@@ -22,7 +22,7 @@ O cliente original já contém os golpes **Egg Bomb**, **High Jump Kick**, **Vol
 ## Mewtwo nível 50
 
 - Entra na equipe ao criar nova campanha; migração dos antigos saves sem perda dos demais membros — se a equipe estiver cheia, o último Pokémon vai para o PC.
-- Banco de **137 movimentos candidatos presentes no cliente original + quatro novos**, sem exigência de nível **apenas para esse Mewtwo de teste**. Nem todos os 137 foram testados individualmente com o corpo do Mewtwo; alguns podem exigir adaptações por espécie.
+- Banco de **137 movimentos selecionáveis no total, incluindo os quatro novos**, sem exigência de nível **apenas para esse Mewtwo de teste**. Nem todos os 137 foram testados individualmente com o corpo do Mewtwo; alguns podem exigir adaptações por espécie.
 - Tela de **Sumário** clicando no Pokémon; mostra retrato PMD, HP, ATK, DEF, SPD, nível, tipos e um banco de movimentos com páginas.
 - Seleção de quatro movimentos equipados em LMB, RMB, Q e E/ULT. O quinto comando de esquiva/defesa continua o original do Pokémon. O movimento no slot E continua consumindo a barra de Ultimate segundo as regras originais; estar desbloqueado não elimina o custo da habilidade.
 - Trocas de golpes e equipe persistem no salvamento local e são aplicadas na cena Phaser original de combate. A evolução permanece apenas após a batalha e por nível no modo Kanto; outros modos continuam com evolução livre/dinâmica.
