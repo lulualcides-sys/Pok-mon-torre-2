@@ -1,5 +1,13 @@
 # Pokémon Torre 2 — Kanto Battle Engine
 
+**▶ [JOGAR — VERSÃO CORRIGIDA (CDN)](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)** — publicado e verificado em desktop e Android horizontal. [Link alternativo direto](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html).
+
+**Correção do Loading:** antes o cliente carregava os retratos de todas as 76 entradas do manifesto (e animações Idle/Walk) antes do menu. Agora carrega só as linhas iniciais necessárias; os demais sprites continuam disponíveis sob demanda durante a seleção e a batalha. Inclui mensagem recuperável após atraso de inicialização, sem excluir Pokémon nem golpes. Ambas as rotas públicas passaram pelo Chromium, inclusive Android simulado, no [teste 39517268452](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39517268452).
+
+**Hospedagem definitiva gratuita:** o GitHub Pages deste repositório ainda precisa ser habilitado em **Settings → Pages → Build and deployment → Source: GitHub Actions**. O deploy automático está pronto: depois de habilitado, a raiz `https://lulualcides-sys.github.io/Pok-mon-torre-2/` redireciona para o Phaser Kanto, e o laboratório Pixi permanece em `/lab.html`. O status "success" do workflow que apenas monta artefatos não confirma que o GitHub Pages esteja ativo.
+
+
+
 ## Pokémon Torre 2 Kanto — jogo SOLO (Phaser)
 
 **AUDITORIA REAL DOS GOLPES:** [inventário dos 160 golpes originais, por tipo, com o que já existe e o que falta](docs/AUDITORIA-160-GOLPES-POKEARENA2D.md). O catálogo do tipo Pedra **já contém Rock Slide, Rock Throw, Stone Edge, Smack Down e Rollout**. Conferência de todos os 26 personagens com evoluções e Megas: [GitHub Actions](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39510957595). Mewtwo de teste ampliado de **137 para 157 opções**, incluindo os quatro movimentos inéditos do Torre 2. Os novos quatro propostos, ainda não implementados: **Surf, Swift, Shadow Ball e Lovely Kiss**, que estão ausentes na versão capturada do site.
@@ -10,7 +18,7 @@
 **Atualização testada:** quatro efeitos exclusivos novos em Phaser: **Bonemerang, Bone Club, Tri Attack e Pay Day**, Mewtwo de testes **nível 50 na equipe**, banco com **157 golpes selecionáveis (incluindo quatro novos)** e **Sumário interativo** com retrato, HP, ATK, DEF, SPD, quatro botões equipáveis e salvamento persistente. O clique em um Pokémon abre o Sumário. [Relatório e próximos refinamentos](docs/LOTE-4-GOLPES-MEWTWO-LV50.md) e [testes da batalha real e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39495106150). Golpes existentes no cliente Poké Arena, como Egg Bomb, High Jump Kick e Volt Tackle, não foram redesenhados. Os quatro VFX exclusivos são **primeira versão para aprovação visual**, não promessa de cópia idêntica.
 
 
-[**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/0867b6e490afb166b68a0197650c497ae9306262/index.html)
+[**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)
 
 **Só para um jogador:** menu inicial original do Poké Arena 2D com fontes, cores, logo e navegação preservados. Retirados ONLINE, 2 PLAYERS, bate-papo, Join/Discord, contagem de pessoas online e o botão EVO/MEGA **somente durante a campanha Kanto**. Training, Arena Mode, VS CPU e League mantêm evolução dinâmica sem exigir nível. PLAY → KANTO CAMPAIGN abre ginásios, capturas e evolução exclusivamente por nível após o combate. Botão MENU volta à abertura. Testado no Chromium, batalha original e Android horizontal: [execução verificada, incluindo evolução por modo e teste Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39488444410).
 
