@@ -52,6 +52,10 @@ const server=http.createServer(async(req,res)=>{
   const missingModule=notFound.filter(o=>/\.js(\?|$)/.test(o.url));
   assert.deepEqual(missingModule,[],'missing source JS file(s)');
   await page.screenshot({path:'test-evidence/pokearena-original-phaser-source.png',fullPage:true});
+  // Exercise the real on-canvas Play button rather than stopping at the title.
+  await page.mouse.click(490,275);
+  await page.waitForTimeout(1100);
+  await page.screenshot({path:'test-evidence/pokearena-play-menu.png',fullPage:true});
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
    notFound:notFound.slice(0,40),source:'pokearena2d.com',result:'Phaser source booted'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
