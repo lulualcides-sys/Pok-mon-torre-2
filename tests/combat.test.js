@@ -103,3 +103,13 @@ test('timed dodge protects against rock throw and rock does not hit through invu
  for(let i=0;i<12;i++)tick(s,.03);
  assert.equal(s.player.hp,hp,'invulnerable character cannot be hit by Rock Throw');
 });
+
+test('PMD licensed 60Hz animation cycles respect source frame durations',async()=>{
+ const {timedFrame,facingDirection}=await import('../src/spritecollab-v02.js');
+ assert.equal(timedFrame([8,10,8,10],0),0);
+ assert.equal(timedFrame([8,10,8,10],9/60),1);
+ assert.equal(timedFrame([8,10,8,10],19/60),2);
+ assert.equal(timedFrame([8,10,8,10],36/60),0);
+ assert.equal(facingDirection(1,0,2),2);
+ assert.equal(facingDirection(0,1,2),4);
+});
