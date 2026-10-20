@@ -24,6 +24,23 @@ jobs:
           set -euo pipefail
           node --check tools/pokearena/capture-client.mjs
           node tools/pokearena/capture-client.mjs
+      - name: Montar cópia isolada para teste WebGL
+        run: |
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/build-preview.mjs
+          node --check tests/source-client-smoke.cjs
+          node tools/pokearena/build-preview.mjs
+      - name: Testar cliente original Phaser no Chromium
+        run: |
+          CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+      - name: Arquivar capturas da verificação visual
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena2d-phaser-smoke-evidencias
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn
       - name: Verificar a captura real e mostrar cobertura
         if: always()
         shell: bash
