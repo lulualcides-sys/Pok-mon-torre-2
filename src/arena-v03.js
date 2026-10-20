@@ -8,14 +8,6 @@ const noise=(x,y)=>{const n=Math.imul(x+3,73856093)^Math.imul(y+7,19349663);retu
 export function makeArena(P){
  const stage=createBase(P);
  const {root}=stage;
- // One sortable actor layer: fighters cross in front/behind naturally as y changes.
- // Decorations remain below, GPU effects remain above.
- const actorLayer=new P.Container();
- actorLayer.sortableChildren=true;
- const idx=root.getChildIndex(stage.shadow);
- root.addChildAt(actorLayer,idx);
- actorLayer.addChild(stage.shadow,stage.enemyRock,stage.enemyOnix,stage.player);
- stage.actorLayer=actorLayer;
  const glare=new P.Graphics(),rim=new P.Graphics(),floor=new P.Graphics();
  // Transparent panel wear; irregular scratches across only 2.7% of panels.
  for(let y=65;y<500;y+=19)for(let x=61;x<910;x+=27){
@@ -84,5 +76,13 @@ export function makeArena(P){
    }
   }
  };
+ // One sortable actor layer: fighters cross in front/behind naturally as y changes.
+ // Decorations remain below, GPU effects remain above.
+ const actorLayer=new P.Container();
+ actorLayer.sortableChildren=true;
+ const idx=root.getChildIndex(stage.shadow);
+ root.addChildAt(actorLayer,idx);
+ actorLayer.addChild(stage.shadow,stage.enemyRock,stage.enemyOnix,stage.player);
+ stage.actorLayer=actorLayer;
  return stage;
 }
