@@ -2,7 +2,7 @@ name: Pokémon Torre 2 — Testes de Combate e WebGL
 
 on:
   push:
-    branches: [main]
+    branches: [main, visual-overhaul-pokearena-v02]
     paths-ignore:
       - '*.md'
       - 'docs/**'

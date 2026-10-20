@@ -1,0 +1,70 @@
+/* Pokémon Torre 2 v0.2 — compact arcade battlefield/HUD.
+ * This is layout only; attack art stays in PixiJS WebGL. */
+:root{--bg:#070b1b;--panel:#151b32;--panel2:#181f3b;--stroke:#52638d;--text:#f3f1f8;--muted:#b6bcdb;--accent:#76dcff;--fire:#fba945}
+html,body{background:radial-gradient(ellipse at top,#1a2244 0%,#090e22 57%,#060a17 100%)}
+.app-shell{max-width:1010px;padding:9px 11px 14px}
+.topline{margin-bottom:8px}
+.brand-mark{color:#8deeff;border-color:#59c4e6;text-shadow:0 0 10px #4bc9ff;padding:7px 11px}
+.brand strong{color:#f4f5fa;font-size:15px}.brand small{color:#9bb8ce}
+.chapter{margin-bottom:7px}.chapter small{color:#8deaff}.chapter h1{font-size:24px;margin:1px 0}.chapter p{font-size:11px}
+.lab,.chip{background:#1c2b47;border-color:#456893;color:#9adef4}
+.arena-shell{border:3px solid #546589;background:#0c1128;border-radius:10px;box-shadow:0 7px 18px #030610}
+#game{background:#202a4b;aspect-ratio:16/9}
+.battle-top{padding:7px 11px;gap:6px}
+.hud{width:210px;background:linear-gradient(150deg,#070c22ed,#141d3fe8);border:2px solid #56628f;
+ border-radius:4px;box-shadow:0 3px 0 #05091d;gap:5px}
+.hud span:first-child{font-weight:900;font-size:13px;text-shadow:0 1px #000}
+.hud span:last-child{font-size:10px}
+.health{background:#060b22;border-color:#5a70a3;border-radius:2px;height:9px}
+.health i{background:linear-gradient(90deg,#55d579,#91ef82)}
+.health.enemy i{background:linear-gradient(90deg,#df6f9f,#a7ef83)}
+.center-counter{margin-top:0;background:#0a1330c4;color:#daecfa;font-size:10px;border:1px solid #556895}
+.arena-footer{bottom:4px;font-size:9px;text-shadow:0 1px 2px #000}
+.battle-log{margin-top:5px;min-height:32px;background:#0d1330;color:#cce6fd;border:1px solid #44588a;border-radius:4px}
+.lower{grid-template-columns:168px 1fr;gap:7px;margin-top:7px}
+.control-area,.moves-section{background:linear-gradient(155deg,#171d36,#0b1026);
+ border:1px solid #4b5a8c;border-radius:7px;padding:10px}
+.control-label,.moves-head{color:#c4bdfc}
+.moves-head{margin-bottom:6px}
+.moves{gap:6px}
+.moves button{background:linear-gradient(90deg,#1c2340,#10172e);border-color:#6b719a;border-left-color:#fa8d31;
+ border-radius:6px;min-height:64px}
+.moves button:hover{border-color:#ffbc57}
+.key{background:#502d31;color:#ffcb7b;border-color:#b96653;border-radius:4px}
+.move-name{font-size:13px}
+.meta{color:#adb6d9;font-weight:650}
+.cd{border-color:#676fa0;color:#e2deff}
+.energy-pill{color:#fbd88a}
+.energy{border-color:#667dab}.energy i{background:linear-gradient(90deg,#0aafda,#72f2f4)}
+.dpad button{background:linear-gradient(#3a456e,#17213e);border-color:#8293c0;color:#daf6ff;box-shadow:0 3px 0 #080f28}
+.dpad .dodge{background:#774932;color:#fceeb8}
+footer{color:#919fbc}
+@media(max-width:710px){
+ .app-shell{padding:3px 3px 10px}
+ .topline{margin:5px 5px 9px}.brand strong{font-size:12px}.brand-mark{padding:5px 9px}
+ .brand small{font-size:7px}.chapter{margin:0 7px 7px}.chapter h1{font-size:19px}
+ .chapter small{font-size:9px}.chapter p{font-size:10px}
+ .arena-shell{border-width:1px;border-radius:4px}
+ .battle-top{padding:3px 3px;gap:2px}.hud{padding:4px;width:33%;gap:2px;border-width:1px}
+ .hud span:first-child{font-size:10px}.hud span:last-child{font-size:8px}
+ .health{height:7px}.center-counter{font-size:8px;padding:3px 4px;max-width:33%}
+ .arena-footer{font-size:6px;letter-spacing:.05em;bottom:3px}
+ .battle-log{font-size:10px;padding:6px 7px;margin-top:3px}
+ .lower{grid-template-columns:123px 1fr;gap:4px;margin-top:5px}
+ .control-area,.moves-section{padding:6px;border-radius:5px}
+ .dpad{width:109px;height:124px;margin:4px auto 0}
+ .dpad button{height:35px;width:34px;font-size:13px}
+ .dpad .up{left:38px;top:1px}.dpad .left{left:0;top:37px}
+ .dpad .right{right:0;top:37px}.dpad .down{left:38px;bottom:6px}
+ .dpad .dodge{left:35px;top:40px;font-size:7px;width:40px;height:31px}
+ .moves-head{flex-direction:row;align-items:center;margin-bottom:4px}.moves-head>span{font-size:8px}
+ .energy-pill{gap:3px;font-size:8px}.energy{width:35px}
+ .moves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+ .moves button{grid-template-columns:17px minmax(0,1fr);grid-template-rows:auto auto auto;
+  position:relative;min-height:53px;padding:5px 3px;gap:0 3px;border-left-width:3px}
+ .key{grid-row:span 2;font-size:10px;padding:4px 0}
+ .move-name{font-size:10px}.meta{font-size:7px}
+ .cd{position:absolute;right:3px;bottom:2px;border:0;padding:0;min-width:0;font-size:7px;opacity:.85}
+ footer{font-size:8px}
+}
+@media(max-width:370px){.moves button{min-height:51px}.move-name{font-size:9px}.control-label{font-size:8px}}
