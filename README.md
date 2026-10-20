@@ -1,5 +1,14 @@
 # Pokémon Torre 2 — Kanto Battle Engine
 
+## Pokémon Torre 2 Kanto — jogo SOLO (Phaser)
+
+[**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/28f2b3d0d83bf5f1c76da0940c1c853a01417b4b/index.html)
+
+O jogo abre diretamente na seleção de Bulbasaur, Charmander ou Squirtle. Reusa os ataques, movimentação, sprites e cenas do motor Phaser de pokearena2d.com, com progressão própria do Torre 1: 13 treinadores antes de Brock e dificuldade crescente, oito líderes, Elite Four, insígnias, EXP, captura após vitória, equipe de 6 e PC, evolução exclusivamente por nível depois do combate e salvamento em localStorage. Sem conta, login, amigos, partidas online ou API de servidor. Testado em navegador Chromium e Android paisagem (landscape): [execução validada](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39484160116).
+
+**Cobertura:** catálogo de 151 Pokémon de Kanto incluído na Pokédex; só as espécies com animações e kits disponíveis no cliente recuperado são liberadas como lutadoras neste estágio. A campanha já usa os lutadores existentes do Poké Arena, ainda não todos os 151. A progressão é independente da versão de laboratório PixiJS V0.8 mantida no ramo principal. No celular, use a tela horizontal. O jogo funciona como página estática, sem serviços multiplayer; para abri-lo por URL é necessário acesso à hospedagem de arquivos estáticos.
+
+
 ## 🎮 TESTAR AGORA (sem esperar GitHub Pages)
 
 **[▶ JOGAR POKÉMON TORRE 2 — V0.8 validada no Android e WebGL](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3badc040242c9117b9c860f795412ac0e310493c/index.html)**
