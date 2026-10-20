@@ -1,6 +1,6 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
 import {makeArena} from './arena-stadium-v06.js';
-import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v06.js';
+import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v08.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
 import {buildBrockAtlas,spawnDust,stepDust} from './brock-v04.js';
 import {stickVector,keyboardOrStick} from './joystick.js';
@@ -22,6 +22,8 @@ let joystickElement=null,joystickThumb=null;
 const logLines=[];
 let metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
 let actorArt=[];
+let activeBank='fire';
+const MOVE_BANKS={fire:['ember','flamethrower','firespin','fireblast'],nature:['watergun','bubblebeam','vinewhip','thunderbolt']};
 function message(t){
  logLines.unshift(t);logLines.length=Math.min(logLines.length,4);
  log.textContent=logLines.join(' · ');
@@ -56,22 +58,33 @@ function createEngine(){
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Estádio de Pewter';
  window.PokemonTorre2={
-  version:'0.7.0-analog-joystick',
+  version:'0.8.0-battle-laboratory',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
     shotsAgainstPlayer:battle.enemyShots.length,metrics:{...metrics},actorArt:actorArt.slice(),
     viewport:{...viewport,cameraX:camera.x,cameraY:camera.y},
     joystick:{active:stickState.active,x:stickState.x,y:stickState.y,pointerId:stickState.pointerId},
-    arenaStyle:stage.arenaStyle, 
+    arenaStyle:stage.arenaStyle,moveBank:activeBank,availableMoves:Object.keys(MOVES), 
     animations:{player:stage.player.__pmd?.state?.mode||'fallback',enemy:(battle.enemy.id==='geodude'?stage.enemyRock:stage.enemyOnix).__pmd?.state?.mode||'fallback'},
     renderer:app.renderer.gl?'webgl':'unavailable'}),
-  cast:(id)=>tryMove(id),restart:()=>restart(),
+  cast:(id)=>tryMove(id),selectBank:(bank)=>selectBank(bank),restart:()=>restart(),
   proof:{originalProjectUntouched:true,moveSource:'original PixiJS pixel art',sourceGame:'none'}
  };
- message('Brock aguarda! Joystick analógico ou WASD · 1–4 golpes · Esquiva');
+ message('Brock aguarda! Joystick analógico · Fogo ou laboratório de golpes · Esquiva');
 }
 function createUI(){
+ for(const tab of document.querySelectorAll('[data-bank]')){
+  tab.addEventListener('click',()=>selectBank(tab.dataset.bank));
+ }
+ const full=document.getElementById('fullscreen');
+ full?.addEventListener('click',async()=>{
+  try{
+   if(document.fullscreenElement){await document.exitFullscreen();return;}
+   await document.querySelector('.app-shell').requestFullscreen();
+   if(screen.orientation?.lock){try{await screen.orientation.lock('landscape')}catch(_){}}
+  }catch(error){message('O navegador não permitiu tela cheia: '+error.message)}
+ });
  for(const button of buttons){
   button.addEventListener('click',event=>{
    event.preventDefault();tryMove(button.dataset.move);
@@ -127,10 +140,7 @@ function createUI(){
   if([' ','arrowup','arrowdown','arrowleft','arrowright'].includes(key))event.preventDefault();
   held.add(key);
   if(event.repeat)return;
-  if(key==='1')tryMove('ember');
-  if(key==='2')tryMove('flamethrower');
-  if(key==='3')tryMove('firespin');
-  if(key==='4')tryMove('fireblast');
+  if(['1','2','3','4'].includes(key))tryMove(MOVE_BANKS[activeBank][Number(key)-1]);
   if(key===' '){const m=movement();dodge(battle,Math.hypot(m.x,m.y)>0?m:vector(battle.player,battle.enemy));}
  });
  window.addEventListener('keyup',e=>held.delete(e.key.toLowerCase()));
@@ -139,6 +149,20 @@ function createUI(){
 }
 function movement(){
  return keyboardOrStick(held,stickState);
+}
+function selectBank(bank){
+ if(!MOVE_BANKS[bank])return false;
+ activeBank=bank;
+ for(const panel of document.querySelectorAll('[data-bank-panel]')){
+  panel.hidden=panel.dataset.bankPanel!==bank;
+ }
+ for(const tab of document.querySelectorAll('[data-bank]')){
+  const pressed=tab.dataset.bank===bank;
+  tab.classList.toggle('selected',pressed);
+  tab.setAttribute('aria-pressed',String(pressed));
+ }
+ message(bank==='fire'?'Golpes de fogo prontos':'Laboratório elemental ativo: 4 golpes originais em teste');
+ return true;
 }
 function tryMove(id){
  const aim=pointTarget&&Math.hypot(pointTarget.x-battle.player.x,pointTarget.y-battle.player.y)>40
@@ -190,6 +214,14 @@ function handleEvents(){
    enemySprite.__pmd?.action('Hurt',.22,battle.t);
   }
   if(e.type==='miss')message(MOVES[e.move].name+' errou o alvo!');
+  if(e.type==='clash'){
+   const effect=createImpact(P,e.move,impactAtlases);
+   effect.graphics.position.set(e.x,e.y);
+   stage.vfx.addChild(effect.graphics);impacts.push(effect);
+   screenShake=Math.max(screenShake,3.2);
+   metrics.clashes=(metrics.clashes||0)+1;
+   message('CHOQUE DE GOLPES! '+MOVES[e.move].name+' × Rock Throw');
+  }
   if(e.type==='enemy-cast'){
    const enemySprite=e.enemy==='geodude'?stage.enemyRock:stage.enemyOnix;
    enemySprite.__pmd?.action('Shoot',.34,battle.t);
@@ -217,23 +249,24 @@ function animateAttacks(delta){
   let gfx=attackVisuals.get(shot.castId);
   if(!gfx){
    gfx=new P.Sprite(atlases[shot.id][0]);
-   gfx.anchor.set(shot.id==='flamethrower'?0:.5,.5);
+   const beam=['flamethrower','watergun','vinewhip','thunderbolt'].includes(shot.id);
+   gfx.anchor.set(beam?0:.5,.5);
    gfx.roundPixels=true;
    stage.vfx.addChild(gfx);attackVisuals.set(shot.castId,gfx);metrics.createdEffectSprites++;
   }
   const arr=atlases[shot.id];
   gfx.texture=arr[Math.floor(shot.age*(shot.id==='fireblast'?10:14))%arr.length];
   const angle=Math.atan2(shot.direction.y,shot.direction.x);
-  if(shot.id==='flamethrower'){
+  if(['flamethrower','watergun','vinewhip','thunderbolt'].includes(shot.id)){
    // ONE continuous forward-growing stream, not detached generic fire balls.
    gfx.position.set(shot.origin.x,shot.origin.y);
    gfx.width=Math.max(14,shot.progress*shot.travel+18);
-   gfx.height=65;
+   gfx.height=shot.id==='thunderbolt'?91:shot.id==='vinewhip'?78:shot.id==='watergun'?51:65;
    gfx.rotation=angle;
   }else{
    gfx.position.set(shot.x,shot.y);
    gfx.rotation=shot.id==='fireblast'?0:(angle+(shot.id==='firespin'?shot.age*3:0));
-   const size=shot.id==='fireblast'?96:shot.id==='firespin'?108:43;
+   const size=shot.id==='fireblast'?96:shot.id==='firespin'?108:shot.id==='bubblebeam'?79:43;
    gfx.width=size;gfx.height=size;
   }
  }
@@ -340,7 +373,7 @@ function restart(){
  joystickElement?.classList.remove('is-active');
  previousActors={player:null,enemy:null};screenShake=0;
  camera={x:0,y:0};stage.root.position.set(0,0);
- metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0,enemyProjectileSprites:0};
+ metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0,enemyProjectileSprites:0,clashes:0};
  logLines.length=0;message('Batalha reiniciada no Ginásio de Pewter');paintUI();
 }
 try{createEngine();paintUI();}catch(error){

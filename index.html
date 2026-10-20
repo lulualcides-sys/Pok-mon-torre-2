@@ -10,12 +10,13 @@
 <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="./styles-v02.css">
 <link rel="stylesheet" href="./joystick.css">
+<link rel="stylesheet" href="./arena-lab-v08.css">
 </head>
 <body>
 <div class="app-shell">
  <header class="topline">
   <div class="brand"><span class="brand-mark">II</span><div><strong>POKÉMON TORRE <em>2</em></strong><small>KANTO · BATALHA 2D WEBGL</small></div></div>
-  <div class="top-right"><span class="lab">V0.7 · JOYSTICK ANALÓGICO</span><button class="subtle" id="reset" type="button">Reiniciar</button></div>
+  <div class="top-right"><span class="lab">V0.8 · ARENA + LABORATÓRIO</span><button class="subtle" id="fullscreen" type="button" aria-label="Abrir batalha em tela cheia">⛶ Tela cheia</button><button class="subtle" id="reset" type="button">Reiniciar</button></div>
  </header>
  <main>
   <div class="chapter"><div><small>01 / 08 · DESAFIO DOS GINÁSIOS</small><h1>Ginásio de Pewter</h1><p><span class="dot"></span> Brock · Tipo Pedra · Insígnia Rocha</p></div><div class="chip">PRIMEIRO COMBATE</div></div>
@@ -47,13 +48,24 @@
     </div>
    </section>
    <section class="moves-section">
-    <div class="moves-head"><span>GOLPES · CHARIZARD</span><div class="energy-pill">✦ <span id="energy-text">100 / 100</span><div class="energy"><i id="energy-bar"></i></div></div></div>
-    <div class="moves">
-     <button type="button" data-move="ember"><span class="key">1</span><span class="move-name">Ember</span><span class="meta">FOGO · ESPECIAL</span><span class="cd">9 EN</span></button>
-     <button type="button" data-move="flamethrower"><span class="key">2</span><span class="move-name">Flamethrower</span><span class="meta">FOGO · CONTÍNUO</span><span class="cd">22 EN</span></button>
-     <button type="button" data-move="firespin"><span class="key">3</span><span class="move-name">Fire Spin</span><span class="meta">FOGO · ÁREA</span><span class="cd">18 EN</span></button>
-     <button type="button" data-move="fireblast"><span class="key">4</span><span class="move-name">Fire Blast</span><span class="meta">FOGO · IMPACTO</span><span class="cd">39 EN</span></button>
+    <div class="moves-head"><span>GOLPES · LABORATÓRIO KANTO</span><div class="energy-pill">✦ <span id="energy-text">100 / 100</span><div class="energy"><i id="energy-bar"></i></div></div></div>
+    <div class="spell-tabs" role="group" aria-label="Escolher conjunto de golpes">
+      <button type="button" data-bank="fire" aria-pressed="true" class="selected">🔥 Fogo</button>
+      <button type="button" data-bank="nature" aria-pressed="false">💧 Água · Planta · Raio</button>
     </div>
+    <div class="moves move-set" data-bank-panel="fire">
+     <button type="button" data-move="ember"><span class="key">1</span><span class="move-name">Ember</span><span class="meta">FOGO · PROJÉTIL</span><span class="cd">9 EN</span></button>
+     <button type="button" data-move="flamethrower"><span class="key">2</span><span class="move-name">Flamethrower</span><span class="meta">FOGO · JATO</span><span class="cd">22 EN</span></button>
+     <button type="button" data-move="firespin"><span class="key">3</span><span class="move-name">Fire Spin</span><span class="meta">FOGO · VÓRTICE</span><span class="cd">18 EN</span></button>
+     <button type="button" data-move="fireblast"><span class="key">4</span><span class="move-name">Fire Blast</span><span class="meta">FOGO · 大</span><span class="cd">39 EN</span></button>
+    </div>
+    <div class="moves move-set" data-bank-panel="nature" hidden>
+     <button type="button" data-move="watergun"><span class="key">1</span><span class="move-name">Water Gun</span><span class="meta">ÁGUA · JATO</span><span class="cd">13 EN</span></button>
+     <button type="button" data-move="bubblebeam"><span class="key">2</span><span class="move-name">Bubble Beam</span><span class="meta">ÁGUA · BOLHAS</span><span class="cd">21 EN</span></button>
+     <button type="button" data-move="vinewhip"><span class="key">3</span><span class="move-name">Vine Whip</span><span class="meta">PLANTA · CHICOTE</span><span class="cd">20 EN</span></button>
+     <button type="button" data-move="thunderbolt"><span class="key">4</span><span class="move-name">Thunderbolt</span><span class="meta">ELÉTRICO · RAIO</span><span class="cd">31 EN</span></button>
+    </div>
+    <p class="lab-caption">Charizard é o personagem de teste desta versão. O segundo conjunto permite avaliar animações de outros tipos antes de liberar os Pokémon correspondentes.</p>
    </section>
   </div>
  </main>

@@ -32,7 +32,8 @@ const fs=require('node:fs');
   assert.equal(s.gym,'pewter');
   assert.equal(s.arenaStyle,'grass-stadium-v06','stage must use outdoor grass stadium, not old metallic arena');
   assert.equal(s.enemy.id,'geodude');
-  assert.equal(await page.locator('button[data-move]').count(),4);
+  assert.equal(await page.locator('button[data-move]').count(),8);
+  assert.equal(await page.locator('[data-bank-panel="fire"] button:visible').count(),4);
   // Measure optional noncommercial artist-credited sprite sheets separately from engine health.
   try{
     await page.waitForFunction(()=>window.PokemonTorre2?.snapshot()?.actorArt?.length>=3,
@@ -76,6 +77,24 @@ const fs=require('node:fs');
     assert.ok(sample.enemy.hp<sample.enemy.maxHp,id+' must hit opponent after arrival');
   }
 
+  // New original attacks are generated as separate GPU atlases, not re-skinned fire.
+  await page.locator('[data-bank="nature"]').click();
+  assert.equal(await page.locator('[data-bank-panel="nature"] button:visible').count(),4);
+  assert.equal(await page.locator('[data-bank-panel="fire"] button:visible').count(),0);
+  for(const id of ['watergun','bubblebeam','vinewhip','thunderbolt']){
+    await page.evaluate(()=>window.PokemonTorre2.restart());
+    const activated=await page.evaluate(id=>window.PokemonTorre2.cast(id),id);
+    assert.equal(activated.ok,true,id+' must be castable from training bank');
+    await page.waitForFunction(()=>{const s=window.PokemonTorre2.snapshot();
+      return s.enemy.hp<s.enemy.maxHp||s.status!=='fighting';},null,{timeout:22000,polling:160});
+    const sample=await page.evaluate(()=>window.PokemonTorre2.snapshot());
+    assert.ok(sample.metrics.createdEffectSprites>=1,id+' WebGL atlas must be drawn');
+    assert.ok(sample.metrics.renderedEffectFrames>=1,id+' must visibly animate');
+    assert.ok(sample.enemy.hp<sample.enemy.maxHp,id+' must land after flight');
+    if(id==='watergun'||id==='thunderbolt')
+      await page.screenshot({path:'test-evidence/arena-v08-'+id+'.png',fullPage:true});
+  }
+  await page.evaluate(()=>window.PokemonTorre2.selectBank('fire'));
   await page.evaluate(()=>window.PokemonTorre2.restart());
   await page.waitForFunction(()=>window.PokemonTorre2?.snapshot().metrics.enemyProjectileSprites>=1,
     null,{timeout:25000,polling:200});
@@ -98,6 +117,7 @@ const fs=require('node:fs');
   assert.ok(framed.viewport.cameraX< -50,'mobile camera must center the two combatants');
 
   assert.equal(await mobile.locator('[data-dir]').count(),0,'old four-button dpad must be removed');
+  assert.equal(await mobile.locator('[data-bank]').count(),2,'two move banks must be reachable on mobile');
   assert.equal(await mobile.locator('#movement-stick').count(),1,'mobile thumbstick must exist');
   const pad=mobile.locator('#movement-stick');
   const origin=await pad.boundingBox();

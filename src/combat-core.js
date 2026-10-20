@@ -6,7 +6,11 @@ export const MOVES=Object.freeze({
  ember:Object.freeze({id:'ember',name:'Ember',type:'fire',power:13,cost:9,cooldown:0.60,speed:520,frames:12,range:480,radius:24,color:0xff9d27}),
  flamethrower:Object.freeze({id:'flamethrower',name:'Flamethrower',type:'fire',power:32,cost:22,cooldown:2.35,speed:750,frames:12,range:440,radius:39,color:0xff6f25}),
  firespin:Object.freeze({id:'firespin',name:'Fire Spin',type:'fire',power:26,cost:18,cooldown:3.2,speed:360,frames:12,range:400,radius:48,color:0xfbc12b}),
- fireblast:Object.freeze({id:'fireblast',name:'Fire Blast',type:'fire',power:62,cost:39,cooldown:5.5,speed:450,frames:16,range:500,radius:68,color:0xff9725})
+ fireblast:Object.freeze({id:'fireblast',name:'Fire Blast',type:'fire',power:62,cost:39,cooldown:5.5,speed:450,frames:16,range:500,radius:68,color:0xff9725}),
+ watergun:Object.freeze({id:'watergun',name:'Water Gun',type:'water',power:20,cost:13,cooldown:1.1,speed:620,frames:12,range:520,radius:27,color:0x4bcff9}),
+ bubblebeam:Object.freeze({id:'bubblebeam',name:'Bubble Beam',type:'water',power:29,cost:21,cooldown:2.2,speed:500,frames:12,range:510,radius:44,color:0x70e7ff}),
+ vinewhip:Object.freeze({id:'vinewhip',name:'Vine Whip',type:'grass',power:32,cost:20,cooldown:2.7,speed:740,frames:12,range:410,radius:32,color:0x60d771}),
+ thunderbolt:Object.freeze({id:'thunderbolt',name:'Thunderbolt',type:'electric',power:43,cost:31,cooldown:4.0,speed:1000,frames:16,range:510,radius:42,color:0xffed62})
 });
 export const GYMS=Object.freeze([
  {id:'pewter',name:'Pewter',leader:'Brock',terrain:'rock',level:1},
@@ -26,13 +30,18 @@ export function vector(from,to){
  return {x:dx/size,y:dy/size};
 }
 export function elementalMultiplier(attack,defender){
- if(attack==='fire'&&['rock','water','fire','dragon'].includes(defender))return .5;
- if(attack==='fire'&&['grass','bug','ice','steel'].includes(defender))return 2;
+ const resisted={fire:['rock','water','fire','dragon'],water:['water','grass','dragon'],
+  grass:['fire','grass','poison','bug','flying','dragon','steel'],electric:['grass','electric','dragon']};
+ const superEffective={fire:['grass','bug','ice','steel'],water:['fire','ground','rock'],
+  grass:['water','ground','rock'],electric:['water','flying']};
+ if(attack==='electric'&&defender==='ground')return 0;
+ if(superEffective[attack]?.includes(defender))return 2;
+ if(resisted[attack]?.includes(defender))return .5;
  return 1;
 }
 const player=()=>({id:'charizard',name:'Charizard',level:50,type:'fire',x:235,y:345,
  radius:24,hp:230,maxHp:230,energy:100,maxEnergy:100,invulnerable:0,speed:190,
- cooldowns:{ember:0,flamethrower:0,firespin:0,fireblast:0}});
+ cooldowns:Object.fromEntries(Object.keys(MOVES).map(id=>[id,0]))});
 const ENEMIES=[
  {id:'geodude',name:'Geodude',type:'rock',level:12,maxHp:86,hp:86,x:715,y:260,speed:76,radius:26,
   action:1.4,power:8},
@@ -143,6 +152,16 @@ export function tick(s,dt){
   rock.progress=step/rock.range;
   rock.x=rock.origin.x+rock.direction.x*step;
   rock.y=rock.origin.y+rock.direction.y*step;
+  // Beam/projectile clashes happen at the collision point, before either
+  // attack can damage a character. One collision consumes each projectile.
+  const intercept=s.projectiles.find(shot=>!shot.hit &&
+    distance(shot,rock)<=Math.min(42,shot.move.radius+rock.radius));
+  if(intercept){
+   intercept.hit=true;rock.done=true;
+   notify(s,'clash',{move:intercept.id,enemy:rock.owner,x:(intercept.x+rock.x)/2,
+    y:(intercept.y+rock.y)/2,playerCastId:intercept.castId,enemyCastId:rock.id});
+   continue;
+  }
   if(distance(rock,p)<p.radius+rock.radius){
    rock.done=true;
    if(p.invulnerable<=0){
@@ -157,6 +176,7 @@ export function tick(s,dt){
   }
  }
  s.enemyShots=s.enemyShots.filter(rock=>!rock.done);
+ s.projectiles=s.projectiles.filter(shot=>!shot.hit);
  if(s.status!=='fighting'||!e||e.hp<=0)return;
  const gap=distance(p,e);
  if(gap>174){

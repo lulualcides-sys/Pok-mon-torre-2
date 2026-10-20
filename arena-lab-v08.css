@@ -1,0 +1,57 @@
+/* Pokémon Torre 2 · V0.8: battle-first layout and attack set selection.
+   CSS is UI only; actual sprites, stage and attacks run in PixiJS/WebGL. */
+.spell-tabs{display:flex;gap:6px;margin:5px 0 9px;align-items:center}
+.spell-tabs button{flex:1;padding:9px 7px;background:#101c31;color:#b7d3e8;
+ font-size:12px;border:1px solid #576b94;border-radius:6px;font-weight:850}
+.spell-tabs button.selected,.spell-tabs button[aria-pressed="true"]{background:#305a7a;
+ color:#e9fbff;border-color:#8feaff;box-shadow:inset 0 -2px #183148}
+.move-set[hidden]{display:none!important}
+.move-set button[data-move="watergun"],.move-set button[data-move="bubblebeam"]{border-left-color:#3cd5fa}
+.move-set button[data-move="vinewhip"]{border-left-color:#74e889}
+.move-set button[data-move="thunderbolt"]{border-left-color:#ffd950}
+.lab-caption{font-size:10px;color:#a3b8c8;line-height:1.3;margin:6px 0 0}
+.top-right{flex-shrink:0}
+#fullscreen{white-space:nowrap;color:#f1f8fc;border-color:#5e91a2}
+.app-shell:fullscreen{background:#070e1f;width:100%;max-width:none;overflow:auto;
+ height:100vh;padding:5px 15px;display:flex;flex-direction:column}
+.app-shell:fullscreen .topline{margin-bottom:4px}
+.app-shell:fullscreen main{flex:1;min-height:0;display:flex;flex-direction:column}
+.app-shell:fullscreen .chapter{margin-bottom:4px}
+.app-shell:fullscreen .arena-shell{width:min(100%,calc((100dvh - 230px)*1.7778));
+ margin:0 auto;flex-shrink:1;min-height:0}
+.app-shell:fullscreen .lower{margin-top:5px;grid-template-columns:168px 1fr;align-self:center;width:min(100%,850px)}
+.app-shell:fullscreen .joystick-base{--ring:106px}
+.app-shell:fullscreen .joystick-zone{gap:2px}
+.app-shell:fullscreen .control-area,.app-shell:fullscreen .moves-section{padding:7px}
+.app-shell:fullscreen .moves button{min-height:55px}
+.app-shell:fullscreen footer{display:none}
+@media(max-width:710px){
+ .spell-tabs{gap:3px;margin:3px 0 4px}
+ .spell-tabs button{padding:5px 3px;font-size:9px}
+ .lab-caption{font-size:8px;line-height:1.2;margin:4px 0}
+ .topline .top-right{gap:4px}
+ #fullscreen{font-size:10px;padding:7px 5px}
+ .app-shell:fullscreen{padding:2px}
+ .app-shell:fullscreen .topline{margin:0 4px 3px}
+ .app-shell:fullscreen .brand small{display:none}
+ .app-shell:fullscreen .chapter{display:none}
+ .app-shell:fullscreen .arena-shell{width:min(100vw,calc(100dvh - 200px));}
+ .app-shell:fullscreen .lower{grid-template-columns:104px 1fr;gap:3px;margin-top:3px}
+ .app-shell:fullscreen .joystick-base{--ring:86px}
+ .app-shell:fullscreen .joystick-thumb{transform-origin:center}
+ .app-shell:fullscreen .lab-caption{display:none}
+ .app-shell:fullscreen .moves button{min-height:43px}
+}
+@media(orientation:landscape) and (max-height:560px){
+ .app-shell{max-width:100vw;padding:4px 8px}
+ .chapter{display:none}
+ .topline{margin-bottom:4px}
+ .arena-shell{max-width:70vw;margin:auto}
+ .lower{grid-template-columns:105px 1fr;gap:5px;margin-top:3px}
+ .joystick-base{--ring:86px}
+ .joystick-zone{gap:2px}
+ .control-area,.moves-section{padding:5px}
+ .moves button{min-height:42px}
+ .lab-caption{display:none}
+ footer{display:none}
+}

@@ -6,8 +6,8 @@ test('Kanto has the canonical eight leader gyms in order',()=>{
  assert.equal(GYMS.length,8);
  assert.deepEqual(GYMS.map(g=>g.leader),['Brock','Misty','Lt. Surge','Erika','Koga','Sabrina','Blaine','Giovanni']);
 });
-test('approved benchmark: 4 separate fire moves with 12 or 16 frames',()=>{
- assert.deepEqual(Object.keys(MOVES),['ember','flamethrower','firespin','fireblast']);
+test('4 fire moves plus 4 distinct water/grass/electric moves with 12 or 16 frames',()=>{
+ assert.deepEqual(Object.keys(MOVES),['ember','flamethrower','firespin','fireblast','watergun','bubblebeam','vinewhip','thunderbolt']);
  for(const m of Object.values(MOVES))assert.ok(m.frames===12||m.frames===16);
  assert.equal(MOVES.flamethrower.frames,12);
  assert.equal(MOVES.fireblast.frames,16);
@@ -49,12 +49,13 @@ test('players cannot walk beyond arena or dodge for free',()=>{
 });
 test('Brock advances from Geodude to Onix, then awards Boulder Badge',()=>{
  const s=createBattle();
- s.enemy.hp=1;
+ // Keep this badge-progression test isolated from the separate clash test.
+ s.enemy.hp=1;s.enemy.action=100;
  assert.equal(cast(s,'fireblast',s.enemy).ok,true);
  for(let i=0;i<45;i++)tick(s,.04);
  assert.equal(s.enemy.id,'onix');
  assert.equal(s.status,'fighting');
- s.enemy.hp=1;s.player.energy=100;s.player.cooldowns.fireblast=0;
+ s.enemy.hp=1;s.enemy.action=100;s.player.energy=100;s.player.cooldowns.fireblast=0;
  assert.equal(cast(s,'fireblast',s.enemy).ok,true);
  for(let i=0;i<45;i++)tick(s,.04);
  assert.equal(s.status,'victory');
@@ -112,4 +113,37 @@ test('PMD licensed 60Hz animation cycles respect source frame durations',async()
  assert.equal(timedFrame([8,10,8,10],36/60),0);
  assert.equal(facingDirection(1,0,2),2);
  assert.equal(facingDirection(0,1,2),4);
+});
+
+test('water and grass hit rock hard; electric does not strike ground types',()=>{
+ assert.equal(elementalMultiplier('water','rock'),2);
+ assert.equal(elementalMultiplier('grass','rock'),2);
+ assert.equal(elementalMultiplier('electric','ground'),0);
+});
+test('an enemy rock and player move collide and disappear without damaging either fighter',()=>{
+ const s=createBattle();
+ const hpPlayer=s.player.hp,hpEnemy=s.enemy.hp;
+ const c=cast(s,'watergun',s.enemy);
+ assert.equal(c.ok,true);
+ const fx=s.projectiles[0];
+ s.enemyShots.push({id:100,owner:'geodude',power:18,origin:{...fx.origin},
+  direction:{x:0,y:0},x:fx.origin.x,y:fx.origin.y,age:0,progress:0,range:150,
+  speed:0,radius:15,done:false});
+ tick(s,.012);
+ const events=consumeEvents(s);
+ assert.equal(events.filter(e=>e.type==='clash').length,1);
+ assert.equal(s.player.hp,hpPlayer);
+ assert.equal(s.enemy.hp,hpEnemy);
+ assert.equal(s.projectiles.length,0);
+ assert.equal(s.enemyShots.length,0);
+});
+test('all new elemental spells obey cooldown, energy and deferred impact',()=>{
+ for(const id of ['watergun','bubblebeam','vinewhip','thunderbolt']){
+  const s=createBattle(),before=s.enemy.hp;
+  assert.equal(cast(s,id,s.enemy).ok,true,id);
+  assert.equal(s.enemy.hp,before,id+' must not damage before travel');
+  assert.equal(cast(s,id,s.enemy).reason,'cooldown');
+  for(let i=0;i<60;i++)tick(s,.04);
+  assert.ok(s.enemy.hp<before,id+' must deal damage after contact');
+ }
 });
