@@ -1,0 +1,55 @@
+/* V0.7: analog thumbstick, not four digital buttons. DOM/CSS is the input
+   control only; all gameplay, sprites and attack effects stay in PixiJS/WebGL. */
+.joystick-zone{
+ display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:9px;padding:8px 0 1px;user-select:none;-webkit-user-select:none;
+}
+.joystick-base{
+ --ring:150px;
+ position:relative;display:block;
+ flex:0 0 var(--ring);width:var(--ring);height:var(--ring);
+ border-radius:50%;touch-action:none;overscroll-behavior:contain;
+ border:3px solid #788fb3;
+ background:
+  radial-gradient(circle at 50% 50%,#101a35 0 19%,transparent 21%),
+  repeating-radial-gradient(circle at center,transparent 0 20px,#40577b44 21px 22px,transparent 24px 28px),
+  radial-gradient(circle at 42% 36%,#293d62 0%,#101a33 65%,#0b1228 100%);
+ box-shadow:inset 0 0 0 6px #0e1930,inset 0 0 17px #030b1f,0 6px 14px #03091485;
+ -webkit-tap-highlight-color:transparent;
+ cursor:grab;
+}
+.joystick-base.is-active{border-color:#8fefff;box-shadow:inset 0 0 0 6px #0e1930,0 0 18px #50cde56b;cursor:grabbing}
+.joystick-base:focus-visible{outline:3px solid #f0c16b;outline-offset:4px}
+.joystick-guide{position:absolute;inset:15%;border-radius:50%;border:1px dashed #9ccfed70;pointer-events:none}
+.joystick-guide:before,.joystick-guide:after{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+ width:64%;height:1px;background:#9fc1e33a;pointer-events:none}
+.joystick-guide:after{transform:translate(-50%,-50%) rotate(90deg)}
+.joystick-thumb{
+ position:absolute;left:50%;top:50%;width:54px;height:54px;margin-left:-27px;margin-top:-27px;
+ pointer-events:none;border-radius:50%;border:3px solid #b9e7f9;
+ background:radial-gradient(circle at 33% 27%,#9ceefe 0%,#47bbd5 29%,#237fa3 61%,#143b60 100%);
+ box-shadow:inset 0 0 0 5px #427ca3,0 4px 10px #050e26aa,0 0 12px #70dfff59;
+ will-change:transform;transform:translate3d(0,0,0);
+}
+.joystick-thumb span{position:absolute;inset:12px;border-radius:50%;border:2px solid #e1ffff85;background:#4cb9df2c}
+.joystick-dodge{
+ min-height:36px;width:min(100%,138px);padding:7px 9px;
+ border:1px solid #f2b96c;border-radius:24px;
+ background:linear-gradient(#aa6e45,#603c3f);color:#fff0cf;font-size:11px;
+ font-weight:900;letter-spacing:.05em;
+ box-shadow:inset 0 2px 0 #ffe9ad40,0 3px 6px #040a1a80;
+ touch-action:manipulation;
+}
+.joystick-dodge:active{transform:scale(.96)}
+@media(max-width:710px){
+ .control-area{min-width:0;padding:6px 4px}
+ .joystick-zone{gap:7px;padding:10px 0 0}
+ .joystick-base{--ring:106px;border-width:2px}
+ .joystick-thumb{width:48px;height:48px;margin-left:-24px;margin-top:-24px;border-width:2px}
+ .joystick-thumb span{inset:11px}
+ .joystick-dodge{width:100%;min-height:30px;padding:5px 2px;font-size:9px}
+}
+@media(max-width:350px){
+ .joystick-base{--ring:98px}
+ .joystick-thumb{width:44px;height:44px;margin-left:-22px;margin-top:-22px}
+}
