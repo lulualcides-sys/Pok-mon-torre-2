@@ -5,6 +5,7 @@ on:
     paths:
       - 'tools/pokearena/**'
       - 'tests/source-client-smoke.cjs'
+      - 'tests/solo-kanto-built.test.mjs'
       - 'tests/evolution-modes-built.test.mjs'
       - 'data/kanto-new-phaser-moves.json'
       - 'tests/public-phaser-preview.cjs'
