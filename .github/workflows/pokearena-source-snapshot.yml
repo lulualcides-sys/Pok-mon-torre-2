@@ -75,6 +75,11 @@ jobs:
           set -euo pipefail
           node --check tests/public-phaser-preview.cjs
           ARENA_PUBLIC_URL="https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/$(cat arena-preview-commit.txt)/index.html" CHROME_BIN="$(command -v google-chrome)" node tests/public-phaser-preview.cjs
+      - name: Validar segundo endereço CDN do GitHack no Android
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARENA_PUBLIC_URL="https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/$(cat arena-preview-commit.txt)/index.html" CHROME_BIN="$(command -v google-chrome)" node tests/public-phaser-preview.cjs
       - name: Arquivar capturas da verificação visual
         if: always()
         uses: actions/upload-artifact@v4
