@@ -82,7 +82,7 @@ export function resolveBattle(s,won,random=Math.random){
  member.id=p.species;member.hp=100;
  s.wins++;
  s.pendingCapture=(opponent.leader||s.capturesInStage<5)?{
-  id:opponent.id,level:opponent.level,
+  id:opponent.id,level:opponent.level,leader:opponent.leader,
   chance:opponent.leader?30+Math.floor(random()*61):Math.max(35,75-Math.floor(s.stage*3))
  }:null;
  if(opponent.leader){
@@ -99,7 +99,7 @@ export function attemptCapture(s,random=Math.random){
  if(!s.pendingCapture)return {ok:false,reason:'No encounter available'};
  const candidate=s.pendingCapture;
  s.pendingCapture=null;
- s.capturesInStage++;
+ if(!candidate.leader)s.capturesInStage++;
  if(random()*100>=candidate.chance){
   s.lastMessage=candidate.id+' escapou da Pokébola.';
   saveCampaign(s);return {ok:false,reason:s.lastMessage};
