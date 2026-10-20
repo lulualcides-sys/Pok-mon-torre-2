@@ -30,6 +30,7 @@ const fs=require('node:fs');
   let s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.equal(s.renderer,'webgl','PixiJS must use actual GPU/WebGL, not Canvas2D');
   assert.equal(s.gym,'pewter');
+  assert.equal(s.arenaStyle,'grass-stadium-v06','stage must use outdoor grass stadium, not old metallic arena');
   assert.equal(s.enemy.id,'geodude');
   assert.equal(await page.locator('button[data-move]').count(),4);
   // Measure optional noncommercial artist-credited sprite sheets separately from engine health.
@@ -86,6 +87,7 @@ const fs=require('node:fs');
   await mobile.goto(process.env.BASE_URL||'http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:50000});
   await mobile.waitForFunction(()=>!!window.PokemonTorre2?.snapshot(),null,{timeout:50000});
   const before=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
+  assert.equal(before.arenaStyle,'grass-stadium-v06');
   assert.equal(before.viewport.width,660,'mobile camera uses a separate 660 world-space viewport');
   assert.equal(before.viewport.height,660,'mobile viewport should be square');
   const canvasBox=await mobile.locator('#game canvas').boundingBox();
