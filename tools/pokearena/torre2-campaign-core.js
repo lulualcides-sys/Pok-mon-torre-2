@@ -32,7 +32,7 @@ function newMember(species,level=5){
 }
 export function createCampaign(starter){
  if(!STARTERS.includes(starter))throw new Error('Choose an original Kanto starter');
- return {version:1,stage:0,trainer:0,team:[newMember(starter)],box:[],
+ return {version:1,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],
   active:0,wins:0,losses:0,capturesInStage:0,pendingCapture:null,
   badges:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
 }
@@ -44,6 +44,12 @@ export function readCampaign(storage=localStorage){
   if(s?.version!==1||!Array.isArray(s.team)||s.team.length===0||
     !Number.isInteger(s.stage)||s.stage<0||s.stage>STAGES.length||
     !Number.isInteger(s.trainer)||s.trainer<0)return null;
+  // Existing player saves receive exactly one permanent level-50 test Mewtwo.
+  if(![...s.team,...(s.box||[])].some(p=>p.id==='mewtwo')){
+   if(s.team.length<6)s.team.push(newMember('mewtwo',50));
+   else s.box.push(newMember('mewtwo',50));
+   storage.setItem(SAVE_KEY,JSON.stringify(s));
+  }
   return s;
  }catch{return null}
 }
