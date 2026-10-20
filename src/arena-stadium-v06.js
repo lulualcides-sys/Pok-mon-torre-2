@@ -39,6 +39,32 @@ function field(P){
    if(n%31===0){rect(g,xx+4,yy-3,1,3,0x3c763b,.25);rect(g,xx+6,yy-2,2,2,0xc3cb78,.19)}
   }
  }
+ // Grassy tufts at readable mobile scale, with individual three-blade silhouettes.
+ // The visual reference has uneven turf rather than a flat solid green surface.
+ for(let y=92;y<521;y+=14)for(let x=12;x<947;x+=15){
+  const n=seed(x,y,58);
+  if(n%100<34)continue;
+  const xx=x+((n>>>7)%9),yy=y+((n>>>11)%6);
+  const dark=(n%3===0),c=dark?0x2d6b36:0xbed57a;
+  const opacity=dark?.33:.25;
+  if(n%11===0){
+   rect(g,xx-4,yy+3,14,3,0x306d36,.14);
+   rect(g,xx,yy+1,9,3,c,.18);
+  }
+  line(g,c,opacity,1,[xx,yy+5,xx-3,yy+1]);
+  line(g,c,opacity,1,[xx+1,yy+5,xx+1,yy]);
+  line(g,c,opacity,1,[xx+3,yy+5,xx+6,yy+2]);
+  if(n%7===0){
+   rect(g,xx-3,yy+7,4,2,0xcbdc88,.22);
+   rect(g,xx+6,yy+6,3,2,0x327541,.25);
+  }
+ }
+ // Irregular warm/cool patches break up rectangular mowing stripes.
+ for(let j=0;j<115;j++){
+  const n=seed(j,57,19),x=23+n%910,y=85+((n>>>9)%420),r=4+((n>>>17)%14);
+  rect(g,x,y,r*2,r, (n%3===0)?0xa9c85f:0x376f3d,.034);
+  rect(g,x+3,y+3,Math.max(3,r-2),4,(n%2)?0xa1ce68:0x2a6940,.057);
+ }
  // Center court and Poké Ball emblem — vector-painted original geometry.
  // Real source stadium visibly has white vertical division and a circular emblem.
  rect(g,475,55,9,478,0xd5e2bf,.28);
