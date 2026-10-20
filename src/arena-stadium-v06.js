@@ -12,9 +12,9 @@ const seed=(a,b,c=0)=>{
  return(n^(n>>>13))>>>0;
 };
 function rect(g,x,y,w,h,color,alpha=1){
- g.beginFill(color,alpha).drawRect(Math.floor(x),Math.floor(y),Math.max(1,w),Math.max(1,h)).endFill();
+ g.lineStyle(0).beginFill(color,alpha).drawRect(Math.floor(x),Math.floor(y),Math.max(1,w),Math.max(1,h)).endFill();
 }
-function poly(g,c,points,a=1){g.beginFill(c,a).drawPolygon(points).endFill()}
+function poly(g,c,points,a=1){g.lineStyle(0).beginFill(c,a).drawPolygon(points).endFill()}
 function line(g,c,a,width,pts){
  g.lineStyle(width,c,a);
  for(let i=0;i<pts.length;i+=2){if(i===0)g.moveTo(pts[i],pts[i+1]);else g.lineTo(pts[i],pts[i+1]);}
