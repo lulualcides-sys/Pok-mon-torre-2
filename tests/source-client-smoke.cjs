@@ -108,7 +108,7 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('Pewter')),
+    .children.list.some(o=>typeof o.text==='string'&&o.text.toUpperCase().includes('PEWTER')),
     null,{timeout:15000});
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-offline-kanto-menu.png',fullPage:true});
   await offline.evaluate(async()=>{
