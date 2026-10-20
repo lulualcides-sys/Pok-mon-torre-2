@@ -55,3 +55,9 @@
  .lab-caption{display:none}
  footer{display:none}
 }
+
+/* EXP progress only; combat sprites and moves remain WebGL rendered. */
+.xp-display{display:flex;align-items:center;gap:4px;font-size:9px;line-height:1.2;color:#bddfef;white-space:nowrap;max-width:100%}
+.xp-track{display:inline-block;overflow:hidden;flex:1;min-width:24px;max-width:84px;height:5px;background:#223c56;border:1px solid #50708b;border-radius:5px}
+.xp-track i{display:block;height:100%;width:0;background:linear-gradient(90deg,#58b8ff,#95f4f4);transition:width .2s ease}
+#xp-text{font-variant-numeric:tabular-nums;color:#b8d4f1}
