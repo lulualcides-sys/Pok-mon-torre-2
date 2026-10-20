@@ -132,6 +132,46 @@ async function main() {
   }catch(error){details.unavailable.push({path:found,source:'relative module import',error:String(error?.message||error)})}
   }
  }
+
+ // Recover the FULL spritesheet catalog, not just the files triggered in one
+ // training session. Every declared animation and portrait in the first-party
+ // manifest is part of the client's data dependency graph.
+ const allManifest=new Set();
+ try{
+  const manifest=JSON.parse(await fs.readFile(path.join(DIR,'assets/pmd/manifest.json'),'utf8'));
+  for(const [dex,meta] of Object.entries(manifest)){
+   const portrait=sanitize('assets/pmd/'+dex+'/portrait.png');
+   if(portrait)allManifest.add(portrait);
+   for(const animation of Object.values(meta?.anims||{})){
+    const file=sanitize('assets/pmd/'+animation.file);
+    if(file)allManifest.add(file);
+   }
+  }
+ }catch(e){details.unavailable.push({path:'assets/pmd/manifest.json',error:'Cannot expand manifest: '+String(e.message)})}
+ const missingManifest=[...allManifest].filter(p=>!imported.has(p));
+ details.manifestAssets={declared:allManifest.size,additional:missingManifest.length};
+ let cursor=0;
+ async function collectManifest(){
+  while(cursor<missingManifest.length){
+   const p=missingManifest[cursor++];
+   details.requestCount++;
+   if(details.totalBytes>MAX_TOTAL){details.skipped.push({path:p,reason:'total size limit'});continue}
+   try{
+    const {data,contentType}=await get(ORIGIN+'/'+p);
+    if(details.totalBytes+data.length>MAX_TOTAL){details.skipped.push({path:p,reason:'total size limit'});continue}
+    const dest=path.resolve(DIR,p);
+    if(!dest.startsWith(DIR+path.sep))throw Error('Unsafe output path');
+    await fs.mkdir(path.dirname(dest),{recursive:true});
+    await fs.writeFile(dest,data);
+    details.totalBytes+=data.length;
+    details.retrieved.push({path:p,bytes:data.length,sha256:sha256(data),source:'PMD manifest dependency',contentType});
+    imported.add(p);
+   }catch(e){details.unavailable.push({path:p,source:'PMD manifest dependency',error:String(e.message).slice(0,180)})}
+  }
+ }
+ await Promise.all(Array.from({length:12},collectManifest));
+ details.manifestAssets.missing=[...allManifest].filter(p=>!imported.has(p));
+ details.planned+=missingManifest.length;
  details.planned+=details.retrieved.filter(x=>x.source==='relative module import').length;
  details.retrieved.sort((a,b)=>a.path.localeCompare(b.path));
  details.unavailable.sort((a,b)=>a.path.localeCompare(b.path));
