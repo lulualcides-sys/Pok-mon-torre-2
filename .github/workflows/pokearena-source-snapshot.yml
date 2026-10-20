@@ -60,6 +60,12 @@ jobs:
           git push origin HEAD:refs/heads/pokearena2d-cliente-phaser --force
           echo '### Cliente Phaser original publicado em ramo isolado para teste' >> "$GITHUB_STEP_SUMMARY"
           echo 'https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/pokearena2d-cliente-phaser/index.html' >> "$GITHUB_STEP_SUMMARY"
+      - name: Verificar endereço público do clone (não o Pages desativado)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check tests/public-phaser-preview.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/public-phaser-preview.cjs
       - name: Arquivar capturas da verificação visual
         if: always()
         uses: actions/upload-artifact@v4
