@@ -31,7 +31,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p _site
-          cp index.html styles.css favicon.svg _site/
+          cp index.html styles.css styles-v02.css favicon.svg CREDITS_SPRITECOLLAB.md _site/
           cp -a src _site/src
           test -s _site/index.html
       - name: Arquivar build pronto para publicar
