@@ -31,6 +31,7 @@ const beforeBadge=state.badges.length;
 resolveBattle(state,true,()=>0);
 assert.equal(state.stage,1);
 assert.equal(state.badges.length,beforeBadge+1);
+if(state.pendingCapture)assert.equal(attemptCapture(state,()=>0).ok,true);
 assert.equal(readCampaign().stage,1);
 assert.equal(state.team.length,6);
 assert.ok(state.box.length>0);
