@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   capture:
@@ -33,6 +33,33 @@ jobs:
       - name: Testar cliente original Phaser no Chromium
         run: |
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+      - name: Publicar ramo isolado de teste Phaser para GitHack (sem alterar Kanto)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/torre2-phaser-publicacao
+          git worktree add --detach /tmp/torre2-phaser-publicacao HEAD
+          cd /tmp/torre2-phaser-publicacao
+          git switch --orphan pokearena2d-cliente-phaser
+          git rm -rf . >/dev/null
+          cp -a "$GITHUB_WORKSPACE/_site/arena2d/." .
+          cat > SOURCE-CREDITS.md <<'EOF'
+          # Poké Arena 2D — cópia técnica autorizada
+          Origem: https://www.pokearena2d.com/
+          Implementação original Phaser preservada conforme os arquivos públicos do site.
+          A autorização de uso foi informada pelo criador do Pokémon Torre 2 para seu projeto
+          pessoal, gratuito e sem comercialização. Todos os créditos originais de sprites e
+          terceiros foram mantidos em assets/creditos.json e no menu de créditos.
+          Este ramo é SOMENTE o cliente isolado para validação. A campanha Kanto continua
+          sendo desenvolvida no ramo main do Pokémon Torre 2.
+          EOF
+          git config user.name "pokemon-torre-2-actions"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "source: staged original Phaser client from pokearena2d.com (authorized personal copy)"
+          git push origin HEAD:refs/heads/pokearena2d-cliente-phaser --force
+          echo '### Cliente Phaser original publicado em ramo isolado para teste' >> "$GITHUB_STEP_SUMMARY"
+          echo 'https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/pokearena2d-cliente-phaser/index.html' >> "$GITHUB_STEP_SUMMARY"
       - name: Arquivar capturas da verificação visual
         if: always()
         uses: actions/upload-artifact@v4
