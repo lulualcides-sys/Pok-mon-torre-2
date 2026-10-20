@@ -247,7 +247,7 @@ const server=http.createServer(async(req,res)=>{
    const e=window.__pt2Game.scene.getScene('combate'),l=e.luchadores[0],r=e.luchadores[1];
    const slots=['lmb','rmb','q','e'],out=[];
    for(const slot of slots){
-    l.energia=100;l.ulti=100;l.cd[slot]=0;l.accion=null;l.est.aturdido=null;
+    l.energia=100;l.ulti=100;l.cd[slot]=0;l.accion=null;delete l.est.aturdido;
     const before=e.efectos.length,ok=fx.usarHabilidad(l,slot);
     out.push({slot,ok,forma:l.kit[slot]?.forma,rendered:e.efectos.length>before});
     // Each effect remains in the live scene for rendering.
