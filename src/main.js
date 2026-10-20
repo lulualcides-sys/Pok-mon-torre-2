@@ -11,6 +11,7 @@ let app,battle,stage,atlases,attackVisuals=new Map(),impacts=[],pointTarget=null
 const held=new Set(),fingerDirs=new Set();
 const input={x:0,y:0};
 const logLines=[];
+let metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
 function message(t){
  logLines.unshift(t);logLines.length=Math.min(logLines.length,4);
  log.textContent=logLines.join(' · ');
@@ -39,7 +40,7 @@ function createEngine(){
   version:'0.1.0',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
-    effectsActive:attackVisuals.size,renderer:app.renderer.gl?'webgl':'unavailable'}),
+    effectsActive:attackVisuals.size,metrics:{...metrics},renderer:app.renderer.gl?'webgl':'unavailable'}),
   cast:(id)=>tryMove(id),restart:()=>restart(),
   proof:{originalProjectUntouched:true,moveSource:'original PixiJS pixel art',sourceGame:'none'}
  };
@@ -103,6 +104,7 @@ function renderModels(){
  stage.shadow.position.set(Math.round(p.x),Math.round(p.y+21));
 }
 function addImpact(x,y,id){
+ metrics.impactVfx++;
  const g=makeParticle(P);
  g.position.set(x-6,y-6);
  stage.vfx.addChild(g);
@@ -132,7 +134,7 @@ function animateAttacks(delta){
    gfx=new P.Sprite(atlases[shot.id][0]);
    gfx.anchor.set(shot.id==='flamethrower'?0:.5,.5);
    gfx.roundPixels=true;
-   stage.vfx.addChild(gfx);attackVisuals.set(shot.castId,gfx);
+   stage.vfx.addChild(gfx);attackVisuals.set(shot.castId,gfx);metrics.createdEffectSprites++;
   }
   const arr=atlases[shot.id];
   gfx.texture=arr[Math.floor(shot.age*(shot.id==='fireblast'?10:14))%arr.length];
@@ -150,6 +152,7 @@ function animateAttacks(delta){
    gfx.width=size;gfx.height=size;
   }
  }
+ metrics.renderedEffectFrames+=current.size;
  for(const [id,gfx] of attackVisuals){
   if(!current.has(id)){gfx.parent?.removeChild(gfx);gfx.destroy();attackVisuals.delete(id);}
  }
@@ -198,6 +201,7 @@ function restart(){
  for(const imp of impacts){imp.graphics.parent?.removeChild(imp.graphics);imp.graphics.destroy();}
  impacts=[];
  battle=createBattle();pointTarget=null;overlay.hidden=true;
+ metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
  logLines.length=0;message('Batalha reiniciada no Ginásio de Pewter');paintUI();
 }
 try{createEngine();paintUI();}catch(error){
