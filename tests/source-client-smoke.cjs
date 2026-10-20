@@ -57,7 +57,16 @@ const server=http.createServer(async(req,res)=>{
   await page.mouse.click(490,275);
   await page.waitForTimeout(1100);
   await page.screenshot({path:'test-evidence/pokearena-play-menu.png',fullPage:true});
-  await page.mouse.click(490,405); // Training in the original Play menu.
+  // The original layout remains, but PLAY now contains only solo entries.
+  await page.evaluate(()=>{
+    const title=window.__pt2Game.scene.getScene('titulo');
+    if(title.menu!=='jugar')title.abrirMenu('jugar');
+    const choices=title.botones.map(b=>b.o?.id||b.id);
+    if(choices.includes('versus'))throw Error('2 PLAYERS still available');
+    const item=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
+    if(item<0)throw Error('TRAINING disappeared from original menu');
+    title.elegir(item);
+  });
   await page.waitForTimeout(1350);
   await page.screenshot({path:'test-evidence/pokearena-training-select.png',fullPage:true});
   await page.mouse.click(205,149); // Confirm Squirtle for Player 1.
@@ -94,8 +103,27 @@ const server=http.createServer(async(req,res)=>{
    if(/wss?:|\/api\/|\/auth\/|\/socket/.test(r.url()))outRequests.push(r.url());
   });
   await offline.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded',timeout:35000});
-  await offline.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('campanha'),
+  await offline.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),
     null,{timeout:60000,polling:300});
+  const opening=await offline.evaluate(()=>{
+    const t=window.__pt2Game.scene.getScene('titulo');
+    return {items:t.botones.map(b=>b.o?.id||b.id),
+      counterHidden:!t.gente.visible&&(!t.puntoGente.visible),chat:!!document.querySelector('#chat-panel')};
+  });
+  assert.equal(opening.items.includes('online'),false,'ONLINE must not appear');
+  assert.equal(opening.counterHidden,true,'connected users should remain hidden');
+  await offline.screenshot({path:'test-evidence/pokemon-torre-2-original-title-offline.png',fullPage:true});
+  await offline.evaluate(()=>{
+    const t=window.__pt2Game.scene.getScene('titulo');
+    t.abrirMenu('jugar');
+    if(t.botones.some(b=>b.o?.id==='versus'||b.id==='versus'))
+      throw Error('2 PLAYERS still on Play menu');
+    const i=t.botones.findIndex(b=>b.o?.id==='kanto'||b.id==='kanto');
+    if(i<0)throw Error('KANTO CAMPAIGN missing in original PLAY menu');
+    t.elegir(i);
+  });
+  await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha'),null,
+    {timeout:15000,polling:250});
   const offlineInitial=await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
    .filter(x=>typeof x.text==='string').map(x=>x.text).join(' | '));
   assert.ok(offlineInitial.includes('CHARMANDER'),'starter selection must be available');
