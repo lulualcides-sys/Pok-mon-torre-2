@@ -108,10 +108,6 @@ patches.push(
   ['BOTONES=calcular(CONTROLES.tactil?.tam);this.botones=BOTONES;',
    'BOTONES=calcular(CONTROLES.tactil?.tam).filter(b=>!escena.datos?.torre2||b.slot!=="mega");this.botones=BOTONES;']
  ]],
- ['luchador.js',[
-  ['if(intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)',
-   'if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)']
- ]],
  ['hud.js',[
   ['else if(l.puedeEvolucionar&&l.humano&&parpadeo)est.push(',
    'else if(!this.e.datos?.torre2&&l.puedeEvolucionar&&l.humano&&parpadeo)est.push('],
