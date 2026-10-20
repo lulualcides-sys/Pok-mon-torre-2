@@ -83,7 +83,9 @@ patches.push(
  ]],
  ['luchador.js',[
   ['if(intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)',
-   'if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)']
+   'if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)'],
+  ['if(antes<this.expNecesaria&&this.exp>=this.expNecesaria&&!this.escena.sim){',
+   'if(!this.escena.datos?.torre2&&antes<this.expNecesaria&&this.exp>=this.expNecesaria&&!this.escena.sim){']
  ]]
 );
 
