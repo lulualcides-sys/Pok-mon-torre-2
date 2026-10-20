@@ -36,6 +36,30 @@ jobs:
           mkdir -p _site/docs
           cp docs/CREDITOS-E-LICENCAS.md docs/REA-IMPLEMENTACAO-INTEGRAL.md docs/CONTRATO_CAMPANHA.md _site/docs/
           test -s _site/index.html
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Adicionar cliente Phaser autorizado do Poké Arena como arena isolada
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/index.html
+          test -s _site/arena2d/lib/phaser.min.js
+      - name: Testar a arena Phaser original no Chromium antes de publicar
+        shell: bash
+        run: |
+          npm install --no-audit --no-fund
+          CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+      - name: Arquivar evidência visual do motor Phaser
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena2d-phaser-pagina-evidencias
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn
       - name: Arquivar build pronto para publicar
         uses: actions/upload-artifact@v4
         with:
