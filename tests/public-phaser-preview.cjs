@@ -10,9 +10,10 @@ const {chromium}=require('playwright-core');
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader',
   '--use-gl=angle','--use-angle=swiftshader','--ignore-gpu-blocklist']});
  const page=await browser.newPage({viewport:{width:980,height:650}});
- const errors=[];const bad=[];
+ const errors=[];const bad=[];const initialAssets=[];
  page.on('pageerror',e=>errors.push(String(e).slice(0,300)));
  page.on('response',r=>{if(r.status()>=400)bad.push({status:r.status(),url:r.url()})});
+ page.on('request',r=>{if(r.url().includes('/assets/pmd/'))initialAssets.push(r.url())});
  try{
   const response=await page.goto(site,{waitUntil:'domcontentloaded',timeout:50000});
   const initial={status:response?.status(),title:await page.title(),url:page.url()};
@@ -29,6 +30,7 @@ const {chromium}=require('playwright-core');
   const game=await page.evaluate(()=>({canvas:document.querySelector('#juego canvas')?.width,
    height:document.querySelector('#juego canvas')?.height,version:window.Phaser.VERSION}));
   assert.ok(game.canvas>=700&&game.height>=400,'Phaser game must render and fill its frame');
+  assert.ok(initialAssets.length<80,`Pokédex preloaded before menu: ${initialAssets.length} assets`);
   await page.screenshot({path:'test-evidence/pokearena-public-githack.png',fullPage:true});
 
   const android=await browser.newPage({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2});
@@ -55,7 +57,7 @@ const {chromium}=require('playwright-core');
   assert.deepEqual(mobileBad.filter(x=>/\/(?:assets|src-|lib\/)/.test(x.url)),[],'No missing game assets');
   await android.screenshot({path:'test-evidence/pokearena-public-android-landscape.png',fullPage:true});
   await android.close();
-  const out={site,initial,game,errors,bad:bad.slice(0,20),android:{...androidResult,errors:mobileErrors,missing:mobileBad.slice(0,15)},result:'Public original Phaser client booted'};
+  const out={site,initial,game,initialPmdAssetRequests:initialAssets.length,errors,bad:bad.slice(0,20),android:{...androidResult,errors:mobileErrors,missing:mobileBad.slice(0,15)},result:'Public original Phaser client booted'};
   fs.writeFileSync('test-evidence/pokearena-public-githack.json',JSON.stringify(out,null,2));
   console.log(JSON.stringify(out,null,2));
  }finally{await browser.close()}
