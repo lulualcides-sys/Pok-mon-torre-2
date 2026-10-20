@@ -18,10 +18,15 @@ const {chromium}=require('playwright-core');
   result.title=await page.title();
   result.text=(await page.locator('body').innerText()).slice(0,550);
   result.html=!!(await page.locator('h1').count());
-  if(/confirmation|phishing|proceed to/i.test(result.text)){
+  if(/confirmation|phishing|proceed to|one more step|open the page/i.test(result.text)){
    result.interstitial=true;
-   const b=page.locator('form button, form input[type="submit"]').first();
-   if(await b.count()){await b.click();await page.waitForTimeout(1500);}
+   const open=page.getByText('Open the page',{exact:true}).first();
+   if(await open.count()){await open.click();await page.waitForTimeout(2000);}
+   else{
+     const b=page.locator('form button, form input[type="submit"]').first();
+     if(await b.count()){await b.click();await page.waitForTimeout(2000);}
+   }
+   result.afterInterstitial={url:page.url(),title:await page.title(),body:(await page.locator('body').innerText()).slice(0,220)};
   }
   try{
    await page.waitForFunction(()=>window.PokemonTorre2?.snapshot()?.renderer==='webgl',null,
