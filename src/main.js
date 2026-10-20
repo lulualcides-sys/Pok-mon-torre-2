@@ -334,7 +334,8 @@ function restart(){
  for(const imp of impacts){imp.graphics.parent?.removeChild(imp.graphics);imp.graphics.destroy();}
  impacts=[];
  battle=createBattle();pointTarget=null;overlay.hidden=true;
- stickState.x=0;stickState.y=0;stickState.pointerId=null;stickState.active=false;
+ stickState.x=0;stickState.y=0;stickState.offsetX=0;stickState.offsetY=0;
+ stickState.pointerId=null;stickState.active=false;
  if(joystickThumb)joystickThumb.style.transform='translate3d(0,0,0)';
  joystickElement?.classList.remove('is-active');
  previousActors={player:null,enemy:null};screenShake=0;
