@@ -4,7 +4,7 @@ const fs=require('fs');
 const {chromium}=require('playwright-core');
 (async()=>{
  fs.mkdirSync('test-evidence',{recursive:true});
- const site=process.env.PREVIEW_URL||'https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/index.html';
+ const site=process.env.PREVIEW_URL||'https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3badc040242c9117b9c860f795412ac0e310493c/index.html';
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader',
   '--use-gl=angle','--use-angle=swiftshader','--ignore-gpu-blocklist']});
@@ -44,7 +44,14 @@ const {chromium}=require('playwright-core');
    if(!result.enemyProjectileProof)throw Error('Brock Rock Throw rendering API missing in V0.4');
    result.actorActions=result.game.actorArt.map(x=>({pokemon:x.pokemon,actions:x.actions}));
    if(result.game.arenaStyle!=='grass-stadium-v06')throw Error('Wrong stadium: '+result.game.arenaStyle);
-   if(loadedV02.hero!=='0.6.2-stadium-flames'||!loadedV02.style)throw Error('Wrong cached version: '+JSON.stringify(loadedV02));
+   if(loadedV02.hero!=='0.8.0-battle-laboratory'||!loadedV02.style)throw Error('Wrong cached version: '+JSON.stringify(loadedV02));
+   result.lab=await page.evaluate(()=>({buttons:[...document.querySelectorAll('[data-move]')].map(x=>x.dataset.move),
+      css:!!document.querySelector('link[href="./arena-lab-v08.css"]'),
+      fullscreenButton:!!document.querySelector('#fullscreen'),
+      bank:window.PokemonTorre2.snapshot().moveBank
+    }));
+   if(!result.lab.css||result.lab.buttons.length!==8||!result.lab.fullscreenButton)
+      throw Error('V0.8 laboratory assets missing: '+JSON.stringify(result.lab));
    result.ready=true;
   }catch(e){result.errors.push('GAME_BOOT: '+String(e).slice(0,300));}
   await page.screenshot({path:'test-evidence/preview-githack.png',fullPage:true});
@@ -59,12 +66,13 @@ const {chromium}=require('playwright-core');
     }
     await mobile.waitForFunction(()=>window.PokemonTorre2?.snapshot()?.renderer==='webgl',
       null,{timeout:40000,polling:200});
-    await mobile.locator('button[data-move="flamethrower"]').click();
+    await mobile.locator('[data-bank="nature"]').click();
+    await mobile.locator('button[data-move="watergun"]').click();
     const data=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
     result.mobile={width:390,webgl:data.renderer==='webgl',
       moveButtons:await mobile.locator('[data-move]').count(),
       castCount:data.castCount,energy:data.player.energy};
-    result.readyMobile=result.mobile.webgl&&result.mobile.castCount>=1;
+    result.readyMobile=result.mobile.webgl&&result.mobile.castCount>=1&&result.mobile.moveButtons===8;
     await mobile.screenshot({path:'test-evidence/preview-githack-android.png',fullPage:true});
   }
  }finally{await browser.close()}
