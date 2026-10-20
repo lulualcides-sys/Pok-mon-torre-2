@@ -82,9 +82,12 @@ export function dodge(s,direction={x:1,y:0}){
 }
 export function movePlayer(s,dx,dy,dt){
  if(s.status!=='fighting')return;
- const p=s.player,mag=Math.hypot(dx,dy)||1;
- p.x=clamp(p.x+dx/mag*p.speed*dt,WORLD.padding,WORLD.width-WORLD.padding);
- p.y=clamp(p.y+dy/mag*p.speed*dt,WORLD.padding,WORLD.height-WORLD.padding);
+ const p=s.player,mag=Math.hypot(dx,dy);
+ if(mag<=0)return;
+ // Variable analog magnitude controls walk speed, keyboard diagonal is normalized.
+ const speedFactor=Math.min(1,mag);
+ p.x=clamp(p.x+dx/mag*p.speed*dt*speedFactor,WORLD.padding,WORLD.width-WORLD.padding);
+ p.y=clamp(p.y+dy/mag*p.speed*dt*speedFactor,WORLD.padding,WORLD.height-WORLD.padding);
 }
 function impact(s,projectile){
  if(projectile.hit)return;
