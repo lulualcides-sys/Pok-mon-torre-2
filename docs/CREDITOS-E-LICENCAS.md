@@ -6,11 +6,13 @@ Pokémon Torre 2 é um projeto de fã independente, gratuito e sem comercializa�
 
 ## Fontes de análise técnica
 
-**Site analisado pelo REA:** [pokearena2d.com](https://www.pokearena2d.com/). Os registros de jogabilidade e catálogos de efeitos coletados pelo navegador são atribuídos ao respectivo site de origem.
+**Fonte única da engenharia reversa e do projeto-alvo:** [https://www.pokearena2d.com/](https://www.pokearena2d.com/). Toda referência técnica de código e comportamento deste projeto é desse site, nunca de produtos com nome semelhante.
 
-**Registro da auditoria:** [inventário do REA](https://github.com/lulualcides-sys/Pok-mon-torre/blob/rea-pokearena-all-visible-moves/docs/rea-pokearena/PLANO-RECONSTRUCAO.md) e [420 gravações de estágio/comando](https://github.com/lulualcides-sys/Pok-mon-torre/actions/runs/39428271235). São documentação de comportamento; as gravações não constituem ativos distribuíveis nem prova de que todos os golpes ativaram corretamente.
+**Autorização informada pelo responsável do projeto:** foi concedida permissão para aproveitar o código-fonte e arquivos disponíveis do site para este projeto particular, gratuito e sem vendas. Os arquivos transferidos devem manter identificação de proveniência e os créditos presentes no site; isso não atribui direitos de terceiros ao desenvolvedor do Pokémon Torre 2.
 
-**Big Kid Nation:** [página do desenvolvedor](https://www.bigkidnation.com/), que se apresenta como criador de seu próprio projeto *Pokémon Arena 2D*. Não há, nesta auditoria, prova de vínculo de titularidade ou licenciamento entre essa página e o domínio pokearena2d.com. Nenhum código, sprite ou áudio é atribuído incorretamente a essa equipe.
+**Evidências REA:** [inventário](https://github.com/lulualcides-sys/Pok-mon-torre/blob/rea-pokearena-all-visible-moves/docs/rea-pokearena/PLANO-RECONSTRUCAO.md) e [vídeos de golpe/estágio](https://github.com/lulualcides-sys/Pok-mon-torre/actions/runs/39428271235).
+
+**Captura técnica adicional:** [workflow que recupera arquivos públicos e os guarda como artefato, sem publicá-los diretamente no Pages](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/workflows/pokearena-source-snapshot.yml). O inventário antigo era só metadados; a captura nova permite conferir arquivos reais.
 
 ## Arte e tecnologia efetivamente usadas no jogo
 
@@ -18,10 +20,8 @@ Pokémon Torre 2 é um projeto de fã independente, gratuito e sem comercializa�
 - **PixiJS/WebGL** — motor gráfico usado no Pokémon Torre 2, com seus termos próprios.
 - **Arte e código implementados neste repositório** — módulos de combate, efeitos, regras da campanha e progressão são desenvolvidos no próprio projeto, exceto dependências e recursos indicados nos créditos.
 
-## Registro de autorização e licenças pendentes
+## Autorização de uso declarada
 
-O usuário informou que **solicitou autorização** para aproveitar conteúdo do Poké Arena 2D. Ainda não foi incorporado a este repositório um documento de concessão verificável, indicando titulares, arquivos autorizados, limites de uso e obrigações de atribuição.
+O responsável pelo Pokémon Torre 2 declarou que recebeu autorização do autor do site para usar os recursos e código-fonte acessíveis do site **pokearena2d.com** exclusivamente no projeto pessoal sem vendas. A cópia técnica respeita essa declaração e preserva créditos da origem. Os termos escritos da autorização não foram fornecidos aqui; não atribuir autorização a outras obras, serviços externos ou proprietários de marcas além do escopo informado.
 
-Por isso, **não declaramos que os arquivos originais do site estão licenciados nem que foram importados**. Antes de incorporar bibliotecas, código, spritesheets, áudios ou texturas originais, confirmar autorização expressa da parte com os respectivos direitos e cumprir os termos aplicáveis.
-
-Uso pessoal, gratuidade e créditos, isoladamente, não implicam permissão de redistribuição. Pokémon, nomes, personagens e marcas associados pertencem aos seus respectivos titulares e não são propriedade do Pokémon Torre 2.
+O repositório do Pokémon Torre 2 está atualmente público: a captura original é guardada primeiro em artefato de CI para evitar publicar arquivos de terceiros acidentalmente sem revisar o escopo de redistribuição.
