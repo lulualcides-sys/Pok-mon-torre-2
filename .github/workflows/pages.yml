@@ -47,6 +47,20 @@ jobs:
           node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/index.html
           test -s _site/arena2d/lib/phaser.min.js
+          # Keep the old Pixi test laboratory at /lab.html but launch the real
+          # solo Kanto Phaser game at the stable public root once Pages is enabled.
+          cp _site/index.html _site/lab.html
+          cat > _site/index.html <<'EOF'
+          <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta http-equiv="refresh" content="0;url=./arena2d/">
+          <title>Pokémon Torre 2 — Kanto</title>
+          <script>location.replace('./arena2d/'+location.search+location.hash)</script>
+          </head><body style="background:#101725;color:#e2efff;font:18px system-ui;text-align:center;padding:30px">
+          <p>Abrindo a campanha Pokémon Torre 2...</p>
+          <a href="./arena2d/" style="color:#ffe16d">Abrir jogo</a>
+          </body></html>
+          EOF
       - name: Testar a arena Phaser original no Chromium antes de publicar
         shell: bash
         run: |
