@@ -6,7 +6,7 @@ const stage=path.resolve('_site/arena2d');
 const version=fs.readdirSync(stage).find(x=>/^src-[a-f0-9]{10}$/.test(x));
 assert.ok(version,'Captured Phaser original client not staged');
 const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
- TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
+ TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,saveCampaign}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
 const items=new Map();
 globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
 assert.equal(KANTO_DEX.length,151);
@@ -16,6 +16,28 @@ let state=createCampaign('charmander');
 assert.equal(state.trainer,0);
 assert.equal(TRAINERS_PER_GYM(0),13);
 assert.equal(currentOpponent(state).id,'onix');
+const {availableMoves,equipMove,selectedMoves,resolveLoadout}=await import(
+ pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
+const tester=state.team.find(p=>p.id==='mewtwo');
+assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
+assert.equal(tester.progression.level,50);
+const allMoves=availableMoves(tester);
+assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
+for(const id of ['bonemerang','bone-club','tri-attack','pay-day'])
+ assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
+assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
+assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
+ ['torre2_bonemerang','torre2_boneclub','torre2_triattack','torre2_payday']);
+const confusion=allMoves.find(x=>x.nombre==='Confusion');
+assert.ok(confusion);
+assert.equal(equipMove(tester,0,confusion.id),true);
+assert.equal(resolveLoadout(tester).lmb.nombre,'Confusion');
+assert.equal(equipMove(tester,0,'nonexistent-attack'),false);
+assert.equal(equipMove(tester,1,'tri-attack'),false,'prevent duplicate moves in slots');
+saveCampaign(state);
+assert.equal(readCampaign().team.find(x=>x.id==='mewtwo').moves[0],confusion.id,
+ 'selected moves must persist in saved campaign');
+assert.equal(equipMove(tester,0,'bonemerang'),true);
 const initialSpecies=state.team[0].id;
 for(let i=0;i<13;i++){
  assert.equal(currentOpponent(state).leader,false);
