@@ -1,9 +1,11 @@
 # Pokémon Torre 2 — execução do inventário REA (Poké Arena 2D)
 
 ## Intenção aprovada
-**Manter a campanha do Pokémon Torre 1** e reconstruir **a experiência inteira de combate do Poké Arena 2D**, não um estilo livre inspirado nele. Implementar controles, posicionamento, arenas, zoom, câmera, personagens, efeitos, comportamento, timings e impacto com fidelidade visual e funcional onde tecnicamente possível. Não declarar cópia integral pronta enquanto recursos não estiverem implementados, testados e comparados com as capturas.
+**Manter a campanha do Pokémon Torre 1** e reconstruir a experiência completa de combate do **site https://www.pokearena2d.com/**. O usuário declarou expressamente que obteve autorização do responsável para usar o código e os recursos acessíveis do site neste projeto pessoal sem comercialização.
 
-Não incorporar scripts/arte/áudio protegidos do Poké Arena sem autorização/licença; implementar mecânicas e desenhos próprios ou com licença adequada.
+**Motor confirmado pela REA: Phaser (com WebGL).** Não confundir com outro jogo de nome parecido. A V0.8 do Torre 2 usa PixiJS; migração deve ocorrer somente depois de capturar os módulos reais do site, testar o jogo original em uma área isolada e conectar a campanha do Torre. **O objetivo é aproveitar diretamente a implementação autorizada, não redesenhar sem necessidade.**
+
+**Pipeline criado:** [workflow de captura de recursos públicos](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/workflows/pokearena-source-snapshot.yml). Recupera JavaScript e assets identificados na auditoria REA e registra falhas/hashes. Não publica automaticamente material de terceiros no GitHub Pages.
 
 ## O REA já coletou (20/10/2026)
 
