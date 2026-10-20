@@ -148,6 +148,38 @@ const server=http.createServer(async(req,res)=>{
   await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&
     window.__pt2Game.scene.getScene('combate').luchadores?.length===2,
     null,{timeout:45000});
+  // Regression: Onix reaches the original evolution EXP threshold mid-fight.
+  // In Kanto the CPU must NOT keep issuing blocked EVO commands forever;
+  // in standard CPU mode it still should dynamically request evolution.
+  const aiRegression=await offline.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('combate');
+    const opponent=scene.luchadores[1],cpu=scene.controles[1];
+    opponent.exp=opponent.expNecesaria+2;
+    opponent.hp=Math.min(opponent.hp,opponent.hpMax*.33);
+    const canEvolve=opponent.puedeEvolucionar;
+    cpu.c.evoDist=0;
+    let attacks=0,moveChoices=0,blockedEvo=0;
+    for(let i=0;i<85;i++){
+      cpu.espera=-1;
+      const it=cpu.leer(.25);
+      if(it.mega)blockedEvo++;
+      if(it.lmb||it.rmb||it.q||it.e||it.esp)attacks++;
+      if(Math.abs(it.mx)+Math.abs(it.my)>.08)moveChoices++;
+    }
+    // Temporarily emulate an ordinary VS CPU match to prove dynamic
+    // evolution still works in other modes.
+    const marker=scene.datos.torre2;
+    scene.datos.torre2=null;
+    cpu.espera=-1;
+    const otherMode=cpu.leer(.25);
+    scene.datos.torre2=marker;
+    return {canEvolve,attacks,moveChoices,blockedEvo,otherModeEvo:otherMode.mega};
+  });
+  assert.equal(aiRegression.canEvolve,true,'Onix must be eligible to evolve for regression');
+  assert.equal(aiRegression.blockedEvo,0,'Kanto CPU cannot request blocked EVO');
+  assert.ok(aiRegression.attacks>0,'CPU must continue attacking after evolution becomes available');
+  assert.equal(aiRegression.otherModeEvo,true,'VS CPU/Training/Arena retain original dynamic evolution decision');
+  await offline.screenshot({path:'test-evidence/pokemon-torre-2-ai-evolution-no-stall.png',fullPage:true});
   const combatScene=await offline.evaluate(()=>({
     mode:window.__pt2Game.scene.getScene('combate').datos.modo,
     online:!!window.__pt2Game.scene.getScene('combate').red,
@@ -171,7 +203,7 @@ const server=http.createServer(async(req,res)=>{
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-after-first-victory.png',fullPage:true});
   await offline.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,trainerAfterVictory:offlineResult.trainer},result:'Original Phaser + solo Kanto verified'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},result:'Original Phaser + solo Kanto verified'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{
