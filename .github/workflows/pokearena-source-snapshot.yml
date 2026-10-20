@@ -41,7 +41,7 @@ jobs:
           git worktree add --detach /tmp/torre2-phaser-publicacao HEAD
           cd /tmp/torre2-phaser-publicacao
           git switch --orphan pokearena2d-cliente-phaser
-          git rm -rf . >/dev/null
+          git rm -rf . >/dev/null 2>&1 || true
           cp -a "$GITHUB_WORKSPACE/_site/arena2d/." .
           cat > SOURCE-CREDITS.md <<'EOF'
           # Poké Arena 2D — cópia técnica autorizada
