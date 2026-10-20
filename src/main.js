@@ -26,7 +26,7 @@ function message(t){
 }
 function createEngine(){
  if(!P||!P.Application)throw new Error('PixiJS indisponível. Verifique a conexão.');
- app=new P.Application({width:viewport.width,height:viewport.height,backgroundColor:0x14232b,
+ app=new P.Application({width:viewport.width,height:viewport.height,backgroundColor:0x315f3c,
   resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,
   antialias:false,powerPreference:'high-performance',autoStart:true});
  if(!app.renderer?.gl)throw new Error('Pokémon Torre 2 requer WebGL neste navegador.');
@@ -52,9 +52,9 @@ function createEngine(){
  app.stage.on('pointerdown',mapPoint);
  createUI();
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
- status.textContent='WebGL ativo · Ginásio de Pewter';
+ status.textContent='WebGL ativo · Estádio de Pewter';
  window.PokemonTorre2={
-  version:'0.6.0-stadium',
+  version:'0.6.1-turf',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
