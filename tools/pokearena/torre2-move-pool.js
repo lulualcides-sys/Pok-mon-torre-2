@@ -13,23 +13,29 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'pay-day',nombre:'Pay Day',forma:'torre2_payday',tipo:'NORMAL',dano:10,alcance:235,coste:23,cd:5.4,anim:'Shoot',lanzar:.15,description:'Five pixel coins / independent collision frames'}
 ]);
 function collect(def){
- const kit={...def.kit};
- const stageDefs=[def,...(def.evoluciones||[])];
+ // Use every actual move slot and carry inherited base/evolution properties
+ // forward. In the original client, some evolution kits override only damage
+ // or name; the previous reader lost moves from ESP, Megas and mid-evolutions.
+ const slots=['lmb','rmb','esp','q','e'];
+ const merge=(a,b)=>Object.fromEntries(
+  [...new Set([...Object.keys(a||{}),...Object.keys(b||{})])]
+   .map(key=>[key,{...(a?.[key]||{}),...(b?.[key]||{})}]));
  const moves=[];
- for(const stage of stageDefs){
-  for(const [slot,p] of Object.entries(stage.kit||{})){
-   if(!SLOTS.includes(slot))continue;
-   const h={...kit[slot],...p};
-   if(!h.nombre||!h.forma||typeof h.cd!=='number')continue;
-   moves.push({...h,learnedFrom:stage.nombre||def.nombre});
+ const read=(kit,origin)=>{
+  for(const slot of slots){
+   const h=kit?.[slot];
+   if(!h?.nombre||!h.forma)continue;
+   moves.push({...h,cd:typeof h.cd==='number'?h.cd:5,
+    learnedFrom:origin,originalSlot:slot});
   }
- }
- const mega=def.evoluciones?.at(-1)?.mega;
- if(mega?.kit){
-  for(const [slot,p] of Object.entries(mega.kit)){
-   const h={...kit[slot],...p};
-   if(h.nombre&&h.forma&&typeof h.cd==='number')moves.push({...h,learnedFrom:'MEGA'});
-  }
+ };
+ let accumulated=def.kit||{};
+ read(accumulated,def.nombre||def.id);
+ for(const evo of def.evoluciones||[]){
+  accumulated=merge(accumulated,evo.kit||{});
+  read(accumulated,evo.nombre||evo.dex||'evolution');
+  if(evo.mega?.kit)read(merge(accumulated,evo.mega.kit),
+   evo.mega.nombre||'Mega');
  }
  return moves;
 }
