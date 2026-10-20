@@ -63,6 +63,12 @@ const fs=require('node:fs');
     assert.ok(sample.enemy.hp<sample.enemy.maxHp,id+' must hit opponent after arrival');
   }
 
+  await page.evaluate(()=>window.PokemonTorre2.restart());
+  await page.waitForFunction(()=>window.PokemonTorre2?.snapshot().metrics.enemyProjectileSprites>=1,
+    null,{timeout:25000,polling:200});
+  const enemyAction=await page.evaluate(()=>window.PokemonTorre2.snapshot());
+  assert.ok(enemyAction.metrics.enemyProjectileSprites>=1,'Brock Rock Throw must spawn a PIXI WebGL sprite');
+  await page.screenshot({path:'test-evidence/brock-rock-throw-v04.png',fullPage:true});
   const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   mobile.on('pageerror',e=>errors.push('mobile: '+e));
   await mobile.goto(process.env.BASE_URL||'http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:50000});
@@ -78,8 +84,8 @@ const fs=require('node:fs');
   await mobile.screenshot({path:'test-evidence/brock-mobile.png',fullPage:true});
   if(errors.length)throw Error('Browser errors: '+JSON.stringify(errors));
   fs.writeFileSync('test-evidence/BROWSER-PASS.json',JSON.stringify({webgl:true,initial:s.gym,mobile:true,
-   visualsSource:'original pixel art',tested:['normal Flamethrower hit','Ember, Fire Spin, Fire Blast impact','touch controls','4 move buttons','rendering desktop/mobile'],
-   screenshots:4},null,2));
+   visualsSource:'original pixel art',tested:['normal Flamethrower hit','Ember, Fire Spin, Fire Blast impact','enemy WebGL Rock Throw','touch controls','4 move buttons','rendering desktop/mobile'],
+   screenshots:5},null,2));
   console.log('BROWSER PASS: WebGL / Pewter / Flamethrower impact / mobile move / screenshots');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
