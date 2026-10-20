@@ -16,16 +16,16 @@
 ## V0.2 — camada artística
 
 - Substituir as texturas provisórias geradas pelo WebGL por spritesheets de pixel art **original**, com 8/12/16 quadros e fontes editáveis em LibreSprite.
-- Recriar o acabamento de ataques usando os 420 vídeos de estudo do Poké Arena 2D sem importar arquivos de terceiros.
+- Reconstruir a experiência completa do Poké Arena 2D usando inventário REA, 420 vídeos, classes de comportamento e quatro arenas observadas (sem redistribuir arquivos de terceiros não licenciados). [Plano REA de implementação](REA-IMPLEMENTACAO-INTEGRAL.md).
 - Prioridade: Flamethrower contínuo, Fire Blast 大, impactos de contato, Water Gun, Bubble Beam, Razor Leaf e Vine Whip.
 - Construir variantes de impacto, sombra, profundidade, silhuetas com contornos escuros e densidade limitada de partículas.
 - Acompanhar desempenho real em Android e limitar geração dinâmica de texturas.
 
 ## V0.3 — campanha Kanto (contrato de comportamento obrigatório)
 
-**[Regras aprovadas pelo criador: manter a campanha do Pokémon Torre 1; referências do Poké Arena 2D apenas para combate, arte e animações](./CONTRATO_CAMPANHA.md).**
+**[Regras aprovadas: campanha do Pokémon Torre 1 e reconstrução integral da experiência de batalha Poké Arena 2D](./CONTRATO_CAMPANHA.md).**
 
-**Evolução FireRed:** adquirir EXP/subir de nível em combate, mas só iniciar evolução **após o combate**, nunca no meio da luta. Respeitar evolução por nível específico de cada espécie; pedras e trocas não viram evolução por nível. Aprender golpes adequados ao nível e espécie.
+**Evolução EXCLUSIVAMENTE POR NÍVEL:** adquirir EXP/subir de nível em combate, mas só iniciar evolução **após o combate**, nunca no meio da luta. Mesmo espécies de pedra/troca/amizade recebem níveis definidos para evoluir; não há outros gatilhos. Aprender golpes adequados ao nível e espécie.
 
 
 - Primeira campanha com 13 treinadores antes de Brock; número cresce conforme o ginásio.
