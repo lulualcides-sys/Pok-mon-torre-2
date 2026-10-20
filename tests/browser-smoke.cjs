@@ -14,7 +14,19 @@ const fs=require('node:fs');
   page.on('pageerror',e=>errors.push(String(e)));
   page.on('console',m=>{if(m.type()==='error')errors.push(m.text())});
   await page.goto(process.env.BASE_URL||'http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:50000});
-  await page.waitForFunction(()=>!!window.PokemonTorre2?.snapshot(),null,{timeout:50000});
+  try{
+    await page.waitForFunction(()=>!!window.PokemonTorre2?.snapshot(),null,{timeout:28000});
+  }catch(e){
+    const diagnostic={
+      pageErrors:errors,body:(await page.locator('body').innerText()).slice(0,450),
+      scripts:await page.evaluate(()=>[...document.scripts].map(x=>x.src).slice(-5)),
+      gameApi:await page.evaluate(()=>typeof window.PokemonTorre2),
+      pixi:await page.evaluate(()=>typeof window.PIXI)
+    };
+    fs.writeFileSync('test-evidence/BOOT-DIAGNOSTIC.json',JSON.stringify(diagnostic,null,2));
+    await page.screenshot({path:'test-evidence/BOOT-FAIL.png',fullPage:true});
+    throw new Error('WebGL startup diagnostic: '+JSON.stringify(diagnostic));
+  }
   let s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.equal(s.renderer,'webgl','PixiJS must use actual GPU/WebGL, not Canvas2D');
   assert.equal(s.gym,'pewter');
