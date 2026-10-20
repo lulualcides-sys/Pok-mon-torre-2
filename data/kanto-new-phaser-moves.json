@@ -1,0 +1,1330 @@
+{
+  "version": 1,
+  "created": "2026-10-20",
+  "description": "New-from-scratch visual move library for Pokémon Torre 2 using Poké Arena 2D Phaser conventions; NOT imported or copied from Torre 1.",
+  "originalSource": "https://www.pokearena2d.com/",
+  "counts": {
+    "targetAttacksPerType": 14,
+    "targetStatusPerType": 2
+  },
+  "status": "PLANNED - No new move art is considered finished by this list",
+  "artStrategy": {
+    "size": "Original-style 2D pixel art; coherent shadows, contour, timing and palette",
+    "renderer": "Poké Arena 2D Phaser 3 / WebGL",
+    "visualPolicy": "New VFX and sprites only; original Poké Arena techniques and environment art may be used where authorized. No port of Pokémon Torre 1 moves.",
+    "discipline": "Each shared move has one VFX implementation reused across eligible Kanto Pokémon; distinctive signature moves have custom animations.",
+    "collision": "Impact frame synchronized with damage; status mechanics visually distinguishable; 60 FPS target mobile/desktop."
+  },
+  "types": [
+    {
+      "type": "normal",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Tackle",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Pound",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Scratch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Quick Attack",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Headbutt",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Body Slam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Double-Edge",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Swift",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Hyper Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Take Down",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Strength",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Slam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Extreme Speed",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Giga Impact",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Protect",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Swords Dance",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "fire",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Ember",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Flame Wheel",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Flamethrower",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Fire Blast",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Heat Wave",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Fire Spin",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Flame Charge",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Fire Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Fire Fang",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Overheat",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Lava Plume",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Inferno",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Incinerate",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Eruption",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Will-O-Wisp",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sunny Day",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "water",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Water Gun",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Bubble",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Bubble Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Water Pulse",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Aqua Jet",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Surf",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Hydro Pump",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Aqua Tail",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Waterfall",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Whirlpool",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Muddy Water",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Scald",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Brine",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dive",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Rain Dance",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Aqua Ring",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "electric",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Thunder Shock",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Spark",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Thunderbolt",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Thunder",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Discharge",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Electro Ball",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Volt Switch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Wild Charge",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Charge Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Thunder Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Electroweb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Shock Wave",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Zap Cannon",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Thunder Wave",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Charge",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 1,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "grass",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Vine Whip",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Razor Leaf",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Absorb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Mega Drain",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Giga Drain",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Energy Ball",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Seed Bomb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Solar Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Petal Dance",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Leaf Storm",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Magical Leaf",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Power Whip",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Bullet Seed",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Leaf Blade",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Leech Seed",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sleep Powder",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "ice",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Ice Shard",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Ice Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Blizzard",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Aurora Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Icy Wind",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Ice Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Ice Fang",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Avalanche",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Frost Breath",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Freeze-Dry",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Triple Axel",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Ice Spinner",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Icicle Spear",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Haze",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Mist",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 1,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "fighting",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Karate Chop",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Double Kick",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Low Kick",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Brick Break",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Close Combat",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Cross Chop",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Focus Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Drain Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Mach Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Aura Sphere",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dynamic Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "High Jump Kick",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Focus Blast",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Reversal",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Bulk Up",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Detect",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "poison",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Poison Sting",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Acid",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sludge",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sludge Bomb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sludge Wave",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Poison Jab",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Venoshock",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Gunk Shot",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Poison Fang",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Acid Spray",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Cross Poison",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Clear Smog",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Belch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Smog",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Toxic",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Poison Gas",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "ground",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Mud-Slap",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Mud Shot",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Mud Bomb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dig",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Earthquake",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Earth Power",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Stomping Tantrum",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Bulldoze",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "High Horsepower",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Drill Run",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Scorching Sands",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sand Tomb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Magnitude",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Fissure",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Sand Attack",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Spikes",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "flying",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Gust",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Peck",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Wing Attack",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Air Cutter",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Aerial Ace",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Air Slash",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Hurricane",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Brave Bird",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Fly",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Drill Peck",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Acrobatics",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sky Attack",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Pluck",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Bounce",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Tailwind",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Roost",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "psychic",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Confusion",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Psybeam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Psychic",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Psyshock",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Psywave",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Future Sight",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Zen Headbutt",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Stored Power",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Extrasensory",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Psycho Cut",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Psychic Fangs",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Expanding Force",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Calm Mind",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Light Screen",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 2,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "bug",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Bug Bite",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Fury Cutter",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "X-Scissor",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Silver Wind",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Bug Buzz",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Leech Life",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Signal Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Megahorn",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Pin Missile",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Struggle Bug",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Pollen Puff",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "U-turn",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Infestation",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Lunge",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "String Shot",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sticky Web",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "rock",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Rock Throw",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Rock Slide",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Rock Tomb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Stone Edge",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Rock Blast",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Smack Down",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Ancient Power",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Power Gem",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Rollout",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Head Smash",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Meteor Beam",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Sandstorm",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Stealth Rock",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 3,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "ghost",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Lick",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Night Shade",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Shadow Ball",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Shadow Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Shadow Claw",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Shadow Sneak",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Hex",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Phantom Force",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Ominous Wind",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Astonish",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Poltergeist",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Curse",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Confuse Ray",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 3,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "dragon",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Dragon Breath",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dragon Rage",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dragon Claw",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dragon Pulse",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Outrage",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dragon Tail",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dragon Rush",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dragon Hammer",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Draco Meteor",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Twister",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Scale Shot",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Breaking Swipe",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Dragon Dance",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dragon Cheer",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 2,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "dark",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Bite",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Crunch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dark Pulse",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Night Slash",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Foul Play",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Snarl",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Pursuit",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Sucker Punch",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Knock Off",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Thief",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Assurance",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Payback",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Beat Up",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Brutal Swing",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Taunt",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Nasty Plot",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 0,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "steel",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Metal Claw",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Iron Tail",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Iron Head",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Flash Cannon",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Steel Wing",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Gyro Ball",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Heavy Slam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Smart Strike",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Steel Beam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Mirror Shot",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Magnet Bomb",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Metal Burst",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Metal Sound",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Autotomize",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 2,
+      "openStatusSlots": 0
+    },
+    {
+      "type": "fairy",
+      "quota": {
+        "attack": 14,
+        "status": 2
+      },
+      "attack": [
+        {
+          "name": "Fairy Wind",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Dazzling Gleam",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Moonblast",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Play Rough",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Draining Kiss",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Disarming Voice",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Misty Explosion",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Spirit Break",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Alluring Voice",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "status": [
+        {
+          "name": "Charm",
+          "status": "needs-new-phaser-vfx"
+        },
+        {
+          "name": "Misty Terrain",
+          "status": "needs-new-phaser-vfx"
+        }
+      ],
+      "openAttackSlots": 5,
+      "openStatusSlots": 0
+    }
+  ]
+}
