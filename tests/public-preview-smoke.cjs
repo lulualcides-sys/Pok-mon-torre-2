@@ -4,7 +4,7 @@ const fs=require('fs');
 const {chromium}=require('playwright-core');
 (async()=>{
  fs.mkdirSync('test-evidence',{recursive:true});
- const site=process.env.PREVIEW_URL||'https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/34ccc083d68aa386cb166b4fd2958eaeb4734357/index.html';
+ const site=process.env.PREVIEW_URL||'https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/72b2a3ef142c72268f19a829516494a723b50b4d/index.html';
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader',
   '--use-gl=angle','--use-angle=swiftshader','--ignore-gpu-blocklist']});
@@ -39,8 +39,10 @@ const {chromium}=require('playwright-core');
    }));
    result.versionEvidence=loadedV02;
    result.moveAnimations=result.game.animations;
+   result.enemyProjectileProof=typeof result.game.enemyEffectsActive==='number';
+   if(!result.enemyProjectileProof)throw Error('Brock Rock Throw rendering API missing in V0.4');
    result.actorActions=result.game.actorArt.map(x=>({pokemon:x.pokemon,actions:x.actions}));
-   if(loadedV02.hero!=='0.3.0-fidelity'||!loadedV02.style)throw Error('Wrong cached version: '+JSON.stringify(loadedV02));
+   if(loadedV02.hero!=='0.4.0-battle-depth'||!loadedV02.style)throw Error('Wrong cached version: '+JSON.stringify(loadedV02));
    result.ready=true;
   }catch(e){result.errors.push('GAME_BOOT: '+String(e).slice(0,300));}
   await page.screenshot({path:'test-evidence/preview-githack.png',fullPage:true});
