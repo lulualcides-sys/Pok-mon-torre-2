@@ -164,8 +164,8 @@ function animateAttacks(delta){
   if(shot.id==='flamethrower'){
    // ONE continuous forward-growing stream, not detached generic fire balls.
    gfx.position.set(shot.origin.x,shot.origin.y);
-   gfx.width=Math.max(6,shot.progress*shot.travel+24);
-   gfx.height=60;
+   gfx.width=Math.max(14,shot.progress*shot.travel+18);
+   gfx.height=41;
    gfx.rotation=angle;
   }else{
    gfx.position.set(shot.x,shot.y);
