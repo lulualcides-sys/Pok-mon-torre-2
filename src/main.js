@@ -1,6 +1,7 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
 import {makeArena} from './arena-v02.js';
 import {buildAtlases,makeParticle} from './effects-v02.js';
+import {installSpriteCollab} from './spritecollab-v02.js';
 const P=window.PIXI;
 const status=document.getElementById('status');
 const canvasHost=document.getElementById('game');
@@ -13,6 +14,7 @@ const held=new Set(),fingerDirs=new Set();
 const input={x:0,y:0};
 const logLines=[];
 let metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
+let actorArt=[];
 function message(t){
  logLines.unshift(t);logLines.length=Math.min(logLines.length,4);
  log.textContent=logLines.join(' · ');
@@ -29,6 +31,7 @@ function createEngine(){
  app.view.style.width='100%';app.view.style.height='100%';
  battle=createBattle();
  stage=makeArena(P);app.stage.addChild(stage.root);
+ installSpriteCollab(P,stage,states=>{actorArt=states;}).catch(err=>console.warn('Optional SpriteCollab actors unavailable:',err.message));
  atlases=buildAtlases(P,app);
  app.stage.eventMode='static';
  app.stage.hitArea=new P.Rectangle(0,0,WORLD.width,WORLD.height);
@@ -41,7 +44,7 @@ function createEngine(){
   version:'0.2.0-visual-test',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
-    effectsActive:attackVisuals.size,metrics:{...metrics},renderer:app.renderer.gl?'webgl':'unavailable'}),
+    effectsActive:attackVisuals.size,metrics:{...metrics},actorArt:actorArt.slice(),renderer:app.renderer.gl?'webgl':'unavailable'}),
   cast:(id)=>tryMove(id),restart:()=>restart(),
   proof:{originalProjectUntouched:true,moveSource:'original PixiJS pixel art',sourceGame:'none'}
  };
