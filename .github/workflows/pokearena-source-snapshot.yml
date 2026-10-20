@@ -33,6 +33,7 @@ jobs:
           node --check tests/source-client-smoke.cjs
           node tools/pokearena/build-preview.mjs
           node tests/solo-kanto-built.test.mjs
+          node tests/evolution-modes-built.test.mjs
       - name: Testar cliente original Phaser no Chromium
         run: |
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
