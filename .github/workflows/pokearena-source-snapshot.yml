@@ -1,0 +1,41 @@
+name: Pokémon Torre 2 — Captura do cliente Poké Arena (REA)
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/**'
+      - '.github/workflows/pokearena-source-snapshot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Identificar fontes do site e recuperar arquivos publicamente servidos
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/capture-client.mjs
+          node tools/pokearena/capture-client.mjs
+      - name: Verificar a captura real e mostrar cobertura
+        if: always()
+        shell: bash
+        run: |
+          if test -f site-capture/CAPTURE-REPORT.json; then
+            node -e "const j=require('./site-capture/CAPTURE-REPORT.json');console.log('capturados',j.totalFiles,'de',j.planned,'arquivos');console.log('falhas',j.unavailable?.length);console.log('versão encontrada',JSON.stringify(j.sourceVersions))"
+          fi
+      - name: Guardar fonte recuperada e relatório sem publicar em GitHub Pages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena2d-cliente-publico-capturado
+          path: site-capture/
+          retention-days: 14
+          if-no-files-found: error
