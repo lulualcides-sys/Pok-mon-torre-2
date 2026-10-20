@@ -27,22 +27,25 @@ assert.match(title,/txt:"VS CPU"/,'VS CPU still exists');
 assert.doesNotMatch(title,/id:"versus",txt:"2 PLAYERS"/);
 assert.doesNotMatch(title,/id:"online",txt:"ONLINE"/);
 assert.match(loader,/else this\.scene\.start\("titulo"\)/,'preserve original title screen');
-const data=JSON.parse(fs.readFileSync(path.resolve('data/kanto-shared-moves.json'),'utf8'));
+const data=JSON.parse(fs.readFileSync(path.resolve('data/kanto-new-phaser-moves.json'),'utf8'));
 assert.equal(data.types.length,18);
-const types=new Set(),ids=new Set();let count=0,missing=0;
-for(const t of data.types){
- assert.ok(!types.has(t.type),'type duplicated: '+t.type);types.add(t.type);
- assert.ok(t.attacks.length<=14&&t.statuses.length<=2,'quota exceeded');
- assert.equal(t.pending.attacks,14-t.attacks.length);
- assert.equal(t.pending.statuses,2-t.statuses.length);
- for(const move of [...t.attacks,...t.statuses]){
-   assert.ok(!ids.has(move.id),'move duplicated: '+move.id);ids.add(move.id);
-   assert.ok(move.sourcePath.startsWith('effects/moves/catalog/'),'source must come from Torre 1');
-   assert.equal(move.adaptation,'needs-Phaser-integration');
-   count++;
+assert.equal(data.artStrategy.renderer,'Poké Arena 2D Phaser 3 / WebGL');
+assert.match(data.description,/NOT imported or copied from Torre 1/);
+const types=new Set();
+let planned=0,missing=0;
+for(const type of data.types){
+ assert.ok(!types.has(type.type));types.add(type.type);
+ assert.ok(type.attack.length<=14&&type.status.length<=2);
+ assert.equal(type.openAttackSlots,14-type.attack.length);
+ assert.equal(type.openStatusSlots,2-type.status.length);
+ for(const move of [...type.attack,...type.status]){
+  assert.equal(move.status,'needs-new-phaser-vfx');
+  planned++;
  }
- missing+=t.pending.attacks+t.pending.statuses;
+ missing+=type.openAttackSlots+type.openStatusSlots;
 }
-assert.equal(count,246);
-assert.equal(missing,42);
-console.log('PASS: EVO/MEGA is Kanto-only disabled; all other Phaser modes retain original dynamics. Shared move library: 18 types, 246 candidates, 42 slots pending; no extra art declared complete.');
+assert.equal(planned,269);
+assert.equal(missing,19);
+assert.ok(!fs.existsSync(path.resolve('data/kanto-shared-moves.json')),
+ 'Old Torre 1 import catalog must not be used');
+console.log('PASS: Kanto-only EVO disabled; other original Phaser modes retain EVO. 18 scratch-built move pools, 269 planned VFX candidates, zero old Torre 1 art.');
