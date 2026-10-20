@@ -21,7 +21,12 @@
 - Construir variantes de impacto, sombra, profundidade, silhuetas com contornos escuros e densidade limitada de partículas.
 - Acompanhar desempenho real em Android e limitar geração dinâmica de texturas.
 
-## V0.3 — campanha Kanto
+## V0.3 — campanha Kanto (contrato de comportamento obrigatório)
+
+**[Regras aprovadas pelo criador: manter a campanha do Pokémon Torre 1; referências do Poké Arena 2D apenas para combate, arte e animações](./CONTRATO_CAMPANHA.md).**
+
+**Evolução FireRed:** adquirir EXP/subir de nível em combate, mas só iniciar evolução **após o combate**, nunca no meio da luta. Respeitar evolução por nível específico de cada espécie; pedras e trocas não viram evolução por nível. Aprender golpes adequados ao nível e espécie.
+
 
 - Primeira campanha com 13 treinadores antes de Brock; número cresce conforme o ginásio.
 - Oito líderes, cenários específicos por ginásio e final da Elite Four.
