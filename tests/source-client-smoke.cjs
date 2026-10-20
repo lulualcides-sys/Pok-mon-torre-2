@@ -39,7 +39,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(response.status(),200);
   assert.match(await page.title(),/Pok. Arena 2D/i);
   await page.waitForFunction(()=>!!window.Phaser&&!!document.querySelector('#juego canvas'),null,{timeout:35000});
-  await page.waitForTimeout(2700);
+  await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:45000,polling:250});
+  await page.waitForTimeout(800);
   const canvas=await page.evaluate(()=>{
    const c=document.querySelector('#juego canvas');
    return {width:c.width,height:c.height,visible:c.getBoundingClientRect().width>0,
@@ -66,8 +67,28 @@ const server=http.createServer(async(req,res)=>{
   await page.mouse.click(864,544); // Fight! from original client.
   await page.waitForTimeout(2450);
   await page.screenshot({path:'test-evidence/pokearena-training-battle.png',fullPage:true});
+  // Android landscape: the real LOADING scene must complete before the
+  // timeout; merely having a WebGL canvas is not enough.
+  const mobile=await browser.newPage({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2});
+  const mobileErrors=[];const mobileMissing=[];
+  mobile.on('pageerror',e=>mobileErrors.push(String(e)));
+  mobile.on('response',r=>{if(r.status()>=400)mobileMissing.push({status:r.status(),url:r.url()})});
+  const begin=Date.now();
+  await mobile.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded',timeout:35000});
+  await mobile.waitForFunction(()=>window.__pt2Started===true&&!!document.querySelector('#juego canvas'),null,{timeout:55000,polling:250});
+  await mobile.waitForTimeout(750);
+  const mobileBootMs=Date.now()-begin;
+  const mobileInfo=await mobile.evaluate(()=>({started:window.__pt2Started,
+    canvasWidth:document.querySelector('#juego canvas')?.width,
+    viewport:{width:innerWidth,height:innerHeight},
+    rotateOverlay:getComputedStyle(document.getElementById('girar')).display}));
+  assert.equal(mobileInfo.started,true,'Android must leave initial LOADING scene');
+  assert.ok(mobileInfo.canvasWidth>500,'Android landscape WebGL game must render');
+  assert.deepEqual(mobileErrors.filter(x=>/TypeError|ReferenceError|SyntaxError/i.test(x)),[]);
+  await mobile.screenshot({path:'test-evidence/pokearena-android-landscape.png',fullPage:true});
+  await mobile.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),source:'pokearena2d.com',result:'Phaser source booted'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',result:'Phaser source booted'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{
