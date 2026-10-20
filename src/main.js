@@ -12,6 +12,9 @@ const scoreboard=document.getElementById('scoreboard');
 const buttons=[...document.querySelectorAll('[data-move]')];
 let app,battle,stage,atlases,impactAtlases,brockAtlas,attackVisuals=new Map(),enemyVisuals=new Map(),impacts=[],stoneDust=[],pointTarget=null;
 let previousActors={player:null,enemy:null},screenShake=0;
+const mobileView=typeof window.matchMedia==='function'&&window.matchMedia('(max-width:710px)').matches;
+const viewport=mobileView?{width:660,height:660,zoom:1.1}:{width:WORLD.width,height:WORLD.height,zoom:1};
+let camera={x:0,y:0};
 const held=new Set(),fingerDirs=new Set();
 const input={x:0,y:0};
 const logLines=[];
@@ -23,7 +26,7 @@ function message(t){
 }
 function createEngine(){
  if(!P||!P.Application)throw new Error('PixiJS indisponível. Verifique a conexão.');
- app=new P.Application({width:WORLD.width,height:WORLD.height,backgroundColor:0x14232b,
+ app=new P.Application({width:viewport.width,height:viewport.height,backgroundColor:0x14232b,
   resolution:Math.min(2,window.devicePixelRatio||1),autoDensity:true,
   antialias:false,powerPreference:'high-performance',autoStart:true});
  if(!app.renderer?.gl)throw new Error('Pokémon Torre 2 requer WebGL neste navegador.');
@@ -33,23 +36,30 @@ function createEngine(){
  app.view.style.width='100%';app.view.style.height='100%';
  battle=createBattle();
  stage=makeArena(P);app.stage.addChild(stage.root);
+ stage.root.scale.set(viewport.zoom);
  installSpriteCollab(P,stage,states=>{actorArt=states;}).catch(err=>console.warn('Optional SpriteCollab actors unavailable:',err.message));
  atlases=buildAtlases(P,app);
  impactAtlases=buildImpactAtlases(P,app);
  brockAtlas=buildBrockAtlas(P,app);
  app.stage.eventMode='static';
- app.stage.hitArea=new P.Rectangle(0,0,WORLD.width,WORLD.height);
- app.stage.on('pointermove',event=>{if(event.global?.x!=null)pointTarget={x:event.global.x,y:event.global.y};});
- app.stage.on('pointerdown',event=>{if(event.global?.x!=null)pointTarget={x:event.global.x,y:event.global.y};});
+ app.stage.hitArea=new P.Rectangle(0,0,viewport.width,viewport.height);
+ const mapPoint=(event)=>{
+  if(event.global?.x==null)return;
+  const pos=stage.root.toLocal(event.global);
+  pointTarget={x:clamp(pos.x,0,WORLD.width),y:clamp(pos.y,0,WORLD.height)};
+ };
+ app.stage.on('pointermove',mapPoint);
+ app.stage.on('pointerdown',mapPoint);
  createUI();
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Ginásio de Pewter';
  window.PokemonTorre2={
-  version:'0.4.0-battle-depth',
+  version:'0.5.0-mobile-camera',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
     shotsAgainstPlayer:battle.enemyShots.length,metrics:{...metrics},actorArt:actorArt.slice(),
+    viewport:{...viewport,cameraX:camera.x,cameraY:camera.y}, 
     animations:{player:stage.player.__pmd?.state?.mode||'fallback',enemy:(battle.enemy.id==='geodude'?stage.enemyRock:stage.enemyOnix).__pmd?.state?.mode||'fallback'},
     renderer:app.renderer.gl?'webgl':'unavailable'}),
   cast:(id)=>tryMove(id),restart:()=>restart(),
@@ -206,8 +216,19 @@ function animateAttacks(delta){
  stage.updateLighting?.(battle.t,battle.projectiles);
  // Very short camera kick only at physical contact.
  screenShake=Math.max(0,screenShake-delta*24);
- stage.root.position.set(screenShake?Math.sin(battle.t*75)*screenShake:0,
-    screenShake?Math.cos(battle.t*91)*screenShake*.65:0);
+ // Smartphone: square combat viewport crops empty outer floor, tracks the
+ // midpoint between active opponents, and keeps native pixel proportions.
+ // Desktop remains the original fixed wide stadium.
+ if(mobileView){
+  const center=(battle.player.x+battle.enemy.x)/2;
+  const targetX=clamp(viewport.width/2-center*viewport.zoom,
+    viewport.width-WORLD.width*viewport.zoom,0);
+  const targetY=(viewport.height-WORLD.height*viewport.zoom)/2;
+  camera.x+=(targetX-camera.x)*Math.min(1,delta*7.5);
+  camera.y+=(targetY-camera.y)*Math.min(1,delta*7.5);
+ }else{camera.x=0;camera.y=0;}
+ stage.root.position.set(camera.x+(screenShake?Math.sin(battle.t*75)*screenShake:0),
+   camera.y+(screenShake?Math.cos(battle.t*91)*screenShake*.65:0));
 }
 function animateBrockRocks(dt){
  const active=new Set();
@@ -278,7 +299,7 @@ function restart(){
  impacts=[];
  battle=createBattle();pointTarget=null;overlay.hidden=true;
  previousActors={player:null,enemy:null};screenShake=0;
- stage.root.position.set(0,0);
+ camera={x:0,y:0};stage.root.position.set(0,0);
  metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0,enemyProjectileSprites:0};
  logLines.length=0;message('Batalha reiniciada no Ginásio de Pewter');paintUI();
 }

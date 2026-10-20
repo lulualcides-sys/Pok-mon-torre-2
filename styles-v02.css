@@ -45,6 +45,8 @@ footer{color:#919fbc}
  .brand small{font-size:7px}.chapter{margin:0 7px 7px}.chapter h1{font-size:19px}
  .chapter small{font-size:9px}.chapter p{font-size:10px}
  .arena-shell{border-width:1px;border-radius:4px}
+ #game{aspect-ratio:1 / 1; background:#10182f}
+ #game canvas{image-rendering:pixelated;max-width:100%;max-height:100%}
  .battle-top{padding:3px 3px;gap:2px}.hud{padding:4px;width:33%;gap:2px;border-width:1px}
  .hud span:first-child{font-size:10px}.hud span:last-child{font-size:8px}
  .health{height:7px}.center-counter{font-size:8px;padding:3px 4px;max-width:33%}

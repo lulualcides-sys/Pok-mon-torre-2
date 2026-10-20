@@ -86,6 +86,15 @@ const fs=require('node:fs');
   await mobile.goto(process.env.BASE_URL||'http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:50000});
   await mobile.waitForFunction(()=>!!window.PokemonTorre2?.snapshot(),null,{timeout:50000});
   const before=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
+  assert.equal(before.viewport.width,660,'mobile camera uses a separate 660 world-space viewport');
+  assert.equal(before.viewport.height,660,'mobile viewport should be square');
+  const canvasBox=await mobile.locator('#game canvas').boundingBox();
+  assert.ok(Math.abs(canvasBox.width-canvasBox.height)<3,
+    'mobile arena should not be a flattened 16:9 strip');
+  await mobile.waitForTimeout(900);
+  const framed=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
+  assert.ok(framed.viewport.cameraX< -50,'mobile camera must center the two combatants');
+
   await mobile.locator('[data-dir="right"]').dispatchEvent('pointerdown',{pointerId:1,pointerType:'touch'});
   await mobile.waitForTimeout(340);
   await mobile.locator('[data-dir="right"]').dispatchEvent('pointerup',{pointerId:1,pointerType:'touch'});
@@ -96,7 +105,7 @@ const fs=require('node:fs');
   await mobile.screenshot({path:'test-evidence/brock-mobile.png',fullPage:true});
   if(errors.length)throw Error('Browser errors: '+JSON.stringify(errors));
   fs.writeFileSync('test-evidence/BROWSER-PASS.json',JSON.stringify({webgl:true,initial:s.gym,mobile:true,
-   visualsSource:'original pixel art',tested:['normal Flamethrower hit','Ember, Fire Spin, Fire Blast impact','enemy WebGL Rock Throw','touch controls','4 move buttons','rendering desktop/mobile'],
+   visualsSource:'original pixel art',tested:['normal Flamethrower hit','Ember, Fire Spin, Fire Blast impact','enemy WebGL Rock Throw','touch controls','4 move buttons','square mobile battle camera','rendering desktop/mobile'],
    screenshots:5},null,2));
   console.log('BROWSER PASS: WebGL / Pewter / Flamethrower impact / mobile move / screenshots');
  }finally{await browser.close()}
