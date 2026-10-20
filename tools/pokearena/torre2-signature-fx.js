@@ -93,7 +93,7 @@ export function boneclub(l,h,extra){
   const radius=10+20*Math.sin(clamp(T)*pi);
   const theta=angle-1.55+(T<.7?ease(T/.7)*2.6:2.6);
   const cx=p(l.x+Math.cos(theta)*radius),cy=p(l.y-l.alto*.5+Math.sin(theta)*radius*.65);
-  g.setPosition(cx,cy);spin(g,theta+pi*.5);bone(g,1.03);
+  g.setPosition(cx,cy);spin(g,theta+pi*.5);bone(g,.68);
   if(!hit&&T>=.42&&T<=.77&&r&&!r.ko){
    const distance=Math.hypot(r.x-l.x,r.y-l.y);
    if(distance<(h.alcance??67)+12){
@@ -106,13 +106,39 @@ export function boneclub(l,h,extra){
  }});
 }
 function elemental(g,ox,oy,size,type,t){
- const c=type===0?colors.fire:type===1?colors.ice:colors.volt;
- block(g,ox-size-2,oy-size-2,2*size+4,2*size+4,colors.outline,.96);
- block(g,ox-size,oy-size,2*size,2*size,c);
- block(g,ox-size+2,oy-size+2,size,3,colors.white);
- if(type===0){block(g,ox-3,oy-size-5,5,4,0xffae54);block(g,ox,oy-size-8,2,4,0xffd87b)}
- if(type===1){block(g,ox-2,oy+size-2,5,4,0xbafaff);block(g,ox+size,oy-4,3,7,0xe3faff)}
- if(type===2){block(g,ox+size,oy-1,5,3,0xffef7e);block(g,ox+size+3,oy-5,2,5,colors.white)}
+ // Three different readable silhouettes: licking flame, crystalline ice,
+ // and bent lightning. Not three copies of a generic colored orb.
+ const x=p(ox),y=p(oy),a=1;
+ if(type===0){
+  block(g,x-6,y-5,13,13,colors.outline);
+  block(g,x-3,y-11,5,6,colors.outline);
+  block(g,x+3,y-9,5,5,colors.outline);
+  block(g,x-5,y-4,11,11,0xee5429);
+  block(g,x-3,y-8,4,7,0xffa34c);
+  block(g,x+2,y-7,3,7,0xffb655);
+  block(g,x-2,y-2,6,8,0xffd675);
+  block(g,x,y+1,3,5,colors.white);
+ }else if(type===1){
+  block(g,x-3,y-12,7,4,colors.outline);
+  block(g,x-7,y-8,15,15,colors.outline);
+  block(g,x-3,y+7,7,5,colors.outline);
+  block(g,x-2,y-10,5,4,0xccf6ff);
+  block(g,x-5,y-6,11,11,0x69b6e2);
+  block(g,x-3,y-6,5,9,0xd5f8ff);
+  block(g,x+2,y-5,2,12,0x9ce3fb);
+  block(g,x-1,y+5,3,5,0xe9ffff);
+ }else{
+  block(g,x-3,y-13,10,5,colors.outline);
+  block(g,x-1,y-10,7,8,colors.outline);
+  block(g,x-7,y-3,13,6,colors.outline);
+  block(g,x-5,y+1,8,7,colors.outline);
+  block(g,x-5,y+7,5,6,colors.outline);
+  block(g,x-1,y-11,5,5,0xfffa96);
+  block(g,x-1,y-7,4,5,0xffdb44);
+  block(g,x-5,y-1,9,3,0xffec59);
+  block(g,x-3,y+2,5,6,0xffea61);
+  block(g,x-4,y+8,3,4,colors.white);
+ }
 }
 export function triattack(l,h,extra){
  const e=l.escena,r=l.rival,ang=Math.atan2(l.ay-l.y,l.ax-l.x),g=shape(e),tail=shape(e,1509);
