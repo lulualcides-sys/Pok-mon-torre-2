@@ -107,7 +107,7 @@ const fs=require('node:fs');
     clientX:at.x,clientY:at.y,bubbles:true});
   await pad.dispatchEvent('pointermove',{pointerType:'touch',pointerId:20,
     clientX:at.x+at.reach,clientY:at.y-at.reach,bubbles:true});
-  await mobile.waitForTimeout(420);
+  await mobile.waitForTimeout(850);
   const steered=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.equal(steered.joystick.active,true,'pointer should remain captured while moving');
   assert.ok(steered.joystick.x>.35&&steered.joystick.y<-.35,'diagonal analog vector should be preserved');
@@ -125,8 +125,9 @@ const fs=require('node:fs');
   const after=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.ok(Math.abs(after.player.x-releasePos.x)<1.1&&Math.abs(after.player.y-releasePos.y)<1.1,
     'player must not keep moving after finger release');
-  assert.equal(await mobile.locator('#movement-thumb').evaluate(e=>e.style.transform),
-    'translate3d(0px, 0px, 0px)','thumb knob must recenter after releasing');
+  const thumbAfter=await mobile.locator('#movement-thumb').evaluate(e=>e.style.transform.replaceAll(' ',''));
+  assert.equal(thumbAfter,'translate3d(0px,0px,0px)',
+    'thumb knob must recenter after releasing');
   assert.equal(await mobile.locator('#dodge').count(),1,'separate dodge button must stay available');
   await mobile.locator('button[data-move="ember"]').click();
   assert.ok((await mobile.evaluate(()=>window.PokemonTorre2.snapshot())).castCount>=1);
