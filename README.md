@@ -2,9 +2,11 @@
 
 ## Pokémon Torre 2 Kanto — jogo SOLO (Phaser)
 
-[**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/28f2b3d0d83bf5f1c76da0940c1c853a01417b4b/index.html)
+[**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/28e9734477e2934277cfa9ec7b3c160c10146cc3/index.html)
 
-O jogo abre diretamente na seleção de Bulbasaur, Charmander ou Squirtle. Reusa os ataques, movimentação, sprites e cenas do motor Phaser de pokearena2d.com, com progressão própria do Torre 1: 13 treinadores antes de Brock e dificuldade crescente, oito líderes, Elite Four, insígnias, EXP, captura após vitória, equipe de 6 e PC, evolução exclusivamente por nível depois do combate e salvamento em localStorage. Sem conta, login, amigos, partidas online ou API de servidor. Testado em navegador Chromium e Android paisagem (landscape): [execução validada](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39484160116).
+**Só para um jogador:** menu inicial original do Poké Arena 2D com fontes, cores, logo e navegação preservados. Retirados ONLINE, 2 PLAYERS, bate-papo, Join/Discord, contagem de pessoas online e botão EVO/MEGA em batalha. PLAY → KANTO CAMPAIGN abre ginásios, capturas e evolução exclusivamente por nível após o combate. Botão MENU volta à abertura. Testado no Chromium, batalha original e Android horizontal: [execução verificada](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39486696029).
+
+O jogo permite acessar a seleção de Bulbasaur, Charmander ou Squirtle. Reusa os ataques, movimentação, sprites e cenas do motor Phaser de pokearena2d.com, com progressão própria do Torre 1: 13 treinadores antes de Brock e dificuldade crescente, oito líderes, Elite Four, insígnias, EXP, captura após vitória, equipe de 6 e PC, evolução exclusivamente por nível depois do combate e salvamento em localStorage. Sem conta, login, amigos, partidas online ou API de servidor. Testado em navegador Chromium e Android paisagem (landscape): [execução validada](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39484160116).
 
 **Cobertura:** catálogo de 151 Pokémon de Kanto incluído na Pokédex; só as espécies com animações e kits disponíveis no cliente recuperado são liberadas como lutadoras neste estágio. A campanha já usa os lutadores existentes do Poké Arena, ainda não todos os 151. A progressão é independente da versão de laboratório PixiJS V0.8 mantida no ramo principal. No celular, use a tela horizontal. O jogo funciona como página estática, sem serviços multiplayer; para abri-lo por URL é necessário acesso à hospedagem de arquivos estáticos.
 
