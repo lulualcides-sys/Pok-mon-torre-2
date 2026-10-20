@@ -20,6 +20,14 @@ const fs=require('node:fs');
   assert.equal(s.gym,'pewter');
   assert.equal(s.enemy.id,'geodude');
   assert.equal(await page.locator('button[data-move]').count(),4);
+  // Measure optional noncommercial artist-credited sprite sheets separately from engine health.
+  try{
+    await page.waitForFunction(()=>window.PokemonTorre2?.snapshot()?.actorArt?.length>=3,
+      null,{timeout:18000,polling:250});
+  }catch(_){/* An offline fallback is permitted; record why the sprite host failed. */}
+  const actorArt=await page.evaluate(()=>window.PokemonTorre2.snapshot().actorArt);
+  fs.writeFileSync('test-evidence/SPRITES-STATUS.json',JSON.stringify({actorArt},null,2));
+  console.log('SPRITE STATUS',JSON.stringify(actorArt));
   await page.screenshot({path:'test-evidence/brock-initial-desktop.png',fullPage:true});
   await page.locator('button[data-move="flamethrower"]').click();
   s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
