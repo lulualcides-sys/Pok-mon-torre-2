@@ -23,7 +23,8 @@ class Campanha extends Phaser.Scene{
   g.strokeRect(10,7,ANCHO-20,ALTO-14);
   g.fillStyle(0x142037,.95);g.fillRect(11,8,ANCHO-22,43);
   this.add.text(20,13,'POKÉMON TORRE 2 · KANTO',{...titleStyle,fontSize:'20px'});
-  text(this,ANCHO-20,24,'MODO SOLO · PHASER 3',statusStyle).setOrigin(1,.5);
+  text(this,ANCHO-85,24,'MODO SOLO · PHASER 3',statusStyle).setOrigin(1,.5);
+  this.button(526,23,62,24,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){
    const marker=this.result.marker||{};
