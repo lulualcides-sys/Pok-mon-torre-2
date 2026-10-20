@@ -59,6 +59,11 @@ const server=http.createServer(async(req,res)=>{
   await page.mouse.click(490,405); // Training in the original Play menu.
   await page.waitForTimeout(1350);
   await page.screenshot({path:'test-evidence/pokearena-training-select.png',fullPage:true});
+  await page.mouse.click(205,149); // Squirtle as training dummy.
+  await page.waitForTimeout(350);
+  await page.mouse.click(864,544); // Fight! from original client.
+  await page.waitForTimeout(2450);
+  await page.screenshot({path:'test-evidence/pokearena-training-battle.png',fullPage:true});
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
    notFound:notFound.slice(0,40),source:'pokearena2d.com',result:'Phaser source booted'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
