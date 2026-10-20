@@ -72,6 +72,61 @@ patches.push(
    'if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)']
  ]]
 );
+
+// Offline single-player UI clean-up: retain the site's original pixel font,
+// title logo, animated background, controls, credit screen and other screens.
+// Only online, multiplayer, chat, connected players and combat evolution go.
+patches.push(
+ ['escenas/titulo.js',[
+  ['{id:"online",txt:"ONLINE",menu:"online",ico:"globo"},',''],
+  ['{id:"versus",txt:"2 PLAYERS",escena:"seleccion",datos:{previo:{modo:"versus"}},ico:"dos"},',''],
+  ['jugar:[{id:"liga",txt:"LEAGUE"',
+   'jugar:[{id:"kanto",txt:"KANTO CAMPAIGN",escena:"campanha",ico:"pokeball"},{id:"liga",txt:"LEAGUE"'],
+  ['ajustes:[{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},','ajustes:['],
+  ['this.time.addEvent({delay:CADA_GENTE,loop:true,callback:()=>this.consultarGente()});this.consultarGente();',''],
+  ['this.puntoGente=this.add.graphics().setDepth(1e3);',
+   'this.puntoGente=this.add.graphics().setDepth(1e3).setVisible(false);'],
+  ['this.gente=texto(this,22,10,"",{tam:8,color:"#bfe9c8",borde:3}).setOrigin(0,.5).setDepth(1e3);',
+   'this.gente=texto(this,22,10,"",{tam:8,color:"#bfe9c8",borde:3}).setOrigin(0,.5).setDepth(1e3).setVisible(false);'],
+  ['if(this.scene.isActive()&&red.conectado)red.pedir("$cuantos",{version:VERSION}).catch(()=>{})',
+   '/* No connected-player checks in solo game. */'],
+  ['this.conectarOnline();this.consultarGente()',
+   '/* Online menus are disabled in the solo game. */'],
+  ['if(o.menu==="online"&&!red.cuenta&&!red.ficha)return this.scene.start("cuenta",{volver:"online"});',
+   'if(o.menu==="online")return;'],
+  ['this.botones.forEach((b,i)=>{if(!b.dato)return;b.dato.setText(this.datoOnline(b.id)??"").setX(this.derecha(i)+1+(b.nuevo?b.nuevo.width+5:0))})',
+   '/* No online person counter or activity data. */']
+ ]],
+ ['escenas/seleccion.js',[
+  ['const MODOS=[{id:"cpu",nombre:"VS CPU"},{id:"versus",nombre:"2 PLAYERS"},{id:"entreno",nombre:"TRAINING"}];',
+   'const MODOS=[{id:"cpu",nombre:"VS CPU"},{id:"entreno",nombre:"TRAINING"}];'],
+  ['ANCHO/2-130+i*130,27,m.nombre','ANCHO/2-67+i*134,27,m.nombre']
+ ]],
+ ['tactil.js',[
+  [',{slot:"mega",x:466,y:246,r:17,txt:"EVO"}','']
+ ]],
+ ['luchador.js',[
+  ['if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)',
+   'if(false&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)']
+ ]],
+ ['hud.js',[
+  ['else if(l.puedeEvolucionar&&l.humano&&parpadeo)est.push(',
+   'else if(false&&l.puedeEvolucionar&&l.humano&&parpadeo)est.push('],
+  ['else if(l.puedeMega&&l.humano&&parpadeo)est.push(',
+   'else if(false&&l.puedeMega&&l.humano&&parpadeo)est.push(']
+ ]],
+ ['escenas/combate.js',[
+  ['mega evolve','evolução após a batalha']
+ ]],
+ ['main.js',[
+  ['import{iniciarChat,reservaChat}from"./chat.js";',
+   'const reservaChat=()=>0; /* No chat widget or reserved space in solo game. */']
+ ]],
+ ['escenas/carga.js',[
+  ['else this.scene.start(q.has("original")?"titulo":"campanha")',
+   'else this.scene.start("titulo")']
+ ]]
+);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
