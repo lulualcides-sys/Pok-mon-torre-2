@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0c1923">
+<meta name="description" content="Pokémon Torre 2 — batalhas em pixel art, Kanto e golpes animados com PixiJS/WebGL">
+<title>Pokémon Torre 2 — Kanto</title>
+<link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="app-shell">
+ <header class="topline">
+  <div class="brand"><span class="brand-mark">II</span><div><strong>POKÉMON TORRE <em>2</em></strong><small>KANTO · BATALHA 2D WEBGL</small></div></div>
+  <div class="top-right"><span class="lab">PROTÓTIPO V0.1</span><button class="subtle" id="reset" type="button">Reiniciar</button></div>
+ </header>
+ <main>
+  <div class="chapter"><div><small>01 / 08 · DESAFIO DOS GINÁSIOS</small><h1>Ginásio de Pewter</h1><p><span class="dot"></span> Brock · Tipo Pedra · Insígnia Rocha</p></div><div class="chip">PRIMEIRO COMBATE</div></div>
+  <section class="arena-shell" aria-label="Arena da batalha">
+   <div class="battle-top">
+    <div class="hud"><span id="p-name">Charizard · Nv.50</span><div class="health"><i id="p-hp"></i></div><span id="hp-text">230/230</span></div>
+    <div class="center-counter" id="scoreboard">Ginásio de Pewter · Brock · 0/2 Pokémon</div>
+    <div class="hud enemy-hud"><span id="e-name">Geodude · Nv.12</span><div class="health enemy"><i id="e-hp"></i></div><span id="e-hp-text">86/86</span></div>
+   </div>
+   <div id="game"></div>
+   <div class="arena-footer"><span>◈ PISO ROCHOSO</span><span>🎯 MIRA LIVRE OU AUTOMÁTICA</span></div>
+   <div class="end-screen" id="end-screen" hidden>
+    <div class="end-content">
+     <span class="trophy">✦</span><h2 id="end-title">Vitória!</h2><p id="end-desc">Você ganhou a Insígnia Rocha.</p>
+     <button id="restart" type="button">Jogar novamente</button>
+    </div>
+   </div>
+  </section>
+  <div class="battle-log" role="status" aria-live="polite" id="battle-log">Preparando batalha…</div>
+  <div class="lower">
+   <section class="control-area">
+    <div class="control-label">MOVIMENTAÇÃO</div>
+    <div class="dpad" role="group" aria-label="Controles de movimento">
+     <button data-dir="up" class="up" aria-label="Mover para cima" type="button">▲</button>
+     <button data-dir="left" class="left" aria-label="Mover para esquerda" type="button">◀</button>
+     <button data-dir="down" class="down" aria-label="Mover para baixo" type="button">▼</button>
+     <button data-dir="right" class="right" aria-label="Mover para direita" type="button">▶</button>
+     <button class="dodge" id="dodge" aria-label="Esquiva" type="button">ESQUIVA</button>
+    </div>
+   </section>
+   <section class="moves-section">
+    <div class="moves-head"><span>GOLPES · CHARIZARD</span><div class="energy-pill">✦ <span id="energy-text">100 / 100</span><div class="energy"><i id="energy-bar"></i></div></div></div>
+    <div class="moves">
+     <button type="button" data-move="ember"><span class="key">1</span><span class="move-name">Ember</span><span class="meta">FOGO · ESPECIAL</span><span class="cd">9 EN</span></button>
+     <button type="button" data-move="flamethrower"><span class="key">2</span><span class="move-name">Flamethrower</span><span class="meta">FOGO · CONTÍNUO</span><span class="cd">22 EN</span></button>
+     <button type="button" data-move="firespin"><span class="key">3</span><span class="move-name">Fire Spin</span><span class="meta">FOGO · ÁREA</span><span class="cd">18 EN</span></button>
+     <button type="button" data-move="fireblast"><span class="key">4</span><span class="move-name">Fire Blast</span><span class="meta">FOGO · IMPACTO</span><span class="cd">39 EN</span></button>
+    </div>
+   </section>
+  </div>
+ </main>
+ <footer><span id="status">Inicializando PixiJS WebGL…</span><span>Protótipo original · a campanha completa virá por etapas</span></footer>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.4.3/pixi.min.js" integrity="" crossorigin="anonymous"></script>
+<script type="module" src="./src/main.js"></script>
+</body>
+</html>
