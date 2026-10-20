@@ -25,10 +25,12 @@ jobs:
         run: |
           set +e
           for url in \
-            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/af1bb961f7c60ae0a7d87108267bfe598fee254b/index.html \
-            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/af1bb961f7c60ae0a7d87108267bfe598fee254b/src/main.js \
-            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/af1bb961f7c60ae0a7d87108267bfe598fee254b/styles-v02.css \
-            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/af1bb961f7c60ae0a7d87108267bfe598fee254b/src/brock-v04.js \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/index.html \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/src/main.js \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/styles-v02.css \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/src/brock-v04.js \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/src/arena-stadium-v06.js \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/src/effects-v06.js \
             https://lulualcides-sys.github.io/Pok-mon-torre-2/ ; do
             echo "$url"
             curl --max-time 25 -IL -sS -o /dev/null -w "status=%{http_code} mime=%{content_type}\n" "$url"
