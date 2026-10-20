@@ -35,8 +35,27 @@ const {chromium}=require('playwright-core');
    result.ready=true;
   }catch(e){result.errors.push('GAME_BOOT: '+String(e).slice(0,300));}
   await page.screenshot({path:'test-evidence/preview-githack.png',fullPage:true});
+  if(result.ready){
+    // Same public mirror in Android-sized touch browser.
+    const mobile=await browser.newPage({viewport:{width:390,height:844},
+      isMobile:true,hasTouch:true,deviceScaleFactor:1});
+    await mobile.goto(site,{waitUntil:'domcontentloaded',timeout:45000});
+    if((await mobile.title()).includes('External Content Notice')){
+      const approve=mobile.getByText('Open the page',{exact:true}).first();
+      await approve.click();
+    }
+    await mobile.waitForFunction(()=>window.PokemonTorre2?.snapshot()?.renderer==='webgl',
+      null,{timeout:40000,polling:200});
+    await mobile.locator('button[data-move="flamethrower"]').click();
+    const data=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
+    result.mobile={width:390,webgl:data.renderer==='webgl',
+      moveButtons:await mobile.locator('[data-move]').count(),
+      castCount:data.castCount,energy:data.player.energy};
+    result.readyMobile=result.mobile.webgl&&result.mobile.castCount>=1;
+    await mobile.screenshot({path:'test-evidence/preview-githack-android.png',fullPage:true});
+  }
  }finally{await browser.close()}
  fs.writeFileSync('test-evidence/PUBLIC-PREVIEW.json',JSON.stringify(result,null,2));
  console.log(JSON.stringify(result));
- if(!result.ready)process.exitCode=1;
+ if(!result.ready || !result.readyMobile)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});
