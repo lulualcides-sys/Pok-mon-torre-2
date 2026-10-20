@@ -139,6 +139,7 @@ export function makeArena(P){
  root.addChild(grass,stands,edge);
  // Use licensed multi-action actors when available; old pixel meshes are
  // fallback ONLY. This stage itself uses no copied assets.
+ old.shadow.visible=false; // No oval or circular ground marker under combatants.
  const actorLayer=new P.Container();actorLayer.sortableChildren=true;
  root.addChild(actorLayer);
  actorLayer.addChild(old.shadow,old.enemyRock,old.enemyOnix,old.player);
