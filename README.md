@@ -14,6 +14,8 @@ Depois disso, `.github/workflows/pages.yml` já está preparado para publicar.
 ---
 
 
+**[CONTRATO DA CAMPANHA E EVOLUÇÃO (FireRed)](docs/CONTRATO_CAMPANHA.md)**: mesma estrutura de campanha do Pokémon Torre 1, com 13 treinadores antes do primeiro líder e Kanto completo; Poké Arena 2D é referência visual das batalhas, não de progressão. Evoluções por nível somente após a batalha, jamais no meio. A V0.8 ainda é laboratório e não implementa essa campanha ou a evolução.
+
 Novo jogo independente do Pokémon Torre original.
 
 **Primeiro marco:** batalha jogável no Ginásio de Pewter (Brock), controles mobile/PC, combate 2D em PixiJS/WebGL, oito golpes de teste e 21 testes unitários aprovados com Chromium real. Não é a campanha completa.
