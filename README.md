@@ -2,9 +2,9 @@
 
 ## 🎮 TESTAR AGORA (sem esperar GitHub Pages)
 
-**[▶ JOGAR POKÉMON TORRE 2 — WebGL](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/main/index.html)**
+**[▶ JOGAR POKÉMON TORRE 2 — V0.2 sem cache antigo](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/b3aeb1fea93574ff824cf96a88a9509434be20f7/index.html)**
 
-Link verificado em Chromium no GitHub Actions: o jogo inicia e o renderizador WebGL funciona.
+Link da versão V0.2 fixada no commit e verificado em Chromium (desktop e Android simulado). O navegador confirmou a nova interface, os três sprites animados e WebGL.
 Na primeira visita, o serviço independente rawgit.hack pode pedir confirmação **Open the page**.
 
 O domínio permanente `https://lulualcides-sys.github.io/Pok-mon-torre-2/` permanece inativo
