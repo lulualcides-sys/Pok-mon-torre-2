@@ -45,9 +45,7 @@
 ## Código e direitos
 
 O jogo é um projeto de fã não oficial. Os personagens Pokémon e suas marcas pertencem a seus titulares.
-Os 420 vídeos do Poké Arena 2D foram capturados para estudo de ritmo, comportamento,
-dimensões e composição; **não** são uma licença para copiar ou redistribuir spritesheets,
-código ou sons. Os efeitos e cenários usados aqui devem ser autorais ou licenciados.
+O usuário declarou autorização do responsável por **pokearena2d.com** para aproveitar seu código-fonte e recursos acessíveis no projeto pessoal não comercial. A captura de recursos do site será feita em artefato de integração, com proveniência e créditos, antes de integrar ao motor Phaser. Direitos sobre marcas/obras de outros titulares não são presumidos.
 
 ## Deploy
 
