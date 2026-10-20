@@ -19,6 +19,7 @@ html=html.replace('href="/favicon.png"','href="favicon.png"');
 html=html.replace('</head>','<meta name="referrer" content="no-referrer">\n</head>');
 await fs.writeFile(index,html);
 const raw=JSON.parse(await fs.readFile('site-capture/CAPTURE-REPORT.json','utf8'));
+await fs.writeFile(path.join(dest,'version.json'),JSON.stringify({src:raw.sourceVersions?.selected||null,localMirror:true}));
 await fs.writeFile(path.join(dest,'capture-provenance.json'),JSON.stringify({
  source:raw.source,files:raw.totalFiles,version:raw.sourceVersions?.selected,
  originalCatalog:raw.sourceCatalog,capturedAt:raw.completed,personalUse:true,
