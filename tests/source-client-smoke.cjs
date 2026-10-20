@@ -35,7 +35,7 @@ const server=http.createServer(async(req,res)=>{
  page.on('pageerror',e=>errors.push(String(e)));
  page.on('response',r=>{if(r.status()>=400)notFound.push({status:r.status(),url:r.url()})});
  try{
-  const response=await page.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded',timeout:30000});
+  const response=await page.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:30000});
   assert.equal(response.status(),200);
   assert.match(await page.title(),/Pok. Arena 2D/i);
   await page.waitForFunction(()=>!!window.Phaser&&!!document.querySelector('#juego canvas'),null,{timeout:35000});
@@ -74,7 +74,7 @@ const server=http.createServer(async(req,res)=>{
   mobile.on('pageerror',e=>mobileErrors.push(String(e)));
   mobile.on('response',r=>{if(r.status()>=400)mobileMissing.push({status:r.status(),url:r.url()})});
   const begin=Date.now();
-  await mobile.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded',timeout:35000});
+  await mobile.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:35000});
   await mobile.waitForFunction(()=>window.__pt2Started===true&&!!document.querySelector('#juego canvas'),null,{timeout:55000,polling:250});
   await mobile.waitForTimeout(750);
   const mobileBootMs=Date.now()-begin;
