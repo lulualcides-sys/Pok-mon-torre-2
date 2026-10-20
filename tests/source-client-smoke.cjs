@@ -202,8 +202,69 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(outRequests,[],'no external account or multiplayer endpoints in campaign');
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-after-first-victory.png',fullPage:true});
   await offline.close();
+  // Real Mewtwo summary and actual execution of all four newly drawn VFX.
+  const tester=await browser.newPage({viewport:{width:980,height:650},deviceScaleFactor:1});
+  const newErrors=[];
+  tester.on('pageerror',e=>newErrors.push(String(e)));
+  await tester.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded'});
+  await tester.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:65000});
+  const summaryState=await tester.evaluate(async()=>{
+    const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+    const base=new URL('./',entry.src);
+    const core=await import(new URL('torre2/campaign-core.js',base).href);
+    const pool=await import(new URL('torre2/move-pool.js',base).href);
+    const s=core.createCampaign('squirtle');
+    core.saveCampaign(s);
+    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+    const p=pool.availableMoves(s.team[1]);
+    return {level:s.team[1].progression.level,team:s.team.map(x=>x.id),
+     count:p.length,signature:['Bonemerang','Bone Club','Tri Attack','Pay Day'].every(n=>p.some(m=>m.nombre===n))};
+  });
+  assert.equal(summaryState.level,50);
+  assert.ok(summaryState.count>=8&&summaryState.signature,'Mewtwo has ALL captured/created moves unlocked for testing');
+  await tester.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:14000});
+  await tester.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
+    scene.showSummary(state,1);
+  });
+  await tester.waitForTimeout(900);
+  await tester.screenshot({path:'test-evidence/torre2-mewtwo-lv50-summary-stat-moves.png',fullPage:true});
+  await tester.evaluate(async()=>{
+    const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+    const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
+    const move=await import(new URL('./torre2/move-pool.js',entry.src).href);
+    const s=core.readCampaign();s.active=1;core.saveCampaign(s);
+    const d=core.startBattle(s);d.torre2Loadout=move.resolveLoadout(s.team[1]);
+    d.mandos=['kbm','cpu'];
+    window.__pt2Game.scene.getScene('campanha').scene.start('combate',d);
+  });
+  await tester.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&window.__pt2Game.scene.getScene('combate').luchadores?.length===2,
+   null,{timeout:50000});
+  const moveSmoke=await tester.evaluate(async()=>{
+   const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+   const fx=await import(new URL('./habilidades.js',entry.src).href);
+   const e=window.__pt2Game.scene.getScene('combate'),l=e.luchadores[0],r=e.luchadores[1];
+   const slots=['lmb','rmb','q','e'],out=[];
+   for(const slot of slots){
+    l.energia=100;l.ulti=100;l.cd[slot]=0;l.accion=null;l.est.aturdido=null;
+    const before=e.efectos.length,ok=fx.usarHabilidad(l,slot);
+    out.push({slot,ok,forma:l.kit[slot]?.forma,rendered:e.efectos.length>before});
+    // Each effect remains in the live scene for rendering.
+    if(!ok)throw Error('Ability rejected for '+slot);
+   }
+   return {species:l.def.id,level:50,forms:out,enemy:r.def.id};
+  });
+  assert.equal(moveSmoke.species,'mewtwo');
+  assert.equal(moveSmoke.forms.length,4);
+  assert.ok(moveSmoke.forms.every(x=>x.ok&&x.forma?.startsWith('torre2_')&&x.rendered),
+   'Each signature effect must create a real Phaser scene effect');
+  await tester.waitForTimeout(500);
+  await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
+  assert.deepEqual(newErrors,[],'Mewtwo summary + four Phaser moves must not crash');
+  await tester.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},result:'Original Phaser + solo Kanto verified'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,moves:moveSmoke},result:'Original Phaser + solo Kanto verified'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{
