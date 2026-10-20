@@ -13,27 +13,39 @@ function ember(P,f){
  return g;
 }
 function flamethrower(P,f){
- const g=new P.Graphics(),base=30,L=198;
- // A SINGLE unbroken tongue of flame attached to the attacker's muzzle,
- // with a dark pixel outline, red shell, gold core and animated turbulent edge.
- for(let x=0;x<L;x+=4){
-  const wave=Math.sin(x/24+f*.75)*3+Math.sin(x/10-f*.9)*3;
-  const start=Math.min(1,(x+13)/43),end=Math.min(1,(L-x)/27);
-  const width=(9+11*Math.sin(Math.PI*x/L)+4*Math.sin(x/17+f*.5))*start*end;
-  if(width<2)continue;
-  const top=Math.round(base+wave-width),bot=Math.round(base+wave+width);
-  px(g,x,top-3,4,bot-top+6,INK);
-  px(g,x+1,top,4,bot-top+1,RED);
-  px(g,x+1,top+3,4,Math.max(2,bot-top-5),ORANGE);
-  const ctop=top+7+Math.sin(x/16+f)*2,cbot=bot-7+Math.sin(x/19-f)*2;
-  if(cbot-ctop>4){px(g,x+1,ctop,4,cbot-ctop,YELLOW);
-   if((Math.floor(x/8)+f)%4!==0)px(g,x+2,ctop+3,2,Math.max(2,cbot-ctop-8),WHITE);}
+ const g=new P.Graphics(),length=198,cy=29;
+ // One continuous, irregular tongue from mouth to tip; not a stretched
+ // yellow block and not a row of generic independent fireball sprites.
+ for(let x=0;x<length;x+=3){
+  const t=x/length,taper=Math.min(1,(x+7)/22,(length-x+8)/28);
+  const ribbon=(8.7+4.6*Math.sin(Math.PI*t)+2.4*Math.sin(x*.077+f*.7))*taper;
+  if(ribbon<1.5)continue;
+  const jitter=Math.sin(x*.13-f*.66)*1.9+Math.sin(x*.045+f*.9)*2.0;
+  const top=Math.round(cy-ribbon+jitter),bottom=Math.round(cy+ribbon+jitter);
+  // Dark outline + rust red edge surround a mostly orange flame.
+  px(g,x,top-2,3,bottom-top+5,INK);
+  px(g,x,top,3,bottom-top+1,RED);
+  if(bottom-top>5)px(g,x+1,top+2,2,bottom-top-3,ORANGE);
+  // Hot yellow appears in separated surges, leaving orange negative space.
+  if(bottom-top>10&&(Math.floor(x/13)+f)%4!==0){
+   const hot=cy+jitter+Math.sin(x*.11+f)*2;
+   px(g,x+1,hot-3,2,6,GOLD);
+   if((Math.floor(x/21)+f)%3===0)px(g,x+1,hot-1,2,3,YELLOW);
+  }
  }
- for(let i=0;i<8;i++){
-  const x=25+i*21+(f%3)*2,y=base+(i%2?1:-1)*(14+(i+f)%4*2);
-  px(g,x,y,8,8,INK);px(g,x+1,y+1,6,6,RED);px(g,x+2,y+2,4,3,GOLD);
+ // A few sharp fire tongues grow from the connected stream surface.
+ for(let i=0;i<7;i++){
+  const x=18+i*23+(f%4)*2,sg=i%2?1:-1;
+  const y=cy+sg*(11+(i+f)%4);
+  const len=6+(i*3+f)%7;
+  px(g,x-1,y-2,12,5,INK);
+  px(g,x,y,10,3,RED);
+  px(g,x+3,y+sg*3,7,len,ORANGE);
+  px(g,x+4,y+sg*5,4,3,GOLD);
  }
- px(g,0,26,10,8,WHITE);px(g,8,27,8,6,YELLOW);
+ // Muzzle joins seamlessly with the flame and stays bright.
+ px(g,0,cy-5,9,10,INK);px(g,1,cy-4,9,8,ORANGE);
+ px(g,4,cy-2,9,5,GOLD);
  return g;
 }
 function drawStroke(g,x1,y1,x2,y2,w,col){
