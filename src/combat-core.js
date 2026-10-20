@@ -57,8 +57,13 @@ export function cast(s,id,aim){
  if(p.energy<move.cost)return {ok:false,reason:'energy'};
  if(!s.enemy||s.enemy.hp<=0)return {ok:false,reason:'no-target'};
  const dest=aim&&Number.isFinite(aim.x)&&Number.isFinite(aim.y)?aim:s.enemy;
- const dir=vector(p,dest),travel=clamp(distance(p,dest),50,move.range);
- const origin={x:p.x+dir.x*25,y:p.y+dir.y*6-8};
+ // Projectiles start from the visible Charizard mouth instead of its feet.
+ // Calculate the travel vector from the actual emission point so damage and
+ // the rendered flame are spatially synchronized, including diagonal casts.
+ const rough=vector({x:p.x,y:p.y-34},dest);
+ const origin={x:p.x+rough.x*39,y:p.y-33+rough.y*5};
+ const dir=vector(origin,dest);
+ const travel=clamp(distance(origin,dest),50,move.range);
  p.energy-=move.cost;p.cooldowns[id]=move.cooldown;s.castCount++;
  const pr={id,castId:s.castCount,move,origin,x:origin.x,y:origin.y,
   direction:dir,age:0,lifetime:travel/move.speed,remaining:travel,
