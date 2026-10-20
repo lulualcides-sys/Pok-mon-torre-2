@@ -59,7 +59,9 @@ const server=http.createServer(async(req,res)=>{
   await page.mouse.click(490,405); // Training in the original Play menu.
   await page.waitForTimeout(1350);
   await page.screenshot({path:'test-evidence/pokearena-training-select.png',fullPage:true});
-  await page.mouse.click(205,149); // Squirtle as training dummy.
+  await page.mouse.click(205,149); // Confirm Squirtle for Player 1.
+  await page.waitForTimeout(300);
+  await page.mouse.click(68,149); // Confirm Bulbasaur as Dummy after focus switches.
   await page.waitForTimeout(350);
   await page.mouse.click(864,544); // Fight! from original client.
   await page.waitForTimeout(2450);
