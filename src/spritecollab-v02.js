@@ -5,11 +5,11 @@
 export const PMD_CREDITS='https://github.com/PMDCollab/SpriteCollab';
 const BASE='https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/';
 const ROSTER=[
- {name:'Charizard',id:'0006',target:'player',scale:2.65,face:2,
+ {name:'Charizard',id:'0006',target:'player',scale:3.75,face:2,
   sizes:{Idle:[40,48],Walk:[40,48],Shoot:[56,56],Attack:[80,88],Hurt:[64,64]}},
- {name:'Geodude',id:'0074',target:'enemyRock',scale:2.65,face:6,
+ {name:'Geodude',id:'0074',target:'enemyRock',scale:3.35,face:6,
   sizes:{Idle:[32,24],Walk:[32,32],Shoot:[48,40],Attack:[72,80],Hurt:[40,48]}},
- {name:'Onix',id:'0095',target:'enemyOnix',scale:1.20,face:6,
+ {name:'Onix',id:'0095',target:'enemyOnix',scale:1.43,face:6,
   sizes:{Idle:[96,104],Walk:[88,112],Shoot:[96,112],Attack:[128,152],Hurt:[80,88]}}
 ];
 const ACTIONS=['Idle','Walk','Shoot','Attack','Hurt'];
