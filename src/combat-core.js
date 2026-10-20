@@ -152,6 +152,16 @@ export function tick(s,dt){
   rock.progress=step/rock.range;
   rock.x=rock.origin.x+rock.direction.x*step;
   rock.y=rock.origin.y+rock.direction.y*step;
+  // Beam/projectile clashes happen at the collision point, before either
+  // attack can damage a character. One collision consumes each projectile.
+  const intercept=s.projectiles.find(shot=>!shot.hit &&
+    distance(shot,rock)<=Math.min(42,shot.move.radius+rock.radius));
+  if(intercept){
+   intercept.hit=true;rock.done=true;
+   notify(s,'clash',{move:intercept.id,enemy:rock.owner,x:(intercept.x+rock.x)/2,
+    y:(intercept.y+rock.y)/2,playerCastId:intercept.castId,enemyCastId:rock.id});
+   continue;
+  }
   if(distance(rock,p)<p.radius+rock.radius){
    rock.done=true;
    if(p.invulnerable<=0){
@@ -166,6 +176,7 @@ export function tick(s,dt){
   }
  }
  s.enemyShots=s.enemyShots.filter(rock=>!rock.done);
+ s.projectiles=s.projectiles.filter(shot=>!shot.hit);
  if(s.status!=='fighting'||!e||e.hp<=0)return;
  const gap=distance(p,e);
  if(gap>174){
