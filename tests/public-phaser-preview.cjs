@@ -24,12 +24,38 @@ const {chromium}=require('playwright-core');
   }
   await page.waitForFunction(()=>!!window.Phaser&&!!document.querySelector('#juego canvas'),null,
    {timeout:45000,polling:500});
-  await page.waitForTimeout(1800);
+  await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:50000,polling:400});
+  await page.waitForTimeout(600);
   const game=await page.evaluate(()=>({canvas:document.querySelector('#juego canvas')?.width,
    height:document.querySelector('#juego canvas')?.height,version:window.Phaser.VERSION}));
   assert.ok(game.canvas>=700&&game.height>=400,'Phaser game must render and fill its frame');
   await page.screenshot({path:'test-evidence/pokearena-public-githack.png',fullPage:true});
-  const out={site,initial,game,errors,bad:bad.slice(0,20),result:'Public original Phaser client booted'};
+
+  const android=await browser.newPage({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2});
+  const mobileErrors=[],mobileBad=[];
+  android.on('pageerror',e=>mobileErrors.push(String(e)));
+  android.on('response',r=>{if(r.status()>=400)mobileBad.push({status:r.status(),url:r.url()})});
+  const begun=Date.now();
+  await android.goto(site,{waitUntil:'domcontentloaded',timeout:60000});
+  const notices=await android.locator('body').innerText();
+  if(/External Content Notice|Open the page|phishing prevention/i.test(notices)){
+    const btn=android.getByText('Open the page',{exact:true}).first();
+    if(await btn.count())await btn.click();
+  }
+  await android.waitForFunction(()=>window.__pt2Started===true&&!!document.querySelector('#juego canvas'),
+    null,{timeout:60000,polling:400});
+  const androidResult=await android.evaluate(()=>({started:window.__pt2Started,
+    width:document.querySelector('#juego canvas')?.width,
+    height:document.querySelector('#juego canvas')?.height,
+    rotateOverlay:getComputedStyle(document.querySelector('#girar')).display}));
+  androidResult.elapsedMs=Date.now()-begun;
+  assert.equal(androidResult.started,true,'Live Android must complete original Loading scene');
+  assert.ok(androidResult.width>500,'Mobile game canvas must be visible in landscape');
+  assert.deepEqual(mobileErrors,[],'No Android JS errors');
+  assert.deepEqual(mobileBad.filter(x=>/\/(?:assets|src-|lib\/)/.test(x.url)),[],'No missing game assets');
+  await android.screenshot({path:'test-evidence/pokearena-public-android-landscape.png',fullPage:true});
+  await android.close();
+  const out={site,initial,game,errors,bad:bad.slice(0,20),android:{...androidResult,errors:mobileErrors,missing:mobileBad.slice(0,15)},result:'Public original Phaser client booted'};
   fs.writeFileSync('test-evidence/pokearena-public-githack.json',JSON.stringify(out,null,2));
   console.log(JSON.stringify(out,null,2));
  }finally{await browser.close()}
