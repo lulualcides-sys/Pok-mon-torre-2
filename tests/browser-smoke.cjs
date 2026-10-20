@@ -25,8 +25,11 @@ const fs=require('node:fs');
   s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.equal(s.castCount,1);
   assert.ok(s.player.energy<100);
-  assert.ok(s.effectsActive>=0);
-  await page.waitForTimeout(1400);
+  await page.waitForTimeout(140);
+  s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
+  assert.ok(s.effectsActive>0,'Flamethrower must have a live WebGL animated sprite before impact');
+  await page.screenshot({path:'test-evidence/flamethrower-mid-flight.png',fullPage:true});
+  await page.waitForTimeout(1260);
   s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.ok(s.enemy.hp<s.enemy.maxHp,'real battle must apply damage at projectile contact');
   await page.screenshot({path:'test-evidence/brock-after-flamethrower.png',fullPage:true});
@@ -46,7 +49,7 @@ const fs=require('node:fs');
   if(errors.length)throw Error('Browser errors: '+JSON.stringify(errors));
   fs.writeFileSync('test-evidence/BROWSER-PASS.json',JSON.stringify({webgl:true,initial:s.gym,mobile:true,
    visualsSource:'original pixel art',tested:['normal Flamethrower hit','touch controls','4 move buttons','rendering desktop/mobile'],
-   screenshots:3},null,2));
+   screenshots:4},null,2));
   console.log('BROWSER PASS: WebGL / Pewter / Flamethrower impact / mobile move / screenshots');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
