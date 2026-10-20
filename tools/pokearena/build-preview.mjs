@@ -73,6 +73,19 @@ patches.push(
  ]]
 );
 
+// Fix CPU soft-lock: AI.elegir() previously returned early with only EVO/MEGA
+// when EXP/ult meter allowed a transform, but the campaign blocks that input.
+// As a result the enemy could stop fighting permanently. Skip the evolution
+// *decision* exclusively in campaign and continue attack/defence planning.
+patches.push(
+ ['ia.js',[
+  ['if(yo.puedeEvolucionar&&(d>c.evoDist||yo.hp/yo.hpMax<c.evoHp||s.vendido))',
+   'if(!yo.escena.datos?.torre2&&yo.puedeEvolucionar&&(d>c.evoDist||yo.hp/yo.hpMax<c.evoHp||s.vendido))'],
+  ['if(yo.puedeMega&&(d<c.megaDist||s.vendido))',
+   'if(!yo.escena.datos?.torre2&&yo.puedeMega&&(d<c.megaDist||s.vendido))']
+ ]]
+);
+
 // Offline single-player UI clean-up: retain the site's original pixel font,
 // title logo, animated background, controls, credit screen and other screens.
 // Only online, multiplayer, chat, connected players and combat evolution go.
