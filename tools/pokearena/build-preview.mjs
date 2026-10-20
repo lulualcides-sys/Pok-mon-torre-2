@@ -105,22 +105,23 @@ patches.push(
   ['ANCHO/2-130+i*130,27,m.nombre','ANCHO/2-67+i*134,27,m.nombre']
  ]],
  ['tactil.js',[
-  [',{slot:"mega",x:466,y:246,r:17,txt:"EVO"}','']
+  ['BOTONES=calcular(CONTROLES.tactil?.tam);this.botones=BOTONES;',
+   'BOTONES=calcular(CONTROLES.tactil?.tam).filter(b=>!escena.datos?.torre2||b.slot!=="mega");this.botones=BOTONES;']
  ]],
  ['luchador.js',[
-  ['if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)',
-   'if(false&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)']
+  ['if(intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)',
+   'if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)']
  ]],
  ['hud.js',[
   ['else if(l.puedeEvolucionar&&l.humano&&parpadeo)est.push(',
-   'else if(false&&l.puedeEvolucionar&&l.humano&&parpadeo)est.push('],
+   'else if(!this.e.datos?.torre2&&l.puedeEvolucionar&&l.humano&&parpadeo)est.push('],
   ['else if(l.puedeMega&&l.humano&&parpadeo)est.push(',
-   'else if(false&&l.puedeMega&&l.humano&&parpadeo)est.push(']
+   'else if(!this.e.datos?.torre2&&l.puedeMega&&l.humano&&parpadeo)est.push(']
  ]],
  ['escenas/combate.js',[
-  [' · ${n(k.mega)} mega evolve',''],
-  [' · ${n(k2.mega)} Mega',''],
-  [' · ${bp("mega")} mega evolve','']
+  [' · ${n(k.mega)} mega evolve','${this.datos?.torre2?"":" · "+n(k.mega)+" mega evolve"}'],
+  [' · ${n(k2.mega)} Mega','${this.datos?.torre2?"":" · "+n(k2.mega)+" Mega"}'],
+  [' · ${bp("mega")} mega evolve','${this.datos?.torre2?"":" · "+bp("mega")+" mega evolve"}']
  ]],
  ['main.js',[
   ['import{iniciarChat,reservaChat}from"./chat.js";',
