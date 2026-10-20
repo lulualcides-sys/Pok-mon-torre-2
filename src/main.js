@@ -1,5 +1,6 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
-import {makeArena,buildAtlases,makeParticle} from './art.js';
+import {makeArena} from './arena-v02.js';
+import {buildAtlases,makeParticle} from './effects-v02.js';
 const P=window.PIXI;
 const status=document.getElementById('status');
 const canvasHost=document.getElementById('game');
@@ -37,7 +38,7 @@ function createEngine(){
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Ginásio de Pewter';
  window.PokemonTorre2={
-  version:'0.1.0',
+  version:'0.2.0-visual-test',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,metrics:{...metrics},renderer:app.renderer.gl?'webgl':'unavailable'}),
@@ -95,12 +96,12 @@ function tryMove(id){
 }
 function renderModels(){
  const p=battle.player,e=battle.enemy;
- stage.player.position.set(Math.round(p.x),Math.round(p.y-13));
+ stage.player.position.set(Math.round(p.x),Math.round(p.y-13+Math.sin(battle.t*6)*1.5));
  stage.player.alpha=p.invulnerable>0&&Math.floor(battle.t*15)%2===0?.65:1;
  stage.enemyRock.visible=e.id==='geodude';
  stage.enemyOnix.visible=e.id==='onix';
  const sprite=e.id==='geodude'?stage.enemyRock:stage.enemyOnix;
- sprite.position.set(Math.round(e.x),Math.round(e.y-5));
+ sprite.position.set(Math.round(e.x),Math.round(e.y-5+Math.sin(battle.t*4)*1));
  stage.shadow.position.set(Math.round(p.x),Math.round(p.y+21));
 }
 function addImpact(x,y,id){
@@ -147,7 +148,7 @@ function animateAttacks(delta){
    gfx.rotation=angle;
   }else{
    gfx.position.set(shot.x,shot.y);
-   gfx.rotation=angle+(shot.id==='firespin'?shot.age*3:0);
+   gfx.rotation=shot.id==='fireblast'?0:(angle+(shot.id==='firespin'?shot.age*3:0));
    const size=shot.id==='fireblast'?96:shot.id==='firespin'?108:43;
    gfx.width=size;gfx.height=size;
   }
