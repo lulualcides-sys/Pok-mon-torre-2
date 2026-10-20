@@ -147,3 +147,36 @@ test('all new elemental spells obey cooldown, energy and deferred impact',()=>{
   assert.ok(s.enemy.hp<before,id+' must deal damage after contact');
  }
 });
+
+test('EXP from live Brock combat cannot evolve a Pokémon before battle ends',async()=>{
+ const {createPokemonProgression,totalExperienceForLevel}=await import('../src/progression.js');
+ const s=createBattle();
+ s.player.id='charmander';s.player.name='Charmander';s.player.level=15;
+ s.player.progression=createPokemonProgression('charmander',15,{growth:'medium-slow',
+  experience:totalExperienceForLevel(16,'medium-slow')-150});
+ s.enemy.hp=1;s.enemy.action=100;
+ assert.equal(cast(s,'fireblast',s.enemy).ok,true);
+ for(let i=0;i<45;i++)tick(s,.04);
+ const events=consumeEvents(s);
+ const xp=events.find(e=>e.type==='experience');
+ assert.ok(xp&&xp.gained>0,'defeating Geodude must award EXP');
+ assert.equal(s.status,'fighting','Brock still has an Onix');
+ assert.equal(s.player.progression.species,'charmander','must not evolve during combat');
+ assert.equal(s.player.id,'charmander','character identity must stay stable');
+ assert.equal(s.player.level,16,'level may rise during combat');
+ s.enemy.hp=1;s.enemy.action=100;s.player.energy=100;s.player.cooldowns.fireblast=0;
+ assert.equal(cast(s,'fireblast',s.enemy).ok,true);
+ for(let i=0;i<45;i++)tick(s,.04);
+ assert.equal(s.status,'victory');
+ assert.equal(s.player.id,'charmeleon','evolution processed at battle end');
+ assert.ok(consumeEvents(s).some(e=>e.type==='evolution'));
+});
+test('Charizard laboratory earns EXP without phantom evolution',()=>{
+ const s=createBattle();s.enemy.hp=1;s.enemy.action=100;
+ const before=s.player.progression.experience;
+ assert.equal(cast(s,'fireblast',s.enemy).ok,true);
+ for(let i=0;i<45;i++)tick(s,.04);
+ assert.ok(s.player.progression.experience>before);
+ assert.equal(s.player.progression.species,'charizard');
+ assert.equal(s.player.progression.pendingEvolution,false);
+});
