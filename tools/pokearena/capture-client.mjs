@@ -114,7 +114,7 @@ async function main() {
  for(let i=0;i<pending.length&&i<220;i++){
   const current=pending[i];
   const contents=await fs.readFile(path.join(DIR,current.path),'utf8');
-  for(const match of contents.matchAll(/\\b(?:from\\s*|import\\s*)(?:["'])([^"']+)(?:["'])/g)){
+  for(const match of contents.matchAll(/\b(?:from\s*|import\s*)(?:["'])([^"']+)(?:["'])/g)){
    const reference=match[1];
    if(!reference.startsWith('.'))continue;
    const found=sanitize(new URL(reference,ORIGIN+'/'+current.path).href);
