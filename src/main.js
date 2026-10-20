@@ -1,4 +1,5 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
+import {totalExperienceForLevel} from './progression.js';
 import {makeArena} from './arena-stadium-v06.js';
 import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v08.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
@@ -63,6 +64,7 @@ function createEngine(){
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
     shotsAgainstPlayer:battle.enemyShots.length,metrics:{...metrics},actorArt:actorArt.slice(),
+    experience:{...battle.player.progression},
     viewport:{...viewport,cameraX:camera.x,cameraY:camera.y},
     joystick:{active:stickState.active,x:stickState.x,y:stickState.y,pointerId:stickState.pointerId},
     arenaStyle:stage.arenaStyle,moveBank:activeBank,availableMoves:Object.keys(MOVES), 
@@ -232,6 +234,8 @@ function handleEvents(){
    stage.vfx.addChild(puff.sprite);stoneDust.push(puff);
    screenShake=Math.max(screenShake,2.2);
   }
+  if(e.type==='experience')message('+'+e.gained+' EXP por derrotar '+e.enemy+'!'+(e.levelsGained?' Nível '+e.toLevel+'!':''));
+  if(e.type==='evolution')message(e.evolutions.map(v=>v.from+' evoluiu para '+v.to+' após a batalha!').join(' · '));
   if(e.type==='enemy-defeated')message(e.enemy+' foi derrotado!');
   if(e.type==='next-enemy')message('Brock enviou '+e.enemy.toUpperCase()+'!');
   if(e.type==='player-hit'){
@@ -332,6 +336,12 @@ let uiTimer=0;
 function paintUI(){
  const p=battle.player,e=battle.enemy;
  document.getElementById('p-name').textContent=p.name+' · Nv.'+p.level;
+ const xp=p.progression;
+ const baseXp=totalExperienceForLevel(xp.level,xp.growth);
+ const nextXp=xp.level<100?totalExperienceForLevel(xp.level+1,xp.growth):baseXp;
+ const gainedXp=Math.max(0,xp.experience-baseXp),requiredXp=Math.max(1,nextXp-baseXp);
+ document.getElementById('p-xp').style.width=(xp.level===100?100:Math.min(100,100*gainedXp/requiredXp)).toFixed(1)+'%';
+ document.getElementById('xp-text').textContent=xp.level===100?'Nv. máximo':gainedXp+'/'+requiredXp+' EXP';
  document.getElementById('e-name').textContent=e.name+' · Nv.'+e.level;
  document.getElementById('p-hp').style.width=(p.hp/p.maxHp*100).toFixed(1)+'%';
  document.getElementById('e-hp').style.width=(e.hp/e.maxHp*100).toFixed(1)+'%';
