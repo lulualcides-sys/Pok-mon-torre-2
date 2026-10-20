@@ -1,0 +1,42 @@
+name: Pokémon Torre 2 — Publicação GitHub Pages
+
+on:
+  workflow_run:
+    workflows: ["Pokémon Torre 2 — Testes de Combate e WebGL"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pokemon-torre-2-pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar apenas o jogo independente, sem scripts de teste
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p _site
+          cp index.html styles.css favicon.svg _site/
+          cp -a src _site/src
+          test -s _site/index.html
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site/
+      - id: deploy
+        uses: actions/deploy-pages@v4
