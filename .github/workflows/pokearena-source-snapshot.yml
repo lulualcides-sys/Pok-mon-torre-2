@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths:
       - 'tools/pokearena/**'
+      - 'tests/source-client-smoke.cjs'
+      - 'tests/public-phaser-preview.cjs'
       - '.github/workflows/pokearena-source-snapshot.yml'
   workflow_dispatch:
 
