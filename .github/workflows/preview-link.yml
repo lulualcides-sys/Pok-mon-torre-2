@@ -25,8 +25,9 @@ jobs:
         run: |
           set +e
           for url in \
-            https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/main/index.html \
-            https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/main/src/main.js \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/b3aeb1fea93574ff824cf96a88a9509434be20f7/index.html \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/b3aeb1fea93574ff824cf96a88a9509434be20f7/src/main.js \
+            https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/b3aeb1fea93574ff824cf96a88a9509434be20f7/styles-v02.css \
             https://lulualcides-sys.github.io/Pok-mon-torre-2/ ; do
             echo "$url"
             curl --max-time 25 -IL -sS -o /dev/null -w "status=%{http_code} mime=%{content_type}\n" "$url"
