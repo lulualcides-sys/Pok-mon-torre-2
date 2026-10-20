@@ -93,7 +93,7 @@ export function makeArena(P){
  }
  line(ring,480,31,480,504,0x2395c9,.22,8);line(ring,480,32,480,503,0xa7fbff,.41,2);
  line(ring,46,266,914,266,0x79d7ff,.11,1);
- const shadow=new P.Graphics();shadow.beginFill(0x04091b,.62).drawEllipse(0,0,41,11).endFill();
+ const shadow=new P.Graphics();shadow.beginFill(0x04091b,.30).drawEllipse(0,0,23,6).endFill();
  const player=monster(P,'hero'),enemyRock=monster(P,'geodude'),enemyOnix=monster(P,'onix');
  const vfx=new P.Container();root.addChild(shadow,enemyRock,enemyOnix,player,vfx);
  return {root,player,enemyRock,enemyOnix,shadow,vfx};
