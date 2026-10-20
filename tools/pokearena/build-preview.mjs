@@ -45,10 +45,24 @@ await fs.mkdir(path.join(dest,clientSource,'torre2'),{recursive:true});
 await Promise.all([
  ['src/progression.js','progression.js'],
  ['tools/pokearena/torre2-campaign-core.js','campaign-core.js'],
- ['tools/pokearena/torre2-campaign-scene.js','campanha.js']
+ ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
+ ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
+ ['tools/pokearena/torre2-signature-fx.js','signature-fx.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
+patches.push(
+ ['habilidades.js',[
+  ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
+   'import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";import{TORRE2_FORMS}from"./torre2/signature-fx.js";'],
+  ['const FORMAS={proyectil,chorro,cono,zona,rayo,pulso,',
+   'const FORMAS={...TORRE2_FORMS,proyectil,chorro,cono,zona,rayo,pulso,']
+ ]],
+ ['luchador.js',[
+  ['return this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit',
+   'return {...(this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit),...(this.escena.datos?.torre2&&this.lado===0?this.escena.datos.torre2Loadout:{})}']
+ ]]
+);
 patches.push(
  ['main.js',[
   ['import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,caso,registrarNombres}from"./config.js";',
