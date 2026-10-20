@@ -14,7 +14,9 @@ Depois disso, `.github/workflows/pages.yml` já está preparado para publicar.
 ---
 
 
-**[CONTRATO DA CAMPANHA E EVOLUÇÃO (FireRed)](docs/CONTRATO_CAMPANHA.md)**: mesma estrutura de campanha do Pokémon Torre 1, com 13 treinadores antes do primeiro líder e Kanto completo; Poké Arena 2D é referência visual das batalhas, não de progressão. Evoluções por nível somente após a batalha, jamais no meio. A V0.8 ainda é laboratório e não implementa essa campanha ou a evolução.
+**[CONTRATO DA CAMPANHA E EVOLUÇÃO SOMENTE POR NÍVEL](docs/CONTRATO_CAMPANHA.md)**: mesma estrutura de campanha do Pokémon Torre 1, com 13 treinadores antes do primeiro líder e Kanto completo; Poké Arena 2D é o objetivo de reconstrução completa da experiência de batalha; sua progressão não substitui Kanto do Torre 1. Evoluções exclusivamente por nível (inclusive pedra/troca/amizade convertidas para níveis), somente após a batalha, jamais no meio. A V0.8 ainda é laboratório e não implementa essa campanha ou a evolução.
+
+**[Inventário REA e especificação de reconstrução integral das batalhas](docs/REA-IMPLEMENTACAO-INTEGRAL.md)**.
 
 Novo jogo independente do Pokémon Torre original.
 
