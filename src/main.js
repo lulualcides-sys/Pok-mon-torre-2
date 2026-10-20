@@ -1,6 +1,6 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
 import {makeArena} from './arena-stadium-v06.js';
-import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v03.js';
+import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v06.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
 import {buildBrockAtlas,spawnDust,stepDust} from './brock-v04.js';
 const P=window.PIXI;
@@ -54,7 +54,7 @@ function createEngine(){
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Estádio de Pewter';
  window.PokemonTorre2={
-  version:'0.6.1-turf',
+  version:'0.6.2-stadium-flames',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
@@ -193,7 +193,7 @@ function animateAttacks(delta){
    // ONE continuous forward-growing stream, not detached generic fire balls.
    gfx.position.set(shot.origin.x,shot.origin.y);
    gfx.width=Math.max(14,shot.progress*shot.travel+18);
-   gfx.height=41;
+   gfx.height=65;
    gfx.rotation=angle;
   }else{
    gfx.position.set(shot.x,shot.y);
