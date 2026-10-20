@@ -49,12 +49,13 @@ test('players cannot walk beyond arena or dodge for free',()=>{
 });
 test('Brock advances from Geodude to Onix, then awards Boulder Badge',()=>{
  const s=createBattle();
- s.enemy.hp=1;
+ // Keep this badge-progression test isolated from the separate clash test.
+ s.enemy.hp=1;s.enemy.action=100;
  assert.equal(cast(s,'fireblast',s.enemy).ok,true);
  for(let i=0;i<45;i++)tick(s,.04);
  assert.equal(s.enemy.id,'onix');
  assert.equal(s.status,'fighting');
- s.enemy.hp=1;s.player.energy=100;s.player.cooldowns.fireblast=0;
+ s.enemy.hp=1;s.enemy.action=100;s.player.energy=100;s.player.cooldowns.fireblast=0;
  assert.equal(cast(s,'fireblast',s.enemy).ok,true);
  for(let i=0;i<45;i++)tick(s,.04);
  assert.equal(s.status,'victory');
