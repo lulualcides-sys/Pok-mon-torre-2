@@ -2,9 +2,9 @@
 
 ## 🎮 TESTAR AGORA (sem esperar GitHub Pages)
 
-**[▶ JOGAR POKÉMON TORRE 2 — V0.5 sem cache antigo](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/af1bb961f7c60ae0a7d87108267bfe598fee254b/index.html)**
+**[▶ JOGAR POKÉMON TORRE 2 — V0.6 estádio gramado (link sem cache)](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/3e0c3bd6fb0198bbfd5686a404c76af67ecdae43/index.html)**
 
-Link da versão V0.5 fixada no commit e verificado em Chromium (desktop e Android simulado). O navegador confirmou a nova interface, os três sprites animados e WebGL.
+Link V0.6 verificado em Chromium (WebGL e toque no celular). Confira a nova arena de gramado, arquibancada vermelho/azul e o Flamethrower com quadros conectados.
 Na primeira visita, o serviço independente rawgit.hack pode pedir confirmação **Open the page**.
 
 O domínio permanente `https://lulualcides-sys.github.io/Pok-mon-torre-2/` permanece inativo
