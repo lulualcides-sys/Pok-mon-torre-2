@@ -1,0 +1,55 @@
+name: Pokémon Torre 2 — Testes de Combate e WebGL
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - '*.md'
+      - 'docs/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  testes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Preparar dependencias de navegador
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --version
+          google-chrome --version
+      - name: Verificar sintaxe do jogo e regras da campanha
+        run: |
+          npm run check
+          npm test
+      - name: Iniciar versão real de teste
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 4173 --bind 127.0.0.1 > test-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4173/ > /dev/null; then break; fi
+            sleep 1
+          done
+          curl -fsSI http://127.0.0.1:4173/src/combat-core.js
+      - name: Testar Chrome/PixiJS WebGL e botões no celular
+        run: |
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Preservar capturas e erros mesmo na falha
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokemon-torre-2-primeira-batalha-evidencias
+          path: |
+            test-evidence/
+            test-http.log
+          if-no-files-found: warn
+          retention-days: 30
