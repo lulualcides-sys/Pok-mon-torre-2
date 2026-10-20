@@ -4,7 +4,7 @@ const fs=require('fs');
 const {chromium}=require('playwright-core');
 (async()=>{
  fs.mkdirSync('test-evidence',{recursive:true});
- const site='https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/main/index.html';
+ const site=process.env.PREVIEW_URL||'https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/b3aeb1fea93574ff824cf96a88a9509434be20f7/index.html';
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader',
   '--use-gl=angle','--use-angle=swiftshader','--ignore-gpu-blocklist']});
@@ -32,6 +32,13 @@ const {chromium}=require('playwright-core');
    await page.waitForFunction(()=>window.PokemonTorre2?.snapshot()?.renderer==='webgl',null,
     {timeout:35000,polling:350});
    result.game=await page.evaluate(()=>window.PokemonTorre2.snapshot());
+   const loadedV02=await page.evaluate(()=>({
+      style:!!document.querySelector('link[href="./styles-v02.css"]'),
+      hero:window.PokemonTorre2.version,
+      src:document.querySelector('script[type="module"]')?.getAttribute('src')
+   }));
+   result.versionEvidence=loadedV02;
+   if(loadedV02.hero!=='0.2.0-visual-test'||!loadedV02.style)throw Error('Wrong cached version: '+JSON.stringify(loadedV02));
    result.ready=true;
   }catch(e){result.errors.push('GAME_BOOT: '+String(e).slice(0,300));}
   await page.screenshot({path:'test-evidence/preview-githack.png',fullPage:true});
