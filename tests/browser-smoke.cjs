@@ -97,17 +97,44 @@ const fs=require('node:fs');
   const framed=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.ok(framed.viewport.cameraX< -50,'mobile camera must center the two combatants');
 
-  await mobile.locator('[data-dir="right"]').dispatchEvent('pointerdown',{pointerId:1,pointerType:'touch'});
-  await mobile.waitForTimeout(340);
-  await mobile.locator('[data-dir="right"]').dispatchEvent('pointerup',{pointerId:1,pointerType:'touch'});
+  assert.equal(await mobile.locator('[data-dir]').count(),0,'old four-button dpad must be removed');
+  assert.equal(await mobile.locator('#movement-stick').count(),1,'mobile thumbstick must exist');
+  const pad=mobile.locator('#movement-stick');
+  const origin=await pad.boundingBox();
+  assert.ok(origin&&origin.width>=98,'joystick touch target must be large enough');
+  const at=await pad.evaluate(el=>{const r=el.getBoundingClientRect();return {x:r.left+r.width/2,y:r.top+r.height/2,reach:r.width*.30}});
+  await pad.dispatchEvent('pointerdown',{pointerType:'touch',pointerId:20,
+    clientX:at.x,clientY:at.y,bubbles:true});
+  await pad.dispatchEvent('pointermove',{pointerType:'touch',pointerId:20,
+    clientX:at.x+at.reach,clientY:at.y-at.reach,bubbles:true});
+  await mobile.waitForTimeout(850);
+  const steered=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
+  assert.equal(steered.joystick.active,true,'pointer should remain captured while moving');
+  assert.ok(steered.joystick.x>.35&&steered.joystick.y<-.35,'diagonal analog vector should be preserved');
+  assert.ok(steered.player.x>before.player.x+1,'analog joystick must move player right');
+  assert.ok(steered.player.y<before.player.y-1,'analog joystick must move player upward');
+  await mobile.screenshot({path:'test-evidence/brock-mobile-joystick-active.png',fullPage:true});
+  await pad.dispatchEvent('pointerup',{pointerType:'touch',pointerId:20,
+    clientX:at.x+at.reach,clientY:at.y-at.reach,bubbles:true});
+  const released=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
+  assert.equal(released.joystick.active,false,'release must stop joystick');
+  assert.equal(released.joystick.x,0,'release must reset direction X');
+  assert.equal(released.joystick.y,0,'release must reset direction Y');
+  const releasePos=released.player;
+  await mobile.waitForTimeout(350);
   const after=await mobile.evaluate(()=>window.PokemonTorre2.snapshot());
-  assert.ok(after.player.x>=before.player.x,'touch movement must not move left');
+  assert.ok(Math.abs(after.player.x-releasePos.x)<1.1&&Math.abs(after.player.y-releasePos.y)<1.1,
+    'player must not keep moving after finger release');
+  const thumbAfter=await mobile.locator('#movement-thumb').evaluate(e=>e.style.transform.replaceAll(' ',''));
+  assert.equal(thumbAfter,'translate3d(0px,0px,0px)',
+    'thumb knob must recenter after releasing');
+  assert.equal(await mobile.locator('#dodge').count(),1,'separate dodge button must stay available');
   await mobile.locator('button[data-move="ember"]').click();
   assert.ok((await mobile.evaluate(()=>window.PokemonTorre2.snapshot())).castCount>=1);
   await mobile.screenshot({path:'test-evidence/brock-mobile.png',fullPage:true});
   if(errors.length)throw Error('Browser errors: '+JSON.stringify(errors));
   fs.writeFileSync('test-evidence/BROWSER-PASS.json',JSON.stringify({webgl:true,initial:s.gym,mobile:true,
-   visualsSource:'original pixel art',tested:['normal Flamethrower hit','Ember, Fire Spin, Fire Blast impact','enemy WebGL Rock Throw','touch controls','4 move buttons','square mobile battle camera','rendering desktop/mobile'],
+   visualsSource:'original pixel art',tested:['normal Flamethrower hit','Ember, Fire Spin, Fire Blast impact','enemy WebGL Rock Throw','360 degree analog touch joystick and release','4 move buttons','square mobile battle camera','rendering desktop/mobile'],
    screenshots:5},null,2));
   console.log('BROWSER PASS: WebGL / Pewter / Flamethrower impact / mobile move / screenshots');
  }finally{await browser.close()}

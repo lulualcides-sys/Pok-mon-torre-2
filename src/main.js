@@ -3,6 +3,7 @@ import {makeArena} from './arena-stadium-v06.js';
 import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v06.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
 import {buildBrockAtlas,spawnDust,stepDust} from './brock-v04.js';
+import {stickVector,keyboardOrStick} from './joystick.js';
 const P=window.PIXI;
 const status=document.getElementById('status');
 const canvasHost=document.getElementById('game');
@@ -15,8 +16,9 @@ let previousActors={player:null,enemy:null},screenShake=0;
 const mobileView=typeof window.matchMedia==='function'&&window.matchMedia('(max-width:710px)').matches;
 const viewport=mobileView?{width:660,height:660,zoom:1.1}:{width:WORLD.width,height:WORLD.height,zoom:1};
 let camera={x:0,y:0};
-const held=new Set(),fingerDirs=new Set();
-const input={x:0,y:0};
+const held=new Set();
+const stickState={x:0,y:0,pointerId:null,active:false};
+let joystickElement=null,joystickThumb=null;
 const logLines=[];
 let metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
 let actorArt=[];
@@ -54,19 +56,20 @@ function createEngine(){
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Estádio de Pewter';
  window.PokemonTorre2={
-  version:'0.6.2-stadium-flames',
+  version:'0.7.0-analog-joystick',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
     shotsAgainstPlayer:battle.enemyShots.length,metrics:{...metrics},actorArt:actorArt.slice(),
     viewport:{...viewport,cameraX:camera.x,cameraY:camera.y},
+    joystick:{active:stickState.active,x:stickState.x,y:stickState.y,pointerId:stickState.pointerId},
     arenaStyle:stage.arenaStyle, 
     animations:{player:stage.player.__pmd?.state?.mode||'fallback',enemy:(battle.enemy.id==='geodude'?stage.enemyRock:stage.enemyOnix).__pmd?.state?.mode||'fallback'},
     renderer:app.renderer.gl?'webgl':'unavailable'}),
   cast:(id)=>tryMove(id),restart:()=>restart(),
   proof:{originalProjectUntouched:true,moveSource:'original PixiJS pixel art',sourceGame:'none'}
  };
- message('Brock aguarda! Controles WASD · 1–4 golpes · Espaço esquiva');
+ message('Brock aguarda! Joystick analógico ou WASD · 1–4 golpes · Esquiva');
 }
 function createUI(){
  for(const button of buttons){
@@ -76,12 +79,47 @@ function createUI(){
  }
  document.getElementById('restart').addEventListener('click',restart);
  document.getElementById('reset').addEventListener('click',restart);
- for(const btn of document.querySelectorAll('[data-dir]')){
-  const dir=btn.dataset.dir;
-  btn.addEventListener('pointerdown',event=>{event.preventDefault();btn.setPointerCapture?.(event.pointerId);fingerDirs.add(dir);});
-  for(const evt of ['pointerup','pointercancel','lostpointercapture'])
-   btn.addEventListener(evt,()=>fingerDirs.delete(dir));
+ // Pointer capture keeps movement responsive even if a finger drifts off the ring.
+ joystickElement=document.getElementById('movement-stick');
+ joystickThumb=document.getElementById('movement-thumb');
+ const showStick=()=>{
+  joystickThumb.style.transform='translate3d('+stickState.offsetX+'px,'+stickState.offsetY+'px,0px)';
+  joystickElement.classList.toggle('is-active',stickState.active);
+ };
+ const updateStick=event=>{
+  const v=stickVector(event.clientX,event.clientY,joystickElement.getBoundingClientRect());
+  Object.assign(stickState,v);
+  showStick();
+ };
+ const resetStick=()=>{
+  stickState.x=0;stickState.y=0;stickState.offsetX=0;stickState.offsetY=0;
+  stickState.active=false;stickState.pointerId=null;
+  showStick();
+ };
+ joystickElement.addEventListener('pointerdown',event=>{
+  if(stickState.pointerId!==null)return;
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  event.preventDefault();
+  stickState.pointerId=event.pointerId;
+  stickState.active=true;
+  try{joystickElement.setPointerCapture(event.pointerId)}catch(_){}
+  updateStick(event);
+ });
+ joystickElement.addEventListener('pointermove',event=>{
+  if(stickState.pointerId!==event.pointerId)return;
+  event.preventDefault();updateStick(event);
+ });
+ for(const name of ['pointerup','pointercancel','lostpointercapture']){
+  joystickElement.addEventListener(name,event=>{
+   if(event.pointerId!==stickState.pointerId)return;
+   resetStick();
+  });
  }
+ joystickElement.addEventListener('keydown',event=>{
+  // Accessible joystick for users without touch: arrows/WASD remain supported.
+  if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(event.key))
+   event.preventDefault();
+ });
  const dodgeBtn=document.getElementById('dodge');
  dodgeBtn.addEventListener('click',()=>{const d=movement();dodge(battle,Math.hypot(d.x,d.y)>0?d:vector(battle.player,battle.enemy))});
  window.addEventListener('keydown',event=>{
@@ -96,14 +134,11 @@ function createUI(){
   if(key===' '){const m=movement();dodge(battle,Math.hypot(m.x,m.y)>0?m:vector(battle.player,battle.enemy));}
  });
  window.addEventListener('keyup',e=>held.delete(e.key.toLowerCase()));
- window.addEventListener('blur',()=>{held.clear();fingerDirs.clear();});
+ window.addEventListener('blur',()=>{held.clear();resetStick();});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden){held.clear();resetStick();}});
 }
 function movement(){
- const has=k=>held.has(k)||fingerDirs.has(k);
- return {x:Number(has('d')||has('arrowright')||has('right'))-
-           Number(has('a')||has('arrowleft')||has('left')),
-  y:Number(has('s')||has('arrowdown')||has('down'))-
-    Number(has('w')||has('arrowup')||has('up'))};
+ return keyboardOrStick(held,stickState);
 }
 function tryMove(id){
  const aim=pointTarget&&Math.hypot(pointTarget.x-battle.player.x,pointTarget.y-battle.player.y)>40
@@ -299,6 +334,10 @@ function restart(){
  for(const imp of impacts){imp.graphics.parent?.removeChild(imp.graphics);imp.graphics.destroy();}
  impacts=[];
  battle=createBattle();pointTarget=null;overlay.hidden=true;
+ stickState.x=0;stickState.y=0;stickState.offsetX=0;stickState.offsetY=0;
+ stickState.pointerId=null;stickState.active=false;
+ if(joystickThumb)joystickThumb.style.transform='translate3d(0,0,0)';
+ joystickElement?.classList.remove('is-active');
  previousActors={player:null,enemy:null};screenShake=0;
  camera={x:0,y:0};stage.root.position.set(0,0);
  metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0,enemyProjectileSprites:0};

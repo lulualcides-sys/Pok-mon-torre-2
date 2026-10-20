@@ -9,12 +9,13 @@
 <link rel="icon" type="image/svg+xml" href="./favicon.svg">
 <link rel="stylesheet" href="./styles.css">
 <link rel="stylesheet" href="./styles-v02.css">
+<link rel="stylesheet" href="./joystick.css">
 </head>
 <body>
 <div class="app-shell">
  <header class="topline">
   <div class="brand"><span class="brand-mark">II</span><div><strong>POKÉMON TORRE <em>2</em></strong><small>KANTO · BATALHA 2D WEBGL</small></div></div>
-  <div class="top-right"><span class="lab">V0.6 · ESTÁDIO DE KANTO</span><button class="subtle" id="reset" type="button">Reiniciar</button></div>
+  <div class="top-right"><span class="lab">V0.7 · JOYSTICK ANALÓGICO</span><button class="subtle" id="reset" type="button">Reiniciar</button></div>
  </header>
  <main>
   <div class="chapter"><div><small>01 / 08 · DESAFIO DOS GINÁSIOS</small><h1>Ginásio de Pewter</h1><p><span class="dot"></span> Brock · Tipo Pedra · Insígnia Rocha</p></div><div class="chip">PRIMEIRO COMBATE</div></div>
@@ -37,12 +38,12 @@
   <div class="lower">
    <section class="control-area">
     <div class="control-label">MOVIMENTAÇÃO</div>
-    <div class="dpad" role="group" aria-label="Controles de movimento">
-     <button data-dir="up" class="up" aria-label="Mover para cima" type="button">▲</button>
-     <button data-dir="left" class="left" aria-label="Mover para esquerda" type="button">◀</button>
-     <button data-dir="down" class="down" aria-label="Mover para baixo" type="button">▼</button>
-     <button data-dir="right" class="right" aria-label="Mover para direita" type="button">▶</button>
-     <button class="dodge" id="dodge" aria-label="Esquiva" type="button">ESQUIVA</button>
+    <div class="joystick-zone">
+     <div id="movement-stick" class="joystick-base" role="application" tabindex="0" aria-label="Joystick analógico: arraste para movimentar em qualquer direção">
+      <span class="joystick-guide" aria-hidden="true"></span>
+      <span class="joystick-thumb" id="movement-thumb" aria-hidden="true"><span></span></span>
+     </div>
+     <button class="joystick-dodge" id="dodge" type="button" aria-label="Esquiva">ESQUIVA</button>
     </div>
    </section>
    <section class="moves-section">
