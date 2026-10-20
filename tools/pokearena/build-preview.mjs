@@ -22,7 +22,7 @@ await fs.writeFile(index,html);
 // Independent startup health check: HTML must explain blockers even if the
 // Phaser JS import graph fails completely (before any game scene is created).
 // Do not show online-game menus or connect to servers.
-const diagnostics=\`<style>
+const diagnostics=`<style>
 #pt2-boot-status{display:none;position:fixed;inset:0;background:#080c17;z-index:4000;color:#f1f6ff;
 font:14px system-ui;align-items:center;justify-content:center;text-align:center;padding:20px}
 #pt2-boot-card{width:min(420px,92vw);border:1px solid #42617d;border-radius:12px;padding:22px;
@@ -51,7 +51,7 @@ background:#102138;box-shadow:0 12px 40px #0007}
  window.setTimeout(function(){if(!finished())show('Carregamento demorando mais que o normal. '+(reason||'Tente abrir no Chrome e atualizar a página.'))},17000);
  window.setInterval(finished,800);
 })();
-</script>\`;
+</script>`;
 html=html.replace('</body>',diagnostics+'</body>');
 await fs.writeFile(index,html);
 
