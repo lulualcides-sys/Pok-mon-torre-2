@@ -51,6 +51,6 @@ A biblioteca de golpes é compartilhada. Não existem 14 artes para cada espéci
 
 1. Conservar a tela inicial do Poké Arena e seus outros modos solo, com a evolução original nesses modos.
 2. Importar sprites Kanto por prioridade de campanha, usando os 27 Kanto conhecidos no manifesto do site e depois SpriteCollab; nunca comprometer performance do mobile pré-carregando o catálogo inteiro.
-3. Selecionar 14 + 2 **candidatos** por tipo, dar preferência aos efeitos Phaser já funcionais e adaptar assets aprovados do Torre 1 quando necessários.
+3. Selecionar até 14 ataques + 2 golpes de status por tipo. **Não importar nenhum efeito visual do Torre 1**: criar novos sprites/efeitos no Phaser, usando exclusivamente as técnicas, bibliotecas e materiais autorizados do Poké Arena 2D e recursos gráficos inéditos.
 4. Associar golpes a cada espécie, suas evoluções por nível e seu learnset; usar os efeitos compartilhados.
 5. Testar no jogo WebGL/Phaser (dano no impacto, CPU, habilidades físicas, movimentos de status, Android horizontal, FPS) e confirmar que nenhuma mudança da campanha afeta Training/VS CPU/Arena Mode.
