@@ -1,5 +1,5 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
-import {makeArena} from './arena-v03.js';
+import {makeArena} from './arena-stadium-v06.js';
 import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v03.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
 import {buildBrockAtlas,spawnDust,stepDust} from './brock-v04.js';
@@ -54,12 +54,13 @@ function createEngine(){
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Ginásio de Pewter';
  window.PokemonTorre2={
-  version:'0.5.0-mobile-camera',
+  version:'0.6.0-stadium',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
     effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
     shotsAgainstPlayer:battle.enemyShots.length,metrics:{...metrics},actorArt:actorArt.slice(),
-    viewport:{...viewport,cameraX:camera.x,cameraY:camera.y}, 
+    viewport:{...viewport,cameraX:camera.x,cameraY:camera.y},
+    arenaStyle:stage.arenaStyle, 
     animations:{player:stage.player.__pmd?.state?.mode||'fallback',enemy:(battle.enemy.id==='geodude'?stage.enemyRock:stage.enemyOnix).__pmd?.state?.mode||'fallback'},
     renderer:app.renderer.gl?'webgl':'unavailable'}),
   cast:(id)=>tryMove(id),restart:()=>restart(),
