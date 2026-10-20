@@ -37,6 +37,18 @@ const fs=require('node:fs');
   assert.ok(s.metrics.renderedEffectFrames>=1,'move must animate through real WebGL frames');
   assert.ok(s.metrics.impactVfx>=1,'impact animation must appear when damage occurs');
   await page.screenshot({path:'test-evidence/brock-after-flamethrower.png',fullPage:true});
+  for(const id of ['ember','firespin','fireblast']){
+    await page.evaluate(()=>window.PokemonTorre2.restart());
+    const activated=await page.evaluate(id=>window.PokemonTorre2.cast(id),id);
+    assert.ok(activated.ok,'combat engine must accept '+id);
+    await page.waitForTimeout(1700);
+    const sample=await page.evaluate(()=>window.PokemonTorre2.snapshot());
+    assert.equal(sample.castCount,1);
+    assert.ok(sample.metrics.createdEffectSprites>0,id+' must render PixiJS effect');
+    assert.ok(sample.metrics.renderedEffectFrames>0,id+' effect must animate');
+    assert.ok(sample.enemy.hp<sample.enemy.maxHp,id+' must hit opponent after arrival');
+  }
+
   const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   mobile.on('pageerror',e=>errors.push('mobile: '+e));
   await mobile.goto(process.env.BASE_URL||'http://127.0.0.1:4173/',{waitUntil:'domcontentloaded',timeout:50000});
@@ -52,7 +64,7 @@ const fs=require('node:fs');
   await mobile.screenshot({path:'test-evidence/brock-mobile.png',fullPage:true});
   if(errors.length)throw Error('Browser errors: '+JSON.stringify(errors));
   fs.writeFileSync('test-evidence/BROWSER-PASS.json',JSON.stringify({webgl:true,initial:s.gym,mobile:true,
-   visualsSource:'original pixel art',tested:['normal Flamethrower hit','touch controls','4 move buttons','rendering desktop/mobile'],
+   visualsSource:'original pixel art',tested:['normal Flamethrower hit','Ember, Fire Spin, Fire Blast impact','touch controls','4 move buttons','rendering desktop/mobile'],
    screenshots:4},null,2));
   console.log('BROWSER PASS: WebGL / Pewter / Flamethrower impact / mobile move / screenshots');
  }finally{await browser.close()}
