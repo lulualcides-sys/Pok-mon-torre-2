@@ -40,7 +40,7 @@ function sanitize(raw) {
   p=decodeURIComponent(u.pathname).replace(/^\/+/,'');
  }catch{return null}
  if(!p||p.includes('\\')||p.split('/').includes('..')||p.length>250)return null;
- if(!(/^(assets|lib|src-[a-z0-9]{6,20})\//i.test(p)||p==='analitica.js'||p==='favicon.ico'||p==='index.html'))return null;
+ if(!(/^(assets|lib|src-[a-z0-9]{6,20}|iconos)\//i.test(p)||['analitica.js','favicon.ico','favicon.png','index.html','manifest.webmanifest','safari.js'].includes(p)))return null;
  if(/(^|\/)(?:\.env|\.git|secret|token|keys?|password|credentials)(?:\/|\.|$)/i.test(p))return null;
  return p;
 }
@@ -71,6 +71,7 @@ async function main() {
   const normalized=sanitize(item);
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'REA named asset'});
  }
+ for(const extra of ['safari.js','manifest.webmanifest','favicon.png','iconos/icono-192.png']) {const p=sanitize(extra);if(p)tasks.set(p,{source:'HTML accessory'});}
  for(const value of html.matchAll(/(?:src|href)\s*=\s*["']([^"'#?]+)["']/gi)){
   const normalized=sanitize(value[1]);
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'HTML direct'});
@@ -106,6 +107,32 @@ async function main() {
   }
  }
  await Promise.all(Array.from({length:8},worker));
+ // REA's old inventory predates updates to the site's module graph.
+ // Resolve relative JS imports recursively, otherwise the site may fail at boot.
+ const imported=new Set(details.retrieved.map(x=>x.path));
+ const pending=details.retrieved.filter(x=>x.path.endsWith('.js')&&!x.path.endsWith('phaser.min.js'));
+ for(let i=0;i<pending.length&&i<220;i++){
+  const current=pending[i];
+  const contents=await fs.readFile(path.join(DIR,current.path),'utf8');
+  for(const match of contents.matchAll(/\\b(?:from\\s*|import\\s*)(?:["'])([^"']+)(?:["'])/g)){
+   const reference=match[1];
+   if(!reference.startsWith('.'))continue;
+   const found=sanitize(new URL(reference,ORIGIN+'/'+current.path).href);
+   if(!found||imported.has(found))continue;
+   try{
+    const {data,contentType}=await get(ORIGIN+'/'+found);
+    const dest=path.resolve(DIR,found);
+    if(!dest.startsWith(DIR+path.sep))throw Error('Invalid import path');
+    await fs.mkdir(path.dirname(dest),{recursive:true});
+    await fs.writeFile(dest,data);
+    details.totalBytes+=data.length;
+    const item={path:found,bytes:data.length,sha256:sha256(data),contentType,source:'relative module import'};
+    details.retrieved.push(item);imported.add(found);
+    if(found.endsWith('.js'))pending.push(item);
+  }catch(error){details.unavailable.push({path:found,source:'relative module import',error:String(error?.message||error)})}
+  }
+ }
+ details.planned+=details.retrieved.filter(x=>x.source==='relative module import').length;
  details.retrieved.sort((a,b)=>a.path.localeCompare(b.path));
  details.unavailable.sort((a,b)=>a.path.localeCompare(b.path));
  details.completed=new Date().toISOString();
