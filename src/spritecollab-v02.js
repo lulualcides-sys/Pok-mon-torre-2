@@ -5,9 +5,9 @@
 export const PMD_CREDITS='https://github.com/PMDCollab/SpriteCollab';
 const base='https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/';
 const mons=[
- {name:'Charizard',id:'0006',target:'player',width:40,height:48,scale:1.40,direction:2},
- {name:'Geodude',id:'0074',target:'enemyRock',width:32,height:24,scale:1.72,direction:6},
- {name:'Onix',id:'0095',target:'enemyOnix',width:96,height:104,scale:.73,direction:6}
+ {name:'Charizard',id:'0006',target:'player',width:40,height:48,scale:2.45,direction:1},
+ {name:'Geodude',id:'0074',target:'enemyRock',width:32,height:24,scale:2.75,direction:7},
+ {name:'Onix',id:'0095',target:'enemyOnix',width:96,height:104,scale:1.13,direction:7}
 ];
 export async function installSpriteCollab(P,stage,report=()=>{}){
  const outcomes=[];
