@@ -43,3 +43,11 @@ Versão V0.8: estádio gramado, arquibancadas, personagens animados do PMD Sprit
 
 ## Publicação
 GitHub Actions gera e testa o projeto. A publicação no GitHub Pages depende da configuração de Pages deste novo repositório.
+
+## Cliente real Poké Arena 2D — cópia Phaser (corrigida)
+
+**[▶ TESTAR CÓPIA PHASER SEM TRAVAR NO LOADING](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/2f890ea81c5f6a01b9baed2c24a2180303164a97/index.html)**
+
+Captura autorizada pelo usuário do site `pokearena2d.com`, sem ligação com qualquer outro jogo de nome parecido. **1.135 arquivos públicos identificados e recuperados**, 0 faltas no relatório de captura da atualização; inclui todos os sprites declarados no manifesto PMD da versão capturada. Correção no arranque: pré-carregamento inicial reduzido e demais animações carregadas quando necessário. Testes de Chromium para desktop, menu, Training e Android horizontal, além de verificação do link público fixado no commit. [Execução e evidências](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39481590980).
+
+Este link é **laboratório do cliente original Phaser**, ainda não a campanha Kanto do Pokémon Torre 2. A campanha Kanto e a evolução exclusivamente por nível, depois do combate, seguem em desenvolvimento separado. O jogo de origem requer orientação horizontal no celular. O código servidor e serviços online privados não são parte do pacote público capturado.
