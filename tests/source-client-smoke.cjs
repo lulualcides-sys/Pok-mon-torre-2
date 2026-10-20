@@ -87,8 +87,63 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(mobileErrors.filter(x=>/TypeError|ReferenceError|SyntaxError/i.test(x)),[]);
   await mobile.screenshot({path:'test-evidence/pokearena-android-landscape.png',fullPage:true});
   await mobile.close();
+  // Default boot is the SOLO KANTO CAMPAIGN, not the old online menus.
+  const offline=await browser.newPage({viewport:{width:980,height:650},deviceScaleFactor:1});
+  const outRequests=[];
+  offline.on('request',r=>{
+   if(/wss?:|\/api\/|\/auth\/|\/socket/.test(r.url()))outRequests.push(r.url());
+  });
+  await offline.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded',timeout:35000});
+  await offline.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('campanha'),
+    null,{timeout:60000,polling:300});
+  const offlineInitial=await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+   .filter(x=>typeof x.text==='string').map(x=>x.text).join(' | '));
+  assert.ok(offlineInitial.includes('CHARMANDER'),'starter selection must be available');
+  // Choose starter via campaign module and confirm launch into real Phaser combat.
+  await offline.evaluate(async()=>{
+    const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+    const base=new URL('./',entry.src).href;
+    const m=await import(base+'torre2/campaign-core.js');
+    m.saveCampaign(m.createCampaign('charmander'));
+    window.__pt2Game.scene.getScene('campanha').scene.restart();
+  });
+  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('Pewter')),
+    null,{timeout:15000});
+  await offline.screenshot({path:'test-evidence/pokemon-torre-2-offline-kanto-menu.png',fullPage:true});
+  await offline.evaluate(async()=>{
+    const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+    const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
+    const s=core.readCampaign();
+    window.__pt2Game.scene.getScene('campanha').scene.start('combate',core.startBattle(s));
+  });
+  await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&
+    window.__pt2Game.scene.getScene('combate').luchadores?.length===2,
+    null,{timeout:45000});
+  const combatScene=await offline.evaluate(()=>({
+    mode:window.__pt2Game.scene.getScene('combate').datos.modo,
+    online:!!window.__pt2Game.scene.getScene('combate').red,
+    species:window.__pt2Game.scene.getScene('combate').luchadores.map(x=>x.def.id)
+  }));
+  assert.equal(combatScene.mode,'cpu');
+  assert.equal(combatScene.online,false,'campaign battle must not use online server');
+  // Verify the winning result returns to campaign and persists an earned victory.
+  await offline.evaluate(()=>{
+    const battle=window.__pt2Game.scene.getScene('combate');
+    battle.victorias=[2,0];battle.resultado();
+  });
+  await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha')&&
+    JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')||'{}').trainer===1,
+    null,{timeout:16000});
+  const offlineResult=await offline.evaluate(()=>JSON.parse(
+    localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')));
+  assert.equal(offlineResult.trainer,1);
+  assert.ok(offlineResult.team[0].progression.experience>125);
+  assert.deepEqual(outRequests,[],'no external account or multiplayer endpoints in campaign');
+  await offline.screenshot({path:'test-evidence/pokemon-torre-2-after-first-victory.png',fullPage:true});
+  await offline.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',result:'Phaser source booted'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,trainerAfterVictory:offlineResult.trainer},result:'Original Phaser + solo Kanto verified'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{
