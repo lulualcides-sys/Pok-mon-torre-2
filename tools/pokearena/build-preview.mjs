@@ -59,7 +59,7 @@ patches.push(
    'window.__pt2Game=juego;/* Offline Kanto: do not start online chat, account or polling services. */']
  ]],
  ['escenas/carga.js',[
-  ['else this.scene.start("titulo")','else this.scene.start("campanha")']
+  ['else this.scene.start("titulo")','else this.scene.start(q.has("original")?"titulo":"campanha")']
  ]],
  ['escenas/combate.js',[
   ['resultado(){this.fase="fin";',
