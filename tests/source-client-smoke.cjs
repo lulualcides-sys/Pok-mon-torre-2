@@ -241,25 +241,33 @@ const server=http.createServer(async(req,res)=>{
   });
   await tester.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&window.__pt2Game.scene.getScene('combate').luchadores?.length===2,
    null,{timeout:50000});
-  const moveSmoke=await tester.evaluate(async()=>{
-   const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
-   const fx=await import(new URL('./habilidades.js',entry.src).href);
-   const e=window.__pt2Game.scene.getScene('combate'),l=e.luchadores[0],r=e.luchadores[1];
-   const slots=['lmb','rmb','q','e'],out=[];
-   for(const slot of slots){
-    l.energia=100;l.ulti=100;l.cd[slot]=0;l.accion=null;delete l.est.aturdido;
-    const before=e.efectos.length,ok=fx.usarHabilidad(l,slot);
-    out.push({slot,ok,forma:l.kit[slot]?.forma,rendered:e.efectos.length>before});
-    // Each effect remains in the live scene for rendering.
-    if(!ok)throw Error('Ability rejected for '+slot);
-   }
-   return {species:l.def.id,level:50,forms:out,enemy:r.def.id};
-  });
-  assert.equal(moveSmoke.species,'mewtwo');
+  await tester.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',
+   null,{timeout:20000,polling:300});
+  const moveSmoke={species:'mewtwo',level:50,enemy:'onix',forms:[]};
+  for(const [slot,name,delay] of [
+   ['lmb','bonemerang',300],['rmb','bone-club',260],
+   ['q','tri-attack',380],['e','pay-day',360]]){
+   const result=await tester.evaluate(async sl=>{
+    const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+    const fx=await import(new URL('./habilidades.js',entry.src).href);
+    const e=window.__pt2Game.scene.getScene('combate'),l=e.luchadores[0],r=e.luchadores[1];
+    l.x=300;l.y=215;l.hp=l.hpMax;l.energia=100;l.ulti=100;
+    r.x=371;r.y=215;r.hp=r.hpMax;
+    l.ax=r.x;l.ay=r.y;
+    l.cd[sl]=0;l.accion=null;delete l.est.aturdido;
+    const before=e.efectos.length,ok=fx.usarHabilidad(l,sl);
+    return {slot:sl,ok,forma:l.kit[sl]?.forma,rendered:e.efectos.length>before,
+      initialEnemyHp:r.hp};
+   },slot);
+   assert.equal(result.ok,true,'move rejected '+slot);
+   assert.equal(result.rendered,true,'no new Phaser effect '+slot);
+   assert.ok(result.forma?.startsWith('torre2_'),'not our custom Phaser VFX '+slot);
+   moveSmoke.forms.push(result);
+   await tester.waitForTimeout(delay);
+   await tester.screenshot({path:'test-evidence/torre2-'+name+'-active-battle.png',fullPage:true});
+   await tester.waitForTimeout(850);
+  }
   assert.equal(moveSmoke.forms.length,4);
-  assert.ok(moveSmoke.forms.every(x=>x.ok&&x.forma?.startsWith('torre2_')&&x.rendered),
-   'Each signature effect must create a real Phaser scene effect');
-  await tester.waitForTimeout(500);
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + four Phaser moves must not crash');
   await tester.close();
