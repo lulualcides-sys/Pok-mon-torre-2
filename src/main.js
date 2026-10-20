@@ -1,5 +1,5 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
-import {totalExperienceForLevel} from './progression.js';
+import {createPokemonProgression,totalExperienceForLevel} from './progression.js';
 import {makeArena} from './arena-stadium-v06.js';
 import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v08.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
@@ -21,6 +21,21 @@ const held=new Set();
 const stickState={x:0,y:0,pointerId:null,active:false};
 let joystickElement=null,joystickThumb=null;
 const logLines=[];
+const LAB_SAVE_KEY='pokemon-torre-2-lab-charizard-exp-v1';
+function restoreLabProgress(){
+ try{
+  const data=JSON.parse(localStorage.getItem(LAB_SAVE_KEY)||'null');
+  if(!data||data.species!=='charizard')return;
+  const restored=createPokemonProgression('charizard',data.level,
+   {growth:'medium-slow',experience:data.experience});
+  battle.player.progression=restored;
+  battle.player.level=restored.level;
+ }catch(error){console.warn('Lab EXP save ignored:',error?.message||error);}
+}
+function saveLabProgress(){
+ try{localStorage.setItem(LAB_SAVE_KEY,JSON.stringify(battle.player.progression));}
+ catch(error){console.warn('Lab EXP save unavailable:',error?.message||error);}
+}
 let metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
 let actorArt=[];
 let activeBank='fire';
@@ -40,6 +55,7 @@ function createEngine(){
  app.view.setAttribute('aria-label','Arena de Pewter, batalha Pokémon Torre 2');
  app.view.style.width='100%';app.view.style.height='100%';
  battle=createBattle();
+ restoreLabProgress();
  stage=makeArena(P);app.stage.addChild(stage.root);
  stage.root.scale.set(viewport.zoom);
  installSpriteCollab(P,stage,states=>{actorArt=states;}).catch(err=>console.warn('Optional SpriteCollab actors unavailable:',err.message));
@@ -234,7 +250,10 @@ function handleEvents(){
    stage.vfx.addChild(puff.sprite);stoneDust.push(puff);
    screenShake=Math.max(screenShake,2.2);
   }
-  if(e.type==='experience')message('+'+e.gained+' EXP por derrotar '+e.enemy+'!'+(e.levelsGained?' Nível '+e.toLevel+'!':''));
+  if(e.type==='experience'){
+   saveLabProgress();
+   message('+'+e.gained+' EXP por derrotar '+e.enemy+'!'+(e.levelsGained?' Nível '+e.toLevel+'!':''));
+  }
   if(e.type==='evolution')message(e.evolutions.map(v=>v.from+' evoluiu para '+v.to+' após a batalha!').join(' · '));
   if(e.type==='enemy-defeated')message(e.enemy+' foi derrotado!');
   if(e.type==='next-enemy')message('Brock enviou '+e.enemy.toUpperCase()+'!');
@@ -376,7 +395,7 @@ function restart(){
  attackVisuals.clear();
  for(const imp of impacts){imp.graphics.parent?.removeChild(imp.graphics);imp.graphics.destroy();}
  impacts=[];
- battle=createBattle();pointTarget=null;overlay.hidden=true;
+ battle=createBattle();restoreLabProgress();pointTarget=null;overlay.hidden=true;
  stickState.x=0;stickState.y=0;stickState.offsetX=0;stickState.offsetY=0;
  stickState.pointerId=null;stickState.active=false;
  if(joystickThumb)joystickThumb.style.transform='translate3d(0,0,0)';
