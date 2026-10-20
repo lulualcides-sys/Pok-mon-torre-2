@@ -1,5 +1,19 @@
 # Pokémon Torre 2 — Kanto Battle Engine
 
+## 🎮 TESTAR AGORA (sem esperar GitHub Pages)
+
+**[▶ JOGAR POKÉMON TORRE 2 — WebGL](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/main/index.html)**
+
+Link verificado em Chromium no GitHub Actions: o jogo inicia e o renderizador WebGL funciona.
+Na primeira visita, o serviço independente rawgit.hack pode pedir confirmação **Open the page**.
+
+O domínio permanente `https://lulualcides-sys.github.io/Pok-mon-torre-2/` permanece inativo
+até habilitar **Settings → Pages → Source: GitHub Actions** no repositório.
+Depois disso, `.github/workflows/pages.yml` já está preparado para publicar.
+
+---
+
+
 Novo jogo independente do Pokémon Torre original.
 
 **Primeiro marco:** batalha jogável no Ginásio de Pewter (Brock), controles mobile/PC, combate 2D em PixiJS/WebGL, quadro de quatro golpes de fogo e testes automatizados.
