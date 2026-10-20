@@ -116,7 +116,9 @@ patches.push(
    'else if(false&&l.puedeMega&&l.humano&&parpadeo)est.push(']
  ]],
  ['escenas/combate.js',[
-  ['mega evolve','evolução após a batalha']
+  [' · ${n(k.mega)} mega evolve',''],
+  [' · ${n(k2.mega)} Mega',''],
+  [' · ${bp("mega")} mega evolve','']
  ]],
  ['main.js',[
   ['import{iniciarChat,reservaChat}from"./chat.js";',
