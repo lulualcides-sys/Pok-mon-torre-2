@@ -46,8 +46,9 @@ export function readCampaign(storage=localStorage){
     !Number.isInteger(s.trainer)||s.trainer<0)return null;
   // Existing player saves receive exactly one permanent level-50 test Mewtwo.
   if(![...s.team,...(s.box||[])].some(p=>p.id==='mewtwo')){
-   if(s.team.length<6)s.team.push(newMember('mewtwo',50));
-   else s.box.push(newMember('mewtwo',50));
+   // Keep the tester playable immediately, without discarding the sixth team member.
+   if(s.team.length>=6)s.box.push(s.team.pop());
+   s.team.push(newMember('mewtwo',50));
    storage.setItem(SAVE_KEY,JSON.stringify(s));
   }
   return s;
