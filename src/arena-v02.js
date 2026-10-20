@@ -60,22 +60,47 @@ function monster(P,type){
 export function makeArena(P){
  const root=new P.Container(),g=new P.Graphics();root.addChild(g);
  rect(g,0,0,960,540,0x090d20);rect(g,9,9,942,522,0x15203b);
- for(let row=0;row<9;row++)for(let col=-1;col<14;col++){
-  const x=12+col*80+(row%2)*35,y=11+row*62,n=hash(col,row);
-  rect(g,x,y,78,61,C.ink);rect(g,x+3,y+3,72,55,[C.a,C.b,C.c,0x455178][n%4]);
-  rect(g,x+4,y+4,69,2,0xc9d8f0,.10);rect(g,x+6,y+54,67,2,0x070e25,.19);
-  for(let i=0;i<6;i++){const xx=x+12+(n+i*17)%56,yy=y+11+((n>>2)+i*23)%38;
-   rect(g,xx,yy,2+i%2,2,((n+i)%2)?0x92add0:0x121e3b,.10);}
-  for(const ax of [5,69])for(const ay of [5,52]){
-   rect(g,x+ax-3,y+ay-3,8,8,0x0d1330);
-   rect(g,x+ax-2,y+ay-2,5,5,0x7e8cb3);
-   rect(g,x+ax-1,y+ay-1,3,3,0x223051);
+ // Irregular large steel panels with stone-like abrasion and subtle bevels.
+ // Compared with previous grid this avoids a homogeneous 'blue chessboard'.
+ const STEEL=[0x333b59,0x343e60,0x394262,0x2d3755,0x39415f];
+ for(let row=-1;row<9;row++)for(let col=-1;col<11;col++){
+  const xx=18+col*93+(row%2)*38,yy=19+row*74,n=hash(col,row),c=STEEL[n%STEEL.length];
+  rect(g,xx-1,yy-1,91,72,0x0c142e);
+  rect(g,xx+2,yy+2,86,67,c);
+  rect(g,xx+3,yy+3,84,2,0xc3d1e7,.14);
+  rect(g,xx+3,yy+5,2,60,0x9fb4cd,.105);
+  rect(g,xx+4,yy+65,83,3,0x111b33,.45);
+  rect(g,xx+86,yy+4,2,62,0x11182e,.55);
+  if(n%4===0){
+   rect(g,xx+14,yy+13,57,3,0x6d7899,.075);
+   rect(g,xx+17,yy+17,52,1,0x0a1026,.22);
   }
-  if(n%3===0){line(g,x+12,y+32,x+38,y+32,0xa7badd,.10,1);}
+  for(let k=0;k<28;k++){
+   const u=(hash(n,k+row)%78)+5,v=(hash(k+col,n)%56)+7;
+   rect(g,xx+u,yy+v,1+(k%3===0?2:0),1,n%3===0?0xb6b9d4:0x10182f,
+    k%5===0?.18:.095);
+  }
+  for(let k=0;k<3;k++){
+   const u=15+(hash(n+k,22)%57),v=14+(hash(n+k,41)%40);
+   rect(g,xx+u,yy+v,5+(n+k)%9,1,0xd9e0ed,.075);
+   rect(g,xx+u+3,yy+v+2,3+(n+k)%5,1,0x0b142c,.16);
+  }
+  // Fastening bolts: dark recess, steel lip, tiny directional light.
+  for(const [bx,by] of [[6,6],[83,6],[6,62],[83,62]]){
+   rect(g,xx+bx-3,yy+by-3,7,7,0x131c32,.68);
+   rect(g,xx+bx-2,yy+by-2,5,5,0x6d7897,.48);
+   rect(g,xx+bx-1,yy+by-1,2,2,0xc6d1e3,.20);
+  }
+  if(n%5===0)for(let w=0;w<2;w++)rect(g,xx+38,yy+23+w*3,24,1,0x91a8c1,.10);
  }
- for(let row=1;row<8;row++)for(let col=0;col<11;col++)if(hash(col,row)%4===0){
-  const x=15+col*89+(row%2)*12,y=5+row*62;
-  rect(g,x-5,y-6,8,28,0x25b8e1,.12);rect(g,x-1,y-4,2,25,0x87ebff,.73);
+ // Narrow neon seams are intermittent and embedded within floor, not wide light stripes.
+ for(let row=0;row<8;row++)for(let col=0;col<10;col++){
+  const n=hash(row*3,col+4);
+  if(n%3!==0)continue;
+  const x=24+col*94+(row%2)*36,y=20+row*74;
+  rect(g,x-3,y+45,7,27,0x0d1c36,.7);
+  rect(g,x,y+48,2,21,0x83def7,.66);
+  rect(g,x+1,y+50,1,17,0xa7fcff,.38);
  }
  const rim=new P.Graphics();root.addChild(rim);
  for(let k=0;k<5;k++){line(rim,10+k*3,11+k*3,949-k*3,11+k*3,0x85b4dc,k===0?.44:.12,2);

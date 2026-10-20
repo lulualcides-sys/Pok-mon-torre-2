@@ -66,3 +66,16 @@ test('unknown moves rejected, no dummy damage or type confusion',()=>{
  assert.equal(s.enemy.hp,s.enemy.maxHp);
  assert.equal(Object.isFrozen(MOVES.fireblast),true);
 });
+
+test('attack originates at the mouth and travels toward a moving opponent',()=>{
+ const s=createBattle(),p=s.player,e=s.enemy;
+ const result=cast(s,'flamethrower',e);
+ assert.equal(result.ok,true);
+ const fx=s.projectiles[0];
+ assert.ok(fx.origin.y<=p.y-28,'emission must be above the Pokémon foot anchor');
+ assert.ok(fx.origin.x>p.x+25,'emission should be outside the Pokémon body');
+ assert.ok(fx.direction.y<0,'diagonal projectile should rise toward Geodude');
+ assert.equal(e.hp,e.maxHp,'animation must start before any damage');
+ for(let i=0;i<45;i++)tick(s,.04);
+ assert.ok(e.hp<e.maxHp,'damage must still reach target after muzzle correction');
+});

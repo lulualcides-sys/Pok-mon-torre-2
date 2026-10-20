@@ -1,77 +1,124 @@
-/* PMD SpriteCollab animation adapter — CC BY-NC 4.0, artists require credit.
- * Detailed attribution: CREDITS_SPRITECOLLAB.md. No Poké Arena assets used.
- * Geometric Pixi fallbacks are retained when public sprite host is unavailable.
+/* V0.3 — multi-action 8-direction battle animation, based on licensed PMD SpriteCollab
+ * CC BY-NC, credits in CREDITS_SPRITECOLLAB.md. No Poké Arena sprites reused.
+ * WebGL/Pixi, no Canvas2D, fallback actor mesh retained if asset host unavailable.
  */
 export const PMD_CREDITS='https://github.com/PMDCollab/SpriteCollab';
-const base='https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/';
-const mons=[
- {name:'Charizard',id:'0006',target:'player',width:40,height:48,scale:2.45,direction:1},
- {name:'Geodude',id:'0074',target:'enemyRock',width:32,height:24,scale:2.75,direction:7},
- {name:'Onix',id:'0095',target:'enemyOnix',width:96,height:104,scale:1.13,direction:7}
+const BASE='https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/';
+const ROSTER=[
+ {name:'Charizard',id:'0006',target:'player',scale:2.65,face:2,
+  sizes:{Idle:[40,48],Walk:[40,48],Shoot:[56,56],Attack:[80,88],Hurt:[64,64]}},
+ {name:'Geodude',id:'0074',target:'enemyRock',scale:2.65,face:6,
+  sizes:{Idle:[32,24],Walk:[32,32],Shoot:[48,40],Attack:[72,80],Hurt:[40,48]}},
+ {name:'Onix',id:'0095',target:'enemyOnix',scale:1.20,face:6,
+  sizes:{Idle:[96,104],Walk:[88,112],Shoot:[96,112],Attack:[128,152],Hurt:[80,88]}}
 ];
-
-function recolorNoncommercialSprite(P,sprite,pokemon){
- // Community-contributed shiny variants: create an independent orange/stone
- // palette using a GPU filter, while preserving black outlines and transparency.
- // This is a documented derivative of the credited CC BY-NC sprites.
- const frag=`
+const ACTIONS=['Idle','Walk','Shoot','Attack','Hurt'];
+export function facingDirection(dx,dy,previous=2){
+ if(Math.hypot(dx,dy)<0.13)return previous;
+ // PMD eight-way rows: down, down-right, right, up-right, up,
+ // up-left, left, down-left (by screen y-down convention).
+ const theta=Math.atan2(dy,dx);
+ return ((Math.round(theta/(Math.PI/4))+2+8)%8);
+}
+function makePaletteFilter(P,mon){
+ const src=`
  varying vec2 vTextureCoord;
  uniform sampler2D uSampler;
- uniform float uPokemon;
+ uniform float uHero;
  void main(void){
-   vec4 c=texture2D(uSampler,vTextureCoord);
-   if(c.a<0.01){gl_FragColor=c;return;}
-   float bright=dot(c.rgb,vec3(0.299,0.587,0.114));
-   float mx=max(c.r,max(c.g,c.b)), mn=min(c.r,min(c.g,c.b));
-   float chroma=mx-mn;
-   if(uPokemon<0.5){
-     // Dark charcoal shiny body -> warm orange, keep blue wing membrane.
-     if(bright>0.11 && bright<0.76 && chroma<0.19){
-       float t=clamp((bright-0.10)/0.64,0.0,1.0);
-       c.rgb=mix(vec3(0.35,0.12,0.06),vec3(1.0,0.62,0.22),t);
-     }
-   } else {
-     // Gold/green variant stone -> weathered blue-grey rock, not gold metal.
-     if(bright>0.18 && c.r>c.b*1.12){
-       float k=clamp(bright,0.0,1.0);
-       c.rgb=vec3(0.27+0.47*k,0.30+0.43*k,0.39+0.35*k);
-     }
-   }
-   gl_FragColor=c;
+  vec4 c=texture2D(uSampler,vTextureCoord);
+  if(c.a<.01){gl_FragColor=c;return;}
+  float b=dot(c.rgb,vec3(.299,.587,.114));
+  float hi=max(c.r,max(c.g,c.b)),lo=min(c.r,min(c.g,c.b));
+  if(uHero>.5){
+    // Only neutral dark Charizard body; black outlines remain black.
+    if(b>.12 && b<.78 && hi-lo<.18){
+      float k=clamp((b-.10)/.69,0.,1.);
+      c.rgb=mix(vec3(.36,.13,.08),vec3(1.,.63,.20),k);
+    }
+  }else if(b>.2 && c.r>c.b*1.14){
+    // Optional shiny stone variant turned back into dark mineral grey.
+    c.rgb=vec3(.27,.31,.39)+vec3(.42,.44,.42)*b;
+  }
+  gl_FragColor=c;
  }
 `;
- sprite.filters=[new P.Filter(undefined,frag,{uPokemon:pokemon==='Charizard'?0:1})];
+ return new P.Filter(undefined,src,{uHero:mon==='Charizard'?1:0});
 }
-
+async function loadClip(P,mon,action){
+ const [fw,fh]=mon.sizes[action];
+ const url=BASE+mon.id+'/0000/0001/'+action+'-Anim.png';
+ const tex=await P.Assets.load(url);
+ const base=tex.baseTexture||tex.texture?.baseTexture||tex;
+ const columns=Math.floor(base.width/fw),rows=Math.floor(base.height/fh);
+ if(columns<1||rows<8)throw Error('invalid frame atlas for '+mon.name+' '+action+': '+base.width+'x'+base.height);
+ const clips=[];
+ for(let d=0;d<8;d++){
+  const textures=[];
+  for(let i=0;i<Math.min(15,columns);i++){
+   textures.push(new P.Texture(base,new P.Rectangle(i*fw,d*fh,fw,fh)));
+  }
+  clips.push(textures);
+ }
+ return {url,clips,count:columns,frameWidth:fw,frameHeight:fh};
+}
+function buildController(P,parent,mon,loaded){
+ const sprite=new P.AnimatedSprite(loaded.Idle.clips[mon.face]);
+ sprite.anchor.set(.5,.80);
+ sprite.scale.set(mon.scale);
+ sprite.position.set(0,-7);sprite.roundPixels=true;
+ sprite.animationSpeed=.12;sprite.loop=true;
+ sprite.filters=[makePaletteFilter(P,mon.name)];
+ for(const child of parent.children)child.visible=false;
+ parent.addChild(sprite);
+ const state={mode:'Idle',face:mon.face,locked:'',lockUntil:0,frames:0,changes:0,actions:0,
+  lastAction:'',loaded:Object.keys(loaded),name:mon.name};
+ const get=(action,face)=>loaded[action]?.clips[face]||loaded.Idle.clips[face];
+ const controller={
+  sprite,state,
+  action(name,duration=0.5,time=0){
+   if(!loaded[name])return false;
+   state.locked=name;state.lockUntil=time+duration;
+   state.actions++;state.lastAction=name;
+   return true;
+  },
+  update(time,dx,dy,lookDx,lookDy){
+   const was=state.face;
+   state.face=facingDirection(lookDx,lookDy,state.face);
+   if(state.face!==was)state.changes++;
+   const walking=Math.hypot(dx,dy)>0.8;
+   const mode=time<state.lockUntil&&loaded[state.locked]?state.locked:
+     walking&&loaded.Walk?'Walk':'Idle';
+   if(mode!==state.mode||state.face!==was){
+    sprite.textures=get(mode,state.face);
+    sprite.gotoAndStop(0);
+    state.mode=mode;
+   }
+   // Battle sprites update at real time, not with arbitrary renderer frames.
+   const fps=mode==='Idle'?5:mode==='Walk'?11:mode==='Hurt'?9:18;
+   const i=Math.floor(time*fps)%sprite.totalFrames;
+   sprite.gotoAndStop(i);
+   state.frames++;
+  }
+ };
+ parent.__pmd=controller;
+ return controller;
+}
 export async function installSpriteCollab(P,stage,report=()=>{}){
  const outcomes=[];
- for(const mon of mons){
-  const url=base+mon.id+'/0000/0001/Idle-Anim.png';
+ for(const mon of ROSTER){
   const parent=stage[mon.target];
-  if(!parent){outcomes.push({pokemon:mon.name,status:'missing-actor'});continue;}
-  try{
-   const texture=await P.Assets.load(url);
-   const baseTexture=texture.baseTexture||(texture.texture||texture).baseTexture||texture;
-   const cols=Math.floor(baseTexture.width/mon.width);
-   const rows=Math.floor(baseTexture.height/mon.height);
-   if(cols<1||rows<1)throw Error('Invalid sprite sheet dimensions');
-   const row=Math.min(mon.direction,rows-1),frames=[];
-   for(let i=0;i<Math.min(4,cols);i++){
-    frames.push(new P.Texture(baseTexture,
-     new P.Rectangle(i*mon.width,row*mon.height,mon.width,mon.height)));
-   }
-   const sprite=new P.AnimatedSprite(frames);
-   sprite.anchor.set(.5,.72);sprite.scale.set(mon.scale);
-   sprite.animationSpeed=.085;sprite.loop=true;
-   sprite.position.set(0,8);sprite.roundPixels=true;
-   for(const child of parent.children)child.visible=false;
-   parent.addChild(sprite);recolorNoncommercialSprite(P,sprite,mon.name);sprite.play();
-   outcomes.push({pokemon:mon.name,status:'animated-sprite-loaded',
-    frames:frames.length,recolored:true,rows,columns:cols,size:mon.width+'x'+mon.height,source:url});
-  }catch(error){
-   outcomes.push({pokemon:mon.name,status:'original-fallback',
-    reason:String(error?.message||error).slice(0,200)});
+  if(!parent){outcomes.push({pokemon:mon.name,status:'missing-parent'});report(outcomes.slice());continue;}
+  const loaded={},errors=[];
+  for(const name of ACTIONS){
+   try{loaded[name]=await loadClip(P,mon,name)}
+   catch(error){errors.push({name,reason:String(error?.message||error).slice(0,120)})}
   }
+  if(loaded.Idle){
+   buildController(P,parent,mon,loaded);
+   outcomes.push({pokemon:mon.name,status:'animated-sprite-loaded',frames:loaded.Idle.count,
+    actions:Object.keys(loaded),directions:8,source:PMD_CREDITS,errors});
+  }else outcomes.push({pokemon:mon.name,status:'original-fallback',errors});
   report(outcomes.slice());
  }
  return outcomes;
