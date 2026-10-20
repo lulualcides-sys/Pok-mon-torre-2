@@ -19,6 +19,43 @@ html=html.replace('href="/favicon.png"','href="favicon.png"');
 html=html.replace('</head>','<meta name="referrer" content="no-referrer">\n</head>');
 await fs.writeFile(index,html);
 
+// Independent startup health check: HTML must explain blockers even if the
+// Phaser JS import graph fails completely (before any game scene is created).
+// Do not show online-game menus or connect to servers.
+const diagnostics=\`<style>
+#pt2-boot-status{display:none;position:fixed;inset:0;background:#080c17;z-index:4000;color:#f1f6ff;
+font:14px system-ui;align-items:center;justify-content:center;text-align:center;padding:20px}
+#pt2-boot-card{width:min(420px,92vw);border:1px solid #42617d;border-radius:12px;padding:22px;
+background:#102138;box-shadow:0 12px 40px #0007}
+#pt2-boot-card h2{color:#ffdf73;margin:0 0 14px}#pt2-boot-card p{line-height:1.6}
+#pt2-retry{font:700 15px system-ui;background:#ffe177;color:#102033;border:0;padding:12px 24px;border-radius:8px}
+</style>
+<div id="pt2-boot-status" role="status" aria-live="polite">
+ <div id="pt2-boot-card"><h2>POKÉMON TORRE 2</h2>
+ <p id="pt2-boot-message">Preparando a arena...</p>
+ <button type="button" id="pt2-retry" onclick="location.reload()">TENTAR NOVAMENTE</button>
+ <p style="font-size:12px;color:#a2b8cd">Abra no Chrome e vire o celular na horizontal. O jogo é solo.</p>
+ </div>
+</div>
+<script>
+(function(){
+ var booted=false,reason='';
+ var status=document.getElementById('pt2-boot-status');
+ var message=document.getElementById('pt2-boot-message');
+ function finished(){booted=!!(window.__pt2Started&&window.__pt2Game);
+   if(booted)status.style.display='none';return booted}
+ function show(error){if(finished())return;status.style.display='flex';
+   message.textContent=error||'O jogo não conseguiu carregar. Verifique a conexão e abra no Chrome.'}
+ window.addEventListener('error',function(e){if(!finished())reason=(e.message||'Falha ao carregar um arquivo').slice(0,190)});
+ window.addEventListener('unhandledrejection',function(e){if(!finished())reason=String(e.reason?.message||e.reason||'Erro de inicialização').slice(0,190)});
+ window.setTimeout(function(){if(!finished())show('Carregamento demorando mais que o normal. '+(reason||'Tente abrir no Chrome e atualizar a página.'))},17000);
+ window.setInterval(finished,800);
+})();
+</script>\`;
+html=html.replace('</body>',diagnostics+'</body>');
+await fs.writeFile(index,html);
+
+
 // Load startup visuals in batches. Initial title/selection should not load
 // every animation for every Pokémon before showing the menu on Android.
 const clientSource=(await fs.readdir(dest)).find(x=>/^src-[0-9a-f]{10}$/.test(x));
@@ -28,7 +65,7 @@ const patches=[
   ['preload(){texto(this,ANCHO/2,ALTO/2,"LOADING...",{tam:8,color:"#d6a63a",origen:.5});',
    'preload(){const txt=texto(this,ANCHO/2,ALTO/2,"LOADING...",{tam:8,color:"#d6a63a",origen:.5});this.load.on("progress",p=>txt.active&&txt.setText("LOADING... "+Math.round(p*100)+"%"));this.load.on("loaderror",f=>console.warn("Poké Arena resource failed",f?.src));'],
   ['const nombres=soloEstos?null:BASICAS;cargarPMD(this,usados,nombres);',
-   'const nombres=soloEstos?null:BASICAS;if(!soloEstos){const starter=soloFormas(m,formasDe(["bulbasaur","charmander","squirtle","pichu"]));usados=Object.fromEntries(Object.entries(m).map(([dex,v])=>[dex,{...v,anims:starter[dex]?Object.fromEntries(Object.entries(v.anims).filter(([n])=>BASICAS.includes(n))):{}}]));}cargarPMD(this,usados,nombres);'],
+   'const nombres=soloEstos?null:BASICAS;if(!soloEstos){usados=soloFormas(m,formasDe(["bulbasaur","charmander","squirtle","pichu"]));}cargarPMD(this,usados,nombres);'],
   ['crearAnimsHojas(this);generarTexturas(this);texturasUI(this);this.arrancar()',
    'crearAnimsHojas(this);generarTexturas(this);texturasUI(this);this.arrancar();window.__pt2Started=true']
  ]],
