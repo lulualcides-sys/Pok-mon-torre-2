@@ -1,0 +1,44 @@
+name: Pokemon Torre 2 - teste de link alternativo
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - tests/public-preview-smoke.cjs
+      - .github/workflows/preview-link.yml
+
+permissions:
+  contents: read
+jobs:
+  verificar-link:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Verificar HTTP do HTML e módulos públicos
+        shell: bash
+        run: |
+          set +e
+          for url in \
+            https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/main/index.html \
+            https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/main/src/main.js \
+            https://lulualcides-sys.github.io/Pok-mon-torre-2/ ; do
+            echo "$url"
+            curl --max-time 25 -IL -sS -o /dev/null -w "status=%{http_code} mime=%{content_type}\n" "$url"
+          done
+          exit 0
+      - name: Abrir link alternativo em Chromium WebGL
+        run: |
+          CHROME_BIN="$(command -v google-chrome)" node tests/public-preview-smoke.cjs
+      - name: Salvar prova ou erro do link
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: teste-link-web-pokemon-torre-2
+          path: test-evidence/
+          retention-days: 14
