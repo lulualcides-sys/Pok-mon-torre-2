@@ -22,7 +22,7 @@ export function makeArena(P){
   }
  }
  floor.alpha=.88;
- root.addChildAt(floor,root.children.length-4);
+ root.addChildAt(floor,root.getChildIndex(stage.shadow));
  // Dusty specular streaks on the four metal panels near the arena boundary.
  for(const [cx,cy,sx,sy] of [
   [156,85,220,108],[835,94,202,95],[125,455,192,104],[841,464,230,117]
@@ -43,7 +43,7 @@ export function makeArena(P){
    glare.beginFill(0x55bbfb,.006+(48-r)/7000).drawEllipse(x,y,r,r*.49).endFill();
   }
  }
- root.addChildAt(glare,root.children.length-3);
+ root.addChildAt(glare,root.getChildIndex(stage.shadow));
  const edge=0x071027;
  // Bottom foreground metallic border, shadow and corner clamps.
  for(const [x,y,w,h] of [[0,0,960,19],[0,516,960,24],[0,0,20,540],[940,0,20,540]]){
@@ -59,7 +59,7 @@ export function makeArena(P){
    rect(rim,side,y+5,5,9,0x93d6ee,.35);
   }
  }
- root.addChildAt(rim,root.children.length-2);
+ root.addChildAt(rim,root.getChildIndex(stage.shadow));
  // Dynamic lighting layer is separate and hardware-accelerated.
  const lighting=new P.Graphics();
  root.addChild(lighting);
