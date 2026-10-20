@@ -64,13 +64,13 @@ export function bonemerang(l,h,extra){
   const outward=T<=.52,phase=outward?ease(T/.52):ease((T-.52)/.48);
   const distance=outward?mix(0,r,phase):mix(r,0,phase);
   const cx=p(ox+Math.cos(ang)*distance),cy=p(oy+Math.sin(ang)*distance*.72-15*Math.sin(pi*T));
-  go.setPosition(cx,cy);spin(go,T*25);bone(go,.86+Math.sin(T*pi)*.12);
+  go.setPosition(cx,cy);spin(go,T*25);bone(go,.43+Math.sin(T*pi)*.06);
   trail.clear();trail.lineStyle(2,0x171f2a,.7);
   for(let i=1;i<4;i++){
    const oldT=clamp(T-i*.024),oldPhase=oldT<=.52?ease(oldT/.52):ease((oldT-.52)/.48);
    const d=oldT<=.52?mix(0,r,oldPhase):mix(r,0,oldPhase);
    const x=p(ox+Math.cos(ang)*d),y=p(oy+Math.sin(ang)*d*.72-15*Math.sin(pi*oldT));
-   trail.fillStyle(0xcbd4cf,.28*(1-i/4));trail.fillRect(x-7,y-1,12,2);
+   trail.fillStyle(0xcbd4cf,.28*(1-i/4));trail.fillRect(x-4,y-1,6,2);
   }
   const target=l.rival;
   if(target&&!target.ko&&Math.hypot(cx-target.x,cy-(target.y-target.alto*.4))<Math.max(24,target.alto*.85)&&
@@ -90,13 +90,13 @@ export function boneclub(l,h,extra){
  l.accion={hasta:l.t+.49,angulo:angle,lento:.25};
  return effect(e,{update(dt){
   age+=dt;const T=age/.54;if(T>=1){g.destroy();return false}
-  const radius=10+20*Math.sin(clamp(T)*pi);
+  const radius=13+27*Math.sin(clamp(T)*pi);
   const theta=angle-1.55+(T<.7?ease(T/.7)*2.6:2.6);
   const cx=p(l.x+Math.cos(theta)*radius),cy=p(l.y-l.alto*.5+Math.sin(theta)*radius*.65);
-  g.setPosition(cx,cy);spin(g,theta+pi*.5);bone(g,.68);
+  g.setPosition(cx,cy);spin(g,theta+pi*.5);bone(g,.47);
   if(!hit&&T>=.42&&T<=.77&&r&&!r.ko){
    const distance=Math.hypot(r.x-l.x,r.y-l.y);
-   if(distance<(h.alcance??67)+12){
+   if(distance<(h.alcance??67)*1.1+12){
     hit=true;contact(l,h,extra,r,1,{push:80,stun:.16,heavy:true});
     flash(e,r.x,r.y-r.alto*.55,0xfff2d0,1.15);
     e.cameras.main.shake(70,.004);
@@ -141,26 +141,90 @@ function elemental(g,ox,oy,size,type,t){
  }
 }
 export function triattack(l,h,extra){
- const e=l.escena,r=l.rival,ang=Math.atan2(l.ay-l.y,l.ax-l.x),g=shape(e),tail=shape(e,1509);
- const start={x:l.x,y:l.y-l.alto*.55};let age=0,applied=false;
- l.animar('Charge',.65,.12);l.accion={hasta:l.t+.35,bloquea:true,lento:.3,angulo:ang};
- return effect(e,{update(dt){
-  age+=dt;const T=age/.92;if(T>=1){fadeDestroy(g,[tail]);return false}
-  const launched=clamp((T-.18)/.72),d=ease(launched)*Math.min(h.alcance??245,270);
-  const cx=p(start.x+Math.cos(ang)*d),cy=p(start.y+Math.sin(ang)*d*.7);
-  g.clear();tail.clear();
-  const q=Math.min(1,launched*7);
-  for(let i=0;i<3;i++){
-   const theta=T*15+i*2*pi/3,rad=12+4*Math.sin(T*9+i);
-   const x=p(cx+Math.cos(theta)*rad),y=p(cy+Math.sin(theta)*rad*.66);
-   elemental(g,x,y,5+Math.round(q*2),i,T);
-   const bx=p(x-Math.cos(ang)*14),by=p(y-Math.sin(ang)*9);
-   block(tail,bx-2,by-1,10,3,[0xbf4326,0x3c9cc2,0xd9b94a][i],.6*(1-T));
+ // Canonical Tri Attack: three energy rays converging as a flying triangle.
+ // Gen I Stadium showed an energy triangle; later versions show three
+ // simultaneous FIRE / ICE / ELECTRIC rays. The move itself stays NORMAL.
+ const e=l.escena,r=l.rival,ang=Math.atan2(l.ay-l.y,l.ax-l.x);
+ const ray=e.add.graphics().setDepth(1511),particle=e.add.graphics().setDepth(1512);
+ let age=0,applied=false;
+ const origin={x:l.x+Math.cos(ang)*9,y:l.y-l.alto*.55};
+ l.animar('Charge',.63,.15);
+ l.accion={hasta:l.t+.34,bloquea:true,lento:.36,angulo:ang};
+ const range=Math.min(h.alcance??245,270);
+ const palette=[
+  {outer:0xa73721,body:0xff6e35,core:0xffdf8b},
+  {outer:0x276c99,body:0x76cfee,core:0xe7fcff},
+  {outer:0x88611d,body:0xffd94c,core:0xffffc2}
+ ];
+ const drawBeam=(x0,y0,x1,y1,c,step)=>{
+  const dx=x1-x0,dy=y1-y0,length=Math.hypot(dx,dy)||1;
+  const nx=-dy/length,ny=dx/length;
+  const band=(width,color,alpha)=>{
+   ray.lineStyle(width,color,alpha);
+   ray.beginPath();ray.moveTo(Math.round(x0+nx*.2),Math.round(y0+ny*.2));
+   ray.lineTo(Math.round(x1),Math.round(y1));ray.strokePath();
+  };
+  band(9,c.outer,.94);band(6,c.body,.95);band(2,c.core,1);
+  // Discrete pixel particles — no blur, PNG overlay, or CSS.
+  for(let k=1;k<5;k++){
+   const t=((k/5+age*2.3+step*.12)%1);
+   const px=x0+dx*t+nx*Math.sin(k*5+age*27)*3;
+   const py=y0+dy*t+ny*Math.sin(k*5+age*27)*3;
+   block(particle,px-2,py-2,4,4,k%2?c.core:c.body,.78);
   }
-  // Three prongs remain visually distinct until contact.
-  if(!applied&&launched>.06&&r&&!r.ko&&Math.hypot(cx-r.x,cy-(r.y-r.alto*.52))<25){
-   applied=true;contact(l,h,extra,r,1,{stun:.2,push:70,heavy:true});
-   for(const col of [colors.fire,colors.ice,colors.volt])flash(e,r.x,r.y-r.alto*.55,col,.46);
+ };
+ return effect(e,{update(dt){
+  age+=dt;
+  const T=age/1.02;
+  if(T>=1){fadeDestroy(ray,[particle]);return false}
+  const charging=clamp(T/.19);
+  const travel=clamp((T-.2)/.65);
+  // The triangle has a definite three-corner silhouette, no orbiting spheres.
+  const reach=range*ease(travel);
+  const cx=origin.x+Math.cos(ang)*reach;
+  const cy=origin.y+Math.sin(ang)*reach*.73;
+  const orient=ang,along={x:Math.cos(orient),y:Math.sin(orient)};
+  const normal={x:-Math.sin(orient),y:Math.cos(orient)};
+  const pts=[-1,0,1].map((v,i)=>({
+    x:cx+normal.x*v*12+along.x*(i===1?-9:7),
+    y:cy+normal.y*v*10+along.y*(i===1?-9:7)
+  }));
+  ray.clear();particle.clear();
+  // Charge first, then reveal three simultaneous live beams from the Pokémon
+  // to each vertex and a thin triangular cross-connection.
+  const beamLength=charging*15+travel*19;
+  if(T>=.14){
+   pts.forEach((q,i)=>{
+    const col=palette[i];
+    const fromX=q.x-along.x*beamLength,fromY=q.y-along.y*beamLength*.73;
+    drawBeam(fromX,fromY,q.x,q.y,col,i);
+    elemental(particle,q.x,q.y,Math.round(3+2*charging),i,T);
+   });
+   ray.lineStyle(2,0xf6f2ce,.76);
+   ray.strokePoints(pts,true,true);
+   ray.lineStyle(1,0x181d2e,.87);
+   for(let i=0;i<3;i++)ray.strokeLineShape(
+     new Phaser.Geom.Line(pts[i].x+2,pts[i].y+2,pts[(i+1)%3].x+2,pts[(i+1)%3].y+2));
+  }else{
+   pts.forEach((q,i)=>elemental(particle,q.x,q.y,3+Math.round(charging*2),i,T));
+  }
+  // ONE hit at contact of the triple field; secondary status 20% total,
+  // distributed equally between burn / freeze / paralysis.
+  if(!applied&&travel>.06&&r&&!r.ko&&
+     Math.hypot(cx-r.x,cy-(r.y-r.alto*.50))<27){
+   applied=true;
+   const landed=contact(l,h,extra,r,1,{stun:.13,push:75,heavy:true});
+   if(landed){
+    palette.forEach(col=>flash(e,r.x,r.y-r.alto*.52,col.body,.52));
+    if(Math.random()<.2&&typeof r.ponerEstado==='function'){
+     const pick=Math.floor(Math.random()*3);
+     const key=['quemado','congelado','paralizado'][pick];
+     const immune=(pick===0&&r.tipos?.includes('FIRE'))||
+       (pick===1&&r.tipos?.includes('ICE'))||
+       (pick===2&&r.tipos?.includes('ELECTRIC'));
+     if(!immune)r.ponerEstado(key,pick===1?1.1:2.2);
+    }
+   }
   }
   return true
  }});
@@ -181,18 +245,18 @@ export function payday(l,h,extra){
  return effect(e,{update(dt){
   age+=dt;const T=age/1.05;if(T>=1){fadeDestroy(g,[trail]);return false}
   g.clear();trail.clear();
-  for(let i=0;i<5;i++){
-   const t=clamp((T-i*.084)/.73);
+  for(let i=0;i<9;i++){
+   const t=clamp((T-i*.046)/.65);
    if(t<=0||t>=1)continue;
-   const d=distance*ease(t),offset=(i-2)*8;
+   const d=distance*ease(t),offset=(i-4)*5.2;
    const x=p(ox+Math.cos(ang)*d-Math.sin(ang)*offset),
          y=p(oy+Math.sin(ang)*d*.72+Math.cos(ang)*offset*.6-18*Math.sin(pi*t));
-   coin(g,x,y,7,t*19+i);
+   coin(g,x,y,6,t*21+i*.83);
    block(trail,x-4-Math.cos(ang)*10,y-1,4,3,colors.goldLit,.35);
    const target=l.rival;
    if(!(hitCount&(1<<i))&&target&&!target.ko&&
      Math.hypot(x-target.x,y-(target.y-target.alto*.5))<21){
-    hitCount|=1<<i;contact(l,h,extra,target,.24,{push:10,stun:.02});
+    hitCount|=1<<i;contact(l,h,extra,target,.14,{push:9,stun:.015});
     flash(e,target.x,target.y-target.alto*.5,colors.golden,.55);
    }
   }
