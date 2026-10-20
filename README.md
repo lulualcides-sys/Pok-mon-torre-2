@@ -35,7 +35,7 @@ Celular: controles direcionais virtuais e botões de golpes.
 O GitHub Actions também executa teste real de Chromium com verificação WebGL.
 
 ## Estado
-Protótipo inicial em desenvolvimento. A primeira batalha é um *vertical slice*, não toda a campanha de Kanto. Nenhum golpe do jogo original é substituído.
+Versão visual V0.2: arena tecnológica refeita, sprites animados PMD SpriteCollab creditados, quatro ataques GPU reconstruídos. Ainda não alcança toda a fidelidade visual nem o conteúdo completo do Poké Arena 2D. A primeira batalha é um *vertical slice*, não toda a campanha de Kanto. Nenhum golpe do jogo original é substituído.
 
 ## Publicação
 GitHub Actions gera e testa o projeto. A publicação no GitHub Pages depende da configuração de Pages deste novo repositório.
