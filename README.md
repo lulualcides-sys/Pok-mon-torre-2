@@ -2,9 +2,9 @@
 
 ## 🎮 TESTAR AGORA (sem esperar GitHub Pages)
 
-**[▶ JOGAR POKÉMON TORRE 2 — V0.3 sem cache antigo](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/34ccc083d68aa386cb166b4fd2958eaeb4734357/index.html)**
+**[▶ JOGAR POKÉMON TORRE 2 — V0.4 sem cache antigo](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/72b2a3ef142c72268f19a829516494a723b50b4d/index.html)**
 
-Link da versão V0.3 fixada no commit e verificado em Chromium (desktop e Android simulado). O navegador confirmou a nova interface, os três sprites animados e WebGL.
+Link da versão V0.4 fixada no commit e verificado em Chromium (desktop e Android simulado). O navegador confirmou a nova interface, os três sprites animados e WebGL.
 Na primeira visita, o serviço independente rawgit.hack pode pedir confirmação **Open the page**.
 
 O domínio permanente `https://lulualcides-sys.github.io/Pok-mon-torre-2/` permanece inativo
@@ -35,7 +35,7 @@ Celular: controles direcionais virtuais e botões de golpes.
 O GitHub Actions também executa teste real de Chromium com verificação WebGL.
 
 ## Estado
-Versão visual V0.2: arena tecnológica refeita, sprites animados PMD SpriteCollab creditados, quatro ataques GPU reconstruídos. Ainda não alcança toda a fidelidade visual nem o conteúdo completo do Poké Arena 2D. A primeira batalha é um *vertical slice*, não toda a campanha de Kanto. Nenhum golpe do jogo original é substituído.
+Versão visual V0.4: arena tecnológica refeita com profundidade por posição, personagens PMD SpriteCollab animados com durações oficiais e escala ajustada, ataques de fogo GPU e Rock Throw visível de Brock com impacto e esquiva reais. Ainda não alcança toda a fidelidade visual nem o conteúdo completo do Poké Arena 2D. A primeira batalha é um *vertical slice*, não toda a campanha de Kanto. Nenhum golpe do jogo original é substituído.
 
 ## Publicação
 GitHub Actions gera e testa o projeto. A publicação no GitHub Pages depende da configuração de Pages deste novo repositório.
