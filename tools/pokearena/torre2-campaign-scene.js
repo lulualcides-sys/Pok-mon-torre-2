@@ -169,10 +169,10 @@ class Campanha extends Phaser.Scene{
   this.button(131,317,188,29,index===state.active?'◆ ATIVO':'USAR NA BATALHA',()=>{
    selectTeamMember(state,index);this.scene.restart();
   },index===state.active);
-  text(this,273,69,'GOLPES EQUIPADOS   ·   SELECIONE UM SLOT',{fontSize:'12px',color:C.gold});
+  text(this,273,63,'GOLPES EQUIPADOS   ·   SELECIONE UM SLOT',{fontSize:'12px',color:C.gold});
   chosen.forEach((id,i)=>{
    const m=pool.find(x=>x.id===id);
-   const y=89+i*28;
+   const y=99+i*25;
    this.button(439,y,328,24,(slot===i?'▶ ':'')+ids[i]+'  '+(m?.nombre||'—')+
     '   '+(m?.tipo||''),()=>this.showSummary(state,index,i,0),slot===i);
   });
