@@ -14,41 +14,38 @@ A separação é decidida pelo marcador `escena.datos?.torre2` da luta. O códig
 
 O botão EVO desaparece **somente** no controle de toque da campanha. Os prompts EVO/MEGA desaparecem **somente** no HUD da campanha. O comando de teclado/controle EVO/MEGA não funciona durante a campanha, mas permanece funcionando nos demais modos. O ganho de nível e a transformação após a batalha usam o módulo `src/progression.js` próprio do Torre 2.
 
-## Não será necessário pedir ao usuário para reenviar todos os sprites
+## Fontes e política visual aprovada
 
-Fontes já conhecidas no repositório [Pokémon Torre 1](https://github.com/lulualcides-sys/Pok-mon-torre):
+**Não reaproveitar golpes do Pokémon Torre 1.** O catálogo anterior de candidatos foi excluído do Pokémon Torre 2. Seus sprites e efeitos de golpes ficam preservados no repositório original, mas **não são importados ao Torre 2**.
 
-- [312 nomes/IDs de golpes e catálogos de efeitos](https://github.com/lulualcides-sys/Pok-mon-torre/blob/main/effects/moves/catalog/manifest.json);
-- [efeitos aprovados ou protegidos](https://github.com/lulualcides-sys/Pok-mon-torre/blob/main/effects/moves/STATUS_APROVADOS.json); versões aprovadas não podem ser sobrescritas;
-- [sprites e suas referências](https://github.com/lulualcides-sys/Pok-mon-torre/tree/main/assets/sprites) e [padrão visual](https://github.com/lulualcides-sys/Pok-mon-torre/blob/main/effects/moves/PADRAO_VISUAL_OFICIAL.md);
-- [animações de Bolhas e Pistola d'Água](https://github.com/lulualcides-sys/Pok-mon-torre/tree/main/effects/moves/v128-water-preview) — exemplo de fidelidade visual aprovada;
-- cliente do [pokearena2d.com](https://www.pokearena2d.com/) recuperado pelo REA, com o motor Phaser, arquivos `habilidades.js`, `vfx.js`, `arena.js`, `sprites.js` e spritesheets;
-- [SpriteCollab/PMDCollab](https://github.com/PMDCollab/SpriteCollab) para outras espécies e animações Pokémon, sob CC BY-NC com créditos por autor.
+**Pokémon novos:** o usuário não precisa reenviar os sprites que já estão no Torre 1 para identificar espécies e recursos, e podemos obter sprites de Pokémon adicionais na SpriteCollab com créditos. Entretanto, o **novo efeito de golpe sempre será feito do zero no Phaser**, baseado em código, acabamento e comportamentos do `pokearena2d.com`; não usar o renderer antigo nem os efeitos Pixi/Canvas do Torre 1.
 
-**Atenção:** um arquivo referenciado em `assets/sprites/CATALOGO.json` pode estar somente na biblioteca histórica e não fisicamente dentro do repositório Torre 1. Verificar origem e arquivo real, nunca afirmar que está integrado apenas por constar no catálogo. A tradução de um efeito antigo Canvas/Pixi para Phaser não é automática. Só usar novo sprite depois de baixar/portar, conferir licença, montar animações e testar em combate.
+## Banco de ataques enxuto e reutilizável
 
-## Banco econômico — 14 golpes de ataque + 2 de status por tipo
+O banco novo está em [data/kanto-new-phaser-moves.json](../data/kanto-new-phaser-moves.json), com 18 tipos e meta de **14 golpes ofensivos + 2 status por tipo**. Foram definidos **269 candidatos de golpes novos**; 19 posições ainda estão em aberto para não inventar golpes ou incluir ataques típicos de outros Pokémon como genéricos.
 
-Criado o arquivo de candidatos [data/kanto-shared-moves.json](../data/kanto-shared-moves.json).
+Este arquivo é **planejamento**; nenhuma animação inédita está pronta por constar na lista. Para ficar igual ao padrão do Poké Arena 2D, cada golpe novo usará o **Phaser 3/WebGL, pixel art com contorno, orientação, animações de 8 a 16 frames quando necessário, partículas e impacto sincronizado com dano**, reaproveitando rotinas gráficas que existem no Poké Arena 2D, mas **criando novos sprites e animações próprios**.
 
-- **18 tipos**, cada um com **teto de 14 ataques + 2 golpes de status** no primeiro conjunto compartilhado de Kanto. Esses números **não** são 16 animações obrigatórias para *cada Pokémon*.
-- Os mesmos spritesheets, efeitos e rotinas de impacto do Phaser são compartilhados por todos os Pokémon que legalmente aprendem o golpe.
-- O conjunto inicial importado do catálogo do Torre 1 possui **246 candidatos**; faltam **42 vagas** para preencher os 288 slots-alvo (ex.: dark/ghost/flying); isso **não** equivale a 246 golpes já portados ou jogáveis.
-- Antes de incluir um golpe no jogo, remover duplicatas PT/EN, verificar categoria/tipo/nome inglês, confronto com learnsets, status aprovado e efeito visual, timing/colisão/dano. Não usar o tipo automaticamente registrado no catálogo antigo como prova de correção (ex.: Scratch/Arranhão tipo Normal).
-- **Reutilizar famílias de efeitos** (`projetil`, `chorro`, `burbujas`, `ola`, `rayo`, `dash`, `tajo`, `zona`, `escudo`, `viento` etc.). Não criar arte duplicada quando dois golpes compartilham comportamento; diferenciar forma, escala, tempo, paleta e impacto para manter identidade.
-- **Status:** 2 golpes de status distintos por tipo como primeira meta; podem compartilhar as animações de status (brilhos, cura, escudo, poeira) adaptadas quando fizer sentido sem confundir seus efeitos.
-- **Pokémon com tipos duplos:** usam o banco dos dois tipos, com movesets determinados pela espécie e seu nível. Pokémon não recebem golpes aleatórios só porque partilham um tipo. Movimentos de cobertura Normal devem ser permitidos conforme learnsets, sempre com até quatro golpes equipados na campanha.
+A biblioteca de golpes é compartilhada. Não existem 14 artes para cada espécie. Cada Pokémon terá **quatro golpes equipados** na campanha e aprenderá novos golpes conforme nível e espécie; várias espécies podem utilizar a mesma animação de Surf ou Thunderbolt com ajustes proporcionais.
 
-### Exemplo de Água: Water Gun, Bubble Beam, Surf e Hydro Pump
+### Golpes exclusivos: criar com animação própria
 
-O Poké Arena 2D já possui lógicas e texturas de jato, bolhas, ondas (`ola`) e hidrocanhão (`hidrocanon`). Reaproveitar essa **linguagem de pixel art** e o renderer do jogo, mas respeitar a silhueta de cada golpe:
+- **Cubone/Marowak — Bonemerang**: osso lançado que gira, atinge e retorna ao lançador; **dois contatos/impactos** distintos, com timing próprio.
+- **Cubone/Marowak — Bone Club**: contato curto com osso físico, impacto e recuo. O mesmo asset de osso poderá aparecer em Bonemerang, sem igualar a coreografia.
+- **Exeggcute/Exeggutor — Barrage e Egg Bomb**: vários ovos em sequência vs ovo grande de impacto; duas silhuetas distintas.
+- **Meowth/Persian — Pay Day**: moedas pixeladas projetadas e estilhaços dourados no impacto.
+- **Kangaskhan — Dizzy Punch**: sequência física com estrelas de confusão.
+- **Porygon — Conversion e Tri Attack**: conversão de tipos com mudança na aparência do HUD, e ataque com três elementos cruzados.
+- **Ditto/Mew — Transform**: transição de sprite e habilidades para o alvo; exige lógica de combate específica.
+- **Magikarp — Splash**: salto sem dano para preservar a identidade e funcionamento real.
+- **Hitmonlee — Rolling Kick / High Jump Kick**: aproximação física sem projétil, golpe no contato e recuo.
+- **Chansey — Soft-Boiled**: cura com animação de ovo/efeito discreto.
+- **Jynx — Lovely Kiss**: beijo e sono com ícones/status sem poluir a tela.
+- **Pikachu — Volt Tackle**: investida elétrica envolvendo o corpo, faíscas de rastro e recoil.
+- **Mewtwo — Psystrike**: carga psíquica e impacto próprio, não uma Shadow Ball recolorida.
+- **Venusaur/Charizard/Blastoise — Frenzy Plant, Blast Burn e Hydro Cannon**: finalizadores com identidade distinta por elemento.
 
-- **Water Gun:** jato estreito contínuo; 
-- **Bubble Beam:** várias bolhas, não um laser;
-- **Surf:** uma onda ampla e móvel que alcança o alvo e dissipa em espuma;
-- **Hydro Pump:** coluna/jato concentrado, mais poderoso e estreito que Surf.
-
-Surf não é apenas Water Gun com escala maior: requer composição e frames de frente de onda. **O efeito de Surf ainda não está concluído.**
+**Prioridade sugerida:** Bonemerang, Bone Club, Tri Attack, Pay Day, Dizzy Punch, Transform, Volt Tackle, Psystrike e os três finalizadores. Cada exclusivo terá prévia e teste em batalha, depois aprovação antes de entrar na campanha.
 
 ## Ordem de integração
 
