@@ -5,6 +5,8 @@ on:
     paths:
       - 'tools/pokearena/**'
       - 'tests/source-client-smoke.cjs'
+      - 'tests/evolution-modes-built.test.mjs'
+      - 'data/kanto-new-phaser-moves.json'
       - 'tests/public-phaser-preview.cjs'
       - '.github/workflows/pokearena-source-snapshot.yml'
   workflow_dispatch:
