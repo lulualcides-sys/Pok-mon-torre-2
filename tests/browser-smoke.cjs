@@ -38,7 +38,9 @@ const fs=require('node:fs');
   // Chrome headless can skip the brief mid-flight interval under SwiftShader;
   // assert the engine's accumulated GPU sprite frames after actual contact.
   await page.screenshot({path:'test-evidence/flamethrower-mid-flight.png',fullPage:true});
-  await page.waitForTimeout(1260);
+  await page.waitForFunction(()=>{const state=window.PokemonTorre2?.snapshot();
+    return state&&(state.enemy.hp<state.enemy.maxHp||state.status!=='fighting');},
+    null,{timeout:18000,polling:150});
   s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.ok(s.enemy.hp<s.enemy.maxHp,'real battle must apply damage at projectile contact');
   assert.ok(s.metrics.createdEffectSprites>=1,'real PixiJS sprite must be created');
