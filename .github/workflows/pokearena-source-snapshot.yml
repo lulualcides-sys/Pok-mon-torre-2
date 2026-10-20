@@ -35,6 +35,7 @@ jobs:
           node --check tools/pokearena/build-preview.mjs
           node --check tests/source-client-smoke.cjs
           node tools/pokearena/build-preview.mjs
+          node tools/pokearena/audit-moves.mjs
           node tests/solo-kanto-built.test.mjs
           node tests/evolution-modes-built.test.mjs
       - name: Testar cliente original Phaser no Chromium
@@ -81,6 +82,16 @@ jobs:
           name: pokearena2d-phaser-smoke-evidencias
           path: test-evidence/
           retention-days: 14
+          if-no-files-found: warn
+      - name: Arquivar inventário exaustivo de golpes e suas ausências
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena2d-inventario-golpes
+          path: |
+            site-capture/POKEARENA-MOVE-AUDIT.json
+            site-capture/POKEARENA-MOVE-AUDIT.md
+          retention-days: 30
           if-no-files-found: warn
       - name: Verificar a captura real e mostrar cobertura
         if: always()
