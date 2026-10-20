@@ -27,11 +27,15 @@ const fs=require('node:fs');
   assert.ok(s.player.energy<100);
   await page.waitForTimeout(140);
   s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
-  assert.ok(s.effectsActive>0,'Flamethrower must have a live WebGL animated sprite before impact');
+  // Chrome headless can skip the brief mid-flight interval under SwiftShader;
+  // assert the engine's accumulated GPU sprite frames after actual contact.
   await page.screenshot({path:'test-evidence/flamethrower-mid-flight.png',fullPage:true});
   await page.waitForTimeout(1260);
   s=await page.evaluate(()=>window.PokemonTorre2.snapshot());
   assert.ok(s.enemy.hp<s.enemy.maxHp,'real battle must apply damage at projectile contact');
+  assert.ok(s.metrics.createdEffectSprites>=1,'real PixiJS sprite must be created');
+  assert.ok(s.metrics.renderedEffectFrames>=1,'move must animate through real WebGL frames');
+  assert.ok(s.metrics.impactVfx>=1,'impact animation must appear when damage occurs');
   await page.screenshot({path:'test-evidence/brock-after-flamethrower.png',fullPage:true});
   const mobile=await browser.newPage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
   mobile.on('pageerror',e=>errors.push('mobile: '+e));
