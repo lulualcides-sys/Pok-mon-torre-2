@@ -81,7 +81,7 @@ export function resolveBattle(s,won,random=Math.random){
  const evolved=resolveEvolutionAfterBattle(p,'victory');
  member.id=p.species;member.hp=100;
  s.wins++;
- s.pendingCapture=s.capturesInStage<5?{
+ s.pendingCapture=(opponent.leader||s.capturesInStage<5)?{
   id:opponent.id,level:opponent.level,
   chance:opponent.leader?30+Math.floor(random()*61):Math.max(35,75-Math.floor(s.stage*3))
  }:null;
