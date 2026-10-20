@@ -128,74 +128,180 @@ class Campanha extends Phaser.Scene{
   text(this,320,350,notice,{fontSize:'10px',color:C.muted,wordWrap:{width:550}}).setOrigin(.5,1);
  }
  showSummary(state,index,slot=0,page=0){
+  // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
+  // touch targets, instant type filtering and search for Mewtwo's large pool.
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
   const member=state.team[index];
   if(!member)return this.scene.restart();
-  const stats=pokemonStats(member);
-  const pool=availableMoves(member);
-  const chosen=selectedMoves(member);
-  const ids=['LMB','RMB','Q','ULT'];
-  text(this,18,13,'SUMÁRIO · '+stats.name,{fontSize:'18px',color:C.gold});
-  this.button(584,23,84,28,'◀ VOLTAR',()=>this.scene.restart());
-  this.card(15,56,235,288,0x4f82b6);
-  this.card(260,56,365,288,0x46668b);
-  // Portrait is loaded directly from the captured PMD resource; original game
-  // stays Phaser/WebGL and needs no Canvas2D/copy from Torre 1.
+  const stats=pokemonStats(member),pool=availableMoves(member);
+  const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
+  this.summaryFilter??='ALL';this.summarySearch??='';
+  const slotCodes=['LMB','RMB','Q','E / ULT'];
+  const slotNames=['ATAQUE 1','ATAQUE 2','ESPECIAL','FINALIZADOR'];
+  const types={NORMAL:0xb9c4d2,FIRE:0xf0804d,WATER:0x6fb7f0,ELECTRIC:0xeec95d,
+    GRASS:0x83d18a,ICE:0x9bdcee,FIGHTING:0xdb8e77,POISON:0xb98cd9,
+    GROUND:0xc3aa77,FLYING:0x98c6e3,PSYCHIC:0xe997bf,BUG:0xaacb70,
+    ROCK:0xbaa981,GHOST:0x9b8ec5,DRAGON:0x9da9ef,DARK:0x969cac,
+    STEEL:0xa4bbc6,FAIRY:0xe5a8d6};
+  const hex=(type)=>'#'+(types[type]??0x9db1c7).toString(16).padStart(6,'0');
+  const ncol=type=>types[type]??0x9db1c7;
+  const box=(x,y,w,h,fill=0x14243b,stroke=0x375371)=>{
+   const rect=this.add.rectangle(x+w/2,y+h/2,w,h,fill,.98).setStrokeStyle(1,stroke);
+   return rect;
+  };
+  const label=(x,y,caption,color='#dceaff',size=11)=>text(this,x,y,caption,{
+   fontSize:size+'px',color});
+  const button=(x,y,w,h,caption,click,selected=false)=>{
+   const bg=box(x,y,w,h,selected?0x28465f:0x1b314a,selected?0xe7c56a:0x52718f);
+   bg.setInteractive({useHandCursor:true});
+   bg.on('pointerover',()=>bg.setFillStyle(selected?0x385b79:0x2d506f));
+   bg.on('pointerout',()=>bg.setFillStyle(selected?0x28465f:0x1b314a));
+   bg.on('pointerdown',click);
+   const name=label(x+w/2,y+h/2,caption,selected?'#ffe09a':'#e1eeff',11);
+   name.setOrigin(.5);
+   return bg;
+  };
+  // Distinct header and unified back navigation.
+  box(10,8,620,36,0x10243d,0x456b91);
+  label(23,15,'POKÉMON / SUMÁRIO',C.gold,16);
+  button(521,13,98,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
+  // Left: species identity and visible stats.
+  box(13,52,197,296,0x13233b,0x4a789f);
+  label(24,61,stats.name.toUpperCase(),C.gold,15);
+  const typesCaption=stats.types.join('  /  ');
+  label(25,82,'NV. '+stats.level+'    '+typesCaption,hex(stats.types[0]),11);
   const {def,etapa}=buscar(member.id);
   const dex=(etapa>0?def.evoluciones[etapa-1]?.dex:def.dex)||'0150';
   const key='torre2-portrait-'+dex;
-  if(!this.textures.exists(key)){
+  box(25,103,82,81,0x091726,0x365b78);
+  const portrait=()=>{
+   if(!this.scene.isActive()||!this.textures.exists(key))return;
+   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(2);
+  };
+  if(this.textures.exists(key))portrait();
+  else{
    this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
-   this.load.once('complete',()=>{
-    if(!this.scene.isActive()||!this.textures.exists(key))return;
-    const img=this.add.image(72,124,key).setDisplaySize(76,76).setDepth(2);
-   });
-   this.load.start();
-  }else this.add.image(72,124,key).setDisplaySize(76,76);
-  text(this,129,88,'NV. '+stats.level,{fontSize:'15px',color:C.gold});
-  text(this,129,109,stats.types.join('/'),{fontSize:'11px',color:C.blue});
-  text(this,129,126,stats.role||'POKÉMON',{fontSize:'10px',color:C.muted});
-  const statRows=[['HP',stats.hp,160],['ATK',stats.attack,190],['DEF',stats.defense,190],['SPD',stats.speed,200]];
-  statRows.forEach(([label,value,cap],i)=>{
-   const y=178+i*28;
-   text(this,29,y,label,{fontSize:'10px',color:C.muted});
-   this.add.rectangle(133,y+7,123,6,0x0a1421);
-   this.add.rectangle(72+(118*Math.min(1,value/cap))/2,y+7,118*Math.min(1,value/cap),6,
-    i===0?0x6fdbb8:i===1?0xffa869:i===2?0x90b3ff:0x75d9f5);
-   text(this,210,y,String(value),{fontSize:'10px',color:C.white});
+   this.load.once('complete',portrait);
+   if(!this.load.isLoading())this.load.start();
+  }
+  label(119,114,'TIPO',C.muted,10);
+  label(119,131,stats.types[0],hex(stats.types[0]),12);
+  label(119,151,'NV. '+stats.level,C.white,11);
+  const statRows=[['HP',stats.hp,180,0x64cb9c],['ATK',stats.attack,160,0xf6a268],
+                  ['DEF',stats.defense,165,0x7ab3f5],['SPD',stats.speed,200,0x9cd4d7]];
+  statRows.forEach(([name,value,max,color],i)=>{
+   const y=194+i*23;
+   label(25,y,name,C.muted,10);label(179,y,String(value),C.white,10).setOrigin(1,0);
+   box(60,y+3,100,7,0x0c1725,0x1d3046);
+   const width=Math.max(3,96*Math.min(1,Math.max(0,value/max)));
+   this.add.rectangle(62+width/2,y+6.5,width,4,color,1);
   });
-  this.button(131,317,188,29,index===state.active?'◆ ATIVO':'USAR NA BATALHA',()=>{
-   selectTeamMember(state,index);this.scene.restart();
+  label(25,289,member.id==='mewtwo'?'TESTE · GOLPES LIBERADOS':'ESCOLHA SEU POKÉMON',
+    member.id==='mewtwo'?'#ffcd7b':C.blue,10);
+  button(24,311,174,29,index===state.active?'◆ EM BATALHA':'USAR NA BATALHA',()=>{
+   selectTeamMember(state,index);this.summaryFilter='ALL';this.summarySearch='';this.scene.restart();
   },index===state.active);
-  text(this,273,63,'GOLPES EQUIPADOS   ·   SELECIONE UM SLOT',{fontSize:'12px',color:C.gold});
+  // Right: four prominent touch-friendly equipped slots, 2×2.
+  box(218,52,409,296,0x12243a,0x496b86);
+  label(231,59,'GOLPES EQUIPADOS',C.gold,14);
+  label(231,78,'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,10);
   chosen.forEach((id,i)=>{
-   const m=pool.find(x=>x.id===id);
-   const y=99+i*25;
-   this.button(439,y,328,24,(slot===i?'▶ ':'')+ids[i]+'  '+(m?.nombre||'—')+
-    '   '+(m?.tipo||''),()=>this.showSummary(state,index,i,0),slot===i);
+   const move=pool.find(m=>m.id===id);
+   const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
+   const current=activeSlot===i;
+   const bg=box(x,y,189,39,current?0x294765:0x172d43,current?0xf0cb6d:0x385772);
+   bg.setInteractive({useHandCursor:true});
+   bg.on('pointerdown',()=>this.showSummary(state,index,i,0));
+   bg.on('pointerover',()=>bg.setFillStyle(0x335977));
+   bg.on('pointerout',()=>bg.setFillStyle(current?0x294765:0x172d43));
+   label(x+8,y+4,slotCodes[i]+' · '+slotNames[i],
+     current?'#ffe6a7':'#96b2ce',9);
+   label(x+8,y+18,move?.nombre??'—',C.white,12);
+   label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
+   label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
   });
-  text(this,273,201,'BANCO DE GOLPES '+pool.length+
-   (member.id==='mewtwo'?' · TODOS LIBERADOS PARA TESTE':''),
-   {fontSize:'10px',color:C.blue});
-  const pages=Math.max(1,Math.ceil(pool.length/4));
-  const safePage=((page%pages)+pages)%pages;
-  pool.slice(safePage*4,safePage*4+4).forEach((move,i)=>{
-   const y=220+i*22;
-   const active=chosen.includes(move.id);
-   const bg=this.add.rectangle(445,y+8,335,19,active?0x214d60:0x182d44)
-    .setStrokeStyle(1,active?0x6aa59c:0x30516b).setInteractive({useHandCursor:true});
-   text(this,278,y,(active?'✓ ':'+ ')+move.nombre+'  · '+move.tipo,{fontSize:'10px',color:active?0xa5ecd3:C.white});
+  // Separated library with filters and paging: can navigate 137 Mewtwo moves.
+  this.add.rectangle(424,183,384,1,0x446580);
+  label(230,192,'BIBLIOTECA · '+pool.length+' GOLPES',C.gold,12);
+  button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
+  button(541,187,75,25,'BUSCAR',()=>{
+   const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
+   if(query===null)return;
+   this.summarySearch=query.trim().slice(0,35);
+   this.showSummary(state,index,activeSlot,0);
+  });
+  const filtered=pool.filter(move=>
+   (this.summaryFilter==='ALL'||move.tipo===this.summaryFilter)&&
+   (!this.summarySearch||move.nombre.toLowerCase().includes(this.summarySearch.toLowerCase())));
+  const pageSize=6,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
+  const safePage=Math.min(pages-1,Math.max(0,page));
+  if(this.summaryFilter!=='ALL'||this.summarySearch)
+   label(230,213,'FILTRO: '+this.summaryFilter+
+    (this.summarySearch?'  ·  '+this.summarySearch.toUpperCase():''),
+    '#95ceef',9);
+  const rowsY=223;
+  filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
+   const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
+   const equipped=chosen.includes(move.id);
+   const current=chosen[activeSlot]===move.id;
+   const bg=box(x,y,188,27,current?0x275749:equipped?0x1e434c:0x1a344d,
+    current?0x73d8b0:equipped?0x658e96:0x3c6283);
+   bg.setInteractive({useHandCursor:true});
    bg.on('pointerdown',()=>{
-    if(equipMove(member,slot,move.id)){
-     saveCampaign(state);
-     this.showSummary(state,index,slot,safePage);
-    }else text(this,273,308,'Já equipado noutro slot.',{fontSize:'10px',color:C.gold});
+    if(equipMove(member,activeSlot,move.id)){
+     saveCampaign(state);this.showSummary(state,index,activeSlot,safePage);
+    }else{
+     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':'GOLPE NÃO DISPONÍVEL.';
+     this.showSummary(state,index,activeSlot,safePage);
+    }
+   });
+   bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
+   bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
+   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+move.nombre,
+    current?'#bcffe3':'#ebf5ff',10);
+   label(x+6,y+16,move.tipo,C.muted,8);
+   label(x+181,y+16,'CD '+move.cd+'s',C.muted,8).setOrigin(1,0);
+  });
+  if(filtered.length===0)label(242,255,'NENHUM GOLPE ENCONTRADO',C.muted,11);
+  button(233,317,68,25,'◀ ANTES',()=>this.showSummary(state,index,activeSlot,(safePage+pages-1)%pages));
+  button(306,317,125,25,(safePage+1)+' / '+pages+' PÁGINAS',()=>this.showSummary(state,index,activeSlot,0),true);
+  button(437,317,73,25,'PRÓXIMO ▶',()=>this.showSummary(state,index,activeSlot,(safePage+1)%pages));
+  button(515,317,101,25,'LIMPAR',()=>{
+   this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
+   this.showSummary(state,index,activeSlot,0);
+  });
+  if(this.summaryWarning)label(242,211,this.summaryWarning,'#f6bc86',9);
+  this.summaryWarning=null;
+ }
+ showMoveTypePicker(state,index,slot){
+  // In-game type chooser, not a browser form or tiny cycle control.
+  const all=availableMoves(state.team[index]);
+  const types=['ALL',...new Set(all.map(m=>m.tipo))].sort((a,b)=>
+   a==='ALL'?-1:b==='ALL'?1:a.localeCompare(b));
+  const overlay=this.add.rectangle(320,180,640,360,0x050e19,.9)
+   .setDepth(2000).setInteractive();
+  const panel=this.add.rectangle(320,178,550,268,0x152a45,.99)
+   .setStrokeStyle(2,0x7da5c1).setDepth(2001);
+  const title=text(this,75,66,'FILTRAR MOVIMENTOS POR TIPO',
+   {fontSize:'17px',color:C.gold}).setDepth(2002);
+  const close=text(this,548,69,'FECHAR ✕',{fontSize:'11px',color:C.white})
+   .setInteractive({useHandCursor:true}).setDepth(2003);
+  close.on('pointerdown',()=>this.showSummary(state,index,slot,0));
+  types.forEach((type,i)=>{
+   const x=79+(i%5)*99,y=109+Math.floor(i/5)*49;
+   const rect=this.add.rectangle(x+43,y+14,91,35,
+     this.summaryFilter===type?0x365d74:0x233f59).setStrokeStyle(1,
+      this.summaryFilter===type?0xecc76d:0x5e809d)
+    .setInteractive({useHandCursor:true}).setDepth(2002);
+   const labelType=text(this,x+43,y+14,type,{fontSize:'11px',color:'#f2f6fb'})
+     .setOrigin(.5).setDepth(2003);
+   rect.on('pointerdown',()=>{
+    this.summaryFilter=type;this.summaryWarning=null;
+    this.showSummary(state,index,slot,0);
    });
   });
-  this.button(546,329,130,23,'BANCO '+(safePage+1)+'/'+pages,()=>this.showSummary(state,index,slot,safePage+1));
-  this.button(331,329,120,23,'◀ PÁGINA',()=>this.showSummary(state,index,slot,safePage-1));
  }
  dexScreen(state){
   this.children.removeAll(true);
