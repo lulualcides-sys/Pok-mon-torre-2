@@ -1,6 +1,6 @@
 import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,vector,clamp} from './combat-core.js';
-import {makeArena} from './arena-v02.js';
-import {buildAtlases,makeParticle} from './effects-v02.js';
+import {makeArena} from './arena-v03.js';
+import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v03.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
 const P=window.PIXI;
 const status=document.getElementById('status');
@@ -9,7 +9,8 @@ const overlay=document.getElementById('end-screen');
 const log=document.getElementById('battle-log');
 const scoreboard=document.getElementById('scoreboard');
 const buttons=[...document.querySelectorAll('[data-move]')];
-let app,battle,stage,atlases,attackVisuals=new Map(),impacts=[],pointTarget=null;
+let app,battle,stage,atlases,impactAtlases,attackVisuals=new Map(),impacts=[],pointTarget=null;
+let previousActors={player:null,enemy:null},screenShake=0;
 const held=new Set(),fingerDirs=new Set();
 const input={x:0,y:0};
 const logLines=[];
@@ -33,6 +34,7 @@ function createEngine(){
  stage=makeArena(P);app.stage.addChild(stage.root);
  installSpriteCollab(P,stage,states=>{actorArt=states;}).catch(err=>console.warn('Optional SpriteCollab actors unavailable:',err.message));
  atlases=buildAtlases(P,app);
+ impactAtlases=buildImpactAtlases(P,app);
  app.stage.eventMode='static';
  app.stage.hitArea=new P.Rectangle(0,0,WORLD.width,WORLD.height);
  app.stage.on('pointermove',event=>{if(event.global?.x!=null)pointTarget={x:event.global.x,y:event.global.y};});
@@ -41,10 +43,12 @@ function createEngine(){
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Ginásio de Pewter';
  window.PokemonTorre2={
-  version:'0.2.0-visual-test',
+  version:'0.3.0-fidelity',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
-    effectsActive:attackVisuals.size,metrics:{...metrics},actorArt:actorArt.slice(),renderer:app.renderer.gl?'webgl':'unavailable'}),
+    effectsActive:attackVisuals.size,metrics:{...metrics},actorArt:actorArt.slice(),
+    animations:{player:stage.player.__pmd?.state?.mode||'fallback',enemy:(battle.enemy.id==='geodude'?stage.enemyRock:stage.enemyOnix).__pmd?.state?.mode||'fallback'},
+    renderer:app.renderer.gl?'webgl':'unavailable'}),
   cast:(id)=>tryMove(id),restart:()=>restart(),
   proof:{originalProjectUntouched:true,moveSource:'original PixiJS pixel art',sourceGame:'none'}
  };
@@ -106,25 +110,39 @@ function renderModels(){
  const sprite=e.id==='geodude'?stage.enemyRock:stage.enemyOnix;
  sprite.position.set(Math.round(e.x),Math.round(e.y-5+Math.sin(battle.t*4)*1));
  stage.shadow.position.set(Math.round(p.x),Math.round(p.y+21));
+ const playerDelta=previousActors.player?{x:p.x-previousActors.player.x,y:p.y-previousActors.player.y}:{x:0,y:0};
+ const enemyDelta=previousActors.enemy?{x:e.x-previousActors.enemy.x,y:e.y-previousActors.enemy.y}:{x:0,y:0};
+ stage.player.__pmd?.update(battle.t,playerDelta.x,playerDelta.y,e.x-p.x,e.y-p.y);
+ sprite.__pmd?.update(battle.t,enemyDelta.x,enemyDelta.y,p.x-e.x,p.y-e.y);
+ previousActors={player:{x:p.x,y:p.y},enemy:{x:e.x,y:e.y}};
 }
 function addImpact(x,y,id){
  metrics.impactVfx++;
- const g=makeParticle(P);
- g.position.set(x-6,y-6);
- stage.vfx.addChild(g);
- impacts.push({graphics:g,life:.38,max:.38,id});
+ const effect=createImpact(P,id,impactAtlases);
+ effect.graphics.position.set(x,y);
+ stage.vfx.addChild(effect.graphics);
+ impacts.push(effect);
+ screenShake=id==='fireblast'?4.2:id==='flamethrower'?1.4:.9;
 }
 function handleEvents(){
  for(const e of consumeEvents(battle)){
-  if(e.type==='cast')message('Charizard usou '+MOVES[e.move].name+'!');
+  if(e.type==='cast'){
+   message('Charizard usou '+MOVES[e.move].name+'!');
+   stage.player.__pmd?.action('Shoot',e.move==='fireblast'?.58:.38,battle.t);
+  }
   if(e.type==='impact'){
    message(MOVES[e.move].name+' acertou: '+e.damage+' de dano'+(e.effective<1?' (não muito eficaz)':''));
    addImpact(e.x,e.y,e.move);
+   const enemySprite=battle.enemy.id==='geodude'?stage.enemyRock:stage.enemyOnix;
+   enemySprite.__pmd?.action('Hurt',.22,battle.t);
   }
   if(e.type==='miss')message(MOVES[e.move].name+' errou o alvo!');
   if(e.type==='enemy-defeated')message(e.enemy+' foi derrotado!');
   if(e.type==='next-enemy')message('Brock enviou '+e.enemy.toUpperCase()+'!');
-  if(e.type==='player-hit')message('Brock acertou '+e.damage+' de dano!');
+  if(e.type==='player-hit'){
+   message('Brock acertou '+e.damage+' de dano!');
+   stage.player.__pmd?.action('Hurt',.30,battle.t);
+  }
   if(e.type==='badge')endGame('Vitória!','Você ganhou a Insígnia Rocha de Brock.');
   if(e.type==='defeat')endGame('Fim da batalha','Seus Pokémon foram derrotados. Tente novamente!');
  }
@@ -161,14 +179,17 @@ function animateAttacks(delta){
   if(!current.has(id)){gfx.parent?.removeChild(gfx);gfx.destroy();attackVisuals.delete(id);}
  }
  for(let i=impacts.length-1;i>=0;i--){
-  const imp=impacts[i];imp.life-=delta;
-  imp.graphics.alpha=clamp(imp.life/imp.max,0,1);
-  imp.graphics.scale.set(1+(imp.max-imp.life)*5);
-  if(imp.life<=0){
+  const imp=impacts[i];
+  if(!renderImpact(imp,delta)){
    imp.graphics.parent?.removeChild(imp.graphics);
    imp.graphics.destroy();impacts.splice(i,1);
   }
  }
+ stage.updateLighting?.(battle.t,battle.projectiles);
+ // Very short camera kick only at physical contact.
+ screenShake=Math.max(0,screenShake-delta*24);
+ stage.root.position.set(screenShake?Math.sin(battle.t*75)*screenShake:0,
+    screenShake?Math.cos(battle.t*91)*screenShake*.65:0);
 }
 let uiTimer=0;
 function paintUI(){
@@ -205,6 +226,8 @@ function restart(){
  for(const imp of impacts){imp.graphics.parent?.removeChild(imp.graphics);imp.graphics.destroy();}
  impacts=[];
  battle=createBattle();pointTarget=null;overlay.hidden=true;
+ previousActors={player:null,enemy:null};screenShake=0;
+ stage.root.position.set(0,0);
  metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
  logLines.length=0;message('Batalha reiniciada no Ginásio de Pewter');paintUI();
 }
