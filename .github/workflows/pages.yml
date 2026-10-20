@@ -34,11 +34,32 @@ jobs:
           cp index.html styles.css favicon.svg _site/
           cp -a src _site/src
           test -s _site/index.html
-      - uses: actions/configure-pages@v5
+      - name: Arquivar build pronto para publicar
+        uses: actions/upload-artifact@v4
         with:
-          enablement: true
-      - uses: actions/upload-pages-artifact@v3
+          name: pokemon-torre-2-site-pronto
+          path: _site/
+          retention-days: 30
+      - name: Detectar se GitHub Pages ja foi habilitado
+        id: pages-enabled
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if gh api "/repos/${{ github.repository }}/pages" > /dev/null 2>&1; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "### Site pronto, mas GitHub Pages precisa ser habilitado" >> "$GITHUB_STEP_SUMMARY"
+            echo "Configuracao unica: Settings -> Pages -> Build and deployment -> Source: GitHub Actions." >> "$GITHUB_STEP_SUMMARY"
+            echo "Este workflow vai publicar automaticamente depois da configuracao." >> "$GITHUB_STEP_SUMMARY"
+          fi
+      - if: steps.pages-enabled.outputs.enabled == 'true'
+        uses: actions/configure-pages@v5
+      - if: steps.pages-enabled.outputs.enabled == 'true'
+        uses: actions/upload-pages-artifact@v3
         with:
           path: _site/
-      - id: deploy
+      - if: steps.pages-enabled.outputs.enabled == 'true'
+        id: deploy
         uses: actions/deploy-pages@v4
