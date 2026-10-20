@@ -41,7 +41,11 @@ const fs=require('node:fs');
     await page.evaluate(()=>window.PokemonTorre2.restart());
     const activated=await page.evaluate(id=>window.PokemonTorre2.cast(id),id);
     assert.ok(activated.ok,'combat engine must accept '+id);
-    await page.waitForTimeout(1700);
+    // Software WebGL on shared CI runners can render slower than wall-clock.
+    // Wait for the real simulation to reach impact, not an arbitrary 1.7 seconds.
+    await page.waitForFunction(()=>{const s=window.PokemonTorre2?.snapshot();
+      return s && (s.enemy.hp<s.enemy.maxHp || s.status!=='fighting');},
+      null,{timeout:18000,polling:150});
     const sample=await page.evaluate(()=>window.PokemonTorre2.snapshot());
     assert.equal(sample.castCount,1);
     assert.ok(sample.metrics.createdEffectSprites>0,id+' must render PixiJS effect');
