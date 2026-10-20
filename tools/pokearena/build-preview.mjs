@@ -39,6 +39,39 @@ const patches=[
    'if(!m||!this.anims.exists(`${forma.dex}-Idle-2`)||(m.feet??5)-(m.head??-16)>50)return;']
  ]]
 ];
+// Place the solo campaign beside the recovered original source so browsers do
+// not depend on server APIs or external runtime assets for Kanto progression.
+await fs.mkdir(path.join(dest,clientSource,'torre2'),{recursive:true});
+await Promise.all([
+ ['src/progression.js','progression.js'],
+ ['tools/pokearena/torre2-campaign-core.js','campaign-core.js'],
+ ['tools/pokearena/torre2-campaign-scene.js','campanha.js']
+].map(async([source,name])=>{
+ await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
+}));
+patches.push(
+ ['main.js',[
+  ['import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,caso,registrarNombres}from"./config.js";',
+   'import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,caso,registrarNombres}from"./config.js";import{Campanha}from"./torre2/campanha.js";'],
+  ['scene:[Carga,Titulo,Seleccion,Combate,Batalla,Reel,Preparar,',
+   'scene:[Carga,Campanha,Titulo,Seleccion,Combate,Batalla,Reel,Preparar,'],
+  ['iniciarAvisos(juego);iniciarChat(juego,ajustar);iniciarTarjetas(juego);vigilarVersion(juego);',
+   'window.__pt2Game=juego;/* Offline Kanto: do not start online chat, account or polling services. */']
+ ]],
+ ['escenas/carga.js',[
+  ['else this.scene.start("titulo")','else this.scene.start("campanha")']
+ ]],
+ ['escenas/combate.js',[
+  ['resultado(){this.fase="fin";',
+   'resultado(){if(this.datos.torre2){const ganhou=this.victorias[0]>this.victorias[1];this.fase="fin";this.time.delayedCall(700,()=>this.scene.start("campanha",{finished:true,won:ganhou,marker:this.datos.torre2}));return;}this.fase="fin";'],
+  ['salir(){this.soltarTiempo();',
+   'salir(){this.soltarTiempo();if(this.datos.torre2)return this.scene.start("campanha");']
+ ]],
+ ['luchador.js',[
+  ['if(intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)',
+   'if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)']
+ ]]
+);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
