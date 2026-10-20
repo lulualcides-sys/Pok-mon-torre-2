@@ -230,6 +230,29 @@ const server=http.createServer(async(req,res)=>{
   });
   await tester.waitForTimeout(900);
   await tester.screenshot({path:'test-evidence/torre2-mewtwo-lv50-summary-stat-moves.png',fullPage:true});
+  const uiCheck=await tester.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
+   const labels=()=>scene.children.list.filter(x=>typeof x.text==='string').map(x=>x.text);
+   const first=labels();
+   if(!first.includes('GOLPES EQUIPADOS')||!first.includes('TIPO ▾')||
+      !first.includes('BUSCAR'))throw Error('Polished summary controls missing');
+   const root={equipped:true,search:true,paging:first.some(x=>x.includes('PÁGINAS'))};
+   scene.showMoveTypePicker(state,1,0);
+   if(!labels().includes('GROUND'))throw Error('Type picker is not populated');
+   scene.summaryFilter='GROUND';
+   scene.showSummary(state,1,0,0);
+   if(!labels().some(x=>x.includes('FILTRO: GROUND')))throw Error('GROUND filter label missing');
+   if(!labels().some(x=>x.includes('Bonemerang')))throw Error('Ground attack filtered out');
+   scene.summaryFilter='ALL';scene.summarySearch='PAY';
+   scene.showSummary(state,1,0,0);
+   if(!labels().some(x=>x.includes('Pay Day')))throw Error('Move search not working');
+   scene.summarySearch='';scene.showSummary(state,1,0,0);
+   return {...root,typePicker:true,typeFiltering:true,searchFiltering:true};
+  });
+  assert.equal(uiCheck.typePicker,true);
+  await tester.screenshot({path:'test-evidence/torre2-mewtwo-redesigned-moves.png',fullPage:true});
+
   await tester.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
     const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
@@ -272,7 +295,7 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(newErrors,[],'Mewtwo summary + four Phaser moves must not crash');
   await tester.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,moves:moveSmoke},result:'Original Phaser + solo Kanto verified'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke},result:'Original Phaser + solo Kanto verified'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{
