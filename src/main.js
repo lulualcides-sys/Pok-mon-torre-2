@@ -83,7 +83,7 @@ function createUI(){
  joystickElement=document.getElementById('movement-stick');
  joystickThumb=document.getElementById('movement-thumb');
  const showStick=()=>{
-  joystickThumb.style.transform='translate3d('+stickState.offsetX+'px,'+stickState.offsetY+'px,0)';
+  joystickThumb.style.transform='translate3d('+stickState.offsetX+'px,'+stickState.offsetY+'px,0px)';
   joystickElement.classList.toggle('is-active',stickState.active);
  };
  const updateStick=event=>{
