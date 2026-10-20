@@ -76,5 +76,13 @@ export function makeArena(P){
    }
   }
  };
+ // One sortable actor layer: fighters cross in front/behind naturally as y changes.
+ // Decorations remain below, GPU effects remain above.
+ const actorLayer=new P.Container();
+ actorLayer.sortableChildren=true;
+ const idx=root.getChildIndex(stage.shadow);
+ root.addChildAt(actorLayer,idx);
+ actorLayer.addChild(stage.shadow,stage.enemyRock,stage.enemyOnix,stage.player);
+ stage.actorLayer=actorLayer;
  return stage;
 }

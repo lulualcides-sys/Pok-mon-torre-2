@@ -2,6 +2,7 @@ import {WORLD,MOVES,GYMS,createBattle,consumeEvents,cast,dodge,movePlayer,tick,v
 import {makeArena} from './arena-v03.js';
 import {buildAtlases,buildImpactAtlases,createImpact,renderImpact} from './effects-v03.js';
 import {installSpriteCollab} from './spritecollab-v02.js';
+import {buildBrockAtlas,spawnDust,stepDust} from './brock-v04.js';
 const P=window.PIXI;
 const status=document.getElementById('status');
 const canvasHost=document.getElementById('game');
@@ -9,7 +10,7 @@ const overlay=document.getElementById('end-screen');
 const log=document.getElementById('battle-log');
 const scoreboard=document.getElementById('scoreboard');
 const buttons=[...document.querySelectorAll('[data-move]')];
-let app,battle,stage,atlases,impactAtlases,attackVisuals=new Map(),impacts=[],pointTarget=null;
+let app,battle,stage,atlases,impactAtlases,brockAtlas,attackVisuals=new Map(),enemyVisuals=new Map(),impacts=[],stoneDust=[],pointTarget=null;
 let previousActors={player:null,enemy:null},screenShake=0;
 const held=new Set(),fingerDirs=new Set();
 const input={x:0,y:0};
@@ -35,6 +36,7 @@ function createEngine(){
  installSpriteCollab(P,stage,states=>{actorArt=states;}).catch(err=>console.warn('Optional SpriteCollab actors unavailable:',err.message));
  atlases=buildAtlases(P,app);
  impactAtlases=buildImpactAtlases(P,app);
+ brockAtlas=buildBrockAtlas(P,app);
  app.stage.eventMode='static';
  app.stage.hitArea=new P.Rectangle(0,0,WORLD.width,WORLD.height);
  app.stage.on('pointermove',event=>{if(event.global?.x!=null)pointTarget={x:event.global.x,y:event.global.y};});
@@ -43,10 +45,11 @@ function createEngine(){
  app.ticker.add(()=>step(app.ticker.deltaMS/1000));
  status.textContent='WebGL ativo · Ginásio de Pewter';
  window.PokemonTorre2={
-  version:'0.3.0-fidelity',
+  version:'0.4.0-battle-depth',
   snapshot:()=>({status:battle.status,gym:battle.gym,player:{...battle.player},enemy:{...battle.enemy},
     castCount:battle.castCount,kills:battle.kills,badges:battle.badges,
-    effectsActive:attackVisuals.size,metrics:{...metrics},actorArt:actorArt.slice(),
+    effectsActive:attackVisuals.size,enemyEffectsActive:enemyVisuals.size,
+    shotsAgainstPlayer:battle.enemyShots.length,metrics:{...metrics},actorArt:actorArt.slice(),
     animations:{player:stage.player.__pmd?.state?.mode||'fallback',enemy:(battle.enemy.id==='geodude'?stage.enemyRock:stage.enemyOnix).__pmd?.state?.mode||'fallback'},
     renderer:app.renderer.gl?'webgl':'unavailable'}),
   cast:(id)=>tryMove(id),restart:()=>restart(),
@@ -110,6 +113,10 @@ function renderModels(){
  const sprite=e.id==='geodude'?stage.enemyRock:stage.enemyOnix;
  sprite.position.set(Math.round(e.x),Math.round(e.y-5+Math.sin(battle.t*4)*1));
  stage.shadow.position.set(Math.round(p.x),Math.round(p.y+21));
+ stage.shadow.zIndex=p.y-1;
+ stage.player.zIndex=p.y;
+ stage.enemyRock.zIndex=e.y;
+ stage.enemyOnix.zIndex=e.y;
  const playerDelta=previousActors.player?{x:p.x-previousActors.player.x,y:p.y-previousActors.player.y}:{x:0,y:0};
  const enemyDelta=previousActors.enemy?{x:e.x-previousActors.enemy.x,y:e.y-previousActors.enemy.y}:{x:0,y:0};
  stage.player.__pmd?.update(battle.t,playerDelta.x,playerDelta.y,e.x-p.x,e.y-p.y);
@@ -137,6 +144,16 @@ function handleEvents(){
    enemySprite.__pmd?.action('Hurt',.22,battle.t);
   }
   if(e.type==='miss')message(MOVES[e.move].name+' errou o alvo!');
+  if(e.type==='enemy-cast'){
+   const enemySprite=e.enemy==='geodude'?stage.enemyRock:stage.enemyOnix;
+   enemySprite.__pmd?.action('Shoot',.34,battle.t);
+   message((e.enemy==='geodude'?'Geodude':'Onix')+' usou Rock Throw!');
+  }
+  if(e.type==='enemy-impact'){
+   const puff=spawnDust(P,brockAtlas,e.x,e.y);
+   stage.vfx.addChild(puff.sprite);stoneDust.push(puff);
+   screenShake=Math.max(screenShake,2.2);
+  }
   if(e.type==='enemy-defeated')message(e.enemy+' foi derrotado!');
   if(e.type==='next-enemy')message('Brock enviou '+e.enemy.toUpperCase()+'!');
   if(e.type==='player-hit'){
@@ -185,11 +202,41 @@ function animateAttacks(delta){
    imp.graphics.destroy();impacts.splice(i,1);
   }
  }
+ animateBrockRocks(delta);
  stage.updateLighting?.(battle.t,battle.projectiles);
  // Very short camera kick only at physical contact.
  screenShake=Math.max(0,screenShake-delta*24);
  stage.root.position.set(screenShake?Math.sin(battle.t*75)*screenShake:0,
     screenShake?Math.cos(battle.t*91)*screenShake*.65:0);
+}
+function animateBrockRocks(dt){
+ const active=new Set();
+ for(const shot of battle.enemyShots){
+  active.add(shot.id);
+  let gfx=enemyVisuals.get(shot.id);
+  if(!gfx){
+   gfx=new P.Sprite(brockAtlas[shot.owner][0]);
+   gfx.anchor.set(.5,.5);gfx.roundPixels=true;
+   gfx.width=shot.owner==='onix'?51:38;
+   gfx.height=shot.owner==='onix'?51:38;
+   stage.vfx.addChild(gfx);enemyVisuals.set(shot.id,gfx);
+   metrics.enemyProjectileSprites=(metrics.enemyProjectileSprites||0)+1;
+  }
+  gfx.position.set(Math.round(shot.x),Math.round(shot.y));
+  gfx.texture=brockAtlas[shot.owner][Math.floor(shot.age*15)%8];
+  gfx.rotation=shot.age*4;
+  const lift=Math.sin(Math.PI*shot.progress);
+  gfx.scale.set((shot.owner==='onix'?.56:.44)*(1+.14*lift));
+ }
+ for(const [id,gfx] of enemyVisuals)if(!active.has(id)){
+  gfx.parent?.removeChild(gfx);gfx.destroy();enemyVisuals.delete(id);
+ }
+ for(let i=stoneDust.length-1;i>=0;i--){
+  const d=stoneDust[i];
+  if(!stepDust(d,dt,brockAtlas)){
+   d.sprite.parent?.removeChild(d.sprite);d.sprite.destroy();stoneDust.splice(i,1);
+  }
+ }
 }
 let uiTimer=0;
 function paintUI(){
@@ -222,13 +269,17 @@ function endGame(title,subtitle){
 }
 function restart(){
  for(const [,g] of attackVisuals){g.parent?.removeChild(g);g.destroy();}
+ for(const [,g] of enemyVisuals){g.parent?.removeChild(g);g.destroy();}
+ enemyVisuals.clear();
+ for(const d of stoneDust){d.sprite.parent?.removeChild(d.sprite);d.sprite.destroy();}
+ stoneDust=[];
  attackVisuals.clear();
  for(const imp of impacts){imp.graphics.parent?.removeChild(imp.graphics);imp.graphics.destroy();}
  impacts=[];
  battle=createBattle();pointTarget=null;overlay.hidden=true;
  previousActors={player:null,enemy:null};screenShake=0;
  stage.root.position.set(0,0);
- metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0};
+ metrics={renderedEffectFrames:0,createdEffectSprites:0,impactVfx:0,enemyProjectileSprites:0};
  logLines.length=0;message('Batalha reiniciada no Ginásio de Pewter');paintUI();
 }
 try{createEngine();paintUI();}catch(error){

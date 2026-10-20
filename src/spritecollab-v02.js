@@ -5,14 +5,41 @@
 export const PMD_CREDITS='https://github.com/PMDCollab/SpriteCollab';
 const BASE='https://raw.githubusercontent.com/PMDCollab/SpriteCollab/master/sprite/';
 const ROSTER=[
- {name:'Charizard',id:'0006',target:'player',scale:2.65,face:2,
+ {name:'Charizard',id:'0006',target:'player',scale:3.75,face:2,
   sizes:{Idle:[40,48],Walk:[40,48],Shoot:[56,56],Attack:[80,88],Hurt:[64,64]}},
- {name:'Geodude',id:'0074',target:'enemyRock',scale:2.65,face:6,
+ {name:'Geodude',id:'0074',target:'enemyRock',scale:3.35,face:6,
   sizes:{Idle:[32,24],Walk:[32,32],Shoot:[48,40],Attack:[72,80],Hurt:[40,48]}},
- {name:'Onix',id:'0095',target:'enemyOnix',scale:1.20,face:6,
+ {name:'Onix',id:'0095',target:'enemyOnix',scale:1.43,face:6,
   sizes:{Idle:[96,104],Walk:[88,112],Shoot:[96,112],Attack:[128,152],Hurt:[80,88]}}
 ];
 const ACTIONS=['Idle','Walk','Shoot','Attack','Hurt'];
+const FRAME_DURATIONS={
+ // Durations transcribed from per-species licensed PMD SpriteCollab AnimData.xml (60 Hz ticks).
+ '0006':{
+  Idle:[15,15,15,15],Walk:[8,10,8,10],
+  Shoot:[4,6,2,2,2,2,2,2,2,2,2],
+  Attack:[2,2,2,2,4,1,1,2,2,2,2,2,2,2],Hurt:[2,8]
+ },
+ '0074':{
+  Idle:[8,12,8,12],Walk:[8,10,8,10],
+  Shoot:[2,2,4,1,1,2,2,2,2,2,2,2,2,2],
+  Attack:[3,3,2,2,2,2,1,1,1,1,1,1,2,2],Hurt:[2,8]
+ },
+ '0095':{
+  Idle:[16,16,16,16],Walk:[10,14,10,14],
+  Shoot:[2,2,6,2,2,2,2,2,2,2],
+  Attack:[2,6,1,1,1,2,2,2,2,2,2],Hurt:[2,8]
+ }
+};
+export function timedFrame(durations,elapsed){
+ if(!durations?.length)return 0;
+ const ticks=durations.reduce((a,b)=>a+b,0);
+ let position=((Math.max(0,elapsed)*60)%ticks+ticks)%ticks;
+ for(let n=0;n<durations.length;n++){
+  position-=durations[n];if(position<0)return n;
+ }
+ return durations.length-1;
+}
 export function facingDirection(dx,dy,previous=2){
  if(Math.hypot(dx,dy)<0.13)return previous;
  // PMD eight-way rows: down, down-right, right, up-right, up,
@@ -72,7 +99,7 @@ function buildController(P,parent,mon,loaded){
  for(const child of parent.children)child.visible=false;
  parent.addChild(sprite);
  const state={mode:'Idle',face:mon.face,locked:'',lockUntil:0,frames:0,changes:0,actions:0,
-  lastAction:'',loaded:Object.keys(loaded),name:mon.name};
+  lastAction:'',loaded:Object.keys(loaded),name:mon.name,modeSince:0,frame:0};
  const get=(action,face)=>loaded[action]?.clips[face]||loaded.Idle.clips[face];
  const controller={
   sprite,state,
@@ -84,21 +111,23 @@ function buildController(P,parent,mon,loaded){
   },
   update(time,dx,dy,lookDx,lookDy){
    const was=state.face;
-   state.face=facingDirection(lookDx,lookDy,state.face);
-   if(state.face!==was)state.changes++;
    const walking=Math.hypot(dx,dy)>0.8;
+   const movingFreely=walking&&time>=state.lockUntil;
+   state.face=facingDirection(movingFreely?dx:lookDx,movingFreely?dy:lookDy,state.face);
+   if(state.face!==was)state.changes++;
    const mode=time<state.lockUntil&&loaded[state.locked]?state.locked:
      walking&&loaded.Walk?'Walk':'Idle';
    if(mode!==state.mode||state.face!==was){
     sprite.textures=get(mode,state.face);
     sprite.gotoAndStop(0);
     state.mode=mode;
+    state.modeSince=time; // A new shoot/hurt/walk sequence always begins at frame 0.
    }
-   // Battle sprites update at real time, not with arbitrary renderer frames.
-   const fps=mode==='Idle'?5:mode==='Walk'?11:mode==='Hurt'?9:18;
-   const i=Math.floor(time*fps)%sprite.totalFrames;
-   sprite.gotoAndStop(i);
-   state.frames++;
+   const durations=FRAME_DURATIONS[mon.id]?.[mode];
+   const i=durations?timedFrame(durations.slice(0,sprite.totalFrames),time-state.modeSince):
+     Math.floor(Math.max(0,time-state.modeSince)*10)%sprite.totalFrames;
+   sprite.gotoAndStop(Math.min(i,sprite.totalFrames-1));
+   state.frame=i;state.frames++;
   }
  };
  parent.__pmd=controller;

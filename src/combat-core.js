@@ -42,7 +42,7 @@ const ENEMIES=[
 const cloneEnemy=e=>({...e});
 export function createBattle(){
  return {gym:'pewter',status:'fighting',player:player(),enemy:cloneEnemy(ENEMIES[0]),
-  enemyIndex:0,t:0,projectiles:[],visuals:[],events:[],kills:0,badges:0,castCount:0,goal:'Vença Brock no Ginásio de Pewter'};
+  enemyIndex:0,t:0,projectiles:[],enemyShots:[],enemyCastCount:0,visuals:[],events:[],kills:0,badges:0,castCount:0,goal:'Vença Brock no Ginásio de Pewter'};
 }
 function notify(s,type,payload={}){
  s.events.push({type,time:s.t,...payload});
@@ -103,6 +103,7 @@ function impact(s,projectile){
 }
 function defeatEnemy(s){
  s.kills++;
+ s.enemyShots.length=0; // No previous Pokemon projectile survives a trainer switch.
  notify(s,'enemy-defeated',{enemy:s.enemy.id});
  if(s.enemyIndex===ENEMIES.length-1){
   s.status='victory';s.badges=1;notify(s,'badge',{leader:'Brock',gym:'pewter'});
@@ -130,21 +131,50 @@ export function tick(s,dt){
   if(distance(shot,e)<=shot.move.radius+e.radius||shot.progress>=1)impact(s,shot);
  }
  s.projectiles=s.projectiles.filter(shot=>!shot.hit);
- if(!e||e.hp<=0)return;
+ if(s.status!=='fighting')return;
+ // Brock's rocks now have an actual visible travel arc and can be dodged.
+ // HP is never removed by an invisible proximity hit.
+ for(const rock of s.enemyShots){
+  rock.age+=dt;
+  const step=Math.min(rock.range,rock.speed*rock.age);
+  rock.progress=step/rock.range;
+  rock.x=rock.origin.x+rock.direction.x*step;
+  rock.y=rock.origin.y+rock.direction.y*step;
+  if(distance(rock,p)<p.radius+rock.radius){
+   rock.done=true;
+   if(p.invulnerable<=0){
+    p.hp=Math.max(0,p.hp-rock.power);
+    p.invulnerable=.32;
+    notify(s,'enemy-impact',{enemy:rock.owner,id:rock.id,x:rock.x,y:rock.y});
+    notify(s,'player-hit',{damage:rock.power,hp:p.hp,x:rock.x,y:rock.y});
+    if(p.hp===0){s.status='defeat';notify(s,'defeat',{leader:'Brock'});}
+   }
+  }else if(rock.progress>=1){
+   rock.done=true;notify(s,'enemy-miss',{enemy:rock.owner,id:rock.id,x:rock.x,y:rock.y});
+  }
+ }
+ s.enemyShots=s.enemyShots.filter(rock=>!rock.done);
+ if(s.status!=='fighting'||!e||e.hp<=0)return;
  const gap=distance(p,e);
- if(gap>118){
+ if(gap>174){
   const toward=vector(e,p);
   e.x=clamp(e.x+toward.x*e.speed*dt,80,WORLD.width-80);
   e.y=clamp(e.y+toward.y*e.speed*dt,80,WORLD.height-80);
  }
  e.action-=dt;
  if(e.action<=0){
-  e.action=1.7;
-  if(distance(p,e)<158&&p.invulnerable<=0){
-   p.hp=Math.max(0,p.hp-e.power);
-   p.invulnerable=.28;
-   notify(s,'player-hit',{damage:e.power,hp:p.hp});
-   if(p.hp===0){s.status='defeat';notify(s,'defeat',{leader:'Brock'});}
+  e.action=e.id==='onix'?1.4:1.8;
+  if(distance(p,e)<490){
+   const origin={x:e.x,y:e.y-24};
+   const target={x:p.x,y:p.y-14};
+   const dir=vector(origin,target);
+   const rock={id:++s.enemyCastCount,owner:e.id,power:e.power,
+    origin,direction:dir,x:origin.x,y:origin.y,
+    age:0,progress:0,range:Math.min(520,distance(origin,target)+26),
+    speed:e.id==='onix'?390:335,radius:e.id==='onix'?17:13,done:false};
+   s.enemyShots.push(rock);
+   notify(s,'enemy-cast',{enemy:e.id,id:rock.id,x:rock.x,y:rock.y,
+    target,range:rock.range});
   }
  }
 }

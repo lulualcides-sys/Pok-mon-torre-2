@@ -79,3 +79,37 @@ test('attack originates at the mouth and travels toward a moving opponent',()=>{
  for(let i=0;i<45;i++)tick(s,.04);
  assert.ok(e.hp<e.maxHp,'damage must still reach target after muzzle correction');
 });
+
+test('Geodude fires a visible moving stone rather than applying invisible proximity damage',()=>{
+ const s=createBattle();
+ const initial=s.player.hp;
+ s.enemy.x=s.player.x+220;s.enemy.y=s.player.y;
+ s.enemy.action=.01;
+ tick(s,.025);
+ assert.equal(s.player.hp,initial,'rock throw cannot damage on cast');
+ assert.equal(s.enemyShots.length,1,'enemy must create a visible rock object');
+ const born={...s.enemyShots[0]};
+ tick(s,.025);
+ assert.ok(s.enemyShots[0].x<born.x,'rock travels toward player');
+ assert.ok(consumeEvents(s).some(e=>e.type==='enemy-cast'));
+});
+test('timed dodge protects against rock throw and rock does not hit through invulnerability',()=>{
+ const s=createBattle(),hp=s.player.hp;
+ s.enemy.x=s.player.x+90;s.enemy.y=s.player.y;
+ s.enemy.action=0.01;
+ tick(s,.03);
+ assert.ok(s.enemyShots.length>0);
+ assert.equal(dodge(s,{x:1,y:0}),true);
+ for(let i=0;i<12;i++)tick(s,.03);
+ assert.equal(s.player.hp,hp,'invulnerable character cannot be hit by Rock Throw');
+});
+
+test('PMD licensed 60Hz animation cycles respect source frame durations',async()=>{
+ const {timedFrame,facingDirection}=await import('../src/spritecollab-v02.js');
+ assert.equal(timedFrame([8,10,8,10],0),0);
+ assert.equal(timedFrame([8,10,8,10],9/60),1);
+ assert.equal(timedFrame([8,10,8,10],19/60),2);
+ assert.equal(timedFrame([8,10,8,10],36/60),0);
+ assert.equal(facingDirection(1,0,2),2);
+ assert.equal(facingDirection(0,1,2),4);
+});
