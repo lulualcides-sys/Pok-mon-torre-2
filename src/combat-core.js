@@ -1,6 +1,7 @@
 /* Pokémon Torre 2 — pure deterministic battle rules (no DOM, no Canvas2D).
  * A successful cast emits a visual event; damage applies only at impact.
  */
+import {createPokemonProgression,awardBattleExperience,resolveEvolutionAfterBattle} from './progression.js';
 export const WORLD=Object.freeze({width:960,height:540,padding:46});
 export const MOVES=Object.freeze({
  ember:Object.freeze({id:'ember',name:'Ember',type:'fire',power:13,cost:9,cooldown:0.60,speed:520,frames:12,range:480,radius:24,color:0xff9d27}),
@@ -39,7 +40,8 @@ export function elementalMultiplier(attack,defender){
  if(resisted[attack]?.includes(defender))return .5;
  return 1;
 }
-const player=()=>({id:'charizard',name:'Charizard',level:50,type:'fire',x:235,y:345,
+const player=()=>({id:'charizard',name:'Charizard',level:50,type:'fire',
+ progression:createPokemonProgression('charizard',50,{growth:'medium-slow'}),x:235,y:345,
  radius:24,hp:230,maxHp:230,energy:100,maxEnergy:100,invulnerable:0,speed:190,
  cooldowns:Object.fromEntries(Object.keys(MOVES).map(id=>[id,0]))});
 const ENEMIES=[
@@ -116,9 +118,24 @@ function impact(s,projectile){
 function defeatEnemy(s){
  s.kills++;
  s.enemyShots.length=0; // No previous Pokemon projectile survives a trainer switch.
+ // Gen III trainer-battle EXP approximation, with per-species Gen III base yields.
+ // Award EXP now, but never evolve or swap sprites before combat has ended.
+ const baseYield=s.enemy.id==='geodude'?86:s.enemy.id==='onix'?108:0;
+ const gained=Math.floor(baseYield*s.enemy.level*1.5/7);
+ const growth=awardBattleExperience(s.player.progression,gained,'fighting');
+ s.player.level=s.player.progression.level;
+ notify(s,'experience',{enemy:s.enemy.id,gained,...growth});
  notify(s,'enemy-defeated',{enemy:s.enemy.id});
  if(s.enemyIndex===ENEMIES.length-1){
-  s.status='victory';s.badges=1;notify(s,'badge',{leader:'Brock',gym:'pewter'});
+  s.status='victory';s.badges=1;
+  const evolution=resolveEvolutionAfterBattle(s.player.progression,s.status);
+  if(evolution.evolutions.length){
+   // Model-level species identity is updated only on the post-combat boundary.
+   s.player.id=s.player.progression.species;
+   s.player.name=s.player.id.charAt(0).toUpperCase()+s.player.id.slice(1);
+   notify(s,'evolution',{evolutions:evolution.evolutions});
+  }
+  notify(s,'badge',{leader:'Brock',gym:'pewter'});
  }else{
   s.enemyIndex++;
   s.enemy=cloneEnemy(ENEMIES[s.enemyIndex]);
