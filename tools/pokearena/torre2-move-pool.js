@@ -20,8 +20,8 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'sing',approved:true,nombre:'Sing',forma:'torre2_sing',tipo:'NORMAL',dano:0,alcance:220,coste:24,cd:8,anim:'Charge',lanzar:.14,description:'Jigglypuff song: staggered pixel notes, 55% sleep only after contact'},
  {id:'crabhammer',approved:true,nombre:'Crabhammer',forma:'torre2_crabhammer',tipo:'WATER',dano:15,alcance:80,coste:26,cd:6.5,anim:'Swing',lanzar:.12,description:'Kingler pixel-claw hammer, contact only, blue impact splash'},
  {id:'smog',approved:true,nombre:'Smog',forma:'torre2_smog',tipo:'POISON',dano:7,alcance:190,coste:23,cd:6.7,anim:'Shoot',lanzar:.13,description:'17 staggered drifting toxic bubbles with independent collision and small impact damage; 40% poison on first confirmed bubble'},
- {id:'hyper-fang',nombre:'Hyper Fang',forma:'torre2_hyperfang',tipo:'NORMAL',dano:20,alcance:87,coste:24,cd:6.3,anim:'Swing',lanzar:.11,description:'Raticate pixel fangs: single real bite, 90% accuracy and 10% flinch'},
- {id:'guillotine',nombre:'Guillotine',forma:'torre2_guillotine',tipo:'NORMAL',dano:19,alcance:85,coste:45,cd:15,anim:'Swing',lanzar:.18,description:'Pinsir steel pincers, 30% physical-contact OHKO chance, level-gated'},
+ {id:'hyper-fang',approved:true,nombre:'Hyper Fang',forma:'torre2_hyperfang',tipo:'NORMAL',dano:20,alcance:87,coste:24,cd:6.3,anim:'Swing',lanzar:.11,description:'Raticate pixel fangs: single real bite, 90% accuracy and 10% flinch'},
+ {id:'guillotine',approved:true,nombre:'Guillotine',forma:'torre2_guillotine',tipo:'NORMAL',dano:19,alcance:85,coste:45,cd:15,anim:'Swing',lanzar:.18,description:'Pinsir steel pincers, 30% physical-contact OHKO chance, level-gated'},
  {id:'petal-dance',nombre:'Petal Dance',forma:'torre2_petaldance',tipo:'GRASS',dano:13,alcance:220,coste:33,cd:10,anim:'Charge',lanzar:.19,description:'Vileplume pixel rose petal spiral, up to three actual contacts and self-confusion'},
  {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
