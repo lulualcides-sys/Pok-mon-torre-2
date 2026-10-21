@@ -142,37 +142,58 @@ function star(g,x,y,phase=0){
  if(phase%3===0)draw(g,x+3,y-3,1,1,0xffffff,.65);
 }
 export function swift(l,h,extra){
- const e=l.escena,g=layer(e,1510),tail=layer(e,1509),r=l.rival;
- let age=0,hitDone=false;
- const ox=l.x,oy=l.y-l.alto*.53,ang=direct(l);
+ // Five actual independent stars, never a homing auto-hit. Their trajectories
+ // are locked when fired, and each star does a SWEPT segment/body collision.
+ // An evading Pokémon can avoid one, some, or all hits.
+ const e=l.escena,g=layer(e,1510),trail=layer(e,1509),r=l.rival;
+ const origin={x:l.x+Math.cos(direct(l))*8,y:l.y-l.alto*.52};
+ const angle=direct(l),speed=345,reach=Math.min(h.alcance||250,265);
  const stars=Array.from({length:5},(_,i)=>({
-  delay:i*.073,skew:(i-2)*8,seed:i*1.17
+  delay:i*.085,angle:angle+[-.075,-.035,0,.035,.075][i],
+  from:origin.x,to:origin.y,position:null,done:false,impact:false
  }));
- l.animar('Shoot',.53,.11);l.accion={hasta:l.t+.23,lento:.64,angulo:ang};
+ let age=0,disposed=false;
+ const dispose=()=>{if(disposed)return;disposed=true;g.destroy();trail.destroy()};
+ l.animar('Shoot',.52,.12);
+ l.accion={hasta:l.t+.26,lento:.62,angulo:angle};
  return running(e,dt=>{
-  age+=dt;g.clear();tail.clear();
+  age+=dt;g.clear();trail.clear();
   for(let i=0;i<stars.length;i++){
-   const q=stars[i],t=(age-q.delay)/.63;
-   if(t<0||t>=1)continue;
-   const target=targetAt(r)||{x:ox+Math.cos(ang)*220,y:oy+Math.sin(ang)*160};
-   const f=ease(t),nx=-Math.sin(ang),ny=Math.cos(ang);
-   const side=q.skew*Math.sin(PI*f)*.7;
-   const x=lerp(ox,target.x,f)+nx*side;
-   const y=lerp(oy,target.y,f)+ny*side*.75-9*Math.sin(PI*f);
-   star(g,x,y,Math.floor(age*16+q.seed));
-   for(let n=1;n<=2;n++){
-    const older=ease(sat(t-n*.041));
-    draw(tail,lerp(ox,target.x,older)+nx*side*.65,
-     lerp(oy,target.y,older)+ny*side*.5,2,2,0xdab857,.38-n*.09);
+   const q=stars[i];
+   if(q.done||age<q.delay)continue;
+   const elapsed=age-q.delay,travel=Math.min(speed*elapsed,reach);
+   const x=origin.x+Math.cos(q.angle)*travel;
+   const y=origin.y+Math.sin(q.angle)*travel*.76;
+   const previous=q.position||{x:origin.x,y:origin.y};
+   q.position={x,y};
+   // Segment/circle crossing avoids tunnelling through a moving hitbox when
+   // the game temporarily runs at a low frame rate.
+   if(r&&!r.ko){
+    const center={x:r.x,y:r.y-r.alto*.5};
+    const dx=x-previous.x,dy=y-previous.y;
+    const div=dx*dx+dy*dy||1;
+    const along=sat(((center.x-previous.x)*dx+(center.y-previous.y)*dy)/div);
+    const cx=previous.x+dx*along,cy=previous.y+dy*along;
+    const radius=Math.max(11,Math.min(19,(r.alto||30)*.4));
+    if(Math.hypot(cx-center.x,cy-center.y)<=radius){
+     q.done=true;
+     q.impact=hit(l,h,extra,r,.22,8);
+     if(q.impact){
+      sparkle(e,cx,cy,0xffd979,.42);
+      // Small independent impact, like Pay Day — NO delayed blanket damage.
+     }
+     continue;
+    }
    }
-   if(!hitDone&&r&&!r.ko&&t>.86){
-    hitDone=true;
-    if(hit(l,h,extra,r,1,34))sparkle(e,r.x,r.y-r.alto*.5,0xf5d876,.65);
-   }
+   if(travel>=reach){q.done=true;continue}
+   star(g,x,y,Math.floor(elapsed*13+i));
+   // Short muted afterimage, never a long golden streak or yellow ball.
+   draw(trail,x-Math.cos(q.angle)*7,y-Math.sin(q.angle)*5,2,2,
+    0xbe983a,.36);
   }
-  if(age>.96){g.destroy();tail.destroy();return false}
-  return true
- },()=>{g.destroy();tail.destroy()});
+  if(stars.every(q=>q.done)||age>1.25){dispose();return false}
+  return true;
+ },dispose);
 }
 function orb(g,x,y,t){
  // Compact Ghost-type mass: deep violet center and uneven dark outline.
