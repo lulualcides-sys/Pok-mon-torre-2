@@ -23,7 +23,7 @@ assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
 assert.equal(tester.progression.level,50);
 const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
-for(const id of ['bonemerang','bone-club','tri-attack','pay-day','surf','swift','shadow-ball','lovely-kiss'])
+for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -37,8 +37,8 @@ assert.equal(equipMove(tester,1,'tri-attack'),false,'prevent duplicate moves in 
 saveCampaign(state);
 assert.equal(readCampaign().team.find(x=>x.id==='mewtwo').moves[0],confusion.id,
  'selected moves must persist in saved campaign');
-assert.equal(equipMove(tester,0,'surf'),true,'new Surf must equip');
-assert.equal(resolveLoadout(tester).lmb.forma,'torre2_surf');
+assert.equal(allMoves.some(x=>x.id==='surf'),false,'unapproved Surf must be hidden from the Kanto move catalog');
+assert.equal(equipMove(tester,0,'surf'),false,'unapproved Surf may not be equipped');
 assert.equal(equipMove(tester,0,'swift'),true,'new Swift must equip');
 assert.equal(resolveLoadout(tester).lmb.forma,'torre2_swift');
 assert.equal(equipMove(tester,0,'shadow-ball'),true,'new Shadow Ball must equip');
