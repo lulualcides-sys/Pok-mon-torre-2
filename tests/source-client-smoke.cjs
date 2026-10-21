@@ -176,6 +176,28 @@ const server=http.createServer(async(req,res)=>{
     .children.list.some(o=>typeof o.text==='string'&&o.text.toUpperCase().includes('PEWTER')),
     null,{timeout:15000});
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-offline-kanto-menu.png',fullPage:true});
+  const newMap=await offline.evaluate(async()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+    const state=core.readCampaign();
+    const labels=()=>c.children.list.filter(x=>typeof x.text==='string').map(x=>x.text).join(' | ');
+    const map=labels();
+    c.grassScreen(state);const grass=labels();
+    c.centerScreen(state);const center=labels();
+    c.martScreen(state);const mart=labels();
+    c.bagScreen(state);const bag=labels();
+    c.scene.restart();
+    return {map,grass,center,mart,bag};
+  });
+  assert.ok(newMap.map.includes('BATALHAR'),'Playable map has current route battle');
+  assert.ok(newMap.map.includes('INSÍGNIAS'),'Map shows progress');
+  assert.ok(newMap.grass.includes('VIRIDIAN'),'Grass is regional, not random Kanto');
+  assert.ok(newMap.center.includes('CURAR'),'Pokémon Center is interactive');
+  assert.ok(newMap.mart.includes('POKÉ MART'),'Mart offers items');
+  assert.ok(newMap.bag.includes('POÇÃO'),'Bag has potions and TM UI');
+  await offline.screenshot({path:'test-evidence/torre2-kanto-path-map.png',fullPage:true});
+
   await offline.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
     const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
@@ -462,6 +484,44 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(Math.max(...kissHearts.firstYs)-Math.min(...kissHearts.firstYs)>=25,
     'Lovely Kiss hearts must scatter instead of forming a straight row');
   assert.equal(kissHearts.statuses,0,'Cosmetic hearts must not auto-apply sleep');
+
+  // Three unapproved, new species-characteristic moves: physics regression.
+  const newSpeciesAttacks=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const moves=await import(new URL('./torre2/species-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate'),old=Math.random,results=[];
+    try{
+      for(const cfg of [
+       {key:'sing',dist:116,tipo:'NORMAL'},
+       {key:'crabhammer',dist:63,tipo:'WATER'},
+       {key:'smog',dist:116,tipo:'POISON'}
+      ])for(const miss of [false,true]){
+       const enemy={x:174+cfg.dist,y:miss?380:215,alto:38,ko:false,hp:150,
+        hits:0,status:[],recibir(_l,d){this.hits++;this.hp-=d.dano||0;return 'golpe'},
+        ponerEstado(name){this.status.push(name)}};
+       const player={x:174,y:215,alto:38,ax:440,ay:215,escena:e,
+        rival:enemy,t:0,animar(){},accion:null};
+       Math.random=()=>.1;
+       const fx=moves[cfg.key](player,{tipo:cfg.tipo,dano:12,alcance:250},{slot:'lmb'});
+       let active=true;
+       for(let frame=0;frame<140&&active;frame++)active=fx.update(.016);
+       fx.destroy();e.efectos=e.efectos.filter(x=>x!==fx);
+       results.push({key:cfg.key,miss,hits:enemy.hits,status:enemy.status,cleaned:!active});
+      }
+      return results;
+    }finally{Math.random=old}
+  });
+  assert.ok(newSpeciesAttacks.every(x=>x.cleaned),'All 3 new species VFX free graphics');
+  for(const key of ['sing','crabhammer','smog']){
+   assert.ok(newSpeciesAttacks.find(x=>x.key===key&&!x.miss)?.hits>0,
+    key+' should land only on actual trajectory');
+   assert.equal(newSpeciesAttacks.find(x=>x.key===key&&x.miss)?.hits,0,
+    key+' should MISS when opponent dodges');
+  }
+  assert.ok(newSpeciesAttacks.find(x=>x.key==='sing'&&!x.miss)?.status.includes('aturdido'),
+   'Sing must only put rival to sleep if note hits and accuracy succeeds');
+  assert.ok(newSpeciesAttacks.find(x=>x.key==='smog'&&!x.miss)?.status.includes('veneno'),
+   'Smog only poisons after confirmed contact');
 
   // Collision regression for the four NEW moves only.
   // Existing Pokémon Arena 2D effects are deliberately never touched.
