@@ -1,0 +1,34 @@
+name: REA público — Pokémon Zarza (somente leitura)
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/zarza-public-rea.yml'
+      - 'tools/research/zarza-public-rea.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-public-arena:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar dependencias do navegador
+        run: npm install --no-audit --no-fund
+      - name: Examinar paginas publicas em modo somente leitura
+        run: CHROME_BIN="$(command -v google-chrome)" node tools/research/zarza-public-rea.cjs
+      - name: Arquivar relatorio e imagens sem baixar efeitos de terceiros
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: zarza-rea-observacoes-publicas
+          path: test-evidence/zarza-rea/
+          retention-days: 14
+          if-no-files-found: warn
