@@ -1,7 +1,7 @@
 # Pokémon Torre 2 — Golpes específicos: controle de conclusão
 Data: 21/10/2026
 
-**Alvo deste ciclo:** apenas golpes que não possuem visual original no Poké Arena 2D. Não redesenhar originais. Nada de novas tecnologias globais nesta etapa. **16 golpes específicos estão aprovados. Petal Dance continua pendente de avaliação visual após o ajuste de movimento.**
+**Alvo deste ciclo:** apenas golpes que não possuem visual original no Poké Arena 2D. Não redesenhar originais. Nada de novas tecnologias globais nesta etapa. **17 golpes específicos aprovados, incluindo Petal Dance. Três novos golpes aguardam avaliação visual: Metronome, Absorb e X-Scissor.**
 
 | Nome | Situação | Base técnica | Próxima ação |
 |---|---|---|---|
