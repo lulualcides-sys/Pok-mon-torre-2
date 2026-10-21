@@ -8,6 +8,7 @@ import {TORRE2_MEGA_FORMS} from './mega-patch-fx.js';
 import {TORRE2_SPECIES_FORMS} from './species-fx.js';
 import {TORRE2_KANTO_FORMS} from './kanto-signatures-fx.js';
 import {TORRE2_NEW_SPECIFIC_FORMS} from './next-specific-fx.js';
+import {TORRE2_ADAPTED_FORMS} from './adapted-moves-fx.js';
 
 const pi=Math.PI, clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const ease=t=>1-(1-clamp(t))**3;
@@ -294,5 +295,6 @@ export const TORRE2_FORMS={
  ...TORRE2_MEGA_FORMS,
  ...TORRE2_SPECIES_FORMS,
  ...TORRE2_KANTO_FORMS,
- ...TORRE2_NEW_SPECIFIC_FORMS
+ ...TORRE2_NEW_SPECIFIC_FORMS,
+ ...TORRE2_ADAPTED_FORMS
 };
