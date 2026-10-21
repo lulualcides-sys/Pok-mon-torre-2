@@ -260,7 +260,11 @@ const server=http.createServer(async(req,res)=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
     const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
     const s=core.readCampaign();
-    window.__pt2Game.scene.getScene('campanha').scene.start('combate',core.startBattle(s));
+    const match=core.startBattle(s);
+    // Only this AI regression uses Onix, so its historic evolution scenario
+    // remains identical while the real Kanto trainer ladder starts at Pidgey.
+    match.p2='onix';
+    window.__pt2Game.scene.getScene('campanha').scene.start('combate',match);
   });
   await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&
     window.__pt2Game.scene.getScene('combate').luchadores?.length===2,
