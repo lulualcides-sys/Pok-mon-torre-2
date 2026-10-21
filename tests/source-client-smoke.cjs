@@ -546,6 +546,68 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(Object.values(megaV2).every(x=>x.expired),
    'All four v2 regression trials must clean their Phaser graphics');
 
+  // V3 visual/physics contract. Capture actual Phaser draw calls: Ice Beam
+  // must form one LONG connected beam, never a single tiny glowing sphere.
+  const specialV3=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const {icebeam,confuseray,softboiled}=await import(
+     new URL('./torre2/mega-patch-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const originalGraphics=e.add.graphics;
+    const gfx=[];let oldRandom=Math.random;
+    try{
+     e.add.graphics=function(...args){
+      const g=originalGraphics.apply(this,args),originalFill=g.fillPoints;
+      g._v3Polygons=[];
+      g.fillPoints=function(points,close){
+       this._v3Polygons.push(points.map(pt=>({x:pt.x,y:pt.y})));
+       return originalFill.call(this,points,close);
+      };
+      gfx.push(g);return g;
+     };
+     const setup=(y=375)=>({
+      player:{x:174,y:215,alto:38,ax:450,ay:215,escena:e,t:0,
+       ko:false,hp:40,hpMax:200,animar(){},accion:null},
+      enemy:{x:292,y,alto:38,ko:false,hp:200,tipos:['NORMAL'],
+       statuses:[],hits:0,recibir(){this.hits++;return 'golpe'},
+       ponerEstado(name){this.statuses.push(name)},escarchar(){this.statuses.push('frost')}}
+     });
+     Math.random=()=>.95;
+     const beam=setup(),beamFx=icebeam(beam.player,{dano:12,alcance:260,tipo:'ICE'},{slot:'lmb'});
+     beam.player.rival=beam.enemy;
+     for(let i=0;i<25;i++)beamFx.update(.016);
+     const beamPolys=gfx[0]._v3Polygons;
+     const longRibbon=beamPolys.some(poly=>poly.length===4&&
+      Math.max(...poly.map(p=>p.x))-Math.min(...poly.map(p=>p.x))>70&&
+      Math.max(...poly.map(p=>p.y))-Math.min(...poly.map(p=>p.y))<25);
+     for(let i=25;i<88;i++)if(beamFx.update(.016)===false)break;
+     beamFx.destroy();e.efectos=e.efectos.filter(x=>x!==beamFx);
+     const conf=setup(215);conf.player.rival=conf.enemy;
+     const confFx=confuseray(conf.player,{dano:0,alcance:230,tipo:'GHOST'},{slot:'lmb'});
+     for(let i=0;i<95;i++)if(confFx.update(.016)===false)break;
+     confFx.destroy();e.efectos=e.efectos.filter(x=>x!==confFx);
+     const egg=setup();egg.player.rival=egg.enemy;
+     const eggFx=softboiled(egg.player,{dano:0,alcance:0,tipo:'NORMAL'},{slot:'lmb'});
+     let before=0,after=0;
+     for(let i=0;i<90;i++){
+      if(i===40)before=egg.player.hp;
+      if(eggFx.update(.016)===false)break;
+     }
+     after=egg.player.hp;
+     eggFx.destroy();e.efectos=e.efectos.filter(x=>x!==eggFx);
+     return {longRibbon,iceMissHits:beam.enemy.hits,
+      confuseContact:conf.enemy.hits,confuseStatus:conf.enemy.statuses.length,
+      healBefore:before,healAfter:after};
+    }finally{e.add.graphics=originalGraphics;Math.random=oldRandom}
+  });
+  assert.equal(specialV3.longRibbon,true,
+    'Ice Beam needs a long connected icy laser, not a spherical projectile');
+  assert.equal(specialV3.iceMissHits,0,'Ice Beam must miss off-axis targets');
+  assert.ok(specialV3.confuseContact>=1,'Confuse Ray needs real ray collision');
+  assert.equal(specialV3.confuseStatus,0,'Confuse Ray must not guarantee confusion');
+  assert.equal(specialV3.healBefore,40,'Egg animation must precede healing');
+  assert.equal(specialV3.healAfter,100,'Soft-Boiled must heal only 30 percent');
+
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
   await tester.close();

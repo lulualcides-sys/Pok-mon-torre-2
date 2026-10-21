@@ -14,10 +14,10 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'swift',nombre:'Swift',forma:'torre2_swift',tipo:'NORMAL',dano:10,alcance:250,coste:21,cd:5.2,anim:'Shoot',lanzar:.15,description:'Seven fan-scattered stars, staggered Pay Day-style impacts, individual contact and misses'},
  {id:'shadow-ball',nombre:'Shadow Ball',forma:'torre2_shadowball',tipo:'GHOST',dano:14,alcance:245,coste:31,cd:6.5,anim:'Charge',lanzar:.18,description:'Dark ghost orb and expanding impact ring'},
  {id:'lovely-kiss',nombre:'Lovely Kiss',forma:'torre2_lovelykiss',tipo:'NORMAL',dano:0,alcance:225,coste:25,cd:9.8,anim:'Shoot',lanzar:.13,description:'Larger aimed kiss: must physically hit; 75% sleep accuracy after contact, no damage'},
- {id:'ice-beam',nombre:'Ice Beam',forma:'torre2_icebeam',tipo:'ICE',dano:13,alcance:260,coste:28,cd:6.8,anim:'Charge',lanzar:.15,description:'Aura Sphere-style ice energy projectile, manual aim, 10% frost only on contact'},
+ {id:'ice-beam',nombre:'Ice Beam',forma:'torre2_icebeam',tipo:'ICE',dano:13,alcance:260,coste:28,cd:6.8,anim:'Charge',lanzar:.15,description:'Continuous triple-layer freezing laser/jet, manual aim, 10% frost on contact'},
  {id:'rock-blast',nombre:'Rock Blast',forma:'torre2_rockblast',tipo:'ROCK',dano:12,alcance:250,coste:27,cd:6.8,anim:'Throw',lanzar:.15,description:'Six or seven different polygonal stones, sequential independent contact or miss'},
- {id:'confuse-ray',nombre:'Confuse Ray',forma:'torre2_confuseray',tipo:'GHOST',dano:0,alcance:230,coste:24,cd:9.1,anim:'Charge',lanzar:.16,description:'Spectral pixel-flame trail, aimed collision and 85% confusion after contact'},
- {id:'soft-boiled',nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Animated shell-break after channel, heals only self up to 30% max HP'}
+ {id:'confuse-ray',nombre:'Confuse Ray',forma:'torre2_confuseray',tipo:'GHOST',dano:0,alcance:230,coste:24,cd:9.1,anim:'Charge',lanzar:.16,description:'Continuous sinister hypnotic ray with contact-based 85% confusion'},
+ {id:'soft-boiled',nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
  // Use every actual move slot and carry inherited base/evolution properties
