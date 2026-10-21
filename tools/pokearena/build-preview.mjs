@@ -287,7 +287,7 @@ for(const [filename,changes] of patches){
 // module tree under a fresh, content-addressed src-xxxxxxxxxx directory.
 const vfxFingerprint=createHash('sha256');
 for(const filename of [
- 'main.js','habilidades.js','escenas/titulo.js','escenas/pokedex.js',
+ 'main.js','habilidades.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
