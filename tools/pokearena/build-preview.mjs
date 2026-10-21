@@ -207,7 +207,7 @@ patches.push(
   ['import{dexAspecto,ponerRetrato}from"../sprites.js";',
    'import{dexAspecto,ponerRetrato,cargarPMD,soloFormas}from"../sprites.js";'],
   ['init(datos){this.conGuia=!!datos?.tutorial;this.sys.settings.data={}}create(){',
-   'init(datos){this.conGuia=!!datos?.tutorial;this.sys.settings.data={}}preload(){const m=this.registry.get("manifiesto");const needed=new Set();for(const circuit of LIGA.ligas)for(const rv of rivalesDe(circuit)){const p=ROSTER.find(q=>q.id===(rv.pokemon??rv.id));if(!p)continue;const stage=rv.etapa??rv.retrato;const actual=stage?etapaDe(p,stage):p;if(actual?.dex)needed.add(dexAspecto(actual.dex,rv.aspecto,m));}cargarPMD(this,soloFormas(m,needed),[]);}create(){'],
+   'init(datos){this.conGuia=!!datos?.tutorial;this.sys.settings.data={}}preload(){const m=this.registry.get("manifiesto");const needed=new Set();for(const circuit of LIGA.ligas)for(const rv of rivalesDe(circuit)){const p=ROSTER.find(q=>q.id===(rv.pokemon??rv.id));if(!p)continue;const stage=rv.etapa??rv.retrato;const actual=stage?etapaDe(p,stage):p;if(actual?.dex){needed.add(actual.dex);needed.add(dexAspecto(actual.dex,rv.aspecto,m));}}cargarPMD(this,soloFormas(m,needed),[]);}create(){'],
   ['if(dex!==p.dex)ponerRetrato(this,img,dex);',
    'ponerRetrato(this,img,dex);']
  ]],
