@@ -183,14 +183,19 @@ const server=http.createServer(async(req,res)=>{
     const state=core.readCampaign();
     const labels=()=>c.children.list.filter(x=>typeof x.text==='string').map(x=>x.text).join(' | ');
     const map=labels();
+    const portraits=c.children.list.filter(o=>o.type==='Image'&&
+      String(o.texture?.key||'').startsWith('torre2-portrait-')).length;
     c.grassScreen(state);const grass=labels();
     c.centerScreen(state);const center=labels();
     c.martScreen(state);const mart=labels();
     c.bagScreen(state);const bag=labels();
     c.scene.restart();
-    return {map,grass,center,mart,bag};
+    return {map,grass,center,mart,bag,portraits};
   });
-  assert.ok(newMap.map.includes('BATALHAR'),'Playable map has current route battle');
+  assert.ok(newMap.map.includes('INICIAR BATALHA'),'Large readable start button must be visible');
+   assert.ok(newMap.map.includes('MINHA EQUIPE'),'My team must be clearly labeled');
+   assert.ok(newMap.map.includes('BOLSA'),'Visible backpack shortcut must exist');
+   assert.ok(newMap.portraits>=1,'Campaign should show captured PMD team portraits');
   assert.ok(newMap.map.includes('INSÍGNIAS'),'Map shows progress');
   assert.ok(newMap.grass.includes('VIRIDIAN'),'Grass is regional, not random Kanto');
   assert.ok(newMap.center.includes('CURAR'),'Pokémon Center is interactive');

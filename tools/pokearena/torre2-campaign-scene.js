@@ -44,10 +44,11 @@ class Campanha extends Phaser.Scene{
   g.strokeRect(10,7,ANCHO-20,ALTO-14);
   g.fillStyle(0x142037,.95);g.fillRect(11,8,ANCHO-22,43);
   this.add.text(20,12,'POKÉMON TORRE 2  /  KANTO',{...titleStyle,fontSize:'18px'});
-  this.button(465,24,96,29,'CENTRO / PC',()=>{const state=readCampaign();if(state)this.centerScreen(state)});
-  this.button(557,24,79,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
+  this.button(447,24,100,29,'CENTRO / PC',()=>{const state=readCampaign();if(state)this.centerScreen(state)});
+  this.button(537,24,76,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){
+   this.mapPage=null; // Follow the newly unlocked route node after battle.
    const marker=this.result.marker||{};
    if(marker.stage===state.stage&&marker.trainer===state.trainer){
     const summary=marker.kind==='wild'&&state.pendingWild?.id===marker.id?
@@ -99,7 +100,7 @@ class Campanha extends Phaser.Scene{
   this.backdrop();
   const stage=STAGES[state.stage],finished=state.champion||!stage;
   const gymStage=state.stage<GYMS.length;
-  const limit=TRAINERS_PER_GYM(state.stage);
+  const limit=finished?0:TRAINERS_PER_GYM(state.stage);
   // Five large, clearly spaced path nodes per panel; the active page follows progress.
   const perPage=5,totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
   const activePage=Math.min(totalPages-1,Math.floor(state.trainer/perPage));
@@ -136,7 +137,7 @@ class Campanha extends Phaser.Scene{
   text(this,34,68,finished?'KANTO · CAMPEÃO':
    'ROTA '+(state.stage+1)+'  /  '+(gymStage?area.label:stage.city.toUpperCase()),{
    fontSize:'14px',color:'#fff3ce',fontStyle:'bold'});
-  text(this,376,71,gymStage?'GINÁSIO '+(state.stage+1)+'/8':'ELITE FOUR',{
+  text(this,376,71,gymStage?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():'ELITE FOUR',{
    fontSize:'10px',color:'#d9edc4'}).setOrigin(1,0);
   // Gentle climb, like Summit Run: intentional zigzag and uncluttered nodes.
   const first=page*perPage;
@@ -172,9 +173,6 @@ class Campanha extends Phaser.Scene{
     text(this,p.x,p.y-1,boss?'G':p.kind==='rocket'?'R':p.kind==='rival'?'!':'▶',{
      fontSize:'12px',color:'#fffbe0',fontStyle:'bold'}).setOrigin(.5);
     // A single high-contrast "YOU" marker pinpoints current location.
-    const tag=this.add.rectangle(p.x,p.y-27,74,18,0x22485b).setStrokeStyle(1,0xffd77c);
-    text(this,p.x,p.y-27,'VOCÊ ESTÁ AQUI',{
-     fontSize:'8px',color:'#fff6cb'}).setOrigin(.5);
     const click=this.add.zone(p.x,p.y,42,42).setInteractive({useHandCursor:true});
     click.on('pointerdown',()=>this.enterBattle(state));
    }else{
@@ -382,8 +380,16 @@ class Campanha extends Phaser.Scene{
    fontSize:'11px',color:C.blue}).setOrigin(.5);
   state.team.slice(0,6).forEach((member,i)=>{
    const x=161+(i%3)*160,y=127+Math.floor(i/3)*40;
-   this.button(x,y,149,33,(i===state.active?'◆ ':'')+member.id.toUpperCase(),()=>{
-    selectTeamMember(state,i);this.bagScreen(state)},i===state.active);
+   const chosen=i===state.active;
+   const hit=this.add.rectangle(x,y,149,33,chosen?0x35566e:0x213950)
+    .setStrokeStyle(2,chosen?0xffd479:0x567994)
+    .setInteractive({useHandCursor:true});
+   hit.on('pointerdown',()=>{selectTeamMember(state,i);this.bagScreen(state)});
+   this.drawPortrait(member,x-55,y,27);
+   text(this,x-34,y-12,(chosen?'◆ ':'')+member.id.toUpperCase().slice(0,12),{
+    fontSize:'10px',color:chosen?'#ffe4a1':'#e4f2ff'});
+   text(this,x-33,y+3,'NV.'+(member.progression?.level??'?')+' · HP '+(member.hp??100)+'%',{
+    fontSize:'9px',color:C.muted});
   });
   this.button(157,231,170,37,'POÇÃO +25 HP',()=>{usePotion(state,'potion');this.bagScreen(state)},true);
   this.button(340,231,170,37,'SUPER +60 HP',()=>{usePotion(state,'superpotion');this.bagScreen(state)},true);
