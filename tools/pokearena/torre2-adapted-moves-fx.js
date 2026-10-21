@@ -4,6 +4,7 @@
  * Additive only: NEVER edit native Poké Arena or approved attacks.
  * No Canvas2D, vectors, CSS effects, or PNG video sprites.
  */
+import {clashAt} from './clash-fx.js';
 const PI=Math.PI, clamp=n=>Math.max(0,Math.min(1,n)),round=n=>Math.round(n);
 function rect(g,x,y,w,h,c,a=1){g.fillStyle(c,a).fillRect(round(x),round(y),Math.max(1,round(w)),Math.max(1,round(h)))}
 function stamp(g,rows,cx,cy,palette,scale=2,alpha=1,flip=false){
@@ -17,7 +18,7 @@ function stamp(g,rows,cx,cy,palette,scale=2,alpha=1,flip=false){
 function layers(e){return[e.add.graphics().setDepth(1512),e.add.graphics().setDepth(1513)]}
 function effect(e,loop,objs){
  let dead=false;
- const destroy=()=>{if(dead)return;dead=true;for(const g of objs)g.destroy()};
+ const destroy=()=>{if(dead)return;dead=true;if(fx.clashBody)fx.clashBody.live=false;for(const g of objs)g.destroy()};
  const fx={update(dt){if(dead)return false;if(!loop(Math.min(.055,Math.max(dt||0,0)))){destroy();return false}return true},destroy};
  e.efectos.push(fx);return fx;
 }
@@ -91,13 +92,16 @@ export function mudslap(l,h,extra){
  const start=origin(l),sx=start.x+ux*12,sy=start.y;
  const max=Math.min(h.alcance??205,225),speed=300;
  let age=0,prev={x:sx,y:sy},impact=null,didHit=false;
- return effect(e,dt=>{
+ const body={owner:l,type:h.tipo||'GROUND',radius:12,x:sx,y:sy,live:true};
+ const fx=effect(e,dt=>{
   age+=dt;proj.clear();sparks.clear();
   if(l.ko||l.est?.aturdido||age>1.08)return false;
   if(!impact){
    const dist=age*speed;
    if(dist>=max)return false;
    const tip={x:sx+dist*ux,y:sy+dist*uy};
+   body.x=tip.x;body.y=tip.y;
+   if(clashAt(e,fx,l,tip,12,h.tipo||'GROUND'))return false;
    const on=collision(prev,tip,r,12);prev=tip;
    if(on){
     const result=strike(l,r,h,extra,h.dano??4,13);
@@ -108,6 +112,7 @@ export function mudslap(l,h,extra){
      const old=r.est.torre2MudAccuracy?.stacks??0;
      r.est.torre2MudAccuracy={stacks:Math.min(6,old+1)};
     }
+    body.live=false;
     impact={x:on.x,y:on.y,at:age};
    }else{
     // Two original-inspired shades of uneven mud, 10-frame tumbling.
@@ -147,6 +152,8 @@ export function mudslap(l,h,extra){
   }
   return impact?age<impact.at+.29:true;
  },[proj,sparks]);
+ fx.clashBody=body;
+ return fx;
 }
 const SEED_PAL={K:0x1b3329,D:0x395333,G:0x618846,L:0x9abc60,W:0xe7efae,A:0x9b7045};
 const BOMB=[
@@ -201,17 +208,20 @@ export function seedbomb(l,h,extra){
  const pos=origin(l),start={x:pos.x+ux*14,y:pos.y};
  const max=Math.min(h.alcance??225,250),speed=260;
  let age=0,prev=start,impact=null,didHit=false;
- return effect(e,dt=>{
+ const collisionBody={owner:l,type:h.tipo||'GRASS',radius:13,x:start.x,y:start.y,live:true};
+ const fx=effect(e,dt=>{
   age+=dt;body.clear();shards.clear();
   if(l.ko||l.est?.aturdido||age>1.4)return false;
   if(!impact){
    const distance=age*speed;
    if(distance>=max)return false;
    const tip={x:start.x+ux*distance,y:start.y+uy*distance};
+   collisionBody.x=tip.x;collisionBody.y=tip.y;
+   if(clashAt(e,fx,l,tip,13,h.tipo||'GRASS'))return false;
    const on=collision(prev,tip,r,13);prev=tip;
    if(on){
     const result=strike(l,r,h,extra,h.dano??16,22);
-    didHit=result.landed;impact={x:on.x,y:on.y,at:age};
+    didHit=result.landed;collisionBody.live=false;impact={x:on.x,y:on.y,at:age};
    }else{
     const frame=Math.floor(age*22)%3;
     // Keep seed INTACT in flight: the crack opens only ON impact.
@@ -256,6 +266,8 @@ export function seedbomb(l,h,extra){
   }
   return impact?age<impact.at+.37:true;
  },[body,shards]);
+ fx.clashBody=collisionBody;
+ return fx;
 }
 // The following jaw matrices mirror the ALREADY APPROVED Hyper Fang art.
 // They are copied into this separate module; Hyper Fang source is untouched.
