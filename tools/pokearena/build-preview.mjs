@@ -101,6 +101,7 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-signatures-fx.js','kanto-signatures-fx.js'],
  ['tools/pokearena/torre2-next-specific-fx.js','next-specific-fx.js'],
  ['tools/pokearena/torre2-adapted-moves-fx.js','adapted-moves-fx.js'],
+ ['tools/pokearena/torre2-early-route-fx.js','early-route-fx.js'],
  ['tools/pokearena/torre2-clash-fx.js','clash-fx.js'],
  ['tools/pokearena/torre2-route-data.js','route-data.js']
 ].map(async([source,name])=>{
@@ -282,7 +283,7 @@ for(const [filename,changes] of patches){
 const vfxFingerprint=createHash('sha256');
 for(const filename of [
  'main.js','habilidades.js','escenas/titulo.js','escenas/pokedex.js',
- 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
+ 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
