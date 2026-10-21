@@ -131,7 +131,7 @@ patches.push(
  ]],
  ['luchador.js',[
   ['return this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit',
-   'return {...(this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit),...(this.escena.datos?.torre2&&this.lado===0?this.escena.datos.torre2Loadout:{})}']
+   'return {...(this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit),...(this.escena.datos?.torre2?(this.lado===0?this.escena.datos.torre2Loadout:this.escena.datos.torre2OpponentLoadout):{})}']
  ]]
 );
 patches.push(
@@ -190,6 +190,9 @@ patches.push(
 // download their own PMD Idle sheet on first click, and are cached thereafter.
 patches.push(
  ['escenas/pokedex.js',[
+  // Pending levels are visible in the native Pokédex, original sprites kept.
+  ['const out=slot==="e"?["ULT"]:[];',
+   'const out=slot==="e"?["ULT"]:[];if(h.pendiente&&h.torre2UnlockLevel)out.push("LOCKED LV "+h.torre2UnlockLevel);if(h.pendiente&&h.torre2UnlockEvolution)out.push("EVOLVE "+h.torre2UnlockEvolution);'],
   // Original styled Pokedex: adjust only the card grid for 36 families.
   ['const COLS=5,CEL=44,GX=10,GY=36;',
    'const COLS=6,CEL=36,GX=10,GY=36;'],

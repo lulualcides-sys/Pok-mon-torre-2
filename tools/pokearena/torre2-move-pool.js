@@ -75,6 +75,7 @@ function collect(def){
   for(const slot of slots){
    const h=kit?.[slot];
    if(!h?.nombre||!h.forma)continue;
+   if(slot==='esp'&&earlyKantoSlotPlan(def.id))continue; // Native DODGE is fixed, never another equipped attack.
    moves.push({...h,cd:typeof h.cd==='number'?h.cd:5,
     learnedFrom:origin,originalSlot:slot});
   }
