@@ -151,3 +151,11 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - Correção de registro da Pokédex: Nidoran♀ e Nidoran♂ usam IDs `nidoran-f`/`nidoran-m` para captura, sem fundir as duas entradas. Testes exigem imagens PMD e evolução de todas as dez linhas e ataques por nível para Pidgey.
 
 - Adaptação de grade da Pokédex original: 6 colunas × 36px, com retratos PMD redimensionados para caber as 36 famílias sem sobreposição com o pedestal. Visual, abas evolutivas e botões permanecem nativos.
+
+
+## Controle de cinco comandos nas novas espécies Kanto — 21/10/2026
+- Corrigido o motivo de a Pokédex cortar os ataques após `BASIC · Tackle`: os 10 kits novos tinham 1–3 entradas e não possuíam o `esp` obrigatório do motor. Agora os novos Pokémon possuem **BASIC fraco (LMB), habilidade (RMB), esquiva sem dano (ESPACE), Q e ultimate (E)**, como no cliente Poké Arena 2D, sem mexer no motor original.
+- Os quatro ataques são distintos, com prioridade às animações nativas e aprovadas. Os futuros aparecem bloqueados no kit (`pendiente`) até o nível ou evolução correspondente. Caterpie/Weedle desbloqueiam suas últimas habilidades após evolução; o medidor original de ultimate permanece necessário.
+- Esquiva é dash nativo não ofensivo (`forma:'dash'`, com cooldown), não um projétil nem um golpe adicional. Evoluções mantêm os quatro slots na mesma função.
+- Na campanha, os slots do sumário ficam ancorados: LMB básico, RMB e Q golpes, E ultimate; mudar o nível desbloqueia o golpe sem deslocar a posição dos outros, nem reiniciar os saves. Mewtwo teste mantém quatro slots livres.
+- A distribuição é uma adaptação de progressão do Pokémon Torre 2, não uma alegação de ser learnset oficial exato de uma única geração; nenhum golpe já aprovado foi redesenhado.

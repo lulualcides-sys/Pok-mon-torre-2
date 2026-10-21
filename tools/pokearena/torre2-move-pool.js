@@ -3,7 +3,7 @@
  * Poké Arena client, plus all four brand-new signature VFX in this project.
  */
 import {ROSTER,buscar,etapaDe} from '../datos.js';
-import {EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
+import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan} from './early-kanto-species.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -171,38 +171,58 @@ export function availableMoves(member){
  return moves.filter(m=>tms.has(canonicalMoveKey(m.nombre))||
    (early[m.id]!==undefined&&level>=early[m.id]));
 }
+// New Kanto species keep the exact Arena 2D four attack slots even when
+// an ability is still locked. ESP is the original fifth control and NEVER
+// belongs in the editor: it remains the non-damaging defensive dodge.
 export function defaultLoadout(member){
- const pool=availableMoves(member);
- if(member.id==='mewtwo')
-  return ['bonemerang','bone-club','tri-attack','pay-day'];
- const {def}=buscar(member.id);
- const slots=['lmb','rmb','q','e'];
- const ids=slots.map(s=>norm(def.kit[s]?.nombre));
- return ids.map((name,i)=>pool.find(p=>p.id===name)?.id||pool[i]?.id).filter(Boolean).slice(0,4);
+ const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
+ if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
+ const plan=earlyKantoSlotPlan(member.id);
+ if(plan)return plan.map(name=>{
+  const id=canonicalMoveKey(name);
+  return byId.has(id)?id:null;
+ });
+ const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
+ const ids=slots.map(slot=>canonicalMoveKey(def.kit[slot]?.nombre));
+ return ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4);
 }
 export function selectedMoves(member){
- const pool=availableMoves(member),valid=new Set(pool.map(x=>x.id));
- const chosen=(member.moves?.length===4&&member.moves.every(id=>valid.has(id)))?member.moves:defaultLoadout(member);
+ const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
+ const plan=earlyKantoSlotPlan(member.id);
+ if(plan){
+  const defaults=defaultLoadout(member);
+  if(member.moves?.length!==4)return defaults;
+  // Keep each slot in place. Future moves unlock automatically as the
+  // level rises and the team member evolves; old saves need no migration.
+  return defaults.map((id,i)=>member.moves[i]&&valid.has(member.moves[i])?
+   member.moves[i]:id);
+ }
+ const chosen=member.moves?.length===4&&member.moves.every(id=>valid.has(id))?
+  member.moves:defaultLoadout(member);
  return chosen.filter(id=>valid.has(id)).slice(0,4);
 }
 export function equipMove(member,slot,moveId){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return false;
  const pool=availableMoves(member);
  if(!pool.some(m=>m.id===moveId))return false;
- const selected=selectedMoves(member);
- // Do not put the same move into multiple buttons.
- if(selected.some((id,i)=>id===moveId&&i!==slot))return false;
- while(selected.length<4)selected.push(pool[selected.length]?.id);
- selected[slot]=moveId;member.moves=selected;
+ const early=earlyKantoSlotPlan(member.id);
+ // New first-route Pokémon always have a weak basic and a dedicated
+ // meter-gated ultimate, respecting the original client control roles.
+ if(early&&slot===0&&moveId!==canonicalMoveKey(early[0]))return false;
+ if(early&&slot===3&&moveId!==canonicalMoveKey(early[3]))return false;
+ const chosen=selectedMoves(member);
+ if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;
+ if(early){chosen[slot]=moveId;member.moves=chosen;return true;}
+ while(chosen.length<4)chosen.push(pool[chosen.length]?.id);
+ chosen[slot]=moveId;member.moves=chosen;
  return true;
 }
 export function resolveLoadout(member){
- const pool=availableMoves(member);
- const dict=new Map(pool.map(h=>[h.id,h]));
+ const pool=availableMoves(member),dict=new Map(pool.map(h=>[h.id,h]));
  const out={};
  selectedMoves(member).forEach((id,i)=>{
-  const move=dict.get(id);
-  if(move)out[SLOTS[i]]={...move};
+  const attack=dict.get(id);
+  if(attack)out[SLOTS[i]]={...attack,pendiente:false};
  });
  return out;
 }
