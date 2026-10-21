@@ -10,6 +10,6 @@ Mewtwo de teste consegue equipar os três. Famílias de Pokémon que ainda não 
 
 Documentação e testes no GitHub; publicar somente após CI.
 
-## Ajuste de acompanhamento do alvo (21/10/2026)
+## Correção definitiva — mira manual no padrão Ice Beam (21/10/2026)
 
-A publicação anterior girava as pétalas, mas conservava a direção inicial. Agora cada pétala acompanha a posição atual do inimigo, com rotação limitada por frame e deslocamento físico; o lançador também gira durante a animação, inspirado no direcionamento do Aura Storm. Não há teleporte nem dano automático; colisões individuais, limite de três acertos, tamanho e tons de rosa aprovados permanecem. Petal Dance segue aguardando aprovação visual.
+O acompanhamento automático da posição do inimigo foi **removido**. O Petal Dance recebe sua direção a cada quadro de `l.ax/l.ay` (mouse/toque/controle), como o `angApunte(l)` do `Chorro` nativo; a velocidade de giro fica limitada a **3,5 rad/s**, igual ao Ice Beam V6 aprovado. As 16 pétalas saem sequencialmente, executam órbitas próprias e seguem **a direção escolhida pelo jogador**, não as coordenadas do rival. O adversário pode esquivar; dano apenas se a projeção tocar, até três impactos independentes. Manter sprites de 2 px, seis tons de rosa, autoconfusão e aprovação pendente. A alteração não modifica VFX nativos nem os 16 golpes já aprovados.
