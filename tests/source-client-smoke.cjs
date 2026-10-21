@@ -37,7 +37,7 @@ const server=http.createServer(async(req,res)=>{
  try{
   const response=await page.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:30000});
   assert.equal(response.status(),200);
-  assert.match(await page.title(),/Pok. Arena 2D/i);
+  assert.equal(await page.title(),'Pokémon Torre','The title must use the approved new game name');
   await page.waitForFunction(()=>!!window.Phaser&&!!document.querySelector('#juego canvas'),null,{timeout:35000});
   await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:45000,polling:250});
   await page.waitForTimeout(800);
@@ -52,6 +52,20 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(critical,[],'import graph must load without runtime crash');
   const missingModule=notFound.filter(o=>/\.js(\?|$)/.test(o.url));
   assert.deepEqual(missingModule,[],'missing source JS file(s)');
+  const brand=await page.evaluate(()=>{
+    const game=window.__pt2Game,title=game.scene.getScene('titulo');
+    const logo=game.textures.get('ui-logo').getSourceImage();
+    return {width:logo.width,height:logo.height,
+      menu:title.menu,buttons:title.botones.map(b=>b.id),
+      fixedButtons:title.botones.map(b=>({x:b.x,y:b.y,w:b.w,h:b.h}))};
+  });
+  assert.deepEqual([brand.width,brand.height],[240,80],
+   'The approved pixel-art Pokémon Torre sprite replaces only the old menu title texture');
+  assert.equal(brand.menu,'principal','Main menu unchanged');
+  assert.deepEqual(brand.buttons,['jugar','pokedex','tutorial','ajustes','creditos'],
+   'Keep every original menu button and its exact navigation');
+  assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320],
+   'Keep original menu button positions');
   await page.screenshot({path:'test-evidence/pokearena-original-phaser-source.png',fullPage:true});
   // Exercise the real on-canvas Play button rather than stopping at the title.
   await page.mouse.click(490,275);
