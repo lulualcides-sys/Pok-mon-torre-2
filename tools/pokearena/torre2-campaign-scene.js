@@ -3,6 +3,7 @@
  */
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
 import {marco,UI as MENU_UI} from '../ui.js';
+import {drawApprovedDashboard} from './approved-dashboard.js';
 import {header,backdrop as richBackdrop,buttonFrame,map as richMap,node as richNode,
  team as richTeam,teamCard,ball,progress} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
@@ -31,6 +32,8 @@ class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
  init(input){this.result=input?.finished?input:null}
  preload(){
+  if(!this.textures.exists('torre2-approved-kanto'))
+   this.load.image('torre2-approved-kanto','assets/ui/kanto-approved.avif');
   const state=readCampaign();
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
@@ -105,6 +108,8 @@ class Campanha extends Phaser.Scene{
   return bg;
  }
  renderCampaign(state){
+  if(this.textures.exists('torre2-approved-kanto'))
+   return drawApprovedDashboard(this,state);
   this.backdrop();
   const stage=STAGES[state.stage],finished=state.champion||!stage;
   const gymStage=state.stage<GYMS.length;
@@ -213,18 +218,18 @@ class Campanha extends Phaser.Scene{
    }
   });
  }
- drawPortrait(member,x,y,size=34){
+ drawPortrait(member,x,y,size=34,depth=5){
   const key=portraitKey(member);
   if(this.textures.exists(key)){
-   const img=this.add.image(x,y,key).setDisplaySize(size,size).setDepth(5);
+   const img=this.add.image(x,y,key).setDisplaySize(size,size).setDepth(depth);
    return img;
   }
   // A missing captured portrait must not hide the name or block input.
-  const g=this.add.graphics().setDepth(5);
+  const g=this.add.graphics().setDepth(depth);
   g.fillStyle(0x34556b);g.fillRect(x-size/2,y-size/2,size,size);
   g.lineStyle(1,0x7baabb);g.strokeRect(x-size/2,y-size/2,size,size);
   text(this,x,y,member.id.slice(0,2).toUpperCase(),{
-   fontSize:'11px',color:'#ffffff'}).setOrigin(.5).setDepth(6);
+   fontSize:'11px',color:'#ffffff'}).setOrigin(.5).setDepth(depth+1);
  }
  battleButton(x,y,w,h,label,callback,active=true){
   const zone=this.button(x,y,w,h,label,callback,active,13,'gold');
