@@ -1,7 +1,7 @@
 # Pokémon Torre 2 — Golpes específicos: controle de conclusão
 Data: 21/10/2026
 
-**Alvo deste ciclo:** apenas golpes que não possuem visual original no Poké Arena 2D. Não redesenhar originais. Nada de novas tecnologias globais nesta etapa. **Todos os 11 golpes específicos já implementados foram aprovados.**
+**Alvo deste ciclo:** apenas golpes que não possuem visual original no Poké Arena 2D. Não redesenhar originais. Nada de novas tecnologias globais nesta etapa. **16 golpes específicos estão aprovados. Petal Dance continua pendente de avaliação visual após o ajuste de movimento.**
 
 | Nome | Situação | Base técnica | Próxima ação |
 |---|---|---|---|
@@ -16,6 +16,12 @@ Data: 21/10/2026
 | Soft-Boiled | ✅ aprovado | Ovo e cura pixelados | Congelar |
 | Swift | ✅ aprovado | 7 estrelas com trajetória e colisão individuais | Congelar |
 | Lovely Kiss | ✅ aprovado | Lábios e cinco corações pixelados | Congelar |
+| Sing | ✅ aprovado | Notas musicais pixeladas | Congelar |
+| Crabhammer | ✅ aprovado | Pinça pixelada | Congelar |
+| Smog | ✅ aprovado | 17 bolhas, impactos individuais | Congelar |
+| Hyper Fang | ✅ aprovado | Incisivos grandes de rato | Congelar |
+| Guillotine | ✅ aprovado | Duas pinças visíveis fechando no alvo | Congelar |
+| Petal Dance | 🔧 avaliação pendente | Pétalas pequenas em vórtice móvel como Aura Storm | Avaliar animação |
 
 **Proteções:** nenhum item aprovado muda sem autorização explícita. Original Pokémon Arena 2D: manter 100% do visual pré-existente. Surf permanece oculto/não equipável.
 
