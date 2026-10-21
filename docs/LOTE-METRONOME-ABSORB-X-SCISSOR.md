@@ -25,3 +25,13 @@ Todos os três estão disponíveis para equipar em Mewtwo nível 50, sem modific
 - Bulbapedia — Metronome: https://bulbapedia.bulbagarden.net/wiki/Metronome_(move) (seleção aleatória, com exceções).
 
 **Regra de alcance e habilidade:** Absorb e X-Scissor não usam autoaim; inimigo em linha errada/fora de alcance não perde HP. Feixes futuros seguem apenas `l.ax/l.ay` com giro suave, padrão Ice Beam, nunca teleguiamento.
+
+## 2º refinamento — sprites desenhados, não formas geradas (21/10/2026)
+
+O primeiro lote foi **reprovado visualmente** pelo usuário: contornos grandes, linhas lisas e ícones que pareciam Canvas. Esta revisão substitui integralmente **somente** `tools/pokearena/torre2-next-specific-fx.js` com arte organizada em matrizes de células de pixel (mesmo conceito aprovado em Petal Dance, Crabhammer e Guillotine), usando pequenos sprites desenhados com `K` como contorno escuro, tons médios, luz pontual e sequências de 12 quadros. O renderizador continua Phaser Graphics/WebGL, sem Canvas 2D, CSS, bitmap estático, linhas vetoriais ou círculos.
+
+- **Metronome:** palma pixelada e dedo com quatro silhuetas autorais e ordem de doze posições; pequenas estrelas pixeladas, seguido do ataque sorteado do repertório real. Sem barra cinza/cursor artificial.
+- **Absorb:** folha verde angular sombreada avança com a mira; após colisão, cinco pequenas partículas verdes retornam do inimigo ao usuário e restauram 50% do dano real. Sem desenho de broto repetido ao longo da trilha.
+- **X-Scissor:** duas lâminas serrilhadas inteiramente desenhadas em matriz, com contorno escuro, lâmina verde e borda clara, atravessam a mesma posição em um X; único impacto físico no cruzamento e somente se acertar.
+
+**Petal Dance e os 16 outros aprovados não sofreram alterações.** Estes três continuam **sem aprovação visual** até o usuário testar a atualização.
