@@ -19,8 +19,8 @@ function buttonLabel(s,x,y,str){
 function card(s,g,state,member,index,x,y,w,h){
  const selected=member&&index===state.active;
  const accent=selected?0xffd66b:member?(index%2?0xc795ed:0x54d6a0):0x456a97;
- g.fillStyle(0x06132b);g.fillRoundedRect(x,y,w,h,4);
- g.lineStyle(selected?3:2,accent);g.strokeRoundedRect(x,y,w,h,4);
+ g.fillStyle(0x06132b);g.fillRoundedRect(x,y,w,h,2);
+ g.lineStyle(selected?2:2,accent);g.strokeRoundedRect(x,y,w,h,2);
  g.fillStyle(member?(index%2?0x232a57:0x0b4339):0x162946);
  g.fillRoundedRect(x+3,y+3,w-6,h-6,2);
  g.fillStyle(accent,.8);g.fillRect(x+4,y+4,w-8,2);
@@ -31,7 +31,8 @@ function card(s,g,state,member,index,x,y,w,h){
   txt(s,x+w/2,y+h-18,'- VAZIO -',9,'#8bb4d8').setOrigin(.5,0);
   return;
  }
- s.drawPortrait(member,x+21,y+24,39,14);
+ const portrait=s.drawPortrait(member,x+21,y+24,39,14);
+ if(portrait?.texture?.setFilter)portrait.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
  const name=member.id.toUpperCase().slice(0,12),hp=Math.max(0,Math.min(100,Number(member.hp??100)));
  txt(s,x+43,y+10,name,name.length>9?9:11,selected?'#ffe6a3':'#f5fcff',true);
  txt(s,x+43,y+25,'NV.'+(member.progression?.level??5),9,'#aedcf0');
@@ -52,7 +53,12 @@ function node(s,g,p,won,active){
 }
 export function drawApprovedDashboard(s,state){
  s.backdrop();
- s.add.image(320,180,'torre2-approved-kanto').setDisplaySize(640,360).setDepth(10);
+ // Keep the approved art crisp at the game's fixed internal resolution.
+ const bg=s.add.image(320,180,'torre2-approved-kanto').setDisplaySize(640,360).setDepth(10);
+ const texture=s.textures.get('torre2-approved-kanto');
+ if(texture?.setFilter&&typeof Phaser!=='undefined')
+  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ bg.setScrollFactor(0);
  const g=s.add.graphics().setDepth(12);
  const rect=(x,y,w,h,c)=>{g.fillStyle(c);g.fillRect(x,y,w,h)};
  const stage=STAGES[state.stage],finished=!!state.champion||!stage,gym=state.stage<GYMS.length;
@@ -63,10 +69,13 @@ export function drawApprovedDashboard(s,state){
  s.mapPage=page;
  const next=currentOpponent(state),area=wildAvailability(state.stage),first=page*perPage;
  const movePage=d=>{s.mapPage=Math.max(0,Math.min(totalPages-1,page+d));s.scene.restart()};
- // Dynamic map labels replace the mockup's sample names.
+ // The image is artwork, never a snapshot of progress. Opaque areas below
+ // replace ALL sample data, so saves and the Brock route stay truthful.
+ // Artwork highlights the early-Kanto area; later regions keep their own labels.
+ 
  rect(50,59,220,22,0x073c50);rect(301,59,80,22,0x073c50);
  txt(s,52,64,finished?'KANTO / CAMPEÃO':
-  'ROTA '+(state.stage+1)+' / '+(gym?area.label:stage.city.toUpperCase()),
+  (state.stage===0?'ROTA 1 / PEWTER · BROCK': 'ROTA '+(state.stage+1)+' / '+(gym?area.label:stage.city.toUpperCase())),
   12,'#fff5d7',true);
  txt(s,381,66,gym?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():
   'ELITE FOUR',9,'#baedf6').setOrigin(1,0);
@@ -74,8 +83,8 @@ export function drawApprovedDashboard(s,state){
  coords.forEach(([x,y],i)=>{
   const index=first+i,kind=routeNode(state.stage,index,limit).type;
   const active=!finished&&index===state.trainer,won=index<state.trainer;
-  node(s,g,{x,y,index,kind},won,active);
-  if(active)zone(s,x,y,38,38,()=>s.enterBattle(state));
+  if(index<=limit)node(s,g,{x,y,index,kind},won,active);
+  if(active&&index<=limit)zone(s,x,y,38,38,()=>s.enterBattle(state));
  });
  // Dynamic next challenge, badges, currency and trainer/page progress.
  const kind=next?.kind==='leader'?'LÍDER':next?.kind==='rocket'?'ROCKET':
