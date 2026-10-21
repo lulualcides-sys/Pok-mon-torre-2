@@ -338,6 +338,6 @@ export function lovelykiss(l,h,extra){
  },dispose);
 }
 export const TORRE2_NEW_FORMS={
- torre2_surf:surf,torre2_swift:swift,torre2_shadowball:shadowball,
+ torre2_swift:swift,torre2_shadowball:shadowball,
  torre2_lovelykiss:lovelykiss
 };
