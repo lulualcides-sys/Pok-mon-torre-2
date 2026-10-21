@@ -490,6 +490,85 @@ const server=http.createServer(async(req,res)=>{
     'Lovely Kiss hearts must scatter instead of forming a straight row');
   assert.equal(kissHearts.statuses,0,'Cosmetic hearts must not auto-apply sleep');
 
+  // NEW pending approval: Hyper Fang, Guillotine, Petal Dance.
+  // Renderer is isolated so native Poké Arena 2D moves stay byte-for-byte intact.
+  const kantoSignaturePhysics=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const moves=await import(new URL('./torre2/kanto-signatures-fx.js',main.src).href);
+    const scene=window.__pt2Game.scene.getScene('combate');
+    const saved=Math.random,results=[];
+    const names=[
+      {name:'hyperfang',distance:72,type:'NORMAL'},
+      {name:'guillotine',distance:72,type:'NORMAL'},
+      {name:'petaldance',distance:135,type:'GRASS'}
+    ];
+    try{
+     for(const spec of names)for(const mode of ['hit','miss']){
+      let spawned=0,cleared=0;
+      const add=scene.add.graphics;
+      scene.add.graphics=function(...args){
+       spawned++;
+       const g=add.apply(this,args),original=g.destroy;
+       g.destroy=function(...a){cleared++;return original.apply(this,a)};
+       return g;
+      };
+      const enemy={x:174+spec.distance,y:mode==='miss'?370:215,
+       hp:250,level:42,alto:38,ko:false,hits:0,status:[],
+       recibir(_a,d){this.hits++;this.hp-=d.dano||0;return 'golpe'},
+       ponerEstado(s){this.status.push(s)}};
+      const player={x:174,y:215,alto:38,ax:480,ay:215,t:0,
+       escena:scene,rival:enemy,ko:false,level:50,status:[],accion:null,
+       animar(){},ponerEstado(s){this.status.push(s)}};
+      Math.random=()=>.1;
+      try{
+       const effect=moves[spec.name](player,
+        {dano:18,tipo:spec.type,alcance:spec.name==='petaldance'?230:84},{slot:'lmb'});
+       let alive=true;
+       for(let frame=0;frame<150&&alive;frame++)alive=effect.update(.016);
+       effect.destroy();
+       scene.efectos=scene.efectos.filter(x=>x!==effect);
+       results.push({name:spec.name,mode,enemyHp:enemy.hp,hits:enemy.hits,
+        statuses:player.status,cleared:spawned===cleared,done:!alive});
+      }finally{scene.add.graphics=add}
+     }
+    }finally{Math.random=saved}
+    return results;
+  });
+  assert.ok(kantoSignaturePhysics.every(x=>x.done&&x.cleared),
+   'All 3 new WebGL attacks must terminate and clean up GPU Graphics');
+  for(const name of ['hyperfang','guillotine','petaldance']){
+   assert.ok(kantoSignaturePhysics.find(x=>x.name===name&&x.mode==='hit')?.hits>=1,
+    name+' must hit with physical contact');
+   assert.equal(kantoSignaturePhysics.find(x=>x.name===name&&x.mode==='miss')?.hits,0,
+    name+' cannot hit a foe outside its trail');
+  }
+  assert.equal(kantoSignaturePhysics.find(x=>x.name==='hyperfang'&&x.mode==='hit')?.hits,1,
+   'Hyper Fang is ONE bite, not multiple automatic damage ticks');
+  assert.ok(kantoSignaturePhysics.find(x=>x.name==='guillotine'&&x.mode==='hit')?.enemyHp<0,
+   'Guillotine hit can finish target, after chance and contact');
+  assert.equal(kantoSignaturePhysics.find(x=>x.name==='petaldance'&&x.mode==='hit')?.hits,3,
+   'Petal Dance has three independent impact windows');
+  assert.ok(kantoSignaturePhysics.find(x=>x.name==='petaldance'&&x.mode==='hit')?.statuses.includes('confuso'),
+   'Completed Petal Dance confuses its caster');
+  // Note: a Guillotine high RNG outcome deliberately misses even on contact.
+  const guillotineFail=await tester.evaluate(async()=>{
+   const main=document.querySelector('script[src*="/main.js"]');
+   const {guillotine}=await import(new URL('./torre2/kanto-signatures-fx.js',main.src).href);
+   const scene=window.__pt2Game.scene.getScene('combate');
+   const target={x:246,y:215,alto:38,hp:150,level:50,ko:false,
+    hits:0,recibir(){this.hits++;return 'golpe'}};
+   const attacker={x:174,y:215,alto:38,ax:480,ay:215,t:0,escena:scene,
+    rival:target,ko:false,level:50,animar(){}};
+   const saved=Math.random;Math.random=()=>.95;
+   try{
+    const fx=guillotine(attacker,{dano:20,alcance:84,tipo:'NORMAL'},{slot:'lmb'});
+    for(let i=0;i<90;i++)if(fx.update(.016)===false)break;
+    fx.destroy();scene.efectos=scene.efectos.filter(x=>x!==fx);
+    return target.hits;
+   }finally{Math.random=saved}
+  });
+  assert.equal(guillotineFail,0,'Guillotine does not hit 100% of close targets');
+
   // Three newly approved species-characteristic moves: real collision regression.
   const newSpeciesAttacks=await tester.evaluate(async()=>{
     const main=document.querySelector('script[src*="/main.js"]');
