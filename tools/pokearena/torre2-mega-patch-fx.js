@@ -103,56 +103,105 @@ function frostStream(g,x,y,ux,uy,nx,ny,front,age){
   block(g,xx,yy,2,2,k%2===0?FROST.shine:FROST.body,.9);
  }
 }
+// Ice terminal inspired by the constantly flowing Aura Storm muzzle:
+ // a pointed, faceted glacier lance and two narrow side wings, never
+ // a flat or dry/truncated end of an otherwise animated beam.
+function frostCrown(g,x,y,ux,uy,nx,ny,front,age,opacity=1){
+ const p=(d,w)=>({x:px(x+ux*d+nx*w),y:px(y+uy*d+ny*w)});
+ const tremble=Math.sin(age*27)*1.1;
+ // Solid dark outline encloses the whole forward spear head.
+ const outline=[p(front-14,-8),p(front-3,-11-tremble),p(front+8,-5),
+  p(front+17,0),p(front+8,5),p(front-3,11+tremble),p(front-14,8)];
+ g.fillStyle(0x0b2843,opacity);g.fillPoints(outline,true);
+ g.fillStyle(0x338ebd,opacity);g.fillPoints([
+  p(front-12,-6),p(front-2,-8),p(front+12,0),p(front-2,8),p(front-12,6)
+ ],true);
+ g.fillStyle(0xa2eaff,opacity);g.fillPoints([
+  p(front-11,-3),p(front+1,-5),p(front+14,0),p(front+2,3),p(front-11,3)
+ ],true);
+ g.fillStyle(0xf6ffff,opacity);g.fillPoints([
+  p(front-9,-1),p(front+12,0),p(front-9,2)
+ ],true);
+ for(const side of [-1,1]){
+  // Two ice spurs grow and retract out of phase as the blast runs.
+  const spur=2+3*Math.sin(age*18+side*2);
+  g.fillStyle(0x133f62,opacity);
+  g.fillPoints([p(front-13,side*7),p(front-1,side*(13+spur)),
+   p(front+9,side*(10+spur*.6)),p(front+3,side*5)],true);
+  g.fillStyle(0x83dded,opacity);
+  g.fillPoints([p(front-9,side*8),p(front+3,side*(11+spur)),
+   p(front+6,side*7)],true);
+ }
+ // A little continuous ice spray flows FORWARD beyond the shaped point.
+ for(let i=0;i<6;i++){
+  const adv=2+((i*7+age*95)%20),side=(i%3-1)*7;
+  const xx=x+ux*(front+adv)+nx*(side+Math.sin(age*16+i)*2);
+  const yy=y+uy*(front+adv)+ny*(side+Math.sin(age*16+i)*2);
+  block(g,xx,yy,i%2+1,i%3===0?3:2,
+   i%3===0?0xffffff:0x81d7f2,opacity*.85);
+ }
+}
 export function icebeam(l,h,extra){
  const e=begin(l,'Charge',.72),[g,glints]=layers(e),r=l.rival;
- const ang=Math.atan2(l.ay-l.y,l.ax-l.x);
- const ux=Math.cos(ang),uy=Math.sin(ang)*.76;
- const len=Math.hypot(ux,uy)||1,nx=-uy/len,ny=ux/len;
- const ox=l.x+ux*12,oy=l.y-(l.alto||36)*.52;
- const range=Math.min(h.alcance??260,285),speed=510;
- let age=0,lastReach=0,done=false,hitAt=-1,hitPoint=null;
+ const initialAngle=Math.atan2(l.ay-l.y,l.ax-l.x);
+ let angle=initialAngle,age=0,hitDone=false,hitPoint=null,hitAt=0;
+ const range=Math.min(h.alcance??260,285),speed=560,charge=.15;
+ const duration=1.16,release=1.0,steerRate=h.giro??2.8;
+ // Aura Storm's Chorro holds a channeling action for the entire beam
+ // and reads aiming input every frame instead of freezing the cast angle.
+ l.accion={hasta:l.t+duration,bloquea:true,lento:.35,angulo:angle};
  return register(e,dt=>{
   age+=dt;g.clear();glints.clear();
-  const reach=Math.min(range,Math.max(0,age-.15)*speed);
-  if(reach<1){
-   for(let i=0;i<6;i++){
-    const a=i*PI/3+age*11,radius=15-8*sat(age/.15);
+  if(l.ko||l.est?.aturdido)return false;
+  // Original Chorro update: aim toward the current controller/cursor target,
+  // rotate by at most "giro * dt". This works on touch and keyboard/mouse.
+  const target=Math.atan2(l.ay-l.y,l.ax-l.x);
+  const diff=Math.atan2(Math.sin(target-angle),Math.cos(target-angle));
+  angle+=Math.max(-steerRate*dt,Math.min(steerRate*dt,diff));
+  if(l.accion)l.accion.angulo=angle;
+  const ux=Math.cos(angle),uy=Math.sin(angle)*.76,normal=Math.hypot(ux,uy)||1;
+  const nx=-uy/normal,ny=ux/normal;
+  const ox=l.x+ux*12,oy=l.y-(l.alto||36)*.52;
+  const rising=Math.min(range,Math.max(0,age-charge)*speed);
+  const fade=sat((duration-age)/(duration-release));
+  const front=rising*fade;
+  if(front<2){
+   if(age<charge)for(let i=0;i<6;i++){
+    const a=i*PI/3+age*11,radius=15-8*sat(age/charge);
     freezeFlake(g,ox+Math.cos(a)*radius,oy+Math.sin(a)*radius,.48);
    }
-   return age<.95;
+   return age<duration;
   }
-  const visibleFront=done&&hitPoint?
-   Math.min(reach,Math.max(13,Math.hypot(hitPoint.x-ox,hitPoint.y-oy))):reach;
-  frostStream(g,ox,oy,ux,uy,nx,ny,visibleFront,age);
-  if(!done&&r&&!r.ko){
-   // Test the actual beam front on every update; a dodging enemy or a
-   // target outside the cast angle takes no damage at all.
-   const from={x:ox+ux*lastReach,y:oy+uy*lastReach};
-   const to={x:ox+ux*reach,y:oy+uy*reach};
-   const collision=pathHit(from,to,r);
+  // Same flowing, imperfect layered beam silhouette as Hyper Beam/Aura
+  // Storm. The source never changes: just rotate its drawing each frame.
+  frostStream(g,ox,oy,ux,uy,nx,ny,front,age);
+  frostCrown(g,ox,oy,ux,uy,nx,ny,front,age,Math.max(.2,fade));
+  if(!hitDone&&r&&!r.ko&&age>=charge&&age<=release){
+   // A player must SWEEP the live beam over the moving enemy. No
+   // auto-targeting, no repeat damage, no guaranteed freeze.
+   const end={x:ox+ux*front,y:oy+uy*front};
+   const collision=pathHit({x:ox,y:oy},end,r);
    if(collision){
-    done=true;hitAt=age;
+    hitDone=true;
     if(strike(l,h,extra,r,1)){
-     hitPoint=collision;
+     hitPoint=collision;hitAt=age;
      impact(e,collision.x,collision.y,0x98e6fc);
      if(Math.random()<.1&&!r.tipos?.includes('ICE')&&typeof r.escarchar==='function')
       r.escarchar('torre2-icebeam-'+Math.round(l.t*1000));
     }
    }
   }
-  lastReach=reach;
+  // The channel REMAINS active after first impact. Swiping the aim
+  // continues to move the visible jet, just like Aura Storm.
   if(hitPoint){
-   const t=sat((age-hitAt)/.24);
-   for(let i=0;i<10;i++){
-    const a=i*PI/5+age*5,radius=6+t*24;
+   const elapsed=age-hitAt;
+   if(elapsed<=.24)for(let i=0;i<10;i++){
+    const a=i*PI/5+age*5,radius=6+sat(elapsed/.24)*24;
     freezeFlake(glints,hitPoint.x+Math.cos(a)*radius,
-     hitPoint.y+Math.sin(a)*radius,.47+.3*(1-t),1-t*.35);
+     hitPoint.y+Math.sin(a)*radius,.47+.3*(1-sat(elapsed/.24)));
    }
   }
-  // Freeze the beam for a moment on impact then dissolve; never repeat
-  // damage ticks or acquire a target after the effect expires.
-  if(done)return age<hitAt+.24;
-  return age<.91;
+  return age<duration;
  },()=>{g.destroy();glints.destroy()});
 }
 function rock(g,x,y,index,angle){
@@ -219,77 +268,42 @@ export function rockblast(l,h,extra){
   return age<1.5&&stones.some(q=>!q.done);
  },()=>{g.destroy();trail.destroy()});
 }
-// Three small YELLOW pixel orbs travel together. On confirmed successful
-// status they follow the defender and orbit OVER ITS HEAD like dizziness.
-// No violet laser and no enlarged projectile.
-function yellowOrb(g,x,y,phase=0){
- const light=Math.sin(phase)>0?0xfff3a8:0xffdb59;
- block(g,x-3,y-3,6,6,0x3c321c,.94);
- block(g,x-2,y-3,4,6,0xb77f22);
- block(g,x-3,y-2,6,4,0xc88d27);
- block(g,x-2,y-2,4,4,light);
- block(g,x-1,y-2,2,2,0xfffce2);
- block(g,x+1,y+1,2,2,0xe6a522);
-}
 export function confuseray(l,h,extra){
- const e=begin(l,'Shoot',.42),[balls,trail]=layers(e),r=l.rival;
- const ang=Math.atan2(l.ay-l.y,l.ax-l.x);
- const ux=Math.cos(ang),uy=Math.sin(ang)*.76,norm=Math.hypot(ux,uy)||1;
- const nx=-uy/norm,ny=ux/norm;
- const ox=l.x+ux*10,oy=l.y-(l.alto||36)*.52;
- const range=Math.min(h.alcance??230,260),speed=310;
- let age=0,previous={x:ox,y:oy},orbit=-1,applied=false;
+ const e=begin(l,'Charge',.57),[g,trail]=layers(e),r=l.rival;
+ const ang=Math.atan2(l.ay-l.y,l.ax-l.x),ox=l.x+Math.cos(ang)*10,oy=l.y-(l.alto||36)*.52;
+ const reach=Math.min(h.alcance??230,260),speed=275;
+ let age=0,previous={x:ox,y:oy};
  return register(e,dt=>{
-  age+=dt;balls.clear();trail.clear();
-  if(orbit>=0){
-   orbit+=dt;
-   if(!r||r.ko||orbit>1.35)return false;
-   // Critical behavior: orbit anchor is recalculated from rival EVERY frame.
-   const headX=r.x,headY=r.y-(r.alto||36)-12;
-   for(let i=0;i<3;i++){
-    const a=orbit*11.5+i*PI*2/3;
-    const fade=sat((1.35-orbit)/.3);
-    const x=headX+Math.cos(a)*13,y=headY+Math.sin(a)*5;
-    if(fade>.02)yellowOrb(balls,x,y,orbit*14+i);
+  age+=dt;g.clear();trail.clear();
+  const dist=Math.min(reach,Math.max(0,age-.10)*speed);
+  const x=ox+Math.cos(ang)*dist,y=oy+Math.sin(ang)*dist*.76;
+  // Three intertwined flickering spectral rays, not one colored circle.
+  for(let k=0;k<3;k++){
+   const phase=k*PI*2/3+age*12,xx=x+Math.cos(phase)*10,yy=y+Math.sin(phase)*7;
+   const color=[0xe1a31b,0xffe47a,0xc98612][k];
+   block(g,xx-3,yy-4,7,8,0x4a3511);
+   block(g,xx-2,yy-3,5,6,color);
+   block(g,xx-1,yy-2,2,3,0xfffeeb);
+   if(dist>22){
+    block(trail,xx-Math.cos(ang)*13,yy-Math.sin(ang)*9,3,2,color,.45);
    }
-   return true;
   }
-  const d=Math.min(range,Math.max(0,age-.095)*speed);
-  const tip={x:ox+ux*d,y:oy+uy*d};
-  if(d<1){
-   for(let i=0;i<3;i++){
-    const a=age*14+i*PI*2/3;
-    yellowOrb(balls,ox+Math.cos(a)*5,oy+Math.sin(a)*4,age*15+i);
-   }
-  }else{
-   for(let i=0;i<3;i++){
-    // Three distinct compact yellow balls, loosely distributed as they fly.
-    const side=(i-1)*7.5+Math.sin(age*11+i*2)*1.5;
-    const behind=i*4;
-    const x=tip.x-ux*behind+nx*side;
-    const y=tip.y-uy*behind+ny*side*.72;
-    yellowOrb(balls,x,y,age*17+i);
-    if(i===0)block(trail,x-ux*9,y-uy*9,2,2,0xeabb37,.5);
-   }
-   if(!applied&&d>10&&r&&!r.ko){
-    const collision=pathHit(previous,tip,r);
-    if(collision){
-     applied=true;
-     const landed=r.recibir(l,{dano:0,tipo:'GHOST',
-      silencioso:true,slot:extra?.slot})==='golpe';
-     // First hit, then the accuracy roll. Hits never guarantee confusion.
-     if(landed&&Math.random()<.85&&typeof r.ponerEstado==='function'){
+  if(dist>9&&r&&!r.ko){
+   const collision=pathHit(previous,{x,y},r);
+   if(collision){
+    // Silent 0-damage collision honors shields/invulnerability.
+    const landed=r.recibir(l,{dano:0,tipo:'GHOST',silencioso:true,slot:extra?.slot})==='golpe';
+    if(landed){
+     if(Math.random()<.85&&typeof r.ponerEstado==='function')
       r.ponerEstado('confuso',3.1,{fuente:l});
-      orbit=0; // Orbit exists only on a successful confused target.
-      return true;
-     }
-     return false;
+     impact(e,collision.x,collision.y,0xffdc57);
     }
+    return false;
    }
   }
-  previous=tip;
-  return d<range&&age<1.13;
- },()=>{balls.destroy();trail.destroy()});
+  previous={x,y};
+  return age<1.18&&dist<reach;
+ },()=>{g.destroy();trail.destroy()});
 }
 function pixelEgg(g,x,y,s=1){
  // Large upright egg, 22x30 pixel template, opaque shell and dark contour.

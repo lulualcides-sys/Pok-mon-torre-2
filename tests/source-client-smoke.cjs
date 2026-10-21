@@ -608,52 +608,75 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(specialV3.healBefore,40,'Egg animation must precede healing');
   assert.equal(specialV3.healAfter,100,'Soft-Boiled must heal only 30 percent');
 
-  // V4: exactly three yellow orbs must stay above and FOLLOW the moving
-  // opponent after a physical hit. Rock Blast and Soft-Boiled remain untouched.
-  const yellowOrbit=await tester.evaluate(async()=>{
+  // V5: Player can steer the channel mid-flight. Ice Beam is not a
+  // stationary one-shot beam; first Confuse Ray palette is now yellow.
+  const steeringV5=await tester.evaluate(async()=>{
     const main=document.querySelector('script[src*="/main.js"]');
-    const {confuseray}=await import(new URL('./torre2/mega-patch-fx.js',main.src).href);
+    const {icebeam,confuseray}=await import(
+      new URL('./torre2/mega-patch-fx.js',main.src).href);
     const e=window.__pt2Game.scene.getScene('combate');
-    const originalGraphics=e.add.graphics,originalRandom=Math.random;
-    let draw=[],fx;
+    const add=e.add.graphics,origRandom=Math.random,graphics=[];
+    let iceFx,confuseFx;
     try{
-      e.add.graphics=function(...args){
-       const graphic=originalGraphics.apply(this,args);
-       const fill=graphic.fillRect;
-       graphic.fillRect=function(x,y,w,h){
-        if(graphic===draw[0]?.g&&w>=1&&h>=1)draw[0].rects.push({x,y,w,h});
-        return fill.call(this,x,y,w,h);
-       };
-       if(draw.length===0)draw.push({g:graphic,rects:[]});
-       return graphic;
+     e.add.graphics=function(...args){
+      const g=add.apply(this,args),base=g.fillPoints;
+      g._v5Faces=[];
+      g.fillPoints=function(points,closed){
+       g._v5Faces.push(points.map(p=>({x:p.x,y:p.y})));
+       return base.call(this,points,closed);
       };
-      Math.random=()=>.2;
-      const enemy={x:290,y:215,alto:38,ko:false,
-       statuses:[],recibir(){return 'golpe'},
-       ponerEstado(name){this.statuses.push(name)}};
-      const player={x:174,y:215,alto:38,ax:420,ay:215,
-       escena:e,rival:enemy,t:0,animar(){},accion:null};
-      fx=confuseray(player,{dano:0,alcance:230,tipo:'GHOST'},{slot:'lmb'});
-      for(let i=0;i<40&&enemy.statuses.length===0;i++)fx.update(.016);
-      const beforeMove=draw[0].rects.slice(-18);
-      enemy.x=350;enemy.y=250;draw[0].rects.length=0;
-      fx.update(.016);
-      const afterMove=draw[0].rects.slice();
-      const centers=afterMove.filter((_,i)=>i%6===0);
-      return{applied:enemy.statuses.length,ballPixels:afterMove.length,
-       beforeMeanX:beforeMove.reduce((sum,p)=>sum+p.x,0)/(beforeMove.length||1),
-       afterMeanX:afterMove.reduce((sum,p)=>sum+p.x,0)/(afterMove.length||1),
-       above:centers.every(p=>p.y<enemy.y-enemy.alto+5)};
+      graphics.push(g);return g;
+     };
+     Math.random=()=>.2;
+     const foe={x:350,y:380,alto:38,ko:false,hp:200,tipos:['NORMAL'],
+      hits:0,statuses:[],recibir(){this.hits++;return 'golpe'},
+      ponerEstado(name){this.statuses.push(name)},escarchar(){}};
+     const p={x:174,y:215,alto:38,ax:420,ay:215,t:0,ko:false,
+      rival:foe,escena:e,animar(){},accion:null};
+     iceFx=icebeam(p,{dano:10,alcance:260,tipo:'ICE'}, {slot:'lmb'});
+     for(let i=0;i<27;i++)iceFx.update(.016);
+     const firstFace=graphics[0]._v5Faces[0],straightY=firstFace?.[Math.floor(firstFace.length/4)]?.y;
+     // Change the cast input DURING beam firing, as in Aura Storm.
+     p.ay=415;
+     for(let i=0;i<32;i++)iceFx.update(.016);
+     const laterFace=graphics[0]._v5Faces[0],steeredY=laterFace?.[Math.floor(laterFace.length/4)]?.y;
+     const aliveAfterTurn=iceFx.update(.016);
+     for(let i=0;i<110;i++)if(!iceFx.update(.016))break;
+     iceFx.destroy();e.efectos=e.efectos.filter(x=>x!==iceFx);
+     // Drawing must use the historical first-version 3-light stencil.
+     graphics.length=0;
+     const victim={x:380,y:390,alto:38,ko:false,statuses:[],
+      recibir(){return 'golpe'},ponerEstado(name){this.statuses.push(name)}};
+     const shooter={x:174,y:215,alto:38,ax:420,ay:215,t:0,
+      rival:victim,escena:e,animar(){},accion:null};
+     confuseFx=confuseray(shooter,{dano:0,alcance:230,tipo:'GHOST'},{slot:'lmb'});
+     const ink=graphics[0],colors=[],fills=ink.fillStyle;
+     ink.fillStyle=function(color,alpha){
+      colors.push(color);return fills.call(this,color,alpha);
+     };
+     confuseFx.update(.22);
+     const colorWasYellow=colors.some(c=>[0xe1a31b,0xffe47a,0xc98612].includes(c));
+     const blockedPurple=!colors.some(c=>[0xa17eec,0xf3ccfa,0x7754b8].includes(c));
+     confuseFx.destroy();e.efectos=e.efectos.filter(x=>x!==confuseFx);
+     return{straightY,steeredY,aliveAfterTurn,enemyHits:foe.hits,
+      colorWasYellow,blockedPurple};
     }finally{
-      e.add.graphics=originalGraphics;Math.random=originalRandom;
-      if(fx){fx.destroy();e.efectos=e.efectos.filter(x=>x!==fx)}
+     e.add.graphics=add;Math.random=origRandom;
+     if(iceFx)iceFx.destroy();
+     if(confuseFx)confuseFx.destroy();
     }
   });
-  assert.equal(yellowOrbit.applied,1,'Confuse Ray must apply confusion only on physical success');
-  assert.equal(yellowOrbit.ballPixels,18,'Orbit uses exactly three small yellow pixel balls');
-  assert.ok(yellowOrbit.afterMeanX>yellowOrbit.beforeMeanX+30,
-   'Three yellow balls must follow opponent movement, not stay over impact');
-  assert.equal(yellowOrbit.above,true,'Yellow confusion balls must orbit above rival head');
+  assert.ok(steeringV5.aliveAfterTurn,
+   'Ice Beam must keep channeling while steering, not stop at first contact');
+  assert.ok(Number.isFinite(steeringV5.straightY)&&Number.isFinite(steeringV5.steeredY) &&
+   steeringV5.steeredY>steeringV5.straightY+20,
+   'Ice Beam must rotate with new aim while being fired, like Aura Storm');
+  assert.equal(steeringV5.enemyHits,0,
+   'Ice Beam must not automatically hit an enemy outside the beam trajectory');
+  assert.equal(steeringV5.colorWasYellow,true,
+   'Historical Confuse Ray sparks must be yellow');
+  assert.equal(steeringV5.blockedPurple,true,
+   'Historical purple Confuse Ray palette must not remain');
 
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
