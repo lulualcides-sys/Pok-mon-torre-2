@@ -6,6 +6,24 @@ import {ROSTER,buscar,etapaDe} from '../datos.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
+/* One Pokémon move, one catalog entry — whether the original captured client
+ * or the original game calls it by Portuguese, English or an alias.
+ * Never make a second VFX of an existing Poké Arena 2D move. The native
+ * entry takes priority; custom entries only fill truly missing moves.
+ * Do NOT alter any approved original animation, metadata or menu.
+ */
+const MOVE_ALIASES=Object.freeze({
+ 'absorver':'absorb','tapa-de-lama':'mud-slap',
+ 'bomba-de-sementes':'seed-bomb','bomba-semente':'seed-bomb',
+ 'super-presa':'super-fang','hiper-presa':'hyper-fang',
+ 'bola-sombria':'shadow-ball','lanca-chamas':'flamethrower',
+ 'pistola-dagua':'water-gun','pistola-de-agua':'water-gun',
+ 'chicote-de-vinha':'vine-whip','folha-navalha':'razor-leaf',
+ 'bolhas':'bubble','metronomo':'metronome',
+ 'raio-confuso':'confuse-ray','raio-de-gelo':'ice-beam',
+ 'semente-sanguessuga':'leech-seed','po-sonifero':'sleep-powder'
+});
+export const canonicalMoveKey=name=>MOVE_ALIASES[norm(name)]||norm(name);
 export const SIGNATURE_MOVES=Object.freeze([
  {id:'bonemerang',approved:true,nombre:'Bonemerang',forma:'torre2_bonemerang',tipo:'GROUND',dano:10.5,alcance:245,coste:24,cd:5.7,anim:'Shoot',lanzar:.16,description:'Bone boomerang / two synchronized hits'},
  {id:'bone-club',approved:true,nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
@@ -60,10 +78,14 @@ function collect(def){
  return moves;
 }
 const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES];
-const ids=new Map(),signatureEntries=new Set(SIGNATURE_MOVES);
+const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
 for(const h of rawLibrary){
- const id=h.id||norm(h.nombre);
- if(!ids.has(id))ids.set(id,{...h,id,source:signatureEntries.has(h)?'new-phaser-fx':'arena2d-original'});
+ const id=h.id||norm(h.nombre),sameMove=canonicalMoveKey(h.nombre);
+ if(!sameMove||ids.has(id)||seenNames.has(sameMove))continue;
+ // ROSTER/native entries are collected before custom ones on purpose:
+ // if a move already exists in Pokémon Arena 2D, never override/recreate it.
+ ids.set(id,{...h,id,source:signatureEntries.has(h)?'new-phaser-fx':'arena2d-original'});
+ seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
 export function availableMoves(member){
