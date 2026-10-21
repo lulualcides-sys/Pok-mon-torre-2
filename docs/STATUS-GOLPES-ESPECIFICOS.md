@@ -80,3 +80,10 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - **Mud-Slap/Seed Bomb × projétil nativo ou entre si:** ponte nova em `tools/pokearena/torre2-clash-fx.js`, raio físico, cancelamento antes do dano, **10 quadros de pixel art com dissipação**, criação postergada para que o loop do Phaser não descarte o efeito. Sem mexer no sprite aprovado nem no Super Fang.
 - **Outros movimentos específicos próprios:** **ainda pendentes de instrumentação individual da hitbox**. Não marcar como concluídos globalmente até o teste na arena; golpes sem projétil (mordidas, status, cura) exigem interfaces de hitbox adequadas.
 - **Teste automático:** `tests/solo-kanto-built.test.mjs` garante instalação; `tests/source-client-smoke.cjs` cobre colisão real, erro de mira, aliados, dissipação e descarte completo de gráficos Phaser.
+
+## Patch avanço/contato e três golpes iniciais — 21/10/2026
+- **Bite / Crunch:** manter exatamente os sprites de mandíbula aprovados, agora mover o Pokémon na direção da mira (avanço real), aplicar dano somente no contato do ator e recuar à posição inicial. Crunch continua com duas mordidas horizontal/vertical e no máximo uma aplicação de dano.
+- **Peck — novo, ainda sem aprovação visual:** bico pequeno dourado em pixel art, avanço/contato/recuo e efeito de impacto contido.
+- **Leech Life — novo visual, sem aprovação visual:** movimento nativo já existia; manter entrada, substituir apenas `forma` no Torre 2. Uma agulha verde baseada no Poison Sting aprovado, sem envenenar, cinco motes de volta ao Pokémon e recuperação de 50% do dano comprovado.
+- **Bug Bite — novo, ainda sem aprovação visual:** boca menor de inseto verde com contorno escuro, contato físico uma única vez com avanço/recuo.
+- **Congelamentos:** demais golpes aprovados intocados, assim como menu, campanha, save e sprite do cliente original. O comportamento especial de frutas não é simulado sem um sistema de berries.

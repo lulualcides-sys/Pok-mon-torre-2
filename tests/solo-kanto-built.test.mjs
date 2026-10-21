@@ -104,6 +104,8 @@ const officialMoveStats={
  'gust':{poder:40,precisao:100,pp:35,categoria:'SPECIAL',tipo:'FLYING',dano:8},
  'poison-sting':{poder:15,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'POISON',dano:3},
  'bite':{poder:60,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'DARK',dano:12},
+  'peck':{poder:35,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'FLYING',dano:7},
+  'bug-bite':{poder:60,precisao:100,pp:20,categoria:'PHYSICAL',tipo:'BUG',dano:12},
  'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
  'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
  'super-fang':{poder:null,precisao:90,pp:10,categoria:'PHYSICAL',dano:0}
@@ -118,7 +120,7 @@ for(const [id,stats] of Object.entries(officialMoveStats)){
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
  'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
  'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor',
- 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch'])
+ 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch','peck','leech-life','bug-bite'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -137,6 +139,18 @@ assert.ok(nativeCrunch,'Original Pokémon Arena Crunch must be available');
 assert.equal(nativeCrunch.forma,'torre2_crunch','Crunch renderer updated in Kanto loadout');
 assert.equal(nativeCrunch.source,'torre2-visual-override','Native Crunch stats kept');
 assert.equal(SIGNATURE_MOVES.some(m=>m.id==='crunch'),false,'Never duplicate native Crunch');
+const leech=allMoves.find(m=>m.id==='leech-life');
+assert.ok(leech,'Native Leech Life remains in original catalog');
+assert.equal(leech.forma,'torre2_leechlife','Only the Kanto custom visual changes');
+assert.equal(leech.source,'torre2-visual-override');
+assert.ok(!SIGNATURE_MOVES.some(m=>m.id==='leech-life'),'No duplicate native move');
+for(const [id,forma] of [['peck','torre2_peck'],['bug-bite','torre2_bugbite']]){
+ const move=allMoves.find(m=>m.id===id);
+ assert.equal(move.forma,forma);
+ assert.equal(move.approved,undefined,'New moves still await user approval');
+ assert.equal(equipMove(tester,0,id),true);
+ assert.equal(resolveLoadout(tester).lmb.forma,forma);
+}
 assert.equal(equipMove(tester,0,'crunch'),true);
 assert.equal(resolveLoadout(tester).lmb.forma,'torre2_crunch');
 assert.equal(allMoves.filter(x=>x.nombre==='Tackle').length,1,
@@ -213,7 +227,7 @@ assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
 assert.ok(dexBuilt.includes('this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)}'),
  'Pokedex evolution tabs must lazily load each selected original PMD animation');
 const early=fs.readFileSync(path.join(stage,version,'torre2/early-route-fx.js'),'utf8');
-for(const name of ['gust','poisonsting','bite','crunch'])
+for(const name of ['gust','poisonsting','bite','crunch','peck','leechlife','bugbite'])
  assert.ok(early.includes('export function '+name+'('),
   'Missing new hand-pixeled early-route renderer '+name);
 assert.ok(early.includes('clashAt(e,fx,l,tip,15')&&early.includes('clashAt(e,fx,l,tip,6'),
@@ -230,6 +244,10 @@ for(const id of ['gust','poison-sting'])
 for(const id of ['bite','crunch'])
  assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
  'User explicitly approved Bite and Crunch; preserve their pixel art and mechanics');
+assert.ok(early.includes('export function contactDash(')&&early.includes('dash.step(age)'),
+ 'Bite and Crunch advance the actual fighter before returning');
+assert.ok(early.includes('sprite(tipFx,NEEDLE')&&early.includes('DRAIN_PAL'),
+ 'Leech Life shares Poison Sting pixel matrix without changing its colors');
 const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
 assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
 assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');

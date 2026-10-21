@@ -139,7 +139,12 @@ jobs:
                 && grep -Fq 'const rotations=[0,PI/2]' /tmp/torre-bites.js \
                 && curl -fsSL --max-time 18 "$base/$version/torre2/move-pool.js" -o /tmp/torre-bites-pool.js \
                 && grep -Fq "forma:'torre2_crunch'" /tmp/torre-bites-pool.js \
-                && grep -Fq "approved:true,nombre:'Poison Sting'" /tmp/torre-bites-pool.js; then
+                && grep -Fq "approved:true,nombre:'Poison Sting'" /tmp/torre-bites-pool.js \
+                && grep -Fq 'export function peck(' /tmp/torre-bites.js \
+                && grep -Fq 'export function leechlife(' /tmp/torre-bites.js \
+                && grep -Fq 'export function bugbite(' /tmp/torre-bites.js \
+                && grep -Fq 'export function contactDash(' /tmp/torre-bites.js \
+                && grep -Fq "forma:'torre2_leechlife'" /tmp/torre-bites-pool.js; then
               echo "CONFIRMADO: GitHub Pages esta servindo a versao $version com golpes atualizados."
               exit 0
             fi
