@@ -122,7 +122,11 @@ jobs:
                 && grep -Fq "src=\"$version/main.js\"" /tmp/torre-live.html \
                 && curl -fsSL --max-time 18 "$base/$version/torre2/next-specific-fx.js" -o /tmp/torre-live-fx.js \
                 && grep -Fq 'const SCISSOR_CUT=[' /tmp/torre-live-fx.js \
-                && grep -Fq 'stencil(palm,HAND_PALM,cx,cy+5,HAND_PAL,1.5)' /tmp/torre-live-fx.js; then
+                && grep -Fq 'stencil(palm,HAND_PALM,cx,cy+5,HAND_PAL,1.5)' /tmp/torre-live-fx.js \
+                && curl -fsSL --max-time 18 "$base/$version/torre2/adapted-moves-fx.js" -o /tmp/torre-new-kanto.js \
+                && grep -Fq 'export function mudslap' /tmp/torre-new-kanto.js \
+                && grep -Fq 'export function seedbomb' /tmp/torre-new-kanto.js \
+                && grep -Fq 'export function superfang' /tmp/torre-new-kanto.js; then
               echo "CONFIRMADO: GitHub Pages esta servindo a versao $version com golpes atualizados."
               exit 0
             fi
