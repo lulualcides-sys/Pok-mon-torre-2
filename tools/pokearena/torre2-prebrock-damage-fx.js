@@ -227,7 +227,100 @@ export function rocktomb(l,h,extra){
  });
  fx.clashBody=body;return fx;
 }
+
+// Metal Claw for early FireRed/LeafGreen Charmander: hand-pixelled silver
+// claw, one real melee impact and a 10% chance to raise the user's Attack.
+const STEEL={K:0x1b2631,D:0x536777,M:0x9faeb9,L:0xdbe8ed,W:0xfcffff};
+const METAL_CLAW=[
+ '......KKKKK......',
+ '.....KDLLLWK.....',
+ '...KKDLWWWWK.....',
+ '..KDMLWWKKK......',
+ '..KDMLLK..........',
+ 'KKDMLWWKKKKK.....',
+ 'KDMLWWWWLLWWK....',
+ 'KDMMLWWKKKKK.....',
+ '.KKKKK...........'
+],STEEL_SPARK=['....K....','..KLWK...','KLLWWLK..','..KLWK...','....K....'];
+export function metalclaw(l,h,extra){
+ const e=l.escena,r=l.rival,g=e.add.graphics().setDepth(1514),spark=e.add.graphics().setDepth(1515);
+ const o=begin(l,'Swing',.73),dash=dashActor(l,o,(h.alcance??76)-9,.22,.38,.66);
+ const valid=Math.random()<((h.precisao??95)/100);
+ let age=0,checked=false,contact=null,at=0;
+ return emit(l,[g,spark],dt=>{
+  age+=dt;g.clear();spark.clear();
+  if(l.ko||l.est?.aturdido||age>.75){dash.reset();return false;}
+  dash.step(age);
+  const x=l.x+o.c*16,y=l.y-(l.alto||36)*.5+o.s*16;
+  const sweep=Math.sin(cap(age/.48)*PI)*.18;
+  if(age<.54)stamp(g,METAL_CLAW,x,y,STEEL,
+   .94,cap((.57-age)/.1),o.a+sweep);
+  if(!checked&&age>=.29){
+   checked=true;const on=melee(l,o,r,14);
+   if(on&&valid&&hit(l,r,h,extra,12)){
+    contact=on;at=age;
+    if(Math.random()<.1){
+     if(typeof l.ponerEstado==='function')l.ponerEstado('potencia',3,{mult:1.12,vel:1});
+     else {l.est??={};l.est.potencia={mult:1.12,hasta:(l.t??0)+3};}
+    }
+   }
+  }
+  if(contact&&age-at<.18)
+   stamp(spark,STEEL_SPARK,contact.x,contact.y,STEEL,1.25,1-(age-at)/.18,o.a);
+  return true;
+ });
+}
+// Bind: a genuine close-range constriction with four individually timed
+// damage pulses only after the first physical hit. No remote auto-targeting.
+const ROPE={K:0x22202a,D:0x625d57,M:0x9c9a7f,L:0xdad5a4,W:0xfdf0cc};
+const ROPE_ARC=[
+ '...KKKKKKK...',
+ '..KDMMMMMK..',
+ '.KDMLLLLMDK.',
+ 'KDMLLWWLLMDK',
+ 'KDMLLWWLLMDK',
+ '.KDMLLLLMDK.',
+ '..KDMMMMMK..',
+ '...KKKKKKK...'
+];
+export function bind(l,h,extra){
+ const e=l.escena,r=l.rival,rings=e.add.graphics().setDepth(1514),flash=e.add.graphics().setDepth(1515);
+ const o=begin(l,'Swing',.80),dash=dashActor(l,o,(h.alcance??76)-12,.24,.39,.68);
+ const valid=Math.random()<((h.precisao??85)/100);
+ let age=0,resolved=false,gripped=false,ticks=0;
+ return emit(l,[rings,flash],dt=>{
+  age+=dt;rings.clear();flash.clear();
+  if(l.ko||l.est?.aturdido||age>1.85){dash.reset();return false;}
+  if(age<.75)dash.step(age);
+  if(!resolved&&age>=.29){
+   resolved=true;
+   const on=melee(l,o,r,14);
+   if(on&&valid&&hit(l,r,h,extra,3)){
+    gripped=true;ticks=1;
+    if(typeof r.ponerEstado==='function')r.ponerEstado('lento',1.55,{f:.14});
+   }
+  }
+  if(gripped&&r&&!r.ko){
+   const y=r.y-(r.alto||36)*.5;
+   const shake=Math.sin(age*30)*2;
+   for(let i=0;i<2;i++)
+    stamp(rings,ROPE_ARC,r.x+shake,y+(i?7:-7),ROPE,
+     1.1,cap((1.86-age)/.24),i?PI/2:0);
+   // One first impact followed by three restrained damage ticks.
+   const boundaries=[.68,1.08,1.48];
+   while(ticks<=3&&age>=boundaries[ticks-1]){
+    if(!r.ko&&hit(l,r,h,extra,0)){
+     stamp(flash,STEEL_SPARK,r.x,y,ROPE,.85,.78);
+    }
+    ticks++;
+   }
+  }
+  return true;
+ });
+}
+
 export const TORRE2_PREBROCK_DAMAGE_FORMS=Object.freeze({
  torre2_hornattack:hornattack,torre2_doublekick:doublekick,
- torre2_furyattack:furyattack,torre2_rocktomb:rocktomb
+ torre2_furyattack:furyattack,torre2_rocktomb:rocktomb,
+ torre2_metalclaw:metalclaw,torre2_bind:bind
 });
