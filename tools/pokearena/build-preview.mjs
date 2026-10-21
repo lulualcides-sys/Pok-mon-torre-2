@@ -167,6 +167,21 @@ patches.push(
  ]]
 );
 
+// Pokédex (native): load the 26 real PMD base portraits + Idle animations
+// before rendering its grid. The original client only preloads 4 starters at
+// boot for Android speed, so most Pokédex images showed blank/black squares.
+// Keep ALL original layout/controls/evolution tabs untouched. Evolutions
+// download their own PMD Idle sheet on first click, and are cached thereafter.
+patches.push(
+ ['escenas/pokedex.js',[
+  ['import{atacarEnMenu}from"../sprites.js";',
+   'import{atacarEnMenu,cargarPMD,crearAnimsPMD,soloFormas}from"../sprites.js";'],
+  ['init(datos){this.foco=Math.max(0,ROSTER.findIndex(p=>p.id===datos?.id));this.etapa=0}create(){',
+   'init(datos){this.foco=Math.max(0,ROSTER.findIndex(p=>p.id===datos?.id));this.etapa=0}preload(){const m=this.registry.get("manifiesto");this._torre2DexForms=soloFormas(m,new Set(ROSTER.map(p=>p.dex)));cargarPMD(this,this._torre2DexForms,["Idle"]);}create(){crearAnimsPMD(this,this._torre2DexForms,["Idle"]);'],
+  ['irEtapa(i){if(i===this.etapa)return;this.etapa=i;sfx("confirmar");this.refrescar(true)}',
+   'irEtapa(i){if(i===this.etapa)return;const e=etapasDe(ROSTER[this.foco])[i];if(!e)return;const m=this.registry.get("manifiesto"),forms=soloFormas(m,new Set([e.dex]));if(forms[e.dex]&&!this.anims.exists(`${e.dex}-Idle-0`)){const waiting=cargarPMD(this,forms,["Idle"]);if(waiting){this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)});if(!this.load.isLoading())this.load.start();return;}crearAnimsPMD(this,forms,["Idle"]);}this.etapa=i;sfx("confirmar");this.refrescar(true)}']
+ ]]
+);
 // Offline single-player UI clean-up: retain the site's original pixel font,
 // title logo, animated background, controls, credit screen and other screens.
 // Only online, multiplayer, chat, connected players and combat evolution go.
@@ -266,7 +281,7 @@ for(const [filename,changes] of patches){
 // module tree under a fresh, content-addressed src-xxxxxxxxxx directory.
 const vfxFingerprint=createHash('sha256');
 for(const filename of [
- 'main.js','habilidades.js','escenas/titulo.js',
+ 'main.js','habilidades.js','escenas/titulo.js','escenas/pokedex.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
