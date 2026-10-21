@@ -149,3 +149,5 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - Não modificar sprites e golpes nativos, não introduzir PNG de projéteis nem reabrir menus ou resetar save. Crédito PMD SpriteCollab obrigatório.
 
 - Correção de registro da Pokédex: Nidoran♀ e Nidoran♂ usam IDs `nidoran-f`/`nidoran-m` para captura, sem fundir as duas entradas. Testes exigem imagens PMD e evolução de todas as dez linhas e ataques por nível para Pidgey.
+
+- Adaptação de grade da Pokédex original: 6 colunas × 36px, com retratos PMD redimensionados para caber as 36 famílias sem sobreposição com o pedestal. Visual, abas evolutivas e botões permanecem nativos.

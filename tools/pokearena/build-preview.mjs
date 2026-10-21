@@ -190,6 +190,11 @@ patches.push(
 // download their own PMD Idle sheet on first click, and are cached thereafter.
 patches.push(
  ['escenas/pokedex.js',[
+  // Original styled Pokedex: adjust only the card grid for 36 families.
+  ['const COLS=5,CEL=44,GX=10,GY=36;',
+   'const COLS=6,CEL=36,GX=10,GY=36;'],
+  ['this.add.image(x+1,y+1,`retrato-${p.dex}`).setOrigin(0);',
+   'this.add.image(x+1,y+1,`retrato-${p.dex}`).setOrigin(0).setDisplaySize(CEL-4,CEL-4);'],
   ['import{atacarEnMenu}from"../sprites.js";',
    'import{atacarEnMenu,cargarPMD,crearAnimsPMD,soloFormas}from"../sprites.js";'],
   ['init(datos){this.foco=Math.max(0,ROSTER.findIndex(p=>p.id===datos?.id));this.etapa=0}create(){',

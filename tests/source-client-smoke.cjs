@@ -80,10 +80,13 @@ const server=http.createServer(async(req,res)=>{
    return {count:p.casillas.length,portraits:base.map(id=>({
     id,exists:p.textures.exists('retrato-'+id),
     idle:p.anims.exists(id+'-Idle-0')})),
+    bottom:Math.max(...p.casillas.map(c=>c.y+c.h)),podium:p.peanaY,
     tabNames:p.etapas.map(x=>x.nombre)};
   });
   assert.ok(dexData.count>=36,
    'Pokédex should retain 26 native cards and add ten original early-Kanto species');
+  assert.ok(dexData.bottom<=dexData.podium-22,
+   'Expanded 36-family Pokédex cards cannot overlap the Pokémon pedestal');
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
    'Every base Pokédex Pokémon must have a real captured PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
