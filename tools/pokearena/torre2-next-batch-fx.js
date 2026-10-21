@@ -51,25 +51,32 @@ export function surf(l,h,extra){
   const s=swell,crest=Math.sin(time*13)*2;
   // A SINGLE continuous large body, inky silhouette and layered water.
   // All positions are local pixel coordinates, so the wave rotates with aim.
-  waveShape(water,[[-55,-18*s],[-42,-32*s],[-24,-39*s],[-4,-37*s],
-   [14,-30*s],[30,-34*s],[35,-23*s],[49,-20*s],[56,-8*s],
-   [44,4*s],[43,20*s],[29,31*s],[7,39*s],[-18,37*s],
-   [-37,29*s],[-55,18*s]],0x0b2441);
-  waveShape(water,[[-51,-16*s],[-40,-29*s],[-21,-35*s],[-2,-32*s],
-   [12,-25*s],[28,-30*s],[32,-19*s],[45,-16*s],
-   [49,-7*s],[36,3*s],[40,19*s],[24,28*s],[6,34*s],
-   [-16,32*s],[-35,25*s],[-51,16*s]],0x175b8a);
-  waveShape(water,[[-43,-13*s],[-29,-26*s],[-10,-29*s],[8,-22*s],
-   [24,-21*s],[17,-10*s],[-1,-7*s],[2,10*s],
-   [25,17*s],[17,25*s],[-11,27*s],[-33,18*s]],0x269bc3,.97);
-  waveShape(highlights,[[-32,-23*s],[-15,-34*s],[8,-30*s],
-   [25,-24*s],[39,-28*s],[53,-19*s],[48,-9*s],[34,-6*s],
-   [27,-15*s],[11,-17*s],[-5,-13*s],[-17,-18*s]],0xc7faff);
-  waveShape(highlights,[[11,-17*s],[25,-18*s],[42,-12*s],
-   [47,-6*s],[34,1*s],[28,-6*s],[15,-7*s]],0x76d9ef);
+  waveShape(water,[[-99,-18*s],[-72,-34*s],[-37,-47*s],[-7,-49*s],
+   [14,-46*s],[35,-33*s],[41,-23*s],[53,-21*s],[65,-9*s],
+   [61,4*s],[43,16*s],[36,31*s],[8,47*s],[-28,48*s],
+   [-74,30*s],[-100,18*s],[-71,13*s],[-41,7*s],[-32,-1*s],
+   [-43,-9*s],[-73,-14*s]],0x0b2441);
+  waveShape(water,[[-94,-15*s],[-66,-29*s],[-34,-42*s],[-4,-44*s],
+   [17,-41*s],[34,-29*s],[38,-17*s],[51,-16*s],
+   [57,-7*s],[53,3*s],[38,12*s],[32,28*s],[6,42*s],
+   [-26,42*s],[-69,27*s],[-94,15*s],[-71,11*s],
+   [-35,4*s],[-26,-2*s],[-43,-12*s]],0x175b8a);
+  waveShape(water,[[-86,-11*s],[-64,-26*s],[-31,-39*s],[4,-39*s],
+   [26,-31*s],[32,-22*s],[20,-11*s],[-4,-5*s],
+   [-14,7*s],[20,16*s],[27,25*s],[7,38*s],
+   [-26,37*s],[-68,23*s],[-84,12*s],[-49,7*s],
+   [-30,-2*s],[-48,-11*s]],0x269bc3,.94);
+  waveShape(highlights,[[-53,-30*s],[-33,-43*s],[-8,-46*s],
+   [17,-43*s],[36,-34*s],[49,-32*s],[62,-20*s],
+   [54,-9*s],[40,-7*s],[32,-16*s],[9,-21*s],
+   [-8,-18*s],[-29,-24*s]],0xc7faff);
+  waveShape(highlights,[[12,-27*s],[31,-30*s],[48,-22*s],
+   [55,-9*s],[45,2*s],[31,8*s],[22,-1*s],[33,-12*s],
+   [24,-18*s]],0x76d9ef);
   // Breaking front of Surf: foam, white spouts, water curls and droplets.
-  const front=[[-30,-30],[-17,-34],[3,-30],[19,-25],[31,-29],
-   [40,-25],[50,-18],[50,-9],[45,3],[43,19],[28,29],[6,34],[-14,30],[-36,24]];
+  const front=[[-49,-37],[-31,-42],[-7,-43],[14,-39],[35,-33],
+   [48,-27],[57,-20],[59,-10],[52,2],[44,18],[27,33],
+   [4,41],[-24,40],[-55,27]];
   for(let i=0;i<front.length;i++){
    const [px,py]=front[i],shake=Math.sin(time*18+i*2.1)*(i%3+1);
    draw(highlights,px+shake,py*s,5+(i%3)*2,3,0xf3feff,.95);
@@ -79,19 +86,19 @@ export function surf(l,h,extra){
   for(let i=0;i<18;i++){
    const ripple=(time*39+i*11)%72;
    const py=-31*s+(i%9)*8*s;
-   const px=-40+ripple*.7;
+   const px=-84+ripple*.95;
    draw(highlights,px,py+Math.sin(time*14+i)*3,4+(i%3)*2,
     2+(i%2),i%3?0x8be6f8:0xe0fbff,.67);
   }
   for(let i=0;i<12;i++){
-   const px=-65-(i*8+time*35)%49,py=((i*29)%66-33)*s;
+   const px=-99-(i*8+time*35)%51,py=((i*29)%83-41)*s;
    draw(spray,px,py,2+i%3,2+i%2,i%3?0x64c9df:0xe5fbff,.45);
   }
   if(!damaged&&r&&!r.ko&&t>.08){
    const tx=r.x-x,ty=r.y-r.alto*.5-y;
    const ahead=tx*Math.cos(ang)+ty*Math.sin(ang);
    const side=-tx*Math.sin(ang)+ty*Math.cos(ang);
-   if(Math.abs(ahead-33)<29&&Math.abs(side)<Math.max(29,40*s)){
+   if(Math.abs(ahead-39)<27&&Math.abs(side)<Math.max(29,48*s)){
     damaged=true;impactSplash=.27;
     if(hit(l,h,extra,r,1,88))sparkle(e,r.x,r.y-r.alto*.5,0x83e7fa,1.35);
    }
