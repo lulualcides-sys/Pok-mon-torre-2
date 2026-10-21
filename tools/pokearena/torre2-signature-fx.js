@@ -3,6 +3,7 @@
  * Every impact is resolved at the rendered contact frame.
  */
 import * as vfx from '../vfx.js';
+import {TORRE2_NEW_FORMS} from './next-batch-fx.js';
 
 const pi=Math.PI, clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const ease=t=>1-(1-clamp(t))**3;
@@ -146,7 +147,7 @@ export function triattack(l,h,extra){
  // simultaneous FIRE / ICE / ELECTRIC rays. The move itself stays NORMAL.
  const e=l.escena,r=l.rival,ang=Math.atan2(l.ay-l.y,l.ax-l.x);
  const ray=e.add.graphics().setDepth(1511),particle=e.add.graphics().setDepth(1512);
- let age=0,applied=false;
+ let age=0,applied=false,impactAge=-1,impactCenter=null;
  const origin={x:l.x+Math.cos(ang)*9,y:l.y-l.alto*.55};
  l.animar('Charge',.63,.15);
  l.accion={hasta:l.t+.34,bloquea:true,lento:.36,angulo:ang};
@@ -186,13 +187,13 @@ export function triattack(l,h,extra){
   const orient=ang,along={x:Math.cos(orient),y:Math.sin(orient)};
   const normal={x:-Math.sin(orient),y:Math.cos(orient)};
   const pts=[-1,0,1].map((v,i)=>({
-    x:cx+normal.x*v*12+along.x*(i===1?-9:7),
-    y:cy+normal.y*v*10+along.y*(i===1?-9:7)
+    x:cx+normal.x*v*18+along.x*(i===1?-14:10),
+    y:cy+normal.y*v*15+along.y*(i===1?-14:10)
   }));
   ray.clear();particle.clear();
   // Charge first, then reveal three simultaneous live beams from the Pokémon
   // to each vertex and a thin triangular cross-connection.
-  const beamLength=charging*15+travel*19;
+  const beamLength=charging*20+travel*56;
   if(T>=.14){
    pts.forEach((q,i)=>{
     const col=palette[i];
@@ -215,7 +216,8 @@ export function triattack(l,h,extra){
    applied=true;
    const landed=contact(l,h,extra,r,1,{stun:.13,push:75,heavy:true});
    if(landed){
-    palette.forEach(col=>flash(e,r.x,r.y-r.alto*.52,col.body,.52));
+    impactAge=0;impactCenter={x:r.x,y:r.y-r.alto*.52};
+    palette.forEach(col=>flash(e,r.x,r.y-r.alto*.52,col.body,.72));
     if(Math.random()<.2&&typeof r.ponerEstado==='function'){
      const pick=Math.floor(Math.random()*3);
      const key=['quemado','congelado','paralizado'][pick];
@@ -225,6 +227,18 @@ export function triattack(l,h,extra){
      if(!immune)r.ponerEstado(key,pick===1?1.1:2.2);
     }
    }
+  }
+  if(impactAge>=0&&impactAge<.38&&impactCenter){
+   impactAge+=dt;const k=impactAge/.38,radius=6+30*k;
+   palette.forEach((col,i)=>{
+    const theta=i*2*pi/3+age*5;
+    ray.lineStyle(3,col.outer,1-k);ray.strokeCircle(impactCenter.x,impactCenter.y,radius-i*2);
+    for(let j=0;j<5;j++){
+     const a=theta+j*2*pi/5+age*7;
+     block(particle,impactCenter.x+Math.cos(a)*radius,
+       impactCenter.y+Math.sin(a)*radius,4,4,col.body,1-k);
+    }
+   });
   }
   return true
  }});
@@ -241,6 +255,8 @@ export function payday(l,h,extra){
  const e=l.escena,ang=Math.atan2(l.ay-l.y,l.ax-l.x),g=shape(e),trail=shape(e,1508);
  const ox=l.x+Math.cos(ang)*9,oy=l.y-l.alto*.55;
  const distance=Math.min(h.alcance??260,260);let age=0,hitCount=0;
+ // Fan/spray layout with individual trajectories; no linear coin queue.
+ const fan=[[-40,-27],[-9,34],[30,-21],[-27,14],[12,-41],[46,13],[-48,5],[3,7],[24,39]];
  l.animar('Shoot',.4,.1);l.accion={hasta:l.t+.32,lento:.7,angulo:ang};
  return effect(e,{update(dt){
   age+=dt;const T=age/1.05;if(T>=1){fadeDestroy(g,[trail]);return false}
@@ -248,11 +264,15 @@ export function payday(l,h,extra){
   for(let i=0;i<9;i++){
    const t=clamp((T-i*.046)/.65);
    if(t<=0||t>=1)continue;
-   const d=distance*ease(t),offset=(i-4)*5.2;
-   const x=p(ox+Math.cos(ang)*d-Math.sin(ang)*offset),
-         y=p(oy+Math.sin(ang)*d*.72+Math.cos(ang)*offset*.6-18*Math.sin(pi*t));
+   const d=distance*ease(t),side=fan[i][0],height=fan[i][1];
+   const fanCurve=Math.sin(pi*Math.min(1,t))*1.15+.38*t;
+   const x=p(ox+Math.cos(ang)*d-Math.sin(ang)*side*fanCurve),
+         y=p(oy+Math.sin(ang)*d*.72+Math.cos(ang)*side*fanCurve*.8+
+            height*Math.sin(pi*t)-11*Math.sin(pi*t*1.6));
    coin(g,x,y,6,t*21+i*.83);
    block(trail,x-4-Math.cos(ang)*10,y-1,4,3,colors.goldLit,.35);
+   // Brief afterimages fill the entire cone, not only the nearest row.
+   if(i%2===0){block(trail,x+Math.sin(ang)*7,y-7,2,2,colors.white,.62);}
    const target=l.rival;
    if(!(hitCount&(1<<i))&&target&&!target.ko&&
      Math.hypot(x-target.x,y-(target.y-target.alto*.5))<21){
@@ -265,5 +285,6 @@ export function payday(l,h,extra){
 }
 export const TORRE2_FORMS={
  torre2_bonemerang:bonemerang,torre2_boneclub:boneclub,
- torre2_triattack:triattack,torre2_payday:payday
+ torre2_triattack:triattack,torre2_payday:payday,
+ ...TORRE2_NEW_FORMS
 };
