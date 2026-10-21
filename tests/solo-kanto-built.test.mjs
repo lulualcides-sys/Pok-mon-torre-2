@@ -60,7 +60,7 @@ assert.equal(realBeam.giro,3.5);
 assert.equal(realBeam.source,'new-phaser-fx','Only native renderer is reused, not falsely relabeled');
 for(const id of ['rock-blast','soft-boiled','confuse-ray'])
  assert.equal(allMoves.find(m=>m.id===id)?.approved,true,'Approved '+id);
-assert.equal(realBeam.approved,undefined,'Ice Beam not approved yet');
+assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
 const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf8');
 assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
 assert.ok(abilityBody.includes('h.paleta==="hieloTorre2"'),'Ice particles apply only to Ice Beam');
