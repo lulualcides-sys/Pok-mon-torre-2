@@ -67,8 +67,20 @@ const server=http.createServer(async(req,res)=>{
     if(item<0)throw Error('TRAINING disappeared from original menu');
     title.elegir(item);
   });
-  await page.waitForTimeout(1350);
-  await page.screenshot({path:'test-evidence/pokearena-training-select.png',fullPage:true});
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:35000});
+  const visiblePokemon=await page.evaluate(()=>{
+    const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
+    const m=scene.registry.get('manifiesto');
+    const expected=['0001','0004','0007','0025','0041','0042'];
+    return expected.map(dex=>({dex,listed:!!m[dex],
+      portrait:scene.textures.exists('retrato-'+dex),
+      idle:scene.textures.exists('pmd-'+dex+'-Idle'),
+      animated:scene.anims.exists(dex+'-Idle-2')}));
+  });
+  assert.ok(visiblePokemon.every(x=>x.portrait&&x.idle&&x.animated),
+   'Selection cards must preload actual Pokémon portraits and animated sprites, including Zubat/Golbat: '+
+   JSON.stringify(visiblePokemon));
+  await page.screenshot({path:'test-evidence/pokearena-training-select-sprites-fixed.png',fullPage:true});
   await page.mouse.click(205,149); // Confirm Squirtle for Player 1.
   await page.waitForTimeout(300);
   await page.mouse.click(68,149); // Confirm Bulbasaur as Dummy after focus switches.
