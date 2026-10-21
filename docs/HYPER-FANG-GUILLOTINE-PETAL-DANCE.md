@@ -9,3 +9,7 @@ Hyper Fang e Guillotine estão ✅ aprovados (21/10/2026) e protegidos. Petal Da
 Mewtwo de teste consegue equipar os três. Famílias de Pokémon que ainda não existem no ROSTER podem equipar quando forem integradas.
 
 Documentação e testes no GitHub; publicar somente após CI.
+
+## Ajuste de acompanhamento do alvo (21/10/2026)
+
+A publicação anterior girava as pétalas, mas conservava a direção inicial. Agora cada pétala acompanha a posição atual do inimigo, com rotação limitada por frame e deslocamento físico; o lançador também gira durante a animação, inspirado no direcionamento do Aura Storm. Não há teleporte nem dano automático; colisões individuais, limite de três acertos, tamanho e tons de rosa aprovados permanecem. Petal Dance segue aguardando aprovação visual.
