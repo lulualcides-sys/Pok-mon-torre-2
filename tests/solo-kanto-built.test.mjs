@@ -228,8 +228,8 @@ for(const id of ['gust','poison-sting'])
  assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
  'These early-route moves are explicitly approved and frozen: '+id);
 for(const id of ['bite','crunch'])
- assert.notEqual(allMoves.find(x=>x.id===id)?.approved,true,
- 'Bite and Crunch await visual approval after requested adjustments');
+ assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
+ 'User explicitly approved Bite and Crunch; preserve their pixel art and mechanics');
 const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
 assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
 assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');

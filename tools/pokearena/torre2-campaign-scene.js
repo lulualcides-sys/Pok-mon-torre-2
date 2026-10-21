@@ -28,15 +28,7 @@ class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
  init(input){this.result=input?.finished?input:null}
  preload(){
-  let state=readCampaign();
-  // Opt-in preview opens directly with the two revised moves already equipped.
-  if(!state&&new URLSearchParams(window.location.search).get('testMoves')==='bite-crunch'){
-   state=createCampaign('bulbasaur');
-   const mewtwo=state.team.find(p=>p.id==='mewtwo');
-   if(mewtwo)mewtwo.moves=['bite','crunch','tri-attack','pay-day'];
-   state.active=Math.max(0,state.team.findIndex(p=>p.id==='mewtwo'));
-   saveCampaign(state);
-  }
+  const state=readCampaign();
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
   for(const dex of toLoad){
@@ -67,15 +59,6 @@ class Campanha extends Phaser.Scene{
    }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
   }
   if(!state)return this.starterSelection();
-  if(new URLSearchParams(window.location.search).get('testMoves')==='bite-crunch'&&
-     !this.result&&!window.__torre2BiteCrunchOpened){
-   window.__torre2BiteCrunchOpened=true;
-   const index=state.team.findIndex(p=>p.id==='mewtwo');
-   if(index>=0){
-    this.summaryFilter='ALL';this.summarySearch='';
-    return this.showSummary(state,index,0,0);
-   }
-  }
   this.renderCampaign(state);
  }
  // Exact original Poké Arena 2D menu frame, font and hover/highlight,

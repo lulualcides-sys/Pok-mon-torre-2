@@ -6,11 +6,8 @@ import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,r
 import {ROSTER} from '../datos.js';
 import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS} from './route-data.js';
 
-// Direct Bite/Crunch preview uses separate save storage: never overwrite Kanto progress.
-const biteCrunchPreview=typeof location!=='undefined'&&
- new URLSearchParams(location.search).get('testMoves')==='bite-crunch';
-export const SAVE_KEY=biteCrunchPreview?
- 'pokemon-torre-2-bite-crunch-preview-v1':'pokemon-torre-2-kanto-campaign-v1';
+// Persistent normal Kanto campaign. No temporary preview slots or save switches.
+export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
 export const GYMS=Object.freeze([
  {city:'Pewter',leader:'Brock',badge:'Rocha',arena:'crater',type:'ROCK',enemy:['onix','machop','zubat'],boss:'onix'},
  {city:'Cerulean',leader:'Misty',badge:'Cascata',arena:'estadio',type:'WATER',enemy:['squirtle','magikarp','zubat'],boss:'wartortle'},

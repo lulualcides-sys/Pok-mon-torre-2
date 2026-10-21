@@ -36,9 +36,15 @@ Triagem inicial e ordem sugerida em [CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md](./
 ## Revisão de Bite / Crunch e aprovação de Gust / Poison Sting (21/10/2026)
 - **Gust — ✅ aprovado, congelado.** Manter renderer, precisão, dano e colisões sem mudanças.
 - **Poison Sting — ✅ aprovado, congelado.** Manter ferrão, chance de envenenamento e colisões sem mudanças.
-- **Bite — visual refeito para avaliação.** Duas mandíbulas pixeladas em 8 posições reais (abrir → fechar → reabrir), contorno escuro, tamanho proporcional e uma única colisão verdadeira. Visual baseado no spritesheet de mordida fornecido e confirmado pelo usuário.
-- **Crunch — visual refeito para avaliação.** Entrada original preservada (sem duplicar) e renderer alterado somente no moveset da campanha. Duas mordidas sequenciais com a mesma matriz, a primeira reta/horizontal e a segunda girada a 90 graus/vertical. Dano do movimento pode ocorrer uma única vez se alguma das duas fechar sobre o alvo, sem autoacerto. Não marcar como aprovado antes de retorno visual do usuário.
+- **Bite — ✅ aprovado, congelado.** Duas mandíbulas pixeladas em 8 posições reais (abrir → fechar → reabrir), contorno escuro, tamanho proporcional e uma única colisão verdadeira. Visual baseado no spritesheet de mordida fornecido e confirmado pelo usuário.
+- **Crunch — ✅ aprovado, congelado.** Entrada original preservada (sem duplicar) e renderer alterado somente no moveset da campanha. Duas mordidas sequenciais com a mesma matriz, a primeira reta/horizontal e a segunda girada a 90 graus/vertical. Dano do movimento pode ocorrer uma única vez se alguma das duas fechar sobre o alvo, sem autoacerto. Aprovação visual recebida; não alterar arte e dano sem solicitação expressa.
 - Não alterar visual dos golpes originais Pokémon Arena 2D, nem os específicos previamente aprovados, fora os dois movimentos autorizados neste patch.
+
+## Aprovação e retorno à campanha normal — 21/10/2026
+- **Bite e Crunch aprovados**, ambas as animações congeladas. Não alterar outros golpes aprovados.
+- Removido o modo especial `?testMoves=bite-crunch`, seu save separado e a abertura automática do sumário Mewtwo.
+- **Entrada normal:** tela inicial aprovada, botão Play → Kanto Campaign; progresso do jogador permanece em `pokemon-torre-2-kanto-campaign-v1`.
+- **Próximo lote proposto para as primeiras rotas:** String Shot (Caterpie/Weedle), Peck (Spearow), Leech Life (Zubat). Validar ausência no cliente capturado antes de criar sprites próprios; usar Phaser/WebGL pixel art, manter efeitos nativos intactos.
 
 ## Menu principal — aprovado em 21/10/2026
 O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, fundo, botões, tipografia e navegação foi **aprovado** pelo usuário. **Não modificar** menu, logo, dimensões ou funcionamento sem novo pedido.

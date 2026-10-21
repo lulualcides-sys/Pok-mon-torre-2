@@ -50,7 +50,7 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'super-fang',approved:true,nombre:'Super Fang',forma:'torre2_superfang',tipo:'NORMAL',poder:null,precisao:90,pp:10,categoria:'PHYSICAL',fazContato:true,dano:0,alcance:82,coste:28,cd:7.8,anim:'Swing',lanzar:.13,description:'Physical twin-incisor bite; halves the foe current HP upon true contact'},
  {id:'gust',approved:true,nombre:'Gust',forma:'torre2_gust',tipo:'FLYING',poder:40,precisao:100,pp:35,categoria:'SPECIAL',fazContato:false,dano:8,alcance:235,coste:16,cd:4.2,anim:'Shoot',lanzar:.13,description:'12-frame curling hand-pixeled gust, one real hit; Fly/Bounce double power'},
  {id:'poison-sting',approved:true,nombre:'Poison Sting',forma:'torre2_poisonsting',tipo:'POISON',poder:15,precisao:100,pp:35,categoria:'PHYSICAL',fazContato:false,dano:3,alcance:235,coste:12,cd:3.5,anim:'Shoot',lanzar:.12,description:'Needle-shaped barb, physical contact 30 percent poison on true hit'},
- {id:'bite',nombre:'Bite',forma:'torre2_bite',tipo:'DARK',poder:60,precisao:100,pp:25,categoria:'PHYSICAL',fazContato:true,dano:12,alcance:76,coste:21,cd:5.0,anim:'Swing',lanzar:.12,description:'One 8-pose original pixel-art bite, real aimed contact, 30% flinch'},
+ {id:'bite',approved:true,nombre:'Bite',forma:'torre2_bite',tipo:'DARK',poder:60,precisao:100,pp:25,categoria:'PHYSICAL',fazContato:true,dano:12,alcance:76,coste:21,cd:5.0,anim:'Swing',lanzar:.12,description:'One 8-pose original pixel-art bite, real aimed contact, 30% flinch'},
  {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
@@ -91,7 +91,7 @@ for(const h of rawLibrary){
   // for the Torre 2 selected loadout; preserve native name/stats/PP/accuracy.
   // The original client's Crunch is untouched and no duplicate is added.
   const nativeCrunch=sameMove==='crunch'&&!signatureEntries.has(h);
-  ids.set(id,{...h,id,...(nativeCrunch?{forma:'torre2_crunch'}:{}),
+  ids.set(id,{...h,id,...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
    source:nativeCrunch?'torre2-visual-override':
     signatureEntries.has(h)?'new-phaser-fx':'arena2d-original'});
  seenNames.add(sameMove);
