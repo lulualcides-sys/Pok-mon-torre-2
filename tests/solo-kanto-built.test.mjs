@@ -138,8 +138,19 @@ for(const name of ['metronome','absorb','xscissor'])assert.ok(
  newVfx.includes('export function '+name+'('),'New VFX renderer exists: '+name);
 assert.ok(newVfx.includes("from './move-pool.js'"),
  'Metronome picks a real installed move, not arbitrary dummy damage');
-assert.ok(newVfx.includes('damage*.5'),'Absorb heals half of actual dealt damage');
+assert.ok(newVfx.includes('dealt*.5'),'Absorb heals half of actual dealt damage');
 assert.ok(!newVfx.includes('CanvasRenderingContext2D'),'New custom moves use Phaser Graphics only');
+for(const sprite of ['const HAND_PALM=[','const FINGER_FRAMES=[','const ABSORB_HEAD=[',
+ 'const ABSORB_MOTE=[','const SCISSOR_BLADE=[']){
+ assert.ok(newVfx.includes(sprite),'Hand-authored sprite matrix required '+sprite);
+}
+assert.ok(newVfx.includes('const WAG=[0,1,2,3,3,2,1,0,0,1,2,3]'),
+ 'Metronome requires 12 named animation poses instead of a CSS-like moving slab');
+assert.ok(newVfx.includes('stencil(blades,SCISSOR_BLADE'),
+ 'X-Scissor uses two jagged pixel sprites, not vector strokes');
+assert.ok(!/\\.fillCircle\\(|\\.fillEllipse\\(|\\.strokePath\\(|\\.lineTo\\(|\\.arc\\(/.test(newVfx),
+ 'New effects must use only authored pixel stencils, not Canvas-like vectors');
+
 assert.equal(equipMove(tester,0,'bonemerang'),true);
 const kantoFile=fs.readFileSync(path.join(stage,version,'torre2/kanto-signatures-fx.js'),'utf8');
 assert.ok(kantoFile.includes('const FANG_UP=['),'Hyper Fang fangs defined as pixel cells');
