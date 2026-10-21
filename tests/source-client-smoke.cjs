@@ -705,6 +705,70 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(adaptedCheck['super-fang-hit'].hp,56,
    'Super Fang must remove floor(111/2)=55 current HP, not a flat power value');
 
+  // Projectile Clash regression: native/approved missiles retain their own
+  // art, two new spells physically stop only on crossing *opposing* missiles.
+  // This simulates the actual Phaser 'efectos.filter' lifecycle including
+  // the next-tick scheduler required for visible 10-frame dissipation.
+  const clashes=await tester.evaluate(async()=>{
+   const main=document.querySelector('script[src*="/main.js"]');
+   const {TORRE2_ADAPTED_FORMS}=await import(
+    new URL('./torre2/adapted-moves-fx.js',main.src).href);
+   const outcomes={};
+   for(const scenario of ['native','mutual','ally','no-cross']){
+    let t=0,particles=0,clashSprites=0,nativeStopped=false,foeHits=0;
+    const objects=[],tasks=[];
+    const scene={efectos:[],programar(seconds,fn){tasks.push({at:t+seconds,fn})},
+     add:{graphics(){
+      const g={pixels:0,deleted:false,setDepth(){return this},
+       fillStyle(){return this},fillRect(){this.pixels++;particles++;return this},
+       clear(){this.pixels=0;return this},destroy(){this.deleted=true}};
+      objects.push(g);return g;
+     }}};
+    const owner=(x,ax,lado)=>({x,y:220,ax,ay:220,alto:36,lado,
+     est:{},ko:false,hp:110,t:0,escena:scene,animar(){},
+     recibir(_l,g){foeHits++;this.hp-=g.dano||0;return 'golpe'}});
+    const left=owner(160,460,0),right=owner(335,-20,1);
+    left.rival=right;right.rival=left;
+    if(scenario==='no-cross')right.y=360;
+    const start=()=>TORRE2_ADAPTED_FORMS.torre2_mudslap(
+     left,{dano:4,tipo:'GROUND',alcance:240},{slot:'lmb'});
+    if(['native','ally'].includes(scenario)){
+     const native={dueno:scenario==='ally'?left:right,vivo:true,
+      x:235,y:203,alt:0,h:{radio:9,tipo:'WATER'},
+      terminar(){this.vivo=false;nativeStopped=true},
+      update(){return this.vivo}};
+     scene.efectos.push(native);
+    }
+    const incoming=start();
+    if(scenario==='mutual')TORRE2_ADAPTED_FORMS.torre2_seedbomb(
+     right,{dano:16,tipo:'GRASS',alcance:240},{slot:'lmb'});
+    for(let i=0;i<100;i++){
+     t+=.016;left.t=right.t=t;
+     const due=tasks.filter(x=>x.at<=t);
+     for(const job of due)job.fn();
+     for(let k=tasks.length-1;k>=0;k--)if(tasks[k].at<=t)tasks.splice(k,1);
+     scene.efectos=scene.efectos.filter(o=>o.update?.(.016)!==false);
+    }
+    clashSprites=objects.length-(scenario==='mutual'?4:2);
+    outcomes[scenario]={nativeStopped,foeHits,
+     clashSprites,allFreed:objects.every(x=>x.deleted),
+     noLiveEffects:scene.efectos.length===0,
+     clashDisabled:incoming.clashBody.live===false,particles};
+   }
+   return outcomes;
+  });
+  assert.equal(clashes.native.nativeStopped,true,'Mud-Slap must Clash with an enemy native projectile');
+  assert.equal(clashes.native.clashSprites,1,'Native clash triggers exactly one pixel dissipation');
+  assert.equal(clashes.mutual.clashSprites,1,'Seed Bomb versus Mud-Slap triggers exactly one impact');
+  assert.equal(clashes.mutual.foeHits,0,'Clashed projectiles cannot deal damage');
+  assert.equal(clashes.ally.nativeStopped,false,'Do not collide with a friendly projectile');
+  assert.equal(clashes.ally.clashSprites,0,'Friendly crossing must not render CLASH');
+  assert.equal(clashes['no-cross'].clashSprites,0,'No collision must not make a CLASH effect');
+  for(const [label,state] of Object.entries(clashes)){
+   assert.equal(state.allFreed,true,label+' must release all WebGL graphics');
+   assert.equal(state.noLiveEffects,true,label+' must clear scene effects');
+  }
+
   // Three newly approved species-characteristic moves: real collision regression.
   const newSpeciesAttacks=await tester.evaluate(async()=>{
     const main=document.querySelector('script[src*="/main.js"]');
