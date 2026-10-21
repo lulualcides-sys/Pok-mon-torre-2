@@ -12,6 +12,8 @@ const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
  purchaseItem,usePotion,teachTM}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
 const items=new Map();
 globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
+const {availableMoves,equipMove,selectedMoves,resolveLoadout}=await import(
+ pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
 assert.equal(KANTO_DEX.length,151);
 assert.equal(GYMS.length,8);
 assert.deepEqual(STARTERS,['bulbasaur','charmander','squirtle']);
@@ -62,8 +64,7 @@ if(area.available.length){
 }
 assert.equal(TRAINERS_PER_GYM(0),13);
 assert.equal(currentOpponent(state).id,'onix');
-const {availableMoves,equipMove,selectedMoves,resolveLoadout}=await import(
- pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
+
 const tester=state.team.find(p=>p.id==='mewtwo');
 assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
 assert.equal(tester.progression.level,50);
