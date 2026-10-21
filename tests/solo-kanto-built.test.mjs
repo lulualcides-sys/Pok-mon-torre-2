@@ -104,7 +104,6 @@ const officialMoveStats={
  'gust':{poder:40,precisao:100,pp:35,categoria:'SPECIAL',tipo:'FLYING',dano:8},
  'poison-sting':{poder:15,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'POISON',dano:3},
  'bite':{poder:60,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'DARK',dano:12},
-  'crunch':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',tipo:'DARK',dano:16},
  'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
  'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
  'super-fang':{poder:null,precisao:90,pp:10,categoria:'PHYSICAL',dano:0}
@@ -133,6 +132,13 @@ for(const id of ['gust','poison-sting','bite','crunch']){
  assert.equal(equipMove(tester,0,id),true,'early-route move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new early-route move usable '+id);
 }
+const nativeCrunch=allMoves.find(m=>m.id==='crunch');
+assert.ok(nativeCrunch,'Original Pokémon Arena Crunch must be available');
+assert.equal(nativeCrunch.forma,'torre2_crunch','Crunch renderer updated in Kanto loadout');
+assert.equal(nativeCrunch.source,'torre2-visual-override','Native Crunch stats kept');
+assert.equal(SIGNATURE_MOVES.some(m=>m.id==='crunch'),false,'Never duplicate native Crunch');
+assert.equal(equipMove(tester,0,'crunch'),true);
+assert.equal(resolveLoadout(tester).lmb.forma,'torre2_crunch');
 assert.equal(allMoves.filter(x=>x.nombre==='Tackle').length,1,
  'Tackle already exists in original Pokémon Arena 2D and must not be duplicated');
 const confusion=allMoves.find(x=>x.nombre==='Confusion');

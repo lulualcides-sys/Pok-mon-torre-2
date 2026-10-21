@@ -37,7 +37,7 @@ Triagem inicial e ordem sugerida em [CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md](./
 - **Gust — ✅ aprovado, congelado.** Manter renderer, precisão, dano e colisões sem mudanças.
 - **Poison Sting — ✅ aprovado, congelado.** Manter ferrão, chance de envenenamento e colisões sem mudanças.
 - **Bite — visual refeito para avaliação.** Duas mandíbulas pixeladas em 8 posições reais (abrir → fechar → reabrir), contorno escuro, tamanho proporcional e uma única colisão verdadeira. Visual baseado no spritesheet de mordida fornecido e confirmado pelo usuário.
-- **Crunch — visual refeito para avaliação.** Duas mordidas sequenciais com a mesma matriz, a primeira reta/horizontal e a segunda girada a 90 graus/vertical. Dano do movimento pode ocorrer uma única vez se alguma das duas fechar sobre o alvo, sem autoacerto. Não marcar como aprovado antes de retorno visual do usuário.
+- **Crunch — visual refeito para avaliação.** Entrada original preservada (sem duplicar) e renderer alterado somente no moveset da campanha. Duas mordidas sequenciais com a mesma matriz, a primeira reta/horizontal e a segunda girada a 90 graus/vertical. Dano do movimento pode ocorrer uma única vez se alguma das duas fechar sobre o alvo, sem autoacerto. Não marcar como aprovado antes de retorno visual do usuário.
 - Não alterar visual dos golpes originais Pokémon Arena 2D, nem os específicos previamente aprovados, fora os dois movimentos autorizados neste patch.
 
 ## Menu principal — aprovado em 21/10/2026
