@@ -84,7 +84,8 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-core.js','campaign-core.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
- ['tools/pokearena/torre2-signature-fx.js','signature-fx.js']
+ ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
+ ['tools/pokearena/torre2-next-batch-fx.js','next-batch-fx.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
