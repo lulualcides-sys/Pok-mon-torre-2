@@ -7,7 +7,9 @@ const version=fs.readdirSync(stage).find(x=>/^src-[a-f0-9]{10}$/.test(x));
 assert.ok(version,'Captured Phaser original client not staged');
 const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
  TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,saveCampaign,
- startBattle,recordSeen,recordCaught,storePokemon,withdrawPokemon,swapPokemon}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
+ startBattle,recordSeen,recordCaught,storePokemon,withdrawPokemon,swapPokemon,
+ wildAvailability,startWildEncounter,startWildBattle,resolveWildBattle,
+ purchaseItem,usePotion,teachTM}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
 const items=new Map();
 globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
 assert.equal(KANTO_DEX.length,151);
@@ -15,6 +17,49 @@ assert.equal(GYMS.length,8);
 assert.deepEqual(STARTERS,['bulbasaur','charmander','squirtle']);
 let state=createCampaign('charmander');
 assert.equal(state.trainer,0);
+assert.equal(state.money,1400);
+assert.equal(state.inventory.pokeball,5);
+const {routeNode,KANTO_ROUTES,MART_ITEMS}=await import(
+ pathToFileURL(path.join(stage,version,'torre2/route-data.js')));
+assert.equal(KANTO_ROUTES.length,8,'Eight FireRed-like region maps');
+assert.equal(routeNode(0,3,13).type,'rival');
+assert.equal(routeNode(0,5,13).type,'rocket');
+assert.equal(routeNode(0,13,13).type,'leader');
+assert.equal(MART_ITEMS.some(x=>x.kind==='tm'),true);
+const marketState=createCampaign('squirtle');
+const boughtBall=purchaseItem(marketState,'pokeball');
+assert.equal(boughtBall.ok,true);
+assert.equal(marketState.inventory.pokeball,6);
+assert.equal(marketState.money,1200);
+marketState.money=3000;marketState.stage=1;
+assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,true);
+assert.equal(marketState.inventory.tms.includes('tm-water-pulse'),true);
+assert.equal(teachTM(marketState,'tm-water-pulse').ok,true);
+assert.equal(marketState.team[0].tmMoves.includes('Water Pulse'),true);
+assert.equal(availableMoves(marketState.team[0]).some(m=>m.nombre==='Water Pulse'),true);
+marketState.team[0].hp=50;
+assert.equal(usePotion(marketState,'potion').ok,true);
+assert.equal(marketState.team[0].hp,75);
+assert.equal(usePotion(marketState,'potion').ok,true);
+assert.equal(marketState.team[0].hp,100);
+assert.equal(usePotion(marketState,'potion').ok,false,'Potion cannot be wasted on full HP');
+const area=wildAvailability(0);
+assert.equal(area.area.includes('Viridian'),true);
+assert.ok(area.wild.includes('caterpie'),'Regional table keeps genuine FireRed species');
+if(area.available.length){
+ const grass=createCampaign('charmander');
+ const found=startWildEncounter(grass,()=>0);
+ assert.equal(found.ok,true);
+ assert.equal(grass.wildEncountersStage,1);
+ const fight=startWildBattle(grass);
+ assert.equal(fight.torre2.kind,'wild');
+ assert.equal(fight.p2,found.encounter.id);
+ assert.equal(resolveWildBattle(grass,true).won,true);
+ assert.equal(grass.trainer,0,'Wild encounters do not move gym trainer cursor');
+ assert.equal(grass.pendingCapture.wild,true);
+ assert.equal(attemptCapture(grass,()=>0).ok,true);
+ assert.equal(grass.inventory.pokeball,4);
+}
 assert.equal(TRAINERS_PER_GYM(0),13);
 assert.equal(currentOpponent(state).id,'onix');
 const {availableMoves,equipMove,selectedMoves,resolveLoadout}=await import(
@@ -25,7 +70,7 @@ assert.equal(tester.progression.level,50);
 const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
- 'ice-beam','rock-blast','confuse-ray','soft-boiled'])
+ 'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -99,7 +144,7 @@ for(let i=0;i<13;i++){
  assert.equal(result.won,true);
  assert.equal(state.stage,0);
  assert.ok(state.team[0].progression.experience>0);
- if(state.pendingCapture){const r=attemptCapture(state,()=>0);assert.ok(r.ok)}
+ if(state.pendingCapture){state.inventory.pokeball=Math.max(1,state.inventory.pokeball);const r=attemptCapture(state,()=>0);assert.ok(r.ok)}
 }
 assert.equal(state.trainer,13);
 assert.equal(currentOpponent(state).leader,true);
@@ -107,7 +152,7 @@ const beforeBadge=state.badges.length;
 resolveBattle(state,true,()=>0);
 assert.equal(state.stage,1);
 assert.equal(state.badges.length,beforeBadge+1);
-if(state.pendingCapture)assert.equal(attemptCapture(state,()=>0).ok,true);
+if(state.pendingCapture){state.inventory.pokeball=Math.max(1,state.inventory.pokeball);assert.equal(attemptCapture(state,()=>0).ok,true)}
 assert.equal(readCampaign().stage,1);
 assert.equal(state.team.length,6);
 assert.ok(state.box.length>0);

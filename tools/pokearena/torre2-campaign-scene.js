@@ -90,7 +90,7 @@ class Campanha extends Phaser.Scene{
   const route=wildAvailability(state.stage);
   const next=currentOpponent(state);
   // Two-column campaign: colorful traversable path left, party/shop on right.
-  const g=this.add.graphics().setDepth(2);
+  const g=this.add.graphics();
   g.fillStyle(0x376f47);g.fillRoundedRect(12,55,379,277,10);
   g.fillStyle(0x6baf64);g.fillRoundedRect(17,79,368,224,6);
   g.fillStyle(0x9ed274);g.fillRect(25,93,353,204);
