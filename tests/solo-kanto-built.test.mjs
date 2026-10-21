@@ -25,7 +25,8 @@ const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
  purchaseItem,usePotion,teachTM}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
 const items=new Map();
 globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
-const {availableMoves,equipMove,selectedMoves,resolveLoadout}=await import(
+const {availableMoves,equipMove,selectedMoves,resolveLoadout,
+ TEST_LIBRARY,SIGNATURE_MOVES,canonicalMoveKey}=await import(
  pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
 assert.equal(KANTO_DEX.length,151);
 assert.equal(GYMS.length,8);
@@ -83,6 +84,22 @@ assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
 assert.equal(tester.progression.level,50);
 const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
+// Protect the user's approved Poké Arena + Pokémon Arena 2D base.
+// Even alias names (PT/EN) cannot introduce a second copy of a move.
+// Different moves sharing native renderers are NOT duplicates.
+const uniqueNameKeys=new Set(TEST_LIBRARY.map(m=>canonicalMoveKey(m.nombre)));
+assert.equal(uniqueNameKeys.size,TEST_LIBRARY.length,
+ 'Duplicate Pokémon moves in selectable library (including translated aliases)');
+const nativeNames=new Set(TEST_LIBRARY
+ .filter(m=>m.source==='arena2d-original').map(m=>canonicalMoveKey(m.nombre)));
+const repeatedOriginals=SIGNATURE_MOVES
+ .filter(m=>nativeNames.has(canonicalMoveKey(m.nombre)));
+assert.deepEqual(repeatedOriginals,[],
+ 'A client-original move is already approved: never recreate a separate custom move');
+assert.equal(canonicalMoveKey('Bola Sombria'),canonicalMoveKey('Shadow Ball'));
+assert.equal(canonicalMoveKey('Pistola de Água'),canonicalMoveKey('Water Gun'));
+assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb'));
+
 const officialMoveStats={
  'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
  'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
