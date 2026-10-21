@@ -199,6 +199,23 @@ patches.push(
    'else this.scene.start("titulo")']
  ]]
 );
+// League and selection use their OWN scene caches. Preloading only the
+// selection never fixed the green missing-texture squares in the League map.
+// Load precisely the league opponents' actual portrait IDs before create().
+patches.push(
+ ['escenas/liga.js',[
+  ['import{dexAspecto,ponerRetrato}from"../sprites.js";',
+   'import{dexAspecto,ponerRetrato,cargarPMD,soloFormas}from"../sprites.js";'],
+  ['init(datos){this.conGuia=!!datos?.tutorial;this.sys.settings.data={}}create(){',
+   'init(datos){this.conGuia=!!datos?.tutorial;this.sys.settings.data={}}preload(){const m=this.registry.get("manifiesto");const needed=new Set();for(const circuit of LIGA.ligas)for(const rv of rivalesDe(circuit)){const p=ROSTER.find(q=>q.id===(rv.pokemon??rv.id));if(!p)continue;const stage=rv.etapa??rv.retrato;const actual=stage?etapaDe(p,stage):p;if(actual?.dex)needed.add(dexAspecto(actual.dex,rv.aspecto,m));}cargarPMD(this,soloFormas(m,needed),[]);}create(){'],
+  ['if(dex!==p.dex)ponerRetrato(this,img,dex);',
+   'ponerRetrato(this,img,dex);']
+ ]],
+ ['escenas/seleccion.js',[
+  ['const img=this.add.image(x+1,y+2,`retrato-${p.dex}`).setOrigin(0);const bloqueado=',
+   'const img=this.add.image(x+1,y+2,`retrato-${p.dex}`).setOrigin(0);ponerRetrato(this,img,p.dex);const bloqueado=']
+ ]]
+);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
