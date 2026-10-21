@@ -72,7 +72,7 @@ const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
  'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
- 'hyper-fang','guillotine','petal-dance'])
+ 'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -114,18 +114,32 @@ for(const id of ['swift','lovely-kiss'])
  assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
   'The user has explicitly approved '+id);
 assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
-// Hyper Fang and Guillotine are approved; Petal Dance's new moving vortex awaits review.
+// Petal Dance, Hyper Fang and Guillotine are explicitly approved. New trio awaits visual review.
 for(const [id,forma] of [['hyper-fang','torre2_hyperfang'],
  ['guillotine','torre2_guillotine'],['petal-dance','torre2_petaldance']]){
  const h=allMoves.find(x=>x.id===id);
  assert.ok(h,'New Kanto move registered '+id);
  assert.equal(h.forma,forma,'Correct art renderer '+id);
- assert.equal(h.approved,id==='petal-dance'?undefined:true,
-  'Only user-approved new moves may display a checkmark: '+id);
+ assert.equal(h.approved,true,
+  'All three prior Kanto moves received visual approval: '+id);
  assert.equal(h.source,'new-phaser-fx');
  assert.equal(equipMove(tester,0,id),true,'Mewtwo test loadout includes '+id);
  assert.equal(resolveLoadout(tester).lmb.forma,forma);
 }
+for(const [id,forma] of [['metronome','torre2_metronome'],['absorb','torre2_absorb'],['x-scissor','torre2_xscissor']]){
+ const h=allMoves.find(m=>m.id===id);
+ assert.ok(h,'New ability must be in Kanto/Mewtwo move library: '+id);
+ assert.equal(h.forma,forma);
+ assert.equal(h.approved,undefined,'New trio must await explicit visual approval');
+ assert.equal(equipMove(tester,0,id),true,'New trio selectable in Mewtwo test menu');
+}
+const newVfx=fs.readFileSync(path.join(stage,version,'torre2/next-specific-fx.js'),'utf8');
+for(const name of ['metronome','absorb','xscissor'])assert.ok(
+ newVfx.includes('export function '+name+'('),'New VFX renderer exists: '+name);
+assert.ok(newVfx.includes("from './move-pool.js'"),
+ 'Metronome picks a real installed move, not arbitrary dummy damage');
+assert.ok(newVfx.includes('damage*.5'),'Absorb heals half of actual dealt damage');
+assert.ok(!newVfx.includes('CanvasRenderingContext2D'),'New custom moves use Phaser Graphics only');
 assert.equal(equipMove(tester,0,'bonemerang'),true);
 const kantoFile=fs.readFileSync(path.join(stage,version,'torre2/kanto-signatures-fx.js'),'utf8');
 assert.ok(kantoFile.includes('const FANG_UP=['),'Hyper Fang fangs defined as pixel cells');
