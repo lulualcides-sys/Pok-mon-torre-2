@@ -5,6 +5,19 @@ import path from 'node:path';
 const stage=path.resolve('_site/arena2d');
 const version=fs.readdirSync(stage).find(x=>/^src-[a-f0-9]{10}$/.test(x));
 assert.ok(version,'Captured Phaser original client not staged');
+// The menu's HTML query string alone cannot bust cached JS imports. Every
+// patch must create a new hashed source folder, and the HTML must use it.
+assert.notEqual(version,'src-8d89349697',
+ 'Do not reuse cached upstream module directory between game revisions');
+const entryHTML=fs.readFileSync(path.join(stage,'index.html'),'utf8');
+const buildMeta=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8'));
+assert.ok(entryHTML.includes('src="'+version+'/main.js"'),
+ 'Live game must import hashed, updated Phaser JavaScript');
+assert.equal(buildMeta.modules,version,
+ 'version.json must expose the exact currently published module path');
+assert.ok(entryHTML.includes('name="pokemon-torre-build" content="'+version+'"'),
+ 'HTML must expose module version, so users can verify updates');
+
 const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
  TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,saveCampaign,
  startBattle,recordSeen,recordCaught,storePokemon,withdrawPokemon,swapPokemon,
