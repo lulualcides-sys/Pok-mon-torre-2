@@ -52,3 +52,7 @@ Ice Beam V6, Confuse Ray (três luzes amarelas), Rock Blast e Soft-Boiled estão
 Consultar funcionamento original; comparar pelo menos os modelos Arena 2D e Zarza; selecionar motor mais fiel sem romper o estilo Arena 2D; implementar no Phaser/WebGL; verificar acerto, erro, status, dano no momento certo, desempenho e animação visual em batalha; só então publicar e solicitar aprovação.
 
 A autorização informada pelo usuário para estudar o Pokémon Zarza não deve ser confundida com autorização pública e irrestrita de redistribuição. Antes de incorporar recursos visuais originais num repositório público, confirmar os termos específicos de uso. Estudo de páginas e módulos públicos permanece separado do jogo.
+
+## Regra de mira para feixes e jatos NOVOS (21/10/2026)
+
+O usuário esclareceu que **acompanhar** não é teleguiar para o inimigo. Feixes, jatos e fluxos controláveis criados daqui para a frente devem seguir **a mira do jogador em tempo real**, de acordo com o Chorro original do Pokémon Arena 2D e Ice Beam V6, com limite de rotação suave (referência: `giro:3.5`). **Nunca calcular a direção mirando automaticamente em `rival.x/rival.y`** para forçar contato. Quando o inimigo esquivar ou a mira não cruzar sua hitbox, o golpe erra e não causa dano. Preservar alcance, formas pixeladas e colisão verdadeira. NÃO alterar golpes nativos ou já aprovados para aplicar a regra retroativamente sem pedido explícito.
