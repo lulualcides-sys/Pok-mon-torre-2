@@ -275,14 +275,11 @@ function petal(g,x,y,rotation,shade=0,alpha=1){
 }
 export function petaldance(l,h,extra){
  const e=l.escena,r=l.rival,blooms=sceneLayer(e,1510),trail=sceneLayer(e,1511);
- const baseAngle=setup(l,'Charge',1.5);
- // Native Aura Storm / guided projectile principle: continually turn toward
- // the CURRENT rival position rather than replaying a fixed launch direction.
- const targetPoint=()=>r&&!r.ko&&Number.isFinite(r.x)&&Number.isFinite(r.y)
-  ?{x:r.x,y:r.y-(r.alto||36)*.5}:null;
- const target=targetPoint();
- const initialAngle=target
-  ?Math.atan2(target.y-(l.y-(l.alto||36)*.5),target.x-l.x):baseAngle;
+ // Keep the original Poké Arena 2D Ice Beam/Chorro aim model: the player aims
+ // (mouse, touch or controller). Never read the rival to steer the attack.
+ const initialAngle=setup(l,'Charge',1.5);
+ const turnSpeed=3.5; // rad/s, exactly Ice Beam's approved giro setting
+ const angleDifference=(a,b)=>Math.atan2(Math.sin(a-b),Math.cos(a-b));
  const ux0=Math.cos(initialAngle),uy0=Math.sin(initialAngle);
  const x0=l.x+ux0*8,y0=l.y-(l.alto||36)*.5;
  const reach=Math.min(h.alcance??215,240),speed=220;
@@ -295,14 +292,15 @@ export function petaldance(l,h,extra){
  return register(e,dt=>{
   age+=dt;blooms.clear();trail.clear();
   if(l.ko||l.est?.aturdido)return false;
-  // Rotate the caster as the rival moves, just like Aura Storm's aimed beam.
-  const foe=targetPoint();
-  if(foe){
-   const desired=Math.atan2(foe.y-y0,foe.x-x0);
-   const delta=Math.atan2(Math.sin(desired-castingAngle),Math.cos(desired-castingAngle));
-   castingAngle+=Math.max(-5.5*dt,Math.min(5.5*dt,delta));
-   if(l.accion)l.accion.angulo=castingAngle;
+  // Phaser Chorro / Ice Beam sweeps toward live PLAYER INPUT, not enemy HP.
+  // A dodging rival is never auto-tracked: only real pixel petals can hit it.
+  if(Number.isFinite(l.ax)&&Number.isFinite(l.ay)){
+   const desired=Math.atan2(l.ay-y0,l.ax-x0);
+   const delta=angleDifference(desired,castingAngle);
+   const maxTurn=turnSpeed*dt;
+   castingAngle+=Math.max(-maxTurn,Math.min(maxTurn,delta));
   }
+  if(l.accion)l.accion.angulo=castingAngle;
   for(let i=0;i<lanes.length;i++){
    const p=petals[i],elapsed=age-.035-i*.067;
    if(elapsed<=0||p.spent)continue;
@@ -310,14 +308,11 @@ export function petaldance(l,h,extra){
     p.launched=true;
     p.heading=castingAngle;
    }
-   // Real steering, bounded angular velocity: follows a moving target without
-   // teleporting, guaranteed contact or hidden damage (the rival can dodge).
-   if(foe){
-    const desired=Math.atan2(foe.y-p.y,foe.x-p.x);
-    const diff=Math.atan2(Math.sin(desired-p.heading),Math.cos(desired-p.heading));
-    const turn=9.5*dt;
-    p.heading+=Math.max(-turn,Math.min(turn,diff));
-   }
+   // Each petal shares the limited Chorro aim sweep, but has its own flight.
+   // No rival coordinates, homing, auto-hit or sudden 180-degree turns.
+   const turn=turnSpeed*dt;
+   const diff=angleDifference(castingAngle,p.heading);
+   p.heading+=Math.max(-turn,Math.min(turn,diff));
    const vx=Math.cos(p.heading),vy=Math.sin(p.heading);
    p.x+=vx*speed*dt;
    p.y+=vy*speed*dt;
