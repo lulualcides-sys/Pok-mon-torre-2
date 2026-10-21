@@ -675,7 +675,7 @@ const server=http.createServer(async(req,res)=>{
     let active=true,frame=0;
     while(active&&frame++<140)active=fx.update(.016);
     fx.destroy();
-    results[id+'-'+mode]={hits:foe.hits,hp:foe.hp,finished:!active,
+    results[id+'-'+mode]={hits:foe.hits,hp:foe.hp,mudDebuff:foe.est.torre2MudAccuracy,finished:!active,
      drawn:drawings.reduce((n,g)=>n+g.max,0),
      disposed:drawings.every(g=>g.deleted)};
    }
@@ -695,6 +695,11 @@ const server=http.createServer(async(req,res)=>{
     assert.equal(result.disposed,true,id+' WebGL graphics must be cleaned');
    }
   }
+  assert.equal(adaptedCheck['mud-slap-hit'].mudDebuff?.stacks,1,
+   'Mud-Slap must apply an accuracy stage only after successful projectile hit');
+  for(const mode of ['aim-away','dodge','blocked'])
+   assert.equal(adaptedCheck['mud-slap-'+mode].mudDebuff,undefined,
+    'Mud-Slap cannot blind without causing physical contact damage');
   assert.equal(adaptedCheck['super-fang-hit'].hp,56,
    'Super Fang must remove floor(111/2)=55 current HP, not a flat power value');
 
