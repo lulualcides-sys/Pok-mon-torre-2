@@ -69,3 +69,14 @@ Site estático compatível com GitHub Pages. Após a configuração única em
 **Settings → Pages → Build and deployment → Source: GitHub Actions**, o workflow
 `pages.yml` é capaz de publicar novas versões, desde que o workflow de testes termine com sucesso.
 Até Pages ser habilitado, o próprio workflow preserva um artefato com o build do jogo.
+
+## Atualização de manutenção — 21/10/2026
+
+**Correções técnicas aplicadas sem alterar o cliente original nem os golpes aprovados:**
+- O cliente isolado fazia uma requisição para `assets/ui/balls20.png`, mas o arquivo não estava presente na captura pública; nenhum componente original verificado consumia a textura `ui-balls`. Removida somente essa tentativa de carregamento na build isolada, para evitar 404 e erro falso no teste público.
+- O arquivo `escenas/carga.js` agora entra no hash dos módulos publicados. Alterações no pré-carregamento deixam de ser mascaradas pelo cache do Android/GitHub Pages.
+- Testes de comportamento de **Gust, Poison Sting e Bite** inseridos no navegador: mira, desvio, defesa, única colisão, 30% de veneno/hesitação, imunidade a veneno, desenho real e liberação dos gráficos WebGL. Mantidas como **pendentes de aprovação visual**.
+
+**Trabalho recomendado após avaliar esses três golpes:** confirmar se **Peck, Scratch e Sand Attack** continuam ausentes na captura mais recente antes de criá-los; priorizar Pidgey/Spearow, Weedle e Rattata para as primeiras rotas, aproveitando Tackle, Quick Attack e String Shot já nativos, sem refazê-los. Para novos Pokémon, verificar a presença de retrato, animações de batalha e evoluções no manifest PMD; adquirir novos recursos apenas se houver lacuna.
+
+**Regra:** o Pokémon Arena 2D original (slots, esquiva, sprites, golpes, UI) permanece intocado. Não adicionar espécies ou modificar os golpes aprovados sem nova solicitação.
