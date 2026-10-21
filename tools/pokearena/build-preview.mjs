@@ -212,8 +212,8 @@ patches.push(
    'ponerRetrato(this,img,dex);']
  ]],
  ['escenas/seleccion.js',[
-  ['const img=this.add.image(x+1,y+2,`retrato-${p.dex}`).setOrigin(0);const bloqueado=',
-   'const img=this.add.image(x+1,y+2,`retrato-${p.dex}`).setOrigin(0);ponerRetrato(this,img,p.dex);const bloqueado=']
+  ['const img=this.add.image(x+2,y+3,`retrato-${p.dex}`).setOrigin(0);const bloqueado=',
+   'const img=this.add.image(x+2,y+3,`retrato-${p.dex}`).setOrigin(0);ponerRetrato(this,img,p.dex);const bloqueado=']
  ]]
 );
 for(const [filename,changes] of patches){
