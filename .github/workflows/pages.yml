@@ -65,6 +65,12 @@ jobs:
           <a href="./arena2d/" style="color:#ffe16d">Abrir jogo</a>
           </body></html>
           EOF
+      - name: Bloquear golpes duplicados e proteger artes nativas do cliente
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/pokearena/audit-moves.mjs
+          echo "Inventário checado: ataques nativos preservados; nenhum golpe repetido permitido."
       - name: Testar a arena Phaser original no Chromium antes de publicar
         shell: bash
         run: |
