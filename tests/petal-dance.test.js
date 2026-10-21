@@ -39,7 +39,7 @@ function run(misses=false,moveEnemy=null){
  const positions=[],samples=[];
  let alive=true;
  for(let frame=1;frame<=150&&alive;frame++){
-  if(moveEnemy)moveEnemy(b.enemy,frame);
+  if(moveEnemy)moveEnemy(b.enemy,frame,b.player);
   alive=fx.update(.016);
   if(frame===3||frame===6)positions.push(center(b.graphics[0].tiles));
   if(frame===12||frame===24)samples.push(center(b.graphics[0].tiles));
@@ -64,17 +64,26 @@ test('Petal Dance never automatically damages a foe outside the vortex',()=>{
  assert.ok(b.player.status.includes('confuso'));
 });
 
-test('Petal Dance tracks the moving enemy, adjusting both caster and petal trajectories',()=>{
+test('Petal Dance DOES NOT chase an enemy dodging the player's fixed aim',()=>{
  const still=run();
- const chased=run(false,(enemy,frame)=>{
-  if(frame===8)enemy.y=115; // enemy dodges vertically during the cast
+ const dodged=run(false,(enemy,frame)=>{
+  if(frame===8)enemy.y=115; // target dodges away, but the player never re-aims
  });
- assert.equal(still.samples.length,2);
- assert.equal(chased.samples.length,2);
- assert.ok(chased.samples[1].y<still.samples[1].y-8,
-  'Petal vortex should bend noticeably toward a foe that moved upward');
- assert.ok(chased.player.accion.angulo<-.2,
-  'The caster must turn toward the moving foe like Aura Storm');
- assert.ok(chased.enemy.hits>0,
-  'Following a dodging enemy can lead to real petal contact');
+ assert.deepEqual(dodged.samples,still.samples,
+  'Enemy movement alone must not affect pixel trajectories');
+ assert.equal(dodged.enemy.hits,0,
+  'A foe that dodges the projected flower stream must escape damage');
+ assert.equal(dodged.player.accion.angulo,still.player.accion.angulo,
+  'Caster rotation must not lock onto enemy coordinates');
+});
+test('Petal Dance uses Ice Beam-style controlled aim, not automatic lock-on',()=>{
+ const still=run();
+ const aimed=run(false,(_enemy,frame,player)=>{
+  if(frame===8)player.ay=115; // PLAYER actively moves the pointer up
+ });
+ assert.equal(aimed.samples.length,2);
+ assert.ok(aimed.samples[1].y<still.samples[1].y-8,
+  'Petals should curve when the player changes aim');
+ assert.ok(aimed.player.accion.angulo<-.2,
+  'Caster turns toward player's aim with the original Chorro-style angular limit');
 });
