@@ -328,14 +328,24 @@ export function lovelykiss(l,h,extra){
   const previousPosition=previous;
   previous={x,y};
   if(distance>9)lips(g,x,y);
-  // Three small, clearly separated hearts follow behind the leading kiss.
-  // No heart can spawn on the caster or render all stacked on the first frame.
-  for(let i=0;i<3;i++){
-   const behind=distance-33-i*28;
-   if(behind<38)continue;
-   const hx=origin.x+Math.cos(ang)*behind-Math.sin(ang)*(i-1)*6;
-   const hy=origin.y+Math.sin(ang)*behind*.76+Math.cos(ang)*(i-1)*5;
-   heart(trail,hx,hy-3);
+  // Five independently scattered pixel hearts trail the approved kiss.
+  // Alternating left/right offsets form a loose cloud, never a straight row.
+  // Keep every heart away from the caster and vary the motion subtly.
+  const hearts=[
+   {back:18,side:-21,phase:0},
+   {back:27,side:18,phase:1.2},
+   {back:40,side:-3,phase:2.5},
+   {back:48,side:27,phase:3.6},
+   {back:57,side:-22,phase:4.7}
+  ];
+  for(const q of hearts){
+   const behind=distance-q.back;
+   if(behind<24)continue;
+   const side=q.side+Math.sin(age*9+q.phase)*2;
+   const hx=origin.x+Math.cos(ang)*behind-Math.sin(ang)*side;
+   const hy=origin.y+Math.sin(ang)*behind*.76+
+    Math.cos(ang)*side*.8+Math.sin(age*10+q.phase)*2;
+   heart(trail,hx,hy);
   }
   if(!applied&&distance>9&&r&&!r.ko){
    // Real swept hit detection, rather than applying sleep at the end of an

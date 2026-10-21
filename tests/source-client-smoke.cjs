@@ -424,6 +424,42 @@ const server=http.createServer(async(req,res)=>{
     'Lovely Kiss must leave no lingering graphics after hit or miss');
 
 
+  // Exercise actual Phaser Graphics: five pixels hearts visibly dispersed,
+  // not a decorative array with no drawing or an automatic status hit.
+  const kissHearts=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const {lovelykiss}=await import(new URL('./torre2/next-batch-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const created=[],originalGraphics=e.add.graphics;
+    let fx;
+    try{
+      e.add.graphics=function(...args){
+        const graphic=originalGraphics.apply(this,args);
+        created.push(graphic);return graphic;
+      };
+      const r={x:500,y:400,alto:38,ko:false,statuses:[],ponerEstado(...args){this.statuses.push(args)}};
+      const l={x:174,y:215,alto:38,ax:420,ay:215,rival:r,escena:e,t:0,animar(){},accion:null};
+      fx=lovelykiss(l,{tipo:'NORMAL',dano:0,alcance:225},{slot:'lmb'});
+      const trail=created[1],rects=[],originalRect=trail.fillRect;
+      trail.fillRect=function(x,y,w,h){rects.push({x,y});return originalRect.call(this,x,y,w,h)};
+      fx.update(.016); // None of the hearts is drawn over the caster.
+      const atLaunch=rects.length;
+      fx.update(.404); // All five hearts are visible in their scattered paths.
+      const perHeart=27; // Opaque pixels in the existing 7x6 heart stencil.
+      const firstYs=Array.from({length:5},(_,i)=>rects[i*perHeart]?.y);
+      return{atLaunch,drawnPixels:rects.length,
+        hearts:rects.length/perHeart,firstYs,statuses:r.statuses.length};
+    }finally{
+      e.add.graphics=originalGraphics;
+      if(fx){fx.destroy();e.efectos=e.efectos.filter(item=>item!==fx)}
+    }
+  });
+  assert.equal(kissHearts.atLaunch,0,'Kiss hearts must not spawn over the caster');
+  assert.equal(kissHearts.hearts,5,'Lovely Kiss must draw exactly five pixel hearts');
+  assert.ok(Math.max(...kissHearts.firstYs)-Math.min(...kissHearts.firstYs)>=25,
+    'Lovely Kiss hearts must scatter instead of forming a straight row');
+  assert.equal(kissHearts.statuses,0,'Cosmetic hearts must not auto-apply sleep');
+
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
   await tester.close();
