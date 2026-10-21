@@ -143,6 +143,16 @@ patches.push(
  ]]
 );
 
+// Mud-Slap accuracy debuff: while an enemy/player is actually affected,
+// slightly deflect AIM INPUT (not projectiles in flight) for 3.7 seconds.
+// Applies exclusively in offline Kanto mode, never to approved move art,
+// original title/menu, or the native Poké Arena arena.
+patches.push(
+ ['luchador.js',[
+  ['this.ax=intento.ax;this.ay=intento.ay',
+   'this.ax=intento.ax;this.ay=intento.ay;if(this.escena.datos?.torre2){const b=this.est.torre2MudAccuracy;if(b&&this.t<b.until){const theta=Math.atan2(this.ay-this.y,this.ax-this.x),len=Math.max(110,Math.hypot(this.ax-this.x,this.ay-this.y)),offset=.13*b.stacks*Math.sin(this.t*6+this.lado*1.6);this.ax=this.x+Math.cos(theta+offset)*len;this.ay=this.y+Math.sin(theta+offset)*len}else if(b&&this.t>=b.until)delete this.est.torre2MudAccuracy;}']
+ ]]
+);
 // Fix CPU soft-lock: AI.elegir() previously returned early with only EVO/MEGA
 // when EXP/ult meter allowed a transform, but the campaign blocks that input.
 // As a result the enemy could stop fighting permanently. Skip the evolution
