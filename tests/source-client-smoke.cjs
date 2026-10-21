@@ -619,8 +619,14 @@ const server=http.createServer(async(req,res)=>{
     let iceFx,confuseFx;
     try{
      e.add.graphics=function(...args){
-      const g=add.apply(this,args),base=g.fillPoints;
+      const g=add.apply(this,args),base=g.fillPoints,baseClear=g.clear;
       g._v5Faces=[];
+      // Phaser Graphics clears each rendered frame; reset our probe too.
+      // Otherwise the test reads the *launch* shape on every later frame.
+      g.clear=function(...params){
+       this._v5Faces=[];
+       return baseClear.apply(this,params);
+      };
       g.fillPoints=function(points,closed){
        g._v5Faces.push(points.map(p=>({x:p.x,y:p.y})));
        return base.call(this,points,closed);
