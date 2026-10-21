@@ -570,6 +570,64 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(guillotineFail,0,'Guillotine does not hit 100% of close targets');
 
+  // Newly implemented Phaser/WebGL attacks: real hit, miss, healing, RNG.
+  // These new files never overwrite any native Arena 2D effect.
+  const trioPhysics=await tester.evaluate(async()=>{
+   const script=[...document.querySelectorAll('script[src]')]
+    .find(x=>x.src.includes('/main.js'));
+   const {absorb,xscissor,metronome}=await import(
+    new URL('./torre2/next-specific-fx.js',script.src).href);
+   const e=window.__pt2Game.scene.getScene('combate');
+   const results={};
+   function run(fn,kind,miss,aimAway=false){
+    const enemy={x:kind==='xscissor'?246:309,y:miss?380:215,
+     hp:160,alto:38,ko:false,hits:0,
+     recibir(_l,data){this.hits++;this.hp-=data.dano||0;return 'golpe'}};
+    const player={x:174,y:215,alto:38,ax:430,ay:aimAway?70:215,t:0,
+     hp:40,hpMax:100,ko:false,escena:e,rival:enemy,accion:null,animar(){}};
+    const effect=fn(player,{
+     tipo:kind==='xscissor'?'BUG':'GRASS',dano:kind==='xscissor'?19:16,
+     alcance:kind==='xscissor'?78:225
+    },{slot:'lmb'});
+    let alive=true;
+    for(let k=0;k<135&&alive;k++)alive=effect.update(.016);
+    effect.destroy();e.efectos=e.efectos.filter(x=>x!==effect);
+    return {hp:enemy.hp,hits:enemy.hits,heal:player.hp,completed:!alive};
+   }
+   results.absorbHit=run(absorb,'absorb',false);
+   results.absorbMiss=run(absorb,'absorb',true);
+   results.absorbAimMiss=run(absorb,'absorb',false,true);
+   results.xHit=run(xscissor,'xscissor',false);
+   results.xMiss=run(xscissor,'xscissor',true);
+   results.xAimMiss=run(xscissor,'xscissor',false,true);
+   const cast= {x:174,y:215,alto:38,ax:450,ay:215,t:0,
+    ko:false,escena:e,animar(){},accion:null};
+   const drawn=[];
+   const metFx=metronome(cast,{tipo:'NORMAL'},{slot:'lmb'},{
+    torre2_payday(_p,h){drawn.push({id:h.id,forma:h.forma});}
+   });
+   let alive=true;
+   for(let k=0;k<100&&alive;k++)alive=metFx.update(.016);
+   metFx.destroy();e.efectos=e.efectos.filter(x=>x!==metFx);
+   results.metronome={effects:drawn,completed:!alive};
+   return results;
+  });
+  assert.ok(trioPhysics.absorbHit.hits===1&&trioPhysics.absorbHit.heal===48,
+   'Absorb must hit once and heal 50% of actual 16 damage on returned particles');
+  assert.ok(trioPhysics.absorbMiss.hits===0&&trioPhysics.absorbMiss.heal===40,
+   'Absorb must not heal on a miss');
+  assert.ok(trioPhysics.absorbAimMiss.hits===0&&trioPhysics.absorbAimMiss.heal===40,
+   'Absorb can miss if the user aims away despite enemy being in range');
+  assert.equal(trioPhysics.xHit.hits,1,'X-Scissor delivers exactly one actual melee contact');
+  assert.equal(trioPhysics.xMiss.hits,0,'X-Scissor cannot hurt an off-axis foe');
+  assert.equal(trioPhysics.xAimMiss.hits,0,'X-Scissor must obey the player aim');
+  assert.equal(trioPhysics.metronome.effects.length,1,
+   'Metronome must cast a real randomly selected move once');
+  assert.equal(trioPhysics.metronome.effects[0].forma,'torre2_payday',
+   'Metronome uses an actual move renderer, not an imitation');
+  assert.ok(Object.entries(trioPhysics).every(([,result])=>result.completed),
+   'All three attacks release their Phaser Graphics when completed');
+
   // Three newly approved species-characteristic moves: real collision regression.
   const newSpeciesAttacks=await tester.evaluate(async()=>{
     const main=document.querySelector('script[src*="/main.js"]');
