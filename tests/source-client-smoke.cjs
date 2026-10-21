@@ -258,7 +258,10 @@ const server=http.createServer(async(req,res)=>{
     const img=c.children.list.find(o=>o.type==='Image'&&o.texture?.key==='torre2-approved-kanto');
     const dashboard={loaded:c.textures.exists('torre2-approved-kanto'),
      width:img?.displayWidth,height:img?.displayHeight,
-     actions:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length};
+     actions:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length,
+     images:c.children.list.filter(o=>o.type==='Image'||o.texture?.key)
+      .slice(0,24).map(o=>({type:o.type,key:o.texture?.key,width:o.displayWidth})),
+     labels:labels().slice(0,500)};
     c.grassScreen(state);const grass=labels();
     c.centerScreen(state);const center=labels();
     c.martScreen(state);const mart=labels();
@@ -268,6 +271,7 @@ const server=http.createServer(async(req,res)=>{
   });
   // Approved concept artwork is a real graphics texture, with live hit areas.
   const dashboard=newMap.dashboard;
+  console.log('TORRE2 DASHBOARD DIAG',JSON.stringify(dashboard));
   assert.equal(dashboard.loaded,true,'Approved artwork must load in Phaser');
   assert.equal(dashboard.width,640,'Approved artwork must fill the Kanto canvas');
   assert.equal(dashboard.height,360,'Approved artwork must respect native 16:9');
