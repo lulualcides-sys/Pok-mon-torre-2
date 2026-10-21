@@ -359,7 +359,15 @@ const server=http.createServer(async(req,res)=>{
    scene.summaryFilter='NEW';scene.summarySearch='';
    scene.showSummary(state,1,0,0);
    if(!labels().some(x=>x.includes('FILTRO: NEW')))throw Error('NEW filter label missing');
-   if(!labels().some(x=>x.includes('Bind')))throw Error('Pending Bind missing in NEW');
+   // NEW rows are distinct from the equipped slots above them.
+   const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
+    x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
+   for(const name of ['Horn Attack','Rock Tomb'])
+    if(!pendingRows.some(x=>x.includes(name)))
+     throw Error('Pending move missing from NEW: '+name);
+   for(const name of ['Metal Claw','Bind','Double Kick','Fury Attack'])
+    if(pendingRows.some(x=>x.includes(name)))
+     throw Error('Approved move leaked into NEW: '+name);
    // Equipped moves above the library are always visible; only inspect the
    // NEW-filtered library rows at y >= 223, not the four equipped slots.
    if(scene.children.list.some(x=>typeof x.text==='string'&&
