@@ -362,12 +362,12 @@ const server=http.createServer(async(req,res)=>{
    // NEW rows are distinct from the equipped slots above them.
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
-   for(const name of ['Horn Attack','Rock Tomb'])
-    if(!pendingRows.some(x=>x.includes(name)))
-     throw Error('Pending move missing from NEW: '+name);
-   for(const name of ['Metal Claw','Bind','Double Kick','Fury Attack'])
+   if(!labels().some(x=>x.includes('TODOS OS GOLPES APROVADOS')))
+    throw Error('Empty NEW tab must confirm all moves have been approved');
+   for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',
+    'Metal Claw','Bind','Double Kick','Fury Attack'])
     if(pendingRows.some(x=>x.includes(name)))
-     throw Error('Approved move leaked into NEW: '+name);
+     throw Error('Approved move leaked into empty NEW: '+name);
    // Equipped moves above the library are always visible; only inspect the
    // NEW-filtered library rows at y >= 223, not the four equipped slots.
    if(scene.children.list.some(x=>typeof x.text==='string'&&

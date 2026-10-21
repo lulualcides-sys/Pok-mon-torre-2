@@ -103,15 +103,18 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 // NEW is an approval queue. Native moves and approved custom art never enter it.
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
-for(const id of ['rock-tomb','horn-attack','metronome','absorb','x-scissor'])
- assert.ok(pendingIds.includes(id),'Unapproved custom VFX must appear in NEW: '+id);
+assert.equal(pendingIds.length,0,'User approved ALL items of NEW, including Metronome, Absorb, X-Scissor, Horn Attack and Rock Tomb');
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
- 'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack'])
+ 'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
+ 'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
  assert.ok(!pendingIds.includes(id),'Native and approved moves must never enter NEW: '+id);
+for(const id of ['metronome','absorb','x-scissor'])
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
+  'User just approved the previously queued move '+id);
 assert.ok(pending.every(isPendingApprovalMove));
 assert.ok(pending.every(m=>m.source==='new-phaser-fx'));
-assert.equal(filterMoveLibrary(allMoves,'NEW','ROCK').length,1,
- 'Search inside NEW must find pending Rock Tomb only');
+assert.equal(filterMoveLibrary(allMoves,'NEW','ROCK').length,0,
+ 'Approved Rock Tomb must not reappear in NEW even when searching');
 assert.ok(filterMoveLibrary(allMoves,'ROCK').some(m=>m.id==='rock-tomb'),
  'Element ROCK must remain unaffected by virtual NEW tab');
 assert.equal(filterMoveLibrary(allMoves,'ALL').length,allMoves.length,
@@ -185,9 +188,8 @@ for(const [id,forma] of [
  assert.ok(move,'Pre-Brock missing attack now installed: '+id);
  assert.equal(move.forma,forma);
  assert.equal(move.source,'new-phaser-fx','Never overwrite an original move');
- assert.equal(move.approved,
-  ['metal-claw','bind','double-kick','fury-attack'].includes(id)?true:undefined,
-  'Only approved moves leave NEW; Horn Attack and Rock Tomb remain pending');
+ assert.equal(move.approved,true,
+  'All six pre-Brock moves are now approved and protected');
  assert.equal(equipMove(tester,0,id),true);
  assert.equal(resolveLoadout(tester).lmb.forma,forma);
 }

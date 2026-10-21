@@ -132,3 +132,10 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - **Horn Attack:** novo chifre pequeno em pixel art, ligado à frente do Pokémon durante aproximação, contato e recuo; ainda não aprovado.
 - **Rock Tomb:** nove pedras variadas em dispersão estilo Pay Day, leve rastreamento limitado do Pokémon-alvo, dano individual só se a pedra atingir, possibilidade real de erro, sem garantia de acerto; ainda não aprovado.
 - Originais e já aprovados preservados. Nenhuma alteração no jogo de Pokémon Torre 1.
+
+
+## Todas as pendências da aba NEW aprovadas — 21/10/2026
+- O usuário **aprovou todos os golpes que ainda estavam em NEW**: **Rock Tomb**, **Horn Attack**, **Metronome**, **Absorb** e **X-Scissor**.
+- Marcados com `approved:true` sem modificar qualquer arte/mecânica. A lista NEW passa a ter **zero pendentes**, exibindo **TODOS OS GOLPES APROVADOS ✓**. Os movimentos seguem disponíveis nos respectivos tipos e em ALL.
+- A aprovação anterior de Metal Claw, Bind, Double Kick e Fury Attack é mantida. Golpes do cliente nativo Poké Arena 2D têm prioridade absoluta e permanecem intocados.
+- Próxima etapa diferente da fila NEW: cobertura de espécies/sprites e learnsets por nível da rota inicial até Brock. Itens no planejamento geral de 160 faltantes são uma fotografia antiga, não uma lista de pendências de aprovação.

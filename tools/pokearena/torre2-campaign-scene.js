@@ -575,7 +575,7 @@ class Campanha extends Phaser.Scene{
    if(pending)label(x+77,y+16,'NEW','#ffdc89',8);
    label(x+181,y+16,'CD '+move.cd+'s',C.muted,8).setOrigin(1,0);
   });
-  if(filtered.length===0)label(242,255,'NENHUM GOLPE ENCONTRADO',C.muted,11);
+  if(filtered.length===0)label(242,255,this.summaryFilter==='NEW'?'TODOS OS GOLPES APROVADOS ✓':'NENHUM GOLPE ENCONTRADO',C.muted,11);
   button(233,317,68,25,'◀ ANTES',()=>this.showSummary(state,index,activeSlot,(safePage+pages-1)%pages));
   button(306,317,125,25,(safePage+1)+' / '+pages+' PÁGINAS',()=>this.showSummary(state,index,activeSlot,0),true);
   button(437,317,73,25,'PRÓXIMO ▶',()=>this.showSummary(state,index,activeSlot,(safePage+1)%pages));
