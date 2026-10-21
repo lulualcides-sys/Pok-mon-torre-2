@@ -269,14 +269,28 @@ export function shadowball(l,h,extra){
  },dispose);
 }
 function lips(g,x,y){
- // Single compact pixel-art kiss, not a large decorative pink disk.
- const rows=["..pp..pp..",".pLLppLLp.","pLLLLLLLLp",".pLLLLLLp.","..pLLLLp..","...pppp..."];
+ // Larger, readable 20x12 pixel-art kiss. Reuse the original simple
+ // two-lobe silhouette, not a tiny dot or a decorative flat circle.
+ const rows=[
+  "...ppp...ppp...",
+  "..pLLLp.pLLLp..",
+  ".pLLLLLpLLLLLp.",
+  "pLLLLLLLLLLLLLp",
+  "pLLLLLLLLLLLLLp",
+  ".pLLLLLLLLLLLp.",
+  "..pLLLLLLLLLp..",
+  "...pLLLLLLp...",
+  "....pLLLLp....",
+  ".....pppp....."
+ ];
+ const scale=1.45;
  for(let j=0;j<rows.length;j++)for(let i=0;i<rows[j].length;i++){
   const c=rows[j][i];
-  if(c==='p')draw(g,x+i-5,y+j-3,1,1,0x451b37);
-  if(c==='L')draw(g,x+i-5,y+j-3,1,1,j<3?0xf7a4cb:0xd867a4);
+  if(c==='p')draw(g,x+(i-7.5)*scale,y+(j-5)*scale,scale,scale,0x42152f);
+  if(c==='L')draw(g,x+(i-7.5)*scale,y+(j-5)*scale,scale,scale,
+   j<4?0xffb0d8:0xd568a2);
  }
- draw(g,x-2,y+1,5,1,0x632143);
+ draw(g,x-4,y+1,8,2,0x752447);
 }
 function heart(g,x,y){
  const pixels=[
@@ -287,53 +301,66 @@ function heart(g,x,y){
   "..pPP..",
   "...p..."
  ];
+ const scale=1.5;
  for(let yy=0;yy<pixels.length;yy++)for(let xx=0;xx<pixels[yy].length;xx++){
   const c=pixels[yy][xx];
-  if(c==='p')draw(g,x+xx-3,y+yy-3,1,1,0x5c2147);
-  else if(c==='P')draw(g,x+xx-3,y+yy-3,1,1,yy<3?0xffaed4:0xda72aa);
+  if(c==='p')draw(g,x+(xx-3)*scale,y+(yy-3)*scale,scale,scale,0x5c2147);
+  else if(c==='P')draw(g,x+(xx-3)*scale,y+(yy-3)*scale,scale,scale,
+   yy<3?0xffb3d9:0xdf78b3);
  }
 }
 export function lovelykiss(l,h,extra){
  const e=l.escena,g=layer(e,1510),trail=layer(e,1509),r=l.rival;
  let age=0,applied=false,disposed=false;
- const start={x:l.x+11,y:l.y-l.alto*.55};
- const angle=direct(l),distance=Math.min(h.alcance||225,230);
+ const ang=direct(l),reach=Math.min(h.alcance||225,245);
+ const speed=275;
+ const origin={x:l.x+Math.cos(ang)*11,y:l.y-l.alto*.55};
+ let previous={...origin};
  const dispose=()=>{if(disposed)return;disposed=true;g.destroy();trail.destroy()};
- l.animar('Shoot',.58,.12);l.accion={hasta:l.t+.27,angulo:angle,lento:.68};
+ l.animar('Shoot',.61,.15);
+ l.accion={hasta:l.t+.3,angulo:ang,lento:.7};
  return running(e,dt=>{
   age+=dt;g.clear();trail.clear();
-  if(age>.96){dispose();return false}
-  const progress=ease(sat((age-.13)/.65));
-  const travelled=distance*progress;
-  const x=start.x+Math.cos(angle)*travelled;
-  const y=start.y+Math.sin(angle)*travelled*.75-5*Math.sin(progress*PI);
-  if(age>.15&&progress>.045&&progress<1)lips(g,x,y);
-  // Exactly three very small hearts. Each one is emitted only after the
-  // leading kiss has moved at least 35 pixels away from its caster.
+  const distance=Math.min(reach,Math.max(0,age-.10)*speed);
+  // The aim is captured ON CAST. Never steer towards the moving enemy.
+  const x=origin.x+Math.cos(ang)*distance;
+  const y=origin.y+Math.sin(ang)*distance*.76;
+  const previousPosition=previous;
+  previous={x,y};
+  if(distance>9)lips(g,x,y);
+  // Three small, clearly separated hearts follow behind the leading kiss.
+  // No heart can spawn on the caster or render all stacked on the first frame.
   for(let i=0;i<3;i++){
-   const emittedAt=.30+i*.115;
-   const life=age-emittedAt;
-   if(life<0||life>.32)continue;
-   const behind=distance*ease(sat((emittedAt-.13)/.65))-12;
-   if(behind<35)continue;
-   const slide=life*53;
-   const dist=behind+slide;
-   const hx=start.x+Math.cos(angle)*dist-Math.sin(angle)*(i-1)*5;
-   const hy=start.y+Math.sin(angle)*dist*.75+Math.cos(angle)*(i-1)*4-3-life*8;
-   heart(trail,hx,hy);
+   const behind=distance-33-i*28;
+   if(behind<38)continue;
+   const hx=origin.x+Math.cos(ang)*behind-Math.sin(ang)*(i-1)*6;
+   const hy=origin.y+Math.sin(ang)*behind*.76+Math.cos(ang)*(i-1)*5;
+   heart(trail,hx,hy-3);
   }
-  if(!applied&&progress>.96&&r&&!r.ko){
-   applied=true;
+  if(!applied&&distance>9&&r&&!r.ko){
+   // Real swept hit detection, rather than applying sleep at the end of an
+   // animation. The player MUST aim the kiss where the rival actually is.
    const center=targetAt(r);
-   const touches=center&&Math.hypot(x-center.x,y-center.y)<Math.max(20,r.alto*.5);
-   if(touches&&Math.random()<.75){
-    r.ponerEstado('aturdido',2.4,{fuente:l});
-    vfx.textoFlotante(e,r.x,r.y-r.alto-11,'Zzz…',{color:'#f8a1d2',dur:850});
-    sparkle(e,r.x,r.y-r.alto*.5,0xfa8fc2,.55);
-   }else if(touches){
-    vfx.textoFlotante(e,r.x,r.y-r.alto-10,'MISS',{color:'#ffbfdd',dur:570});
+   const dx=x-previousPosition.x,dy=y-previousPosition.y;
+   const projection=sat(((center.x-previousPosition.x)*dx+
+    (center.y-previousPosition.y)*dy)/(dx*dx+dy*dy||1));
+   const cx=previousPosition.x+dx*projection;
+   const cy=previousPosition.y+dy*projection;
+   const radius=Math.max(12,Math.min(20,(r.alto||30)*.46));
+   if(Math.hypot(cx-center.x,cy-center.y)<=radius){
+    applied=true;
+    // Contact is mandatory, and 75% status accuracy is STILL rolled.
+    if(Math.random()<.75){
+     r.ponerEstado('aturdido',2.4,{fuente:l});
+     vfx.textoFlotante(e,r.x,r.y-r.alto-11,'Zzz…',
+      {color:'#f8a1d2',dur:850});
+     sparkle(e,cx,cy,0xfa8fc2,.68);
+    }else vfx.textoFlotante(e,r.x,r.y-r.alto-10,'MISS',
+      {color:'#ffbfdd',dur:570});
+    dispose();return false;
    }
   }
+  if(distance>=reach||age>1.15){dispose();return false}
   return true;
  },dispose);
 }
