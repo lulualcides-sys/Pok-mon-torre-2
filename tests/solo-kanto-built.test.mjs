@@ -185,7 +185,19 @@ for(const name of ['metronome','absorb','xscissor'])assert.ok(
  newVfx.includes('export function '+name+'('),'New VFX renderer exists: '+name);
 assert.ok(newVfx.includes("from './move-pool.js'"),
  'Metronome picks a real installed move, not arbitrary dummy damage');
+const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
+assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
+assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');
+assert.ok(sharedClash.includes('frame>=10'),'Ten hand-drawn frames must end cleanly');
+assert.ok(sharedClash.includes('item.dueno!==attacker.rival'),'Never clash with own projectiles');
+assert.ok(sharedClash.includes('scene.programar(0,()=>scene.efectos.push(fx))'),
+ 'Defer Clash graphics so original Phaser battle loop does not discard them');
 const adapted=fs.readFileSync(path.join(stage,version,'torre2/adapted-moves-fx.js'),'utf8');
+assert.ok(adapted.includes("import {clashAt} from './clash-fx.js';"),
+ 'New approved Mud-Slap and Seed Bomb register collision with shared adapter');
+assert.ok(adapted.includes('fx.clashBody=body;')&&adapted.includes('fx.clashBody=collisionBody;'),
+ 'Both new projectile moves expose physical hitboxes for Clash');
+
 for(const fn of ['mudslap','seedbomb','superfang'])assert.ok(
  adapted.includes('export function '+fn+'('),'Missing hand-animated new renderer '+fn);
 for(const matrix of ['const MUD_PELLET=[','const MUD_SPLASH=[','const BOMB=[','const BOMB_CRACK=[','const JAW_TOP=[','const INCISOR=[']){
