@@ -159,3 +159,10 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - Esquiva é dash nativo não ofensivo (`forma:'dash'`, com cooldown), não um projétil nem um golpe adicional. Evoluções mantêm os quatro slots na mesma função.
 - Na campanha, os slots do sumário ficam ancorados: LMB básico, RMB e Q golpes, E ultimate; mudar o nível desbloqueia o golpe sem deslocar a posição dos outros, nem reiniciar os saves. Mewtwo teste mantém quatro slots livres.
 - A distribuição é uma adaptação de progressão do Pokémon Torre 2, não uma alegação de ser learnset oficial exato de uma única geração; nenhum golpe já aprovado foi redesenhado.
+
+
+## Diretriz de expansão de Pokémon / evolução na batalha (21/10/2026) — ROADMAP, NÃO IMPLEMENTAR AGORA
+- **Qualquer Pokémon novo adicionado ao jogo deve estar também disponível na arena de batalha**, incluindo formas evolutivas, sprites animados, golpes, animações, comportamento e integração com a Pokédex/equipe. Não basta incluí-lo apenas como ícone ou entrada da Pokédex.
+- **Evolução durante a batalha**: funcionalidade desejada **para uma etapa futura**. Ao implementar, integrar com o medidor de EXP/progressão e troca de forma em tempo real, respeitando golpes, atributos, sprites, continuidade de HP/estado e desempenho.
+- **Estado atual aprovado e preservado**: evolução da campanha continua a ocorrer **após** as batalhas, por nível; não reativar o sistema original de evolução durante a arena até o usuário solicitar explicitamente.
+- Continuar priorizando artes e movimentos nativos ou já aprovados, sem refazê-los e sem quebrar controles LMB / RMB / SPACE (esquiva) / Q / E (ultimate).
