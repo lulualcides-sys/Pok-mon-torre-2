@@ -227,12 +227,11 @@ export function xscissor(l,h,extra){
    resolved=true;
    // One contact hit after BOTH crossing pixel blades converge.
    // Aiming elsewhere or being too far away must miss.
-   const within=r=>{
-    const target=origin(r);
-    return Math.hypot(r.x-l.x,r.y-l.y)<=reach+16&&
-     project({x:center.x-ux*15,y:center.y-uy*15},
-             {x:center.x+ux*15,y:center.y+uy*15},r,18);
-   };
+   const within=r=>Math.hypot(r.x-l.x,r.y-l.y)<=reach+16&&
+    // The actual X spans ~60 pixels: use its visible crossing footprint,
+    // not an invisible auto-hit from the caster to the enemy.
+    project({x:center.x-ux*30,y:center.y-uy*30},
+            {x:center.x+ux*30,y:center.y+uy*30},r,15);
    const target=l.rival;
    if(target&&!target.ko&&within(target)){
     const dx=target.x-l.x,dy=target.y-l.y,d=Math.hypot(dx,dy)||1;
