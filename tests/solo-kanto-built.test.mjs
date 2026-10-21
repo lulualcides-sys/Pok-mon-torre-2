@@ -101,6 +101,9 @@ assert.equal(canonicalMoveKey('Pistola de Água'),canonicalMoveKey('Water Gun'))
 assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb'));
 
 const officialMoveStats={
+ 'gust':{poder:40,precisao:100,pp:35,categoria:'SPECIAL',tipo:'FLYING',dano:8},
+ 'poison-sting':{poder:15,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'POISON',dano:3},
+ 'bite':{poder:60,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'DARK',dano:12},
  'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
  'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
  'super-fang':{poder:null,precisao:90,pp:10,categoria:'PHYSICAL',dano:0}
@@ -115,7 +118,7 @@ for(const [id,stats] of Object.entries(officialMoveStats)){
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
  'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
  'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor',
- 'mud-slap','seed-bomb','super-fang'])
+ 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -124,6 +127,13 @@ for(const id of ['mud-slap','seed-bomb','super-fang']){
  assert.equal(equipMove(tester,0,id),true,'new adapted Kanto move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new adapted move usable in battle '+id);
 }
+for(const id of ['gust','poison-sting','bite']){
+ assert.ok(allMoves.find(m=>m.id===id),'new early-route move not registered '+id);
+ assert.equal(equipMove(tester,0,id),true,'early-route move can be equipped '+id);
+ assert.equal(resolveLoadout(tester).lmb.id,id,'new early-route move usable '+id);
+}
+assert.equal(allMoves.filter(x=>x.nombre==='Tackle').length,1,
+ 'Tackle already exists in original Pokémon Arena 2D and must not be duplicated');
 const confusion=allMoves.find(x=>x.nombre==='Confusion');
 assert.ok(confusion);
 assert.equal(equipMove(tester,0,confusion.id),true);
@@ -185,6 +195,21 @@ for(const name of ['metronome','absorb','xscissor'])assert.ok(
  newVfx.includes('export function '+name+'('),'New VFX renderer exists: '+name);
 assert.ok(newVfx.includes("from './move-pool.js'"),
  'Metronome picks a real installed move, not arbitrary dummy damage');
+const dexBuilt=fs.readFileSync(path.join(stage,version,'escenas/pokedex.js'),'utf8');
+assert.ok(dexBuilt.includes('preload(){const m=this.registry.get("manifiesto")'),
+ 'Pokédex loads all 26 original base portraits before drawing the grid');
+assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
+ 'Pokédex must use existing PMD portrait/Idle assets rather than placeholder');
+assert.ok(dexBuilt.includes('this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)}'),
+ 'Pokedex evolution tabs must lazily load each selected original PMD animation');
+const early=fs.readFileSync(path.join(stage,version,'torre2/early-route-fx.js'),'utf8');
+for(const name of ['gust','poisonsting','bite'])
+ assert.ok(early.includes('export function '+name+'('),
+  'Missing new hand-pixeled early-route renderer '+name);
+assert.ok(early.includes('clashAt(e,fx,l,tip,15')&&early.includes('clashAt(e,fx,l,tip,6'),
+ 'Gust and Poison Sting participate in physical Clash and dissipate on contact');
+for(const shape of ['const WIND_CURL=[','const NEEDLE=[','const JAW_UP=['])
+ assert.ok(early.includes(shape),'Distinct pixel matrix is missing: '+shape);
 const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
 assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
 assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');
