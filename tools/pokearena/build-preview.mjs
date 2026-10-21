@@ -244,7 +244,7 @@ patches.push(
  ]],
  ['escenas/carga.js',[
   ['else this.scene.start(q.has("original")?"titulo":"campanha")',
-   'else this.scene.start(q.get("testMoves")==="bite-crunch"?"campanha":"titulo")']
+   'else if(q.get("testMoves")==="bite-crunch")this.scene.start("campanha");else this.scene.start("titulo")']
  ]]
 );
 // League and selection use their OWN scene caches. Preloading only the
