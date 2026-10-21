@@ -483,7 +483,7 @@ const server=http.createServer(async(req,res)=>{
     };
     const saved=Math.random;
     try{
-      Math.random=()=>.8; // Rock Blast 4 projectiles, no Ice Beam freeze.
+      Math.random=()=>.8; // Rock Blast seven stones, no Ice Beam freeze; confusion passes at 85%.
       return{iceHit:run(fx.icebeam,'hit'),iceMiss:run(fx.icebeam,'miss'),
        rockHit:run(fx.rockblast,'hit'),rockMiss:run(fx.rockblast,'miss'),
        confuseHit:run(fx.confuseray,'hit'),confuseMiss:run(fx.confuseray,'miss'),
@@ -493,14 +493,58 @@ const server=http.createServer(async(req,res)=>{
   for(const value of Object.values(megaLogic))
    assert.equal(value.done,true,'new Phaser effect must clean up after completing');
   assert.ok(megaLogic.iceHit.hp<200&&megaLogic.iceMiss.hp===200,'Ice Beam must require physical collision');
-  assert.ok(megaLogic.rockHit.hits>=2&&megaLogic.rockHit.hits<=5,
+  assert.ok(megaLogic.rockHit.hits>=2&&megaLogic.rockHit.hits<=7,
    'Rock Blast hits separately when multiple rocks reach the enemy');
   assert.equal(megaLogic.rockMiss.hits,0,'Rock Blast misses if the enemy dodges');
   assert.deepEqual(megaLogic.confuseHit.statuses,['confuso'],
    'Confuse Ray applies status once on contact');
   assert.deepEqual(megaLogic.confuseMiss.statuses,[],
    'Confuse Ray misses cleanly without auto applying status');
-  assert.equal(megaLogic.heal.ownHp,140,'Soft-Boiled heals exactly half max HP, without damaging rival');
+  assert.equal(megaLogic.heal.ownHp,100,'Soft-Boiled heals 30% max HP, without damaging rival');
+
+  // Chance and casting regressions: moving projectiles cannot guarantee status,
+  // self-healing must wait for the pixel egg to crack, and 7-stone blasts stay finite.
+  const megaV2=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const fx=await import(new URL('./torre2/mega-patch-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const savedRandom=Math.random;
+    const run=(attack,seed,earlySteps=0)=>{
+      Math.random=()=>seed;
+      const enemy={x:290,y:215,alto:38,ko:false,hp:200,tipos:['NORMAL'],
+       hits:0,statuses:[],recibir(_l,arg){this.hits++;this.hp-=arg.dano||0;return 'golpe'},
+       ponerEstado(name){this.statuses.push(name)},escarchar(){this.statuses.push('frost')}};
+      const player={x:174,y:215,alto:38,ax:420,ay:215,rival:enemy,escena:e,
+       t:0,ko:false,hp:40,hpMax:200,animar(){},accion:null};
+      const effect=attack(player,{dano:12,alcance:260,tipo:'GHOST'},{slot:'lmb'});
+      let alive=true,earlyHp=null,earlyStatus=null;
+      for(let i=0;i<135&&alive;i++){
+       if(i===earlySteps){earlyHp=player.hp;earlyStatus=enemy.statuses.length}
+       alive=effect.update(.016);
+      }
+      effect.destroy();e.efectos=e.efectos.filter(x=>x!==effect);
+      return{hp:player.hp,earlyHp,earlyStatus,hits:enemy.hits,statuses:enemy.statuses,expired:!alive};
+    };
+    try{
+     return {confuseFailed:run(fx.confuseray,.98,10),
+      rockSix:run(fx.rockblast,.1,10),rockSeven:run(fx.rockblast,.8,10),
+      delayedHeal:run(fx.softboiled,.2,40)};
+    }finally{Math.random=savedRandom}
+  });
+  assert.deepEqual(megaV2.confuseFailed.statuses,[],
+   'Confuse Ray can physically connect yet fail its status chance');
+  assert.ok(megaV2.confuseFailed.hits>=1,
+   'Confuse Ray resistance trial must still hit the target');
+  assert.ok(megaV2.rockSix.hits<=6&&megaV2.rockSeven.hits<=7,
+   'Rock Blast must have only six or seven independently resolved projectiles');
+  assert.ok(megaV2.rockSix.hits>=2&&megaV2.rockSeven.hits>=2,
+   'Both stone counts must allow multiple real collisions');
+  assert.equal(megaV2.delayedHeal.earlyHp,40,
+   'Soft-Boiled may not heal before the egg breaks');
+  assert.equal(megaV2.delayedHeal.hp,100,
+   'Soft-Boiled heals only 30% of maximum HP after its animation');
+  assert.ok(Object.values(megaV2).every(x=>x.expired),
+   'All four v2 regression trials must clean their Phaser graphics');
 
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
