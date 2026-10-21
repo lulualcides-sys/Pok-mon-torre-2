@@ -87,3 +87,14 @@ test('Petal Dance uses Ice Beam-style controlled aim, not automatic lock-on',()=
  assert.ok(aimed.player.accion.angulo<-.2,
   "Caster turns toward player aim with the original Chorro-style angular limit");
 });
+
+test('Petal Dance can miss an enemy inside reach when the player aims away',()=>{
+ const b=battle(false);
+ b.player.ay=40;
+ const fx=petaldance(b.player,{dano:18,tipo:'GRASS',alcance:230},{slot:'lmb'});
+ let alive=true;
+ for(let frame=0;frame<150&&alive;frame++)alive=fx.update(.016);
+ assert.equal(alive,false);
+ assert.equal(b.enemy.hits,0,'In-range enemy must not take damage off the player projection');
+ assert.ok(b.graphics.every(g=>g.destroyed));
+});
