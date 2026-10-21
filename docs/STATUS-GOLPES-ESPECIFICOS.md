@@ -21,7 +21,7 @@ Data: 21/10/2026
 | Smog | ✅ aprovado | 17 bolhas, impactos individuais | Congelar |
 | Hyper Fang | ✅ aprovado | Incisivos grandes de rato | Congelar |
 | Guillotine | ✅ aprovado | Duas pinças visíveis fechando no alvo | Congelar |
-| Petal Dance | 🔧 avaliação pendente | Pétalas em vórtice girando com a mira do jogador (Chorro/Ice Beam), sem travar no alvo | Avaliar animação |
+| Petal Dance | ✅ aprovado | Pétalas pequenas acompanhando a mira manual (Ice Beam) | Congelar |
 
 **Proteções:** nenhum item aprovado muda sem autorização explícita. Original Pokémon Arena 2D: manter 100% do visual pré-existente. Surf permanece oculto/não equipável.
 
@@ -32,3 +32,9 @@ Data: 21/10/2026
 ## Próximos golpes após concluir os 11
 
 Triagem inicial e ordem sugerida em [CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md](./CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md). Cada candidato ainda precisa de conferência visual no cliente atual antes de implementação.
+
+## Menu principal — aprovado em 21/10/2026
+O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, fundo, botões, tipografia e navegação foi **aprovado** pelo usuário. **Não modificar** menu, logo, dimensões ou funcionamento sem novo pedido.
+
+## Novo lote sob revisão — 21/10/2026
+**Metronome, Absorb e X-Scissor continuam SEM visto de aprovação.** Último feedback: Metronome e Absorb reduzidos aproximadamente 50% (palma/dedo, folha, gotas, retornos e faíscas). X-Scissor foi refeito com **dois cortes diagonais cruzados em X, contorno preto, ponta afiada, interior azul-esverdeado e impacto somente no encontro real**. Todos usam sprites de matriz em Phaser/WebGL. Não alterar golpes aprovados nem o menu.
