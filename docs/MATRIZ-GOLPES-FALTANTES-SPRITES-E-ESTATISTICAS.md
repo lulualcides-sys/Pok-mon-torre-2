@@ -2,6 +2,16 @@
 
 **Auditoria real do cliente Phaser + planejamento (21/10/2026):** 18 tipos, **269** golpes/status planejados, **98** já presentes no cliente original, **11** feitos especificamente no Torre 2 dentro do planejamento e **160** ainda sem implementação no catálogo capturado. A classificação é por **nome**, não mede qualidade visual nem se um Pokémon do Kanto aprende o movimento. Golpes originais do cliente não serão alterados.
 
+## Duas referências de arte + proteção anti-repetição — regra de 21/10
+
+**Bases visuais a estudar:** (1) golpes do **Pokémon Arena** mostrados nos vídeos de referência enviados pelo usuário; (2) cliente **Poké Arena 2D** em https://www.pokearena2d.com/ (fonte Phaser/WebGL) e (3) efeitos individuais já aprovados **dentro do Pokémon Torre 2**. Não utilizar apenas as artes feitas por nós: procurar o padrão original dos dois jogos para escala, silhueta, quadros e impacto. Referência visual não autoriza inventar mecânica ou copiar materiais sem licença.
+
+**Congelamento:** golpes que já existem no cliente Poké Arena 2D são considerados aprovados e **não devem ser refeitos, recoloridos, removidos nem substituídos**. Os golpes customizados com aprovação também ficam congelados. Mesmo golpe com grafia/PT/EN diferente conta como **uma entrada**; jamais criar um segundo Metronome/Absorb/Shadow Ball/etc. O mesmo renderer (`proyectil`, `chorro`, `tajo`) compartilhado por vários movimentos nativos NÃO significa que os golpes sejam idênticos: confirmar nome e mecânica.
+
+**Antes de implementar qualquer lote:** rodar `node tools/pokearena/audit-moves.mjs` após criar a build, verificar o `POKEARENA-MOVE-AUDIT.json` da captura **mais recente** e manter apenas nomes classificados `MISSING_IN_CAPTURED_CLIENT`. Atualização do cliente pode alterar a lista — os números de 98 nativos / 160 faltantes abaixo são **foto de uma captura**, não garantia de que o cliente não ganhou outros golpes. O pipeline GitHub Pages agora é bloqueado se houver duplicata no pool selecionável, tradução PT/EN equivalente ou golpe personalizado recriado sobre o nativo. Não modificar nenhum golpe aprovado só por usar a mesma base visual.
+
+**Lotes visuais:** reutilizar a lógica de partículas, proporções e sprite-base quando útil; distinguir cada movimento por forma, trajetória e efeito. **Estatísticas e acerto** pertencem exclusivamente ao golpe correto. Evitar produzir 15 recolorações de uma bola genérica. A seleção final do próximo lote deve ser deduplicada novamente após cada captura.
+
 ## Regra mestre: sprite não é estatística
 Reaproveitar somente a matriz de pixel art, contorno, paleta, fases e efeitos visuais, **nunca copiar `dano`, `tipo`, `precisao`, `poder`, `pp`, efeitos adicionais ou alcance** de um golpe para outro. Pesquisar cada movimento em Pokémon Database/Bulbapedia antes da mecânica e registrar tipo, categoria, poder, precisão, PP, contato, prioridade, efeitos e exceções. Normalizar **dano da arena separadamente** da potência oficial, mantendo a proporção/semântica; mudar apenas a arte não deve alterar o resultado da batalha. Sem projétil teleguiado ou acerto garantido; teste de colisão e de erro manual.
 
