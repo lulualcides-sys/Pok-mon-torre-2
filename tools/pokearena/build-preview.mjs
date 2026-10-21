@@ -167,6 +167,10 @@ patches.push(
    '/* No online person counter or activity data. */']
  ]],
  ['escenas/seleccion.js',[
+  ['import{atacarEnMenu,precargarLineas,alTerminarCarga,dexAspecto,auraAspecto,ponerRetrato}from"../sprites.js";',
+   'import{atacarEnMenu,precargarLineas,alTerminarCarga,dexAspecto,auraAspecto,ponerRetrato,cargarPMD,crearAnimsPMD,soloFormas,formasDe}from"../sprites.js";'],
+  ['init(datos){this.previo=datos?.previo}create(){',
+   'init(datos){this.previo=datos?.previo}preload(){const m=this.registry.get("manifiesto");this._torre2Selecao=soloFormas(m,formasDe(ROSTER.map(p=>p.id)));cargarPMD(this,this._torre2Selecao,["Idle"]);}create(){crearAnimsPMD(this,this._torre2Selecao,["Idle"]);'],
   ['const MODOS=[{id:"cpu",nombre:"VS CPU"},{id:"versus",nombre:"2 PLAYERS"},{id:"entreno",nombre:"TRAINING"}];',
    'const MODOS=[{id:"cpu",nombre:"VS CPU"},{id:"entreno",nombre:"TRAINING"}];'],
   ['ANCHO/2-130+i*130,27,m.nombre','ANCHO/2-67+i*134,27,m.nombre']
