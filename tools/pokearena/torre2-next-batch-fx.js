@@ -27,72 +27,96 @@ function running(e,update,dispose){
  const fx={update(dt){return update(dt)},destroy(){dispose?.()}};
  e.efectos.push(fx);return fx;
 }
-function drawFoam(g,x,y,t,seed){
- draw(g,x,y,5,3,0x0e4064);
- draw(g,x+1,y,4,2,0xe5fbff);
- draw(g,x+2,y-2-Math.sin(t*13+seed)*2,2,2,0xa6f2fd);
+function waveShape(g,points,color,alpha=1){
+ g.fillStyle(color,alpha);
+ g.fillPoints(points.map(([x,y])=>({x:rnd(x),y:rnd(y)})),true);
 }
 export function surf(l,h,extra){
- const e=l.escena,r=l.rival,ang=direct(l),g=layer(e,1510),foam=layer(e,1511);
- const start={x:l.x+Math.cos(ang)*9,y:l.y-l.alto*.33};
- const speed=h.alcance||255;
- let time=0,damaged=false,burst=0;
+ const e=l.escena,r=l.rival,ang=direct(l);
+ const water=layer(e,1509),highlights=layer(e,1510),spray=layer(e,1511);
+ const ox=l.x+Math.cos(ang)*11,oy=l.y-l.alto*.3,range=Math.min(265,h.alcance||255);
+ let time=0,damaged=false,impactSplash=0;
  l.animar('Shoot',.65,.2);
- l.accion={hasta:l.t+.55,bloquea:true,lento:.35,angulo:ang};
+ l.accion={hasta:l.t+.55,bloquea:true,lento:.34,angulo:ang};
  return running(e,dt=>{
-  time+=dt;const t=time/1.13;
-  if(t>=1.18){g.destroy();foam.destroy();return false}
-  const flight=ease(sat((t-.1)/.8))*speed;
-  const x=start.x+Math.cos(ang)*flight,y=start.y+Math.sin(ang)*flight*.73;
-  g.clear();foam.clear();g.setPosition(rnd(x),rnd(y)).setRotation(ang);
-  foam.setPosition(rnd(x),rnd(y)).setRotation(ang);
-  // Broad stepped water wall with a curved crest; *not* Water Gun scaled up.
-  const swell=(.7+.3*Math.sin(Math.min(1,t)*PI))*Math.min(1,t*6);
-  const span=34*swell,crest=7+5*Math.sin(t*11);
-  for(let k=-9;k<=9;k++){
-   const side=k/9,dy=side*span;
-   const ridge=11*Math.cos(side*PI*.5)+crest*Math.pow(1-Math.abs(side),2);
-   const depth=11+ridge;
-   draw(g,-12-ridge*.35,dy-5,depth+15,11,0x0d2b4b,.95);
-   draw(g,-9-ridge*.28,dy-4,depth+11,8,0x22759e,.97);
-   draw(g,1,dy-3,Math.max(4,11+ridge*.5),4,0x66c9e3,.85);
-   if(k%2===0){
-    drawFoam(foam,7+ridge*.4,dy-4,time,k);
-    draw(foam,9+ridge*.4,dy-6,2,2,0xffffff,.75);
-   }
+  time+=dt;const t=time/1.14;
+  if(t>1.17){water.destroy();highlights.destroy();spray.destroy();return false}
+  const travel=ease(sat((t-.06)/.80));
+  const x=ox+Math.cos(ang)*range*travel,y=oy+Math.sin(ang)*range*travel*.74;
+  const opacity=sat(t*10)*sat((1.19-t)*6);
+  const swell=Math.max(.35,Math.min(1,t*6));
+  for(const g of [water,highlights,spray]){
+   g.clear().setPosition(rnd(x),rnd(y)).setRotation(ang).setAlpha(opacity);
   }
-  // Foaming spray and trailing droplets travel with the water front.
-  for(let i=0;i<9;i++){
-   const seed=i*12.989,offset=Math.sin(seed)*18;
-   const fx=-24-(i*7+Math.floor(time*70))%37;
-   draw(foam,fx,offset,2+i%2,2,0x8dddf2,.55);
+  const s=swell,crest=Math.sin(time*13)*2;
+  // A SINGLE continuous large body, inky silhouette and layered water.
+  // All positions are local pixel coordinates, so the wave rotates with aim.
+  waveShape(water,[[-55,-18*s],[-42,-32*s],[-24,-39*s],[-4,-37*s],
+   [14,-30*s],[30,-34*s],[35,-23*s],[49,-20*s],[56,-8*s],
+   [44,4*s],[43,20*s],[29,31*s],[7,39*s],[-18,37*s],
+   [-37,29*s],[-55,18*s]],0x0b2441);
+  waveShape(water,[[-51,-16*s],[-40,-29*s],[-21,-35*s],[-2,-32*s],
+   [12,-25*s],[28,-30*s],[32,-19*s],[45,-16*s],
+   [49,-7*s],[36,3*s],[40,19*s],[24,28*s],[6,34*s],
+   [-16,32*s],[-35,25*s],[-51,16*s]],0x175b8a);
+  waveShape(water,[[-43,-13*s],[-29,-26*s],[-10,-29*s],[8,-22*s],
+   [24,-21*s],[17,-10*s],[-1,-7*s],[2,10*s],
+   [25,17*s],[17,25*s],[-11,27*s],[-33,18*s]],0x269bc3,.97);
+  waveShape(highlights,[[-32,-23*s],[-15,-34*s],[8,-30*s],
+   [25,-24*s],[39,-28*s],[53,-19*s],[48,-9*s],[34,-6*s],
+   [27,-15*s],[11,-17*s],[-5,-13*s],[-17,-18*s]],0xc7faff);
+  waveShape(highlights,[[11,-17*s],[25,-18*s],[42,-12*s],
+   [47,-6*s],[34,1*s],[28,-6*s],[15,-7*s]],0x76d9ef);
+  // Breaking front of Surf: foam, white spouts, water curls and droplets.
+  const front=[[-30,-30],[-17,-34],[3,-30],[19,-25],[31,-29],
+   [40,-25],[50,-18],[50,-9],[45,3],[43,19],[28,29],[6,34],[-14,30],[-36,24]];
+  for(let i=0;i<front.length;i++){
+   const [px,py]=front[i],shake=Math.sin(time*18+i*2.1)*(i%3+1);
+   draw(highlights,px+shake,py*s,5+(i%3)*2,3,0xf3feff,.95);
+   if(i%2===0)draw(spray,px+8+Math.sin(time*16+i)*7,
+     py*s-8-Math.sin(time*12+i)*7,3,3,0x9cecf5,.82);
   }
-  if(!damaged&&r&&!r.ko&&t>.1){
+  for(let i=0;i<18;i++){
+   const ripple=(time*39+i*11)%72;
+   const py=-31*s+(i%9)*8*s;
+   const px=-40+ripple*.7;
+   draw(highlights,px,py+Math.sin(time*14+i)*3,4+(i%3)*2,
+    2+(i%2),i%3?0x8be6f8:0xe0fbff,.67);
+  }
+  for(let i=0;i<12;i++){
+   const px=-65-(i*8+time*35)%49,py=((i*29)%66-33)*s;
+   draw(spray,px,py,2+i%3,2+i%2,i%3?0x64c9df:0xe5fbff,.45);
+  }
+  if(!damaged&&r&&!r.ko&&t>.08){
    const tx=r.x-x,ty=r.y-r.alto*.5-y;
-   const forward=tx*Math.cos(ang)+ty*Math.sin(ang);
+   const ahead=tx*Math.cos(ang)+ty*Math.sin(ang);
    const side=-tx*Math.sin(ang)+ty*Math.cos(ang);
-   if(Math.abs(forward)<21&&Math.abs(side)<Math.max(25,span)){
-    damaged=true;burst=.3;
-    if(hit(l,h,extra,r,1,90))sparkle(e,r.x,r.y-r.alto*.5,0x81e9f8,1.3);
+   if(Math.abs(ahead-33)<29&&Math.abs(side)<Math.max(29,40*s)){
+    damaged=true;impactSplash=.27;
+    if(hit(l,h,extra,r,1,88))sparkle(e,r.x,r.y-r.alto*.5,0x83e7fa,1.35);
    }
   }
-  if(burst>0){
-   burst-=dt;
-   vfx.rafaga(e,'gota',rnd(x),rnd(y),0x84dff7,2);
+  if(impactSplash>0){
+   impactSplash-=dt;
+   if(Math.random()<.5)vfx.rafaga(e,'gota',r.x,r.y-r.alto*.4,0xa2eaf7,2);
   }
-  return true
- },()=>{g.destroy();foam.destroy()});
+  return true;
+ },()=>{water.destroy();highlights.destroy();spray.destroy()});
 }
 function star(g,x,y,size=1,phase=0){
- const c=0xffe368,bright=0xfff9c1,outline=0x17233e;
- const s=Math.max(1,Math.round(size));
- draw(g,x-3*s,y-s,7*s,3*s,outline);
- draw(g,x-s,y-4*s,3*s,9*s,outline);
- draw(g,x-2*s,y-2*s,5*s,5*s,c);
- draw(g,x-s,y-3*s,3*s,7*s,c);
- draw(g,x-3*s,y-s,7*s,3*s,c);
- draw(g,x-s,y-s,2*s,2*s,bright);
- if(phase%2===0){draw(g,x+3*s,y-2*s,s,2*s,bright,.6)}
+ // A proper FIVE-POINTED star, not a cross, yellow orb or thin spark.
+ // Discrete pixel-rounded vertices with a dark outside contour.
+ const outer=8.6*size,inner=3.35*size;
+ const polygon=(R,r)=>Array.from({length:10},(_,i)=>{
+  const a=-PI/2+i*PI/5;
+  const radius=i%2?r:R;
+  return{x:rnd(x+Math.cos(a)*radius),y:rnd(y+Math.sin(a)*radius)};
+ });
+ g.fillStyle(0x17182f,1);g.fillPoints(polygon(outer+2.1,inner+1.5),true);
+ g.fillStyle(0xffd24d,1);g.fillPoints(polygon(outer,inner),true);
+ g.fillStyle(0xfff1a3,1);g.fillPoints(polygon(outer*.68,inner*.69),true);
+ draw(g,x-1*size,y-3*size,2*size,3*size,0xffffff);
+ if(phase%2===0)draw(g,x+5*size,y-6*size,2,2,0xffffce,.7);
 }
 export function swift(l,h,extra){
  const e=l.escena,g=layer(e,1510),tail=layer(e,1509),r=l.rival;
@@ -130,58 +154,85 @@ export function swift(l,h,extra){
  },()=>{g.destroy();tail.destroy()});
 }
 function orb(g,x,y,t){
- const bands=[[-12,8,0x101027],[-10,5,0x352052],[-8,3,0x643c96],[-5,0,0x9e6bd1]];
- for(const [radius,shift,col] of bands){
-  const r=radius<0?-radius:radius;
-  for(let yy=-r;yy<=r;yy+=3){
-   const xx=Math.floor(Math.sqrt(Math.max(0,r*r-yy*yy)));
-   draw(g,x-xx+shift*.13,y+yy+shift*.11,xx*2,3,col,.93);
+ // Dark, dense Ghost-type sphere, layered pixel rings and asymmetrical core.
+ const pulse=Math.sin(t*18),R=15+pulse*1.5;
+ const paintRing=(radius,color,offset=0)=>{
+  for(let yy=-radius;yy<=radius;yy+=2){
+   const widest=Math.sqrt(Math.max(0,radius*radius-yy*yy));
+   const turbulent=Math.sin(t*22+yy*1.1+offset)*1.8;
+   const width=Math.max(1,Math.floor(widest+turbulent));
+   draw(g,x-width,y+yy,2*width,2,color,.98);
   }
+ };
+ paintRing(R+3,0x080c19);
+ paintRing(R,0x291a42,1.4);
+ paintRing(R-3,0x533075,2.2);
+ paintRing(R-6,0x2a184b,3.1);
+ paintRing(R-9,0x140c2c);
+ // Dark animated spiral should stay darker than the aura.
+ const swirl=t*7;
+ for(let i=0;i<11;i++){
+  const angle=swirl+i*.59,rr=3+(i*1.7)%11;
+  draw(g,x+Math.cos(angle)*rr,y+Math.sin(angle)*rr,
+   i%3?3:5,i%2?2:4,i%3?0x0d0b25:0x8154a8,.7);
  }
- draw(g,x-5,y-6,5,4,0xbda6ed,.8);
- draw(g,x+7,y+6,5,3,0x0b0b23);
+ draw(g,x-7,y-10,5,3,0xa68cce,.83);
+ draw(g,x+6,y+5,5,3,0x0b0a1e,.95);
 }
 export function shadowball(l,h,extra){
- const e=l.escena,g=layer(e,1510),aura=layer(e,1508),r=l.rival;
- const ox=l.x+7,oy=l.y-l.alto*.55,ang=direct(l);
+ const e=l.escena,g=layer(e,1511),aura=layer(e,1509),trail=layer(e,1508),r=l.rival;
+ const ox=l.x+9,oy=l.y-l.alto*.55,ang=direct(l);
  let t=0,landed=false,explode=0,ix=0,iy=0;
- l.animar('Charge',.6,.16);l.accion={hasta:l.t+.3,bloquea:true,lento:.44,angulo:ang};
+ l.animar('Charge',.61,.16);
+ l.accion={hasta:l.t+.32,bloquea:true,lento:.43,angulo:ang};
  return running(e,dt=>{
   t+=dt;
-  if(t>1.25){g.destroy();aura.destroy();return false}
-  g.clear();aura.clear();
-  if(explode){
-   explode-=dt;
-   const rad=(1-Math.max(0,explode)/.31)*37;
-   aura.lineStyle(4,0x130f2f,.95);aura.strokeCircle(ix,iy,rad+4);
-   aura.lineStyle(2,0xa48adc,.88);aura.strokeCircle(ix,iy,rad);
-   for(let i=0;i<8;i++){
-    const theta=i*PI/4+t*9;
-    draw(g,ix+Math.cos(theta)*rad,iy+Math.sin(theta)*rad,5,4,i%2?0x6f4ca3:0x2c2256,.8);
+  if(t>1.37){g.destroy();aura.destroy();trail.destroy();return false}
+  g.clear();aura.clear();trail.clear();
+  if(explode>0){
+   explode=Math.max(0,explode-dt);
+   const u=1-explode/.39,rad=7+44*u;
+   aura.lineStyle(7,0x0e0a23,1-u);aura.strokeCircle(ix,iy,rad+6);
+   aura.lineStyle(3,0x573181,.92*(1-u));aura.strokeCircle(ix,iy,rad);
+   aura.lineStyle(2,0x986cbd,.85*(1-u));aura.strokeCircle(ix,iy,rad*.73);
+   for(let i=0;i<23;i++){
+    const th=i*2.4+t*4+Math.sin(i*8)*.3;
+    const rr=rad*(.42+(i%5)*.13);
+    const xx=ix+Math.cos(th)*rr,yy=iy+Math.sin(th)*rr*.8;
+    draw(g,xx,yy,3+(i%3)*2,3+(i%2)*2,
+     i%4===0?0x0b081e:i%2?0x4a276e:0x7b56a6,1-u);
    }
    return true;
   }
-  const flight=ease(sat((t-.09)/.74));
-  const range=Math.min(h.alcance||245,250);
-  const x=ox+Math.cos(ang)*range*flight,y=oy+Math.sin(ang)*range*flight*.73-4*Math.sin(t*13);
-  orb(g,x,y,t);
-  for(let i=0;i<13;i++){
-   const theta=(i*2.4+t*17),rad=17+(i*7)%14;
-   draw(aura,x+Math.cos(theta)*rad,y+Math.sin(theta)*rad*.9,3+(i%3),3,
-    i%2?0x8456b0:0x392862,(.35+.4*(i%3)/3));
-   draw(aura,x-Math.cos(ang)*(i*7+10),y-Math.sin(ang)*(i*4+5),3,2,0x593c87,.4);
+  const flight=ease(sat((t-.07)/.72));
+  const range=Math.min(h.alcance||245,260);
+  const x=ox+Math.cos(ang)*range*flight,y=oy+Math.sin(ang)*range*flight*.73-3*Math.sin(t*15);
+  const lateral={x:-Math.sin(ang),y:Math.cos(ang)};
+  for(let i=1;i<=11;i++){
+   const off=i*10+(t*24)%14,d=t-i*.024;
+   const wobble=Math.sin(t*20+i*2.7)*9;
+   draw(trail,x-Math.cos(ang)*off+lateral.x*wobble,
+    y-Math.sin(ang)*off*.75+lateral.y*wobble*.6,4+i%4,4+i%3,
+    i%4===0?0x090e21:i%2?0x39235c:0x683d8c,.62*(1-i/13));
   }
-  if(!landed&&r&&!r.ko&&Math.hypot(x-r.x,y-(r.y-r.alto*.5))<24){
-   landed=true;explode=.31;ix=x;iy=y;
+  for(let i=0;i<26;i++){
+   const theta=(i*2.4+t*(i%2?10:-9)),rad=18+(i*11)%19;
+   const px=x+Math.cos(theta)*rad,py=y+Math.sin(theta)*rad*.8;
+   draw(aura,px,py,2+(i%3),2+(i%3),
+    i%4===0?0x090d1d:i%2?0x9864bb:0x442268,.55+.3*(i%3)/3);
+  }
+  aura.lineStyle(2,0x130e27,.75);
+  aura.strokeCircle(x,y,19+Math.sin(t*15)*3);
+  orb(g,x,y,t);
+  if(!landed&&r&&!r.ko&&Math.hypot(x-r.x,y-(r.y-r.alto*.5))<27){
+   landed=true;explode=.39;ix=x;iy=y;
    if(hit(l,h,extra,r,1,65)){
-    sparkle(e,r.x,r.y-r.alto*.5,0x9b6ad3,1.22);
-    // Shadow Ball: 20% chance to weaken Special Defence in the original.
-    // Simplified Arena combat: 20% slow/debuff; no false permanent stat loss.
+    sparkle(e,r.x,r.y-r.alto*.5,0x6b3f96,1.35);
     if(Math.random()<.2)r.ponerEstado('lento',2,{f:.15});
    }
   }
-  return true
- },()=>{g.destroy();aura.destroy()});
+  return true;
+ },()=>{g.destroy();aura.destroy();trail.destroy()});
 }
 function lips(g,x,y,size=1){
  const s=Math.max(1,Math.round(size));
@@ -216,7 +267,12 @@ export function lovelykiss(l,h,extra){
   const x=lerp(origin.x,target.x,progress),y=lerp(origin.y,target.y,progress)-10*Math.sin(progress*PI);
   lips(g,x,y,progress>.4?1:1);
   for(let i=0;i<6;i++){
-   const f=sat((t-i*.09)/.78);
+   // Never draw future hearts at f=0: the old code stacked six shapes
+   // over frame one and looked like one broken heart.
+   const delay=.12+i*.11;
+   if(t<delay+.025)continue;
+   const f=sat((t-delay)/.66);
+   if(f>=1)continue;
    const sx=lerp(origin.x,target.x,f),sy=lerp(origin.y,target.y,f)-19*Math.sin(f*PI);
    const sideways=Math.sin(i*3.2+t*6)*9;
    heart(trail,sx-sideways,sy-14+Math.cos(i+t*8)*8,1);
