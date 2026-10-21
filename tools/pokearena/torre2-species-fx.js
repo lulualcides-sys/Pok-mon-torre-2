@@ -57,7 +57,10 @@ export function sing(l,h,extra){
  const ux=Math.cos(ang),uy=Math.sin(ang)*.76,nx=-uy,ny=ux;
  const x0=l.x+ux*10,y0=l.y-(l.alto||32)*.58;
  const speed=235,range=Math.min(h.alcance??210,235);
- const offsets=[0,-9,12,-5,7],spawn=[0,.11,.23,.33,.43];
+ // Nine staggered notes, kept small and separated so the song looks
+ // richer without becoming a single guaranteed-hit wall.
+ const offsets=[0,-9,12,-5,7,-13,15,-1,10];
+ const spawn=[0,.075,.15,.23,.31,.39,.47,.55,.63];
  const progress=offsets.map(()=>({previous:null,ended:false}));
  let age=0,done=false,impact=0;
  return register(e,dt=>{
@@ -90,28 +93,74 @@ export function sing(l,h,extra){
    if(distance>=range){q.ended=true;continue}
    q.previous={x,y};
    note(notes,x,y,i);
-   for(let j=0;j<2;j++){
+   // Each moving note has its own tiny trailing pixels and sparkles.
+   for(let j=0;j<3;j++){
     const d=j*7+4;
     draw(sparks,x-ux*d-2,y-uy*d+Math.sin(age*8+i+j)*2,
-     2,2,i%2?0xc4edff:0xffdcf3,.56-j*.18);
+     j===0?3:2,j===0?2:1,i%2?0xc4edff:0xffdcf3,.7-j*.17);
+   }
+   if(i%3===0){
+    const sparkle=Math.sin(age*18+i);
+    draw(sparks,x+6+Math.sin(age*7+i)*3,y-11+sparkle*2,2,2,0xfff8df,.8);
    }
   }
-  return age<1.65&&progress.some(q=>!q.ended);
+  return age<1.95&&progress.some(q=>!q.ended);
  },()=>{notes.destroy();sparks.destroy()});
 }
-function claw(g,x,y,angle,charge=1){
- // Pixelated blue-tipped Kingler pincer in a short melee arc.
- const point=(r,offset)=>({x:px(x+Math.cos(angle)*r-Math.sin(angle)*offset),
-  y:px(y+Math.sin(angle)*r+Math.cos(angle)*offset)});
- const p=[point(-16,-9),point(9,-9),point(29,-17),point(43,-12),point(24,0),
-  point(43,12),point(29,17),point(9,9),point(-16,9)];
- g.fillStyle(0x102b4e,charge);g.fillPoints(p,true);
- g.fillStyle(0x369fc4,charge);
- g.fillPoints([point(-12,-5),point(12,-5),point(31,-13),
-  point(37,-9),point(21,0),point(37,9),point(31,13),point(12,5),point(-12,5)],true);
- g.fillStyle(0xc7f8ff,charge);
- g.fillPoints([point(12,-6),point(34,-12),point(25,-2),point(16,-1)],true);
- g.fillPoints([point(12,6),point(34,12),point(25,2),point(16,1)],true);
+// Genuine GRID-BASED PIXEL ART: three independent, hand-authored palettes
+// of squares, no fillPoints, circles, bezier curves, image smoothing or
+// canvas textures. Every frame is assembled from reusable pixel cells.
+const CRAB_PALETTE={
+ K:0x182b3b, D:0x743b38, R:0xc45e43, O:0xf08f57,
+ L:0xffc28a, W:0xfff1cf, A:0x3683a9, B:0x92e5f7
+};
+const CRAB_PALM=[
+ '.......KKKKKK.......',
+ '.....KKDDRRRRKK.....',
+ '...KKDDRRRRRRRRK....',
+ '..KDDRRROOOORRRRRK..',
+ '.KDDRRROOOOOOORRRK..',
+ 'KDDRRROOOOLLLOORRRK.',
+ 'KDDRRROOOOLLLOORRRK.',
+ 'KDDRRROOOOOOOORRRRK.',
+ '.KDDRRRRRRRRRRRRRK..',
+ '..KDDRRRRRRRRRRRK...',
+ '...KKDDRRRRRRRK.....',
+ '.....KKKKKKKK.......'
+];
+const CRAB_JAW=[
+ '.....KKKKKK........',
+ '...KKKKWWWKK.......',
+ '.KKDDOOWWWWWKK.....',
+ 'KDDROOOOOLLWWKKK...',
+ 'KRRROOOOOOOLWWWWK..',
+ 'KRRRRRROOOOOLLWWK.',
+ '.KRRRRRRROOOLLWWWK',
+ '..KKKRRRRRROKKWWK.',
+ '.....KKKKKKKKKKK...'
+];
+function crabPixels(g,matrix,x,y,ca,sa,alpha=1,scale=2){
+ // Rounded coordinates preserve integer pixels even when facing diagonally.
+ for(let row=0;row<matrix.length;row++){
+  const chars=matrix[row];
+  for(let col=0;col<chars.length;col++){
+   const color=CRAB_PALETTE[chars[col]];
+   if(color==null)continue;
+   const dx=(col-10)*scale,dy=(row-5)*scale;
+   draw(g,x+dx*ca-dy*sa,y+dx*sa+dy*ca,
+    Math.ceil(scale),Math.ceil(scale),color,alpha);
+  }
+ }
+}
+function claw(g,x,y,angle,charge=1,closure=.3){
+ const ca=Math.cos(angle),sa=Math.sin(angle),normalX=-sa,normalY=ca;
+ const gap=(1-sat(closure))*8;
+ crabPixels(g,CRAB_PALM,x-9*ca,y-9*sa,ca,sa,charge,2.3);
+ // Upper and lower pixel-art pincers CLOSE during the hammer strike.
+ crabPixels(g,CRAB_JAW,x+18*ca+normalX*(-12-gap),
+  y+18*sa+normalY*(-12-gap),ca,sa,charge,2);
+ crabPixels(g,CRAB_JAW.slice().reverse(),
+  x+18*ca+normalX*(12+gap),y+18*sa+normalY*(12+gap),ca,sa,charge,2);
 }
 export function crabhammer(l,h,extra){
  const e=l.escena,r=l.rival,[main,splash]=graphics(e);
@@ -124,14 +173,16 @@ export function crabhammer(l,h,extra){
   const t=sat((age-.065)/.4),extend=Math.sin(t*PI)*Math.max(0,reach-30);
   const x=x0+Math.cos(a)*extend,y=y0+Math.sin(a)*extend*.7;
   const oscillate=a-.45+t*.9;
-  if(age<.59)claw(main,x,y,oscillate,Math.min(1,age*9));
-  for(let j=0;j<11;j++){
-   const front=10+((j*11+age*85)%Math.max(11,extend+22));
-   const side=(j%2?1:-1)*(4+j%5)*2;
+  if(age<.59)claw(main,x,y,oscillate,Math.min(1,age*9),
+   sat((age-.16)/.29));
+  // Sharp, sparse blue PIXEL droplets rather than a flat polygon hammer.
+  for(let j=0;j<16;j++){
+   const front=10+((j*13+age*95)%Math.max(11,extend+23));
+   const side=(j%2?1:-1)*(3+j%7)*2;
    const xx=x0+Math.cos(a)*front-Math.sin(a)*side;
    const yy=y0+Math.sin(a)*front*.7+Math.cos(a)*side*.7;
-   if(age<.55)draw(splash,xx,yy,j%2+2,j%3+2,
-    j%3===0?0xe0ffff:j%2?0x5ac8e4:0x2685b4,.9);
+   if(age<.55)draw(splash,xx,yy,j%3===0?3:2,j%4===0?3:2,
+    j%3===0?0xe0ffff:j%2?0x5ac8e4:0x2685b4,.86);
   }
   if(!applied&&r&&!r.ko&&age>.14&&age<.48){
    // Not a projectile. The claw must physically reach the foe.
@@ -168,6 +219,17 @@ function smokeLobe(g,x,y,size,phase,alpha=1){
  g.fillPoints([p(-5,-2),p(-3,-6),p(2,-6),p(4,-3),p(0,0),p(-4,1)],true);
  draw(g,x-2*size,y-5*size,3*size,2*size,0xb49cc0,alpha*.7);
 }
+function smogBubble(g,x,y,size=2,fade=1){
+ // Four-tone 2D *pixel* bubble outline, no smooth ellipse.
+ const unit=Math.max(1,Math.round(size));
+ const ring=0xb79bc5,inside=0x78598c;
+ draw(g,x-unit*2,y-unit,unit,unit*3,ring,fade);
+ draw(g,x+unit*2,y-unit,unit,unit*3,ring,fade);
+ draw(g,x-unit,y-unit*2,unit*3,unit,ring,fade);
+ draw(g,x-unit,y+unit*2,unit*3,unit,inside,fade);
+ draw(g,x-unit,y-unit,unit*3,unit*3,inside,fade*.45);
+ draw(g,x-unit,y-unit,unit,unit,0xe4c9ec,fade*.8);
+}
 export function smog(l,h,extra){
  const e=l.escena,r=l.rival,[fog,specks]=graphics(e);
  const a=start(l,'Shoot',.78);
@@ -180,14 +242,24 @@ export function smog(l,h,extra){
   const travel=Math.max(0,age-.12)*175;
   if(travel>reach||age>1.36)return false;
   const fx=x0+ux*travel,fy=y0+uy*travel;
-  for(let i=0;i<9;i++){
-   const behind=Math.max(0,travel-i*9),ageFrac=sat((travel-i*9)/70);
+  for(let i=0;i<11;i++){
+   const behind=Math.max(0,travel-i*8),ageFrac=sat((travel-i*8)/70);
    if(ageFrac===0)continue;
    const side=Math.sin(age*7+i*1.43)*(6+i*.9)+(i%3-1)*6;
    const x=x0+ux*behind+nx*side;
    const y=y0+uy*behind+ny*side*.8-2*Math.sin(i+age*5);
    smokeLobe(fog,x,y,.38+ageFrac*.36+(i%3)*.04,i,Math.min(.9,ageFrac));
    if(i%2===0)draw(specks,x+7,y-8,2,2,0xc6a8d0,.55*ageFrac);
+  }
+  // Extra bubbles are deliberately subtle: keep the Smog's already approved
+  // looking smoke, only enliven it without covering the entire battlefield.
+  for(let b=0;b<17;b++){
+   const lag=b*6+((b*13+age*45)%18);
+   if(travel<lag)continue;
+   const shift=Math.sin(age*9+b*1.3)*(9+b%5*2)+(b%3-1)*5;
+   const x=x0+ux*(travel-lag)+nx*shift;
+   const y=y0+uy*(travel-lag)+ny*shift*.65-4-Math.sin(age*6+b)*2;
+   smogBubble(specks,x,y,b%4===0?2:1,.5+.27*Math.sin(age*6+b)**2);
   }
   if(!landed&&r&&!r.ko&&travel>8){
    const point=contact(previous.x,previous.y,fx,fy,r,21);
