@@ -268,74 +268,74 @@ export function shadowball(l,h,extra){
   return true;
  },dispose);
 }
-function lips(g,x,y,size=1){
- const s=Math.max(1,Math.round(size));
- // Two pink pixel lobes with a dark central mouth line; no emoji or PNG.
- draw(g,x-9*s,y-2*s,7*s,5*s,0x230d30);
- draw(g,x+2*s,y-2*s,7*s,5*s,0x230d30);
- draw(g,x-8*s,y-4*s,16*s,6*s,0xe98abb);
- draw(g,x-6*s,y-5*s,5*s,3*s,0xffc0e4);
- draw(g,x+2*s,y-5*s,5*s,3*s,0xffb5dc);
- draw(g,x-7*s,y+1*s,14*s,4*s,0xbc518b);
- draw(g,x-5*s,y+3*s,10*s,2*s,0x84295b);
- draw(g,x-4*s,y,8*s,2*s,0x3c153c);
+function lips(g,x,y){
+ // Single compact pixel-art kiss, not a large decorative pink disk.
+ const rows=["..pp..pp..",".pLLppLLp.","pLLLLLLLLp",".pLLLLLLp.","..pLLLLp..","...pppp..."];
+ for(let j=0;j<rows.length;j++)for(let i=0;i<rows[j].length;i++){
+  const c=rows[j][i];
+  if(c==='p')draw(g,x+i-5,y+j-3,1,1,0x451b37);
+  if(c==='L')draw(g,x+i-5,y+j-3,1,1,j<3?0xf7a4cb:0xd867a4);
+ }
+ draw(g,x-2,y+1,5,1,0x632143);
 }
 function heart(g,x,y){
- // One small 9x8 pixel heart with a dark border and a separate highlight.
- const pattern=[
-  "..xx.xx..",
-  ".xppxppx.",
-  "xpppppppx",
-  "xpppppppx",
-  ".xpppppx.",
-  "..xpppx..",
-  "...xpx...",
-  "....x...."
+ const pixels=[
+  ".pp.pp.",
+  "pPPpPPp",
+  "pPPPPpp",
+  ".pPPPP.",
+  "..pPP..",
+  "...p..."
  ];
- for(let j=0;j<pattern.length;j++)
-  for(let i=0;i<pattern[j].length;i++){
-   const c=pattern[j][i];
-   if(c==='x')draw(g,x+i-4,y+j-4,1,1,0x4b193d);
-   else if(c==='p')draw(g,x+i-4,y+j-4,1,1,
-    j<3?0xffb1d2:0xe77caf);
-  }
+ for(let yy=0;yy<pixels.length;yy++)for(let xx=0;xx<pixels[yy].length;xx++){
+  const c=pixels[yy][xx];
+  if(c==='p')draw(g,x+xx-3,y+yy-3,1,1,0x5c2147);
+  else if(c==='P')draw(g,x+xx-3,y+yy-3,1,1,yy<3?0xffaed4:0xda72aa);
+ }
 }
 export function lovelykiss(l,h,extra){
  const e=l.escena,g=layer(e,1510),trail=layer(e,1509),r=l.rival;
- let age=0,statusApplied=false;
- const start={x:l.x+11,y:l.y-l.alto*.55},ang=direct(l);
- l.animar('Shoot',.62,.14);
- l.accion={hasta:l.t+.31,angulo:ang,lento:.7};
+ let age=0,applied=false,disposed=false;
+ const start={x:l.x+11,y:l.y-l.alto*.55};
+ const angle=direct(l),distance=Math.min(h.alcance||225,230);
+ const dispose=()=>{if(disposed)return;disposed=true;g.destroy();trail.destroy()};
+ l.animar('Shoot',.58,.12);l.accion={hasta:l.t+.27,angulo:angle,lento:.68};
  return running(e,dt=>{
   age+=dt;g.clear();trail.clear();
-  if(age>1.12){g.destroy();trail.destroy();return false}
-  const target=targetAt(r)||{x:start.x+Math.cos(ang)*190,y:start.y+Math.sin(ang)*110};
-  const t=ease(sat((age-.14)/.66));
-  const x=lerp(start.x,target.x,t),y=lerp(start.y,target.y,t)-8*Math.sin(t*PI);
-  // Only release the kiss AFTER the initial charge; no malformed heart at origin.
-  if(age>.14&&t>.07&&t<1)lips(g,x,y,1);
-  for(let i=0;i<4;i++){
-   const delay=.28+i*.12;
-   if(age<=delay+.035)continue;
-   const f=sat((age-delay)/.54);
-   if(f<.11||f>=.91)continue;
-   const pt=sat(t-.18-i*.095);
-   if(pt<.12)continue;
-   const hx=lerp(start.x,target.x,pt)+Math.sin(i*2.4+age*7)*4;
-   const hy=lerp(start.y,target.y,pt)-12*Math.sin(PI*pt)-5;
-   if(Math.hypot(hx-start.x,hy-start.y)<20)continue;
+  if(age>.96){dispose();return false}
+  const progress=ease(sat((age-.13)/.65));
+  const travelled=distance*progress;
+  const x=start.x+Math.cos(angle)*travelled;
+  const y=start.y+Math.sin(angle)*travelled*.75-5*Math.sin(progress*PI);
+  if(age>.15&&progress>.045&&progress<1)lips(g,x,y);
+  // Exactly three very small hearts. Each one is emitted only after the
+  // leading kiss has moved at least 35 pixels away from its caster.
+  for(let i=0;i<3;i++){
+   const emittedAt=.30+i*.115;
+   const life=age-emittedAt;
+   if(life<0||life>.32)continue;
+   const behind=distance*ease(sat((emittedAt-.13)/.65))-12;
+   if(behind<35)continue;
+   const slide=life*53;
+   const dist=behind+slide;
+   const hx=start.x+Math.cos(angle)*dist-Math.sin(angle)*(i-1)*5;
+   const hy=start.y+Math.sin(angle)*dist*.75+Math.cos(angle)*(i-1)*4-3-life*8;
    heart(trail,hx,hy);
   }
-  if(!statusApplied&&t>.97&&r&&!r.ko){
-   statusApplied=true;
-   if(Math.random()<.75){
+  if(!applied&&progress>.96&&r&&!r.ko){
+   applied=true;
+   const center=targetAt(r);
+   const touches=center&&Math.hypot(x-center.x,y-center.y)<Math.max(20,r.alto*.5);
+   if(touches&&Math.random()<.75){
     r.ponerEstado('aturdido',2.4,{fuente:l});
-    vfx.textoFlotante(e,r.x,r.y-r.alto-11,'Zzz…',{color:'#f8a1d2',dur:1100});
-    sparkle(e,r.x,r.y-r.alto*.5,0xffa4d7,.65);
-   }else vfx.textoFlotante(e,r.x,r.y-r.alto-10,'MISS',{color:'#ffbfdd',dur:600});
+    vfx.textoFlotante(e,r.x,r.y-r.alto-11,'Zzz…',{color:'#f8a1d2',dur:850});
+    sparkle(e,r.x,r.y-r.alto*.5,0xfa8fc2,.55);
+   }else if(touches){
+    vfx.textoFlotante(e,r.x,r.y-r.alto-10,'MISS',{color:'#ffbfdd',dur:570});
+   }
   }
-  return true
- },()=>{g.destroy();trail.destroy()});
+  return true;
+ },dispose);
 }
 export const TORRE2_NEW_FORMS={
  torre2_surf:surf,torre2_swift:swift,torre2_shadowball:shadowball,
