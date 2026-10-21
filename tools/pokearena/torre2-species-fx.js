@@ -230,50 +230,82 @@ function smogBubble(g,x,y,size=2,fade=1){
  draw(g,x-unit,y-unit,unit*3,unit*3,inside,fade*.45);
  draw(g,x-unit,y-unit,unit,unit,0xe4c9ec,fade*.8);
 }
+// Match Pay Day's independent contacts: each bubble has its own launch,
+// flight, hit check and pixel impact. The purple smoke itself is decorative.
+const SMOG_FAN=Object.freeze([-26,15,-11,28,-18,3,20,-32,7,-5,34,-24,12,-15,25,-1,18]);
 export function smog(l,h,extra){
  const e=l.escena,r=l.rival,[fog,specks]=graphics(e);
  const a=start(l,'Shoot',.78);
  const ux=Math.cos(a),uy=Math.sin(a)*.76,nx=-uy,ny=ux;
  const x0=l.x+ux*13,y0=l.y-(l.alto||36)*.56;
- let age=0,previous={x:x0,y:y0},landed=false;
  const reach=Math.min(h.alcance??180,205);
+ const bubbles=SMOG_FAN.map(()=>({previous:null,finished:false,hit:false}));
+ const impacts=[];
+ let age=0,poisonChecked=false;
  return register(e,dt=>{
   age+=dt;fog.clear();specks.clear();
-  const travel=Math.max(0,age-.12)*175;
-  if(travel>reach||age>1.36)return false;
-  const fx=x0+ux*travel,fy=y0+uy*travel;
-  for(let i=0;i<11;i++){
+  if(age>1.76)return false;
+  const travel=Math.min(reach,Math.max(0,age-.12)*175);
+  // Preserve the existing Smog purple wisps without allowing the
+  // decorative cloud to deal guaranteed damage.
+  if(age<1.37)for(let i=0;i<11;i++){
    const behind=Math.max(0,travel-i*8),ageFrac=sat((travel-i*8)/70);
    if(ageFrac===0)continue;
    const side=Math.sin(age*7+i*1.43)*(6+i*.9)+(i%3-1)*6;
    const x=x0+ux*behind+nx*side;
    const y=y0+uy*behind+ny*side*.8-2*Math.sin(i+age*5);
-   smokeLobe(fog,x,y,.38+ageFrac*.36+(i%3)*.04,i,Math.min(.9,ageFrac));
+   smokeLobe(fog,x,y,.38+ageFrac*.36+(i%3)*.04,i,
+    Math.min(.9,ageFrac)*sat((1.42-age)*9));
    if(i%2===0)draw(specks,x+7,y-8,2,2,0xc6a8d0,.55*ageFrac);
   }
-  // Extra bubbles are deliberately subtle: keep the Smog's already approved
-  // looking smoke, only enliven it without covering the entire battlefield.
-  for(let b=0;b<17;b++){
-   const lag=b*6+((b*13+age*45)%18);
-   if(travel<lag)continue;
-   const shift=Math.sin(age*9+b*1.3)*(9+b%5*2)+(b%3-1)*5;
-   const x=x0+ux*(travel-lag)+nx*shift;
-   const y=y0+uy*(travel-lag)+ny*shift*.65-4-Math.sin(age*6+b)*2;
-   smogBubble(specks,x,y,b%4===0?2:1,.5+.27*Math.sin(age*6+b)**2);
-  }
-  if(!landed&&r&&!r.ko&&travel>8){
-   const point=contact(previous.x,previous.y,fx,fy,r,21);
-   if(point){
-    landed=true;
-    if(hit(l,h,extra,1,12)){
-     vfx.rafaga(e,'humo',px(point.x),px(point.y),0x7b618e,6);
-     if(Math.random()<.4&&typeof r.ponerEstado==='function')
-      r.ponerEstado('veneno',3.5,{fuente:l,dps:1.5,pilas:1});
+  // Seventeen tiny individually simulated bubbles in a slightly wider fan:
+  // every bubble can connect once, miss, or expire, just like Pay Day coins.
+  for(let b=0;b<SMOG_FAN.length;b++){
+   const state=bubbles[b],local=age-(.11+b*.041);
+   if(local<=0||state.finished)continue;
+   const d=local*205;
+   if(d>=reach){state.finished=true;continue}
+   const spread=.48+.67*sat(d/reach);
+   const side=SMOG_FAN[b]*spread+Math.sin(age*8.2+b*1.4)*2.5;
+   const x=x0+ux*d+nx*side;
+   const y=y0+uy*d+ny*side*.78-4+Math.sin(age*7+b*1.1)*2.5;
+   const old=state.previous||{x:x0,y:y0};
+   state.previous={x,y};
+   if(r&&!r.ko&&d>5){
+    const point=contact(old.x,old.y,x,y,r,11);
+    if(point){
+     state.finished=true;
+     // Damage only on the physical contact of EACH separate bubble.
+     // Small per-bubble portion prevents an overpowering 17x Smog.
+     if(hit(l,h,extra,.23,5)){
+      state.hit=true;
+      impacts.push({x:point.x,y:point.y,born:age});
+      if(!poisonChecked){
+       poisonChecked=true;
+       if(Math.random()<.4&&typeof r.ponerEstado==='function')
+        r.ponerEstado('veneno',3.5,{fuente:l,dps:1.5,pilas:1});
+      }
+     }
+     continue;
     }
    }
+   smogBubble(specks,x,y,b%4===0?2:1,.60+.22*Math.sin(age*6+b)**2);
+   // Small trailing pixel emphasizes that the individual bubble is moving.
+   if(b%2===0)draw(specks,x-ux*7,y-uy*7,2,2,0xbea7d5,.45);
   }
-  previous={x:fx,y:fy};
-  return true;
+  // Several staggered micro-impacts rather than a single explosion.
+  for(const imp of impacts){
+   const progress=(age-imp.born)/.17;
+   if(progress<0||progress>1)continue;
+   const alpha=1-progress,scale=2+progress*8;
+   for(let i=0;i<4;i++){
+    const rad=PI*i/2;
+    draw(specks,imp.x+Math.cos(rad)*scale,imp.y+Math.sin(rad)*scale,
+     2,2,i%2?0xe6c9ef:0x9c76b5,alpha);
+   }
+  }
+  return age<1.68&&bubbles.some(b=>!b.finished) ||
+   impacts.some(imp=>age-imp.born<.17);
  },()=>{fog.destroy();specks.destroy()});
 }
 export const TORRE2_SPECIES_FORMS=Object.freeze({

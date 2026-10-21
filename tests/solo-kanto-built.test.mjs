@@ -116,8 +116,8 @@ assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen
 const smogMove=allMoves.find(x=>x.id==='smog');
 assert.equal(smogMove?.approved,true,'Smog approved with extra pixel bubbles');
 for(const id of ['sing','crabhammer'])
- assert.equal(allMoves.find(x=>x.id===id)?.approved,undefined,
-  'Sing and Crabhammer need user visual approval after revisions');
+ assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
+  'Sing and Crabhammer explicitly approved by user; preserve current visuals');
 const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
 assert.ok(menuCampaign.includes('marco(g,x-w/2'),'Campaign uses original Poké Arena menu border');
 assert.ok(menuCampaign.includes('textoMenu(this,x,y'),'Campaign buttons use exact initial menu font');
@@ -127,7 +127,12 @@ const pixelPincer=speciesFile.slice(speciesFile.indexOf('function crabPixels('),
  speciesFile.indexOf('export function crabhammer('));
 assert.ok(pixelPincer.includes('draw(g,')&&!pixelPincer.includes('.fillPoints('),
  'Crabhammer claw is actual hand-crafted squared pixel art, not polygons');
-assert.ok(speciesFile.includes('b<17'),'Smog must have added drifting pixel gas bubbles');
+assert.ok(speciesFile.includes('SMOG_FAN.length'),'Smog must animate independent bubbles');
+assert.ok(speciesFile.includes('SMOG_FAN=Object.freeze(['),'Smog must retain fixed staggered spread');
+assert.ok(speciesFile.includes('if(hit(l,h,extra,.23,5))'),
+ 'Each Smog bubble applies its own balanced damage on impact');
+assert.ok(!speciesFile.includes('let age=0,previous={x:x0,y:y0},landed=false'),
+ 'No single global hit gate may suppress other Smog bubbles');
 assert.ok(speciesFile.includes('offsets=[0,-9,12,-5,7,-13,15,-1,10]'),
  'Sing keeps nine separate staggered pixel music notes');
 

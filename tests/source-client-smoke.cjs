@@ -490,7 +490,7 @@ const server=http.createServer(async(req,res)=>{
     'Lovely Kiss hearts must scatter instead of forming a straight row');
   assert.equal(kissHearts.statuses,0,'Cosmetic hearts must not auto-apply sleep');
 
-  // Three unapproved, new species-characteristic moves: physics regression.
+  // Three newly approved species-characteristic moves: real collision regression.
   const newSpeciesAttacks=await tester.evaluate(async()=>{
     const main=document.querySelector('script[src*="/main.js"]');
     const moves=await import(new URL('./torre2/species-fx.js',main.src).href);
@@ -527,6 +527,12 @@ const server=http.createServer(async(req,res)=>{
    'Sing must only put rival to sleep if note hits and accuracy succeeds');
   assert.ok(newSpeciesAttacks.find(x=>x.key==='smog'&&!x.miss)?.status.includes('veneno'),
    'Smog only poisons after confirmed contact');
+  assert.ok(newSpeciesAttacks.find(x=>x.key==='smog'&&!x.miss)?.hits>1,
+   'Smog bubbles must hit individually rather than triggering one global impact');
+  assert.equal(newSpeciesAttacks.find(x=>x.key==='smog'&&x.miss)?.hits,0,
+   'No Smog bubble deals damage if all travel paths miss');
+  assert.equal(newSpeciesAttacks.find(x=>x.key==='smog'&&!x.miss)?.status.filter(s=>s==='veneno').length,1,
+   'Smog poison proc must not be rolled on every separate bubble');
 
   // Collision regression for the four NEW moves only.
   // Existing Pokémon Arena 2D effects are deliberately never touched.
