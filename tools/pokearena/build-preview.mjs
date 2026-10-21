@@ -72,6 +72,11 @@ const clientSource=(await fs.readdir(dest)).find(x=>/^src-[0-9a-f]{10}$/.test(x)
 if(!clientSource)throw Error('Original Phaser source directory missing');
 const patches=[
  ['escenas/carga.js',[
+  // The public Poké Arena CDN no longer provides balls20.png. No native
+  // UI/gameplay source uses "ui-balls" after preload, so drop ONLY the
+  // unavailable optional request in our isolated build. Preserve every
+  // existing original pixel-art icon and input binding.
+  ['this.load.spritesheet("ui-balls","assets/ui/balls20.png",{frameWidth:20,frameHeight:20});',''],
   ['preload(){texto(this,ANCHO/2,ALTO/2,"LOADING...",{tam:8,color:"#d6a63a",origen:.5});',
    'preload(){const txt=texto(this,ANCHO/2,ALTO/2,"LOADING...",{tam:8,color:"#d6a63a",origen:.5});this.load.on("progress",p=>txt.active&&txt.setText("LOADING... "+Math.round(p*100)+"%"));this.load.on("loaderror",f=>console.warn("Poké Arena resource failed",f?.src));'],
   ['const nombres=soloEstos?null:BASICAS;cargarPMD(this,usados,nombres);',
