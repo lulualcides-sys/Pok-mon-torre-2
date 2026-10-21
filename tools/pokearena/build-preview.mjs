@@ -3,6 +3,7 @@
  */
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import {createHash} from 'node:crypto';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -246,8 +247,36 @@ for(const [filename,changes] of patches){
  await fs.writeFile(filenameFull,body);
 }
 
+// Avoid stale attack VFX on mobile browsers and GitHub Pages caching.
+// Previously all revisions imported exactly the same /src-8d89349697/*.js
+// URL: a ?v= query added to /arena2d/ never invalidated those modules.
+// Fingerprint the FINAL patched JS and place that entire original Phaser
+// module tree under a fresh, content-addressed src-xxxxxxxxxx directory.
+const vfxFingerprint=createHash('sha256');
+for(const filename of [
+ 'main.js','habilidades.js','escenas/titulo.js',
+ 'torre2/next-specific-fx.js','torre2/signature-fx.js',
+ 'torre2/move-pool.js','torre2/kanto-signatures-fx.js'
+])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
+const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
+if(versionedSource===clientSource)throw Error('VFX fingerprint collides with upstream dir');
+const finalHTML=await fs.readFile(index,'utf8');
+const oldModule='src="'+clientSource+'/main.js"';
+if(!finalHTML.includes(oldModule))
+ throw Error('Main Phaser module URL not found for cache-busted revision');
+const stampedHTML=finalHTML.replace(oldModule,
+ 'src="'+versionedSource+'/main.js"')
+ .replace('</head>',
+ '<meta name="pokemon-torre-build" content="'+versionedSource+'">\n</head>');
+await fs.writeFile(index,stampedHTML);
+await fs.rename(path.join(dest,clientSource),path.join(dest,versionedSource));
+console.log('Versioned Phaser modules for mobile cache:',versionedSource);
+
 const raw=JSON.parse(await fs.readFile('site-capture/CAPTURE-REPORT.json','utf8'));
-await fs.writeFile(path.join(dest,'version.json'),JSON.stringify({src:raw.sourceVersions?.selected||null,localMirror:true}));
+await fs.writeFile(path.join(dest,'version.json'),JSON.stringify({
+ src:raw.sourceVersions?.selected||null,modules:versionedSource,
+ pixelFXVersion:versionedSource,localMirror:true
+}));
 await fs.writeFile(path.join(dest,'capture-provenance.json'),JSON.stringify({
  source:raw.source,files:raw.totalFiles,version:raw.sourceVersions?.selected,
  originalCatalog:raw.sourceCatalog,capturedAt:raw.completed,personalUse:true,
