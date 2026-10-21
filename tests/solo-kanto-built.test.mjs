@@ -113,6 +113,24 @@ for(const id of ['swift','lovely-kiss'])
  assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
   'The user has explicitly approved '+id);
 assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
+const smogMove=allMoves.find(x=>x.id==='smog');
+assert.equal(smogMove?.approved,true,'Smog approved with extra pixel bubbles');
+for(const id of ['sing','crabhammer'])
+ assert.equal(allMoves.find(x=>x.id===id)?.approved,undefined,
+  'Sing and Crabhammer need user visual approval after revisions');
+const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
+assert.ok(menuCampaign.includes('marco(g,x-w/2'),'Campaign uses original Poké Arena menu border');
+assert.ok(menuCampaign.includes('textoMenu(this,x,y'),'Campaign buttons use exact initial menu font');
+assert.ok(!menuCampaign.includes('0xdf803c'),'Remove orange generic battle button');
+const speciesFile=fs.readFileSync(path.join(stage,version,'torre2/species-fx.js'),'utf8');
+const pixelPincer=speciesFile.slice(speciesFile.indexOf('function crabPixels('),
+ speciesFile.indexOf('export function crabhammer('));
+assert.ok(pixelPincer.includes('draw(g,')&&!pixelPincer.includes('.fillPoints('),
+ 'Crabhammer claw is actual hand-crafted squared pixel art, not polygons');
+assert.ok(speciesFile.includes('b<17'),'Smog must have added drifting pixel gas bubbles');
+assert.ok(speciesFile.includes('offsets=[0,-9,12,-5,7,-13,15,-1,10]'),
+ 'Sing keeps nine separate staggered pixel music notes');
+
 const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf8');
 assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
 assert.ok(abilityBody.includes('h.paleta==="hieloTorre2"'),'Ice particles apply only to Ice Beam');

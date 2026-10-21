@@ -19,7 +19,7 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'confuse-ray',approved:true,nombre:'Confuse Ray',forma:'torre2_confuseray',tipo:'GHOST',dano:0,alcance:230,coste:24,cd:9.1,anim:'Charge',lanzar:.16,description:'First original three swirling spectral lights, yellow palette, 85% status on hit'},
  {id:'sing',nombre:'Sing',forma:'torre2_sing',tipo:'NORMAL',dano:0,alcance:220,coste:24,cd:8,anim:'Charge',lanzar:.14,description:'Jigglypuff song: staggered pixel notes, 55% sleep only after contact'},
  {id:'crabhammer',nombre:'Crabhammer',forma:'torre2_crabhammer',tipo:'WATER',dano:15,alcance:80,coste:26,cd:6.5,anim:'Swing',lanzar:.12,description:'Kingler pixel-claw hammer, contact only, blue impact splash'},
- {id:'smog',nombre:'Smog',forma:'torre2_smog',tipo:'POISON',dano:7,alcance:190,coste:23,cd:6.7,anim:'Shoot',lanzar:.13,description:'Koffing toxic smoke; 40% poison after contact'},
+ {id:'smog',approved:true,nombre:'Smog',forma:'torre2_smog',tipo:'POISON',dano:7,alcance:190,coste:23,cd:6.7,anim:'Shoot',lanzar:.13,description:'Koffing toxic smoke; 40% poison after contact'},
  {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
