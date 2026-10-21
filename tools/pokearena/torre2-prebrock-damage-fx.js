@@ -188,6 +188,7 @@ export function rocktomb(l,h,extra){
  const first={x:o.x+o.c*12,y:o.y+o.s*12};
  const body={owner:l,type:'ROCK',x:first.x,y:first.y,radius:11,live:true};
  let age=0,previous=first,impact=null,success=false;
+ const accurate=Math.random()<((h.precisao??95)/100);
  const fx=emit(l,[g,dust],(dt,self)=>{
   age+=dt;g.clear();dust.clear();
   if(l.ko||l.est?.aturdido||age>1.25){body.live=false;return false;}
@@ -200,7 +201,7 @@ export function rocktomb(l,h,extra){
    const on=lineHit(previous,tip,r,12);previous=tip;
    if(on){
     body.live=false;
-    success=hit(l,r,h,extra,13);
+    success=accurate&&hit(l,r,h,extra,13);
     impact={...on,t:age};
     if(success&&typeof r.ponerEstado==='function')r.ponerEstado('lento',2.7,{f:.21,fonte:l});
    }else{
