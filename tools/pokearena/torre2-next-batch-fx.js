@@ -48,23 +48,49 @@ export function surf(l,h,extra){
   const height=.6+.4*Math.sin(Math.min(1,phase)*PI);
   const alpha=sat(t*12)*sat((1.03-t)*8);
   for(const g of [water,foam,wake])g.clear().setPosition(rnd(cx),rnd(cy)).setRotation(ang).setAlpha(alpha);
-  // Thirteen OPEN streaming water ribbons: moving blue water and gaps, not one
-  // geometric plate/arrowhead. The white curled crest leads each band.
-  for(let k=-6;k<=6;k++){
-   const row=k*7.3*height;
-   const edge=49-8*Math.abs(k)/6+5*Math.cos(k*.48+t*10);
-   const back=-53+6*Math.sin(k*.82+t*12);
-   const flow=2*Math.sin(t*22+k*.81);
-   const thick=k%3===0?6:5;
-   draw(water,back+flow-3,row-1,edge-back+8,thick+2,0x102a48,.75);
-   draw(water,back+flow,row,edge-back,thick,
-    k%3===0?0x17648c:k%2===0?0x238eb5:0x2c9fc4,.8);
-   draw(water,back+13+flow,row+1,Math.max(8,edge-back-21),2,0x6bcbdd,.52);
-   // Broken edges and pixels convey water, not an artificial solid triangle.
-   draw(foam,edge-9,row-2,8+(k%3),3,0x8fe7f4,.83);
-   draw(foam,edge-2,row-4-(k%3),5,5,0xe9fdff,.92);
-   if(k%2===0)draw(foam,edge+5,row-6-Math.sin(t*14+k)*3,3,3,0xffffff,.8);
-   if(k%3===0)draw(wake,back-15-(t*41)%21,row+2,9,2,0x5bc3df,.46);
+  // An OPEN rolling breaker instead of straight bars or a solid kite.
+  // Staggered water tongues carve visible gaps behind a curved, foaming crest.
+  for(let k=-5;k<=5;k++){
+   const row=k*8.7*height;
+   const swell=3*Math.sin(k*.94+t*11);
+   const front=52-4.2*Math.abs(k)+swell;
+   const back=-54-(k%3)*7+5*Math.sin(k*.83+t*18);
+   const thick=5+((k+7)%3)*1.4;
+   const bend=3*Math.sin(k*.76+t*15);
+   water.fillStyle(0x112a48,.86);
+   water.fillPoints([
+    {x:rnd(back-3),y:rnd(row-thick/2-2)},
+    {x:rnd(back+20),y:rnd(row-thick/2-4+bend)},
+    {x:rnd(front-22),y:rnd(row-thick/2-3-bend)},
+    {x:rnd(front+1),y:rnd(row-3)},
+    {x:rnd(front+1),y:rnd(row+3)},
+    {x:rnd(front-23),y:rnd(row+thick/2+2+bend)},
+    {x:rnd(back+13),y:rnd(row+thick/2-1)},
+    {x:rnd(back-3),y:rnd(row+thick/2+1)}
+   ],true);
+   water.lineStyle(thick,k%3===0?0x2a8fae:k%2===0?0x269dbc:0x206f94,.86);
+   water.beginPath();water.moveTo(rnd(back),rnd(row));
+   water.lineTo(rnd(back+22),rnd(row+bend));
+   water.lineTo(rnd(front-11),rnd(row-bend));
+   water.strokePath();
+   draw(wake,back+11+(t*43)%13,row+thick/2,12,2,0x4bc3dc,.55);
+   draw(foam,front-10,row-5-bend,9,3,0x91e8f0,.88);
+   draw(foam,front-2,row-5-bend,5,3,0xe9fdff,.94);
+   if(k%2===0)draw(foam,front+5,row-12+Math.sin(t*12+k)*4,3,3,0xf6ffff,.8);
+  }
+  const crestPts=[
+   [-21,-48],[2,-47],[25,-39],[42,-27],[52,-14],[58,0],
+   [52,14],[42,27],[25,39],[2,47],[-21,48]
+  ].map(([x,y],i)=>({x:rnd(x+Math.sin(t*13+i*.8)*2),
+     y:rnd(y*height)}));
+  water.lineStyle(11,0x0b2e50,.88);water.strokePoints(crestPts,false);
+  foam.lineStyle(6,0x2da8cf,.94);foam.strokePoints(crestPts,false);
+  foam.lineStyle(3,0xd6fbff,.95);foam.strokePoints(crestPts,false);
+  // White pixel crests break away at intervals instead of one uniform stripe.
+  for(let i=0;i<crestPts.length;i+=2){
+   const p=crestPts[i];
+   draw(foam,p.x+3,p.y-4,5,3,0xffffff,.85);
+   draw(foam,p.x+7+Math.sin(t*18+i)*4,p.y-8,3,2,0xc2f5fc,.68);
   }
   // Curved rolling crest above the ribbon field: multiple white curls and
   // turquoise droplets, never one giant flat translucent polygon.
