@@ -47,3 +47,9 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - Reaproveitar sprites, escala, quadros e padrões de impacto não significa copiar poder, dano, categoria, precisão, estados ou alcance.
 - Auditoria automática em `tools/pokearena/audit-moves.mjs` + teste de biblioteca no `tests/solo-kanto-built.test.mjs`, bloqueio na publicação Pages se detectar sobreposição.
 - Mesma textura de projétil para **golpes distintos** pode ser uma família visual, mas precisa ter silhueta e comportamento legíveis; não criar recolorações genéricas sem fidelidade.
+
+## Refinamento dos golpes após aprovação de Super Fang (21/10/2026)
+- **Super Fang — ✅ APROVADO, CONGELADO:** animação e mecânicas preservadas exatamente; teste de assinatura bloqueia mudanças não autorizadas.
+- **Mud-Slap — 🔧 revisão visual pendente:** mantida bolota de lama; splash original ampliado 12,5%; três respingos menores nas laterais, rastro curto com 3 partículas; dano, precisão, tipo, velocidade, alcance e redução de precisão inalterados.
+- **Seed Bomb — 🔧 revisão visual pendente:** semente permanece intacta durante o voo; rachadura aparece no impacto, miolo verde claro rapidamente visível; seis fragmentos originais + três microfragmentos de casca; sem danos extras; mecânica e estatísticas inalteradas.
+- Nenhuma mudança no menu, sprites do cliente Pokémon Arena 2D ou outros golpes aprovados.
