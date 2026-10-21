@@ -97,6 +97,15 @@ export function mudslap(l,h,extra){
    if(on){
     const result=strike(l,r,h,extra,h.dano??8,13);
     didHit=result.landed;
+    // Real-time adaptation of Mud-Slap's accuracy-stage reduction.
+    // On a true hit, the victim's aim becomes briefly less precise.
+    // Applied only in Kanto, via a narrow gameplay patch to luchador.js.
+    if(didHit&&r.est){
+     const now=Number.isFinite(r.t)?r.t:(Number.isFinite(e.t)?e.t:0);
+     const old=r.est.torre2MudAccuracy;
+     r.est.torre2MudAccuracy={until:now+3.7,
+      stacks:Math.min(3,(old?.until>now?old.stacks:0)+1)};
+    }
     impact={x:on.x,y:on.y,at:age};
    }else{
     // Two original-inspired shades of uneven mud, 10-frame tumbling.
