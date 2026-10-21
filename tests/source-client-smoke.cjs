@@ -512,7 +512,8 @@ const server=http.createServer(async(req,res)=>{
        g.destroy=function(...a){cleared++;return original.apply(this,a)};
        return g;
       };
-      const enemy={x:174+spec.distance,y:mode==='miss'?370:215,
+      const enemy={x:mode==='miss'&&spec.name==='petaldance'?174+600:174+spec.distance,
+       y:mode==='miss'?370:215,
        hp:250,level:42,alto:38,ko:false,hits:0,status:[],
        recibir(_a,d){this.hits++;this.hp-=d.dano||0;return 'golpe'},
        ponerEstado(s){this.status.push(s)}};
@@ -540,7 +541,7 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(kantoSignaturePhysics.find(x=>x.name===name&&x.mode==='hit')?.hits>=1,
     name+' must hit with physical contact');
    assert.equal(kantoSignaturePhysics.find(x=>x.name===name&&x.mode==='miss')?.hits,0,
-    name+' cannot hit a foe outside its trail');
+    name+' cannot hit a foe outside reach or actual collision');
   }
   assert.equal(kantoSignaturePhysics.find(x=>x.name==='hyperfang'&&x.mode==='hit')?.hits,1,
    'Hyper Fang is ONE bite, not multiple automatic damage ticks');
