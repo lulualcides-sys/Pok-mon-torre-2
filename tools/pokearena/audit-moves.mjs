@@ -8,6 +8,9 @@ const version=fs.readdirSync(root).find(x=>/^src-[a-f0-9]{10}$/.test(x));
 if(!version)throw Error('run capture-client + build-preview first');
 const base=pathToFileURL(path.join(root,version,'datos.js'));
 const {ROSTER,TODOS}=await import(base);
+const {EARLY_KANTO_BASE}=await import(
+ pathToFileURL(path.join(root,version,'torre2/early-kanto-species.js')));
+const addedFamilies=new Set(EARLY_KANTO_BASE);
 const pool=await import(pathToFileURL(path.join(root,version,'torre2/move-pool.js')));
 const plan=JSON.parse(fs.readFileSync('data/kanto-new-phaser-moves.json','utf8'));
 const slug=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
@@ -26,6 +29,11 @@ function record(kit,pk,stage,scope){
  }
 }
 for(const d of TODOS){
+ // Audit ONLY true upstream Poké Arena definitions. Added Torre 2 Pokémon
+ // may reuse a pre-approved custom renderer (e.g. Gust), but that does NOT
+ // suddenly make that renderer a native-original move or a duplicate.
+ // All actual native source files and the strict collision check stay frozen.
+ if(addedFamilies.has(d.id))continue;
  const scope=d.desactivado?'disabled':'active';
  let kit=d.kit||{};record(kit,d.id,d.nombre,scope);
  for(const ev of d.evoluciones||[]){
