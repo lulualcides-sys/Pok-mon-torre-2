@@ -239,60 +239,70 @@ function mouthFlash(g,contact,age,rotation){
  const t=clamp(age/.16);
  if(t<1)sprite(g,BITE_SHOCK,contact.x,contact.y,BITE,1.1,1-t,rotation);
 }
-// Bite = one clear, modest-sized chomp, at the manually aimed contact location.
-// Attack does NOT home toward the enemy or cause automatic damage on a miss.
+
+// Shared manual-aim contact movement. The Pokémon itself lunges and retreats;
+// approved Bite/Crunch matrices are not changed or turned into projectiles.
+export function contactDash(l,o,reach,advanceAt,retreatAt,finishAt){
+ let moved=0;const distance=Math.min(74,Math.max(0,reach));
+ const ease=x=>Math.sin(clamp(x)*PI/2);
+ return {step(t){
+  const goal=t<advanceAt?distance*ease(t/advanceAt):t<retreatAt?distance:
+   distance*(1-ease((t-retreatAt)/(finishAt-retreatAt)));
+  const x=l.x,y=l.y,d=goal-moved;
+  l.x+=o.c*d;l.y+=o.s*d;l.limitar?.();
+  moved+=(l.x-x)*o.c+(l.y-y)*o.s;
+ },release(){
+  if(moved>.01){l.x-=o.c*moved;l.y-=o.s*moved;l.limitar?.();moved=0;}
+ }};
+}
+function physicalHit(l,o,r,radius=14){
+ const x=l.x,y=l.y-(l.alto||36)*.5;
+ return intersect({x:x-o.c*9,y:y-o.s*9},{x:x+o.c*17,y:y+o.s*17},r,radius);
+}
 export function bite(l,h,extra){
  const e=l.escena,r=l.rival,jaw=e.add.graphics().setDepth(1514),flash=e.add.graphics().setDepth(1515);
- const o=start(l,'Swing',.52),reach=Math.min(76,h.alcance??76);
- let age=0,resolved=false,contact=null,contactAge=0;
+ const o=start(l,'Swing',.85),reach=Math.min(76,h.alcance??76);
+ l.accion.hasta=l.t+.83;l.accion.lento=0;
+ const dash=contactDash(l,o,reach-10,.23,.43,.75);
+ let age=0,resolved=false,hit=null,hitAt=0;
  return effect(e,dt=>{
   age+=dt;jaw.clear();flash.clear();
-  if(l.ko||l.est?.aturdido||age>.54)return false;
-  const phase=clamp(age/.46),frame=Math.min(7,Math.floor(phase*8));
-  const travel=reach*clamp(age/.245);
-  const cx=o.x+o.c*(7+travel),cy=o.y+o.s*(7+travel);
-  const opacity=clamp((.54-age)/.1);
-  paintChomp(jaw,cx,cy,0,frame,opacity,1.08);
-  if(!resolved&&frame>=4){
+  if(l.ko||l.est?.aturdido||age>.83){dash.release();return false;}
+  dash.step(age);
+  const frame=Math.min(7,Math.floor(clamp((age-.09)/.41)*8));
+  const cx=l.x+o.c*13,cy=l.y-(l.alto||36)*.5+o.s*13;
+  if(age<.66)paintChomp(jaw,cx,cy,0,frame,clamp((.66-age)/.12),1.08);
+  if(!resolved&&age>=.28){
    resolved=true;
-   const on=intersect(o,{x:cx,y:cy},r,14);
-   if(on){
-    const flinch=Math.random()<.30;
-    if(strike(l,r,h,extra,{push:17,status:flinch?{aturde:.32}:{}})){
-     contact=on;contactAge=age;
-    }
+   const on=physicalHit(l,o,r);
+   if(on&&strike(l,r,h,extra,{push:17,status:Math.random()<.30?{aturde:.32}:{}})){
+    hit=on;hitAt=age;
    }
   }
-  if(contact)mouthFlash(flash,contact,age-contactAge,0);
+  if(hit)mouthFlash(flash,hit,age-hitAt,0);
   return true;
  },[jaw,flash]);
 }
-// Crunch = TWO separate actual chomp animations: first straight/horizontal,
-// then 90 degrees rotated/vertical, with one single physical damage instance.
-// Either timed contact may hit, but never two full-power hits in one attack.
 export function crunch(l,h,extra){
  const e=l.escena,r=l.rival,jaw=e.add.graphics().setDepth(1514),flash=e.add.graphics().setDepth(1515);
- const o=start(l,'Swing',.82),reach=Math.min(80,h.alcance??80);
+ const o=start(l,'Swing',1.12),reach=Math.min(80,h.alcance??80);
+ l.accion.hasta=l.t+1.09;l.accion.lento=0;
+ const dash=contactDash(l,o,reach-11,.23,.77,1.03);
  const rotations=[0,PI/2],resolved=[false,false],bursts=[null,null];
  let age=0,landed=false;
  return effect(e,dt=>{
   age+=dt;jaw.clear();flash.clear();
-  if(l.ko||l.est?.aturdido||age>.82)return false;
-  const turn=age<.38?0:1,elapsed=age-turn*.38;
-  const phase=clamp(elapsed/.34),frame=Math.min(7,Math.floor(phase*8));
-  const distance=reach*clamp(elapsed/.175);
-  const cx=o.x+o.c*(7+distance),cy=o.y+o.s*(7+distance);
-  const opacity=clamp((.36-elapsed)/.075);
-  paintChomp(jaw,cx,cy,rotations[turn],frame,opacity,1.16);
-  if(!resolved[turn]&&frame>=4){
-   resolved[turn]=true;
-   const on=intersect(o,{x:cx,y:cy},r,16);
+  if(l.ko||l.est?.aturdido||age>1.09){dash.release();return false;}
+  dash.step(age);
+  const turn=age<.43?0:1,elapsed=age-turn*.43;
+  const frame=Math.min(7,Math.floor(clamp((elapsed-.09)/.34)*8));
+  const cx=l.x+o.c*13,cy=l.y-(l.alto||36)*.5+o.s*13;
+  if(age<.86)paintChomp(jaw,cx,cy,rotations[turn],frame,clamp((.88-age)/.12),1.16);
+  if(!resolved[turn]&&elapsed>=.29){
+   resolved[turn]=true;const on=physicalHit(l,o,r,15);
    if(on){
-    // Crunch is visually two bites, NOT two independent high-power attacks.
     const struck=landed||strike(l,r,h,extra,{push:21});
-    if(struck){
-     landed=true;bursts[turn]={contact:on,time:age};
-    }
+    if(struck){landed=true;bursts[turn]={contact:on,time:age};}
    }
   }
   for(let i=0;i<2;i++)if(bursts[i])
@@ -300,6 +310,118 @@ export function crunch(l,h,extra){
   return true;
  },[jaw,flash]);
 }
+const PECK_PAL={K:0x222431,D:0x825833,M:0xca8b3e,L:0xf0c061,W:0xffedaf};
+const SMALL_BEAK=[
+ '...........KK',
+ '.........KKLK',
+ '.......KKLWWK',
+ '....KKLLWWMK.',
+ '..KKDMLWWMK..',
+ '.KDMMMLWMK...',
+ 'KDDMMMKK.....',
+ '.KKKKK.......'
+],BEAK_FLASH=['....K....','..KLLK...','KLLWWLLK.','..KLLK...','....K....'];
+export function peck(l,h,extra){
+ const e=l.escena,r=l.rival,beak=e.add.graphics().setDepth(1514),flash=e.add.graphics().setDepth(1515);
+ const o=start(l,'Swing',.68),reach=Math.min(76,h.alcance??76);
+ l.accion.hasta=l.t+.65;l.accion.lento=0;
+ const dash=contactDash(l,o,reach-9,.18,.33,.57);
+ let age=0,checked=false,hit=null,at=0;
+ return effect(e,dt=>{
+  age+=dt;beak.clear();flash.clear();
+  if(l.ko||l.est?.aturdido||age>.66){dash.release();return false;}
+  dash.step(age);
+  const x=l.x+o.c*14,y=l.y-(l.alto||36)*.5+o.s*14;
+  if(age<.48)sprite(beak,SMALL_BEAK,x,y,PECK_PAL,age<.18?.86:1.03,clamp((.50-age)/.10),o.a);
+  if(!checked&&age>=.22){
+   checked=true;const on=physicalHit(l,o,r,13);
+   if(on&&strike(l,r,h,extra,{push:8})){hit=on;at=age;}
+  }
+  if(hit&&age-at<.15)sprite(flash,BEAK_FLASH,hit.x,hit.y,PECK_PAL,1.1,1-(age-at)/.15,o.a);
+  return true;
+ },[beak,flash]);
+}
+// Read-only Poison Sting shape in green: single barb flight, then life return.
+// This is a Kanto-only visual override for an existing original move.
+const DRAIN_PAL={K:0x133625,D:0x326e3e,M:0x5cad5c,L:0xa8e788,W:0xedffce};
+const DRAIN_MOTE=['..K..','.KML.','KMLWK','.KLK.','..K..'];
+export function leechlife(l,h,extra){
+ const e=l.escena,r=l.rival,tipFx=e.add.graphics().setDepth(1513),essence=e.add.graphics().setDepth(1514);
+ const o=start(l,'Shoot',.45),max=Math.min(h.alcance??210,235);
+ const first={x:o.x+o.c*13,y:o.y+o.s*13};
+ let age=0,prev=first,impact=null,drained=0,restored=false;
+ return effect(e,dt=>{
+  age+=dt;tipFx.clear();essence.clear();
+  if(l.ko||l.est?.aturdido||age>1.5)return false;
+  if(!impact){
+   const dist=age*420;if(dist>max)return false;
+   const tip={x:first.x+o.c*dist,y:first.y+o.s*dist};
+   const on=intersect(prev,tip,r,9);prev=tip;
+   if(on){
+    const before=r.hp,done=strike(l,r,h,extra,{push:6});
+    drained=done&&Number.isFinite(before)&&Number.isFinite(r.hp)?
+     Math.max(0,before-r.hp):0;
+    if(!drained)return false;
+    impact={x:on.x,y:on.y,t:age};
+   }else{
+    sprite(tipFx,NEEDLE,tip.x,tip.y,DRAIN_PAL,1.13,1,o.a);
+    for(let k=1;k<=2;k++){
+     const behind=dist-k*13;if(behind<0)continue;
+     sprite(essence,BARB,first.x+o.c*behind,first.y+o.s*behind,
+      DRAIN_PAL,.55,.65-k*.16,o.a);
+    }
+   }
+  }
+  if(impact){
+   const t=clamp((age-impact.t)/.53);
+   const x=l.x,y=l.y-(l.alto||36)*.5;
+   if(t<.22)sprite(tipFx,STING_IMPACT,impact.x,impact.y,DRAIN_PAL,1.2,1-t*3,o.a);
+   for(let i=0;i<5;i++){
+    const u=clamp(t-i*.075);
+    sprite(essence,DRAIN_MOTE,impact.x+(x-impact.x)*u,
+     impact.y+(y-impact.y)*u+Math.sin(u*PI*2+i)*2,DRAIN_PAL,.79,1-i*.15);
+   }
+   if(t>=1&&!restored){
+    restored=true;
+    if(!l.ko&&Number.isFinite(l.hp)&&Number.isFinite(l.hpMax))
+     l.hp=Math.min(l.hpMax,l.hp+Math.floor(drained*.5));
+   }
+   return age<impact.t+.66;
+  }
+  return true;
+ },[tipFx,essence]);
+}
+const BUG_PAL={K:0x14271b,D:0x365e41,M:0x6ba052,L:0xb7df7e,W:0xf0ffbb};
+const BUG_TOP=['..KKKKKKKK.....','.KDDMMMMDKK....','KDDMLLLLWWMK...',
+ 'KDMLWWWWWWMK...','.KKWKWKWKDK....','...K.K.K.K.....'];
+const BUG_BOTTOM=BUG_TOP.slice().reverse();
+const BUG_FLASH=['..K...K..','.KLMKMLK.','KLMWWWMLK','.KLMKMLK.','..K...K..'];
+export function bugbite(l,h,extra){
+ const e=l.escena,r=l.rival,jaw=e.add.graphics().setDepth(1514),flash=e.add.graphics().setDepth(1515);
+ const o=start(l,'Swing',.76),reach=Math.min(74,h.alcance??74);
+ l.accion.hasta=l.t+.74;l.accion.lento=0;
+ const dash=contactDash(l,o,reach-9,.23,.41,.67),poses=[10,8,6,4,1,2,5,9];
+ let age=0,checked=false,hit=null,at=0;
+ return effect(e,dt=>{
+  age+=dt;jaw.clear();flash.clear();
+  if(l.ko||l.est?.aturdido||age>.75){dash.release();return false;}
+  dash.step(age);
+  const frame=Math.min(7,Math.floor(clamp((age-.075)/.42)*8));
+  const gap=poses[frame],nx=-o.s,ny=o.c;
+  const x=l.x+o.c*12,y=l.y-(l.alto||36)*.5+o.s*12;
+  if(age<.57){
+   sprite(jaw,BUG_TOP,x-nx*gap,y-ny*gap,BUG_PAL,.87,clamp((.59-age)/.1),o.a);
+   sprite(jaw,BUG_BOTTOM,x+nx*gap,y+ny*gap,BUG_PAL,.87,clamp((.59-age)/.1),o.a);
+  }
+  if(!checked&&age>=.28){
+   checked=true;const on=physicalHit(l,o,r,13);
+   if(on&&strike(l,r,h,extra,{push:11})){hit=on;at=age;}
+  }
+  if(hit&&age-at<.18)sprite(flash,BUG_FLASH,hit.x,hit.y,BUG_PAL,1,1-(age-at)/.18,o.a);
+  return true;
+ },[jaw,flash]);
+}
 export const TORRE2_EARLY_ROUTE_FORMS=Object.freeze({
- torre2_gust:gust,torre2_poisonsting:poisonsting,torre2_bite:bite,torre2_crunch:crunch
+ torre2_gust:gust,torre2_poisonsting:poisonsting,torre2_bite:bite,torre2_crunch:crunch,
+  torre2_peck:peck,torre2_leechlife:leechlife,torre2_bugbite:bugbite
 });
