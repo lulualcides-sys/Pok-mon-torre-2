@@ -141,13 +141,24 @@ assert.ok(newVfx.includes("from './move-pool.js'"),
 assert.ok(newVfx.includes('dealt*.5'),'Absorb heals half of actual dealt damage');
 assert.ok(!newVfx.includes('CanvasRenderingContext2D'),'New custom moves use Phaser Graphics only');
 for(const sprite of ['const HAND_PALM=[','const FINGER_FRAMES=[','const ABSORB_HEAD=[',
- 'const ABSORB_MOTE=[','const SCISSOR_BLADE=[']){
+ 'const ABSORB_MOTE=[','const SCISSOR_CUT=[']){
  assert.ok(newVfx.includes(sprite),'Hand-authored sprite matrix required '+sprite);
 }
 assert.ok(newVfx.includes('const WAG=[0,1,2,3,3,2,1,0,0,1,2,3]'),
  'Metronome requires 12 named animation poses instead of a CSS-like moving slab');
-assert.ok(newVfx.includes('stencil(blades,SCISSOR_BLADE'),
- 'X-Scissor uses two jagged pixel sprites, not vector strokes');
+
+assert.ok(newVfx.includes('stencil(palm,HAND_PALM,cx,cy+5,HAND_PAL,1.5)'),
+ 'Metronome palm must be half of old scale 3');
+assert.ok(newVfx.includes('stencil(palm,FINGER_FRAMES[WAG[frame]],cx,cy-10,HAND_PAL,1.5)'),
+ 'Metronome finger must also be half size');
+assert.ok(newVfx.includes('PAL,1.5,1,a*.4)'),
+ 'Absorb head must be half the former scale 3');
+assert.ok(newVfx.includes('SCISSOR_CROSS=SCISSOR_CUT.map'),
+ 'X-Scissor uses two opposing pixel-matrix scythe streaks');
+assert.ok(newVfx.includes('if(!resolved&&frame>=6)'),
+ 'X-Scissor only resolves one hit when the two blades visually meet');
+assert.ok(newVfx.includes('stencil(blades,SCISSOR_CUT'),
+ 'X-Scissor renders two distinct crossing scythe-slash pixel sprites, not vector strokes');
 for(const forbidden of ['.fillCircle(','.fillEllipse(','.strokePath(','.lineTo(','.arc(']){
  assert.ok(!newVfx.includes(forbidden),
   'New effects must use only authored pixel stencils, not Canvas-like vectors: '+forbidden);
