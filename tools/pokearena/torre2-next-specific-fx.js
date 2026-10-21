@@ -165,8 +165,8 @@ export function metronome(l,h,extra,registry){
    const frame=Math.min(11,Math.floor(age*23));
    // Two overlapping hand-drawn sprites are an actual wagging glove,
    // not a slab of rectangles or a cursor outline.
-   stencil(palm,HAND_PALM,cx,cy+8,HAND_PAL,2);
-   stencil(palm,FINGER_FRAMES[WAG[frame]],cx,cy-16,HAND_PAL,2);
+   stencil(palm,HAND_PALM,cx,cy+10,HAND_PAL,3);
+   stencil(palm,FINGER_FRAMES[WAG[frame]],cx,cy-20,HAND_PAL,3);
    for(let i=0;i<4;i++){
     const th=(i*PI/2)+age*2.4;
     const sx=cx+Math.cos(th)*(25+i%2*5),sy=cy-16+Math.sin(th)*17;
@@ -217,13 +217,13 @@ export function absorb(l,h,extra){
     // flipping + three staggered hand-drawn motes.
     const flip=Math.floor(age*18)%2;
     stencil(leaf,ABSORB_HEAD,tip.x,tip.y+Math.sin(age*12)*2,
-     PAL,flip?2:1.8,1,a*.4);
+     PAL,3,1,a*.4);
     for(let j=1;j<=3;j++){
      const back=dist-j*15;
      if(back<1)continue;
      const x=from.x+ux*back-uy*Math.sin(age*14+j)*5;
      const y=from.y+uy*back+ux*Math.sin(age*14+j)*5;
-     stencil(essence,j%2?ABSORB_MOTE:ABSORB_TAIL,x,y,PAL,1,.8-j*.18);
+     stencil(essence,j%2?ABSORB_MOTE:ABSORB_TAIL,x,y,PAL,2,.8-j*.18);
     }
    }
   }
@@ -237,7 +237,7 @@ export function absorb(l,h,extra){
     const x=hit.x+(home.x-hit.x)*t;
     const y=hit.y+(home.y-hit.y)*t+Math.sin(t*PI*2+k*.7)*5;
     stencil(essence,k%2?ABSORB_TAIL:ABSORB_MOTE,x,y,PAL,
-     k===0?2:1,1-k*.13);
+     2,1-k*.13);
    }
    if(progress<.23){
     stencil(leaf,GREEN_STAR,hit.x,hit.y,PAL,2,1-progress*2.8);
