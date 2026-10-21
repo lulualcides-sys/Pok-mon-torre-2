@@ -22,7 +22,10 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'smog',approved:true,nombre:'Smog',forma:'torre2_smog',tipo:'POISON',dano:7,alcance:190,coste:23,cd:6.7,anim:'Shoot',lanzar:.13,description:'17 staggered drifting toxic bubbles with independent collision and small impact damage; 40% poison on first confirmed bubble'},
  {id:'hyper-fang',approved:true,nombre:'Hyper Fang',forma:'torre2_hyperfang',tipo:'NORMAL',dano:20,alcance:87,coste:24,cd:6.3,anim:'Swing',lanzar:.11,description:'Raticate pixel fangs: single real bite, 90% accuracy and 10% flinch'},
  {id:'guillotine',approved:true,nombre:'Guillotine',forma:'torre2_guillotine',tipo:'NORMAL',dano:19,alcance:85,coste:45,cd:15,anim:'Swing',lanzar:.18,description:'Pinsir steel pincers, 30% physical-contact OHKO chance, level-gated'},
- {id:'petal-dance',nombre:'Petal Dance',forma:'torre2_petaldance',tipo:'GRASS',dano:13,alcance:220,coste:33,cd:10,anim:'Charge',lanzar:.19,description:'Vileplume pixel rose petal spiral, up to three actual contacts and self-confusion'},
+ {id:'petal-dance',approved:true,nombre:'Petal Dance',forma:'torre2_petaldance',tipo:'GRASS',dano:13,alcance:220,coste:33,cd:10,anim:'Charge',lanzar:.19,description:'Vileplume pixel rose petal spiral, up to three actual contacts and self-confusion'},
+ {id:'metronome',nombre:'Metronome',forma:'torre2_metronome',tipo:'NORMAL',dano:0,alcance:0,coste:24,cd:12,anim:'Charge',lanzar:.15,description:'Finger-wag pixel art; calls one genuinely random installed move, never itself'},
+ {id:'absorb',nombre:'Absorb',forma:'torre2_absorb',tipo:'GRASS',dano:7,alcance:225,coste:15,cd:5.3,anim:'Shoot',lanzar:.14,description:'Aimed green sprout strikes once and returns half inflicted damage as health'},
+ {id:'x-scissor',nombre:'X-Scissor',forma:'torre2_xscissor',tipo:'BUG',dano:19,alcance:78,coste:20,cd:5,anim:'Swing',lanzar:.12,description:'Two crossing pixel blades, one physical aimed melee strike'},
  {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
@@ -72,6 +75,9 @@ export function availableMoves(member){
  if(['koffing','weezing'].includes(member.id))names.add('smog');
  if(['rattata','raticate'].includes(member.id))names.add('hyper-fang');
  if(member.id==='pinsir')names.add('guillotine');
+ if(['clefairy','clefable','mew','chansey'].includes(member.id))names.add('metronome');
+ if(['oddish','gloom','vileplume','bellsprout','weepinbell','victreebel','paras','parasect','tangela','omanyte','omastar'].includes(member.id))names.add('absorb');
+ if(['scyther','pinsir','parasect','beedrill'].includes(member.id))names.add('x-scissor');
  if(['oddish','gloom','vileplume','bellsprout','weepinbell','victreebel'].includes(member.id))
   names.add('petal-dance');
  // New exclusive VFX are only assigned to compatible Kanto species.
