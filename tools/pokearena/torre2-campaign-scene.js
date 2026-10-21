@@ -132,6 +132,27 @@ class Campanha extends Phaser.Scene{
    rect(x,y,3,4,0x6ca85a);rect(x+5,y-2,3,6,0x6ca85a);
    rect(x+10,y+1,3,3,0x6ca85a);
   }
+  // Two quiet landmarks echo the reference's Pokémon Center and Mart.
+  // They live outside the path and share the restrained pixel palette.
+  const shop=(x,y,roof,word)=>{
+   rect(x,y+9,43,25,0x795d43);
+   rect(x+3,y+11,37,22,0xfff0cd);
+   rect(x-3,y+3,49,10,0x3c4e57);
+   rect(x-1,y+1,45,10,roof);
+   rect(x+4,y+15,9,10,0x86b9cd);
+   rect(x+30,y+15,9,10,0x86b9cd);
+   rect(x+18,y+21,8,12,0x63544a);
+   rect(x+20,y+24,2,3,0xffd37a);
+   text(this,x+21,y+1,word,{fontSize:'8px',color:'#ffffff',fontStyle:'bold'})
+    .setOrigin(.5,0);
+  };
+  shop(52,203,0xc65e55,'PC');
+  shop(301,118,0x397ba9,'MART');
+  for(const [x,y] of [[76,132],[85,138],[300,214],[312,222]]){
+   rect(x,y,15,3,0x347b46);
+   rect(x+2,y-4,4,7,0x438c4c);
+   rect(x+10,y-5,3,8,0x5b9d54);
+  }
   rect(22,65,368,25,0x244b4b);
   rect(22,87,368,2,0xe7cb83);
   text(this,34,68,finished?'KANTO · CAMPEÃO':
@@ -164,8 +185,6 @@ class Campanha extends Phaser.Scene{
    art.fillCircle(p.x,p.y,boss?15:13);
    art.lineStyle(current?3:2,current?0xffe681:0xfaf3cd,1);
    art.strokeCircle(p.x,p.y,boss?15:13);
-   art.fillStyle(0xf9edce);art.fillRect(p.x-5,p.y-2,10,4);
-   art.fillStyle(0x2f3c45);art.fillRect(p.x-2,p.y-2,4,4);
    if(won){
     art.fillStyle(0x2b6844);art.fillCircle(p.x,p.y,8);
     text(this,p.x,p.y,'✓',{fontSize:'13px',color:'#ffffff'}).setOrigin(.5);
@@ -176,8 +195,9 @@ class Campanha extends Phaser.Scene{
     const click=this.add.zone(p.x,p.y,42,42).setInteractive({useHandCursor:true});
     click.on('pointerdown',()=>this.enterBattle(state));
    }else{
-    text(this,p.x,p.y,boss?'G':p.kind==='rocket'?'R':p.kind==='rival'?'!':'·',{
-     fontSize:'12px',color:'#f9ebc9'}).setOrigin(.5);
+    text(this,p.x,p.y,boss?'G':p.kind==='rocket'?'R':
+     p.kind==='rival'?'!':String(p.index+1),{
+     fontSize:'12px',color:'#ffffff',fontStyle:'bold'}).setOrigin(.5);
    }
   }
   const currentKind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
