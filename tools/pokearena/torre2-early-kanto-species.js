@@ -49,9 +49,18 @@ function nativeAttacks(original){
   if(!lookup.has(key))lookup.set(key,move);
  }}
  for(const p of original){
-  read(p.kit);
+  // Native evolutions often override only the NAME or damage of an earlier
+  // move, inheriting its real 'forma' (e.g. Lopunny's Low Kick). Resolve
+  // slot-by-slot exactly as the original client's move collector does.
+  let inherited=p.kit||{};
+  read(inherited);
+  const merge=(a,b)=>Object.fromEntries(
+   [...new Set([...Object.keys(a||{}),...Object.keys(b||{})])]
+    .map(slot=>[slot,{...(a?.[slot]||{}),...(b?.[slot]||{})}]));
   for(const e of p.evoluciones||[]){
-   read(e.kit);if(e.mega)read(e.mega.kit);
+   inherited=merge(inherited,e.kit||{});
+   read(inherited);
+   if(e.mega?.kit)read(merge(inherited,e.mega.kit));
   }
  }
  return lookup;
