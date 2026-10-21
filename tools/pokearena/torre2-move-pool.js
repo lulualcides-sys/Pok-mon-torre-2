@@ -27,9 +27,9 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'absorb',nombre:'Absorb',forma:'torre2_absorb',tipo:'GRASS',dano:7,alcance:225,coste:15,cd:5.3,anim:'Shoot',lanzar:.14,description:'Aimed green sprout strikes once and returns half inflicted damage as health'},
  {id:'x-scissor',nombre:'X-Scissor',forma:'torre2_xscissor',tipo:'BUG',dano:19,alcance:78,coste:20,cd:5,anim:'Swing',lanzar:.12,description:'Two crossing pixel blades, one physical aimed melee strike'},
 
- {id:'mud-slap',nombre:'Mud-Slap',forma:'torre2_mudslap',tipo:'GROUND',dano:8,alcance:205,coste:17,cd:4.6,anim:'Throw',lanzar:.13,description:'Compact brown mud projectile, small pixel splatter on physical contact; ground attack'},
- {id:'seed-bomb',nombre:'Seed Bomb',forma:'torre2_seedbomb',tipo:'GRASS',dano:16,alcance:225,coste:24,cd:5.8,anim:'Throw',lanzar:.16,description:'Single big inked green seed, shell fractures into six shards only on contact'},
- {id:'super-fang',nombre:'Super Fang',forma:'torre2_superfang',tipo:'NORMAL',dano:0,alcance:82,coste:28,cd:7.8,anim:'Swing',lanzar:.13,description:'Physical twin-incisor bite; halves the foe current HP upon true contact'},
+ {id:'mud-slap',nombre:'Mud-Slap',forma:'torre2_mudslap',tipo:'GROUND',poder:20,precisao:100,pp:10,categoria:'SPECIAL',fazContato:false,dano:4,alcance:205,coste:17,cd:4.6,anim:'Throw',lanzar:.13,description:'Compact brown mud projectile, small pixel splatter on physical contact; ground attack'},
+ {id:'seed-bomb',nombre:'Seed Bomb',forma:'torre2_seedbomb',tipo:'GRASS',poder:80,precisao:100,pp:15,categoria:'PHYSICAL',fazContato:false,dano:16,alcance:225,coste:24,cd:5.8,anim:'Throw',lanzar:.16,description:'Single big inked green seed, shell fractures into six shards only on contact'},
+ {id:'super-fang',nombre:'Super Fang',forma:'torre2_superfang',tipo:'NORMAL',poder:null,precisao:90,pp:10,categoria:'PHYSICAL',fazContato:true,dano:0,alcance:82,coste:28,cd:7.8,anim:'Swing',lanzar:.13,description:'Physical twin-incisor bite; halves the foe current HP upon true contact'},
  {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
