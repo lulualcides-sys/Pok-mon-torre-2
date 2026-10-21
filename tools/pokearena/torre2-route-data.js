@@ -3,8 +3,9 @@
  * The caller MUST filter by actually integrated battle species.
  */
 export const KANTO_ROUTES=Object.freeze([
- {area:'Route 2 · Viridian Forest',label:'VIRIDIAN FOREST',
-  wild:['pidgey','rattata','caterpie','weedle','pikachu','metapod','kakuna']},
+ {area:'Route 1 · Route 2 · Viridian Forest · Route 22',label:'ROUTE 1 / VIRIDIAN FOREST',
+  wild:['pidgey','rattata','caterpie','weedle','pikachu','metapod','kakuna',
+   'spearow','mankey','nidoran-f','nidoran-m','geodude']},
  {area:'Mt. Moon · Route 4',label:'MT. MOON',
   wild:['zubat','geodude','paras','clefairy','sandshrew','ekans']},
  {area:'Route 6 · Diglett Cave',label:'VERMILION ROUTES',

@@ -23,3 +23,9 @@ O jogo **Pokémon Torre 2 é um projeto de fã gratuito e não oficial**, destin
 ## Referência de animações
 
 Os **420 registros de golpes** do Poké Arena 2D foram coletados para estudo visual e **não são sprites ou código distribuídos aqui**. Esse material não concede licença sobre os ativos artísticos de outro jogo.
+
+
+## PMD sprites do primeiro trecho de Kanto (21/10/2026)
+O instalador de publicação `tools/pokearena/install-early-kanto-assets.mjs` baixa e inclui, com os créditos, os sprites animados **CC BY-NC 4.0** do [PMD SpriteCollab](https://github.com/PMDCollab/SpriteCollab) para as espécies Route 1, Route 2, Viridian Forest e Route 22, mais Geodude para a preparação de Brock. O jogo permanece não comercial; direitos Nintendo/Game Freak/The Pokémon Company não são concedidos por esta licença.
+Linhas incluídas: 0010–0012 Caterpie; 0013–0015 Weedle; 0016–0018 Pidgey; 0019–0020 Rattata; 0021–0022 Spearow; 0025–0026 Pikachu (preservar os nativos); 0029–0031 Nidoran♀; 0032–0034 Nidoran♂; 0056–0057 Mankey; 0074–0076 Geodude.
+**Créditos autorais por espécie:** `https://github.com/PMDCollab/SpriteCollab/blob/master/sprite/<DEX>/credits.txt` — substituir DEX pelo número de quatro dígitos acima. Os metadados de tempo por frame vêm de `AnimData.xml` das respectivas espécies. A pasta `assets/pmd` do Poké Arena original é preservada.

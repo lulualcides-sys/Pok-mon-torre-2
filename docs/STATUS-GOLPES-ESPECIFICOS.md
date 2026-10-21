@@ -139,3 +139,11 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - Marcados com `approved:true` sem modificar qualquer arte/mecânica. A lista NEW passa a ter **zero pendentes**, exibindo **TODOS OS GOLPES APROVADOS ✓**. Os movimentos seguem disponíveis nos respectivos tipos e em ALL.
 - A aprovação anterior de Metal Claw, Bind, Double Kick e Fury Attack é mantida. Golpes do cliente nativo Poké Arena 2D têm prioridade absoluta e permanecem intocados.
 - Próxima etapa diferente da fila NEW: cobertura de espécies/sprites e learnsets por nível da rota inicial até Brock. Itens no planejamento geral de 160 faltantes são uma fotografia antiga, não uma lista de pendências de aprovação.
+
+
+## Primeiro lote de Pokémon no jogo — Route 1 e Viridian até Brock
+- **10 linhas adicionais + evoluções**: Pidgey, Rattata, Caterpie, Weedle, Pikachu, Spearow, Nidoran♀, Nidoran♂, Mankey, Geodude. Importação 2D real: sprites animados Idle/Walk/Attack e ações opcionais, retratos e metadados no manifesto Phaser.
+- Encontros da etapa 0 agregam Route 1, Route 2, Viridian Forest e Route 22, sem alterar estrutura de 13 treinadores nem chefe Brock/Onix.
+- Técnicas reutilizam motores de golpes já existentes/aprovados. Moveset do jogador fica limitado a golpes permitidos pelo nível e TM, Mewtwo de teste segue sem restrição.
+- Evoluções exclusivamente pelo nível e após batalha já implementadas no módulo de progressão. Pokédex permanece com 151 espécies e pode registrar as novas capturas.
+- Não modificar sprites e golpes nativos, não introduzir PNG de projéteis nem reabrir menus ou resetar save. Crédito PMD SpriteCollab obrigatório.

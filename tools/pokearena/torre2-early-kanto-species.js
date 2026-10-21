@@ -87,7 +87,10 @@ function evolutionaryLine(native,id,dex,name,types,stats,names,evolutions=[]){
  return {id,dex,nombre:name,tipos:types,rol:stats.role,
   lema:'KANTO WILD POKÉMON',hp:stats.hp,vel:stats.speed,
   atk:stats.attack,def:stats.defense,regen:4,ia:{rango:stats.range||102},
-  kit:kit(native,names),
+  kit:kit(native,names.filter(name=>{
+   const key=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+   return (EARLY_KANTO_LEARNSETS[id]?.[key]??1)<=5;
+  })),
   evoluciones:evolutions.map(([dex,nombre,hp,tipos,attacks])=>({
    dex,nombre,hp,tipos,kit:kit(native,attacks||names)
   }))

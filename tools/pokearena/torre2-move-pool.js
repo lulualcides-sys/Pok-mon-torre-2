@@ -3,6 +3,7 @@
  * Poké Arena client, plus all four brand-new signature VFX in this project.
  */
 import {ROSTER,buscar,etapaDe} from '../datos.js';
+import {EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -90,6 +91,7 @@ function collect(def){
 }
 const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES];
 const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
+const signatureByName=new Map(SIGNATURE_MOVES.map(m=>[canonicalMoveKey(m.nombre),m]));
 for(const h of rawLibrary){
  const id=h.id||norm(h.nombre),sameMove=canonicalMoveKey(h.nombre);
  if(!sameMove||ids.has(id)||seenNames.has(sameMove))continue;
@@ -99,9 +101,15 @@ for(const h of rawLibrary){
   // for the Torre 2 selected loadout; preserve native name/stats/PP/accuracy.
   // The original client's Crunch is untouched and no duplicate is added.
   const nativeCrunch=sameMove==='crunch'&&!signatureEntries.has(h);
-  ids.set(id,{...h,id,...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
+  // An integrated species can equip user-approved Torre 2 effects. The
+  // canonical signature remains approved, never relabeled as a native copy.
+  const signature=signatureByName.get(sameMove);
+  const inheritedSignature=!signatureEntries.has(h)&&
+   signature&&signature.forma===h.forma;
+  ids.set(id,{...h,...(inheritedSignature?signature:{}),id,
+   ...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
    source:nativeCrunch?'torre2-visual-override':
-    signatureEntries.has(h)?'new-phaser-fx':'arena2d-original'});
+    signatureEntries.has(h)||inheritedSignature?'new-phaser-fx':'arena2d-original'});
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
@@ -154,7 +162,14 @@ export function availableMoves(member){
  if(['nidoran-m','nidorino','nidoking','nidoran-f','nidorina','nidoqueen'].includes(member.id))names.add('double-kick');
  if(['spearow','fearow','doduo','dodrio','nidoran-m','nidorino','beedrill'].includes(member.id))names.add('fury-attack');
  if(member.id==='chansey')names.add('soft-boiled');
- return TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
+ const early=EARLY_KANTO_LEARNSETS[member.id];
+ if(early)for(const id of Object.keys(early))names.add(id);
+ const moves=TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
+ if(!early)return moves;
+ const level=member.progression?.level??5;
+ const tms=new Set((member.tmMoves||[]).map(canonicalMoveKey));
+ return moves.filter(m=>tms.has(canonicalMoveKey(m.nombre))||
+   (early[m.id]!==undefined&&level>=early[m.id]));
 }
 export function defaultLoadout(member){
  const pool=availableMoves(member);

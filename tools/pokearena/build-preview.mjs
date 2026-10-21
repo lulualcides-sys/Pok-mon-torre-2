@@ -10,6 +10,9 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dest=path.join(root,'arena2d');
 await fs.mkdir(root,{recursive:true});
 await fs.cp(source,dest,{recursive:true,force:true});
+// Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
+const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');
+await installEarlyKantoSprites(dest);
 // Only replace the original title-image bytes. The Phaser title scene, its
 // buttons, animated background, layout, hotspots and menu flow stay identical.
 // Keep the approved pixel logo as a small indexed PNG for fast mobile loading.
@@ -109,11 +112,17 @@ await Promise.all([
  ['tools/pokearena/torre2-early-route-fx.js','early-route-fx.js'],
  ['tools/pokearena/torre2-prebrock-damage-fx.js','prebrock-damage-fx.js'],
  ['tools/pokearena/torre2-clash-fx.js','clash-fx.js'],
- ['tools/pokearena/torre2-route-data.js','route-data.js']
+ ['tools/pokearena/torre2-route-data.js','route-data.js'],
+ ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
 patches.push(
+ ['datos.js',[
+  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";const TIPOS={'],
+  ['const ROSTER=TODOS.filter(p=>!p.desactivado);',
+   'TODOS.push(...addEarlyKantoSpecies(TODOS));const ROSTER=TODOS.filter(p=>!p.desactivado);']
+ ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
    'import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";import{TORRE2_FORMS}from"./torre2/signature-fx.js";'],
@@ -288,9 +297,9 @@ for(const [filename,changes] of patches){
 // module tree under a fresh, content-addressed src-xxxxxxxxxx directory.
 const vfxFingerprint=createHash('sha256');
 for(const filename of [
- 'main.js','habilidades.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
+ 'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
- 'torre2/move-pool.js','torre2/kanto-signatures-fx.js'
+ 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
 if(versionedSource===clientSource)throw Error('VFX fingerprint collides with upstream dir');

@@ -9,7 +9,9 @@ import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS} from './route-dat
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
 export const GYMS=Object.freeze([
- {city:'Pewter',leader:'Brock',badge:'Rocha',arena:'crater',type:'ROCK',enemy:['onix','machop','zubat'],boss:'onix'},
+ {city:'Pewter',leader:'Brock',badge:'Rocha',arena:'crater',type:'ROCK',
+  enemy:['pidgey','rattata','caterpie','weedle','pikachu','spearow','mankey','nidoran-f','nidoran-m','geodude'],
+  boss:'onix'},
  {city:'Cerulean',leader:'Misty',badge:'Cascata',arena:'estadio',type:'WATER',enemy:['squirtle','magikarp','zubat'],boss:'wartortle'},
  {city:'Vermilion',leader:'Lt. Surge',badge:'Trovao',arena:'neon',type:'ELECTRIC',enemy:['pikachu','raichu','machop'],boss:'raichu'},
  {city:'Celadon',leader:'Erika',badge:'Arco-Iris',arena:'ruinas',type:'GRASS',enemy:['bulbasaur','ivysaur','exeggcute'],boss:'venusaur'},
