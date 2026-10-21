@@ -102,6 +102,23 @@ const server=http.createServer(async(req,res)=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
    return p.etapa===2&&p.anims.exists('0003-Idle-0')&&p.sprite?.dex==='0003';
   },null,{timeout:16000});
+  const newKantoDex=await dexPage.evaluate(()=>{
+   const p=window.__pt2Game.scene.getScene('pokedex');
+   return ['pidgey','caterpie','weedle','geodude','mankey'].map(id=>{
+    const idx=p.casillas.findIndex(x=>x.p.id===id);
+    p.elegir(idx);
+    return {id,slots:Object.keys(p.etapas[0].kit),
+     captions:p.movs.list.filter(x=>typeof x.text==='string').map(x=>x.text)};
+   });
+  });
+  for(const dex of newKantoDex){
+   for(const s of ['lmb','rmb','esp','q','e'])
+    assert.ok(dex.slots.includes(s),'New Kanto Pokémon missing action '+dex.id+'/'+s);
+   assert.ok(dex.captions.some(s=>s.includes('Dodge')),
+    'Dodge must be visible in Pokédex '+dex.id);
+   assert.ok(dex.captions.some(s=>s.includes('ULT')),
+    'Ultimate must be visible in Pokédex '+dex.id);
+  }
   assert.deepEqual(dexErr,[],'Pokedex and evolution buttons must not throw');
   await dexPage.screenshot({path:'test-evidence/pokedex-real-pmd-and-venusaur-evolution.png',fullPage:true});
   await dexPage.close();

@@ -87,15 +87,42 @@ assert.equal(recordSeen(nidoState,'nidoran-f'),true);
 assert.equal(recordCaught(nidoState,'nidoran-m'),true);
 assert.ok(nidoState.dexCaught.includes('nidoran-m'));
 const young={id:'pidgey',progression:{species:'pidgey',level:5}};
-assert.deepEqual(availableMoves(young).map(x=>x.id),['tackle'],
- 'Pidgey level 5 must not yet know Gust, Quick Attack or Wing Attack');
+assert.deepEqual(availableMoves(young).map(x=>x.id).sort(),['gust','tackle']);
+assert.deepEqual(selectedMoves(young),['tackle','gust',null,null]);
+assert.deepEqual(Object.keys(resolveLoadout(young)),['lmb','rmb']);
+assert.ok(!availableMoves(young).some(x=>x.id==='dodge'));
 young.progression.level=13;
 assert.ok(availableMoves(young).some(x=>x.id==='gust'));
 assert.ok(availableMoves(young).some(x=>x.id==='quick-attack'));
 assert.ok(!availableMoves(young).some(x=>x.id==='wing-attack'));
+assert.deepEqual(selectedMoves(young),['tackle','gust','quick-attack',null],
+ 'Level 13 Q must unlock in place, not move to ULT');
+young.progression.level=19;
+assert.deepEqual(selectedMoves(young),['tackle','gust','quick-attack','wing-attack']);
+assert.equal(resolveLoadout(young).e.nombre,'Wing Attack');
+assert.equal(equipMove(young,0,'wing-attack'),false,'Basic must remain weak');
+assert.equal(equipMove(young,3,'tackle'),false,'Ultimate stays at E');
 const bug={id:'caterpie',progression:{species:'caterpie',level:10}};
 assert.ok(availableMoves(bug).some(x=>x.id==='bug-bite'));
 assert.ok(EARLY_KANTO_LEARNSETS.butterfree.confusion<=10);
+for(const id of EARLY_KANTO_BASE){
+ const d=ROSTER.find(p=>p.id===id);
+ assert.ok(d);
+ for(const slot of ['lmb','rmb','esp','q','e'])
+  assert.ok(d.kit[slot]?.nombre&&d.kit[slot]?.forma,
+   'Every Kanto route Pokémon needs 5 functional Arena2D controls: '+id+'/'+slot);
+ assert.equal(d.kit.esp.forma,'dash','Native-style dodge control');
+ assert.equal(d.kit.esp.dano,0,'Dodge deals no damage');
+ assert.equal(d.kit.e.ulti,true);
+ for(const evo of d.evoluciones||[])
+  for(const slot of ['lmb','rmb','esp','q','e'])
+   assert.ok(evo.kit[slot]?.nombre,'Evolved form missing '+id+'/'+slot);
+}
+const caterpie=ROSTER.find(p=>p.id==='caterpie');
+assert.equal(caterpie.kit.rmb.nombre,'String Shot',
+ 'Native String Shot must remain the skill of Caterpie');
+assert.equal(caterpie.kit.e.pendiente,true,'Future Butterfree ULT stays locked');
+assert.equal(caterpie.evoluciones[1].kit.e.torre2UnlockEvolution,undefined);
 assert.ok(area.wild.includes('caterpie'),'Regional table keeps genuine FireRed species');
 if(area.available.length){
  const grass=createCampaign('charmander');
