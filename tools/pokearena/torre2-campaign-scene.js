@@ -1,7 +1,8 @@
 /* Pokémon Torre 2 — offline campaign frontend inside original Phaser game.
  * No login, network API or online match dependency.
  */
-import {ANCHO,ALTO} from '../config.js';
+import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
+import {marco,UI as MENU_UI} from '../ui.js';
 import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats} from './move-pool.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
@@ -60,15 +61,29 @@ class Campanha extends Phaser.Scene{
   if(!state)return this.starterSelection();
   this.renderCampaign(state);
  }
- button(x,y,w,h,label,callback,emphasis=false){
-  const color=emphasis?0x3677a8:0x253b5a;
-  const bg=this.add.rectangle(x,y,w,h,color,.98).setStrokeStyle(1,0x6ba9cc);
-  bg.setInteractive({useHandCursor:true});
-  bg.on('pointerdown',()=>{bg.setFillStyle(0x385f8b);callback()});
-  bg.on('pointerover',()=>bg.setFillStyle(0x38648b));
-  bg.on('pointerout',()=>bg.setFillStyle(color));
-  text(this,x,y,label,{fontSize:'12px',color:emphasis?C.white:C.gold}).setOrigin(.5);
-  return bg;
+ // Exact original Poké Arena 2D menu frame, font and hover/highlight,
+ // reused here rather than reinterpreted with generic rectangles and CSS.
+ button(x,y,w,h,label,callback,emphasis=false,tam=null){
+  const g=this.add.graphics();
+  const size=tam??(w>=202?12:w>=145?10:w>=92?9:8);
+  const caption=estrechar(textoMenu(this,x,y,label,{
+   tam:size,borde:3,colorBorde:MENU_UI.bordeTexto
+  }).setOrigin(.5),w-13);
+  let hovered=false;
+  const paint=()=>{
+   g.clear();
+   const golden=!!(emphasis||hovered);
+   marco(g,x-w/2,y-h/2,w,h,golden?'oro':'azul');
+   caption.setColor(golden?MENU_UI.textoOscuro:MENU_UI.texto);
+   caption.setStroke(MENU_UI.bordeTexto,golden?0:3);
+  };
+  const zone=this.add.zone(x,y,w,Math.max(h,27))
+   .setInteractive({useHandCursor:true});
+  zone.on('pointerover',()=>{hovered=true;paint()});
+  zone.on('pointerout',()=>{hovered=false;paint()});
+  zone.on('pointerdown',()=>callback());
+  paint();
+  return zone;
  }
  starterSelection(){
   text(this,ANCHO/2,73,'ESCOLHA SEU PRIMEIRO POKÉMON',{color:C.gold,fontSize:'19px'}).setOrigin(.5);
@@ -263,7 +278,7 @@ class Campanha extends Phaser.Scene{
   text(this,575,74,'BOLSA',{fontSize:'10px',color:'#ffffff',fontStyle:'bold'});
   // Action is always in exactly the same predictable bottom-right position.
   if(state.pendingCapture){
-   this.button(519,322,217,45,'▶ CAPTURAR POKÉMON',()=>this.captureScreen(state),true);
+   this.battleButton(519,322,217,45,'▶ CAPTURAR POKÉMON',()=>this.captureScreen(state),true);
   }else{
    const caption=finished?'★ CAMPEÃO DE KANTO':'▶ INICIAR BATALHA';
    this.battleButton(519,322,217,45,caption,()=>{
@@ -291,16 +306,11 @@ class Campanha extends Phaser.Scene{
    fontSize:'11px',color:'#ffffff'}).setOrigin(.5).setDepth(6);
  }
  battleButton(x,y,w,h,label,callback,active=true){
-  const fill=active?0xdf803c:0x4e6c78;
-  const shadow=this.add.rectangle(x+2,y+3,w,h,0x6b402a,.9);
-  const button=this.add.rectangle(x,y,w,h,fill)
-   .setStrokeStyle(3,active?0xffe29a:0x8ca6b1).setInteractive({useHandCursor:true});
-  button.on('pointerdown',callback);
-  button.on('pointerover',()=>button.setFillStyle(active?0xf39b4e:0x5a7b87));
-  button.on('pointerout',()=>button.setFillStyle(fill));
-  text(this,x,y,label,{fontSize:'17px',color:active?'#1c2940':'#ffffff',
-   fontStyle:'bold'}).setOrigin(.5);
-  return button;
+  // Same gold cartridge from Play on the original title screen.
+  const zone=this.button(x,y,w,h,label,callback,active,13);
+  if(active&&this.textures.exists('ico-pokeball'))
+   this.add.image(x-w/2+17,y,'ico-pokeball').setDepth(6).setScale(.9);
+  return zone;
  }
  captureScreen(state){
   this.children.removeAll(true);this.backdrop();
