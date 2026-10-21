@@ -148,7 +148,9 @@ jobs:
                 && grep -Fq 'export function rocktomb(' /tmp/torre-prebrock.js \
                 && grep -Fq 'export function hornattack(' /tmp/torre-prebrock.js \
                 && grep -Fq 'export function doublekick(' /tmp/torre-prebrock.js \
-                && grep -Fq 'export function furyattack(' /tmp/torre-prebrock.js; then
+                && grep -Fq 'export function furyattack(' /tmp/torre-prebrock.js \
+                && grep -Fq 'export function metalclaw(' /tmp/torre-prebrock.js \
+                && grep -Fq 'export function bind(' /tmp/torre-prebrock.js; then
               echo "CONFIRMADO: GitHub Pages esta servindo a versao $version com golpes atualizados."
               exit 0
             fi

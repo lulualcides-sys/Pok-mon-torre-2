@@ -110,3 +110,9 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - **Lacuna de espécies antes do Brock:** a captura Phaser atual só inclui Bulbasaur, Charmander, Squirtle e Onix da lista imediata; ainda não há Pidgey, Rattata, Caterpie, Metapod, Weedle, Kakuna, Pikachu, Spearow, Nidoran♂/♀, Mankey ou Geodude no ROSTER. Suas entradas do mapa são filtradas até os sprites/atores serem integrados. Portanto, ter um ataque no catálogo ≠ ter o Pokémon jogável.
 - Os golpes são cadastrados para essas espécies futuras, não surgem artificialmente como Pokémon capturados. Mewtwo nível 50 mantém biblioteca de teste para escolher.
 - Não considerar a revisão completa do learnset por nível até definir a geração de referência de cada espécie; dano de golpe e desbloqueio são etapas diferentes.
+
+
+### Complemento ofensivo pré-Brock — Metal Claw e Bind
+- **Metal Claw**: Charmander em FireRed/LeafGreen aprende o ataque antes de Brock; golpe STEEL, 50 poder, 95% precisão, toque da garra de metal com avanço e recuo, 10% de chance de aumento do ataque no acerto. Não é sprite nativo capturado; novo pixel art e aguarda aprovação.
+- **Bind**: Onix aprende antes de Brock; NORMAL 15 poder, 85% precisão, quatro pulsos de dano no nosso tempo real, somente após contato físico, com enrolamento pixelado temporário. Aproxima, acerta e recua, deixando a animação de aprisionamento na vítima. Também aguarda aprovação visual.
+- **Roteiro de sprite/learnset**: nas novas espécies, a equipe deve vincular esses golpes conforme níveis e geração, preservando os nativos. Não atribuir Double Kick a Mankey; Mankey mantém Low Kick e Karate Chop nativos.

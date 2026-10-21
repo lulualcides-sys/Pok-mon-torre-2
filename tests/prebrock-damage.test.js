@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const src=fs.readFileSync(new URL('../tools/pokearena/torre2-prebrock-damage-fx.js',import.meta.url),'utf8');
 const moduleText=src.replace("import {clashAt} from './clash-fx.js';",'const clashAt=()=>false;');
 assert.notEqual(src,moduleText);
-const {rocktomb,hornattack,doublekick,furyattack,TORRE2_PREBROCK_DAMAGE_FORMS}=await import(
+const {rocktomb,hornattack,doublekick,furyattack,metalclaw,bind,TORRE2_PREBROCK_DAMAGE_FORMS}=await import(
  'data:text/javascript;base64,'+Buffer.from(moduleText).toString('base64'));
 const EPS=.1;
 function battle(targetX,{block=false,immune=false,aimY=100}={}){
@@ -41,7 +41,7 @@ function run(fn,target,stats,opts){
 }
 test('Only unique absent early Kanto moves are registered',()=>{
  assert.deepEqual(Object.keys(TORRE2_PREBROCK_DAMAGE_FORMS).sort(),[
-  'torre2_doublekick','torre2_furyattack','torre2_hornattack','torre2_rocktomb'
+  'torre2_bind','torre2_doublekick','torre2_furyattack','torre2_hornattack','torre2_metalclaw','torre2_rocktomb'
  ]);
 });
 test('Horn Attack: one physical hit after lunge, retreat, miss when out of reach',()=>{
@@ -81,4 +81,25 @@ test('Rock Tomb: one physical boulder impact and speed debuff only on hit',()=>{
  const blocked=run(rocktomb,140,h,{block:true});
  assert.equal(blocked.damage.length,0);
  assert.equal(blocked.state.length,0,'Blocked projectile must never inflict slow');
+});
+
+test('Metal Claw: precise physical claw, no projectile damage on a miss',()=>{
+ const h={dano:10,tipo:'STEEL',alcance:76,precisao:95};
+ const hit=run(metalclaw,65,h);
+ assert.equal(hit.damage.length,1);
+ assert.equal(hit.foe.hp,140);
+ assert.ok(Math.max(...hit.path)>42);
+ assert.ok(Math.abs(hit.attacker.x)<EPS);
+ assert.equal(run(metalclaw,260,h).damage.length,0);
+});
+test('Bind: only true contact starts four damage pulses and slow',()=>{
+ const h={dano:3,tipo:'NORMAL',alcance:76,precisao:85};
+ const hit=run(bind,65,h);
+ assert.equal(hit.damage.length,4);
+ assert.equal(hit.foe.hp,138);
+ assert.ok(Math.abs(hit.attacker.x)<EPS);
+ assert.equal(hit.state.filter(x=>x[0]==='lento').length,1);
+ const miss=run(bind,250,h);
+ assert.equal(miss.damage.length,0);
+ assert.equal(miss.state.length,0);
 });
