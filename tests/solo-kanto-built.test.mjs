@@ -141,8 +141,10 @@ assert.equal(nativeCrunch.source,'torre2-visual-override','Native Crunch stats k
 assert.equal(SIGNATURE_MOVES.some(m=>m.id==='crunch'),false,'Never duplicate native Crunch');
 const leech=allMoves.find(m=>m.id==='leech-life');
 assert.ok(leech,'Native Leech Life remains in original catalog');
-assert.equal(leech.forma,'torre2_leechlife','Only the Kanto custom visual changes');
-assert.equal(leech.source,'torre2-visual-override');
+assert.equal(leech.source,'arena2d-original',
+ 'Native Leech Life must keep its existing renderer, category and stats');
+assert.equal(leech.forma,'golpe',
+ 'Leech Life renderer must remain the original Arena 2D hit effect');
 assert.ok(!SIGNATURE_MOVES.some(m=>m.id==='leech-life'),'No duplicate native move');
 for(const [id,forma] of [['peck','torre2_peck'],['bug-bite','torre2_bugbite']]){
  const move=allMoves.find(m=>m.id===id);
@@ -227,7 +229,7 @@ assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
 assert.ok(dexBuilt.includes('this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)}'),
  'Pokedex evolution tabs must lazily load each selected original PMD animation');
 const early=fs.readFileSync(path.join(stage,version,'torre2/early-route-fx.js'),'utf8');
-for(const name of ['gust','poisonsting','bite','crunch','peck','leechlife','bugbite'])
+for(const name of ['gust','poisonsting','bite','crunch','peck','bugbite'])
  assert.ok(early.includes('export function '+name+'('),
   'Missing new hand-pixeled early-route renderer '+name);
 assert.ok(early.includes('clashAt(e,fx,l,tip,15')&&early.includes('clashAt(e,fx,l,tip,6'),
@@ -246,8 +248,9 @@ for(const id of ['bite','crunch'])
  'User explicitly approved Bite and Crunch; preserve their pixel art and mechanics');
 assert.ok(early.includes('export function contactDash(')&&early.includes('dash.step(age)'),
  'Bite and Crunch advance the actual fighter before returning');
-assert.ok(early.includes('sprite(tipFx,NEEDLE')&&early.includes('DRAIN_PAL'),
- 'Leech Life shares Poison Sting pixel matrix without changing its colors');
+assert.ok(!early.includes('export function leechlife(')&&
+ !early.includes('torre2_leechlife:'),
+ 'No replacement renderer for the previously existing Leech Life');
 const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
 assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
 assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');

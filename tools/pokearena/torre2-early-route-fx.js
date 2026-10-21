@@ -341,56 +341,6 @@ export function peck(l,h,extra){
   return true;
  },[beak,flash]);
 }
-// Read-only Poison Sting shape in green: single barb flight, then life return.
-// This is a Kanto-only visual override for an existing original move.
-const DRAIN_PAL={K:0x133625,D:0x326e3e,M:0x5cad5c,L:0xa8e788,W:0xedffce};
-const DRAIN_MOTE=['..K..','.KML.','KMLWK','.KLK.','..K..'];
-export function leechlife(l,h,extra){
- const e=l.escena,r=l.rival,tipFx=e.add.graphics().setDepth(1513),essence=e.add.graphics().setDepth(1514);
- const o=start(l,'Shoot',.45),max=Math.min(h.alcance??210,235);
- const first={x:o.x+o.c*13,y:o.y+o.s*13};
- let age=0,prev=first,impact=null,drained=0,restored=false;
- return effect(e,dt=>{
-  age+=dt;tipFx.clear();essence.clear();
-  if(l.ko||l.est?.aturdido||age>1.5)return false;
-  if(!impact){
-   const dist=age*420;if(dist>max)return false;
-   const tip={x:first.x+o.c*dist,y:first.y+o.s*dist};
-   const on=intersect(prev,tip,r,9);prev=tip;
-   if(on){
-    const before=r.hp,done=strike(l,r,h,extra,{push:6});
-    drained=done&&Number.isFinite(before)&&Number.isFinite(r.hp)?
-     Math.max(0,before-r.hp):0;
-    if(!drained)return false;
-    impact={x:on.x,y:on.y,t:age};
-   }else{
-    sprite(tipFx,NEEDLE,tip.x,tip.y,DRAIN_PAL,1.13,1,o.a);
-    for(let k=1;k<=2;k++){
-     const behind=dist-k*13;if(behind<0)continue;
-     sprite(essence,BARB,first.x+o.c*behind,first.y+o.s*behind,
-      DRAIN_PAL,.55,.65-k*.16,o.a);
-    }
-   }
-  }
-  if(impact){
-   const t=clamp((age-impact.t)/.53);
-   const x=l.x,y=l.y-(l.alto||36)*.5;
-   if(t<.22)sprite(tipFx,STING_IMPACT,impact.x,impact.y,DRAIN_PAL,1.2,1-t*3,o.a);
-   for(let i=0;i<5;i++){
-    const u=clamp(t-i*.075);
-    sprite(essence,DRAIN_MOTE,impact.x+(x-impact.x)*u,
-     impact.y+(y-impact.y)*u+Math.sin(u*PI*2+i)*2,DRAIN_PAL,.79,1-i*.15);
-   }
-   if(t>=1&&!restored){
-    restored=true;
-    if(!l.ko&&Number.isFinite(l.hp)&&Number.isFinite(l.hpMax))
-     l.hp=Math.min(l.hpMax,l.hp+Math.floor(drained*.5));
-   }
-   return age<impact.t+.66;
-  }
-  return true;
- },[tipFx,essence]);
-}
 const BUG_PAL={K:0x14271b,D:0x365e41,M:0x6ba052,L:0xb7df7e,W:0xf0ffbb};
 const BUG_TOP=['..KKKKKKKK.....','.KDDMMMMDKK....','KDDMLLLLWWMK...',
  'KDMLWWWWWWMK...','.KKWKWKWKDK....','...K.K.K.K.....'];
@@ -423,5 +373,5 @@ export function bugbite(l,h,extra){
 }
 export const TORRE2_EARLY_ROUTE_FORMS=Object.freeze({
  torre2_gust:gust,torre2_poisonsting:poisonsting,torre2_bite:bite,torre2_crunch:crunch,
-  torre2_peck:peck,torre2_leechlife:leechlife,torre2_bugbite:bugbite
+  torre2_peck:peck,torre2_bugbite:bugbite
 });

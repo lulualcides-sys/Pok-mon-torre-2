@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const src=fs.readFileSync(new URL('../tools/pokearena/torre2-early-route-fx.js',import.meta.url),'utf8');
 const moduleSource=src.replace("import {clashAt} from './clash-fx.js';",'const clashAt=()=>false;');
 assert.notEqual(moduleSource,src,'single dependency replaced only in isolated tests');
-const {bite,crunch,peck,leechlife,bugbite,CHOMP_POSES}=await import(
+const {bite,crunch,peck,bugbite,CHOMP_POSES}=await import(
  'data:text/javascript;base64,'+Buffer.from(moduleSource).toString('base64'));
 const makeBattle=(targetX)=>{
  const pixels=[];
@@ -78,14 +78,4 @@ test('Bug Bite: green chitin jaws are contact-only and never double-hit',()=>{
  assert.ok(hit.pixels.length>120);
  const miss=simulate(bugbite,240,{alcance:74,dano:12,tipo:'BUG'});
  assert.equal(miss.contacts.length,0);
-});
-test('Leech Life uses green Poison-Sting silhouette and heals only real damage',()=>{
- const hit=simulate(leechlife,155,{alcance:205,dano:10,tipo:'BUG'});
- assert.equal(hit.contacts.length,1);
- assert.equal(hit.enemy.hp,140);
- assert.equal(hit.attacker.hp,45,'heals half of actual inflicted 10 damage');
- assert.ok(hit.pixels.length>100);
- const miss=simulate(leechlife,280,{alcance:205,dano:10,tipo:'BUG'});
- assert.equal(miss.contacts.length,0);
- assert.equal(miss.attacker.hp,40,'no damage means no heal');
 });

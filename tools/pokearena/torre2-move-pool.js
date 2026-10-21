@@ -93,10 +93,8 @@ for(const h of rawLibrary){
   // for the Torre 2 selected loadout; preserve native name/stats/PP/accuracy.
   // The original client's Crunch is untouched and no duplicate is added.
   const nativeCrunch=sameMove==='crunch'&&!signatureEntries.has(h);
-  const nativeLeech=sameMove==='leech-life'&&!signatureEntries.has(h);
   ids.set(id,{...h,id,...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
-   ...(nativeLeech?{forma:'torre2_leechlife'}:{}),
-   source:nativeCrunch||nativeLeech?'torre2-visual-override':
+   source:nativeCrunch?'torre2-visual-override':
     signatureEntries.has(h)?'new-phaser-fx':'arena2d-original'});
  seenNames.add(sameMove);
 }
@@ -132,7 +130,6 @@ export function availableMoves(member){
   if(['raticate','arbok','golbat','crobat','arcanine','ninetales','gyarados','aerodactyl'].includes(member.id))names.add('crunch');
  if(['spearow','fearow','beedrill','nidoran-m','nidorino','nidoking','doduo','dodrio','farfetchd'].includes(member.id))names.add('peck');
  if(['caterpie','weedle','metapod','kakuna','butterfree','beedrill','paras','parasect','venonat','venomoth'].includes(member.id))names.add('bug-bite');
- if(['zubat','golbat','crobat','paras','parasect','venonat','venomoth'].includes(member.id))names.add('leech-life');
  if(member.id==='chansey')names.add('soft-boiled');
  return TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
 }
