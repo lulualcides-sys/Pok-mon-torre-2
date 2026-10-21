@@ -17,7 +17,8 @@ permissions:
 
 concurrency:
   group: pokemon-torre-2-pages
-  cancel-in-progress: false
+  # When many move patches arrive, deploy only the latest commit.
+  cancel-in-progress: true
 
 jobs:
   deploy:
