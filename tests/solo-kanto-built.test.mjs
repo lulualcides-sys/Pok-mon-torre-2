@@ -71,7 +71,8 @@ assert.equal(tester.progression.level,50);
 const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
- 'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog'])
+ 'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
+ 'hyper-fang','guillotine','petal-dance'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -113,6 +114,25 @@ for(const id of ['swift','lovely-kiss'])
  assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
   'The user has explicitly approved '+id);
 assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
+// New 3 Kanto signatures must remain UNAPPROVED until user tests visuals.
+for(const [id,forma] of [['hyper-fang','torre2_hyperfang'],
+ ['guillotine','torre2_guillotine'],['petal-dance','torre2_petaldance']]){
+ const h=allMoves.find(x=>x.id===id);
+ assert.ok(h,'New Kanto move registered '+id);
+ assert.equal(h.forma,forma,'Correct art renderer '+id);
+ assert.equal(h.approved,undefined,'Must not auto-approve new move '+id);
+ assert.equal(h.source,'new-phaser-fx');
+ assert.equal(equipMove(tester,0,id),true,'Mewtwo test loadout includes '+id);
+ assert.equal(resolveLoadout(tester).lmb.forma,forma);
+}
+assert.equal(equipMove(tester,0,'bonemerang'),true);
+const kantoFile=fs.readFileSync(path.join(stage,version,'torre2/kanto-signatures-fx.js'),'utf8');
+assert.ok(kantoFile.includes('const FANG_UP=['),'Hyper Fang fangs defined as pixel cells');
+assert.ok(kantoFile.includes('const PINCER=['),'Guillotine pincers defined as pixel cells');
+assert.ok(kantoFile.includes('const PETAL=['),'Petal Dance petals defined as pixel cells');
+assert.ok(!kantoFile.includes('CanvasRenderingContext2D') &&
+ !kantoFile.includes('.fillPoints(') && !kantoFile.includes('.arc('),
+ 'No smooth polygon, Canvas 2D or vector VFX in new moves');
 const smogMove=allMoves.find(x=>x.id==='smog');
 assert.equal(smogMove?.approved,true,'Smog approved with extra pixel bubbles');
 for(const id of ['sing','crabhammer'])
