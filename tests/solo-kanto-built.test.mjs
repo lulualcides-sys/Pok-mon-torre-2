@@ -52,6 +52,21 @@ for(const id of ['ice-beam','rock-blast','confuse-ray','soft-boiled']){
  assert.equal(equipMove(tester,0,id),true,'new move equippable '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new Phaser move active '+id);
 }
+const realBeam=allMoves.find(m=>m.id==='ice-beam');
+assert.equal(realBeam.forma,'chorro','Ice Beam must reuse real Hyper Beam/Aura Storm engine');
+assert.equal(realBeam.paleta,'hieloTorre2');
+assert.equal(realBeam.haz,true);
+assert.equal(realBeam.giro,3.5);
+assert.equal(realBeam.source,'new-phaser-fx','Only native renderer is reused, not falsely relabeled');
+for(const id of ['rock-blast','soft-boiled','confuse-ray'])
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,true,'Approved '+id);
+assert.equal(realBeam.approved,undefined,'Ice Beam not approved yet');
+const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf8');
+assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
+assert.ok(abilityBody.includes('h.paleta==="hieloTorre2"'),'Ice particles apply only to Ice Beam');
+assert.equal(equipMove(tester,0,'ice-beam'),true);
+assert.equal(resolveLoadout(tester).lmb.forma,'chorro');
+assert.equal(resolveLoadout(tester).lmb.paleta,'hieloTorre2');
 assert.equal(equipMove(tester,0,'bonemerang'),true);
 const original=allMoves.filter(m=>['Flamethrower','Rock Slide','Water Pulse','Thunderbolt'].includes(m.nombre));
 assert.ok(original.length>=2,'captured Poké Arena move catalog retained');

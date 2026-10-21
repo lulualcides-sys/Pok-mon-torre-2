@@ -14,10 +14,10 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'swift',nombre:'Swift',forma:'torre2_swift',tipo:'NORMAL',dano:10,alcance:250,coste:21,cd:5.2,anim:'Shoot',lanzar:.15,description:'Seven fan-scattered stars, staggered Pay Day-style impacts, individual contact and misses'},
  {id:'shadow-ball',nombre:'Shadow Ball',forma:'torre2_shadowball',tipo:'GHOST',dano:14,alcance:245,coste:31,cd:6.5,anim:'Charge',lanzar:.18,description:'Dark ghost orb and expanding impact ring'},
  {id:'lovely-kiss',nombre:'Lovely Kiss',forma:'torre2_lovelykiss',tipo:'NORMAL',dano:0,alcance:225,coste:25,cd:9.8,anim:'Shoot',lanzar:.13,description:'Larger aimed kiss: must physically hit; 75% sleep accuracy after contact, no damage'},
- {id:'ice-beam',nombre:'Ice Beam',forma:'torre2_icebeam',tipo:'ICE',dano:13,alcance:260,coste:28,cd:6.8,anim:'Charge',lanzar:.15,description:'Steerable Aura Storm-style ice beam, shaped crystal tip, sustained channel, aim to hit'},
- {id:'rock-blast',nombre:'Rock Blast',forma:'torre2_rockblast',tipo:'ROCK',dano:12,alcance:250,coste:27,cd:6.8,anim:'Throw',lanzar:.15,description:'Six or seven different polygonal stones, sequential independent contact or miss'},
- {id:'confuse-ray',nombre:'Confuse Ray',forma:'torre2_confuseray',tipo:'GHOST',dano:0,alcance:230,coste:24,cd:9.1,anim:'Charge',lanzar:.16,description:'First original three swirling spectral lights, yellow palette, 85% status on hit'},
- {id:'soft-boiled',nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
+ {id:'ice-beam',nombre:'Ice Beam',forma:'chorro',paleta:'hieloTorre2',haz:true,desdeBoca:true,ancho:17,largo:260,carga:.16,dur:.76,velTrozos:440,pulsos:4,giro:3.5,giroCarga:3.5,empuje:12,empujePulso:3,tipo:'ICE',dano:13,alcance:260,coste:28,cd:6.8,anim:'Charge',lanzar:.15,description:'Authentic Poké Arena Hyper Beam/Aura Storm Chorro, cold recolor and subtle ice crystals'},
+ {id:'rock-blast',approved:true,nombre:'Rock Blast',forma:'torre2_rockblast',tipo:'ROCK',dano:12,alcance:250,coste:27,cd:6.8,anim:'Throw',lanzar:.15,description:'Six or seven different polygonal stones, sequential independent contact or miss'},
+ {id:'confuse-ray',approved:true,nombre:'Confuse Ray',forma:'torre2_confuseray',tipo:'GHOST',dano:0,alcance:230,coste:24,cd:9.1,anim:'Charge',lanzar:.16,description:'First original three swirling spectral lights, yellow palette, 85% status on hit'},
+ {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
  // Use every actual move slot and carry inherited base/evolution properties
@@ -47,10 +47,10 @@ function collect(def){
  return moves;
 }
 const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES];
-const ids=new Map();
+const ids=new Map(),signatureEntries=new Set(SIGNATURE_MOVES);
 for(const h of rawLibrary){
  const id=h.id||norm(h.nombre);
- if(!ids.has(id))ids.set(id,{...h,id,source:h.forma?.startsWith('torre2_')?'new-phaser-fx':'arena2d-original'});
+ if(!ids.has(id))ids.set(id,{...h,id,source:signatureEntries.has(h)?'new-phaser-fx':'arena2d-original'});
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
 export function availableMoves(member){

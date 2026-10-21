@@ -217,6 +217,12 @@ patches.push(
    'const img=this.add.image(x+2,y+3,`retrato-${p.dex}`).setOrigin(0);ponerRetrato(this,img,p.dex);const bloqueado=']
  ]]
 );
+// Ice Beam uses original Chorro.pintarHaz renderer (Hyper Beam / Aura Storm).
+// The client ships unchanged original palettes, plus this opt-in icy variant.
+patches.push(['habilidades.js',[
+ ['const aAspecto=',"PALETAS.hieloTorre2={contorno:0x0b2843,borde:0x5daaca,cuerpo:0x40b9e2,nucleo:0xe4fcff,hebra:0xffffff,hebraAtras:0x66c0dc,claro:0xdaf6ff,particula:\"chispa\"};HAZ.hieloTorre2={halo:0x65bbec,borde:0x143b61,cuerpo:0x68c6e8,nucleo:0xeaffff,veta:0xb0edff,motas:[0xffffff,0xacecff,0x54bbda,0x2787ad]};const aAspecto="],
+ ["if(h.haz&&frente>cola)this.pintarHaz(dt,dispara,S,cos,sin,cola,frente,tc);","if(h.haz&&frente>cola)this.pintarHaz(dt,dispara,S,cos,sin,cola,frente,tc);if(h.paleta===\"hieloTorre2\"&&frente>cola){const gg=this.g,span=Math.max(1,frente-cola-14),step=Math.floor(tc*30);for(const b of S)for(let k=0;k<7;k++){const s=cola+8+((k*43+step*9)%span),side=k%2?1:-1,offset=side*(h.ancho*.69+3+Math.sin(tc*22+k*1.9)*2);const xx=Math.round(b.x+cos*s-sin*offset),yy=Math.round(b.y+sin*s+cos*offset-alturaRayo(b.alt,s));gg.fillStyle(0x113e5e,.9);gg.fillRect(xx-2,yy-4,5,9);gg.fillRect(xx-4,yy-2,9,5);gg.fillStyle(k%3===0?0xffffff:0x9eeafb,1);gg.fillRect(xx-1,yy-4,3,9);gg.fillRect(xx-4,yy-1,9,3);gg.fillStyle(0x49acdf,.9);gg.fillRect(xx-1,yy-1,3,3);}}"]
+]]);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
