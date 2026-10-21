@@ -1,5 +1,21 @@
 # Pokémon Torre 2 — Roteiro de desenvolvimento
 
+## REGRA MESTRE ATUAL — prioridade e isolamento (21/10/2026)
+
+**Prioridade absoluta agora: TERMINAR OS GOLPES.** Não iniciar ainda a reorganização de movesets, slots ou esquiva. Essa etapa fica **adiada até o usuário pedir explicitamente** depois de concluído o trabalho dos golpes.
+
+**Cliente Pokémon Arena 2D congelado:** o padrão original de movimentos, distribuição entre `LMB/ATK`, `RMB/SKL`, `Q`, `E/ULT` e `ESP/DASH`, as habilidades defensivas, estatísticas, arte, lógica, UI e comportamento **permanecem exatamente como estão**. Não aplicar reorganização global ao cliente, não remapear slots nativos, não refazer ou duplicar ataques da base que o usuário já aprovou.
+
+**Escopo autorizado para personalizações futuras:** somente (1) **novos golpes que criarmos para Pokémon Torre 2**, mantendo estatísticas/mecânicas corretas e animações em pixel art com Clash e dissipação quando fizer sentido; e (2) **Pokémon novos que adicionarmos daqui para frente**, com seus próprios slots, movesets, esquiva/defesa e evolução. Quando chegar o momento, organizar e validar essas entidades **sem afetar os Pokémon e golpes do cliente original**. Mudanças por Pokémon ou movimento já aprovado exigem solicitação explícita.
+
+**Referência para a etapa futura (não executar agora):**
+- ATK / LMB: ataque frequente; SKL / RMB: especial 1; Q: especial 2; E: ultimate que usa a barra; ESP: esquiva ou defesa própria.
+- Consultar o padrão do Pokémon Arena 2D como **referência**, sem sobrescrever ou reequilibrar seus kits.
+- Para nossos novos golpes e espécies, definir slots permitidos, efeitos, cooldown, nível de desbloqueio, ultimate e movimento defensivo; testar controles mobile/PC, IA, progressão e preservação das versões aprovadas.
+- **Mewtwo de testes** continua livre para testar novos movimentos enquanto finalizamos a biblioteca; não impor ainda restrição de slots.
+- Não fazer alterações de código motivadas por esta seção sem novo pedido do usuário.
+
+---
 ## V0.1 — motor isolado (implementado e testado)
 
 - Arena real em WebGL/PixiJS, arte original provisória em pixel art.
