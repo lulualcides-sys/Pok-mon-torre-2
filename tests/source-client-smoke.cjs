@@ -88,6 +88,31 @@ const server=http.createServer(async(req,res)=>{
   await page.mouse.click(864,544); // Fight! from original client.
   await page.waitForTimeout(2450);
   await page.screenshot({path:'test-evidence/pokearena-training-battle.png',fullPage:true});
+  // Regression: League has its own scene and initially displayed green
+  // MISSING textures, even while the selection screen loaded correctly.
+  const league=await browser.newPage({viewport:{width:980,height:650}});
+  const leagueErrors=[],leagueMisses=[];
+  league.on('pageerror',err=>leagueErrors.push(String(err)));
+  league.on('response',response=>{if(response.status()>=400)leagueMisses.push(response.url())});
+  await league.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded'});
+  await league.waitForFunction(()=>window.__pt2Started===true&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
+  await league.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('liga'));
+  await league.waitForFunction(()=>window.__pt2Game?.scene.isActive('liga')&&
+    window.__pt2Game.scene.getScene('liga').celdas?.length>0,null,{timeout:35000});
+  const leaguePortraits=await league.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('liga');
+   const missed=scene.celdas.filter(cell=>!scene.textures.exists('retrato-'+cell.p.dex))
+      .map(cell=>({name:cell.p.nombre,dex:cell.p.dex}));
+   return {cards:scene.celdas.length,missed};
+  });
+  assert.ok(leaguePortraits.cards>=15,'League scene must show opponent cards');
+  assert.deepEqual(leaguePortraits.missed,[],
+   'League map must not show empty/green Pokémon portraits');
+  assert.deepEqual(leagueErrors.filter(x=>/ReferenceError|TypeError|SyntaxError/.test(x)),[]);
+  assert.deepEqual(leagueMisses.filter(x=>/\/assets\/pmd\//.test(x)),[]);
+  await league.screenshot({path:'test-evidence/pokearena-league-opponents-restored.png',fullPage:true});
+  await league.close();
+
   // Android landscape: the real LOADING scene must complete before the
   // timeout; merely having a WebGL canvas is not enough.
   const mobile=await browser.newPage({viewport:{width:844,height:390},isMobile:true,hasTouch:true,deviceScaleFactor:2});
