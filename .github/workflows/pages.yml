@@ -107,3 +107,27 @@ jobs:
       - if: steps.pages-enabled.outputs.enabled == 'true'
         id: deploy
         uses: actions/deploy-pages@v4
+      - name: Verificar no Pages publico se o codigo novo foi servido
+        if: steps.pages-enabled.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "JSON.parse(require('fs').readFileSync('_site/arena2d/version.json','utf8')).modules")"
+          base="https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d"
+          echo "VFX esperado no Pages: $version"
+          # CDN publication and propagation can lag deployment by several seconds.
+          # Inspect PUBLIC code, not only successfully built local assets.
+          for n in $(seq 1 18); do
+            if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' "$base/index.html?revision=$version-$n" -o /tmp/torre-live.html \
+                && grep -Fq "src=\"$version/main.js\"" /tmp/torre-live.html \
+                && curl -fsSL --max-time 18 "$base/$version/torre2/next-specific-fx.js" -o /tmp/torre-live-fx.js \
+                && grep -Fq 'const SCISSOR_CUT=[' /tmp/torre-live-fx.js \
+                && grep -Fq 'stencil(palm,HAND_PALM,cx,cy+5,HAND_PAL,1.5)' /tmp/torre-live-fx.js; then
+              echo "CONFIRMADO: GitHub Pages esta servindo a versao $version com golpes atualizados."
+              exit 0
+            fi
+            echo "Pages ainda propagando versao $version ($n/18)"
+            sleep 7
+          done
+          echo "::error::A versao atual nao esta acessivel no endereco publico do jogo"
+          exit 1
