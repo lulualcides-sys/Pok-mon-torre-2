@@ -309,13 +309,14 @@ export function xscissor(l,h,extra){
    const x1=cx+nx*spread,y1=cy+ny*spread;
    const x2=cx-nx*spread,y2=cy-ny*spread;
    if(frame>=7){
-    const t=(frame-7)/5;
-    // Ghost afterimages are strictly the same stamped PIXEL sprites,
-    // smaller opacity, no lines, ellipses, circles or HTML overlays.
-    stencil(blades,SCISSOR_CUT,x1-nx*4*t,y1-ny*4*t,
-     SCISSOR_PALETTE,2,(1-t)*.27,a);
-    stencil(blades,SCISSOR_CROSS,x2+nx*4*t,y2+ny*4*t,
-     SCISSOR_PALETTE,2,(1-t)*.27,a);
+    // Lightweight, separately animated pixel flecks replace full-size
+    // duplicated slashes: avoid thousands of draw calls on older phones.
+    const u=(frame-7)/5;
+    for(let k=0;k<4;k++){
+     const theta=a+PI/4+k*PI/2;
+     stencil(chips,SCISSOR_CHIP,cx+Math.cos(theta)*(24+u*8),
+      cy+Math.sin(theta)*(24+u*8),SCISSOR_PALETTE,1,(1-u)*.4);
+    }
    }
    stencil(blades,SCISSOR_CUT,x1,y1,SCISSOR_PALETTE,2,strength,a);
    stencil(blades,SCISSOR_CROSS,x2,y2,SCISSOR_PALETTE,2,strength,a);
