@@ -46,7 +46,23 @@ const moves=['ice beam','hyper beam','aura storm','confuse ray','shadow ball','f
            fingerprints,moveMentions,hasWebGL:/webgl|getcontext\s*\(\s*['"]webgl/.test(content),
            hasRaf:/requestanimationframe/.test(content),
            hasParticle:/particle|emitter/.test(content),
-           hasAtlas:/atlas|spritesheet|spritesheet/.test(content)});
+           hasAtlas:/atlas|spritesheet|spritesheet/.test(content),
+           primitives:{
+            drawImage:(body.match(/\.drawImage\s*\(/g)||[]).length,
+            fillRect:(body.match(/\.fillRect\s*\(/g)||[]).length,
+            stroke:(body.match(/\.stroke\s*\(/g)||[]).length,
+            putImageData:(body.match(/\.putImageData\s*\(/g)||[]).length,
+            createLinearGradient:(body.match(/\.createLinearGradient\s*\(/g)||[]).length,
+            createRadialGradient:(body.match(/\.createRadialGradient\s*\(/g)||[]).length,
+            composite:(body.match(/globalCompositeOperation/g)||[]).length,
+            webglDraw:(body.match(/\.drawArrays|\.drawElements/g)||[]).length,
+            raf:(body.match(/requestAnimationFrame/g)||[]).length,
+            particle:(body.match(/particle|emitter/gi)||[]).length,
+            atlas:(body.match(/spriteSheet|spritesheet|atlas/gi)||[]).length
+           },
+           declaredFunctions:[...body.matchAll(/\bfunction\s+([A-Za-z_$][\w$]*)\s*\(/g)]
+             .map(x=>x[1]).filter(x=>!x.startsWith('_')).slice(0,25)
+          });
        }catch(error){errors.push('public-script-read '+safe(error.message))}
      }
    });
@@ -97,11 +113,17 @@ const moves=['ice beam','hyper beam','aura storm','confuse ray','shadow ball','f
   'Navigation: '+(r.navError||'ok'),
   'Title: '+(r.dom.title||'?'),
   'Canvas elements: '+JSON.stringify(r.dom.canvas||[]),
+  'Global engine objects detected at runtime: '+JSON.stringify(r.dom.appHints||{}),
   'JS files inspected: '+r.scriptFindings.length,
   'Technology fingerprints (code strings only, not validated libraries): '+JSON.stringify([...new Set(fps)]),
   'Visible move names in public JS (keyword matches only): '+JSON.stringify(mention),
   'Resources: '+JSON.stringify(r.resourceSummary.kinds),
   'Public script paths: '+JSON.stringify(r.scriptFindings.map(x=>x.path)),
+  'Relevant renderer modules (public identifiers and drawing counts, no code copied): '+
+    JSON.stringify(r.scriptFindings.filter(x=>
+      /\/(?:poke-arena-(?:vfx|vfx-data|beams|atlases|animation|move-art-data|lighting|moves|effects-copy|surface-reactions|visual-profiles|art)|original-arena-animation|animation)\.js$/.test(x.path))
+       .map(x=>({path:x.path,bytes:x.bytes,primitives:x.primitives,
+        moveMentions:x.moveMentions,functions:x.declaredFunctions}))),
   'Buttons: '+JSON.stringify((r.dom.buttons||[]).slice(0,15)),
   'Errors: '+JSON.stringify(r.errors)
  ].join('\n');
