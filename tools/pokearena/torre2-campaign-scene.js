@@ -5,6 +5,7 @@ import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
 import {marco,UI as MENU_UI} from '../ui.js';
 import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
+import {earlyKantoSlotPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
@@ -335,6 +336,12 @@ class Campanha extends Phaser.Scene{
   if(state.pendingCapture){state.lastMessage='Resolva a captura antes de continuar.';saveCampaign(state);return this.scene.restart()}
   const match=wild?startWildBattle(state):startBattle(state);
   match.torre2Loadout=resolveLoadout(state.team[state.active]);
+  if(earlyKantoSlotPlan(match.p2)){
+   const level=wild?(state.pendingWild?.level??5):(currentOpponent(state)?.level??5);
+   match.torre2OpponentLoadout=resolveLoadout({
+    id:match.p2,progression:{species:match.p2,level}
+   });
+  }
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
   this.scene.start('combate',match);
@@ -447,9 +454,11 @@ class Campanha extends Phaser.Scene{
   const stats=pokemonStats(member),pool=availableMoves(member);
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
+  const earlyPlan=earlyKantoSlotPlan(member.id);
   this.summaryFilter??='ALL';this.summarySearch??='';
   const slotCodes=['LMB','RMB','Q','E / ULT'];
-  const slotNames=['ATAQUE 1','ATAQUE 2','ESPECIAL','FINALIZADOR'];
+  const slotNames=earlyPlan?['BÁSICO FRACO','GOLPE 1','GOLPE 2','ULTIMATE']:
+   ['ATAQUE 1','ATAQUE 2','ESPECIAL','FINALIZADOR'];
   const types={NORMAL:0xb9c4d2,FIRE:0xf0804d,WATER:0x6fb7f0,ELECTRIC:0xeec95d,
     GRASS:0x83d18a,ICE:0x9bdcee,FIGHTING:0xdb8e77,POISON:0xb98cd9,
     GROUND:0xc3aa77,FLYING:0x98c6e3,PSYCHIC:0xe997bf,BUG:0xaacb70,
@@ -516,7 +525,8 @@ class Campanha extends Phaser.Scene{
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
-  label(231,78,'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,10);
+  label(231,78,earlyPlan?'ESPAÇO = ESQUIVA · Q 2º GOLPE · E ULTIMATE':
+   'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,9);
   chosen.forEach((id,i)=>{
    const move=pool.find(m=>m.id===id);
    const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
@@ -528,7 +538,10 @@ class Campanha extends Phaser.Scene{
    bg.on('pointerout',()=>bg.setFillStyle(current?0x294765:0x172d43));
    label(x+8,y+4,slotCodes[i]+' · '+slotNames[i],
      current?'#ffe6a7':'#96b2ce',9);
-   label(x+8,y+18,move?.nombre??'—',C.white,12);
+   const upcoming=earlyPlan?.[i],need=upcoming?EARLY_KANTO_LEARNSETS[member.id]?.[
+    upcoming.toLowerCase().replace(/[^a-z0-9]+/g,'-')]:null;
+   label(x+8,y+18,move?.nombre??(upcoming?
+    upcoming+' · LV '+(need??'EVO'):'—'),move?C.white:'#f5c578',move?12:10);
    label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
    label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
   });
