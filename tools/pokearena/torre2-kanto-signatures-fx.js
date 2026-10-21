@@ -290,10 +290,17 @@ export function petaldance(l,h,extra){
    if(elapsed<=0||p.spent)continue;
    const d=speed*elapsed;
    if(d>=reach){p.spent=true;continue}
-   // Sixteen petals swirl in a two-lobed spiral. No auto-targeting.
-   const sway=(Math.sin(age*13-i*.93)*8+lanes[i]*(.55+.35*clamp(d/reach)));
-   const x=x0+ux*d+nx*sway;
-   const y=y0+uy*d+ny*sway*.74-Math.sin(age*8+i)*3;
+   // Moving Aura Storm-inspired vortex: each pixel petal orbits, rises,
+   // flutters and travels down its own lane. The flow is never a static ring.
+   // Preserve petal size/palette, real collision and the three-hit limit.
+   const progress=clamp(d/reach);
+   const orbitPhase=elapsed*(11.5+(i%4)*.85)+i*2.399963;
+   const vortexRadius=8+12*Math.sin(progress*PI)**2;
+   const orbitOffset=Math.cos(orbitPhase)*vortexRadius+lanes[i]*.25;
+   const lift=Math.sin(orbitPhase)*vortexRadius*.72;
+   const flutter=Math.sin(elapsed*19+i*1.17)*3;
+   const x=x0+ux*d+nx*orbitOffset-uy*(lift+flutter)*.75;
+   const y=y0+uy*d+ny*orbitOffset*.74+ux*(lift+flutter)*.75;
    const prior=p.before||{x:x0,y:y0};
    p.before={x,y};
    if(r&&!r.ko&&landed<3&&d>10){
@@ -308,7 +315,8 @@ export function petaldance(l,h,extra){
      continue;
     }
    }
-   petal(blooms,x,y,age*10+i*.87,i,.9);
+   // Independent tumbling: alternating quarter-turn pixel frames.
+   petal(blooms,x,y,orbitPhase+Math.sin(elapsed*14+i)*.8,i,.9);
    for(let k=0;k<2;k++){
     const back=8+k*7;
     rect(trail,x-ux*back,y-uy*back,2,2,
