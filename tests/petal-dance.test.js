@@ -85,5 +85,5 @@ test('Petal Dance uses Ice Beam-style controlled aim, not automatic lock-on',()=
  assert.ok(aimed.samples[1].y<still.samples[1].y-8,
   'Petals should curve when the player changes aim');
  assert.ok(aimed.player.accion.angulo<-.2,
-  'Caster turns toward player's aim with the original Chorro-style angular limit');
+  "Caster turns toward player aim with the original Chorro-style angular limit");
 });
