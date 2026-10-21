@@ -66,6 +66,41 @@ const server=http.createServer(async(req,res)=>{
    'Keep every original menu button and its exact navigation');
   assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320],
    'Keep original menu button positions');
+  // Pokedex uses original 26 portraits, not empty/green placeholders:
+  // native layout and clickable evolution tabs must remain unchanged.
+  const dexPage=await browser.newPage({viewport:{width:980,height:650}});
+  const dexErr=[];dexPage.on('pageerror',e=>dexErr.push(String(e)));
+  await dexPage.goto('http://127.0.0.1:4274/arena2d/?pantalla=pokedex',
+   {waitUntil:'domcontentloaded',timeout:30000});
+  await dexPage.waitForFunction(()=>window.__pt2Game?.scene?.isActive('pokedex'),
+   null,{timeout:45000});
+  const dexData=await dexPage.evaluate(()=>{
+   const p=window.__pt2Game.scene.getScene('pokedex');
+   const base=p.casillas.map(x=>x.p.dex);
+   return {count:p.casillas.length,portraits:base.map(id=>({
+    id,exists:p.textures.exists('retrato-'+id),
+    idle:p.anims.exists(id+'-Idle-0')})),
+    tabNames:p.etapas.map(x=>x.nombre)};
+  });
+  assert.equal(dexData.count,26,'Pokedex must preserve the original 26-card roster');
+  assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
+   'Every base Pokédex Pokémon must have a real captured PMD portrait and Idle: '+
+    JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
+  assert.deepEqual(dexData.tabNames.slice(0,3),['BULBASAUR','IVYSAUR','VENUSAUR'],
+   'Original Bulbasaur family tabs must remain clickable');
+  await dexPage.evaluate(()=>window.__pt2Game.scene.getScene('pokedex').irEtapa(1));
+  await dexPage.waitForFunction(()=>{
+   const p=window.__pt2Game.scene.getScene('pokedex');
+   return p.etapa===1&&p.anims.exists('0002-Idle-0')&&p.sprite?.dex==='0002';
+  },null,{timeout:16000});
+  await dexPage.evaluate(()=>window.__pt2Game.scene.getScene('pokedex').irEtapa(2));
+  await dexPage.waitForFunction(()=>{
+   const p=window.__pt2Game.scene.getScene('pokedex');
+   return p.etapa===2&&p.anims.exists('0003-Idle-0')&&p.sprite?.dex==='0003';
+  },null,{timeout:16000});
+  assert.deepEqual(dexErr,[],'Pokedex and evolution buttons must not throw');
+  await dexPage.screenshot({path:'test-evidence/pokedex-real-pmd-and-venusaur-evolution.png',fullPage:true});
+  await dexPage.close();
   await page.screenshot({path:'test-evidence/pokearena-original-phaser-source.png',fullPage:true});
   // Exercise the real on-canvas Play button rather than stopping at the title.
   await page.mouse.click(490,275);
