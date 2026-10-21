@@ -11,8 +11,7 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'bone-club',nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
  {id:'tri-attack',nombre:'Tri Attack',forma:'torre2_triattack',tipo:'NORMAL',dano:13,alcance:240,coste:30,cd:6.2,anim:'Charge',lanzar:.2,description:'Fire / ice / electric three-point projectile'},
  {id:'pay-day',nombre:'Pay Day',forma:'torre2_payday',tipo:'NORMAL',dano:10,alcance:235,coste:23,cd:5.4,anim:'Shoot',lanzar:.15,description:'Nine scattered coins, each with independent impact'},
- {id:'surf',nombre:'Surf',forma:'torre2_surf',tipo:'WATER',dano:15,alcance:255,coste:36,cd:8.1,anim:'Shoot',lanzar:.23,description:'Wide sweeping pixel-wave with foam and broad collision'},
- {id:'swift',nombre:'Swift',forma:'torre2_swift',tipo:'NORMAL',dano:10,alcance:250,coste:21,cd:5.2,anim:'Shoot',lanzar:.15,description:'Golden homing pixel stars, never misses'},
+ {id:'swift',nombre:'Swift',forma:'torre2_swift',tipo:'NORMAL',dano:10,alcance:250,coste:21,cd:5.2,anim:'Shoot',lanzar:.15,description:'Five consecutive tiny stars with independent projectile collision, each can miss'},
  {id:'shadow-ball',nombre:'Shadow Ball',forma:'torre2_shadowball',tipo:'GHOST',dano:14,alcance:245,coste:31,cd:6.5,anim:'Charge',lanzar:.18,description:'Dark ghost orb and expanding impact ring'},
  {id:'lovely-kiss',nombre:'Lovely Kiss',forma:'torre2_lovelykiss',tipo:'NORMAL',dano:0,alcance:225,coste:25,cd:9.8,anim:'Shoot',lanzar:.13,description:'75% hit; sleep status, no damage'}
 ]);
