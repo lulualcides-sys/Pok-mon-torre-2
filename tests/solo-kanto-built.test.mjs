@@ -89,12 +89,12 @@ for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow
  'mud-slap','seed-bomb','super-fang'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
+assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
+ ['torre2_bonemerang','torre2_boneclub','torre2_triattack','torre2_payday']);
 for(const id of ['mud-slap','seed-bomb','super-fang']){
  assert.equal(equipMove(tester,0,id),true,'new adapted Kanto move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new adapted move usable in battle '+id);
 }
-assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
- ['torre2_bonemerang','torre2_boneclub','torre2_triattack','torre2_payday']);
 const confusion=allMoves.find(x=>x.nombre==='Confusion');
 assert.ok(confusion);
 assert.equal(equipMove(tester,0,confusion.id),true);
