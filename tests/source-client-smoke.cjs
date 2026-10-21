@@ -269,11 +269,17 @@ const server=http.createServer(async(req,res)=>{
   const moveSmoke={species:'mewtwo',level:50,enemy:'onix',forms:[]};
   for(const [slot,name,delay] of [
    ['lmb','bonemerang',300],['rmb','bone-club',260],
-   ['q','tri-attack',380],['e','pay-day',360]]){
-   const result=await tester.evaluate(async sl=>{
+   ['q','tri-attack',380],['e','pay-day',360],
+   ['lmb','surf',520],['rmb','swift',450],
+   ['q','shadow-ball',490],['e','lovely-kiss',570]]){
+   const result=await tester.evaluate(async ({sl,moveName})=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
     const fx=await import(new URL('./habilidades.js',entry.src).href);
+    const pool=await import(new URL('./torre2/move-pool.js',entry.src).href);
     const e=window.__pt2Game.scene.getScene('combate'),l=e.luchadores[0],r=e.luchadores[1];
+    const attack=pool.SIGNATURE_MOVES.find(x=>x.id===moveName);
+    if(!attack)throw Error('Missing attack in test catalog '+moveName);
+    l.kit[sl]={...attack};
     l.x=300;l.y=215;l.hp=l.hpMax;l.energia=100;l.ulti=100;
     r.x=371;r.y=215;r.hp=r.hpMax;
     l.ax=r.x;l.ay=r.y;
@@ -281,7 +287,7 @@ const server=http.createServer(async(req,res)=>{
     const before=e.efectos.length,ok=fx.usarHabilidad(l,sl);
     return {slot:sl,ok,forma:l.kit[sl]?.forma,rendered:e.efectos.length>before,
       initialEnemyHp:r.hp};
-   },slot);
+   },{sl:slot,moveName:name});
    assert.equal(result.ok,true,'move rejected '+slot);
    assert.equal(result.rendered,true,'no new Phaser effect '+slot);
    assert.ok(result.forma?.startsWith('torre2_'),'not our custom Phaser VFX '+slot);
@@ -290,9 +296,9 @@ const server=http.createServer(async(req,res)=>{
    await tester.screenshot({path:'test-evidence/torre2-'+name+'-active-battle.png',fullPage:true});
    await tester.waitForTimeout(850);
   }
-  assert.equal(moveSmoke.forms.length,4);
+  assert.equal(moveSmoke.forms.length,8);
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
-  assert.deepEqual(newErrors,[],'Mewtwo summary + four Phaser moves must not crash');
+  assert.deepEqual(newErrors,[],'Mewtwo summary + eight Phaser moves must not crash');
   await tester.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
    notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke},result:'Original Phaser + solo Kanto verified'};
