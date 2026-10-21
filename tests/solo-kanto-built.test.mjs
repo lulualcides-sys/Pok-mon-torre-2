@@ -148,8 +148,10 @@ assert.ok(newVfx.includes('const WAG=[0,1,2,3,3,2,1,0,0,1,2,3]'),
  'Metronome requires 12 named animation poses instead of a CSS-like moving slab');
 assert.ok(newVfx.includes('stencil(blades,SCISSOR_BLADE'),
  'X-Scissor uses two jagged pixel sprites, not vector strokes');
-assert.ok(!/\\.fillCircle\\(|\\.fillEllipse\\(|\\.strokePath\\(|\\.lineTo\\(|\\.arc\\(/.test(newVfx),
- 'New effects must use only authored pixel stencils, not Canvas-like vectors');
+for(const forbidden of ['.fillCircle(','.fillEllipse(','.strokePath(','.lineTo(','.arc(']){
+ assert.ok(!newVfx.includes(forbidden),
+  'New effects must use only authored pixel stencils, not Canvas-like vectors: '+forbidden);
+}
 
 assert.equal(equipMove(tester,0,'bonemerang'),true);
 const kantoFile=fs.readFileSync(path.join(stage,version,'torre2/kanto-signatures-fx.js'),'utf8');
