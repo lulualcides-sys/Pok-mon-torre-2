@@ -35,3 +35,12 @@ O primeiro lote foi **reprovado visualmente** pelo usuário: contornos grandes, 
 - **X-Scissor:** duas lâminas serrilhadas inteiramente desenhadas em matriz, com contorno escuro, lâmina verde e borda clara, atravessam a mesma posição em um X; único impacto físico no cruzamento e somente se acertar.
 
 **Petal Dance e os 16 outros aprovados não sofreram alterações.** Estes três continuam **sem aprovação visual** até o usuário testar a atualização.
+
+## 3º refinamento — 21/10/2026 (não aprovado ainda)
+- **Menu principal:** logomarca "Pokémon Torre" aprovada e congelada; não editar menu, botões, logo, layout ou funções.
+- **Metronome:** palma de 3 para 1,5 pixels/célula, dedo de 3 para 1,5; mover a palma e o dedo proporcionalmente; estrela e raio orbital reduzidos pela metade. Aleatoriedade e golpe sorteado preservados.
+- **Absorb:** folha principal de 3 para 1,5 pixels/célula; motes e energia de cura de 2 para 1, estrelas e ondulação de trilha reduzidas ~50%; manter mira livre, dano apenas ao acertar e cura de 50% do dano real.
+- **X-Scissor:** reprovado na versão anterior (parecia dois objetos verdes em X). Substituído por duas matrizes manuais de corte crescente/ciano, com ponta afiada, contorno escuro e núcleo claro. Doze quadros de movimento até cruzarem fisicamente em X, faíscas de pixel somente com contato real e uma só aplicação de dano. Nenhum projétil ou alvo teleguiado; efeitos duplicados substituídos por pequenos fragmentos para desempenho em Android.
+- **Aprovação:** Metronome, Absorb e X-Scissor continuam aguardando avaliação visual. Os 17 golpes aprovados e o cliente original permanecem intocados.
+
+Referência de funcionamento: [Pokémon Database — X-Scissor](https://pokemondb.net/move/x-scissor), golpe físico inseto feito com corte cruzado das garras/foices.
