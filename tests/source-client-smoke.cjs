@@ -334,6 +334,24 @@ const server=http.createServer(async(req,res)=>{
    await tester.waitForTimeout(850);
   }
   assert.equal(moveSmoke.forms.length,8);
+  // Regress false contact: Shadow Ball must finish silently when the target is
+  // outside range, without damage or an orphaned purple ring after expiration.
+  const shadowMiss=await tester.evaluate(async()=>{
+    const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+    const {shadowball}=await import(new URL('./torre2/next-batch-fx.js',entry.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const l=e.luchadores[0],r=e.luchadores[1];
+    l.x=200;l.y=200;r.x=570;r.y=200;
+    l.ax=r.x;l.ay=r.y;r.hp=r.hpMax;
+    const startHP=r.hp;
+    const projectile=shadowball(l,{tipo:'GHOST',dano:11,alcance:120},{slot:'lmb'});
+    let running=true;
+    for(let i=0;i<50&&running;i++)running=projectile.update(.024);
+    return {expired:!running,hpUnchanged:r.hp===startHP};
+  });
+  assert.equal(shadowMiss.expired,true,'Shadow Ball must self-dispose on miss');
+  assert.equal(shadowMiss.hpUnchanged,true,'Shadow Ball must not cause ghost damage on miss');
+
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + eight Phaser moves must not crash');
   await tester.close();
