@@ -255,20 +255,19 @@ const server=http.createServer(async(req,res)=>{
     const map=labels();
     const portraits=c.children.list.filter(o=>o.type==='Image'&&
       String(o.texture?.key||'').startsWith('torre2-portrait-')).length;
+    const img=c.children.list.find(o=>o.type==='Image'&&o.texture?.key==='torre2-approved-kanto');
+    const dashboard={loaded:c.textures.exists('torre2-approved-kanto'),
+     width:img?.displayWidth,height:img?.displayHeight,
+     actions:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length};
     c.grassScreen(state);const grass=labels();
     c.centerScreen(state);const center=labels();
     c.martScreen(state);const mart=labels();
     c.bagScreen(state);const bag=labels();
     c.scene.restart();
-    return {map,grass,center,mart,bag,portraits};
+    return {map,grass,center,mart,bag,portraits,dashboard};
   });
   // Approved concept artwork is a real graphics texture, with live hit areas.
-  const dashboard=await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   const img=c.children.list.find(o=>o.type==='Image'&&o.texture?.key==='torre2-approved-kanto');
-   return {loaded:c.textures.exists('torre2-approved-kanto'),width:img?.displayWidth,
-    height:img?.displayHeight,actions:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length};
-  });
+  const dashboard=newMap.dashboard;
   assert.equal(dashboard.loaded,true,'Approved artwork must load in Phaser');
   assert.equal(dashboard.width,640,'Approved artwork must fill the Kanto canvas');
   assert.equal(dashboard.height,360,'Approved artwork must respect native 16:9');
