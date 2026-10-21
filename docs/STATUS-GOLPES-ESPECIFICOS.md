@@ -60,3 +60,10 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - **Origem dos efeitos:** aproveitar o sistema já existente do cliente Poké Arena 2D para projéteis e raios sem alterá-los; criar a mesma interface de colisão para novos movimentos personalizados e avançar por classes (projéteis, feixes, cones, lâminas, área). Preservar estatísticas e as artes de todos os movimentos aprovados.
 - Um Clash nunca pode modificar as matrizes dos sprites aprovados: o efeito entra como camada transitória e deve ser testado em batalha (inclusive ao errar, acertar e quando é cancelado por outro ataque).
 - Esta regra é **meta de cobertura global**. Registrar quais classes já são realmente cobertas pelos testes, sem marcar prematuramente todos os ataques como finalizados.
+
+### Cobertura atual de Clash (implantação inicial, 21/10/2026)
+- **Projétil nativo × projétil nativo:** a base Pokémon Arena 2D já fornece colisão, texto CLASH, som e encerramento dos projéteis. **Preservado sem edições**.
+- **Feixe nativo × feixe nativo:** o cliente já detecta cruzamento de segmentos e aciona CLASH. **Preservado sem edições**.
+- **Mud-Slap/Seed Bomb × projétil nativo ou entre si:** ponte nova em `tools/pokearena/torre2-clash-fx.js`, raio físico, cancelamento antes do dano, **10 quadros de pixel art com dissipação**, criação postergada para que o loop do Phaser não descarte o efeito. Sem mexer no sprite aprovado nem no Super Fang.
+- **Outros movimentos específicos próprios:** **ainda pendentes de instrumentação individual da hitbox**. Não marcar como concluídos globalmente até o teste na arena; golpes sem projétil (mordidas, status, cura) exigem interfaces de hitbox adequadas.
+- **Teste automático:** `tests/solo-kanto-built.test.mjs` garante instalação; `tests/source-client-smoke.cjs` cobre colisão real, erro de mira, aliados, dissipação e descarte completo de gráficos Phaser.
