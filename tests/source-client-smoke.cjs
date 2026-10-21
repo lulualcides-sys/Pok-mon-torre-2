@@ -315,6 +315,36 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(outRequests,[],'no external account or multiplayer endpoints in campaign');
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-after-first-victory.png',fullPage:true});
   await offline.close();
+  // Public test URL needs to open the actual Mewtwo summary with BOTH new VFX
+  // equipped, while keeping normal campaign progress in a separate save.
+  const preview=await browser.newPage({viewport:{width:980,height:650},deviceScaleFactor:1});
+  const previewErrors=[];preview.on('pageerror',e=>previewErrors.push(String(e)));
+  await preview.goto('http://127.0.0.1:4274/arena2d/?testMoves=bite-crunch',
+   {waitUntil:'domcontentloaded',timeout:30000});
+  await preview.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha')&&
+   window.__torre2BiteCrunchOpened===true,null,{timeout:65000});
+  const previewInfo=await preview.evaluate(async()=>{
+   const entry=[...document.querySelectorAll('script[src]')].find(s=>s.src.includes('/main.js'));
+   const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
+   const pool=await import(new URL('./torre2/move-pool.js',entry.src).href);
+   const s=core.readCampaign(),m=s.team[s.active];
+   const names=window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(x=>typeof x.text==='string').map(x=>x.text);
+   return {storage:core.SAVE_KEY,member:m.id,moves:pool.selectedMoves(m),
+    forms:Object.values(pool.resolveLoadout(m)).map(move=>move.forma),
+    showsBite:names.includes('Bite'),showsCrunch:names.includes('Crunch'),
+    realSave:localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')};
+  });
+  assert.equal(previewInfo.storage,'pokemon-torre-2-bite-crunch-preview-v1');
+  assert.equal(previewInfo.member,'mewtwo');
+  assert.deepEqual(previewInfo.moves.slice(0,2),['bite','crunch']);
+  assert.deepEqual(previewInfo.forms.slice(0,2),['torre2_bite','torre2_crunch']);
+  assert.equal(previewInfo.showsBite,true,'Bite shown in first preview slot');
+  assert.equal(previewInfo.showsCrunch,true,'Crunch shown in second preview slot');
+  assert.equal(previewInfo.realSave,null,'Never reset ordinary Kanto saves');
+  assert.deepEqual(previewErrors,[],'Test link boots without browser errors');
+  await preview.screenshot({path:'test-evidence/torre2-bite-crunch-visible-preview.png',fullPage:true});
+  await preview.close();
   // Real Mewtwo summary and actual execution of all four newly drawn VFX.
   const tester=await browser.newPage({viewport:{width:980,height:650},deviceScaleFactor:1});
   const newErrors=[];
