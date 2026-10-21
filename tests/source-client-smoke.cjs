@@ -353,7 +353,7 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(shadowMiss.hpUnchanged,true,'Shadow Ball must not cause ghost damage on miss');
 
 
-  // Actual 5-star Swift physics: each projectile impacts only on contact.
+  // Actual 7-star Swift physics: fan trajectories; independent hits only on contact.
   // It is not enough to call "usarHabilidad": prove sequential multi-hit
   // against stationary target, absolute miss, and partial hit after dodge.
   const swiftCollision=await tester.evaluate(async()=>{
@@ -381,17 +381,54 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(swiftCollision.every(t=>t.expired),'Swift projectiles must expire cleanly');
   assert.ok(swiftCollision[0].hits>=2,'Swift needs multiple separate successful star impacts');
-  assert.ok(swiftCollision[0].hits<=5,'Swift must never hit more than its five stars');
+  assert.ok(swiftCollision[0].hits<=7,'Swift must never hit more than its seven stars');
   assert.equal(swiftCollision[1].hits,0,'Swift must deal NO damage when all stars miss');
   assert.ok(swiftCollision[2].hits<swiftCollision[0].hits,
     'Dodging during flight must avoid later stars; no automatic full damage');
   assert.equal(swiftCollision[1].hp,100,'Swift miss must not reduce health');
 
+  // Lovely Kiss: aiming is mandatory, status chance is applied only after
+  // collision, and a blocked/missed projectile cannot put an opponent asleep.
+  const kissPhysics=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const {lovelykiss}=await import(new URL('./torre2/next-batch-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const originalRandom=Math.random,results=[];
+    try{
+      const run=(mode)=>{
+        const enemy={x:285,y:mode==='miss'?375:215,alto:38,ko:false,
+         statuses:[],ponerEstado(...args){this.statuses.push(args)}};
+        const l={x:174,y:215,alto:38,ax:390,ay:215,rival:enemy,
+         escena:e,t:0,animar(){},accion:null};
+        const fx=lovelykiss(l,{tipo:'NORMAL',dano:0,alcance:225},{slot:'lmb'});
+        let alive=true;
+        for(let step=0;step<93&&alive;step++){
+          if(mode==='dodge'&&step===12)enemy.y=375;
+          alive=fx.update(.016);
+        }
+        fx.destroy();
+        e.efectos=e.efectos.filter(item=>item!==fx);
+        return{mode,applied:enemy.statuses.length,expired:!alive};
+      };
+      Math.random=()=>.12;
+      results.push(run('hit'));results.push(run('miss'));
+      results.push(run('dodge'));
+      Math.random=()=>.96;
+      results.push(run('rollfail'));
+      return results;
+    }finally{Math.random=originalRandom}
+  });
+  assert.deepEqual(kissPhysics.map(x=>x.applied),[1,0,0,0],
+    'Lovely Kiss must require actual aimed contact AND pass accuracy check');
+  assert.ok(kissPhysics.every(x=>x.expired),
+    'Lovely Kiss must leave no lingering graphics after hit or miss');
+
+
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
   await tester.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke,swiftCollision},result:'Original Phaser + solo Kanto verified'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke,swiftCollision,kissPhysics},result:'Original Phaser + solo Kanto verified'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{
