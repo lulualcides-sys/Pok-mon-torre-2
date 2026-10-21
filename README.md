@@ -1,21 +1,29 @@
 # Pokémon Torre 2 — Kanto Battle Engine
 
+**🎮 [JOGAR POKÉMON TORRE 2 — GITHUB PAGES PERMANENTE](https://lulualcides-sys.github.io/Pok-mon-torre-2/)**
+
+**ATUALIZAÇÃO TESTADA — 2 + 4 GOLPES:** Tri Attack com feixes e impacto melhorados, Pay Day com moedas espalhadas em leque, Surf, Swift, Shadow Ball e Lovely Kiss criados em Phaser/WebGL. Bonemerang e Bone Club preservados conforme aprovação. **Mewtwo nível 50 com 161 golpes selecionáveis** no Sumário. [Detalhes do patch](docs/PATCH-SURF-SWIFT-SHADOWBALL-LOVELYKISS.md) · [Batalhas dos oito golpes testadas](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39520429183) · [Publicação GitHub Pages confirmada](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39520574366).
+
+**Jogo publicado na raiz do Pages:** o GitHub Pages está habilitado. O motor Phaser está em [`/arena2d/`](https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/), e o laboratório Pixi antigo fica em [`/lab.html`](https://lulualcides-sys.github.io/Pok-mon-torre-2/lab.html).
+
+
+
 **▶ [JOGAR — VERSÃO CORRIGIDA (CDN)](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)** — publicado e verificado em desktop e Android horizontal. [Link alternativo direto](https://raw.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html).
 
 **Correção do Loading:** antes o cliente carregava os retratos de todas as 76 entradas do manifesto (e animações Idle/Walk) antes do menu. Agora carrega só as linhas iniciais necessárias; os demais sprites continuam disponíveis sob demanda durante a seleção e a batalha. Inclui mensagem recuperável após atraso de inicialização, sem excluir Pokémon nem golpes. Ambas as rotas públicas passaram pelo Chromium, inclusive Android simulado, no [teste 39517268452](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39517268452).
 
-**Hospedagem definitiva gratuita:** o GitHub Pages deste repositório ainda precisa ser habilitado em **Settings → Pages → Build and deployment → Source: GitHub Actions**. O deploy automático está pronto: depois de habilitado, a raiz `https://lulualcides-sys.github.io/Pok-mon-torre-2/` redireciona para o Phaser Kanto, e o laboratório Pixi permanece em `/lab.html`. O status "success" do workflow que apenas monta artefatos não confirma que o GitHub Pages esteja ativo.
+**Hospedagem gratuita permanente:** GitHub Pages habilitado, implantado e testado na versão Phaser/Kanto. [Abrir jogo](https://lulualcides-sys.github.io/Pok-mon-torre-2/)
 
 
 
 ## Pokémon Torre 2 Kanto — jogo SOLO (Phaser)
 
-**AUDITORIA REAL DOS GOLPES:** [inventário dos 160 golpes originais, por tipo, com o que já existe e o que falta](docs/AUDITORIA-160-GOLPES-POKEARENA2D.md). O catálogo do tipo Pedra **já contém Rock Slide, Rock Throw, Stone Edge, Smack Down e Rollout**. Conferência de todos os 26 personagens com evoluções e Megas: [GitHub Actions](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39510957595). Mewtwo de teste ampliado de **137 para 157 opções**, incluindo os quatro movimentos inéditos do Torre 2. Os novos quatro propostos, ainda não implementados: **Surf, Swift, Shadow Ball e Lovely Kiss**, que estão ausentes na versão capturada do site.
+**AUDITORIA REAL DOS GOLPES:** [inventário dos 160 golpes originais, por tipo, com o que já existe e o que falta](docs/AUDITORIA-160-GOLPES-POKEARENA2D.md). O catálogo do tipo Pedra **já contém Rock Slide, Rock Throw, Stone Edge, Smack Down e Rollout**. Conferência de todos os 26 personagens com evoluções e Megas: [GitHub Actions](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39510957595). Mewtwo de teste ampliado de **137 para 161 opções**, incluindo os quatro movimentos inéditos do Torre 2. Os novos quatro propostos, ainda não implementados: **Surf, Swift, Shadow Ball e Lovely Kiss**, que estão ausentes na versão capturada do site.
 
 **PATCH 1 CONCLUÍDO E TESTADO:** Bonemerang -50% de escala; Bone Club menor e +10% de alcance; Pay Day com nove moedas; Tri Attack refeito para apresentar três feixes simultâneos de fogo, gelo e eletricidade com uma formação triangular (pesquisa Bulbapedia/Pokémon Database); **Sumário dos golpes redesenhado** no Phaser com 4 slots 2×2, atributos, banco de seis movimentos por página, filtros de tipo e busca por nome. [Relatório](docs/PATCH-1-GOLPES-MENU-2026-10-20.md) · [Testes incluindo batalha e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39505390551).
 
 
-**Atualização testada:** quatro efeitos exclusivos novos em Phaser: **Bonemerang, Bone Club, Tri Attack e Pay Day**, Mewtwo de testes **nível 50 na equipe**, banco com **157 golpes selecionáveis (incluindo quatro novos)** e **Sumário interativo** com retrato, HP, ATK, DEF, SPD, quatro botões equipáveis e salvamento persistente. O clique em um Pokémon abre o Sumário. [Relatório e próximos refinamentos](docs/LOTE-4-GOLPES-MEWTWO-LV50.md) e [testes da batalha real e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39495106150). Golpes existentes no cliente Poké Arena, como Egg Bomb, High Jump Kick e Volt Tackle, não foram redesenhados. Os quatro VFX exclusivos são **primeira versão para aprovação visual**, não promessa de cópia idêntica.
+**Atualização testada:** quatro efeitos exclusivos novos em Phaser: **Bonemerang, Bone Club, Tri Attack e Pay Day**, Mewtwo de testes **nível 50 na equipe**, banco com **161 golpes selecionáveis (incluindo quatro novos)** e **Sumário interativo** com retrato, HP, ATK, DEF, SPD, quatro botões equipáveis e salvamento persistente. O clique em um Pokémon abre o Sumário. [Relatório e próximos refinamentos](docs/LOTE-4-GOLPES-MEWTWO-LV50.md) e [testes da batalha real e Android](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/39495106150). Golpes existentes no cliente Poké Arena, como Egg Bomb, High Jump Kick e Volt Tackle, não foram redesenhados. Os quatro VFX exclusivos são **primeira versão para aprovação visual**, não promessa de cópia idêntica.
 
 
 [**▶ JOGAR POKÉMON TORRE 2 — CAMPANHA KANTO SOLO**](https://rawcdn.githack.com/lulualcides-sys/Pok-mon-torre-2/9eabc99b9c7fbe8b87c7c4a73df56b54092b5d45/index.html)
