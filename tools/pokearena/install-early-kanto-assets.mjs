@@ -37,15 +37,30 @@ function readTag(segment,name){
  return m?.[1]?.trim()||'';
 }
 function parseAnimationManifest(xml,dex){
- const anims={};
+ const definitions=new Map();
  for(const found of xml.matchAll(/<Anim>\s*([\s\S]*?)<\/Anim>/g)){
   const block=found[1],name=readTag(block,'Name');
-  if(![...REQUIRED,...OPTIONAL].includes(name)||readTag(block,'CopyOf'))continue;
+  if(!name)continue;
+  const copy=readTag(block,'CopyOf');
   const fw=Number(readTag(block,'FrameWidth')),fh=Number(readTag(block,'FrameHeight'));
   const durations=[...block.matchAll(/<Duration>(\d+)<\/Duration>/g)].map(x=>Number(x[1]));
-  if(!fw||!fh||!durations.length)continue;
-  anims[name]={file:dex+'/'+name+'-Anim.png',fw,fh,durations,
-   hitFrame:Number(readTag(block,'HitFrame')||-1),returnFrame:Number(readTag(block,'ReturnFrame')||-1)};
+  definitions.set(name,{name,copy,fw,fh,durations,
+   hitFrame:Number(readTag(block,'HitFrame')||-1),
+   returnFrame:Number(readTag(block,'ReturnFrame')||-1)});
+ }
+ const anims={};
+ for(const name of [...REQUIRED,...OPTIONAL]){
+  const original=definitions.get(name);
+  if(!original)continue;
+  let source=original,tries=0;
+  while(source.copy&&tries++<5)source=definitions.get(source.copy);
+  if(!source?.fw||!source.fh||!source.durations.length)continue;
+  // CopyOf clips (e.g. Beedrill Idle=Walk) must reuse source PNG
+  // and frame metadata; do NOT request a missing Idle-Anim.png.
+  anims[name]={file:dex+'/'+source.name+'-Anim.png',
+   fw:source.fw,fh:source.fh,durations:source.durations,
+   hitFrame:original.hitFrame>=0?original.hitFrame:source.hitFrame,
+   returnFrame:original.returnFrame>=0?original.returnFrame:source.returnFrame};
  }
  if(!anims.Idle||!anims.Walk)throw Error('Incomplete SpriteCollab Idle/Walk metadata '+dex);
  return {shadowSize:Number(readTag(xml,'ShadowSize')||1),anims};
@@ -72,12 +87,13 @@ export async function installEarlyKantoSprites(destination){
   // Missing optional clips aren't advertised. Required clips never silently
   // disappear, avoiding a blank Pokémon or delayed runtime 404.
   await eachLimited(Object.entries(entry.anims),3,async([name,info])=>{
-   const data=await download('sprite/'+dex+'/'+name+'-Anim.png',
+   const sourceFile=path.basename(info.file);
+   const data=await download('sprite/'+dex+'/'+sourceFile,
     {required:REQUIRED.includes(name)});
    if(!data){delete entry.anims[name];return;}
    if(!data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))
-    throw Error('Invalid PNG sprite '+dex+'/'+name);
-   await fs.writeFile(path.join(folder,name+'-Anim.png'),data);
+    throw Error('Invalid PNG sprite '+dex+'/'+sourceFile);
+   await fs.writeFile(path.join(folder,sourceFile),data);
   });
   const portrait=await download('portrait/'+dex+'/Normal.png',{required:false});
   if(portrait){
