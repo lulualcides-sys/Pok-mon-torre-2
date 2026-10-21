@@ -120,4 +120,7 @@ const save=items.get(SAVE_KEY);assert.ok(save.includes('"version":1'));
 const before=state.trainer;
 resolveBattle(state,false);
 assert.equal(state.trainer,before,'a lost battle does not advance trainer progression');
+assert.equal(readCampaign().losses,state.losses,'defeat statistics must persist after refresh');
+assert.equal(readCampaign().trainer,before,'loss must not advance the saved trainer');
+assert.equal(readCampaign().pendingCapture,null,'loss must clear any stale capture opportunity');
 console.log('PASS offline Kanto campaign: 151 names, 8 gyms, 13 trainers, badges, captures, saves and no in-combat evolution.');

@@ -135,7 +135,13 @@ export function startBattle(s){
 export function resolveBattle(s,won,random=Math.random){
  const opponent=currentOpponent(s);
  if(!opponent)throw new Error('No battle pending');
- if(!won){s.losses++;s.lastMessage='Derrota contra '+opponent.name+'. Cure a equipe e tente novamente.';return {won:false,message:s.lastMessage,evolutions:[]}}
+ if(!won){
+  s.losses++;
+  s.pendingCapture=null; // Never retain a capture opportunity from a prior victory.
+  s.lastMessage='Derrota contra '+opponent.name+'. Cure a equipe e tente novamente.';
+  saveCampaign(s);
+  return {won:false,message:s.lastMessage,evolutions:[]};
+ }
  recordSeen(s,opponent.id);
  const member=s.team[s.active],p=member.progression;
  // The species remains unchanged throughout the battle and evolves now only
