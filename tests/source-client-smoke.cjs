@@ -355,6 +355,14 @@ const server=http.createServer(async(req,res)=>{
    const root={equipped:true,search:true,paging:first.some(x=>x.includes('PÁGINAS'))};
    scene.showMoveTypePicker(state,1,0);
    if(!labels().includes('GROUND'))throw Error('Type picker is not populated');
+   if(!labels().includes('NEW'))throw Error('NEW tab missing from TIPO picker');
+   scene.summaryFilter='NEW';scene.summarySearch='';
+   scene.showSummary(state,1,0,0);
+   if(!labels().some(x=>x.includes('FILTRO: NEW')))throw Error('NEW filter label missing');
+   if(!labels().some(x=>x.includes('Bind')))throw Error('Pending Bind missing in NEW');
+   if(labels().some(x=>x.includes('Bonemerang')))throw Error('Approved move leaked into NEW');
+   scene.showMoveTypePicker(state,1,0);
+   if(!labels().includes('NEW'))throw Error('NEW not available on reopening types');
    scene.summaryFilter='GROUND';
    scene.showSummary(state,1,0,0);
    if(!labels().some(x=>x.includes('FILTRO: GROUND')))throw Error('GROUND filter label missing');
@@ -363,9 +371,10 @@ const server=http.createServer(async(req,res)=>{
    scene.showSummary(state,1,0,0);
    if(!labels().some(x=>x.includes('Pay Day')))throw Error('Move search not working');
    scene.summarySearch='';scene.showSummary(state,1,0,0);
-   return {...root,typePicker:true,typeFiltering:true,searchFiltering:true};
+   return {...root,typePicker:true,typeFiltering:true,searchFiltering:true,newApprovalTab:true};
   });
   assert.equal(uiCheck.typePicker,true);
+  assert.equal(uiCheck.newApprovalTab,true,'NEW should work in the existing TIPO picker');
   await tester.screenshot({path:'test-evidence/torre2-mewtwo-redesigned-moves.png',fullPage:true});
 
   await tester.evaluate(async()=>{

@@ -26,7 +26,8 @@ const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
 const items=new Map();
 globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
 const {availableMoves,equipMove,selectedMoves,resolveLoadout,
- TEST_LIBRARY,SIGNATURE_MOVES,canonicalMoveKey}=await import(
+ TEST_LIBRARY,SIGNATURE_MOVES,canonicalMoveKey,
+ isPendingApprovalMove,filterMoveLibrary}=await import(
  pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
 assert.equal(KANTO_DEX.length,151);
 assert.equal(GYMS.length,8);
@@ -99,6 +100,23 @@ assert.deepEqual(repeatedOriginals,[],
 assert.equal(canonicalMoveKey('Bola Sombria'),canonicalMoveKey('Shadow Ball'));
 assert.equal(canonicalMoveKey('Pistola de Água'),canonicalMoveKey('Water Gun'));
 assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb'));
+// NEW is an approval queue. Native moves and approved custom art never enter it.
+const pending=filterMoveLibrary(allMoves,'NEW');
+const pendingIds=pending.map(m=>m.id);
+for(const id of ['rock-tomb','horn-attack','double-kick','fury-attack','metal-claw','bind',
+ 'metronome','absorb','x-scissor'])
+ assert.ok(pendingIds.includes(id),'Unapproved custom VFX must appear in NEW: '+id);
+for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
+ 'leech-life','bonemerang','flamethrower'])
+ assert.ok(!pendingIds.includes(id),'Native and approved moves must never enter NEW: '+id);
+assert.ok(pending.every(isPendingApprovalMove));
+assert.ok(pending.every(m=>m.source==='new-phaser-fx'));
+assert.equal(filterMoveLibrary(allMoves,'NEW','ROCK').length,1,
+ 'Search inside NEW must find pending Rock Tomb only');
+assert.ok(filterMoveLibrary(allMoves,'ROCK').some(m=>m.id==='rock-tomb'),
+ 'Element ROCK must remain unaffected by virtual NEW tab');
+assert.equal(filterMoveLibrary(allMoves,'ALL').length,allMoves.length,
+ 'ALL must retain the complete selectable move library');
 
 const officialMoveStats={
  'gust':{poder:40,precisao:100,pp:35,categoria:'SPECIAL',tipo:'FLYING',dano:8},

@@ -116,3 +116,12 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - **Metal Claw**: Charmander em FireRed/LeafGreen aprende o ataque antes de Brock; golpe STEEL, 50 poder, 95% precisão, toque da garra de metal com avanço e recuo, 10% de chance de aumento do ataque no acerto. Não é sprite nativo capturado; novo pixel art e aguarda aprovação.
 - **Bind**: Onix aprende antes de Brock; NORMAL 15 poder, 85% precisão, quatro pulsos de dano no nosso tempo real, somente após contato físico, com enrolamento pixelado temporário. Aproxima, acerta e recua, deixando a animação de aprisionamento na vítima. Também aguarda aprovação visual.
 - **Roteiro de sprite/learnset**: nas novas espécies, a equipe deve vincular esses golpes conforme níveis e geração, preservando os nativos. Não atribuir Double Kick a Mankey; Mankey mantém Low Kick e Karate Chop nativos.
+
+
+## Filtro TIPO > NEW — 21/10/2026
+- No sumário, **TIPO ▾** inclui **NEW** depois de ALL, sem substituir os tipos Pokémon.
+- NEW mostra automaticamente somente golpes próprios do Torre 2 ainda **pendentes de aprovação visual**: `source === 'new-phaser-fx'` e `approved !== true`. **Os golpes do Poké Arena 2D estão preservados e nunca entram em NEW**, mesmo que seu registro não possua `approved`.
+- Pendentes atuais: **Rock Tomb, Horn Attack, Double Kick, Fury Attack, Metal Claw, Bind**, mais **Metronome, Absorb, X-Scissor** que aguardavam revisão.
+- Lista com contador no botão NEW, filtro, páginas, busca, marcadores NEW nos itens e troca dos quatro slots do Mewtwo de teste lv50. Quando NEW é escolhido, pesquisa antiga é limpa para revelar todos os pendentes.
+- Quando a aprovação for registrada como `approved:true`, o golpe sai automaticamente de NEW, continuando no seu tipo normal e no ALL.
+- Sem alterar arte, colisão, balanceamento, menu principal, ataques nativos ou progresso de campanha.

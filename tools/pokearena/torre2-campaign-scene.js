@@ -4,7 +4,7 @@
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
 import {marco,UI as MENU_UI} from '../ui.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats} from './move-pool.js';
+import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
@@ -542,9 +542,8 @@ class Campanha extends Phaser.Scene{
    this.summarySearch=query.trim().slice(0,35);
    this.showSummary(state,index,activeSlot,0);
   });
-  const filtered=pool.filter(move=>
-   (this.summaryFilter==='ALL'||move.tipo===this.summaryFilter)&&
-   (!this.summarySearch||move.nombre.toLowerCase().includes(this.summarySearch.toLowerCase())));
+  // Virtual NEW tab shows only not-yet-approved Torre 2 moves.
+  const filtered=filterMoveLibrary(pool,this.summaryFilter,this.summarySearch);
   const pageSize=6,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const safePage=Math.min(pages-1,Math.max(0,page));
   if(this.summaryFilter!=='ALL'||this.summarySearch)
@@ -556,6 +555,7 @@ class Campanha extends Phaser.Scene{
    const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
    const equipped=chosen.includes(move.id);
    const current=chosen[activeSlot]===move.id;
+   const pending=isPendingApprovalMove(move);
    const bg=box(x,y,188,27,current?0x275749:equipped?0x1e434c:0x1a344d,
     current?0x73d8b0:equipped?0x658e96:0x3c6283);
    bg.setInteractive({useHandCursor:true});
@@ -572,6 +572,7 @@ class Campanha extends Phaser.Scene{
    label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+move.nombre+(move.approved?' ✓':''),
     current?'#bcffe3':'#ebf5ff',10);
    label(x+6,y+16,move.tipo,C.muted,8);
+   if(pending)label(x+77,y+16,'NEW','#ffdc89',8);
    label(x+181,y+16,'CD '+move.cd+'s',C.muted,8).setOrigin(1,0);
   });
   if(filtered.length===0)label(242,255,'NENHUM GOLPE ENCONTRADO',C.muted,11);
@@ -588,8 +589,9 @@ class Campanha extends Phaser.Scene{
  showMoveTypePicker(state,index,slot){
   // In-game type chooser, not a browser form or tiny cycle control.
   const all=availableMoves(state.team[index]);
-  const types=['ALL',...new Set(all.map(m=>m.tipo))].sort((a,b)=>
-   a==='ALL'?-1:b==='ALL'?1:a.localeCompare(b));
+  const newCount=all.filter(isPendingApprovalMove).length;
+  // NEW belongs in the type selector, after ALL; it is not a Pokémon type.
+  const types=['ALL','NEW',...[...new Set(all.map(m=>m.tipo))].sort()];
   const overlay=this.add.rectangle(320,180,640,360,0x050e19,.9)
    .setDepth(2000).setInteractive();
   const panel=this.add.rectangle(320,178,550,268,0x152a45,.99)
@@ -605,10 +607,15 @@ class Campanha extends Phaser.Scene{
      this.summaryFilter===type?0x365d74:0x233f59).setStrokeStyle(1,
       this.summaryFilter===type?0xecc76d:0x5e809d)
     .setInteractive({useHandCursor:true}).setDepth(2002);
-   const labelType=text(this,x+43,y+14,type,{fontSize:'11px',color:'#f2f6fb'})
-     .setOrigin(.5).setDepth(2003);
+   const labelType=text(this,x+43,y+14,type,{
+     fontSize:'11px',color:type==='NEW'?'#ffe09a':'#f2f6fb'
+   }).setOrigin(.5).setDepth(2003);
+   if(type==='NEW')text(this,x+81,y+4,String(newCount),
+     {fontSize:'9px',color:'#ffe09a'}).setOrigin(1,0).setDepth(2003);
    rect.on('pointerdown',()=>{
-    this.summaryFilter=type;this.summaryWarning=null;
+    this.summaryFilter=type;
+    if(type==='NEW')this.summarySearch=''; // always reveal entire pending queue
+    this.summaryWarning=null;
     this.showSummary(state,index,slot,0);
    });
   });

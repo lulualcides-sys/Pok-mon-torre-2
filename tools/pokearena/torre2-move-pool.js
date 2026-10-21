@@ -105,6 +105,17 @@ for(const h of rawLibrary){
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+// NEW is a review queue, not a type or a replacement for existing attacks.
+// Original Poké Arena 2D attacks are implicitly approved and NEVER enter NEW.
+export const isPendingApprovalMove=move=>Boolean(
+ move&&move.source==='new-phaser-fx'&&move.approved!==true);
+export function filterMoveLibrary(moves,type='ALL',search=''){
+ const selected=type||'ALL',query=String(search||'').trim().toLowerCase();
+ return moves.filter(move=>
+  (selected==='ALL'||selected==='NEW'?selected==='ALL'||isPendingApprovalMove(move):
+   move.tipo===selected)&&
+  (!query||move.nombre.toLowerCase().includes(query)));
+}
 export function availableMoves(member){
  if(member.id==='mewtwo')return TEST_LIBRARY;
  const {def}=buscar(member.id);
