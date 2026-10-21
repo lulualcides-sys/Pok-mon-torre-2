@@ -85,9 +85,14 @@ const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
  'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
- 'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor'])
+ 'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor',
+ 'mud-slap','seed-bomb','super-fang'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
+for(const id of ['mud-slap','seed-bomb','super-fang']){
+ assert.equal(equipMove(tester,0,id),true,'new adapted Kanto move can be equipped '+id);
+ assert.equal(resolveLoadout(tester).lmb.id,id,'new adapted move usable in battle '+id);
+}
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
  ['torre2_bonemerang','torre2_boneclub','torre2_triattack','torre2_payday']);
 const confusion=allMoves.find(x=>x.nombre==='Confusion');
@@ -151,6 +156,15 @@ for(const name of ['metronome','absorb','xscissor'])assert.ok(
  newVfx.includes('export function '+name+'('),'New VFX renderer exists: '+name);
 assert.ok(newVfx.includes("from './move-pool.js'"),
  'Metronome picks a real installed move, not arbitrary dummy damage');
+const adapted=fs.readFileSync(path.join(stage,version,'torre2/adapted-moves-fx.js'),'utf8');
+for(const fn of ['mudslap','seedbomb','superfang'])assert.ok(
+ adapted.includes('export function '+fn+'('),'Missing hand-animated new renderer '+fn);
+for(const matrix of ['const MUD_PELLET=[','const MUD_SPLASH=[','const BOMB=[','const BOMB_CRACK=[','const JAW_TOP=[','const INCISOR=[']){
+ assert.ok(adapted.includes(matrix),'Missing hand-drawn pixel art sprite '+matrix);
+}
+assert.ok(adapted.includes("puro:true"),'Super Fang uses exact fixed half-HP damage');
+assert.ok(adapted.includes("Math.floor(r.hp*.5)"),'Super Fang hits for 50% current HP');
+assert.ok(!adapted.includes('CanvasRenderingContext2D'),'New 3 attacks use WebGL pixel matrices only');
 assert.ok(newVfx.includes('dealt*.5'),'Absorb heals half of actual dealt damage');
 assert.ok(!newVfx.includes('CanvasRenderingContext2D'),'New custom moves use Phaser Graphics only');
 for(const sprite of ['const HAND_PALM=[','const FINGER_FRAMES=[','const ABSORB_HEAD=[',
