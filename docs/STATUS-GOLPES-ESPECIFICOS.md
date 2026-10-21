@@ -83,13 +83,18 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 
 ## Patch avanço/contato e três golpes iniciais — 21/10/2026
 - **Bite / Crunch:** manter exatamente os sprites de mandíbula aprovados, agora mover o Pokémon na direção da mira (avanço real), aplicar dano somente no contato do ator e recuar à posição inicial. Crunch continua com duas mordidas horizontal/vertical e no máximo uma aplicação de dano.
-- **Peck — novo, ainda sem aprovação visual:** bico pequeno dourado em pixel art, avanço/contato/recuo e efeito de impacto contido.
+- **Peck — ✅ aprovado, congelado:** bico pequeno dourado em pixel art, avanço/contato/recuo e efeito de impacto contido.
 - **Leech Life — ORIGINAL PRESERVADO:** o usuário confirmou que não sabia que já existia. O visual customizado foi CANCELADO, a forma nativa continua `golpe` e nenhum renderer verde deve substituir o original. Não mudar sem pedido explícito.
-- **Bug Bite — novo, ainda sem aprovação visual:** boca menor de inseto verde com contorno escuro, contato físico uma única vez com avanço/recuo.
+- **Bug Bite — ✅ aprovado, congelado:** boca menor de inseto verde com contorno escuro, contato físico uma única vez com avanço/recuo.
 - **Congelamentos:** demais golpes aprovados intocados, assim como menu, campanha, save e sprite do cliente original. O comportamento especial de frutas não é simulado sem um sistema de berries.
 
 
 ## Regra confirmada pelo usuário: prioridade total aos golpes originais — 21/10/2026
 - Se um golpe já existe no cliente original Poké Arena 2D, **não modificar nem substituir a arte, mecânica, cores, estatísticas ou moveset nativo**, mesmo que já exista uma ideia para reimplementá-lo. Só alterar após **pedido explícito do usuário sabendo que o golpe já existe**.
 - **Leech Life**: mudança verde abortada e visual original restaurado; sem duplicata, sem alteração no unlock da campanha.
-- **Peck e Bug Bite** continuam novos e sob avaliação visual. **Bite e Crunch** seguem a alteração de avanço/recuo expressamente autorizada. Poison Sting e Gust continuam congelados.
+- **Peck e Bug Bite** receberam aprovação visual em 21/10/2026; manter as artes e efeitos intactos. **Bite e Crunch** seguem a alteração de avanço/recuo expressamente autorizada. Poison Sting e Gust continuam congelados.
+
+## Aprovações e próximo lote — 21/10/2026
+- **Peck e Bug Bite: ✅ aprovados e congelados.** Dano, colisão, recuo, pixel art e sprites mantidos sem alterações. Bite e Crunch permanecem aprovados. **Leech Life original também preservado**.
+- **Três golpes sugeridos para início de Kanto (não implementar sem pedido):** Scratch (Charmander/Meowth, arranhão físico com contato), Sand Attack (Pidgey/Sandshrew, grãos de areia pixelados, redução de precisão quando acertar) e Sleep Powder (Bulbasaur/Butterfree, nuvem de pó de sono pixelado, precisão de 75% e sem dano).
+- A lista do cliente capturado `datos.js` foi consultada: Scratch, Sand Attack e Sleep Powder não constam como entradas nativas; conservar a regra de revalidar antes de programar e nunca sobrescrever golpes originais.

@@ -149,7 +149,7 @@ assert.ok(!SIGNATURE_MOVES.some(m=>m.id==='leech-life'),'No duplicate native mov
 for(const [id,forma] of [['peck','torre2_peck'],['bug-bite','torre2_bugbite']]){
  const move=allMoves.find(m=>m.id===id);
  assert.equal(move.forma,forma);
- assert.equal(move.approved,undefined,'New moves still await user approval');
+ assert.equal(move.approved,true,'User approved Peck and Bug Bite; freeze graphics and effects');
  assert.equal(equipMove(tester,0,id),true);
  assert.equal(resolveLoadout(tester).lmb.forma,forma);
 }
