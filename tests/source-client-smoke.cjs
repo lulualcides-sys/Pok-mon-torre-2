@@ -736,7 +736,9 @@ const server=http.createServer(async(req,res)=>{
      const native={dueno:scenario==='ally'?left:right,vivo:true,
       x:235,y:203,alt:0,h:{radio:9,tipo:'WATER'},
       terminar(){this.vivo=false;nativeStopped=true},
-      update(){return this.vivo}};
+      // Native shots have finite range/lifetime; this mock must too,
+      // including the allied (non-clashing) case.
+      update(){return this.vivo&&t<.95}};
      scene.efectos.push(native);
     }
     const incoming=start();
