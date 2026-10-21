@@ -114,13 +114,14 @@ for(const id of ['swift','lovely-kiss'])
  assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
   'The user has explicitly approved '+id);
 assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
-// New 3 Kanto signatures must remain UNAPPROVED until user tests visuals.
+// Hyper Fang and Guillotine are approved; Petal Dance's new moving vortex awaits review.
 for(const [id,forma] of [['hyper-fang','torre2_hyperfang'],
  ['guillotine','torre2_guillotine'],['petal-dance','torre2_petaldance']]){
  const h=allMoves.find(x=>x.id===id);
  assert.ok(h,'New Kanto move registered '+id);
  assert.equal(h.forma,forma,'Correct art renderer '+id);
- assert.equal(h.approved,undefined,'Must not auto-approve new move '+id);
+ assert.equal(h.approved,id==='petal-dance'?undefined:true,
+  'Only user-approved new moves may display a checkmark: '+id);
  assert.equal(h.source,'new-phaser-fx');
  assert.equal(equipMove(tester,0,id),true,'Mewtwo test loadout includes '+id);
  assert.equal(resolveLoadout(tester).lmb.forma,forma);
@@ -142,6 +143,10 @@ assert.ok(kantoFile.includes('const scale=2,rows=PETAL'),
  'Petals are one-third smaller');
 assert.ok(kantoFile.includes('PETAL_PALETTES[Math.abs(shade)%'),
  'Petal Dance has multiple pink palettes');
+assert.ok(kantoFile.includes('const orbitPhase=elapsed*')&&
+ kantoFile.includes('const vortexRadius=8+12*Math.sin(progress*PI)**2')&&
+ kantoFile.includes('petal(blooms,x,y,orbitPhase'),
+ 'Petal Dance must travel as individually tumbling Aura Storm-style petals');
 
 assert.ok(!kantoFile.includes('CanvasRenderingContext2D') &&
  !kantoFile.includes('.fillPoints(') && !kantoFile.includes('.arc('),
