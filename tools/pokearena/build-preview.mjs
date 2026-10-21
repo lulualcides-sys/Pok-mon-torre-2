@@ -89,6 +89,7 @@ await Promise.all([
  ['tools/pokearena/torre2-mega-patch-fx.js','mega-patch-fx.js'],
  ['tools/pokearena/torre2-species-fx.js','species-fx.js'],
  ['tools/pokearena/torre2-kanto-signatures-fx.js','kanto-signatures-fx.js'],
+ ['tools/pokearena/torre2-next-specific-fx.js','next-specific-fx.js'],
  ['tools/pokearena/torre2-route-data.js','route-data.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
@@ -98,7 +99,7 @@ patches.push(
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
    'import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";import{TORRE2_FORMS}from"./torre2/signature-fx.js";'],
   ['const FORMAS={proyectil,chorro,cono,zona,rayo,pulso,',
-   'const FORMAS={...TORRE2_FORMS,proyectil,chorro,cono,zona,rayo,pulso,']
+   'const FORMAS={...TORRE2_FORMS,torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(l,h,extra,FORMAS),proyectil,chorro,cono,zona,rayo,pulso,']
  ]],
  ['luchador.js',[
   ['return this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit',
