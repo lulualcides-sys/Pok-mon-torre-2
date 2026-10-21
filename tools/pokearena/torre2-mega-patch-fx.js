@@ -226,8 +226,8 @@ export function confuseray(l,h,extra){
      // Contact is necessary but not sufficient: confusion is 85%, never 100%.
      if(Math.random()<.85&&typeof r.ponerEstado==='function'){
       r.ponerEstado('confuso',3.1,{fuente:l});
-     }else vfx.textoFlotante(e,r.x,r.y-(r.alto||36)-10,'MISS',
-       {color:'#e4b4f3',dur:580});
+     } // No floating HUD text on a failed roll: the contact visual is enough.
+       // A projectile can connect without guaranteeing confusion.
     }
     return false;
    }
