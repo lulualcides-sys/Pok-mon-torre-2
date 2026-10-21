@@ -33,6 +33,13 @@ Data: 21/10/2026
 
 Triagem inicial e ordem sugerida em [CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md](./CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md). Cada candidato ainda precisa de conferência visual no cliente atual antes de implementação.
 
+## Revisão de Bite / Crunch e aprovação de Gust / Poison Sting (21/10/2026)
+- **Gust — ✅ aprovado, congelado.** Manter renderer, precisão, dano e colisões sem mudanças.
+- **Poison Sting — ✅ aprovado, congelado.** Manter ferrão, chance de envenenamento e colisões sem mudanças.
+- **Bite — visual refeito para avaliação.** Duas mandíbulas pixeladas em 8 posições reais (abrir → fechar → reabrir), contorno escuro, tamanho proporcional e uma única colisão verdadeira. Visual baseado no spritesheet de mordida fornecido e confirmado pelo usuário.
+- **Crunch — visual refeito para avaliação.** Duas mordidas sequenciais com a mesma matriz, a primeira reta/horizontal e a segunda girada a 90 graus/vertical. Dano do movimento pode ocorrer uma única vez se alguma das duas fechar sobre o alvo, sem autoacerto. Não marcar como aprovado antes de retorno visual do usuário.
+- Não alterar visual dos golpes originais Pokémon Arena 2D, nem os específicos previamente aprovados, fora os dois movimentos autorizados neste patch.
+
 ## Menu principal — aprovado em 21/10/2026
 O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, fundo, botões, tipografia e navegação foi **aprovado** pelo usuário. **Não modificar** menu, logo, dimensões ou funcionamento sem novo pedido.
 

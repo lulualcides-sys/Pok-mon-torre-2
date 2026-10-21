@@ -1,5 +1,5 @@
-/* Pokémon Torre 2 — early-route, UNAPPROVED pixel attacks.
- * Gust, Poison Sting, Bite. Entirely new VFX, no client-original or
+/* Pokémon Torre 2 — early-route pixel attacks.
+ * Approved (frozen): Gust and Poison Sting. Bite/Crunch under visual revision. Entirely new VFX, no client-original or
  * approved VFX altered. Phaser Graphics/WebGL; matrices, not circles/CSS.
  * Directional manual aiming, real hitbox, no auto-hit or extra damage.
  */
@@ -192,20 +192,32 @@ export function poisonsting(l,h,extra){
  },[main,motes]);
  fx.clashBody=body;return fx;
 }
-const BITE={K:0x1c2433,D:0x5b3951,M:0xa36e7b,L:0xd29d9a,W:0xfff3dd};
+
+/* Hand-pixeled jaw silhouette inspired by the approved 8-frame Bite sheet.
+ * Phaser/WebGL graphics only: no Canvas 2D, CSS or pasted video sprites.
+ * The two jaw halves move separately and meet at the contact frame.
+ */
+const BITE={K:0x161621,D:0x49444d,M:0x948781,L:0xd7cec0,W:0xfff9e9};
 const JAW_UP=[
- '..KKKKKKKKKK.....',
- '.KDDDDMMMMDKK....',
- 'KDDMMMMMLLMDK....',
- 'KDMLLLWWLLMDK....',
- 'KDMWWWWWWLMDK....',
- '.KDMMKKMMMK......',
- '..KKK.KK.KKK......'
+ '.........KKKKKKKKK.........',
+ '......KKKDDDDDDDDDKKK......',
+ '....KKDDMMMMMMMMMDDKK......',
+ '...KDDMMLLLLLLLLLMMDDK.....',
+ '..KDDMLLWWWWWWWWWLLMDDK....',
+ '.KDDMLWWWWWWWWWWWWWLMDDK...',
+ 'KDDMLWWWWWWWWWWWWWWWLMDDK..',
+ 'KDMWWWWWWWWWWWWWWWWWWWMDK..',
+ '.KKWWKWWKWWKWWKWWKWWKKK...',
+ '...KWWKWWKWWKWWKWWKWWK....',
+ '....K..K..K..K..K..K.K.....'
 ];
+// Pad symmetrically before pixel drawing so the arch never drifts sideways.
+const JAW_WIDTH=Math.max(...JAW_UP.map(row=>row.length));
+for(let i=0;i<JAW_UP.length;i++){
+ const pad=JAW_WIDTH-JAW_UP[i].length;
+ JAW_UP[i]='.'.repeat(Math.floor(pad/2))+JAW_UP[i]+'.'.repeat(Math.ceil(pad/2));
+}
 const JAW_DOWN=JAW_UP.slice().reverse();
-const BITE_TOOTH=[
- '..KK...','.KWWK..','KWWWWK.','KWWWWK.','.KWWK..','..KK...'
-];
 const BITE_SHOCK=[
  '.....K.....',
  '...KWWK....',
@@ -215,45 +227,79 @@ const BITE_SHOCK=[
  '...KWWK....',
  '.....K.....'
 ];
-// Bite = DARK contact, one tight rat-sized jaw that closes at the
-// manual aim location; 30% flinch ON contact, never a homing projectile.
+// Eight discrete pixel-art poses; frame four closes on the opponent.
+export const CHOMP_POSES=Object.freeze([13,11,8,5,1,2,6,10]);
+function paintChomp(g,cx,cy,rotation,frame,opacity=1,scale=1.08){
+ const idx=Math.min(7,Math.max(0,frame|0));
+ const spread=CHOMP_POSES[idx]*scale,ox=-Math.sin(rotation),oy=Math.cos(rotation);
+ sprite(g,JAW_UP,cx-ox*spread,cy-oy*spread,BITE,scale,opacity,rotation);
+ sprite(g,JAW_DOWN,cx+ox*spread,cy+oy*spread,BITE,scale,opacity,rotation);
+}
+function mouthFlash(g,contact,age,rotation){
+ const t=clamp(age/.16);
+ if(t<1)sprite(g,BITE_SHOCK,contact.x,contact.y,BITE,1.1,1-t,rotation);
+}
+// Bite = one clear, modest-sized chomp, at the manually aimed contact location.
+// Attack does NOT home toward the enemy or cause automatic damage on a miss.
 export function bite(l,h,extra){
  const e=l.escena,r=l.rival,jaw=e.add.graphics().setDepth(1514),flash=e.add.graphics().setDepth(1515);
- const o=start(l,'Swing',.54),reach=Math.min(76,h.alcance??76);
- const nx=-o.s,ny=o.c;
- let age=0,resolved=false,hit=false,contact=null;
+ const o=start(l,'Swing',.52),reach=Math.min(76,h.alcance??76);
+ let age=0,resolved=false,contact=null,contactAge=0;
  return effect(e,dt=>{
   age+=dt;jaw.clear();flash.clear();
-  if(l.ko||l.est?.aturdido||age>.65)return false;
-  const frame=Math.min(11,Math.floor(age/.05)),close=clamp((age-.07)/.24);
-  const travel=clamp(age/.30),distance=reach*travel,spread=11*(1-close);
-  const cx=o.x+o.c*(8+distance),cy=o.y+o.s*(8+distance),alpha=clamp((.65-age)/.16);
-  if(frame<=10){
-   sprite(jaw,JAW_UP,cx-nx*spread,cy-ny*spread-9,BITE,1.65,alpha,o.a);
-   sprite(jaw,JAW_DOWN,cx+nx*spread,cy+ny*spread+9,BITE,1.65,alpha,o.a);
-   if(frame<8){
-    sprite(jaw,BITE_TOOTH,cx+o.c*4-nx*(8+spread),cy+o.s*4-ny*(8+spread),BITE,1.3,alpha,o.a);
-    sprite(jaw,BITE_TOOTH,cx+o.c*4+nx*(8+spread),cy+o.s*4+ny*(8+spread),BITE,1.3,alpha,o.a);
-   }
-  }
-  if(!resolved&&frame>=5){
+  if(l.ko||l.est?.aturdido||age>.54)return false;
+  const phase=clamp(age/.46),frame=Math.min(7,Math.floor(phase*8));
+  const travel=reach*clamp(age/.245);
+  const cx=o.x+o.c*(7+travel),cy=o.y+o.s*(7+travel);
+  const opacity=clamp((.54-age)/.1);
+  paintChomp(jaw,cx,cy,0,frame,opacity,1.08);
+  if(!resolved&&frame>=4){
    resolved=true;
-   const contactRadius=13;
-   const on=intersect(o,{x:cx+o.c*10,y:cy+o.s*10},r,contactRadius);
+   const on=intersect(o,{x:cx,y:cy},r,14);
    if(on){
-    const stunChance=Math.random()<.30;
-    hit=strike(l,r,h,extra,{push:18,
-     status:stunChance?{aturde:.32}:{}});
-    contact=on;
+    const flinch=Math.random()<.30;
+    if(strike(l,r,h,extra,{push:17,status:flinch?{aturde:.32}:{}})){
+     contact=on;contactAge=age;
+    }
    }
   }
-  if(hit&&contact&&frame>=5&&frame<=9){
-   const t=(frame-5)/5;
-   sprite(flash,BITE_SHOCK,contact.x,contact.y,BITE,1.15,1-t,o.a);
+  if(contact)mouthFlash(flash,contact,age-contactAge,0);
+  return true;
+ },[jaw,flash]);
+}
+// Crunch = TWO separate actual chomp animations: first straight/horizontal,
+// then 90 degrees rotated/vertical, with one single physical damage instance.
+// Either timed contact may hit, but never two full-power hits in one attack.
+export function crunch(l,h,extra){
+ const e=l.escena,r=l.rival,jaw=e.add.graphics().setDepth(1514),flash=e.add.graphics().setDepth(1515);
+ const o=start(l,'Swing',.82),reach=Math.min(80,h.alcance??80);
+ const rotations=[0,PI/2],resolved=[false,false],bursts=[null,null];
+ let age=0,landed=false;
+ return effect(e,dt=>{
+  age+=dt;jaw.clear();flash.clear();
+  if(l.ko||l.est?.aturdido||age>.82)return false;
+  const turn=age<.38?0:1,elapsed=age-turn*.38;
+  const phase=clamp(elapsed/.34),frame=Math.min(7,Math.floor(phase*8));
+  const distance=reach*clamp(elapsed/.175);
+  const cx=o.x+o.c*(7+distance),cy=o.y+o.s*(7+distance);
+  const opacity=clamp((.36-elapsed)/.075);
+  paintChomp(jaw,cx,cy,rotations[turn],frame,opacity,1.16);
+  if(!resolved[turn]&&frame>=4){
+   resolved[turn]=true;
+   const on=intersect(o,{x:cx,y:cy},r,16);
+   if(on){
+    // Crunch is visually two bites, NOT two independent high-power attacks.
+    const struck=landed||strike(l,r,h,extra,{push:21});
+    if(struck){
+     landed=true;bursts[turn]={contact:on,time:age};
+    }
+   }
   }
+  for(let i=0;i<2;i++)if(bursts[i])
+   mouthFlash(flash,bursts[i].contact,age-bursts[i].time,rotations[i]);
   return true;
  },[jaw,flash]);
 }
 export const TORRE2_EARLY_ROUTE_FORMS=Object.freeze({
- torre2_gust:gust,torre2_poisonsting:poisonsting,torre2_bite:bite
+ torre2_gust:gust,torre2_poisonsting:poisonsting,torre2_bite:bite,torre2_crunch:crunch
 });

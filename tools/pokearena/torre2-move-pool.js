@@ -48,9 +48,10 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'mud-slap',approved:true,nombre:'Mud-Slap',forma:'torre2_mudslap',tipo:'GROUND',poder:20,precisao:100,pp:10,categoria:'SPECIAL',fazContato:false,dano:4,alcance:205,coste:17,cd:4.6,anim:'Throw',lanzar:.13,description:'Compact brown mud projectile, small pixel splatter on physical contact; ground attack'},
  {id:'seed-bomb',approved:true,nombre:'Seed Bomb',forma:'torre2_seedbomb',tipo:'GRASS',poder:80,precisao:100,pp:15,categoria:'PHYSICAL',fazContato:false,dano:16,alcance:225,coste:24,cd:5.8,anim:'Throw',lanzar:.16,description:'Single big inked green seed, shell fractures into six shards only on contact'},
  {id:'super-fang',approved:true,nombre:'Super Fang',forma:'torre2_superfang',tipo:'NORMAL',poder:null,precisao:90,pp:10,categoria:'PHYSICAL',fazContato:true,dano:0,alcance:82,coste:28,cd:7.8,anim:'Swing',lanzar:.13,description:'Physical twin-incisor bite; halves the foe current HP upon true contact'},
- {id:'gust',nombre:'Gust',forma:'torre2_gust',tipo:'FLYING',poder:40,precisao:100,pp:35,categoria:'SPECIAL',fazContato:false,dano:8,alcance:235,coste:16,cd:4.2,anim:'Shoot',lanzar:.13,description:'12-frame curling hand-pixeled gust, one real hit; Fly/Bounce double power'},
- {id:'poison-sting',nombre:'Poison Sting',forma:'torre2_poisonsting',tipo:'POISON',poder:15,precisao:100,pp:35,categoria:'PHYSICAL',fazContato:false,dano:3,alcance:235,coste:12,cd:3.5,anim:'Shoot',lanzar:.12,description:'Needle-shaped barb, physical contact 30 percent poison on true hit'},
- {id:'bite',nombre:'Bite',forma:'torre2_bite',tipo:'DARK',poder:60,precisao:100,pp:25,categoria:'PHYSICAL',fazContato:true,dano:12,alcance:76,coste:21,cd:5.0,anim:'Swing',lanzar:.12,description:'Dark-type contact jaws, 30 percent flinch on physical hit'},
+ {id:'gust',approved:true,nombre:'Gust',forma:'torre2_gust',tipo:'FLYING',poder:40,precisao:100,pp:35,categoria:'SPECIAL',fazContato:false,dano:8,alcance:235,coste:16,cd:4.2,anim:'Shoot',lanzar:.13,description:'12-frame curling hand-pixeled gust, one real hit; Fly/Bounce double power'},
+ {id:'poison-sting',approved:true,nombre:'Poison Sting',forma:'torre2_poisonsting',tipo:'POISON',poder:15,precisao:100,pp:35,categoria:'PHYSICAL',fazContato:false,dano:3,alcance:235,coste:12,cd:3.5,anim:'Shoot',lanzar:.12,description:'Needle-shaped barb, physical contact 30 percent poison on true hit'},
+ {id:'bite',nombre:'Bite',forma:'torre2_bite',tipo:'DARK',poder:60,precisao:100,pp:25,categoria:'PHYSICAL',fazContato:true,dano:12,alcance:76,coste:21,cd:5.0,anim:'Swing',lanzar:.12,description:'One 8-pose original pixel-art bite, real aimed contact, 30% flinch'},
+  {id:'crunch',nombre:'Crunch',forma:'torre2_crunch',tipo:'DARK',poder:80,precisao:100,pp:15,categoria:'PHYSICAL',fazContato:true,dano:16,alcance:80,coste:28,cd:6.3,anim:'Swing',lanzar:.13,description:'Two 8-pose bites: straight then vertical 90 degrees; only one contact damage'},
  {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
@@ -119,6 +120,7 @@ export function availableMoves(member){
  if(['pidgey','pidgeotto','pidgeot','spearow','fearow','butterfree','zubat','golbat','crobat'].includes(member.id))names.add('gust');
  if(['weedle','kakuna','beedrill','nidoran-f','nidorina','nidoqueen','nidoran-m','nidorino','nidoking','ekans','arbok','spinarak','ariados'].includes(member.id))names.add('poison-sting');
  if(['rattata','raticate','ekans','arbok','zubat','golbat','crobat','growlithe','arcanine','eevee','vulpix','ninetales'].includes(member.id))names.add('bite');
+  if(['raticate','arbok','golbat','crobat','arcanine','ninetales','gyarados','aerodactyl'].includes(member.id))names.add('crunch');
  if(member.id==='chansey')names.add('soft-boiled');
  return TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
 }

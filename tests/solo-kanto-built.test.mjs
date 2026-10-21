@@ -104,6 +104,7 @@ const officialMoveStats={
  'gust':{poder:40,precisao:100,pp:35,categoria:'SPECIAL',tipo:'FLYING',dano:8},
  'poison-sting':{poder:15,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'POISON',dano:3},
  'bite':{poder:60,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'DARK',dano:12},
+  'crunch':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',tipo:'DARK',dano:16},
  'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
  'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
  'super-fang':{poder:null,precisao:90,pp:10,categoria:'PHYSICAL',dano:0}
@@ -118,7 +119,7 @@ for(const [id,stats] of Object.entries(officialMoveStats)){
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
  'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
  'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor',
- 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite'])
+ 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -127,7 +128,7 @@ for(const id of ['mud-slap','seed-bomb','super-fang']){
  assert.equal(equipMove(tester,0,id),true,'new adapted Kanto move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new adapted move usable in battle '+id);
 }
-for(const id of ['gust','poison-sting','bite']){
+for(const id of ['gust','poison-sting','bite','crunch']){
  assert.ok(allMoves.find(m=>m.id===id),'new early-route move not registered '+id);
  assert.equal(equipMove(tester,0,id),true,'early-route move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new early-route move usable '+id);
@@ -206,13 +207,23 @@ assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
 assert.ok(dexBuilt.includes('this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)}'),
  'Pokedex evolution tabs must lazily load each selected original PMD animation');
 const early=fs.readFileSync(path.join(stage,version,'torre2/early-route-fx.js'),'utf8');
-for(const name of ['gust','poisonsting','bite'])
+for(const name of ['gust','poisonsting','bite','crunch'])
  assert.ok(early.includes('export function '+name+'('),
   'Missing new hand-pixeled early-route renderer '+name);
 assert.ok(early.includes('clashAt(e,fx,l,tip,15')&&early.includes('clashAt(e,fx,l,tip,6'),
  'Gust and Poison Sting participate in physical Clash and dissipate on contact');
 for(const shape of ['const WIND_CURL=[','const NEEDLE=[','const JAW_UP=['])
  assert.ok(early.includes(shape),'Distinct pixel matrix is missing: '+shape);
+assert.ok(early.includes('const rotations=[0,PI/2]') &&
+ early.includes('paintChomp(jaw,cx,cy,rotations[turn]') &&
+ early.includes('const struck=landed||strike('),
+ 'Crunch has horizontal + vertical pixel bites, with only one actual damaging hit');
+for(const id of ['gust','poison-sting'])
+ assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
+ 'These early-route moves are explicitly approved and frozen: '+id);
+for(const id of ['bite','crunch'])
+ assert.notEqual(allMoves.find(x=>x.id===id)?.approved,true,
+ 'Bite and Crunch await visual approval after requested adjustments');
 const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
 assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
 assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');
