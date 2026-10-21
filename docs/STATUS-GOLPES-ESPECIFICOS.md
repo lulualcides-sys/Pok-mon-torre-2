@@ -50,6 +50,13 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 
 ## Refinamento dos golpes após aprovação de Super Fang (21/10/2026)
 - **Super Fang — ✅ APROVADO, CONGELADO:** animação e mecânicas preservadas exatamente; teste de assinatura bloqueia mudanças não autorizadas.
-- **Mud-Slap — 🔧 revisão visual pendente:** mantida bolota de lama; splash original ampliado 12,5%; três respingos menores nas laterais, rastro curto com 3 partículas; dano, precisão, tipo, velocidade, alcance e redução de precisão inalterados.
-- **Seed Bomb — 🔧 revisão visual pendente:** semente permanece intacta durante o voo; rachadura aparece no impacto, miolo verde claro rapidamente visível; seis fragmentos originais + três microfragmentos de casca; sem danos extras; mecânica e estatísticas inalteradas.
+- **Mud-Slap — ✅ APROVADO, CONGELADO:** mantida bolota de lama; splash original ampliado 12,5%; três respingos menores nas laterais, rastro curto com 3 partículas; dano, precisão, tipo, velocidade, alcance e redução de precisão inalterados.
+- **Seed Bomb — ✅ APROVADO, CONGELADO:** semente permanece intacta durante o voo; rachadura aparece no impacto, miolo verde claro rapidamente visível; seis fragmentos originais + três microfragmentos de casca; sem danos extras; mecânica e estatísticas inalteradas.
 - Nenhuma mudança no menu, sprites do cliente Pokémon Arena 2D ou outros golpes aprovados.
+
+## Requisito permanente — Clash e dissipação (21/10/2026)
+- **Todos os ataques com colisão entre golpes compatíveis** devem ter quadro de contato de Clash e animação de dissipação dos dois efeitos (ou do mais fraco, dependendo das regras), com pixel art e fragmentos proporcionais. **Status, cura e golpes sem volume físico** não recebem colisão artificial.
+- Aplicar ao encontro real entre ataques oponentes, nunca no lançamento ou por proximidade sem contato. Não causar dano indevido em Pokémon durante dissipação, e não deixar sprite fantasma após encerramento. Rastrear se o ataque sobrevive, cancela ou perde potência conforme os atributos próprios.
+- **Origem dos efeitos:** aproveitar o sistema já existente do cliente Poké Arena 2D para projéteis e raios sem alterá-los; criar a mesma interface de colisão para novos movimentos personalizados e avançar por classes (projéteis, feixes, cones, lâminas, área). Preservar estatísticas e as artes de todos os movimentos aprovados.
+- Um Clash nunca pode modificar as matrizes dos sprites aprovados: o efeito entra como camada transitória e deve ser testado em batalha (inclusive ao errar, acertar e quando é cancelado por outro ataque).
+- Esta regra é **meta de cobertura global**. Registrar quais classes já são realmente cobertas pelos testes, sem marcar prematuramente todos os ataques como finalizados.
