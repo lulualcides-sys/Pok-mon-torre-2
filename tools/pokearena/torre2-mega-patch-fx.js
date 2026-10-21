@@ -349,8 +349,9 @@ export function softboiled(l,h,extra){
     const amount=Math.max(0,Math.min(l.hpMax-l.hp,Math.floor(l.hpMax*.30)));
     l.hp+=amount;
     if(amount>0){
-     vfx.textoFlotante(e,l.x,l.y-(l.alto||36)-14,'+'+amount,
-      {color:'#a9edc1',dur:780});
+     // Keep the cure in Phaser Graphics: an animated green-gold healing
+     // halo already surrounds the Pokemon. Avoid spawning canvas-backed
+     // text objects that break in headless/WebGL battle scenes.
      vfx.rafaga(e,'chispa',l.x,body,0xf0e9b9,5);
     }
    }
