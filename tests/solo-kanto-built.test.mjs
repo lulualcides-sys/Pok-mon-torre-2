@@ -6,7 +6,8 @@ const stage=path.resolve('_site/arena2d');
 const version=fs.readdirSync(stage).find(x=>/^src-[a-f0-9]{10}$/.test(x));
 assert.ok(version,'Captured Phaser original client not staged');
 const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
- TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,saveCampaign}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
+ TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,saveCampaign,
+ startBattle,recordSeen,recordCaught,storePokemon,withdrawPokemon,swapPokemon}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
 const items=new Map();
 globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
 assert.equal(KANTO_DEX.length,151);
@@ -23,7 +24,8 @@ assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
 assert.equal(tester.progression.level,50);
 const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
-for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss'])
+for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
+ 'ice-beam','rock-blast','confuse-ray','soft-boiled'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -46,6 +48,28 @@ assert.equal(resolveLoadout(tester).lmb.forma,'torre2_shadowball');
 assert.equal(equipMove(tester,0,'lovely-kiss'),true,'new Lovely Kiss must equip');
 assert.equal(resolveLoadout(tester).lmb.forma,'torre2_lovelykiss');
 assert.equal(equipMove(tester,0,'bonemerang'),true);
+for(const id of ['ice-beam','rock-blast','confuse-ray','soft-boiled']){
+ assert.equal(equipMove(tester,0,id),true,'new move equippable '+id);
+ assert.equal(resolveLoadout(tester).lmb.id,id,'new Phaser move active '+id);
+}
+assert.equal(equipMove(tester,0,'bonemerang'),true);
+const original=allMoves.filter(m=>['Flamethrower','Rock Slide','Water Pulse','Thunderbolt'].includes(m.nombre));
+assert.ok(original.length>=2,'captured Poké Arena move catalog retained');
+assert.ok(original.every(m=>m.source==='arena2d-original'),'original Arena VFX always take priority');
+assert.equal(state.dexCaught.includes('charmander'),true);
+assert.equal(recordSeen(state,'onix'),true);
+assert.equal(recordSeen(state,'onix'),false);
+assert.equal(recordSeen(state,'pichu'),false,'Kanto Pokedex excludes Pichu');
+assert.equal(startBattle(state).nivel,'facil');
+assert.equal(state.dexSeen.includes('onix'),true);
+state.stage=5;state.trainer=TRAINERS_PER_GYM(5);
+assert.equal(startBattle(state).nivel,'dificil','later gym bosses gain advanced native AI');
+state.stage=8;state.trainer=0;
+assert.equal(startBattle(state).nivel,'maestro','Elite Four uses the original master AI');
+state.stage=0;state.trainer=0;saveCampaign(state);
+assert.equal(recordCaught(state,'onix'),true);
+assert.equal(recordCaught(state,'onix'),false);
+
 
 const initialSpecies=state.team[0].id;
 for(let i=0;i<13;i++){
@@ -66,6 +90,30 @@ if(state.pendingCapture)assert.equal(attemptCapture(state,()=>0).ok,true);
 assert.equal(readCampaign().stage,1);
 assert.equal(state.team.length,6);
 assert.ok(state.box.length>0);
+const beforeParty=state.team.map(x=>x.uid),beforeBox=state.box.map(x=>x.uid);
+assert.equal(storePokemon(state,0),true);
+assert.equal(state.team.length,5);
+assert.equal(state.box.at(-1).uid,beforeParty[0]);
+assert.equal(withdrawPokemon(state,state.box.length-1),true);
+assert.equal(state.team.at(-1).uid,beforeParty[0]);
+assert.equal(state.box.length,beforeBox.length);
+const bench=state.box[0].uid,slot=state.team[0].uid;
+assert.equal(swapPokemon(state,0,0),true);
+assert.equal(state.team[0].uid,bench);
+assert.equal(state.box[0].uid,slot);
+assert.equal(swapPokemon(state,0,0),true);
+assert.equal(state.team[0].uid,slot);
+assert.equal(storePokemon(state,-1),false);
+assert.equal(withdrawPokemon(state,999),false);
+assert.equal(readCampaign().team[0].uid,slot);
+const legacy=JSON.parse(items.get(SAVE_KEY));
+delete legacy.box;delete legacy.dexSeen;delete legacy.dexCaught;
+items.set(SAVE_KEY,JSON.stringify(legacy));
+const migrated=readCampaign();
+assert.ok(Array.isArray(migrated.box)&&Array.isArray(migrated.dexCaught));
+assert.ok(migrated.team.length>0&&migrated.team.length<=6);
+saveCampaign(state);
+
 assert.ok(state.team[0].progression.level>=5);
 assert.ok(state.team[0].id!==initialSpecies || state.team[0].progression.level<16);
 const save=items.get(SAVE_KEY);assert.ok(save.includes('"version":1'));

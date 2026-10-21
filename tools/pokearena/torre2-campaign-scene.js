@@ -6,7 +6,8 @@ import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats} from './move-pool.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
- resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX} from './campaign-core.js';
+ resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
+ storePokemon,withdrawPokemon,swapPokemon} from './campaign-core.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -25,6 +26,7 @@ class Campanha extends Phaser.Scene{
   g.strokeRect(10,7,ANCHO-20,ALTO-14);
   g.fillStyle(0x142037,.95);g.fillRect(11,8,ANCHO-22,43);
   this.add.text(20,13,'POKÉMON TORRE 2 · KANTO',{...titleStyle,fontSize:'20px'});
+  this.button(440,23,77,24,'ABRIR PC',()=>{const state=readCampaign();if(state)this.pcScreen(state)});
   this.button(526,23,62,24,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){
@@ -83,7 +85,8 @@ class Campanha extends Phaser.Scene{
    'ELITE FOUR · '+gym.leader.toUpperCase();
   text(this,18,62,progress,{fontSize:'16px',color:C.gold});
   text(this,18,85,'INSÍGNIAS '+state.badges.length+' / 12   ·   VITÓRIAS '+state.wins+
-   '   ·   DERROTAS '+state.losses,{fontSize:'10px',color:C.muted});
+   '   ·   DERROTAS '+state.losses+'   ·   POKÉDEX '+(state.dexCaught?.length??0)+'/151',
+   {fontSize:'10px',color:C.muted});
   const progressFraction=complete?1:state.stage<GYMS.length?Math.min(1,state.trainer/limit):1;
   this.add.rectangle(320,107,604,5,0x0c1929);
   this.add.rectangle(18+600*progressFraction/2,107,600*progressFraction,5,0x4bb6ff);
@@ -303,21 +306,65 @@ class Campanha extends Phaser.Scene{
    });
   });
  }
+ pcScreen(state,page=0){
+  // Native Phaser PC, storing and swapping caught Pokémon, fully persistent.
+  this.children.removeAll(true);this.cameras.main.setBackgroundColor(C.ink);
+  this.backdrop();
+  text(this,20,13,'CENTRO POKÉMON · PC',{...titleStyle,fontSize:'19px'});
+  this.button(549,21,155,28,'◀ CAMPANHA',()=>{this.pcSelected=null;this.scene.restart()});
+  text(this,22,52,'EQUIPE '+state.team.length+'/6',{color:C.gold,fontSize:'14px'});
+  text(this,330,52,'ARMAZENAMENTO '+state.box.length,{color:C.gold,fontSize:'14px'});
+  const totalPages=Math.max(1,Math.ceil(state.box.length/6));
+  const safePage=Math.max(0,Math.min(totalPages-1,page));
+  state.team.forEach((m,i)=>{
+   const y=79+i*34,selected=this.pcSelected===i,isActive=i===state.active;
+   this.button(164,y,281,29,(isActive?'◆ ':'')+m.id.toUpperCase()+
+    ' NV.'+(m.progression?.level??'?')+(selected?' [SELECIONADO]':''),()=>{
+     this.pcSelected=i===this.pcSelected?null:i;this.pcScreen(state,safePage);
+    },selected);
+  });
+  const boxPage=state.box.slice(safePage*6,(safePage+1)*6);
+  boxPage.forEach((m,i)=>{
+   const actual=safePage*6+i,y=79+i*34;
+   this.button(466,y,277,29,m.id.toUpperCase()+' · NV.'+(m.progression?.level??'?'),()=>{
+    let changed=false;
+    if(state.team.length<6)changed=withdrawPokemon(state,actual);
+    else if(Number.isInteger(this.pcSelected))changed=swapPokemon(state,this.pcSelected,actual);
+    if(changed)this.pcSelected=null;
+    else state.lastMessage='Selecione um Pokémon da equipe para trocar.';
+    this.pcScreen(state,Math.min(safePage,Math.max(0,Math.ceil(state.box.length/6)-1)));
+   });
+  });
+  if(!boxPage.length)text(this,342,94,'PC VAZIO · CAPTURE POKÉMON',statusStyle);
+  this.button(121,310,195,29,'GUARDAR SELECIONADO',()=>{
+   if(!storePokemon(state,this.pcSelected))
+    state.lastMessage='Selecione um Pokémon; mantenha pelo menos um na equipe.';
+   this.pcSelected=null;this.pcScreen(state,safePage);
+  });
+  this.button(337,310,111,29,'◀ ANTERIOR',()=>this.pcScreen(state,(safePage-1+totalPages)%totalPages));
+  this.button(451,310,104,29,(safePage+1)+' / '+totalPages,()=>this.pcScreen(state,0));
+  this.button(568,310,119,29,'PRÓXIMA ▶',()=>this.pcScreen(state,(safePage+1)%totalPages));
+  text(this,20,345,'Equipe cheia? Selecione alguém à esquerda e clique no PC para trocar.',{
+   fontSize:'10px',color:C.muted});
+ }
  dexScreen(state){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   text(this,ANCHO/2,18,'POKÉDEX DE KANTO · '+KANTO_DEX.length+' ESPÉCIES',
     {...titleStyle,fontSize:'18px'}).setOrigin(.5,0);
   const supported=new Set(ROSTER.flatMap(p=>[p.id,...(p.evoluciones||[]).map(x=>x.nombre.toLowerCase())]));
-  text(this,ANCHO/2,47,'Apenas espécies com animação e golpes integrados entram em batalha.',statusStyle).setOrigin(.5);
+  text(this,ANCHO/2,47,'VISTOS '+(state.dexSeen?.length??0)+'  ·  CAPTURADOS '+(state.dexCaught?.length??0)+
+   '  ·  Somente espécies integradas entram em batalha.',statusStyle).setOrigin(.5);
   const page=Math.min(this.dexPage||0,6);
   for(let i=0;i<22;i++){
    const index=page*22+i;if(index>=KANTO_DEX.length)break;
    const raw=KANTO_DEX[index],slug=raw.toLowerCase();
-   const ready=supported.has(slug);
+   const ready=supported.has(slug),caught=(state.dexCaught||[]).includes(slug);
+   const seen=caught||(state.dexSeen||[]).includes(slug);
    const x=35+(i>=11?295:0),y=75+(i%11)*21;
-   text(this,x,y,String(index+1).padStart(3,'0')+'. '+raw+(ready?' ✓':''),{
-    fontSize:'11px',color:ready?C.blue:C.muted});
+   const marker=caught?' ★':seen?' ◦':ready?' ✓':'';
+   text(this,x,y,String(index+1).padStart(3,'0')+'. '+raw+marker,{
+    fontSize:'11px',color:caught?C.gold:seen?C.blue:C.muted});
   }
   this.button(91,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
   this.button(360,329,160,31,'PÁGINA '+(page+1)+'/7',()=>{

@@ -8,7 +8,7 @@ export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
 export const GYMS=Object.freeze([
  {city:'Pewter',leader:'Brock',badge:'Rocha',arena:'crater',type:'ROCK',enemy:['onix','machop','zubat'],boss:'onix'},
  {city:'Cerulean',leader:'Misty',badge:'Cascata',arena:'estadio',type:'WATER',enemy:['squirtle','magikarp','zubat'],boss:'wartortle'},
- {city:'Vermilion',leader:'Lt. Surge',badge:'Trovao',arena:'neon',type:'ELECTRIC',enemy:['pichu','pikachu','machop'],boss:'raichu'},
+ {city:'Vermilion',leader:'Lt. Surge',badge:'Trovao',arena:'neon',type:'ELECTRIC',enemy:['pikachu','raichu','machop'],boss:'raichu'},
  {city:'Celadon',leader:'Erika',badge:'Arco-Iris',arena:'ruinas',type:'GRASS',enemy:['bulbasaur','ivysaur','exeggcute'],boss:'venusaur'},
  {city:'Fuchsia',leader:'Koga',badge:'Alma',arena:'ruinas',type:'POISON',enemy:['zubat','golbat','exeggcute'],boss:'golbat'},
  {city:'Saffron',leader:'Sabrina',badge:'Pantano',arena:'neon',type:'PSYCHIC',enemy:['exeggcute','machop','zubat'],boss:'exeggutor'},
@@ -32,7 +32,7 @@ function newMember(species,level=5){
 }
 export function createCampaign(starter){
  if(!STARTERS.includes(starter))throw new Error('Choose an original Kanto starter');
- return {version:1,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],
+ return {version:1,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],dexSeen:[starter],dexCaught:[starter],
   active:0,wins:0,losses:0,capturesInStage:0,pendingCapture:null,
   badges:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
 }
@@ -44,13 +44,29 @@ export function readCampaign(storage=localStorage){
   if(s?.version!==1||!Array.isArray(s.team)||s.team.length===0||
     !Number.isInteger(s.stage)||s.stage<0||s.stage>STAGES.length||
     !Number.isInteger(s.trainer)||s.trainer<0)return null;
+  // Additive v1 migration. Do not reset saves or lose stored Pokémon.
+  let migrated=false;
+  if(!Array.isArray(s.box)){s.box=[];migrated=true}
+  if(s.team.length>6){s.box.unshift(...s.team.splice(6));migrated=true}
+  if(!Number.isInteger(s.active)||s.active<0||s.active>=s.team.length){
+   s.active=0;migrated=true;
+  }
+  if(!Number.isInteger(s.capturesInStage)||s.capturesInStage<0){
+   s.capturesInStage=0;migrated=true;
+  }
+  if(!Array.isArray(s.dexCaught)){
+   s.dexCaught=[...new Set([...s.team,...s.box].map(p=>p.id).filter(id=>id!=='mewtwo'))];
+   migrated=true;
+  }
+  if(!Array.isArray(s.dexSeen)){s.dexSeen=[...s.dexCaught];migrated=true}
   // Existing player saves receive exactly one permanent level-50 test Mewtwo.
   if(![...s.team,...(s.box||[])].some(p=>p.id==='mewtwo')){
    // Keep the tester playable immediately, without discarding the sixth team member.
    if(s.team.length>=6)s.box.push(s.team.pop());
    s.team.push(newMember('mewtwo',50));
-   storage.setItem(SAVE_KEY,JSON.stringify(s));
+   migrated=true;
   }
+  if(migrated)storage.setItem(SAVE_KEY,JSON.stringify(s));
   return s;
  }catch{return null}
 }
@@ -59,6 +75,40 @@ export function saveCampaign(state,storage=localStorage){
  return state;
 }
 export function resetCampaign(storage=localStorage){storage.removeItem(SAVE_KEY)}
+// Pokédex data describes encounters/captures, not which sprites are playable.
+export function recordSeen(s,id){
+ if(!id||!KANTO_DEX.some(name=>name.toLowerCase()===String(id).toLowerCase()))return false;
+ s.dexSeen??=[];if(s.dexSeen.includes(id))return false;
+ s.dexSeen.push(id);return true;
+}
+export function recordCaught(s,id){
+ const added=recordSeen(s,id);s.dexCaught??=[];
+ if(!s.dexCaught.includes(id)){s.dexCaught.push(id);return true}
+ return added;
+}
+export function storePokemon(s,index){
+ if(!Number.isInteger(index)||index<0||index>=s.team.length||s.team.length<=1)return false;
+ const [member]=s.team.splice(index,1);
+ s.box??=[];s.box.push(member);
+ if(s.active===index)s.active=0;
+ else if(index<s.active)s.active--;
+ s.lastMessage=member.id+' enviado para o PC.';
+ saveCampaign(s);return true;
+}
+export function withdrawPokemon(s,index){
+ if(!Number.isInteger(index)||index<0||index>=s.box.length||s.team.length>=6)return false;
+ const [member]=s.box.splice(index,1);
+ s.team.push(member);s.lastMessage=member.id+' entrou na equipe.';
+ saveCampaign(s);return true;
+}
+export function swapPokemon(s,teamIndex,boxIndex){
+ if(!Number.isInteger(teamIndex)||teamIndex<0||teamIndex>=s.team.length||
+    !Number.isInteger(boxIndex)||boxIndex<0||boxIndex>=s.box.length)return false;
+ const old=s.team[teamIndex];
+ s.team[teamIndex]=s.box[boxIndex];s.box[boxIndex]=old;
+ s.lastMessage=s.team[teamIndex].id+' trocado com '+old.id+'.';
+ saveCampaign(s);return true;
+}
 export function currentOpponent(s){
  if(s.champion||s.stage>=STAGES.length)return null;
  const gym=STAGES[s.stage];
@@ -73,13 +123,20 @@ export function startBattle(s){
  if(!s.team[s.active])throw new Error('Active Pokémon not selected');
  const opponent=currentOpponent(s);
  if(!opponent)throw new Error('Kanto campaign completed');
- return {p1:s.team[s.active].id,p2:opponent.id,modo:'cpu',nivel:s.stage<2?'facil':'normal',
+ // Scale the ORIGINAL Poké Arena tactical bot as Kanto progresses:
+ // its native difficulty adjusts reactions, evasions and attack judgment.
+ recordSeen(s,opponent.id);saveCampaign(s);
+ const tier=opponent.leader?
+  (s.stage>=8?'maestro':s.stage>=4?'dificil':'normal'):
+  (s.stage>=8?'dificil':s.stage>=3?'normal':'facil');
+ return {p1:s.team[s.active].id,p2:opponent.id,modo:'cpu',nivel:tier,
   arena:opponent.arena,mandos:['kbm','cpu'],torre2:{stage:s.stage,trainer:s.trainer}};
 }
 export function resolveBattle(s,won,random=Math.random){
  const opponent=currentOpponent(s);
  if(!opponent)throw new Error('No battle pending');
  if(!won){s.losses++;s.lastMessage='Derrota contra '+opponent.name+'. Cure a equipe e tente novamente.';return {won:false,message:s.lastMessage,evolutions:[]}}
+ recordSeen(s,opponent.id);
  const member=s.team[s.active],p=member.progression;
  // The species remains unchanged throughout the battle and evolves now only
  // because the Phaser battle scene already sent its confirmed result.
@@ -112,6 +169,7 @@ export function attemptCapture(s,random=Math.random){
   saveCampaign(s);return {ok:false,reason:s.lastMessage};
  }
  const member=newMember(candidate.id,candidate.level);
+ recordCaught(s,candidate.id);
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC');
  saveCampaign(s);return {ok:true,pokemon:member};

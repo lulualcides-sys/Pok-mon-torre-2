@@ -308,7 +308,9 @@ const server=http.createServer(async(req,res)=>{
    ['lmb','bonemerang',300],['rmb','bone-club',260],
    ['q','tri-attack',380],['e','pay-day',360],
    ['rmb','swift',450],
-   ['q','shadow-ball',490],['e','lovely-kiss',570]]){
+   ['q','shadow-ball',490],['e','lovely-kiss',570],
+   ['lmb','ice-beam',450],['rmb','rock-blast',610],
+   ['q','confuse-ray',500],['lmb','soft-boiled',700]]){
    const result=await tester.evaluate(async ({sl,moveName})=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
     const fx=await import(new URL('./habilidades.js',entry.src).href);
@@ -333,7 +335,7 @@ const server=http.createServer(async(req,res)=>{
    await tester.screenshot({path:'test-evidence/torre2-'+name+'-active-battle.png',fullPage:true});
    await tester.waitForTimeout(850);
   }
-  assert.equal(moveSmoke.forms.length,7);
+  assert.equal(moveSmoke.forms.length,11);
   // Regress false contact: Shadow Ball must finish silently when the target is
   // outside range, without damage or an orphaned purple ring after expiration.
   const shadowMiss=await tester.evaluate(async()=>{
@@ -460,11 +462,51 @@ const server=http.createServer(async(req,res)=>{
     'Lovely Kiss hearts must scatter instead of forming a straight row');
   assert.equal(kissHearts.statuses,0,'Cosmetic hearts must not auto-apply sleep');
 
+  // Collision regression for the four NEW moves only.
+  // Existing Pokémon Arena 2D effects are deliberately never touched.
+  const megaLogic=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const fx=await import(new URL('./torre2/mega-patch-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const run=(func,mode)=>{
+      const enemy={x:290,y:mode==='miss'?380:215,alto:38,ko:false,hp:200,
+       tipos:['NORMAL'],hits:0,statuses:[],
+       recibir(_l,arg){this.hits++;this.hp-=arg.dano||0;return 'golpe'},
+       ponerEstado(name){this.statuses.push(name)},escarchar(){this.statuses.push('frost')}};
+      const player={x:174,y:215,alto:38,ax:420,ay:215,escena:e,
+       rival:enemy,t:0,ko:false,hp:40,hpMax:200,animar(){},accion:null};
+      const effect=func(player,{dano:12,alcance:260,tipo:'ROCK'},{slot:'lmb'});
+      let active=true;
+      for(let i=0;i<130&&active;i++)active=effect.update(.016);
+      effect.destroy();e.efectos=e.efectos.filter(x=>x!==effect);
+      return{hp:enemy.hp,hits:enemy.hits,statuses:enemy.statuses,ownHp:player.hp,done:!active};
+    };
+    const saved=Math.random;
+    try{
+      Math.random=()=>.8; // Rock Blast 4 projectiles, no Ice Beam freeze.
+      return{iceHit:run(fx.icebeam,'hit'),iceMiss:run(fx.icebeam,'miss'),
+       rockHit:run(fx.rockblast,'hit'),rockMiss:run(fx.rockblast,'miss'),
+       confuseHit:run(fx.confuseray,'hit'),confuseMiss:run(fx.confuseray,'miss'),
+       heal:run(fx.softboiled,'miss')};
+    }finally{Math.random=saved}
+  });
+  for(const value of Object.values(megaLogic))
+   assert.equal(value.done,true,'new Phaser effect must clean up after completing');
+  assert.ok(megaLogic.iceHit.hp<200&&megaLogic.iceMiss.hp===200,'Ice Beam must require physical collision');
+  assert.ok(megaLogic.rockHit.hits>=2&&megaLogic.rockHit.hits<=5,
+   'Rock Blast hits separately when multiple rocks reach the enemy');
+  assert.equal(megaLogic.rockMiss.hits,0,'Rock Blast misses if the enemy dodges');
+  assert.deepEqual(megaLogic.confuseHit.statuses,['confuso'],
+   'Confuse Ray applies status once on contact');
+  assert.deepEqual(megaLogic.confuseMiss.statuses,[],
+   'Confuse Ray misses cleanly without auto applying status');
+  assert.equal(megaLogic.heal.ownHp,140,'Soft-Boiled heals exactly half max HP, without damaging rival');
+
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
   await tester.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke,swiftCollision,kissPhysics},result:'Original Phaser + solo Kanto verified'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke,swiftCollision,kissPhysics,megaLogic},result:'Original Phaser + solo Kanto verified'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{

@@ -4,6 +4,7 @@
  */
 import * as vfx from '../vfx.js';
 import {TORRE2_NEW_FORMS} from './next-batch-fx.js';
+import {TORRE2_MEGA_FORMS} from './mega-patch-fx.js';
 
 const pi=Math.PI, clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const ease=t=>1-(1-clamp(t))**3;
@@ -286,5 +287,6 @@ export function payday(l,h,extra){
 export const TORRE2_FORMS={
  torre2_bonemerang:bonemerang,torre2_boneclub:boneclub,
  torre2_triattack:triattack,torre2_payday:payday,
- ...TORRE2_NEW_FORMS
+ ...TORRE2_NEW_FORMS,
+ ...TORRE2_MEGA_FORMS
 };

@@ -13,7 +13,11 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'pay-day',nombre:'Pay Day',forma:'torre2_payday',tipo:'NORMAL',dano:10,alcance:235,coste:23,cd:5.4,anim:'Shoot',lanzar:.15,description:'Nine scattered coins, each with independent impact'},
  {id:'swift',nombre:'Swift',forma:'torre2_swift',tipo:'NORMAL',dano:10,alcance:250,coste:21,cd:5.2,anim:'Shoot',lanzar:.15,description:'Seven fan-scattered stars, staggered Pay Day-style impacts, individual contact and misses'},
  {id:'shadow-ball',nombre:'Shadow Ball',forma:'torre2_shadowball',tipo:'GHOST',dano:14,alcance:245,coste:31,cd:6.5,anim:'Charge',lanzar:.18,description:'Dark ghost orb and expanding impact ring'},
- {id:'lovely-kiss',nombre:'Lovely Kiss',forma:'torre2_lovelykiss',tipo:'NORMAL',dano:0,alcance:225,coste:25,cd:9.8,anim:'Shoot',lanzar:.13,description:'Larger aimed kiss: must physically hit; 75% sleep accuracy after contact, no damage'}
+ {id:'lovely-kiss',nombre:'Lovely Kiss',forma:'torre2_lovelykiss',tipo:'NORMAL',dano:0,alcance:225,coste:25,cd:9.8,anim:'Shoot',lanzar:.13,description:'Larger aimed kiss: must physically hit; 75% sleep accuracy after contact, no damage'},
+ {id:'ice-beam',nombre:'Ice Beam',forma:'torre2_icebeam',tipo:'ICE',dano:13,alcance:260,coste:28,cd:6.8,anim:'Charge',lanzar:.15,description:'Stepped crystal beam; actual collision and 10% frost chance'},
+ {id:'rock-blast',nombre:'Rock Blast',forma:'torre2_rockblast',tipo:'ROCK',dano:12,alcance:250,coste:27,cd:6.8,anim:'Throw',lanzar:.15,description:'2–5 independently colliding pixel stones; dodges can evade hits'},
+ {id:'confuse-ray',nombre:'Confuse Ray',forma:'torre2_confuseray',tipo:'GHOST',dano:0,alcance:230,coste:24,cd:9.1,anim:'Charge',lanzar:.16,description:'Three spectral lights; confusion only on impact'},
+ {id:'soft-boiled',nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Egg-shell healing: restore up to 50% max HP only to caster'}
 ]);
 function collect(def){
  // Use every actual move slot and carry inherited base/evolution properties
@@ -57,6 +61,11 @@ export function availableMoves(member){
  if(['meowth','persian'].includes(member.id))names.add('pay-day');
  if(['porygon'].includes(member.id))names.add('tri-attack');
  if(['jynx'].includes(member.id))names.add('lovely-kiss');
+ // New exclusive VFX are only assigned to compatible Kanto species.
+ if(['blastoise','wartortle','lapras','dewgong','cloyster','starmie','slowbro','golduck','vaporeon','articuno'].includes(member.id))names.add('ice-beam');
+ if(['onix','geodude','graveler','golem','rhyhorn','rhydon','omastar','kabutops','aerodactyl'].includes(member.id))names.add('rock-blast');
+ if(['gastly','haunter','gengar','zubat','golbat','vulpix','ninetales','starmie'].includes(member.id))names.add('confuse-ray');
+ if(member.id==='chansey')names.add('soft-boiled');
  return TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
 }
 export function defaultLoadout(member){
