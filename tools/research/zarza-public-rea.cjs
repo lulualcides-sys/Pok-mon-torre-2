@@ -9,8 +9,23 @@ const {chromium}=require('playwright-core');
 const base='https://pokemonzarza.com';
 const targets=[
  {id:'arena',url:base+'/poke-arena.html?lang=en&city=encinacorba&mode=exhibition&entry=welcome'},
- {id:'lab',url:base+'/poke-arena-lab.html'}
+ {id:'lab',url:base+'/poke-arena-lab.html'},
+ {id:'homepage',url:base+'/'},
+ {id:'gallery',url:base+'/galeria/index.html'},
+ {id:'ranking',url:base+'/ranking.html'}
 ];
+const visited=new Set();
+const maxPages=30;
+const addPublicPage=(link,referer)=>{
+ try{
+  const u=new URL(link,referer);
+  if(u.origin!==base||!/\.(?:html?)$|\/$/i.test(u.pathname))return;
+  if(/(?:admin|login|account|profile|auth|private|api|upload|register)/i.test(u.pathname))return;
+  const key=u.pathname;
+  if(!visited.has(key)&&!targets.some(x=>new URL(x.url).pathname===key)&&targets.length<maxPages)
+   targets.push({id:'page'+targets.length,url:u.origin+u.pathname});
+ }catch{}
+};
 const dest=path.resolve('test-evidence/zarza-rea');
 fs.mkdirSync(dest,{recursive:true});
 const safe=(s)=>String(s||'').slice(0,360);
@@ -22,9 +37,19 @@ const moves=['ice beam','hyper beam','aura storm','confuse ray','shadow ball','f
  const reports=[];
  try{
  for(const target of targets){
+   if(visited.has(new URL(target.url).pathname))continue;
+   visited.add(new URL(target.url).pathname);
    const page=await browser.newPage({viewport:{width:1240,height:760},deviceScaleFactor:1,
      locale:'en-US',serviceWorkers:'block'});
    page.setDefaultTimeout(13000);
+   await page.addInitScript(()=>{
+    const actual=HTMLCanvasElement.prototype.getContext;
+    window.__publicVfxContexts=[];
+    HTMLCanvasElement.prototype.getContext=function(type,...args){
+     window.__publicVfxContexts.push(String(type));
+     return actual.call(this,type,...args);
+    };
+   });
    const errors=[],resources=[],requests=[];
    const scripts=[];
    page.on('pageerror',error=>errors.push(safe(error.message)));
@@ -69,7 +94,7 @@ const moves=['ice beam','hyper beam','aura storm','confuse ray','shadow ball','f
    let response=null,navError=null;
    try{response=await page.goto(target.url,{waitUntil:'domcontentloaded',timeout:26000});}
    catch(error){navError=safe(error.message)}
-   if(!navError)await page.waitForTimeout(5000);
+   if(!navError)await page.waitForTimeout(target.id==='arena'||target.id==='lab'?3200:900);
    let dom={};
    try{dom=await page.evaluate(()=>{
      const trim=text=>String(text||'').replace(/\s+/g,' ').trim().slice(0,130);
@@ -86,14 +111,17 @@ const moves=['ice beam','hyper beam','aura storm','confuse ray','shadow ball','f
        audio:document.querySelectorAll('audio').length,
        appHints:{phaser:!!window.Phaser,pixi:!!window.PIXI,three:!!window.THREE,
          gsap:!!window.gsap,babylon:!!window.BABYLON},
+       contexts:window.__publicVfxContexts||[],
+       internalLinks:[...document.querySelectorAll('a[href]')].map(a=>a.href).slice(0,180),
        bodySample:trim(document.body?.innerText||'').slice(0,130)
      };
    })}catch(error){errors.push('dom: '+safe(error.message))}
+   for(const url of dom.internalLinks||[])addPublicPage(url,target.url);
    try{await page.screenshot({path:path.join(dest,target.id+'.png'),fullPage:false,timeout:10000})}
    catch(error){errors.push('screenshot: '+safe(error.message))}
    reports.push({target:target.id,requestedUrl:target.url,finalUrl:page.url(),
      status:response?.status()??null,navError,
-     dom,scriptFindings:scripts,resourceSummary:{
+     dom:{...dom,internalLinks:undefined},scriptFindings:scripts,resourceSummary:{
        total:resources.length,
        kinds:Object.fromEntries([...new Set(requests.map(r=>r.kind))].map(k=>[k,requests.filter(r=>r.kind===k).length])),
        scripts:resources.filter(r=>r.type.includes('javascript')).map(r=>r.url).slice(0,25),
@@ -114,6 +142,7 @@ const moves=['ice beam','hyper beam','aura storm','confuse ray','shadow ball','f
   'Title: '+(r.dom.title||'?'),
   'Canvas elements: '+JSON.stringify(r.dom.canvas||[]),
   'Global engine objects detected at runtime: '+JSON.stringify(r.dom.appHints||{}),
+  'Canvas context types requested: '+JSON.stringify([...new Set(r.dom.contexts||[])]),
   'JS files inspected: '+r.scriptFindings.length,
   'Technology fingerprints (code strings only, not validated libraries): '+JSON.stringify([...new Set(fps)]),
   'Visible move names in public JS (keyword matches only): '+JSON.stringify(mention),
@@ -130,5 +159,23 @@ const moves=['ice beam','hyper beam','aura storm','confuse ray','shadow ball','f
  });
  const md='# Poké Zarza REA — Public site inspection\n\nRead-only browser access, no login, no bypass, no copied art/source. Keyword matches alone do NOT prove the renderer.\n\n'+rows.join('\n\n');
  fs.writeFileSync(path.join(dest,'report.md'),md);
- console.log('ZARZA_REA_BEGIN\n'+md+'\nZARZA_REA_END');
+ const indexes={};
+ for(const r of reports)for(const script of r.scriptFindings)
+  for(const move of script.moveMentions)
+   (indexes[move]??=new Set()).add(script.path);
+ const moveMap=Object.fromEntries(Object.entries(indexes).sort((a,b)=>a[0].localeCompare(b[0]))
+   .map(([move,paths])=>[move,[...paths]]));
+ fs.writeFileSync(path.join(dest,'move-module-map.json'),JSON.stringify({
+  scope:'Text mentions in public JavaScript; not proof animations are available.',
+  pages:reports.map(r=>({page:r.finalUrl,status:r.status,contexts:r.dom.contexts,modules:r.scriptFindings.length})),
+  moveMap},null,2));
+ console.log('ZARZA_WIDE_SUMMARY '+JSON.stringify({
+  publicPagesVisited:reports.length,
+  good:reports.filter(r=>r.status===200).length,
+  uniqueModules:new Set(reports.flatMap(r=>r.scriptFindings.map(s=>s.path))).size,
+  canvasContexts:[...new Set(reports.flatMap(r=>r.dom.contexts||[]))],
+  moveKeywords:Object.keys(moveMap).length,
+  firstPages:reports.slice(0,14).map(r=>({id:r.target,status:r.status,url:r.finalUrl}))
+ }));
+ console.log('ZARZA_REA_BEGIN\n'+md.slice(0,16000)+'\nZARZA_REA_END');
 })().catch(err=>{console.error('ZARZA_REA_FATAL',err);process.exitCode=1});

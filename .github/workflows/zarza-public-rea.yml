@@ -1,4 +1,4 @@
-name: REA público — Pokémon Zarza (somente leitura)
+name: REA ampliada — Pokémon Zarza (somente leitura)
 
 on:
   push:
@@ -14,7 +14,7 @@ permissions:
 jobs:
   inspect-public-arena:
     runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    timeout-minutes: 11
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
