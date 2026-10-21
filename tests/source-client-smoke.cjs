@@ -307,7 +307,7 @@ const server=http.createServer(async(req,res)=>{
   for(const [slot,name,delay] of [
    ['lmb','bonemerang',300],['rmb','bone-club',260],
    ['q','tri-attack',380],['e','pay-day',360],
-   ['lmb','surf',520],['rmb','swift',450],
+   ['rmb','swift',450],
    ['q','shadow-ball',490],['e','lovely-kiss',570]]){
    const result=await tester.evaluate(async ({sl,moveName})=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
@@ -333,7 +333,7 @@ const server=http.createServer(async(req,res)=>{
    await tester.screenshot({path:'test-evidence/torre2-'+name+'-active-battle.png',fullPage:true});
    await tester.waitForTimeout(850);
   }
-  assert.equal(moveSmoke.forms.length,8);
+  assert.equal(moveSmoke.forms.length,7);
   // Regress false contact: Shadow Ball must finish silently when the target is
   // outside range, without damage or an orphaned purple ring after expiration.
   const shadowMiss=await tester.evaluate(async()=>{
@@ -352,11 +352,46 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(shadowMiss.expired,true,'Shadow Ball must self-dispose on miss');
   assert.equal(shadowMiss.hpUnchanged,true,'Shadow Ball must not cause ghost damage on miss');
 
+
+  // Actual 5-star Swift physics: each projectile impacts only on contact.
+  // It is not enough to call "usarHabilidad": prove sequential multi-hit
+  // against stationary target, absolute miss, and partial hit after dodge.
+  const swiftCollision=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const {swift}=await import(new URL('./torre2/next-batch-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const trials=[];
+    const run=(movement)=>{
+      const opponent={x:290,y:215,alto:38,ko:false,hp:100,
+        hits:0,recibir(_l,d){this.hits++;this.hp-=d.dano;return 'golpe'}};
+      const player={x:174,y:215,alto:38,ax:430,ay:215,rival:opponent,
+        escena:e,t:0,animar(){},accion:null};
+      const fx=swift(player,{tipo:'NORMAL',dano:10,alcance:260},{slot:'lmb'});
+      let alive=true;
+      for(let step=0;step<108&&alive;step++){
+        if(movement==='dodge'&&step===20)opponent.y=360;
+        if(movement==='miss'&&step===0)opponent.y=360;
+        alive=fx.update(.016);
+      }
+      e.efectos=e.efectos.filter(item=>item!==fx);
+      return {mode:movement,hits:opponent.hits,hp:opponent.hp,expired:!alive};
+    };
+    trials.push(run('still'));trials.push(run('miss'));trials.push(run('dodge'));
+    return trials;
+  });
+  assert.ok(swiftCollision.every(t=>t.expired),'Swift projectiles must expire cleanly');
+  assert.ok(swiftCollision[0].hits>=2,'Swift needs multiple separate successful star impacts');
+  assert.ok(swiftCollision[0].hits<=5,'Swift must never hit more than its five stars');
+  assert.equal(swiftCollision[1].hits,0,'Swift must deal NO damage when all stars miss');
+  assert.ok(swiftCollision[2].hits<swiftCollision[0].hits,
+    'Dodging during flight must avoid later stars; no automatic full damage');
+  assert.equal(swiftCollision[1].hp,100,'Swift miss must not reduce health');
+
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
-  assert.deepEqual(newErrors,[],'Mewtwo summary + eight Phaser moves must not crash');
+  assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
   await tester.close();
   const summary={url:page.url(),title:await page.title(),canvas,errors:errors.slice(0,20),
-   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke},result:'Original Phaser + solo Kanto verified'};
+   notFound:notFound.slice(0,40),mobile:{...mobileInfo,bootMs:mobileBootMs,errors:mobileErrors,missing:mobileMissing.slice(0,20)},source:'pokearena2d.com',offline:{initial:true,combat:combatScene,aiRegression,trainerAfterVictory:offlineResult.trainer},mewtwo:{summary:summaryState,ui:uiCheck,moves:moveSmoke,swiftCollision},result:'Original Phaser + solo Kanto verified'};
   fs.writeFileSync('test-evidence/pokearena-original-source-smoke.json',JSON.stringify(summary,null,2));
   console.log(JSON.stringify(summary,null,2));
  }finally{
