@@ -77,8 +77,13 @@ const MUD_SPLASH=[
 const DUST=[
  '..K...','.KDK..','KMDMK.','.KSK..','..K...'
 ];
+// Three tiny hand-pixeled mud splashes, separate from the original 5 drops.
+// No physics/collision change, particles spawn ONLY on damaging contact.
+const MUD_MICRO_SPLASH=[
+ '..K.', '.KMK','KMSK','.KK.'
+];
 // MUD-SLAP: adapted simple native sludge-arc impact into a 10-frame
-// SMALL aimed mud pellet with brown droplets + 0.24s pixel splash.
+// SMALL aimed mud pellet with brown droplets + 0.27s pixel splash.
 // Actual projectile contact can fail. No giant sludge cloud or poison.
 export function mudslap(l,h,extra){
  const e=l.escena,[proj,sparks]=layers(e),r=l.rival;
@@ -112,18 +117,31 @@ export function mudslap(l,h,extra){
      const d=dist-j*13;if(d<0)continue;
      const x=sx+ux*d-uy*Math.sin(age*11+j)*4;
      const y=sy+uy*d+ux*Math.sin(age*11+j)*4;
-     stamp(sparks,DUST,x,y,MUD_PALETTE,j===1?1:.75,.75-j*.12);
+     // Preserve the original speed and size; three faint, short trail flecks.
+     stamp(sparks,DUST,x,y,MUD_PALETTE,j===1?.9:.7,.78-j*.13);
     }
    }
   }
   if(impact&&didHit){
    const t=clamp((age-impact.at)/.27);
    if(t<1){
-    stamp(proj,MUD_SPLASH,impact.x,impact.y,MUD_PALETTE,1.6,1-t);
+    // Widen the APPROVED original splash by 12.5% without changing
+    // the main pellet's scale, launch timing, power, PP or hit detection.
+    stamp(proj,MUD_SPLASH,impact.x,impact.y,MUD_PALETTE,1.8,1-t);
     for(let i=0;i<5;i++){
      const rad=4+t*(11+i%3*4),th=(i/5)*2*PI;
      stamp(sparks,DUST,impact.x+Math.cos(th)*rad,
       impact.y+Math.sin(th)*rad*.65,MUD_PALETTE,1,1-t);
+    }
+    // Three additional uneven SIDE splashes, each drawn as a tiny
+    // 4x4 pixel matrix. Brief lateral arcs, no generic circles.
+    for(let i=0;i<3;i++){
+     const side=i-1;
+     const lateral=side*(7+17*t);
+     const lift=Math.sin(t*PI)*(7+(i===1?5:2));
+     const x=impact.x+(-uy)*lateral-ux*(2+4*t);
+     const y=impact.y+ux*lateral-uy*(2+4*t)-lift;
+     stamp(sparks,MUD_MICRO_SPLASH,x,y,MUD_PALETTE,.85,1-t);
     }
    }
   }
@@ -166,6 +184,14 @@ const SHARD=[
 const SEED_SPARK=[
  '..K...','.KGK..','KGLGK.','.KWK..','..K...'
 ];
+// Tiny splintered shell pieces; these are NOT additional hits or projectiles.
+const SEED_SHELL_CHIP=[
+ '..K...', '.KDK..', 'KDGK..', '.KK...'
+];
+// Readable pale interior of a freshly split seed: short, pixel-only flash.
+const SEED_CORE=[
+ '..K..','.KLGK','KLLWK','.KLLK','..K..'
+];
 // SEED BOMB: Bullet Seed's hand-inked seed silhouette enlarged into one
 // projectile, Egg Bomb-style delayed crack + just six small seed fragments.
 // Aiming is fixed at cast and damage fires ON physical contact only.
@@ -188,7 +214,8 @@ export function seedbomb(l,h,extra){
     didHit=result.landed;impact={x:on.x,y:on.y,at:age};
    }else{
     const frame=Math.floor(age*22)%3;
-    stamp(body,frame===2?BOMB_CRACK:BOMB,tip.x,
+    // Keep seed INTACT in flight: the crack opens only ON impact.
+    stamp(body,BOMB,tip.x,
      tip.y+Math.sin(age*17)*1.5,SEED_PAL,1.8,1,frame===1);
     for(let k=1;k<=3;k++){
      const d=distance-k*12;if(d<0)continue;
@@ -200,13 +227,30 @@ export function seedbomb(l,h,extra){
   if(impact&&didHit){
    const t=clamp((age-impact.at)/.34);
    if(t<1){
-    if(t<.33)stamp(body,BOMB_CRACK,impact.x,impact.y,SEED_PAL,1.8,1-2*t);
-    // Six hand-drawn shell shards fly from exactly the recorded collision.
+    // Impact opens a noticeable crack for ~0.14s (not during flight).
+    // Single short pale-green interior flash reveals the seed actually split.
+    if(t<.41){
+     const crackAlpha=t<.20?1:(.41-t)/.21;
+     stamp(body,BOMB_CRACK,impact.x,impact.y,SEED_PAL,1.8,crackAlpha);
+    }
+    if(t>=.12&&t<.29){
+     const glow=Math.sin(((t-.12)/.17)*PI);
+     stamp(shards,SEED_CORE,impact.x,impact.y,SEED_PAL,1.15,glow);
+    }
+    // Preserve the original six shell shards and add three tiny,
+    // staggered chips for a dry seed 'pop', without extra damage.
     for(let i=0;i<6;i++){
      const phi=(i*2*PI)/6+.15,dist=5+t*(14+i%2*5);
      stamp(shards,SHARD,
       impact.x+Math.cos(phi)*dist,impact.y+Math.sin(phi)*dist*.75,
       SEED_PAL,1.1,1-t,i%2===0);
+    }
+    for(let i=0;i<3;i++){
+     const travel=clamp((t-i*.065)/.81);
+     const phi=(i*2*PI)/3+.75,dist=3+20*travel;
+     stamp(shards,SEED_SHELL_CHIP,
+      impact.x+Math.cos(phi)*dist,impact.y+Math.sin(phi)*dist*.8,
+      SEED_PAL,.85,1-travel,i===1);
     }
    }
   }
