@@ -196,65 +196,76 @@ export function swift(l,h,extra){
  },dispose);
 }
 function orb(g,x,y,t){
- // Compact Ghost-type mass: deep violet center and uneven dark outline.
- const r=11+Math.sin(t*17)*1;
- for(let yy=-r;yy<=r;yy+=2){
-  const span=Math.sqrt(Math.max(0,r*r-yy*yy)),w=Math.max(1,Math.floor(span));
-  draw(g,x-w-2,y+yy-1,2*w+4,3,0x090b1d);
-  draw(g,x-w,y+yy,2*w,2,yy%4?0x39204e:0x512c69);
+ // A shadow-energy knot with uneven inked edges and a dark purple spiral.
+ // Deliberately not a simple purple ball or a translucent circular PNG.
+ const phase=t*17,R=11+Math.sin(phase)*1.2;
+ const contour=Array.from({length:13},(_,i)=>{
+  const a=i*2*PI/13,rough=(i%3===0?2:i%4===0?-1:0);
+  const rad=R+rough+Math.sin(phase+i*2.7)*1.3;
+  return {x:rnd(x+Math.cos(a)*rad),y:rnd(y+Math.sin(a)*rad)};
+ });
+ g.fillStyle(0x070919,1);g.fillPoints(contour,true);
+ const interior=contour.map(p=>({x:rnd(x+(p.x-x)*.81),y:rnd(y+(p.y-y)*.81)}));
+ g.fillStyle(0x332048,1);g.fillPoints(interior,true);
+ // Rotating claw-shaped slashes instead of bright rings.
+ const a=phase*.5;
+ for(let i=0;i<7;i++){
+  const theta=a+i*.71,radius=4+i*.76;
+  const px=x+Math.cos(theta)*radius,py=y+Math.sin(theta)*radius;
+  draw(g,px-1,py-1,i%3?3:4,2,
+   i%3===0?0x76508c:i%2?0x180d31:0x58356d,.92);
  }
- draw(g,x-6,y-5,5,2,0x8760ad,.7);
- draw(g,x+2,y+4,4,2,0x150d2e,.9);
+ draw(g,x-4,y-6,3,2,0xa083b8,.78);
+ draw(g,x+3,y+4,3,2,0x080b19,1);
 }
 export function shadowball(l,h,extra){
  const e=l.escena,g=layer(e,1511),aura=layer(e,1509),trail=layer(e,1508);
  const r=l.rival,ang=direct(l);
- const ox=l.x+9,oy=l.y-l.alto*.53,range=Math.min(h.alcance||245,255);
- let age=0,burstRemaining=0,impactX=0,impactY=0,disposed=false;
+ const ox=l.x+Math.cos(ang)*9,oy=l.y-l.alto*.54;
+ const range=Math.min(h.alcance||245,255),speed=285;
+ let age=0,burst=0,impactX=0,impactY=0,disposed=false;
  const dispose=()=>{if(disposed)return;disposed=true;g.destroy();aura.destroy();trail.destroy()};
- l.animar('Charge',.59,.15);
- l.accion={hasta:l.t+.29,bloquea:true,lento:.48,angulo:ang};
+ l.animar('Charge',.61,.16);
+ l.accion={hasta:l.t+.32,bloquea:true,lento:.43,angulo:ang};
  return running(e,dt=>{
-  age+=dt;
-  g.clear();aura.clear();trail.clear();
-  if(burstRemaining>0){
-   burstRemaining=Math.max(0,burstRemaining-dt);
-   if(burstRemaining<=0){dispose();return false}
-   const phase=1-burstRemaining/.22,rad=5+27*phase,opacity=1-phase;
-   aura.lineStyle(4,0x160d30,opacity);aura.strokeCircle(impactX,impactY,rad+3);
-   aura.lineStyle(2,0x8052ab,opacity*.9);aura.strokeCircle(impactX,impactY,rad*.84);
-   for(let i=0;i<11;i++){
-    const th=i*2*PI/11+age*6;
-    draw(g,impactX+Math.cos(th)*rad,impactY+Math.sin(th)*rad,
-     2+i%3,2+i%2,i%2?0x412259:0x9165af,opacity*.86);
+  age+=dt;g.clear();aura.clear();trail.clear();
+  if(burst>0){
+   burst=Math.max(0,burst-dt);
+   if(burst===0){dispose();return false}
+   // A fast *collapsing* spectral burst. No lingering purple ring.
+   const f=1-burst/.16,opacity=(1-f),radius=7+12*f;
+   for(let i=0;i<8;i++){
+    const a=i*2*PI/8+.4,rr=radius+(i%3)*3;
+    const px=impactX+Math.cos(a)*rr,py=impactY+Math.sin(a)*rr;
+    draw(g,px-3,py-2,3+i%2,3,
+     i%3===0?0x0a0719:i%2?0x493063:0x8d69a4,opacity);
    }
    return true;
   }
-  const flight=ease(sat((age-.08)/.68));
-  // Missed projectile expires with no impact rings and no lingering FX.
-  if(flight>=1||age>.84||!r||r.ko){dispose();return false}
-  const x=ox+Math.cos(ang)*range*flight,y=oy+Math.sin(ang)*range*flight*.75;
-  for(let i=0;i<12;i++){
-   const th=age*12+i*2.399,radius=13+(i*7)%9;
-   draw(aura,x+Math.cos(th)*radius,y+Math.sin(th)*radius*.8,
-    2+i%2,2+i%2,i%3===0?0x170e32:0x744c95,.38+.2*(i%2));
+  const travel=Math.max(0,age-.085)*speed;
+  if(travel>=range||age>1.04||!r||r.ko){dispose();return false}
+  const x=ox+Math.cos(ang)*travel,y=oy+Math.sin(ang)*travel*.76;
+  // Only four short dark smoke wisps. The compact orb remains the main shape.
+  for(let i=0;i<5;i++){
+   const theta=age*13+i*2.5,rad=14+(i%2)*4;
+   draw(aura,x+Math.cos(theta)*rad,y+Math.sin(theta)*rad*.7,
+    2+i%2,2, i%2?0x201336:0x725089,.58);
   }
-  for(let i=1;i<7;i++){
-   const dist=i*9,drift=Math.sin(age*18+i*2.1)*4;
-   draw(trail,x-Math.cos(ang)*dist-Math.sin(ang)*drift,
-    y-Math.sin(ang)*dist*.75+Math.cos(ang)*drift,
-    3,2,i%2?0x2d1c48:0x5e387e,.35*(1-i/8));
+  for(let i=1;i<5;i++){
+   const d=i*7;
+   const px=x-Math.cos(ang)*d,py=y-Math.sin(ang)*d*.75;
+   draw(trail,px,py,3,2,i%2?0x271939:0x4e315f,.44-i*.07);
   }
   orb(g,x,y,age);
-  if(Math.hypot(x-r.x,y-(r.y-r.alto*.5))<22){
-   // The prior code started an explosion BEFORE knowing if the defender
-   // actually took the hit. A blocked/missed ball must simply disappear.
-   if(!hit(l,h,extra,r,1,57)){dispose();return false}
-   impactX=x;impactY=y;burstRemaining=.22;
-   sparkle(e,r.x,r.y-r.alto*.5,0x78519f,.8);
+  const center=targetAt(r);
+  if(center&&Math.hypot(x-center.x,y-center.y)<22){
+   // Deal damage first; a shield/invalid target cannot generate a hit VFX.
+   if(!hit(l,h,extra,r,1,55)){dispose();return false}
+   impactX=center.x;impactY=center.y;burst=.16;
+   sparkle(e,center.x,center.y,0x684084,.67);
    if(Math.random()<.2)r.ponerEstado('lento',2,{f:.15});
   }
-  return true
+  return true;
  },dispose);
 }
 function lips(g,x,y,size=1){
