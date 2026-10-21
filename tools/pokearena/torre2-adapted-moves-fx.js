@@ -95,16 +95,13 @@ export function mudslap(l,h,extra){
    const tip={x:sx+dist*ux,y:sy+dist*uy};
    const on=collision(prev,tip,r,12);prev=tip;
    if(on){
-    const result=strike(l,r,h,extra,h.dano??8,13);
+    const result=strike(l,r,h,extra,h.dano??4,13);
     didHit=result.landed;
-    // Real-time adaptation of Mud-Slap's accuracy-stage reduction.
-    // On a true hit, the victim's aim becomes briefly less precise.
-    // Applied only in Kanto, via a narrow gameplay patch to luchador.js.
+    // Mud-Slap: Accuracy -1 stage on a successful damaging hit.
+    // Stages persist through this fight (unless switched), capped at -6.
     if(didHit&&r.est){
-     const now=Number.isFinite(r.t)?r.t:(Number.isFinite(e.t)?e.t:0);
-     const old=r.est.torre2MudAccuracy;
-     r.est.torre2MudAccuracy={until:now+3.7,
-      stacks:Math.min(3,(old?.until>now?old.stacks:0)+1)};
+     const old=r.est.torre2MudAccuracy?.stacks??0;
+     r.est.torre2MudAccuracy={stacks:Math.min(6,old+1)};
     }
     impact={x:on.x,y:on.y,at:age};
    }else{
@@ -280,8 +277,10 @@ export function superfang(l,h,extra){
    // The bite reaches only the manually aimed 90px melee segment.
    const c=collision(old,{x:cx+ux*16,y:cy+uy*16},r,13);
    const ghost=Array.isArray(r?.tipos)&&r.tipos.includes('GHOST');
+   // Super Fang retains native 90% accuracy in addition to actual reach.
    if(c&&r&&!r.ko&&!ghost&&!r.invulnerable&&!r.est?.vuelo
-      &&Number.isFinite(r.hp)&&r.hp>0){
+      &&Number.isFinite(r.hp)&&r.hp>0
+      &&Math.random()<((h.precisao??90)/100)){
     contactPt=c;
     const damage=Math.max(1,Math.floor(r.hp*.5));
     // Pure fixed damage has no unintended multipliers: actual half current HP.
