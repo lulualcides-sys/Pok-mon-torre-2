@@ -679,6 +679,75 @@ const server=http.createServer(async(req,res)=>{
 
   // New additive Mud-Slap / Seed Bomb / Super Fang use hand-drawn sprite
   // matrices, physical hit/miss and clear their graphics after battle.
+  // Newly authored route moves: genuine aim/collision, two 30% status
+  // rolls, rendering, renderer cleanup. Native Tackle is intentionally frozen.
+  const earlyRoute=await tester.evaluate(async()=>{
+   const moduleScript=[...document.querySelectorAll('script[src]')]
+    .find(x=>x.src.includes('/main.js'));
+   const {TORRE2_EARLY_ROUTE_FORMS}=await import(
+    new URL('./torre2/early-route-fx.js',moduleScript.src).href);
+   const results={};const oldRandom=Math.random;
+   try{
+    Math.random=()=>.01; // deterministic positive 30% status check
+    for(const [id,forma,kind] of [
+     ['gust','torre2_gust','FLYING'],
+     ['poison-sting','torre2_poisonsting','POISON'],
+     ['bite','torre2_bite','DARK']
+    ])for(const mode of ['hit','aim-away','dodge','blocked','immune']){
+     const drawings=[];
+     const fake={efectos:[],add:{graphics(){
+      const g={draws:0,deleted:false,setDepth(){return this},
+       fillStyle(){return this},fillRect(){this.draws++;return this},
+       clear(){return this},destroy(){this.deleted=true}};
+      drawings.push(g);return g;
+     }}};
+     const enemy={x:id==='bite'?235:301,y:mode==='dodge'?350:215,
+      hp:120,alto:36,ko:false,tipos:mode==='immune'?['POISON']:['NORMAL'],
+      est:{},hits:0,status:[],
+      recibir(_l,attack){
+       if(mode==='blocked')return 'miss';
+       this.hits++;this.hp-=attack.dano||0;
+       if(attack.veneno)this.status.push('veneno');
+       if(attack.aturde)this.status.push('aturde');
+       return 'golpe';
+      }};
+     const user={x:174,y:215,alto:36,ko:false,est:{},t:0,
+      ax:430,ay:mode==='aim-away'?60:215,rival:enemy,
+      escena:fake,animar(){}};
+     const attack=TORRE2_EARLY_ROUTE_FORMS[forma](user,{
+      dano:id==='gust'?8:id==='poison-sting'?3:12,
+      tipo:kind,alcance:id==='bite'?76:235
+     },{slot:'lmb'});
+     let active=true,frames=0;
+     while(active&&frames++<110)active=attack.update(.016);
+     attack.destroy();
+     results[id+'-'+mode]={hits:enemy.hits,status:enemy.status,
+      finished:!active,ink:drawings.reduce((n,g)=>n+g.draws,0),
+      disposed:drawings.every(g=>g.deleted)};
+    }
+   }finally{Math.random=oldRandom}
+   return results;
+  });
+  for(const id of ['gust','poison-sting','bite']){
+   assert.equal(earlyRoute[id+'-hit'].hits,1,id+' hits only on actual contact');
+   for(const mode of ['aim-away','dodge','blocked'])
+    assert.equal(earlyRoute[id+'-'+mode].hits,0,
+     id+' never hits when '+mode);
+   for(const mode of ['hit','aim-away','dodge','blocked','immune']){
+    assert.equal(earlyRoute[id+'-'+mode].finished,true,id+' effect must finish');
+    assert.equal(earlyRoute[id+'-'+mode].disposed,true,id+' WebGL graphics must be released');
+    assert.ok(earlyRoute[id+'-'+mode].ink>0,id+' renders real pixel matrices');
+   }
+  }
+  assert.ok(earlyRoute['poison-sting-hit'].status.includes('veneno'),
+   '30% poison check should apply only after a real damaging contact');
+  assert.ok(!earlyRoute['poison-sting-immune'].status.includes('veneno'),
+   'Poison Sting should not poison Poison immune defenders');
+  assert.ok(earlyRoute['bite-hit'].status.includes('aturde'),
+   'Bite can cause brief flinch after physical contact');
+  assert.ok(!earlyRoute['bite-blocked'].status.includes('aturde'),
+   'Blocked Bite cannot flinch a target');
+
   const adaptedCheck=await tester.evaluate(async()=>{
    const script=[...document.querySelectorAll('script[src]')]
     .find(x=>x.src.includes('/main.js'));
