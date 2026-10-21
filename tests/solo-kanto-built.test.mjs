@@ -62,6 +62,40 @@ assert.equal(marketState.team[0].hp,100);
 assert.equal(usePotion(marketState,'potion').ok,false,'Potion cannot be wasted on full HP');
 const area=wildAvailability(0);
 assert.equal(area.area.includes('Viridian'),true);
+const {ROSTER}=await import(pathToFileURL(path.join(stage,version,'datos.js')));
+const {EARLY_KANTO_BASE,EARLY_KANTO_FORMS,EARLY_KANTO_LEARNSETS}=await import(
+ pathToFileURL(path.join(stage,version,'torre2/early-kanto-species.js')));
+for(const id of EARLY_KANTO_BASE)assert.ok(ROSTER.some(p=>p.id===id),
+ 'New pre-Brock species must exist in actual battle ROSTER: '+id);
+const manifest=JSON.parse(fs.readFileSync(path.join(stage,'assets/pmd/manifest.json'),'utf8'));
+for(const [id,dexes] of Object.entries(EARLY_KANTO_FORMS)){
+ assert.ok(ROSTER.some(p=>p.id===id),'Missing first route family '+id);
+ for(const dex of dexes){
+  const entry=manifest[dex];
+  assert.ok(entry?.anims?.Idle&&entry?.anims?.Walk,
+   'Missing battle Idle/Walk animations of '+id+' dex '+dex);
+  for(const action of ['Idle','Walk']){
+   const a=entry.anims[action],filename=path.join(stage,'assets/pmd',a.file);
+   assert.ok(fs.statSync(filename).size>50,'Missing credited PMD sheet '+filename);
+  }
+ }
+}
+for(const id of ['pidgey','rattata','caterpie','weedle','pikachu','spearow','mankey','geodude','nidoran-f','nidoran-m'])
+ assert.ok(area.available.includes(id),'Pre-Brock grass route species missing '+id);
+const nidoState=createCampaign('bulbasaur');
+assert.equal(recordSeen(nidoState,'nidoran-f'),true);
+assert.equal(recordCaught(nidoState,'nidoran-m'),true);
+assert.ok(nidoState.dexCaught.includes('nidoran-m'));
+const young={id:'pidgey',progression:{species:'pidgey',level:5}};
+assert.deepEqual(availableMoves(young).map(x=>x.id),['tackle'],
+ 'Pidgey level 5 must not yet know Gust, Quick Attack or Wing Attack');
+young.progression.level=13;
+assert.ok(availableMoves(young).some(x=>x.id==='gust'));
+assert.ok(availableMoves(young).some(x=>x.id==='quick-attack'));
+assert.ok(!availableMoves(young).some(x=>x.id==='wing-attack'));
+const bug={id:'caterpie',progression:{species:'caterpie',level:10}};
+assert.ok(availableMoves(bug).some(x=>x.id==='bug-bite'));
+assert.ok(EARLY_KANTO_LEARNSETS.butterfree.confusion<=10);
 assert.ok(area.wild.includes('caterpie'),'Regional table keeps genuine FireRed species');
 if(area.available.length){
  const grass=createCampaign('charmander');
@@ -78,7 +112,8 @@ if(area.available.length){
  assert.equal(grass.inventory.pokeball,4);
 }
 assert.equal(TRAINERS_PER_GYM(0),13);
-assert.equal(currentOpponent(state).id,'onix');
+assert.equal(currentOpponent(state).id,'pidgey',
+ 'Pewter trainer ladder begins with integrated Route 1 Pokémon instead of Onix');
 
 const tester=state.team.find(p=>p.id==='mewtwo');
 assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');

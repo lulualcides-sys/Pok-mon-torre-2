@@ -147,3 +147,5 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - Técnicas reutilizam motores de golpes já existentes/aprovados. Moveset do jogador fica limitado a golpes permitidos pelo nível e TM, Mewtwo de teste segue sem restrição.
 - Evoluções exclusivamente pelo nível e após batalha já implementadas no módulo de progressão. Pokédex permanece com 151 espécies e pode registrar as novas capturas.
 - Não modificar sprites e golpes nativos, não introduzir PNG de projéteis nem reabrir menus ou resetar save. Crédito PMD SpriteCollab obrigatório.
+
+- Correção de registro da Pokédex: Nidoran♀ e Nidoran♂ usam IDs `nidoran-f`/`nidoran-m` para captura, sem fundir as duas entradas. Testes exigem imagens PMD e evolução de todas as dez linhas e ataques por nível para Pidgey.

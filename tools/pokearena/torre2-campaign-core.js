@@ -96,7 +96,9 @@ export function saveCampaign(state,storage=localStorage){
 export function resetCampaign(storage=localStorage){storage.removeItem(SAVE_KEY)}
 // Pokédex data describes encounters/captures, not which sprites are playable.
 export function recordSeen(s,id){
- if(!id||!KANTO_DEX.some(name=>name.toLowerCase()===String(id).toLowerCase()))return false;
+ // Keep distinct male/female Nidoran IDs while displaying native Dex symbols.
+ const dexId=id==='nidoran-f'?'nidoran♀':id==='nidoran-m'?'nidoran♂':String(id||'').toLowerCase();
+ if(!id||!KANTO_DEX.some(name=>name.toLowerCase()===dexId))return false;
  s.dexSeen??=[];if(s.dexSeen.includes(id))return false;
  s.dexSeen.push(id);return true;
 }
@@ -220,8 +222,11 @@ export function healTeam(s){for(const member of s.team)member.hp=100;s.lastMessa
 const supportedKanto=new Set();
 for(const species of ROSTER){
  const all=[species.id,...(species.evoluciones||[]).map(x=>String(x.nombre||'').toLowerCase().replace(/[^a-z0-9]+/g,''))];
- for(const id of all)if(KANTO_DEX.some(name=>name.toLowerCase().replace(/[^a-z0-9]+/g,'')===id))
-  supportedKanto.add(id);
+ for(const id of all){
+  const name=id==='nidoran-f'?'nidoran♀':id==='nidoran-m'?'nidoran♂':id;
+  if(KANTO_DEX.some(entry=>entry.toLowerCase().replace(/[^a-z0-9♀♂]+/g,'')===
+    name.replace(/[^a-z0-9♀♂]+/g,'')))supportedKanto.add(id);
+ }
 }
 export function wildAvailability(stage){
  const route=routeEncounterTable(stage);

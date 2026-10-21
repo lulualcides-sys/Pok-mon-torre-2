@@ -672,7 +672,8 @@ class Campanha extends Phaser.Scene{
   const page=Math.min(this.dexPage||0,6);
   for(let i=0;i<22;i++){
    const index=page*22+i;if(index>=KANTO_DEX.length)break;
-   const raw=KANTO_DEX[index],slug=raw.toLowerCase();
+   const raw=KANTO_DEX[index];
+   const slug=raw==='Nidoran♀'?'nidoran-f':raw==='Nidoran♂'?'nidoran-m':raw.toLowerCase();
    const ready=supported.has(slug),caught=(state.dexCaught||[]).includes(slug);
    const seen=caught||(state.dexSeen||[]).includes(slug);
    const x=35+(i>=11?295:0),y=75+(i%11)*21;
