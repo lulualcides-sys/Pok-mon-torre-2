@@ -17,6 +17,9 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'ice-beam',approved:true,nombre:'Ice Beam',forma:'chorro',paleta:'hieloTorre2',haz:true,desdeBoca:true,ancho:17,largo:260,carga:.16,dur:.76,velTrozos:440,pulsos:4,giro:3.5,giroCarga:3.5,empuje:12,empujePulso:3,tipo:'ICE',dano:13,alcance:260,coste:28,cd:6.8,anim:'Charge',lanzar:.15,description:'Authentic Poké Arena Hyper Beam/Aura Storm Chorro, cold recolor and subtle ice crystals'},
  {id:'rock-blast',approved:true,nombre:'Rock Blast',forma:'torre2_rockblast',tipo:'ROCK',dano:12,alcance:250,coste:27,cd:6.8,anim:'Throw',lanzar:.15,description:'Six or seven different polygonal stones, sequential independent contact or miss'},
  {id:'confuse-ray',approved:true,nombre:'Confuse Ray',forma:'torre2_confuseray',tipo:'GHOST',dano:0,alcance:230,coste:24,cd:9.1,anim:'Charge',lanzar:.16,description:'First original three swirling spectral lights, yellow palette, 85% status on hit'},
+ {id:'sing',nombre:'Sing',forma:'torre2_sing',tipo:'NORMAL',dano:0,alcance:220,coste:24,cd:8,anim:'Charge',lanzar:.14,description:'Jigglypuff song: staggered pixel notes, 55% sleep only after contact'},
+ {id:'crabhammer',nombre:'Crabhammer',forma:'torre2_crabhammer',tipo:'WATER',dano:15,alcance:80,coste:26,cd:6.5,anim:'Swing',lanzar:.12,description:'Kingler pixel-claw hammer, contact only, blue impact splash'},
+ {id:'smog',nombre:'Smog',forma:'torre2_smog',tipo:'POISON',dano:7,alcance:190,coste:23,cd:6.7,anim:'Shoot',lanzar:.13,description:'Koffing toxic smoke; 40% poison after contact'},
  {id:'soft-boiled',approved:true,nombre:'Soft-Boiled',forma:'torre2_softboiled',tipo:'NORMAL',dano:0,alcance:0,coste:30,cd:11,anim:'Charge',lanzar:.15,description:'Rising glowing egg, dissolving shell and animated healing aura; 30% max HP'}
 ]);
 function collect(def){
@@ -56,11 +59,14 @@ export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b
 export function availableMoves(member){
  if(member.id==='mewtwo')return TEST_LIBRARY;
  const {def}=buscar(member.id);
- const names=new Set(collect(def).map(x=>norm(x.nombre)));
+ const names=new Set([...collect(def).map(x=>norm(x.nombre)),...(member.tmMoves||[]).map(norm)]);
  if(['cubone','marowak'].includes(member.id)){names.add('bonemerang');names.add('bone-club')}
  if(['meowth','persian'].includes(member.id))names.add('pay-day');
  if(['porygon'].includes(member.id))names.add('tri-attack');
  if(['jynx'].includes(member.id))names.add('lovely-kiss');
+ if(['jigglypuff','wigglytuff'].includes(member.id))names.add('sing');
+ if(['krabby','kingler'].includes(member.id))names.add('crabhammer');
+ if(['koffing','weezing'].includes(member.id))names.add('smog');
  // New exclusive VFX are only assigned to compatible Kanto species.
  if(['blastoise','wartortle','lapras','dewgong','cloyster','starmie','slowbro','golduck','vaporeon','articuno'].includes(member.id))names.add('ice-beam');
  if(['onix','geodude','graveler','golem','rhyhorn','rhydon','omastar','kabutops','aerodactyl'].includes(member.id))names.add('rock-blast');
