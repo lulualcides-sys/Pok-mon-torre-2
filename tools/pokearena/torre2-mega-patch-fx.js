@@ -243,12 +243,12 @@ export function confuseray(l,h,extra){
   age+=dt;balls.clear();trail.clear();
   if(orbit>=0){
    orbit+=dt;
-   if(!r||r.ko||orbit>1.7)return false;
+   if(!r||r.ko||orbit>1.35)return false;
    // Critical behavior: orbit anchor is recalculated from rival EVERY frame.
    const headX=r.x,headY=r.y-(r.alto||36)-12;
    for(let i=0;i<3;i++){
     const a=orbit*11.5+i*PI*2/3;
-    const fade=sat((1.7-orbit)/.35);
+    const fade=sat((1.35-orbit)/.3);
     const x=headX+Math.cos(a)*13,y=headY+Math.sin(a)*5;
     if(fade>.02)yellowOrb(balls,x,y,orbit*14+i);
    }
