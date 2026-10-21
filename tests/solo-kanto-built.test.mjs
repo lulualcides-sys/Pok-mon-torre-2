@@ -83,6 +83,18 @@ assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
 assert.equal(tester.progression.level,50);
 const allMoves=availableMoves(tester);
 assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
+const officialMoveStats={
+ 'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
+ 'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
+ 'super-fang':{poder:null,precisao:90,pp:10,categoria:'PHYSICAL',dano:0}
+};
+for(const [id,stats] of Object.entries(officialMoveStats)){
+ const move=allMoves.find(m=>m.id===id);
+ assert.ok(move,'Official statistics require real move '+id);
+ for(const [k,v] of Object.entries(stats))
+  assert.equal(move[k],v,'Official '+k+' should match Pokémon Database for '+id);
+}
+
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
  'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
  'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor',
