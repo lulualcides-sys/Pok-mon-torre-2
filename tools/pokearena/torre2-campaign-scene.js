@@ -3,6 +3,8 @@
  */
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
 import {marco,UI as MENU_UI} from '../ui.js';
+import {header,backdrop as richBackdrop,buttonFrame,map as richMap,node as richNode,
+ team as richTeam,teamCard,ball,progress} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
 import {earlyKantoSlotPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
@@ -41,11 +43,9 @@ class Campanha extends Phaser.Scene{
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   this.add.rectangle(ANCHO/2,ALTO/2,ANCHO,ALTO,0x090d1c);
-  const g=this.add.graphics();
-  g.lineStyle(2,0x36475f,1);
-  g.strokeRect(10,7,ANCHO-20,ALTO-14);
-  g.fillStyle(0x142037,.95);g.fillRect(11,8,ANCHO-22,43);
-  this.add.text(20,12,'POKÉMON TORRE 2  /  KANTO',{...titleStyle,fontSize:'18px'});
+  header(this);
+  this.add.text(52,14,'POKÉMON TORRE 2 / KANTO',{...titleStyle,
+   fontSize:'17px',stroke:'#020b1b',strokeThickness:4});
   this.button(447,24,100,29,'CENTRO / PC',()=>{const state=readCampaign();if(state)this.centerScreen(state)});
   this.button(537,24,76,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
@@ -64,27 +64,25 @@ class Campanha extends Phaser.Scene{
  }
  // Exact original Poké Arena 2D menu frame, font and hover/highlight,
  // reused here rather than reinterpreted with generic rectangles and CSS.
- button(x,y,w,h,label,callback,emphasis=false,tam=null){
-  const g=this.add.graphics();
+ button(x,y,w,h,label,callback,emphasis=false,tam=null,variant=null){
+  const g=this.add.graphics().setDepth(3);
   const size=tam??(w>=202?12:w>=145?10:w>=92?9:8);
   const caption=estrechar(textoMenu(this,x,y,label,{
    tam:size,borde:3,colorBorde:MENU_UI.bordeTexto
-  }).setOrigin(.5),w-13);
+  }).setOrigin(.5).setDepth(5),w-14);
   let hovered=false;
   const paint=()=>{
-   g.clear();
-   const golden=!!(emphasis||hovered);
-   marco(g,x-w/2,y-h/2,w,h,golden?'oro':'azul');
-   caption.setColor(golden?MENU_UI.textoOscuro:MENU_UI.texto);
-   caption.setStroke(MENU_UI.bordeTexto,golden?0:3);
+   g.clear();const tone=variant||(emphasis?'gold':'blue');
+   buttonFrame(g,x-w/2,y-h/2,w,h,tone,hovered);
+   caption.setColor(tone==='gold'?'#2e291b':hovered?'#fff5cd':'#f9fdff');
+   caption.setStroke(tone==='gold'?'#fff1ac':'#091629',tone==='gold'?0:3);
   };
-  const zone=this.add.zone(x,y,w,Math.max(h,27))
+  const zone=this.add.zone(x,y,w,Math.max(h,27)).setDepth(8)
    .setInteractive({useHandCursor:true});
   zone.on('pointerover',()=>{hovered=true;paint()});
   zone.on('pointerout',()=>{hovered=false;paint()});
   zone.on('pointerdown',()=>callback());
-  paint();
-  return zone;
+  paint();return zone;
  }
  starterSelection(){
   text(this,ANCHO/2,73,'ESCOLHA SEU PRIMEIRO POKÉMON',{color:C.gold,fontSize:'19px'}).setOrigin(.5);
@@ -99,13 +97,7 @@ class Campanha extends Phaser.Scene{
   text(this,ANCHO/2,294,'Sem conta e sem multiplayer. Itens são comprados com Poké Dollars do jogo.',statusStyle).setOrigin(.5);
  }
  backdrop(){
-  const g=this.add.graphics().setDepth(0);
-  g.fillGradientStyle(0x101f3a,0x101f3a,0x070b1b,0x070b1b,1);
-  g.fillRect(0,51,ANCHO,ALTO-51);
-  for(let i=0;i<12;i++){
-   g.lineStyle(1,i%3===0?0x2b456c:0x192940,.25);
-   g.lineBetween(0,60+i*23,ANCHO,60+i*23);
-  }
+  richBackdrop(this);
  }
  card(x,y,w,h,accent=0x4b789b){
   const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
@@ -117,177 +109,105 @@ class Campanha extends Phaser.Scene{
   const stage=STAGES[state.stage],finished=state.champion||!stage;
   const gymStage=state.stage<GYMS.length;
   const limit=finished?0:TRAINERS_PER_GYM(state.stage);
-  // Five large, clearly spaced path nodes per panel; the active page follows progress.
   const perPage=5,totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
   const activePage=Math.min(totalPages-1,Math.floor(state.trainer/perPage));
   const page=this.mapPage==null?activePage:Math.max(0,Math.min(totalPages-1,this.mapPage));
   this.mapPage=page;
   const next=currentOpponent(state),area=wildAvailability(state.stage);
-  const art=this.add.graphics();
-  const rect=(x,y,w,h,color)=>{art.fillStyle(color);art.fillRect(x,y,w,h)};
-  const border=(x,y,w,h,color=0x456a58)=>{art.lineStyle(2,color);art.strokeRect(x,y,w,h)};
-  // Minimal four-tone pixel meadow, with all decoration kept well away from labels.
-  rect(12,57,386,292,0x142f28);
-  rect(17,62,376,282,0x8aba73);
-  rect(23,93,364,171,0xa1d47e);
-  rect(23,94,364,3,0xbedb8c);
-  border(17,62,376,282,0x345b43);
-  // Frame-like canopy on the edges rather than 50 random overlapping objects.
-  for(let i=0;i<6;i++){
-   const y=105+i*28;
-   for(const x of [27,362]){
-    rect(x+3,y+11,4,10,0x5a753d);
-    rect(x,y+1,13,13,0x337946);
-    rect(x+2,y,10,7,0x438f4d);
-    rect(x+4,y+2,4,3,0x71ba6a);
-   }
-  }
-  // Small pixel grass clusters, never on the center road.
-  for(let i=0;i<14;i++){
-   const x=48+(i*59)%292,y=107+(i*47)%147;
-   rect(x,y,3,4,0x6ca85a);rect(x+5,y-2,3,6,0x6ca85a);
-   rect(x+10,y+1,3,3,0x6ca85a);
-  }
-  // Two quiet landmarks echo the reference's Pokémon Center and Mart.
-  // They live outside the path and share the restrained pixel palette.
-  const shop=(x,y,roof,word)=>{
-   rect(x,y+9,43,25,0x795d43);
-   rect(x+3,y+11,37,22,0xfff0cd);
-   rect(x-3,y+3,49,10,0x3c4e57);
-   rect(x-1,y+1,45,10,roof);
-   rect(x+4,y+15,9,10,0x86b9cd);
-   rect(x+30,y+15,9,10,0x86b9cd);
-   rect(x+18,y+21,8,12,0x63544a);
-   rect(x+20,y+24,2,3,0xffd37a);
-   text(this,x+21,y+1,word,{fontSize:'8px',color:'#ffffff',fontStyle:'bold'})
-    .setOrigin(.5,0);
-  };
-  shop(52,203,0xc65e55,'PC');
-  shop(301,118,0x397ba9,'MART');
-  for(const [x,y] of [[76,132],[85,138],[300,214],[312,222]]){
-   rect(x,y,15,3,0x347b46);
-   rect(x+2,y-4,4,7,0x438c4c);
-   rect(x+10,y-5,3,8,0x5b9d54);
-  }
-  rect(22,65,368,25,0x244b4b);
-  rect(22,87,368,2,0xe7cb83);
-  text(this,34,68,finished?'KANTO · CAMPEÃO':
-   'ROTA '+(state.stage+1)+'  /  '+(gymStage?area.label:stage.city.toUpperCase()),{
-   fontSize:'14px',color:'#fff3ce',fontStyle:'bold'});
-  text(this,376,71,gymStage?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():'ELITE FOUR',{
-   fontSize:'10px',color:'#d9edc4'}).setOrigin(1,0);
-  // Gentle climb, like Summit Run: intentional zigzag and uncluttered nodes.
-  const first=page*perPage;
-  const count=Math.min(perPage,limit+1-first);
-  const xs=[189,136,234,149,233];
+  const first=page*perPage,count=Math.min(perPage,limit+1-first);
+  const xs=[190,144,234,150,232];
   const points=Array.from({length:count},(_,i)=>({
-   index:first+i,x:xs[i],y:244-i*34,
+   index:first+i,x:xs[i],y:240-i*32,
    kind:routeNode(state.stage,first+i,limit).type
   }));
-  // Every segment is constructed in the graphics layer, below interactive symbols.
-  for(let i=1;i<points.length;i++){
-   const p=points[i-1],q=points[i];
-   art.lineStyle(17,0x8d784e);art.lineBetween(p.x,p.y,q.x,q.y);
-   art.lineStyle(13,0xf0ce90);art.lineBetween(p.x,p.y,q.x,q.y);
-   art.lineStyle(2,0xffe9af,.48);art.lineBetween(p.x+2,p.y-2,q.x+2,q.y-2);
-  }
-  const shape={trainer:0x5077a7,rocket:0x42454f,rival:0xc26056,leader:0xa6703e};
+  richMap(this,state.stage,points);
+  const art=this.add.graphics().setDepth(2);
+  ball(art,32,75,8);
+  text(this,46,68,finished?'KANTO · CAMPEÃO':
+   'ROTA '+(state.stage+1)+' / '+(gymStage?area.label:stage.city.toUpperCase()),{
+   fontSize:'14px',color:'#fff4d3',fontStyle:'bold',
+   stroke:'#072e3d',strokeThickness:2}).setDepth(4);
+  text(this,380,69,gymStage?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():'ELITE FOUR',{
+   fontSize:'9px',color:'#baf4e9'}).setOrigin(1,0).setDepth(4);
   for(const p of points){
-   const current=p.index===state.trainer,won=p.index<state.trainer,
-     locked=p.index>state.trainer,boss=p.kind==='leader';
-   // Cartridges and mini Pokéball controls, not a carpet of numeric labels.
-   art.fillStyle(0x3a573b,.65);art.fillCircle(p.x+2,p.y+4,boss?16:14);
-   art.fillStyle(locked?0x839186:shape[p.kind]||0x537b9e);
-   art.fillCircle(p.x,p.y,boss?15:13);
-   art.lineStyle(current?3:2,current?0xffe681:0xfaf3cd,1);
-   art.strokeCircle(p.x,p.y,boss?15:13);
-   if(won){
-    art.fillStyle(0x2b6844);art.fillCircle(p.x,p.y,8);
-    text(this,p.x,p.y,'✓',{fontSize:'13px',color:'#ffffff'}).setOrigin(.5);
-   }else if(current){
-    text(this,p.x,p.y-1,boss?'G':p.kind==='rocket'?'R':p.kind==='rival'?'!':'▶',{
-     fontSize:'12px',color:'#fffbe0',fontStyle:'bold'}).setOrigin(.5);
-    // A single high-contrast "YOU" marker pinpoints current location.
-    const click=this.add.zone(p.x,p.y,42,42).setInteractive({useHandCursor:true});
-    click.on('pointerdown',()=>this.enterBattle(state));
-   }else{
-    text(this,p.x,p.y,boss?'G':p.kind==='rocket'?'R':
-     p.kind==='rival'?'!':String(p.index+1),{
-     fontSize:'12px',color:'#ffffff',fontStyle:'bold'}).setOrigin(.5);
-   }
+   const current=p.index===state.trainer,won=p.index<state.trainer;
+   richNode(art,p.x,p.y,won?'done':current?'current':'future');
+   if(won)text(this,p.x,p.y-1,'✓',{fontSize:'14px',
+    color:'#ffffff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
+   else if(current){
+    text(this,p.x,p.y-1,p.kind==='leader'?'G':
+     p.kind==='rocket'?'R':p.kind==='rival'?'!':'▶',
+     {fontSize:'13px',color:'#fff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
+    this.add.zone(p.x,p.y,42,42).setInteractive({useHandCursor:true})
+     .setDepth(9).on('pointerdown',()=>this.enterBattle(state));
+   }else text(this,p.x,p.y,p.kind==='leader'?'G':
+     p.kind==='rocket'?'R':p.kind==='rival'?'!':String(p.index+1),{
+     fontSize:'11px',fontStyle:'bold',color:'#fff'}).setOrigin(.5).setDepth(5);
   }
-  const currentKind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
-   next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'SEU RIVAL':'TREINADOR';
-  rect(23,270,364,30,0x285a48);
-  text(this,204,274,finished?'TODOS OS DESAFIOS CONCLUÍDOS':
-   'PRÓXIMO: '+currentKind+'  ·  '+(next?.id||'').toUpperCase(),{
-   fontSize:'11px',color:'#ffffff'}).setOrigin(.5,0);
-  // Clean page controls. Gray when only one page.
-  this.button(72,315,84,27,'◀ VOLTAR',()=>{
-   this.mapPage=Math.max(0,page-1);this.scene.restart();
-  });
-  text(this,202,307,'TRILHA '+(page+1)+'/'+totalPages+' · '+(state.trainer+1)+'/'+(limit+1),{
-   fontSize:'10px',color:'#143e35',fontStyle:'bold'}).setOrigin(.5,0);
-  this.button(325,315,93,27,'AVANÇAR ▶',()=>{
-   this.mapPage=Math.min(totalPages-1,page+1);this.scene.restart();
-  });
-  // Facilities must be discoverable by their names, not cryptic GR / HP / M.
+  const kind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
+   next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'RIVAL':'TREINADOR';
+  text(this,38,272,finished?'★ TODOS OS DESAFIOS CONCLUÍDOS':
+   'PRÓXIMO: '+kind+' · '+(next?.id||'').toUpperCase(),{
+   fontSize:'12px',fontStyle:'bold',color:'#ffebc1'}).setDepth(5);
+  ball(art,45,299,6);
+  progress(art,64,299,Math.max(0,state.trainer-first),6);
+  text(this,363,292,'TRILHA '+(page+1)+'/'+totalPages+' · '+(state.trainer+1)+'/'+(limit+1),{
+   fontSize:'10px',fontStyle:'bold',color:'#c0eacb'}).setOrigin(1,0).setDepth(5);
+  const navigate=delta=>{
+   this.mapPage=Math.max(0,Math.min(totalPages-1,page+delta));
+   this.scene.restart();
+  };
+  this.add.zone(26,299,22,22).setDepth(9).setInteractive({useHandCursor:true})
+   .on('pointerdown',()=>navigate(-1));
+  this.add.zone(380,299,20,22).setDepth(9).setInteractive({useHandCursor:true})
+   .on('pointerdown',()=>navigate(1));
+  text(this,25,291,'‹',{fontSize:'19px',color:'#ffdfa4'}).setOrigin(.5,0).setDepth(5);
+  text(this,380,291,'›',{fontSize:'19px',color:'#ffdfa4'}).setOrigin(.5,0).setDepth(5);
+  this.button(53,331,85,30,'◀ VOLTAR',()=>navigate(-1),false,10);
   if(gymStage){
-   // 3 mini buildings along path edge; clearly labeled actions in the footer.
-   this.button(75,341,108,27,'GRAMA ALTA',()=>this.grassScreen(state));
-   this.button(203,341,113,27,'CENTRO POK.',()=>this.centerScreen(state));
-   this.button(325,341,110,27,'POKÉ MART',()=>this.martScreen(state));
-  }
-  // Right side: dedicated team panel, inventory, and unmistakable BATTLE CTA.
-  const panel=this.add.graphics();
-  panel.fillStyle(0x142c47);panel.fillRoundedRect(409,58,221,235,7);
-  panel.lineStyle(2,0x5c83a2);panel.strokeRoundedRect(409,58,221,235,7);
-  panel.fillStyle(0xc95b44);panel.fillRoundedRect(414,63,211,31,5);
-  text(this,423,68,'MINHA EQUIPE',{fontSize:'15px',color:'#fff4dc',fontStyle:'bold'});
-  text(this,421,101,'INSÍGNIAS '+state.badges.length+'/12',{fontSize:'10px',color:'#ebd69d'});
-  text(this,617,101,'$ '+(state.money||0),{fontSize:'11px',color:'#f7e5a5'}).setOrigin(1,0);
-  text(this,421,119,'TOQUE NO POKÉMON PARA O SUMÁRIO',{
-   fontSize:'9px',color:'#a9d4e8'});
-  // Actual PMD portraits, in two columns. Empty cards visibly marked.
+   this.button(145,331,89,30,'GRAMA ALTA',()=>this.grassScreen(state),false,9,'green');
+   this.button(249,331,109,30,'CENTRO POK.',()=>this.centerScreen(state),false,9);
+   this.button(352,331,91,30,'POKÉ MART',()=>this.martScreen(state),false,9);
+  }else this.button(240,331,187,30,'AVANÇAR ▶',()=>navigate(1));
+  richTeam(this);
+  text(this,443,67,'MINHA EQUIPE',{fontSize:'15px',fontStyle:'bold',
+   color:'#fff8e0',stroke:'#682f32',strokeThickness:2}).setDepth(5);
+  text(this,417,101,'INSÍGNIAS '+state.badges.length+'/12',{
+   fontSize:'11px',fontStyle:'bold',color:'#ffdf95'}).setDepth(5);
+  text(this,617,101,'$ '+(state.money||0),{
+   fontSize:'12px',fontStyle:'bold',color:'#ffdc71'}).setOrigin(1,0).setDepth(5);
+  text(this,417,117,'TOQUE NO POKÉMON PARA O SUMÁRIO',{
+   fontSize:'9px',color:'#a9daf1'}).setDepth(5);
   for(let i=0;i<6;i++){
-   const x=416+(i%2)*106,y=141+Math.floor(i/2)*48;
+   const x=413+i%2*107,y=135+Math.floor(i/2)*48;
    const member=state.team[i],selected=i===state.active;
-   const bg=this.add.rectangle(x+50,y+21,101,43,
-     member?(selected?0x34536a:0x203b54):0x1a3044)
-    .setStrokeStyle(1,selected?0xffd77e:member?0x527b92:0x345169);
+   teamCard(this,x,y,member,selected);
    if(member){
-    this.drawPortrait(member,x+18,y+21,32);
-    const display=member.id.toUpperCase().slice(0,10);
-    text(this,x+36,y+6,display,{fontSize:display.length>=9?'9px':'10px',
-     color:selected?'#ffe8a5':'#e8f5ff',fontStyle:'bold'});
-    text(this,x+36,y+23,'NV.'+(member.progression?.level??'—')+
-     ' HP '+(member.hp??100)+'%',{fontSize:'8px',color:'#acd2d4'});
-    bg.setInteractive({useHandCursor:true});
-    bg.on('pointerdown',()=>this.showSummary(state,i));
-   }else{
-    text(this,x+50,y+13,'—  VAZIO  —',{fontSize:'9px',color:'#7794ab'}).setOrigin(.5);
-   }
+    this.drawPortrait(member,x+19,y+21,29);
+    const name=member.id.toUpperCase().slice(0,10);
+    text(this,x+37,y+6,name,{fontSize:name.length>=9?'8px':'9px',
+     fontStyle:'bold',color:selected?'#ffedb3':'#f8faff'}).setDepth(6);
+    text(this,x+37,y+20,'NV.'+(member.progression?.level??'—')+
+     ' HP '+(member.hp??100)+'%',{fontSize:'8px',color:'#b5daee'}).setDepth(6);
+    this.add.zone(x+50,y+22,100,44).setDepth(9)
+     .setInteractive({useHandCursor:true}).on('pointerdown',()=>this.showSummary(state,i));
+   }else text(this,x+50,y+29,'— VAZIO —',{fontSize:'8px',
+    color:'#7298ba'}).setOrigin(.5).setDepth(5);
   }
-  // Small bag silhouette is a real touch target, not decorative emoji.
-  const bagBg=this.add.rectangle(584,79,78,28,0x20465d)
-   .setStrokeStyle(1,0xf6d68d).setInteractive({useHandCursor:true});
-  bagBg.on('pointerdown',()=>this.bagScreen(state));
-  const bagIcon=this.add.graphics();
-  bagIcon.lineStyle(2,0xffd99a);bagIcon.strokeRect(556,72,9,10);
-  bagIcon.fillStyle(0xffd99a);bagIcon.fillRect(554,78,14,12);
-  bagIcon.fillStyle(0x9c683a);bagIcon.fillRect(560,81,3,3);
-  text(this,575,74,'BOLSA',{fontSize:'10px',color:'#ffffff',fontStyle:'bold'});
-  // Action is always in exactly the same predictable bottom-right position.
-  if(state.pendingCapture){
-   this.battleButton(519,322,217,45,'▶ CAPTURAR POKÉMON',()=>this.captureScreen(state),true);
-  }else{
-   const caption=finished?'★ CAMPEÃO DE KANTO':'▶ INICIAR BATALHA';
-   this.battleButton(519,322,217,45,caption,()=>{
+  this.button(582,79,80,25,'BOLSA',()=>this.bagScreen(state),false,9);
+  // CTA stays at the original clickable location with richer gold chrome.
+  const g=this.add.graphics().setDepth(2);
+  g.fillStyle(0xf4b94b,.2);g.fillRoundedRect(406,301,225,49,4);
+  for(const [x,y] of [[420,312],[609,311],[426,337],[603,341]]){
+   g.fillStyle(0xfff6b9);g.fillRect(x,y,4,1);g.fillRect(x+1,y-1,1,4);
+  }
+  if(state.pendingCapture)this.battleButton(518,326,218,44,
+   'CAPTURAR POKÉMON ▶',()=>this.captureScreen(state),true);
+  else this.battleButton(518,326,218,44,
+   finished?'★ CAMPEÃO DE KANTO':'▶ INICIAR BATALHA',()=>{
     if(!finished)this.enterBattle(state);
    },!finished);
-  }
-  // 3 simple actions always accessible in top menu/places; keep footer clean.
-  this.button(606,24,56,28,'RESET',()=>{
+  this.button(607,26,56,30,'RESET',()=>{
    if(window.confirm('Apagar o progresso da campanha Kanto?')){
     resetCampaign();this.scene.restart();
    }
@@ -307,10 +227,9 @@ class Campanha extends Phaser.Scene{
    fontSize:'11px',color:'#ffffff'}).setOrigin(.5).setDepth(6);
  }
  battleButton(x,y,w,h,label,callback,active=true){
-  // Same gold cartridge from Play on the original title screen.
-  const zone=this.button(x,y,w,h,label,callback,active,13);
-  if(active&&this.textures.exists('ico-pokeball'))
-   this.add.image(x-w/2+17,y,'ico-pokeball').setDepth(6).setScale(.9);
+  const zone=this.button(x,y,w,h,label,callback,active,13,'gold');
+  const icon=this.add.graphics().setDepth(6);
+  ball(icon,x-w/2+20,y,10);
   return zone;
  }
  captureScreen(state){
