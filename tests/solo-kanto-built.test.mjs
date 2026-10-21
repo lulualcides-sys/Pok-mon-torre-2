@@ -470,7 +470,14 @@ for(const id of ['sing','crabhammer'])
  assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
   'Sing and Crabhammer explicitly approved by user; preserve current visuals');
 const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
-assert.ok(menuCampaign.includes('marco(g,x-w/2'),'Campaign uses original Poké Arena menu border');
+assert.ok(menuCampaign.includes('drawApprovedDashboard(this,state)'),
+ 'Campaign must show the exact approved art with genuine controls');
+assert.ok(fs.statSync(path.join(stage,'assets/ui/kanto-approved.avif')).size>7000,
+ 'Approved user-picked Kanto artwork must ship as an actual image asset');
+const dashSource=fs.readFileSync(path.join(stage,version,'torre2/approved-dashboard.js'),'utf8');
+assert.ok(dashSource.includes('s.captureScreen(state)')&&dashSource.includes('s.grassScreen(state)'),
+ 'Capture button in art must start the real capture/grass flow');
+assert.ok(dashSource.includes('s.enterBattle(state)'),'Trainer map nodes must work');
 assert.ok(menuCampaign.includes('textoMenu(this,x,y'),'Campaign buttons use exact initial menu font');
 assert.ok(!menuCampaign.includes('0xdf803c'),'Remove orange generic battle button');
 const speciesFile=fs.readFileSync(path.join(stage,version,'torre2/species-fx.js'),'utf8');

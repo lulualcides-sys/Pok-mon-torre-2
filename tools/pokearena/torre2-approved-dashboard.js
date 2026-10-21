@@ -136,9 +136,5 @@ export function drawApprovedDashboard(s,state){
   rect(453,302,144,23,0xffcd55);
   txt(s,522,304,'★ CAMPEÃO DE KANTO',12,'#40290d',true).setOrigin(.5,0);
  }
- // Named text objects assist UI audits/accessibility. They do not cover the
- // approved, sharper pixel-lettering baked into the visual chrome.
- for(const label of ['MINHA EQUIPE','BOLSA','CAPTURAR POKÉMON']){
-  txt(s,-200,-200,label,9).setVisible(false);
- }
+
 }

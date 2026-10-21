@@ -166,3 +166,11 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - **Evolução durante a batalha**: funcionalidade desejada **para uma etapa futura**. Ao implementar, integrar com o medidor de EXP/progressão e troca de forma em tempo real, respeitando golpes, atributos, sprites, continuidade de HP/estado e desempenho.
 - **Estado atual aprovado e preservado**: evolução da campanha continua a ocorrer **após** as batalhas, por nível; não reativar o sistema original de evolução durante a arena até o usuário solicitar explicitamente.
 - Continuar priorizando artes e movimentos nativos ou já aprovados, sem refazê-los e sem quebrar controles LMB / RMB / SPACE (esquiva) / Q / E (ultimate).
+
+
+## Interface da campanha fiel à referência aprovada (21/10/2026)
+- Arte real do conceito visual aprovado foi integrada como **textura AVIF** do Phaser/WebGL (`tools/pokearena/kanto-approved-ui.avif`, copiada no build para `assets/ui/kanto-approved.avif`). Não é uma imagem falsa clicável: os controles são objetos Phaser independentes.
+- `torre2-approved-dashboard.js`: botões com zonas clicáveis reais para grama alta, loja, Centro/PC, bolsa, Menu, reset, paginação e captura; nós da trilha chamam o combate original.
+- Sobreposição dinâmica atualiza região, líder, treinador, estrelas de fase, progresso, badges, dinheiro e equipe de até seis Pokémon, retratos nativos, barras de HP e sumário. Quatro aparecem por vez em formato 2×2 como a imagem, com segunda página para membros 5 e 6.
+- A CTA dourada abre a tela de captura após vitória selvagem; em outro momento abre a grama alta. Progressão, saves, animações de golpes e batalhas originais preservados.
+- Integridade SHA-256 da arte validada no build, fallback visual anterior preservado se AVIF não carregar, teste Chromium verifica asset e hotspots funcionais.

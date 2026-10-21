@@ -262,9 +262,17 @@ const server=http.createServer(async(req,res)=>{
     c.scene.restart();
     return {map,grass,center,mart,bag,portraits};
   });
-  assert.ok(newMap.map.includes('INICIAR BATALHA'),'Large readable start button must be visible');
-   assert.ok(newMap.map.includes('MINHA EQUIPE'),'My team must be clearly labeled');
-   assert.ok(newMap.map.includes('BOLSA'),'Visible backpack shortcut must exist');
+  // Approved concept artwork is a real graphics texture, with live hit areas.
+  const dashboard=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const img=c.children.list.find(o=>o.type==='Image'&&o.texture?.key==='torre2-approved-kanto');
+   return {loaded:c.textures.exists('torre2-approved-kanto'),width:img?.displayWidth,
+    height:img?.displayHeight,actions:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length};
+  });
+  assert.equal(dashboard.loaded,true,'Approved artwork must load in Phaser');
+  assert.equal(dashboard.width,640,'Approved artwork must fill the Kanto canvas');
+  assert.equal(dashboard.height,360,'Approved artwork must respect native 16:9');
+  assert.ok(dashboard.actions>=13,'Reference artwork buttons must remain interactive');
    assert.ok(newMap.portraits>=1,'Campaign should show captured PMD team portraits');
   assert.ok(newMap.map.includes('INSÍGNIAS'),'Map shows progress');
   assert.ok(newMap.grass.includes('VIRIDIAN'),'Grass is regional, not random Kanto');
