@@ -7,7 +7,9 @@ import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats} from
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
- storePokemon,withdrawPokemon,swapPokemon} from './campaign-core.js';
+ storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
+ startWildBattle,resolveWildBattle,purchaseItem,usePotion,teachTM} from './campaign-core.js';
+import {routeNode,MART_ITEMS} from './route-data.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -32,7 +34,8 @@ class Campanha extends Phaser.Scene{
   if(this.result&&state){
    const marker=this.result.marker||{};
    if(marker.stage===state.stage&&marker.trainer===state.trainer){
-    const summary=resolveBattle(state,!!this.result.won);
+    const summary=marker.kind==='wild'&&state.pendingWild?.id===marker.id?
+     resolveWildBattle(state,!!this.result.won):resolveBattle(state,!!this.result.won);
     state.lastMessage=summary.message;
     saveCampaign(state);
    }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
@@ -79,56 +82,221 @@ class Campanha extends Phaser.Scene{
  renderCampaign(state){
   this.backdrop();
   const gym=STAGES[state.stage],complete=state.champion||!gym;
-  const limit=state.stage<GYMS.length?TRAINERS_PER_GYM(state.stage):0;
-  const progress=complete?'CAMPEÃO DE KANTO':state.stage<GYMS.length?
-   gym.city.toUpperCase()+' · '+gym.leader.toUpperCase():
-   'ELITE FOUR · '+gym.leader.toUpperCase();
-  text(this,18,62,progress,{fontSize:'16px',color:C.gold});
-  text(this,18,85,'INSÍGNIAS '+state.badges.length+' / 12   ·   VITÓRIAS '+state.wins+
-   '   ·   DERROTAS '+state.losses+'   ·   POKÉDEX '+(state.dexCaught?.length??0)+'/151',
-   {fontSize:'10px',color:C.muted});
-  const progressFraction=complete?1:state.stage<GYMS.length?Math.min(1,state.trainer/limit):1;
-  this.add.rectangle(320,107,604,5,0x0c1929);
-  this.add.rectangle(18+600*progressFraction/2,107,600*progressFraction,5,0x4bb6ff);
-  text(this,18,120,'EQUIPE  '+state.team.length+'/6  ·  PC '+state.box.length+
-   '    ·    TOQUE EM UM POKÉMON PARA VER O SUMÁRIO E TROCAR GOLPES',
-   {fontSize:'10px',color:C.blue});
-  state.team.slice(0,6).forEach((member,i)=>{
-   const x=18+(i%3)*205,y=146+Math.floor(i/3)*58;
-   const active=i===state.active;
-   this.card(x,y,198,50,active?0xf5ca5d:0x345879);
-   const stats=pokemonStats(member);
-   text(this,x+12,y+8,(active?'◆ ':'')+stats.name,{fontSize:'13px',color:active?C.gold:C.white});
-   text(this,x+12,y+28,'NV.'+stats.level+'  '+stats.types.join('/')+(member.id==='mewtwo'?' · TESTE':''),{fontSize:'10px',color:C.muted});
-   const hit=this.add.zone(x+100,y+25,198,50).setInteractive({useHandCursor:true});
-   hit.on('pointerdown',()=>this.showSummary(state,i));
-  });
-  const enemy=currentOpponent(state);
-  if(enemy){
-   text(this,18,271,'PRÓXIMO: '+enemy.name.toUpperCase()+'  ·  '+enemy.id.toUpperCase()+
-    ' NV.'+enemy.level,{fontSize:'11px',color:C.gold});
+  const gymStage=state.stage<GYMS.length,limit=TRAINERS_PER_GYM(state.stage);
+  const pageSize=9,lastPage=Math.floor(limit/pageSize);
+  const here=Math.min(lastPage,Math.floor(state.trainer/pageSize));
+  const page=this.mapPage==null?here:Math.min(lastPage,Math.max(0,this.mapPage));
+  this.mapPage=page;
+  const route=wildAvailability(state.stage);
+  const next=currentOpponent(state);
+  // Two-column campaign: colorful traversable path left, party/shop on right.
+  const g=this.add.graphics().setDepth(2);
+  g.fillStyle(0x376f47);g.fillRoundedRect(12,55,379,277,10);
+  g.fillStyle(0x6baf64);g.fillRoundedRect(17,79,368,224,6);
+  g.fillStyle(0x9ed274);g.fillRect(25,93,353,204);
+  g.lineStyle(2,0x294f41);g.strokeRoundedRect(12,55,379,277,10);
+  // Pixel grass and stylized trees: inexpensive static Phaser/WebGL shapes.
+  for(let i=0;i<33;i++){
+   const x=29+(i*67)%338,y=91+(i*37)%194;
+   const green=i%2?0x4c994f:0x79ba5b;
+   g.fillStyle(0x2c593d);g.fillRect(x+3,y+6,4,7);
+   g.fillStyle(green);g.fillRect(x,y,10,10);
+   g.fillStyle(0xb1db77,.75);g.fillRect(x+2,y,3,3);
   }
-  this.button(106,310,174,35,complete?'CAMPEÃO!':'INICIAR BATALHA',()=>{
-   if(complete)return;
-   const match=startBattle(state);
-   match.torre2Loadout=resolveLoadout(state.team[state.active]);
-   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
-   match.mandos=[touch?'tactil':'kbm','cpu'];
-   this.scene.start('combate',match);
-  },true);
-  this.button(291,310,176,35,'CURAR EQUIPE',()=>{healTeam(state);this.scene.restart()});
-  if(state.pendingCapture){
-   this.button(501,310,185,35,'CAPTURAR '+state.pendingCapture.chance+'%',()=>{
-    attemptCapture(state);this.scene.restart();
-   },true);
-  }else this.button(501,310,185,35,'POKÉDEX '+KANTO_DEX.length,()=>this.dexScreen(state));
-  this.button(599,23,53,24,'RESET',()=>{
-   if(window.confirm('Apagar o progresso da campanha Kanto?')){
-    resetCampaign();this.scene.restart();
-   }
+  for(let i=0;i<22;i++){
+   const x=27+(i*83)%336,y=93+(i*49)%190;
+   g.fillStyle(0x397b39);g.fillRect(x,y,13,3);g.fillRect(x+2,y-3,3,4);g.fillRect(x+9,y-2,2,4);
+  }
+  this.add.rectangle(201,68,344,21,0x183452,.98).setStrokeStyle(1,0xe1ce87);
+  text(this,202,59,complete?'KANTO CHAMPION':gym.city.toUpperCase()+
+   '  ·  '+gym.leader.toUpperCase(),{fontSize:'13px',color:'#fce39b'}).setOrigin(.5,0);
+  const first=page*pageSize,count=Math.min(pageSize,Math.max(0,limit-first)+1);
+  const spots=Array.from({length:count},(_,i)=>{
+   const index=first+i;
+   const horizontal=[195,125,235,165,270,165,95,185,245][i%9];
+   const vertical=289-(i*(190/Math.max(1,count-1)));
+   return {index,x:horizontal,y:vertical,node:routeNode(state.stage,index,limit)};
   });
-  const notice=state.lastMessage||'Batalhe, capture e evolua por nível.';
-  text(this,320,350,notice,{fontSize:'10px',color:C.muted,wordWrap:{width:550}}).setOrigin(.5,1);
+  for(let i=0;i<spots.length-1;i++){
+   const a=spots[i],b=spots[i+1];
+   g.lineStyle(12,0x8d7c4e);g.lineBetween(a.x,a.y,b.x,b.y);
+   g.lineStyle(7,0xe9ce8d);g.lineBetween(a.x,a.y,b.x,b.y);
+  }
+  for(const p of spots){
+   const unlocked=p.index<=state.trainer,selected=p.index===state.trainer,
+    boss=p.node.type==='leader';
+   const colors={leader:0xe89c47,rocket:0x3d3e59,rival:0x678bd5,trainer:0xb2c4bc};
+   const base=colors[p.node.type]??0x95b0bf;
+   g.fillStyle(0x304733,.9);g.fillCircle(p.x+2,p.y+3,boss?13:10);
+   g.fillStyle(unlocked?base:0x536e65);g.fillCircle(p.x,p.y,boss?12:9);
+   g.lineStyle(selected?3:1,selected?0xffe66c:unlocked?0xf6f4da:0x4c756b,1);
+   g.strokeCircle(p.x,p.y,boss?12:9);
+   text(this,p.x,p.y-5,boss?'G':p.node.type==='rocket'?'R':
+    p.node.type==='rival'?'!':String(p.index+1),
+     {fontSize:boss?'12px':'9px',color:unlocked?'#ffffff':'#acc8af'}).setOrigin(.5,0);
+   if(p.index<state.trainer)text(this,p.x+11,p.y-14,'✓',{fontSize:'10px',color:'#fdf0a9'});
+   if(selected){
+    g.lineStyle(1,0xffffa4);g.strokeCircle(p.x,p.y,boss?16:13);
+    const click=this.add.zone(p.x,p.y,boss?35:29,boss?35:29).setInteractive({useHandCursor:true});
+    click.on('pointerdown',()=>this.enterBattle(state));
+   }
+  }
+  // Explicit side-branches; the main path advances ONLY by winning battles.
+  const markSide=(x,y,color,symbol,callback)=>{
+   const bg=this.add.rectangle(x,y,38,28,color).setStrokeStyle(2,0xffffff)
+    .setInteractive({useHandCursor:true});
+   bg.on('pointerdown',callback);
+   text(this,x,y,symbol,{fontSize:'12px',color:'#ffffff'}).setOrigin(.5);
+  };
+  if(gymStage){
+   markSide(351,111,0x277a48,'GR',()=>this.grassScreen(state));
+   markSide(351,185,0xc8454d,'HP',()=>this.centerScreen(state));
+   markSide(351,257,0x326bc3,'M',()=>this.martScreen(state));
+  }
+  this.button(92,315,100,24,'◀ MAPA',()=>{this.mapPage=(page-1+lastPage+1)%(lastPage+1);this.scene.restart()});
+  text(this,202,310,'ETAPA '+(page+1)+'/'+(lastPage+1)+' · NÓ '+(state.trainer+1)+'/'+(limit+1),
+   {fontSize:'9px',color:'#fff5ca'}).setOrigin(.5);
+  this.button(322,315,110,24,'MAPA ▶',()=>{this.mapPage=(page+1)%(lastPage+1);this.scene.restart()});
+  // Right-side reference panel with progress, Pokémon and useful shops.
+  g.fillStyle(0x14263c);g.fillRoundedRect(400,55,229,278,8);
+  g.lineStyle(2,0x537a9a);g.strokeRoundedRect(400,55,229,278,8);
+  g.fillStyle(0xa74837);g.fillRoundedRect(405,60,219,29,5);
+  text(this,514,66,complete?'CAMPEÃO!':gymStage?'GINÁSIO DE '+gym.city.toUpperCase():
+   'ELITE FOUR · '+gym.leader.toUpperCase(),{fontSize:'12px',color:'#fff8d8'}).setOrigin(.5,0);
+  const info=complete?'CAMPANHA CONCLUÍDA':next?next.name.toUpperCase()+' · NV.'+next.level:'';
+  text(this,410,95,'INSÍGNIAS '+state.badges.length+'/12  ·  $'+(state.money||0),{
+   fontSize:'10px',color:C.gold});
+  text(this,410,114,'PRÓXIMO: '+info,{fontSize:'10px',color:C.white,
+   wordWrap:{width:207}});
+  text(this,410,133,'POKÉBALL '+(state.inventory?.pokeball||0)+' · GRAMA '+(state.wildEncountersStage||0)+'/5',
+   {fontSize:'9px',color:C.muted});
+  text(this,410,150,'EQUIPE ('+state.team.length+'/6) · TOQUE PARA SUMÁRIO',
+   {fontSize:'9px',color:C.blue});
+  const team=state.team.slice(0,4);
+  team.forEach((p,i)=>{
+   const y=173+i*23,isActive=i===state.active;
+   const b=this.add.rectangle(513,y,214,21,isActive?0x36536a:0x22364f)
+    .setStrokeStyle(1,isActive?0xffdd74:0x48617b).setInteractive({useHandCursor:true});
+   b.on('pointerdown',()=>this.showSummary(state,i));
+   text(this,414,y-7,(isActive?'◆ ':'')+p.id.toUpperCase()+
+    ' NV.'+(p.progression?.level??'?')+'  HP '+(p.hp??100)+'%',{
+    fontSize:'10px',color:isActive?'#fff1a8':'#d7eafb'});
+  });
+  if(state.pendingCapture){
+   text(this,514,266,'CAPTURAR '+state.pendingCapture.id.toUpperCase(),{
+    fontSize:'10px',color:C.gold}).setOrigin(.5);
+   this.button(439,292,66,27,'PB '+state.inventory.pokeball,()=>{
+    attemptCapture(state,Math.random,'pokeball');this.scene.restart()},true);
+   this.button(514,292,70,27,'GB '+state.inventory.greatball,()=>{
+    attemptCapture(state,Math.random,'greatball');this.scene.restart()},true);
+   this.button(588,292,69,27,'UB '+state.inventory.ultraball,()=>{
+    attemptCapture(state,Math.random,'ultraball');this.scene.restart()},true);
+  }else{
+   this.button(460,293,111,33,complete?'VITÓRIA!':'BATALHAR',()=>{if(!complete)this.enterBattle(state)},true);
+   this.button(573,293,102,33,'BOLSA / TM',()=>this.bagScreen(state));
+  }
+  text(this,319,344,state.lastMessage||'Escolha o próximo caminho.',{
+   fontSize:'10px',color:C.muted,wordWrap:{width:601}}).setOrigin(.5,0);
+  this.button(602,23,55,24,'RESET',()=>{
+   if(window.confirm('Apagar o progresso da campanha Kanto?')){resetCampaign();this.scene.restart()}
+  });
+ }
+ enterBattle(state,wild=false){
+  if(state.pendingCapture){state.lastMessage='Resolva a captura antes de continuar.';saveCampaign(state);return this.scene.restart()}
+  const match=wild?startWildBattle(state):startBattle(state);
+  match.torre2Loadout=resolveLoadout(state.team[state.active]);
+  const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  match.mandos=[touch?'tactil':'kbm','cpu'];
+  this.scene.start('combate',match);
+ }
+ grassScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const area=wildAvailability(state.stage);
+  text(this,320,23,'GRAMA ALTA · '+area.label,{
+   ...titleStyle,fontSize:'18px'}).setOrigin(.5);
+  text(this,320,63,area.area.toUpperCase(),{fontSize:'15px',color:C.gold}).setOrigin(.5);
+  text(this,320,95,'ENCONTROS REGIONAIS (REFERÊNCIA FIRE RED):',{
+   fontSize:'12px',color:C.blue}).setOrigin(.5);
+  area.wild.forEach((id,i)=>{
+   const x=66+(i%4)*153,y=132+Math.floor(i/4)*32;
+   const ok=area.available.includes(id);
+   this.add.rectangle(x+62,y+11,140,26,ok?0x24553f:0x233243)
+    .setStrokeStyle(1,ok?0x7dd597:0x445468);
+   text(this,x+5,y+3,id.toUpperCase()+(ok?' ✓':' · FUTURO'),{
+    fontSize:'9px',color:ok?'#d7ffda':'#8ca9bb'});
+  });
+  text(this,320,227,'Encontros explorados nesta área: '+(state.wildEncountersStage||0)+'/5',
+   {fontSize:'12px',color:C.gold}).setOrigin(.5);
+  text(this,320,253,'Espécies sem batalha integrada ainda não surgem. Nunca trocamos por Pokémon de outra rota.',
+   {fontSize:'10px',color:C.muted,wordWrap:{width:550},align:'center'}).setOrigin(.5);
+  this.button(192,315,230,34,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  this.button(447,315,235,34,'PROCURAR POKÉMON',()=>{
+   const found=startWildEncounter(state);
+   if(found.ok)this.enterBattle(state,true);
+   else this.scene.restart();
+  },true);
+ }
+ centerScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,41,'CENTRO POKÉMON',{...titleStyle,fontSize:'24px'}).setOrigin(.5);
+  text(this,320,96,'CURAR TODA A EQUIPE · SEM CUSTO',{
+   fontSize:'16px',color:'#a4f6dc'}).setOrigin(.5);
+  this.button(320,154,275,46,'CURAR POKÉMON',()=>{
+   healTeam(state);this.scene.restart()},true);
+  this.button(320,219,275,40,'ABRIR PC',()=>this.pcScreen(state));
+  this.button(320,298,275,32,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+ }
+ martScreen(state,page=0){
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,23,'POKÉ MART · $'+state.money,{
+   ...titleStyle,fontSize:'19px'}).setOrigin(.5);
+  const items=MART_ITEMS.filter(i=>state.stage>=(i.minStage||0));
+  const count=Math.max(1,Math.ceil(items.length/6));
+  const pageNum=Math.min(count-1,Math.max(0,page));
+  items.slice(pageNum*6,(pageNum+1)*6).forEach((item,i)=>{
+   const x=168+(i%2)*301,y=95+Math.floor(i/2)*66;
+   this.card(x-141,y-20,283,57,state.money>=item.price?0x568fbb:0x6b5669);
+   text(this,x-125,y-9,item.name,{fontSize:'12px',color:C.white});
+   text(this,x-125,y+9,'$'+item.price+(item.kind==='tm'?' · TM':' · '+item.kind.toUpperCase()),{
+    fontSize:'10px',color:C.muted});
+   this.button(x+100,y+6,70,30,'COMPRAR',()=>{
+    purchaseItem(state,item.id);this.martScreen(state,pageNum);
+   },state.money>=item.price);
+  });
+  this.button(140,315,177,33,'◀ MAPA',()=>this.scene.restart());
+  this.button(346,315,205,33,'ITENS '+(pageNum+1)+'/'+count,()=>this.martScreen(state,(pageNum+1)%count),true);
+  this.button(543,315,176,33,'BOLSA / TM',()=>this.bagScreen(state));
+  text(this,320,281,state.lastMessage||'Compre Pokébolas, poções e TM',{
+   fontSize:'10px',color:C.gold,wordWrap:{width:560}}).setOrigin(.5);
+ }
+ bagScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,27,'BOLSA · $'+state.money,{...titleStyle,fontSize:'20px'}).setOrigin(.5);
+  const inv=state.inventory||{};
+  text(this,320,63,'PB '+(inv.pokeball||0)+' · GB '+(inv.greatball||0)+
+   ' · UB '+(inv.ultraball||0)+' · POÇÃO '+(inv.potion||0)+' · SUPER '+(inv.superpotion||0),
+   {fontSize:'11px',color:C.gold}).setOrigin(.5);
+  text(this,320,92,'POKÉMON ATIVO · Clique para selecionar e equipar a TM',{
+   fontSize:'11px',color:C.blue}).setOrigin(.5);
+  state.team.slice(0,6).forEach((member,i)=>{
+   const x=161+(i%3)*160,y=127+Math.floor(i/3)*40;
+   this.button(x,y,149,33,(i===state.active?'◆ ':'')+member.id.toUpperCase(),()=>{
+    selectTeamMember(state,i);this.bagScreen(state)},i===state.active);
+  });
+  this.button(157,231,170,37,'POÇÃO +25 HP',()=>{usePotion(state,'potion');this.bagScreen(state)},true);
+  this.button(340,231,170,37,'SUPER +60 HP',()=>{usePotion(state,'superpotion');this.bagScreen(state)},true);
+  this.button(517,231,166,37,'SUMÁRIO',()=>this.showSummary(state,state.active));
+  const tms=inv.tms||[];
+  if(tms.length)text(this,320,270,'ENSINAR TM AO POKÉMON ATIVO:',{
+   fontSize:'11px',color:C.gold}).setOrigin(.5);
+  else text(this,320,270,'Nenhuma TM na bolsa. Compre no Mart.',{
+   fontSize:'11px',color:C.muted}).setOrigin(.5);
+  tms.slice(0,3).forEach((id,i)=>{
+   const item=MART_ITEMS.find(x=>x.id===id);
+   if(item)this.button(144+i*181,302,173,27,item.name.replace('TM','TM '),()=>{
+    teachTM(state,id);this.bagScreen(state)},true);
+  });
+  this.button(320,343,220,23,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
