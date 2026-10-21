@@ -6,7 +6,7 @@
  */
 const PI=Math.PI, clamp=n=>Math.max(0,Math.min(1,n)),round=n=>Math.round(n);
 function rect(g,x,y,w,h,c,a=1){g.fillStyle(c,a).fillRect(round(x),round(y),Math.max(1,round(w)),Math.max(1,round(h)))}
-function stamp(g,rows,palette,cx,cy,scale=2,alpha=1,flip=false){
+function stamp(g,rows,cx,cy,palette,scale=2,alpha=1,flip=false){
  const h=rows.length,w=Math.max(...rows.map(r=>r.length));
  for(let y=0;y<h;y++)for(let x=0;x<rows[y].length;x++){
   const col=palette[rows[y][x]];if(col===undefined)continue;
