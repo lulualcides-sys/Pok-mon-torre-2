@@ -103,7 +103,7 @@ export function icebeam(l,h,extra){
    const collision=pathHit({x:ox,y:oy},{x:tx,y:ty},r);
    if(collision){
     attempted=true;
-    const t=sat(((collision.x-ox)*ux+(collision.y-oy)*uy)/(normal*normal||1));
+    const t=Math.max(0,((collision.x-ox)*ux+(collision.y-oy)*uy)/(normal*normal||1));
     stopDistance=Math.min(stopDistance,Math.max(14,t));
     contactTime=age;
     if(strike(l,h,extra,r,1)){
