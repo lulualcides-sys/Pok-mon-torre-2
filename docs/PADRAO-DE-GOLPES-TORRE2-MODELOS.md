@@ -12,7 +12,7 @@ A prioridade agora é **finalizar a lista atual de golpes específicos do Torre 
 
 **Status atualizado da biblioteca de 11 golpes específicos:**
 - **Protegidos, aprovados:** Bonemerang, Bone Club, Tri Attack, Pay Day, Shadow Ball, Ice Beam V6, Rock Blast, Confuse Ray amarelo e Soft-Boiled.
-- **Em ajuste/avaliação, não marcar como aprovados ainda:** Swift (sete estrelas, acertar/errar de verdade, movimento do Pay Day) e Lovely Kiss (cinco corações grandes, efeito visível desde o início, acerto obrigatório, sono não garantido).
+- **Também aprovados:** Swift (sete estrelas, acerto/erro individual) e Lovely Kiss (cinco corações grandes, colisão e 75% sono ao acertar). Total: **11 golpes específicos concluídos e aprovados**.
 - **Surf:** segue removido do catálogo dos novos golpes, conforme pedido do usuário. Não reinserir.
 - Não confundir **Pokémon Torre 1** com Pokémon Torre 2.
 

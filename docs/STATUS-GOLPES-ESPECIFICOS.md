@@ -1,7 +1,7 @@
 # Pokémon Torre 2 — Golpes específicos: controle de conclusão
 Data: 21/10/2026
 
-**Alvo deste ciclo:** apenas golpes que não possuem visual original no Poké Arena 2D. Não redesenhar originais. Nada de novas tecnologias globais nesta etapa.
+**Alvo deste ciclo:** apenas golpes que não possuem visual original no Poké Arena 2D. Não redesenhar originais. Nada de novas tecnologias globais nesta etapa. **Todos os 11 golpes específicos já implementados foram aprovados.**
 
 | Nome | Situação | Base técnica | Próxima ação |
 |---|---|---|---|
@@ -14,11 +14,15 @@ Data: 21/10/2026
 | Rock Blast | ✅ aprovado | Pedras pixeladas individuais | Congelar |
 | Confuse Ray amarelo | ✅ aprovado | Primeira versão das três luzes | Congelar |
 | Soft-Boiled | ✅ aprovado | Ovo e cura pixelados | Congelar |
-| Swift | ⏳ avaliação final | 7 estrelas com trajetória e colisão individuais | Verificar visual final e pedir aprovação |
-| Lovely Kiss | 🔧 ainda em ajuste | Lábios e cinco corações pixelados | Priorizar percepção dos corações desde o começo; preservar colisão e chance de sono |
+| Swift | ✅ aprovado | 7 estrelas com trajetória e colisão individuais | Congelar |
+| Lovely Kiss | ✅ aprovado | Lábios e cinco corações pixelados | Congelar |
 
 **Proteções:** nenhum item aprovado muda sem autorização explícita. Original Pokémon Arena 2D: manter 100% do visual pré-existente. Surf permanece oculto/não equipável.
 
 **Adiados:** ajuste global de origem do golpe ao corpo/movimentos até inclusão dos 151 Pokémon de Kanto; iluminação dinâmica mais adiante.
 
 **Avaliação futura de golpes específicos:** comparar catálogo original para confirmar ausência de VFX nativo antes de iniciar qualquer novo ataque; se houver VFX nativo, não fazer outro.
+
+## Próximos golpes após concluir os 11
+
+Triagem inicial e ordem sugerida em [CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md](./CATALOGO-PROXIMOS-GOLPES-ESPECIFICOS.md). Cada candidato ainda precisa de conferência visual no cliente atual antes de implementação.

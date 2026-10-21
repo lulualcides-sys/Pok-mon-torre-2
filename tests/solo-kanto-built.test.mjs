@@ -64,8 +64,8 @@ for(const id of [
 ])
  assert.equal(allMoves.find(m=>m.id===id)?.approved,true,'Previously approved signature move '+id);
 for(const id of ['swift','lovely-kiss'])
- assert.equal(allMoves.find(m=>m.id===id)?.approved,undefined,
-  'Still awaiting explicit approval for signature '+id);
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
+  'The user has explicitly approved '+id);
 assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
 const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf8');
 assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
