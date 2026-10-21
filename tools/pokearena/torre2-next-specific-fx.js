@@ -97,27 +97,60 @@ const ABSORB_MOTE=[
 const ABSORB_TAIL=[
  '..B...','BEGB..','BGENB.','.BEGB.','..BB..'
 ];
-// Genuine pixel blade sprite (individual jagged silhouette, dark bevel,
-// brighter sharpened edge). Two blades cross in combat; NO traced lines.
-const SCISSOR_BLADE=[
- '...........................KKKK.....',
- '.........................KKSTTKK...',
- '......................KKSSTAACCK...',
- '..................KKSSSTAAAACCK...',
- '............KKKSSSTAAAAACCCKK....',
- '.....KKKSSSSSTAAAACCCCCCWCK......',
- 'KKKSSSTTTAAAAACCCCWWWWCCK........',
- '.KKSSSTTAAAAACCCCWWWCCKK.........',
- '.....KKSSSTAAAACCCCWWCKK..........',
- '..........KKSSSTAAAACCKK..........',
- '..............KKSSSTACK............',
- '..................KKKK.............'
+// X-Scissor: pixel-inked twin *cuts*, NOT metal swords or lines generated at
+// runtime. Both 36x36 designs are prebuilt discrete grid silhouettes with
+// tapered tips, separated deep ink, cyan edge and white cutting core.
+// The second diagonal is a tile-mirrored sprite (no geometry strokes).
+const SCISSOR_CUT=[
+ '....................................',
+ '....................................',
+ '....................................',
+ '..K.................................',
+ '..TKK...............................',
+ '..TTKK..............................',
+ '..KTTKKK............................',
+ '..KKTTTKK...........................',
+ '...KTCTTKK..........................',
+ '....KTCWTTKK........................',
+ '.....KTCWTTKK.......................',
+ '.....KSACWTTKK......................',
+ '......KTACWWTTK.....................',
+ '.......KTACWWTTKK...................',
+ '.......KKTACWWTTKK..................',
+ '........KSAACWWWTKK.................',
+ '.........KTAACWWWTKK................',
+ '..........KTAACCWWTKK...............',
+ '...........KTAACCWWTTK..............',
+ '...........KKTAACCWWTTK.............',
+ '............KKTAACCWWTTK............',
+ '.............KSTAAACWWTTK...........',
+ '..............KSTAAACWWTTK..........',
+ '...............KSTAAACCWTTK.........',
+ '................KKTAAACCWWTK........',
+ '.................KKTTAAACWWTKK......',
+ '..................KKTTAAACCWTK......',
+ '...................KKSTTAACCWTK.....',
+ '.....................KKTTTAACCTK....',
+ '......................KKKTTTACCTK...',
+ '........................KKKTTTTCTK..',
+ '..........................KKKKTTTT..',
+ '............................KKKKKT..',
+ '...............................KKK..',
+ '....................................',
+ '....................................',
 ];
-const SCISSOR_PALETTE={K:0x183736,S:0x2e635d,T:0x368b74,
- A:0x66bfa0,C:0xa1efd1,W:0xf1fff1};
-const CRACK=[
- '..K.K..','.K.C.K.','K.CWC.K','.CWWW C.'.replace(' ',''),
- 'K.CWC.K','.K.C.K.','..K.K..'
+const SCISSOR_CROSS=SCISSOR_CUT.map(row=>row.split('').reverse().join(''));
+const SCISSOR_PALETTE={K:0x102d39,S:0x24515e,T:0x327882,
+ A:0x50a9a8,C:0x83e7d5,W:0xf0fff1};
+const SCISSOR_FLASH=[
+ '.....K.....','....KCK....','...KCCC K..'.replace(' ',''),
+ '..KCCWCCCK.','.KCCWWWCCK','KCCWWFWWCCK',
+ '.KCCWWWCCK','..KCCWCCCK.','...KCCCK...',
+ '....KCK....','.....K.....'
+];
+const SCISSOR_FLASH_PAL={K:0x12343d,C:0x7fdfc8,W:0xf2fff1,F:0xffffff};
+const SCISSOR_CHIP=[
+ '..K..','.KCK.','KCWCK','.KCK.','..K..'
 ];
 const angle=l=>Math.atan2((l.ay??l.y)-l.y,(l.ax??l.x+100)-l.x);
 const pos=l=>({x:l.x,y:l.y-(l.alto||36)*.5});
@@ -160,17 +193,17 @@ export function metronome(l,h,extra,registry){
  return run(e,dt=>{
   age+=dt;palm.clear();stars.clear();
   if(l.ko||l.est?.aturdido||age>.79)return false;
-  const p=pos(l),cx=p.x,cy=p.y-19;
+  const p=pos(l),cx=p.x,cy=p.y-11;
   if(age<.54){
    const frame=Math.min(11,Math.floor(age*23));
    // Two overlapping hand-drawn sprites are an actual wagging glove,
    // not a slab of rectangles or a cursor outline.
-   stencil(palm,HAND_PALM,cx,cy+10,HAND_PAL,3);
-   stencil(palm,FINGER_FRAMES[WAG[frame]],cx,cy-20,HAND_PAL,3);
+   stencil(palm,HAND_PALM,cx,cy+5,HAND_PAL,1.5);
+   stencil(palm,FINGER_FRAMES[WAG[frame]],cx,cy-10,HAND_PAL,1.5);
    for(let i=0;i<4;i++){
     const th=(i*PI/2)+age*2.4;
-    const sx=cx+Math.cos(th)*(25+i%2*5),sy=cy-16+Math.sin(th)*17;
-    stencil(stars,GOLD_STAR,sx,sy,PAL,1,i%2?.75:1);
+    const sx=cx+Math.cos(th)*(12.5+i%2*2.5),sy=cy-8+Math.sin(th)*8.5;
+    stencil(stars,GOLD_STAR,sx,sy,PAL,.7,i%2?.75:1);
    }
   }
   if(!called&&age>=.47){
@@ -215,15 +248,15 @@ export function absorb(l,h,extra){
     // Small asymmetrical LEAF, a cluster of veins and a handful of seeds.
     // Twelve distinct pixel frames come from the two authored leaf silhouettes
     // flipping + three staggered hand-drawn motes.
-    const flip=Math.floor(age*18)%2;
-    stencil(leaf,ABSORB_HEAD,tip.x,tip.y+Math.sin(age*12)*2,
-     PAL,3,1,a*.4);
+    const flutter=Math.floor(age*18)%2?1:-1;
+    stencil(leaf,ABSORB_HEAD,tip.x,tip.y+flutter,
+     PAL,1.5,1,a*.4);
     for(let j=1;j<=3;j++){
      const back=dist-j*15;
      if(back<1)continue;
-     const x=from.x+ux*back-uy*Math.sin(age*14+j)*5;
-     const y=from.y+uy*back+ux*Math.sin(age*14+j)*5;
-     stencil(essence,j%2?ABSORB_MOTE:ABSORB_TAIL,x,y,PAL,2,.8-j*.18);
+     const x=from.x+ux*back-uy*Math.sin(age*14+j)*2.5;
+     const y=from.y+uy*back+ux*Math.sin(age*14+j)*2.5;
+     stencil(essence,j%2?ABSORB_MOTE:ABSORB_TAIL,x,y,PAL,1,.8-j*.18);
     }
    }
   }
@@ -235,15 +268,15 @@ export function absorb(l,h,extra){
    for(let k=0;k<5;k++){
     const t=sat(progress-k*.075);
     const x=hit.x+(home.x-hit.x)*t;
-    const y=hit.y+(home.y-hit.y)*t+Math.sin(t*PI*2+k*.7)*5;
+    const y=hit.y+(home.y-hit.y)*t+Math.sin(t*PI*2+k*.7)*2.5;
     stencil(essence,k%2?ABSORB_TAIL:ABSORB_MOTE,x,y,PAL,
-     2,1-k*.13);
+     1,1-k*.13);
    }
    if(progress<.23){
-    stencil(leaf,GREEN_STAR,hit.x,hit.y,PAL,2,1-progress*2.8);
+    stencil(leaf,GREEN_STAR,hit.x,hit.y,PAL,1,1-progress*2.8);
    }else if(progress>.74){
     const flare=sat((progress-.74)/.26);
-    stencil(leaf,GREEN_STAR,home.x,home.y,PAL,2,flare);
+    stencil(leaf,GREEN_STAR,home.x,home.y,PAL,1,flare);
    }
    if(progress>=1&&!restored){
     restored=true;
@@ -256,54 +289,64 @@ export function absorb(l,h,extra){
 }
 export function xscissor(l,h,extra){
  const e=l.escena,blades=layer(e,1514),chips=layer(e,1515);
- const a=start(l,'Swing',.72),ux=Math.cos(a),uy=Math.sin(a);
+ const a=start(l,'Swing',.66),ux=Math.cos(a),uy=Math.sin(a);
  const body=pos(l),reach=Math.min(h.alcance??78,90);
  const cx=body.x+ux*Math.min(reach,62),cy=body.y+uy*Math.min(reach,62);
+ const nx=-uy,ny=ux;
  let age=0,resolved=false,landed=false;
  return run(e,dt=>{
   age+=dt;blades.clear();chips.clear();
-  if(l.ko||l.est?.aturdido||age>.74)return false;
-  // 12 animation frames: fast windup, two sharp PIXEL blades sweep across
-  // independently, then stagger and break apart at the crossing.
-  const f=Math.min(11,Math.floor(age/.065));
-  const progress=sat((age-.12)/.27);
-  const opacity=sat(age*13)*sat((.75-age)*6);
-  if(age<.64){
-   const spread=(1-progress)*17;
-   const sideX=-uy,sideY=ux;
-   const sx=sideX*spread,sy=sideY*spread;
-   // Sprite source pixels are rotated IN INTEGER CELLS, no SVG line or
-   // automatically drawn X. Distinct serrated outlines stay visible.
-   stencil(blades,SCISSOR_BLADE,cx+sx,cy+sy,SCISSOR_PALETTE,2,
-    opacity,a+PI/4);
-   stencil(blades,SCISSOR_BLADE,cx-sx,cy-sy,SCISSOR_PALETTE,2,
-    opacity,a-PI/4);
+  if(l.ko||l.est?.aturdido||age>.64)return false;
+  // Twelve hand-timed frames (20fps): recoil -> two crossed claw slashes ->
+  // crisp X at impact -> staggered fading afterimages. NO launched object.
+  const frame=Math.min(11,Math.floor(age/.05));
+  const travel=sat((frame-1)/5);
+  const spread=(1-travel)*19;
+  const fade=sat((.65-age)/.24);
+  const strength=Math.min(1,age*15)*fade;
+  if(frame<=11){
+   // Draw the two different diagonals toward the same physical hit point.
+   const x1=cx+nx*spread,y1=cy+ny*spread;
+   const x2=cx-nx*spread,y2=cy-ny*spread;
+   if(frame>=7){
+    const t=(frame-7)/5;
+    // Ghost afterimages are strictly the same stamped PIXEL sprites,
+    // smaller opacity, no lines, ellipses, circles or HTML overlays.
+    stencil(blades,SCISSOR_CUT,x1-nx*4*t,y1-ny*4*t,
+     SCISSOR_PALETTE,2,(1-t)*.27,a);
+    stencil(blades,SCISSOR_CROSS,x2+nx*4*t,y2+ny*4*t,
+     SCISSOR_PALETTE,2,(1-t)*.27,a);
+   }
+   stencil(blades,SCISSOR_CUT,x1,y1,SCISSOR_PALETTE,2,strength,a);
+   stencil(blades,SCISSOR_CROSS,x2,y2,SCISSOR_PALETTE,2,strength,a);
   }
-  if(!resolved&&age>=.37){
+  // Resolve damage ONLY when the two physical cuts form the visible X;
+  // no autoaim, no guaranteed enemy contact, one short-range hit maximum.
+  if(!resolved&&frame>=6){
    resolved=true;
    const rival=l.rival;
    const close=rival&&!rival.ko&&
     Math.hypot(rival.x-l.x,rival.y-l.y)<=reach+16;
    const contact=close&&intersection(
-    {x:cx-ux*29,y:cy-uy*29},{x:cx+ux*29,y:cy+uy*29},rival,15);
+    {x:cx-ux*18,y:cy-uy*18},{x:cx+ux*18,y:cy+uy*18},rival,14);
    if(contact){
     const dx=rival.x-l.x,dy=rival.y-l.y,d=Math.hypot(dx,dy)||1;
     const old=rival.hp;
-    const outcome=rival.recibir(l,{dano:h.dano??19,tipo:h.tipo||'BUG',
+    const result=rival.recibir(l,{dano:h.dano??19,tipo:h.tipo||'BUG',
      surge:extra?.surge,slot:extra?.slot,empuje:24,dirX:dx/d,dirY:dy/d});
-    landed=outcome==='golpe'||rival.hp<old;
+    landed=result==='golpe'||rival.hp<old;
    }
   }
-  if(landed&&age>=.37&&age<.61){
-   const impact=sat((age-.37)/.23);
-   // Inked impact splinters in 4 directions, only after a REAL hit.
+  if(landed&&frame>=6&&frame<=10){
+   const u=sat((frame-6)/5);
+   if(frame<=8)stencil(chips,SCISSOR_FLASH,cx,cy,
+    SCISSOR_FLASH_PAL,1.5,1-u);
+   // Two small CUT splinters follow the X diagonals, never a magic ring.
    for(let k=0;k<4;k++){
-    const th=k*PI/2+a;
-    const d=6+21*impact;
-    stencil(chips,k%2?GOLD_STAR:GREEN_STAR,cx+Math.cos(th)*d,
-     cy+Math.sin(th)*d,k%2?PAL:PAL,1,1-impact);
+    const th=a+(PI/4)+k*PI/2,dist=5+13*u;
+    stencil(chips,SCISSOR_CHIP,cx+Math.cos(th)*dist,
+     cy+Math.sin(th)*dist,SCISSOR_PALETTE,1,1-u);
    }
-   if(age<.45)stencil(chips,CRACK,cx,cy,SCISSOR_PALETTE,2,.85);
   }
   return true;
  },[blades,chips]);
