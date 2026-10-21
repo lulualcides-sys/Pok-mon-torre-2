@@ -1,5 +1,25 @@
 # Padrão permanente de efeitos — Pokémon Torre 2
 
+## Escopo ATUAL — terminar exclusivamente os golpes específicos (21/10/2026)
+
+**Regra acima de qualquer sugestão anterior:** só modificar um golpe se ele **não possuir visual próprio no Poké Arena 2D**. Todas as animações já existentes no cliente original Poké Arena 2D são finais e devem permanecer **exatamente como estão**. O Pokémon Zarza serve para pesquisar conceitos e modelos, nunca como motivo para trocar golpes nativos por outros.
+
+A prioridade agora é **finalizar a lista atual de golpes específicos do Torre 2**. Não iniciar sistemas gerais, não retrabalhar golpes nativos e não começar séries genéricas de ataques (Flamethrower, Thunderbolt, Earthquake, Hydro Pump etc. enquanto tiverem arte original).
+
+**Postergação expressa pelo usuário:**
+- Sistema global para posicionar golpes em mãos/bocas/corpos e sincronizar todos os Pokémon: **somente quando os 151 Pokémon de Kanto estiverem no jogo**.
+- Iluminação dinâmica em todos os golpes: **mais adiante**, sem implementar agora.
+
+**Status atualizado da biblioteca de 11 golpes específicos:**
+- **Protegidos, aprovados:** Bonemerang, Bone Club, Tri Attack, Pay Day, Shadow Ball, Ice Beam V6, Rock Blast, Confuse Ray amarelo e Soft-Boiled.
+- **Em ajuste/avaliação, não marcar como aprovados ainda:** Swift (sete estrelas, acertar/errar de verdade, movimento do Pay Day) e Lovely Kiss (cinco corações grandes, efeito visível desde o início, acerto obrigatório, sono não garantido).
+- **Surf:** segue removido do catálogo dos novos golpes, conforme pedido do usuário. Não reinserir.
+- Não confundir **Pokémon Torre 1** com Pokémon Torre 2.
+
+Ao terminar Swift e Lovely Kiss e obter aprovação explícita, voltar à lista de golpes específicos **que estejam realmente sem efeito nativo** no Poké Arena 2D. Nunca reinventar um golpe que já está desenhado lá.
+
+
+
 Aprovado em 21/10/2026.
 
 Quando for pedido um golpe, examinar os modelos de animação disponíveis e escolher aquele que melhor representa **o golpe original**, mas preservar sempre a **identidade visual, escala e fluidez do Poké Arena 2D**. A referência Pokémon Zarza é uma biblioteca de ideias e técnicas, não substitui o estilo do jogo.

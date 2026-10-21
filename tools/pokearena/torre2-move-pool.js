@@ -7,12 +7,12 @@ import {ROSTER,buscar,etapaDe} from '../datos.js';
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
 export const SIGNATURE_MOVES=Object.freeze([
- {id:'bonemerang',nombre:'Bonemerang',forma:'torre2_bonemerang',tipo:'GROUND',dano:10.5,alcance:245,coste:24,cd:5.7,anim:'Shoot',lanzar:.16,description:'Bone boomerang / two synchronized hits'},
- {id:'bone-club',nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
- {id:'tri-attack',nombre:'Tri Attack',forma:'torre2_triattack',tipo:'NORMAL',dano:13,alcance:240,coste:30,cd:6.2,anim:'Charge',lanzar:.2,description:'Fire / ice / electric three-point projectile'},
- {id:'pay-day',nombre:'Pay Day',forma:'torre2_payday',tipo:'NORMAL',dano:10,alcance:235,coste:23,cd:5.4,anim:'Shoot',lanzar:.15,description:'Nine scattered coins, each with independent impact'},
+ {id:'bonemerang',approved:true,nombre:'Bonemerang',forma:'torre2_bonemerang',tipo:'GROUND',dano:10.5,alcance:245,coste:24,cd:5.7,anim:'Shoot',lanzar:.16,description:'Bone boomerang / two synchronized hits'},
+ {id:'bone-club',approved:true,nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
+ {id:'tri-attack',approved:true,nombre:'Tri Attack',forma:'torre2_triattack',tipo:'NORMAL',dano:13,alcance:240,coste:30,cd:6.2,anim:'Charge',lanzar:.2,description:'Fire / ice / electric three-point projectile'},
+ {id:'pay-day',approved:true,nombre:'Pay Day',forma:'torre2_payday',tipo:'NORMAL',dano:10,alcance:235,coste:23,cd:5.4,anim:'Shoot',lanzar:.15,description:'Nine scattered coins, each with independent impact'},
  {id:'swift',nombre:'Swift',forma:'torre2_swift',tipo:'NORMAL',dano:10,alcance:250,coste:21,cd:5.2,anim:'Shoot',lanzar:.15,description:'Seven fan-scattered stars, staggered Pay Day-style impacts, individual contact and misses'},
- {id:'shadow-ball',nombre:'Shadow Ball',forma:'torre2_shadowball',tipo:'GHOST',dano:14,alcance:245,coste:31,cd:6.5,anim:'Charge',lanzar:.18,description:'Dark ghost orb and expanding impact ring'},
+ {id:'shadow-ball',approved:true,nombre:'Shadow Ball',forma:'torre2_shadowball',tipo:'GHOST',dano:14,alcance:245,coste:31,cd:6.5,anim:'Charge',lanzar:.18,description:'Dark ghost orb and expanding impact ring'},
  {id:'lovely-kiss',nombre:'Lovely Kiss',forma:'torre2_lovelykiss',tipo:'NORMAL',dano:0,alcance:225,coste:25,cd:9.8,anim:'Shoot',lanzar:.13,description:'Larger aimed kiss: must physically hit; 75% sleep accuracy after contact, no damage'},
  {id:'ice-beam',approved:true,nombre:'Ice Beam',forma:'chorro',paleta:'hieloTorre2',haz:true,desdeBoca:true,ancho:17,largo:260,carga:.16,dur:.76,velTrozos:440,pulsos:4,giro:3.5,giroCarga:3.5,empuje:12,empujePulso:3,tipo:'ICE',dano:13,alcance:260,coste:28,cd:6.8,anim:'Charge',lanzar:.15,description:'Authentic Poké Arena Hyper Beam/Aura Storm Chorro, cold recolor and subtle ice crystals'},
  {id:'rock-blast',approved:true,nombre:'Rock Blast',forma:'torre2_rockblast',tipo:'ROCK',dano:12,alcance:250,coste:27,cd:6.8,anim:'Throw',lanzar:.15,description:'Six or seven different polygonal stones, sequential independent contact or miss'},

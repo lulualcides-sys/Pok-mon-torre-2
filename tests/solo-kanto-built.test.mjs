@@ -58,8 +58,14 @@ assert.equal(realBeam.paleta,'hieloTorre2');
 assert.equal(realBeam.haz,true);
 assert.equal(realBeam.giro,3.5);
 assert.equal(realBeam.source,'new-phaser-fx','Only native renderer is reused, not falsely relabeled');
-for(const id of ['rock-blast','soft-boiled','confuse-ray'])
- assert.equal(allMoves.find(m=>m.id===id)?.approved,true,'Approved '+id);
+for(const id of [
+ 'bonemerang','bone-club','tri-attack','pay-day','shadow-ball',
+ 'rock-blast','soft-boiled','confuse-ray'
+])
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,true,'Previously approved signature move '+id);
+for(const id of ['swift','lovely-kiss'])
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,undefined,
+  'Still awaiting explicit approval for signature '+id);
 assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
 const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf8');
 assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
