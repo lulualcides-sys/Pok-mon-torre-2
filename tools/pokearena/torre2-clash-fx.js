@@ -45,7 +45,11 @@ export function clashBurst(scene,x,y,types=['NORMAL','NORMAL']){
   }
   return true;
  },destroy:stop};
- scene.efectos.push(fx);
+ // The real Combate.paso() replaces 'efectos' after filtering updates.
+ // Deferring installation by one tick avoids losing an effect spawned
+ // *inside* that filter (and keeps the 10-frame animation visible).
+ if(typeof scene.programar==='function')scene.programar(0,()=>scene.efectos.push(fx));
+ else scene.efectos.push(fx);
  return fx;
 }
 function candidate(item,self,attacker){
