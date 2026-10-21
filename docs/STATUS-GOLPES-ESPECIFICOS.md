@@ -21,7 +21,7 @@ Data: 21/10/2026
 | Smog | ✅ aprovado | 17 bolhas, impactos individuais | Congelar |
 | Hyper Fang | ✅ aprovado | Incisivos grandes de rato | Congelar |
 | Guillotine | ✅ aprovado | Duas pinças visíveis fechando no alvo | Congelar |
-| Petal Dance | 🔧 avaliação pendente | Pétalas pequenas em vórtice que acompanha o alvo móvel como Aura Storm | Avaliar animação |
+| Petal Dance | 🔧 avaliação pendente | Pétalas em vórtice girando com a mira do jogador (Chorro/Ice Beam), sem travar no alvo | Avaliar animação |
 
 **Proteções:** nenhum item aprovado muda sem autorização explícita. Original Pokémon Arena 2D: manter 100% do visual pré-existente. Surf permanece oculto/não equipável.
 
