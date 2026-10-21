@@ -577,7 +577,7 @@ const server=http.createServer(async(req,res)=>{
      beam.player.rival=beam.enemy;
      for(let i=0;i<25;i++)beamFx.update(.016);
      const beamPolys=gfx[0]._v3Polygons;
-     const longRibbon=beamPolys.some(poly=>poly.length===4&&
+     const longRibbon=beamPolys.some(poly=>poly.length>=10&&
       Math.max(...poly.map(p=>p.x))-Math.min(...poly.map(p=>p.x))>70&&
       Math.max(...poly.map(p=>p.y))-Math.min(...poly.map(p=>p.y))<25);
      for(let i=25;i<88;i++)if(beamFx.update(.016)===false)break;
