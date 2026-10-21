@@ -193,6 +193,37 @@ for(const matrix of ['const MUD_PELLET=[','const MUD_SPLASH=[','const BOMB=[','c
 }
 assert.ok(adapted.includes("puro:true"),'Super Fang uses exact fixed half-HP damage');
 assert.ok(adapted.includes("Math.floor(r.hp*.5)"),'Super Fang hits for 50% current HP');
+// Visual-only adjustments: collision, move stats and already-approved Super Fang
+// must not change just because we improved Mud-Slap and Seed Bomb pixels.
+assert.ok(adapted.includes('const MUD_MICRO_SPLASH=['),
+ 'Mud-Slap must have three separate micro-splash pixel matrices');
+assert.ok(adapted.includes('stamp(proj,MUD_SPLASH,impact.x,impact.y,MUD_PALETTE,1.8,1-t)'),
+ 'Mud-Slap original impact is opened by 12.5%, not its projectile');
+assert.ok(adapted.includes('for(let i=0;i<3;i++){\n     const side=i-1;'),
+ 'Mud-Slap adds exactly 3 small lateral splash flecks');
+assert.ok(adapted.includes('stamp(body,BOMB,tip.x,'),
+ 'Seed Bomb stays intact during flight');
+assert.ok(!adapted.includes('frame===2?BOMB_CRACK:BOMB'),
+ 'Seed Bomb crack may not appear during flight');
+assert.ok(adapted.includes('stamp(body,BOMB_CRACK,impact.x'),
+ 'Seed Bomb shows its crack only at physical impact');
+assert.ok(adapted.includes('const SEED_CORE=['),
+ 'Seed Bomb briefly reveals the pale-green center');
+assert.ok(adapted.includes('const SEED_SHELL_CHIP=['),
+ 'Seed Bomb includes 3 additional micro shell chips');
+assert.ok(adapted.includes('for(let i=0;i<6;i++){')&&adapted.includes('for(let i=0;i<3;i++){\n     const travel='),
+ 'Seed Bomb has 6 original and 3 added shards — without additional hit checks');
+// FNV-1a guard of the art, timing and damage code of approved Super Fang.
+// Future work on the two previous spells cannot silently edit these bytes.
+const approvedFang=adapted.split('const JAW_COL=')[1]?.split('export const TORRE2_ADAPTED_FORMS')[0];
+assert.ok(approvedFang,'Missing approved Super Fang source');
+let fangGuard=2166136261;
+for(const char of 'const JAW_COL='+approvedFang){
+ fangGuard^=char.charCodeAt(0);
+ fangGuard=Math.imul(fangGuard,16777619);
+}
+assert.equal(fangGuard>>>0,0x098cb000,
+ 'Super Fang is approved and frozen: pixel matrices and behaviour must not change');
 assert.ok(!adapted.includes('CanvasRenderingContext2D'),'New 3 attacks use WebGL pixel matrices only');
 assert.ok(newVfx.includes('dealt*.5'),'Absorb heals half of actual dealt damage');
 assert.ok(!newVfx.includes('CanvasRenderingContext2D'),'New custom moves use Phaser Graphics only');
