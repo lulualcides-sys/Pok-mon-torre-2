@@ -275,39 +275,72 @@ function petal(g,x,y,rotation,shade=0,alpha=1){
 }
 export function petaldance(l,h,extra){
  const e=l.escena,r=l.rival,blooms=sceneLayer(e,1510),trail=sceneLayer(e,1511);
- const angle=setup(l,'Charge',1.5),{ux,uy}=aim(l,angle);
- const nx=-uy,ny=ux;
- const x0=l.x+ux*8,y0=l.y-(l.alto||36)*.5;
+ const baseAngle=setup(l,'Charge',1.5);
+ // Native Aura Storm / guided projectile principle: continually turn toward
+ // the CURRENT rival position rather than replaying a fixed launch direction.
+ const targetPoint=()=>r&&!r.ko&&Number.isFinite(r.x)&&Number.isFinite(r.y)
+  ?{x:r.x,y:r.y-(r.alto||36)*.5}:null;
+ const target=targetPoint();
+ const initialAngle=target
+  ?Math.atan2(target.y-(l.y-(l.alto||36)*.5),target.x-l.x):baseAngle;
+ const ux0=Math.cos(initialAngle),uy0=Math.sin(initialAngle);
+ const x0=l.x+ux0*8,y0=l.y-(l.alto||36)*.5;
  const reach=Math.min(h.alcance??215,240),speed=220;
  const lanes=[-9,7,0,15,-15,5,-4,22,-19,0,11,-10,-2,17,-16,3];
- const petals=lanes.map(()=>({before:null,spent:false}));
- let age=0,landed=0,confused=false;
+ const petals=lanes.map(()=>({
+  before:null,spent:false,x:x0,y:y0,heading:initialAngle,distance:0,
+  launched:false
+ }));
+ let age=0,landed=0,confused=false,castingAngle=initialAngle;
  return register(e,dt=>{
   age+=dt;blooms.clear();trail.clear();
   if(l.ko||l.est?.aturdido)return false;
+  // Rotate the caster as the rival moves, just like Aura Storm's aimed beam.
+  const foe=targetPoint();
+  if(foe){
+   const desired=Math.atan2(foe.y-y0,foe.x-x0);
+   const delta=Math.atan2(Math.sin(desired-castingAngle),Math.cos(desired-castingAngle));
+   castingAngle+=Math.max(-5.5*dt,Math.min(5.5*dt,delta));
+   if(l.accion)l.accion.angulo=castingAngle;
+  }
   for(let i=0;i<lanes.length;i++){
    const p=petals[i],elapsed=age-.035-i*.067;
    if(elapsed<=0||p.spent)continue;
-   const d=speed*elapsed;
-   if(d>=reach){p.spent=true;continue}
-   // Moving Aura Storm-inspired vortex: each pixel petal orbits, rises,
-   // flutters and travels down its own lane. The flow is never a static ring.
-   // Preserve petal size/palette, real collision and the three-hit limit.
-   const progress=clamp(d/reach);
+   if(!p.launched){
+    p.launched=true;
+    p.heading=castingAngle;
+   }
+   // Real steering, bounded angular velocity: follows a moving target without
+   // teleporting, guaranteed contact or hidden damage (the rival can dodge).
+   if(foe){
+    const desired=Math.atan2(foe.y-p.y,foe.x-p.x);
+    const diff=Math.atan2(Math.sin(desired-p.heading),Math.cos(desired-p.heading));
+    const turn=9.5*dt;
+    p.heading+=Math.max(-turn,Math.min(turn,diff));
+   }
+   const vx=Math.cos(p.heading),vy=Math.sin(p.heading);
+   p.x+=vx*speed*dt;
+   p.y+=vy*speed*dt;
+   p.distance+=speed*dt;
+   if(p.distance>=reach){p.spent=true;continue}
+   // Moving Aura Storm-style vortex: compact, individually tumbling petals
+   // swirl AROUND their steered centerline instead of hanging in the arena.
+   const progress=clamp(p.distance/reach);
    const orbitPhase=elapsed*(11.5+(i%4)*.85)+i*2.399963;
    const vortexRadius=8+12*Math.sin(progress*PI)**2;
    const orbitOffset=Math.cos(orbitPhase)*vortexRadius+lanes[i]*.25;
    const lift=Math.sin(orbitPhase)*vortexRadius*.72;
    const flutter=Math.sin(elapsed*19+i*1.17)*3;
-   const x=x0+ux*d+nx*orbitOffset-uy*(lift+flutter)*.75;
-   const y=y0+uy*d+ny*orbitOffset*.74+ux*(lift+flutter)*.75;
+   const nx=-vy,ny=vx,twist=lift+flutter;
+   const x=p.x+nx*orbitOffset-vy*twist*.75;
+   const y=p.y+ny*orbitOffset*.74+vx*twist*.75;
    const prior=p.before||{x:x0,y:y0};
    p.before={x,y};
-   if(r&&!r.ko&&landed<3&&d>10){
+   if(r&&!r.ko&&landed<3&&p.distance>10){
     const collision=segmentHit(prior,{x,y},r,15);
     if(collision){
      p.spent=true;
-     // Three sequential contacts (Petal Dance), never hit outside petals.
+     // Three sequential, physical petal contacts; misses remain possible.
      if(strike(l,h,extra,.42,9)){
       landed++;
       for(let k=0;k<4;k++)pixelspark(trail,collision.x,collision.y,k,1);
@@ -315,15 +348,15 @@ export function petaldance(l,h,extra){
      continue;
     }
    }
-   // Independent tumbling: alternating quarter-turn pixel frames.
+   // Keep the approved rose palettes, 2px tiles and spin animation unchanged.
    petal(blooms,x,y,orbitPhase+Math.sin(elapsed*14+i)*.8,i,.9);
    for(let k=0;k<2;k++){
     const back=8+k*7;
-    rect(trail,x-ux*back,y-uy*back,2,2,
+    rect(trail,x-vx*back,y-vy*back,2,2,
      k===0?COLORS.petalLight:COLORS.leaf,.55-k*.17);
    }
   }
-  // Like the original move, finishing the dance confuses the caster.
+  // Finishing Petal Dance still confuses the caster.
   if(!confused&&age>1.42){
    confused=true;
    if(typeof l.ponerEstado==='function')
