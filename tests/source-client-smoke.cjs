@@ -642,6 +642,62 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(Object.entries(trioPhysics).every(([,result])=>result.completed),
    'All three attacks release their Phaser Graphics when completed');
 
+  // New additive Mud-Slap / Seed Bomb / Super Fang use hand-drawn sprite
+  // matrices, physical hit/miss and clear their graphics after battle.
+  const adaptedCheck=await tester.evaluate(async()=>{
+   const script=[...document.querySelectorAll('script[src]')]
+    .find(x=>x.src.includes('/main.js'));
+   const {TORRE2_ADAPTED_FORMS}=await import(
+    new URL('./torre2/adapted-moves-fx.js',script.src).href);
+   const results={};
+   for(const [id,forma,type] of [
+    ['mud-slap','torre2_mudslap','GROUND'],
+    ['seed-bomb','torre2_seedbomb','GRASS'],
+    ['super-fang','torre2_superfang','NORMAL']
+   ])for(const mode of ['hit','aim-away','dodge','blocked']){
+    const drawings=[];
+    const fake={efectos:[],add:{graphics(){
+      const g={count:0,max:0,deleted:false,setDepth(){return this},
+       fillStyle(){return this},fillRect(){this.count++;this.max++;return this},
+       clear(){this.count=0;return this},destroy(){this.deleted=true}};
+      drawings.push(g);return g;
+    }}};
+    const foe={x:id==='super-fang'?244:301,y:mode==='dodge'?350:215,
+     hp:111,alto:36,ko:false,est:{},invulnerable:mode==='blocked',
+     tipos:['NORMAL'],hits:0,recibir(_p,v){
+       if(mode==='blocked')return 'miss';
+       this.hits++;this.hp-=v.dano||0;return 'golpe';
+     }};
+    const p={x:174,y:215,ax:430,ay:mode==='aim-away'?75:215,
+     alto:36,ko:false,est:{},t:0,rival:foe,escena:fake,animar(){}};
+    const fx=TORRE2_ADAPTED_FORMS[forma](p,{dano:16,tipo:type,
+     alcance:id==='super-fang'?82:225},{slot:'lmb'});
+    let active=true,frame=0;
+    while(active&&frame++<140)active=fx.update(.016);
+    fx.destroy();
+    results[id+'-'+mode]={hits:foe.hits,hp:foe.hp,finished:!active,
+     drawn:drawings.reduce((n,g)=>n+g.max,0),
+     disposed:drawings.every(g=>g.deleted)};
+   }
+   return results;
+  });
+  for(const id of ['mud-slap','seed-bomb','super-fang']){
+   const hit=adaptedCheck[id+'-hit'];
+   assert.equal(hit.hits,1,id+' must hit at true physical contact only once');
+   assert.ok(hit.drawn>20,id+' must render actual pixel rectangles, not invisible FX');
+   for(const mode of ['aim-away','dodge','blocked']){
+    const miss=adaptedCheck[id+'-'+mode];
+    assert.equal(miss.hits,0,id+' must MISS if '+mode);
+   }
+   for(const mode of ['hit','aim-away','dodge','blocked']){
+    const result=adaptedCheck[id+'-'+mode];
+    assert.equal(result.finished,true,id+' VFX should terminate');
+    assert.equal(result.disposed,true,id+' WebGL graphics must be cleaned');
+   }
+  }
+  assert.equal(adaptedCheck['super-fang-hit'].hp,56,
+   'Super Fang must remove floor(111/2)=55 current HP, not a flat power value');
+
   // Three newly approved species-characteristic moves: real collision regression.
   const newSpeciesAttacks=await tester.evaluate(async()=>{
     const main=document.querySelector('script[src*="/main.js"]');
