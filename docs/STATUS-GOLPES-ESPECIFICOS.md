@@ -98,3 +98,15 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - **Peck e Bug Bite: ✅ aprovados e congelados.** Dano, colisão, recuo, pixel art e sprites mantidos sem alterações. Bite e Crunch permanecem aprovados. **Leech Life original também preservado**.
 - **Três golpes sugeridos para início de Kanto (não implementar sem pedido):** Scratch (Charmander/Meowth, arranhão físico com contato), Sand Attack (Pidgey/Sandshrew, grãos de areia pixelados, redução de precisão quando acertar) e Sleep Powder (Bulbasaur/Butterfree, nuvem de pó de sono pixelado, precisão de 75% e sem dano).
 - A lista do cliente capturado `datos.js` foi consultada: Scratch, Sand Attack e Sleep Powder não constam como entradas nativas; conservar a regra de revalidar antes de programar e nunca sobrescrever golpes originais.
+
+
+## Auditoria ofensiva pré-Brock / lote de 4 golpes — 21/10/2026
+**Solicitação:** somente golpes de dano para os Pokémon disponíveis da Route 1, Route 2 / Viridian Forest, Route 22 e equipe do Brock, antes de implementar mais espécies. NÃO criar Scratch (dispensado pelo usuário) nem Growl/Tail Whip/Sand Attack/Sleep Powder (status adiados). Preservar todos os originais.
+
+**Auditoria do cliente Phaser original (`pokearena2d-cliente-phaser/src-7e7509264a/datos.js`):**
+- Já disponíveis como golpe original: Tackle, Quick Attack, Wing Attack, Vine Whip, Razor Leaf, Ember, Bubble, Water Gun, Thunder Shock, Rock Throw, Rock Slide, Low Kick, Karate Chop, String Shot (status), entre outros.
+- Já criados e aprovados no Torre 2: Gust, Poison Sting, Bite, Peck, Bug Bite, Hyper Fang, Mud-Slap, Rock Blast e outros. Não recriar.
+- **Novos golpes de dano implementados, pendentes de aprovação visual:** Rock Tomb (Brock/Onix, 60 de potência, mira manual, uma colisão com dano e redução de velocidade), Horn Attack (Nidoran, chifre, contato/recuo), Double Kick (Nidoran, dois chutes com checagens e danos separados), Fury Attack (Spearow, 2–5 bicadas atingindo individualmente). Todos sprite matrix em Phaser/WebGL, sem alterar cliente original.
+- **Lacuna de espécies antes do Brock:** a captura Phaser atual só inclui Bulbasaur, Charmander, Squirtle e Onix da lista imediata; ainda não há Pidgey, Rattata, Caterpie, Metapod, Weedle, Kakuna, Pikachu, Spearow, Nidoran♂/♀, Mankey ou Geodude no ROSTER. Suas entradas do mapa são filtradas até os sprites/atores serem integrados. Portanto, ter um ataque no catálogo ≠ ter o Pokémon jogável.
+- Os golpes são cadastrados para essas espécies futuras, não surgem artificialmente como Pokémon capturados. Mewtwo nível 50 mantém biblioteca de teste para escolher.
+- Não considerar a revisão completa do learnset por nível até definir a geração de referência de cada espécie; dano de golpe e desbloqueio são etapas diferentes.

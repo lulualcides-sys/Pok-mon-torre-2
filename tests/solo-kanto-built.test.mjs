@@ -106,6 +106,10 @@ const officialMoveStats={
  'bite':{poder:60,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'DARK',dano:12},
   'peck':{poder:35,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'FLYING',dano:7},
   'bug-bite':{poder:60,precisao:100,pp:20,categoria:'PHYSICAL',tipo:'BUG',dano:12},
+  'rock-tomb':{poder:60,precisao:95,pp:15,categoria:'PHYSICAL',tipo:'ROCK',dano:12},
+  'horn-attack':{poder:65,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'NORMAL',dano:13},
+  'double-kick':{poder:30,precisao:100,pp:30,categoria:'PHYSICAL',tipo:'FIGHTING',dano:6},
+  'fury-attack':{poder:15,precisao:85,pp:20,categoria:'PHYSICAL',tipo:'NORMAL',dano:3},
  'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
  'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
  'super-fang':{poder:null,precisao:90,pp:10,categoria:'PHYSICAL',dano:0}
@@ -120,7 +124,7 @@ for(const [id,stats] of Object.entries(officialMoveStats)){
 for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
  'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
  'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor',
- 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch','peck','leech-life','bug-bite'])
+ 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch','peck','leech-life','bug-bite','rock-tomb','horn-attack','double-kick','fury-attack'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
 assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
@@ -150,6 +154,18 @@ for(const [id,forma] of [['peck','torre2_peck'],['bug-bite','torre2_bugbite']]){
  const move=allMoves.find(m=>m.id===id);
  assert.equal(move.forma,forma);
  assert.equal(move.approved,true,'User approved Peck and Bug Bite; freeze graphics and effects');
+ assert.equal(equipMove(tester,0,id),true);
+ assert.equal(resolveLoadout(tester).lmb.forma,forma);
+}
+for(const [id,forma] of [
+ ['rock-tomb','torre2_rocktomb'],['horn-attack','torre2_hornattack'],
+ ['double-kick','torre2_doublekick'],['fury-attack','torre2_furyattack']
+]){
+ const move=allMoves.find(m=>m.id===id);
+ assert.ok(move,'Pre-Brock missing attack now installed: '+id);
+ assert.equal(move.forma,forma);
+ assert.equal(move.source,'new-phaser-fx','Never overwrite an original move');
+ assert.equal(move.approved,undefined,'Await explicit visual approval');
  assert.equal(equipMove(tester,0,id),true);
  assert.equal(resolveLoadout(tester).lmb.forma,forma);
 }
@@ -251,6 +267,11 @@ assert.ok(early.includes('export function contactDash(')&&early.includes('dash.s
 assert.ok(!early.includes('export function leechlife(')&&
  !early.includes('torre2_leechlife:'),
  'No replacement renderer for the previously existing Leech Life');
+const prebrockFx=fs.readFileSync(path.join(stage,version,'torre2/prebrock-damage-fx.js'),'utf8');
+for(const fn of ['rocktomb','hornattack','doublekick','furyattack'])
+ assert.ok(prebrockFx.includes('export function '+fn+'('),'Unbundled pre-Brock VFX: '+fn);
+assert.ok(prebrockFx.includes("from './clash-fx.js'"),
+ 'Rock Tomb collision must use shared native projectile Clash adapter');
 const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
 assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
 assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');

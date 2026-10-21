@@ -50,6 +50,10 @@ export const SIGNATURE_MOVES=Object.freeze([
  {id:'super-fang',approved:true,nombre:'Super Fang',forma:'torre2_superfang',tipo:'NORMAL',poder:null,precisao:90,pp:10,categoria:'PHYSICAL',fazContato:true,dano:0,alcance:82,coste:28,cd:7.8,anim:'Swing',lanzar:.13,description:'Physical twin-incisor bite; halves the foe current HP upon true contact'},
  {id:'gust',approved:true,nombre:'Gust',forma:'torre2_gust',tipo:'FLYING',poder:40,precisao:100,pp:35,categoria:'SPECIAL',fazContato:false,dano:8,alcance:235,coste:16,cd:4.2,anim:'Shoot',lanzar:.13,description:'12-frame curling hand-pixeled gust, one real hit; Fly/Bounce double power'},
  {id:'poison-sting',approved:true,nombre:'Poison Sting',forma:'torre2_poisonsting',tipo:'POISON',poder:15,precisao:100,pp:35,categoria:'PHYSICAL',fazContato:false,dano:3,alcance:235,coste:12,cd:3.5,anim:'Shoot',lanzar:.12,description:'Needle-shaped barb, physical contact 30 percent poison on true hit'},
+ {id:'rock-tomb',nombre:'Rock Tomb',forma:'torre2_rocktomb',tipo:'ROCK',poder:60,precisao:95,pp:15,categoria:'PHYSICAL',fazContato:false,dano:12,alcance:235,coste:24,cd:6.4,anim:'Throw',lanzar:.16,description:'Aimed pixel boulder, hit-caused fragments and reduced opponent speed'},
+ {id:'horn-attack',nombre:'Horn Attack',forma:'torre2_hornattack',tipo:'NORMAL',poder:65,precisao:100,pp:25,categoria:'PHYSICAL',fazContato:true,dano:13,alcance:76,coste:18,cd:4.8,anim:'Swing',lanzar:.11,description:'Horn jab, real fighter contact and retreat'},
+ {id:'double-kick',nombre:'Double Kick',forma:'torre2_doublekick',tipo:'FIGHTING',poder:30,precisao:100,pp:30,categoria:'PHYSICAL',fazContato:true,dano:6,alcance:76,coste:21,cd:5.3,anim:'Kick',lanzar:.12,description:'Two physical kicks, two separately timed hit checks and fighter retreat'},
+ {id:'fury-attack',nombre:'Fury Attack',forma:'torre2_furyattack',tipo:'NORMAL',poder:15,precisao:85,pp:20,categoria:'PHYSICAL',fazContato:true,dano:3,alcance:76,coste:22,cd:6.0,anim:'Jab',lanzar:.12,description:'Two to five real physical spear/beak hits depending on accuracy and contact'},
  {id:'peck',approved:true,nombre:'Peck',forma:'torre2_peck',tipo:'FLYING',poder:35,precisao:100,pp:35,categoria:'PHYSICAL',fazContato:true,dano:7,alcance:76,coste:14,cd:3.8,anim:'Swing',lanzar:.11,description:'Small pixel beak, manual aim, contact and retreat'},
  {id:'bug-bite',approved:true,nombre:'Bug Bite',forma:'torre2_bugbite',tipo:'BUG',poder:60,precisao:100,pp:20,categoria:'PHYSICAL',fazContato:true,dano:12,alcance:74,coste:19,cd:4.7,anim:'Swing',lanzar:.11,description:'Small green chitin jaws, contact and retreat'},
  {id:'bite',approved:true,nombre:'Bite',forma:'torre2_bite',tipo:'DARK',poder:60,precisao:100,pp:25,categoria:'PHYSICAL',fazContato:true,dano:12,alcance:76,coste:21,cd:5.0,anim:'Swing',lanzar:.12,description:'One 8-pose original pixel-art bite, real aimed contact, 30% flinch'},
@@ -130,6 +134,10 @@ export function availableMoves(member){
   if(['raticate','arbok','golbat','crobat','arcanine','ninetales','gyarados','aerodactyl'].includes(member.id))names.add('crunch');
  if(['spearow','fearow','beedrill','nidoran-m','nidorino','nidoking','doduo','dodrio','farfetchd'].includes(member.id))names.add('peck');
  if(['caterpie','weedle','metapod','kakuna','butterfree','beedrill','paras','parasect','venonat','venomoth'].includes(member.id))names.add('bug-bite');
+ if(['geodude','graveler','golem','onix','rhyhorn','rhydon','sandshrew','sandslash'].includes(member.id))names.add('rock-tomb');
+ if(['nidoran-m','nidorino','nidoking','nidoran-f','nidorina','nidoqueen','rhyhorn','rhydon'].includes(member.id))names.add('horn-attack');
+ if(['nidoran-m','nidorino','nidoking','nidoran-f','nidorina','nidoqueen','mankey','primeape'].includes(member.id))names.add('double-kick');
+ if(['spearow','fearow','doduo','dodrio','nidoran-m','nidorino','beedrill'].includes(member.id))names.add('fury-attack');
  if(member.id==='chansey')names.add('soft-boiled');
  return TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
 }

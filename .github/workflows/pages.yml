@@ -143,7 +143,12 @@ jobs:
                 && grep -Fq 'export function peck(' /tmp/torre-bites.js \
                 && grep -Fq 'export function bugbite(' /tmp/torre-bites.js \
                 && grep -Fq 'export function contactDash(' /tmp/torre-bites.js \
-                && ! grep -Fq "forma:'torre2_leechlife'" /tmp/torre-bites-pool.js; then
+                && ! grep -Fq "forma:'torre2_leechlife'" /tmp/torre-bites-pool.js \
+                && curl -fsSL --max-time 18 "$base/$version/torre2/prebrock-damage-fx.js" -o /tmp/torre-prebrock.js \
+                && grep -Fq 'export function rocktomb(' /tmp/torre-prebrock.js \
+                && grep -Fq 'export function hornattack(' /tmp/torre-prebrock.js \
+                && grep -Fq 'export function doublekick(' /tmp/torre-prebrock.js \
+                && grep -Fq 'export function furyattack(' /tmp/torre-prebrock.js; then
               echo "CONFIRMADO: GitHub Pages esta servindo a versao $version com golpes atualizados."
               exit 0
             fi
