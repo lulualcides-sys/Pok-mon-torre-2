@@ -64,7 +64,7 @@ test('Petal Dance never automatically damages a foe outside the vortex',()=>{
  assert.ok(b.player.status.includes('confuso'));
 });
 
-test('Petal Dance DOES NOT chase an enemy dodging the player's fixed aim',()=>{
+test("Petal Dance DOES NOT chase an enemy dodging the player\'s fixed aim",()=>{
  const still=run();
  const dodged=run(false,(enemy,frame)=>{
   if(frame===8)enemy.y=115; // target dodges away, but the player never re-aims
