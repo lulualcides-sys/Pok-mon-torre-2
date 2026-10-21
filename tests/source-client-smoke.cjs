@@ -650,6 +650,7 @@ const server=http.createServer(async(req,res)=>{
    const {TORRE2_ADAPTED_FORMS}=await import(
     new URL('./torre2/adapted-moves-fx.js',script.src).href);
    const results={};
+   const randomBefore=Math.random;Math.random=()=>.05; // Reliable 90% Super Fang hit path.
    for(const [id,forma,type] of [
     ['mud-slap','torre2_mudslap','GROUND'],
     ['seed-bomb','torre2_seedbomb','GRASS'],
@@ -679,6 +680,7 @@ const server=http.createServer(async(req,res)=>{
      drawn:drawings.reduce((n,g)=>n+g.max,0),
      disposed:drawings.every(g=>g.deleted)};
    }
+   Math.random=randomBefore;
    return results;
   });
   for(const id of ['mud-slap','seed-bomb','super-fang']){
