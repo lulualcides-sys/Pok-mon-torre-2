@@ -37,6 +37,39 @@ for(const d of TODOS){
 const implemented=[...catalog.values()].sort((a,b)=>a.name.localeCompare(b.name));
 const custom=new Map(pool.SIGNATURE_MOVES.map(m=>[slug(m.nombre),{name:m.nombre,form:m.forma}]));
 const chosen=new Set(pool.TEST_LIBRARY.map(m=>slug(m.nombre)));
+// Duplicate protection goes beyond IDs: native attacks from the original
+// Pokémon Arena 2D must not be reimplemented as new custom attacks. Aliases
+// in Portuguese and English are normalized to the same move key.
+const key=pool.canonicalMoveKey||slug;
+const groupedMoves=new Map();
+for(const m of pool.TEST_LIBRARY){
+ const normalized=key(m.nombre),group=groupedMoves.get(normalized)||[];
+ group.push({id:m.id,name:m.nombre,source:m.source});
+ groupedMoves.set(normalized,group);
+}
+const duplicatedSelections=[...groupedMoves.entries()]
+ .filter(([_,rows])=>rows.length!==1)
+ .map(([id,rows])=>({id,entries:rows}));
+const originalKeys=new Map(implemented.map(row=>[key(row.name),row.name]));
+const collisions=pool.SIGNATURE_MOVES
+ .filter(m=>originalKeys.has(key(m.nombre)))
+ .map(m=>({name:m.nombre,existingOriginal:originalKeys.get(key(m.nombre))}));
+const customKeys=new Map(),repeatedCustom=[];
+for(const move of pool.SIGNATURE_MOVES){
+ const normalized=key(move.nombre);
+ if(customKeys.has(normalized))repeatedCustom.push({name:move.nombre,previous:customKeys.get(normalized)});
+ else customKeys.set(normalized,move.nombre);
+}
+const visuals=new Map();
+for(const row of implemented)for(const shape of row.forms){
+ if(!shape)continue;
+ const members=visuals.get(shape)||new Set();
+ members.add(row.name);visuals.set(shape,members);
+}
+const sharedNativeVisuals=[...visuals]
+ .filter(([_,names])=>names.size>1)
+ .map(([form,names])=>({form,count:names.size,examples:[...names].slice(0,8)}))
+ .sort((a,b)=>b.count-a.count);
 function classify(name){
  const fromSite=catalog.get(slug(name));
  if(fromSite)return{status:'IN_SITE',forms:fromSite.forms,
@@ -67,6 +100,8 @@ const report={version,audit:'captured Poké Arena Phaser game (not Pokémon Torr
  source:'https://www.pokearena2d.com/',activeLines:ROSTER.length,allLines:TODOS.length,
  originalMoveCount:implemented.length,mewtwoSelectables:pool.TEST_LIBRARY.length,
  originalMoves:implemented,customMoves:pool.SIGNATURE_MOVES,
+ deduplication:{duplicatedSelections,collisions,repeatedCustom,sharedNativeVisuals,
+  policy:'Native Poké Arena 2D sprites and attacks stay approved; one canonical PT/EN name; recolor is NOT a new move.'},
  keyChecks:checks,byType,totals,
  caveats:['IN_SITE means declared in a Pokémon kit, not each move screenshot-tested',
  'Evolution and other-generation kits are included','No move effect from Pokémon Torre 1 is reused',
@@ -79,7 +114,12 @@ const markdown=['# Inventário técnico dos golpes do Poké Arena 2D',
  '- Linhas jogáveis: **'+ROSTER.length+'**',
  '- Movimentos distintos nos kits do cliente: **'+implemented.length+'**',
  '- Biblioteca selecionável no Mewtwo de testes, incluindo novos: **'+pool.TEST_LIBRARY.length+'**',
+ '- Entradas duplicadas no Mewtwo: **'+duplicatedSelections.length+'** | Tentativas de refazer ataque nativo: **'+collisions.length+'** | Duplicados personalizados: **'+repeatedCustom.length+'**',
  '- Plano 14 ataques + 2 status por tipo: **'+totals.inSite+' já no site**, **'+totals.newTorre2+' novos no Torre 2**, **'+totals.missing+' ainda ausentes**, **'+totals.unassigned+' vagas em aberto**',
+ '',
+ '## Formas visuais reaproveitadas pelo cliente (não são golpes duplicados)',
+ 'Mesmo renderer/sprite-base pode servir a ataques de nomes e efeitos diferentes. **Não redesenhar** os golpes originais aprovados.',
+ ...sharedNativeVisuals.slice(0,15).map(x=>'- '+x.form+': '+x.count+' movimentos ('+x.examples.join(', ')+')'),
  '',
  '## Verificação dos golpes mencionados',
  '| Golpe | Situação | Exemplos encontrados |',
@@ -94,6 +134,11 @@ const markdown=['# Inventário técnico dos golpes do Poké Arena 2D',
  'Detalhamento de formas, slots e espécies: POKEARENA-MOVE-AUDIT.json.',
  'A presença no kit não garante que todas as animações estejam testadas ou que a espécie esteja liberada na campanha Kanto.'].join('\n');
 fs.writeFileSync('site-capture/POKEARENA-MOVE-AUDIT.md',markdown);
+if(collisions.length||repeatedCustom.length||duplicatedSelections.length){
+ throw Error('DUPLICATE_MOVE_BLOCKED: native vs custom='+JSON.stringify(collisions)+
+  '; duplicated PT/EN='+JSON.stringify(duplicatedSelections)+
+  '; duplicate custom='+JSON.stringify(repeatedCustom));
+}
 console.log(JSON.stringify({version,lines:ROSTER.length,originalMoves:implemented.length,
  mewtwo:pool.TEST_LIBRARY.length,totals,checks,missingByType:byType.map(x=>({type:x.type,
  missingCount:x.missing.length}))},null,2));
