@@ -608,6 +608,53 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(specialV3.healBefore,40,'Egg animation must precede healing');
   assert.equal(specialV3.healAfter,100,'Soft-Boiled must heal only 30 percent');
 
+  // V4: exactly three yellow orbs must stay above and FOLLOW the moving
+  // opponent after a physical hit. Rock Blast and Soft-Boiled remain untouched.
+  const yellowOrbit=await tester.evaluate(async()=>{
+    const main=document.querySelector('script[src*="/main.js"]');
+    const {confuseray}=await import(new URL('./torre2/mega-patch-fx.js',main.src).href);
+    const e=window.__pt2Game.scene.getScene('combate');
+    const originalGraphics=e.add.graphics,originalRandom=Math.random;
+    let draw=[],fx;
+    try{
+      e.add.graphics=function(...args){
+       const graphic=originalGraphics.apply(this,args);
+       const fill=graphic.fillRect;
+       graphic.fillRect=function(x,y,w,h){
+        if(graphic===draw[0]?.g&&w>=1&&h>=1)draw[0].rects.push({x,y,w,h});
+        return fill.call(this,x,y,w,h);
+       };
+       if(draw.length===0)draw.push({g:graphic,rects:[]});
+       return graphic;
+      };
+      Math.random=()=>.2;
+      const enemy={x:290,y:215,alto:38,ko:false,
+       statuses:[],recibir(){return 'golpe'},
+       ponerEstado(name){this.statuses.push(name)}};
+      const player={x:174,y:215,alto:38,ax:420,ay:215,
+       escena:e,rival:enemy,t:0,animar(){},accion:null};
+      fx=confuseray(player,{dano:0,alcance:230,tipo:'GHOST'},{slot:'lmb'});
+      for(let i=0;i<40&&enemy.statuses.length===0;i++)fx.update(.016);
+      const beforeMove=draw[0].rects.slice(-18);
+      enemy.x=350;enemy.y=250;draw[0].rects.length=0;
+      fx.update(.016);
+      const afterMove=draw[0].rects.slice();
+      const centers=afterMove.filter((_,i)=>i%6===0);
+      return{applied:enemy.statuses.length,ballPixels:afterMove.length,
+       beforeMeanX:beforeMove.reduce((sum,p)=>sum+p.x,0)/(beforeMove.length||1),
+       afterMeanX:afterMove.reduce((sum,p)=>sum+p.x,0)/(afterMove.length||1),
+       above:centers.every(p=>p.y<enemy.y-enemy.alto+5)};
+    }finally{
+      e.add.graphics=originalGraphics;Math.random=originalRandom;
+      if(fx){fx.destroy();e.efectos=e.efectos.filter(x=>x!==fx)}
+    }
+  });
+  assert.equal(yellowOrbit.applied,1,'Confuse Ray must apply confusion only on physical success');
+  assert.equal(yellowOrbit.ballPixels,18,'Orbit uses exactly three small yellow pixel balls');
+  assert.ok(yellowOrbit.afterMeanX>yellowOrbit.beforeMeanX+30,
+   'Three yellow balls must follow opponent movement, not stay over impact');
+  assert.equal(yellowOrbit.above,true,'Yellow confusion balls must orbit above rival head');
+
   await tester.screenshot({path:'test-evidence/torre2-signature-fx-battle.png',fullPage:true});
   assert.deepEqual(newErrors,[],'Mewtwo summary + seven available custom Phaser moves must not crash');
   await tester.close();
