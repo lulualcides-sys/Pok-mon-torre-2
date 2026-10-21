@@ -9,9 +9,18 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dest=path.join(root,'arena2d');
 await fs.mkdir(root,{recursive:true});
 await fs.cp(source,dest,{recursive:true,force:true});
+// Only replace the original title-image bytes. The Phaser title scene, its
+// buttons, animated background, layout, hotspots and menu flow stay identical.
+// Keep the approved pixel logo as a small indexed PNG for fast mobile loading.
+const titlePngBase64=(await fs.readFile('tools/pokearena/pokemon-torre-logo.b64','utf8')).trim();
+const titlePng=Buffer.from(titlePngBase64,'base64');
+if(!titlePng.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))
+ throw Error('Invalid Pokémon Torre title sprite PNG');
+await fs.writeFile(path.join(dest,'assets/ui/logo.png'),titlePng);
 const index=path.join(dest,'index.html');
 let html=await fs.readFile(index,'utf8');
 // The user's personal copy must not call the original site's analytics beacons.
+html=html.replace(/<title>[^<]*<\/title>/i,'<title>Pokémon Torre</title>');
 html=html.replace(/<script\s+src="\/analitica\.js"><\/script>/g,'');
 html=html.replace(/<script\s+async\s+src="\/m\/s"><\/script>/g,'');
 // Original favicon and manifests must be relative to our subfolder.
