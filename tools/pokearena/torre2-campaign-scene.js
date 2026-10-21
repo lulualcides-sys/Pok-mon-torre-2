@@ -16,9 +16,25 @@ const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyl
 const textStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'13px',color:C.white};
 const statusStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'12px',color:C.muted};
 function text(scene,x,y,content,style={}){return scene.add.text(x,y,content,{...textStyle,...style})}
+// Portraits come from the captured Poké Arena 2D PMD asset library.
+// Preload all six team members so the map does not show empty squares.
+function portraitId(member){
+ const {def,etapa}=buscar(member.id);
+ return (etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150';
+}
+function portraitKey(member){return 'torre2-portrait-'+portraitId(member)}
 class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
  init(input){this.result=input?.finished?input:null}
+ preload(){
+  const state=readCampaign();
+  const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
+  for(const dex of toLoad){
+   const key='torre2-portrait-'+dex;
+   if(!this.textures.exists(key))this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
+  }
+ }
  create(){
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
@@ -27,9 +43,9 @@ class Campanha extends Phaser.Scene{
   g.lineStyle(2,0x36475f,1);
   g.strokeRect(10,7,ANCHO-20,ALTO-14);
   g.fillStyle(0x142037,.95);g.fillRect(11,8,ANCHO-22,43);
-  this.add.text(20,13,'POKÉMON TORRE 2 · KANTO',{...titleStyle,fontSize:'20px'});
-  this.button(440,23,77,24,'ABRIR PC',()=>{const state=readCampaign();if(state)this.pcScreen(state)});
-  this.button(526,23,62,24,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
+  this.add.text(20,12,'POKÉMON TORRE 2  /  KANTO',{...titleStyle,fontSize:'18px'});
+  this.button(465,24,96,29,'CENTRO / PC',()=>{const state=readCampaign();if(state)this.centerScreen(state)});
+  this.button(557,24,79,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){
    const marker=this.result.marker||{};
@@ -63,7 +79,7 @@ class Campanha extends Phaser.Scene{
    },true);
   });
   text(this,ANCHO/2,270,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',statusStyle).setOrigin(.5);
-  text(this,ANCHO/2,294,'Sem conta, login, ranking, compras ou multiplayer.',statusStyle).setOrigin(.5);
+  text(this,ANCHO/2,294,'Sem conta e sem multiplayer. Itens são comprados com Poké Dollars do jogo.',statusStyle).setOrigin(.5);
  }
  backdrop(){
   const g=this.add.graphics().setDepth(0);
@@ -81,125 +97,211 @@ class Campanha extends Phaser.Scene{
  }
  renderCampaign(state){
   this.backdrop();
-  const gym=STAGES[state.stage],complete=state.champion||!gym;
-  const gymStage=state.stage<GYMS.length,limit=TRAINERS_PER_GYM(state.stage);
-  const pageSize=9,lastPage=Math.floor(limit/pageSize);
-  const here=Math.min(lastPage,Math.floor(state.trainer/pageSize));
-  const page=this.mapPage==null?here:Math.min(lastPage,Math.max(0,this.mapPage));
+  const stage=STAGES[state.stage],finished=state.champion||!stage;
+  const gymStage=state.stage<GYMS.length;
+  const limit=TRAINERS_PER_GYM(state.stage);
+  // Five large, clearly spaced path nodes per panel; the active page follows progress.
+  const perPage=5,totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
+  const activePage=Math.min(totalPages-1,Math.floor(state.trainer/perPage));
+  const page=this.mapPage==null?activePage:Math.max(0,Math.min(totalPages-1,this.mapPage));
   this.mapPage=page;
-  const route=wildAvailability(state.stage);
-  const next=currentOpponent(state);
-  // Two-column campaign: colorful traversable path left, party/shop on right.
-  const g=this.add.graphics();
-  g.fillStyle(0x376f47);g.fillRoundedRect(12,55,379,277,10);
-  g.fillStyle(0x6baf64);g.fillRoundedRect(17,79,368,224,6);
-  g.fillStyle(0x9ed274);g.fillRect(25,93,353,204);
-  g.lineStyle(2,0x294f41);g.strokeRoundedRect(12,55,379,277,10);
-  // Pixel grass and stylized trees: inexpensive static Phaser/WebGL shapes.
-  for(let i=0;i<33;i++){
-   const x=29+(i*67)%338,y=91+(i*37)%194;
-   const green=i%2?0x4c994f:0x79ba5b;
-   g.fillStyle(0x2c593d);g.fillRect(x+3,y+6,4,7);
-   g.fillStyle(green);g.fillRect(x,y,10,10);
-   g.fillStyle(0xb1db77,.75);g.fillRect(x+2,y,3,3);
-  }
-  for(let i=0;i<22;i++){
-   const x=27+(i*83)%336,y=93+(i*49)%190;
-   g.fillStyle(0x397b39);g.fillRect(x,y,13,3);g.fillRect(x+2,y-3,3,4);g.fillRect(x+9,y-2,2,4);
-  }
-  this.add.rectangle(201,68,344,21,0x183452,.98).setStrokeStyle(1,0xe1ce87);
-  text(this,202,59,complete?'KANTO CHAMPION':gym.city.toUpperCase()+
-   '  ·  '+gym.leader.toUpperCase(),{fontSize:'13px',color:'#fce39b'}).setOrigin(.5,0);
-  const first=page*pageSize,count=Math.min(pageSize,Math.max(0,limit-first)+1);
-  const spots=Array.from({length:count},(_,i)=>{
-   const index=first+i;
-   const horizontal=[195,125,235,165,270,165,95,185,245][i%9];
-   const vertical=289-(i*(190/Math.max(1,count-1)));
-   return {index,x:horizontal,y:vertical,node:routeNode(state.stage,index,limit)};
-  });
-  for(let i=0;i<spots.length-1;i++){
-   const a=spots[i],b=spots[i+1];
-   g.lineStyle(12,0x8d7c4e);g.lineBetween(a.x,a.y,b.x,b.y);
-   g.lineStyle(7,0xe9ce8d);g.lineBetween(a.x,a.y,b.x,b.y);
-  }
-  for(const p of spots){
-   const unlocked=p.index<=state.trainer,selected=p.index===state.trainer,
-    boss=p.node.type==='leader';
-   const colors={leader:0xe89c47,rocket:0x3d3e59,rival:0x678bd5,trainer:0xb2c4bc};
-   const base=colors[p.node.type]??0x95b0bf;
-   g.fillStyle(0x304733,.9);g.fillCircle(p.x+2,p.y+3,boss?13:10);
-   g.fillStyle(unlocked?base:0x536e65);g.fillCircle(p.x,p.y,boss?12:9);
-   g.lineStyle(selected?3:1,selected?0xffe66c:unlocked?0xf6f4da:0x4c756b,1);
-   g.strokeCircle(p.x,p.y,boss?12:9);
-   text(this,p.x,p.y-5,boss?'G':p.node.type==='rocket'?'R':
-    p.node.type==='rival'?'!':String(p.index+1),
-     {fontSize:boss?'12px':'9px',color:unlocked?'#ffffff':'#acc8af'}).setOrigin(.5,0);
-   if(p.index<state.trainer)text(this,p.x+11,p.y-14,'✓',{fontSize:'10px',color:'#fdf0a9'});
-   if(selected){
-    g.lineStyle(1,0xffffa4);g.strokeCircle(p.x,p.y,boss?16:13);
-    const click=this.add.zone(p.x,p.y,boss?35:29,boss?35:29).setInteractive({useHandCursor:true});
-    click.on('pointerdown',()=>this.enterBattle(state));
+  const next=currentOpponent(state),area=wildAvailability(state.stage);
+  const art=this.add.graphics();
+  const rect=(x,y,w,h,color)=>{art.fillStyle(color);art.fillRect(x,y,w,h)};
+  const border=(x,y,w,h,color=0x456a58)=>{art.lineStyle(2,color);art.strokeRect(x,y,w,h)};
+  // Minimal four-tone pixel meadow, with all decoration kept well away from labels.
+  rect(12,57,386,292,0x142f28);
+  rect(17,62,376,282,0x8aba73);
+  rect(23,93,364,171,0xa1d47e);
+  rect(23,94,364,3,0xbedb8c);
+  border(17,62,376,282,0x345b43);
+  // Frame-like canopy on the edges rather than 50 random overlapping objects.
+  for(let i=0;i<6;i++){
+   const y=105+i*28;
+   for(const x of [27,362]){
+    rect(x+3,y+11,4,10,0x5a753d);
+    rect(x,y+1,13,13,0x337946);
+    rect(x+2,y,10,7,0x438f4d);
+    rect(x+4,y+2,4,3,0x71ba6a);
    }
   }
-  // Explicit side-branches; the main path advances ONLY by winning battles.
-  const markSide=(x,y,color,symbol,callback)=>{
-   const bg=this.add.rectangle(x,y,38,28,color).setStrokeStyle(2,0xffffff)
-    .setInteractive({useHandCursor:true});
-   bg.on('pointerdown',callback);
-   text(this,x,y,symbol,{fontSize:'12px',color:'#ffffff'}).setOrigin(.5);
-  };
+  // Small pixel grass clusters, never on the center road.
+  for(let i=0;i<14;i++){
+   const x=48+(i*59)%292,y=107+(i*47)%147;
+   rect(x,y,3,4,0x6ca85a);rect(x+5,y-2,3,6,0x6ca85a);
+   rect(x+10,y+1,3,3,0x6ca85a);
+  }
+  rect(22,65,368,25,0x244b4b);
+  rect(22,87,368,2,0xe7cb83);
+  text(this,34,68,finished?'KANTO · CAMPEÃO':
+   'ROTA '+(state.stage+1)+'  /  '+(gymStage?area.label:stage.city.toUpperCase()),{
+   fontSize:'14px',color:'#fff3ce',fontStyle:'bold'});
+  text(this,376,71,gymStage?'GINÁSIO '+(state.stage+1)+'/8':'ELITE FOUR',{
+   fontSize:'10px',color:'#d9edc4'}).setOrigin(1,0);
+  // Gentle climb, like Summit Run: intentional zigzag and uncluttered nodes.
+  const first=page*perPage;
+  const count=Math.min(perPage,limit+1-first);
+  const xs=[189,136,234,149,233];
+  const points=Array.from({length:count},(_,i)=>({
+   index:first+i,x:xs[i],y:244-i*34,
+   kind:routeNode(state.stage,first+i,limit).type
+  }));
+  // Every segment is constructed in the graphics layer, below interactive symbols.
+  for(let i=1;i<points.length;i++){
+   const p=points[i-1],q=points[i];
+   art.lineStyle(17,0x8d784e);art.lineBetween(p.x,p.y,q.x,q.y);
+   art.lineStyle(13,0xf0ce90);art.lineBetween(p.x,p.y,q.x,q.y);
+   art.lineStyle(2,0xffe9af,.48);art.lineBetween(p.x+2,p.y-2,q.x+2,q.y-2);
+  }
+  const shape={trainer:0x5077a7,rocket:0x42454f,rival:0xc26056,leader:0xa6703e};
+  for(const p of points){
+   const current=p.index===state.trainer,won=p.index<state.trainer,
+     locked=p.index>state.trainer,boss=p.kind==='leader';
+   // Cartridges and mini Pokéball controls, not a carpet of numeric labels.
+   art.fillStyle(0x3a573b,.65);art.fillCircle(p.x+2,p.y+4,boss?16:14);
+   art.fillStyle(locked?0x839186:shape[p.kind]||0x537b9e);
+   art.fillCircle(p.x,p.y,boss?15:13);
+   art.lineStyle(current?3:2,current?0xffe681:0xfaf3cd,1);
+   art.strokeCircle(p.x,p.y,boss?15:13);
+   art.fillStyle(0xf9edce);art.fillRect(p.x-5,p.y-2,10,4);
+   art.fillStyle(0x2f3c45);art.fillRect(p.x-2,p.y-2,4,4);
+   if(won){
+    art.fillStyle(0x2b6844);art.fillCircle(p.x,p.y,8);
+    text(this,p.x,p.y,'✓',{fontSize:'13px',color:'#ffffff'}).setOrigin(.5);
+   }else if(current){
+    text(this,p.x,p.y-1,boss?'G':p.kind==='rocket'?'R':p.kind==='rival'?'!':'▶',{
+     fontSize:'12px',color:'#fffbe0',fontStyle:'bold'}).setOrigin(.5);
+    // A single high-contrast "YOU" marker pinpoints current location.
+    const tag=this.add.rectangle(p.x,p.y-27,74,18,0x22485b).setStrokeStyle(1,0xffd77c);
+    text(this,p.x,p.y-27,'VOCÊ ESTÁ AQUI',{
+     fontSize:'8px',color:'#fff6cb'}).setOrigin(.5);
+    const click=this.add.zone(p.x,p.y,42,42).setInteractive({useHandCursor:true});
+    click.on('pointerdown',()=>this.enterBattle(state));
+   }else{
+    text(this,p.x,p.y,boss?'G':p.kind==='rocket'?'R':p.kind==='rival'?'!':'·',{
+     fontSize:'12px',color:'#f9ebc9'}).setOrigin(.5);
+   }
+  }
+  const currentKind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
+   next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'SEU RIVAL':'TREINADOR';
+  rect(23,270,364,30,0x285a48);
+  text(this,204,274,finished?'TODOS OS DESAFIOS CONCLUÍDOS':
+   'PRÓXIMO: '+currentKind+'  ·  '+(next?.id||'').toUpperCase(),{
+   fontSize:'11px',color:'#ffffff'}).setOrigin(.5,0);
+  // Clean page controls. Gray when only one page.
+  this.button(72,315,84,27,'◀ VOLTAR',()=>{
+   this.mapPage=Math.max(0,page-1);this.scene.restart();
+  });
+  text(this,202,307,'TRILHA '+(page+1)+'/'+totalPages+' · '+(state.trainer+1)+'/'+(limit+1),{
+   fontSize:'10px',color:'#143e35',fontStyle:'bold'}).setOrigin(.5,0);
+  this.button(325,315,93,27,'AVANÇAR ▶',()=>{
+   this.mapPage=Math.min(totalPages-1,page+1);this.scene.restart();
+  });
+  // Facilities must be discoverable by their names, not cryptic GR / HP / M.
   if(gymStage){
-   markSide(351,111,0x277a48,'GR',()=>this.grassScreen(state));
-   markSide(351,185,0xc8454d,'HP',()=>this.centerScreen(state));
-   markSide(351,257,0x326bc3,'M',()=>this.martScreen(state));
+   // 3 mini buildings along path edge; clearly labeled actions in the footer.
+   this.button(75,341,108,27,'GRAMA ALTA',()=>this.grassScreen(state));
+   this.button(203,341,113,27,'CENTRO POK.',()=>this.centerScreen(state));
+   this.button(325,341,110,27,'POKÉ MART',()=>this.martScreen(state));
   }
-  this.button(92,315,100,24,'◀ MAPA',()=>{this.mapPage=(page-1+lastPage+1)%(lastPage+1);this.scene.restart()});
-  text(this,202,310,'ETAPA '+(page+1)+'/'+(lastPage+1)+' · NÓ '+(state.trainer+1)+'/'+(limit+1),
-   {fontSize:'9px',color:'#fff5ca'}).setOrigin(.5);
-  this.button(322,315,110,24,'MAPA ▶',()=>{this.mapPage=(page+1)%(lastPage+1);this.scene.restart()});
-  // Right-side reference panel with progress, Pokémon and useful shops.
-  g.fillStyle(0x14263c);g.fillRoundedRect(400,55,229,278,8);
-  g.lineStyle(2,0x537a9a);g.strokeRoundedRect(400,55,229,278,8);
-  g.fillStyle(0xa74837);g.fillRoundedRect(405,60,219,29,5);
-  text(this,514,66,complete?'CAMPEÃO!':gymStage?'GINÁSIO DE '+gym.city.toUpperCase():
-   'ELITE FOUR · '+gym.leader.toUpperCase(),{fontSize:'12px',color:'#fff8d8'}).setOrigin(.5,0);
-  const info=complete?'CAMPANHA CONCLUÍDA':next?next.name.toUpperCase()+' · NV.'+next.level:'';
-  text(this,410,95,'INSÍGNIAS '+state.badges.length+'/12  ·  $'+(state.money||0),{
-   fontSize:'10px',color:C.gold});
-  text(this,410,114,'PRÓXIMO: '+info,{fontSize:'10px',color:C.white,
-   wordWrap:{width:207}});
-  text(this,410,133,'POKÉBALL '+(state.inventory?.pokeball||0)+' · GRAMA '+(state.wildEncountersStage||0)+'/5',
-   {fontSize:'9px',color:C.muted});
-  text(this,410,150,'EQUIPE ('+state.team.length+'/6) · TOQUE PARA SUMÁRIO',
-   {fontSize:'9px',color:C.blue});
-  const team=state.team.slice(0,4);
-  team.forEach((p,i)=>{
-   const y=173+i*23,isActive=i===state.active;
-   const b=this.add.rectangle(513,y,214,21,isActive?0x36536a:0x22364f)
-    .setStrokeStyle(1,isActive?0xffdd74:0x48617b).setInteractive({useHandCursor:true});
-   b.on('pointerdown',()=>this.showSummary(state,i));
-   text(this,414,y-7,(isActive?'◆ ':'')+p.id.toUpperCase()+
-    ' NV.'+(p.progression?.level??'?')+'  HP '+(p.hp??100)+'%',{
-    fontSize:'10px',color:isActive?'#fff1a8':'#d7eafb'});
-  });
+  // Right side: dedicated team panel, inventory, and unmistakable BATTLE CTA.
+  const panel=this.add.graphics();
+  panel.fillStyle(0x142c47);panel.fillRoundedRect(409,58,221,235,7);
+  panel.lineStyle(2,0x5c83a2);panel.strokeRoundedRect(409,58,221,235,7);
+  panel.fillStyle(0xc95b44);panel.fillRoundedRect(414,63,211,31,5);
+  text(this,423,68,'MINHA EQUIPE',{fontSize:'15px',color:'#fff4dc',fontStyle:'bold'});
+  text(this,421,101,'INSÍGNIAS '+state.badges.length+'/12',{fontSize:'10px',color:'#ebd69d'});
+  text(this,617,101,'$ '+(state.money||0),{fontSize:'11px',color:'#f7e5a5'}).setOrigin(1,0);
+  text(this,421,119,'TOQUE NO POKÉMON PARA O SUMÁRIO',{
+   fontSize:'9px',color:'#a9d4e8'});
+  // Actual PMD portraits, in two columns. Empty cards visibly marked.
+  for(let i=0;i<6;i++){
+   const x=416+(i%2)*106,y=141+Math.floor(i/2)*48;
+   const member=state.team[i],selected=i===state.active;
+   const bg=this.add.rectangle(x+50,y+21,101,43,
+     member?(selected?0x34536a:0x203b54):0x1a3044)
+    .setStrokeStyle(1,selected?0xffd77e:member?0x527b92:0x345169);
+   if(member){
+    this.drawPortrait(member,x+18,y+21,32);
+    const display=member.id.toUpperCase().slice(0,10);
+    text(this,x+36,y+6,display,{fontSize:display.length>=9?'9px':'10px',
+     color:selected?'#ffe8a5':'#e8f5ff',fontStyle:'bold'});
+    text(this,x+36,y+23,'NV.'+(member.progression?.level??'—')+
+     ' HP '+(member.hp??100)+'%',{fontSize:'8px',color:'#acd2d4'});
+    bg.setInteractive({useHandCursor:true});
+    bg.on('pointerdown',()=>this.showSummary(state,i));
+   }else{
+    text(this,x+50,y+13,'—  VAZIO  —',{fontSize:'9px',color:'#7794ab'}).setOrigin(.5);
+   }
+  }
+  // Small bag silhouette is a real touch target, not decorative emoji.
+  const bagBg=this.add.rectangle(584,79,78,28,0x20465d)
+   .setStrokeStyle(1,0xf6d68d).setInteractive({useHandCursor:true});
+  bagBg.on('pointerdown',()=>this.bagScreen(state));
+  const bagIcon=this.add.graphics();
+  bagIcon.lineStyle(2,0xffd99a);bagIcon.strokeRect(556,72,9,10);
+  bagIcon.fillStyle(0xffd99a);bagIcon.fillRect(554,78,14,12);
+  bagIcon.fillStyle(0x9c683a);bagIcon.fillRect(560,81,3,3);
+  text(this,575,74,'BOLSA',{fontSize:'10px',color:'#ffffff',fontStyle:'bold'});
+  // Action is always in exactly the same predictable bottom-right position.
   if(state.pendingCapture){
-   text(this,514,266,'CAPTURAR '+state.pendingCapture.id.toUpperCase(),{
-    fontSize:'10px',color:C.gold}).setOrigin(.5);
-   this.button(439,292,66,27,'PB '+state.inventory.pokeball,()=>{
-    attemptCapture(state,Math.random,'pokeball');this.scene.restart()},true);
-   this.button(514,292,70,27,'GB '+state.inventory.greatball,()=>{
-    attemptCapture(state,Math.random,'greatball');this.scene.restart()},true);
-   this.button(588,292,69,27,'UB '+state.inventory.ultraball,()=>{
-    attemptCapture(state,Math.random,'ultraball');this.scene.restart()},true);
+   this.button(519,322,217,45,'▶ CAPTURAR POKÉMON',()=>this.captureScreen(state),true);
   }else{
-   this.button(460,293,111,33,complete?'VITÓRIA!':'BATALHAR',()=>{if(!complete)this.enterBattle(state)},true);
-   this.button(573,293,102,33,'BOLSA / TM',()=>this.bagScreen(state));
+   const caption=finished?'★ CAMPEÃO DE KANTO':'▶ INICIAR BATALHA';
+   this.battleButton(519,322,217,45,caption,()=>{
+    if(!finished)this.enterBattle(state);
+   },!finished);
   }
-  text(this,319,344,state.lastMessage||'Escolha o próximo caminho.',{
-   fontSize:'10px',color:C.muted,wordWrap:{width:601}}).setOrigin(.5,0);
-  this.button(602,23,55,24,'RESET',()=>{
-   if(window.confirm('Apagar o progresso da campanha Kanto?')){resetCampaign();this.scene.restart()}
+  // 3 simple actions always accessible in top menu/places; keep footer clean.
+  this.button(606,24,56,28,'RESET',()=>{
+   if(window.confirm('Apagar o progresso da campanha Kanto?')){
+    resetCampaign();this.scene.restart();
+   }
   });
+ }
+ drawPortrait(member,x,y,size=34){
+  const key=portraitKey(member);
+  if(this.textures.exists(key)){
+   const img=this.add.image(x,y,key).setDisplaySize(size,size).setDepth(5);
+   return img;
+  }
+  // A missing captured portrait must not hide the name or block input.
+  const g=this.add.graphics().setDepth(5);
+  g.fillStyle(0x34556b);g.fillRect(x-size/2,y-size/2,size,size);
+  g.lineStyle(1,0x7baabb);g.strokeRect(x-size/2,y-size/2,size,size);
+  text(this,x,y,member.id.slice(0,2).toUpperCase(),{
+   fontSize:'11px',color:'#ffffff'}).setOrigin(.5).setDepth(6);
+ }
+ battleButton(x,y,w,h,label,callback,active=true){
+  const fill=active?0xdf803c:0x4e6c78;
+  const shadow=this.add.rectangle(x+2,y+3,w,h,0x6b402a,.9);
+  const button=this.add.rectangle(x,y,w,h,fill)
+   .setStrokeStyle(3,active?0xffe29a:0x8ca6b1).setInteractive({useHandCursor:true});
+  button.on('pointerdown',callback);
+  button.on('pointerover',()=>button.setFillStyle(active?0xf39b4e:0x5a7b87));
+  button.on('pointerout',()=>button.setFillStyle(fill));
+  text(this,x,y,label,{fontSize:'17px',color:active?'#1c2940':'#ffffff',
+   fontStyle:'bold'}).setOrigin(.5);
+  return button;
+ }
+ captureScreen(state){
+  this.children.removeAll(true);this.backdrop();
+  const victim=state.pendingCapture;
+  if(!victim)return this.scene.restart();
+  text(this,320,37,'CAPTURAR '+victim.id.toUpperCase(),{
+   ...titleStyle,fontSize:'21px'}).setOrigin(.5);
+  text(this,320,82,'ESCOLHA A POKÉBOLA',{fontSize:'15px',color:C.white}).setOrigin(.5);
+  for(const [i,key,label] of [
+   [0,'pokeball','POKÉ BALL'],[1,'greatball','GREAT BALL'],[2,'ultraball','ULTRA BALL']]){
+   const x=134+i*187,n=state.inventory?.[key]||0;
+   this.button(x,176,173,72,label+'  x'+n,()=>{
+    if(!n){state.lastMessage='Sem '+label+'. Compre no Poké Mart.';this.captureScreen(state);return}
+    attemptCapture(state,Math.random,key);this.scene.restart();
+   },n>0);
+  }
+  text(this,320,258,'Chance base '+victim.chance+'% · bolas melhores aumentam a chance',{
+   fontSize:'12px',color:C.muted}).setOrigin(.5);
+  this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  enterBattle(state,wild=false){
   if(state.pendingCapture){state.lastMessage='Resolva a captura antes de continuar.';saveCampaign(state);return this.scene.restart()}
@@ -307,6 +409,7 @@ class Campanha extends Phaser.Scene{
   const member=state.team[index];
   if(!member)return this.scene.restart();
   const stats=pokemonStats(member),pool=availableMoves(member);
+  // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
   this.summaryFilter??='ALL';this.summarySearch??='';
   const slotCodes=['LMB','RMB','Q','E / ULT'];
