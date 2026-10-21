@@ -66,7 +66,7 @@ const server=http.createServer(async(req,res)=>{
    'Keep every original menu button and its exact navigation');
   assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320],
    'Keep original menu button positions');
-  // Pokedex uses original 26 portraits, not empty/green placeholders:
+  // Pokédex retains 26 native families and adds ten licensed PMD sprite families:
   // native layout and clickable evolution tabs must remain unchanged.
   const dexPage=await browser.newPage({viewport:{width:980,height:650}});
   const dexErr=[];dexPage.on('pageerror',e=>dexErr.push(String(e)));
@@ -82,7 +82,8 @@ const server=http.createServer(async(req,res)=>{
     idle:p.anims.exists(id+'-Idle-0')})),
     tabNames:p.etapas.map(x=>x.nombre)};
   });
-  assert.equal(dexData.count,26,'Pokedex must preserve the original 26-card roster');
+  assert.ok(dexData.count>=36,
+   'Pokédex should retain 26 native cards and add ten original early-Kanto species');
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
    'Every base Pokédex Pokémon must have a real captured PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
