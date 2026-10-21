@@ -329,7 +329,8 @@ const server=http.createServer(async(req,res)=>{
    },{sl:slot,moveName:name});
    assert.equal(result.ok,true,'move rejected '+slot);
    assert.equal(result.rendered,true,'no new Phaser effect '+slot);
-   assert.ok(result.forma?.startsWith('torre2_'),'not our custom Phaser VFX '+slot);
+   assert.ok(name==='ice-beam'?result.forma==='chorro':result.forma?.startsWith('torre2_'),
+    'new attack must use its authorized Phaser renderer: '+name);
    moveSmoke.forms.push(result);
    await tester.waitForTimeout(delay);
    await tester.screenshot({path:'test-evidence/torre2-'+name+'-active-battle.png',fullPage:true});
