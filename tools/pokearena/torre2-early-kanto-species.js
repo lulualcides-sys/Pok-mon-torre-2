@@ -128,12 +128,16 @@ function kit(native,names,baseId,stageId){
  for(let i=0;i<slots.length;i++){
   const name=names[i];if(!name)continue;
   const moveData=move(name,native),id=name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
-  const requiredLevel=learned[id]??99;
+  const futureForms=baseId==='caterpie'?['metapod','butterfree']:
+   baseId==='weedle'?['kakuna','beedrill']:[];
+  const futureLevels=futureForms.map(form=>EARLY_KANTO_LEARNSETS[form]?.[id])
+   .filter(v=>Number.isInteger(v));
+  const requiredLevel=learned[id]??(futureLevels.length?Math.min(...futureLevels):99);
   const evoLocked=(i===3&&stageIndex<reqStage);
   // Later moves are visible in the Pokédex, but inactive until unlocked.
   out[slots[i]]={...moveData,
    ...(requiredLevel>5||evoLocked?{pendiente:true,torre2UnlockLevel:requiredLevel,
-    torre2UnlockEvolution:evoLocked?names[3]==='Confusion'?'Butterfree':'Beedrill':null}:{})};
+    ...(evoLocked?{torre2UnlockEvolution:names[3]==='Confusion'?'Butterfree':'Beedrill'}:{})}:{})};
   // E is a genuine meter-gated Ultimate of the Arena 2D engine. Preserve
   // the move's artwork/stats, only gate its unlock on new Kanto species.
   if(i===3)out.e={...out.e,ulti:true};
