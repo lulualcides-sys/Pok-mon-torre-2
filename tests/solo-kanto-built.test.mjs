@@ -195,6 +195,9 @@ for(const name of ['metronome','absorb','xscissor'])assert.ok(
  newVfx.includes('export function '+name+'('),'New VFX renderer exists: '+name);
 assert.ok(newVfx.includes("from './move-pool.js'"),
  'Metronome picks a real installed move, not arbitrary dummy damage');
+const cargaBuilt=fs.readFileSync(path.join(stage,version,'escenas/carga.js'),'utf8');
+assert.ok(!cargaBuilt.includes('assets/ui/balls20.png'),
+ 'Do not request missing balls20.png from live site: native client has no consumer');
 const dexBuilt=fs.readFileSync(path.join(stage,version,'escenas/pokedex.js'),'utf8');
 assert.ok(dexBuilt.includes('preload(){const m=this.registry.get("manifiesto")'),
  'Pokédex loads all 26 original base portraits before drawing the grid');
