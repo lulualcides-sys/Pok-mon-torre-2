@@ -125,3 +125,10 @@ O menu inicial com o nome **Pokémon Torre**, logo em pixel art, mesmo layout, f
 - Lista com contador no botão NEW, filtro, páginas, busca, marcadores NEW nos itens e troca dos quatro slots do Mewtwo de teste lv50. Quando NEW é escolhido, pesquisa antiga é limpa para revelar todos os pendentes.
 - Quando a aprovação for registrada como `approved:true`, o golpe sai automaticamente de NEW, continuando no seu tipo normal e no ALL.
 - Sem alterar arte, colisão, balanceamento, menu principal, ataques nativos ou progresso de campanha.
+
+
+## Aprovações e revisão Horn Attack / Rock Tomb — 21/10/2026
+- **Metal Claw, Bind, Double Kick e Fury Attack:** aprovados (`approved:true`), sprites e mecânicas congelados; saem automaticamente da aba NEW.
+- **Horn Attack:** novo chifre pequeno em pixel art, ligado à frente do Pokémon durante aproximação, contato e recuo; ainda não aprovado.
+- **Rock Tomb:** nove pedras variadas em dispersão estilo Pay Day, leve rastreamento limitado do Pokémon-alvo, dano individual só se a pedra atingir, possibilidade real de erro, sem garantia de acerto; ainda não aprovado.
+- Originais e já aprovados preservados. Nenhuma alteração no jogo de Pokémon Torre 1.

@@ -103,11 +103,10 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 // NEW is an approval queue. Native moves and approved custom art never enter it.
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
-for(const id of ['rock-tomb','horn-attack','double-kick','fury-attack','metal-claw','bind',
- 'metronome','absorb','x-scissor'])
+for(const id of ['rock-tomb','horn-attack','metronome','absorb','x-scissor'])
  assert.ok(pendingIds.includes(id),'Unapproved custom VFX must appear in NEW: '+id);
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
- 'leech-life','bonemerang','flamethrower'])
+ 'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack'])
  assert.ok(!pendingIds.includes(id),'Native and approved moves must never enter NEW: '+id);
 assert.ok(pending.every(isPendingApprovalMove));
 assert.ok(pending.every(m=>m.source==='new-phaser-fx'));
@@ -186,7 +185,9 @@ for(const [id,forma] of [
  assert.ok(move,'Pre-Brock missing attack now installed: '+id);
  assert.equal(move.forma,forma);
  assert.equal(move.source,'new-phaser-fx','Never overwrite an original move');
- assert.equal(move.approved,undefined,'Await explicit visual approval');
+ assert.equal(move.approved,
+  ['metal-claw','bind','double-kick','fury-attack'].includes(id)?true:undefined,
+  'Only approved moves leave NEW; Horn Attack and Rock Tomb remain pending');
  assert.equal(equipMove(tester,0,id),true);
  assert.equal(resolveLoadout(tester).lmb.forma,forma);
 }
@@ -291,6 +292,9 @@ assert.ok(!early.includes('export function leechlife(')&&
 const prebrockFx=fs.readFileSync(path.join(stage,version,'torre2/prebrock-damage-fx.js'),'utf8');
 for(const fn of ['rocktomb','hornattack','doublekick','furyattack','metalclaw','bind'])
  assert.ok(prebrockFx.includes('export function '+fn+'('),'Unbundled pre-Brock VFX: '+fn);
+assert.ok(prebrockFx.includes('ROCK_TOMB_COUNT=9')&&prebrockFx.includes('ROCK_FAN='),
+ 'Rock Tomb should render nine independently aimed stones');
+assert.ok(prebrockFx.includes("'......KK'"),'Horn Attack should have tiny pixel horn');
 assert.ok(prebrockFx.includes("from './clash-fx.js'"),
  'Rock Tomb collision must use shared native projectile Clash adapter');
 const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
