@@ -292,6 +292,12 @@ export function bind(l,h,extra){
   age+=dt;rings.clear();flash.clear();
   if(l.ko||l.est?.aturdido||age>1.85){dash.reset();return false;}
   if(age<.75)dash.step(age);
+  // Show the curling, short-range coil even when the user aims away.
+  // This is only visual feedback; no homing or damage before contact.
+  if(age<.46){
+   const x=l.x+o.c*16,y=l.y-(l.alto||36)*.5+o.s*16;
+   stamp(rings,ROPE_ARC,x,y,ROPE,1.05,cap((.48-age)/.10),o.a);
+  }
   if(!resolved&&age>=.29){
    resolved=true;
    const on=melee(l,o,r,14);
