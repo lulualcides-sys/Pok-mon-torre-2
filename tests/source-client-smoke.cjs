@@ -360,7 +360,11 @@ const server=http.createServer(async(req,res)=>{
    scene.showSummary(state,1,0,0);
    if(!labels().some(x=>x.includes('FILTRO: NEW')))throw Error('NEW filter label missing');
    if(!labels().some(x=>x.includes('Bind')))throw Error('Pending Bind missing in NEW');
-   if(labels().some(x=>x.includes('Bonemerang')))throw Error('Approved move leaked into NEW');
+   // Equipped moves above the library are always visible; only inspect the
+   // NEW-filtered library rows at y >= 223, not the four equipped slots.
+   if(scene.children.list.some(x=>typeof x.text==='string'&&
+     x.text.includes('Bonemerang')&&x.x>=230&&x.y>=222&&x.y<315))
+    throw Error('Approved move leaked into NEW library rows');
    scene.showMoveTypePicker(state,1,0);
    if(!labels().includes('NEW'))throw Error('NEW not available on reopening types');
    scene.summaryFilter='GROUND';
