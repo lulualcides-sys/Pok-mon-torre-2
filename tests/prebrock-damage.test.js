@@ -4,7 +4,7 @@ import fs from 'node:fs';
 const src=fs.readFileSync(new URL('../tools/pokearena/torre2-prebrock-damage-fx.js',import.meta.url),'utf8');
 const moduleText=src.replace("import {clashAt} from './clash-fx.js';",'const clashAt=()=>false;');
 assert.notEqual(src,moduleText);
-const {rocktomb,hornattack,doublekick,furyattack,metalclaw,bind,TORRE2_PREBROCK_DAMAGE_FORMS}=await import(
+const {rocktomb,hornattack,doublekick,furyattack,metalclaw,bind,ROCK_TOMB_COUNT,TORRE2_PREBROCK_DAMAGE_FORMS}=await import(
  'data:text/javascript;base64,'+Buffer.from(moduleText).toString('base64'));
 const EPS=.1;
 function battle(targetX,{block=false,immune=false,aimY=100}={}){
@@ -69,18 +69,21 @@ test('Fury Attack: 2-5 separate hit windows, with misses supported',()=>{
  assert.ok(Math.abs(b.attacker.x)<EPS);
  assert.equal(run(furyattack,260,h).damage.length,0);
 });
-test('Rock Tomb: one physical boulder impact and speed debuff only on hit',()=>{
+test('Rock Tomb draws nine moving rocks with individual non-guaranteed contacts',()=>{
+ assert.equal(ROCK_TOMB_COUNT,9);
  const h={dano:12,tipo:'ROCK',alcance:235,precisao:95};
- const hit=run(rocktomb,140,h);
- assert.equal(hit.damage.length,1);
- assert.equal(hit.foe.hp,138);
- assert.equal(hit.state.filter(x=>x[0]==='lento').length,1);
- const miss=run(rocktomb,270,h);
- assert.equal(miss.damage.length,0);
- assert.equal(miss.state.length,0);
- const blocked=run(rocktomb,140,h,{block:true});
- assert.equal(blocked.damage.length,0);
- assert.equal(blocked.state.length,0,'Blocked projectile must never inflict slow');
+ const struck=run(rocktomb,140,h);
+ assert.ok(struck.damage.length>=1&&struck.damage.length<9,'Independent rocks can miss');
+ assert.ok(struck.foe.hp<150&&struck.foe.hp>=138,'Total damage capped by split damage');
+ assert.equal(struck.state.filter(x=>x[0]==='lento').length,1);
+ assert.ok(struck.pixels.length>450,'Nine pixel stone trails are visible');
+ const far=run(rocktomb,270,h);
+ assert.equal(far.damage.length,0);
+ assert.equal(far.state.length,0);
+ assert.equal(run(rocktomb,140,h,{aimY:260}).damage.length,0,'No perfect auto-homing');
+ const protectedFoe=run(rocktomb,140,h,{block:true});
+ assert.equal(protectedFoe.damage.length,0);
+ assert.equal(protectedFoe.state.length,0);
 });
 
 test('Metal Claw: precise physical claw, no projectile damage on a miss',()=>{

@@ -70,15 +70,14 @@ function melee(l,o,r,radius=12){
  {x:l.x+o.c*18,y:y+o.s*18},r,radius);
 }
 const HORN={K:0x21212d,D:0x5e6373,M:0xaab5ba,L:0xe3e7dc,W:0xffffff};
+// Tiny dark-edged horn, 8 by 6 pixels, not a detached spear.
 const HORN_TIP=[
- '..............K',
- '............KKW',
- '.........KKMLWK',
- '......KKDMLWWK.',
- '...KKDDMLLWWK..',
- 'KKDDMMLLWWK....',
- 'KDDMLLWWK.......',
- 'KKKKKK...........'
+ '......KK',
+ '.....KLW',
+ '...KKLWK',
+ '.KKDMLWK',
+ 'KDMLWWK.',
+ 'KKKKKK..'
 ],HORN_SPARK=['....K....','..KLWK...','KLWWWLK..','..KLWK...','....K....'];
 // Horn Attack: one aimed physical horn jab, one real damage event.
 export function hornattack(l,h,extra){
@@ -89,7 +88,8 @@ export function hornattack(l,h,extra){
   age+=dt;g.clear();flash.clear();
   if(l.ko||l.est?.aturdido||age>.77){dash.reset();return false;}
   dash.step(age);
-  const x=l.x+o.c*17,y=l.y-(l.alto||36)*.5+o.s*17;
+  // Keep the short horn attached as the actual fighter lunges.
+  const x=l.x+o.c*12,y=l.y-(l.alto||36)*.5+o.s*12;
   if(age<.56)stamp(g,HORN_TIP,x,y,HORN,
    .94,cap((.59-age)/.1),o.a);
   if(!resolved&&age>=.29){
@@ -180,52 +180,75 @@ const ROCK_BODY=[
  '.KKDDDDDKK...',
  '...KKKKK.....'
 ],ROCK_CHIP=['..K..','.KML.','KMLWK','.KKK.'],ROCK_DUST=['....K....','..KMLK...','KMLWLMDK.','..KMLK...','....K....'];
-// Rock Tomb: manually aimed boulder projectile. A physical collision spawns
-// short pixel-rock fall around the hit, with one damage event and Slow.
+// Rock Tomb — nine stones, like Pay Day's independent fan of impacts.
+// Limited sideways tracking follows moving Pokémon, but never hard-locks.
+export const ROCK_TOMB_COUNT=9;
+const ROCK_FAN=Object.freeze([-46,19,-12,43,-27,7,57,-53,31]);
+const ROCK_VARIANTS=[
+ ROCK_BODY,
+ ['...KKKK...','..KDDMMKK.','.KDMMLLWK.','KDMMLWWLK.','.KKDDMMK..','...KKKK...'],
+ ['..KKKKK...','.KDDMMMK..','KDMLLLWWK.','KDMMLWWK..','.KKDDDK...','..KKK.....'],
+ ['...KKK....','.KKDMMK...','KDDMLWWK..','KDMLWWLK..','.KKDDKK...','..KKK.....']
+];
+function limitedRockFollow(r,o){
+ if(!r||r.ko)return 0;
+ const y=r.y-(r.alto||36)*.5;
+ const lateral=-o.s*(r.x-o.x)+o.c*(y-o.y);
+ return Math.max(-32,Math.min(32,lateral*.38));
+}
 export function rocktomb(l,h,extra){
- const e=l.escena,r=l.rival,g=e.add.graphics().setDepth(1513),dust=e.add.graphics().setDepth(1514);
- const o=begin(l,'Throw',.68),reach=Math.min(245,h.alcance??245),speed=310;
- const first={x:o.x+o.c*12,y:o.y+o.s*12};
- const body={owner:l,type:'ROCK',x:first.x,y:first.y,radius:11,live:true};
- let age=0,previous=first,impact=null,success=false;
- const accurate=Math.random()<((h.precisao??95)/100);
- const fx=emit(l,[g,dust],(dt,self)=>{
+ const e=l.escena,r=l.rival,g=e.add.graphics().setDepth(1513),
+  dust=e.add.graphics().setDepth(1514);
+ const o=begin(l,'Throw',.67),reach=Math.min(245,h.alcance??245);
+ const origin={x:o.x+o.c*12,y:o.y+o.s*12};
+ const rocks=Array.from({length:ROCK_TOMB_COUNT},(_,i)=>({
+  delay:i*.055,previous:null,done:false,index:i
+ }));
+ const perStone=(h.dano??12)/ROCK_TOMB_COUNT;
+ let age=0,slowApplied=false;
+ return emit(l,[g,dust],(dt,self)=>{
   age+=dt;g.clear();dust.clear();
-  if(l.ko||l.est?.aturdido||age>1.25){body.live=false;return false;}
-  if(!impact){
-   const distance=age*speed;
-   if(distance>reach){body.live=false;return false;}
-   const tip={x:first.x+o.c*distance,y:first.y+o.s*distance};
-   body.x=tip.x;body.y=tip.y;
-   if(clashAt(e,self,l,tip,11,'ROCK')){body.live=false;return false;}
-   const on=lineHit(previous,tip,r,12);previous=tip;
-   if(on){
-    body.live=false;
-    success=accurate&&hit(l,r,h,extra,13);
-    impact={...on,t:age};
-    if(success&&typeof r.ponerEstado==='function')r.ponerEstado('lento',2.7,{f:.21,fonte:l});
-   }else{
-    stamp(g,ROCK_BODY,tip.x,tip.y,ROCK,1.35,1,o.a+age*8);
-    for(let i=1;i<=2;i++){
-     const d=distance-i*13;if(d<=0)continue;
-     stamp(dust,ROCK_CHIP,first.x+o.c*d,first.y+o.s*d,ROCK,.57,.64-i*.13);
+  if(l.ko||l.est?.aturdido||age>1.42)return false;
+  let remaining=false;
+  const follow=limitedRockFollow(r,o);
+  for(const rock of rocks){
+   if(rock.done)continue;
+   const elapsed=age-rock.delay;
+   if(elapsed<=0){remaining=true;continue;}
+   const distance=Math.min(reach,elapsed*335),t=cap(distance/reach);
+   if(distance>=reach&&rock.previous){rock.done=true;continue;}
+   remaining=true;
+   const fan=ROCK_FAN[rock.index]*(0.23+.66*Math.sin(PI*t*.85));
+   const sideways=fan+follow*(.22+.56*t)+Math.sin(t*PI*1.3+rock.index*1.7)*7;
+   const pt={x:origin.x+o.c*distance-o.s*sideways,
+    y:origin.y+o.s*distance+o.c*sideways};
+   const prev=rock.previous??origin;rock.previous=pt;
+   if(clashAt(e,self,l,pt,6,'ROCK')){rock.done=true;continue;}
+   const crossing=lineHit(prev,pt,r,7);
+   if(crossing){
+    rock.done=true;
+    // One accuracy roll for THIS stone, and only after spatial collision.
+    if(Math.random()<((h.precisao??95)/100)){
+     if(hit(l,r,{...h,dano:perStone},extra,3)){
+      if(!slowApplied&&typeof r.ponerEstado==='function'){
+       r.ponerEstado('lento',2.7,{f:.21,fonte:l});slowApplied=true;
+      }
+     }
     }
-   }
-  }
-  if(impact&&success){
-   const t=cap((age-impact.t)/.32);
-   if(t<1){
-    for(let i=0;i<5;i++){
-     const theta=2*PI*i/5,dist=8+t*(12+i%2*5);
-     stamp(g,i%2?ROCK_CHIP:ROCK_BODY,impact.x+Math.cos(theta)*dist,
-      impact.y+Math.sin(theta)*dist-(1-t)*10,ROCK,.65+t*.25,1-t,theta);
+    for(let k=0;k<3;k++){
+     const a=2*PI*k/3+rock.index;
+     stamp(dust,ROCK_CHIP,pt.x+Math.cos(a)*5,pt.y+Math.sin(a)*5,
+      ROCK,.55,.68,a);
     }
-    stamp(dust,ROCK_DUST,impact.x,impact.y,ROCK,1.3,1-t);
+    continue;
    }
+   const scale=[.98,.78,.86,.90,.74,.96,.82,.88,.76][rock.index];
+   stamp(g,ROCK_VARIANTS[rock.index%ROCK_VARIANTS.length],
+    pt.x,pt.y,ROCK,scale,1,o.a+elapsed*(3+rock.index*.16));
+   stamp(dust,ROCK_CHIP,pt.x-o.c*9,pt.y-o.s*9,ROCK,.44,.58);
   }
-  return impact?age<impact.t+.34:true;
+  return remaining;
  });
- fx.clashBody=body;return fx;
 }
 
 // Metal Claw for early FireRed/LeafGreen Charmander: hand-pixelled silver
