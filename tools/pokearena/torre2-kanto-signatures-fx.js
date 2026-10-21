@@ -37,6 +37,10 @@ const FANG_DOWN=[
  '..KKDDDDDDDDDDKK....',
  '....KKKKKKKKKKK.....'
 ];
+const RAT_INCISOR=[
+ '..KKKK..','.KWWLLK.','KWWWWLLK','KWWWWLLK','KWWWWLLK',
+ 'KWWWWLLK','KWWWWLLK','.KWWWLK.','.KWWWWK.','..KKKK..'
+];
 const MANDIBLE=[
  '......KKKKKKKK.......',
  '....KKSSSSSSSSKK.....',
@@ -57,6 +61,15 @@ const PINCER=[
  '.KSSSSMMMMMMKKKKWWWK.',
  '..KKKSSSSKKK....KKK..'
 ];
+const GUILLOTINE_JAW_TOP=[
+ '..................KKKK....','..............KKKKSSSMK...',
+ '..........KKKKSSMMMMMLK..','......KKKKSSMMMMMMMMLLLK.',
+ '...KKKSSMMMMMMMLLLLLWWWK','.KKSSMMMMMLLLMMMMLWWWWK.',
+ 'KSSMMMMMMMMMLLLWWWWKK...','KSSMMMMMMMMMLWWWWWK.....',
+ '.KKSSMMMMMLWWWWK........','...KKKKKKKKKK...........'
+];
+const GUILLOTINE_JAW_BOTTOM=GUILLOTINE_JAW_TOP.slice().reverse();
+const GUILLOTINE_COL={K:0x192839,S:0x465a6b,M:0x8799a1,L:0xd8dfd5,W:0xffedc7};
 const PETAL=[
  '....KK...',
  '..KKPPKK.',
@@ -69,7 +82,14 @@ const PETAL=[
 ];
 const FANG_COL={K:COLORS.ink,D:COLORS.jawDark,O:COLORS.jaw,L:COLORS.jawLight,W:COLORS.shine};
 const PINCER_COL={K:COLORS.ink,S:0x4d5662,M:COLORS.steel,L:COLORS.steelLight,W:COLORS.shine};
-const PETAL_COL={K:0x683b65,P:COLORS.pink,R:COLORS.rose,L:COLORS.petalLight};
+const PETAL_PALETTES=[
+ {K:0x6d365e,P:0xd65a91,R:0xf08fb3,L:0xffd7eb},
+ {K:0x81375f,P:0xeb6ea2,R:0xffacd0,L:0xffe0f1},
+ {K:0x70395f,P:0xc65b9d,R:0xeb91cf,L:0xffc8e7},
+ {K:0x973b6e,P:0xe85a92,R:0xff98bd,L:0xffd3dc},
+ {K:0x80476f,P:0xdd82ad,R:0xf3a9cf,L:0xffe3f0},
+ {K:0x702c55,P:0xc84478,R:0xe979ab,L:0xffb9d5}
+];
 function stamp(g,rows,table,x,y,scale=2,flip=false,alpha=1){
  // Axis-aligned integer sprites. Each tile gets a true pixel boundary.
  for(let j=0;j<rows.length;j++){
@@ -132,8 +152,11 @@ function jawPixels(g,x,y,closure,t=1){
  const rowGap=7*(1-clamp(closure));
  stamp(g,FANG_UP,FANG_COL,x-22,y-25-rowGap,2,false,t);
  stamp(g,FANG_DOWN,FANG_COL,x-22,y+4+rowGap,2,false,t);
- // A few glints stay tiny and crisp, not a huge glowing bite ring.
- rect(g,x+15,y-12,3,3,COLORS.shine,t);
+ // Two unmistakable WHITE RAT INCISORS, outlined, separated and animated.
+ const toothY=y-16-rowGap;
+ stamp(g,RAT_INCISOR,FANG_COL,x-6,toothY,2,false,t);
+ stamp(g,RAT_INCISOR,FANG_COL,x+11,toothY,2,false,t);
+ rect(g,x+11,y-11-rowGap,2,3,COLORS.shine,t);
 }
 export function hyperfang(l,h,extra){
  const e=l.escena,r=l.rival,g=sceneLayer(e,1513),flecks=sceneLayer(e,1514);
@@ -171,15 +194,29 @@ export function hyperfang(l,h,extra){
  },[g,flecks]);
 }
 function pincerPair(g,x,y,close,t=1){
- const span=16*(1-clamp(close));
- stamp(g,MANDIBLE,PINCER_COL,x-25,y-23,2,false,t);
- // The two pincers approach the enemy from above and below, opposing arcs.
- stamp(g,PINCER,PINCER_COL,x+5,y-30-span,2,false,t);
- stamp(g,PINCER.slice().reverse(),PINCER_COL,x+5,y+5+span,2,false,t);
- // Original King's silver/steel shell, with a gold critical focal spark.
- if(close>.7){
-  rect(g,x+40,y-2,4,4,0xffffff,t);
-  rect(g,x+36,y-2,3,4,0xffddb0,t);
+ // Two large PINCERS that open apart and CLOSE toward the center.
+ const phase=clamp(close),spread=Math.round(19*(1-phase));
+ const left=Math.round(x-28);
+ const upper=Math.round(y-20-spread),lower=Math.round(y+1+spread);
+ // Dark metal root binds the pair to the Pokémon.
+ rect(g,left-9,y-8,12,17,0x192839,t);
+ rect(g,left-7,y-6,8,13,0x677984,t);
+ rect(g,left-4,y-3,3,7,0xd8dfd5,t);
+ stamp(g,GUILLOTINE_JAW_TOP,GUILLOTINE_COL,left,upper,2,false,t);
+ stamp(g,GUILLOTINE_JAW_BOTTOM,GUILLOTINE_COL,left,lower,2,false,t);
+ // Serrated cutting edges read clearly against the empty center.
+ for(let i=0;i<3;i++){
+  const xx=left+18+i*9,up=upper+18,lo=lower;
+  rect(g,xx,up,5,3,0x192839,t);
+  rect(g,xx+1,up+1,3,2,0xffedc7,t);
+  rect(g,xx,lo-3,5,3,0x192839,t);
+  rect(g,xx+1,lo-2,3,2,0xffedc7,t);
+ }
+ if(phase>.72){
+  const a=clamp((phase-.72)/.28)*t;
+  rect(g,x+19,y-2,7,4,0xffffff,a);
+  rect(g,x+21,y-6,3,12,0xffe2a0,a);
+  rect(g,x+30,y-1,4,3,0xfff8d9,a*.8);
  }
 }
 export function guillotine(l,h,extra){
@@ -221,19 +258,18 @@ export function guillotine(l,h,extra){
  },[main,impact]);
 }
 function petal(g,x,y,rotation,shade=0,alpha=1){
- // Hand-indexed 8x8 sprite frames. Leaf reflections use square pixels.
- const widths=[2,2,2,1,2,3,3,2];
- const rows=PETAL;
- // Rotate only in 90-degree discrete steps: crisp sprite silhouettes.
- const phase=((Math.floor(rotation/ (PI/2))%4)+4)%4;
- if(phase===0)stamp(g,rows,PETAL_COL,x-11,y-12,3,false,alpha);
- else if(phase===2)stamp(g,rows.slice().reverse(),PETAL_COL,x-11,y-12,3,true,alpha);
+ // Scale reduced from 3 to 2, retaining each crisp pixel and the outlines.
+ const palette=PETAL_PALETTES[Math.abs(shade)%PETAL_PALETTES.length];
+ const scale=2,rows=PETAL;
+ const phase=((Math.floor(rotation/(PI/2))%4)+4)%4;
+ if(phase===0)stamp(g,rows,palette,x-8,y-8,scale,false,alpha);
+ else if(phase===2)stamp(g,rows.slice().reverse(),palette,x-8,y-8,scale,true,alpha);
  else{
   for(let j=0;j<rows.length;j++)for(let i=0;i<rows[j].length;i++){
-   const col=PETAL_COL[rows[j][i]];if(col===undefined)continue;
+   const col=palette[rows[j][i]];if(col===undefined)continue;
    const u=phase===1?rows.length-1-j:j;
    const v=phase===1?i:rows[j].length-1-i;
-   rect(g,x+(u-4)*3,y+(v-4)*3,3,3,col,alpha);
+   rect(g,x+(u-4)*scale,y+(v-4)*scale,scale,scale,col,alpha);
   }
  }
 }

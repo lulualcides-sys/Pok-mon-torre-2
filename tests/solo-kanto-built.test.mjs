@@ -130,6 +130,19 @@ const kantoFile=fs.readFileSync(path.join(stage,version,'torre2/kanto-signatures
 assert.ok(kantoFile.includes('const FANG_UP=['),'Hyper Fang fangs defined as pixel cells');
 assert.ok(kantoFile.includes('const PINCER=['),'Guillotine pincers defined as pixel cells');
 assert.ok(kantoFile.includes('const PETAL=['),'Petal Dance petals defined as pixel cells');
+assert.ok(kantoFile.includes('const RAT_INCISOR=['),'Rat incisors encoded as pixel art');
+assert.ok(kantoFile.includes('x-6,toothY')&&kantoFile.includes('x+11,toothY'),
+ 'Both large rodent incisors are drawn');
+assert.ok(kantoFile.includes('const GUILLOTINE_JAW_TOP=[')&&
+ kantoFile.includes('const GUILLOTINE_JAW_BOTTOM='),
+ 'Opposing Guillotine blades must have readable silhouettes');
+assert.ok(kantoFile.includes('spread=Math.round(19*(1-phase))'),
+ 'Guillotine starts open and closes its two pincers');
+assert.ok(kantoFile.includes('const scale=2,rows=PETAL'),
+ 'Petals are one-third smaller');
+assert.ok(kantoFile.includes('PETAL_PALETTES[Math.abs(shade)%'),
+ 'Petal Dance has multiple pink palettes');
+
 assert.ok(!kantoFile.includes('CanvasRenderingContext2D') &&
  !kantoFile.includes('.fillPoints(') && !kantoFile.includes('.arc('),
  'No smooth polygon, Canvas 2D or vector VFX in new moves');
