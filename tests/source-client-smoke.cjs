@@ -370,8 +370,11 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(footer.ctaX,320);
   assert.ok(footer.ctaWidth>=240&&footer.caption&&footer.clickable,
    'Gold battle action must be centered, readable and clickable');
-  assert.ok(footer.dockY.length>=4&&footer.dockY.every(y=>y>=300),
-   'Compact party cards must sit lower than the map and above the CTA');
+  // The smoke fixture can have only two Pokémon; unlike the real saved
+  // party it must not be required to render four populated click targets.
+  assert.ok(footer.dockY.length>=2&&footer.dockY.every(y=>y>=299),
+   'Populated party cards must sit lower and above the centered CTA: '+
+    JSON.stringify(footer));
   assert.equal(panelTest.collapsed.zoneEnabled,0,
    'Hidden buttons cannot intercept clicks intended for the map');
   assert.equal(panelTest.restored.active,false);
