@@ -275,6 +275,7 @@ const server=http.createServer(async(req,res)=>{
       c.children.list.some(x=>x.type==='Image'&&
        x.texture?.key==='torre2-brock-custom');
   },null,{timeout:23000});
+  await offline.screenshot({path:'test-evidence/torre2-brock-map-hires-direct.png'});
   // PATCH 1 / PATCH 2: one real Pewter world for all 13 encounters and boss.
   // No PALLET -> ROUTE -> FOREST pagination, no route-line screen changes.
   const mapState=await offline.evaluate(async()=>{
@@ -295,28 +296,7 @@ const server=http.createServer(async(req,res)=>{
        String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
       zones:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length
     };
-    c.gymScreen(state);
-    result.lockedGym=labels();
-    result.gymDidNotStartCombat=!window.__pt2Game.scene.isActive('combate');
-    c.scene.restart();
-    return result;
-  });
-  assert.equal(mapState.world,'pewter');
-  assert.ok(mapState.realScene,'Brock must still use the original composite image');
-  // gymScreen() removes the header; allow the queued Phaser scene restart
-  // to finish before counting the new fullscreen button and cached textures.
-  await offline.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&
-    c.children.list.some(o=>o.active&&o.type==='Image'&&
-     o.texture?.key==='torre2-brock-custom')&&
-    c.children.list.some(o=>o.active&&o.type==='TileSprite'&&
-     o.texture?.key==='torre2-brock-forest')&&
-    c.__campaignMapObjects?.length>0&&
-    c.__campaignMap?.spec?.id==='pewter'&&
-    c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
-  },null,{timeout:18000});
-  const imageIsolation=await offline.evaluate(()=>{
+    const imageIsolation=(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const base=c.textures.get('torre2-brock-custom');
    const mask=c.textures.get('torre2-brock-forest');
@@ -335,7 +315,24 @@ const server=http.createServer(async(req,res)=>{
     independentMask:!!mask&&!!cut&&mask!==base,
     baseFrames:base?.getFrameNames(),filter:base?.source?.[0]?.filter,
     mapId:c.__torre2WorldView?.id};
+  })();
+    result.imageIsolation=imageIsolation;
+    c.gymScreen(state);
+    result.lockedGym=labels();
+    result.gymDidNotStartCombat=!window.__pt2Game.scene.isActive('combate');
+    c.scene.restart();
+    return result;
   });
+  assert.equal(mapState.world,'pewter');
+  assert.ok(mapState.realScene,'Brock must still use the original composite image');
+  // gymScreen() removes the header; allow the queued Phaser scene restart
+  // to finish before counting the new fullscreen button and cached textures.
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+    c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
+  },null,{timeout:18000});
+  const imageIsolation=mapState.imageIsolation;
   assert.equal(imageIsolation.baseWidth,1200);
   assert.equal(imageIsolation.baseHeight,675);
   console.log('BROCK_HIRES_FRAME_DIAGNOSTIC',JSON.stringify(imageIsolation));
