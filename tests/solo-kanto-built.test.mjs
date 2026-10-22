@@ -65,7 +65,7 @@ assert.ok(entryHTML.includes('name="pokemon-torre-build" content="'+version+'"')
  'HTML must expose module version, so users can verify updates');
 
 const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
- TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,saveCampaign,
+ TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,SAVE_BACKUP_KEY,saveCampaign,
  startBattle,recordSeen,recordCaught,storePokemon,withdrawPokemon,swapPokemon,
  wildAvailability,startWildEncounter,startWildBattle,resolveWildBattle,
  purchaseItem,usePotion,teachTM}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
@@ -856,6 +856,18 @@ const migrated=readCampaign();
 assert.ok(Array.isArray(migrated.box)&&Array.isArray(migrated.dexCaught));
 assert.ok(migrated.team.length>0&&migrated.team.length<=6);
 saveCampaign(state);
+// Regression: a partial save write must fall back to the previous complete
+// checkpoint. The original user's Pokémon and gym progress are not reset.
+const checkpoint=readCampaign();
+state.money+=7;saveCampaign(state);
+assert.ok(items.has(SAVE_BACKUP_KEY),'One previous campaign save kept intact');
+items.set(SAVE_KEY,'{truncated');
+const recovered=readCampaign();
+assert.equal(recovered.stage,checkpoint.stage);
+assert.equal(recovered.trainer,checkpoint.trainer);
+assert.equal(recovered.team.length,checkpoint.team.length);
+assert.equal(recovered.money,checkpoint.money);
+state.money=checkpoint.money;saveCampaign(state);
 
 assert.ok(state.team[0].progression.level>=5);
 assert.ok(state.team[0].id!==initialSpecies || state.team[0].progression.level<16);
