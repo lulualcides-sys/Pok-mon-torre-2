@@ -343,11 +343,18 @@ const server=http.createServer(async(req,res)=>{
   },null,{timeout:13000});
   await offline.screenshot({path:'test-evidence/torre2-pewter-single-map-13-trainers.png',
     fullPage:true});
-  const mapScreen=await offline.evaluate(async()=>{
+  await offline.evaluate(async()=>{
     const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
     const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+    window.__pt2Game.scene.getScene('campanha').mapScreen(core.readCampaign());
+  });
+  await offline.waitForFunction(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
-    scene.mapScreen(core.readCampaign());
+    return scene.scene.isActive()&&scene.__campaignMap?.spec?.id==='pewter'&&
+     scene.children.list.some(o=>o.text==='SUA EQUIPE');
+  },null,{timeout:15000});
+  const mapScreen=await offline.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
     return {id:scene.__campaignMap?.spec?.id,
      points:scene.__campaignMap?.locations,
      label:scene.children.list.filter(x=>typeof x.text==='string')
