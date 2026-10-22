@@ -106,15 +106,19 @@ export function installPartyBattle(scene){
  }
  const graphics=scene.add.graphics().setDepth(2480);
  graphics.fillStyle(0x082339,.91);
- graphics.fillRoundedRect(12,74,177,37,4);
- graphics.fillRoundedRect(448,74,180,37,4);
- label(scene,85,82,'SUA EQUIPE',9,'#d1f6eb');
- label(scene,551,82,payload.kind==='wild'?'SELVAGEM':'EQUIPE RIVAL',9,'#ffe4d5');
+ graphics.fillRoundedRect(12,74,177,45,4);
+ graphics.fillRoundedRect(448,74,180,45,4);
+ label(scene,85,80,'SEUS POKÉMON · '+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length,
+  8,'#d1f6eb');
+ label(scene,550,80,payload.kind==='wild'?'SELVAGEM':'RIVAL · '+
+  party.foes.filter(m=>m.hp>0).length+'/'+party.foes.length,8,'#ffe4d5');
  const drawIcons=(arr,active,x)=>{
   for(let i=0;i<arr.length;i++)dot(scene,x+i*17,101,arr[i].hp>0,i===active);
  };
  drawIcons(party.friend,party.playerIndex,30);
  drawIcons(party.foes,party.enemyIndex,470);
+ label(scene,87,113,'● ATIVO   ○ DESMAIADO',7,'#d5dee8');
+ label(scene,550,113,'POKÉBOLAS DO RIVAL',7,'#d5dee8');
  const available=()=>party.friend.map((m,i)=>({m,i}))
   .filter(({m,i})=>i!==party.playerIndex&&m.hp>0);
  const announce=(textValue)=>{
@@ -187,18 +191,11 @@ export function installPartyBattle(scene){
    }
    if(frames>=40)enterNext();
   };
-  if(kind==='faint'){
-   // Native KO may suspend both scene timers and global render callbacks.
-   // Dispatch the replacement immediately instead of risking a frozen game;
-   // the following scene paints the Pokéball release / red beam.
-   fx.clear();
-   fx.lineStyle(5,0xff5166,1);
-   fx.lineBetween(from.x,from.y,px,py);
-   if(actor.spr?.active)actor.spr.setAlpha(.05);
-   enterNext();
-   return;
-  }
+  // Always show the red recollection beam and shrinking Pokémon (including
+  // K.O.) before sending the replacement. A scene clock can be paused by
+  // native hitstop, so game-level frames and a guarded fallback are used.
   scene.game.events.on('step',step);
+  scene.time.delayedCall(kind==='faint'?700:950,enterNext);
   scene.events.once('shutdown',()=>scene.game.events.off('step',step));
  }
  function finish(won){
@@ -220,7 +217,10 @@ export function installPartyBattle(scene){
   const next=arr.findIndex((m,i)=>i!==pos&&m.hp>0);
   if(next<0){finish(side===1);return}
   announce(side===0?'POKÉMON DESMAIOU!':'RIVAL VAI TROCAR!');
-  scene.time.delayedCall(450,()=>recall(side,next,'faint'));
+  // KO pauses native fight ticks. Recollect through the same red beam as
+  // manual switching; call synchronously so a paused scene clock cannot
+  // leave the player's party stuck on a fainted Pokémon.
+  recall(side,next,'faint');
  };
  const menu=scene.add.graphics().setDepth(2600);
  let entries=[];
@@ -258,7 +258,9 @@ export function installPartyBattle(scene){
  }
  // A native clickable Pokémon switch (mouse and touch) independent of
  // the Arena 2D ability buttons. Only available with living reserves.
- const switchText=label(scene,322,89,'TROCAR POKÉMON ▾',10,'#ffe7a3',2482);
+ const switchText=label(scene,322,89,
+  'TROCAR POKÉMON ('+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length+') ▾',
+  10,'#ffe7a3',2482);
  const switchHit=scene.add.zone(320,88,177,30).setDepth(2500)
   .setInteractive({useHandCursor:true}).on('pointerdown',showParty);
  scene.events.once('shutdown',()=>{
