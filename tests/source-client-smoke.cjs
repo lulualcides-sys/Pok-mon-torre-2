@@ -959,6 +959,16 @@ const server=http.createServer(async(req,res)=>{
    'Three selectable balls appear in the native capture HUD');
   assert.equal(captureHud.phase,'capturando',
    'Throwing a ball must pause real attacks while animation plays');
+  // Capture the ACTUAL native Phaser GOTCHA state, not a composed PNG preview.
+  // The panel must appear AFTER the last ball shake, before map navigation.
+  await offline.waitForFunction(()=>{
+    const game=window.__pt2Game;
+    if(!game?.scene.isActive('combate'))return false;
+    const battle=game.scene.getScene('combate');
+    return battle.children.list.some(o=>typeof o.text==='string'&&
+      o.text.includes('GOTCHA!'));
+  },null,{timeout:12000,polling:120});
+  await offline.screenshot({path:'test-evidence/torre2-wild-capture-gotcha.png',fullPage:true});
   await offline.waitForFunction(()=>{
     if(!window.__pt2Game?.scene.isActive('campanha'))return false;
     const s=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')||'{}');
