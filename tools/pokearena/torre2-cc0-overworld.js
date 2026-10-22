@@ -59,6 +59,13 @@ export function decorateWorldWithSprites(scene,region,points=[]){
  if(typeof Phaser!=='undefined')
   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
  const biome=region?.biome||'route';
+ // Stamp REAL authored grass tiles across the playing field. They are
+ // Phaser texture frames, not generated polygons or a flat screenshot.
+ // Road geometry renders one layer ABOVE these tiles; NPCs render above both.
+ if(frame(scene,'grass')){
+  for(let y=105;y<=249;y+=16)for(let x=29;x<=377;x+=16)
+   sprite(scene,'grass',x,y,16,16,{depth:1.05});
+ }
  const rng=random((region?.stage??0)*593+(region?.page??0)*239+17);
  const wooded=['route','forest','safari','grassland','grass-gym'].includes(biome);
  const rocky=['pewter','cliff','cave','victory','ground-gym','volcano'].includes(biome);
