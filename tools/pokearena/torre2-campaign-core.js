@@ -150,7 +150,9 @@ export function currentOpponent(s){
  const role=leader?'leader':node.type;
  const rivalId=s.team[0]?.id==='charmander'?'squirtle':
   s.team[0]?.id==='squirtle'?'bulbasaur':'charmander';
- const species=leader?(s.stage===STAGES.length-1?rivalId:gym.boss):role==='rival'?rivalId:
+ const championId=({charmander:'charizard',squirtle:'blastoise',
+  bulbasaur:'venusaur'})[rivalId]||rivalId;
+ const species=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
   role==='rocket'?(['zubat','machop','ekans'].includes(list[s.trainer%list.length])?
    list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
  return {id:species,leader,kind:role,
