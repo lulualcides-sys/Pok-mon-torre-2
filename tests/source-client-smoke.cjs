@@ -422,6 +422,37 @@ const server=http.createServer(async(req,res)=>{
    'Mobile map offers a clickable fullscreen control');
   assert.equal(mobileResources.hoverGraphics,1,
    'Map uses one shared hover Graphics instead of per-trainer effects');
+  // In landscape phones wider than 16:9, remove side letterboxing without
+  // making the user press fullscreen. Verify the real browser viewport.
+  await offline.setViewportSize({width:980,height:420});
+  await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.registry.get('torre2-wide-map')===true&&
+    c.scale.gameSize.width>=800&&c.__campaignMapObjects?.length>0;
+  },null,{timeout:22000});
+  const automaticWide=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const img=c.__campaignMapObjects.find(x=>x.obj.type==='Image'&&
+    x.obj.texture?.key==='torre2-brock-custom').obj;
+   return {width:c.scale.gameSize.width,mapWidth:img.displayWidth,
+    ctaX:c.children.list.find(x=>x.getData?.('torre2-central-cta'))?.x};
+  });
+  assert.ok(automaticWide.mapWidth>440,'Landscape map is bigger before tapping fullscreen');
+  assert.equal(automaticWide.ctaX,automaticWide.width/2,
+   'Battle button must remain centered in landscape panorama');
+  await offline.setViewportSize({width:980,height:650});
+  await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   c.registry.set('torre2-wide-map',false);
+   c.scale.resize(640,360);
+   c.scene.restart();
+  });
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+    c.scale.gameSize.width===640;
+  },null,{timeout:20000});
   // Fullscreen APIs are browser gesture-restricted; stub the Phaser manager
   // here and exercise the real button's pointerup handler.
   const fullscreenClicks=await offline.evaluate(()=>{
