@@ -117,6 +117,22 @@ export function installWildCapture(scene){
   // must absorb those visuals too, or a red oval remains under an empty tile.
   const ground=[enemy.sombra,enemy.anillo].filter(x=>x?.active!==false&&x);
   const groundVisible=ground.map(x=>x.visible);
+  const groundAlpha=ground.map(x=>x.alpha);
+  // The native fighter can redraw its ring on each animation frame. Hide it
+  // AFTER the combat renderer runs, until we either restore a breakout or
+  // transition to the saved captured result.
+  let absorbed=false;
+  const hideGround=()=>{
+   if(!absorbed||!scene.scene.isActive())return;
+   if(obj?.active!==false&&obj){
+    obj.setAlpha(0).setVisible(false);
+   }
+   ground.forEach(effect=>{
+    if(effect.active!==false)effect.setVisible(false).setAlpha(0);
+   });
+  };
+  scene.game.events.on('poststep',hideGround);
+  scene.events.once('shutdown',()=>scene.game.events.off('poststep',hideGround));
   const before=obj?{x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY,
    alpha:obj.alpha,visible:obj.visible}:null;
   // The sprite can be offset from its logical fighter spawn: aim at the
@@ -134,8 +150,11 @@ export function installWildCapture(scene){
    drawCaptureBall(gfx,x,y,kind,2,angle);
   };
   const restore=()=>{
+   absorbed=false;
+   scene.game.events.off('poststep',hideGround);
    ground.forEach((effect,i)=>{
-    if(effect.active!==false)effect.setVisible(groundVisible[i]);
+    if(effect.active!==false)
+     effect.setAlpha(groundAlpha[i]).setVisible(groundVisible[i]);
    });
    if(obj&&obj.active!==false){
     obj.setAlpha(before.alpha);
@@ -162,10 +181,8 @@ export function installWildCapture(scene){
       gfx.clear();artBeam(gfx,end.x,end.y,focus.x,focus.y,beam.t);
       drawCaptureBall(gfx,end.x,end.y,kind,2,0,true);
      },onComplete:()=>{
-      if(obj)obj.setAlpha(0);
-      ground.forEach(effect=>{
-       if(effect.active!==false)effect.setVisible(false);
-      });
+      absorbed=true;
+      hideGround();
       caption.setText('A POKÉBOLA CAIU...');
       const floorY=Math.min(315,enemyY+37),drop={t:0};
       scene.tweens.add({targets:drop,t:1,duration:350,ease:'Bounce.easeOut',
