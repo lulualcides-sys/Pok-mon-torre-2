@@ -422,9 +422,11 @@ const server=http.createServer(async(req,res)=>{
     core.saveCampaign(core.createCampaign('charmander'));
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
-  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('PALLET')),
-    null,{timeout:12000});
+  await offline.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.__campaignMap?.spec?.id==='pewter'&&
+     c.children.list.some(o=>o.text==='SUA EQUIPE');
+  },null,{timeout:12000});
 
   await offline.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
