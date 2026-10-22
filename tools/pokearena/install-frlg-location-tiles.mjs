@@ -10,7 +10,13 @@ const MAPS=[
  ['route1','Route 1','https://poketrainervault.com/images/frlg/maps/Route_1.webp'],
  ['viridian','Viridian City','https://poketrainervault.com/images/frlg/maps/Viridian_City.webp'],
  ['forest','Viridian Forest','https://poketrainervault.com/images/frlg/maps/Viridian_Forest.webp'],
- ['pewter','Pewter City','https://poketrainervault.com/images/frlg/maps/Pewter_City.webp']
+ ['pewter','Pewter City','https://poketrainervault.com/images/frlg/maps/Pewter_City.webp'],
+ ['cerulean','Cerulean City','https://poketrainervault.com/images/frlg/maps/Cerulean_City.webp'],
+ ['vermilion','Vermilion City','https://poketrainervault.com/images/frlg/maps/Vermilion_City.webp'],
+ ['lavender','Lavender Town','https://poketrainervault.com/images/frlg/maps/Lavender_Town.webp'],
+ ['celadon','Celadon City','https://poketrainervault.com/images/frlg/maps/Celadon_City.webp'],
+ ['fuchsia','Fuchsia City','https://poketrainervault.com/images/frlg/maps/Fuchsia_City.webp'],
+ ['cinnabar','Cinnabar Island','https://poketrainervault.com/images/frlg/maps/Cinnabar_Island.webp']
 ];
 const timeout=12000;
 async function load(url){
