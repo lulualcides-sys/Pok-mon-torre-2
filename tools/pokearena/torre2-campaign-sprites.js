@@ -1,6 +1,7 @@
 /* Native Phaser/WebGL pixel stencils for Kanto trainers and shop items.
  * No external trainer-sprite rip, canvas, CSS image, or screenshot backdrop.
  */
+import {drawBallSprite} from './ball-sprites.js';
 const SHAPE=[
  '....HHHH....',
  '...HHHHHH...',
@@ -188,18 +189,9 @@ export function drawShopItem(g,cx,cy,item,scale=2){
  const type=typeof item==='string'?item:item?.id||'pokeball';
  const x=Math.round(cx-9*scale),y=Math.round(cy-9*scale);
  if(kind==='ball'||/ball/.test(type)){
-  const tone=type==='ultraball'?0xefc342:type==='greatball'?0x3399d7:0xe85251;
-  px(g,x+5*scale,y+2*scale,8*scale,2*scale,0x1a263b);
-  px(g,x+3*scale,y+4*scale,12*scale,4*scale,tone);
-  px(g,x+2*scale,y+7*scale,14*scale,4*scale,0x1a263b);
-  px(g,x+3*scale,y+11*scale,12*scale,4*scale,0xf2f5f2);
-  px(g,x+5*scale,y+15*scale,8*scale,2*scale,0x14233a);
-  px(g,x+7*scale,y+8*scale,4*scale,4*scale,0xffffff);
-  px(g,x+8*scale,y+9*scale,2*scale,2*scale,0x283b57);
-  if(type==='ultraball'){
-   px(g,x+4*scale,y+5*scale,3*scale,2*scale,0x1b2c43);
-   px(g,x+11*scale,y+5*scale,3*scale,2*scale,0x1b2c43);
-  }
+  // Inventory and shop use the SAME pixel-cell ball art as wild capture,
+  // party HUD and red recall beams (never a generic WebGL circle).
+  drawBallSprite(g,cx,cy,type,scale,0,false);
  }else if(kind==='tm'){
   px(g,x+2*scale,y+2*scale,14*scale,14*scale,0x202b4a);
   px(g,x+3*scale,y+3*scale,12*scale,12*scale,0x6eafce);
