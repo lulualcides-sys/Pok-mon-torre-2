@@ -19,7 +19,7 @@ import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './part
 import {drawTrainer,drawShopItem} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
-import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
+import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES,HAS_CUSTOM_BROCK} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
@@ -60,6 +60,9 @@ class Campanha extends Phaser.Scene{
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
   const world=getCampaignMapSpec(stage,0).id;
+  if(stage===0&&HAS_CUSTOM_BROCK&&
+      !this.textures.exists('torre2-brock-custom'))
+   this.load.image('torre2-brock-custom','assets/ui/torre2-brock-custom.webp');
   if(AVAILABLE_FRLG.includes(world)){
    const key='frlg-location-'+world;
    if(!this.textures.exists(key))

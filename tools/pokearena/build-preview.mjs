@@ -19,6 +19,18 @@ console.log('Verified CC0 overworld sprites',JSON.stringify(cc0Tiles));
 const {installFRLGMaps}=await import('./install-frlg-location-tiles.mjs');
 const frlgLocations=await installFRLGMaps(dest);
 console.log('Original FireRed locality maps:',Object.keys(frlgLocations.locations));
+// Optional personalized map from the user's uploaded FireRed illustration.
+// Kept separate from the original FireRed city texture.
+const customBrockFile='reference-assets/kanto/maps/custom-brock-map.webp';
+let hasCustomBrock=false;
+try{
+ const picture=await fs.readFile(customBrockFile);
+ if(picture.length<2500||picture.toString('ascii',0,4)!=='RIFF'||
+   picture.toString('ascii',8,12)!=='WEBP')throw Error('Invalid Brock map');
+ await fs.writeFile(path.join(dest,'assets/ui/torre2-brock-custom.webp'),picture);
+ hasCustomBrock=true;
+}catch(e){if(e.code!=='ENOENT')throw e}
+console.log('Brock custom illustration found:',hasCustomBrock);
 const {installFRLGNPCs}=await import('./install-frlg-npcs.mjs');
 const originalNPCs=await installFRLGNPCs(dest);
 
@@ -118,7 +130,8 @@ await fs.writeFile(path.join(dest,clientSource,'torre2','frlg-available.js'),
  Object.fromEntries(Object.entries(frlgLocations.locations).map(
  ([id,info])=>[id,info.file])))+');\n'+
  'export const AVAILABLE_FRLG_NPCS=Object.freeze('+JSON.stringify(
- originalNPCs.available)+');\n');
+ originalNPCs.available)+');\n'+
+ 'export const HAS_CUSTOM_BROCK='+JSON.stringify(hasCustomBrock)+';\n');
 await Promise.all([
  ['src/progression.js','progression.js'],
  ['tools/pokearena/torre2-campaign-core.js','campaign-core.js'],

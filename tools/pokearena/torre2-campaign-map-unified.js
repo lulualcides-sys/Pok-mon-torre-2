@@ -44,6 +44,17 @@ const WORLDS=Object.freeze([
 ]);
 // Deliberately manually staged positions so Brock's first 13 trainers have
 // a fixed location that does not change when any prior fight is won.
+// Exact 13 trainer route drawn over the supplied Pallet -> Route 1 ->
+// Viridian -> Route 2 -> Forest -> Pewter composite, not an arbitrary grid.
+// Explicit coordinates stay stable and preserve original battle/save indices.
+const BROCK_CUSTOM_POINTS=Object.freeze([
+ [76,266],[122,252],[135,227],[141,202],[130,181],
+ [191,148],[218,168],[223,194],[239,217],[283,246],
+ [306,215],[328,183],[355,152]
+]);
+const CUSTOM_BROCK_LOCATIONS=Object.freeze({
+ gym:[340,114],center:[103,161],mart:[145,162],grass:[299,235]
+});
 const BROCK_POINTS=Object.freeze([
  // Clickable challenge route, staged on open streets rather than overlapping
  // Pokémon Center, Poké Mart, grass hotspot, or the Gym entrance.
@@ -52,7 +63,9 @@ const BROCK_POINTS=Object.freeze([
  [97,231],[97,195],[97,157],[231,150]
 ]);
 // Same deterministic map coordinates across reloads and battles.
-function checkpointsFor(total,stage){
+function checkpointsFor(total,stage,custom=false){
+ if(custom&&stage===0&&total===13)
+  return BROCK_CUSTOM_POINTS.map(([x,y])=>({x,y}));
  if(stage===0&&total===13)return BROCK_POINTS.map(([x,y])=>({x,y}));
  const points=[];
  const columns=total>20?7:5,rows=Math.ceil(total/columns);
@@ -88,13 +101,16 @@ function checkpointsFor(total,stage){
  }
  return settled;
 }
-export function getCampaignMapSpec(stage,trainerCount){
+export function getCampaignMapSpec(stage,trainerCount,customBrock=false){
  const world=stage<0?WORLDS[0]:stage<9?WORLDS[stage]:WORLDS[9];
  const count=Math.max(0,Math.min(60,Math.floor(Number(trainerCount)||0)));
  return {id:world.id,title:world.title,short:world.short,
   theme:world.theme,leader:world.leader,biome:world.biome,
   focusY:world.focusY,
-  buildings:world.buildings,points:checkpointsFor(count,stage),
+  buildings:customBrock&&stage===0?
+   CUSTOM_BROCK_LOCATIONS:world.buildings,
+  points:checkpointsFor(count,stage,customBrock),
+  customBrock:!!(customBrock&&stage===0),
   boss:stage>=9?'indigo':world.id,stage};
 }
 const font=(scene,x,y,label,size=9,color='#fff4d6',depth=12)=>{
@@ -123,6 +139,15 @@ function landmark(scene,g,label,x,y,accent,callback,locked=false){
  return zone;
 }
 function realMap(scene,spec){
+ if(spec.customBrock&&scene.textures.exists('torre2-brock-custom')){
+  const tex=scene.textures.get('torre2-brock-custom');
+  if(typeof Phaser!=='undefined')
+   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  scene.add.image(20,85,'torre2-brock-custom')
+   .setOrigin(0,0).setDepth(1).setDisplaySize(372,211);
+  scene.__torre2WorldView={id:'brock-user-map',x:0,y:0,w:372,h:211};
+  return true;
+ }
  const key='frlg-location-'+spec.id;
  if(!scene.textures.exists(key))return false;
  const texture=scene.textures.get(key),source=texture.source?.[0];
@@ -174,7 +199,8 @@ function badge(scene,g,index,x,y,condition,onClick){
 }
 export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
  onCenter,onMart,onGrass,onLocked}={}){
- const spec=getCampaignMapSpec(state.stage,limit);
+ const spec=getCampaignMapSpec(state.stage,limit,
+  state.stage===0&&scene.textures.exists('torre2-brock-custom'));
  scene.__torre2WorldView=null;
  const g=scene.add.graphics().setDepth(0);
  box(g,10,54,390,259,0x051827,0xd9bb7d);
@@ -201,8 +227,10 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
  spec.points.forEach((p,i)=>{
   const stateName=i<state.trainer?'done':i===state.trainer?'current':'locked';
   const type=state.stage===0?
-   ['youngster','lass','bugcatcher','youngster','lass','bugcatcher',
-    'hiker','youngster','bugcatcher','lass','hiker','youngster','hiker'][i%13]:
+   // Route 1: youngsters. Route 2 / Viridian Forest: Bug Catchers.
+   // Pewter approach: Hikers. Always the actual 16×32 FireRed NPC sprites.
+   ['youngster','youngster','youngster','lass','bugcatcher','bugcatcher',
+    'bugcatcher','bugcatcher','bugcatcher','hiker','hiker','hiker','hiker'][i%13]:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'][i%6];
   if(!addFireRedNPC(scene,type,p.x,p.y+9,{scale:.70,depth:7}))
    drawTrainer(under,p.x,p.y+4,type,.70);
