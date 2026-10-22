@@ -223,15 +223,15 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
  if(!ok)unavailableTexture(scene,spec);
  // A single map remains mounted after each battle, with only marker colors
  // reflecting state.trainer. There is NO scrolling / page switch / route line.
- const hud=scene.add.graphics().setDepth(9);
+ const hud=scene.add.graphics().setDepth(9).setData('torre2-map-chrome',true);
  hud.fillStyle(0x082538,.97);hud.fillRect(19,59,372,25);
  hud.lineStyle(1,0xffe2a0);hud.lineBetween(19,84,391,84);
- font(scene,133,71,spec.short,11,'#ffe7b3',12);
+ font(scene,133,71,spec.short,11,'#ffe7b3',12).setData('torre2-map-chrome',true);
  const completed=Math.min(limit,state.trainer);
- font(scene,335,71,String(completed)+' / '+String(limit),11,'#b4f5cf',12);
- const foot=scene.add.graphics().setDepth(10);
+ font(scene,335,71,String(completed)+' / '+String(limit),11,'#b4f5cf',12).setData('torre2-map-chrome',true);
+ const foot=scene.add.graphics().setDepth(10).setData('torre2-map-chrome',true);
  foot.fillStyle(0x082538,.96);foot.fillRect(19,296,373,12);
- font(scene,191,301,'TOQUE NO PRÓXIMO TREINADOR • SEM TROCAR DE MAPA',8,'#d3f4ec',12);
+ font(scene,191,301,'TOQUE NO PRÓXIMO TREINADOR • SEM TROCAR DE MAPA',8,'#d3f4ec',12).setData('torre2-map-chrome',true);
  // One shared highlight, instead of 13-27 independent Graphics objects
  // and draw commands being retained by WebGL each time the map is opened.
  scene.__torre2MapHover=scene.add.graphics().setDepth(25);
