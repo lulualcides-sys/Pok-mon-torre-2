@@ -315,21 +315,28 @@ class Campanha extends Phaser.Scene{
   }
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
-  if(wild){
-   // Install the capture HUD when the real battle objects are ready, not in
-   // a fake modal outside combat. Clear the listener when the fight finishes.
-   const game=this.game;let frames=0;
-   const attach=()=>{
-    const battle=game.scene.getScene('combate');
-    if(battle.scene.isActive()&&battle.luchadores?.length===2){
-     game.events.off('step',attach);
-     installWildCapture(battle);
-    }else if(++frames>900||(!battle.scene.isActive()&&frames>180)){
-     game.events.off('step',attach);
-    }
-   };
-   game.events.on('step',attach);
-  }
+  // Campaign-only level HUD, using the real saved levels and leader cap.
+  // The original Arena 2D sprites, attacks and other modes remain untouched.
+  const game=this.game;let frames=0;
+  const attach=()=>{
+   const battle=game.scene.getScene('combate');
+   if(battle.scene.isActive()&&battle.luchadores?.length===2){
+    game.events.off('step',attach);
+    const levelPanel=battle.add.graphics().setDepth(1170);
+    levelPanel.fillStyle(0x071a2b,.92);
+    levelPanel.fillRoundedRect(189,5,262,24,3);
+    levelPanel.lineStyle(1,0xd3ac60);
+    levelPanel.strokeRoundedRect(189,5,262,24,3);
+    text(battle,199,10,'SEU NV.'+match.torre2.playerLevel+
+     '   RIVAL NV.'+match.torre2.enemyLevel+
+     '   TETO NV.'+match.torre2.hardCap,{
+     fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
+    if(wild)installWildCapture(battle);
+   }else if(++frames>900||(!battle.scene.isActive()&&frames>180)){
+    game.events.off('step',attach);
+   }
+  };
+  game.events.on('step',attach);
   this.scene.start('combate',match);
  }
  grassScreen(state){
