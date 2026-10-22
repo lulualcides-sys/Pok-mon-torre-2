@@ -342,7 +342,8 @@ const server=http.createServer(async(req,res)=>{
    'Collapse arrow must be clickable in the campaign');
   assert.equal(panelTest.start.ctaX,320,
    'Battle/capture starts at the bottom center, not inside sidebar');
-  assert.equal(panelTest.start.ctaY,347);
+  // CTA raised 25/360px (~7%) so the action stays comfortably on-screen.
+  assert.equal(panelTest.start.ctaY,322);
   assert.equal(panelTest.start.sidebar,true);
   assert.equal(panelTest.collapsed.active,true);
   assert.ok(panelTest.collapsed.width>panelTest.start.width*1.6,
