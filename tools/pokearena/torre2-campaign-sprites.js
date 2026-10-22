@@ -80,26 +80,106 @@ export function trainerClassName(kind){
  channeler:'MÉDIUM',ace:'TREINADOR ELITE',gentleman:'CAVALHEIRO'})[kind]||'TREINADOR';
 }
 
+// Character classes use unique pixel shapes: Rocket beret, bug net,
+// sailor cap, long coats, backpacks, colored belts, and leader silhouettes.
+const CLASS_SHAPES=Object.freeze({
+ youngster:[
+ '..HHHHHH....','.HHHHHHHH...','..HSSSSH....','..HSSSSH....',
+ '..SSSSSS....','...NNNN.....','.UUUUUUUU...','UUUUUUUUUU..',
+ 'UUUUAAUUUU..','UUUUUUUUUU..','..UUUUUU....','...PPPP.....',
+ '..PPPPPP....','..PP..PP....','..PP..PP....','.BBB..BBB...'
+ ],
+ bugcatcher:[
+ '...HHHH.....','..HHHHHH....','.HHHHHHHH...','..HSSSSH....',
+ '..SSSSSS....','...NNNN.....','..UUUUUU....','.UUUUUUUU... ',
+ '.UUUAAUUU...','..UUUUUU....','...UUUU.....','...PPPP.....',
+ '..PPPPPP....','..PP..PP....','..PP..PP....','.BBB..BBB...'
+ ],
+ lass:[
+ '..HHHHHH....','.HHHHHHHH...','..HSSSSH....','..SSSSSS....',
+ '..SSSSSS....','...NNNN.....','..UUUUUU....','.UUUUUUUU...',
+ '.UUUA AUUU...','.UUUUUUUU...','.UUUUUUUU...','UUUUUUUUUU..',
+ 'UUUUUUUUUU..','..PP..PP....','..PP..PP....','.BBB..BBB...'
+ ],
+ hiker:[
+ '..HHHHHH....','.HHHHHHHH...','..SSSSSS....','..SSSSSS....',
+ '.SSSSSSSS...','..NNNNNN....','..UUUUUU....','UUUUUUUUUU..',
+ 'UUUUA AUUU..','UUUUUUUUUU..','..UUUUUU....','...PPPP.....',
+ '..PPPPPP....','.PPP..PPP...','.PPP..PPP...','BBBB..BBBB..'
+ ],
+ rival:[
+ '..HHHHHH....','.HHHHHHHH...','..SSSSSS....','..SSSSSS....',
+ '...SSSS.....','..NNNNNN....','..UUUUUU....','.UUUUUUUU...',
+ '.UUAAAAUU...','UUUUUUUUUU..','..UUUUUU....','...PPPP.....',
+ '..PPPPPP....','..PP..PP....','..PP..PP....','.BBB..BBB...'
+ ],
+ rocket:[
+ '..HHHHHH....','.HHHHHHHH...','..SSSSSS....','..SSSSSS....',
+ '...SSSS.....','...NNNN.....','..UUUUUU....','.UUUUUUUU...',
+ '.UUUAAUUU...','.UUUUUUUU...','..UUUUUU....','...PPPP.....',
+ '..PPPPPP....','..PP..PP....','..PP..PP....','.BBB..BBB...'
+ ],
+ sailor:[
+ '...HHHH.....','..HHHHHH....','.HHHHHHHH...','..SSSSSS....',
+ '..SSSSSS....','...NNNN.....','..UUUUUU....','.UUUUUUUU...',
+ '.UUAAA AUU..','.UUUUUUUU...','..UUUUUU....','...PPPP.....',
+ '..PPPPPP....','..PP..PP....','..PP..PP....','.BBB..BBB...'
+ ],
+ psychic:[
+ '..HHHHHH....','.HHHHHHHH...','..SSSSSS....','..SSSSSS....',
+ '...SSSS.....','...NNNN.....','..UUUUUU....','.UUUUUUUU...',
+ '.UUUAAUUU...','..UUUUUU....','.UUUUUUUU...','UUUUUUUUUU..',
+ '..PPPPPP....','..PP..PP....','..PP..PP....','.BBB..BBB...'
+ ]
+});
 export function drawTrainer(g,cx,cy,kind='youngster',scale=1){
  const p=PAL[kind]||PAL.ace;
+ const shape=CLASS_SHAPES[kind]||CLASS_SHAPES[
+  ['scientist','ace','channeler','swimmer','cyclist'].includes(kind)?'psychic':
+  ['gentleman','blackbelt','brock'].includes(kind)?'hiker':'youngster'];
  const x=Math.round(cx-6*scale),y=Math.round(cy-10*scale);
- for(let row=0;row<SHAPE.length;row++)for(let col=0;col<12;col++){
-  let ch=SHAPE[row][col];if(ch==='.')continue;
-  // Variation in hats, clothing and faces inspired by FRLG trainer classes.
-  if(kind==='bugcatcher'&&row<3)ch='U';
-  if(kind==='lass'&&row>12&&col>=2&&col<=9)ch='U';
-  if(kind==='rocket'&&row===8&&(col===5||col===6))ch='A';
-  if(kind==='brock'&&row>=1&&row<=4&&col>=4&&col<=7)ch='H';
-  const c=p[ch]||0x182738;
-  g.fillStyle(c,1);g.fillRect(x+col*scale,y+row*scale,scale,scale);
+ // One-pixel shadow gives readable contact with grassy map tiles.
+ px(g,x+3*scale,y+17*scale,8*scale,2*scale,0x1b493c);
+ for(let row=0;row<shape.length;row++){
+  for(let col=0;col<12;col++){
+   let ch=shape[row][col]||'.';
+   if(ch===' '||ch==='.')continue;
+   const color=p[ch]||0x17253d;
+   px(g,x+col*scale,y+row*scale,scale,scale,color);
+  }
  }
- // Face expression and outline, headband/hair variation.
- g.fillStyle(0x202b39,1);
- g.fillRect(x+4*scale,y+4*scale,scale,scale);
- g.fillRect(x+7*scale,y+4*scale,scale,scale);
- if(kind==='rival'||kind==='youngster'){
-  g.fillStyle(kind==='rival'?0xd54b43:0x4c7fb5);
-  g.fillRect(x+2*scale,y+1*scale,8*scale,scale);
+ // Each outfit has a recognizable iconography at its tiny GBA scale.
+ const accent=(a,b,w,h,color)=>px(g,x+a*scale,y+b*scale,w*scale,h*scale,color);
+ accent(4,3,1,1,0x242839);accent(7,3,1,1,0x242839);
+ if(kind==='bugcatcher'){
+  accent(1,0,10,2,0x9fca6e);
+  // Butterfly net carried over the shoulder, two-tone mesh
+  accent(11,-5,1,16,0xe5bc76);
+  accent(9,-7,6,1,0xf2e2ac);accent(9,-6,1,6,0xe7d19c);
+  accent(14,-6,1,6,0xe7d19c);accent(9,0,6,1,0xf2e2ac);
+  accent(10,-4,4,1,0x77b3a6);
+ }else if(kind==='rocket'){
+  accent(2,1,8,2,0x333745);accent(4,8,4,2,0xd7535a);
+  accent(5,8,2,3,0xffffff);
+ }else if(kind==='rival'||kind==='youngster'){
+  accent(2,1,8,2,kind==='rival'?0xea5650:0x2f82cd);
+  accent(8,1,3,1,0xfbf2d3);
+  accent(8,10,2,2,0xe8cf75);
+ }else if(kind==='sailor'){
+  accent(1,0,10,2,0xffffff);
+  accent(4,-1,4,2,0x427fbb);accent(6,7,2,2,0x5c86c8);
+ }else if(kind==='hiker'||kind==='brock'){
+  accent(-2,6,4,9,0x685446);
+  accent(-1,6,2,7,0xb9a16f);
+  accent(4,7,4,2,0xefddaf);
+ }else if(kind==='lass'||kind==='channeler'){
+  accent(1,2,2,6,p.H);accent(9,2,2,6,p.H);
+  accent(5,10,2,2,0xffecb9);
+ }else if(kind==='scientist'){
+  accent(2,8,3,5,0xe8eeed);accent(8,8,3,5,0xe8eeed);
+  accent(5,5,2,1,0x496d7b);
+ }else if(kind==='psychic'){
+  accent(3,1,7,2,0x634393);accent(3,9,6,2,0xf5d2e3);
  }
 }
 function px(g,x,y,w,h,c){g.fillStyle(c,1);g.fillRect(Math.round(x),Math.round(y),w,h)}
