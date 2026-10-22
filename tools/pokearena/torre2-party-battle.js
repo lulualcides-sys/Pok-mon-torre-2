@@ -64,6 +64,9 @@ export function installPartyBattle(scene){
  const party=payload?.party;
  if(!party||scene.__torre2PartyInstalled||!scene.luchadores?.[1])return;
  scene.__torre2PartyInstalled=true;
+ // Phaser reuses the same Scene instance on restart. Clear the switch lock
+ // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
+ scene.__torre2Changing=false;
  const actors=scene.luchadores;
  for(const [side,member]of [[0,party.friend[party.playerIndex]],
                             [1,party.foes[party.enemyIndex]]]){
