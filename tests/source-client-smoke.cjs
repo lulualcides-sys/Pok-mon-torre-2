@@ -771,8 +771,9 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(rivalVisuals.oldCount,0,
    'Enemy KO must remove the previous PMD enemy sprite: '+
     JSON.stringify(rivalVisuals));
-  assert.equal(rivalVisuals.texture,'pmd-'+rivalVisuals.dex+'-Idle',
-   'The rival HUD species and visible enemy PMD sprite must match');
+  assert.ok(rivalVisuals.texture.startsWith('pmd-'+rivalVisuals.dex+'-'),
+   'Enemy PMD body must match the actual species even during Walk/Idle/Attack: '+
+    JSON.stringify(rivalVisuals));
   assert.equal(rivalVisuals.beam?.side,1,
    'Enemy KO uses its own red-beam recollection and release');
   await offline.evaluate(()=>{
