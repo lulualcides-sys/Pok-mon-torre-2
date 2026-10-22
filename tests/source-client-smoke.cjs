@@ -827,6 +827,26 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(shadowMiss.hpUnchanged,true,'Shadow Ball must not cause ghost damage on miss');
 
 
+  // Reset to a LIVE Phaser combat scene for later physics checks. The 11
+  // preceding move previews may have finished the sparring match while their
+  // particles were fading; standalone VFX collision tests must not call the
+  // native particle emitter of a scene already shut down. This changes no
+  // attack art or gameplay.
+  await tester.evaluate(async()=>{
+   const game=window.__pt2Game;
+   const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
+   const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
+   const pool=await import(new URL('./torre2/move-pool.js',entry.src).href);
+   const state=core.readCampaign();state.active=1;
+   const duel=core.startBattle(state);
+   duel.torre2Loadout=pool.resolveLoadout(state.team[1]);
+   duel.mandos=['kbm','cpu'];
+   game.scene.start('combate',duel);
+  });
+  await tester.waitForFunction(()=>{
+   const e=window.__pt2Game.scene.getScene('combate');
+   return e.scene.isActive()&&e.fase==='lucha'&&e.luchadores?.length===2;
+  },null,{timeout:45000});
   // Actual 7-star Swift physics: fan trajectories; independent hits only on contact.
   // It is not enough to call "usarHabilidad": prove sequential multi-hit
   // against stationary target, absolute miss, and partial hit after dodge.
