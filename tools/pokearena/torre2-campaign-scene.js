@@ -16,6 +16,7 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
 import {routeNode,MART_ITEMS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {trainerClass,trainerClassName,drawTrainer,drawShopItem} from './campaign-sprites.js';
+import {campaignRegion,KANTO_CHAPTERS} from './kanto-regions.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -123,20 +124,20 @@ class Campanha extends Phaser.Scene{
    index:first+i,x:xs[i],y:240-i*32,
    kind:routeNode(state.stage,first+i,limit).type
   }));
-  richMap(this,state.stage,points,page);
+  const region=campaignRegion(state.stage,page,totalPages,finished);
+  richMap(this,state.stage,points,page,region);
   const art=this.add.graphics().setDepth(2);
   ball(art,32,75,8);
-  text(this,46,68,finished?'KANTO · CAMPEÃO':
-   (state.stage===0?['ROTA 1 / VIRIDIAN','ROTA 2 / FLORESTA','PEWTER / GINÁSIO'][Math.min(2,page)]:
-    'ROTA '+(state.stage+1)+' / '+(gymStage?area.label:stage.city.toUpperCase())),{
-   fontSize:'14px',color:'#fff4d3',fontStyle:'bold',
-   stroke:'#072e3d',strokeThickness:2}).setDepth(4);
-  text(this,380,69,state.stage===0?['VIRIDIAN','FLORESTA','PEWTER · BROCK'][Math.min(2,page)]:gymStage?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():'ELITE FOUR',{
-   fontSize:'9px',color:'#baf4e9'}).setOrigin(1,0).setDepth(4);
+  text(this,46,68,region.title,{
+   fontSize:region.title.length>19?'12px':'14px',color:'#fff4d3',
+   fontStyle:'bold',stroke:'#072e3d',strokeThickness:2}).setDepth(4);
+  text(this,380,69,region.subtitle,{
+   fontSize:region.subtitle.length>21?'8px':'9px',
+   color:'#baf4e9'}).setOrigin(1,0).setDepth(4);
   const trainers=this.add.graphics().setDepth(6);
   for(const p of points){
    const current=p.index===state.trainer,won=p.index<state.trainer;
-   if(!won)drawTrainer(trainers,p.x+23,p.y-13,trainerClass(state.stage,p.index,p.kind),1);
+   if(!won)drawTrainer(trainers,p.x+23,p.y-13,trainerClass(state.stage,p.index,p.kind,region.biome),1);
    richNode(art,p.x,p.y,won?'done':current?'current':'future');
    if(won)text(this,p.x,p.y-1,'✓',{fontSize:'14px',
     color:'#ffffff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
@@ -152,7 +153,7 @@ class Campanha extends Phaser.Scene{
   }
   const kind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
    next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'RIVAL':'TREINADOR';
-  const nextTrainer=trainerClass(state.stage,state.trainer,next?.kind);
+  const nextTrainer=trainerClass(state.stage,state.trainer,next?.kind,region.biome);
   drawTrainer(trainers,35,278,nextTrainer,1);
   text(this,52,272,finished?'★ TODOS OS DESAFIOS CONCLUÍDOS':
    'PRÓXIMO: '+(next?.leader?'BROCK':trainerClassName(nextTrainer))+' · '+(next?.id||'').toUpperCase(),{
