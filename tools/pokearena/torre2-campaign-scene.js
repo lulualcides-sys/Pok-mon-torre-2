@@ -188,17 +188,17 @@ class Campanha extends Phaser.Scene{
    const current=p.index===state.trainer,won=p.index<state.trainer;
    if(!won)drawTrainer(trainers,p.x+23,p.y-13,trainerClass(state.stage,p.index,p.kind,region.biome),1);
    richNode(art,p.x,p.y,won?'done':current?'current':'future');
-   if(won)text(this,p.x,p.y-1,'✓',{fontSize:'14px',
+   if(won)text(this,p.x,p.y-1,'✓',{fontSize:'9px',
     color:'#ffffff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
    else if(current){
     text(this,p.x,p.y-1,p.kind==='leader'?'G':
      p.kind==='rocket'?'R':p.kind==='rival'?'!':'▶',
-     {fontSize:'13px',color:'#fff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
+     {fontSize:'10px',color:'#132536',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
     this.add.zone(p.x,p.y,42,42).setInteractive({useHandCursor:true})
      .setDepth(9).on('pointerdown',()=>this.enterBattle(state));
    }else text(this,p.x,p.y,p.kind==='leader'?'G':
      p.kind==='rocket'?'R':p.kind==='rival'?'!':String(p.index+1),{
-     fontSize:'11px',fontStyle:'bold',color:'#fff'}).setOrigin(.5).setDepth(5);
+     fontSize:'8px',fontStyle:'bold',color:'#fff'}).setOrigin(.5).setDepth(5);
   }
   const kind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
    next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'RIVAL':'TREINADOR';
