@@ -46,6 +46,7 @@ const PAL={
  ace:{H:0x533b2a,S:0xf0c29b,N:0xa76b4e,U:0xd69a46,A:0xf2d38b,P:0x3b5375,B:0x24364e}
 };
 export function trainerClass(stage,index,type='trainer',biome='route'){
+ if(type==='leader'&&stage>=12)return 'rival';
  if(type==='leader')return stage===0?'brock':
   ['water-gym','electric-gym','grass-gym','poison-gym','psychic-gym',
    'fire-gym'].includes(biome)?({
