@@ -440,7 +440,7 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(partyUi.panel.includes('TROCAR POKÉMON'),
    'Real Phaser combat exposes party selector');
-  assert.ok(partyUi.panel.includes('SUA EQUIPE')&&partyUi.panel.includes('EQUIPE RIVAL'),
+  assert.ok(partyUi.panel.includes('SEUS POKÉMON')&&partyUi.panel.includes('RIVAL'),
    'Pokéball badges show both combat parties below their life HUDs');
   assert.ok(partyUi.control&&partyUi.target,'Switch must be clickable by touch');
   await offline.waitForFunction(()=>{
