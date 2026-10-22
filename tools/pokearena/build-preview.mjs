@@ -79,7 +79,8 @@ body.torre2-landscape-map #juego canvas{
  margin:0!important;padding:0!important;transform:none!important;
  image-rendering:pixelated
 }
-</style>\\n</head>`);
+</style>
+</head>`);
 html=html.replace('</head>','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="referrer" content="no-referrer">\n</head>');
 await fs.writeFile(index,html);
 
