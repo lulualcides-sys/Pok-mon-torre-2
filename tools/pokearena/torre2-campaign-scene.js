@@ -166,8 +166,8 @@ class Campanha extends Phaser.Scene{
    return zone;
   };
   if(region.biome==='city'){
-   worldZone(74,229,63,43,()=>this.centerScreen(state));
-   worldZone(327,152,65,40,()=>this.martScreen(state));
+   worldZone(160,237,75,52,()=>this.centerScreen(state));
+   worldZone(314,134,82,55,()=>this.martScreen(state));
   }else if(region.biome==='forest'||region.biome==='safari'){
    if(gymStage)worldZone(329,169,81,65,()=>this.grassScreen(state));
   }else if(region.biome.endsWith('-gym')||region.biome==='hall'){
