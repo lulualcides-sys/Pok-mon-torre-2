@@ -107,6 +107,13 @@ class Campanha extends Phaser.Scene{
   }
  }
  create(){
+  // Battles always run at 640x360. Restore the user's panoramic campaign
+  // preference when returning from a battle while browser fullscreen stays on.
+  if(this.scale.isFullscreen&&this.registry.get('torre2-wide-map')===true&&
+     (this.scale.gameSize?.width||640)===640){
+   const ratio=(window.innerWidth||640)/Math.max(1,window.innerHeight||360);
+   this.scale.resize(Math.min(860,Math.max(640,Math.round(360*ratio))),360);
+  }
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
@@ -138,17 +145,21 @@ class Campanha extends Phaser.Scene{
    const target=Math.min(860,Math.max(640,Math.round(360*ratio)));
    if(target>665&&typeof this.scale.resize==='function'){
     this.registry.set('torre2-panel-collapsed',false);
+    this.registry.set('torre2-wide-map',true);
     this.scale.resize(target,360);
     this.scene.restart();
    }else if(this.__campaignMapObjects?.length){
     this.setCampaignPanelCollapsed(true);
    }
-   if(screen.orientation?.lock)
-    Promise.resolve(screen.orientation.lock('landscape')).catch(()=>{});
+   if(screen.orientation?.lock){
+    try{Promise.resolve(screen.orientation.lock('landscape')).catch(()=>{});}
+    catch(_){}
+   }
   });
   // Restore the native aspect ratio on exiting fullscreen. No other Arena
   // 2D mode inherits the campaign's optional ultrawide viewport.
   const leaveWide=()=>{
+   this.registry.set('torre2-wide-map',false);
    if((this.scale.gameSize?.width||640)>640){
     this.scale.resize(640,360);
     if(this.scene.isActive())this.scene.restart();
@@ -157,6 +168,7 @@ class Campanha extends Phaser.Scene{
   this.scale.on('leavefullscreen',leaveWide);
   this.events.once('shutdown',()=>this.scale.off('leavefullscreen',leaveWide));
   this.button(537+wideExtra*.65,24,76,29,'MENU',()=>{
+   this.registry.set('torre2-wide-map',false);
    if((this.scale.gameSize?.width||640)>640)this.scale.resize(640,360);
    this.scene.start('titulo',{menu:'principal'});
   });
