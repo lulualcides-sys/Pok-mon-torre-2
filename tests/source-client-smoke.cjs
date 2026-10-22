@@ -469,11 +469,26 @@ const server=http.createServer(async(req,res)=>{
     c.enterBattle(c.__campaignMap&&JSON.parse(
       localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')));
   });
-  await offline.waitForFunction(()=>{
-   const b=window.__pt2Game.scene.getScene('combate');
-   return b.scene.isActive()&&b.__torre2PartyInstalled&&
-     b.fase==='lucha'&&b.datos.torre2.party.friend.length===2;
-  },null,{timeout:26000});
+  try{
+   await offline.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.__torre2PartyInstalled&&
+      b.fase==='lucha'&&b.datos.torre2.party.friend.length===2;
+   },null,{timeout:26000});
+  }catch(error){
+   const diag=await offline.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return {active:b.scene.isActive(),status:b.sys.settings.status,
+     phase:b.fase,installed:b.__torre2PartyInstalled,
+     fighters:b.luchadores?.map(l=>l.def?.id),
+     hasParty:!!b.datos?.torre2?.party,
+     loading:b.load?.isLoading(),pending:b.load?.totalToLoad,
+     loadFailure:b.load?.totalFailed,
+     textures:b.textures.getTextureKeys().filter(k=>k.startsWith('pmd-')).length};
+   });
+   console.error('PARTY_STARTUP_DIAGNOSTIC',JSON.stringify(diag));
+   throw error;
+  }
   const partyUi=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    const panel=b.children.list.filter(o=>typeof o.text==='string')
