@@ -165,13 +165,12 @@ export function installPartyBattle(scene){
   const fx=sharedBeam;
   const px=actor.x,py=actor.y-Math.max(18,actor.alto*.6);
   const ball=sharedBall;
+  // Exact same crisp FireRed pixel-ball art as inventory/team HUD.
+  // Draw into an existing Phaser Graphics surface; never generate circles
+  // or allocate a new PNG/canvas for every swap.
   const drawBall=()=>{
-   ball.clear();ball.fillStyle(0x101d2e);
-   ball.fillCircle(from.x,from.y,8);
-   ball.fillStyle(0xe95359);ball.fillRect(from.x-6,from.y-6,12,6);
-   ball.fillStyle(0xffffff);ball.fillRect(from.x-6,from.y,12,6);
-   ball.lineStyle(2,0x192c39);ball.strokeCircle(from.x,from.y,8);
-   ball.fillStyle(0xfff4d2);ball.fillCircle(from.x,from.y,2);
+   ball.clear();
+   drawShopItem(ball,Math.round(from.x),Math.round(from.y),'pokeball',.95);
   };
   drawBall();
   let frames=0,restarted=false;
@@ -230,8 +229,20 @@ export function installPartyBattle(scene){
      scene.game.events.off('step',release);return;
     }
     const t=Math.min(1,++comingFrame/12);
-    fx.clear();fx.lineStyle(3,0xff6171,1-t);
-    fx.lineBetween(from.x,from.y,actor.x,actor.y-actor.alto*.6);
+    fx.clear();
+    const targetY=actor.y-actor.alto*.6;
+    // Three pixel-bright layers simulate the compact release beam in the
+    // reference: red silhouette, hot core and a tiny 4-way opening flash.
+    fx.lineStyle(6,0xd83456,(1-t)*.4);
+    fx.lineBetween(from.x,from.y,actor.x,targetY);
+    fx.lineStyle(3,0xff6c81,(1-t)*.9);
+    fx.lineBetween(from.x,from.y,actor.x,targetY);
+    fx.lineStyle(1,0xfff3dc,(1-t));
+    fx.lineBetween(from.x,from.y,actor.x,targetY);
+    fx.fillStyle(0xffe0bb,(1-t)*.9);
+    const flash=Math.max(1,Math.round(9*(1-t)));
+    fx.fillRect(Math.round(actor.x)-flash,Math.round(targetY)-1,flash*2,2);
+    fx.fillRect(Math.round(actor.x)-1,Math.round(targetY)-flash,2,flash*2);
     if(actor.spr?.active)
      actor.spr.setAlpha(.1+.9*t).setScale(replacementScale*(.15+.85*t));
     if(comingFrame>=12){
@@ -253,12 +264,19 @@ export function installPartyBattle(scene){
    scene.fase='ko';
    const t=Math.min(1,++frames/18);
    fx.clear();
-   fx.lineStyle(2+3*(1-t),0xff525f,.9);
+   // Pixel-beam recall in three crisp colors. Avoid the huge translucent
+   // triangle that made the original look like a generic laser pointer.
+   const fade=1-t;
+   fx.lineStyle(5,0xa52146,.55*fade);
    fx.lineBetween(from.x,from.y,px,py);
-   fx.lineStyle(1,0xffe2cb,1);
+   fx.lineStyle(3,0xff4767,.95*fade);
    fx.lineBetween(from.x,from.y,px,py);
-   fx.fillStyle(0xff4e63,.35*(1-t));
-   fx.fillTriangle(from.x,from.y,px-16*(1-t),py,px+16*(1-t),py);
+   fx.lineStyle(1,0xffede1,fade);
+   fx.lineBetween(from.x,from.y,px,py);
+   fx.fillStyle(0xffc0be,.7*fade);
+   const spark=Math.max(1,Math.round(7*fade));
+   fx.fillRect(Math.round(px)-spark,Math.round(py)-1,spark*2,2);
+   fx.fillRect(Math.round(px)-1,Math.round(py)-spark,2,spark*2);
    if(actor.spr?.active){
     actor.spr.setAlpha(Math.max(.05,1-t));
     actor.spr.setScale(Math.max(.06,(actor.escala||1)*(1-t*.9)));
