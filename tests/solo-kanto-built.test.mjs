@@ -10,7 +10,7 @@ assert.ok(version,'Captured Phaser original client not staged');
 // trainer art, shops or capture modules. Check each staged ES module.
 for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
  'torre2/campaign-sprites.js','torre2/capture-arena.js',
- 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js']){
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js']){
  const source=path.join(stage,version,name);
  const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
  assert.equal(parsed.status,0,
@@ -66,6 +66,39 @@ assert.equal(KANTO_ROUTES.length,9,'Eight regional gyms plus Victory Road grass 
 const {KANTO_CHAPTERS,campaignRegion}=await import(pathToFileURL(
  path.join(stage,version,'torre2/kanto-regions.js')));
 assert.equal(KANTO_CHAPTERS.length,13,'Eight gyms, four Elite Four and Champion rival');
+const {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,
+ awardCampaignExperience,enforceCampaignCap,KANTO_LEVEL_CAPS}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-levels.js')));
+const {worldPosition,mapVisitInfo,drawKantoWorldMap}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-world-map.js')));
+assert.deepEqual(KANTO_LEVEL_CAPS.slice(0,8),[14,21,24,29,43,43,47,50],
+ 'Every gym uses the exact FireRed ace level');
+assert.equal(typeof drawKantoWorldMap,'function','Town Map is a live Phaser scene');
+assert.equal(worldPosition(0,0,13),'viridian','First town map pin starts at Viridian');
+assert.equal(worldPosition(0,13,13),'pewter','Before Brock pin moves to Pewter City');
+assert.equal(worldPosition(1,7,15),'moon','Mt. Moon is an early Cerulean checkpoint');
+assert.equal(mapVisitInfo(6,0,25).cap,47,'Cinnabar level cap mirrors Blaine');
+for(let gym=0;gym<13;gym++){
+ const cap=currentLevelCap(gym),limit=TRAINERS_PER_GYM(gym);
+ assert.equal(trainerLevelFor(gym,limit,limit,true),cap);
+ assert.ok(trainerLevelFor(gym,limit-1,limit)<cap,'Route trainer must not exceed boss ace');
+ assert.ok(wildLevelFor(gym,3,limit)<cap,'Wild encounters must stay below gym cap');
+ assert.ok(xpRewardFor(gym,limit)>0);
+}
+const {createPokemonProgression,totalExperienceForLevel}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/progression.js')));
+const capped=createPokemonProgression('charmander',13);
+for(let i=0;i<100;i++)awardCampaignExperience(capped,10000,0);
+assert.equal(capped.level,14,'Unlimited trainer fights never pass Brock cap');
+assert.ok(capped.experience<totalExperienceForLevel(15));
+const oldOverleveled=createPokemonProgression('pidgey',26);
+const downleveled={id:'pidgey',progression:oldOverleveled};
+assert.equal(enforceCampaignCap(downleveled,0),true,'Migrate old overleveled saves');
+assert.equal(oldOverleveled.level,14);
+const testerOverleveled={id:'mewtwo',progression:createPokemonProgression('mewtwo',50)};
+assert.equal(enforceCampaignCap(testerOverleveled,0),false,
+ 'Explicit level-50 test Mewtwo is preserved');
+
 assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['route','forest','pewter'],
  'Brock must be reached through Route 1, Viridian Forest and Pewter');
 for(let regionStage=0;regionStage<13;regionStage++){
