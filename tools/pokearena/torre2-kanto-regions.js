@@ -88,11 +88,9 @@ export function campaignRegion(stage,page,totalPages=3,champion=false){
  // No gaps if an old or newly extended route contains more pages than
  // references: repeat the final area without losing leader accessibility.
  const actualPage=Math.max(0,Math.min(totalPages-1,page));
- let p=Math.min(chapter.length-1,actualPage);
- // Always reserve the final page for the leader arena.
- if(actualPage===totalPages-1)p=chapter.length-1;
- else if(totalPages<chapter.length)
-  p=Math.floor(actualPage*(chapter.length-1)/Math.max(1,totalPages-1));
+ // Distribute the chapter's distinct locations across all trainer pages,
+ // keeping the leader room on the last page (including old 30+ trainer saves).
+ const p=Math.floor(actualPage*(chapter.length-1)/Math.max(1,totalPages-1));
  const [title,subtitle,biome]=chapter[p];
  return {title,subtitle,biome,stage,page:actualPage,chapterPage:p};
 }
