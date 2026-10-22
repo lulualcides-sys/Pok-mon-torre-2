@@ -175,10 +175,12 @@ export function installPartyBattle(scene){
   };
   drawBall();
   let frames=0,restarted=false;
+  const detachRecall=()=>scene.game.events.off('step',step);
   const enterNext=()=>{
    if(restarted||!scene.scene.isActive())return;
    restarted=true;
-   scene.game.events.off('step',step);
+   detachRecall();
+   scene.events.off('shutdown',detachRecall);
    const member=side===0?party.friend[next]:party.foes[next];
    const actor=actors[side];
    let found;
@@ -234,11 +236,13 @@ export function installPartyBattle(scene){
      actor.spr.setAlpha(.1+.9*t).setScale(replacementScale*(.15+.85*t));
     if(comingFrame>=12){
      fx.clear();scene.game.events.off('step',release);
+     scene.events.off('shutdown',detachRelease);
      scene.__torre2Changing=false;scene.fase='lucha';
     }
    };
+   const detachRelease=()=>scene.game.events.off('step',release);
    scene.game.events.on('step',release);
-   scene.events.once('shutdown',()=>scene.game.events.off('step',release));
+   scene.events.once('shutdown',detachRelease);
    redrawPartyHud();
   };
   // A global frame-step remains live during native KO hitstop. The original
@@ -266,7 +270,7 @@ export function installPartyBattle(scene){
   // native hitstop, so game-level frames and a guarded fallback are used.
   scene.game.events.on('step',step);
   scene.time.delayedCall(550,enterNext);
-  scene.events.once('shutdown',()=>scene.game.events.off('step',step));
+  scene.events.once('shutdown',detachRecall);
  }
  function finish(won){
   scene.fase='ko';
