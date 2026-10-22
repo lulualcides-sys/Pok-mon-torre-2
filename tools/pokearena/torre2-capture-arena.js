@@ -113,6 +113,10 @@ export function installWildCapture(scene){
   const caption=txt(scene,320,100,'POKÉBOLA, VAI!',13,'#ffe5aa').setOrigin(.5);
   activeVisuals.push(gfx,caption);
   const obj=enemyPortrait(enemy);
+  // The native Arena 2D fighter also owns a ground ring/shadow. The ball
+  // must absorb those visuals too, or a red oval remains under an empty tile.
+  const ground=[enemy.sombra,enemy.anillo].filter(x=>x?.active!==false&&x);
+  const groundVisible=ground.map(x=>x.visible);
   const before=obj?{x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY,
    alpha:obj.alpha,visible:obj.visible}:null;
   // The sprite can be offset from its logical fighter spawn: aim at the
@@ -130,6 +134,9 @@ export function installWildCapture(scene){
    drawCaptureBall(gfx,x,y,kind,2,angle);
   };
   const restore=()=>{
+   ground.forEach((effect,i)=>{
+    if(effect.active!==false)effect.setVisible(groundVisible[i]);
+   });
    if(obj&&obj.active!==false){
     obj.setAlpha(before.alpha);
     obj.setScale(before.sx,before.sy);
@@ -156,6 +163,9 @@ export function installWildCapture(scene){
       drawCaptureBall(gfx,end.x,end.y,kind,2,0,true);
      },onComplete:()=>{
       if(obj)obj.setAlpha(0);
+      ground.forEach(effect=>{
+       if(effect.active!==false)effect.setVisible(false);
+      });
       caption.setText('A POKÉBOLA CAIU...');
       const floorY=Math.min(315,enemyY+37),drop={t:0};
       scene.tweens.add({targets:drop,t:1,duration:350,ease:'Bounce.easeOut',

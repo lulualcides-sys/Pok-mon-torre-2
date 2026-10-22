@@ -968,6 +968,12 @@ const server=http.createServer(async(req,res)=>{
     return battle.children.list.some(o=>typeof o.text==='string'&&
       o.text.includes('GOTCHA!'));
   },null,{timeout:12000,polling:120});
+  const grounded=await offline.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),enemy=b.luchadores[1];
+    return {ring:enemy.anillo?.visible,shadow:enemy.sombra?.visible};
+  });
+  assert.notEqual(grounded.ring,true,'Caught enemy must not leave a red target ring');
+  assert.notEqual(grounded.shadow,true,'Caught enemy must not leave a live shadow');
   await offline.screenshot({path:'test-evidence/torre2-wild-capture-gotcha.png',fullPage:true});
   await offline.waitForFunction(()=>{
     if(!window.__pt2Game?.scene.isActive('campanha'))return false;
