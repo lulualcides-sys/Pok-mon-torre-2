@@ -1,176 +1,235 @@
-/* Wild capture HUD — actual Pokémon Torre 2 Phaser combat scene, not an image.
- * Pixel-art ball throw, red recall beam, fall, 3 visible shake slots, break-out.
- * The enemy's genuine battle HP decides the catch odds.
+/* Pokémon Torre 2 — animated FireRed-style single-ball capture.
+ * One ball = one throw, one red recall beam and up to three shakes.
+ * Four internal RNG checks determine the outcome, never four attempts.
+ * Separate from approved Arena 2D Pokémon sprites and move effects.
  */
 import {captureChance} from './capture-mechanics.js';
 import {readCampaign,attemptCapture} from './campaign-core.js';
-const FONT='Pixelify Sans, monospace';
-const LABEL={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL'};
-function message(scene,x,y,s,size=11,color='#f0f7ff'){
- return scene.add.text(x,y,s,{fontFamily:FONT,fontSize:size+'px',
-  color,fontStyle:'bold',stroke:'#081b35',strokeThickness:3}).setDepth(1201);
-}
-function block(g,x,y,w,h,c){g.fillStyle(c,1);g.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)))}
-function ballSprite(g,x,y,kind='pokeball',scale=2,tilt=0){
- const rim=kind==='ultraball'?0xe4ca56:kind==='greatball'?0x2e99e0:0xf04d52;
- const dark=0x10243e,shift=Math.round(Math.sin(tilt)*2);
- const sprite=[
-  '....KKKK....','..KKWWWWKK..','.KWWWWWWWWK.','KWWWWWWWWWWK',
-  'KCCCCCCCCCCK','KCCCCCCCCCCK','KKKKKWWKKKKK','KWWWWKKWWWWK',
-  'KWWWWWWWWWWK','.KWWWWWWWWK.','..KKWWWWKK..','....KKKK....'];
- for(let row=0;row<12;row++)for(let col=0;col<12;col++){
-  const cc=sprite[row][col];if(cc==='.'){continue}
-  let fill=cc==='K'?dark:cc==='C'?rim:0xf3f5fa;
-  if(row<3&&cc==='W')fill=0xffffff;
-  block(g,x+(col-6)*scale+shift,y+(row-6)*scale,scale,scale,fill);
+const FONT='Pixelify Sans,monospace';
+const COLORS={
+ pokeball:{top:0xe44746,shine:0xff9b76,bottom:0xfff8df},
+ greatball:{top:0x277ec4,shine:0xa2e7ff,bottom:0xfcf6df},
+ ultraball:{top:0x262a3b,shine:0xf4d871,bottom:0xfff9e8}
+};
+// Authentic two-tone, horizontally split Pokéball in authored pixel cells.
+// Red top, white bottom, thick charcoal separator, center white latch.
+const BALL=[
+ '......OOOO......','....OOXXXXOO....','...OXXXXXXXXO...',
+ '..OXXXXXXXXXXO..','.OXXXXXXXXXXXXO.','.OXXXXXXXXXXXXO.',
+ 'OXXXXXXXXXXXXXXO','OOOOOOWWWOOOOOOO','OWWWWWOOOWWWWWWO',
+ 'OOWWWWWOOWWWWWOO','.OWWWWWWWWWWWWO.','..OWWWWWWWWWWWO..',
+ '...OWWWWWWWWWO...','....OOWWWWWOO....','......OOOO......'];
+function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+function ball(g,cx,cy,kind,scale=2,rotation=0){
+ const c=COLORS[kind]||COLORS.pokeball;
+ const shift=Math.round(Math.sin(rotation)*1.7*scale);
+ const x=Math.round(cx-8*scale+shift),y=Math.round(cy-7*scale);
+ for(let row=0;row<BALL.length;row++)for(let col=0;col<16;col++){
+  const v=BALL[row][col];if(v==='.')continue;
+  const base=v==='O'?0x151d32:v==='W'?c.bottom:c.top;
+  px(g,x+col*scale,y+row*scale,scale,scale,base);
  }
- block(g,x-scale,y-scale,scale*2,scale*2,0x192c45);
- block(g,x,y,scale,scale,0xffffff);
+ px(g,cx-2*scale+shift,cy-1*scale,4*scale,3*scale,0x141d2c);
+ px(g,cx-scale+shift,cy,2*scale,2*scale,0xfffcdd);
+ px(g,cx-scale+shift,cy,scale,scale,0xffffff);
+ px(g,cx-4*scale+shift,cy-4*scale,3*scale,scale,c.shine);
  if(kind==='ultraball'){
-  block(g,x-scale*3,y-scale*4,scale*2,scale,0x101c2e);
-  block(g,x+scale*2,y-scale*4,scale*2,scale,0x101c2e);
+  px(g,cx-5*scale+shift,cy-4*scale,2*scale,3*scale,0xe8c75f);
+  px(g,cx+3*scale+shift,cy-4*scale,2*scale,3*scale,0xe8c75f);
  }else if(kind==='greatball'){
-  block(g,x-scale*4,y-scale*4,scale,scale,0xd6464e);
-  block(g,x+scale*3,y-scale*4,scale,scale,0xd6464e);
+  px(g,cx-5*scale+shift,cy-3*scale,2*scale,2*scale,0xdb4f56);
+  px(g,cx+3*scale+shift,cy-3*scale,2*scale,2*scale,0xdb4f56);
  }
 }
-function panel(scene,x,y,w,h){
- const g=scene.add.graphics().setDepth(1198);
- block(g,x+2,y+3,w,h,0x031020);block(g,x,y,w,h,0x08223c);
- block(g,x+1,y+1,w-2,h-2,0x4895b6);
- block(g,x+3,y+3,w-6,h-6,0x0c2b44);
- block(g,x+4,y+4,w-8,2,0x8de4e4);
+function txt(scene,x,y,value,size=11,color='#f5f4e5'){
+ return scene.add.text(x,y,value,{fontFamily:FONT,fontSize:size+'px',
+  fontStyle:'bold',color,stroke:'#0a233b',strokeThickness:3}).setDepth(1206);
+}
+function frame(scene,x,y,w,h){
+ const g=scene.add.graphics().setDepth(1203);
+ px(g,x+2,y+3,w,h,0x061120);
+ px(g,x,y,w,h,0x091b2c);px(g,x+1,y+1,w-2,h-2,0xf0d07d);
+ px(g,x+3,y+3,w-6,h-6,0x113952);px(g,x+5,y+4,w-10,2,0x67b8a2);
  return g;
 }
-function click(scene,x,y,w,h,fn){
- return scene.add.zone(x,y,w,h).setDepth(1250).setInteractive({useHandCursor:true}).on('pointerdown',fn);
+function hit(scene,x,y,w,h,onClick){
+ return scene.add.zone(x,y,w,h).setDepth(1215).setInteractive({useHandCursor:true})
+ .on('pointerdown',onClick);
 }
-function battleStatus(enemy){
- const v=enemy?.status?.nombre||enemy?.estado?.nombre||enemy?.estado||
-  enemy?.est?.estado||enemy?.statuses?.map(x=>x?.name||x?.tipo).join(' ')||'';
- return typeof v==='string'?v:'';
+function statusName(enemy){
+ const raw=enemy?.status?.nombre??enemy?.estado?.nombre??enemy?.estado??
+  enemy?.est?.estado??enemy?.statuses?.map(x=>x?.name||x?.tipo).join(' ')??'';
+ return typeof raw==='string'?raw:'';
+}
+function enemyPortrait(enemy){
+ const s=enemy?.sprite;
+ if(s?.setAlpha&&s?.setScale)return s;
+ return null;
+}
+function artBeam(g,ballX,ballY,enemyX,enemyY,t){
+ // Narrow red cone from the opened ball TO the enemy; growing brighter
+ // and contracting as the Pokémon is recalled.
+ const spread=18*(1-t*.8),a=1-t*.65;
+ g.fillStyle(0xf33152,.24*a);
+ g.fillTriangle(ballX,ballY,enemyX-spread,enemyY-spread,enemyX+spread,enemyY+spread);
+ g.lineStyle(5,0xff5267,.38*a);g.lineBetween(ballX,ballY,enemyX,enemyY);
+ g.lineStyle(2,0xffb0aa,.92*a);g.lineBetween(ballX,ballY,enemyX,enemyY);
+ for(let i=0;i<10;i++){
+  const f=(i*.19+t*.41)%1.0,jitter=Math.sin(i*6.3+t*11)*spread*.6;
+  const x=ballX+(enemyX-ballX)*f,y=ballY+(enemyY-ballY)*f+jitter;
+  px(g,x,y,i%3===0?4:2,2,i%3?0xff6b76:0xffe4b7,Math.max(.15,a));
+ }
 }
 export function installWildCapture(scene){
  if(scene.__torre2WildCapture||scene.datos?.torre2?.kind!=='wild')return;
+ const enemy=scene.luchadores?.[1];
+ if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
- const enemy=scene.luchadores?.[1];if(!enemy)return;
- const ui=panel(scene,455,41,169,39);
- const title=message(scene,466,45,'◉ CAPTURAR',13,'#ffe2a0');
- const status=message(scene,466,64,'HP do alvo: 100%',9,'#aff2cf');
- const launch=click(scene,539,61,171,41,showChoices);
- const cleanup=()=>{scene.events.off('update',refresh);scene.__torre2WildCapture=false;};
+ const hud=frame(scene,458,41,169,42);
+ txt(scene,467,47,'BOLSA  /  POKÉBOLA',11,'#fff0b9');
+ const hpLine=txt(scene,469,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
+ hit(scene,539,61,171,42,showChoices);
+ let menu=[],busy=false,activeVisuals=[];
+ const cleanup=()=>{
+  scene.events.off('update',refresh);
+  scene.__torre2WildCapture=false;
+  for(const item of activeVisuals)item.destroy?.();
+  activeVisuals=[];
+ };
  scene.events.once('shutdown',cleanup);
  function refresh(){
-  if(!scene.scene.isActive()||!enemy?.hpMax)return;
-  const hp=Math.max(0,Math.ceil((enemy.hp/enemy.hpMax)*100));
-  status.setText('HP '+hp+'% · '+(hp<=25?'ótima chance':hp<=50?'chance maior':'enfraqueça'));
+  if(!scene.scene.isActive()||!enemy.hpMax)return;
+  const percent=Math.max(0,Math.ceil(100*enemy.hp/enemy.hpMax));
+  hpLine.setText('HP '+percent+'% · '+(percent<=25?'BOA CHANCE':
+   percent<=50?'ENFRAQUECIDO':'ENFRAQUEÇA'));
  }
- scene.events.on('update',refresh);
- refresh();
- let menu=[],busy=false;
- const close=()=>{
-  for(const item of menu)item.destroy?.();menu=[];
- };
+ scene.events.on('update',refresh);refresh();
  function add(item){menu.push(item);return item}
+ function close(){for(const item of menu)item.destroy?.();menu=[]}
  function showChoices(){
   if(busy||enemy.hp<=0)return;
   close();
   const state=readCampaign();if(!state?.pendingWild)return;
-  const choice=add(panel(scene,175,115,292,153));
-  const top=add(message(scene,188,125,'LANÇAR POKÉBOLA',16,'#ffdf8a'));
+  add(frame(scene,173,109,299,169));
+  add(txt(scene,188,119,'ESCOLHA UMA POKÉBOLA',15,'#ffe5a4'));
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
-  add(message(scene,190,150,enemy.def?.id?.toUpperCase()+' · HP '+hp+'%',11));
-  const keys=['pokeball','greatball','ultraball'];
-  keys.forEach((key,i)=>{
-   const yy=179+i*24;
-   const gr=add(scene.add.graphics().setDepth(1202));
-   ballSprite(gr,201,yy+7,key,1);
-   const probability=captureChance({...state.pendingWild,hpPercent:hp,
-    status:battleStatus(enemy)},key);
-   add(message(scene,217,yy,LABEL[key]+' x'+(state.inventory[key]||0)+
-    '  '+Math.round(probability*100)+'%',10));
-   add(click(scene,316,yy+8,275,22,()=>throwBall(key)));
-  });
-  add(message(scene,192,251,'Toque na arena para cancelar',9,'#b5d2e2'));
-  add(click(scene,325,279,250,21,close));
+  add(txt(scene,187,142,state.pendingWild.id.toUpperCase()+
+   ' · HP '+hp+'%',11,'#d2f5e5'));
+  const labels={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL'};
+  for(const [i,kind]of ['pokeball','greatball','ultraball'].entries()){
+   const y=178+i*27,owned=state.inventory[kind]||0;
+   const draw=add(scene.add.graphics().setDepth(1208));
+   ball(draw,200,y+4,kind,1);
+   const chance=captureChance({...state.pendingWild,hpPercent:hp,
+    status:statusName(enemy)},kind);
+   add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
+    '  '+Math.round(chance*100)+'%',10,owned?'#f9f6e9':'#a88c9b'));
+   if(owned)add(hit(scene,316,y+8,275,25,()=>throwBall(kind)));
+  }
+  add(txt(scene,225,265,'TOQUE NA MARGEM PARA VOLTAR',8,'#9bd9dc'));
+  add(hit(scene,324,290,250,17,close));
  }
  function throwBall(kind){
-  if(busy)return;
-  const state=readCampaign();if(!state?.pendingWild||!(state.inventory?.[kind]>0))return;
-  if(!enemy.hpMax||enemy.hp<=0)return;
+  if(busy||enemy.hp<=0||!enemy.hpMax)return;
+  const save=readCampaign();if(!save?.pendingWild||(save.inventory?.[kind]??0)<1)return;
   busy=true;close();
-  const hpPercent=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
+  const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
+  // Exactly one inventory decrement, one capture roll and one projectile.
   const oldPhase=scene.fase;scene.fase='capturando';
-  const result=attemptCapture(state,Math.random,kind,
-   {duringBattle:true,hpPercent,status:battleStatus(enemy)});
-  const gfx=scene.add.graphics().setDepth(1205);
-  const caption=message(scene,320,112,'',14,'#ffebac').setOrigin(.5);
-  const fighter=scene.luchadores?.[1];
-  const start={x:110,y:284},end={x:Math.max(200,Math.min(520,fighter?.x??444)),
-   y:Math.max(145,Math.min(294,fighter?.y??220))};
-  const point={t:0,shake:0};
-  const draw=(phase)=>{
+  const result=attemptCapture(save,Math.random,kind,
+   {duringBattle:true,hpPercent:hp,status:statusName(enemy)});
+  const gfx=scene.add.graphics().setDepth(1208);
+  const caption=txt(scene,320,100,'POKÉBOLA, VAI!',13,'#ffe5aa').setOrigin(.5);
+  activeVisuals.push(gfx,caption);
+  const obj=enemyPortrait(enemy);
+  const before=obj?{x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY,
+   alpha:obj.alpha,visible:obj.visible}:null;
+  const enemyX=Math.max(165,Math.min(555,Number(enemy.x)||444)),
+   enemyY=Math.max(130,Math.min(291,Number(enemy.y)||221));
+  const shot={x:116,y:281},end={x:enemyX-18,y:enemyY-23};
+  const ballPos={t:0,angle:0},shake={phase:0};
+  const drawBall=(x,y,angle=0)=>{
    gfx.clear();
-   if(phase==='beam'){
-    for(let k=0;k<9;k++){
-     const sx=end.x-38+k*10,ey=end.y-5+Math.sin(k*.9)*8;
-     gfx.lineStyle(k%2?2:3,k%3?0xff6d75:0xeb324c,k%3?.8:1);
-     gfx.lineBetween(sx,ey,end.x,end.y+4);
-     block(gfx,end.x-14+k*3,end.y-14+Math.sin(k)*9,2,2,0xff8899);
-    }
-   }
-   const y=phase==='throw'?start.y+(end.y-start.y)*point.t-
-    95*Math.sin(Math.PI*point.t):end.y+16;
-   const x=phase==='throw'?start.x+(end.x-start.x)*point.t:
-    end.x+Math.sin(point.shake)*5;
-   block(gfx,x-14,y+10,28,3,0x122d33);
-   ballSprite(gfx,x,y,kind,2,phase==='throw'?point.t*5:point.shake);
+   px(gfx,x-15,y+22,31,3,0x061e27,.65);
+   ball(gfx,x,y,kind,2,angle);
   };
-  caption.setText('POKÉBOLA, VAI!');
-  scene.tweens.add({targets:point,t:1,duration:600,ease:'Sine.easeOut',
-   onUpdate:()=>draw('throw'),onComplete:()=>{
-    draw('beam');caption.setText('RAIO DE CAPTURA!');
-    const targetSprite=fighter?.sprite;
-    const previousAlpha=targetSprite?.alpha??1;
-    if(targetSprite?.setAlpha)targetSprite.setAlpha(.4);
-    scene.time.delayedCall(440,()=>{
-     if(!scene.scene.isActive())return;
-     // The Pokémon stays INSIDE the ball through all shakes; restore its
-     // appearance only if the ball actually bursts open.
-     if(targetSprite?.setAlpha)targetSprite.setAlpha(0);
-     point.shake=0;draw('land');caption.setText('A POKÉBOLA CAIU...');
-     let step=0;const shakes=result.ok?3:result.shakes;
-     const animateShake=()=>{
-      if(!scene.scene.isActive())return;
-      if(step>=shakes){
-       scene.time.delayedCall(260,()=>{
-        if(!scene.scene.isActive())return;
-        if(result.ok){
-         gfx.clear();ballSprite(gfx,end.x,end.y+16,kind,2);
-         for(let k=0;k<8;k++){
-          const a=k*Math.PI/4;
-          block(gfx,end.x+Math.cos(a)*27,end.y+16+Math.sin(a)*27,3,3,0xffed6b);
+  const restore=()=>{
+   if(obj&&obj.active!==false){
+    obj.setAlpha(before.alpha);
+    obj.setScale(before.sx,before.sy);
+    obj.setPosition(before.x,before.y);
+    obj.setVisible(before.visible);
+   }
+  };
+  scene.tweens.add({targets:ballPos,t:1,duration:650,ease:'Sine.easeInOut',
+   onUpdate:()=>{
+    const t=ballPos.t;
+    drawBall(shot.x+(end.x-shot.x)*t,
+     shot.y+(end.y-shot.y)*t-83*Math.sin(Math.PI*t),t*7);
+   },onComplete:()=>{
+    caption.setText('O RAIO VERMELHO ENVOLVEU O POKÉMON!');
+    const beam={t:0},focus={x:enemyX,y:enemyY};
+    if(obj){
+     scene.tweens.add({targets:obj,x:end.x,y:end.y,
+      scaleX:Math.max(.03,before.sx*.05),scaleY:Math.max(.03,before.sy*.05),
+      alpha:.12,duration:370,ease:'Cubic.easeIn'});
+    }
+    scene.tweens.add({targets:beam,t:1,duration:400,
+     onUpdate:()=>{
+      gfx.clear();artBeam(gfx,end.x,end.y,focus.x,focus.y,beam.t);
+      ball(gfx,end.x,end.y,kind,2);
+     },onComplete:()=>{
+      if(obj)obj.setAlpha(0);
+      caption.setText('A POKÉBOLA CAIU...');
+      const floorY=Math.min(315,enemyY+37),drop={t:0};
+      scene.tweens.add({targets:drop,t:1,duration:350,ease:'Bounce.easeOut',
+       onUpdate:()=>drawBall(end.x,end.y+(floorY-end.y)*drop.t),
+       onComplete:()=>{
+        let completed=0;
+        const wobble=()=>{
+         if(!scene.scene.isActive())return;
+         // FRLG: 0, 1, 2 or 3 wobble(s) before opening; success
+         // always shows all three. There is no 'second round'.
+         const limit=result.ok?3:result.shakes;
+         if(completed>=limit){
+          scene.time.delayedCall(250,()=>{
+           if(!scene.scene.isActive())return;
+           gfx.clear();
+           if(result.ok){
+            ball(gfx,end.x,floorY,kind,2);
+            for(let i=0;i<10;i++){
+             const angle=i*Math.PI/5;
+             px(gfx,end.x+Math.cos(angle)*26,floorY+Math.sin(angle)*25,
+              3,3,i%2?0xfff2b8:0xffd04d);
+            }
+            caption.setText('CAPTURADO!').setColor('#a4ffc1');
+            scene.time.delayedCall(800,()=>scene.scene.start('campanha'));
+           }else{
+            caption.setText('O POKÉMON ESCAPOU!').setColor('#ffdeae');
+            gfx.fillStyle(0xfff8e1,.8);gfx.fillCircle(end.x,floorY,10);
+            restore();scene.fase=oldPhase;
+            scene.time.delayedCall(850,()=>{
+             if(scene.scene.isActive()){
+              gfx.destroy();caption.destroy();busy=false;refresh();
+             }
+            });
+           }
+          });
+          return;
          }
-         caption.setText('CAPTURADO!');caption.setColor('#8cffb8');
-         scene.time.delayedCall(700,()=>scene.scene.start('campanha'));
-        }else{
-         caption.setText('ESCAPOU! TENTE NOVAMENTE');
-         if(targetSprite?.setAlpha)targetSprite.setAlpha(previousAlpha);
-         gfx.clear();scene.fase=oldPhase;
-         scene.time.delayedCall(650,()=>{caption.destroy();gfx.destroy();busy=false;refresh()});
-        }
-       });
-       return;
-      }
-      step++;
-      scene.tweens.add({targets:point,shake:Math.PI*2,duration:410,
-       onUpdate:()=>draw('land'),onComplete:()=>{
-        point.shake=0;caption.setText('BALANÇO '+step+' / 3');
-        scene.time.delayedCall(170,animateShake);
+         completed++;
+         const wob={t:0};
+         scene.tweens.add({targets:wob,t:1,duration:430,
+          onUpdate:()=>drawBall(end.x+Math.sin(wob.t*Math.PI*2)*6,
+           floorY+Math.sin(wob.t*Math.PI)*2,wob.t*Math.PI*2),
+          onComplete:()=>{
+           caption.setText('BALANÇO '+completed+' / 3');
+           scene.time.delayedCall(130,wobble);
+          }});
+        };
+        wobble();
        }});
-     };
-     animateShake();
-    });
+     }});
    }});
  }
 }
