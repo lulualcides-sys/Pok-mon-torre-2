@@ -20,18 +20,26 @@ const BALL=[
  'OOWWWWWOOWWWWWOO','.OWWWWWWWWWWWWO.','..OWWWWWWWWWWO..',
  '...OWWWWWWWWO...','....OOWWWWOO....','......OOOO......'];
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
-function ball(g,cx,cy,kind,scale=2,rotation=0){
+function ball(g,cx,cy,kind,scale=2,rotation=0,opened=false){
  const c=COLORS[kind]||COLORS.pokeball;
  const shift=Math.round(Math.sin(rotation)*1.7*scale);
  const x=Math.round(cx-8*scale+shift),y=Math.round(cy-7*scale);
  for(let row=0;row<BALL.length;row++)for(let col=0;col<16;col++){
   const v=BALL[row][col];if(v==='.')continue;
   const base=v==='O'?0x151d32:v==='W'?c.bottom:c.top;
-  px(g,x+col*scale,y+row*scale,scale,scale,base);
+  const lid=opened?(row<=6?-4*scale:row>=8?2*scale:0):0;
+  px(g,x+col*scale,y+row*scale+lid,scale,scale,base);
  }
- px(g,cx-2*scale+shift,cy-1*scale,4*scale,3*scale,0x141d2c);
- px(g,cx-scale+shift,cy,2*scale,2*scale,0xfffcdd);
- px(g,cx-scale+shift,cy,scale,scale,0xffffff);
+ if(opened){
+  // Top shell snaps open like FireRed, exposing a bright crimson aperture.
+  px(g,cx-4*scale+shift,cy-3*scale,8*scale,3*scale,0x551d31);
+  px(g,cx-3*scale+shift,cy-3*scale,6*scale,2*scale,0xff7082);
+  px(g,cx-scale+shift,cy-4*scale,2*scale,3*scale,0xffd0ad);
+ }else{
+  px(g,cx-2*scale+shift,cy-1*scale,4*scale,3*scale,0x141d2c);
+  px(g,cx-scale+shift,cy,2*scale,2*scale,0xfffcdd);
+  px(g,cx-scale+shift,cy,scale,scale,0xffffff);
+ }
  px(g,cx-4*scale+shift,cy-4*scale,3*scale,scale,c.shine);
  if(kind==='ultraball'){
   px(g,cx-5*scale+shift,cy-4*scale,2*scale,3*scale,0xe8c75f);
@@ -177,7 +185,7 @@ export function installWildCapture(scene){
     scene.tweens.add({targets:beam,t:1,duration:400,
      onUpdate:()=>{
       gfx.clear();artBeam(gfx,end.x,end.y,focus.x,focus.y,beam.t);
-      ball(gfx,end.x,end.y,kind,2);
+      ball(gfx,end.x,end.y,kind,2,0,true);
      },onComplete:()=>{
       if(obj)obj.setAlpha(0);
       caption.setText('A POKÉBOLA CAIU...');
@@ -206,7 +214,8 @@ export function installWildCapture(scene){
             scene.time.delayedCall(800,()=>scene.scene.start('campanha'));
            }else{
             caption.setText('O POKÉMON ESCAPOU!').setColor('#ffdeae');
-            gfx.fillStyle(0xfff8e1,.8);gfx.fillCircle(end.x,floorY,10);
+            gfx.fillStyle(0xfff8e1,.8);gfx.fillCircle(end.x,floorY,12);
+            ball(gfx,end.x,floorY,kind,2,0,true);
             restore();scene.fase=oldPhase;
             scene.time.delayedCall(850,()=>{
              if(scene.scene.isActive()){
@@ -223,7 +232,7 @@ export function installWildCapture(scene){
           onUpdate:()=>drawBall(end.x+Math.sin(wob.t*Math.PI*2)*6,
            floorY+Math.sin(wob.t*Math.PI)*2,wob.t*Math.PI*2),
           onComplete:()=>{
-           caption.setText('BALANÇO '+completed+' / 3');
+           caption.setText('...');
            scene.time.delayedCall(130,wobble);
           }});
         };
