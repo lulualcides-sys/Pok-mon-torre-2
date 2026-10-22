@@ -360,6 +360,48 @@ const server=http.createServer(async(req,res)=>{
    'Toggling back restores exact native pixel-art layout');
   assert.equal(panelTest.restored.sidebar,true);
   assert.ok(panelTest.restored.zoneEnabled>=6);
+  // Protect the FireRed map from grass navigation; no texture/child removal.
+  // Simulate an ultra-wide Phaser viewport without invoking browser fullscreen
+  // so both touch coordinates and actual artwork resizing are exercised.
+  const wideAndGrass=await offline.evaluate(async()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const image=c.__campaignMapObjects.find(x=>x.obj.type==='Image'&&
+    x.obj.texture?.key==='torre2-brock-custom').obj;
+   const startingWidth=image.displayWidth;
+   const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+   const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+   c.grassScreen(core.readCampaign());
+   const whileGrass=image.active&&!!c.__torre2GrassOverlay?.active;
+   const close=c.children.list.find(o=>o.type==='Zone'&&o.depth===630&&
+    Math.abs(o.x-174)<2&&Math.abs(o.y-292)<2);
+   close?.emit('pointerdown');
+   const restored=image.active&&!c.__torre2GrassOverlay;
+   c.scale.resize(800,360);
+   c.setCampaignPanelCollapsed(false);
+   const wide={
+    width:c.scale.gameSize.width,
+    mapWidth:image.displayWidth,
+    mapX:image.x,
+    sideX:c.__campaignSidebarObjects.find(o=>o.text==='SUA EQUIPE')?.x,
+    canvasWidth:c.game.canvas.width
+   };
+   c.scale.resize(640,360);
+   c.scene.restart();
+   return {startingWidth,whileGrass,restored,close:!!close,wide};
+  });
+  assert.ok(wideAndGrass.whileGrass&&wideAndGrass.close&&wideAndGrass.restored,
+   'Tall grass opens a separate modal while FireRed map remains alive');
+  assert.equal(wideAndGrass.wide.width,800,
+   'Wide campaign needs a genuinely wider WebGL canvas');
+  assert.ok(wideAndGrass.wide.mapWidth>wideAndGrass.startingWidth*1.15,
+   'Panoramic view must expand the map without distorting combat sprites');
+  assert.ok(wideAndGrass.wide.sideX>500,
+   'Panoramic party should move into newly available horizontal space');
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+    c.scale.gameSize.width===640;
+  },null,{timeout:18000});
   const mobileResources=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return {
@@ -608,7 +650,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(afterFaint.player,'charmander',
     'After KO the actual replacement Pokémon controls the same arena');
   assert.ok(afterFaint.foe>.59&&afterFaint.foe<.74,
-    'Red-beam replacement does not restore the rival HP');
+    'Red-beam replacement does not restore the rival HP: '+
+     JSON.stringify({afterFaint,afterSwitch}));
   await offline.evaluate(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
     b.scene.start('campanha');
