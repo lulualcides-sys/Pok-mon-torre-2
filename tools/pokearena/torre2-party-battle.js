@@ -12,23 +12,28 @@ const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 // The fighter's logical simulation location can differ from the PMD sprite.
 // Use actual displayed sprite bounds so the Pokéball beam never points at an
 // old spawn position, especially after a KO or a teammate swap.
+// Coordinates come from the native Luchador renderer's world position.
+// A PMD image rectangle has invisible padding, and when the sprite shrinks
+// during return it cannot be used as a stable laser target on its own.
 function visibleActorCenter(actor){
  const visual=actor?.spr||actor?.sprite;
+ const logicalX=Number(actor?.x),logicalY=Number(actor?.y);
+ const alto=Number(actor?.alto),salto=Number(actor?.salto)||0;
+ const chest=(Number.isFinite(logicalY)?logicalY:180)-
+  Math.max(8,(Number.isFinite(alto)?alto:24)*.53)-salto;
  if(visual?.getBounds&&visual.active!==false){
   const b=visual.getBounds();
-  // Bounds are calculated from the actual PMD texture, including animation
-  // frame origin and scale. Never use a saved spawn position for the beam.
   if(Number.isFinite(b.centerX)&&Number.isFinite(b.centerY)&&
      b.width>0&&b.height>0){
-   // PMD idle frames include transparent padding ABOVE the visible body.
-   // The geometric frame centre is often empty air (or behind the Pokémon).
-   // Aim lower, through its torso, not at the center of its full texture.
-   return {x:Math.round(b.centerX),
-    y:Math.round(b.top+b.height*.72)};
+   const x=Number.isFinite(logicalX)?logicalX:b.centerX;
+   // On full-size frames use the body's physical y. While recalled and
+   // shrinking, clamp it to the actual visible sprite rectangle.
+   const inset=Math.max(1,Math.min(4,b.height*.12));
+   return {x:Math.round(Math.max(b.left+1,Math.min(b.right-1,x))),
+    y:Math.round(Math.max(b.top+inset,Math.min(b.bottom-inset,chest)))};
   }
  }
- return {x:Number(actor?.x)||320,
-  y:(Number(actor?.y)||180)-Math.max(18,Number(actor?.alto||36)*.5)};
+ return {x:Number.isFinite(logicalX)?logicalX:320,y:chest};
 }
 function drawRecallBeam(g,from,target,strength=1){
  const a=Math.max(0,Math.min(1,strength));
@@ -206,9 +211,9 @@ export function installPartyBattle(scene){
   // Put the actual ball near the outgoing fighter so the red beam begins
   // on-screen and ends exactly at the visible sprite, including on faint.
   const from={
-   // Throw from a fixed on-screen trainer side, NOT from a nearby invisible
-   // point that makes a tiny red stub indistinguishable from an attack.
-   x:side===0?80:560,y:296
+   // Fixed hand at opposite battlefield edge makes return/release visibly
+   // distinct from a tiny attack hit spark, even on mobile screens.
+   x:side===0?70:570,y:286
   };
   const fx=sharedBeam;
   const ball=sharedBall;
@@ -302,6 +307,9 @@ export function installPartyBattle(scene){
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
    const replacementScale=actor.escala||actor.spr.scaleX||1;
+   // Snapshot the native full-size body position BEFORE materializing. The
+   // target must not jump around because a sprite is temporarily 15% size.
+   const stableSpawn=visibleActorCenter(actor);
    actor.spr.setAlpha(.1).setScale(.15*replacementScale).setVisible(true);
    actor.sombra?.setVisible(true);
    actor.anillo?.setVisible(true);
@@ -315,9 +323,11 @@ export function installPartyBattle(scene){
     fx.clear();
     // During materialization, aim at the real visible PMD sprite frame,
     // not the pre-shrink cached center or the Luchador's logical position.
-    const live=visibleActorCenter(actor);
+    // Beam locks on the full-size sprite's chest while it materializes;
+    // use the live actor position only for subsequent normal battle frames.
+    const live=stableSpawn;
     const targetX=live.x,targetY=live.y;
-    drawRecallBeam(fx,from,live,1-t*.55);
+    drawRecallBeam(fx,from,live,1-t*.30);
     scene.__torre2BeamDebug={
      phase:'release',side,frame:comingFrame,
      from:{x:from.x,y:from.y},to:{...live},
@@ -360,7 +370,7 @@ export function installPartyBattle(scene){
    // BEFORE shrinking. This keeps the red ray touching the Pokémon itself.
    const live=visibleActorCenter(actor);
    if(frames<=32){recallTarget.x=live.x;recallTarget.y=live.y;}
-   const fade=1-t*.48;
+   const fade=1-t*.30;
    drawRecallBeam(fx,from,recallTarget,fade);
    scene.__torre2BeamDebug={
     phase:'recall',side,frame:frames,

@@ -675,7 +675,21 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(Math.hypot(
    visibleSwapPokemon.beam.currentBody.x-visibleSwapPokemon.beam.to.x,
    visibleSwapPokemon.beam.currentBody.y-visibleSwapPokemon.beam.to.y)<6,
-   'Final laser endpoint must align with moving visible PMD body');
+   'Final laser endpoint must align with visible Pokémon body');
+  const liveSpeciesGuard=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0];
+   const idle='pmd-'+a.dex+'-Idle',wrong='pmd-0007-Idle';
+   if(!b.textures.exists(wrong))throw Error('Missing test PMD atlas');
+   a.spr.anims.stop();a.spr.setTexture(wrong);
+   a.actualizarGraficos(0);
+   return {dex:a.dex,texture:a.spr.texture.key,expected:idle,
+    corrections:a.__torre2RenderCorrections||0};
+  });
+  assert.ok(liveSpeciesGuard.texture.startsWith('pmd-'+liveSpeciesGuard.dex+'-'),
+   'NATIVE Phaser Luchador renderer must repair a stale species texture: '+
+    JSON.stringify(liveSpeciesGuard));
+  assert.ok(liveSpeciesGuard.corrections>=1,
+   'The real Luchador renderer should detect and correct stale PMD atlases');
   assert.equal(visibleSwapPokemon.phase,'lucha',
    'No frozen KO phase or replayed FIGHT countdown after a manual switch');
   assert.ok(afterSwitch.enemyPct>.59&&afterSwitch.enemyPct<.74,

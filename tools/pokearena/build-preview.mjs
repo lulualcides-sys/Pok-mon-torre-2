@@ -435,6 +435,15 @@ patches.push(['escenas/combate.js',[[
  'const dexs=formasDe(d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2],d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);',
  'const ids=d.torre2?.party?[...d.torre2.party.friend,...d.torre2.party.foes].map(m=>m.id):d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2];const dexs=d.torre2?.party?new Set(ids.map(id=>{const found=buscar(id);return found?.etapa?found.def.evoluciones[found.etapa-1]?.dex??found.def.dex:found?.def?.dex}).filter(Boolean)):formasDe(ids,d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);'
 ]]]);
+// KANTO-ONLY: fix the real Phaser Luchador renderer instead of only changing
+// the HUD or a single sprite frame during a manual switch. Native walking,
+// attacks and fainting may switch PMD atlases on every update. If an old
+// animation survives a species replacement, discard it before render and
+// recover the atlas for the active fighter. Preserve all other game modes.
+patches.push(['luchador.js',[[
+ 'actualizarGraficos(dt=0){const r=CAMPO.ovalo?v=>v:Math.round;',
+ 'actualizarGraficos(dt=0){if(this.escena.datos?.torre2&&this.spr?.active){const actual=String(this.spr.texture?.key||""),due="pmd-"+this.dex+"-";if(actual.startsWith("pmd-")&&!actual.startsWith(due)){this.spr.anims.stop();const idle=due+"Idle";if(this.escena.textures.exists(idle))this.spr.setTexture(idle);this.claveAnim=null;this.__torre2RenderCorrections=(this.__torre2RenderCorrections||0)+1}}const r=CAMPO.ovalo?v=>v:Math.round;'
+]]]);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
