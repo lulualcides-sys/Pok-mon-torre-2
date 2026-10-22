@@ -49,13 +49,13 @@ assert.equal(state.money,1400);
 assert.equal(state.inventory.pokeball,5);
 const {routeNode,KANTO_ROUTES,MART_ITEMS}=await import(
  pathToFileURL(path.join(stage,version,'torre2/route-data.js')));
-assert.equal(KANTO_ROUTES.length,8,'Eight FireRed-like region maps');
+assert.equal(KANTO_ROUTES.length,9,'Eight regional gyms plus Victory Road grass encounters');
 const {KANTO_CHAPTERS,campaignRegion}=await import(pathToFileURL(
  path.join(stage,version,'torre2/kanto-regions.js')));
-assert.equal(KANTO_CHAPTERS.length,12,'Eight Kanto gyms + four Elite Four chapters');
+assert.equal(KANTO_CHAPTERS.length,13,'Eight gyms, four Elite Four and Champion rival');
 assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['route','forest','pewter'],
  'Brock must be reached through Route 1, Viridian Forest and Pewter');
-for(let regionStage=0;regionStage<12;regionStage++){
+for(let regionStage=0;regionStage<13;regionStage++){
  const count=Math.ceil((TRAINERS_PER_GYM(regionStage)+1)/5);
  const first=campaignRegion(regionStage,0,count);
  const final=campaignRegion(regionStage,count-1,count);
@@ -66,8 +66,9 @@ for(let regionStage=0;regionStage<12;regionStage++){
 }
 const biomes=new Set(KANTO_CHAPTERS.flatMap(chapter=>chapter.map(row=>row[2])));
 assert.ok(biomes.size>=20,'Kanto needs varied environments, not reused bland generic map');
-assert.equal(campaignRegion(7,5,6).biome,'victory','Viridian approaches Victory Road');
-assert.equal(campaignRegion(11,7,8).biome,'hall','Lance concludes near Hall of Fame');
+assert.equal(campaignRegion(7,5,6).biome,'ground-gym','Giovanni stays in Viridian Gym');
+assert.equal(campaignRegion(8,1,4).biome,'victory','Victory Road follows Giovanni');
+assert.equal(campaignRegion(12,0,1).biome,'hall','Champion is the Hall of Fame finale');
 
 assert.equal(routeNode(0,3,13).type,'rival');
 assert.equal(routeNode(0,5,13).type,'rocket');
@@ -193,6 +194,19 @@ if(area.available.length){
  assert.equal(fainted.pendingCapture,null,'KO must not trigger free capture');
 }
 assert.equal(TRAINERS_PER_GYM(0),13);
+assert.equal(TRAINERS_PER_GYM(7),27,'Giovanni route has more trainers than Brock');
+assert.equal(TRAINERS_PER_GYM(8),17,'Victory Road has additional encounters');
+assert.equal(TRAINERS_PER_GYM(9),0,'Elite Four Bruno fights once, not 31 times');
+assert.equal(TRAINERS_PER_GYM(12),0,'Champion follows Lance without filler trainers');
+const finale=createCampaign('bulbasaur');
+finale.stage=12;finale.trainer=0;finale.inventory.pokeball=5;
+assert.equal(currentOpponent(finale).leader,true,'Final champion is a leader battle');
+assert.equal(currentOpponent(finale).id,'charizard',
+ 'Champion rival uses starter advantage over Bulbasaur');
+assert.equal(resolveBattle(finale,true,()=>0).won,true);
+assert.equal(finale.champion,true,'Champion must complete the entire Kanto campaign');
+assert.equal(finale.stage,13,'Champion clear is persisted after all gym/Elite stages');
+
 assert.equal(currentOpponent(state).id,'pidgey',
  'Pewter trainer ladder begins with integrated Route 1 Pokémon instead of Onix');
 
