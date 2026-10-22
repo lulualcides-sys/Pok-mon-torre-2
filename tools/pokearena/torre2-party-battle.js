@@ -136,40 +136,42 @@ export function installPartyBattle(scene){
    ball.fillStyle(0xfff4d2);ball.fillCircle(from.x,from.y,2);
   };
   drawBall();
-  const tween={v:0};
-  let restarted=false;
+  let frames=0,restarted=false;
   const enterNext=()=>{
    if(restarted||!scene.scene.isActive())return;
    restarted=true;
+   scene.game.events.off('step',step);
    if(side===0)party.playerIndex=next;
    else party.enemyIndex=next;
    party.changes++;
    const left=party.friend[party.playerIndex],right=party.foes[party.enemyIndex];
-   const d={...scene.datos,p1:left.id,p2:right.id,
+   scene.scene.restart({...scene.datos,p1:left.id,p2:right.id,
     torre2:{...payload,party,lastSwitchedSide:side,
      playerLevel:left.level,enemyLevel:right.level},
-    torre2Loadout:left.loadout,torre2OpponentLoadout:right.loadout};
-   scene.scene.restart(d);
+    torre2Loadout:left.loadout,torre2OpponentLoadout:right.loadout});
   };
-  // Native Phaser rounds may temporarily pause tweens during KO hitstop.
-  // The scene clock is authoritative so a faint can never soft-lock play.
-  scene.time.delayedCall(780,enterNext);
-  scene.tweens.add({targets:tween,v:1,duration:540,
-   onUpdate:()=>{
-    const t=tween.v;
-    fx.clear();
-    fx.lineStyle(2+3*(1-t),0xff525f,.9);
-    fx.lineBetween(from.x,from.y,px,py);
-    fx.lineStyle(1,0xffe2cb,1);
-    fx.lineBetween(from.x,from.y,px,py);
-    fx.fillStyle(0xff4e63,.35*(1-t));
-    fx.fillTriangle(from.x,from.y,px-16*(1-t),py,px+16*(1-t),py);
-    if(actor.spr?.active){
-     actor.spr.setAlpha(Math.max(.05,1-t));
-     actor.spr.setScale(Math.max(.06,1-t*.85));
-    }
-   },onComplete:enterNext
-  });
+  // A global frame-step remains live during native KO hitstop. The original
+  // combat scene's local clock/tween may be suspended for animations, which
+  // previously left battles frozen for good at the replacement moment.
+  const step=()=>{
+   if(!scene.scene.isActive()){scene.game.events.off('step',step);return}
+   scene.fase='ko';
+   const t=Math.min(1,++frames/36);
+   fx.clear();
+   fx.lineStyle(2+3*(1-t),0xff525f,.9);
+   fx.lineBetween(from.x,from.y,px,py);
+   fx.lineStyle(1,0xffe2cb,1);
+   fx.lineBetween(from.x,from.y,px,py);
+   fx.fillStyle(0xff4e63,.35*(1-t));
+   fx.fillTriangle(from.x,from.y,px-16*(1-t),py,px+16*(1-t),py);
+   if(actor.spr?.active){
+    actor.spr.setAlpha(Math.max(.05,1-t));
+    actor.spr.setScale(Math.max(.06,1-t*.85));
+   }
+   if(frames>=40)enterNext();
+  };
+  scene.game.events.on('step',step);
+  scene.events.once('shutdown',()=>scene.game.events.off('step',step));
  }
  function finish(won){
   scene.fase='ko';
