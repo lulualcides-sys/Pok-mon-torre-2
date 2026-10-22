@@ -177,6 +177,17 @@ export function installPartyBattle(scene){
    }
    if(frames>=40)enterNext();
   };
+  if(kind==='faint'){
+   // Native KO may suspend both scene timers and global render callbacks.
+   // Dispatch the replacement immediately instead of risking a frozen game;
+   // the following scene paints the Pokéball release / red beam.
+   fx.clear();
+   fx.lineStyle(5,0xff5166,1);
+   fx.lineBetween(from.x,from.y,px,py);
+   if(actor.spr?.active)actor.spr.setAlpha(.05);
+   enterNext();
+   return;
+  }
   scene.game.events.on('step',step);
   scene.events.once('shutdown',()=>scene.game.events.off('step',step));
  }
