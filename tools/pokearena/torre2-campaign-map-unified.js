@@ -48,17 +48,26 @@ const WORLDS=Object.freeze([
 // Viridian -> Route 2 -> Forest -> Pewter composite, not an arbitrary grid.
 // Explicit coordinates stay stable and preserve original battle/save indices.
 const BROCK_CUSTOM_POINTS=Object.freeze([
- // Single clockwise progression: Pallet -> Route 1 -> Viridian ->
- // Route 2 -> Viridian Forest -> the rocky Pewter Gym approach.
- [77,271],[116,265],
- [132,239],[143,211],
- [127,184],[160,171],
- [191,149],[214,174],
- [227,202],[261,237],[295,218],
- [331,180],[354,149]
+ // Fixed 13-step route on the supplied illustration. Steps are on OPEN
+ // WALKWAYS (not roofs, water, cave walls or borders); battle indexes never
+ // depend on whether the player has defeated another trainer.
+ // Pallet Town (1) -> Route 1 (2-3) -> Viridian (4-5)
+ // -> Route 2 (6-7) -> Viridian Forest (8-11) -> Pewter (12-13).
+ [84,267],
+ [109,237],[143,215],
+ [109,192],[173,181],
+ [186,146],[219,163],
+ [223,196],[253,207],[258,249],[303,225],
+ [324,192],[349,163]
+]);
+const BROCK_AREAS=Object.freeze([
+ 'PALLET TOWN','ROTA 1','ROTA 1','VIRIDIAN CITY',
+ 'VIRIDIAN CITY','ROTA 2','ROTA 2','VIRIDIAN FOREST',
+ 'VIRIDIAN FOREST','VIRIDIAN FOREST','VIRIDIAN FOREST',
+ 'PEWTER CITY','PEWTER CITY'
 ]);
 const CUSTOM_BROCK_LOCATIONS=Object.freeze({
- gym:[340,114],center:[103,161],mart:[145,162],grass:[299,235]
+ gym:[339,118],center:[103,161],mart:[145,162],grass:[288,260]
 });
 const BROCK_POINTS=Object.freeze([
  // Clickable challenge route, staged on open streets rather than overlapping
@@ -116,6 +125,7 @@ export function getCampaignMapSpec(stage,trainerCount,customBrock=false){
    CUSTOM_BROCK_LOCATIONS:world.buildings,
   points:checkpointsFor(count,stage,customBrock),
   customBrock:!!(customBrock&&stage===0),
+  trainerAreas:customBrock&&stage===0?BROCK_AREAS:null,
   boss:stage>=9?'indigo':world.id,stage};
 }
 const font=(scene,x,y,label,size=9,color='#fff4d6',depth=12)=>{
@@ -127,19 +137,24 @@ function box(g,x,y,w,h,fill,border){
  g.fillStyle(fill,1);g.fillRect(x,y,w,h);
  g.lineStyle(1,border,1);g.strokeRect(x+.5,y+.5,w-1,h-1);
 }
-function landmark(scene,g,label,x,y,accent,callback,locked=false){
- // Tiny signposts hover over the existing sprites. Don't cover roofs with
- // the large rectangular overlays visible in the previous screenshot.
- const w=Math.max(38,Math.min(81,Math.round(label.length*5.4+11)));
- const yText=Math.min(283,Math.max(98,y-24));
- box(g,x-w/2,yText-8,w,15,0x092438,locked?0x7a91a0:accent);
- font(scene,x,yText,label,8,'#fff7df',15);
+function landmark(scene,g,label,x,y,accent,callback,locked=false,compact=false){
+ // The custom map already contains buildings and city captions in its art.
+ // Small unobtrusive signs identify click targets; never cover the roofs.
+ const caption=compact?({
+  'GINÁSIO':'GYM','CENTRO':'PC','LOJA':'MART','GRAMA':'GRAMA'
+ }[label]||label):label;
+ const w=compact?Math.max(20,Math.round(caption.length*5.4+9)):
+  Math.max(38,Math.min(81,Math.round(label.length*5.4+11)));
+ const height=compact?12:15;
+ const yText=Math.min(283,Math.max(98,y-(compact?19:24)));
+ box(g,x-w/2,yText-height/2,w,height,0x092438,locked?0x718692:accent);
+ font(scene,x,yText,caption,compact?7:8,'#fff7df',15);
  const hover=scene.__torre2MapHover;
- const zone=scene.add.zone(x,y,43,30).setDepth(21)
+ const zone=scene.add.zone(x,y,compact?39:43,compact?30:30).setDepth(21)
   .setInteractive({useHandCursor:true}).setData('torre2-landmark',label);
  zone.on('pointerover',()=>{
   hover.clear();hover.lineStyle(1,0xffe3a0,.97);
-  hover.strokeRect(x-22,y-17,44,35);
+  hover.strokeRect(x-20,y-16,40,33);
  }).on('pointerout',()=>hover.clear()).on('pointerdown',callback);
  return zone;
 }
@@ -186,23 +201,27 @@ function unavailableTexture(scene){
  scene.add.image(20,85,key).setOrigin(0,0).setDepth(1)
   .setDisplaySize(372,211);
 }
-function badge(scene,g,index,x,y,condition,onClick){
+function badge(scene,g,index,x,y,condition,onClick,compact=false){
  const active=condition==='current',completed=condition==='done';
- // Defeated trainers shrink to a tiny green ✓. Only the next trainer
- // gets a prominent gold marker; future opponents stay quiet on the map.
- const w=completed?11:active?21:14,h=completed?11:active?17:13;
- const ty=y-(active?29:completed?22:24);
+ // Brock: a small check on defeated NPCs, quiet numbers on future NPCs,
+ // and ONE bright target for the current trainer. No floating placards.
+ const w=compact?(completed?9:active?20:13):
+  (completed?11:active?21:14);
+ const h=compact?(completed?9:active?17:12):
+  (completed?11:active?17:13);
+ const bx=compact&&!active?Math.min(375,x+11):x;
+ const ty=y-(compact?(active?31:19):(active?29:completed?22:24));
  const border=active?0xffd97a:completed?0x7ce3ad:0x5a7786;
  const bg=active?0x554022:completed?0x163d39:0x092739;
- box(g,x-w/2,ty,w,h,bg,border);
+ box(g,bx-w/2,ty,w,h,bg,border);
  if(active){
   g.fillStyle(0xffe296,.9);
-  g.fillRect(x-w/2,ty+h,Math.round(w/3),2);
+  g.fillRect(bx-w/2,ty+h,Math.round(w/3),2);
  }
- font(scene,x,ty+h/2,completed?'✓':String(index+1),
-  completed?8:active?10:8,
-  active?'#fff6c4':completed?'#baffd7':'#cbdde6',16);
- const zone=scene.add.zone(x,y-9,30,34).setDepth(24)
+ font(scene,bx,ty+h/2,completed?'✓':String(index+1),
+  completed?7:active?10:compact?7:8,
+  active?'#fff6c4':completed?'#baffd7':'#afc3cc',16);
+ const zone=scene.add.zone(x,y-9,28,33).setDepth(24)
   .setInteractive({useHandCursor:true}).setData('torre2-checkpoint',index);
  const hover=scene.__torre2MapHover;
  zone.on('pointerover',()=>{
@@ -246,39 +265,58 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
    ['youngster','youngster','youngster','lass','bugcatcher','bugcatcher',
     'bugcatcher','bugcatcher','bugcatcher','hiker','hiker','hiker','hiker'][i%13]:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'][i%6];
-  if(!addFireRedNPC(scene,type,p.x,p.y+9,{scale:.70,depth:7}))
-   drawTrainer(under,p.x,p.y+4,type,.70);
+  const npc=addFireRedNPC(scene,type,p.x,p.y+9,{scale:.70,depth:7});
+  if(!npc)drawTrainer(under,p.x,p.y+4,type,.70);
+  else if(spec.customBrock)npc.setAlpha(stateName==='done'?.72:
+   stateName==='current'?1:.83);
   badge(scene,marker,i,p.x,p.y,stateName,()=>{
    if(i===state.trainer)onTrainer?.(i);
    else onLocked?.(i<state.trainer?'TREINADOR JÁ VENCIDO':
     'VENÇA O TREINADOR '+(state.trainer+1)+' PRIMEIRO');
-  });
+  },spec.customBrock);
  });
  const b=spec.buildings;
  const unlocked=state.trainer>=limit&&!state.champion;
  // Landmark hotspots align with the authentic building pixels in the
  // FireRed city PNG; the gym is visible but not bypassable.
  landmark(scene,marker,'GINÁSIO',...b.gym,spec.theme,
-  ()=>onGym?.(),!unlocked);
- landmark(scene,marker,'CENTRO',...b.center,0xf4796d,()=>onCenter?.());
- landmark(scene,marker,'LOJA',...b.mart,0x72c8f7,()=>onMart?.());
- landmark(scene,marker,'GRAMA',...b.grass,0x8fe0a3,()=>onGrass?.());
+  ()=>onGym?.(),!unlocked,spec.customBrock);
+ landmark(scene,marker,'CENTRO',...b.center,0xf4796d,
+  ()=>onCenter?.(),false,spec.customBrock);
+ landmark(scene,marker,'LOJA',...b.mart,0x72c8f7,
+  ()=>onMart?.(),false,spec.customBrock);
+ landmark(scene,marker,'GRAMA',...b.grass,0x8fe0a3,
+  ()=>onGrass?.(),false,spec.customBrock);
  // The gym itself IS checkpoint N+1; avoid a second number/bubble over the
  // entrance (the previous image looked like two trainers in the same spot).
  const bossText=unlocked?'LÍDER '+(limit+1)+' LIBERADO':
   'LÍDER '+(limit+1)+' BLOQUEADO';
- marker.fillStyle(0x082538,.93);
- marker.fillRect(220,299,172,9);
- font(scene,305,302,bossText,8,
-  unlocked?'#a5ffc7':'#d2dbe2',13);
+ if(spec.customBrock){
+  // The entrance itself is checkpoint 14. Keep its status above the door,
+  // not in a long banner over the bottom of the user's illustration.
+  font(scene,b.gym[0]-18,b.gym[1]+14,
+   unlocked?'14 ✓':'14',8,
+   unlocked?'#ffe9ab':'#c9d3d8',13);
+ }else{
+  marker.fillStyle(0x082538,.93);
+  marker.fillRect(220,299,172,9);
+  font(scene,305,302,bossText,8,
+   unlocked?'#a5ffc7':'#d2dbe2',13);
+ }
  const npc=state.stage===0?'brock':
   ['misty','surge','erika','koga','sabrina','blaine','giovanni'][state.stage-1]||'lorelei';
- addFireRedNPC(scene,npc,b.gym[0]+26,b.gym[1]+6,{depth:13,scale:.70});
+ addFireRedNPC(scene,npc,
+  spec.customBrock?b.gym[0]+4:b.gym[0]+26,
+  spec.customBrock?b.gym[1]+17:b.gym[1]+6,
+  {depth:13,scale:.70});
  // Show Red only beside the next challenge, not as a permanently walked
  // overworld avatar. Later patch can replace click navigation with movement.
  const here=spec.points[Math.min(state.trainer,limit-1)]||b.gym;
  const px=Array.isArray(here)?here[0]:here.x,py=Array.isArray(here)?here[1]:here.y;
- if(!addRedPlayer(scene,Math.max(30,px-23),py+10,{scale:.70,depth:9}))
-  drawTrainer(under,Math.max(30,px-23),py+4,'rival',.70);
+ const redX=spec.customBrock?
+  Math.max(31,Math.min(376,px+(px>310?-21:21))):
+  Math.max(30,px-23);
+ if(!addRedPlayer(scene,redX,py+10,{scale:.70,depth:9}))
+  drawTrainer(under,redX,py+4,'rival',.70);
  return {spec,locations:spec.points.length,artLoaded:ok};
 }

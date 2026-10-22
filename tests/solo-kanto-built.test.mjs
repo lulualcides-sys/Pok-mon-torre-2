@@ -699,6 +699,34 @@ assert.equal(pewterWorld.points.length,13,'Brock shows all 13 trainers at once')
 assert.ok(pewterWorld.buildings.center&&pewterWorld.buildings.mart&&
  pewterWorld.buildings.gym&&pewterWorld.buildings.grass,
  'Single Pewter world needs real landmarks and encounter grass');
+// Brock is a designed, stable 13-trainer route over the USER map, not a
+// procedural grid. No NPCs spill beyond the illustration or occupy landmarks.
+const brockComposite=getCampaignMapSpec(0,13,true);
+assert.ok(brockComposite.customBrock&&brockComposite.trainerAreas?.length===13,
+ 'Brock uses its own manually planned FireRed story path');
+assert.equal(brockComposite.points.length,13);
+const seen=new Set();
+for(let i=0;i<13;i++){
+ const pt=brockComposite.points[i],key=pt.x+','+pt.y;
+ assert.ok(pt.x>=42&&pt.x<=365&&pt.y>=135&&pt.y<=280,
+  'Brock trainer '+(i+1)+' must stay inside usable image boundaries');
+ assert.ok(!seen.has(key),'Trainer coordinates cannot be duplicated');
+ seen.add(key);
+ for(let j=0;j<i;j++){
+  const before=brockComposite.points[j];
+  assert.ok(Math.hypot(pt.x-before.x,pt.y-before.y)>=28,
+    'NPCs cannot overlap: trainers '+(j+1)+' and '+(i+1));
+ }
+ for(const [name,loc] of Object.entries(brockComposite.buildings))
+  assert.ok(Math.hypot(pt.x-loc[0],pt.y-loc[1])>=29,
+   'Trainer '+(i+1)+' must not block '+name+' hotspot');
+}
+assert.deepEqual(brockComposite.trainerAreas.slice(0,1),['PALLET TOWN']);
+assert.deepEqual(brockComposite.trainerAreas.slice(-2),['PEWTER CITY','PEWTER CITY']);
+assert.deepEqual(getCampaignMapSpec(0,13,true).points,brockComposite.points,
+ 'Saved progress must not shuffle checkpoint positions');
+assert.equal(getCampaignMapSpec(1,15).customBrock,false,
+ 'Do not change the unfinished Misty map in Brock-only patch');
 assert.equal(getCampaignMapSpec(1,15).id,'cerulean',
  'Misty gets a separate themed map after defeating Brock');
 assert.equal(getCampaignMapSpec(7,27).points.length,27,

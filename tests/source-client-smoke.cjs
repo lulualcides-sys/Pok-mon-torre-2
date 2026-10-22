@@ -302,6 +302,7 @@ const server=http.createServer(async(req,res)=>{
     return result;
   });
   assert.equal(mapState.world,'pewter');
+  assert.ok(mapState.realScene,'Brock must still use the original composite image');
   // gymScreen() removes the header; allow the queued Phaser scene restart
   // to finish before counting the new fullscreen button and cached textures.
   await offline.waitForFunction(()=>{
