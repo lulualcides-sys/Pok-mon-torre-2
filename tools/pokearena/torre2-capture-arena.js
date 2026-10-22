@@ -17,8 +17,8 @@ const BALL=[
  '......OOOO......','....OOXXXXOO....','...OXXXXXXXXO...',
  '..OXXXXXXXXXXO..','.OXXXXXXXXXXXXO.','.OXXXXXXXXXXXXO.',
  'OXXXXXXXXXXXXXXO','OOOOOOWWWOOOOOOO','OWWWWWOOOWWWWWWO',
- 'OOWWWWWOOWWWWWOO','.OWWWWWWWWWWWWO.','..OWWWWWWWWWWWO..',
- '...OWWWWWWWWWO...','....OOWWWWWOO....','......OOOO......'];
+ 'OOWWWWWOOWWWWWOO','.OWWWWWWWWWWWWO.','..OWWWWWWWWWWO..',
+ '...OWWWWWWWWO...','....OOWWWWOO....','......OOOO......'];
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 function ball(g,cx,cy,kind,scale=2,rotation=0){
  const c=COLORS[kind]||COLORS.pokeball;
@@ -111,7 +111,7 @@ export function installWildCapture(scene){
   close();
   const state=readCampaign();if(!state?.pendingWild)return;
   add(frame(scene,173,109,299,169));
-  add(txt(scene,188,119,'ESCOLHA UMA POKÉBOLA',15,'#ffe5a4'));
+  add(txt(scene,188,119,'LANÇAR POKÉBOLA',15,'#ffe5a4'));
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
   add(txt(scene,187,142,state.pendingWild.id.toUpperCase()+
    ' · HP '+hp+'%',11,'#d2f5e5'));
