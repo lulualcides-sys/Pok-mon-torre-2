@@ -376,6 +376,7 @@ const server=http.createServer(async(req,res)=>{
     Math.abs(o.x-174)<2&&Math.abs(o.y-292)<2);
    close?.emit('pointerdown');
    const restored=image.active&&!c.__torre2GrassOverlay;
+   c.registry.set('torre2-wide-map',true);
    c.scale.resize(800,360);
    c.setCampaignPanelCollapsed(false);
    const wide={
@@ -385,6 +386,7 @@ const server=http.createServer(async(req,res)=>{
     sideX:c.__campaignSidebarObjects.find(o=>o.text==='SUA EQUIPE')?.x,
     canvasWidth:c.game.canvas.width
    };
+   c.registry.set('torre2-wide-map',false);
    c.scale.resize(640,360);
    c.scene.restart();
    return {startingWidth,whileGrass,restored,close:!!close,wide};
