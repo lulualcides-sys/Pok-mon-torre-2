@@ -226,18 +226,27 @@ class Campanha extends Phaser.Scene{
    fontSize:region.subtitle.length>21?'8px':'9px',
    color:'#baf4e9'}).setOrigin(1,0).setDepth(4);
   const trainers=this.add.graphics().setDepth(6);
-  for(const p of points){
-   const current=p.index===state.trainer,won=p.index<state.trainer;
+  for(let i=0;i<points.length;i++){
+   const p=points[i],current=p.index===state.trainer,won=p.index<state.trainer;
    if(!won){
     const trainerKind=trainerClass(state.stage,p.index,p.kind,region.biome);
-    // Feet line up with the route marker, not floating 20px to the right.
-    if(!addFireRedNPC(this,trainerKind,p.x,p.y-4,{depth:7,scale:.82}))
-     drawTrainer(trainers,p.x,p.y-13,trainerKind,.72);
-    if(current)addRedPlayer(this,p.x-18,p.y+5,{depth:8,scale:.85});
+    // The trainer's feet sit on the checkpoint in the same zigzag trail.
+    if(!addFireRedNPC(this,trainerKind,p.x,p.y+3,{depth:7,scale:.82}))
+     drawTrainer(trainers,p.x,p.y-6,trainerKind,.72);
+    if(current){
+     // Red stays on the incoming segment, 21px before the opponent.
+     const previous=i?points[i-1]:{x:56,y:251};
+     const dx=p.x-previous.x,dy=p.y-previous.y;
+     const length=Math.hypot(dx,dy)||1;
+     const playerX=p.x-21*dx/length,playerY=p.y-21*dy/length;
+     if(!addRedPlayer(this,playerX,playerY+3,{depth:8,scale:.85}))
+      drawTrainer(trainers,playerX,playerY-6,'youngster',.72);
+    }
    }
-   richNode(art,p.x,p.y,won?'done':current?'current':'future');
+   // The route already paints small square checkpoints. No bulky round pins.
    if(won)text(this,p.x,p.y-1,'✓',{fontSize:'9px',
-    color:'#ffffff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
+    color:'#ffffff',fontStyle:'bold',stroke:'#18392c',strokeThickness:2})
+    .setOrigin(.5).setDepth(8);
    else if(current){
     text(this,p.x+12,p.y-25,'!',{
      fontSize:'12px',color:'#ffe5a0',fontStyle:'bold',
