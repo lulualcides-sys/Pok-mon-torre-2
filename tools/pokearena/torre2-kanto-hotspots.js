@@ -138,7 +138,7 @@ export function attachBuildingInteractions(scene,view,onEnter){
  return hotspots.map(h=>{
   const zone=scene.add.zone(h.x+h.width/2,h.y+h.height/2,
    Math.max(h.width,26),Math.max(h.height,26))
-   .setInteractive({useHandCursor:true}).setDepth(21)
+   .setInteractive({useHandCursor:true}).setDepth(9)
    .setData('frlg-building',h.id);
   zone.on('pointerover',()=>highlight(h));
   zone.on('pointerout',()=>highlight(null));

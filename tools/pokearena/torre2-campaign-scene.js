@@ -19,10 +19,11 @@ import {trainerClass,trainerClassName,drawTrainer,drawShopItem} from './campaign
 import {campaignRegion,KANTO_CHAPTERS} from './kanto-regions.js';
 import {drawKantoWorldMap,mapVisitInfo} from './kanto-world-map.js';
 import {currentLevelCap} from './kanto-levels.js';
-import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS} from './frlg-available.js';
+import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {attachBuildingInteractions} from './kanto-hotspots.js';
 import {addFireRedNPC,addRedPlayer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
+import {zigzagRoutePoints} from './kanto-route-layout.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -47,7 +48,7 @@ class Campanha extends Phaser.Scene{
   for(const id of AVAILABLE_FRLG){
    const key='frlg-location-'+id;
    if(!this.textures.exists(key))
-    this.load.image(key,'assets/ui/frlg/'+id+'.webp');
+    this.load.image(key,AVAILABLE_FRLG_FILES[id]||'assets/ui/frlg/'+id+'.webp');
   }
   for(const id of AVAILABLE_FRLG_NPCS){
    const key='frlg-npc-'+id;
@@ -186,21 +187,10 @@ class Campanha extends Phaser.Scene{
   this.mapPage=page;
   const next=currentOpponent(state),area=wildAvailability(state.stage);
   const first=page*perPage,count=Math.min(perPage,limit+1-first);
-  // These node coordinates are shared by the native routes and their hit zones.
-  const xs=[190,144,234,150,232];
-  // Trainer placement follows the local FireRed camera path rather than
-  // reusing the same diagonal dots through buildings on every screen.
-  const firstRoute=[
-   [[160,214],[240,216],[312,184]],   // Pallet Town
-   [[186,235],[196,199],[198,158]],   // Route 1
-   [[204,223],[239,186],[274,149]],   // Viridian
-   [[181,234],[235,191],[298,143]],   // Viridian Forest
-   [[170,223],[258,190]]             // Pewter / Brock
-  ];
-  const positions=state.stage===0?firstRoute[page]:null;
-  const points=Array.from({length:count},(_,i)=>({
-   index:first+i,x:positions?.[i]?.[0]??xs[i],
-   y:positions?.[i]?.[1]??240-i*32,
+  // Fixed serpentine map route: left -> right -> left, anchored to the art.
+  // Each checkpoint keeps its original saved trainer index.
+  const points=zigzagRoutePoints(count).map((pos,i)=>({
+   index:first+i,x:pos.x,y:pos.y,
    kind:routeNode(state.stage,first+i,limit).type
   }));
   const region=campaignRegion(state.stage,page,totalPages,finished);
@@ -240,22 +230,21 @@ class Campanha extends Phaser.Scene{
    const current=p.index===state.trainer,won=p.index<state.trainer;
    if(!won){
     const trainerKind=trainerClass(state.stage,p.index,p.kind,region.biome);
-    if(!addFireRedNPC(this,trainerKind,p.x+20,p.y-8,{depth:7}))
-     drawTrainer(trainers,p.x+23,p.y-13,trainerKind,1);
-    if(current&&locationView)addRedPlayer(this,p.x-16,p.y+1,{depth:8});
+    // Feet line up with the route marker, not floating 20px to the right.
+    if(!addFireRedNPC(this,trainerKind,p.x,p.y-4,{depth:7,scale:.82}))
+     drawTrainer(trainers,p.x,p.y-13,trainerKind,.72);
+    if(current)addRedPlayer(this,p.x-18,p.y+5,{depth:8,scale:.85});
    }
    richNode(art,p.x,p.y,won?'done':current?'current':'future');
    if(won)text(this,p.x,p.y-1,'✓',{fontSize:'9px',
     color:'#ffffff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
    else if(current){
-    text(this,p.x,p.y-1,p.kind==='leader'?'G':
-     p.kind==='rocket'?'R':p.kind==='rival'?'!':'▶',
-     {fontSize:'10px',color:'#132536',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
-    this.add.zone(p.x,p.y,42,42).setInteractive({useHandCursor:true})
-     .setDepth(9).on('pointerdown',()=>this.enterBattle(state));
-   }else text(this,p.x,p.y,p.kind==='leader'?'G':
-     p.kind==='rocket'?'R':p.kind==='rival'?'!':String(p.index+1),{
-     fontSize:'8px',fontStyle:'bold',color:'#fff'}).setOrigin(.5).setDepth(5);
+    text(this,p.x+12,p.y-25,'!',{
+     fontSize:'12px',color:'#ffe5a0',fontStyle:'bold',
+     stroke:'#20333f',strokeThickness:2}).setOrigin(.5).setDepth(9);
+    this.add.zone(p.x,p.y-10,34,45).setInteractive({useHandCursor:true})
+     .setDepth(25).on('pointerdown',()=>this.enterBattle(state));
+   }
   }
   const kind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
    next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'RIVAL':'TREINADOR';

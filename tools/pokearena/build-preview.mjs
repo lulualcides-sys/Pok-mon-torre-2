@@ -114,6 +114,9 @@ await fs.mkdir(path.join(dest,clientSource,'torre2'),{recursive:true});
 await fs.writeFile(path.join(dest,clientSource,'torre2','frlg-available.js'),
  'export const AVAILABLE_FRLG=Object.freeze('+JSON.stringify(
  Object.keys(frlgLocations.locations))+');\n'+
+ 'export const AVAILABLE_FRLG_FILES=Object.freeze('+JSON.stringify(
+ Object.fromEntries(Object.entries(frlgLocations.locations).map(
+ ([id,info])=>[id,info.file])))+');\n'+
  'export const AVAILABLE_FRLG_NPCS=Object.freeze('+JSON.stringify(
  originalNPCs.available)+');\n');
 await Promise.all([
@@ -127,6 +130,7 @@ await Promise.all([
  ['tools/pokearena/torre2-cc0-overworld.js','cc0-overworld.js'],
  ['tools/pokearena/torre2-frlg-location.js','frlg-location.js'],
  ['tools/pokearena/torre2-kanto-hotspots.js','kanto-hotspots.js'],
+ ['tools/pokearena/torre2-kanto-route-layout.js','kanto-route-layout.js'],
  ['tools/pokearena/torre2-frlg-npc.js','frlg-npc.js'],
  ['tools/pokearena/torre2-frlg-interiors.js','frlg-interiors.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],

@@ -268,19 +268,22 @@ function panelMap(g){
  }
 }
 function pathStroke(g,points){
- const route=[{x:82,y:243},...points,{x:333,y:149}];
+ // One easy-to-follow serpentine trail over the actual map image.
+ // Draw thin and partially translucent so buildings and trees remain visible.
+ const route=[{x:56,y:251},...points,{x:334,y:107}];
  for(let i=1;i<route.length;i++){
-  const a=route[i-1],b=route[i],dx=b.x-a.x,dy=b.y-a.y;
-  for(const [w,c] of [[22,0x606b42],[20,0x977b48],[16,0xdfad6a],
-    [12,0xf4d28c],[6,0xffe2a0]]){
-   g.lineStyle(w,c,1);g.lineBetween(a.x,a.y,b.x,b.y);
+  const a=route[i-1],b=route[i];
+  for(const [width,color,alpha] of [
+   [11,0x354739,.86],[8,0xb78e58,.86],[5,0xf9db9e,.90]
+  ]){
+   g.lineStyle(width,color,alpha);
+   g.lineBetween(a.x,a.y,b.x,b.y);
   }
-  const steps=Math.max(1,Math.floor(Math.hypot(dx,dy)/7));
-  for(let j=1;j<steps;j++){
-   const t=j/steps,xx=Math.round(a.x+dx*t),yy=Math.round(a.y+dy*t);
-   px(g,xx-2,yy+5,3,1,0xb88f59,.45);
-   px(g,xx+2,yy-3,3,1,0xffe4a0,.7);
-  }
+ }
+ // Small pixel checkpoints, not oversized circles or fake buildings.
+ for(const p of points){
+  px(g,p.x-5,p.y-5,10,10,0x243a40,.8);
+  px(g,p.x-3,p.y-3,6,6,0xffdfa1,.85);
  }
 }
 function pathDistance(x,y,points){
@@ -351,14 +354,13 @@ export function map(scene,stage,points,page=0,region=null){
  // FireRed source map is tiled as 16x16 Phaser sprites on top of the
  // native base scene; gameplay nodes render at higher depths.
  const hasFRLG=renderLocationTiles(scene,region);
- if(!hasFRLG)pathStroke(g,points);
+ // Draw exactly one trail on top of whichever map texture is available.
  const hasWorldSprites=!hasFRLG&&scene.textures.exists(WORLD_SHEET);
  if(hasWorldSprites){
   // True PNG tile textures at depth 1.05, native road path above at 1.20,
   // then trees/buildings at depth 1.4. Trainer nodes stay clickable on top.
   decorateWorldWithSprites(scene,region,points);
-  const roadLayer=scene.add.graphics().setDepth(1.2);
-  pathStroke(roadLayer,points);
+  // Route overlay is shared with FireRed source maps and CC0 fallback.
  }
  if(!hasWorldSprites&&!hasFRLG){
  // Procedural art is only a FALLBACK when neither real location tiles nor
@@ -410,6 +412,9 @@ export function map(scene,stage,points,page=0,region=null){
    fontSize:'9px',fontStyle:'bold',color:'#ffffff',stroke:'#203c56',
    strokeThickness:2}).setOrigin(.5).setDepth(2);
  }
+ // Route always remains visible ABOVE the FireRed tiles, never hidden below them.
+ const routeOverlay=scene.add.graphics().setDepth(2.25);
+ pathStroke(routeOverlay,points);
  // Keep the map art separate from interactive Phaser nodes / information.
  px(g,17,62,376,27,0x054553);
  px(g,19,64,372,23,0x064558);
@@ -423,7 +428,7 @@ export function map(scene,stage,points,page=0,region=null){
 
 export function node(g,x,y,kind='future'){
  // FRLG-sized unobtrusive marker: keep source map tiles visible.
- const r=8;
+ const r=6;
  g.fillStyle(0x0b2535,.8);g.fillCircle(x+1,y+3,r+3);
  g.fillStyle(0xf9efd8);g.fillCircle(x,y,r+2);
  g.fillStyle(0x1d3548);g.fillCircle(x,y,r+1);

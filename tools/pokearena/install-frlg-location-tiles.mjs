@@ -36,6 +36,27 @@ const MAPS=[
  ['powerplant','Power Plant','https://poketrainervault.com/images/frlg/maps/Power_Plant.webp'],
  ['rocketwarehouse','Rocket Warehouse','https://poketrainervault.com/images/frlg/maps/Rocket_Warehouse.webp']
 ];
+// User-supplied composites, checked into the reference library.
+ // Prefer local images over remote requests so maps always load after deploy.
+ const LOCAL=Object.freeze({
+  pallet:'maps/cities/pallet-town.png',viridian:'maps/cities/viridian-city.png',
+  pewter:'maps/cities/pewter-city.png',cerulean:'maps/cities/cerulean-city.png',
+  vermilion:'maps/cities/vermilion-city.png',lavender:'maps/cities/lavender-town.png',
+  celadon:'maps/cities/celadon-city.png',fuchsia:'maps/cities/fuchsia-city.png',
+  saffron:'maps/cities/saffron-city.png',cinnabar:'maps/cities/cinnabar-island.png',
+  forest:'maps/locations/viridian-forest.png',mtmoon:'maps/dungeons/mt-moon-floors.png',
+  seafoam:'maps/dungeons/seafoam-islands-floors.png',
+  victory:'maps/dungeons/victory-road-floors.png',
+  safari:'maps/locations/safari-zone-sections.png',
+  silph:'maps/locations/silph-co-floors.png',
+  indigo:'maps/locations/indigo-plateau-elite-four.png',
+  rocketwarehouse:'maps/locations/rocket-warehouse.png',
+  rockethideout:'maps/locations/rocket-hideout-floors.png',
+  powerplant:'maps/locations/power-plant.png',
+  route24:'maps/routes/route-24.png',route25:'maps/routes/route-25-bills-house.png',
+  ssanne:'maps/locations/vermilion-harbor-ss-anne.png',
+  pokemontower:'maps/locations/pokemon-tower-floors.png'
+ });
 const timeout=8500;
 async function load(url){
  const r=await fetch(url,{signal:AbortSignal.timeout(timeout),
@@ -58,12 +79,21 @@ export async function installFRLGMaps(dest){
  // Phaser asset requests; the game still uses its existing route fallback.
  for(let i=0;i<MAPS.length;i+=5)await Promise.all(
   MAPS.slice(i,i+5).map(async([id,name,url])=>{
-   let data=null,issue='';
-   try{data=await load(url)}catch(e){issue=String(e.message||e)}
+   let data=null,issue='',ext='.webp',source=url;
+   const local=LOCAL[id]&&path.join('reference-assets','kanto',LOCAL[id]);
+   if(local){
+    try{
+     data=await fs.readFile(local);
+     if(!data.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))
+      throw Error('Not a PNG');
+     ext='.png';source='user-uploaded reference: '+local;
+    }catch(e){data=null;issue=String(e.message||e)}
+   }
+   if(!data)try{data=await load(url)}catch(e){issue=String(e.message||e)}
    if(data){
-    await fs.writeFile(path.join(folder,id+'.webp'),data);
-    manifest.locations[id]={name,file:'assets/ui/frlg/'+id+'.webp',
-     source:url,bytes:data.length};
+    await fs.writeFile(path.join(folder,id+ext),data);
+    manifest.locations[id]={name,file:'assets/ui/frlg/'+id+ext,
+     source,bytes:data.length};
    }else console.warn('Optional FireRed map unavailable',id,issue);
   })
  );
