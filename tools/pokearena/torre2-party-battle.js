@@ -5,6 +5,7 @@
  */
 import {GYMS} from './campaign-core.js';
 import {resolveLoadout} from './move-pool.js';
+import {buscar} from '../datos.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
@@ -48,16 +49,17 @@ export function applyPartyBattleResult(state,party){
 }
 // Small Pokéballs show owned members under each HP HUD, filled for Pokémon
 // still standing and hollow for fainted ones.
-function dot(scene,x,y,alive,isActive,depth=2480){
- const g=scene.add.graphics().setDepth(depth);
- const ring=alive?0xe7f6ed:0x597183;
- g.lineStyle(1,ring,1);g.strokeCircle(x,y,5);
- g.fillStyle(alive?0xe85558:0x36424e,alive?1:.85);
- g.fillRect(x-4,y-3,8,3);
- g.fillStyle(alive?0xf5fcf3:0x72818d,.94);g.fillRect(x-4,y,8,3);
- g.fillStyle(0x192838);g.fillRect(x-5,y-1,10,2);
- g.fillStyle(isActive?0xffe790:0xe4e9e8);g.fillRect(x-1,y-2,3,4);
- return g;
+function drawPixelBall(g,x,y,alive,active){
+ const x0=Math.round(x)-6,y0=Math.round(y)-6;
+ const b=(dx,dy,w,h,color)=>{g.fillStyle(color);g.fillRect(x0+dx,y0+dy,w,h)};
+ if(active){b(-2,-2,16,16,0xf8cb63);b(-1,-1,14,14,0x604425);}
+ b(2,0,8,12,0x142637);b(0,2,12,8,0x142637);
+ b(2,2,8,3,alive?0xee5959:0x616a77);
+ b(1,5,10,2,0x132536);
+ b(2,7,8,3,alive?0xf6fff5:0x86939f);
+ b(4,4,4,4,0x132536);
+ b(5,5,2,2,alive?0xffeac7:0xa6afbd);
+ if(alive){b(3,2,3,1,0xffbcb2);b(3,8,2,1,0xffffff);}
 }
 export function installPartyBattle(scene){
  const payload=scene.datos?.torre2;
@@ -105,20 +107,28 @@ export function installPartyBattle(scene){
   scene.events.once('shutdown',()=>scene.game.events.off('step',sparkle));
  }
  const graphics=scene.add.graphics().setDepth(2480);
- graphics.fillStyle(0x082339,.91);
- graphics.fillRoundedRect(12,74,177,45,4);
- graphics.fillRoundedRect(448,74,180,45,4);
- label(scene,85,80,'SEUS POKÉMON · '+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length,
-  8,'#d1f6eb');
- label(scene,550,80,payload.kind==='wild'?'SELVAGEM':'RIVAL · '+
-  party.foes.filter(m=>m.hp>0).length+'/'+party.foes.length,8,'#ffe4d5');
- const drawIcons=(arr,active,x)=>{
-  for(let i=0;i<arr.length;i++)dot(scene,x+i*17,101,arr[i].hp>0,i===active);
- };
- drawIcons(party.friend,party.playerIndex,30);
- drawIcons(party.foes,party.enemyIndex,470);
- label(scene,87,113,'● ATIVO   ○ DESMAIADO',7,'#d5dee8');
- label(scene,550,113,'POKÉBOLAS DO RIVAL',7,'#d5dee8');
+ const playerLabel=label(scene,96,79,'',9,'#c1efe3');
+ const enemyLabel=label(scene,539,79,'',9,'#ffe0d1');
+ const switchText=label(scene,322,89,'',10,'#ffe7a3',2482);
+ function redrawPartyHud(){
+  graphics.clear();
+  for(const xx of [12,448]){
+   graphics.fillStyle(0x082436,.94);graphics.fillRect(xx,73,178,45);
+   graphics.lineStyle(1,0x80a6ad,1);
+   graphics.strokeRect(xx+.5,73.5,177,44);
+   graphics.fillStyle(0x133647);graphics.fillRect(xx+2,75,174,13);
+  }
+  for(const [members,active,start] of [
+   [party.friend,party.playerIndex,31],[party.foes,party.enemyIndex,470]]){
+   members.forEach((m,i)=>
+    drawPixelBall(graphics,start+i*17,101,m.hp>0,i===active));
+  }
+  playerLabel.setText('SEUS POKÉMON · '+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length);
+  enemyLabel.setText((payload.kind==='wild'?'SELVAGEM':'RIVAL')+' · '+
+   party.foes.filter(m=>m.hp>0).length+'/'+party.foes.length);
+  switchText.setText('TROCAR POKÉMON ('+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length+') ▾');
+ }
+ redrawPartyHud();
  const available=()=>party.friend.map((m,i)=>({m,i}))
   .filter(({m,i})=>i!==party.playerIndex&&m.hp>0);
  const announce=(textValue)=>{
@@ -162,14 +172,43 @@ export function installPartyBattle(scene){
    if(restarted||!scene.scene.isActive())return;
    restarted=true;
    scene.game.events.off('step',step);
-   if(side===0)party.playerIndex=next;
-   else party.enemyIndex=next;
+   const member=side===0?party.friend[next]:party.foes[next];
+   const actor=actors[side];
+   let found;
+   try{found=buscar(member.id)}catch(e){
+    console.error('Torre 2: espécie não carregada',member.id,e);
+    scene.__torre2Changing=false;scene.fase='lucha';return;
+   }
+   if(!found?.def){
+    scene.__torre2Changing=false;scene.fase='lucha';return;
+   }
+   // Crucial: mutate the same Luchador used by HUD, AI and input controls.
+   // Reloading Combate recreates the whole arena and starts FIGHT countdown.
+   if(side===0){
+    party.playerIndex=next;scene.datos.p1=member.id;
+    scene.datos.torre2Loadout=member.loadout;
+    payload.playerLevel=member.level;
+   }else{
+    party.enemyIndex=next;scene.datos.p2=member.id;
+    scene.datos.torre2OpponentLoadout=member.loadout;
+    payload.enemyLevel=member.level;
+   }
    party.changes++;
-   const left=party.friend[party.playerIndex],right=party.foes[party.enemyIndex];
-   scene.scene.restart({...scene.datos,p1:left.id,p2:right.id,
-    torre2:{...payload,party,lastSwitchedSide:side,
-     playerLevel:left.level,enemyLevel:right.level},
-    torre2Loadout:left.loadout,torre2OpponentLoadout:right.loadout});
+   const x=actor.x,y=actor.y;
+   actor.def=found.def;actor.etapa=found.etapa??0;
+   actor.aspecto=null;actor.jefe=null;
+   actor.reiniciar(x,y);
+   if(scene.textures.exists('pmd-'+actor.dex+'-Idle'))
+    actor.spr.setTexture('pmd-'+actor.dex+'-Idle');
+   actor.kit=actor.kitActual();
+   actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
+   actor.ko=false;
+   actor.spr.setAlpha(1).setVisible(true);
+   actor.sombra?.setVisible(true);
+   actor.anillo?.setVisible(true);
+   scene.__torre2Changing=false;
+   scene.fase='lucha';
+   redrawPartyHud();
   };
   // A global frame-step remains live during native KO hitstop. The original
   // combat scene's local clock/tween may be suspended for animations, which
@@ -213,7 +252,7 @@ export function installPartyBattle(scene){
   const side=caido.lado,arr=side===0?party.friend:party.foes;
   const pos=side===0?party.playerIndex:party.enemyIndex;
   scene.fase='ko';
-  syncHp();arr[pos].hp=0;
+  syncHp();arr[pos].hp=0;redrawPartyHud();
   const next=arr.findIndex((m,i)=>i!==pos&&m.hp>0);
   if(next<0){finish(side===1);return}
   announce(side===0?'POKÉMON DESMAIOU!':'RIVAL VAI TROCAR!');
@@ -258,9 +297,6 @@ export function installPartyBattle(scene){
  }
  // A native clickable Pokémon switch (mouse and touch) independent of
  // the Arena 2D ability buttons. Only available with living reserves.
- const switchText=label(scene,322,89,
-  'TROCAR POKÉMON ('+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length+') ▾',
-  10,'#ffe7a3',2482);
  const switchHit=scene.add.zone(320,88,177,30).setDepth(2500)
   .setInteractive({useHandCursor:true}).on('pointerdown',showParty);
  scene.events.once('shutdown',()=>{

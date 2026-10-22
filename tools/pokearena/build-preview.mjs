@@ -350,6 +350,11 @@ patches.push(['luchador.js',[
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(!g.puro){',
   'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro&&fuente&&fuente!==this&&Number.isInteger(fuente.lado)&&fuente.lado!==this.lado){d*=torre2DamageMultiplier(torre2FighterLevel(fuente),torre2FighterLevel(this));}if(!g.puro){']
 ]]);
+// Preload every member before first round: in-place swap never triggers LOADING.
+patches.push(['escenas/combate.js',[[
+ 'const dexs=formasDe(d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2],d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);',
+ 'const ids=d.torre2?.party?[...d.torre2.party.friend,...d.torre2.party.foes].map(m=>m.id):d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2];const dexs=formasDe(ids,d.torre2?.party?null:d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);'
+]]]);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');

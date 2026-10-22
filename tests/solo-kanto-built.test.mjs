@@ -669,6 +669,15 @@ for(const id of ['sing','crabhammer'])
 const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
 assert.ok(!menuCampaign.includes('drawApprovedDashboard(this,state)'),
  'Never paste the approved reference image over the playable map');
+const partySource=fs.readFileSync(path.join(stage,version,'torre2/party-battle.js'),'utf8');
+assert.ok(!partySource.includes('scene.scene.restart(')&&
+ partySource.includes('actor.reiniciar(x,y)'),
+ 'Pokémon swaps reuse native Luchador without restart or countdown');
+assert.ok(partySource.includes('drawPixelBall('),
+ 'Pokéballs use a single lightweight pixel-art Graphics layer');
+const fightSource=fs.readFileSync(path.join(stage,version,'escenas/combate.js'),'utf8');
+assert.ok(fightSource.includes('d.torre2?.party?'),
+ 'Every party species preloaded before combat; never load on swap');
 assert.ok(menuCampaign.includes('renderUnifiedCampaignMap(this,state,'),
  'Campaign should use one persistent FireRed world per leader');
 assert.ok(!menuCampaign.includes('richMap(this,state.stage,points,page,region)'),

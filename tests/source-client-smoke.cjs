@@ -341,7 +341,7 @@ const server=http.createServer(async(req,res)=>{
    'Collapse arrow must be clickable in the campaign');
   assert.equal(panelTest.start.ctaX,320,
    'Battle/capture starts at the bottom center, not inside sidebar');
-  assert.equal(panelTest.start.ctaY,339);
+  assert.equal(panelTest.start.ctaY,347);
   assert.equal(panelTest.start.sidebar,true);
   assert.equal(panelTest.collapsed.active,true);
   assert.ok(panelTest.collapsed.width>panelTest.start.width*1.5,
@@ -503,10 +503,12 @@ const server=http.createServer(async(req,res)=>{
   const afterSwitch=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    const e=b.luchadores[1];
-   return {enemyPct:e.hp/e.hpMax,
+   return {enemyPct:e.hp/e.hpMax,phase:b.fase,round:b.numRonda,
     remaining:b.datos.torre2.party.friend.filter(x=>x.hp>0).length,
     marker:b.datos.torre2.trainer};
   });
+  assert.equal(afterSwitch.phase,'lucha','Swap resumes SAME battle scene');
+  assert.equal(afterSwitch.round,1,'No new countdown after switching');
   assert.ok(afterSwitch.enemyPct>.59&&afterSwitch.enemyPct<.74,
     'Switching Pokémon must preserve opponent damage');
   assert.equal(afterSwitch.remaining,2,

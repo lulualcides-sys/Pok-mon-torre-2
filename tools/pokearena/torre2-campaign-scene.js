@@ -397,31 +397,39 @@ class Campanha extends Phaser.Scene{
   const cta=state.pendingCapture?'CAPTURAR POKÉMON ▶':
    finished?'★ CAMPEÃO DE KANTO':
    state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1);
-  this.battleButton(320,339,210,28,cta,()=>{
+  this.battleButton(320,347,224,24,cta,()=>{
    if(state.pendingCapture)return this.captureScreen(state);
    if(finished)return;
    if(state.trainer>=limit)this.gymScreen(state);
    else this.enterBattle(state);
   },!finished||!!state.pendingCapture).setData('torre2-central-cta',true);
-  // Compact central party strip is only drawn when the sidebar is hidden.
-  // The six original PMD portraits stay tappable to open their summaries.
+  // Compact six-slot pixel-art party dock with portrait, name, level and
+  // health. Hidden side menu remains touch-free; no card overlaps the CTA.
   const dockStart=this.children.list.length;
   const dockBg=this.add.graphics().setDepth(51);
-  dockBg.fillStyle(0x071e31,.96);
-  dockBg.fillRect(18,307,604,17);
-  dockBg.lineStyle(1,0xaac1b5,.8);
-  dockBg.strokeRect(18,307,604,17);
+  dockBg.fillStyle(0x071d30,.98);dockBg.fillRect(15,305,612,29);
+  dockBg.lineStyle(1,0x719eab,1);dockBg.strokeRect(15.5,305.5,611,28);
   for(let i=0;i<6;i++){
-   const member=state.team[i],x=173+i*59,y=315;
+   const member=state.team[i],x=27+i*99,y=307;
+   dockBg.fillStyle(member?(i===state.active?0x37504c:0x18384a):0x0c2736);
+   dockBg.fillRect(x,y,94,25);
+   dockBg.lineStyle(1,i===state.active?0xffd574:member?0x537c8c:0x24495b);
+   dockBg.strokeRect(x+.5,y+.5,93,24);
    if(!member)continue;
-   this.drawPortrait(member,x-12,y,14,54);
-   const name=member.id.toUpperCase().slice(0,7);
-   text(this,x+5,y-3,name,{
-    fontSize:'7px',color:i===state.active?'#ffe8ad':'#e0f8f6'
+   this.drawPortrait(member,x+14,y+12,21,54);
+   const name=member.id.toUpperCase().slice(0,10);
+   text(this,x+28,y+4,name,{
+    fontSize:name.length>8?'7px':'8px',
+    color:i===state.active?'#ffe7ad':'#e9f9f7',fontStyle:'bold'
    }).setDepth(55);
-   text(this,x+5,y+5,'NV.'+(member.progression?.level??'?'),{
-    fontSize:'6px',color:'#a9ddc8'}).setDepth(55);
-   this.add.zone(x+10,y,56,18).setDepth(58)
+   text(this,x+28,y+13,'NV.'+(member.progression?.level??'?')+
+    (Number(member.hp??100)<=0?' · K.O.':''),{
+    fontSize:'7px',color:'#b7e1d3'}).setDepth(55);
+   const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
+   dockBg.fillStyle(0x091724);dockBg.fillRect(x+30,y+21,49,3);
+   dockBg.fillStyle(hp>50?0x5ce4a1:hp>20?0xf2c859:0xf06b70);
+   dockBg.fillRect(x+30,y+21,49*hp/100,3);
+   this.add.zone(x+47,y+12,94,25).setDepth(58)
     .setInteractive({useHandCursor:true})
     .on('pointerdown',()=>this.showSummary(state,i));
   }
