@@ -14,7 +14,7 @@ export function locationForCampaign(region){
  if(stage===3&&page===2)return 'lavender';
  if(stage===3&&page>=3)return 'celadon';
  if(stage===4&&page>=3)return 'fuchsia';
- if(stage===5&&page>=2)return 'celadon'; // Saffron art not yet verified
+ // Saffron City needs its own verified sheet; never show Celadon in its place.
  if(stage===6&&page>=3)return 'cinnabar';
  if(stage===7&&page>=1)return 'viridian';
  return null;
