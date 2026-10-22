@@ -137,6 +137,23 @@ export function installPartyBattle(scene){
   };
   drawBall();
   const tween={v:0};
+  let restarted=false;
+  const enterNext=()=>{
+   if(restarted||!scene.scene.isActive())return;
+   restarted=true;
+   if(side===0)party.playerIndex=next;
+   else party.enemyIndex=next;
+   party.changes++;
+   const left=party.friend[party.playerIndex],right=party.foes[party.enemyIndex];
+   const d={...scene.datos,p1:left.id,p2:right.id,
+    torre2:{...payload,party,lastSwitchedSide:side,
+     playerLevel:left.level,enemyLevel:right.level},
+    torre2Loadout:left.loadout,torre2OpponentLoadout:right.loadout};
+   scene.scene.restart(d);
+  };
+  // Native Phaser rounds may temporarily pause tweens during KO hitstop.
+  // The scene clock is authoritative so a faint can never soft-lock play.
+  scene.time.delayedCall(780,enterNext);
   scene.tweens.add({targets:tween,v:1,duration:540,
    onUpdate:()=>{
     const t=tween.v;
@@ -151,23 +168,7 @@ export function installPartyBattle(scene){
      actor.spr.setAlpha(Math.max(.05,1-t));
      actor.spr.setScale(Math.max(.06,1-t*.85));
     }
-   },onComplete:()=>{
-    if(!scene.scene.isActive())return;
-    if(side===0)party.playerIndex=next;
-    else party.enemyIndex=next;
-    party.changes++;
-    const left=party.friend[party.playerIndex],right=party.foes[party.enemyIndex];
-    if(kind==='faint'){
-     if(side===0)party.friend[party.playerIndex].hp=Math.max(1,left.hp);
-     else party.foes[party.enemyIndex].hp=Math.max(1,right.hp);
-    }
-    const d={...scene.datos,p1:left.id,p2:right.id,
-      torre2:{...payload,party,lastSwitchedSide:side,
-       playerLevel:left.level,enemyLevel:right.level},
-      torre2Loadout:left.loadout,torre2OpponentLoadout:right.loadout};
-    // The next Pokémon is animated by the native original Phaser entry.
-    scene.scene.restart(d);
-   }
+   },onComplete:enterNext
   });
  }
  function finish(won){
