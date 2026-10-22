@@ -460,6 +460,31 @@ const server=http.createServer(async(req,res)=>{
     'Switching Pokémon must preserve opponent damage');
   assert.equal(afterSwitch.remaining,2,
     'Manual switching does not mark a Pokémon fainted');
+  // Force one actual knockout event, then verify the red recall action
+  // sends the original starter back out without finishing the trainer.
+  await offline.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    b.fase='lucha';
+    b.luchadores[0].hp=0;
+    b.alKO(b.luchadores[0]);
+  });
+  await offline.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.__torre2PartyInstalled&&
+      b.datos?.torre2?.party?.playerIndex===0&&
+      b.datos?.torre2?.party?.friend?.[1]?.hp===0&&
+      b.luchadores?.[0]?.def?.id==='charmander';
+  },null,{timeout:23000});
+  const afterFaint=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return {foe:b.luchadores[1].hp/b.luchadores[1].hpMax,
+    faded:b.datos.torre2.party.friend[1].hp,
+    player:b.luchadores[0].def.id};
+  });
+  assert.equal(afterFaint.faded,0,
+    'Pokéball indicator marks fainted Mewtwo unavailable');
+  assert.ok(afterFaint.foe>.59&&afterFaint.foe<.74,
+    'Red-beam replacement does not restore the rival HP');
   await offline.evaluate(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
     b.scene.start('campanha');
