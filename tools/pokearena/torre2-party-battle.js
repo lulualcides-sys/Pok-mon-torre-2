@@ -19,7 +19,13 @@ function visibleActorCenter(actor){
   // Bounds are calculated from the actual PMD texture, including animation
   // frame origin and scale. Never use a saved spawn position for the beam.
   if(Number.isFinite(b.centerX)&&Number.isFinite(b.centerY)&&
-     b.width>0&&b.height>0)return {x:b.centerX,y:b.centerY};
+     b.width>0&&b.height>0){
+   // PMD idle frames include transparent padding ABOVE the visible body.
+   // The geometric frame centre is often empty air (or behind the Pokémon).
+   // Aim lower, through its torso, not at the center of its full texture.
+   return {x:Math.round(b.centerX),
+    y:Math.round(b.top+b.height*.72)};
+  }
  }
  return {x:Number(actor?.x)||320,
   y:(Number(actor?.y)||180)-Math.max(18,Number(actor?.alto||36)*.5)};
@@ -28,16 +34,18 @@ function drawRecallBeam(g,from,target,strength=1){
  const a=Math.max(0,Math.min(1,strength));
  const x=Math.round(target.x),y=Math.round(target.y);
  g.clear();
- g.lineStyle(8,0xba2347,a*.60);
+ // Distinct, continuous red beam from the opened Pokéball right through
+ // the Pokémon's visible body. Strong enough for a phone screen at 60 FPS.
+ g.lineStyle(11,0xb4163d,a*.82);
  g.lineBetween(from.x,from.y,x,y);
- g.lineStyle(4,0xff496b,a);
+ g.lineStyle(6,0xff3152,a);
  g.lineBetween(from.x,from.y,x,y);
- g.lineStyle(2,0xffcbd0,a);
+ g.lineStyle(3,0xffe9d9,a);
  g.lineBetween(from.x,from.y,x,y);
- g.fillStyle(0xff6381,a*.65);
- g.fillCircle(x,y,Math.max(2,Math.round(7*a)));
- g.fillStyle(0xffffff,a);
- g.fillRect(x-2,y-2,4,4);
+ g.fillStyle(0xff4f75,a*.84);
+ g.fillCircle(x,y,Math.max(3,Math.round(8*a)));
+ g.fillStyle(0xfff0dd,a);
+ g.fillRect(x-3,y-3,6,6);
 }
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
  return scene.add.text(x,y,value,{fontFamily:'Pixelify Sans,monospace',
@@ -113,9 +121,8 @@ export function installPartyBattle(scene){
  if(party.changes>0){
   const release=scene.add.graphics().setDepth(2604);
   const actor=actors[scene.datos?.torre2?.lastSwitchedSide===1?1:0];
-  const bx=actor.lado===1?567:72,by=288;
   const initialTarget=visibleActorCenter(actor);
-  const tx=initialTarget.x,ty=initialTarget.y;
+  const bx=actor.lado===1?560:80,by=296;
   let frame=0;
   if(actor.spr?.active)actor.spr.setAlpha(.05);
   const sparkle=()=>{
@@ -123,13 +130,8 @@ export function installPartyBattle(scene){
     scene.game.events.off('step',sparkle);return
    }
    const t=Math.min(1,++frame/26);
-   release.clear();
-   release.lineStyle(4,0xff465a,.8*(1-t));
-   release.lineBetween(bx,by,tx,ty);
-   release.lineStyle(1,0xffe8df,.98*(1-t));
-   release.lineBetween(bx,by,tx,ty);
-   release.fillStyle(0xff9f9f,(1-t)*.38);
-   release.fillCircle(tx,ty,22*(1-t)+2);
+   const live=visibleActorCenter(actor);
+   drawRecallBeam(release,{x:bx,y:by},live,1-t*.80);
    if(actor.spr?.active)actor.spr.setAlpha(Math.min(1,.05+t*.95));
    if(frame>=26){
     if(actor.spr?.active)actor.spr.setAlpha(1);
@@ -185,14 +187,17 @@ export function installPartyBattle(scene){
   scene.__torre2Changing=true;
   scene.fase='ko';
   syncHp();
-  // The native damage/regen logic may tick briefly during the 450ms KO
-  // animation. Never overwrite a confirmed faint with a tiny HP fraction.
+  // The native damage/regen logic may tick briefly during KO animation.
+  // Never overwrite a confirmed faint with a tiny HP fraction.
   if(kind==='faint'){
    const members=side===0?party.friend:party.foes;
    const outgoing=side===0?party.playerIndex:party.enemyIndex;
    if(members[outgoing])members[outgoing].hp=0;
   }
   const actor=actors[side];
+  // Native faint logic may hide/alpha-fade sprites before this handler runs.
+  // Restore a drawable PMD silhouette so the red recall ray visibly pulls it.
+  if(actor.spr?.active)actor.spr.setVisible(true).setAlpha(1);
   const target=visibleActorCenter(actor);
   // Combat is paused while the Pokéball acts. Remember the other fighter's
   // exact HP: stale native hit effects must not heal/damage it during recall.
@@ -201,8 +206,9 @@ export function installPartyBattle(scene){
   // Put the actual ball near the outgoing fighter so the red beam begins
   // on-screen and ends exactly at the visible sprite, including on faint.
   const from={
-   x:Math.max(24,Math.min(616,target.x+(side===0?-76:76))),
-   y:Math.max(90,Math.min(322,target.y+42))
+   // Throw from a fixed on-screen trainer side, NOT from a nearby invisible
+   // point that makes a tiny red stub indistinguishable from an attack.
+   x:side===0?80:560,y:296
   };
   const fx=sharedBeam;
   const ball=sharedBall;
@@ -242,6 +248,13 @@ export function installPartyBattle(scene){
    }
    // Crucial: mutate the same Luchador used by HUD, AI and input controls.
    // Reloading Combate recreates the whole arena and starts FIGHT countdown.
+   // The native reiniciar() can replace the PMD sprite without deleting
+   // previously rendered ones; retain references for orphan cleanup.
+   const previousSprite=actor.spr;
+   const previousDex=String(actor.dex||'');
+   const oldVisuals=scene.children.list.filter(obj=>
+    obj.active&&obj.texture?.key?.startsWith('pmd-'+previousDex+'-')&&
+    obj.type==='Sprite');
    if(side===0){
     party.playerIndex=next;scene.datos.p1=member.id;
     scene.datos.torre2Loadout=member.loadout;
@@ -265,6 +278,16 @@ export function installPartyBattle(scene){
    if(scene.textures.exists(idleTexture))actor.spr.setTexture(idleTexture);
    if(scene.anims.exists(idleAnimation))actor.spr.play(idleAnimation);
    actor.claveAnim=idleAnimation;
+   // A stale fighter sprite may survive the native reiniciar() and continue
+   // animating independently. Delete orphaned old-Pokémon visuals while
+   // preserving the actual current fighter and the opponent's PMD sprite.
+   for(const visual of oldVisuals){
+    if(visual!==actor.spr&&visual.active&&
+       !actors.some(a=>a.spr===visual))visual.destroy();
+   }
+   if(previousSprite&&previousSprite!==actor.spr&&previousSprite.active&&
+      !actors.some(a=>a.spr===previousSprite))previousSprite.destroy();
+   actor.spr.setVisible(true).setAlpha(1);
    actor.kit=actor.kitActual();
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
@@ -320,7 +343,7 @@ export function installPartyBattle(scene){
    // The PMD sprite moves while in combat; read its current on-screen bounds
    // BEFORE shrinking. This keeps the red ray touching the Pokémon itself.
    const live=visibleActorCenter(actor);
-   if(frames<=24){recallTarget.x=live.x;recallTarget.y=live.y;}
+   if(frames<=32){recallTarget.x=live.x;recallTarget.y=live.y;}
    const fade=1-t*.48;
    drawRecallBeam(fx,from,recallTarget,fade);
    ball.clear();
@@ -330,7 +353,7 @@ export function installPartyBattle(scene){
     actor.spr.setAlpha(Math.max(.02,1-t));
     actor.spr.setScale(Math.max(.035,(actor.escala||1)*(1-t*.95)));
    }
-   if(frames>=32)enterNext();
+   if(frames>=44)enterNext();
   };
   // Always show the red recollection beam and shrinking Pokémon (including
   // K.O.) before sending the replacement. A scene clock can be paused by
@@ -339,7 +362,7 @@ export function installPartyBattle(scene){
   // The game-wide frame callback is the primary completion mechanism:
   // battle-scene timers may pause during the engine's native KO hitstop.
   // DelayedCall only acts as a fallback when the local clock is running.
-  scene.time.delayedCall(1100,enterNext);
+  scene.time.delayedCall(1400,enterNext);
   scene.events.once('shutdown',detachRecall);
  }
  function finish(won){
