@@ -37,7 +37,7 @@ const EDGES=Object.freeze([
  ['viridian','victory'],['victory','indigo']
 ]);
 const PROGRESSION=Object.freeze([
- ['viridian','forest','pewter'],
+ ['pallet','viridian','forest','pewter'],
  ['moon','moon','cerulean','cerulean'],
  ['nugget','saffron','ssanne','vermilion'],
  ['rock','rock','lavender','celadon'],
