@@ -110,7 +110,7 @@ class Campanha extends Phaser.Scene{
  renderCampaign(state){
   this.backdrop();
   const stage=STAGES[state.stage],finished=state.champion||!stage;
-  const gymStage=state.stage<GYMS.length;
+  const gymStage=state.stage<=GYMS.length; // Victory Road retains wild encounters and Poké Mart
   const limit=finished?0:TRAINERS_PER_GYM(state.stage);
   const perPage=5,totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
   const activePage=Math.min(totalPages-1,Math.floor(state.trainer/perPage));
@@ -156,7 +156,8 @@ class Campanha extends Phaser.Scene{
   const nextTrainer=trainerClass(state.stage,state.trainer,next?.kind,region.biome);
   drawTrainer(trainers,35,278,nextTrainer,1);
   text(this,52,272,finished?'★ TODOS OS DESAFIOS CONCLUÍDOS':
-   'PRÓXIMO: '+(next?.leader?'BROCK':trainerClassName(nextTrainer))+' · '+(next?.id||'').toUpperCase(),{
+   'PRÓXIMO: '+(next?.leader?String(next.name).toUpperCase():trainerClassName(nextTrainer))+
+   ' · '+(next?.id||'').toUpperCase(),{
    fontSize:'12px',fontStyle:'bold',color:'#ffebc1'}).setDepth(5);
   ball(art,45,299,6);
   progress(art,64,299,Math.max(0,state.trainer-first),6);
@@ -181,7 +182,7 @@ class Campanha extends Phaser.Scene{
   richTeam(this);
   text(this,443,67,'MINHA EQUIPE',{fontSize:'15px',fontStyle:'bold',
    color:'#fff8e0',stroke:'#682f32',strokeThickness:2}).setDepth(5);
-  text(this,417,101,'INSÍGNIAS '+state.badges.length+'/12',{
+  text(this,417,101,'INSÍGNIAS '+Math.min(8,state.badges.length)+'/8',{
    fontSize:'11px',fontStyle:'bold',color:'#ffdf95'}).setDepth(5);
   text(this,617,101,'$ '+(state.money||0),{
    fontSize:'12px',fontStyle:'bold',color:'#ffdc71'}).setOrigin(1,0).setDepth(5);
