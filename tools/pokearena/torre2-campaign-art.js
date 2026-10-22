@@ -309,13 +309,8 @@ export function map(scene,stage,points,page=0,region=null){
   urban?[0xc2ba94,0xd2c3a0,0xa4b3a8,0xb8b09e]:
   ash?[0x727b7a,0x8b8f8b,0x657d7b,0x96958c]:
   [0x8dcb66,0x80be58,0x97d36c,0x79b958];
- for(let y=90;y<266;y+=6)for(let x=19;x<391;x+=6){
-  px(g,x,y,6,6,meadow[Math.floor(r()*meadow.length)]);
-  if(r()<.21)px(g,x+1,y+1,2,1,0xc5ea83,.65);
-  if(r()<.18)px(g,x+4,y+4,2,1,0x3f9750,.6);
- }
- // Modular 16px pixel tiles are the visual ground, separate from path,
- // buildings, game-state markers and the Arena 2D Pokémon sprites.
+ // Clean 16-pixel terrain replaces the former busy 6-pixel random confetti.
+ // Keep paths and trainer markers visually dominant at mobile 640x360.
  drawKantoTiles(g,biome,stage*27+page);
  // Route 01 and Viridian Forest are inland; the shoreline belongs to later
  // Kanto stages. Use the 16-bit vegetation border in the early screenshots.
@@ -353,7 +348,7 @@ export function map(scene,stage,points,page=0,region=null){
  }
  pathStroke(g,points);
  // Extra tile-level ground detail in forest; no random dots over the path.
- for(let k=0;k<(forest?470:urban?130:rocky?150:310);k++){
+ for(let k=0;k<(forest?190:urban?48:rocky?75:128);k++){
   const x=25+Math.floor(r()*350),y=109+Math.floor(r()*149);
   if(x>366||pathDistance(x,y,points)<15||Math.hypot(x-76,y-229)<41
     ||Math.hypot(x-331,y-153)<37||x<135&&y<139)continue;
@@ -366,10 +361,10 @@ export function map(scene,stage,points,page=0,region=null){
  }
  // Deterministic arbor sprites built from layered pixel cells.
  const trees=[];
- for(let i=0;i<(forest?230:urban?35:rocky?54:145);i++){
+ for(let i=0;i<(forest?130:urban?28:rocky?43:90);i++){
   const x=27+Math.floor(r()*346),y=109+Math.floor(r()*144);
-  if(pathDistance(x,y,points)<24||Math.hypot(x-76,y-228)<39
-    ||Math.hypot(x-331,y-145)<40||x<145&&y<145||x>364)continue;
+  if(pathDistance(x,y,points)<29||Math.hypot(x-76,y-228)<43
+    ||Math.hypot(x-331,y-145)<44||x<145&&y<145||x>364)continue;
   if(r()>(forest?.3:urban?.85:rocky?.79:.56))continue;
   trees.push({x,y,s:r()<.25?.48:.58+r()*.2});
  }
