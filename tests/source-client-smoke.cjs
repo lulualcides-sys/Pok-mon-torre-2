@@ -309,6 +309,23 @@ const server=http.createServer(async(req,res)=>{
     c.scene.restart();
     return {map,grass,center,mart,bag,portraits,dashboard};
   });
+  const actualSprites=await offline.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   const images=scene.children.list.filter(x=>x.type==='Image'&&
+    x.texture?.key==='torre2-cc0-world');
+   const sheet=scene.textures.get('torre2-cc0-world');
+   return {ready:scene.textures.exists('torre2-cc0-world'),
+    count:images.length,
+    spriteFrames:[...new Set(images.map(x=>x.frame?.name))],
+    sourceSize:sheet?.source?.[0]?[sheet.source[0].width,sheet.source[0].height]:[]};
+  });
+  console.log('KANTO CC0 ART DIAG',JSON.stringify(actualSprites));
+  assert.equal(actualSprites.ready,true,'Real 16x16 CC0 tile PNG loaded from same-origin build');
+  assert.ok(actualSprites.count>=200,'Kanto terrain must be made of authentic authored PNG tiles, not fake rectangles');
+  assert.ok(actualSprites.spriteFrames.length>=3,
+   'Map must show actual authored grass, trees and buildings from texture sheet');
+  assert.ok(actualSprites.sourceSize[0]>=300&&actualSprites.sourceSize[1]>=400,
+   'Verified source spritesheet must not be a fake single-frame picture');
   // The world and its controls must be Phaser scene objects, never image hotspots.
   const dashboard=newMap.dashboard;
   console.log('TORRE2 NATIVE MAP DIAG',JSON.stringify(dashboard));
