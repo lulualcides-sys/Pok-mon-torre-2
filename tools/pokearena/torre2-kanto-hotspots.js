@@ -57,6 +57,34 @@ export const KANTO_INTERACTIONS=Object.freeze({
   ['center','CENTRO POKÉMON',.62,.69,.20,.18,'Curar Pokémon'],
   ['mart','POKÉ MART',.83,.69,.16,.18,'Comprar itens']
  ],
+ route2:[
+  ['gate','PORTÃO DA ROTA 2',.25,.20,.31,.12,'Passagem para a Floresta de Viridian'],
+  ['house','CASA DA ROTA 2',.70,.31,.23,.12,'Casa na Rota 2']
+ ],
+ route25:[
+  ['bill','CASA DO BILL',.71,.27,.19,.22,'Visitar a casa de Bill']
+ ],
+ pokemontower:[
+  ['tower','TORRE POKÉMON',.50,.48,.63,.72,'Explorar os andares da Torre Pokémon']
+ ],
+ ssanne:[
+  ['harbor','S.S. ANNE',.55,.52,.40,.38,'Explorar o navio S.S. Anne']
+ ],
+ indigo:[
+  ['league','LIGA POKÉMON',.51,.26,.44,.40,'Entrar na Liga Pokémon']
+ ],
+ powerplant:[
+  ['powerplant','USINA ELÉTRICA',.50,.53,.62,.62,'Explorar a usina elétrica']
+ ],
+ seafoam:[
+  ['cave','ILHAS SEAFOAM',.50,.50,.62,.65,'Explorar a caverna gelada']
+ ],
+ rockethideout:[
+  ['rocket','ESCONDERIJO ROCKET',.51,.50,.55,.63,'Explorar os pisos do esconderijo']
+ ],
+ silph:[
+  ['silph','SILPH CO.',.52,.48,.58,.65,'Explorar os andares da Silph Co.']
+ ],
  saffron:[
   ['silph','SILPH CO.',.55,.48,.23,.25,'Prédio Silph Co.'],
   ['center','CENTRO POKÉMON',.46,.71,.13,.11,'Curar Pokémon'],
@@ -114,6 +142,7 @@ export function attachBuildingInteractions(scene,view,onEnter){
    .setData('frlg-building',h.id);
   zone.on('pointerover',()=>highlight(h));
   zone.on('pointerout',()=>highlight(null));
+  zone.on('pointermove',()=>highlight(h));
   zone.on('pointerdown',()=>{
    highlight(h);
    onEnter(h);
