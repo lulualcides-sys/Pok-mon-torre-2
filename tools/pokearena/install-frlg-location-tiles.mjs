@@ -44,6 +44,6 @@ export async function installFRLGMaps(dest){
  console.log('FireRed locality maps downloaded:',found.join(', ')||'none');
  // The rest of Kanto retains our own authored tiles until its files
  // are verified; do not claim those regions are pixel-perfect FireRed.
- if(found.length<2)throw Error('Insufficient FireRed map assets: '+found.join(','));
+ if(found.length<4)throw Error('Insufficient FireRed map assets: '+found.join(','));
  return manifest;
 }
