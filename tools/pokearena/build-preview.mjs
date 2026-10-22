@@ -59,13 +59,24 @@ html=html.replace('href="/favicon.png"','href="favicon.png"');
 // request is to occupy the two horizontal side strips, NOT remap the game.
 html=html.replace('</head>',`<style id="torre2-landscape-map">
 html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden}
+/* Some Chromium/Android builds center #juego itself at a 16:9 ratio.
+   Pin BOTH the wrapper and canvas to the physical screen so the two empty
+   side bands are actually filled, without resizing the Phaser world. */
+body.torre2-landscape-map #juego{
+ position:fixed!important;inset:0!important;
+ left:0!important;top:0!important;
+ width:100vw!important;height:100vh!important;height:100dvh!important;
+ min-width:100vw!important;max-width:none!important;max-height:none!important;
+ margin:0!important;padding:0!important;transform:none!important;
+ overflow:visible!important;z-index:600!important
+}
 body.torre2-landscape-map #juego canvas{
- position:fixed!important;left:0!important;top:0!important;
+ position:absolute!important;left:0!important;top:0!important;
  right:auto!important;bottom:auto!important;
  width:100vw!important;height:100vh!important;height:100dvh!important;
  max-width:none!important;max-height:none!important;
- margin:0!important;transform:none!important;
- z-index:600!important;image-rendering:pixelated
+ margin:0!important;padding:0!important;transform:none!important;
+ image-rendering:pixelated
 }
 </style>\n</head>`);
 html=html.replace('</head>','<meta name="referrer" content="no-referrer">\n</head>');
@@ -79,7 +90,7 @@ const landscapeFit=`<script id="torre2-landscape-display">
  function sync(){
   var game=window.__pt2Game;
   var landscape=window.innerWidth>window.innerHeight&&
-   window.innerWidth/Math.max(1,window.innerHeight)>=1.9;
+   window.innerWidth/Math.max(1,window.innerHeight)>=1.7;
   var active=!!(game&&game.scene&&game.scene.isActive('campanha'));
   var want=landscape&&active&&!!document.querySelector('#juego canvas');
   if(want===last)return;

@@ -342,8 +342,9 @@ const server=http.createServer(async(req,res)=>{
    'Collapse arrow must be clickable in the campaign');
   assert.equal(panelTest.start.ctaX,320,
    'Battle/capture starts at the bottom center, not inside sidebar');
-  // CTA raised 25/360px (~7%) so the action stays comfortably on-screen.
-  assert.equal(panelTest.start.ctaY,322);
+  // Centered gold CTA occupies the footer beneath the compact party tray.
+  assert.equal(panelTest.start.ctaY,335);
+  assert.equal(panelTest.start.ctaX,320);
   assert.equal(panelTest.start.sidebar,true);
   assert.equal(panelTest.collapsed.active,true);
   assert.ok(panelTest.collapsed.width>panelTest.start.width*1.6,
@@ -353,6 +354,22 @@ const server=http.createServer(async(req,res)=>{
    'Side menu must disappear from view');
   assert.ok(panelTest.collapsed.dock>=2,
    'Player party has a compact, touchable strip at bottom');
+  const footer=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const cta=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
+   const dock=c.__campaignDockObjects
+    .filter(o=>o.type==='Zone'&&o.input?.enabled);
+   const caption=c.children.list.find(o=>o.type==='Text'&&
+    /TREINADOR/.test(o.text||'')&&Math.abs(o.y-335)<3);
+   return {ctaY:cta?.y,ctaX:cta?.x,ctaWidth:cta?.width,
+    dockY:dock.map(x=>x.y),caption:!!caption,clickable:!!cta?.input?.enabled};
+  });
+  assert.equal(footer.ctaY,335);
+  assert.equal(footer.ctaX,320);
+  assert.ok(footer.ctaWidth>=240&&footer.caption&&footer.clickable,
+   'Gold battle action must be centered, readable and clickable');
+  assert.ok(footer.dockY.length>=4&&footer.dockY.every(y=>y>=300),
+   'Compact party cards must sit lower than the map and above the CTA');
   assert.equal(panelTest.collapsed.zoneEnabled,0,
    'Hidden buttons cannot intercept clicks intended for the map');
   assert.equal(panelTest.restored.active,false);

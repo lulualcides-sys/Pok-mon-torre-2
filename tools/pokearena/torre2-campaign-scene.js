@@ -420,39 +420,48 @@ class Campanha extends Phaser.Scene{
   const cta=state.pendingCapture?'CAPTURAR POKÉMON ▶':
    finished?'★ CAMPEÃO DE KANTO':
    state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1);
-  this.battleButton(320,322,224,22,cta,()=>{
+  // Battle CTA occupies its own centered footer slot, clear of the team
+  // dock and map artwork even when the sidebar is collapsed.
+  this.battleButton(320,335,248,28,cta,()=>{
    if(state.pendingCapture)return this.captureScreen(state);
    if(finished)return;
    if(state.trainer>=limit)this.gymScreen(state);
    else this.enterBattle(state);
   },!finished||!!state.pendingCapture).setData('torre2-central-cta',true);
-  // Compact six-slot pixel-art party dock with portrait, name, level and
-  // health. Hidden side menu remains touch-free; no card overlaps the CTA.
+  // Compact FireRed-style team tray, lowered twelve pixels so it sits
+  // flush with the map footer and never touches the battle action below it.
+  // Keep every portrait and click area inside its own 98x27 pixel slot.
   const dockStart=this.children.list.length;
   const dockBg=this.add.graphics().setDepth(51);
-  dockBg.fillStyle(0x071d30,.98);dockBg.fillRect(15,273,612,34);
-  dockBg.lineStyle(1,0x719eab,1);dockBg.strokeRect(15.5,273.5,611,33);
+  dockBg.fillStyle(0x020c1b,.90);dockBg.fillRect(12,282,616,36);
+  dockBg.fillStyle(0x0a2a3d,.98);dockBg.fillRect(14,284,612,31);
+  dockBg.lineStyle(1,0xd8c085);dockBg.strokeRect(13.5,283.5,613,32);
+  dockBg.fillStyle(0x6ddbf1,.75);dockBg.fillRect(17,284,606,2);
   for(let i=0;i<6;i++){
-   const member=state.team[i],x=27+i*99,y=276;
-   dockBg.fillStyle(member?(i===state.active?0x37504c:0x18384a):0x0c2736);
-   dockBg.fillRect(x,y,94,29);
-   dockBg.lineStyle(1,i===state.active?0xffd574:member?0x537c8c:0x24495b);
-   dockBg.strokeRect(x+.5,y+.5,93,28);
+   const member=state.team[i],x=25+i*100,y=287;
+   const selected=!!member&&i===state.active;
+   dockBg.fillStyle(selected?0x335d54:member?0x153b4a:0x0c2837);
+   dockBg.fillRect(x,y,97,26);
+   dockBg.lineStyle(1,selected?0xffd574:member?0x66aec1:0x365768);
+   dockBg.strokeRect(x+.5,y+.5,96,25);
+   if(selected){
+    dockBg.fillStyle(0xffd574);dockBg.fillRect(x+2,y+2,2,22);
+   }
    if(!member)continue;
-   this.drawPortrait(member,x+14,y+13,23,54);
+   this.drawPortrait(member,x+14,y+13,22,54);
    const name=member.id.toUpperCase().slice(0,10);
-   text(this,x+28,y+4,name,{
+   text(this,x+27,y+3,name,{
     fontSize:name.length>8?'7px':'8px',
-    color:i===state.active?'#ffe7ad':'#e9f9f7',fontStyle:'bold'
+    color:selected?'#ffe8af':'#f1fbf6',fontStyle:'bold'
    }).setDepth(55);
-   text(this,x+28,y+13,'NV.'+(member.progression?.level??'?')+
+   text(this,x+27,y+13,'NV.'+(member.progression?.level??'?')+
     (Number(member.hp??100)<=0?' · K.O.':''),{
-    fontSize:'7px',color:'#b7e1d3'}).setDepth(55);
+    fontSize:'7px',color:'#bdebdc'}).setDepth(55);
    const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
-   dockBg.fillStyle(0x091724);dockBg.fillRect(x+30,y+24,56,3);
-   dockBg.fillStyle(hp>50?0x5ce4a1:hp>20?0xf2c859:0xf06b70);
-   dockBg.fillRect(x+30,y+24,56*hp/100,3);
-   this.add.zone(x+47,y+14,94,29).setDepth(58)
+   dockBg.fillStyle(0x071724);dockBg.fillRect(x+29,y+23,63,2);
+   dockBg.fillStyle(hp>50?0x62e6a8:hp>20?0xf2c859:0xee6b70);
+   dockBg.fillRect(x+29,y+23,63*hp/100,2);
+   this.add.zone(x+48,y+13,97,27).setDepth(58)
     .setInteractive({useHandCursor:true})
     .on('pointerdown',()=>this.showSummary(state,i));
   }
@@ -494,9 +503,31 @@ class Campanha extends Phaser.Scene{
    fontSize:'11px',color:'#ffffff'}).setOrigin(.5).setDepth(depth+1);
  }
  battleButton(x,y,w,h,label,callback,active=true){
-  const zone=this.button(x,y,w,h,label,callback,active,13,'gold');
-  const icon=this.add.graphics().setDepth(6);
-  ball(icon,x-w/2+20,y,10);
+  // A dedicated gold pixel-art action, centered under the Kanto map.
+  // Native Phaser/WebGL graphics only; the touch target covers the whole CTA.
+  const g=this.add.graphics().setDepth(74);
+  const icon=this.add.graphics().setDepth(76);
+  let hovered=false;
+  const paint=()=>{
+   g.clear();icon.clear();
+   g.fillStyle(0x030f20,.75);
+   g.fillRect(x-w/2-4,y-h/2+5,w+8,h+5);
+   buttonFrame(g,x-w/2,y-h/2,w,h,'gold',hovered);
+   g.fillStyle(0xfff0ab,.9);g.fillRect(x-w/2+32,y-h/2+6,2,h-12);
+   g.fillStyle(0x695020,.8);g.fillRect(x+w/2-8,y-h/2+7,2,h-13);
+   ball(icon,x-w/2+17,y,8);
+  };
+  const caption=estrechar(textoMenu(this,x+11,y,label,{
+   tam:13,borde:3,colorBorde:MENU_UI.bordeTexto
+  }).setOrigin(.5).setDepth(77),w-48);
+  caption.setColor(active?'#2b291c':'#77736a');
+  caption.setStroke('#ffea9f',0);
+  const zone=this.add.zone(x,y,w,Math.max(32,h))
+   .setDepth(79).setInteractive({useHandCursor:true});
+  zone.on('pointerover',()=>{hovered=true;paint()});
+  zone.on('pointerout',()=>{hovered=false;paint()});
+  zone.on('pointerdown',()=>{if(active)callback()});
+  paint();
   return zone;
  }
  captureScreen(state){
