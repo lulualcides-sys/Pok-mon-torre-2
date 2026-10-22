@@ -284,15 +284,21 @@ class Campanha extends Phaser.Scene{
   for(const item of this.__campaignMapObjects||[]){
    const {obj,x,y,sx,sy}=item;
    if(!obj.active)continue;
+   const chrome=obj.getData?.('torre2-map-chrome')===true;
+   obj.setVisible(!hidden||!chrome);
    if(!hidden){
     obj.setPosition(x,y);obj.setScale(sx,sy);
    }else{
-    const stretch=(obj.type==='Image'&&String(obj.texture?.key||'').startsWith('frlg-npc-'))||
-      (obj.type==='Image'&&String(obj.texture?.key||'').startsWith('torre2-portrait-'))||
-      obj.type==='Text';
-    const zoom=1.57;
-    obj.setPosition(x*zoom-7,y);
-    obj.setScale(sx*(stretch?1:zoom),sy);
+    // Fit the entire FireRed artwork into the available screen, including
+    // height. Old layout expanded only WIDTH, leaving the map short and
+    // distorted with large unusable bands on mobile.
+    const zx=606/372,zy=256/211;
+    const tx=14-20*zx,ty=56-85*zy;
+    const nativeSprite=obj.type==='Text'||(obj.type==='Image'&&
+      (String(obj.texture?.key||'').startsWith('frlg-npc-')||
+       String(obj.texture?.key||'').startsWith('torre2-portrait-')));
+    obj.setPosition(tx+zx*x,ty+zy*y);
+    obj.setScale(sx*(nativeSprite?1:zx),sy*(nativeSprite?1:zy));
    }
   }
   for(const obj of this.__campaignSidebarObjects||[]){
@@ -307,6 +313,8 @@ class Campanha extends Phaser.Scene{
   }
   if(this.__campaignArrowLabel?.active)
    this.__campaignArrowLabel.setText(hidden?'▲':'▼');
+  if(this.__campaignWideLabel?.active)
+   this.__campaignWideLabel.setVisible(hidden);
   if(this.__campaignArrowBg?.active){
    this.__campaignArrowBg.clear();
    buttonFrame(this.__campaignArrowBg,586,56,41,27,'blue');
@@ -343,6 +351,11 @@ class Campanha extends Phaser.Scene{
   this.__campaignMapObjects=this.children.list.slice(mapStart).map(obj=>({
    obj,x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY
   }));
+  this.__campaignWideLabel=text(this,327,61,
+    this.__campaignMap.spec.short+' · '+Math.min(state.trainer,limit)+'/'+limit,{
+    fontSize:'9px',fontStyle:'bold',color:'#fff2c5',
+    stroke:'#0a273a',strokeThickness:3
+   }).setOrigin(.5).setDepth(67).setVisible(false);
   const sideStart=this.children.list.length;
   richTeam(this);
   text(this,443,67,'SUA EQUIPE',{fontSize:'15px',fontStyle:'bold',
