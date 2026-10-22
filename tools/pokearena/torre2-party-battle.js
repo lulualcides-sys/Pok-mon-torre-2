@@ -499,9 +499,28 @@ export function installPartyBattle(scene){
    scene.__torre2LastSpeciesRepair={side:actor.lado,from:current,to:idle};
   }
  };
+ // Kanto-only opposing trainer AI: at later gyms it may preserve a weak
+ // Pokémon by recalling it for a healthier reserve, as the player can.
+ // Throttled to one inexpensive check every 75 frames; no added GPU layers.
+ let tacticalFrames=0,tacticalSwaps=0;
+ const considerTacticalSwitch=()=>{
+  if(++tacticalFrames%75!==0||scene.__torre2Changing||
+     scene.fase!=='lucha'||(payload.stage??0)<1||
+     party.foes.length<2||tacticalSwaps>=2)return;
+  const active=actors[1];
+  if(!active?.hpMax||active.hp<=0||active.hp/active.hpMax>.23)return;
+  const backup=party.foes.findIndex((m,i)=>i!==party.enemyIndex&&m.hp>=60);
+  if(backup<0)return;
+  tacticalSwaps++;
+  scene.__torre2TacticalSwitches=tacticalSwaps;
+  announce('RIVAL RECOLHE POKÉMON FRACO!');
+  recall(1,backup,'switch');
+ };
+ scene.game.events.on('step',considerTacticalSwitch);
  scene.game.events.on('step',monitorKo);
  scene.game.events.on('poststep',syncRenderedSpecies);
  scene.events.once('shutdown',()=>{
+  scene.game.events.off('step',considerTacticalSwitch);
   scene.game.events.off('step',monitorKo);
   scene.game.events.off('poststep',syncRenderedSpecies);
   close();scene.__torre2PartyInstalled=false;
