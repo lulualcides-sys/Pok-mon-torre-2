@@ -10,7 +10,7 @@ assert.ok(version,'Captured Phaser original client not staged');
 // trainer art, shops or capture modules. Check each staged ES module.
 for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
  'torre2/campaign-sprites.js','torre2/capture-arena.js',
- 'torre2/capture-mechanics.js','torre2/campaign-core.js']){
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js']){
  const source=path.join(stage,version,name);
  const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
  assert.equal(parsed.status,0,
@@ -50,6 +50,25 @@ assert.equal(state.inventory.pokeball,5);
 const {routeNode,KANTO_ROUTES,MART_ITEMS}=await import(
  pathToFileURL(path.join(stage,version,'torre2/route-data.js')));
 assert.equal(KANTO_ROUTES.length,8,'Eight FireRed-like region maps');
+const {KANTO_CHAPTERS,campaignRegion}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-regions.js')));
+assert.equal(KANTO_CHAPTERS.length,12,'Eight Kanto gyms + four Elite Four chapters');
+assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['route','forest','pewter'],
+ 'Brock must be reached through Route 1, Viridian Forest and Pewter');
+for(let regionStage=0;regionStage<12;regionStage++){
+ const count=Math.ceil((TRAINERS_PER_GYM(regionStage)+1)/5);
+ const first=campaignRegion(regionStage,0,count);
+ const final=campaignRegion(regionStage,count-1,count);
+ assert.ok(first.title&&first.subtitle&&first.biome,'Each Kanto chapter has a map');
+ assert.ok(final.title&&final.subtitle&&final.biome,'Every gym/Elite leader has an arena');
+ assert.equal(final.chapterPage,KANTO_CHAPTERS[regionStage].length-1,
+  'The leader must sit at the last map page for chapter '+regionStage);
+}
+const biomes=new Set(KANTO_CHAPTERS.flatMap(chapter=>chapter.map(row=>row[2])));
+assert.ok(biomes.size>=20,'Kanto needs varied environments, not reused bland generic map');
+assert.equal(campaignRegion(7,5,6).biome,'victory','Viridian approaches Victory Road');
+assert.equal(campaignRegion(11,7,8).biome,'hall','Lance concludes near Hall of Fame');
+
 assert.equal(routeNode(0,3,13).type,'rival');
 assert.equal(routeNode(0,5,13).type,'rocket');
 assert.equal(routeNode(0,13,13).type,'leader');
