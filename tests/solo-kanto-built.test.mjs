@@ -684,6 +684,11 @@ for(let stage=1;stage<8;stage++){
   assert.ok(Math.abs(p.x-xy[0])>33||Math.abs(p.y-xy[1])>31,
    'Trainer marker must not hide building entrance on '+map.id);
 }
+assert.ok(menuCampaign.includes("fullButton.on('pointerup'"),
+ 'Fullscreen uses Android-compatible pointerup, not pointerdown');
+assert.ok(menuCampaign.includes('const needed=new Set(')&&
+ menuCampaign.includes('AVAILABLE_FRLG.includes(world)'),
+ 'The campaign loads only current-map art and relevant overworld NPCs');
 assert.ok(menuCampaign.includes('consumeCampaignResetLink()'),
  'Reset link must be consumed in the actual campaign scene');
 assert.ok(menuCampaign.includes("query.get('reset_kanto')"),

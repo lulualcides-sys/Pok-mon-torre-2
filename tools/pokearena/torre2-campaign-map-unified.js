@@ -113,7 +113,7 @@ function landmark(scene,g,label,x,y,accent,callback,locked=false){
  const yText=Math.min(283,Math.max(98,y-24));
  box(g,x-w/2,yText-8,w,15,0x092438,locked?0x7a91a0:accent);
  font(scene,x,yText,label,8,'#fff7df',15);
- const hover=scene.add.graphics().setDepth(24);
+ const hover=scene.__torre2MapHover;
  const zone=scene.add.zone(x,y,43,30).setDepth(21)
   .setInteractive({useHandCursor:true}).setData('torre2-landmark',label);
  zone.on('pointerover',()=>{
@@ -165,7 +165,7 @@ function badge(scene,g,index,x,y,condition,onClick){
   active?'#fff1bc':completed?'#ccffe8':'#f0f5ff',16);
  const zone=scene.add.zone(x,y-8,28,34).setDepth(24)
   .setInteractive({useHandCursor:true}).setData('torre2-checkpoint',index);
- const hl=scene.add.graphics().setDepth(25);
+ const hl=scene.__torre2MapHover;
  zone.on('pointerover',()=>{
   hl.clear();hl.lineStyle(1,0xffe5a6,1);
   hl.strokeRect(x-15,y-28,30,38);
@@ -192,6 +192,9 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
  const foot=scene.add.graphics().setDepth(10);
  foot.fillStyle(0x082538,.96);foot.fillRect(19,296,373,12);
  font(scene,191,301,'TOQUE NO PRÓXIMO TREINADOR • SEM TROCAR DE MAPA',8,'#d3f4ec',12);
+ // One shared highlight, instead of 13-27 independent Graphics objects
+ // and draw commands being retained by WebGL each time the map is opened.
+ scene.__torre2MapHover=scene.add.graphics().setDepth(25);
  const under=scene.add.graphics().setDepth(6);
  const marker=scene.add.graphics().setDepth(11);
  // True FireRed NPC sprite frames, rather than procedural dummy trainers.

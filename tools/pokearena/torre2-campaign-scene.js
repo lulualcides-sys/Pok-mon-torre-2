@@ -2,9 +2,9 @@
  * No login, network API or online match dependency.
  */
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
-import {marco,UI as MENU_UI} from '../ui.js';
-import {header,backdrop as richBackdrop,buttonFrame,map as richMap,node as richNode,
- team as richTeam,teamCard,ball,progress} from './campaign-art.js';
+import {UI as MENU_UI} from '../ui.js';
+import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
+ ball,progress} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
 import {earlyKantoSlotPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
@@ -13,19 +13,17 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,teachTM} from './campaign-core.js';
-import {routeNode,MART_ITEMS} from './route-data.js';
+import {MART_ITEMS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
-import {trainerClass,trainerClassName,drawTrainer,drawShopItem} from './campaign-sprites.js';
-import {campaignRegion,KANTO_CHAPTERS} from './kanto-regions.js';
-import {drawKantoWorldMap,mapVisitInfo} from './kanto-world-map.js';
+import {drawTrainer,drawShopItem} from './campaign-sprites.js';
+import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
-import {attachBuildingInteractions,buildingInteractions} from './kanto-hotspots.js';
-import {addFireRedNPC,addRedPlayer} from './frlg-npc.js';
+import {buildingInteractions} from './kanto-hotspots.js';
+import {spriteIdForTrainer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
-import {trainerRoutePoints} from './kanto-route-layout.js';
 import {locationForCampaign} from './frlg-location.js';
-import {renderUnifiedCampaignMap} from './campaign-map-unified.js';
+import {getCampaignMapSpec,renderUnifiedCampaignMap} from './campaign-map-unified.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -56,15 +54,27 @@ class Campanha extends Phaser.Scene{
  init(input){this.result=input?.finished?input:null}
  preload(){
   const state=readCampaign();
-  if(!this.textures.exists('torre2-cc0-world'))
-   this.load.image('torre2-cc0-world','assets/ui/kanto-cc0-world.png');
-  // Local FireRed reference tiles; do not change the Poké Arena Pokémon art.
-  for(const id of AVAILABLE_FRLG){
-   const key='frlg-location-'+id;
+  // Mobile performance: the old loader uploaded every Kanto map and all
+  // 41 trainer sheets to the GPU even though only one city is visible.
+  // Load JUST the current gym world + the FireRed characters it displays.
+  const stage=state?.stage??0;
+  const world=getCampaignMapSpec(stage,0).id;
+  if(AVAILABLE_FRLG.includes(world)){
+   const key='frlg-location-'+world;
    if(!this.textures.exists(key))
-    this.load.image(key,AVAILABLE_FRLG_FILES[id]||'assets/ui/frlg/'+id+'.webp');
+    this.load.image(key,AVAILABLE_FRLG_FILES[world]||'assets/ui/frlg/'+world+'.webp');
+  }else if(!this.textures.exists('torre2-cc0-world')){
+   this.load.image('torre2-cc0-world','assets/ui/kanto-cc0-world.png');
   }
-  for(const id of AVAILABLE_FRLG_NPCS){
+  const boss=['brock','misty','surge','erika','koga','sabrina',
+   'blaine','giovanni','lorelei','lorelei','lorelei','lorelei','lorelei'][stage]||'brock';
+  const archetypes=stage===0?
+   ['youngster','lass','bugcatcher','hiker']:
+   ['youngster','lass','bugcatcher','hiker','ace','rocket'];
+  const needed=new Set(['red_normal',spriteIdForTrainer(boss),
+   ...archetypes.map(spriteIdForTrainer)]);
+  for(const id of needed){
+   if(!AVAILABLE_FRLG_NPCS.includes(id))continue;
    const key='frlg-npc-'+id;
    if(!this.textures.exists(key))
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
@@ -87,7 +97,15 @@ class Campanha extends Phaser.Scene{
   this.button(345,24,84,29,'MAPA',()=>{
    const state=readCampaign();if(state)this.mapScreen(state);
   },false,12);
-  this.button(447,24,100,29,'CENTRO / PC',()=>{const state=readCampaign();if(state)this.centerScreen(state)});
+  // Fullscreen must be requested on pointerup on Android Chrome.
+  // The right sidebar already contains Centro, so its duplicate top button
+  // is replaced by this new control without shrinking the battle UI.
+  const fullButton=this.button(447,24,100,29,'TELA CHEIA',()=>{},false,9);
+  fullButton.setData('torre2-fullscreen',true);
+  fullButton.on('pointerup',()=>{
+   if(this.scale.isFullscreen)this.scale.stopFullscreen();
+   else this.scale.startFullscreen({navigationUI:'hide'});
+  });
   this.button(537,24,76,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){

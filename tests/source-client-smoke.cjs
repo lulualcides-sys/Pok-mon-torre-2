@@ -300,6 +300,37 @@ const server=http.createServer(async(req,res)=>{
     return result;
   });
   assert.equal(mapState.world,'pewter');
+  const mobileResources=await offline.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return {
+     maps:c.textures.getTextureKeys().filter(k=>k.startsWith('frlg-location-')),
+     npcs:c.textures.getTextureKeys().filter(k=>k.startsWith('frlg-npc-')),
+     fullscreen:c.children.list.filter(o=>o.type==='Zone'&&
+      o.getData?.('torre2-fullscreen')).length,
+     hoverGraphics:c.children.list.filter(o=>o.type==='Graphics'&&o.depth===25).length
+    };
+  });
+  assert.ok(mobileResources.maps.length<=2,
+   'Opening Brock must not upload all Kanto city sheets to mobile GPU');
+  assert.ok(mobileResources.npcs.length<=12,
+   'Opening Brock must not upload 41 trainer textures');
+  assert.equal(mobileResources.fullscreen,1,
+   'Mobile map offers a clickable fullscreen control');
+  assert.equal(mobileResources.hoverGraphics,1,
+   'Map uses one shared hover Graphics instead of per-trainer effects');
+  // Fullscreen APIs are browser gesture-restricted; stub the Phaser manager
+  // here and exercise the real button's pointerup handler.
+  const fullscreenClicks=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const control=c.children.list.find(o=>o.getData?.('torre2-fullscreen'));
+   const manager=c.scale;let count=0;
+   const original=manager.startFullscreen;
+   manager.startFullscreen=()=>{count++};
+   try{control.emit('pointerup');}finally{manager.startFullscreen=original;}
+   return count;
+  });
+  assert.equal(fullscreenClicks,1,
+   'Fullscreen button invokes Phaser on pointerup for Android compatibility');
   assert.equal(mapState.points,13,'Brock shows all 13 trainers simultaneously');
   assert.equal(mapState.trainer,0);
   assert.ok(mapState.initial.includes('ROTA DE BROCK'));
