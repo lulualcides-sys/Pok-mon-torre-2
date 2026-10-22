@@ -285,6 +285,45 @@ const server=http.createServer(async(req,res)=>{
       .children.list.some(o=>typeof o.text==='string'&&o.text.includes(region)),
       region,{timeout:12000});
   }
+  // UI regression: a real FireRed City building highlights on hover and
+  // enters a functional room with one click/tap. Hit areas are tied to
+  // source map coordinates, never a generic invisible background region.
+  await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   c.mapPage=2;c.scene.restart();
+  });
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__torre2FRLGView?.id==='viridian'&&
+    c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled&&
+      o.listenerCount('pointerover')>0).length>=2;
+  },null,{timeout:20000});
+  const cityClick=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const targets=c.children.list.filter(o=>o.type==='Zone'&&
+    o.input?.enabled&&o.listenerCount('pointerover')>0);
+   const target=targets[0];
+   if(!target)return {highlight:false,opened:false};
+   target.emit('pointerover');
+   const highlight=c.children.list.some(o=>typeof o.text==='string'&&
+    o.text.startsWith('ENTRAR:')&&o.visible);
+   target.emit('pointerdown');
+   const opened=c.children.list.some(o=>typeof o.text==='string'&&
+    (o.text.includes('GINÁSIO')||o.text.includes('ACADEMIA')||
+     o.text.includes('POKÉMON')));
+   return {highlight,opened,nativeZones:targets.length};
+  });
+  assert.ok(cityClick.highlight&&cityClick.opened,
+   'Tapping a real FireRed building highlights it then opens its landmark panel');
+  console.log('VIRIDIAN INTERACTIVE BUILDINGS',JSON.stringify(cityClick));
+  await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   c.mapPage=0;c.scene.restart();
+  });
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.__torre2FRLGView?.id==='pallet';
+  },null,{timeout:15000});
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-offline-kanto-menu.png',fullPage:true});
   const newMap=await offline.evaluate(async()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
