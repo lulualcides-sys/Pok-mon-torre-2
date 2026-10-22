@@ -53,84 +53,83 @@ html=html.replace(/<script\s+src="\/analitica\.js"><\/script>/g,'');
 html=html.replace(/<script\s+async\s+src="\/m\/s"><\/script>/g,'');
 // Original favicon and manifests must be relative to our subfolder.
 html=html.replace('href="/favicon.png"','href="favicon.png"');
-// Fill only the landscape Kanto map canvas across the mobile screen. The
-// Phaser world stays 640x360 so badges, menus, battle hitboxes and sprites
-// cannot drift away from their original logical positions. The screenshot
-// request is to occupy the two horizontal side strips, NOT remap the game.
+// Android Chrome can letterbox the entire original 16:9 Phaser DOM host.
+// Fit the whole host across the available landscape viewport without changing
+// any Phaser coordinates or shrinking individual Pokémon/map elements.
 html=html.replace('</head>',`<style id="torre2-landscape-map">
-html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden;max-width:100%;}
-/* Some Chromium/Android builds center #juego itself at a 16:9 ratio.
-   Pin BOTH the wrapper and canvas to the physical screen so the two empty
-   side bands are actually filled, without resizing the Phaser world. */
+html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden}
+html.torre2-edge-to-edge,html.torre2-edge-to-edge body{
+ width:100vw!important;height:100vh!important;height:100dvh!important;
+ max-width:none!important;margin:0!important;padding:0!important;
+ overflow:hidden!important
+}
 body.torre2-landscape-map #juego{
  position:fixed!important;inset:0!important;
- left:0!important;top:0!important;
  width:100vw!important;height:100vh!important;height:100dvh!important;
- min-width:100vw!important;max-width:none!important;max-height:none!important;
+ min-width:100vw!important;min-height:100dvh!important;
+ max-width:none!important;max-height:none!important;
  margin:0!important;padding:0!important;transform:none!important;
- overflow:visible!important;z-index:600!important
+ overflow:hidden!important;z-index:900!important
 }
 body.torre2-landscape-map #juego canvas{
  position:absolute!important;left:0!important;top:0!important;
- right:auto!important;bottom:auto!important;
- width:100vw!important;height:100vh!important;height:100dvh!important;
+ width:100%!important;height:100%!important;
+ min-width:100%!important;min-height:100%!important;
  max-width:none!important;max-height:none!important;
  margin:0!important;padding:0!important;transform:none!important;
  image-rendering:pixelated
 }
-/* Fallback for browsers that keep a centered/16:9 transformed parent:
-   move the canvas under <body> and make it its own fixed viewport surface. */
-body.torre2-landscape-map > canvas.torre2-wide-canvas{
- position:fixed!important;inset:0!important;
- left:0!important;top:0!important;
- width:100vw!important;height:100dvh!important;
- min-width:100vw!important;max-width:none!important;max-height:none!important;
- margin:0!important;padding:0!important;transform:none!important;
- z-index:900!important;image-rendering:pixelated
-}
-</style>\n</head>`);
+</style>\\n</head>`);
 html=html.replace('</head>','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="referrer" content="no-referrer">\n</head>');
 await fs.writeFile(index,html);
 
-// Watch scene transitions only to toggle the display of the Kanto canvas.
-// Phaser's internal resolution, renderer, objects and game state never change.
+// Fit the whole Phaser viewport, including the after-battle return, to
+// Android landscape. Important: NEVER call scale.resize() or stretch individual
+// trainer hit areas; only the DOM WebGL canvas is visually fitted.
 const landscapeFit=`<script id="torre2-landscape-display">
 (function(){
- var last=null, originalParent=null,ported=null;
- function sync(){
-  var game=window.__pt2Game,canvas=document.querySelector('#juego canvas')||ported;
-  var view=window.visualViewport;
-  var width=Math.max(window.innerWidth,view?.width||0);
-  var height=Math.max(1,window.innerHeight,view?.height||0);
-  var landscape=width>height&&width/height>=1.68;
-  var active=!!(game&&game.scene&&game.scene.isActive('campanha'));
-  var want=landscape&&active&&!!canvas;
-  if(want===last&&!(want&&canvas?.getBoundingClientRect().width<width-12))return;
-  last=want;
-  document.body.classList.toggle('torre2-landscape-map',want);
-  if(want&&canvas){
-   // Phaser's 16:9 parent/transform sometimes constrains the fixed canvas
-   // despite 100vw CSS. Reparent ONLY the DOM canvas (not the WebGL game or
-   // input listeners) when this happens; touch bounds are recalculated below.
-   const box=canvas.getBoundingClientRect();
-   if(!ported&&(box.width<width-12||box.left>12)){
-    originalParent=canvas.parentNode;
-    ported=canvas;ported.classList.add('torre2-wide-canvas');
-    document.body.appendChild(ported);
+ var originalParent=null,gameNode=null,last=null;
+ function update(){
+  var game=window.__pt2Game;
+  var node=document.getElementById('juego');
+  var canvas=game?.canvas||node?.querySelector('canvas');
+  if(!game||!node||!canvas)return;
+  var landscape=window.matchMedia?.('(orientation:landscape)')?.matches||
+   window.innerWidth>window.innerHeight;
+  // Match campaign AND its native battle so the user does not see two
+  // different widths when a Pokémon faints or the fight ends.
+  var scene=game.scene;
+  var sceneActive=!!(scene?.isActive('campanha')||scene?.isActive('combate'));
+  var active=landscape&&sceneActive;
+  if(active===last&&!active)return;
+  last=active;
+  if(active){
+   if(!gameNode){
+    gameNode=node;
+    originalParent=node.parentNode;
+    // A transformed 16:9 parent is the cause of the two permanent side
+    // bars on some Android browsers. Move the WHOLE Phaser host, not its
+    // canvas, under body; Phaser/WebGL state and pointer listeners remain.
+    if(node.parentNode!==document.body)document.body.appendChild(node);
    }
-  }else if(ported){
-   ported.classList.remove('torre2-wide-canvas');
-   if(originalParent?.isConnected)originalParent.appendChild(ported);
-   ported=null;originalParent=null;
+   document.documentElement.classList.add('torre2-edge-to-edge');
+   document.body.classList.add('torre2-landscape-map');
+  }else{
+   document.documentElement.classList.remove('torre2-edge-to-edge');
+   document.body.classList.remove('torre2-landscape-map');
+   if(gameNode&&originalParent?.isConnected&&
+      gameNode.parentNode!==originalParent)originalParent.appendChild(gameNode);
+   gameNode=null;originalParent=null;
   }
-  // Keep touch-to-pixel mapping synchronized with the actual CSS canvas rect.
-  if(game?.scale?.updateBounds)game.scale.updateBounds();
+  if(game.scale?.updateBounds)game.scale.updateBounds();
  }
- window.addEventListener('resize',sync,{passive:true});
- window.addEventListener('orientationchange',sync,{passive:true});
- if(window.visualViewport)window.visualViewport.addEventListener('resize',sync,{passive:true});
- window.setInterval(sync,180);
- sync();
+ window.addEventListener('resize',update,{passive:true});
+ window.addEventListener('orientationchange',update,{passive:true});
+ if(window.visualViewport)
+  window.visualViewport.addEventListener('resize',update,{passive:true});
+ // The combat scene changes asynchronously; update on both transitions.
+ window.setInterval(update,120);
+ update();
 })();
 </script>`;
 html=html.replace('</body>',landscapeFit+'</body>');

@@ -114,7 +114,15 @@ class Campanha extends Phaser.Scene{
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
-  this.__campaignPanelCollapsed=this.registry.get('torre2-panel-collapsed')===true;
+  const viewPreference=this.registry.get('torre2-panel-collapsed');
+  // After an arena fight, Android must return to the same large, readable
+  // FireRed overworld, not a compressed 372-pixel map with a big right bar.
+  // The sidebar remains accessible at any time through the blue arrow.
+  const wideHandset=window.innerWidth>window.innerHeight&&
+   window.innerWidth/Math.max(1,window.innerHeight)>=1.85&&
+   (navigator.maxTouchPoints>0||('ontouchstart' in window));
+  this.__campaignPanelCollapsed=this.result&&wideHandset?true:
+   typeof viewPreference==='boolean'?viewPreference:wideHandset;
   this.add.rectangle(ANCHO/2,ALTO/2,ANCHO,ALTO,0x090d1c);
   header(this);
   this.add.text(52,14,'POKÉMON TORRE 2 / KANTO',{...titleStyle,

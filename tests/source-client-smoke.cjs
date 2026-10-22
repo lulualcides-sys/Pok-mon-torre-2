@@ -382,6 +382,30 @@ const server=http.createServer(async(req,res)=>{
    'Toggling back restores exact native pixel-art layout');
   assert.equal(panelTest.restored.sidebar,true);
   assert.ok(panelTest.restored.zoneEnabled>=6);
+  // Re-enter campaign with a completed trainer battle on Android landscape:
+  // the larger map must return (the screenshot complaint was a small blurry
+  // map plus a wide sidebar after every win).
+  const mapReturn=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const was=c.__campaignPanelCollapsed;
+   const oldResult=c.result;
+   const registry=c.registry;
+   const original=registry.get('torre2-panel-collapsed');
+   // Restart with native lifecycle; no fake map drawing.
+   registry.set('torre2-panel-collapsed',true);
+   c.scene.restart();
+   return {was,original,oldResult:!!oldResult};
+  });
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__campaignPanelCollapsed&&
+    c.__campaignMapObjects?.some(x=>x.obj?.texture?.key==='torre2-brock-custom'&&
+     x.obj.displayWidth>=600);
+  },null,{timeout:18000});
+  await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   c.setCampaignPanelCollapsed(false);
+  });
   // Grass opens as a modal and does not destroy/recreate the map image.
   const grassOverlay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
