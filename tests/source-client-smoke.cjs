@@ -503,6 +503,7 @@ const server=http.createServer(async(req,res)=>{
    const panel=b.children.list.filter(o=>typeof o.text==='string')
     .map(o=>o.text).join(' | ');
    const foes=b.datos.torre2.party.foes;
+   const originalTexture=b.luchadores[0]?.spr?.texture?.key;
    // Simulate real pre-switch damage as a fraction of the enemy's max HP.
    b.luchadores[1].hp=Math.round(b.luchadores[1].hpMax*.67);
    const control=b.children.list.find(o=>o.type==='Zone'&&
@@ -511,21 +512,24 @@ const server=http.createServer(async(req,res)=>{
    const target=b.children.list.find(o=>o.type==='Zone'&&
     Math.abs(o.x-419)<2&&Math.abs(o.y-148)<2&&o.input?.enabled);
    if(target)target.emit('pointerdown');
-   return {panel,foes:foes.length,control:!!control,target:!!target};
+   return {panel,foes:foes.length,control:!!control,target:!!target,
+    originalTexture};
   });
   assert.ok(partyUi.panel.includes('TROCAR POKÉMON'),
    'Real Phaser combat exposes party selector');
   assert.ok(partyUi.panel.includes('SEUS POKÉMON')&&partyUi.panel.includes('RIVAL'),
    'Pokéball badges show both combat parties below their life HUDs');
   assert.ok(partyUi.control&&partyUi.target,'Switch must be clickable by touch');
+  await offline.evaluate(x=>{window.__pt2FirstTexture=x},partyUi.originalTexture);
   await offline.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
     const l=b.luchadores?.[0];
     return b.scene.isActive()&&b.__torre2PartyInstalled&&
       b.datos?.torre2?.party?.playerIndex===1&&
       l?.def?.id==='mewtwo'&&b.fase==='lucha'&&
-      l.spr?.texture?.key?.includes('mewtwo')&&
-      l.spr?.anims?.currentAnim?.key?.includes('mewtwo');
+      l.spr?.texture?.key===('pmd-'+l.dex+'-Idle')&&
+      l.spr?.texture?.key!==window.__pt2FirstTexture&&
+      l.spr?.anims?.currentAnim?.key?.startsWith(l.dex+'-');
   },null,{timeout:24000});
   const afterSwitch=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
@@ -543,10 +547,12 @@ const server=http.createServer(async(req,res)=>{
     visible:l.spr?.visible,scale:l.spr?.scaleX,phase:b.fase,
     active:b.scene.isActive()};
   });
-  assert.ok(visibleSwapPokemon.texture?.includes('mewtwo'),
-   'The ACTUAL in-arena sprite must switch from Bulbasaur to Mewtwo');
-  assert.ok((visibleSwapPokemon.animation||'').includes('mewtwo'),
-   'The new PMD idle animation must replace the old Pokémon animation');
+  assert.equal(visibleSwapPokemon.texture,'pmd-'+visibleSwapPokemon.dex+'-Idle',
+   'The ACTUAL in-arena sprite texture must match Mewtwo numeric PMD dex');
+  assert.notEqual(visibleSwapPokemon.texture,partyUi.originalTexture,
+   'Switch must replace Bulbasaur sprite, not merely rename its HUD');
+  assert.ok((visibleSwapPokemon.animation||'').startsWith(visibleSwapPokemon.dex+'-'),
+   'PMD animations use numeric dex keys, not the English species name');
   assert.ok(visibleSwapPokemon.visible&&visibleSwapPokemon.scale>.2,
    'The replacement sprite must be visible, not miniaturized or transparent');
   assert.equal(visibleSwapPokemon.phase,'lucha',
@@ -570,7 +576,7 @@ const server=http.createServer(async(req,res)=>{
       b.datos?.torre2?.party?.playerIndex===0&&
       b.datos?.torre2?.party?.friend?.[1]?.hp===0&&
       b.luchadores?.[0]?.def?.id==='charmander'&&
-      b.luchadores?.[0]?.spr?.texture?.key?.includes('charmander')&&
+      b.luchadores?.[0]?.spr?.texture?.key===('pmd-'+b.luchadores[0].dex+'-Idle')&&
       b.fase==='lucha';
    },null,{timeout:14000});
   }catch(e){
