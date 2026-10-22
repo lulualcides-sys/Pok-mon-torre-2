@@ -2,9 +2,20 @@ import assert from 'node:assert/strict';
 import {pathToFileURL} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
+import {spawnSync} from 'node:child_process';
 const stage=path.resolve('_site/arena2d');
 const version=fs.readdirSync(stage).find(x=>/^src-[a-f0-9]{10}$/.test(x));
 assert.ok(version,'Captured Phaser original client not staged');
+// Browser startup must never be blocked by malformed JS in campaign,
+// trainer art, shops or capture modules. Check each staged ES module.
+for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
+ 'torre2/campaign-sprites.js','torre2/capture-arena.js',
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js']){
+ const source=path.join(stage,version,name);
+ const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
+ assert.equal(parsed.status,0,
+  'Invalid JavaScript in '+name+': '+parsed.stderr);
+}
 // The menu's HTML query string alone cannot bust cached JS imports. Every
 // patch must create a new hashed source folder, and the HTML must use it.
 assert.notEqual(version,'src-8d89349697',
