@@ -56,7 +56,7 @@ const COMPOSITE_MAIN=Object.freeze({
 export function locationForCampaign(region){
  if(!region)return null;
  const stage=Number(region.stage),p=Number(region.chapterPage??region.page??0);
- if(stage===0)return ['route1','viridian','forest','pewter'][Math.min(3,p)]||null;
+ if(stage===0)return ['pallet','route1','viridian','forest','pewter'][Math.min(4,p)]||null;
  if(stage===1)return ['route3','mtmoon','route4','cerulean'][Math.min(3,p)]||null;
  if(stage===2)return ['route24',null,'ssanne','vermilion'][Math.min(3,p)]||null;
  if(stage===3)return [null,null,'pokemontower','celadon'][Math.min(3,p)]||null;
