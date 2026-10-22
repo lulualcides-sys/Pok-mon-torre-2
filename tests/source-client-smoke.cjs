@@ -410,6 +410,71 @@ const server=http.createServer(async(req,res)=>{
       c.children.list.some(o=>o.text==='SUA EQUIPE');
   },null,{timeout:12000});
 
+  // Campaign party regression: real in-arena switching preserves Kanto
+  // checkpoint progress, and the opponent's HP does not reset on switch.
+  await offline.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+    c.enterBattle(c.__campaignMap&&JSON.parse(
+      localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')));
+  });
+  await offline.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.__torre2PartyInstalled&&
+     b.fase==='lucha'&&b.datos.torre2.party.friend.length===2;
+  },null,{timeout:26000});
+  const partyUi=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const panel=b.children.list.filter(o=>typeof o.text==='string')
+    .map(o=>o.text).join(' | ');
+   const foes=b.datos.torre2.party.foes;
+   // Simulate real pre-switch damage as a fraction of the enemy's max HP.
+   b.luchadores[1].hp=Math.round(b.luchadores[1].hpMax*.67);
+   const control=b.children.list.find(o=>o.type==='Zone'&&
+    Math.abs(o.x-320)<2&&Math.abs(o.y-88)<2&&o.input?.enabled);
+   if(control)control.emit('pointerdown');
+   const target=b.children.list.find(o=>o.type==='Zone'&&
+    Math.abs(o.x-419)<2&&Math.abs(o.y-148)<2&&o.input?.enabled);
+   if(target)target.emit('pointerdown');
+   return {panel,foes:foes.length,control:!!control,target:!!target};
+  });
+  assert.ok(partyUi.panel.includes('TROCAR POKÉMON'),
+   'Real Phaser combat exposes party selector');
+  assert.ok(partyUi.panel.includes('SUA EQUIPE')&&partyUi.panel.includes('EQUIPE RIVAL'),
+   'Pokéball badges show both combat parties below their life HUDs');
+  assert.ok(partyUi.control&&partyUi.target,'Switch must be clickable by touch');
+  await offline.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.__torre2PartyInstalled&&
+      b.datos?.torre2?.party?.playerIndex===1&&
+      b.luchadores?.[0]?.def?.id==='mewtwo';
+  },null,{timeout:24000});
+  const afterSwitch=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const e=b.luchadores[1];
+   return {enemyPct:e.hp/e.hpMax,
+    remaining:b.datos.torre2.party.friend.filter(x=>x.hp>0).length,
+    marker:b.datos.torre2.trainer};
+  });
+  assert.ok(afterSwitch.enemyPct>.59&&afterSwitch.enemyPct<.74,
+    'Switching Pokémon must preserve opponent damage');
+  assert.equal(afterSwitch.remaining,2,
+    'Manual switching does not mark a Pokémon fainted');
+  await offline.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    b.scene.start('campanha');
+  });
+  await offline.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter';
+  },null,{timeout:16000});
+  const trainerAfterSwap=await offline.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.__campaignMap?.spec?.id;
+  });
+  assert.equal(trainerAfterSwap,'pewter',
+   'Manual Pokémon switch must not progress to next trainer');
+
   // Regression: encounter in real native combat, click the capture HUD,
   // weaken the actual enemy HP, throw a sprite-ball, wait through three shakes,
   // and verify the captured Pokémon is persisted without advancing trainers.
