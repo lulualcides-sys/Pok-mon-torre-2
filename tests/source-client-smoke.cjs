@@ -311,7 +311,9 @@ const server=http.createServer(async(req,res)=>{
    mapState.gymDidNotStartCombat,'Gym boss must be locked until 13 victories');
   await offline.waitForFunction(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
-    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter';
+    const captions=c.children.list.filter(o=>typeof o.text==='string').map(o=>o.text);
+    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+      captions.includes('SUA EQUIPE')&&captions.some(x=>x.includes('INSÍGNIAS'));
   },null,{timeout:15000});
   // Existing UI actions still open native screens and return to the SAME map.
   const newMap=await offline.evaluate(async()=>{
@@ -334,8 +336,11 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(newMap.center.includes('CURAR'),'Center screen is functional');
   assert.ok(newMap.mart.includes('POKÉ MART'),'Shop opens actual inventory');
   assert.ok(newMap.bag.includes('POÇÃO'),'Bag retains potions');
-  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .__campaignMap?.spec?.id==='pewter',null,{timeout:13000});
+  await offline.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+      c.children.list.some(o=>o.text==='SUA EQUIPE');
+  },null,{timeout:13000});
   await offline.screenshot({path:'test-evidence/torre2-pewter-single-map-13-trainers.png',
     fullPage:true});
   const mapScreen=await offline.evaluate(async()=>{
@@ -354,8 +359,11 @@ const server=http.createServer(async(req,res)=>{
   await offline.screenshot({path:'test-evidence/torre2-brock-locked-gym-and-real-sprites.png',
    fullPage:true});
   await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
-  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .__campaignMap?.spec?.id==='pewter',null,{timeout:12000});
+  await offline.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+      c.children.list.some(o=>o.text==='SUA EQUIPE');
+  },null,{timeout:12000});
 
   // Regression: encounter in real native combat, click the capture HUD,
   // weaken the actual enemy HP, throw a sprite-ball, wait through three shakes,
