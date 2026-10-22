@@ -8,7 +8,8 @@
 export const KANTO_CHAPTERS=Object.freeze([
  // One entry per gym or Elite Four stage, preserving existing save IDs.
  [
-  ['ROTA 1 / VIRIDIAN','VIRIDIAN CITY','route'],
+  ['ROTA 1 / PALLET','ROTA 1 · KANTO','route'],
+  ['VIRIDIAN CITY','CENTRO / MART','city'],
   ['ROTA 2 / FLORESTA','VIRIDIAN FOREST','forest'],
   ['PEWTER / GINÁSIO','PEWTER · BROCK','pewter']
  ],
