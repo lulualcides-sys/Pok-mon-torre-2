@@ -300,7 +300,7 @@ export function installPartyBattle(scene){
       const index=side===0?party.enemyIndex:party.playerIndex;
       if(teammates[index])teammates[index].hp=clamp(100*peerHpRatio);
      }
-     fx.clear();scene.game.events.off('step',release);
+     fx.clear();ball.clear();scene.game.events.off('step',release);
      scene.events.off('shutdown',detachRelease);
      scene.__torre2Changing=false;scene.fase='lucha';
     }
