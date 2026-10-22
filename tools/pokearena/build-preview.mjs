@@ -120,6 +120,8 @@ await Promise.all([
  ['tools/pokearena/torre2-route-data.js','route-data.js'],
  ['tools/pokearena/torre2-kanto-regions.js','kanto-regions.js'],
  ['tools/pokearena/torre2-kanto-tiles.js','kanto-tiles.js'],
+ ['tools/pokearena/torre2-kanto-levels.js','kanto-levels.js'],
+ ['tools/pokearena/torre2-kanto-world-map.js','kanto-world-map.js'],
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
@@ -315,7 +317,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'
 for(const filename of [
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
- 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/campaign-art.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
+ 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/campaign-art.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
 if(versionedSource===clientSource)throw Error('VFX fingerprint collides with upstream dir');
