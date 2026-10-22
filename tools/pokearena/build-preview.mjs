@@ -95,8 +95,9 @@ const landscapeFit=`<script id="torre2-landscape-display">
   var node=document.getElementById('juego');
   var canvas=game?.canvas||node?.querySelector('canvas');
   if(!game||!node||!canvas)return;
-  var landscape=window.matchMedia?.('(orientation:landscape)')?.matches||
-   window.innerWidth>window.innerHeight;
+  var landscape=(window.matchMedia?.('(orientation:landscape)')?.matches||
+   window.innerWidth>window.innerHeight)&&
+   window.innerWidth/Math.max(1,window.innerHeight)>=1.70;
   // Match campaign AND its native battle so the user does not see two
   // different widths when a Pokémon faints or the fight ends.
   var scene=game.scene;
