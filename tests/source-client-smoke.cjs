@@ -520,9 +520,12 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(partyUi.control&&partyUi.target,'Switch must be clickable by touch');
   await offline.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
+    const l=b.luchadores?.[0];
     return b.scene.isActive()&&b.__torre2PartyInstalled&&
       b.datos?.torre2?.party?.playerIndex===1&&
-      b.luchadores?.[0]?.def?.id==='mewtwo';
+      l?.def?.id==='mewtwo'&&b.fase==='lucha'&&
+      l.spr?.texture?.key?.includes('mewtwo')&&
+      l.spr?.anims?.currentAnim?.key?.includes('mewtwo');
   },null,{timeout:24000});
   const afterSwitch=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
