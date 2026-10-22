@@ -256,8 +256,8 @@ const server=http.createServer(async(req,res)=>{
     const portraits=c.children.list.filter(o=>o.type==='Image'&&
       String(o.texture?.key||'').startsWith('torre2-portrait-')).length;
     const img=c.children.list.find(o=>o.type==='Image'&&o.texture?.key==='torre2-approved-kanto');
-    const dashboard={loaded:c.textures.exists('torre2-approved-kanto'),
-     width:img?.displayWidth,height:img?.displayHeight,
+    const native=c.children.list.filter(o=>o.type==='Graphics'&&o.depth===1);
+    const dashboard={imageOverlay:!!img,nativeGraphics:native.length,
      actions:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length,
      images:c.children.list.filter(o=>o.type==='Image'||o.texture?.key)
       .slice(0,24).map(o=>({type:o.type,key:o.texture?.key,width:o.displayWidth})),
@@ -269,13 +269,12 @@ const server=http.createServer(async(req,res)=>{
     c.scene.restart();
     return {map,grass,center,mart,bag,portraits,dashboard};
   });
-  // Approved concept artwork is a real graphics texture, with live hit areas.
+  // The world and its controls must be Phaser scene objects, never image hotspots.
   const dashboard=newMap.dashboard;
-  console.log('TORRE2 DASHBOARD DIAG',JSON.stringify(dashboard));
-  assert.equal(dashboard.loaded,true,'Approved artwork must load in Phaser');
-  assert.equal(dashboard.width,640,'Approved artwork must fill the Kanto canvas');
-  assert.equal(dashboard.height,360,'Approved artwork must respect native 16:9');
-  assert.ok(dashboard.actions>=13,'Reference artwork buttons must remain interactive');
+  console.log('TORRE2 NATIVE MAP DIAG',JSON.stringify(dashboard));
+  assert.equal(dashboard.imageOverlay,false,'Never paste a complete screenshot into the playable map');
+  assert.ok(dashboard.nativeGraphics>=2,'Map and team must be built from Phaser/WebGL graphics');
+  assert.ok(dashboard.actions>=12,'Native world map buttons and battle nodes must remain interactive');
    assert.ok(newMap.portraits>=1,'Campaign should show captured PMD team portraits');
   assert.ok(newMap.map.includes('INSÍGNIAS'),'Map shows progress');
   assert.ok(newMap.grass.includes('VIRIDIAN'),'Grass is regional, not random Kanto');
