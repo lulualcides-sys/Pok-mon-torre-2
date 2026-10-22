@@ -47,9 +47,9 @@ const WORLDS=Object.freeze([
 const BROCK_POINTS=Object.freeze([
  // Clickable challenge route, staged on open streets rather than overlapping
  // Pokémon Center, Poké Mart, grass hotspot, or the Gym entrance.
- [61,280],[103,281],[220,282],[350,278],
- [352,246],[309,237],[269,205],[205,195],[129,214],
- [88,182],[142,170],[217,160],[281,133]
+ [61,280],[103,280],[220,280],[301,280],
+ [354,249],[349,213],[347,178],[261,184],[201,157],
+ [97,231],[97,195],[97,157],[231,150]
 ]);
 // Same deterministic map coordinates across reloads and battles.
 function checkpointsFor(total,stage){
