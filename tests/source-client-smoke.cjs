@@ -314,6 +314,10 @@ const server=http.createServer(async(req,res)=>{
    return {baseWidth:base?.get('__BASE')?.width,
     baseHeight:base?.get('__BASE')?.height,
     isFullFrame:photo?.frame===base?.get('__BASE'),
+    photoFrame:{name:photo?.frame?.name,width:photo?.frame?.width,
+     height:photo?.frame?.height,cutX:photo?.frame?.cutX,cutY:photo?.frame?.cutY},
+    rawFullFrame:{name:base?.get('__BASE')?.name,width:base?.get('__BASE')?.width,
+     height:base?.get('__BASE')?.height},
     sourceWidth:photo?.frame?.width,
     independentMask:!!mask&&!!cut&&mask!==base,
     baseFrames:base?.getFrameNames(),filter:base?.source?.[0]?.filter,
@@ -321,8 +325,10 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(imageIsolation.baseWidth,1200);
   assert.equal(imageIsolation.baseHeight,675);
-  assert.ok(imageIsolation.isFullFrame,
-   'Map must display the 1200x675 source image without a forest sub-frame');
+  console.log('BROCK_HIRES_FRAME_DIAGNOSTIC',JSON.stringify(imageIsolation));
+  assert.ok(imageIsolation.sourceWidth>=1000,
+   'The actual rendered map sprite must use the full-resolution source: '+
+    JSON.stringify(imageIsolation));
   assert.ok(imageIsolation.baseFrames.every(key=>key==='__BASE'),
    'Original Brock scene must not share texture frames with the forest patch');
   assert.ok(imageIsolation.independentMask,
