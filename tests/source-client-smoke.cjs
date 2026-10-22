@@ -852,6 +852,51 @@ const server=http.createServer(async(req,res)=>{
    returnedMap.source===1200&&returnedMap.overlay===0,
    'After KO, restore high-res world with a freshly uploaded GPU base frame: '+
    JSON.stringify(returnedMap));
+  // Visual regression: checking a 1200px texture key is NOT enough. An
+  // Android GPU can display that very source as huge blurry color blocks.
+  // Measure real SCREENSHOT fine detail after KO, not DOM/texture metadata.
+  const returnedPng=await offline.screenshot({
+   path:'test-evidence/torre2-after-ko-real-webgl-pixels.png',
+   fullPage:false
+  });
+  const mapVisual=await offline.evaluate(async encoded=>{
+   const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
+   const bitmap=await createImageBitmap(new Blob([bytes],{type:'image/png'}));
+   const cv=document.createElement('canvas');cv.width=bitmap.width;cv.height=bitmap.height;
+   const ctx=cv.getContext('2d',{willReadFrequently:true});
+   ctx.drawImage(bitmap,0,0);
+   const data=ctx.getImageData(0,0,cv.width,cv.height).data;
+   const game=window.__pt2Game,c=game.scene.getScene('campanha');
+   const image=c.children.list.find(o=>o.type==='Image'&&
+    o.texture?.key==='torre2-brock-custom');
+   const box=image.getBounds();
+   const canvasBox=game.canvas.getBoundingClientRect();
+   const ratioX=canvasBox.width/game.canvas.width;
+   const ratioY=canvasBox.height/game.canvas.height;
+   let total=0,count=0;
+   // This area contains detailed trees and paths, not the UI labels/forest
+   // watermark. A correct source averages ~20+ RGB edge units here; the
+   // user-reported broken texture averages ~4.
+   for(let v=.15;v<.37;v+=.007){
+    const y=Math.round(canvasBox.top+(box.top+box.height*v)*ratioY);
+    for(let u=.34;u<.56;u+=.004){
+     const x=Math.round(canvasBox.left+(box.left+box.width*u)*ratioX);
+     if(x<=1||x>=cv.width-1||y<0||y>=cv.height)continue;
+     const k=4*(y*cv.width+x),prev=k-4;
+     total+=(Math.abs(data[k]-data[prev])+
+      Math.abs(data[k+1]-data[prev+1])+
+      Math.abs(data[k+2]-data[prev+2]))/3;
+     count++;
+    }
+   }
+   return {horizontalContrast:count?total/count:0,samples:count,
+    canvas:[game.canvas.width,game.canvas.height],
+    map:[box.x,box.y,box.width,box.height]};
+  },returnedPng.toString('base64'));
+  console.log('BROCK_AFTER_KO_VISUAL_DETAIL',JSON.stringify(mapVisual));
+  assert.ok(mapVisual.samples>400&&mapVisual.horizontalContrast>=10,
+   'After a real KO the Kanto map must remain sharp on the rendered screen, not just in the source texture: '+
+    JSON.stringify(mapVisual));
   const trainerAfterSwap=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return c.__campaignMap?.spec?.id;
