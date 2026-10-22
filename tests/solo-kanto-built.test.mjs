@@ -137,7 +137,7 @@ assert.notDeepEqual(natural.map(p=>p.x),[99,292,99,292,99],
 const forestTrail=trainerRoutePoints(5,{biome:'forest'});
 assert.ok(forestTrail.some((p,i)=>i>0&&p.x<forestTrail[i-1].x),
  'Forest trail should include natural turns');
-assert.ok(zigzagRoutePoints(5).every(p=>p.x>=21&&p.x<=389&&p.y>=90&&p.y<=266),
+assert.ok(trainerRoutePoints(5).every(p=>p.x>=21&&p.x<=389&&p.y>=90&&p.y<=266),
  'All trainer checkpoints must stay inside actual map image');
 assert.equal(locationForCampaign(campaignRegion(1,3,4)),'cerulean');
 assert.equal(locationForCampaign(campaignRegion(2,3,4)),'vermilion');
