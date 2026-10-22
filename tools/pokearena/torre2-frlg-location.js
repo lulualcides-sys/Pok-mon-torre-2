@@ -10,9 +10,9 @@ export function locationForCampaign(region){
 }
 export const TILE_VIEW=Object.freeze({
  route1:{cx:192,cy:315},
- viridian:{cx:384,cy:305},
+ viridian:{cx:472,cy:328},
  forest:{cx:395,cy:525},
- pewter:{cx:365,cy:298}
+ pewter:{cx:264,cy:248}
 });
 export function renderLocationTiles(scene,region){
  const id=locationForCampaign(region),key=id&&'frlg-location-'+id;
