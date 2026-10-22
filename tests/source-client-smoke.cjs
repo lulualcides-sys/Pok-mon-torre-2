@@ -268,14 +268,14 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(o=>typeof o.text==='string'&&o.text.toUpperCase().includes('VIRIDIAN')),
+    .children.list.some(o=>typeof o.text==='string'&&o.text.toUpperCase().includes('ROTA 1')),
     null,{timeout:15000});
   // The first page is Viridian, the second Viridian Forest, and the
   // gym approach is Pewter. Do not require Pewter on the first page.
   const getRouteLabel=()=>offline.evaluate(()=>window.__pt2Game.scene
     .getScene('campanha').children.list
     .filter(o=>typeof o.text==='string').map(o=>o.text).join(' | '));
-  assert.ok((await getRouteLabel()).includes('VIRIDIAN'),'First trainer page is Viridian');
+  assert.ok((await getRouteLabel()).includes('ROTA 1'),'First trainer page is Route 1');
   for(const [page,region] of [[1,'VIRIDIAN'],[2,'FLORESTA'],[3,'PEWTER'],[0,'ROTA 1']]){
     await offline.evaluate(page=>{
       const c=window.__pt2Game.scene.getScene('campanha');
@@ -314,7 +314,7 @@ const server=http.createServer(async(req,res)=>{
   await offline.waitForFunction(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
    return scene.scene.isActive()&&scene.children.list.some(x=>
-    typeof x.text==='string'&&x.text.includes('VIRIDIAN'))&&
+    typeof x.text==='string'&&x.text.includes('ROTA 1'))&&
     scene.children.list.some(x=>x.type==='Image'&&
      x.texture?.key==='torre2-cc0-world');
   },null,{timeout:20000});
@@ -382,7 +382,7 @@ const server=http.createServer(async(req,res)=>{
    fullPage:true});
   await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(x=>typeof x.text==='string'&&x.text.includes('VIRIDIAN')),
+    .children.list.some(x=>typeof x.text==='string'&&x.text.includes('ROTA 1')),
     null,{timeout:12000});
 
 
@@ -437,7 +437,7 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('VIRIDIAN')),
+    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('ROTA 1')),
     null,{timeout:12000});
 
   await offline.evaluate(async()=>{
