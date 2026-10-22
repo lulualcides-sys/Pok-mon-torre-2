@@ -110,6 +110,7 @@ class Campanha extends Phaser.Scene{
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
+  this.__campaignPanelCollapsed=this.registry.get('torre2-panel-collapsed')===true;
   this.add.rectangle(ANCHO/2,ALTO/2,ANCHO,ALTO,0x090d1c);
   header(this);
   this.add.text(52,14,'POKÉMON TORRE 2 / KANTO',{...titleStyle,
@@ -272,21 +273,62 @@ class Campanha extends Phaser.Scene{
   const line=this.add.rectangle(x+2,y+2,4,h-4,accent,.9).setOrigin(0,0);
   return bg;
  }
+ // In-place UI switch: no reloading the Phaser scene, no lost map
+ // checkpoint, and no extra WebGL textures on low-memory Android phones.
+ setCampaignPanelCollapsed(collapsed){
+  const hidden=!!collapsed;
+  this.__campaignPanelCollapsed=hidden;
+  this.registry.set('torre2-panel-collapsed',hidden);
+  // Scale the map into the freed sidebar width while keeping character
+  // sprites/text at pixel-perfect sizes, with interactive hit areas relocated.
+  for(const item of this.__campaignMapObjects||[]){
+   const {obj,x,y,sx,sy}=item;
+   if(!obj.active)continue;
+   if(!hidden){
+    obj.setPosition(x,y);obj.setScale(sx,sy);
+   }else{
+    const stretch=(obj.type==='Image'&&String(obj.texture?.key||'').startsWith('frlg-npc-'))||
+      (obj.type==='Image'&&String(obj.texture?.key||'').startsWith('torre2-portrait-'))||
+      obj.type==='Text';
+    const zoom=1.57;
+    obj.setPosition(x*zoom-7,y);
+    obj.setScale(sx*(stretch?1:zoom),sy);
+   }
+  }
+  for(const obj of this.__campaignSidebarObjects||[]){
+   if(!obj.active)continue;
+   obj.setVisible(!hidden);
+   if(obj.input)obj.input.enabled=!hidden;
+  }
+  for(const obj of this.__campaignDockObjects||[]){
+   if(!obj.active)continue;
+   obj.setVisible(hidden);
+   if(obj.input)obj.input.enabled=hidden;
+  }
+  if(this.__campaignArrowLabel?.active)
+   this.__campaignArrowLabel.setText(hidden?'▲':'▼');
+  if(this.__campaignArrowBg?.active){
+   this.__campaignArrowBg.clear();
+   buttonFrame(this.__campaignArrowBg,586,56,41,27,'blue');
+  }
+ }
  renderCampaign(state){
   this.backdrop();
   const finished=state.champion||!STAGES[state.stage];
   const limit=finished?0:TRAINERS_PER_GYM(state.stage);
   const message=notice=>{
    if(this.__routeNotice?.active)this.__routeNotice.destroy();
-   this.__routeNotice=text(this,205,301,notice,{
-    fontSize:'10px',color:'#ffe8ad',fontStyle:'bold',
+   this.__routeNotice=text(this,207,291,notice,{
+    fontSize:'9px',color:'#ffe8ad',fontStyle:'bold',
     stroke:'#071827',strokeThickness:3}).setOrigin(.5).setDepth(48);
    this.time.delayedCall(1550,()=>{
     if(this.__routeNotice?.active)this.__routeNotice.destroy();
    });
   };
-  // ONE live map throughout this leader's entire route. No mapPage, next
-  // page, zigzag line, dynamic region switching or screenshot backdrop.
+  // These objects alone expand when the panel is hidden. The sprites
+  // and trainer hitzones all remain native Phaser objects with their
+  // original index and callback. No scene restart is involved.
+  const mapStart=this.children.list.length;
   this.__campaignMap=renderUnifiedCampaignMap(this,state,{
    limit,
    onTrainer:index=>{
@@ -298,20 +340,10 @@ class Campanha extends Phaser.Scene{
    onGrass:()=>this.grassScreen(state),
    onLocked:message
   });
-  // Do not repeat Center, Mart or Grass as oversized buttons below the
-  // map; they remain tappable on buildings and in the fixed right-side UI.
-  const next=state.trainer>=limit?'LÍDER':String(state.trainer+1);
-  const task=finished?'KANTO CONCLUÍDO':
-   state.trainer>=limit?'GINÁSIO LIBERADO':
-    'PRÓXIMO TREINADOR: '+next+' DE '+limit;
-  const note=this.add.graphics().setDepth(3);
-  note.fillStyle(0x0d2b3c,.96);
-  note.fillRect(20,314,374,36);
-  note.lineStyle(1,0x89a9aa,.95);
-  note.strokeRect(20,314,374,36);
-  text(this,207,332,task,{
-   fontSize:'13px',fontStyle:'bold',color:'#f3e5ba',
-   stroke:'#051522',strokeThickness:2}).setOrigin(.5).setDepth(5);
+  this.__campaignMapObjects=this.children.list.slice(mapStart).map(obj=>({
+   obj,x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY
+  }));
+  const sideStart=this.children.list.length;
   richTeam(this);
   text(this,443,67,'SUA EQUIPE',{fontSize:'15px',fontStyle:'bold',
    color:'#fff8e0',stroke:'#682f32',strokeThickness:2}).setDepth(5);
@@ -359,17 +391,54 @@ class Campanha extends Phaser.Scene{
     .setInteractive({useHandCursor:true})
     .on('pointerdown',()=>this.showSummary(state,i));
   }
-  const g=this.add.graphics().setDepth(2);
-  g.fillStyle(0xf4b94b,.2);g.fillRoundedRect(406,301,225,49,4);
-  if(state.pendingCapture)this.battleButton(518,326,218,44,
-   'CAPTURAR POKÉMON ▶',()=>this.captureScreen(state),true);
-  else this.battleButton(518,326,218,44,
+  this.__campaignSidebarObjects=this.children.list.slice(sideStart);
+  // Bottom-center battle/capture button remains accessible with either UI
+  // state. Placed in the map footer instead of the bulky right-side card.
+  const cta=state.pendingCapture?'CAPTURAR POKÉMON ▶':
    finished?'★ CAMPEÃO DE KANTO':
-   state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1),()=>{
-    if(finished)return;
-    if(state.trainer>=limit)this.gymScreen(state);
-    else this.enterBattle(state);
-   },!finished);
+   state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1);
+  this.battleButton(320,339,210,28,cta,()=>{
+   if(state.pendingCapture)return this.captureScreen(state);
+   if(finished)return;
+   if(state.trainer>=limit)this.gymScreen(state);
+   else this.enterBattle(state);
+  },!finished||!!state.pendingCapture);
+  // Compact central party strip is only drawn when the sidebar is hidden.
+  // The six original PMD portraits stay tappable to open their summaries.
+  const dockStart=this.children.list.length;
+  const dockBg=this.add.graphics().setDepth(51);
+  dockBg.fillStyle(0x071e31,.96);
+  dockBg.fillRect(18,307,604,17);
+  dockBg.lineStyle(1,0xaac1b5,.8);
+  dockBg.strokeRect(18,307,604,17);
+  for(let i=0;i<6;i++){
+   const member=state.team[i],x=173+i*59,y=315;
+   if(!member)continue;
+   this.drawPortrait(member,x-12,y,14,54);
+   const name=member.id.toUpperCase().slice(0,7);
+   text(this,x+5,y-3,name,{
+    fontSize:'7px',color:i===state.active?'#ffe8ad':'#e0f8f6'
+   }).setDepth(55);
+   text(this,x+5,y+5,'NV.'+(member.progression?.level??'?'),{
+    fontSize:'6px',color:'#a9ddc8'}).setDepth(55);
+   this.add.zone(x+10,y,56,18).setDepth(58)
+    .setInteractive({useHandCursor:true})
+    .on('pointerdown',()=>this.showSummary(state,i));
+  }
+  this.__campaignDockObjects=this.children.list.slice(dockStart);
+  // A visible down-arrow at the top of the right panel toggles it on
+  // touch and mouse. Tap it again (up arrow) to restore the full menu.
+  this.__campaignArrowBg=this.add.graphics().setDepth(80);
+  this.__campaignArrowLabel=text(this,607,69,'▼',{
+   fontFamily:'Pixelify Sans,monospace',fontSize:'15px',
+   color:'#ffffff',stroke:'#092238',strokeThickness:2
+  }).setOrigin(.5).setDepth(82);
+  const arrowZone=this.add.zone(606,69,44,34).setDepth(83)
+   .setInteractive({useHandCursor:true})
+   .setData('torre2-panel-toggle',true);
+  arrowZone.on('pointerdown',()=>
+   this.setCampaignPanelCollapsed(!this.__campaignPanelCollapsed));
+  this.setCampaignPanelCollapsed(this.__campaignPanelCollapsed);
   this.button(607,26,56,30,'RESET',()=>{
    if(window.confirm('Apagar o progresso da campanha Kanto?')){
     resetCampaign();this.scene.restart();
