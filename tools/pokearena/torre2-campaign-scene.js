@@ -402,7 +402,7 @@ class Campanha extends Phaser.Scene{
    if(finished)return;
    if(state.trainer>=limit)this.gymScreen(state);
    else this.enterBattle(state);
-  },!finished||!!state.pendingCapture);
+  },!finished||!!state.pendingCapture).setData('torre2-central-cta',true);
   // Compact central party strip is only drawn when the sidebar is hidden.
   // The six original PMD portraits stay tappable to open their summaries.
   const dockStart=this.children.list.length;
