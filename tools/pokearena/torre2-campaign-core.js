@@ -6,6 +6,7 @@ import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,r
 import {ROSTER} from '../datos.js';
 import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS} from './route-data.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
+import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -94,6 +95,7 @@ export function readCampaign(storage=localStorage){
   }
   // Invalid stale wild markers from a previous stage must never be replayed.
   if(s.pendingWild&&s.pendingWild.stage!==s.stage){s.pendingWild=null;migrated=true}
+  for(const member of [...s.team,...s.box])if(enforceCampaignCap(member,s.stage))migrated=true;
   if(migrated)storage.setItem(SAVE_KEY,JSON.stringify(s));
   return s;
  }catch{return null}
@@ -153,7 +155,7 @@ export function currentOpponent(s){
    list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
  return {id:species,leader,kind:role,
   name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':'Treinador '+(s.trainer+1),
-  level:Math.min(85,leader?12+s.stage*7:5+s.stage*7+Math.floor(s.trainer/3)),
+  level:trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader),
   arena:gym.arena,city:gym.city};
 }
 export function startBattle(s){
@@ -183,8 +185,8 @@ export function resolveBattle(s,won,random=Math.random){
  const member=s.team[s.active],p=member.progression;
  // The species remains unchanged throughout the battle and evolves now only
  // because the Phaser battle scene already sent its confirmed result.
- const reward=Math.max(38,Math.round(opponent.level*(opponent.leader?20:14)));
- const growth=awardBattleExperience(p,reward,'fighting');
+ const reward=xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),opponent.leader?'leader':'trainer');
+ const growth=awardCampaignExperience(p,reward,s.stage,{tester:member.id==='mewtwo'});
  const evolved=resolveEvolutionAfterBattle(p,'victory');
  member.id=p.species;member.hp=100;
  s.wins++;
@@ -231,7 +233,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
   return {ok:false,reason:s.lastMessage,...outcome};
  }
  if(inWild)s.pendingWild=null;
- const member=newMember(candidate.id,candidate.level);
+ const member=newMember(candidate.id,Math.min(currentLevelCap(s.stage),candidate.level));
  recordCaught(s,candidate.id);
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC')+
@@ -264,7 +266,8 @@ export function startWildEncounter(s,random=Math.random){
  const area=wildAvailability(s.stage);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
  const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
- const wild={id,stage:s.stage,trainer:s.trainer,level:Math.max(3,4+s.stage*5),area:area.area,hpPercent:100};
+ const wild={id,stage:s.stage,trainer:s.trainer,
+  level:wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100};
  s.pendingWild=wild;s.wildEncountersStage++;
  recordSeen(s,id);saveCampaign(s);
  return {ok:true,encounter:wild};
@@ -287,8 +290,8 @@ export function resolveWildBattle(s,won){
   s.lastMessage='O '+wild.id+' selvagem escapou após a batalha.';
   saveCampaign(s);return {won:false,message:s.lastMessage};
  }
- const member=s.team[s.active],growth=awardBattleExperience(member.progression,
-  wild.level*9,'fighting');
+ const member=s.team[s.active],growth=awardCampaignExperience(member.progression,
+  xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),'wild'),s.stage,{tester:member.id==='mewtwo'});
  const evolved=resolveEvolutionAfterBattle(member.progression,'victory');
  member.id=member.progression.species;
  s.wins++;
