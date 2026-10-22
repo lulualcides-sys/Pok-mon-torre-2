@@ -267,173 +267,95 @@ const server=http.createServer(async(req,res)=>{
     m.saveCampaign(m.createCampaign('charmander'));
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
-  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(o=>typeof o.text==='string'&&o.text.toUpperCase().includes('PALLET')),
-    null,{timeout:15000});
-  // The first page is Viridian, the second Viridian Forest, and the
-  // gym approach is Pewter. Do not require Pewter on the first page.
-  const getRouteLabel=()=>offline.evaluate(()=>window.__pt2Game.scene
-    .getScene('campanha').children.list
-    .filter(o=>typeof o.text==='string').map(o=>o.text).join(' | '));
-  assert.ok((await getRouteLabel()).includes('PALLET'),'First trainer page is Pallet Town');
-  for(const [page,region] of [[1,'ROTA 1'],[2,'VIRIDIAN'],[3,'FLORESTA'],[4,'PEWTER'],[0,'PALLET']]){
-    await offline.evaluate(page=>{
-      const c=window.__pt2Game.scene.getScene('campanha');
-      c.mapPage=page;c.scene.restart();
-    },page);
-    await offline.waitForFunction(region=>window.__pt2Game.scene.getScene('campanha')
-      .children.list.some(o=>typeof o.text==='string'&&o.text.includes(region)),
-      region,{timeout:12000});
-  }
-  // UI regression: a real FireRed City building highlights on hover and
-  // enters a functional room with one click/tap. Hit areas are tied to
-  // source map coordinates, never a generic invisible background region.
-  await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   c.mapPage=2;c.scene.restart();
-  });
   await offline.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__torre2FRLGView?.id==='viridian'&&
-    c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled&&
-      !!o.getData?.('frlg-building')).length>=2;
-  },null,{timeout:20000});
-  const cityClick=await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   const targets=c.children.list.filter(o=>o.type==='Zone'&&
-    o.input?.enabled&&!!o.getData?.('frlg-building'));
-   const target=targets[0];
-   if(!target)return {highlight:false,opened:false};
-   target.emit('pointerover');
-   const highlight=c.children.list.some(o=>typeof o.text==='string'&&
-    o.text.startsWith('ENTRAR:')&&o.visible);
-   target.emit('pointerdown');
-   const opened=c.children.list.some(o=>typeof o.text==='string'&&
-    (o.text.includes('GINÁSIO')||o.text.includes('ACADEMIA')||
-     o.text.includes('POKÉMON')));
-   return {highlight,opened,nativeZones:targets.length};
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.__campaignMap?.spec?.id==='pewter'&&c.__campaignMap.locations===13 &&
+      c.children.list.some(x=>x.type==='Image'&&
+       x.texture?.key==='frlg-location-pewter');
+  },null,{timeout:23000});
+  // PATCH 1 / PATCH 2: one real Pewter world for all 13 encounters and boss.
+  // No PALLET -> ROUTE -> FOREST pagination, no route-line screen changes.
+  const mapState=await offline.evaluate(async()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+    const state=core.readCampaign();
+    const labels=()=>c.children.list.filter(o=>typeof o.text==='string')
+      .map(o=>o.text).join(' | ');
+    const result={
+      initial:labels(),stage:state.stage,trainer:state.trainer,
+      world:c.__campaignMap?.spec?.id,points:c.__campaignMap?.locations,
+      realScene:c.children.list.some(o=>o.type==='Image'&&
+       o.texture?.key==='frlg-location-pewter'),
+      realNPCs:c.children.list.filter(o=>o.type==='Image'&&
+       String(o.texture?.key||'').startsWith('frlg-npc-')).length,
+      portraits:c.children.list.filter(o=>o.type==='Image'&&
+       String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
+      zones:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length
+    };
+    c.gymScreen(state);
+    result.lockedGym=labels();
+    result.gymDidNotStartCombat=!window.__pt2Game.scene.isActive('combate');
+    c.scene.restart();
+    return result;
   });
-  assert.ok(cityClick.highlight&&cityClick.opened,
-   'Tapping a real FireRed building highlights it then opens its landmark panel');
-  console.log('VIRIDIAN INTERACTIVE BUILDINGS',JSON.stringify(cityClick));
-  await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   c.mapPage=0;c.scene.restart();
-  });
+  assert.equal(mapState.world,'pewter');
+  assert.equal(mapState.points,13,'Brock shows all 13 trainers simultaneously');
+  assert.equal(mapState.trainer,0);
+  assert.ok(mapState.initial.includes('ROTA DE BROCK'));
+  assert.ok(mapState.realScene,'Authentic user-supplied Pewter PNG is rendered');
+  assert.ok(mapState.realNPCs>=13,'Trainer markers must use real FireRed NPC sprites');
+  assert.ok(mapState.portraits>=1,'Six-slot team uses real Pokémon portraits');
+  assert.ok(mapState.zones>=19,'13 nodes, gym, grass, Center and Shop are interactive');
+  assert.ok(mapState.lockedGym.includes('FALTAM 13')&&
+   mapState.gymDidNotStartCombat,'Gym boss must be locked until 13 victories');
   await offline.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.__torre2FRLGView?.id==='pallet';
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter';
   },null,{timeout:15000});
-  await offline.screenshot({path:'test-evidence/pokemon-torre-2-offline-kanto-menu.png',fullPage:true});
+  // Existing UI actions still open native screens and return to the SAME map.
   const newMap=await offline.evaluate(async()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
     const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
     const state=core.readCampaign();
-    const labels=()=>c.children.list.filter(x=>typeof x.text==='string').map(x=>x.text).join(' | ');
+    const labels=()=>c.children.list.filter(o=>typeof o.text==='string')
+      .map(o=>o.text).join(' | ');
     const map=labels();
-    const portraits=c.children.list.filter(o=>o.type==='Image'&&
-      String(o.texture?.key||'').startsWith('torre2-portrait-')).length;
-    const img=c.children.list.find(o=>o.type==='Image'&&o.texture?.key==='torre2-approved-kanto');
-    const native=c.children.list.filter(o=>o.type==='Graphics'&&o.depth===1);
-    const dashboard={imageOverlay:!!img,nativeGraphics:native.length,
-     actions:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length,
-     images:c.children.list.filter(o=>o.type==='Image'||o.texture?.key)
-      .slice(0,24).map(o=>({type:o.type,key:o.texture?.key,width:o.displayWidth})),
-     labels:labels().slice(0,500)};
     c.grassScreen(state);const grass=labels();
     c.centerScreen(state);const center=labels();
     c.martScreen(state);const mart=labels();
     c.bagScreen(state);const bag=labels();
     c.scene.restart();
-    return {map,grass,center,mart,bag,portraits,dashboard};
+    return {map,grass,center,mart,bag};
   });
-  // The route is now built from FireRed tiles, not CC0 foliage. Await the
-  // actual Route 1 sprite layer after asynchronous Phaser scene restart.
-  await offline.waitForFunction(()=>{
-   const scene=window.__pt2Game.scene.getScene('campanha');
-   return scene.scene.isActive()&&scene.children.list.some(x=>
-    typeof x.text==='string'&&x.text.includes('PALLET'))&&
-    scene.children.list.some(x=>x.type==='Image'&&
-     x.texture?.key==='frlg-location-pallet');
-  },null,{timeout:20000});
-  const actualSprites=await offline.evaluate(()=>{
-   const scene=window.__pt2Game.scene.getScene('campanha');
-   const images=scene.children.list.filter(x=>x.type==='Image'&&
-    x.texture?.key==='torre2-cc0-world');
-   const sheet=scene.textures.get('torre2-cc0-world');
-   return {ready:scene.textures.exists('torre2-cc0-world'),
-    count:images.length,
-    spriteFrames:[...new Set(images.map(x=>x.frame?.name))],
-    sourceSize:sheet?.source?.[0]?[sheet.source[0].width,sheet.source[0].height]:[]};
-  });
-  console.log('KANTO CC0 ART DIAG',JSON.stringify(actualSprites));
-  const hotspots=await offline.evaluate(()=>{
-   const scene=window.__pt2Game.scene.getScene('campanha');
-   const core=(scene.__torre2FRLGView||{});
-   return {id:core.id,available:scene.textures.exists('frlg-npc-red_normal'),
-    originalNPC:scene.children.list.filter(x=>x.type==='Image'&&
-      String(x.texture?.key||'').startsWith('frlg-npc-')).length};
-  });
-  assert.equal(hotspots.id,'pallet','Pallet Town shows source tilemap');
-  assert.ok(hotspots.available&&hotspots.originalNPC>0,
-   'Map must render authentic FireRed Red and overworld trainers, not handdrawn substitutes');
-  // Check each source tilemap as a Phaser texture, with hundreds of
-  // separate 16-pixel frames instead of one pasted bitmap.
-  const frlgMap=await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   const originals=['route1','viridian','forest','pewter'];
-   return {loaded:originals.every(id=>c.textures.exists('frlg-location-'+id)),
-    tiles:c.children.list.filter(x=>x.type==='Image'&&
-     String(x.texture?.key||'').startsWith('frlg-location-')).length};
-  });
-  assert.ok(frlgMap.loaded,'Original FireRed regional tile sources should preload');
-  assert.ok(frlgMap.tiles>=220,'Route 1 must be rendered as independent 16px Phaser tiles');
-  assert.equal(actualSprites.ready,true,'Real 16x16 CC0 tile PNG loaded from same-origin build');
-  assert.ok(actualSprites.count>=0,'Fallback CC0 tiles are optional when real FireRed location sprites load');
-  assert.ok(frlgMap.tiles>=220,
-   'Actual FireRed locality map must be composed from cropped tiles');
-  assert.ok(actualSprites.sourceSize[0]>=300&&actualSprites.sourceSize[1]>=400,
-   'Verified source spritesheet must not be a fake single-frame picture');
-  // The world and its controls must be Phaser scene objects, never image hotspots.
-  const dashboard=newMap.dashboard;
-  console.log('TORRE2 NATIVE MAP DIAG',JSON.stringify(dashboard));
-  assert.equal(dashboard.imageOverlay,false,'Never paste a complete screenshot into the playable map');
-  assert.ok(dashboard.nativeGraphics>=2,'Map and team must be built from Phaser/WebGL graphics');
-  assert.ok(dashboard.actions>=12,'Native world map buttons and battle nodes must remain interactive');
-   assert.ok(newMap.portraits>=1,'Campaign should show captured PMD team portraits');
-  assert.ok(newMap.map.includes('INSÍGNIAS'),'Map shows progress');
-  assert.ok(newMap.grass.includes('VIRIDIAN'),'Grass is regional, not random Kanto');
-  assert.ok(newMap.center.includes('CURAR'),'Pokémon Center is interactive');
-  assert.ok(newMap.mart.includes('POKÉ MART'),'Mart offers items');
-  assert.ok(newMap.bag.includes('POÇÃO'),'Bag has potions and TM UI');
-  await offline.screenshot({path:'test-evidence/torre2-kanto-path-map.png',fullPage:true});
-
-  // Readable Town Map: click the in-game MAPA feature and verify
-  // Kanto geography, current position, destinations and live Phaser markers.
-  const townMap=await offline.evaluate(async()=>{
+  assert.ok(newMap.map.includes('INSÍGNIAS'),'Map shows saved badges');
+  assert.ok(newMap.grass.includes('VIRIDIAN'),'Grass retains Kanto encounters');
+  assert.ok(newMap.center.includes('CURAR'),'Center screen is functional');
+  assert.ok(newMap.mart.includes('POKÉ MART'),'Shop opens actual inventory');
+  assert.ok(newMap.bag.includes('POÇÃO'),'Bag retains potions');
+  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .__campaignMap?.spec?.id==='pewter',null,{timeout:13000});
+  await offline.screenshot({path:'test-evidence/torre2-pewter-single-map-13-trainers.png',
+    fullPage:true});
+  const mapScreen=await offline.evaluate(async()=>{
     const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
     const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
     const scene=window.__pt2Game.scene.getScene('campanha');
     scene.mapScreen(core.readCampaign());
-    const labels=scene.children.list.filter(x=>typeof x.text==='string')
-     .map(x=>x.text).join(' | ');
-    return {labels,native:scene.children.list.filter(x=>x.type==='Graphics').length,
-     zones:scene.children.list.filter(x=>x.type==='Zone'&&x.input?.enabled).length};
+    return {id:scene.__campaignMap?.spec?.id,
+     points:scene.__campaignMap?.locations,
+     label:scene.children.list.filter(x=>typeof x.text==='string')
+      .map(x=>x.text).join(' | ')};
   });
-  assert.ok(townMap.labels.includes('MAPA DE KANTO')&&townMap.labels.includes('VIRIDIAN')&&
-   townMap.labels.includes('PEWTER')&&townMap.labels.includes('CINNABAR')&&
-   townMap.labels.includes('LOCAL ATUAL')&&townMap.labels.includes('PRÓXIMO OBJETIVO'),
-   'Kanto Town Map shows FireRed cities, current position and future objectives');
-  assert.ok(townMap.native>=2&&townMap.zones>=18,
-   'Town Map uses clickable Phaser draw calls, not a pasted bitmap');
-  await offline.screenshot({path:'test-evidence/torre2-interactive-kanto-town-map.png',
+  assert.equal(mapScreen.id,'pewter','MAPA returns to the same unified location');
+  assert.equal(mapScreen.points,13,'MAPA never changes the number of markers');
+  assert.ok(mapScreen.label.includes('ROTA DE BROCK'));
+  await offline.screenshot({path:'test-evidence/torre2-brock-locked-gym-and-real-sprites.png',
    fullPage:true});
   await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(x=>typeof x.text==='string'&&x.text.includes('PALLET')),
-    null,{timeout:12000});
-
+    .__campaignMap?.spec?.id==='pewter',null,{timeout:12000});
 
   // Regression: encounter in real native combat, click the capture HUD,
   // weaken the actual enemy HP, throw a sprite-ball, wait through three shakes,
