@@ -484,9 +484,26 @@ export function installPartyBattle(scene){
   const fainted=actors.find(a=>a&&!a.inmortal&&a.hp<=0);
   if(fainted)scene.alKO(fainted);
  };
+ // Enforce species AFTER native animations update; no move/VFX textures touched.
+ const syncRenderedSpecies=()=>{
+  if(!scene.scene.isActive()||scene.__torre2Changing)return;
+  for(const actor of actors){
+   const spr=actor?.spr;
+   if(!spr?.active||!actor.dex)continue;
+   const prefix='pmd-'+actor.dex+'-',current=String(spr.texture?.key||'');
+   if(!current.startsWith('pmd-')||current.startsWith(prefix))continue;
+   const idle=prefix+'Idle';
+   if(!scene.textures.exists(idle))continue;
+   spr.anims.stop();spr.setTexture(idle);actor.claveAnim=null;
+   actor.__torre2RenderCorrections=(actor.__torre2RenderCorrections||0)+1;
+   scene.__torre2LastSpeciesRepair={side:actor.lado,from:current,to:idle};
+  }
+ };
  scene.game.events.on('step',monitorKo);
+ scene.game.events.on('poststep',syncRenderedSpecies);
  scene.events.once('shutdown',()=>{
   scene.game.events.off('step',monitorKo);
+  scene.game.events.off('poststep',syncRenderedSpecies);
   close();scene.__torre2PartyInstalled=false;
   sharedBeam.destroy();sharedBall.destroy();graphics.destroy();
  });

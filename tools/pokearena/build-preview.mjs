@@ -62,6 +62,15 @@ html=html.replace('href="/favicon.png"','href="favicon.png"');
 // any Phaser coordinates or shrinking individual Pokémon/map elements.
 html=html.replace('</head>',`<style id="torre2-landscape-map">
 html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden}
+html.torre2-edge-to-edge body::before{
+ content:"";position:fixed;inset:-2%;pointer-events:none;z-index:890;
+ background:linear-gradient(90deg,rgba(4,18,29,.36),rgba(5,24,35,.4)),
+ url("assets/ui/torre2-brock-custom.webp") center/cover no-repeat;
+ filter:blur(12px) saturate(.88)
+}
+html.torre2-edge-to-edge body.torre2-battle-active::before{
+ background:radial-gradient(ellipse at center,#564344 0%,#151a30 68%,#091123 100%)
+}
 html.torre2-edge-to-edge,html.torre2-edge-to-edge body{
  width:100vw!important;height:100vh!important;height:100dvh!important;
  max-width:none!important;margin:0!important;padding:0!important;
@@ -69,10 +78,12 @@ html.torre2-edge-to-edge,html.torre2-edge-to-edge body{
 }
 body.torre2-landscape-map #juego{
  position:fixed!important;inset:0!important;
- width:100vw!important;height:100vh!important;height:100dvh!important;
- min-width:100vw!important;min-height:100dvh!important;
+ width:min(100vw,calc(100dvh * 1.777778))!important;
+ height:min(100dvh,calc(100vw * .5625))!important;
+ min-width:0!important;min-height:0!important;
  max-width:none!important;max-height:none!important;
- margin:0!important;padding:0!important;transform:none!important;
+ left:50%!important;top:50%!important;
+ margin:0!important;padding:0!important;transform:translate(-50%,-50%)!important;
  overflow:hidden!important;z-index:900!important
 }
 body.torre2-landscape-map #juego canvas{
@@ -82,16 +93,6 @@ body.torre2-landscape-map #juego canvas{
  max-width:none!important;max-height:none!important;
  margin:0!important;padding:0!important;transform:none!important;
  image-rendering:pixelated
-}
-/* CSS-only landscape fallback: never rely on a periodic JS scene probe to
-   occupy the two empty Android side bands; native game remains 640x360. */
-@media (orientation:landscape) and (min-aspect-ratio:17/10){
- #juego{position:fixed!important;inset:0!important;z-index:900!important;
-  width:100vw!important;height:100dvh!important;margin:0!important;
-  max-width:none!important;transform:none!important;overflow:hidden!important}
- #juego canvas{position:absolute!important;inset:0!important;
-  width:100%!important;height:100%!important;
-  max-width:none!important;transform:none!important;image-rendering:pixelated}
 }
 </style>
 </head>`);
@@ -103,7 +104,7 @@ await fs.writeFile(index,html);
 // trainer hit areas; only the DOM WebGL canvas is visually fitted.
 const landscapeFit=`<script id="torre2-landscape-display">
 (function(){
- var originalParent=null,gameNode=null,last=null;
+ var originalParent=null,gameNode=null,last=null,lastSize='',lastScene='';
  function update(){
   var game=window.__pt2Game;
   var node=document.getElementById('juego');
@@ -117,8 +118,10 @@ const landscapeFit=`<script id="torre2-landscape-display">
   var scene=game.scene;
   var sceneActive=!!(scene?.isActive('campanha')||scene?.isActive('combate'));
   var active=landscape&&sceneActive;
-  if(active===last&&!active)return;
-  last=active;
+  var size=window.innerWidth+'x'+window.innerHeight;
+  var stateKey=active?(scene.isActive('combate')?'combat':'campaign'):'other';
+  if(active===last&&lastSize===size&&lastScene===stateKey)return;
+  last=active;lastSize=size;lastScene=stateKey;
   if(active){
    if(!gameNode){
     gameNode=node;
@@ -137,6 +140,7 @@ const landscapeFit=`<script id="torre2-landscape-display">
       gameNode.parentNode!==originalParent)originalParent.appendChild(gameNode);
    gameNode=null;originalParent=null;
   }
+  document.body.classList.toggle('torre2-battle-active',active&&scene.isActive('combate'));
   if(game.scale?.updateBounds)game.scale.updateBounds();
  }
  window.addEventListener('resize',update,{passive:true});
@@ -144,7 +148,7 @@ const landscapeFit=`<script id="torre2-landscape-display">
  if(window.visualViewport)
   window.visualViewport.addEventListener('resize',update,{passive:true});
  // The combat scene changes asynchronously; update on both transitions.
- window.setInterval(update,120);
+ window.setInterval(update,360);
  update();
 })();
 </script>`;

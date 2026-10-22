@@ -387,8 +387,19 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(panelTest.start.ctaX,320);
   assert.equal(panelTest.start.sidebar,true);
   assert.equal(panelTest.collapsed.active,true);
-  assert.ok(panelTest.collapsed.width>panelTest.start.width*1.6,
-   'Hiding the panel must expand the FireRed map to full screen width');
+  assert.ok(panelTest.collapsed.width>panelTest.start.width*1.19,
+   'The expanded map must grow while preserving its native aspect ratio');
+  const mapAspect=await offline.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   scene.setCampaignPanelCollapsed(true);
+   const image=scene.__campaignMapObjects.find(v=>
+     v.obj.texture?.key==='torre2-brock-custom').obj;
+   const ratio=image.displayWidth/image.displayHeight;
+   scene.setCampaignPanelCollapsed(false);
+   return ratio;
+  });
+  assert.ok(Math.abs(mapAspect-1200/675)<.04,
+   'An expanded FireRed map must not warp tiles or trainers');
   assert.equal(panelTest.collapsed.arrow,'▲','Arrow shows expand option');
   assert.equal(panelTest.collapsed.sidebar,false,
    'Side menu must disappear from view');
@@ -480,25 +491,29 @@ const server=http.createServer(async(req,res)=>{
    'Mobile map offers a clickable fullscreen control');
   assert.equal(mobileResources.hoverGraphics,1,
    'Map uses one shared hover Graphics instead of per-trainer effects');
-  // A wide phone should enlarge only the CSS canvas rectangle; gameplay
-  // logical resolution and all trainer/menu positions remain 640x360.
+  // Preserve the native 16:9 arena and fill extra horizontal space with
+  // decorative FireRed art, rather than stretch Pokémon and joystick.
   await offline.setViewportSize({width:980,height:420});
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
    return c.scene.isActive()&&
     document.body.classList.contains('torre2-landscape-map')&&
-    Math.abs(document.querySelector('#juego canvas').getBoundingClientRect().width-980)<2;
+    rect.width>700&&rect.width<770;
   },null,{timeout:18000});
   const wideDisplay=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const rect=document.querySelector('#juego canvas').getBoundingClientRect();
    const cta=c.children.list.find(x=>x.getData?.('torre2-central-cta'));
    return {sizeX:c.scale.gameSize.width,rectX:rect.x,rectY:rect.y,
-    rectW:rect.width,rectH:rect.height,ctaX:cta.x};
+    rectW:rect.width,rectH:rect.height,ctaX:cta.x,
+    sideArt:getComputedStyle(document.body,'::before').backgroundImage};
   });
-  assert.ok(Math.abs(wideDisplay.rectW-980)<2&&
-   Math.abs(wideDisplay.rectH-420)<2&&Math.abs(wideDisplay.rectX)<2,
-   'Landscape canvas should extend to both screen edges');
+  assert.ok(Math.abs(wideDisplay.rectW/wideDisplay.rectH-16/9)<.012&&
+   Math.abs(wideDisplay.rectX-(980-wideDisplay.rectW)/2)<3,
+   'Campaign and combat canvas must stay 16:9, never stretched');
+  assert.ok(wideDisplay.sideArt.includes('torre2-brock-custom.webp'),
+   'Fill both extra side areas with scenery instead of black bars');
   assert.equal(wideDisplay.ctaX,320,
    'Battle button keeps its original 640x360 world coordinates');
   await offline.setViewportSize({width:980,height:650});

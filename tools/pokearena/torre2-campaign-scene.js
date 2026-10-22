@@ -320,8 +320,9 @@ class Campanha extends Phaser.Scene{
     // Fit the entire FireRed artwork into the available screen, including
     // height. Old layout expanded only WIDTH, leaving the map short and
     // distorted with large unusable bands on mobile.
-    const zx=606/372,zy=256/211;
-    const tx=14-20*zx,ty=56-85*zy;
+    // Uniform zoom preserves the source map tiles and trainer proportions.
+    const z=Math.min(606/372,256/211),zx=z,zy=z;
+    const tx=14+(606-372*z)/2-20*z,ty=56-85*z;
     const nativeSprite=obj.type==='Text'||(obj.type==='Image'&&
       (String(obj.texture?.key||'').startsWith('frlg-npc-')||
        String(obj.texture?.key||'').startsWith('torre2-portrait-')));
@@ -423,7 +424,7 @@ class Campanha extends Phaser.Scene{
    text(this,x+27,y+13,'NV.'+(member.progression?.level??'—')+
     ' · HP '+Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)))+'%',{
     fontSize:'7px',color:'#baf8d0'}).setDepth(6);
-   const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
+   const hp=Math.max(0,Math.min(100,Number(member.hp??100)||0));
    mini.fillStyle(0x192e44);
    mini.fillRect(x+79,y+18,18,3);
    mini.fillStyle(hp>50?0x70e8a0:hp>20?0xf1d067:0xe7776c);
@@ -475,10 +476,11 @@ class Campanha extends Phaser.Scene{
     fontSize:name.length>8?'7px':'8px',
     color:selected?'#ffe8af':'#f1fbf6',fontStyle:'bold'
    }).setDepth(55);
+   const hpValue=Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)));
    text(this,x+27,y+13,'NV.'+(member.progression?.level??'?')+
-    (Number(member.hp??100)<=0?' · K.O.':''),{
+    (hpValue<=0?' · K.O.':' · '+hpValue+'%'),{
     fontSize:'7px',color:'#bdebdc'}).setDepth(55);
-   const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
+   const hp=Math.max(0,Math.min(100,Number(member.hp??100)||0));
    dockBg.fillStyle(0x071724);dockBg.fillRect(x+29,y+23,63,2);
    dockBg.fillStyle(hp>50?0x62e6a8:hp>20?0xf2c859:0xee6b70);
    dockBg.fillRect(x+29,y+23,63*hp/100,2);
