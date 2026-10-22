@@ -20,6 +20,8 @@ export const KANTO_ROUTES=Object.freeze([
   wild:['koffing','grimer','raticate','vulpix','growlithe','ditto']},
  {area:'Route 22 · Victory Road',label:'VIRIDIAN / VICTORY',
   wild:['mankey','spearow','rattata','nidoran','onix','machop']},
+ {area:'Route 23 · Victory Road',label:'VICTORY ROAD / LIGA',
+  wild:['onix','machop','machoke','geodude','golbat','zubat','rhyhorn']},
 ]);
 export const ROUTE_STOP_TYPES=Object.freeze(['grass','center','mart']);
 export function routeEncounterTable(stage){
