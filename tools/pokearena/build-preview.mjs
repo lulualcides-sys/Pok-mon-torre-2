@@ -19,6 +19,9 @@ console.log('Verified CC0 overworld sprites',JSON.stringify(cc0Tiles));
 const {installFRLGMaps}=await import('./install-frlg-location-tiles.mjs');
 const frlgLocations=await installFRLGMaps(dest);
 console.log('Original FireRed locality maps:',Object.keys(frlgLocations.locations));
+const {installFRLGNPCs}=await import('./install-frlg-npcs.mjs');
+const originalNPCs=await installFRLGNPCs(dest);
+
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');
 await installEarlyKantoSprites(dest);
@@ -106,6 +109,13 @@ const patches=[
 // Place the solo campaign beside the recovered original source so browsers do
 // not depend on server APIs or external runtime assets for Kanto progression.
 await fs.mkdir(path.join(dest,clientSource,'torre2'),{recursive:true});
+// Only preload assets which the installer actually downloaded. Optional
+// missing FireRed location files never trigger 404 in the Phaser client.
+await fs.writeFile(path.join(dest,clientSource,'torre2','frlg-available.js'),
+ 'export const AVAILABLE_FRLG=Object.freeze('+JSON.stringify(
+ Object.keys(frlgLocations.locations))+');\n'+
+ 'export const AVAILABLE_FRLG_NPCS=Object.freeze('+JSON.stringify(
+ originalNPCs.available)+');\n');
 await Promise.all([
  ['src/progression.js','progression.js'],
  ['tools/pokearena/torre2-campaign-core.js','campaign-core.js'],
@@ -116,6 +126,8 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-art.js','campaign-art.js'],
  ['tools/pokearena/torre2-cc0-overworld.js','cc0-overworld.js'],
  ['tools/pokearena/torre2-frlg-location.js','frlg-location.js'],
+ ['tools/pokearena/torre2-kanto-hotspots.js','kanto-hotspots.js'],
+ ['tools/pokearena/torre2-frlg-npc.js','frlg-npc.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
  ['tools/pokearena/torre2-next-batch-fx.js','next-batch-fx.js'],
@@ -327,7 +339,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'
 for(const filename of [
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
- 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
+ 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
 if(versionedSource===clientSource)throw Error('VFX fingerprint collides with upstream dir');
