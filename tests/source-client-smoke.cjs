@@ -871,8 +871,11 @@ const server=http.createServer(async(req,res)=>{
     o.texture?.key==='torre2-brock-custom');
    const box=image.getBounds();
    const canvasBox=game.canvas.getBoundingClientRect();
-   const ratioX=canvasBox.width/game.canvas.width;
-   const ratioY=canvasBox.height/game.canvas.height;
+   // The Arena 2D UI has a fixed 640x360 WORLD, while Phaser may create
+   // a 980x650 physical canvas (DPR/fit). Convert using the logical camera
+   // dimensions; using canvas.width sampled the wrong part of the screenshot.
+   const ratioX=canvasBox.width/640;
+   const ratioY=canvasBox.height/360;
    let total=0,count=0;
    // This area contains detailed trees and paths, not the UI labels/forest
    // watermark. A correct source averages ~20+ RGB edge units here; the
