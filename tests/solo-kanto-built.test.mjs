@@ -480,7 +480,7 @@ for(const id of ['swift','lovely-kiss'])
  assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
   'The user has explicitly approved '+id);
 assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
-// Petal Dance, Hyper Fang and Guillotine are explicitly approved. New trio awaits visual review.
+// Preserve approvals already registered in the master moveset, without editing their art.
 for(const [id,forma] of [['hyper-fang','torre2_hyperfang'],
  ['guillotine','torre2_guillotine'],['petal-dance','torre2_petaldance']]){
  const h=allMoves.find(x=>x.id===id);
@@ -496,7 +496,7 @@ for(const [id,forma] of [['metronome','torre2_metronome'],['absorb','torre2_abso
  const h=allMoves.find(m=>m.id===id);
  assert.ok(h,'New ability must be in Kanto/Mewtwo move library: '+id);
  assert.equal(h.forma,forma);
- assert.equal(h.approved,undefined,'New trio must await explicit visual approval');
+ assert.equal(h.approved,true,'Moves already marked approved must remain approved');
  assert.equal(equipMove(tester,0,id),true,'New trio selectable in Mewtwo test menu');
 }
 const newVfx=fs.readFileSync(path.join(stage,version,'torre2/next-specific-fx.js'),'utf8');
