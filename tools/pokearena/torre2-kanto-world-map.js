@@ -97,109 +97,206 @@ export function mapVisitInfo(stage,trainer,limit){
   ['BROCK','MISTY','LT. SURGE','ERIKA','KOGA','SABRINA','BLAINE','GIOVANNI'][stage];
  return {id,name:node.name,region,objective:next,cap:currentLevelCap(stage)};
 }
+// Original 16-bit styled map for WebGL: locations and the coastline are
+// generated as individually-drawn tiles; no screenshot or single map texture.
+const COAST=[
+ [114,320],[105,306],[110,275],[111,252],[99,235],[104,190],
+ [111,168],[114,138],[128,123],[152,126],[177,137],[205,136],
+ [218,111],[254,110],[260,131],[294,141],[333,140],
+ [346,158],[350,201],[365,224],[358,268],[339,291],
+ [332,318],[301,323],[267,314],[240,308],[204,318],
+ [175,318],[151,323],[129,326]
+];
+function inside(x,y,poly=COAST){
+ let yes=false;
+ for(let i=0,j=poly.length-1;i<poly.length;j=i++){
+  const a=poly[i],b=poly[j],hit=((a[1]>y)!==(b[1]>y))&&
+   (x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0]);
+  if(hit)yes=!yes;
+ }
+ return yes;
+}
+function tile(g,x,y,c){floor(g,x,y,8,8,c);}
+function pine(g,x,y,k=1){
+ const w=7*k;
+ floor(g,x-w-2,y+7*k,2*w+5,3*k,0x235343);
+ floor(g,x-2*k,y+3*k,4*k,8*k,0x6e5837);
+ floor(g,x-w,y,2*w,6*k,0x176b4c);
+ floor(g,x-(w-2*k),y-5*k,2*w-4*k,8*k,0x2f9a60);
+ floor(g,x-3*k,y-8*k,6*k,4*k,0x7bc978);
+ floor(g,x-w+2*k,y+2*k,5*k,2*k,0x52b773);
+}
+function mountain(g,x,y,k=1){
+ // Staggered shaded stepped peaks, almost tile-for-tile GBA palette density.
+ floor(g,x-11*k,y+7*k,23*k,7*k,0x536e62);
+ floor(g,x-9*k,y+1*k,19*k,10*k,0x819688);
+ floor(g,x-6*k,y-5*k,13*k,12*k,0x9fac9c);
+ floor(g,x-3*k,y-9*k,7*k,8*k,0xe6ddbd);
+ floor(g,x+3*k,y-2*k,3*k,11*k,0x62786d);
+ floor(g,x-11*k,y+12*k,24*k,2*k,0x3f5d57);
+}
+function route(g,a,b,surf=false){
+ const s=NODES.find(n=>n.id===a),t=NODES.find(n=>n.id===b);
+ if(!s||!t)return;
+ const elbow=a==='viridian'&&b==='victory'?{x:74,y:245}:null;
+ const pts=elbow?[s,elbow,t]:[s,t];
+ const col=surf?0x9deaf0:0xf7df9d;
+ for(let i=1;i<pts.length;i++){
+  const p=pts[i-1],q=pts[i];
+  const segments=[{x:p.x,y:p.y},{x:q.x,y:p.y},{x:q.x,y:q.y}];
+  // Map roads in FRLG meet at right angles.
+  for(let j=1;j<segments.length;j++){
+   const u=segments[j-1],v=segments[j];
+   g.lineStyle(11,0x34685c,1);g.lineBetween(u.x,u.y,v.x,v.y);
+   g.lineStyle(7,surf?0x328ec3:0xbd9b62,1);g.lineBetween(u.x,u.y,v.x,v.y);
+   g.lineStyle(4,col,1);g.lineBetween(u.x,u.y,v.x,v.y);
+  }
+ }
+}
+function statusAt(node,stage,current){
+ return node.id===current?'VOCÊ ESTÁ AQUI':
+  node.stage<stage?'VISITADO':node.stage===stage?'ÁREA ATUAL':'AINDA NÃO VISITADO';
+}
+function pin(g,n,kind){
+ const {x,y}=n,r=n.small?4:6;
+ const colors={past:0x71d1a0,here:0xffd05a,now:0x75d5ee,locked:0x7d94a8};
+ floor(g,x-r-2,y-r-2,r*2+5,r*2+5,0x0e263a);
+ floor(g,x-r,y-r,r*2+1,r*2+1,colors[kind]??colors.locked);
+ floor(g,x-r+1,y-r+1,r*2-1,2,0xecfff6);
+ floor(g,x-r+2,y+r-2,r*2-4,2,0x426b7c);
+ if(kind==='here'){
+  g.lineStyle(2,0xffecc0);g.strokeRect(x-r-5,y-r-5,r*2+11,r*2+11);
+  floor(g,x-4,y-20,9,7,0x102a46);
+  floor(g,x-3,y-18,7,5,0xffcc4a);
+  floor(g,x-1,y-12,3,3,0xffffff);
+ }
+}
+function tileRelief(g){
+ // Crisp two-layer water grid with readable sea routes and coast.
+ for(let y=62;y<334;y+=8)for(let x=22;x<473;x+=8){
+  const n=(x*47+y*37)%17,land=inside(x+4,y+4);
+  const c=land?(n<4?0x93c77a:n<11?0x80b76e:0xa4d287):
+   (n<7?0x3c98c4:n<12?0x4aaed4:0x2e89bd);
+  tile(g,x,y,c);
+  if(land){
+   if(n%5===0)floor(g,x+1,y+5,4,1,0xc6e5a0);
+   else if(n%4===0)floor(g,x+3,y+2,2,2,0x5eaa66);
+  }else{
+   if(n<5)floor(g,x+1,y+2,6,1,0xace9e6);
+   if(n===8)floor(g,x+3,y+6,4,1,0x87d2eb);
+  }
+ }
+ // Hand-built coastline, rocky Kanto northern ridges and forest belts.
+ const coastPoly=COAST.map(([x,y])=>({x,y}));
+ g.lineStyle(3,0xe9d79e);g.strokePoints(coastPoly,true);
+ const hills=[[126,140],[145,143],[169,153],[201,140],[239,136],
+  [301,151],[332,160],[110,180],[324,192]];
+ for(const [x,y]of hills)mountain(g,x,y,.65);
+ for(const [x,y]of [
+  [157,177],[160,194],[180,193],[204,190],[304,177],
+  [315,184],[326,251],[320,268],[268,282],[234,291],
+  [161,257],[155,242],[119,214],[188,245],[337,235]
+ ])pine(g,x,y,1);
+}
+function font(scene,x,y,text,size=10,color='#faf5db',align='left'){
+ return label(scene,x,y,text,size,color).setOrigin(
+  align==='right'?1:align==='center'?.5:0,0);
+}
+function uiPanel(g,x,y,w,h,bright=false){
+ floor(g,x+3,y+4,w,h,0x07172a);
+ floor(g,x,y,w,h,bright?0xe9c579:0x8bd0e9);
+ floor(g,x+2,y+2,w-4,h-4,0x0a223a);
+ floor(g,x+5,y+5,w-10,h-10,0x13425a);
+ floor(g,x+6,y+5,w-12,2,bright?0xffedb1:0xb5eef4);
+ for(const [a,b]of [[x,y],[x+w-4,y],[x,y+h-4],[x+w-4,y+h-4]])
+  floor(g,a+1,b+1,3,3,0xffe5a5);
+}
 export function drawKantoWorldMap(scene,state,{trainerLimit=0,onBack=()=>{}}={}){
  const stage=state.stage??0,trainer=state.trainer??0;
  const position=mapVisitInfo(stage,trainer,trainerLimit);
- const g=scene.add.graphics().setDepth(1);
- // Outer navy frame and ocean
- floor(g,0,0,W,H,0x0a182c);
- floor(g,11,9,618,342,0x5f9c9a);
- floor(g,15,13,610,334,0x12324c);
- floor(g,21,56,455,281,0x3276a0);
- // Hand-constructed Kanto mainland silhouette (original tile art).
- const coast=[
-  [108,319],[101,304],[104,274],[105,253],[92,236],[100,196],
-  [108,177],[107,147],[117,131],[155,129],[172,144],[205,139],
-  [218,114],[250,110],[253,136],[286,146],[330,144],[348,157],
-  [350,194],[360,216],[352,260],[330,281],[325,320],[302,326],
-  [255,318],[233,309],[213,319],[168,328],[124,328]
- ];
- g.fillStyle(0x163f50);g.fillPoints(coast.map(([x,y])=>({x:x+3,y:y+4})),true);
- g.fillStyle(0x91bd75);g.fillPoints(coast.map(([x,y])=>({x,y})),true);
- // Gold sand along the coast and light geographic patterns.
- g.lineStyle(3,0xe5d0a0);
- g.strokePoints(coast.map(([x,y])=>({x,y})),true);
- for(let y=74;y<333;y+=13)for(let x=27;x<469;x+=19){
-  const t=(x*17+y*31)%13;
-  if(x>360||x<100&&y>245) {
-   if(t<5){floor(g,x+2,y+1,9,2,0x6fc4d8);floor(g,x+5,y+4,4,1,0xc3f9ff);}
-  }else if(t<3){floor(g,x,y,6,3,0x72a766);}
- }
- // Blue sea routes, thin visible roads and city layout.
- for(const [a,b] of EDGES)line(g,a,b,5,
-  ['seafoam','cinnabar','ssanne'].includes(a)||['seafoam','cinnabar','ssanne'].includes(b)?
-  0x7dbfd6:0xd5bd7d);
- for(let i=0;i<24;i++){
-  const x=158+(i*47)%180,y=165+(i*31)%145;
-  if(Math.hypot(x-277,y-241)<35)continue;
-  floor(g,x,y,8,7,0x3b8a5f);floor(g,x+2,y-4,4,6,0x54a877);
-  floor(g,x+2,y+5,3,4,0x336e56);
- }
- // City and route nodes are touch targets with a detail viewer.
- let selected=position.id;
- const mark=()=>{
-  for(const n of NODES){
-   const m=n.id===position.id?'current':n.id===selected?'next':
-    n.stage<stage?'done':'future';
-   locationMarker(g,n,m);
-  }
- };
- mark();
- // Keep labels sparse enough to read at 640x360 on mobile.
- const primary=new Set(['pallet','viridian','pewter','cerulean','vermilion',
-  'lavender','celadon','fuchsia','saffron','cinnabar','indigo']);
+ let selectedId=position.id;
+ const background=scene.add.graphics().setDepth(1);
+ floor(background,0,0,640,360,0x07152b);
+ floor(background,7,6,626,348,0x153b64);
+ floor(background,10,9,620,342,0x9ad9dc);
+ floor(background,13,12,614,336,0x0c2945);
+ // Large iconic FRLG Town Map board: header, sea and routes, sidebar.
+ uiPanel(background,18,15,453,38,true);
+ floor(background,18,56,454,281,0x2b80b6);
+ tileRelief(background);
+ const waterways=new Set(['seafoam','cinnabar','ssanne','pallet']);
+ for(const [a,b]of EDGES)route(background,a,b,waterways.has(a)&&waterways.has(b)||
+  waterways.has(a)&&['fuchsia','vermilion'].includes(b)||
+  waterways.has(b)&&['fuchsia','vermilion'].includes(a));
+ // Optional buildings, no need for missing / remote sprite assets.
  for(const n of NODES){
-  if(primary.has(n.id)){
-   const align=['lavender','fuchsia','indigo','cerulean'].includes(n.id)?1:0;
-   label(scene,n.x+(align?-8:10),n.y-13,n.name,n.name.length>10?8:9,
-    n.stage<=stage?'#fbf2ca':'#d9e6dd').setOrigin(align?1:0,0);
-  }
-  scene.add.zone(n.x,n.y,Math.max(29,n.small?29:37),32).setDepth(15)
+  if(n.small)continue;
+  const urban=['saffron','celadon','vermilion','viridian','pewter','cerulean','fuchsia'].includes(n.id);
+  const x=n.x+8,y=n.y+7;
+  floor(background,x-5,y-8,12,10,0x315b61);
+  floor(background,x-4,y-7,10,4,urban?0xd95b51:0x4d82b4);
+  floor(background,x-3,y-3,8,7,0xffebbb);
+  floor(background,x,y,3,4,0x64503f);
+ }
+ uiPanel(background,482,57,145,280,false);
+ const heading=font(scene,36,25,'MAPA DE KANTO',18,'#ffedb7');
+ font(scene,488,73,'LOCAL ATUAL',10,'#ffdd93');
+ const currentText=font(scene,489,93,position.name,12,'#f8ffff');
+ font(scene,490,120,'PRÓXIMO OBJETIVO',10,'#9cdde9');
+ const objective=font(scene,490,141,position.objective,12,'#ffdf83');
+ floor(background,489,166,130,2,0x59a3b5);
+ font(scene,489,174,'LIMITE DO GINÁSIO',10,'#b5e7d9');
+ font(scene,489,192,'NV. '+position.cap,17,'#f9df82');
+ floor(background,489,221,130,2,0x59a3b5);
+ font(scene,489,229,'LOCAL SELECIONADO',10,'#acd5eb');
+ const detail=font(scene,489,250,position.name,11,'#fff0c6');
+ const status=font(scene,489,267,'VOCÊ ESTÁ AQUI',9,'#b6fac8');
+ floor(background,489,291,129,2,0xa9c9bc);
+ font(scene,489,299,'■ Atual  ◆ Rota',9,'#dbf2ea');
+ font(scene,489,314,'Toque para explorar',9,'#a9c8e0');
+ // Static labels intentionally avoid the busiest node clusters.
+ const sparseLabels=[
+  ['INDIGO',74,91,'center'],['PEWTER',135,160,'left'],
+  ['VIRIDIAN',135,231,'left'],['PALLET',134,281,'left'],
+  ['CERULEAN',232,150,'left'],['CELADON',212,200,'right'],
+  ['SAFFRON',275,240,'center'],['VERMILION',250,296,'center'],
+  ['LAVENDER',360,208,'left'],['FUCHSIA',313,320,'left'],
+  ['CINNABAR',111,327,'left']
+ ];
+ for(const [name,x,y,align]of sparseLabels){
+  font(scene,x,y,name,8,'#fff5d9',align);
+ }
+ const symbols=scene.add.graphics().setDepth(8);
+ const focus=scene.add.graphics().setDepth(10);
+ const repaint=()=>{
+  symbols.clear();focus.clear();
+  for(const n of NODES)pin(symbols,n,
+   n.id===position.id?'here':n.stage<stage?'past':
+   n.stage===stage?'now':'locked');
+  const selected=NODES.find(n=>n.id===selectedId)||NODES[0];
+  focus.lineStyle(2,0xfff4bd);
+  focus.strokeRect(selected.x-11,selected.y-11,22,22);
+  focus.lineStyle(1,0x164659);
+  focus.strokeRect(selected.x-13,selected.y-13,26,26);
+ };
+ repaint();
+ for(const n of NODES){
+  scene.add.zone(n.x,n.y,n.small?27:30,30).setDepth(15)
    .setInteractive({useHandCursor:true}).on('pointerdown',()=>{
-    selected=n.id;
-    details.setText(n.name+' · '+(n.stage<=stage?'VISITADO':'À FRENTE'));
-    objective.setText(n.id===position.id?'VOCÊ ESTÁ AQUI':
-     n.stage>stage?'LOCAL FUTURO':'LOCAL DESBLOQUEADO');
-    g.clear();
-    redraw();
+    selectedId=n.id;
+    detail.setText(n.name);
+    status.setText(statusAt(n,stage,position.id));
+    status.setColor(n.id===position.id?'#b6fac8':
+      n.stage>stage?'#c6cee1':'#ffdd8c');
+    repaint();
    });
  }
- // Right-hand FireRed-inspired town map information card.
- const sidebar=()=>{
-  floor(g,482,56,149,281,0x041a2d);
-  floor(g,484,59,145,275,0x16405a);
-  floor(g,487,63,139,268,0x102a45);
-  floor(g,489,90,135,3,0xe4c56b);
-  floor(g,489,202,135,2,0x6bb5b2);
-  floor(g,489,285,135,2,0xe4c56b);
- };
- const redraw=()=>{
-  floor(g,21,56,455,281,0x3276a0);
-  g.fillStyle(0x163f50);g.fillPoints(coast.map(([x,y])=>({x:x+3,y:y+4})),true);
-  g.fillStyle(0x91bd75);g.fillPoints(coast.map(([x,y])=>({x,y})),true);
-  g.lineStyle(3,0xe5d0a0);g.strokePoints(coast.map(([x,y])=>({x,y})),true);
-  for(const [a,b]of EDGES)line(g,a,b,5);
-  for(let i=0;i<24;i++){const x=158+(i*47)%180,y=165+(i*31)%145;
-   floor(g,x,y,8,7,0x3b8a5f);floor(g,x+2,y-4,4,6,0x54a877);}
-  mark();sidebar();
- };
- sidebar();
- label(scene,32,20,'MAPA DE KANTO',21,'#ffe5a4');
- label(scene,490,69,'LOCAL ATUAL',11,'#ffe4a1');
- label(scene,493,105,position.name,12,'#f0ffff');
- label(scene,493,134,'PRÓXIMO OBJETIVO',10,'#9fdcef');
- label(scene,493,154,position.objective,12,'#ffdb92');
- label(scene,493,182,'LIMITE NV. '+position.cap,11,'#b7f3c5');
- label(scene,493,219,'CIDADES E ROTAS',10,'#bceafa');
- label(scene,493,242,'Toque num local',10,'#e2f0f8');
- label(scene,493,259,'para conhecer.',10,'#e2f0f8');
- const details=label(scene,493,297,position.name,10,'#fff3c0');
- const objective=label(scene,493,314,'VOCÊ ESTÁ AQUI',9,'#9ee8bf');
- const back=scene.add.graphics().setDepth(6);
- floor(back,347,16,118,31,0x102b43);floor(back,349,18,114,27,0xc4a25c);
- floor(back,351,20,110,23,0x1d4157);
- label(scene,362,24,'◀ VOLTAR',13,'#fff4d2');
- scene.add.zone(406,31,120,35).setDepth(20).setInteractive({useHandCursor:true})
-  .on('pointerdown',onBack);
- return {current:position.id,selected,locations:NODES.length};
+ const back=scene.add.graphics().setDepth(11);
+ uiPanel(back,352,17,114,34,true);
+ font(scene,364,25,'◀ VOLTAR',12,'#fff1c1');
+ scene.add.zone(408,33,122,39).setDepth(16)
+  .setInteractive({useHandCursor:true}).on('pointerdown',onBack);
+ // Simple accessible legend and progress ribbon.
+ font(scene,34,61,'R',8,'#e7f1e5');
+ return {current:position.id,selected:selectedId,locations:NODES.length};
 }
