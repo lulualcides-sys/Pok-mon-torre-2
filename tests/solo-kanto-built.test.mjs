@@ -10,7 +10,7 @@ assert.ok(version,'Captured Phaser original client not staged');
 // trainer art, shops or capture modules. Check each staged ES module.
 for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
  'torre2/campaign-sprites.js','torre2/capture-arena.js',
- 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/frlg-location.js','torre2/frlg-available.js','torre2/kanto-hotspots.js','torre2/frlg-npc.js','torre2/frlg-interiors.js']){
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/campaign-map-unified.js','torre2/frlg-location.js','torre2/frlg-available.js','torre2/kanto-hotspots.js','torre2/frlg-npc.js','torre2/frlg-interiors.js']){
  const source=path.join(stage,version,name);
  const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
  assert.equal(parsed.status,0,
@@ -656,8 +656,28 @@ for(const id of ['sing','crabhammer'])
 const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
 assert.ok(!menuCampaign.includes('drawApprovedDashboard(this,state)'),
  'Never paste the approved reference image over the playable map');
-assert.ok(menuCampaign.includes('richMap(this,state.stage,points,page,region)'),
- 'Campaign must draw native world graphics with real route nodes');
+assert.ok(menuCampaign.includes('renderUnifiedCampaignMap(this,state,'),
+ 'Campaign should use one persistent FireRed world per leader');
+assert.ok(!menuCampaign.includes('richMap(this,state.stage,points,page,region)'),
+ 'Trainer progression must not change the background every three battles');
+const {getCampaignMapSpec}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-map-unified.js')));
+const pewterWorld=getCampaignMapSpec(0,13);
+assert.equal(pewterWorld.id,'pewter');
+assert.equal(pewterWorld.points.length,13,'Brock shows all 13 trainers at once');
+assert.ok(pewterWorld.buildings.center&&pewterWorld.buildings.mart&&
+ pewterWorld.buildings.gym&&pewterWorld.buildings.grass,
+ 'Single Pewter world needs real landmarks and encounter grass');
+assert.equal(getCampaignMapSpec(1,15).id,'cerulean',
+ 'Misty gets a separate themed map after defeating Brock');
+assert.equal(getCampaignMapSpec(7,27).points.length,27,
+ 'Later leaders keep increased trainer progression without pagination');
+for(let stage=9;stage<=12;stage++)
+ assert.equal(getCampaignMapSpec(stage,0).id,'indigo',
+  'Elite Four and Champion share the same themed map');
+assert.ok(menuCampaign.includes('GINÁSIO')&&
+ menuCampaign.includes('CAPTURA'),
+ 'Sidebar exposes click-accessible gym and grass');
 const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
 for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',
  'function stone(','function tallGrass(','export function map(']){
