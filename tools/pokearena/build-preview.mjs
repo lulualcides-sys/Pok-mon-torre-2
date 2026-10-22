@@ -53,11 +53,48 @@ html=html.replace(/<script\s+src="\/analitica\.js"><\/script>/g,'');
 html=html.replace(/<script\s+async\s+src="\/m\/s"><\/script>/g,'');
 // Original favicon and manifests must be relative to our subfolder.
 html=html.replace('href="/favicon.png"','href="favicon.png"');
-// Replace browser-black letterbox bars with a coherent Kanto UI backdrop
-// on ultrawide screens without stretching or cropping pixel-art gameplay.
-html=html.replace('</head>','<style id="torre2-widescreen">html,body{background:#081b30!important;min-height:100%;}body:fullscreen{background:#103047!important;}canvas{image-rendering:pixelated;}</style>\n</head>');
+// Fill only the landscape Kanto map canvas across the mobile screen. The
+// Phaser world stays 640x360 so badges, menus, battle hitboxes and sprites
+// cannot drift away from their original logical positions. The screenshot
+// request is to occupy the two horizontal side strips, NOT remap the game.
+html=html.replace('</head>',`<style id="torre2-landscape-map">
+html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden}
+body.torre2-landscape-map #juego canvas{
+ position:fixed!important;left:0!important;top:0!important;
+ right:auto!important;bottom:auto!important;
+ width:100vw!important;height:100vh!important;height:100dvh!important;
+ max-width:none!important;max-height:none!important;
+ margin:0!important;transform:none!important;
+ z-index:600!important;image-rendering:pixelated
+}
+</style>\n</head>`);
 html=html.replace('</head>','<meta name="referrer" content="no-referrer">\n</head>');
 await fs.writeFile(index,html);
+
+// Watch scene transitions only to toggle the display of the Kanto canvas.
+// Phaser's internal resolution, renderer, objects and game state never change.
+const landscapeFit=`<script id="torre2-landscape-display">
+(function(){
+ var last=null;
+ function sync(){
+  var game=window.__pt2Game;
+  var landscape=window.innerWidth>window.innerHeight&&
+   window.innerWidth/Math.max(1,window.innerHeight)>=1.9;
+  var active=!!(game&&game.scene&&game.scene.isActive('campanha'));
+  var want=landscape&&active&&!!document.querySelector('#juego canvas');
+  if(want===last)return;
+  last=want;
+  document.body.classList.toggle('torre2-landscape-map',want);
+  // Phaser input maps browser touch coordinates to the canvas bounding box.
+  if(game?.scale?.updateBounds)game.scale.updateBounds();
+ }
+ window.addEventListener('resize',sync,{passive:true});
+ window.addEventListener('orientationchange',sync,{passive:true});
+ window.setInterval(sync,180);
+ sync();
+})();
+</script>`;
+html=html.replace('</body>',landscapeFit+'</body>');
 
 // Independent startup health check: HTML must explain blockers even if the
 // Phaser JS import graph fails completely (before any game scene is created).

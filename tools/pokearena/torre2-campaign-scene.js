@@ -31,13 +31,6 @@ const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyl
 const textStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'13px',color:C.white};
 const statusStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'12px',color:C.muted};
 function text(scene,x,y,content,style={}){return scene.add.text(x,y,content,{...textStyle,...style})}
-function campaignSceneWidth(scene){
- // Some upstream Phaser builds report the browser-sized gameSize even while
- // the Kanto interface still uses its fixed 640x360 logical coordinates.
- // Only the explicit fullscreen panorama flag may widen its layout.
- return scene.registry?.get('torre2-wide-map')===true?
-  Math.max(640,Number(scene.scale.gameSize?.width)||640):640;
-}
 // Portraits come from the captured Poké Arena 2D PMD asset library.
 // Preload all six team members so the map does not show empty squares.
 function portraitId(member){
@@ -114,83 +107,34 @@ class Campanha extends Phaser.Scene{
   }
  }
  create(){
-  // Mobile landscape is normally much wider than 16:9. Expand the Phaser
-  // overworld automatically instead of requiring the player to press the
-  // fullscreen button merely to remove the black side bars. Normal/portrait
-  // and all combat modes retain the original 640x360 logical battle rules.
-  const ratio=(window.innerWidth||640)/Math.max(1,window.innerHeight||360);
-  const landscape=window.matchMedia?.('(orientation: landscape)')?.matches??
-   (window.innerWidth>window.innerHeight);
-  const canAutoWide=landscape&&ratio>=1.96;
-  const resumeWide=this.registry.get('torre2-wide-map')===true&&ratio>=1.96;
-  if(canAutoWide||resumeWide){
-   const target=Math.min(860,Math.max(640,Math.round(360*ratio)));
-   this.registry.set('torre2-wide-map',target>665);
-   if(target>665&&Math.abs((this.scale.gameSize?.width||640)-target)>1)
-    this.scale.resize(target,360);
-  }else{
-   this.registry.set('torre2-wide-map',false);
-  }
+  // Preserve the original 640x360 Phaser world. The user's landscape phone
+  // expands ONLY the visible WebGL canvas through build-preview's CSS.
+  // Changing scale.resize() here breaks all 13 trainer hit areas and panels.
+  this.registry.set('torre2-wide-map',false);
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   this.__campaignPanelCollapsed=this.registry.get('torre2-panel-collapsed')===true;
-  const sceneWidth=campaignSceneWidth(this);
-  const wideExtra=Math.max(0,sceneWidth-ANCHO);
-  this.add.rectangle(sceneWidth/2,ALTO/2,sceneWidth,ALTO,0x090d1c);
+  this.add.rectangle(ANCHO/2,ALTO/2,ANCHO,ALTO,0x090d1c);
   header(this);
-  // Extend the original Kanto backdrop, not a black browser letterbox.
-  if(wideExtra>0)this.add.rectangle(640+wideExtra/2,180,wideExtra,360,0x0b233b)
-   .setDepth(-8);
   this.add.text(52,14,'POKÉMON TORRE 2 / KANTO',{...titleStyle,
    fontSize:'17px',stroke:'#020b1b',strokeThickness:4});
-  this.button(345+wideExtra*.25,24,84,29,'MAPA',()=>{
+  this.button(345,24,84,29,'MAPA',()=>{
    const state=readCampaign();if(state)this.mapScreen(state);
   },false,12);
   // Fullscreen must be requested on pointerup on Android Chrome.
   // The right sidebar already contains Centro, so its duplicate top button
   // is replaced by this new control without shrinking the battle UI.
-  const fullButton=this.button(447+wideExtra*.48,24,100,29,'TELA CHEIA',()=>{},false,9);
+  const fullButton=this.button(447,24,100,29,'TELA CHEIA',()=>{},false,9);
   fullButton.setData('torre2-fullscreen',true);
   fullButton.on('pointerup',()=>{
-   if(this.scale.isFullscreen){this.scale.stopFullscreen();return;}
-   this.scale.startFullscreen({navigationUI:'hide'});
-   // A 640x360 FIT canvas creates black bars on wide Android displays.
-   // Expand the actual Phaser game viewport while keeping the combat scene
-   // at its native resolution and reflowing Kanto map + party positions.
-   const ratio=(window.innerWidth||640)/Math.max(1,window.innerHeight||360);
-   const target=Math.min(860,Math.max(640,Math.round(360*ratio)));
-   if(target>665&&typeof this.scale.resize==='function'){
-    this.registry.set('torre2-panel-collapsed',false);
-    this.registry.set('torre2-wide-map',true);
-    this.scale.resize(target,360);
-    this.scene.restart();
-   }else if(this.__campaignMapObjects?.length){
-    this.setCampaignPanelCollapsed(true);
-   }
-   if(screen.orientation?.lock){
-    try{Promise.resolve(screen.orientation.lock('landscape')).catch(()=>{});}
-    catch(_){}
-   }
+   // The canvas is already edge-to-edge in landscape. This button only
+   // hides browser chrome; never resize or restart the Phaser simulation.
+   if(this.scale.isFullscreen)this.scale.stopFullscreen();
+   else this.scale.startFullscreen({navigationUI:'hide'});
   });
-  // Restore the native aspect ratio on exiting fullscreen. No other Arena
-  // 2D mode inherits the campaign's optional ultrawide viewport.
-  const leaveWide=()=>{
-   const wasWide=this.registry.get('torre2-wide-map')===true;
-   this.registry.set('torre2-wide-map',false);
-   if(wasWide){
-    this.scale.resize(640,360);
-    if(this.scene.isActive())this.scene.restart();
-   }
-  };
-  this.scale.on('leavefullscreen',leaveWide);
-  this.events.once('shutdown',()=>this.scale.off('leavefullscreen',leaveWide));
-  this.button(537+wideExtra*.65,24,76,29,'MENU',()=>{
-   const wasWide=campaignSceneWidth(this)>640;
-   this.registry.set('torre2-wide-map',false);
-   if(wasWide)this.scale.resize(640,360);
-   this.scene.start('titulo',{menu:'principal'});
-  });
+  this.button(537,24,76,29,'MENU',()=>
+   this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){
    // Return to the same gym map. Stage changes only after the leader.
@@ -382,46 +326,6 @@ class Campanha extends Phaser.Scene{
    this.__campaignArrowBg.clear();
    buttonFrame(this.__campaignArrowBg,586,56,41,27,'blue');
   }
-  if(campaignSceneWidth(this)>640)
-   this.applyWidescreenCampaignLayout();
- }
- // The screen has a flexible 16:9-to-ultrawide Phaser viewport. Move native
- // GameObjects and hitzones in the same transform, never stretch the whole
- // WebGL canvas or the Pokémon's battle sprites.
- applyWidescreenCampaignLayout(){
-  const extra=Math.max(0,campaignSceneWidth(this)-640);
-  if(!extra)return;
-  const collapsed=this.__campaignPanelCollapsed;
-  const mapX=20+extra*.26,zoomX=1+extra/640*.9,zoomY=1+extra/640*.66;
-  const shift=extra*.82;
-  for(const {obj,x,y,sx,sy} of this.__campaignMapObjects||[]){
-   if(!obj.active)continue;
-   if(collapsed){
-    // The collapsed map already spans 606 original units. Center it
-    // within the extra width instead of stretching the tile pixels.
-    const zx=606/372,zy=256/211;
-    const tx=14-20*zx,ty=56-85*zy;
-    const native=obj.type==='Text'||(obj.type==='Image'&&
-     String(obj.texture?.key||'').startsWith('frlg-npc-'));
-    obj.setPosition(tx+zx*x+extra/2,ty+zy*y);
-    obj.setScale(sx*(native?1:zx),sy*(native?1:zy));
-   }else{
-    const native=obj.type==='Text'||(obj.type==='Image'&&
-     String(obj.texture?.key||'').startsWith('frlg-npc-'));
-    obj.setPosition(mapX+(x-20)*zoomX,59+(y-85)*zoomY);
-    obj.setScale(sx*(native?zoomY:zoomX),sy*zoomY);
-   }
-  }
-  for(const item of this.__campaignSidebarBaseline||[]){
-   if(item.obj.active)item.obj.setPosition(item.x+shift,item.y);
-  }
-  for(const item of this.__campaignDockBaseline||[]){
-   if(item.obj.active)item.obj.setPosition(item.x+extra/2,item.y);
-  }
-  this.__campaignArrowLabel?.setPosition(607+shift,69);
-  this.__campaignArrowBg?.setPosition(shift,0);
-  this.__campaignArrowZone?.setPosition(606+shift,69);
-  this.__campaignWideLabel?.setPosition(320+extra/2,61);
  }
  renderCampaign(state){
   this.backdrop();
@@ -516,7 +420,7 @@ class Campanha extends Phaser.Scene{
   const cta=state.pendingCapture?'CAPTURAR POKÉMON ▶':
    finished?'★ CAMPEÃO DE KANTO':
    state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1);
-  this.battleButton(campaignSceneWidth(this)/2,322,224,22,cta,()=>{
+  this.battleButton(320,322,224,22,cta,()=>{
    if(state.pendingCapture)return this.captureScreen(state);
    if(finished)return;
    if(state.trainer>=limit)this.gymScreen(state);
@@ -570,7 +474,7 @@ class Campanha extends Phaser.Scene{
   arrowZone.on('pointerdown',()=>
    this.setCampaignPanelCollapsed(!this.__campaignPanelCollapsed));
   this.setCampaignPanelCollapsed(this.__campaignPanelCollapsed);
-  this.button(607+Math.max(0,campaignSceneWidth(this)-640)*.9,26,56,30,'RESET',()=>{
+  this.button(607,26,56,30,'RESET',()=>{
    if(window.confirm('Apagar o progresso da campanha Kanto?')){
     resetCampaign();this.scene.restart();
    }
@@ -615,9 +519,6 @@ class Campanha extends Phaser.Scene{
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  enterBattle(state,wild=false){
-  // The combat renderer uses its native 640x360 collision/input coordinates.
-  // Only the campaign map is panoramically resized.
-  if(campaignSceneWidth(this)>640)this.scale.resize(640,360);
   if(state.pendingCapture){state.lastMessage='Resolva a captura antes de continuar.';saveCampaign(state);return this.scene.restart()}
   const match=wild?startWildBattle(state):startBattle(state);
   const foe={id:match.p2,level:match.torre2.enemyLevel,
@@ -670,7 +571,7 @@ class Campanha extends Phaser.Scene{
   // precisely the same map, sprites, and panel state without a scene restart.
   if(this.__torre2GrassOverlay?.active)return;
   const start=this.children.list.length;
-  const wideOffset=Math.max(0,campaignSceneWidth(this)-640)/2;
+  const wideOffset=0;
   const shade=this.add.rectangle(320+wideOffset,180,
    640+wideOffset*2,360,0x020c17,.90).setDepth(610);
   this.__torre2GrassOverlay=shade;

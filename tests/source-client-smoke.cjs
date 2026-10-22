@@ -360,50 +360,22 @@ const server=http.createServer(async(req,res)=>{
    'Toggling back restores exact native pixel-art layout');
   assert.equal(panelTest.restored.sidebar,true);
   assert.ok(panelTest.restored.zoneEnabled>=6);
-  // Protect the FireRed map from grass navigation; no texture/child removal.
-  // Simulate an ultra-wide Phaser viewport without invoking browser fullscreen
-  // so both touch coordinates and actual artwork resizing are exercised.
-  const wideAndGrass=await offline.evaluate(async()=>{
+  // Grass opens as a modal and does not destroy/recreate the map image.
+  const grassOverlay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const image=c.__campaignMapObjects.find(x=>x.obj.type==='Image'&&
     x.obj.texture?.key==='torre2-brock-custom').obj;
-   const startingWidth=image.displayWidth;
    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
    c.grassScreen(core.readCampaign());
-   const whileGrass=image.active&&!!c.__torre2GrassOverlay?.active;
+   const opened=image.active&&!!c.__torre2GrassOverlay?.active;
    const close=c.children.list.find(o=>o.type==='Zone'&&o.depth===630&&
     Math.abs(o.x-174)<2&&Math.abs(o.y-292)<2);
    close?.emit('pointerdown');
-   const restored=image.active&&!c.__torre2GrassOverlay;
-   c.registry.set('torre2-wide-map',true);
-   c.scale.resize(800,360);
-   c.setCampaignPanelCollapsed(false);
-   const wide={
-    width:c.scale.gameSize.width,
-    mapWidth:image.displayWidth,
-    mapX:image.x,
-    sideX:c.__campaignSidebarObjects.find(o=>o.text==='SUA EQUIPE')?.x,
-    canvasWidth:c.game.canvas.width
-   };
-   c.registry.set('torre2-wide-map',false);
-   c.scale.resize(640,360);
-   c.scene.restart();
-   return {startingWidth,whileGrass,restored,close:!!close,wide};
+   return {opened,closed:image.active&&!c.__torre2GrassOverlay,close:!!close};
   });
-  assert.ok(wideAndGrass.whileGrass&&wideAndGrass.close&&wideAndGrass.restored,
-   'Tall grass opens a separate modal while FireRed map remains alive');
-  assert.equal(wideAndGrass.wide.width,800,
-   'Wide campaign needs a genuinely wider WebGL canvas');
-  assert.ok(wideAndGrass.wide.mapWidth>wideAndGrass.startingWidth*1.15,
-   'Panoramic view must expand the map without distorting combat sprites');
-  assert.ok(wideAndGrass.wide.sideX>500,
-   'Panoramic party should move into newly available horizontal space');
-  await offline.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
-    c.scale.gameSize.width===640;
-  },null,{timeout:18000});
+  assert.ok(grassOverlay.opened&&grassOverlay.closed&&grassOverlay.close,
+   'Grass modal must preserve the map image and restore click targets');
   const mobileResources=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return {
@@ -422,37 +394,31 @@ const server=http.createServer(async(req,res)=>{
    'Mobile map offers a clickable fullscreen control');
   assert.equal(mobileResources.hoverGraphics,1,
    'Map uses one shared hover Graphics instead of per-trainer effects');
-  // In landscape phones wider than 16:9, remove side letterboxing without
-  // making the user press fullscreen. Verify the real browser viewport.
+  // A wide phone should enlarge only the CSS canvas rectangle; gameplay
+  // logical resolution and all trainer/menu positions remain 640x360.
   await offline.setViewportSize({width:980,height:420});
-  await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.registry.get('torre2-wide-map')===true&&
-    c.scale.gameSize.width>=800&&c.__campaignMapObjects?.length>0;
-  },null,{timeout:22000});
-  const automaticWide=await offline.evaluate(()=>{
+   return c.scene.isActive()&&
+    document.body.classList.contains('torre2-landscape-map')&&
+    Math.abs(document.querySelector('#juego canvas').getBoundingClientRect().width-980)<2;
+  },null,{timeout:18000});
+  const wideDisplay=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   const img=c.__campaignMapObjects.find(x=>x.obj.type==='Image'&&
-    x.obj.texture?.key==='torre2-brock-custom').obj;
-   return {width:c.scale.gameSize.width,mapWidth:img.displayWidth,
-    ctaX:c.children.list.find(x=>x.getData?.('torre2-central-cta'))?.x};
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   const cta=c.children.list.find(x=>x.getData?.('torre2-central-cta'));
+   return {sizeX:c.scale.gameSize.width,rectX:rect.x,rectY:rect.y,
+    rectW:rect.width,rectH:rect.height,ctaX:cta.x};
   });
-  assert.ok(automaticWide.mapWidth>440,'Landscape map is bigger before tapping fullscreen');
-  assert.equal(automaticWide.ctaX,automaticWide.width/2,
-   'Battle button must remain centered in landscape panorama');
+  assert.ok(Math.abs(wideDisplay.rectW-980)<2&&
+   Math.abs(wideDisplay.rectH-420)<2&&Math.abs(wideDisplay.rectX)<2,
+   'Landscape canvas should extend to both screen edges');
+  assert.equal(wideDisplay.ctaX,320,
+   'Battle button keeps its original 640x360 world coordinates');
   await offline.setViewportSize({width:980,height:650});
-  await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   c.registry.set('torre2-wide-map',false);
-   c.scale.resize(640,360);
-   c.scene.restart();
-  });
-  await offline.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
-    c.scale.gameSize.width===640;
-  },null,{timeout:20000});
+  await offline.waitForFunction(()=>
+   !document.body.classList.contains('torre2-landscape-map'),
+   null,{timeout:18000});
   // Fullscreen APIs are browser gesture-restricted; stub the Phaser manager
   // here and exercise the real button's pointerup handler.
   const fullscreenClicks=await offline.evaluate(()=>{
