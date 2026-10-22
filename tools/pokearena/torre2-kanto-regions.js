@@ -55,18 +55,14 @@ export const KANTO_CHAPTERS=Object.freeze([
  [
   ['ROTA 21 / PALLET','PALLET TOWN','sea'],
   ['VIRIDIAN CITY','GINÁSIO REABERTO','city'],
-  ['VIRIDIAN / GIN.','GIOVANNI','ground-gym'],
-  ['ROTA 22 / RIVAL','RUMO À LIGA','route'],
-  ['ROTA 23 / PORTÃO','INSÍGNIAS','gate'],
-  ['VICTORY ROAD','CAMINHO DA VITÓRIA','victory']
+  ['VIRIDIAN / PRAÇA','CENTRO DE KANTO','city'],
+  ['VIRIDIAN / GIN.','GIOVANNI','ground-gym']
  ],
  [
-  ['ROTA 23 / LIGA','INDIGO PLATEAU','gate'],
+  ['ROTA 22 / 23','RIVAL / PORTÕES','gate'],
   ['VICTORY ROAD','CAVERNA FINAL','victory'],
   ['INDIGO PLATEAU','ENTRADA DA LIGA','league'],
-  ['LIGA POKÉMON','DESAFIOS','league'],
-  ['SALA DE LORELEI','ELITE FOUR','ice'],
-  ['ELITE 1 / LORELEI','INDIGO PLATEAU','ice']
+  ['ELITE 1 / LORELEI','CÂMARA DE GELO','ice']
  ],
  [
   ['LIGA / BRUNO','DOJO DE PEDRA','dojo'],
