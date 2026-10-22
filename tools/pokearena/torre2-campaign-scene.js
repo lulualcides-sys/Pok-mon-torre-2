@@ -3,7 +3,6 @@
  */
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
 import {marco,UI as MENU_UI} from '../ui.js';
-import {drawApprovedDashboard} from './approved-dashboard.js';
 import {header,backdrop as richBackdrop,buttonFrame,map as richMap,node as richNode,
  team as richTeam,teamCard,ball,progress} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
@@ -32,8 +31,6 @@ class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
  init(input){this.result=input?.finished?input:null}
  preload(){
-  if(!this.textures.exists('torre2-approved-kanto'))
-   this.load.image('torre2-approved-kanto','assets/ui/kanto-approved.avif');
   const state=readCampaign();
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
@@ -108,8 +105,6 @@ class Campanha extends Phaser.Scene{
   return bg;
  }
  renderCampaign(state){
-  if(this.textures.exists('torre2-approved-kanto'))
-   return drawApprovedDashboard(this,state);
   this.backdrop();
   const stage=STAGES[state.stage],finished=state.champion||!stage;
   const gymStage=state.stage<GYMS.length;
@@ -120,6 +115,7 @@ class Campanha extends Phaser.Scene{
   this.mapPage=page;
   const next=currentOpponent(state),area=wildAvailability(state.stage);
   const first=page*perPage,count=Math.min(perPage,limit+1-first);
+  // These node coordinates are shared by the native routes and their hit zones.
   const xs=[190,144,234,150,232];
   const points=Array.from({length:count},(_,i)=>({
    index:first+i,x:xs[i],y:240-i*32,
@@ -129,7 +125,8 @@ class Campanha extends Phaser.Scene{
   const art=this.add.graphics().setDepth(2);
   ball(art,32,75,8);
   text(this,46,68,finished?'KANTO · CAMPEÃO':
-   'ROTA '+(state.stage+1)+' / '+(gymStage?area.label:stage.city.toUpperCase()),{
+   (state.stage===0?'ROTA 1 / PEWTER':
+    'ROTA '+(state.stage+1)+' / '+(gymStage?area.label:stage.city.toUpperCase())),{
    fontSize:'14px',color:'#fff4d3',fontStyle:'bold',
    stroke:'#072e3d',strokeThickness:2}).setDepth(4);
   text(this,380,69,gymStage?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():'ELITE FOUR',{
@@ -183,22 +180,35 @@ class Campanha extends Phaser.Scene{
    fontSize:'12px',fontStyle:'bold',color:'#ffdc71'}).setOrigin(1,0).setDepth(5);
   text(this,417,117,'TOQUE NO POKÉMON PARA O SUMÁRIO',{
    fontSize:'9px',color:'#a9daf1'}).setDepth(5);
-  for(let i=0;i<6;i++){
-   const x=413+i%2*107,y=135+Math.floor(i/2)*48;
-   const member=state.team[i],selected=i===state.active;
+  // The first four slots are genuinely live; page two exposes slots 5-6.
+  const teamPages=Math.max(1,Math.ceil(state.team.length/4));
+  this.teamPage=Math.min(teamPages-1,this.teamPage||0);
+  for(let i=0;i<4;i++){
+   const x=413+i%2*107,y=136+Math.floor(i/2)*69;
+   const index=this.teamPage*4+i;
+   const member=state.team[index],selected=index===state.active;
    teamCard(this,x,y,member,selected);
    if(member){
-    this.drawPortrait(member,x+19,y+21,29);
-    const name=member.id.toUpperCase().slice(0,10);
-    text(this,x+37,y+6,name,{fontSize:name.length>=9?'8px':'9px',
-     fontStyle:'bold',color:selected?'#ffedb3':'#f8faff'}).setDepth(6);
-    text(this,x+37,y+20,'NV.'+(member.progression?.level??'—')+
-     ' HP '+(member.hp??100)+'%',{fontSize:'8px',color:'#b5daee'}).setDepth(6);
-    this.add.zone(x+50,y+22,100,44).setDepth(9)
-     .setInteractive({useHandCursor:true}).on('pointerdown',()=>this.showSummary(state,i));
-   }else text(this,x+50,y+29,'— VAZIO —',{fontSize:'8px',
+    const portrait=this.drawPortrait(member,x+18,y+21,30);
+    if(portrait?.texture?.setFilter)
+     portrait.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+    const name=member.id.toUpperCase().slice(0,11);
+    text(this,x+36,y+7,name,{fontSize:name.length>=9?'8px':'10px',
+     fontStyle:'bold',color:selected?'#ffe4a2':'#f8faff'}).setDepth(6);
+    text(this,x+36,y+23,'NV.'+(member.progression?.level??'—'),{
+     fontSize:'9px',color:'#acdff7'}).setDepth(6);
+    text(this,x+36,y+37,'HP '+(member.hp??100)+'%',{
+     fontSize:'9px',color:'#b3f7cc'}).setDepth(6);
+    this.add.zone(x+50,y+30,100,62).setDepth(9)
+     .setInteractive({useHandCursor:true}).on('pointerdown',()=>this.showSummary(state,index));
+   }else text(this,x+50,y+41,'— VAZIO —',{fontSize:'9px',
     color:'#7298ba'}).setOrigin(.5).setDepth(5);
   }
+  if(teamPages>1)this.button(567,124,107,19,
+   'EQUIPE '+(this.teamPage+1)+'/'+teamPages+' ›',()=>{
+    this.teamPage=(this.teamPage+1)%teamPages;
+    this.scene.restart();
+   },false,8);
   this.button(582,79,80,25,'BOLSA',()=>this.bagScreen(state),false,9);
   // CTA stays at the original clickable location with richer gold chrome.
   const g=this.add.graphics().setDepth(2);
