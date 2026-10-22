@@ -124,6 +124,7 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-core.js','campaign-core.js'],
  ['tools/pokearena/torre2-capture-mechanics.js','capture-mechanics.js'],
  ['tools/pokearena/torre2-capture-arena.js','capture-arena.js'],
+ ['tools/pokearena/torre2-party-battle.js','party-battle.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  ['tools/pokearena/torre2-campaign-map-unified.js','campaign-map-unified.js'],
