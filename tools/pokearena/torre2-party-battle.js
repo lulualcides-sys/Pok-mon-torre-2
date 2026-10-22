@@ -73,26 +73,33 @@ export function installPartyBattle(scene){
  // Arrival flash after a recall/switch: red Pokéball beam releases the
  // replacement Pokémon before regular combat resumes.
  if(party.changes>0){
-  const left=actors[0],right=actors[1];
   const release=scene.add.graphics().setDepth(2604);
-  const pulse={t:0};
-  const entering=scene.datos?.torre2?.lastSwitchedSide;
-  const actor=actors[entering===1?1:0];
-  const bx=entering===1?567:72,by=288;
+  const actor=actors[scene.datos?.torre2?.lastSwitchedSide===1?1:0];
+  const bx=actor.lado===1?567:72,by=288;
   const tx=actor.x,ty=actor.y-actor.alto*.5;
+  let frame=0;
   if(actor.spr?.active)actor.spr.setAlpha(.05);
-  scene.tweens.add({targets:pulse,t:1,duration:440,
-   onUpdate:()=>{
-    const t=pulse.t;
-    release.clear();
-    release.lineStyle(4,0xff465a,.8*(1-t));
-    release.lineBetween(bx,by,tx,ty);
-    release.lineStyle(1,0xffe8df,.98*(1-t));
-    release.lineBetween(bx,by,tx,ty);
-    release.fillStyle(0xff9f9f,(1-t)*.38);
-    release.fillCircle(tx,ty,22*(1-t)+2);
-    if(actor.spr?.active)actor.spr.setAlpha(Math.min(1,.05+t*.95));
-   },onComplete:()=>release.destroy()});
+  const sparkle=()=>{
+   if(!scene.scene.isActive()||!release.active){
+    scene.game.events.off('step',sparkle);return
+   }
+   const t=Math.min(1,++frame/26);
+   release.clear();
+   release.lineStyle(4,0xff465a,.8*(1-t));
+   release.lineBetween(bx,by,tx,ty);
+   release.lineStyle(1,0xffe8df,.98*(1-t));
+   release.lineBetween(bx,by,tx,ty);
+   release.fillStyle(0xff9f9f,(1-t)*.38);
+   release.fillCircle(tx,ty,22*(1-t)+2);
+   if(actor.spr?.active)actor.spr.setAlpha(Math.min(1,.05+t*.95));
+   if(frame>=26){
+    if(actor.spr?.active)actor.spr.setAlpha(1);
+    scene.game.events.off('step',sparkle);
+    release.destroy();
+   }
+  };
+  scene.game.events.on('step',sparkle);
+  scene.events.once('shutdown',()=>scene.game.events.off('step',sparkle));
  }
  const graphics=scene.add.graphics().setDepth(2480);
  graphics.fillStyle(0x082339,.91);
