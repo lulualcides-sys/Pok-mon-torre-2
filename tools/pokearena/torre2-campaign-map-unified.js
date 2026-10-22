@@ -13,7 +13,7 @@ import {trainerClass,drawTrainer} from './campaign-sprites.js';
 const WORLDS=Object.freeze([
  {id:'pewter',title:'PEWTER · BROCK',short:'ROTA DE BROCK',theme:0xcdb783,
   leader:'BROCK',biome:'pewter',
-  buildings:{gym:[151,97],center:[158,212],mart:[232,179],grass:[343,272]}},
+  buildings:{gym:[151,113],center:[158,212],mart:[232,179],grass:[344,272]}},
  {id:'cerulean',title:'CERULEAN · MISTY',short:'ROTA DAS ÁGUAS',theme:0x7ecde8,
   leader:'MISTY',biome:'water-gym',
   buildings:{gym:[280,240],center:[169,183],mart:[265,185],grass:[70,264]}},
@@ -45,8 +45,10 @@ const WORLDS=Object.freeze([
 // Deliberately manually staged positions so Brock's first 13 trainers have
 // a fixed location that does not change when any prior fight is won.
 const BROCK_POINTS=Object.freeze([
- [62,282],[106,275],[149,286],[193,284],[237,283],[282,282],
- [343,271],[351,241],[329,212],[292,189],[259,155],[212,125],[177,111]
+ // South entrance -> east road -> central plaza -> north gym. Every
+ // trainer stands on open pavement rather than inside the southern trees.
+ [172,256],[218,251],[264,240],[315,224],[344,198],[345,163],
+ [293,154],[253,181],[211,196],[167,182],[115,178],[107,143],[186,131]
 ]);
 // Same deterministic map coordinates across reloads and battles.
 function checkpointsFor(total,stage){
@@ -105,8 +107,10 @@ function realMap(scene,spec){
  if(!texture.has(name))texture.add(name,0,x,y,w,h);
  if(typeof Phaser!=='undefined')
   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
- scene.add.image(20,57,key,name).setOrigin(0,0).setDepth(1)
-  .setDisplaySize(372,250);
+ // Preserve all of the gym facade below the fixed map title bar.
+ // The image itself is the authentic outdoor region of the FireRed sheet.
+ scene.add.image(20,85,key,name).setOrigin(0,0).setDepth(1)
+  .setDisplaySize(372,211);
  return true;
 }
 function unavailableTexture(scene,spec){
@@ -117,8 +121,8 @@ function unavailableTexture(scene,spec){
   const texture=scene.textures.get(key);
   if(typeof Phaser!=='undefined')
    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  scene.add.image(20,57,key).setOrigin(0,0).setDepth(1)
-   .setDisplaySize(372,250);
+  scene.add.image(20,85,key).setOrigin(0,0).setDepth(1)
+   .setDisplaySize(372,211);
  }
 }
 function badge(scene,g,index,x,y,condition,onClick){
