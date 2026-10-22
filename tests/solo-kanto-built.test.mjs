@@ -33,6 +33,19 @@ for(const name of walk(path.join(stage,version))){
 // patch must create a new hashed source folder, and the HTML must use it.
 assert.notEqual(version,'src-8d89349697',
  'Do not reuse cached upstream module directory between game revisions');
+// Regression: the REAL original Phaser hit/HP routines must receive levels.
+const lvlFile=path.join(stage,version,'torre2/level-balance.js');
+assert.ok(fs.existsSync(lvlFile),'Build must ship Kanto level mechanics');
+const fighterCode=fs.readFileSync(path.join(stage,version,'luchador.js'),'utf8');
+assert.ok(fighterCode.includes('torre2DamageMultiplier(')&&
+ fighterCode.includes('torre2ScaledHp('),
+ 'Level balance must be connected to the real Arena 2D fighter (not just HUD)');
+assert.ok(fighterCode.includes('!g.puro&&fuente&&fuente!==this'),
+ 'Poison, recoil, fixed damage and status effects retain native behavior');
+const {campaignDamageMultiplier,campaignScaledHp}=await import(pathToFileURL(lvlFile));
+assert.ok(campaignDamageMultiplier(50,6)>5);
+assert.ok(campaignDamageMultiplier(6,50)<.11);
+assert.ok(campaignScaledHp(100,50)>campaignScaledHp(100,6));
 const entryHTML=fs.readFileSync(path.join(stage,'index.html'),'utf8');
 const buildMeta=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8'));
 assert.ok(entryHTML.includes('src="'+version+'/main.js"'),
