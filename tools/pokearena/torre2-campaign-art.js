@@ -1,4 +1,5 @@
 import {drawKantoTiles} from './kanto-tiles.js';
+import {WORLD_SHEET,decorateWorldWithSprites} from './cc0-overworld.js';
 /* Torre 2 — Kanto premium UI. Native Phaser Graphics/WebGL pixel art,
  * never a pasted mockup, CSS effects or Canvas 2D.
  */
@@ -347,6 +348,15 @@ export function map(scene,stage,points,page=0,region=null){
   }
  }
  pathStroke(g,points);
+ const hasWorldSprites=scene.textures.exists(WORLD_SHEET);
+ if(hasWorldSprites){
+  // True PNG tile textures at depth 1.05, native road path above at 1.20,
+  // then trees/buildings at depth 1.4. Trainer nodes stay clickable on top.
+  decorateWorldWithSprites(scene,region,points);
+  const roadLayer=scene.add.graphics().setDepth(1.2);
+  pathStroke(roadLayer,points);
+ }
+ if(!hasWorldSprites){
  // Extra tile-level ground detail in forest; no random dots over the path.
  for(let k=0;k<(forest?190:urban?48:rocky?75:128);k++){
   const x=25+Math.floor(r()*350),y=109+Math.floor(r()*149);
@@ -384,6 +394,16 @@ export function map(scene,stage,points,page=0,region=null){
    .setOrigin(.5).setDepth(2);
  }else if(forest)landmark(g,scene,biome);
  else landmark(g,scene,biome);
+ }
+ if(hasWorldSprites&&['route','city'].includes(biome)){
+  // Native labels remain interactive Phaser text, not pixels in a screenshot.
+  scene.add.text(74,215,'CENTRO',{fontFamily:'Pixelify Sans,monospace',
+   fontSize:'8px',fontStyle:'bold',color:'#fff4d3',stroke:'#242a4a',
+   strokeThickness:2}).setOrigin(.5).setDepth(2);
+  scene.add.text(330,137,'MART',{fontFamily:'Pixelify Sans,monospace',
+   fontSize:'9px',fontStyle:'bold',color:'#ffffff',stroke:'#203c56',
+   strokeThickness:2}).setOrigin(.5).setDepth(2);
+ }
  // Keep the map art separate from interactive Phaser nodes / information.
  px(g,17,62,376,27,0x054553);
  px(g,19,64,372,23,0x064558);
