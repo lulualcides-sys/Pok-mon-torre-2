@@ -303,7 +303,7 @@ const server=http.createServer(async(req,res)=>{
    const photo=c.children.list.find(x=>x.type==='Image'&&
     x.texture?.key==='torre2-brock-custom');
    const cut=c.children.list.find(x=>
-    x.texture?.key==='torre2-brock-forest');
+    x.type==='TileSprite'&&x.active&&x.depth===2);
    return {baseWidth:base?.get('__BASE')?.width,
     baseHeight:base?.get('__BASE')?.height,
     isFullFrame:photo?.frame===base?.get('__BASE'),
@@ -312,7 +312,9 @@ const server=http.createServer(async(req,res)=>{
     rawFullFrame:{name:base?.get('__BASE')?.name,width:base?.get('__BASE')?.width,
      height:base?.get('__BASE')?.height},
     sourceWidth:photo?.frame?.width,
-    independentMask:!!mask&&!!cut&&mask!==base,
+    independentMask:!!mask&&mask!==base&&
+     c.__torre2WorldView?.separateForest===true,
+    tileSpriteDetected:!!cut,
     baseFrames:base?.getFrameNames(),filter:base?.source?.[0]?.filter,
     mapId:c.__torre2WorldView?.id};
   })();
