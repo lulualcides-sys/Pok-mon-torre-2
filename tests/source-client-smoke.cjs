@@ -504,7 +504,11 @@ const server=http.createServer(async(req,res)=>{
     .map(o=>o.text).join(' | ');
    const foes=b.datos.torre2.party.foes;
    const originalTexture=b.luchadores[0]?.spr?.texture?.key;
-   // Simulate real pre-switch damage as a fraction of the enemy's max HP.
+   // Isolate the swap transition from an unrelated KO in the full
+   // running CPU fight: Mewtwo LV50 can knock out a LV6 target before
+   // the animation ends. We deliberately test damage separately.
+   b.luchadores[0].inmortal=true;
+   b.luchadores[1].inmortal=true;
    b.luchadores[1].hp=Math.round(b.luchadores[1].hpMax*.67);
    const control=b.children.list.find(o=>o.type==='Zone'&&
     Math.abs(o.x-320)<2&&Math.abs(o.y-88)<2&&o.input?.enabled);
