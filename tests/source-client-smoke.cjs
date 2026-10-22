@@ -31,9 +31,20 @@ const server=http.createServer(async(req,res)=>{
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader',
    '--use-gl=angle','--use-angle=swiftshader','--ignore-gpu-blocklist']});
  const page=await browser.newPage({viewport:{width:980,height:650},deviceScaleFactor:1});
- const errors=[],notFound=[];
- page.on('pageerror',e=>errors.push(String(e)));
+ const errors=[],notFound=[],consoleFailures=[],requestFailures=[];
+ page.on('pageerror',e=>errors.push(e.stack||String(e)));
+ page.on('console',m=>{if(m.type()==='error')consoleFailures.push(m.text())});
+ page.on('requestfailed',r=>requestFailures.push({url:r.url(),error:r.failure()}));
  page.on('response',r=>{if(r.status()>=400)notFound.push({status:r.status(),url:r.url()})});
+ await page.addInitScript(()=>{
+  window.addEventListener('error',e=>{
+   console.error('GAME-SCRIPT-ERROR',e.message,'@',e.filename+':'+e.lineno+':'+e.colno,
+    e.error?.stack||'no stack');
+  });
+  window.addEventListener('unhandledrejection',e=>{
+   console.error('GAME-ASYNC-ERROR',e.reason?.stack||String(e.reason));
+  });
+ });
  try{
   const response=await page.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:30000});
   assert.equal(response.status(),200);
@@ -49,7 +60,7 @@ const server=http.createServer(async(req,res)=>{
     started:window.__pt2Started,phaser:typeof window.Phaser,
     moduleTags:[...document.querySelectorAll('script[type="module"]')].map(x=>x.src)
    }));
-   console.error('PHASER FIRST BOOT DIAGNOSTIC',JSON.stringify({diag,errors,notFound}));
+   console.error('PHASER FIRST BOOT DIAGNOSTIC',JSON.stringify({diag,errors,consoleFailures,notFound,requestFailures}));
    await page.screenshot({path:'test-evidence/kanto-phaser-boot-failure.png',fullPage:true}).catch(()=>{});
    throw err;
   }
