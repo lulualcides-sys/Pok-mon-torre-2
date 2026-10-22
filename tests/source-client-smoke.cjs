@@ -468,13 +468,26 @@ const server=http.createServer(async(req,res)=>{
     b.luchadores[0].hp=0;
     b.alKO(b.luchadores[0]);
   });
-  await offline.waitForFunction(()=>{
+  try{
+   await offline.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
     return b.scene.isActive()&&b.__torre2PartyInstalled&&
       b.datos?.torre2?.party?.playerIndex===0&&
       b.datos?.torre2?.party?.friend?.[1]?.hp===0&&
       b.luchadores?.[0]?.def?.id==='charmander';
-  },null,{timeout:23000});
+   },null,{timeout:14000});
+  }catch(e){
+   const info=await offline.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),p=b.datos?.torre2?.party;
+    return {active:b.scene.isActive(),fase:b.fase,changing:b.__torre2Changing,
+     installed:b.__torre2PartyInstalled,playerIndex:p?.playerIndex,
+     changes:p?.changes,hp:p?.friend?.map(m=>m.hp),
+     fighter:b.luchadores?.[0]?.def?.id,enemy:b.luchadores?.[1]?.def?.id,
+     tweens:b.tweens?.getTweens?.().length,scene:b.sys?.settings?.status};
+   });
+   console.log('KO_PARTY_DIAGNOSTIC',JSON.stringify(info));
+   throw e;
+  }
   const afterFaint=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return {foe:b.luchadores[1].hp/b.luchadores[1].hpMax,
