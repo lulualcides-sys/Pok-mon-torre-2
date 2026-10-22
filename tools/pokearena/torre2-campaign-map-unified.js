@@ -190,9 +190,9 @@ function badge(scene,g,index,x,y,condition,onClick){
  const active=condition==='current',completed=condition==='done';
  // Defeated trainers shrink to a tiny green ✓. Only the next trainer
  // gets a prominent gold marker; future opponents stay quiet on the map.
- const w=completed?12:active?20:16,h=completed?12:active?17:14;
+ const w=completed?11:active?21:14,h=completed?11:active?17:13;
  const ty=y-(active?29:completed?22:24);
- const border=active?0xffd97a:completed?0x7ce3ad:0x638897;
+ const border=active?0xffd97a:completed?0x7ce3ad:0x5a7786;
  const bg=active?0x554022:completed?0x163d39:0x092739;
  box(g,x-w/2,ty,w,h,bg,border);
  if(active){
