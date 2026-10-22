@@ -309,6 +309,15 @@ const server=http.createServer(async(req,res)=>{
     c.scene.restart();
     return {map,grass,center,mart,bag,portraits,dashboard};
   });
+  // Phaser Scene.restart() is asynchronous. The prior assertion inspected
+  // the emptied scene immediately after restart and incorrectly found 0 images.
+  await offline.waitForFunction(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   return scene.scene.isActive()&&scene.children.list.some(x=>
+    typeof x.text==='string'&&x.text.includes('VIRIDIAN'))&&
+    scene.children.list.some(x=>x.type==='Image'&&
+     x.texture?.key==='torre2-cc0-world');
+  },null,{timeout:20000});
   const actualSprites=await offline.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
    const images=scene.children.list.filter(x=>x.type==='Image'&&
