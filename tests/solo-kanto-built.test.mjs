@@ -114,10 +114,15 @@ const biomes=new Set(KANTO_CHAPTERS.flatMap(chapter=>chapter.map(row=>row[2])));
 assert.ok(biomes.size>=20,'Kanto needs varied environments, not reused bland generic map');
 const {FRLG_LOCALE_NAMES,locationForCampaign,renderLocationTiles}=await import(pathToFileURL(
  path.join(stage,version,'torre2/frlg-location.js')));
-assert.deepEqual(FRLG_LOCALE_NAMES,['route1','viridian','forest','pewter']);
+assert.deepEqual(FRLG_LOCALE_NAMES.slice(0,4),['route1','viridian','forest','pewter']);
 for(let p=0;p<4;p++)assert.equal(locationForCampaign(campaignRegion(0,p,4)),
  FRLG_LOCALE_NAMES[p],'First gym uses four FireRed geographical location tilemaps');
 assert.equal(typeof renderLocationTiles,'function');
+assert.equal(locationForCampaign(campaignRegion(1,3,4)),'cerulean');
+assert.equal(locationForCampaign(campaignRegion(2,3,4)),'vermilion');
+assert.equal(locationForCampaign(campaignRegion(3,4,5)),'celadon');
+assert.equal(locationForCampaign(campaignRegion(4,4,5)),'fuchsia');
+assert.equal(locationForCampaign(campaignRegion(6,5,6)),'cinnabar');
 for(const id of FRLG_LOCALE_NAMES)
  assert.ok(fs.statSync(path.join(stage,'assets/ui/frlg',id+'.webp')).size>10000,
   'Missing original FireRed locality pixel sprite source: '+id);
