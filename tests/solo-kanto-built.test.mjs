@@ -689,6 +689,9 @@ assert.ok(menuCampaign.includes("fullButton.on('pointerup'"),
 assert.ok(menuCampaign.includes('const needed=new Set(')&&
  menuCampaign.includes('AVAILABLE_FRLG.includes(world)'),
  'The campaign loads only current-map art and relevant overworld NPCs');
+assert.ok(menuCampaign.includes("key.startsWith('frlg-location-')")&&
+ menuCampaign.includes("key.startsWith('torre2-portrait-')"),
+ 'Unused stage and PC textures are released without purging PMD combat VFX');
 assert.ok(menuCampaign.includes('consumeCampaignResetLink()'),
  'Reset link must be consumed in the actual campaign scene');
 assert.ok(menuCampaign.includes("query.get('reset_kanto')"),

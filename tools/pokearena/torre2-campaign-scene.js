@@ -73,6 +73,15 @@ class Campanha extends Phaser.Scene{
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
   const needed=new Set(['red_normal',spriteIdForTrainer(boss),
    ...archetypes.map(spriteIdForTrainer)]);
+  // Across gyms, old campaign-specific GPU textures used to accumulate.
+  // Prune only our private FRLG resources, never PMD battle sprites/effects.
+  const desired='frlg-location-'+world;
+  for(const key of this.textures.getTextureKeys()){
+   if(key.startsWith('frlg-location-')&&key!==desired)
+    this.textures.remove(key);
+   if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))
+    this.textures.remove(key);
+  }
   for(const id of needed){
    if(!AVAILABLE_FRLG_NPCS.includes(id))continue;
    const key='frlg-npc-'+id;
@@ -81,6 +90,13 @@ class Campanha extends Phaser.Scene{
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
+  // Pokémon no longer present in team / first PC box page need not stay
+  // in the GPU after repeated captures and campaign restarts.
+  for(const key of this.textures.getTextureKeys()){
+   if(key.startsWith('torre2-portrait-')&&
+      !toLoad.has(key.slice('torre2-portrait-'.length)))
+    this.textures.remove(key);
+  }
   for(const dex of toLoad){
    const key='torre2-portrait-'+dex;
    if(!this.textures.exists(key))this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
