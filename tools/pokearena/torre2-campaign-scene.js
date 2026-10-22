@@ -331,44 +331,54 @@ class Campanha extends Phaser.Scene{
    this.button(352,331,91,30,'POKÉ MART',()=>this.martScreen(state),false,9);
   }else this.button(240,331,187,30,'AVANÇAR ▶',()=>navigate(1));
   richTeam(this);
-  text(this,443,67,'MINHA EQUIPE',{fontSize:'15px',fontStyle:'bold',
+  text(this,445,67,'SUA EQUIPE',{fontSize:'15px',fontStyle:'bold',
    color:'#fff8e0',stroke:'#682f32',strokeThickness:2}).setDepth(5);
-  text(this,417,101,'INSÍGNIAS '+Math.min(8,state.badges.length)+'/8',{
-   fontSize:'11px',fontStyle:'bold',color:'#ffdf95'}).setDepth(5);
-  text(this,617,101,'$ '+(state.money||0),{
-   fontSize:'12px',fontStyle:'bold',color:'#ffdc71'}).setOrigin(1,0).setDepth(5);
-  text(this,417,117,'LIMITE NV. '+currentLevelCap(state.stage)+'   ·   TOQUE NO POKÉMON',{
-   fontSize:'9px',color:'#a9daf1'}).setDepth(5);
-  // The first four slots are genuinely live; page two exposes slots 5-6.
-  const teamPages=Math.max(1,Math.ceil(state.team.length/4));
-  this.teamPage=Math.min(teamPages-1,this.teamPage||0);
-  for(let i=0;i<4;i++){
-   const x=413+i%2*107,y=136+Math.floor(i/2)*69;
-   const index=this.teamPage*4+i;
-   const member=state.team[index],selected=index===state.active;
-   teamCard(this,x,y,member,selected);
-   if(member){
-    const portrait=this.drawPortrait(member,x+18,y+21,30);
-    if(portrait?.texture?.setFilter)
-     portrait.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-    const name=member.id.toUpperCase().slice(0,11);
-    text(this,x+36,y+7,name,{fontSize:name.length>=9?'8px':'10px',
-     fontStyle:'bold',color:selected?'#ffe4a2':'#f8faff'}).setDepth(6);
-    text(this,x+36,y+23,'NV.'+(member.progression?.level??'—'),{
-     fontSize:'9px',color:'#acdff7'}).setDepth(6);
-    text(this,x+36,y+37,'HP '+(member.hp??100)+'%',{
-     fontSize:'9px',color:'#b3f7cc'}).setDepth(6);
-    this.add.zone(x+50,y+30,100,62).setDepth(9)
-     .setInteractive({useHandCursor:true}).on('pointerdown',()=>this.showSummary(state,index));
-   }else text(this,x+50,y+41,'— VAZIO —',{fontSize:'9px',
-    color:'#7298ba'}).setOrigin(.5).setDepth(5);
+  text(this,416,102,'INSÍGNIAS '+Math.min(8,state.badges.length)+'/8',{
+   fontSize:'10px',fontStyle:'bold',color:'#ffe1a1'}).setDepth(5);
+  text(this,621,102,'$ '+(state.money||0),{
+   fontSize:'11px',fontStyle:'bold',color:'#ffda74'}).setOrigin(1,0).setDepth(5);
+  // Seis botões autênticos do menu Poké Arena, interativos no mouse e toque.
+  const menu=[
+   ['BOLSA',()=>this.bagScreen(state)],
+   ['POKÉMON',()=>state.team.length&&this.showSummary(state,state.active)],
+   ['CENTRO',()=>this.centerScreen(state)],
+   ['LOJA',()=>this.martScreen(state)],
+   ['GINÁSIO',()=>this.gymScreen(state)],
+   ['CASAS',()=>this.housesScreen(state)]
+  ];
+  menu.forEach(([label,action],i)=>{
+   this.button(466+(i%2)*110,137+Math.floor(i/2)*27,
+    102,24,label,action,false,9);
+  });
+  text(this,416,210,'POKÉMON · TOQUE PARA VER GOLPES',{
+   fontSize:'8px',color:'#bde7ec'}).setDepth(6);
+  // Seis retratos reais PMD do cliente, não personagens desenhados por CSS.
+  const mini=this.add.graphics().setDepth(3);
+  for(let i=0;i<6;i++){
+   const x=416+(i%2)*107,y=222+Math.floor(i/2)*25;
+   const member=state.team[i],selected=i===state.active;
+   mini.fillStyle(member?(selected?0x37585b:0x15394d):0x10283b,1);
+   mini.fillRect(x,y,100,23);
+   mini.lineStyle(1,selected?0xffd77c:member?0x7dc0a4:0x3a6279);
+   mini.strokeRect(x,y,100,23);
+   if(!member)continue;
+   this.drawPortrait(member,x+13,y+11,22,5);
+   const name=member.id.toUpperCase().slice(0,11);
+   text(this,x+27,y+2,name,{
+    fontSize:name.length>9?'7px':'9px',
+    color:selected?'#ffe5a9':'#f7fbff',fontStyle:'bold'}).setDepth(6);
+   text(this,x+27,y+13,'NV.'+(member.progression?.level??'—')+
+    ' · HP '+(member.hp??100)+'%',{
+    fontSize:'7px',color:'#baf8d0'}).setDepth(6);
+   const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
+   mini.fillStyle(0x192e44);
+   mini.fillRect(x+79,y+18,18,3);
+   mini.fillStyle(hp>50?0x70e8a0:hp>20?0xf1d067:0xe7776c);
+   mini.fillRect(x+79,y+18,18*hp/100,3);
+   this.add.zone(x+50,y+11,100,23).setDepth(10)
+    .setInteractive({useHandCursor:true})
+    .on('pointerdown',()=>this.showSummary(state,i));
   }
-  if(teamPages>1)this.button(567,124,107,19,
-   'EQUIPE '+(this.teamPage+1)+'/'+teamPages+' ›',()=>{
-    this.teamPage=(this.teamPage+1)%teamPages;
-    this.scene.restart();
-   },false,8);
-  this.button(582,79,80,25,'BOLSA',()=>this.bagScreen(state),false,9);
   // CTA stays at the original clickable location with richer gold chrome.
   const g=this.add.graphics().setDepth(2);
   g.fillStyle(0xf4b94b,.2);g.fillRoundedRect(406,301,225,49,4);
