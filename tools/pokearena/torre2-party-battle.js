@@ -177,6 +177,10 @@ export function installPartyBattle(scene){
   }
   const actor=actors[side];
   const target=visibleActorCenter(actor);
+  // Combat is paused while the Pokéball acts. Remember the other fighter's
+  // exact HP: stale native hit effects must not heal/damage it during recall.
+  const peer=actors[1-side];
+  const peerHpRatio=peer?.hpMax>0?peer.hp/peer.hpMax:null;
   // Put the actual ball near the outgoing fighter so the red beam begins
   // on-screen and ends exactly at the visible sprite, including on faint.
   const from={
@@ -273,6 +277,12 @@ export function installPartyBattle(scene){
     if(actor.spr?.active)
      actor.spr.setAlpha(.1+.9*t).setScale(replacementScale*(.15+.85*t));
     if(comingFrame>=12){
+     if(peer&&peerHpRatio!==null&&peer.hpMax>0){
+      peer.hp=Math.max(0,Math.min(peer.hpMax,peerHpRatio*peer.hpMax));
+      const teammates=side===0?party.foes:party.friend;
+      const index=side===0?party.enemyIndex:party.playerIndex;
+      if(teammates[index])teammates[index].hp=clamp(100*peerHpRatio);
+     }
      fx.clear();scene.game.events.off('step',release);
      scene.events.off('shutdown',detachRelease);
      scene.__torre2Changing=false;scene.fase='lucha';
@@ -403,7 +413,7 @@ export function installPartyBattle(scene){
  const monitorKo=()=>{
   if(!scene.scene.isActive()||scene.__torre2Changing||
      scene.fase!=='lucha')return;
-  const fainted=actors.find(a=>a&&a.hp<=0);
+  const fainted=actors.find(a=>a&&!a.inmortal&&a.hp<=0);
   if(fainted)scene.alKO(fainted);
  };
  scene.game.events.on('step',monitorKo);
