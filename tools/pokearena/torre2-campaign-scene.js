@@ -39,6 +39,18 @@ function portraitId(member){
  return (etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150';
 }
 function portraitKey(member){return 'torre2-portrait-'+portraitId(member)}
+// Only the explicit reset link modifies the browser's private Kanto save.
+// Remove the URL flag immediately so page reloads never reset repeatedly.
+export function consumeCampaignResetLink(storage=localStorage,url=window.location,
+ historyApi=window.history){
+ const query=new URLSearchParams(url.search);
+ if(query.get('reset_kanto')!=='1')return false;
+ resetCampaign(storage);
+ query.delete('reset_kanto');
+ const suffix=query.toString();
+ historyApi.replaceState(null,'',url.pathname+(suffix?'?'+suffix:'')+url.hash);
+ return true;
+}
 class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
  init(input){this.result=input?.finished?input:null}
@@ -65,6 +77,7 @@ class Campanha extends Phaser.Scene{
   }
  }
  create(){
+  if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   this.add.rectangle(ANCHO/2,ALTO/2,ANCHO,ALTO,0x090d1c);
@@ -78,7 +91,7 @@ class Campanha extends Phaser.Scene{
   this.button(537,24,76,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){
-   this.mapPage=null; // Follow the newly unlocked route node after battle.
+   // Return to the same gym map. Stage changes only after the leader.
    const marker=this.result.marker||{};
    if(marker.stage===state.stage&&marker.trainer===state.trainer){
     const summary=marker.kind==='wild'&&state.pendingWild?.id===marker.id?
@@ -122,7 +135,7 @@ class Campanha extends Phaser.Scene{
    },true);
   });
   text(this,ANCHO/2,270,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',statusStyle).setOrigin(.5);
-  text(this,ANCHO/2,294,'Sem conta e sem multiplayer. Itens são comprados com Poké Dollars do jogo.',statusStyle).setOrigin(.5);
+  text(this,ANCHO/2,294,'Mewtwo nível 50 será adicionado à equipe para testes.',statusStyle).setOrigin(.5);
  }
  backdrop(){
   richBackdrop(this);
@@ -246,12 +259,20 @@ class Campanha extends Phaser.Scene{
    onGrass:()=>this.grassScreen(state),
    onLocked:message
   });
-  this.button(89,330,128,31,'GRAMA ALTA',
-   ()=>this.grassScreen(state),false,10,'green');
-  this.button(227,330,128,31,'CENTRO / PC',
-   ()=>this.centerScreen(state),false,10);
-  this.button(350,330,86,31,'LOJA',
-   ()=>this.martScreen(state),false,10);
+  // Do not repeat Center, Mart or Grass as oversized buttons below the
+  // map; they remain tappable on buildings and in the fixed right-side UI.
+  const next=state.trainer>=limit?'LÍDER':String(state.trainer+1);
+  const task=finished?'KANTO CONCLUÍDO':
+   state.trainer>=limit?'GINÁSIO LIBERADO':
+    'PRÓXIMO TREINADOR: '+next+' DE '+limit;
+  const note=this.add.graphics().setDepth(3);
+  note.fillStyle(0x0d2b3c,.96);
+  note.fillRect(20,314,374,36);
+  note.lineStyle(1,0x89a9aa,.95);
+  note.strokeRect(20,314,374,36);
+  text(this,207,332,task,{
+   fontSize:'13px',fontStyle:'bold',color:'#f3e5ba',
+   stroke:'#051522',strokeThickness:2}).setOrigin(.5).setDepth(5);
   richTeam(this);
   text(this,443,67,'SUA EQUIPE',{fontSize:'15px',fontStyle:'bold',
    color:'#fff8e0',stroke:'#682f32',strokeThickness:2}).setDepth(5);
