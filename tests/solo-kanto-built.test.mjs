@@ -43,6 +43,12 @@ assert.equal(routeNode(0,3,13).type,'rival');
 assert.equal(routeNode(0,5,13).type,'rocket');
 assert.equal(routeNode(0,13,13).type,'leader');
 assert.equal(MART_ITEMS.some(x=>x.kind==='tm'),true);
+const {trainerClass,drawTrainer,drawShopItem}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-sprites.js')));
+assert.equal(trainerClass(0,13,'leader'),'brock');
+assert.equal(trainerClass(0,3,'rival'),'rival');
+assert.equal(typeof drawTrainer,'function');
+assert.equal(typeof drawShopItem,'function');
 const marketState=createCampaign('squirtle');
 const boughtBall=purchaseItem(marketState,'pokeball');
 assert.equal(boughtBall.ok,true);
@@ -132,11 +138,29 @@ if(area.available.length){
  const fight=startWildBattle(grass);
  assert.equal(fight.torre2.kind,'wild');
  assert.equal(fight.p2,found.encounter.id);
- assert.equal(resolveWildBattle(grass,true).won,true);
- assert.equal(grass.trainer,0,'Wild encounters do not move gym trainer cursor');
- assert.equal(grass.pendingCapture.wild,true);
- assert.equal(attemptCapture(grass,()=>0).ok,true);
+ const {captureChance,rollCapture}=await import(pathToFileURL(
+  path.join(stage,version,'torre2/capture-mechanics.js')));
+ assert.ok(captureChance({...grass.pendingWild,hpPercent:10})>
+  captureChance({...grass.pendingWild,hpPercent:100}),
+  'Lower HP must mean higher capture chance');
+ assert.ok(captureChance({...grass.pendingWild,hpPercent:10},'ultraball')>
+  captureChance({...grass.pendingWild,hpPercent:10},'pokeball'),
+  'Ultra Ball must improve the catch chance');
+ const low={id:'onix',wild:true,hpPercent:8};
+ assert.ok(captureChance(low,'greatball')>captureChance({...low,hpPercent:100},'greatball'));
+ assert.equal(rollCapture(low,'pokeball',()=>0).shakes,3);
+ const failed=attemptCapture(grass,()=>.999,'pokeball',{duringBattle:true,hpPercent:95});
+ assert.equal(failed.ok,false);
+ assert.ok(grass.pendingWild,'Failed throw must not end live encounter');
  assert.equal(grass.inventory.pokeball,4);
+ assert.equal(attemptCapture(grass,()=>0,'pokeball',{duringBattle:true,hpPercent:10}).ok,true);
+ assert.equal(grass.pendingWild,null);
+ assert.equal(grass.inventory.pokeball,3);
+ assert.equal(grass.trainer,0,'Wild capture does not advance gym trainer cursor');
+ const fainted=createCampaign('charmander');
+ assert.ok(startWildEncounter(fainted,()=>0).ok);
+ assert.equal(resolveWildBattle(fainted,true).won,true);
+ assert.equal(fainted.pendingCapture,null,'KO must not trigger free capture');
 }
 assert.equal(TRAINERS_PER_GYM(0),13);
 assert.equal(currentOpponent(state).id,'pidgey',
