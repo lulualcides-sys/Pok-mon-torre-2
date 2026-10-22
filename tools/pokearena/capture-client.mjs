@@ -46,9 +46,32 @@ function sanitize(raw) {
 }
 async function main() {
  await fs.mkdir(DIR,{recursive:true});
- const raw=await fetch(CATALOG,{headers:{'Accept':'application/json'}});
- if(!raw.ok)throw Error('Could not load REA inventory: '+raw.status);
- const catalog=await raw.json();
+ // The public GitHub raw CDN occasionally returns HTTP 503. Never let one
+ // short outage take the user's playable campaign offline or change its art.
+ // Fetch the SAME immutable source inventory via a second GitHub API path.
+ const inventoryApi='https://api.github.com/repos/lulualcides-sys/Pok-mon-torre'+
+  '/contents/docs/rea-pokearena/INVENTARIO-GERAL.json'+
+  '?ref=rea-pokearena-all-visible-moves';
+ let catalog=null,inventoryError='';
+ for(const url of [CATALOG,CATALOG,inventoryApi,inventoryApi]){
+  try{
+   const response=await fetch(url,{headers:{
+    'Accept':'application/vnd.github+json',
+    'User-Agent':'PokemonTorre2-SourceInventory/1.1'},
+    signal:AbortSignal.timeout(20000)});
+   if(!response.ok)throw Error('HTTP '+response.status);
+   const value=await response.json();
+   catalog=value?.scripts?value:
+    value?.content&&value.encoding==='base64'?
+    JSON.parse(Buffer.from(value.content.replace(/\s/g,''),'base64').toString('utf8')):null;
+   if(!Array.isArray(catalog?.scripts)||catalog.scripts.length<10)
+    throw Error('Incomplete source inventory');
+   break;
+  }catch(error){inventoryError=String(error?.message||error);catalog=null;
+   await new Promise(resolve=>setTimeout(resolve,600));
+  }
+ }
+ if(!catalog)throw Error('Source inventory unavailable via raw and GitHub API: '+inventoryError);
  const homepage=await get(ORIGIN+'/',3*MB);
  const html=homepage.data.toString('utf8');
  const sourceVersions=[...new Set([...html.matchAll(/src-[0-9a-f]{10}/g)].map(m=>m[0]))];
