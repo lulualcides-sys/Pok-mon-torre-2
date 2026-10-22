@@ -20,10 +20,11 @@ import {campaignRegion,KANTO_CHAPTERS} from './kanto-regions.js';
 import {drawKantoWorldMap,mapVisitInfo} from './kanto-world-map.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
-import {attachBuildingInteractions} from './kanto-hotspots.js';
+import {attachBuildingInteractions,buildingInteractions} from './kanto-hotspots.js';
 import {addFireRedNPC,addRedPlayer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
-import {zigzagRoutePoints} from './kanto-route-layout.js';
+import {trainerRoutePoints} from './kanto-route-layout.js';
+import {locationForCampaign} from './frlg-location.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -187,13 +188,12 @@ class Campanha extends Phaser.Scene{
   this.mapPage=page;
   const next=currentOpponent(state),area=wildAvailability(state.stage);
   const first=page*perPage,count=Math.min(perPage,limit+1-first);
-  // Fixed serpentine map route: left -> right -> left, anchored to the art.
-  // Each checkpoint keeps its original saved trainer index.
-  const points=zigzagRoutePoints(count).map((pos,i)=>({
+  // Apenas a apresentação da trilha muda; os índices salvos não mudam.
+  const region=campaignRegion(state.stage,page,totalPages,finished);
+  const points=trainerRoutePoints(count,region).map((pos,i)=>({
    index:first+i,x:pos.x,y:pos.y,
    kind:routeNode(state.stage,first+i,limit).type
   }));
-  const region=campaignRegion(state.stage,page,totalPages,finished);
   richMap(this,state.stage,points,page,region);
   // Functional world objects. Tap the actual rendered building or tall grass,
   // not an invisible fullscreen mockup hotspot.
