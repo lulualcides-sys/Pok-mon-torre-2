@@ -124,6 +124,28 @@ export function attachBuildingInteractions(scene,view,onEnter){
   fontFamily:'Pixelify Sans,monospace',fontSize:'11px',
   fontStyle:'bold',color:'#ffefaf',stroke:'#061b28',
   strokeThickness:3}).setDepth(19).setVisible(false);
+ const shortNames={center:'CENTRO',mart:'LOJA',department:'LOJA',gym:'GINÁSIO',
+  house:'CASA',rival:'RIVAL',lab:'LAB. OAK',school:'ESCOLA',museum:'MUSEU',
+  bike:'BIKES',fuji:'MR. FUJI',dojo:'DOJO',safari:'SAFARI',
+  silph:'SILPH',tower:'TORRE',rocket:'ROCKET',harbor:'PORTO',
+  league:'LIGA',bill:'CASA DO BILL'};
+ // Placas sobre os prédios reais. Não redesenhar casas nem tapar a fachada.
+ for(const h of hotspots){
+  const label=shortNames[h.id];
+  if(!label)continue;
+  const yy=Math.max(96,h.y-12);
+  const w=Math.min(88,Math.max(39,label.length*5+13));
+  const xx=Math.max(21+w/2,Math.min(389-w/2,h.x+h.width/2));
+  const tag=scene.add.graphics().setDepth(16);
+  tag.fillStyle(0x0c2a3c,.91);
+  tag.fillRect(xx-w/2,yy-8,w,13);
+  tag.lineStyle(1,0xffd47e,.88);
+  tag.strokeRect(xx-w/2,yy-8,w,13);
+  scene.add.text(xx,yy-6,label,{
+   fontFamily:'Pixelify Sans,monospace',fontSize:'8px',
+   color:'#fff4d4',fontStyle:'bold',stroke:'#0a2632',strokeThickness:1
+  }).setOrigin(.5,0).setDepth(17);
+ }
  const highlight=h=>{
   paint.clear();tooltip.setVisible(!!h);
   if(!h)return;
