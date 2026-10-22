@@ -384,6 +384,9 @@ export function map(scene,stage,points,page=0,region=null){
   scene.add.text(67,229,'PC',{fontFamily:'Pixelify Sans,monospace',
    fontSize:'11px',fontStyle:'bold',color:'#d83c3e',stroke:'#ffefc6',strokeThickness:2})
    .setOrigin(.5).setDepth(2);
+  scene.add.text(325,138,'MART',{fontFamily:'Pixelify Sans,monospace',
+   fontSize:'9px',fontStyle:'bold',color:'#f2faff',stroke:'#174469',strokeThickness:2})
+   .setOrigin(.5).setDepth(2);
  }else if(forest)landmark(g,scene,biome);
  else landmark(g,scene,biome);
  // Keep the map art separate from interactive Phaser nodes / information.
