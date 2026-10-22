@@ -172,8 +172,8 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
    ['youngster','lass','bugcatcher','youngster','lass','bugcatcher',
     'hiker','youngster','bugcatcher','lass','hiker','youngster','hiker'][i%13]:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'][i%6];
-  if(!addFireRedNPC(scene,type,p.x,p.y+13,{scale:.53,depth:7}))
-   drawTrainer(under,p.x,p.y+4,type,.53);
+  if(!addFireRedNPC(scene,type,p.x,p.y+13,{scale:.70,depth:7}))
+   drawTrainer(under,p.x,p.y+4,type,.70);
   badge(scene,marker,i,p.x,p.y,stateName,()=>{
    if(i===state.trainer)onTrainer?.(i);
    else onLocked?.(i<state.trainer?'TREINADOR JÁ VENCIDO':
@@ -194,12 +194,12 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
   unlocked?'current':'locked',()=>onGym?.());
  const npc=state.stage===0?'brock':
   ['misty','surge','erika','koga','sabrina','blaine','giovanni'][state.stage-1]||'lorelei';
- addFireRedNPC(scene,npc,b.gym[0]+18,b.gym[1]+17,{depth:13,scale:.60});
+ addFireRedNPC(scene,npc,b.gym[0]+18,b.gym[1]+17,{depth:13,scale:.76});
  // Show Red only beside the next challenge, not as a permanently walked
  // overworld avatar. Later patch can replace click navigation with movement.
  const here=spec.points[Math.min(state.trainer,limit-1)]||b.gym;
  const px=Array.isArray(here)?here[0]:here.x,py=Array.isArray(here)?here[1]:here.y;
- if(!addRedPlayer(scene,px-15,py+14,{scale:.58,depth:9}))
-  drawTrainer(under,px-15,py+4,'rival',.53);
+ if(!addRedPlayer(scene,px-15,py+14,{scale:.70,depth:9}))
+  drawTrainer(under,px-15,py+4,'rival',.70);
  return {spec,locations:spec.points.length,artLoaded:ok};
 }
