@@ -6,6 +6,7 @@
 import {GYMS} from './campaign-core.js';
 import {resolveLoadout} from './move-pool.js';
 import {buscar} from '../datos.js';
+import {drawShopItem} from './campaign-sprites.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
@@ -49,17 +50,19 @@ export function applyPartyBattleResult(state,party){
 }
 // Small Pokéballs show owned members under each HP HUD, filled for Pokémon
 // still standing and hollow for fainted ones.
+// FireRed pixel item art shared with the game's own inventory.
 function drawPixelBall(g,x,y,alive,active){
- const x0=Math.round(x)-6,y0=Math.round(y)-6;
- const b=(dx,dy,w,h,color)=>{g.fillStyle(color);g.fillRect(x0+dx,y0+dy,w,h)};
- if(active){b(-2,-2,16,16,0xf8cb63);b(-1,-1,14,14,0x604425);}
- b(2,0,8,12,0x142637);b(0,2,12,8,0x142637);
- b(2,2,8,3,alive?0xee5959:0x616a77);
- b(1,5,10,2,0x132536);
- b(2,7,8,3,alive?0xf6fff5:0x86939f);
- b(4,4,4,4,0x132536);
- b(5,5,2,2,alive?0xffeac7:0xa6afbd);
- if(alive){b(3,2,3,1,0xffbcb2);b(3,8,2,1,0xffffff);}
+ x=Math.round(x);y=Math.round(y);
+ if(active){
+  g.fillStyle(0x10283d);g.fillRect(x-10,y-10,20,20);
+  g.lineStyle(1,0xffd475);g.strokeRect(x-10,y-10,20,20);
+  g.fillStyle(0xffebae);g.fillRect(x-8,y-8,3,2);
+ }
+ drawShopItem(g,x,y,'pokeball',.9);
+ if(!alive){
+  g.fillStyle(0x071827,.78);g.fillRect(x-8,y-8,16,16);
+  g.fillStyle(0x7c91a0);g.fillRect(x-3,y-1,6,2);
+ }
 }
 export function installPartyBattle(scene){
  const payload=scene.datos?.torre2;
@@ -109,21 +112,23 @@ export function installPartyBattle(scene){
  const graphics=scene.add.graphics().setDepth(2480);
  const sharedBeam=scene.add.graphics().setDepth(2603);
  const sharedBall=scene.add.graphics().setDepth(2604);
- const playerLabel=label(scene,96,79,'',9,'#c1efe3');
- const enemyLabel=label(scene,539,79,'',9,'#ffe0d1');
+ const playerLabel=label(scene,96,53,'',9,'#c1efe3');
+ const enemyLabel=label(scene,539,53,'',9,'#ffe0d1');
  const switchText=label(scene,322,89,'',10,'#ffe7a3',2482);
  function redrawPartyHud(){
   graphics.clear();
   for(const xx of [12,448]){
-   graphics.fillStyle(0x082436,.94);graphics.fillRect(xx,73,178,45);
-   graphics.lineStyle(1,0x80a6ad,1);
-   graphics.strokeRect(xx+.5,73.5,177,44);
-   graphics.fillStyle(0x133647);graphics.fillRect(xx+2,75,174,13);
+   graphics.fillStyle(0x071d2e,.95);graphics.fillRect(xx,44,178,46);
+   graphics.lineStyle(2,0x77969f,1);
+   graphics.strokeRect(xx+1,45,176,44);
+   graphics.fillStyle(0x143a4c);graphics.fillRect(xx+3,47,172,13);
+   graphics.lineStyle(1,0xd9be77,1);
+   graphics.lineBetween(xx+4,61,xx+174,61);
   }
   for(const [members,active,start] of [
-   [party.friend,party.playerIndex,31],[party.foes,party.enemyIndex,470]]){
+   [party.friend,party.playerIndex,30],[party.foes,party.enemyIndex,468]]){
    members.forEach((m,i)=>
-    drawPixelBall(graphics,start+i*17,101,m.hp>0,i===active));
+    drawPixelBall(graphics,start+i*20,76,m.hp>0,i===active));
   }
   playerLabel.setText('SEUS POKÉMON · '+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length);
   enemyLabel.setText((payload.kind==='wild'?'SELVAGEM':'RIVAL')+' · '+
@@ -199,13 +204,21 @@ export function installPartyBattle(scene){
    const x=actor.x,y=actor.y;
    actor.def=found.def;actor.etapa=found.etapa??0;
    actor.aspecto=null;actor.jefe=null;
+   // Native reiniciar() changes stats, but the previous PMD animation can
+   // remain playing (Bulbasaur visible under Mewtwo's HUD). Refresh both.
+   scene.tweens.killTweensOf(actor.spr);
    actor.reiniciar(x,y);
-   if(scene.textures.exists('pmd-'+actor.dex+'-Idle'))
-    actor.spr.setTexture('pmd-'+actor.dex+'-Idle');
+   const idleTexture='pmd-'+actor.dex+'-Idle';
+   const idleAnimation=actor.dex+'-Idle-0';
+   actor.spr.anims.stop();
+   if(scene.textures.exists(idleTexture))actor.spr.setTexture(idleTexture);
+   if(scene.anims.exists(idleAnimation))actor.spr.play(idleAnimation);
+   actor.claveAnim=idleAnimation;
    actor.kit=actor.kitActual();
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
-   actor.spr.setAlpha(.1).setVisible(true);
+   const replacementScale=actor.escala||actor.spr.scaleX||1;
+   actor.spr.setAlpha(.1).setScale(.15*replacementScale).setVisible(true);
    actor.sombra?.setVisible(true);
    actor.anillo?.setVisible(true);
    fx.clear();ball.clear();
@@ -217,7 +230,8 @@ export function installPartyBattle(scene){
     const t=Math.min(1,++comingFrame/12);
     fx.clear();fx.lineStyle(3,0xff6171,1-t);
     fx.lineBetween(from.x,from.y,actor.x,actor.y-actor.alto*.6);
-    if(actor.spr?.active)actor.spr.setAlpha(.1+.9*t);
+    if(actor.spr?.active)
+     actor.spr.setAlpha(.1+.9*t).setScale(replacementScale*(.15+.85*t));
     if(comingFrame>=12){
      fx.clear();scene.game.events.off('step',release);
      scene.__torre2Changing=false;scene.fase='lucha';
@@ -233,7 +247,7 @@ export function installPartyBattle(scene){
   const step=()=>{
    if(!scene.scene.isActive()){scene.game.events.off('step',step);return}
    scene.fase='ko';
-   const t=Math.min(1,++frames/36);
+   const t=Math.min(1,++frames/18);
    fx.clear();
    fx.lineStyle(2+3*(1-t),0xff525f,.9);
    fx.lineBetween(from.x,from.y,px,py);
@@ -243,15 +257,15 @@ export function installPartyBattle(scene){
    fx.fillTriangle(from.x,from.y,px-16*(1-t),py,px+16*(1-t),py);
    if(actor.spr?.active){
     actor.spr.setAlpha(Math.max(.05,1-t));
-    actor.spr.setScale(Math.max(.06,1-t*.85));
+    actor.spr.setScale(Math.max(.06,(actor.escala||1)*(1-t*.9)));
    }
-   if(frames>=40)enterNext();
+   if(frames>=22)enterNext();
   };
   // Always show the red recollection beam and shrinking Pokémon (including
   // K.O.) before sending the replacement. A scene clock can be paused by
   // native hitstop, so game-level frames and a guarded fallback are used.
   scene.game.events.on('step',step);
-  scene.time.delayedCall(kind==='faint'?700:950,enterNext);
+  scene.time.delayedCall(550,enterNext);
   scene.events.once('shutdown',()=>scene.game.events.off('step',step));
  }
  function finish(won){
