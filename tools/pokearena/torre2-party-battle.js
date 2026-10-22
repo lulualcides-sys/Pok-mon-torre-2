@@ -133,6 +133,13 @@ export function installPartyBattle(scene){
   scene.__torre2Changing=true;
   scene.fase='ko';
   syncHp();
+  // The native damage/regen logic may tick briefly during the 450ms KO
+  // animation. Never overwrite a confirmed faint with a tiny HP fraction.
+  if(kind==='faint'){
+   const members=side===0?party.friend:party.foes;
+   const outgoing=side===0?party.playerIndex:party.enemyIndex;
+   if(members[outgoing])members[outgoing].hp=0;
+  }
   const actor=actors[side],from={x:side===0?72:567,y:288};
   const fx=scene.add.graphics().setDepth(2603);
   const px=actor.x,py=actor.y-Math.max(18,actor.alto*.6);
