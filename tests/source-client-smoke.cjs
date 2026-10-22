@@ -338,7 +338,13 @@ const server=http.createServer(async(req,res)=>{
   // to finish before counting the new fullscreen button and cached textures.
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+   return c.scene.isActive()&&
+    c.children.list.some(o=>o.active&&o.type==='Image'&&
+     o.texture?.key==='torre2-brock-custom')&&
+    c.children.list.some(o=>o.active&&o.type==='TileSprite'&&
+     o.texture?.key==='torre2-brock-forest')&&
+    c.__campaignMapObjects?.length>0&&
+    c.__campaignMap?.spec?.id==='pewter'&&
     c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
   },null,{timeout:18000});
   // New mobile UI: down-arrow hides ONLY the sidebar, expanding the
