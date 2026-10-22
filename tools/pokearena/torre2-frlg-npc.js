@@ -19,31 +19,35 @@ const ALIAS=Object.freeze({
 export function spriteIdForTrainer(kind){
  return ALIAS[String(kind||'').toLowerCase()]||'youngster';
 }
-export function addFireRedNPC(scene,kind,x,y,{scale=1.0,depth=8}={}){
- const name=spriteIdForTrainer(kind),key=NPC_TEXTURE_PREFIX+name;
- if(!scene.textures.exists(key))return null;
- const texture=scene.textures.get(key);
+// A cropped Image still uses the ORIGINAL sheet dimensions as its geometry.
+ // A dedicated texture frame has true 16x32 bounds and fixes NPCs shifted
+ // outside the map / incorrect hover targets on mobile.
+function frontFrame(texture,key){
  const source=texture.source?.[0];
  if(!source||source.width<16||source.height<16)return null;
- // All people sprites are authored frame sheets. Select top-left front
- // pose, never stretch the whole sheet into a 16px character.
- const w=Math.min(16,source.width),h=Math.min(32,source.height);
- const image=scene.add.image(x,y,key).setOrigin(.5,1).setDepth(depth);
- image.setCrop(0,0,w,h);
- // Force pixels to be hard-edged, matching the FireRed tile sources.
- if(typeof Phaser!=='undefined')texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
- image.setScale(scale);
- return image;
+ const frame='torre2-front-16x32';
+ if(!texture.has(frame))
+  texture.add(frame,0,0,0,16,Math.min(32,source.height));
+ return frame;
 }
-export function addRedPlayer(scene,x,y,options={}){
+export function addFireRedNPC(scene,kind,x,y,{scale=1,depth=8}={}){
+ const key=NPC_TEXTURE_PREFIX+spriteIdForTrainer(kind);
+ if(!scene.textures.exists(key))return null;
+ const tex=scene.textures.get(key);
+ const frame=frontFrame(tex,key);
+ if(!frame)return null;
+ if(typeof Phaser!=='undefined')
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ return scene.add.image(x,y,key,frame).setOrigin(.5,1)
+  .setDepth(depth).setScale(scale);
+}
+export function addRedPlayer(scene,x,y,{scale=1,depth=9}={}){
  const key=NPC_TEXTURE_PREFIX+'red_normal';
  if(!scene.textures.exists(key))return null;
- const texture=scene.textures.get(key);
- const image=scene.add.image(x,y,key).setOrigin(.5,1)
-  .setDepth(options.depth??9);
- image.setCrop(0,0,Math.min(16,texture.source[0].width),
-  Math.min(32,texture.source[0].height));
- if(typeof Phaser!=='undefined')texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
- image.setScale(options.scale??1);
- return image;
+ const tex=scene.textures.get(key),frame=frontFrame(tex,key);
+ if(!frame)return null;
+ if(typeof Phaser!=='undefined')
+  tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ return scene.add.image(x,y,key,frame).setOrigin(.5,1)
+  .setDepth(depth).setScale(scale);
 }
