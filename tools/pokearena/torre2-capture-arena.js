@@ -58,7 +58,7 @@ export function installWildCapture(scene){
  const title=message(scene,466,45,'◉ CAPTURAR',13,'#ffe2a0');
  const status=message(scene,466,64,'HP do alvo: 100%',9,'#aff2cf');
  const launch=click(scene,539,61,171,41,showChoices);
- const cleanup=()=>{scene.events.off('update',refresh);};
+ const cleanup=()=>{scene.events.off('update',refresh);scene.__torre2WildCapture=false;};
  scene.events.once('shutdown',cleanup);
  function refresh(){
   if(!scene.scene.isActive()||!enemy?.hpMax)return;
