@@ -569,7 +569,9 @@ const server=http.createServer(async(req,res)=>{
     return b.scene.isActive()&&b.__torre2PartyInstalled&&
       b.datos?.torre2?.party?.playerIndex===0&&
       b.datos?.torre2?.party?.friend?.[1]?.hp===0&&
-      b.luchadores?.[0]?.def?.id==='charmander';
+      b.luchadores?.[0]?.def?.id==='charmander'&&
+      b.luchadores?.[0]?.spr?.texture?.key?.includes('charmander')&&
+      b.fase==='lucha';
    },null,{timeout:14000});
   }catch(e){
    const info=await offline.evaluate(()=>{
@@ -591,6 +593,8 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(afterFaint.faded,0,
     'Pokéball indicator marks fainted Mewtwo unavailable');
+  assert.equal(afterFaint.player,'charmander',
+    'After KO the actual replacement Pokémon controls the same arena');
   assert.ok(afterFaint.foe>.59&&afterFaint.foe<.74,
     'Red-beam replacement does not restore the rival HP');
   await offline.evaluate(()=>{
