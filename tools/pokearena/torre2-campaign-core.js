@@ -5,6 +5,7 @@
 import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle} from './progression.js';
 import {ROSTER} from '../datos.js';
 import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS} from './route-data.js';
+import {captureChance,rollCapture} from './capture-mechanics.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -76,6 +77,9 @@ export function readCampaign(storage=localStorage){
   if(!Array.isArray(s.inventory.tms)){s.inventory.tms=[];migrated=true}
   if(!Number.isInteger(s.wildEncountersStage)||s.wildEncountersStage<0){s.wildEncountersStage=0;migrated=true}
   if(!('pendingWild'in s)){s.pendingWild=null;migrated=true}
+  if(s.pendingWild&&(!Number.isFinite(s.pendingWild.hpPercent)||s.pendingWild.hpPercent<1)){
+   s.pendingWild.hpPercent=100;migrated=true;
+  }
   // Existing player saves receive exactly one permanent level-50 test Mewtwo.
   if(![...s.team,...(s.box||[])].some(p=>p.id==='mewtwo')){
    // Keep the tester playable immediately, without discarding the sixth team member.
@@ -186,6 +190,9 @@ export function resolveBattle(s,won,random=Math.random){
  }:null;
  if(opponent.leader){
   s.badges.push(STAGES[s.stage].badge);
+  if(s.stage===0&&!s.inventory.tms.includes('tm-rock-tomb')){
+   s.inventory.tms.push('tm-rock-tomb');s.lastRewardTM='TM39 ROCK TOMB';
+  }
   s.stage++;s.trainer=0;s.capturesInStage=0;s.wildEncountersStage=0;s.pendingWild=null;
   if(s.stage>=STAGES.length)s.champion=true;
  }else s.trainer++;
@@ -194,24 +201,37 @@ export function resolveBattle(s,won,random=Math.random){
  saveCampaign(s);
  return {won:true,message:s.lastMessage,reward,growth,evolutions:evolved.evolutions,opponent};
 }
-export function attemptCapture(s,random=Math.random,ball='pokeball'){
- if(!s.pendingCapture)return {ok:false,reason:'No encounter available'};
+// Wild captures are requested from the live battle while the foe still has HP.
+// Previously finished trainer fights keep their existing reward-capture flow.
+export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
+ const inWild=options?.duringBattle===true;
+ const candidate=inWild?s.pendingWild:s.pendingCapture;
+ if(!candidate)return {ok:false,reason:'Nenhum Pokémon disponível para captura.'};
  if(!['pokeball','greatball','ultraball'].includes(ball)||!(s.inventory?.[ball]>0))
   return {ok:false,reason:'Sem Pokébolas! Visite o Mart.'};
- const candidate=s.pendingCapture;
+ if(inWild&&candidate.stage!==s.stage)
+  return {ok:false,reason:'Encontro selvagem expirado.'};
+ // Enemy HP and status are read at the instant of the throw.
+ const target={...candidate,
+  hpPercent:inWild?Math.max(1,Math.min(100,Number(options.hpPercent??candidate.hpPercent??100))):100,
+  status:inWild?options.status:'none'};
+ const outcome=rollCapture(target,ball,typeof random==='function'?random:Math.random);
  s.inventory[ball]--;
- s.pendingCapture=null;
- if(!candidate.leader&&!candidate.wild)s.capturesInStage++;
- const bonus=ball==='ultraball'?22:ball==='greatball'?11:0;
- if(random()*100>=Math.min(95,candidate.chance+bonus)){
-  s.lastMessage=candidate.id+' escapou da Pokébola.';
-  saveCampaign(s);return {ok:false,reason:s.lastMessage};
+ if(!inWild){s.pendingCapture=null;
+  if(!candidate.leader)s.capturesInStage++;
  }
+ if(!outcome.caught){
+  s.lastMessage=candidate.id+' escapou! '+outcome.shakes+' balanços.';
+  saveCampaign(s);
+  return {ok:false,reason:s.lastMessage,...outcome};
+ }
+ if(inWild)s.pendingWild=null;
  const member=newMember(candidate.id,candidate.level);
  recordCaught(s,candidate.id);
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
- s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC');
- saveCampaign(s);return {ok:true,pokemon:member};
+ s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC')+
+  ' · '+Math.round(outcome.chance*100)+'% de chance.';
+ saveCampaign(s);return {ok:true,pokemon:member,...outcome};
 }
 export function selectTeamMember(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length)return false;
@@ -239,7 +259,7 @@ export function startWildEncounter(s,random=Math.random){
  const area=wildAvailability(s.stage);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
  const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
- const wild={id,stage:s.stage,trainer:s.trainer,level:Math.max(3,4+s.stage*5),area:area.area};
+ const wild={id,stage:s.stage,trainer:s.trainer,level:Math.max(3,4+s.stage*5),area:area.area,hpPercent:100};
  s.pendingWild=wild;s.wildEncountersStage++;
  recordSeen(s,id);saveCampaign(s);
  return {ok:true,encounter:wild};
@@ -267,9 +287,8 @@ export function resolveWildBattle(s,won){
  const evolved=resolveEvolutionAfterBattle(member.progression,'victory');
  member.id=member.progression.species;
  s.wins++;
- s.pendingCapture={id:wild.id,level:wild.level,leader:false,wild:true,chance:68};
- s.lastMessage='Encontro na grama! '+wild.id+' NV.'+wild.level+
-  ' · Use uma Pokébola para tentar capturar.';
+ s.pendingCapture=null;
+ s.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
  saveCampaign(s);return {won:true,message:s.lastMessage,growth,evolutions:evolved.evolutions};
 }
 export function purchaseItem(s,itemId){
@@ -299,6 +318,9 @@ export function teachTM(s,itemId,memberIndex=s.active){
  const target=s.team[memberIndex];
  if(!item||!target||!s.inventory?.tms?.includes(itemId))
   return {ok:false,reason:'TM indisponível para esse Pokémon.'};
+ if(target.id!=='mewtwo'&&Array.isArray(item.compatible)&&
+   !item.compatible.includes(target.id))
+  return {ok:false,reason:target.id+' não é compatível com '+item.name+'.'};
  target.tmMoves??=[];
  if(target.tmMoves.includes(item.move))return {ok:false,reason:'Golpe já aprendido.'};
  target.tmMoves.push(item.move);
