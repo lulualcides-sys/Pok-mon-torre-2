@@ -450,10 +450,12 @@ class Campanha extends Phaser.Scene{
      fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
     installPartyBattle(battle);
     if(wild)installWildCapture(battle);
+    // One-shot hook: old versions kept each listener alive for tens of
+    // thousands of frames, piling up after trainer encounters on Android.
+    game.events.off('step',attach);
+    return;
    }
-   if(!battle.scene.isActive()&&++frames>180&&
-      game.scene.isActive('campanha'))game.events.off('step',attach);
-   if(frames>54000)game.events.off('step',attach);
+   if(++frames>900)game.events.off('step',attach);
   };
   game.events.on('step',attach);
   this.scene.start('combate',match);
