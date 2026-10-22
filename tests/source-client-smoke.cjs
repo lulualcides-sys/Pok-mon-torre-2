@@ -276,7 +276,7 @@ const server=http.createServer(async(req,res)=>{
     .getScene('campanha').children.list
     .filter(o=>typeof o.text==='string').map(o=>o.text).join(' | '));
   assert.ok((await getRouteLabel()).includes('VIRIDIAN'),'First trainer page is Viridian');
-  for(const [page,region] of [[1,'FLORESTA'],[2,'PEWTER'],[0,'VIRIDIAN']]){
+  for(const [page,region] of [[1,'VIRIDIAN'],[2,'FLORESTA'],[3,'PEWTER'],[0,'ROTA 1']]){
     await offline.evaluate(page=>{
       const c=window.__pt2Game.scene.getScene('campanha');
       c.mapPage=page;c.scene.restart();
@@ -329,10 +329,21 @@ const server=http.createServer(async(req,res)=>{
     sourceSize:sheet?.source?.[0]?[sheet.source[0].width,sheet.source[0].height]:[]};
   });
   console.log('KANTO CC0 ART DIAG',JSON.stringify(actualSprites));
+  // Check each source tilemap as a Phaser texture, with hundreds of
+  // separate 16-pixel frames instead of one pasted bitmap.
+  const frlgMap=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const originals=['route1','viridian','forest','pewter'];
+   return {loaded:originals.every(id=>c.textures.exists('frlg-location-'+id)),
+    tiles:c.children.list.filter(x=>x.type==='Image'&&
+     String(x.texture?.key||'').startsWith('frlg-location-')).length};
+  });
+  assert.ok(frlgMap.loaded,'Original FireRed regional tile sources should preload');
+  assert.ok(frlgMap.tiles>=220,'Route 1 must be rendered as independent 16px Phaser tiles');
   assert.equal(actualSprites.ready,true,'Real 16x16 CC0 tile PNG loaded from same-origin build');
-  assert.ok(actualSprites.count>=200,'Kanto terrain must be made of authentic authored PNG tiles, not fake rectangles');
-  assert.ok(actualSprites.spriteFrames.length>=3,
-   'Map must show actual authored grass, trees and buildings from texture sheet');
+  assert.ok(actualSprites.count>=0,'Fallback CC0 tiles are optional when real FireRed location sprites load');
+  assert.ok(frlgMap.tiles>=220,
+   'Actual FireRed locality map must be composed from cropped tiles');
   assert.ok(actualSprites.sourceSize[0]>=300&&actualSprites.sourceSize[1]>=400,
    'Verified source spritesheet must not be a fake single-frame picture');
   // The world and its controls must be Phaser scene objects, never image hotspots.
