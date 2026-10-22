@@ -124,8 +124,14 @@ class Campanha extends Phaser.Scene{
   const fullButton=this.button(447,24,100,29,'TELA CHEIA',()=>{},false,9);
   fullButton.setData('torre2-fullscreen',true);
   fullButton.on('pointerup',()=>{
-   if(this.scale.isFullscreen)this.scale.stopFullscreen();
-   else this.scale.startFullscreen({navigationUI:'hide'});
+   if(this.scale.isFullscreen){this.scale.stopFullscreen();return;}
+   // Wide map view is a true in-game layout change, not only a browser flag.
+   // The sidebar remains available via its arrow when the player needs PC,
+   // Poké Mart or the party. This does not alter the native combat viewport.
+   if(this.__campaignMapObjects?.length)this.setCampaignPanelCollapsed(true);
+   this.scale.startFullscreen({navigationUI:'hide'});
+   if(screen.orientation?.lock)
+    Promise.resolve(screen.orientation.lock('landscape')).catch(()=>{});
   });
   this.button(537,24,76,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
@@ -551,30 +557,58 @@ class Campanha extends Phaser.Scene{
   this.scene.start('combate',match);
  }
  grassScreen(state){
-  this.children.removeAll(true);this.backdrop();
+  // Do not destroy the loaded overworld when entering tall grass. Removing
+  // all scene children invalidated the map and its hotspot/hover references.
+  // This modal uses separate high-depth Phaser objects, so Close restores
+  // precisely the same map, sprites, and panel state without a scene restart.
+  if(this.__torre2GrassOverlay?.active)return;
+  const start=this.children.list.length;
+  const shade=this.add.rectangle(320,180,640,360,0x020c17,.90)
+   .setDepth(610);
+  this.__torre2GrassOverlay=shade;
+  this.add.zone(320,180,640,360).setDepth(611).setInteractive();
+  this.add.rectangle(320,179,598,295,0x10283c)
+   .setStrokeStyle(2,0xf0ce87).setDepth(612);
+  const msg=(x,y,value,style={})=>text(this,x,y,value,style)
+   .setDepth(620).setOrigin(.5);
+  const close=()=>{
+   const list=this.children.list.slice(start);
+   list.forEach(obj=>obj.active&&obj.destroy());
+   this.__torre2GrassOverlay=null;
+  };
+  const modalButton=(x,y,w,h,label,callback,gold=false)=>{
+   const g=this.add.graphics().setDepth(622);
+   buttonFrame(g,x-w/2,y-h/2,w,h,gold?'gold':'blue',false);
+   msg(x,y,label,{fontSize:'12px',fontStyle:'bold',
+    color:gold?'#302510':'#fff6e4'}).setDepth(623);
+   return this.add.zone(x,y,w,h).setDepth(630)
+    .setInteractive({useHandCursor:true}).on('pointerdown',callback);
+  };
   const area=wildAvailability(state.stage);
-  text(this,320,23,'GRAMA ALTA · '+area.label,{
-   ...titleStyle,fontSize:'18px'}).setOrigin(.5);
-  text(this,320,63,area.area.toUpperCase(),{fontSize:'15px',color:C.gold}).setOrigin(.5);
-  text(this,320,95,'ENCONTROS REGIONAIS (REFERÊNCIA FIRE RED):',{
-   fontSize:'12px',color:C.blue}).setOrigin(.5);
-  area.wild.forEach((id,i)=>{
-   const x=66+(i%4)*153,y=132+Math.floor(i/4)*32;
+  msg(320,57,'GRAMA ALTA · '+area.label,{...titleStyle,fontSize:'18px'});
+  msg(320,88,area.area.toUpperCase(),{fontSize:'13px',color:C.gold});
+  msg(320,111,'ENCONTROS REGIONAIS (FIRE RED)',{
+   fontSize:'11px',color:C.blue});
+  area.wild.slice(0,12).forEach((id,i)=>{
+   const x=111+(i%4)*142,y=148+Math.floor(i/4)*29;
    const ok=area.available.includes(id);
-   this.add.rectangle(x+62,y+11,140,26,ok?0x24553f:0x233243)
-    .setStrokeStyle(1,ok?0x7dd597:0x445468);
-   text(this,x+5,y+3,id.toUpperCase()+(ok?' ✓':' · FUTURO'),{
+   const badge=this.add.rectangle(x,y,132,25,ok?0x24553f:0x223345)
+    .setStrokeStyle(1,ok?0x7dd597:0x445468).setDepth(617);
+   msg(x,y,id.toUpperCase()+(ok?' ✓':' · FUTURO'),{
     fontSize:'9px',color:ok?'#d7ffda':'#8ca9bb'});
   });
-  text(this,320,227,'Encontros explorados nesta área: '+(state.wildEncountersStage||0)+'/5',
-   {fontSize:'12px',color:C.gold}).setOrigin(.5);
-  text(this,320,253,'Espécies sem batalha integrada ainda não surgem. Nunca trocamos por Pokémon de outra rota.',
-   {fontSize:'10px',color:C.muted,wordWrap:{width:550},align:'center'}).setOrigin(.5);
-  this.button(192,315,230,34,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
-  this.button(447,315,235,34,'PROCURAR POKÉMON',()=>{
+  msg(320,248,'Encontros nesta área: '+(state.wildEncountersStage||0)+'/5',
+   {fontSize:'11px',color:C.gold});
+  modalButton(174,292,224,31,'◀ VOLTAR AO MAPA',close);
+  modalButton(465,292,224,31,'PROCURAR POKÉMON',()=>{
    const found=startWildEncounter(state);
-   if(found.ok)this.enterBattle(state,true);
-   else this.scene.restart();
+   if(found.ok){close();this.enterBattle(state,true);}
+   else{
+    close();
+    const toast=text(this,320,285,state.lastMessage||'Nenhum encontro disponível.',{
+     fontSize:'11px',color:C.gold}).setOrigin(.5).setDepth(620);
+    this.time.delayedCall(1600,()=>toast.active&&toast.destroy());
+   }
   },true);
  }
  centerScreen(state){

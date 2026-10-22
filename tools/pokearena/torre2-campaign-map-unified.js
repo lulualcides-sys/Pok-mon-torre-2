@@ -67,7 +67,7 @@ const BROCK_AREAS=Object.freeze([
  'PEWTER CITY','PEWTER CITY'
 ]);
 const CUSTOM_BROCK_LOCATIONS=Object.freeze({
- gym:[320,128],center:[103,161],mart:[145,162],grass:[288,260]
+ gym:[316,126],center:[103,161],mart:[145,162],grass:[288,260]
 });
 const BROCK_POINTS=Object.freeze([
  // Clickable challenge route, staged on open streets rather than overlapping
@@ -222,7 +222,7 @@ function badge(scene,g,index,x,y,condition,onClick,compact=false){
  const h=compact?(completed?9:active?17:12):
   (completed?11:active?17:13);
  const bx=compact&&!active?Math.min(375,x+11):x;
- const ty=y-(compact?(active?31:19):(active?29:completed?22:24));
+ const ty=y-(compact?(active?41:34):(active?38:completed?32:34));
  const border=active?0xffd97a:completed?0x7ce3ad:0x5a7786;
  const bg=active?0x554022:completed?0x163d39:0x092739;
  box(g,bx-w/2,ty,w,h,bg,border);
@@ -319,7 +319,7 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
   ['misty','surge','erika','koga','sabrina','blaine','giovanni'][state.stage-1]||'lorelei';
  addFireRedNPC(scene,npc,
   spec.customBrock?b.gym[0]:b.gym[0]+26,
-  spec.customBrock?b.gym[1]+14:b.gym[1]+6,
+  spec.customBrock?b.gym[1]+10:b.gym[1]+6,
   {depth:13,scale:.70});
  // Show Red only beside the next challenge, not as a permanently walked
  // overworld avatar. Later patch can replace click navigation with movement.

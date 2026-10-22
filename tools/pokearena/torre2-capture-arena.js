@@ -70,7 +70,7 @@ function statusName(enemy){
  return typeof raw==='string'?raw:'';
 }
 function enemyPortrait(enemy){
- const s=enemy?.sprite;
+ const s=enemy?.spr||enemy?.sprite;
  if(s?.setAlpha&&s?.setScale)return s;
  return null;
 }

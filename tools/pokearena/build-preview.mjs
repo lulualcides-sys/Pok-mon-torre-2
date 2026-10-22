@@ -55,7 +55,7 @@ html=html.replace(/<script\s+async\s+src="\/m\/s"><\/script>/g,'');
 html=html.replace('href="/favicon.png"','href="favicon.png"');
 // Replace browser-black letterbox bars with a coherent Kanto UI backdrop
 // on ultrawide screens without stretching or cropping pixel-art gameplay.
-html=html.replace('</head>','<style id="torre2-widescreen">html,body{background-color:#081b30!important}</style>\n</head>');
+html=html.replace('</head>','<style id="torre2-widescreen">html,body{background:#081b30!important;min-height:100%;}body:fullscreen{background:#103047!important;}canvas{image-rendering:pixelated;}</style>\n</head>');
 html=html.replace('</head>','<meta name="referrer" content="no-referrer">\n</head>');
 await fs.writeFile(index,html);
 

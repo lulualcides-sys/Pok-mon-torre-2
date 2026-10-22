@@ -175,9 +175,15 @@ export function installPartyBattle(scene){
    const outgoing=side===0?party.playerIndex:party.enemyIndex;
    if(members[outgoing])members[outgoing].hp=0;
   }
-  const actor=actors[side],from={x:side===0?72:567,y:288};
-  const fx=sharedBeam;
+  const actor=actors[side];
   const target=visibleActorCenter(actor);
+  // Put the actual ball near the outgoing fighter so the red beam begins
+  // on-screen and ends exactly at the visible sprite, including on faint.
+  const from={
+   x:Math.max(24,Math.min(616,target.x+(side===0?-76:76))),
+   y:Math.max(90,Math.min(322,target.y+42))
+  };
+  const fx=sharedBeam;
   const px=target.x,py=target.y;
   const ball=sharedBall;
   // Exact same crisp FireRed pixel-ball art as inventory/team HUD.
@@ -195,6 +201,11 @@ export function installPartyBattle(scene){
    restarted=true;
    detachRecall();
    scene.events.off('shutdown',detachRecall);
+   if(next<0){
+    fx.clear();ball.clear();
+    finish(side===1);
+    return;
+   }
    const member=side===0?party.friend[next]:party.foes[next];
    const actor=actors[side];
    let found;
@@ -234,6 +245,7 @@ export function installPartyBattle(scene){
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
    const replacementScale=actor.escala||actor.spr.scaleX||1;
+   const deployTarget=visibleActorCenter(actor);
    actor.spr.setAlpha(.1).setScale(.15*replacementScale).setVisible(true);
    actor.sombra?.setVisible(true);
    actor.anillo?.setVisible(true);
@@ -245,8 +257,7 @@ export function installPartyBattle(scene){
     }
     const t=Math.min(1,++comingFrame/12);
     fx.clear();
-    const target=visibleActorCenter(actor);
-    const targetX=target.x,targetY=target.y;
+    const targetX=deployTarget.x,targetY=deployTarget.y;
     // Three pixel-bright layers simulate the compact release beam in the
     // reference: red silhouette, hot core and a tiny 4-way opening flash.
     fx.lineStyle(6,0xd83456,(1-t)*.4);
@@ -303,7 +314,10 @@ export function installPartyBattle(scene){
   // K.O.) before sending the replacement. A scene clock can be paused by
   // native hitstop, so game-level frames and a guarded fallback are used.
   scene.game.events.on('step',step);
-  scene.time.delayedCall(550,enterNext);
+  // The game-wide frame callback is the primary completion mechanism:
+  // battle-scene timers may pause during the engine's native KO hitstop.
+  // DelayedCall only acts as a fallback when the local clock is running.
+  scene.time.delayedCall(800,enterNext);
   scene.events.once('shutdown',detachRecall);
  }
  function finish(won){
@@ -323,7 +337,12 @@ export function installPartyBattle(scene){
   scene.fase='ko';
   syncHp();arr[pos].hp=0;redrawPartyHud();
   const next=arr.findIndex((m,i)=>i!==pos&&m.hp>0);
-  if(next<0){finish(side===1);return}
+  if(next<0){
+   // Even the final defeated Pokémon must be drawn into its Pokéball
+   // before the victory screen, rather than jumping to a white KO sprite.
+   recall(side,-1,'faint');
+   return;
+  }
   announce(side===0?'POKÉMON DESMAIOU!':'RIVAL VAI TROCAR!');
   // KO pauses native fight ticks. Recollect through the same red beam as
   // manual switching; call synchronously so a paused scene clock cannot
@@ -368,7 +387,17 @@ export function installPartyBattle(scene){
  // the Arena 2D ability buttons. Only available with living reserves.
  const switchHit=scene.add.zone(320,88,177,30).setDepth(2500)
   .setInteractive({useHandCursor:true}).on('pointerdown',showParty);
+ // If the native engine sets 0 HP without invoking alKO (some move/status
+ // paths do), the campaign still recalls the fainted fighter exactly once.
+ const monitorKo=()=>{
+  if(!scene.scene.isActive()||scene.__torre2Changing||
+     scene.fase!=='lucha')return;
+  const fainted=actors.find(a=>a&&a.hp<=0);
+  if(fainted)scene.alKO(fainted);
+ };
+ scene.game.events.on('step',monitorKo);
  scene.events.once('shutdown',()=>{
+  scene.game.events.off('step',monitorKo);
   close();scene.__torre2PartyInstalled=false;
   sharedBeam.destroy();sharedBall.destroy();graphics.destroy();
  });
