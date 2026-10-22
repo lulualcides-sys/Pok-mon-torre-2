@@ -36,8 +36,14 @@ export function renderLocationTiles(scene,region){
  if(!key||!scene.textures.exists(key))return false;
  const texture=scene.textures.get(key);
  const source=texture.source?.[0];
- if(!source||source.width<300||source.height<320)return false;
- const cols=23,rows=11,size=16;
+ if(!source||source.width<176||source.height<176)return false;
+ const size=16;
+ // Small original island/town layouts may be only 352x256. Center them
+ // instead of falsely replacing real pixels with procedural fallback.
+ const cols=Math.min(23,Math.floor(source.width/size));
+ const rows=Math.min(11,Math.floor(source.height/size));
+ const left=21+Math.floor((23-cols)*size/2);
+ const top=90+Math.floor((11-rows)*size/2);
  const center=TILE_VIEW[id],maxX=source.width-cols*size,
   maxY=source.height-rows*size;
  const x0=Math.floor(Math.max(0,Math.min(maxX,center.cx-cols*size/2))/16)*16,
@@ -50,7 +56,7 @@ export function renderLocationTiles(scene,region){
   if(sx+size>source.width||sy+size>source.height)continue;
   const name='frlg_'+sx+'_'+sy;
   if(!texture.has(name))texture.add(name,0,sx,sy,size,size);
-  scene.add.image(21+col*size,90+row*size,key,name)
+  scene.add.image(left+col*size,top+row*size,key,name)
    .setOrigin(0,0).setDepth(1.35);
  }
  // Thin rim separates world tiles from the fixed battle panels.
