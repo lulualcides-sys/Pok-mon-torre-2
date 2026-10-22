@@ -327,7 +327,18 @@ export function installPartyBattle(scene){
   // best-of-three round loop is excluded ONLY from Torre 2 party battles.
   scene.victorias=won?[1,0]:[0,1];
   announce(won?'EQUIPE RIVAL DERROTADA!':'TODOS OS POKÉMON DESMAIARAM!');
-  scene.time.delayedCall(850,()=>scene.scene.isActive()&&scene.resultado());
+  // Native KO hitstop can suspend scene.time. A game-step fallback ensures
+  // that the final knockout always reaches the campaign result screen.
+  let finished=false,ticks=0;
+  const resolve=()=>{
+   if(finished||!scene.scene.isActive())return;
+   finished=true;scene.game.events.off('step',watchResult);
+   scene.resultado();
+  };
+  const watchResult=()=>{if(++ticks>=52)resolve();};
+  scene.game.events.on('step',watchResult);
+  scene.time.delayedCall(850,resolve);
+  scene.events.once('shutdown',()=>scene.game.events.off('step',watchResult));
  }
  // Trigger directly on native knockout. Disabled for every other game mode.
  scene.alKO=caido=>{
