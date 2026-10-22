@@ -343,9 +343,11 @@ const server=http.createServer(async(req,res)=>{
     JSON.stringify(imageIsolation));
   assert.ok(imageIsolation.baseFrames.every(key=>key==='__BASE'),
    'Original Brock scene must not share texture frames with the forest patch');
-  assert.ok(imageIsolation.independentMask,
-   'Pixel-art watermark cover must use a distinct WebGL atlas from the image');
-  assert.equal(imageIsolation.mapId,'brock-hires-v4');
+  assert.equal(imageIsolation.tileSpriteDetected,false,
+   'No additional cropped TileSprite may overlap the high-res map on Android');
+  assert.equal(imageIsolation.baseFrames.length,1,
+   'Keep original map texture in its full base frame');
+  assert.equal(imageIsolation.mapId,'brock-hires-v5');
   // New mobile UI: down-arrow hides ONLY the sidebar, expanding the
   // map in place. Party moves to a narrow bottom strip and the battle/catch
   // call-to-action is centered at the bottom in both modes.

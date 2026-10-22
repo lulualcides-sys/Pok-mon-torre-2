@@ -174,25 +174,14 @@ function realMap(scene,spec){
   const image=scene.add.image(20,85,'torre2-brock-custom','__BASE')
    .setOrigin(0,0).setDepth(1).setDisplaySize(372,211);
   image.setData('torre2-hires-base',true);
-  // Keep the logo-cover pixel-art forest in its OWN atlas and GPU sampler.
-  // Its crop must never change the base frame, source UV or filtering.
-  if(scene.textures.exists('torre2-brock-forest')){
-   const forest=scene.textures.get('torre2-brock-forest');
-   const scaleX=(forest.source?.[0]?.width||1200)/372;
-   const scaleY=(forest.source?.[0]?.height||675)/211;
-   const patch='torre2-brock-forest-patch';
-   if(!forest.has(patch))forest.add(patch,0,
-    Math.round(2*scaleX),Math.round(2*scaleY),
-    Math.max(1,Math.round(12*scaleX)),
-    Math.max(1,Math.round(12*scaleY)));
-   if(typeof Phaser!=='undefined')
-    forest.setFilter(Phaser.Textures.FilterMode.NEAREST);
-   scene.add.tileSprite(32,94,65,36,'torre2-brock-forest',patch)
-    .setOrigin(0,0).setTileScale(1/scaleX,1/scaleY).setDepth(2);
-  }
-  scene.__torre2WorldView={id:'brock-hires-v4',x:0,y:0,w:372,h:211,
+  // Android/WebGL: do not render a second repeated/cropped forest atop
+  // the hi-res composite. This overlap could corrupt the render batching and
+  // turn the Kanto terrain into enormous color blocks after a battle.
+  // Keep only the original unaltered full atlas until the logo is removed
+  // from the source image itself in a separate asset edit.
+  scene.__torre2WorldView={id:'brock-hires-v5',x:0,y:0,w:372,h:211,
    fullSourceWidth:full.width,fullSourceHeight:full.height,
-   separateForest:scene.textures.exists('torre2-brock-forest')};
+   separateForest:false,unmodifiedBase:true};
   return true;
  }
  const key='frlg-location-'+spec.id;
