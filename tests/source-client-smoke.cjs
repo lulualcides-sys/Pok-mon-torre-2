@@ -345,8 +345,10 @@ const server=http.createServer(async(req,res)=>{
    'Original Brock scene must not share texture frames with the forest patch');
   assert.equal(imageIsolation.tileSpriteDetected,false,
    'No additional cropped TileSprite may overlap the high-res map on Android');
-  assert.equal(imageIsolation.baseFrames.length,1,
-   'Keep original map texture in its full base frame');
+  assert.ok(imageIsolation.isFullFrame&&
+   imageIsolation.rawFullFrame.width===1200&&
+   imageIsolation.rawFullFrame.height===675,
+   'Map must use entire original base WebGL frame (Phaser omits __BASE from getFrameNames)');
   assert.equal(imageIsolation.mapId,'brock-hires-v5');
   // New mobile UI: down-arrow hides ONLY the sidebar, expanding the
   // map in place. Party moves to a narrow bottom strip and the battle/catch
@@ -830,12 +832,26 @@ const server=http.createServer(async(req,res)=>{
    'Enemy KO uses its own red-beam recollection and release');
   await offline.evaluate(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
-    b.scene.start('campanha');
+    // Exercise the same native finished-battle return path, but with an
+    // invalid marker so this smoke test never advances the saved trainer.
+    b.scene.start('campanha',{finished:true,won:false,marker:{stage:-777}});
   });
   await offline.waitForFunction(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter';
   },null,{timeout:16000});
+  const returnedMap=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const image=c.children.list.find(o=>o.type==='Image'&&
+    o.texture?.key==='torre2-brock-custom');
+   return {loaded:image?.active,refreshed:c.__torre2MapGpuRefreshed===true,
+    source:image?.frame?.width,overlay:c.children.list.filter(o=>
+      o.type==='TileSprite'&&o.active&&o.depth===2).length};
+  });
+  assert.ok(returnedMap.loaded&&returnedMap.refreshed&&
+   returnedMap.source===1200&&returnedMap.overlay===0,
+   'After KO, restore high-res world with a freshly uploaded GPU base frame: '+
+   JSON.stringify(returnedMap));
   const trainerAfterSwap=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return c.__campaignMap?.spec?.id;

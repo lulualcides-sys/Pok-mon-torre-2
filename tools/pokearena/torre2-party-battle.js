@@ -365,7 +365,7 @@ export function installPartyBattle(scene){
   const step=()=>{
    if(!scene.scene.isActive()){scene.game.events.off('step',step);return}
    scene.fase='ko';
-   const t=Math.min(1,++frames/30);
+   const t=Math.min(1,++frames/44);
    // The PMD sprite moves while in combat; read its current on-screen bounds
    // BEFORE shrinking. This keeps the red ray touching the Pokémon itself.
    const live=visibleActorCenter(actor);

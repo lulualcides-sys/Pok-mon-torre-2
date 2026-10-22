@@ -164,8 +164,8 @@ function realMap(scene,spec){
   // texture: a second TileSprite drawing a cropped frame of the SAME WebGL
   // image made the main picture render as huge colored blocks on Android.
   const tex=scene.textures.get('torre2-brock-custom');
-  if(typeof Phaser!=='undefined')
-   tex.setFilter(Phaser.Textures.FilterMode.LINEAR);
+  // Avoid mutating the shared GPU sampler during game scene transitions.
+  // The loader owns the base image filtering; never change it mid-battle.
   const full=tex.get('__BASE');
   if(!full||full.width<1000||full.height<550){
    scene.__torre2MapImageError='Invalid hi-res Brock source frame';

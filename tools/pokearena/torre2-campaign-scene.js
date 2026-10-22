@@ -61,10 +61,20 @@ class Campanha extends Phaser.Scene{
   const stage=state?.stage??0;
   const world=getCampaignMapSpec(stage,0).id;
   if(stage===0&&HAS_CUSTOM_BROCK){
-   if(!this.textures.exists('torre2-brock-custom'))
-    this.load.image('torre2-brock-custom','assets/ui/torre2-brock-custom.webp');
-   if(!this.textures.exists('torre2-brock-forest'))
-    this.load.image('torre2-brock-forest','assets/ui/torre2-brock-forest.webp');
+   // Combat can leave a stale WebGL texture binding for this 1200x675
+   // custom world. Re-upload it on victory/defeat return, not on each frame.
+   // Only this map is affected; do not disturb native PMD/move textures.
+   const key='torre2-brock-custom';
+   if(this.result?.finished&&this.textures.exists(key)){
+    this.textures.remove(key);
+    this.__torre2MapGpuRefreshed=true;
+   }
+   if(!this.textures.exists(key))
+    this.load.image(key,'assets/ui/torre2-brock-custom.webp');
+   // The problematic second forest TileSprite has been removed. Do not
+   // upload its extra 1200x675 copy on Android.
+   if(this.textures.exists('torre2-brock-forest'))
+    this.textures.remove('torre2-brock-forest');
   }
   if(AVAILABLE_FRLG.includes(world)){
    const key='frlg-location-'+world;

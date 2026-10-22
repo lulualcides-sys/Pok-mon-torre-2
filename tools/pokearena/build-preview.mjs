@@ -83,6 +83,16 @@ body.torre2-landscape-map #juego canvas{
  margin:0!important;padding:0!important;transform:none!important;
  image-rendering:pixelated
 }
+/* CSS-only landscape fallback: never rely on a periodic JS scene probe to
+   occupy the two empty Android side bands; native game remains 640x360. */
+@media (orientation:landscape) and (min-aspect-ratio:17/10){
+ #juego{position:fixed!important;inset:0!important;z-index:900!important;
+  width:100vw!important;height:100dvh!important;margin:0!important;
+  max-width:none!important;transform:none!important;overflow:hidden!important}
+ #juego canvas{position:absolute!important;inset:0!important;
+  width:100%!important;height:100%!important;
+  max-width:none!important;transform:none!important;image-rendering:pixelated}
+}
 </style>
 </head>`);
 html=html.replace('</head>','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="referrer" content="no-referrer">\n</head>');
