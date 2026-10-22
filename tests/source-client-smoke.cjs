@@ -344,8 +344,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(panelTest.start.ctaY,347);
   assert.equal(panelTest.start.sidebar,true);
   assert.equal(panelTest.collapsed.active,true);
-  assert.ok(panelTest.collapsed.width>panelTest.start.width*1.5,
-   'Hiding the panel must actually enlarge the playable map');
+  assert.ok(panelTest.collapsed.width>panelTest.start.width*1.6,
+   'Hiding the panel must expand the FireRed map to full screen width');
   assert.equal(panelTest.collapsed.arrow,'▲','Arrow shows expand option');
   assert.equal(panelTest.collapsed.sidebar,false,
    'Side menu must disappear from view');
@@ -533,6 +533,21 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(afterSwitch.phase,'lucha','Swap resumes SAME battle scene');
   assert.equal(afterSwitch.round,1,'No new countdown after switching');
+  const visiblePokemon=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),l=b.luchadores[0];
+   return {dex:l.dex,texture:l.spr?.texture?.key,
+    animation:l.spr?.anims?.currentAnim?.key,
+    visible:l.spr?.visible,scale:l.spr?.scaleX,phase:b.fase,
+    active:b.scene.isActive()};
+  });
+  assert.ok(visiblePokemon.texture?.includes('mewtwo'),
+   'The ACTUAL in-arena sprite must switch from Bulbasaur to Mewtwo');
+  assert.ok((visiblePokemon.animation||'').includes('mewtwo'),
+   'The new PMD idle animation must replace the old Pokémon animation');
+  assert.ok(visiblePokemon.visible&&visiblePokemon.scale>.2,
+   'The replacement sprite must be visible, not miniaturized or transparent');
+  assert.equal(visiblePokemon.phase,'lucha',
+   'No frozen KO phase or replayed FIGHT countdown after a manual switch');
   assert.ok(afterSwitch.enemyPct>.59&&afterSwitch.enemyPct<.74,
     'Switching Pokémon must preserve opponent damage');
   assert.equal(afterSwitch.remaining,2,
