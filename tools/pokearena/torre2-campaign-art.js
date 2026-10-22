@@ -94,56 +94,182 @@ function nearPath(x,y,pts){
  }
  return false;
 }
+
+/* Each rock, tree, fence, flower, trail and building is drawn as Phaser
+ * Graphics on the WebGL renderer. No image, mockup or Canvas overlay. */
+function stone(g,x,y,s=1){
+ const q=(a,b,w,h,c)=>px(g,x+a*s,y+b*s,w*s,h*s,c);
+ q(-6,0,12,6,0x4c5351);q(-5,-3,10,7,0x878c78);
+ q(-3,-4,6,2,0xc8c7a4);q(3,0,2,3,0x585e5a);q(-4,4,11,2,0x435949);
+}
+function pine(g,x,y,s=1){
+ const q=(a,b,w,h,c)=>px(g,x+a*s,y+b*s,w*s,h*s,c);
+ q(-4,8,8,10,0x5c4835);q(-2,9,4,7,0x9a7950);
+ q(-11,6,22,6,0x123a2c);q(-9,0,18,12,0x1b6238);
+ q(-12,-1,24,7,0x237345);q(-8,-8,16,11,0x24874b);
+ q(-6,-11,13,8,0x3eab59);q(-3,-14,7,6,0x78c56c);
+ q(-10,5,5,3,0x439c56);q(3,-6,5,3,0x9ee786);
+ q(4,0,7,3,0x2c9c56);q(-6,-3,3,2,0xa6ed89);
+ q(-10,11,22,2,0x153d31);
+}
+function flower(g,x,y,pink=false){
+ const c=pink?0xf78ba8:0xf8f5d1;
+ px(g,x,y,2,2,c);px(g,x+4,y,2,2,c);
+ px(g,x+2,y-2,2,2,c);px(g,x+2,y+2,2,2,c);
+ px(g,x+2,y,2,2,0xf4c958);px(g,x+3,y+4,1,3,0x25874c);
+}
+function tallGrass(g,x,y){
+ px(g,x-7,y+5,15,3,0x235f38);px(g,x-6,y,2,7,0x277d3e);
+ px(g,x-4,y-4,3,11,0x2b9349);px(g,x,y-1,2,8,0x55b94f);
+ px(g,x+3,y-5,3,12,0x207e41);px(g,x+6,y-2,2,8,0x72be55);
+ px(g,x-3,y-1,2,2,0x9fe37c);
+}
+function fence(g,x,y){
+ for(let k=0;k<3;k++){
+  const a=x+11*k;
+  px(g,a+1,y+3,7,13,0x513a2e);px(g,a,y,7,13,0xab7846);
+  px(g,a+1,y,5,2,0xffd28b);px(g,a+5,y+3,1,8,0xe0a66a);
+  px(g,a,y+12,8,3,0x483b2c);
+ }
+}
+function routeBuilding(g,x,y,pc=false){
+ const roof=pc?0xd94843:0x247ed6,light=pc?0xff9c8f:0x9edbff;
+ // shadow, foundation, cream masonry and roof bevels
+ px(g,x+3,y+36,58,5,0x244b3b);px(g,x+1,y+14,56,23,0x795c47);
+ px(g,x+4,y+15,50,22,0xe5cb91);px(g,x+6,y+18,46,16,0xffebba);
+ px(g,x,y+7,58,10,0x14293e);px(g,x+2,y+2,54,14,roof);
+ px(g,x+5,y,48,7,light);px(g,x+4,y+8,50,3,pc?0xf16058:0x389ceb);
+ px(g,x+7,y+15,13,13,0x254a69);px(g,x+9,y+17,9,9,0xa6e2ff);
+ px(g,x+38,y+15,13,13,0x254a69);px(g,x+40,y+17,9,9,0xa6e2ff);
+ px(g,x+24,y+23,10,14,0x5d433b);px(g,x+26,y+25,6,12,0x987254);
+ px(g,x+30,y+31,1,2,0xffdc86);
+ px(g,x+3,y+35,52,2,0x8b7551);
+ if(pc)ball(g,x+29,y+9,6);
+ else{
+  px(g,x+20,y+5,20,8,0x104985);
+  px(g,x+22,y+6,17,2,0xffffff);
+ }
+}
+function panelMap(g){
+ // Hand-pixeled metal-and-gold frame, each element drawn in game.
+ px(g,8,55,391,260,0x031522);px(g,10,56,386,257,0xcba65a);
+ px(g,13,59,380,251,0x093d49);px(g,16,61,374,247,0x0e2038);
+ px(g,19,89,372,177,0x82bc67);
+ px(g,13,57,376,3,0x9febc1);px(g,13,308,376,3,0x6b481f);
+ for(const [x,y] of [[10,56],[385,56],[10,301],[385,301]]){
+  px(g,x,y,11,11,0x5f4627);px(g,x+1,y+1,9,9,0xffe29a);
+  px(g,x+3,y+3,7,3,0xfff4c2);
+ }
+}
+function pathStroke(g,points){
+ const route=[{x:82,y:243},...points,{x:333,y:149}];
+ for(let i=1;i<route.length;i++){
+  const a=route[i-1],b=route[i],dx=b.x-a.x,dy=b.y-a.y;
+  for(const [w,c] of [[22,0x606b42],[20,0x977b48],[16,0xdfad6a],
+    [12,0xf4d28c],[6,0xffe2a0]]){
+   g.lineStyle(w,c,1);g.lineBetween(a.x,a.y,b.x,b.y);
+  }
+  const steps=Math.max(1,Math.floor(Math.hypot(dx,dy)/7));
+  for(let j=1;j<steps;j++){
+   const t=j/steps,xx=Math.round(a.x+dx*t),yy=Math.round(a.y+dy*t);
+   px(g,xx-2,yy+5,3,1,0xb88f59,.45);
+   px(g,xx+2,yy-3,3,1,0xffe4a0,.7);
+  }
+ }
+}
+function pathDistance(x,y,points){
+ const p=[{x:82,y:243},...points,{x:333,y:149}];
+ let d=999;
+ for(let i=1;i<p.length;i++){
+  const a=p[i-1],b=p[i],dx=b.x-a.x,dy=b.y-a.y;
+  const t=Math.max(0,Math.min(1,((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy||1)));
+  d=Math.min(d,Math.hypot(x-a.x-t*dx,y-a.y-t*dy));
+ }
+ return d;
+}
 export function map(scene,stage,points){
- const g=scene.add.graphics().setDepth(1),r=rand(213+stage*71);
- panel(g,10,56,388,257,true);
- px(g,19,89,372,177,0x8fcb65);
- for(let i=0;i<680;i++){
-  const x=22+Math.floor(r()*366),y=92+Math.floor(r()*172);
-  px(g,x,y,1+r()*3,1+r()*2,r()<.55?0xafe380:0x74b94f,.42);
+ const g=scene.add.graphics().setDepth(1);
+ const r=rand(301+(stage*7381));panelMap(g);
+ const bright=stage===0;
+ const meadow=[0x8dcb66,0x80be58,0x97d36c,0x79b958];
+ for(let y=90;y<266;y+=6)for(let x=19;x<391;x+=6){
+  px(g,x,y,6,6,meadow[Math.floor(r()*meadow.length)]);
+  if(r()<.21)px(g,x+1,y+1,2,1,0xc5ea83,.65);
+  if(r()<.18)px(g,x+4,y+4,2,1,0x3f9750,.6);
  }
- // Pixel river and sandy coast on right.
- for(let y=91;y<266;y+=3){
-  const shore=379+Math.sin(y*.08)*6;
-  px(g,shore-6,y,8,3,0xf0dfa0);
-  px(g,shore,y,11,3,0x348cce);
-  px(g,shore+1+Math.sin(y*.22)*2,y+1,4,1,0x9ef0f1,.8);
- }
- // A rocky cave mouth gives the scene geographic character.
- for(let i=0;i<16;i++){
-  const x=20+i*9,y=93+Math.sin(i)*4;
-  px(g,x,y,10,24+r()*13,0x777a68);px(g,x+1,y+1,8,5,0xb2ae94);
- }
- px(g,60,112,20,18,0x283d35);px(g,64,114,12,13,0x142c25);
- // Wide multi-tonal tracks connect real, interactive route stops.
- for(let i=1;i<points.length;i++){
-  const a=points[i-1],b=points[i];
-  for(const [width,color] of [[23,0x536a41],[19,0x907247],[15,0xf2c781],[9,0xffdfa0]]){
-   g.lineStyle(width,color);g.lineBetween(a.x,a.y,b.x,b.y);
-  }
-  g.lineStyle(1,0xffebbb,.8);g.lineBetween(a.x-2,a.y-3,b.x-2,b.y-3);
- }
- // Seeded forest avoids the path and all navigable nodes.
- for(let i=0;i<145;i++){
-  const x=27+Math.floor(r()*350),y=107+Math.floor(r()*150);
-  if(nearPath(x,y,points)||Math.hypot(x-66,y-210)<45||Math.hypot(x-326,y-133)<43)continue;
-  if(r()<.57)tree(g,x,y,.55+r()*.58);
-  else if(r()<.5)grass(g,x,y);
-  else{
-   const col=r()<.5?0xf3d5ee:0xffb79d;
-   px(g,x,y,3,3,col);px(g,x+1,y+1,1,1,0xfff9cb);
+ // Coast is built out of waves, foam and rocks, never a stretched photo.
+ for(let y=90;y<266;y+=2){
+  const coast=375+Math.floor(Math.sin((y+stage*11)*.085)*5);
+  px(g,coast-4,y,7,2,0xefdda2);
+  px(g,coast,y,391-coast,2,0x399ad8);
+  px(g,coast+5,y+1,10,1,0x1972c4);
+  if(Math.floor(y/2)%4===0){
+   px(g,coast+1,y,5,1,0xe8ffff);px(g,coast+8,y,4,1,0x9fe7f4);
   }
  }
- house(g,45,201,true);house(g,302,118,false);
- px(g,19,63,373,26,0x064354);
- px(g,20,64,371,3,0x197c87);
- px(g,20,86,371,3,0xdfc471);
- px(g,19,266,373,42,0x053b3a);
- px(g,20,267,371,2,0x207c73);
- px(g,20,306,372,2,0xdbb45e);
- for(let x of [27,358,371])tree(g,x,298,.35);
+ // Rock plateau above Pewter and Mt. Moon approach.
+ for(let x=19;x<155;x+=10){
+  const span=26+Math.floor(11*Math.sin((x-19)*.067))+(x<90?8:0);
+  for(let y=90;y<90+span;y+=8){
+   const dark=r()<.5?0x666e64:0x8b8774;
+   px(g,x,y,10,9,dark);px(g,x+1,y+1,7,3,0xb0a993);
+   px(g,x+7,y+4,2,4,0x4b6252);
+   px(g,x+1,y+7,9,2,0x505c50);
+  }
+  px(g,x,89+span,10,4,0x344f3d);
+ }
+ px(g,59,111,29,18,0x283c36);px(g,64,113,20,16,0x0c2429);
+ px(g,68,114,11,16,0x040e1c);
+ for(let j=0;j<4;j++){
+  px(g,63-j*2,130+j*4,32+j*4,3,0xa9a08b);
+  px(g,65-j*2,131+j*4,27+j*4,1,0xe4d0a8);
+ }
+ pathStroke(g,points);
+ // Green patches stay out of the passable trail, facilities and stage markers.
+ for(let k=0;k<270;k++){
+  const x=25+Math.floor(r()*350),y=109+Math.floor(r()*149);
+  if(x>366||pathDistance(x,y,points)<15||Math.hypot(x-76,y-229)<41
+    ||Math.hypot(x-331,y-153)<37||x<135&&y<139)continue;
+  const p=r();
+  if(p<.18)tallGrass(g,x,y);
+  else if(p<.43)px(g,x,y,2,2,0x5baf51);
+  else if(p<.57)flower(g,x,y,r()<.52);
+  else if(p<.72){px(g,x,y,4,2,0x4a8b44);px(g,x+4,y-1,2,3,0x6cbb62)}
+  else if(p<.80)stone(g,x,y,.45);
+ }
+ // Deterministic arbor sprites built from layered pixel cells.
+ const trees=[];
+ for(let i=0;i<120;i++){
+  const x=27+Math.floor(r()*346),y=109+Math.floor(r()*144);
+  if(pathDistance(x,y,points)<24||Math.hypot(x-76,y-228)<39
+    ||Math.hypot(x-331,y-145)<40||x<145&&y<145||x>364)continue;
+  if(r()>.63)continue;
+  trees.push({x,y,s:r()<.25?.48:.58+r()*.2});
+ }
+ trees.sort((a,b)=>a.y-b.y);
+ for(const t of trees)pine(g,t.x,t.y,t.s);
+ // Foreground props and buildings overlay foliage, with functional UI zones
+ // supplied by the campaign scene separately.
+ fence(g,22,224);fence(g,116,244);fence(g,279,196);
+ routeBuilding(g,43,208,true);routeBuilding(g,297,131,false);
+ // Storefront signs are live Phaser text, not words painted in a bitmap.
+ scene.add.text(67,229,'PC',{fontFamily:'Pixelify Sans,monospace',
+  fontSize:'11px',fontStyle:'bold',color:'#d83c3e',stroke:'#ffefc6',strokeThickness:2})
+  .setOrigin(.5).setDepth(2);
+ scene.add.text(326,139,'MART',{fontFamily:'Pixelify Sans,monospace',
+  fontSize:'9px',fontStyle:'bold',color:'#ffffff',stroke:'#15538a',strokeThickness:2})
+  .setOrigin(.5).setDepth(2);
+ // Keep the map art separate from interactive Phaser nodes / information.
+ px(g,17,62,376,27,0x054553);
+ px(g,19,64,372,23,0x064558);
+ px(g,19,86,372,2,0x60c5bc);
+ px(g,19,267,373,41,0x073c38);
+ px(g,19,268,373,2,0x51bc9c);
+ px(g,19,307,373,1,0xf1ca6e);
+ for(const x of [29,36,382])pine(g,x,300,.37);
  return g;
 }
+
 export function node(g,x,y,kind='future'){
  const r=13;
  g.fillStyle(0x173a38,.7);g.fillCircle(x+2,y+4,r+5);
