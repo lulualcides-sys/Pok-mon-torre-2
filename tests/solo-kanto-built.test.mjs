@@ -46,6 +46,11 @@ const {campaignDamageMultiplier,campaignScaledHp}=await import(pathToFileURL(lvl
 assert.ok(campaignDamageMultiplier(50,6)>5);
 assert.ok(campaignDamageMultiplier(6,50)<.11);
 assert.ok(campaignScaledHp(100,50)>campaignScaledHp(100,6));
+const party41=fs.readFileSync(path.join(stage,version,'torre2/party-battle.js'),'utf8');
+assert.ok(party41.includes('actor.reiniciar(x,y)')&&!party41.includes('scene.scene.restart('),
+ 'Party switching must not reload Phaser combat or trigger a new countdown');
+assert.ok(party41.includes('drawPixelBall')&&party41.includes('redrawPartyHud'),
+ 'Battle displays live pixel Pokeballs for both teams');
 const entryHTML=fs.readFileSync(path.join(stage,'index.html'),'utf8');
 const buildMeta=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8'));
 assert.ok(entryHTML.includes('src="'+version+'/main.js"'),
