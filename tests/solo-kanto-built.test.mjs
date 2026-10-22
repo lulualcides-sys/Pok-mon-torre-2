@@ -10,7 +10,7 @@ assert.ok(version,'Captured Phaser original client not staged');
 // trainer art, shops or capture modules. Check each staged ES module.
 for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
  'torre2/campaign-sprites.js','torre2/capture-arena.js',
- 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/frlg-location.js']){
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/frlg-location.js','torre2/frlg-available.js','torre2/kanto-hotspots.js','torre2/frlg-npc.js','torre2/frlg-interiors.js']){
  const source=path.join(stage,version,name);
  const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
  assert.equal(parsed.status,0,
@@ -112,20 +112,46 @@ for(let regionStage=0;regionStage<13;regionStage++){
 }
 const biomes=new Set(KANTO_CHAPTERS.flatMap(chapter=>chapter.map(row=>row[2])));
 assert.ok(biomes.size>=20,'Kanto needs varied environments, not reused bland generic map');
-const {FRLG_LOCALE_NAMES,locationForCampaign,renderLocationTiles}=await import(pathToFileURL(
+const {FRLG_LOCALE_NAMES,locationForCampaign,renderLocationTiles,getLocationViewport}=await import(pathToFileURL(
  path.join(stage,version,'torre2/frlg-location.js')));
-assert.deepEqual(FRLG_LOCALE_NAMES.slice(0,4),['route1','viridian','forest','pewter']);
-for(let p=0;p<4;p++)assert.equal(locationForCampaign(campaignRegion(0,p,4)),
- FRLG_LOCALE_NAMES[p],'First gym uses four FireRed geographical location tilemaps');
+assert.deepEqual(FRLG_LOCALE_NAMES.slice(0,6),
+ ['pallet','route1','viridian','route2','forest','pewter']);
+for(let p=0;p<5;p++)assert.equal(locationForCampaign(campaignRegion(0,p,5)),
+ ['pallet','route1','viridian','forest','pewter'][p],
+ 'Brock campaign uses five true FireRed localities including Pallet');
+assert.equal(getLocationViewport('viridian',1360,672).main.w,768,
+ 'Main town crop must exclude adjacent interior panes');
+assert.equal(getLocationViewport('viridian',1360,672).main.x,8);
+assert.equal(getLocationViewport('route1',400,672).cols,23);
 assert.equal(typeof renderLocationTiles,'function');
 assert.equal(locationForCampaign(campaignRegion(1,3,4)),'cerulean');
 assert.equal(locationForCampaign(campaignRegion(2,3,4)),'vermilion');
 assert.equal(locationForCampaign(campaignRegion(3,4,5)),'celadon');
 assert.equal(locationForCampaign(campaignRegion(4,4,5)),'fuchsia');
 assert.equal(locationForCampaign(campaignRegion(6,5,6)),'cinnabar');
-for(const id of FRLG_LOCALE_NAMES)
+const {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/frlg-available.js')));
+for(const id of ['route1','viridian','forest','pewter'])
+ assert.ok(AVAILABLE_FRLG.includes(id),'Core FireRed map missing: '+id);
+for(const id of AVAILABLE_FRLG)
  assert.ok(fs.statSync(path.join(stage,'assets/ui/frlg',id+'.webp')).size>10000,
-  'Missing original FireRed locality pixel sprite source: '+id);
+  'Available locale has no downloaded art: '+id);
+for(const id of ['red_normal','youngster','rocket_m','brock'])
+ assert.ok(AVAILABLE_FRLG_NPCS.includes(id),'Core FireRed NPC missing: '+id);
+const {buildingInteractions,visibleBuildingInteractions}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-hotspots.js')));
+const {spriteIdForTrainer}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/frlg-npc.js')));
+assert.equal(spriteIdForTrainer('rocket'),'rocket_m');
+assert.equal(spriteIdForTrainer('bugcatcher'),'bug_catcher');
+assert.ok(buildingInteractions('viridian').some(x=>x.id==='center'));
+assert.ok(buildingInteractions('viridian').some(x=>x.id==='mart'));
+assert.ok(buildingInteractions('pallet').some(x=>x.id==='lab'));
+const viewport=getLocationViewport('viridian',1360,672);
+const entrances=visibleBuildingInteractions(viewport);
+assert.ok(entrances.length>=2,'Visible Viridian camera must contain actual building entrances');
+assert.ok(entrances.every(h=>h.x>=19&&h.y>=88&&h.x+h.width<=392&&h.y+h.height<=270),
+ 'Building touch targets cannot cover sidebar or battle controls');
 
 const {drawKantoTiles}=await import(pathToFileURL(
  path.join(stage,version,'torre2/kanto-tiles.js')));
