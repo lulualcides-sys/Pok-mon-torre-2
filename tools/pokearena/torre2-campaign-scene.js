@@ -114,12 +114,22 @@ class Campanha extends Phaser.Scene{
   }
  }
  create(){
-  // Battles always run at 640x360. Restore the user's panoramic campaign
-  // preference when returning from a battle while browser fullscreen stays on.
-  if(this.scale.isFullscreen&&this.registry.get('torre2-wide-map')===true&&
-     (this.scale.gameSize?.width||640)===640){
-   const ratio=(window.innerWidth||640)/Math.max(1,window.innerHeight||360);
-   this.scale.resize(Math.min(860,Math.max(640,Math.round(360*ratio))),360);
+  // Mobile landscape is normally much wider than 16:9. Expand the Phaser
+  // overworld automatically instead of requiring the player to press the
+  // fullscreen button merely to remove the black side bars. Normal/portrait
+  // and all combat modes retain the original 640x360 logical battle rules.
+  const ratio=(window.innerWidth||640)/Math.max(1,window.innerHeight||360);
+  const landscape=window.matchMedia?.('(orientation: landscape)')?.matches??
+   (window.innerWidth>window.innerHeight);
+  const canAutoWide=landscape&&ratio>=1.96;
+  const resumeWide=this.registry.get('torre2-wide-map')===true&&ratio>=1.96;
+  if(canAutoWide||resumeWide){
+   const target=Math.min(860,Math.max(640,Math.round(360*ratio)));
+   this.registry.set('torre2-wide-map',target>665);
+   if(target>665&&Math.abs((this.scale.gameSize?.width||640)-target)>1)
+    this.scale.resize(target,360);
+  }else{
+   this.registry.set('torre2-wide-map',false);
   }
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
