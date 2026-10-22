@@ -48,9 +48,14 @@ const WORLDS=Object.freeze([
 // Viridian -> Route 2 -> Forest -> Pewter composite, not an arbitrary grid.
 // Explicit coordinates stay stable and preserve original battle/save indices.
 const BROCK_CUSTOM_POINTS=Object.freeze([
- [76,266],[122,252],[135,227],[141,202],[130,181],
- [191,148],[218,168],[223,194],[239,217],[283,246],
- [306,215],[328,183],[355,152]
+ // Single clockwise progression: Pallet -> Route 1 -> Viridian ->
+ // Route 2 -> Viridian Forest -> the rocky Pewter Gym approach.
+ [77,271],[116,265],
+ [132,239],[143,211],
+ [127,184],[160,171],
+ [191,149],[214,174],
+ [227,202],[261,237],[295,218],
+ [331,180],[354,149]
 ]);
 const CUSTOM_BROCK_LOCATIONS=Object.freeze({
  gym:[340,114],center:[103,161],mart:[145,162],grass:[299,235]
@@ -183,18 +188,27 @@ function unavailableTexture(scene){
 }
 function badge(scene,g,index,x,y,condition,onClick){
  const active=condition==='current',completed=condition==='done';
- const color=active?0xffd175:completed?0x73cdb0:0x91a9ae;
- const y0=y-25,w=index>=9?20:18;
- box(g,x-w/2,y0,w,15,active?0x52401f:0x0a2839,color);
- font(scene,x,y0+7,completed?'✓':String(index+1),9,
-  active?'#fff1bc':completed?'#ccffe8':'#f0f5ff',16);
- const zone=scene.add.zone(x,y-8,28,34).setDepth(24)
+ // Defeated trainers shrink to a tiny green ✓. Only the next trainer
+ // gets a prominent gold marker; future opponents stay quiet on the map.
+ const w=completed?12:active?20:16,h=completed?12:active?17:14;
+ const ty=y-(active?29:completed?22:24);
+ const border=active?0xffd97a:completed?0x7ce3ad:0x638897;
+ const bg=active?0x554022:completed?0x163d39:0x092739;
+ box(g,x-w/2,ty,w,h,bg,border);
+ if(active){
+  g.fillStyle(0xffe296,.9);
+  g.fillRect(x-w/2,ty+h,Math.round(w/3),2);
+ }
+ font(scene,x,ty+h/2,completed?'✓':String(index+1),
+  completed?8:active?10:8,
+  active?'#fff6c4':completed?'#baffd7':'#cbdde6',16);
+ const zone=scene.add.zone(x,y-9,30,34).setDepth(24)
   .setInteractive({useHandCursor:true}).setData('torre2-checkpoint',index);
- const hl=scene.__torre2MapHover;
+ const hover=scene.__torre2MapHover;
  zone.on('pointerover',()=>{
-  hl.clear();hl.lineStyle(1,0xffe5a6,1);
-  hl.strokeRect(x-15,y-28,30,38);
- }).on('pointerout',()=>hl.clear()).on('pointerdown',onClick);
+  hover.clear();hover.lineStyle(1,0xffe5a6,1);
+  hover.strokeRect(x-15,y-28,30,39);
+ }).on('pointerout',()=>hover.clear()).on('pointerdown',onClick);
  return zone;
 }
 export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
