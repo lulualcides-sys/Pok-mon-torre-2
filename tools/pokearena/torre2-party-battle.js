@@ -107,6 +107,8 @@ export function installPartyBattle(scene){
   scene.events.once('shutdown',()=>scene.game.events.off('step',sparkle));
  }
  const graphics=scene.add.graphics().setDepth(2480);
+ const sharedBeam=scene.add.graphics().setDepth(2603);
+ const sharedBall=scene.add.graphics().setDepth(2604);
  const playerLabel=label(scene,96,79,'',9,'#c1efe3');
  const enemyLabel=label(scene,539,79,'',9,'#ffe0d1');
  const switchText=label(scene,322,89,'',10,'#ffe7a3',2482);
@@ -155,9 +157,9 @@ export function installPartyBattle(scene){
    if(members[outgoing])members[outgoing].hp=0;
   }
   const actor=actors[side],from={x:side===0?72:567,y:288};
-  const fx=scene.add.graphics().setDepth(2603);
+  const fx=sharedBeam;
   const px=actor.x,py=actor.y-Math.max(18,actor.alto*.6);
-  const ball=scene.add.graphics().setDepth(2604);
+  const ball=sharedBall;
   const drawBall=()=>{
    ball.clear();ball.fillStyle(0x101d2e);
    ball.fillCircle(from.x,from.y,8);
@@ -203,11 +205,26 @@ export function installPartyBattle(scene){
    actor.kit=actor.kitActual();
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
-   actor.spr.setAlpha(1).setVisible(true);
+   actor.spr.setAlpha(.1).setVisible(true);
    actor.sombra?.setVisible(true);
    actor.anillo?.setVisible(true);
-   scene.__torre2Changing=false;
-   scene.fase='lucha';
+   fx.clear();ball.clear();
+   let comingFrame=0;
+   const release=()=>{
+    if(!scene.scene.isActive()){
+     scene.game.events.off('step',release);return;
+    }
+    const t=Math.min(1,++comingFrame/12);
+    fx.clear();fx.lineStyle(3,0xff6171,1-t);
+    fx.lineBetween(from.x,from.y,actor.x,actor.y-actor.alto*.6);
+    if(actor.spr?.active)actor.spr.setAlpha(.1+.9*t);
+    if(comingFrame>=12){
+     fx.clear();scene.game.events.off('step',release);
+     scene.__torre2Changing=false;scene.fase='lucha';
+    }
+   };
+   scene.game.events.on('step',release);
+   scene.events.once('shutdown',()=>scene.game.events.off('step',release));
    redrawPartyHud();
   };
   // A global frame-step remains live during native KO hitstop. The original
@@ -274,7 +291,7 @@ export function installPartyBattle(scene){
   if(open){close();return}
   open=true;scene.fase='torre2-select';
   menu.fillStyle(0x061726,.97);
-  menu.fillRoundedRect(118,88,396,204,8);
+  menu.fillRect(118,88,396,204);
   menu.lineStyle(2,0xf1ca7b);menu.strokeRoundedRect(118,88,396,204,8);
   entries.push(label(scene,316,111,'ESCOLHA UM POKÉMON',15,'#fff0bf',2602));
   party.friend.forEach((m,i)=>{
@@ -301,5 +318,6 @@ export function installPartyBattle(scene){
   .setInteractive({useHandCursor:true}).on('pointerdown',showParty);
  scene.events.once('shutdown',()=>{
   close();scene.__torre2PartyInstalled=false;
+  sharedBeam.destroy();sharedBall.destroy();graphics.destroy();
  });
 }
