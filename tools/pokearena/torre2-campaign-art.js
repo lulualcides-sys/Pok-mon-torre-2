@@ -360,8 +360,10 @@ export function map(scene,stage,points,page=0,region=null){
   const roadLayer=scene.add.graphics().setDepth(1.2);
   pathStroke(roadLayer,points);
  }
- if(!hasWorldSprites){
- // Extra tile-level ground detail in forest; no random dots over the path.
+ if(!hasWorldSprites&&!hasFRLG){
+ // Procedural art is only a FALLBACK when neither real location tiles nor
+ // the optional CC0 sheet are available. Never place fake PC/MART labels
+ // or fake buildings over the authentic FireRed map.
  for(let k=0;k<(forest?190:urban?48:rocky?75:128);k++){
   const x=25+Math.floor(r()*350),y=109+Math.floor(r()*149);
   if(x>366||pathDistance(x,y,points)<15||Math.hypot(x-76,y-229)<41
