@@ -25,6 +25,7 @@ import {addFireRedNPC,addRedPlayer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {trainerRoutePoints} from './kanto-route-layout.js';
 import {locationForCampaign} from './frlg-location.js';
+import {renderUnifiedCampaignMap} from './campaign-map-unified.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -127,9 +128,9 @@ class Campanha extends Phaser.Scene{
   richBackdrop(this);
  }
  mapScreen(state){
+  // PATCH 1: MAPA means the current gym world, not a separate location menu.
   this.children.removeAll(true);
-  const stage=state.stage??0,limit=TRAINERS_PER_GYM(stage);
-  drawKantoWorldMap(this,state,{trainerLimit:limit,onBack:()=>this.scene.restart()});
+  this.renderCampaign(state);
  }
  enterLocalityBuilding(state,location,hotspot){
   // Only mark the real accessible landmark. Never cover the map with a
@@ -157,8 +158,9 @@ class Campanha extends Phaser.Scene{
   else if(type==='gym'&&isCurrentGym)
    this.button(260,300,225,34,
     state.trainer>=TRAINERS_PER_GYM(state.stage)?
-     'DESAFIAR O LÍDER':'ENFRENTAR TREINADOR',
-    ()=>this.enterBattle(state),true);
+     'DESAFIAR O LÍDER':'LÍDER BLOQUEADO',
+    ()=>this.gymScreen(state),
+    state.trainer>=TRAINERS_PER_GYM(state.stage));
   else if(type==='safari'&&state.stage===4)
    this.button(260,300,225,34,'EXPLORAR GRAMA ALTA',
     ()=>this.grassScreen(state),true);
@@ -220,131 +222,50 @@ class Campanha extends Phaser.Scene{
  }
  renderCampaign(state){
   this.backdrop();
-  const stage=STAGES[state.stage],finished=state.champion||!stage;
-  const gymStage=state.stage<=GYMS.length; // Victory Road retains wild encounters and Poké Mart
+  const finished=state.champion||!STAGES[state.stage];
   const limit=finished?0:TRAINERS_PER_GYM(state.stage);
-  const perPage=state.stage===0?3:5,
-   totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
-  const activePage=Math.min(totalPages-1,Math.floor(state.trainer/perPage));
-  const page=this.mapPage==null?activePage:Math.max(0,Math.min(totalPages-1,this.mapPage));
-  this.mapPage=page;
-  const next=currentOpponent(state),area=wildAvailability(state.stage);
-  const first=page*perPage,count=Math.min(perPage,limit+1-first);
-  // Apenas a apresentação da trilha muda; os índices salvos não mudam.
-  const region=campaignRegion(state.stage,page,totalPages,finished);
-  const points=trainerRoutePoints(count,region).map((pos,i)=>({
-   index:first+i,x:pos.x,y:pos.y,
-   kind:routeNode(state.stage,first+i,limit).type
-  }));
-  richMap(this,state.stage,points,page,region);
-  // Functional world objects. Tap the actual rendered building or tall grass,
-  // not an invisible fullscreen mockup hotspot.
-  const worldZone=(x,y,w,h,action)=>{
-   const zone=this.add.zone(x,y,w,h).setDepth(9)
-    .setInteractive({useHandCursor:true});
-   zone.on('pointerdown',action);
-   return zone;
+  const message=notice=>{
+   if(this.__routeNotice?.active)this.__routeNotice.destroy();
+   this.__routeNotice=text(this,205,301,notice,{
+    fontSize:'10px',color:'#ffe8ad',fontStyle:'bold',
+    stroke:'#071827',strokeThickness:3}).setOrigin(.5).setDepth(48);
+   this.time.delayedCall(1550,()=>{
+    if(this.__routeNotice?.active)this.__routeNotice.destroy();
+   });
   };
-  const locationView=this.__torre2FRLGView;
-  if(locationView){
-   attachBuildingInteractions(this,locationView,
-    hotspot=>this.enterLocalityBuilding(state,locationView.id,hotspot));
-  }else if(region.biome==='city'){
-   // Old generic fallback only when an authentic locality file is missing.
-   worldZone(160,237,75,52,()=>this.centerScreen(state));
-   worldZone(314,134,82,55,()=>this.martScreen(state));
-  }else if(region.biome==='forest'||region.biome==='safari'){
-   if(gymStage)worldZone(329,169,81,65,()=>this.grassScreen(state));
-  }else if(region.biome.endsWith('-gym')||region.biome==='hall'){
-   if(!finished&&state.trainer===limit)
-    worldZone(319,153,84,52,()=>this.enterBattle(state));
-  }
-  const art=this.add.graphics().setDepth(2);
-  ball(art,32,75,8);
-  text(this,46,68,region.title,{
-   fontSize:region.title.length>19?'12px':'14px',color:'#fff4d3',
-   fontStyle:'bold',stroke:'#072e3d',strokeThickness:2}).setDepth(4);
-  text(this,380,69,region.subtitle,{
-   fontSize:region.subtitle.length>21?'8px':'9px',
-   color:'#baf4e9'}).setOrigin(1,0).setDepth(4);
-  const trainers=this.add.graphics().setDepth(6);
-  for(let i=0;i<points.length;i++){
-   const p=points[i],current=p.index===state.trainer,won=p.index<state.trainer;
-   if(!won){
-    const trainerKind=trainerClass(state.stage,p.index,p.kind,region.biome);
-    // The trainer's feet sit on the checkpoint in the same zigzag trail.
-    if(!addFireRedNPC(this,trainerKind,p.x,p.y+3,{depth:7,scale:.82}))
-     drawTrainer(trainers,p.x,p.y-6,trainerKind,.72);
-    if(current){
-     // Red stays on the incoming segment, 21px before the opponent.
-     const previous=i?points[i-1]:{x:56,y:251};
-     const dx=p.x-previous.x,dy=p.y-previous.y;
-     const length=Math.hypot(dx,dy)||1;
-     const playerX=p.x-21*dx/length,playerY=p.y-21*dy/length;
-     if(!addRedPlayer(this,playerX,playerY+3,{depth:8,scale:.85}))
-      drawTrainer(trainers,playerX,playerY-6,'youngster',.72);
-    }
-   }
-   // The route already paints small square checkpoints. No bulky round pins.
-   if(won)text(this,p.x,p.y-1,'✓',{fontSize:'9px',
-    color:'#ffffff',fontStyle:'bold',stroke:'#18392c',strokeThickness:2})
-    .setOrigin(.5).setDepth(8);
-   else if(current){
-    text(this,p.x+12,p.y-25,'!',{
-     fontSize:'12px',color:'#ffe5a0',fontStyle:'bold',
-     stroke:'#20333f',strokeThickness:2}).setOrigin(.5).setDepth(9);
-    this.add.zone(p.x,p.y-10,34,45).setInteractive({useHandCursor:true})
-     .setDepth(25).on('pointerdown',()=>this.enterBattle(state));
-   }
-  }
-  const kind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
-   next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'RIVAL':'TREINADOR';
-  const nextTrainer=trainerClass(state.stage,state.trainer,next?.kind,region.biome);
-  // Clear two-line travel HUD; player's location stays visible without
-  // opening the regional Town Map. Real saved state drives the position.
-  text(this,54,267,'VOCÊ ESTÁ: '+region.subtitle.toUpperCase().slice(0,35),{
-   fontSize:'8px',color:'#a5eed1',fontStyle:'bold'}).setDepth(5);
-  if(!addFireRedNPC(this,nextTrainer,35,297,{depth:7}))
-   drawTrainer(trainers,35,285,nextTrainer,1);
-  text(this,55,281,finished?'★ JORNADA DE KANTO CONCLUÍDA':
-   'PRÓXIMO: '+(next?.leader?String(next.name).toUpperCase():trainerClassName(nextTrainer))+
-   ' · '+(next?.id||'').toUpperCase(),{
-   fontSize:'10px',fontStyle:'bold',color:'#ffebc1'}).setDepth(5);
-  ball(art,45,299,6);
-  progress(art,64,299,Math.max(0,state.trainer-first),6);
-  text(this,363,292,'TRILHA '+(page+1)+'/'+totalPages+' · '+(state.trainer+1)+'/'+(limit+1),{
-   fontSize:'10px',fontStyle:'bold',color:'#c0eacb'}).setOrigin(1,0).setDepth(5);
-  const navigate=delta=>{
-   this.mapPage=Math.max(0,Math.min(totalPages-1,page+delta));
-   this.scene.restart();
-  };
-  this.add.zone(26,299,22,22).setDepth(9).setInteractive({useHandCursor:true})
-   .on('pointerdown',()=>navigate(-1));
-  this.add.zone(380,299,20,22).setDepth(9).setInteractive({useHandCursor:true})
-   .on('pointerdown',()=>navigate(1));
-  text(this,25,291,'‹',{fontSize:'19px',color:'#ffdfa4'}).setOrigin(.5,0).setDepth(5);
-  text(this,380,291,'›',{fontSize:'19px',color:'#ffdfa4'}).setOrigin(.5,0).setDepth(5);
-  this.button(53,331,85,30,'◀ VOLTAR',()=>navigate(-1),false,10);
-  if(gymStage){
-   this.button(145,331,89,30,'GRAMA ALTA',()=>this.grassScreen(state),false,9,'green');
-   this.button(249,331,109,30,'CENTRO POK.',()=>this.centerScreen(state),false,9);
-   this.button(352,331,91,30,'POKÉ MART',()=>this.martScreen(state),false,9);
-  }else this.button(240,331,187,30,'AVANÇAR ▶',()=>navigate(1));
+  // ONE live map throughout this leader's entire route. No mapPage, next
+  // page, zigzag line, dynamic region switching or screenshot backdrop.
+  this.__campaignMap=renderUnifiedCampaignMap(this,state,{
+   limit,
+   onTrainer:index=>{
+    if(!finished&&index===state.trainer)this.enterBattle(state);
+   },
+   onGym:()=>this.gymScreen(state),
+   onCenter:()=>this.centerScreen(state),
+   onMart:()=>this.martScreen(state),
+   onGrass:()=>this.grassScreen(state),
+   onLocked:message
+  });
+  this.button(89,330,128,31,'GRAMA ALTA',
+   ()=>this.grassScreen(state),false,10,'green');
+  this.button(227,330,128,31,'CENTRO / PC',
+   ()=>this.centerScreen(state),false,10);
+  this.button(350,330,86,31,'LOJA',
+   ()=>this.martScreen(state),false,10);
   richTeam(this);
-  text(this,445,67,'SUA EQUIPE',{fontSize:'15px',fontStyle:'bold',
+  text(this,443,67,'SUA EQUIPE',{fontSize:'15px',fontStyle:'bold',
    color:'#fff8e0',stroke:'#682f32',strokeThickness:2}).setDepth(5);
   text(this,416,102,'INSÍGNIAS '+Math.min(8,state.badges.length)+'/8',{
    fontSize:'10px',fontStyle:'bold',color:'#ffe1a1'}).setDepth(5);
   text(this,621,102,'$ '+(state.money||0),{
    fontSize:'11px',fontStyle:'bold',color:'#ffda74'}).setOrigin(1,0).setDepth(5);
-  // Seis botões autênticos do menu Poké Arena, interativos no mouse e toque.
   const menu=[
    ['BOLSA',()=>this.bagScreen(state)],
    ['POKÉMON',()=>state.team.length&&this.showSummary(state,state.active)],
    ['CENTRO',()=>this.centerScreen(state)],
    ['LOJA',()=>this.martScreen(state)],
    ['GINÁSIO',()=>this.gymScreen(state)],
-   ['CASAS',()=>this.housesScreen(state)]
+   ['CAPTURA',()=>this.grassScreen(state)]
   ];
   menu.forEach(([label,action],i)=>{
    this.button(466+(i%2)*110,137+Math.floor(i/2)*27,
@@ -352,7 +273,6 @@ class Campanha extends Phaser.Scene{
   });
   text(this,416,210,'POKÉMON · TOQUE PARA VER GOLPES',{
    fontSize:'8px',color:'#bde7ec'}).setDepth(6);
-  // Seis retratos reais PMD do cliente, não personagens desenhados por CSS.
   const mini=this.add.graphics().setDepth(3);
   for(let i=0;i<6;i++){
    const x=416+(i%2)*107,y=222+Math.floor(i/2)*25;
@@ -379,17 +299,16 @@ class Campanha extends Phaser.Scene{
     .setInteractive({useHandCursor:true})
     .on('pointerdown',()=>this.showSummary(state,i));
   }
-  // CTA stays at the original clickable location with richer gold chrome.
   const g=this.add.graphics().setDepth(2);
   g.fillStyle(0xf4b94b,.2);g.fillRoundedRect(406,301,225,49,4);
-  for(const [x,y] of [[420,312],[609,311],[426,337],[603,341]]){
-   g.fillStyle(0xfff6b9);g.fillRect(x,y,4,1);g.fillRect(x+1,y-1,1,4);
-  }
   if(state.pendingCapture)this.battleButton(518,326,218,44,
    'CAPTURAR POKÉMON ▶',()=>this.captureScreen(state),true);
   else this.battleButton(518,326,218,44,
-   finished?'★ CAMPEÃO DE KANTO':'▶ INICIAR BATALHA',()=>{
-    if(!finished)this.enterBattle(state);
+   finished?'★ CAMPEÃO DE KANTO':
+   state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1),()=>{
+    if(finished)return;
+    if(state.trainer>=limit)this.gymScreen(state);
+    else this.enterBattle(state);
    },!finished);
   this.button(607,26,56,30,'RESET',()=>{
    if(window.confirm('Apagar o progresso da campanha Kanto?')){
