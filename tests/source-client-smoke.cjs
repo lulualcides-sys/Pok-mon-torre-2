@@ -296,12 +296,12 @@ const server=http.createServer(async(req,res)=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&c.__torre2FRLGView?.id==='viridian'&&
     c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled&&
-      o.listenerCount('pointerover')>0).length>=2;
+      !!o.getData?.('frlg-building')).length>=2;
   },null,{timeout:20000});
   const cityClick=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const targets=c.children.list.filter(o=>o.type==='Zone'&&
-    o.input?.enabled&&o.listenerCount('pointerover')>0);
+    o.input?.enabled&&!!o.getData?.('frlg-building'));
    const target=targets[0];
    if(!target)return {highlight:false,opened:false};
    target.emit('pointerover');
