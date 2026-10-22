@@ -89,7 +89,8 @@ export function campaignRegion(stage,page,totalPages=3,champion=false){
  const actualPage=Math.max(0,Math.min(totalPages-1,page));
  // Distribute the chapter's distinct locations across all trainer pages,
  // keeping the leader room on the last page (including old 30+ trainer saves).
- const p=Math.floor(actualPage*(chapter.length-1)/Math.max(1,totalPages-1));
+ const p=totalPages===1?chapter.length-1:
+  Math.floor(actualPage*(chapter.length-1)/(totalPages-1));
  const [title,subtitle,biome]=chapter[p];
  return {title,subtitle,biome,stage,page:actualPage,chapterPage:p};
 }
