@@ -297,24 +297,34 @@ export function team(scene){
 }
 export function teamCard(scene,x,y,member,chosen){
  const g=scene.add.graphics().setDepth(2);
- px(g,x+2,y+3,100,44,0x061329,.7);
- px(g,x,y,100,44,chosen?0xffd980:member?0x75b9e5:0x315e83);
- px(g,x+2,y+2,96,40,member?0x162f49:0x0e2a47);
- px(g,x+4,y+4,92,2,chosen?0xffe7a8:0x36799e);
+ const trim=chosen?0xffd66f:member?0x5be0ad:0x315f85;
+ const face=member?(chosen?0x252e55:0x0c483f):0x132d4c;
+ px(g,x+2,y+4,100,62,0x030e20,.75);
+ px(g,x,y,100,62,0x05162c);
+ px(g,x+1,y+1,98,60,trim);
+ px(g,x+3,y+3,94,56,0x071d35);
+ px(g,x+4,y+4,92,54,face);
+ px(g,x+5,y+5,90,2,chosen?0xffedb2:0x5aac9d);
+ for(const [cx,cy] of [[x+1,y+1],[x+95,y+1],[x+1,y+57],[x+95,y+57]]){
+  px(g,cx,cy,4,4,0x102541);
+  px(g,cx+1,cy+1,2,2,trim);
+ }
  if(member){
-  px(g,x+4,y+5,30,31,0x0a233d);
-  edge(g,x+4,y+5,30,31,chosen?0xe6be73:0x538fae);
+  px(g,x+4,y+8,30,34,chosen?0x5a4476:0x2d8764);
+  px(g,x+5,y+9,28,32,chosen?0x7f6fa0:0x75bf93);
+  px(g,x+35,y+49,59,8,0x071624);
   const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
-  px(g,x+36,y+35,57,5,0x071629);
-  px(g,x+37,y+36,55,3,0x24556a);
-  px(g,x+37,y+36,55*hp/100,3,hp>50?0x49e68b:hp>20?0xf7d46a:0xf07565);
+  px(g,x+37,y+51,55,4,0x1a4651);
+  px(g,x+37,y+51,55*hp/100,4,hp>50?0x55ed90:hp>20?0xe8ce65:0xe66c60);
+  px(g,x+37,y+51,55*hp/100,1,0xb2ffb2,.75);
  }else{
-  g.fillStyle(0x214265);g.fillCircle(x+50,y+20,10);
-  px(g,x+40,y+19,20,3,0x0b2745);
-  g.fillStyle(0x0b2745);g.fillCircle(x+50,y+20,4);
-  g.fillStyle(0x50759b);g.fillCircle(x+50,y+20,2);
+  g.fillStyle(0x2b5075);g.fillCircle(x+50,y+28,13);
+  px(g,x+37,y+27,26,3,0x0f2c4b);
+  g.fillStyle(0x112e4d);g.fillCircle(x+50,y+28,5);
+  g.fillStyle(0x54789c);g.fillCircle(x+50,y+28,2);
  }
 }
+
 export function progress(g,x,y,active,num=6){
  for(let i=0;i<num;i++){
   const xx=x+i*16;
