@@ -672,6 +672,27 @@ assert.equal(getCampaignMapSpec(1,15).id,'cerulean',
  'Misty gets a separate themed map after defeating Brock');
 assert.equal(getCampaignMapSpec(7,27).points.length,27,
  'Later leaders keep increased trainer progression without pagination');
+for(let stage=0;stage<8;stage++){
+ const map=getCampaignMapSpec(stage,TRAINERS_PER_GYM(stage));
+ assert.equal(map.points.length,13+stage*2,'Each gym owns all trainers on one map');
+ assert.ok(map.points.every(p=>p.x>=25&&p.x<=380&&p.y>=112&&p.y<=291),
+  'Trainer marker must stay inside the playable world viewport');
+}
+for(let stage=1;stage<8;stage++){
+ const map=getCampaignMapSpec(stage,TRAINERS_PER_GYM(stage));
+ for(const p of map.points)for(const xy of Object.values(map.buildings))
+  assert.ok(Math.abs(p.x-xy[0])>33||Math.abs(p.y-xy[1])>31,
+   'Trainer marker must not hide building entrance on '+map.id);
+}
+assert.ok(menuCampaign.includes('consumeCampaignResetLink()'),
+ 'Reset link must be consumed in the actual campaign scene');
+assert.ok(menuCampaign.includes("query.get('reset_kanto')"),
+ 'One-time URL reset is requested explicitly by the player');
+const npcFrames=fs.readFileSync(path.join(stage,version,'torre2/frlg-npc.js'),'utf8');
+assert.ok(npcFrames.includes('texture.add(frame,0,0,0,16,'),
+ 'FireRed NPCs use true cropped texture frames, not stretched spritesheets');
+assert.ok(!npcFrames.includes('image.setCrop(0,0,'),
+ 'Do not put sheet-sized cropped NPC images outside the playable map');
 for(let stage=9;stage<=12;stage++)
  assert.equal(getCampaignMapSpec(stage,0).id,'indigo',
   'Elite Four and Champion share the same themed map');
