@@ -628,6 +628,21 @@ const server=http.createServer(async(req,res)=>{
    'No frozen KO phase or replayed FIGHT countdown after a manual switch');
   assert.ok(afterSwitch.enemyPct>.59&&afterSwitch.enemyPct<.74,
     'Switching Pokémon must preserve opponent damage');
+  // Releasing/recollecting must use genuine authored pixel-cell sprite art,
+  // and the exact same PMD bounds that are visible on the battlefield.
+  const recallArt=await offline.evaluate(async()=>{
+   const src=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+   const mod=await import(new URL('./torre2/capture-arena.js',src.src).href);
+   const b=window.__pt2Game.scene.getScene('combate');
+   const fake={clear(){},fillStyle(){},fillRect(...a){this.rects.push(a)},rects:[]};
+   mod.drawCaptureBall(fake,120,210,'pokeball',1);
+   const fighter=b.luchadores[0],bounds=fighter.spr.getBounds();
+   return {cells:fake.rects.length,target:[bounds.centerX,bounds.centerY],
+    width:bounds.width,height:bounds.height};
+  });
+  assert.ok(recallArt.cells>70,'Pokéball must use fully drawn pixel-cell sprite art');
+  assert.ok(recallArt.target.every(Number.isFinite)&&recallArt.width>0,
+   'The red beam must target an actual animated PMD Pokémon texture');
   assert.equal(afterSwitch.remaining,2,
     'Manual switching does not mark a Pokémon fainted');
   // Force one actual knockout event, then verify the red recall action

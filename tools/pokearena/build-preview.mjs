@@ -58,7 +58,7 @@ html=html.replace('href="/favicon.png"','href="favicon.png"');
 // cannot drift away from their original logical positions. The screenshot
 // request is to occupy the two horizontal side strips, NOT remap the game.
 html=html.replace('</head>',`<style id="torre2-landscape-map">
-html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden}
+html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden;max-width:100%;}
 /* Some Chromium/Android builds center #juego itself at a 16:9 ratio.
    Pin BOTH the wrapper and canvas to the physical screen so the two empty
    side bands are actually filled, without resizing the Phaser world. */
@@ -78,29 +78,57 @@ body.torre2-landscape-map #juego canvas{
  margin:0!important;padding:0!important;transform:none!important;
  image-rendering:pixelated
 }
+/* Fallback for browsers that keep a centered/16:9 transformed parent:
+   move the canvas under <body> and make it its own fixed viewport surface. */
+body.torre2-landscape-map > canvas.torre2-wide-canvas{
+ position:fixed!important;inset:0!important;
+ left:0!important;top:0!important;
+ width:100vw!important;height:100dvh!important;
+ min-width:100vw!important;max-width:none!important;max-height:none!important;
+ margin:0!important;padding:0!important;transform:none!important;
+ z-index:900!important;image-rendering:pixelated
+}
 </style>\n</head>`);
-html=html.replace('</head>','<meta name="referrer" content="no-referrer">\n</head>');
+html=html.replace('</head>','<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">\n<meta name="referrer" content="no-referrer">\n</head>');
 await fs.writeFile(index,html);
 
 // Watch scene transitions only to toggle the display of the Kanto canvas.
 // Phaser's internal resolution, renderer, objects and game state never change.
 const landscapeFit=`<script id="torre2-landscape-display">
 (function(){
- var last=null;
+ var last=null, originalParent=null,ported=null;
  function sync(){
-  var game=window.__pt2Game;
-  var landscape=window.innerWidth>window.innerHeight&&
-   window.innerWidth/Math.max(1,window.innerHeight)>=1.7;
+  var game=window.__pt2Game,canvas=document.querySelector('#juego canvas')||ported;
+  var view=window.visualViewport;
+  var width=Math.max(window.innerWidth,view?.width||0);
+  var height=Math.max(1,window.innerHeight,view?.height||0);
+  var landscape=width>height&&width/height>=1.68;
   var active=!!(game&&game.scene&&game.scene.isActive('campanha'));
-  var want=landscape&&active&&!!document.querySelector('#juego canvas');
-  if(want===last)return;
+  var want=landscape&&active&&!!canvas;
+  if(want===last&&!(want&&canvas?.getBoundingClientRect().width<width-12))return;
   last=want;
   document.body.classList.toggle('torre2-landscape-map',want);
-  // Phaser input maps browser touch coordinates to the canvas bounding box.
+  if(want&&canvas){
+   // Phaser's 16:9 parent/transform sometimes constrains the fixed canvas
+   // despite 100vw CSS. Reparent ONLY the DOM canvas (not the WebGL game or
+   // input listeners) when this happens; touch bounds are recalculated below.
+   const box=canvas.getBoundingClientRect();
+   if(!ported&&(box.width<width-12||box.left>12)){
+    originalParent=canvas.parentNode;
+    ported=canvas;ported.classList.add('torre2-wide-canvas');
+    document.body.appendChild(ported);
+   }
+  }else if(ported){
+   ported.classList.remove('torre2-wide-canvas');
+   if(originalParent?.isConnected)originalParent.appendChild(ported);
+   ported=null;originalParent=null;
+  }
+  // Keep touch-to-pixel mapping synchronized with the actual CSS canvas rect.
   if(game?.scale?.updateBounds)game.scale.updateBounds();
  }
  window.addEventListener('resize',sync,{passive:true});
  window.addEventListener('orientationchange',sync,{passive:true});
+ if(window.visualViewport)window.visualViewport.addEventListener('resize',sync,{passive:true});
  window.setInterval(sync,180);
  sync();
 })();

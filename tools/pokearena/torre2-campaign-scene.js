@@ -400,7 +400,7 @@ class Campanha extends Phaser.Scene{
     fontSize:name.length>9?'7px':'9px',
     color:selected?'#ffe5a9':'#f7fbff',fontStyle:'bold'}).setDepth(6);
    text(this,x+27,y+13,'NV.'+(member.progression?.level??'—')+
-    ' · HP '+(member.hp??100)+'%',{
+    ' · HP '+Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)))+'%',{
     fontSize:'7px',color:'#baf8d0'}).setDepth(6);
    const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
    mini.fillStyle(0x192e44);
@@ -713,7 +713,7 @@ class Campanha extends Phaser.Scene{
    text(this,x-34,y-12,(chosen?'◆ ':'')+member.id.toUpperCase().slice(0,12),{
     fontSize:'10px',color:chosen?'#ffe4a1':'#e4f2ff'});
    text(this,x-33,y+3,'NV.'+(member.progression?.level??'?')+
-    ' · HP '+(member.hp??100)+'%',{fontSize:'9px',color:C.muted});
+    ' · HP '+Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)))+'%',{fontSize:'9px',color:C.muted});
   });
   this.button(157,231,170,37,'POÇÃO +25 HP',()=>{
    const result=usePotion(state,'potion',target);

@@ -6,7 +6,7 @@
 import {GYMS} from './campaign-core.js';
 import {resolveLoadout} from './move-pool.js';
 import {buscar} from '../datos.js';
-import {drawShopItem} from './campaign-sprites.js';
+import {drawCaptureBall} from './capture-arena.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 // The fighter's logical simulation location can differ from the PMD sprite.
@@ -16,11 +16,28 @@ function visibleActorCenter(actor){
  const visual=actor?.spr||actor?.sprite;
  if(visual?.getBounds&&visual.active!==false){
   const b=visual.getBounds();
+  // Bounds are calculated from the actual PMD texture, including animation
+  // frame origin and scale. Never use a saved spawn position for the beam.
   if(Number.isFinite(b.centerX)&&Number.isFinite(b.centerY)&&
      b.width>0&&b.height>0)return {x:b.centerX,y:b.centerY};
  }
  return {x:Number(actor?.x)||320,
   y:(Number(actor?.y)||180)-Math.max(18,Number(actor?.alto||36)*.5)};
+}
+function drawRecallBeam(g,from,target,strength=1){
+ const a=Math.max(0,Math.min(1,strength));
+ const x=Math.round(target.x),y=Math.round(target.y);
+ g.clear();
+ g.lineStyle(8,0xba2347,a*.60);
+ g.lineBetween(from.x,from.y,x,y);
+ g.lineStyle(4,0xff496b,a);
+ g.lineBetween(from.x,from.y,x,y);
+ g.lineStyle(2,0xffcbd0,a);
+ g.lineBetween(from.x,from.y,x,y);
+ g.fillStyle(0xff6381,a*.65);
+ g.fillCircle(x,y,Math.max(2,Math.round(7*a)));
+ g.fillStyle(0xffffff,a);
+ g.fillRect(x-2,y-2,4,4);
 }
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
  return scene.add.text(x,y,value,{fontFamily:'Pixelify Sans,monospace',
@@ -71,7 +88,7 @@ function drawPixelBall(g,x,y,alive,active){
   g.lineStyle(1,0xffd475);g.strokeRect(x-10,y-10,20,20);
   g.fillStyle(0xffebae);g.fillRect(x-8,y-8,3,2);
  }
- drawShopItem(g,x,y,'pokeball',.9);
+ drawCaptureBall(g,x,y,'pokeball',.68);
  if(!alive){
   g.fillStyle(0x071827,.78);g.fillRect(x-8,y-8,16,16);
   g.fillStyle(0x7c91a0);g.fillRect(x-3,y-1,6,2);
@@ -188,17 +205,20 @@ export function installPartyBattle(scene){
    y:Math.max(90,Math.min(322,target.y+42))
   };
   const fx=sharedBeam;
-  const px=target.x,py=target.y;
   const ball=sharedBall;
   // Exact same crisp FireRed pixel-ball art as inventory/team HUD.
   // Draw into an existing Phaser Graphics surface; never generate circles
   // or allocate a new PNG/canvas for every swap.
   const drawBall=()=>{
    ball.clear();
-   drawShopItem(ball,Math.round(from.x),Math.round(from.y),'pokeball',.95);
+   drawCaptureBall(ball,Math.round(from.x),Math.round(from.y),'pokeball',1.15,0,frames<12);
   };
   drawBall();
   let frames=0,restarted=false;
+  // Keep the rendered target synchronized with the actual moving PMD sprite
+  // while the laser is travelling. Capture a copy at the end of recollection
+  // only, when the outgoing Pokémon is fully inside the ball.
+  const recallTarget={x:target.x,y:target.y};
   const detachRecall=()=>scene.game.events.off('step',step);
   const enterNext=()=>{
    if(restarted||!scene.scene.isActive())return;
@@ -249,7 +269,6 @@ export function installPartyBattle(scene){
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
    const replacementScale=actor.escala||actor.spr.scaleX||1;
-   const deployTarget=visibleActorCenter(actor);
    actor.spr.setAlpha(.1).setScale(.15*replacementScale).setVisible(true);
    actor.sombra?.setVisible(true);
    actor.anillo?.setVisible(true);
@@ -261,15 +280,13 @@ export function installPartyBattle(scene){
     }
     const t=Math.min(1,++comingFrame/12);
     fx.clear();
-    const targetX=deployTarget.x,targetY=deployTarget.y;
-    // Three pixel-bright layers simulate the compact release beam in the
-    // reference: red silhouette, hot core and a tiny 4-way opening flash.
-    fx.lineStyle(6,0xd83456,(1-t)*.4);
-    fx.lineBetween(from.x,from.y,targetX,targetY);
-    fx.lineStyle(3,0xff6c81,(1-t)*.9);
-    fx.lineBetween(from.x,from.y,targetX,targetY);
-    fx.lineStyle(1,0xfff3dc,(1-t));
-    fx.lineBetween(from.x,from.y,targetX,targetY);
+    // During materialization, aim at the real visible PMD sprite frame,
+    // not the pre-shrink cached center or the Luchador's logical position.
+    const live=visibleActorCenter(actor);
+    const targetX=live.x,targetY=live.y;
+    drawRecallBeam(fx,from,live,1-t*.55);
+    ball.clear();
+    drawCaptureBall(ball,from.x,from.y,'pokeball',1.15,0,true);
     fx.fillStyle(0xffe0bb,(1-t)*.9);
     const flash=Math.max(1,Math.round(9*(1-t)));
     fx.fillRect(Math.round(targetX)-flash,Math.round(targetY)-1,flash*2,2);
@@ -299,26 +316,21 @@ export function installPartyBattle(scene){
   const step=()=>{
    if(!scene.scene.isActive()){scene.game.events.off('step',step);return}
    scene.fase='ko';
-   const t=Math.min(1,++frames/18);
-   fx.clear();
-   // Pixel-beam recall in three crisp colors. Avoid the huge translucent
-   // triangle that made the original look like a generic laser pointer.
-   const fade=1-t;
-   fx.lineStyle(5,0xa52146,.55*fade);
-   fx.lineBetween(from.x,from.y,px,py);
-   fx.lineStyle(3,0xff4767,.95*fade);
-   fx.lineBetween(from.x,from.y,px,py);
-   fx.lineStyle(1,0xffede1,fade);
-   fx.lineBetween(from.x,from.y,px,py);
-   fx.fillStyle(0xffc0be,.7*fade);
-   const spark=Math.max(1,Math.round(7*fade));
-   fx.fillRect(Math.round(px)-spark,Math.round(py)-1,spark*2,2);
-   fx.fillRect(Math.round(px)-1,Math.round(py)-spark,2,spark*2);
+   const t=Math.min(1,++frames/30);
+   // The PMD sprite moves while in combat; read its current on-screen bounds
+   // BEFORE shrinking. This keeps the red ray touching the Pokémon itself.
+   const live=visibleActorCenter(actor);
+   if(frames<=24){recallTarget.x=live.x;recallTarget.y=live.y;}
+   const fade=1-t*.48;
+   drawRecallBeam(fx,from,recallTarget,fade);
+   ball.clear();
+   drawCaptureBall(ball,Math.round(from.x),Math.round(from.y),
+    'pokeball',1.15,0,frames<=24);
    if(actor.spr?.active){
-    actor.spr.setAlpha(Math.max(.05,1-t));
-    actor.spr.setScale(Math.max(.06,(actor.escala||1)*(1-t*.9)));
+    actor.spr.setAlpha(Math.max(.02,1-t));
+    actor.spr.setScale(Math.max(.035,(actor.escala||1)*(1-t*.95)));
    }
-   if(frames>=22)enterNext();
+   if(frames>=32)enterNext();
   };
   // Always show the red recollection beam and shrinking Pokémon (including
   // K.O.) before sending the replacement. A scene clock can be paused by
@@ -327,7 +339,7 @@ export function installPartyBattle(scene){
   // The game-wide frame callback is the primary completion mechanism:
   // battle-scene timers may pause during the engine's native KO hitstop.
   // DelayedCall only acts as a fallback when the local clock is running.
-  scene.time.delayedCall(800,enterNext);
+  scene.time.delayedCall(1100,enterNext);
   scene.events.once('shutdown',detachRecall);
  }
  function finish(won){

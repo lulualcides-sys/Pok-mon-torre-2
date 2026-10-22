@@ -20,7 +20,7 @@ const BALL=[
  'OOWWWWWOOWWWWWOO','.OWWWWWWWWWWWWO.','..OWWWWWWWWWWO..',
  '...OWWWWWWWWO...','....OOWWWWOO....','......OOOO......'];
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
-function ball(g,cx,cy,kind,scale=2,rotation=0,opened=false){
+export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opened=false){
  const c=COLORS[kind]||COLORS.pokeball;
  const shift=Math.round(Math.sin(rotation)*1.7*scale);
  const x=Math.round(cx-8*scale+shift),y=Math.round(cy-7*scale);
@@ -127,7 +127,7 @@ export function installWildCapture(scene){
   for(const [i,kind]of ['pokeball','greatball','ultraball'].entries()){
    const y=178+i*27,owned=state.inventory[kind]||0;
    const draw=add(scene.add.graphics().setDepth(1208));
-   ball(draw,200,y+4,kind,1);
+   drawCaptureBall(draw,200,y+4,kind,1);
    const chance=captureChance({...state.pendingWild,hpPercent:hp,
     status:statusName(enemy)},kind);
    add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
@@ -164,7 +164,7 @@ export function installWildCapture(scene){
   const drawBall=(x,y,angle=0)=>{
    gfx.clear();
    px(gfx,x-15,y+22,31,3,0x061e27,.65);
-   ball(gfx,x,y,kind,2,angle);
+   drawCaptureBall(gfx,x,y,kind,2,angle);
   };
   const restore=()=>{
    if(obj&&obj.active!==false){
@@ -190,7 +190,7 @@ export function installWildCapture(scene){
     scene.tweens.add({targets:beam,t:1,duration:400,
      onUpdate:()=>{
       gfx.clear();artBeam(gfx,end.x,end.y,focus.x,focus.y,beam.t);
-      ball(gfx,end.x,end.y,kind,2,0,true);
+      drawCaptureBall(gfx,end.x,end.y,kind,2,0,true);
      },onComplete:()=>{
       if(obj)obj.setAlpha(0);
       caption.setText('A POKÉBOLA CAIU...');
@@ -209,7 +209,7 @@ export function installWildCapture(scene){
            if(!scene.scene.isActive())return;
            gfx.clear();
            if(result.ok){
-            ball(gfx,end.x,floorY,kind,2);
+            drawCaptureBall(gfx,end.x,floorY,kind,2);
             for(let i=0;i<10;i++){
              const angle=i*Math.PI/5;
              px(gfx,end.x+Math.cos(angle)*26,floorY+Math.sin(angle)*25,
@@ -220,7 +220,7 @@ export function installWildCapture(scene){
            }else{
             caption.setText('O POKÉMON ESCAPOU!').setColor('#ffdeae');
             gfx.fillStyle(0xfff8e1,.8);gfx.fillCircle(end.x,floorY,12);
-            ball(gfx,end.x,floorY,kind,2,0,true);
+            drawCaptureBall(gfx,end.x,floorY,kind,2,0,true);
             restore();scene.fase=oldPhase;
             scene.time.delayedCall(850,()=>{
              if(scene.scene.isActive()){
