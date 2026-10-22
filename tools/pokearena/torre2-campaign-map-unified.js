@@ -86,6 +86,7 @@ function landmark(scene,g,label,x,y,accent,callback,locked=false){
  font(scene,x,top+7,label,8,'#fff8dd',12);
  const focus=scene.add.graphics().setDepth(14);
  const zone=scene.add.zone(x,y,43,35).setDepth(15).setInteractive({useHandCursor:true});
+ zone.setData('torre2-landmark',label);
  zone.on('pointerover',()=>{
   focus.clear();focus.lineStyle(2,0xffe5a6,.95);
   focus.strokeRect(x-24,y-20,48,39);
@@ -135,7 +136,12 @@ function badge(scene,g,index,x,y,condition,onClick){
  if(active){g.lineStyle(1,0xffffff,.92);g.strokeRect(x0-2,y0-2,w+4,19);}
  const hit=scene.add.zone(x,y,30,43).setDepth(22)
   .setInteractive({useHandCursor:true});
- hit.on('pointerdown',onClick);
+ hit.setData('torre2-checkpoint',index);
+ const hover=scene.add.graphics().setDepth(23);
+ hit.on('pointerover',()=>{
+  hover.clear();hover.lineStyle(1,0xffe5a6,1);
+  hover.strokeRect(x-15,y-25,30,45);
+ }).on('pointerout',()=>hover.clear()).on('pointerdown',onClick);
  return hit;
 }
 export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
