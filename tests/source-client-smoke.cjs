@@ -261,18 +261,19 @@ const server=http.createServer(async(req,res)=>{
     null,{timeout:15000});
   // The first page is Viridian, the second Viridian Forest, and the
   // gym approach is Pewter. Do not require Pewter on the first page.
-  const routeLabels=await offline.evaluate(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    const label=()=>c.children.list.filter(o=>typeof o.text==='string').map(o=>o.text).join(' | ');
-    const names=[label()];
-    c.mapPage=1;c.scene.restart();names.push(label());
-    c.mapPage=2;c.scene.restart();names.push(label());
-    c.mapPage=0;c.scene.restart();
-    return names;
-  });
-  assert.ok(routeLabels[0].includes('VIRIDIAN'),'First trainer page is Viridian');
-  assert.ok(routeLabels[1].includes('FLORESTA'),'Second trainer page is Viridian Forest');
-  assert.ok(routeLabels[2].includes('PEWTER'),'Third trainer page reaches Pewter and Brock');
+  const getRouteLabel=()=>offline.evaluate(()=>window.__pt2Game.scene
+    .getScene('campanha').children.list
+    .filter(o=>typeof o.text==='string').map(o=>o.text).join(' | '));
+  assert.ok((await getRouteLabel()).includes('VIRIDIAN'),'First trainer page is Viridian');
+  for(const [page,region] of [[1,'FLORESTA'],[2,'PEWTER'],[0,'VIRIDIAN']]){
+    await offline.evaluate(page=>{
+      const c=window.__pt2Game.scene.getScene('campanha');
+      c.mapPage=page;c.scene.restart();
+    },page);
+    await offline.waitForFunction(region=>window.__pt2Game.scene.getScene('campanha')
+      .children.list.some(o=>typeof o.text==='string'&&o.text.includes(region)),
+      region,{timeout:12000});
+  }
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-offline-kanto-menu.png',fullPage:true});
   const newMap=await offline.evaluate(async()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
