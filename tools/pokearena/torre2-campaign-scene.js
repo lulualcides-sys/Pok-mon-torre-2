@@ -37,6 +37,8 @@ class Campanha extends Phaser.Scene{
  init(input){this.result=input?.finished?input:null}
  preload(){
   const state=readCampaign();
+  if(!this.textures.exists('torre2-cc0-world'))
+   this.load.image('torre2-cc0-world','assets/ui/kanto-cc0-world.png');
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
   for(const dex of toLoad){
