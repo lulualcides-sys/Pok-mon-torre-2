@@ -10,7 +10,7 @@ assert.ok(version,'Captured Phaser original client not staged');
 // trainer art, shops or capture modules. Check each staged ES module.
 for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
  'torre2/campaign-sprites.js','torre2/capture-arena.js',
- 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js']){
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js']){
  const source=path.join(stage,version,name);
  const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
  assert.equal(parsed.status,0,
@@ -66,6 +66,17 @@ for(let regionStage=0;regionStage<13;regionStage++){
 }
 const biomes=new Set(KANTO_CHAPTERS.flatMap(chapter=>chapter.map(row=>row[2])));
 assert.ok(biomes.size>=20,'Kanto needs varied environments, not reused bland generic map');
+const {drawKantoTiles}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-tiles.js')));
+assert.equal(typeof drawKantoTiles,'function');
+let fills=0;
+const tileMock={fillStyle(){return this},fillRect(){fills++;return this}};
+for(const biome of ['route','forest','sea','cave','city','graveyard','ice','volcano','league']){
+ const before=fills;drawKantoTiles(tileMock,biome,5);
+ assert.ok(fills-before>500,'Biome '+biome+' needs independent Phaser tile detail');
+}
+assert.ok(fills<90000,'World map decoration must remain light enough for mobile');
+
 assert.equal(campaignRegion(7,5,6).biome,'ground-gym','Giovanni stays in Viridian Gym');
 assert.equal(campaignRegion(8,1,4).biome,'victory','Victory Road follows Giovanni');
 assert.equal(campaignRegion(12,0,1).biome,'hall','Champion is the Hall of Fame finale');
