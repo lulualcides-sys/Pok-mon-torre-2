@@ -4,6 +4,7 @@
  * The fight ends only when one entire party is defeated.
  */
 import {GYMS} from './campaign-core.js';
+import {resolveLoadout} from './move-pool.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
@@ -14,7 +15,7 @@ const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
 export function createPartyMatch(state,opponent,wild=false){
  const friend=state.team.slice(0,6).map(m=>({
   id:m.id,uid:m.uid,level:m.progression?.level||5,
-  hp:clamp(m.hp??100)
+  hp:clamp(m.hp??100),loadout:resolveLoadout(m)
  }));
  const pool=GYMS[state.stage]?.enemy||[opponent.id];
  const count=wild?1:opponent.leader?
@@ -22,7 +23,11 @@ export function createPartyMatch(state,opponent,wild=false){
   Math.min(4,1+Math.floor((state.trainer+(state.stage||0))/5));
  const foes=Array.from({length:count},(_,i)=>({
   id:i===0?opponent.id:pool[(state.trainer+i)%pool.length]||opponent.id,
-  level:opponent.level,hp:100
+  level:opponent.level,hp:100,
+  loadout:resolveLoadout({id:i===0?opponent.id:
+   pool[(state.trainer+i)%pool.length]||opponent.id,
+   progression:{species:i===0?opponent.id:pool[(state.trainer+i)%pool.length]||opponent.id,
+    level:opponent.level}})
  }));
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))
@@ -135,7 +140,7 @@ export function installPartyBattle(scene){
     const d={...scene.datos,p1:left.id,p2:right.id,
       torre2:{...payload,party,
        playerLevel:left.level,enemyLevel:right.level},
-      torre2Loadout:null,torre2OpponentLoadout:null};
+      torre2Loadout:left.loadout,torre2OpponentLoadout:right.loadout};
     // The next Pokémon is animated by the native original Phaser entry.
     scene.scene.restart(d);
    }
