@@ -323,6 +323,32 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(newMap.bag.includes('POÇÃO'),'Bag has potions and TM UI');
   await offline.screenshot({path:'test-evidence/torre2-kanto-path-map.png',fullPage:true});
 
+  // Readable Town Map: click the in-game MAPA feature and verify
+  // Kanto geography, current position, destinations and live Phaser markers.
+  const townMap=await offline.evaluate(async()=>{
+    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    scene.mapScreen(core.readCampaign());
+    const labels=scene.children.list.filter(x=>typeof x.text==='string')
+     .map(x=>x.text).join(' | ');
+    return {labels,native:scene.children.list.filter(x=>x.type==='Graphics').length,
+     zones:scene.children.list.filter(x=>x.type==='Zone'&&x.input?.enabled).length};
+  });
+  assert.ok(townMap.labels.includes('MAPA DE KANTO')&&townMap.labels.includes('VIRIDIAN')&&
+   townMap.labels.includes('PEWTER')&&townMap.labels.includes('CINNABAR')&&
+   townMap.labels.includes('LOCAL ATUAL')&&townMap.labels.includes('PRÓXIMO OBJETIVO'),
+   'Kanto Town Map shows FireRed cities, current position and future objectives');
+  assert.ok(townMap.native>=2&&townMap.zones>=18,
+   'Town Map uses clickable Phaser draw calls, not a pasted bitmap');
+  await offline.screenshot({path:'test-evidence/torre2-interactive-kanto-town-map.png',
+   fullPage:true});
+  await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
+  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .children.list.some(x=>typeof x.text==='string'&&x.text.includes('VIRIDIAN')),
+    null,{timeout:12000});
+
+
   // Regression: encounter in real native combat, click the capture HUD,
   // weaken the actual enemy HP, throw a sprite-ball, wait through three shakes,
   // and verify the captured Pokémon is persisted without advancing trainers.
