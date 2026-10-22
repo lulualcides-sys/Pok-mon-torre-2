@@ -28,7 +28,11 @@ jobs:
           google-chrome --version
       - name: Verificar sintaxe do jogo e regras da campanha
         run: |
+          set -euo pipefail
           npm run check
+          for source in tools/pokearena/torre2-*.js; do
+            node --check "$source"
+          done
           npm test
       - name: Iniciar versão real de teste
         shell: bash
