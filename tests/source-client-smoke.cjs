@@ -357,8 +357,10 @@ const server=http.createServer(async(req,res)=>{
   const footer=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const cta=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
+   // Hidden dock zones are intentionally input-disabled while the sidebar
+   // is expanded. Verify their layout geometry, not temporary interactivity.
    const dock=c.__campaignDockObjects
-    .filter(o=>o.type==='Zone'&&o.input?.enabled);
+    .filter(o=>o.type==='Zone');
    const caption=c.children.list.find(o=>o.type==='Text'&&
     /TREINADOR/.test(o.text||'')&&Math.abs(o.y-335)<3);
    return {ctaY:cta?.y,ctaX:cta?.x,ctaWidth:cta?.width,
