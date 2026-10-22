@@ -131,10 +131,13 @@ export function installWildCapture(scene){
    onUpdate:()=>draw('throw'),onComplete:()=>{
     draw('beam');caption.setText('RAIO DE CAPTURA!');
     const targetSprite=fighter?.sprite;
-    if(targetSprite?.setAlpha)targetSprite.setAlpha(.18);
+    const previousAlpha=targetSprite?.alpha??1;
+    if(targetSprite?.setAlpha)targetSprite.setAlpha(.4);
     scene.time.delayedCall(440,()=>{
      if(!scene.scene.isActive())return;
-     if(targetSprite?.setAlpha)targetSprite.setAlpha(1);
+     // The Pokémon stays INSIDE the ball through all shakes; restore its
+     // appearance only if the ball actually bursts open.
+     if(targetSprite?.setAlpha)targetSprite.setAlpha(0);
      point.shake=0;draw('land');caption.setText('A POKÉBOLA CAIU...');
      let step=0;const shakes=result.ok?3:result.shakes;
      const animateShake=()=>{
@@ -152,6 +155,7 @@ export function installWildCapture(scene){
          scene.time.delayedCall(700,()=>scene.scene.start('campanha'));
         }else{
          caption.setText('ESCAPOU! TENTE NOVAMENTE');
+         if(targetSprite?.setAlpha)targetSprite.setAlpha(previousAlpha);
          gfx.clear();scene.fase=oldPhase;
          scene.time.delayedCall(650,()=>{caption.destroy();gfx.destroy();busy=false;refresh()});
         }
