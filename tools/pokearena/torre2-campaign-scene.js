@@ -123,15 +123,18 @@ class Campanha extends Phaser.Scene{
    index:first+i,x:xs[i],y:240-i*32,
    kind:routeNode(state.stage,first+i,limit).type
   }));
-  richMap(this,state.stage,points);
+  richMap(this,state.stage,points,page);
   const art=this.add.graphics().setDepth(2);
   ball(art,32,75,8);
+  const firstRoutes=['ROTA 1 / VIRIDIAN','ROTA 2 / FLORESTA','PEWTER / GINÁSIO'];
   text(this,46,68,finished?'KANTO · CAMPEÃO':
-   (state.stage===0?'ROTA 1 / PEWTER':
+   (state.stage===0?firstRoutes[Math.min(2,page)]:
     'ROTA '+(state.stage+1)+' / '+(gymStage?area.label:stage.city.toUpperCase())),{
    fontSize:'14px',color:'#fff4d3',fontStyle:'bold',
    stroke:'#072e3d',strokeThickness:2}).setDepth(4);
-  text(this,380,69,gymStage?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():'ELITE FOUR',{
+  text(this,380,69,state.stage===0?
+   ['VIRIDIAN','FLORESTA','PEWTER · BROCK'][Math.min(2,page)]:
+   gymStage?stage.city.toUpperCase()+' · '+stage.leader.toUpperCase():'ELITE FOUR',{
    fontSize:'9px',color:'#baf4e9'}).setOrigin(1,0).setDepth(4);
   const trainers=this.add.graphics().setDepth(6);
   for(const p of points){
