@@ -470,14 +470,17 @@ for(const id of ['sing','crabhammer'])
  assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
   'Sing and Crabhammer explicitly approved by user; preserve current visuals');
 const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
-assert.ok(menuCampaign.includes('drawApprovedDashboard(this,state)'),
- 'Campaign must show the exact approved art with genuine controls');
-assert.ok(fs.statSync(path.join(stage,'assets/ui/kanto-approved.avif')).size>7000,
- 'Approved user-picked Kanto artwork must ship as an actual image asset');
-const dashSource=fs.readFileSync(path.join(stage,version,'torre2/approved-dashboard.js'),'utf8');
-assert.ok(dashSource.includes('s.captureScreen(state)')&&dashSource.includes('s.grassScreen(state)'),
- 'Capture button in art must start the real capture/grass flow');
-assert.ok(dashSource.includes('s.enterBattle(state)'),'Trainer map nodes must work');
+assert.ok(!menuCampaign.includes('drawApprovedDashboard(this,state)'),
+ 'Never paste the approved reference image over the playable map');
+assert.ok(menuCampaign.includes('richMap(this,state.stage,points)'),
+ 'Campaign must draw native world graphics with real route nodes');
+const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
+for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',
+ 'function stone(','function tallGrass(','export function map(']){
+ assert.ok(nativeArt.includes(shape),'World map needs real Phaser pixel-art element: '+shape);
+}
+assert.ok(!fs.existsSync(path.join(stage,'assets/ui/kanto-approved.avif')),
+ 'Compiled Kanto map must not depend on pasted reference artwork');
 assert.ok(menuCampaign.includes('textoMenu(this,x,y'),'Campaign buttons use exact initial menu font');
 assert.ok(!menuCampaign.includes('0xdf803c'),'Remove orange generic battle button');
 const speciesFile=fs.readFileSync(path.join(stage,version,'torre2/species-fx.js'),'utf8');
