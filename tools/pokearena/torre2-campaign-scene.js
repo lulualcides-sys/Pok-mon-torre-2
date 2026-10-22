@@ -384,7 +384,74 @@ class Campanha extends Phaser.Scene{
  }
  bagScreen(state){
   this.children.removeAll(true);this.backdrop();
-  text(this,320,27,'BOLSA ·  showSummary(state,index,slot=0,page=0){
+  text(this,320,27,'BOLSA · POKÉDÓLARES '+state.money,{
+   ...titleStyle,fontSize:'20px'}).setOrigin(.5);
+  const inv=state.inventory||{};
+  const target=Math.max(0,Math.min(state.team.length-1,
+   Number.isInteger(this.bagMemberIndex)?this.bagMemberIndex:state.active));
+  this.bagMemberIndex=target;
+  text(this,320,63,'PB '+(inv.pokeball||0)+' · GB '+(inv.greatball||0)+
+   ' · UB '+(inv.ultraball||0)+' · POÇÃO '+(inv.potion||0)+
+   ' · SUPER '+(inv.superpotion||0),{
+   fontSize:'11px',color:C.gold}).setOrigin(.5);
+  text(this,320,92,'ESCOLHA QUEM RECEBE TM OU POÇÃO:',{
+   fontSize:'11px',color:C.blue}).setOrigin(.5);
+  state.team.slice(0,6).forEach((member,i)=>{
+   const x=161+(i%3)*160,y=127+Math.floor(i/3)*40;
+   const chosen=i===target;
+   const hit=this.add.rectangle(x,y,149,33,chosen?0x35566e:0x213950)
+    .setStrokeStyle(2,chosen?0xffd479:0x567994)
+    .setInteractive({useHandCursor:true});
+   hit.on('pointerdown',()=>{
+    this.bagMemberIndex=i;this.bagScreen(state);
+   });
+   this.drawPortrait(member,x-55,y,27);
+   text(this,x-34,y-12,(chosen?'◆ ':'')+member.id.toUpperCase().slice(0,12),{
+    fontSize:'10px',color:chosen?'#ffe4a1':'#e4f2ff'});
+   text(this,x-33,y+3,'NV.'+(member.progression?.level??'?')+
+    ' · HP '+(member.hp??100)+'%',{fontSize:'9px',color:C.muted});
+  });
+  this.button(157,231,170,37,'POÇÃO +25 HP',()=>{
+   const result=usePotion(state,'potion',target);
+   if(!result.ok)state.lastMessage=result.reason;
+   this.bagScreen(state);
+  },true);
+  this.button(340,231,170,37,'SUPER +60 HP',()=>{
+   const result=usePotion(state,'superpotion',target);
+   if(!result.ok)state.lastMessage=result.reason;
+   this.bagScreen(state);
+  },true);
+  this.button(517,231,166,37,'SUMÁRIO',()=>this.showSummary(state,target));
+  const tms=inv.tms||[];
+  const pages=Math.max(1,Math.ceil(tms.length/3));
+  this.bagTmPage=Math.max(0,Math.min(pages-1,this.bagTmPage||0));
+  if(tms.length)text(this,292,269,'ENSINAR TM PARA '+state.team[target].id.toUpperCase().slice(0,11),{
+   fontSize:'11px',color:C.gold}).setOrigin(.5);
+  else text(this,292,269,'Nenhuma TM. Compre no Mart.',{
+   fontSize:'11px',color:C.muted}).setOrigin(.5);
+  if(pages>1)this.button(561,269,117,22,
+   'TM '+(this.bagTmPage+1)+'/'+pages+'  ›',()=>{
+    this.bagTmPage=(this.bagTmPage+1)%pages;this.bagScreen(state);
+   },false,9);
+  tms.slice(this.bagTmPage*3,this.bagTmPage*3+3).forEach((id,i)=>{
+   const item=MART_ITEMS.find(x=>x.id===id);
+   if(!item)return;
+   const compatible=state.team[target].id==='mewtwo'||
+    !Array.isArray(item.compatible)||
+    item.compatible.includes(state.team[target].id);
+   this.button(144+i*181,302,173,27,
+    compatible?item.name:'INCOMP. '+item.name.slice(0,12),()=>{
+    const result=teachTM(state,id,target);
+    if(!result.ok)state.lastMessage=result.reason;
+    this.bagScreen(state);
+   },compatible);
+   drawShopItem(this.add.graphics().setDepth(6),76+i*181,303,item,.65);
+  });
+  if(state.lastMessage)text(this,320,324,state.lastMessage.slice(0,90),{
+   fontSize:'9px',color:C.gold}).setOrigin(.5);
+  this.button(320,343,220,23,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+ }
+ showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
   // touch targets, instant type filtering and search for Mewtwo's large pool.
   this.children.removeAll(true);
