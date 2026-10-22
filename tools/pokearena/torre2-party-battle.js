@@ -206,6 +206,7 @@ export function installPartyBattle(scene){
   };
   const fx=sharedBeam;
   const ball=sharedBall;
+  let frames=0,restarted=false;
   // Exact same crisp FireRed pixel-ball art as inventory/team HUD.
   // Draw into an existing Phaser Graphics surface; never generate circles
   // or allocate a new PNG/canvas for every swap.
@@ -214,7 +215,6 @@ export function installPartyBattle(scene){
    drawCaptureBall(ball,Math.round(from.x),Math.round(from.y),'pokeball',1.15,0,frames<12);
   };
   drawBall();
-  let frames=0,restarted=false;
   // Keep the rendered target synchronized with the actual moving PMD sprite
   // while the laser is travelling. Capture a copy at the end of recollection
   // only, when the outgoing Pokémon is fully inside the ball.
