@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {campaignDamageMultiplier,campaignHpMultiplier,campaignScaledHp,
@@ -39,15 +40,14 @@ test('fighting team switch uses CURRENT player/enemy member levels',()=>{
  assert.equal(campaignFighterLevel({escena:{datos:{}},lado:0}),null,
   'Non-campaign modes retain original damage and HP');
 });
-test('pure damage and status moves remain outside native level hook',()=>{
- const fs=requireSource();
- assert.ok(fs.includes('!g.puro&&fuente&&fuente!==this'),
-  'Only move damage is scaled, not poison, recoil, status or self damage');
- assert.ok(fs.includes('torre2DamageMultiplier('));
- assert.ok(fs.includes('torre2ScaledHp('));
+test('real build patches only move hits, leaving recoil/status unchanged',()=>{
+ const build=readFileSync(new URL('../tools/pokearena/build-preview.mjs',import.meta.url),'utf8');
+ assert.ok(build.includes('!g.puro&&fuente&&fuente!==this'),
+  'Pure/status damage and recoil must remain independent from levels');
+ assert.ok(build.includes('torre2DamageMultiplier('),
+  'Actual original combat hit routine uses a level multiplier');
+ assert.ok(build.includes('torre2ScaledHp('),
+  'Actual original combat HP getter scales by level');
+ assert.ok(build.includes('this.escena.datos?.torre2?torre2ScaledHp('),
+  'Only the Kanto campaign changes native HP');
 });
-function requireSource(){
- // In-source hook is verified in the generated build from tests/solo-kanto-built.
- // Keep this unit pure and import-free for generic node:test.
- return '!g.puro&&fuente&&fuente!==this  torre2DamageMultiplier( torre2ScaledHp(';
-}
