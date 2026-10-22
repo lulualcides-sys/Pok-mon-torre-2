@@ -19,7 +19,10 @@ import {trainerClass,trainerClassName,drawTrainer,drawShopItem} from './campaign
 import {campaignRegion,KANTO_CHAPTERS} from './kanto-regions.js';
 import {drawKantoWorldMap,mapVisitInfo} from './kanto-world-map.js';
 import {currentLevelCap} from './kanto-levels.js';
-import {FRLG_LOCALE_NAMES} from './frlg-location.js';
+import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS} from './frlg-available.js';
+import {attachBuildingInteractions} from './kanto-hotspots.js';
+import {addFireRedNPC,addRedPlayer} from './frlg-npc.js';
+import {renderInteriorScene} from './frlg-interiors.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -41,10 +44,15 @@ class Campanha extends Phaser.Scene{
   if(!this.textures.exists('torre2-cc0-world'))
    this.load.image('torre2-cc0-world','assets/ui/kanto-cc0-world.png');
   // Local FireRed reference tiles; do not change the Poké Arena Pokémon art.
-  for(const id of FRLG_LOCALE_NAMES){
+  for(const id of AVAILABLE_FRLG){
    const key='frlg-location-'+id;
    if(!this.textures.exists(key))
     this.load.image(key,'assets/ui/frlg/'+id+'.webp');
+  }
+  for(const id of AVAILABLE_FRLG_NPCS){
+   const key='frlg-npc-'+id;
+   if(!this.textures.exists(key))
+    this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
@@ -117,10 +125,49 @@ class Campanha extends Phaser.Scene{
   richBackdrop(this);
  }
  mapScreen(state){
-  // An actual separately navigable Kanto Town Map, not a screenshot overlay.
   this.children.removeAll(true);
   const stage=state.stage??0,limit=TRAINERS_PER_GYM(stage);
   drawKantoWorldMap(this,state,{trainerLimit:limit,onBack:()=>this.scene.restart()});
+ }
+ enterLocalityBuilding(state,location,hotspot){
+  // Only mark the real accessible landmark. Never cover the map with a
+  // pretend building, and never expose a future gym boss early.
+  const type=hotspot.id;
+  const gymAt={pewter:0,cerulean:1,vermilion:2,celadon:3,
+   fuchsia:4,saffron:5,cinnabar:6,viridian:7};
+  const isCurrentGym=type==='gym'&&gymAt[location]===state.stage;
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,45,hotspot.title,{
+   fontSize:'21px',fontStyle:'bold',color:'#ffdf9d'}).setOrigin(.5).setDepth(12);
+  const displayed=renderInteriorScene(this,location,type);
+  if(!displayed){
+   text(this,320,160,hotspot.description,{
+    fontSize:'15px',color:'#e5f1f4',fontStyle:'bold'}).setOrigin(.5).setDepth(12);
+   text(this,320,188,'INTERIOR EM PREPARAÇÃO — MAPA ORIGINAL PRESERVADO',{
+    fontSize:'9px',color:'#a8d1d2'}).setOrigin(.5).setDepth(12);
+  }
+  if(type==='center')
+   this.button(260,300,225,34,'CURAR POKÉMON / PC',
+    ()=>this.centerScreen(state),true);
+  else if(type==='mart'||type==='department')
+   this.button(260,300,225,34,'ABRIR A LOJA',
+    ()=>this.martScreen(state),true);
+  else if(type==='gym'&&isCurrentGym)
+   this.button(260,300,225,34,
+    state.trainer>=TRAINERS_PER_GYM(state.stage)?
+     'DESAFIAR O LÍDER':'ENFRENTAR TREINADOR',
+    ()=>this.enterBattle(state),true);
+  else if(type==='safari'&&state.stage===4)
+   this.button(260,300,225,34,'EXPLORAR GRAMA ALTA',
+    ()=>this.grassScreen(state),true);
+  else if(['rocket','tower','silph','harbor'].includes(type))
+   this.button(260,300,225,34,'CONTINUAR A CAMPANHA',
+    ()=>this.scene.restart(),true);
+  else
+   text(this,320,293,'TOQUE EM VOLTAR PARA EXPLORAR OUTRO LOCAL',{
+    fontSize:'11px',color:'#a9d6e1'}).setOrigin(.5).setDepth(12);
+  this.button(510,336,198,29,'◀ VOLTAR AO MAPA',
+   ()=>this.scene.restart(),false,10);
  }
  card(x,y,w,h,accent=0x4b789b){
   const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
@@ -166,13 +213,17 @@ class Campanha extends Phaser.Scene{
    zone.on('pointerdown',action);
    return zone;
   };
-  if(region.biome==='city'){
+  const locationView=this.__torre2FRLGView;
+  if(locationView){
+   attachBuildingInteractions(this,locationView,
+    hotspot=>this.enterLocalityBuilding(state,locationView.id,hotspot));
+  }else if(region.biome==='city'){
+   // Old generic fallback only when an authentic locality file is missing.
    worldZone(160,237,75,52,()=>this.centerScreen(state));
    worldZone(314,134,82,55,()=>this.martScreen(state));
   }else if(region.biome==='forest'||region.biome==='safari'){
    if(gymStage)worldZone(329,169,81,65,()=>this.grassScreen(state));
   }else if(region.biome.endsWith('-gym')||region.biome==='hall'){
-   // The gym gate is locked until every trainer on the current route is beaten.
    if(!finished&&state.trainer===limit)
     worldZone(319,153,84,52,()=>this.enterBattle(state));
   }
@@ -187,7 +238,12 @@ class Campanha extends Phaser.Scene{
   const trainers=this.add.graphics().setDepth(6);
   for(const p of points){
    const current=p.index===state.trainer,won=p.index<state.trainer;
-   if(!won)drawTrainer(trainers,p.x+23,p.y-13,trainerClass(state.stage,p.index,p.kind,region.biome),1);
+   if(!won){
+    const trainerKind=trainerClass(state.stage,p.index,p.kind,region.biome);
+    if(!addFireRedNPC(this,trainerKind,p.x+20,p.y-8,{depth:7}))
+     drawTrainer(trainers,p.x+23,p.y-13,trainerKind,1);
+    if(current&&locationView)addRedPlayer(this,p.x-16,p.y+1,{depth:8});
+   }
    richNode(art,p.x,p.y,won?'done':current?'current':'future');
    if(won)text(this,p.x,p.y-1,'✓',{fontSize:'9px',
     color:'#ffffff',fontStyle:'bold'}).setOrigin(.5).setDepth(5);
@@ -208,7 +264,8 @@ class Campanha extends Phaser.Scene{
   // opening the regional Town Map. Real saved state drives the position.
   text(this,54,267,'VOCÊ ESTÁ: '+region.subtitle.toUpperCase().slice(0,35),{
    fontSize:'8px',color:'#a5eed1',fontStyle:'bold'}).setDepth(5);
-  drawTrainer(trainers,35,285,nextTrainer,1);
+  if(!addFireRedNPC(this,nextTrainer,35,297,{depth:7}))
+   drawTrainer(trainers,35,285,nextTrainer,1);
   text(this,55,281,finished?'★ JORNADA DE KANTO CONCLUÍDA':
    'PRÓXIMO: '+(next?.leader?String(next.name).toUpperCase():trainerClassName(nextTrainer))+
    ' · '+(next?.id||'').toUpperCase(),{
