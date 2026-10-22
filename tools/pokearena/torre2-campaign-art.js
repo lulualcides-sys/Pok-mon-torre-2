@@ -150,6 +150,109 @@ function routeBuilding(g,x,y,pc=false){
   px(g,x+22,y+6,17,2,0xffffff);
  }
 }
+// Differentiated modular structures. Kept in Phaser Graphics — each tile can
+// later be swapped for a licensed spritesheet without touching battle/UI data.
+function landmark(g,scene,biome){
+ const rect=(x,y,w,h,c)=>px(g,x,y,w,h,c);
+ const label=(text,x,y,color='#fff3bd')=>scene.add.text(x,y,text,{
+  fontFamily:'Pixelify Sans,monospace',fontSize:'9px',
+  fontStyle:'bold',color,stroke:'#203442',strokeThickness:2
+ }).setOrigin(.5).setDepth(2);
+ if(['cave','cliff','victory','gate'].includes(biome)){
+  for(let x=278;x<370;x+=11){
+   rect(x,130+(x%3)*3,11,44,0x65706a);
+   rect(x+1,131+(x%3)*3,7,4,0xa3ab99);
+   rect(x,168,11,3,0x394b46);
+  }
+  rect(297,145,54,27,0x323e42);rect(301,145,46,27,0x172d36);
+  rect(306,149,35,23,0x071923);
+  for(let j=0;j<5;j++)rect(301-j*3,171+j*3,47+j*6,3,j%2?0x8c9185:0xadb098);
+  label(biome==='victory'?'VICTORY ROAD':biome==='gate'?'LIGA':biome==='cliff'?'ROTA':'CAVERNA',324,137);
+ }else if(['sea','river','ship','water-gym'].includes(biome)){
+  // Tile strips form moving-water-looking terrain without an image texture.
+  for(let y=110;y<261;y+=9)for(let x=285;x<386;x+=14){
+   rect(x+((y/9)%2)*5,y,8,2,0x9eddeb);
+   rect(x+2,y+3,4,1,0x267fc1);
+  }
+  if(biome==='ship'){
+   rect(286,160,86,19,0x6e5040);rect(291,178,75,6,0x473b33);
+   rect(298,139,58,22,0xf2dfb9);rect(312,132,31,9,0xffffff);
+   for(let x=302;x<355;x+=16)rect(x,147,9,8,0x427ca1);
+   rect(328,110,4,26,0x463a38);
+   label('S.S. ANNE',326,126);
+  }else if(biome==='water-gym'){
+   rect(290,129,76,50,0xdddab3);
+   rect(296,133,63,41,0x339ac6);
+   rect(304,140,47,27,0x67c9ef);label('GYM',327,124);
+  }else{
+   rect(306,157,52,7,0xd3b174);
+   for(let x=311;x<359;x+=7)rect(x,162,3,9,0x78573c);
+   if(biome==='river')label('ROTA 4',333,136);
+  }
+ }else if(['city','pewter','mansion','tower','league','hall','dojo',
+             'psychic-gym','grass-gym','poison-gym','fire-gym',
+             'electric-gym','ground-gym'].includes(biome)){
+  const high=['tower','league','hall','mansion'].includes(biome);
+  const roof=biome==='fire-gym'?0xbe6548:biome==='grass-gym'?0x538b65:
+   biome==='psychic-gym'?0x9171b2:biome==='electric-gym'?0xb79e46:
+   biome==='league'||biome==='hall'?0xd4c078:0x717b82;
+  rect(274,139-(high?20:0),89,37+(high?20:0),0x344a50);
+  rect(278,143-(high?20:0),81,29+(high?20:0),0xc3bda5);
+  rect(271,133-(high?20:0),94,10,roof);
+  rect(277,126-(high?20:0),82,10,0xb6b9a3);
+  rect(282,151,13,17,0x6ba0b5);rect(341,151,13,17,0x6ba0b5);
+  rect(309,150,18,23,0x5c493c);rect(312,154,12,18,0x253b47);
+  if(high)for(const x of [289,307,327,347])rect(x,126,8,8,0x7194a8);
+  const title=biome==='pewter'?'BROCK':biome==='league'?'LIGA':
+   biome==='hall'?'CAMPEÃO':biome==='mansion'?'MANSÃO':
+   biome==='tower'?'SILPH CO.':biome==='city'?'CIDADE':
+   biome==='dojo'?'DOJO':'GYM';
+  label(title,320,136-(high?20:0));
+ }else if(['forest','safari','grassland'].includes(biome)){
+  for(const x of [278,298,326,350]){
+   pine(g,x,137,.85);pine(g,x+8,167,.6);
+  }
+  for(let x=285;x<358;x+=14)tallGrass(g,x,163+(x%3)*4);
+  rect(297,186,56,5,0x6b5034);
+  for(const x of [301,348])rect(x,170,5,16,0xd6ab73);
+  label(biome==='safari'?'SAFARI':'FLORESTA',329,153);
+ }else if(['graveyard','hideout','dragon','ice','volcano','road'].includes(biome)){
+  if(biome==='graveyard'){
+   for(let x=282;x<366;x+=17){
+    rect(x,145+(x%4)*4,12,22,0x98999c);
+    rect(x+3,149+(x%4)*4,6,2,0xd8d1ba);
+    rect(x+5,155+(x%4)*4,2,8,0x4f5b61);
+   }
+   label('TOWER',322,126);
+  }else if(biome==='ice'){
+   for(let x=278;x<366;x+=17){
+    rect(x+4,138+(x%3)*4,8,35,0x68bce2);
+    rect(x+6,131+(x%3)*4,4,8,0xe8faff);
+    rect(x+5,143,3,21,0xb2ebfa);
+   }
+   label('ICE',327,127);
+  }else if(biome==='volcano'){
+   for(let x=285;x<367;x+=8)rect(x,163-(x%5)*4,8,17,0x72665c);
+   rect(305,142,40,19,0xb84c37);
+   rect(317,146,17,14,0xff9e48);rect(325,140,6,8,0xffd468);
+   label('VULCÃO',329,130);
+  }else if(biome==='dragon'){
+   for(let x=285;x<362;x+=24){
+    rect(x,137,13,36,0x4c527f);rect(x+2,134,9,4,0x8d8cbb);
+   }label('DRAGÃO',322,132);
+  }else if(biome==='hideout'){
+   rect(287,135,77,41,0x434953);
+   for(let x=293;x<361;x+=21)rect(x,145,12,21,0x9b626a);
+   rect(310,148,30,16,0x742a35);label('ROCKET',325,130);
+  }else {
+   // Cycling road: long paved path with guard rails.
+   rect(277,130,90,50,0x9b9b9b);
+   for(let x=279;x<365;x+=17)rect(x,154,10,2,0xffefbc);
+   rect(278,133,88,3,0x6c513d);rect(278,175,88,3,0x6c513d);
+   label('CYCLING',326,122);
+  }
+ }
+}
 function panelMap(g){
  // Hand-pixeled metal-and-gold frame, each element drawn in game.
  px(g,8,55,391,260,0x031522);px(g,10,56,386,257,0xcba65a);
@@ -189,12 +292,21 @@ function pathDistance(x,y,points){
 }
 // Route shapes and palette reflect the Route 01, Route 02 / Viridian Forest,
  // and Pewter City reference sheets; no downloaded map sheet is overlaid.
-export function map(scene,stage,points,page=0){
+export function map(scene,stage,points,page=0,region=null){
  const g=scene.add.graphics().setDepth(1);
  const r=rand(301+(stage*7381)+page*5127);panelMap(g);
- const preBrock=stage===0,forest=preBrock&&page===1,pewter=preBrock&&page>=2;
+ const biome=region?.biome||(stage===0?['route','forest','pewter'][Math.min(2,page)]:'route');
+ const preBrock=stage===0,forest=biome==='forest'||biome==='safari',
+  pewter=['pewter','ground-gym','victory','cliff','cave'].includes(biome);
+ const water=['sea','ship','river','water-gym'].includes(biome);
+ const rocky=['cliff','cave','victory','ground-gym','pewter','volcano'].includes(biome);
+ const urban=['city','tower','league','hall','mansion','psychic-gym','electric-gym','dojo'].includes(biome);
+ const ash=['graveyard','hideout','dragon','poison-gym'].includes(biome);
  const meadow=forest?[0x407d52,0x4c8f4f,0x38814e,0x5b9b5b]:
-  pewter?[0xb0b88d,0x9eac80,0x9fad82,0xb6be98]:
+  water?[0x80c8d5,0x6cb7cc,0x8cd6d9,0x4e9eb9]:
+  rocky?[0xa9a58a,0x8f968a,0xbdb39a,0x929880]:
+  urban?[0xc2ba94,0xd2c3a0,0xa4b3a8,0xb8b09e]:
+  ash?[0x727b7a,0x8b8f8b,0x657d7b,0x96958c]:
   [0x8dcb66,0x80be58,0x97d36c,0x79b958];
  for(let y=90;y<266;y+=6)for(let x=19;x<391;x+=6){
   px(g,x,y,6,6,meadow[Math.floor(r()*meadow.length)]);
@@ -203,7 +315,7 @@ export function map(scene,stage,points,page=0){
  }
  // Route 01 and Viridian Forest are inland; the shoreline belongs to later
  // Kanto stages. Use the 16-bit vegetation border in the early screenshots.
- if(!preBrock)for(let y=90;y<266;y+=2){
+ if(water)for(let y=90;y<266;y+=2){
   const coast=375+Math.floor(Math.sin((y+stage*11)*.085)*5);
   px(g,coast-4,y,7,2,0xefdda2);
   px(g,coast,y,391-coast,2,0x399ad8);
@@ -217,7 +329,7 @@ export function map(scene,stage,points,page=0){
  }
  // Cliff field only on the Pewter approach or Mt. Moon; the first
  // two route pages are wooded and grassy as in the GBA reference.
- if(pewter||!preBrock)for(let x=19;x<155;x+=10){
+ if(rocky)for(let x=19;x<155;x+=10){
   const span=26+Math.floor(11*Math.sin((x-19)*.067))+(x<90?8:0);
   for(let y=90;y<90+span;y+=8){
    const dark=r()<.5?0x666e64:0x8b8774;
@@ -227,7 +339,7 @@ export function map(scene,stage,points,page=0){
   }
   px(g,x,89+span,10,4,0x344f3d);
  }
- if(!preBrock||pewter){
+ if(rocky){
   px(g,59,111,29,18,0x283c36);px(g,64,113,20,16,0x0c2429);
   px(g,68,114,11,16,0x040e1c);
   for(let j=0;j<4;j++){
@@ -237,7 +349,7 @@ export function map(scene,stage,points,page=0){
  }
  pathStroke(g,points);
  // Extra tile-level ground detail in forest; no random dots over the path.
- for(let k=0;k<(forest?470:pewter?175:310);k++){
+ for(let k=0;k<(forest?470:urban?130:rocky?150:310);k++){
   const x=25+Math.floor(r()*350),y=109+Math.floor(r()*149);
   if(x>366||pathDistance(x,y,points)<15||Math.hypot(x-76,y-229)<41
     ||Math.hypot(x-331,y-153)<37||x<135&&y<139)continue;
@@ -250,11 +362,11 @@ export function map(scene,stage,points,page=0){
  }
  // Deterministic arbor sprites built from layered pixel cells.
  const trees=[];
- for(let i=0;i<(forest?230:pewter?54:145);i++){
+ for(let i=0;i<(forest?230:urban?35:rocky?54:145);i++){
   const x=27+Math.floor(r()*346),y=109+Math.floor(r()*144);
   if(pathDistance(x,y,points)<24||Math.hypot(x-76,y-228)<39
     ||Math.hypot(x-331,y-145)<40||x<145&&y<145||x>364)continue;
-  if(r()>(forest?.3:pewter?.79:.56))continue;
+  if(r()>(forest?.3:urban?.85:rocky?.79:.56))continue;
   trees.push({x,y,s:r()<.25?.48:.58+r()*.2});
  }
  trees.sort((a,b)=>a.y-b.y);
@@ -262,32 +374,14 @@ export function map(scene,stage,points,page=0){
  // Foreground props and buildings overlay foliage, with functional UI zones
  // supplied by the campaign scene separately.
  fence(g,22,224);fence(g,116,244);fence(g,279,196);
- if(!preBrock||page===0){
-  routeBuilding(g,43,208,true);routeBuilding(g,297,131,false);
+ if(biome==='route'||biome==='city'){
+  routeBuilding(g,43,208,true);
+  routeBuilding(g,297,131,false);
   scene.add.text(67,229,'PC',{fontFamily:'Pixelify Sans,monospace',
    fontSize:'11px',fontStyle:'bold',color:'#d83c3e',stroke:'#ffefc6',strokeThickness:2})
    .setOrigin(.5).setDepth(2);
-  scene.add.text(326,139,'MART',{fontFamily:'Pixelify Sans,monospace',
-   fontSize:'9px',fontStyle:'bold',color:'#ffffff',stroke:'#15538a',strokeThickness:2})
-   .setOrigin(.5).setDepth(2);
- }else if(forest){
-  // Forest gateway and bugcatcher trail: wood gate + deep rows of trees.
-  for(const x of [53,69,85,309,325,341]){
-   px(g,x,196,9,24,0x765638);px(g,x+2,198,5,16,0xc49450);
-  }
-  px(g,51,194,43,6,0xd3a66a);
-  px(g,307,194,43,6,0xd3a66a);
-  pine(g,61,223,.7);pine(g,330,226,.8);
- }else{
-  // Pewter gym entrance inspired by FRLG building proportions.
-  px(g,274,128,86,45,0x414e52);px(g,277,130,80,40,0xc2bda0);
-  px(g,271,125,91,13,0x686f68);px(g,275,120,83,10,0x929e9e);
-  px(g,289,148,15,17,0x73969b);px(g,328,148,15,17,0x73969b);
-  px(g,305,149,20,22,0x5d4b41);px(g,309,155,12,15,0x2b3034);
-  px(g,287,121,47,4,0xd6d5b3);px(g,299,135,27,8,0x504e45);
-  scene.add.text(314,136,'GYM',{fontFamily:'Pixelify Sans,monospace',
-   fontSize:'9px',fontStyle:'bold',color:'#fff1b1'}).setOrigin(.5).setDepth(2);
- }
+ }else if(forest)landmark(g,scene,biome);
+ else landmark(g,scene,biome);
  // Keep the map art separate from interactive Phaser nodes / information.
  px(g,17,62,376,27,0x054553);
  px(g,19,64,372,23,0x064558);
