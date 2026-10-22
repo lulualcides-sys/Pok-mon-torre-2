@@ -410,7 +410,7 @@ class Campanha extends Phaser.Scene{
   const cta=state.pendingCapture?'CAPTURAR POKÉMON ▶':
    finished?'★ CAMPEÃO DE KANTO':
    state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1);
-  this.battleButton(320,347,224,24,cta,()=>{
+  this.battleButton(320,322,224,22,cta,()=>{
    if(state.pendingCapture)return this.captureScreen(state);
    if(finished)return;
    if(state.trainer>=limit)this.gymScreen(state);
@@ -420,10 +420,10 @@ class Campanha extends Phaser.Scene{
   // health. Hidden side menu remains touch-free; no card overlaps the CTA.
   const dockStart=this.children.list.length;
   const dockBg=this.add.graphics().setDepth(51);
-  dockBg.fillStyle(0x071d30,.98);dockBg.fillRect(15,302,612,34);
-  dockBg.lineStyle(1,0x719eab,1);dockBg.strokeRect(15.5,302.5,611,33);
+  dockBg.fillStyle(0x071d30,.98);dockBg.fillRect(15,273,612,34);
+  dockBg.lineStyle(1,0x719eab,1);dockBg.strokeRect(15.5,273.5,611,33);
   for(let i=0;i<6;i++){
-   const member=state.team[i],x=27+i*99,y=305;
+   const member=state.team[i],x=27+i*99,y=276;
    dockBg.fillStyle(member?(i===state.active?0x37504c:0x18384a):0x0c2736);
    dockBg.fillRect(x,y,94,29);
    dockBg.lineStyle(1,i===state.active?0xffd574:member?0x537c8c:0x24495b);

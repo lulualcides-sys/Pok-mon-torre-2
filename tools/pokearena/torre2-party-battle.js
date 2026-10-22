@@ -9,6 +9,19 @@ import {buscar} from '../datos.js';
 import {drawShopItem} from './campaign-sprites.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
+// The fighter's logical simulation location can differ from the PMD sprite.
+// Use actual displayed sprite bounds so the Pokéball beam never points at an
+// old spawn position, especially after a KO or a teammate swap.
+function visibleActorCenter(actor){
+ const visual=actor?.spr||actor?.sprite;
+ if(visual?.getBounds&&visual.active!==false){
+  const b=visual.getBounds();
+  if(Number.isFinite(b.centerX)&&Number.isFinite(b.centerY)&&
+     b.width>0&&b.height>0)return {x:b.centerX,y:b.centerY};
+ }
+ return {x:Number(actor?.x)||320,
+  y:(Number(actor?.y)||180)-Math.max(18,Number(actor?.alto||36)*.5)};
+}
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
  return scene.add.text(x,y,value,{fontFamily:'Pixelify Sans,monospace',
   fontSize:size+'px',fontStyle:'bold',color,stroke:'#031628',
@@ -84,7 +97,8 @@ export function installPartyBattle(scene){
   const release=scene.add.graphics().setDepth(2604);
   const actor=actors[scene.datos?.torre2?.lastSwitchedSide===1?1:0];
   const bx=actor.lado===1?567:72,by=288;
-  const tx=actor.x,ty=actor.y-actor.alto*.5;
+  const initialTarget=visibleActorCenter(actor);
+  const tx=initialTarget.x,ty=initialTarget.y;
   let frame=0;
   if(actor.spr?.active)actor.spr.setAlpha(.05);
   const sparkle=()=>{
@@ -163,7 +177,8 @@ export function installPartyBattle(scene){
   }
   const actor=actors[side],from={x:side===0?72:567,y:288};
   const fx=sharedBeam;
-  const px=actor.x,py=actor.y-Math.max(18,actor.alto*.6);
+  const target=visibleActorCenter(actor);
+  const px=target.x,py=target.y;
   const ball=sharedBall;
   // Exact same crisp FireRed pixel-ball art as inventory/team HUD.
   // Draw into an existing Phaser Graphics surface; never generate circles
@@ -230,19 +245,20 @@ export function installPartyBattle(scene){
     }
     const t=Math.min(1,++comingFrame/12);
     fx.clear();
-    const targetY=actor.y-actor.alto*.6;
+    const target=visibleActorCenter(actor);
+    const targetX=target.x,targetY=target.y;
     // Three pixel-bright layers simulate the compact release beam in the
     // reference: red silhouette, hot core and a tiny 4-way opening flash.
     fx.lineStyle(6,0xd83456,(1-t)*.4);
-    fx.lineBetween(from.x,from.y,actor.x,targetY);
+    fx.lineBetween(from.x,from.y,targetX,targetY);
     fx.lineStyle(3,0xff6c81,(1-t)*.9);
-    fx.lineBetween(from.x,from.y,actor.x,targetY);
+    fx.lineBetween(from.x,from.y,targetX,targetY);
     fx.lineStyle(1,0xfff3dc,(1-t));
-    fx.lineBetween(from.x,from.y,actor.x,targetY);
+    fx.lineBetween(from.x,from.y,targetX,targetY);
     fx.fillStyle(0xffe0bb,(1-t)*.9);
     const flash=Math.max(1,Math.round(9*(1-t)));
-    fx.fillRect(Math.round(actor.x)-flash,Math.round(targetY)-1,flash*2,2);
-    fx.fillRect(Math.round(actor.x)-1,Math.round(targetY)-flash,2,flash*2);
+    fx.fillRect(Math.round(targetX)-flash,Math.round(targetY)-1,flash*2,2);
+    fx.fillRect(Math.round(targetX)-1,Math.round(targetY)-flash,2,flash*2);
     if(actor.spr?.active)
      actor.spr.setAlpha(.1+.9*t).setScale(replacementScale*(.15+.85*t));
     if(comingFrame>=12){

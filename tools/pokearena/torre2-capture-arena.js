@@ -152,8 +152,13 @@ export function installWildCapture(scene){
   const obj=enemyPortrait(enemy);
   const before=obj?{x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY,
    alpha:obj.alpha,visible:obj.visible}:null;
-  const enemyX=Math.max(165,Math.min(555,Number(enemy.x)||444)),
-   enemyY=Math.max(130,Math.min(291,Number(enemy.y)||221));
+  // The sprite can be offset from its logical fighter spawn: aim at the
+  // visible Pokémon, not the (possibly stale) combat coordinates.
+  const bounds=obj?.getBounds?.();
+  const enemyX=Math.max(165,Math.min(555,
+   Number.isFinite(bounds?.centerX)?bounds.centerX:Number(enemy.x)||444)),
+   enemyY=Math.max(130,Math.min(291,
+   Number.isFinite(bounds?.centerY)?bounds.centerY:Number(enemy.y)||221));
   const shot={x:116,y:281},end={x:enemyX-18,y:enemyY-23};
   const ballPos={t:0,angle:0},shake={phase:0};
   const drawBall=(x,y,angle=0)=>{

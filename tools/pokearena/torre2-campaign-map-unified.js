@@ -53,12 +53,12 @@ const BROCK_CUSTOM_POINTS=Object.freeze([
  // depend on whether the player has defeated another trainer.
  // Pallet Town (1) -> Route 1 (2-3) -> Viridian (4-5)
  // -> Route 2 (6-7) -> Viridian Forest (8-11) -> Pewter (12-13).
- [84,267],
- [109,237],[143,215],
- [109,192],[173,181],
- [186,146],[219,163],
- [223,196],[253,207],[258,249],[303,225],
- [324,192],[349,163]
+ [115,274],
+ [112,241],[112,214],
+ [111,189],[159,183],
+ [185,151],[188,129],
+ [221,178],[254,185],[280,227],[302,241],
+ [316,210],[325,185]
 ]);
 const BROCK_AREAS=Object.freeze([
  'PALLET TOWN','ROTA 1','ROTA 1','VIRIDIAN CITY',
@@ -67,7 +67,7 @@ const BROCK_AREAS=Object.freeze([
  'PEWTER CITY','PEWTER CITY'
 ]);
 const CUSTOM_BROCK_LOCATIONS=Object.freeze({
- gym:[339,118],center:[103,161],mart:[145,162],grass:[288,260]
+ gym:[320,128],center:[103,161],mart:[145,162],grass:[288,260]
 });
 const BROCK_POINTS=Object.freeze([
  // Clickable challenge route, staged on open streets rather than overlapping
@@ -165,6 +165,18 @@ function realMap(scene,spec){
    tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
   scene.add.image(20,85,'torre2-brock-custom')
    .setOrigin(0,0).setDepth(1).setDisplaySize(372,211);
+  // Replace the embedded FireRed watermark with a repeated native forest
+  // tile from the SAME user-provided map. WebGL tile sprites; no CSS overlay,
+  // screenshot of a screen, Canvas 2D drawing or replacement of route art.
+  const scaleX=(tex.source?.[0]?.width||372)/372;
+  const scaleY=(tex.source?.[0]?.height||211)/211;
+  const patch='torre2-brock-forest';
+  if(!tex.has(patch))tex.add(patch,0,
+   Math.round(2*scaleX),Math.round(2*scaleY),
+   Math.max(1,Math.round(12*scaleX)),
+   Math.max(1,Math.round(12*scaleY)));
+  scene.add.tileSprite(32,94,65,36,'torre2-brock-custom',patch)
+   .setOrigin(0,0).setTileScale(1/scaleX,1/scaleY).setDepth(2);
   scene.__torre2WorldView={id:'brock-user-map',x:0,y:0,w:372,h:211};
   return true;
  }
@@ -306,8 +318,8 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
  const npc=state.stage===0?'brock':
   ['misty','surge','erika','koga','sabrina','blaine','giovanni'][state.stage-1]||'lorelei';
  addFireRedNPC(scene,npc,
-  spec.customBrock?b.gym[0]+4:b.gym[0]+26,
-  spec.customBrock?b.gym[1]+17:b.gym[1]+6,
+  spec.customBrock?b.gym[0]:b.gym[0]+26,
+  spec.customBrock?b.gym[1]+14:b.gym[1]+6,
   {depth:13,scale:.70});
  // Show Red only beside the next challenge, not as a permanently walked
  // overworld avatar. Later patch can replace click navigation with movement.
