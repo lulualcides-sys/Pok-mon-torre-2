@@ -10,7 +10,7 @@ assert.ok(version,'Captured Phaser original client not staged');
 // trainer art, shops or capture modules. Check each staged ES module.
 for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
  'torre2/campaign-sprites.js','torre2/capture-arena.js',
- 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js']){
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/frlg-location.js']){
  const source=path.join(stage,version,name);
  const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
  assert.equal(parsed.status,0,
@@ -74,7 +74,7 @@ const {worldPosition,mapVisitInfo,drawKantoWorldMap}=await import(pathToFileURL(
 assert.deepEqual(KANTO_LEVEL_CAPS.slice(0,8),[14,21,24,29,43,43,47,50],
  'Every gym uses the exact FireRed ace level');
 assert.equal(typeof drawKantoWorldMap,'function','Town Map is a live Phaser scene');
-assert.equal(worldPosition(0,0,13),'viridian','First town map pin starts at Viridian');
+assert.equal(worldPosition(0,0,13),'pallet','First town map pin starts at Viridian');
 assert.equal(worldPosition(0,13,13),'pewter','Before Brock pin moves to Pewter City');
 assert.equal(worldPosition(1,7,15),'moon','Mt. Moon is an early Cerulean checkpoint');
 assert.equal(mapVisitInfo(6,0,25).cap,47,'Cinnabar level cap mirrors Blaine');
@@ -99,7 +99,7 @@ const testerOverleveled={id:'mewtwo',progression:createPokemonProgression('mewtw
 assert.equal(enforceCampaignCap(testerOverleveled,0),false,
  'Explicit level-50 test Mewtwo is preserved');
 
-assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['route','forest','pewter'],
+assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['route','city','forest','pewter'],
  'Brock must be reached through Route 1, Viridian Forest and Pewter');
 for(let regionStage=0;regionStage<13;regionStage++){
  const count=Math.ceil((TRAINERS_PER_GYM(regionStage)+1)/5);
@@ -112,6 +112,16 @@ for(let regionStage=0;regionStage<13;regionStage++){
 }
 const biomes=new Set(KANTO_CHAPTERS.flatMap(chapter=>chapter.map(row=>row[2])));
 assert.ok(biomes.size>=20,'Kanto needs varied environments, not reused bland generic map');
+const {FRLG_LOCALE_NAMES,locationForCampaign,renderLocationTiles}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/frlg-location.js')));
+assert.deepEqual(FRLG_LOCALE_NAMES,['route1','viridian','forest','pewter']);
+for(let p=0;p<4;p++)assert.equal(locationForCampaign(campaignRegion(0,p,4)),
+ FRLG_LOCALE_NAMES[p],'First gym uses four FireRed geographical location tilemaps');
+assert.equal(typeof renderLocationTiles,'function');
+for(const id of FRLG_LOCALE_NAMES)
+ assert.ok(fs.statSync(path.join(stage,'assets/ui/frlg',id+'.webp')).size>10000,
+  'Missing original FireRed locality pixel sprite source: '+id);
+
 const {drawKantoTiles}=await import(pathToFileURL(
  path.join(stage,version,'torre2/kanto-tiles.js')));
 assert.equal(typeof drawKantoTiles,'function');
