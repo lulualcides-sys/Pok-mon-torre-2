@@ -16,6 +16,19 @@ for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
  assert.equal(parsed.status,0,
   'Invalid JavaScript in '+name+': '+parsed.stderr);
 }
+// Guard the whole browser import graph, not just campaign modules. A source
+// file outside that shortlist previously produced an uncaught SyntaxError and
+// blocked Phaser before the main menu could load.
+const walk=(folder,relative='')=>fs.readdirSync(folder,{withFileTypes:true})
+ .flatMap(entry=>entry.isDirectory()?walk(path.join(folder,entry.name),
+  path.join(relative,entry.name)):
+  entry.isFile()&&entry.name.endsWith('.js')?
+  [path.join(relative,entry.name)]:[]);
+for(const name of walk(path.join(stage,version))){
+ const check=spawnSync(process.execPath,['--check',path.join(stage,version,name)],{
+  encoding:'utf8'});
+ assert.equal(check.status,0,'Phaser browser module has invalid JS: '+name+'\\n'+check.stderr);
+}
 // The menu's HTML query string alone cannot bust cached JS imports. Every
 // patch must create a new hashed source folder, and the HTML must use it.
 assert.notEqual(version,'src-8d89349697',
