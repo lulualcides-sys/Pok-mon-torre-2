@@ -15,6 +15,7 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,teachTM} from './campaign-core.js';
 import {MART_ITEMS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
+import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
 import {drawTrainer,drawShopItem} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
@@ -128,6 +129,7 @@ class Campanha extends Phaser.Scene{
    // Return to the same gym map. Stage changes only after the leader.
    const marker=this.result.marker||{};
    if(marker.stage===state.stage&&marker.trainer===state.trainer){
+    applyPartyBattleResult(state,marker.party);
     const summary=marker.kind==='wild'&&state.pendingWild?.id===marker.id?
      resolveWildBattle(state,!!this.result.won):resolveBattle(state,!!this.result.won);
     state.lastMessage=summary.message;
@@ -412,7 +414,13 @@ class Campanha extends Phaser.Scene{
  enterBattle(state,wild=false){
   if(state.pendingCapture){state.lastMessage='Resolva a captura antes de continuar.';saveCampaign(state);return this.scene.restart()}
   const match=wild?startWildBattle(state):startBattle(state);
-  match.torre2Loadout=resolveLoadout(state.team[state.active]);
+  const foe={id:match.p2,level:match.torre2.enemyLevel,
+   leader:state.trainer>=TRAINERS_PER_GYM(state.stage)};
+  const party=createPartyMatch(state,foe,wild);
+  match.torre2.party=party;
+  match.p1=party.friend[party.playerIndex].id;
+  match.torre2Loadout=party.friend[party.playerIndex].loadout;
+  match.torre2OpponentLoadout=party.foes[0].loadout;
   if(earlyKantoSlotPlan(match.p2)){
    const level=wild?(state.pendingWild?.level??5):(currentOpponent(state)?.level??5);
    match.torre2OpponentLoadout=resolveLoadout({
@@ -426,8 +434,8 @@ class Campanha extends Phaser.Scene{
   const game=this.game;let frames=0;
   const attach=()=>{
    const battle=game.scene.getScene('combate');
-   if(battle.scene.isActive()&&battle.luchadores?.length===2){
-    game.events.off('step',attach);
+   if(battle.scene.isActive()&&battle.luchadores?.length===2&&
+      !battle.__torre2PartyInstalled){
     const levelPanel=battle.add.graphics().setDepth(1170);
     levelPanel.fillStyle(0x071a2b,.92);
     levelPanel.fillRoundedRect(189,5,262,24,3);
@@ -437,10 +445,12 @@ class Campanha extends Phaser.Scene{
      '   RIVAL NV.'+match.torre2.enemyLevel+
      '   TETO NV.'+match.torre2.hardCap,{
      fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
+    installPartyBattle(battle);
     if(wild)installWildCapture(battle);
-   }else if(++frames>900||(!battle.scene.isActive()&&frames>180)){
-    game.events.off('step',attach);
    }
+   if(!battle.scene.isActive()&&++frames>180&&
+      game.scene.isActive('campanha'))game.events.off('step',attach);
+   if(frames>54000)game.events.off('step',attach);
   };
   game.events.on('step',attach);
   this.scene.start('combate',match);
