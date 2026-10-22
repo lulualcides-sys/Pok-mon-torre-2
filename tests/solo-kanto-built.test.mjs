@@ -51,6 +51,10 @@ assert.ok(party41.includes('actor.reiniciar(x,y)')&&!party41.includes('scene.sce
  'Party switching must not reload Phaser combat or trigger a new countdown');
 assert.ok(party41.includes('drawPixelBall')&&party41.includes('redrawPartyHud'),
  'Battle displays live pixel Pokeballs for both teams');
+const buildDefinition=fs.readFileSync(path.join('tools','pokearena','build-preview.mjs'),'utf8');
+for(const moduleName of ['torre2/party-battle.js','torre2/campaign-map-unified.js','torre2/level-balance.js'])
+ assert.ok(buildDefinition.slice(buildDefinition.indexOf('const vfxFingerprint=')).includes(moduleName),
+ 'Changing '+moduleName+' MUST invalidate the live game's versioned JS cache');
 const entryHTML=fs.readFileSync(path.join(stage,'index.html'),'utf8');
 const buildMeta=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8'));
 assert.ok(entryHTML.includes('src="'+version+'/main.js"'),
