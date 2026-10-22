@@ -300,6 +300,13 @@ const server=http.createServer(async(req,res)=>{
     return result;
   });
   assert.equal(mapState.world,'pewter');
+  // gymScreen() removes the header; allow the queued Phaser scene restart
+  // to finish before counting the new fullscreen button and cached textures.
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
+    c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
+  },null,{timeout:18000});
   const mobileResources=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return {
