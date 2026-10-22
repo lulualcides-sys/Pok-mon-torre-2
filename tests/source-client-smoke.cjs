@@ -451,7 +451,7 @@ const server=http.createServer(async(req,res)=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&c.__campaignPanelCollapsed&&
     c.__campaignMapObjects?.some(x=>x.obj?.texture?.key==='torre2-brock-custom'&&
-     x.obj.displayWidth>=600);
+     x.obj.displayWidth>=445&&x.obj.displayWidth<=470);
   },null,{timeout:18000});
   await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
