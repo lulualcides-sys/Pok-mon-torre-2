@@ -10,6 +10,7 @@ import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignEx
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
+export const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
 export const GYMS=Object.freeze([
  {city:'Pewter',leader:'Brock',badge:'Rocha',arena:'crater',type:'ROCK',
   enemy:['pidgey','rattata','caterpie','weedle','pikachu','spearow','mankey','nidoran-f','nidoran-m','geodude'],
@@ -54,7 +55,14 @@ export function readCampaign(storage=localStorage){
  try{
   const raw=storage.getItem(SAVE_KEY);
   if(!raw)return null;
-  const s=JSON.parse(raw);
+  // Resume from the previous valid save if the latest payload was truncated.
+  let s;
+  try{s=JSON.parse(raw)}catch{
+   const backup=storage.getItem(SAVE_BACKUP_KEY);
+   if(!backup)return null;
+   s=JSON.parse(backup);
+   storage.setItem(SAVE_KEY,backup);
+  }
   if(s?.version!==1||!Array.isArray(s.team)||s.team.length===0||
     !Number.isInteger(s.stage)||s.stage<0||s.stage>STAGES.length||
     !Number.isInteger(s.trainer)||s.trainer<0)return null;
@@ -101,10 +109,17 @@ export function readCampaign(storage=localStorage){
  }catch{return null}
 }
 export function saveCampaign(state,storage=localStorage){
- storage.setItem(SAVE_KEY,JSON.stringify(state));
+ const serialized=JSON.stringify(state);
+ const previous=storage.getItem(SAVE_KEY);
+ if(previous&&previous!==serialized){
+  try{JSON.parse(previous);storage.setItem(SAVE_BACKUP_KEY,previous)}catch{}
+ }
+ storage.setItem(SAVE_KEY,serialized);
  return state;
 }
-export function resetCampaign(storage=localStorage){storage.removeItem(SAVE_KEY)}
+export function resetCampaign(storage=localStorage){
+ storage.removeItem(SAVE_KEY);storage.removeItem(SAVE_BACKUP_KEY);
+}
 // Pokédex data describes encounters/captures, not which sprites are playable.
 export function recordSeen(s,id){
  // Keep distinct male/female Nidoran IDs while displaying native Dex symbols.
@@ -223,7 +238,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  if(inWild&&candidate.stage!==s.stage)
   return {ok:false,reason:'Encontro selvagem expirado.'};
  // Enemy HP and status are read at the instant of the throw.
- const target={...candidate,
+ const target={...candidate,wild:inWild,
   hpPercent:inWild?Math.max(1,Math.min(100,Number(options.hpPercent??candidate.hpPercent??100))):100,
   status:inWild?options.status:'none'};
  const outcome=rollCapture(target,ball,typeof random==='function'?random:Math.random);

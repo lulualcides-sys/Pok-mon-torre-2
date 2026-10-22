@@ -4,50 +4,13 @@
  * Separate from approved Arena 2D Pokémon sprites and move effects.
  */
 import {captureChance} from './capture-mechanics.js';
+import {drawBallSprite} from './ball-sprites.js';
 import {readCampaign,attemptCapture} from './campaign-core.js';
 const FONT='Pixelify Sans,monospace';
-const COLORS={
- pokeball:{top:0xe44746,shine:0xff9b76,bottom:0xfff8df},
- greatball:{top:0x277ec4,shine:0xa2e7ff,bottom:0xfcf6df},
- ultraball:{top:0x262a3b,shine:0xf4d871,bottom:0xfff9e8}
-};
-// Authentic two-tone, horizontally split Pokéball in authored pixel cells.
-// Red top, white bottom, thick charcoal separator, center white latch.
-const BALL=[
- '......OOOO......','....OOXXXXOO....','...OXXXXXXXXO...',
- '..OXXXXXXXXXXO..','.OXXXXXXXXXXXXO.','.OXXXXXXXXXXXXO.',
- 'OXXXXXXXXXXXXXXO','OOOOOOWWWOOOOOOO','OWWWWWOOOWWWWWWO',
- 'OOWWWWWOOWWWWWOO','.OWWWWWWWWWWWWO.','..OWWWWWWWWWWO..',
- '...OWWWWWWWWO...','....OOWWWWOO....','......OOOO......'];
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
+// One ball atlas drives captures, party switch, and Pokéball HUD.
 export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opened=false){
- const c=COLORS[kind]||COLORS.pokeball;
- const shift=Math.round(Math.sin(rotation)*1.7*scale);
- const x=Math.round(cx-8*scale+shift),y=Math.round(cy-7*scale);
- for(let row=0;row<BALL.length;row++)for(let col=0;col<16;col++){
-  const v=BALL[row][col];if(v==='.')continue;
-  const base=v==='O'?0x151d32:v==='W'?c.bottom:c.top;
-  const lid=opened?(row<=6?-4*scale:row>=8?2*scale:0):0;
-  px(g,x+col*scale,y+row*scale+lid,scale,scale,base);
- }
- if(opened){
-  // Top shell snaps open like FireRed, exposing a bright crimson aperture.
-  px(g,cx-4*scale+shift,cy-3*scale,8*scale,3*scale,0x551d31);
-  px(g,cx-3*scale+shift,cy-3*scale,6*scale,2*scale,0xff7082);
-  px(g,cx-scale+shift,cy-4*scale,2*scale,3*scale,0xffd0ad);
- }else{
-  px(g,cx-2*scale+shift,cy-1*scale,4*scale,3*scale,0x141d2c);
-  px(g,cx-scale+shift,cy,2*scale,2*scale,0xfffcdd);
-  px(g,cx-scale+shift,cy,scale,scale,0xffffff);
- }
- px(g,cx-4*scale+shift,cy-4*scale,3*scale,scale,c.shine);
- if(kind==='ultraball'){
-  px(g,cx-5*scale+shift,cy-4*scale,2*scale,3*scale,0xe8c75f);
-  px(g,cx+3*scale+shift,cy-4*scale,2*scale,3*scale,0xe8c75f);
- }else if(kind==='greatball'){
-  px(g,cx-5*scale+shift,cy-3*scale,2*scale,2*scale,0xdb4f56);
-  px(g,cx+3*scale+shift,cy-3*scale,2*scale,2*scale,0xdb4f56);
- }
+ return drawBallSprite(g,cx,cy,kind,scale,rotation,opened);
 }
 function txt(scene,x,y,value,size=11,color='#f5f4e5'){
  return scene.add.text(x,y,value,{fontFamily:FONT,fontSize:size+'px',
@@ -128,7 +91,7 @@ export function installWildCapture(scene){
    const y=178+i*27,owned=state.inventory[kind]||0;
    const draw=add(scene.add.graphics().setDepth(1208));
    drawCaptureBall(draw,200,y+4,kind,1);
-   const chance=captureChance({...state.pendingWild,hpPercent:hp,
+   const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,
     status:statusName(enemy)},kind);
    add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
     '  '+Math.round(chance*100)+'%',10,owned?'#f9f6e9':'#a88c9b'));
@@ -215,8 +178,16 @@ export function installWildCapture(scene){
              px(gfx,end.x+Math.cos(angle)*26,floorY+Math.sin(angle)*25,
               3,3,i%2?0xfff2b8:0xffd04d);
             }
-            caption.setText('CAPTURADO!').setColor('#a4ffc1');
-            scene.time.delayedCall(800,()=>scene.scene.start('campanha'));
+            // A brief clear success panel matches the moment shown in the user's
+            // capture reference, without changing original Arena 2D effects.
+            const panel=frame(scene,156,133,328,68);
+            const heading=txt(scene,320,148,'GOTCHA!',24,'#ffda6a').setOrigin(.5);
+            const destination=save.team.some(p=>p.uid===result.pokemon?.uid)?'EQUIPE':'PC';
+            const info=txt(scene,320,181,(result.pokemon?.id||'POKÉMON').toUpperCase()+
+             ' CAPTURADO · '+destination,12,'#ddf8e6').setOrigin(.5);
+            activeVisuals.push(panel,heading,info);
+            caption.setText('CAPTURA CONCLUÍDA!').setColor('#a4ffc1');
+            scene.time.delayedCall(1150,()=>scene.scene.start('campanha'));
            }else{
             caption.setText('O POKÉMON ESCAPOU!').setColor('#ffdeae');
             gfx.fillStyle(0xfff8e1,.8);gfx.fillCircle(end.x,floorY,12);
