@@ -47,7 +47,19 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          node tools/pokearena/capture-client.mjs
+          # Network timeouts from the public game host can be intermittent.
+          # Retry only source acquisition, never publish an incomplete client.
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs; then
+              echo "Fonte Phaser recuperada (tentativa $attempt)"
+              break
+            fi
+            if [ "$attempt" -eq 4 ]; then
+              echo "::error::Não foi possível recuperar o cliente após 4 tentativas"
+              exit 1
+            fi
+            sleep $((attempt * 8))
+          done
           node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/index.html
           test -s _site/arena2d/lib/phaser.min.js
