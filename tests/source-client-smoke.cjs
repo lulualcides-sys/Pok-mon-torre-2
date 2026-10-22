@@ -312,6 +312,60 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(newMap.bag.includes('POÇÃO'),'Bag has potions and TM UI');
   await offline.screenshot({path:'test-evidence/torre2-kanto-path-map.png',fullPage:true});
 
+  // Regression: encounter in real native combat, click the capture HUD,
+  // weaken the actual enemy HP, throw a sprite-ball, wait through three shakes,
+  // and verify the captured Pokémon is persisted without advancing trainers.
+  await offline.evaluate(async()=>{
+    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+    const state=core.readCampaign();
+    const found=core.startWildEncounter(state,()=>0);
+    if(!found.ok)throw Error('Cannot create the first Kanto wild encounter');
+    window.__pt2Game.scene.getScene('campanha').enterBattle(state,true);
+  });
+  await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&
+    window.__pt2Game.scene.getScene('combate').__torre2WildCapture===true,
+    null,{timeout:24000});
+  const captureHud=await offline.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('combate'),enemy=c.luchadores[1];
+    enemy.hp=Math.max(1,enemy.hpMax*.12);
+    const opener=c.children.list.find(o=>o.type==='Zone'&&
+      Math.abs(o.x-539)<2&&Math.abs(o.y-61)<2&&o.input?.enabled);
+    if(!opener)return {opener:false};
+    opener.emit('pointerdown');
+    const menu=c.children.list.filter(o=>typeof o.text==='string')
+      .map(o=>o.text).join(' | ');
+    const choice=c.children.list.find(o=>o.type==='Zone'&&
+      Math.abs(o.x-316)<2&&Math.abs(o.y-187)<2&&o.input?.enabled);
+    if(!choice)return {opener:true,menu,choice:false};
+    const orig=Math.random;
+    Math.random=()=>0;
+    try{choice.emit('pointerdown')}finally{Math.random=orig}
+    return {opener:true,choice:true,menu,phase:c.fase};
+  });
+  assert.ok(captureHud.opener&&captureHud.choice,
+   'Wild battle must expose clickable Phaser Pokéball controls');
+  assert.ok(captureHud.menu.includes('LANÇAR POKÉBOLA'),
+   'Three selectable balls appear in the native capture HUD');
+  assert.equal(captureHud.phase,'capturando',
+   'Throwing a ball must pause real attacks while animation plays');
+  await offline.waitForFunction(()=>{
+    if(!window.__pt2Game?.scene.isActive('campanha'))return false;
+    const s=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')||'{}');
+    return s.pendingWild===null&&s.dexCaught?.length>=2&&s.trainer===0;
+  },null,{timeout:19000});
+  await offline.screenshot({path:'test-evidence/torre2-wild-capture-result.png',fullPage:true});
+  // Reset only the isolated browser test save, not any actual player save.
+  await offline.evaluate(async()=>{
+    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+    core.saveCampaign(core.createCampaign('charmander'));
+    window.__pt2Game.scene.getScene('campanha').scene.restart();
+  });
+  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('VIRIDIAN')),
+    null,{timeout:12000});
+
   await offline.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
     const core=await import(new URL('./torre2/campaign-core.js',entry.src).href);
