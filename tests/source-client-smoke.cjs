@@ -740,6 +740,41 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(afterFaint.foe>.59&&afterFaint.foe<.74,
     'Red-beam replacement does not restore the rival HP: '+
      JSON.stringify({afterFaint,afterSwitch}));
+  // Rival-side KO is important too. A report showed "Pidgey" at the top
+  // while the old Squirtle remained walking in the arena below it. Verify
+  // that the enemy actor swaps the actual native PMD sprite and cleans
+  // every orphan of the previous species (not only the player's own swap).
+  const rivalOld=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),p=b.datos.torre2.party;
+   const e=b.luchadores[1];
+   const oldDex=String(e.dex||'');
+   p.foes.push({id:'charmander',hp:100,level:6,
+    loadout:p.friend[0].loadout});
+   e.inmortal=false;b.fase='lucha';e.hp=0;b.alKO(e);
+   return {oldDex,oldTexture:e.spr?.texture?.key};
+  });
+  await offline.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),p=b.datos?.torre2?.party;
+   return b.scene.isActive()&&p?.enemyIndex===1&&
+    b.luchadores?.[1]?.def?.id==='charmander'&&b.fase==='lucha';
+  },null,{timeout:18000});
+  const rivalVisuals=await offline.evaluate(oldDex=>{
+   const b=window.__pt2Game.scene.getScene('combate'),e=b.luchadores[1];
+   const stale=b.children.list.filter(o=>
+    o.active&&o.visible&&o.type==='Sprite'&&
+    String(o.texture?.key||'').startsWith('pmd-'+oldDex+'-')&&
+    !b.luchadores.some(a=>a.spr===o));
+   return {dex:e.dex,texture:e.spr.texture.key,
+    oldCount:stale.length,swap:b.__torre2SwapDebug,
+    beam:b.__torre2BeamDebug};
+  },rivalOld.oldDex);
+  assert.equal(rivalVisuals.oldCount,0,
+   'Enemy KO must remove the previous PMD enemy sprite: '+
+    JSON.stringify(rivalVisuals));
+  assert.equal(rivalVisuals.texture,'pmd-'+rivalVisuals.dex+'-Idle',
+   'The rival HUD species and visible enemy PMD sprite must match');
+  assert.equal(rivalVisuals.beam?.side,1,
+   'Enemy KO uses its own red-beam recollection and release');
   await offline.evaluate(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
     b.scene.start('campanha');
