@@ -281,12 +281,22 @@ export function installPartyBattle(scene){
    // A stale fighter sprite may survive the native reiniciar() and continue
    // animating independently. Delete orphaned old-Pokémon visuals while
    // preserving the actual current fighter and the opponent's PMD sprite.
+   let staleCleared=0;
    for(const visual of oldVisuals){
     if(visual!==actor.spr&&visual.active&&
-       !actors.some(a=>a.spr===visual))visual.destroy();
+       !actors.some(a=>a.spr===visual)){
+     visual.destroy();staleCleared++;
+    }
    }
    if(previousSprite&&previousSprite!==actor.spr&&previousSprite.active&&
-      !actors.some(a=>a.spr===previousSprite))previousSprite.destroy();
+      !actors.some(a=>a.spr===previousSprite)){
+    previousSprite.destroy();staleCleared++;
+   }
+   scene.__torre2SwapDebug={
+    previousDex,newDex:String(actor.dex||''),
+    staleCleared,oldSpriteSame:previousSprite===actor.spr,
+    activeTexture:actor.spr?.texture?.key,side
+   };
    actor.spr.setVisible(true).setAlpha(1);
    actor.kit=actor.kitActual();
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
@@ -308,6 +318,12 @@ export function installPartyBattle(scene){
     const live=visibleActorCenter(actor);
     const targetX=live.x,targetY=live.y;
     drawRecallBeam(fx,from,live,1-t*.55);
+    scene.__torre2BeamDebug={
+     phase:'release',side,frame:comingFrame,
+     from:{x:from.x,y:from.y},to:{...live},
+     currentBody:visibleActorCenter(actor),
+     visible:actor.spr?.visible===true
+    };
     ball.clear();
     drawCaptureBall(ball,from.x,from.y,'pokeball',1.15,0,true);
     fx.fillStyle(0xffe0bb,(1-t)*.9);
@@ -346,6 +362,13 @@ export function installPartyBattle(scene){
    if(frames<=32){recallTarget.x=live.x;recallTarget.y=live.y;}
    const fade=1-t*.48;
    drawRecallBeam(fx,from,recallTarget,fade);
+   scene.__torre2BeamDebug={
+    phase:'recall',side,frame:frames,
+    from:{x:from.x,y:from.y},
+    to:{x:recallTarget.x,y:recallTarget.y},
+    currentBody:visibleActorCenter(actor),
+    visible:actor.spr?.visible===true
+   };
    ball.clear();
    drawCaptureBall(ball,Math.round(from.x),Math.round(from.y),
     'pokeball',1.15,0,frames<=24);
