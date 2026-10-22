@@ -79,7 +79,10 @@ export const KANTO_CHAPTERS=Object.freeze([
  [
   ['LIGA / LANCE','CÂMARA DRAGÃO','dragon'],
   ['CÂMARA DE LANCE','ELITE FOUR','dragon'],
-  ['SALÃO DA VITÓRIA','HALL OF FAME','hall']
+  ['PORTAL DO CAMPEÃO','ÚLTIMO DESAFIO','dragon']
+ ],
+ [
+  ['SALÃO DO CAMPEÃO','RIVAL · BATALHA FINAL','hall']
  ]
 ]);
 export function campaignRegion(stage,page,totalPages=3,champion=false){
