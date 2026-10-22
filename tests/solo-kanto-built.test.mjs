@@ -99,7 +99,7 @@ const testerOverleveled={id:'mewtwo',progression:createPokemonProgression('mewtw
 assert.equal(enforceCampaignCap(testerOverleveled,0),false,
  'Explicit level-50 test Mewtwo is preserved');
 
-assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['route','city','forest','pewter'],
+assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['city','route','city','forest','pewter'],
  'Brock must be reached through Route 1, Viridian Forest and Pewter');
 for(let regionStage=0;regionStage<13;regionStage++){
  const count=Math.ceil((TRAINERS_PER_GYM(regionStage)+1)/5);
@@ -124,17 +124,23 @@ assert.equal(getLocationViewport('viridian',1360,672).main.w,768,
 assert.equal(getLocationViewport('viridian',1360,672).main.x,8);
 assert.equal(getLocationViewport('route1',400,672).cols,23);
 assert.equal(typeof renderLocationTiles,'function');
+const {zigzagRoutePoints}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-route-layout.js')));
+assert.deepEqual(zigzagRoutePoints(3).map(p=>p.x),[99,292,99],
+ 'Trainer route must visibly zigzag left-right-left');
+assert.ok(zigzagRoutePoints(5).every(p=>p.x>=21&&p.x<=389&&p.y>=90&&p.y<=266),
+ 'All trainer checkpoints must stay inside actual map image');
 assert.equal(locationForCampaign(campaignRegion(1,3,4)),'cerulean');
 assert.equal(locationForCampaign(campaignRegion(2,3,4)),'vermilion');
 assert.equal(locationForCampaign(campaignRegion(3,4,5)),'celadon');
 assert.equal(locationForCampaign(campaignRegion(4,4,5)),'fuchsia');
 assert.equal(locationForCampaign(campaignRegion(6,5,6)),'cinnabar');
-const {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS}=await import(pathToFileURL(
+const {AVAILABLE_FRLG,AVAILABLE_FRLG_FILES,AVAILABLE_FRLG_NPCS}=await import(pathToFileURL(
  path.join(stage,version,'torre2/frlg-available.js')));
 for(const id of ['route1','viridian','forest','pewter'])
  assert.ok(AVAILABLE_FRLG.includes(id),'Core FireRed map missing: '+id);
 for(const id of AVAILABLE_FRLG)
- assert.ok(fs.statSync(path.join(stage,'assets/ui/frlg',id+'.webp')).size>10000,
+ assert.ok(fs.statSync(path.join(stage,AVAILABLE_FRLG_FILES[id])).size>10000,
   'Available locale has no downloaded art: '+id);
 for(const id of ['red_normal','youngster','rocket_m','brock'])
  assert.ok(AVAILABLE_FRLG_NPCS.includes(id),'Core FireRed NPC missing: '+id);
@@ -638,7 +644,7 @@ for(const id of ['sing','crabhammer'])
 const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
 assert.ok(!menuCampaign.includes('drawApprovedDashboard(this,state)'),
  'Never paste the approved reference image over the playable map');
-assert.ok(menuCampaign.includes('richMap(this,state.stage,points)'),
+assert.ok(menuCampaign.includes('richMap(this,state.stage,points,page,region)'),
  'Campaign must draw native world graphics with real route nodes');
 const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
 for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',
