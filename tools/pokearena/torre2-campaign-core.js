@@ -25,12 +25,17 @@ export const ELITE=Object.freeze([
  {city:'Elite Four',leader:'Lorelei',badge:'Elite 1',arena:'estadio',enemy:['squirtle','wartortle','onix'],boss:'blastoise'},
  {city:'Elite Four',leader:'Bruno',badge:'Elite 2',arena:'crater',enemy:['machop','onix','machoke'],boss:'machamp'},
  {city:'Elite Four',leader:'Agatha',badge:'Elite 3',arena:'ruinas',enemy:['zubat','golbat','exeggcute'],boss:'golbat'},
- {city:'Elite Four',leader:'Lance',badge:'Elite 4',arena:'estadio',enemy:['magikarp','gyarados','onix'],boss:'gyarados'}
+ {city:'Elite Four',leader:'Lance',badge:'Elite 4',arena:'estadio',enemy:['magikarp','gyarados','onix'],boss:'gyarados'},
+ {city:'Indigo Plateau',leader:'Campeão',badge:'Campeão',arena:'estadio',
+  enemy:['pidgeot','rhydon','alakazam'],boss:'charizard'}
 ]);
 export const STAGES=Object.freeze([...GYMS,...ELITE]);
 export const STARTERS=Object.freeze(['bulbasaur','charmander','squirtle']);
 export const KANTO_DEX=Object.freeze('Bulbasaur,Ivysaur,Venusaur,Charmander,Charmeleon,Charizard,Squirtle,Wartortle,Blastoise,Caterpie,Metapod,Butterfree,Weedle,Kakuna,Beedrill,Pidgey,Pidgeotto,Pidgeot,Rattata,Raticate,Spearow,Fearow,Ekans,Arbok,Pikachu,Raichu,Sandshrew,Sandslash,Nidoran♀,Nidorina,Nidoqueen,Nidoran♂,Nidorino,Nidoking,Clefairy,Clefable,Vulpix,Ninetales,Jigglypuff,Wigglytuff,Zubat,Golbat,Oddish,Gloom,Vileplume,Paras,Parasect,Venonat,Venomoth,Diglett,Dugtrio,Meowth,Persian,Psyduck,Golduck,Mankey,Primeape,Growlithe,Arcanine,Poliwag,Poliwhirl,Poliwrath,Abra,Kadabra,Alakazam,Machop,Machoke,Machamp,Bellsprout,Weepinbell,Victreebel,Tentacool,Tentacruel,Geodude,Graveler,Golem,Ponyta,Rapidash,Slowpoke,Slowbro,Magnemite,Magneton,Farfetchd,Doduo,Dodrio,Seel,Dewgong,Grimer,Muk,Shellder,Cloyster,Gastly,Haunter,Gengar,Onix,Drowzee,Hypno,Krabby,Kingler,Voltorb,Electrode,Exeggcute,Exeggutor,Cubone,Marowak,Hitmonlee,Hitmonchan,Lickitung,Koffing,Weezing,Rhyhorn,Rhydon,Chansey,Tangela,Kangaskhan,Horsea,Seadra,Goldeen,Seaking,Staryu,Starmie,MrMime,Scyther,Jynx,Electabuzz,Magmar,Pinsir,Tauros,Magikarp,Gyarados,Lapras,Ditto,Eevee,Vaporeon,Jolteon,Flareon,Porygon,Omanyte,Omastar,Kabuto,Kabutops,Aerodactyl,Snorlax,Articuno,Zapdos,Moltres,Dratini,Dragonair,Dragonite,Mewtwo,Mew'.split(','));
-export const TRAINERS_PER_GYM=stage=>13+stage*2;
+// Stage indexes stay stable for existing saves. 13 early route trainers,
+// gradually more towards Giovanni, a real Victory Road, then direct Elite
+// Four and Champion battles rather than dozens of identical boss rematches.
+export const TRAINERS_PER_GYM=stage=>stage<8?13+stage*2:stage===8?17:0;
 
 function newMember(species,level=5){
  const exp=createPokemonProgression(species,level);
@@ -137,13 +142,13 @@ export function swapPokemon(s,teamIndex,boxIndex){
 export function currentOpponent(s){
  if(s.champion||s.stage>=STAGES.length)return null;
  const gym=STAGES[s.stage];
- const leader=s.stage>=GYMS.length||s.trainer>=TRAINERS_PER_GYM(s.stage);
+ const leader=s.trainer>=TRAINERS_PER_GYM(s.stage);
  const list=gym.enemy;
  const node=routeNode(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage));
  const role=leader?'leader':node.type;
  const rivalId=s.team[0]?.id==='charmander'?'squirtle':
   s.team[0]?.id==='squirtle'?'bulbasaur':'charmander';
- const species=leader?gym.boss:role==='rival'?rivalId:
+ const species=leader?(s.stage===STAGES.length-1?rivalId:gym.boss):role==='rival'?rivalId:
   role==='rocket'?(['zubat','machop','ekans'].includes(list[s.trainer%list.length])?
    list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
  return {id:species,leader,kind:role,
@@ -254,7 +259,7 @@ export function wildAvailability(stage){
 }
 export function startWildEncounter(s,random=Math.random){
  if(s.pendingCapture)return {ok:false,reason:'Resolva a captura pendente primeiro.'};
- if(s.stage>=GYMS.length)return {ok:false,reason:'Sem grama alta na Elite Four.'};
+ if(s.stage>GYMS.length)return {ok:false,reason:'Sem grama alta nas câmaras da Elite Four.'};
  if(s.wildEncountersStage>=5)return {ok:false,reason:'Você explorou os cinco encontros desta região.'};
  const area=wildAvailability(s.stage);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
