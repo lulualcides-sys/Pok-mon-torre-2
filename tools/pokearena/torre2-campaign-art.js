@@ -267,23 +267,44 @@ function panelMap(g){
   px(g,x+3,y+3,7,3,0xfff4c2);
  }
 }
-function pathStroke(g,points){
- // One easy-to-follow serpentine trail over the actual map image.
- // Draw thin and partially translucent so buildings and trees remain visible.
- const route=[{x:56,y:251},...points,{x:334,y:107}];
- for(let i=1;i<route.length;i++){
-  const a=route[i-1],b=route[i];
-  for(const [width,color,alpha] of [
-   [11,0x354739,.86],[8,0xb78e58,.86],[5,0xf9db9e,.90]
-  ]){
-   g.lineStyle(width,color,alpha);
-   g.lineBetween(a.x,a.y,b.x,b.y);
+function pathStroke(g,points,authenticMap=false){
+ if(!points.length)return;
+ // Os tiles FireRed já têm estradas. A linha mostra a progressão sem
+ // substituir grama, pontes, árvores e casas originais por uma faixa falsa.
+ const ends=[
+  {x:Math.max(37,points[0].x-24),y:Math.min(252,points[0].y+14)},
+  ...points,
+  {x:Math.min(357,points[points.length-1].x+18),
+   y:Math.max(103,points[points.length-1].y-14)}
+ ];
+ const curve=[];
+ for(let i=0;i<ends.length-1;i++){
+  const a=ends[Math.max(0,i-1)],b=ends[i],c=ends[i+1],
+   d=ends[Math.min(ends.length-1,i+2)];
+  for(let k=0;k<9;k++){
+   const t=k/9,t2=t*t,t3=t2*t;
+   const coord=key=>.5*(2*b[key]+(-a[key]+c[key])*t+
+    (2*a[key]-5*b[key]+4*c[key]-d[key])*t2+
+    (-a[key]+3*b[key]-3*c[key]+d[key])*t3);
+   curve.push({x:coord('x'),y:coord('y')});
   }
  }
- // Small pixel checkpoints, not oversized circles or fake buildings.
+ curve.push(ends[ends.length-1]);
+ for(let i=1;i<curve.length;i++){
+  const a=curve[i-1],b=curve[i];
+  g.lineStyle(authenticMap?3:8,0x493a28,authenticMap?.32:.58);
+  g.lineBetween(a.x,a.y,b.x,b.y);
+  g.lineStyle(authenticMap?1.5:5,0xf9e0a0,authenticMap?.65:.86);
+  g.lineBetween(a.x,a.y,b.x,b.y);
+ }
+ // Marcas pequenas de caminho, sem esconder os sprites de Pokémon.
+ for(let i=4;i<curve.length-4;i+=9){
+  const p=curve[i];
+  px(g,p.x-1,p.y-1,3,3,0xffefb9,authenticMap?.80:.96);
+ }
  for(const p of points){
-  px(g,p.x-5,p.y-5,10,10,0x243a40,.8);
-  px(g,p.x-3,p.y-3,6,6,0xffdfa1,.85);
+  px(g,p.x-5,p.y-5,10,10,0x172b39,.80);
+  px(g,p.x-3,p.y-3,6,6,0xffd67f,.98);
  }
 }
 function pathDistance(x,y,points){
@@ -414,7 +435,7 @@ export function map(scene,stage,points,page=0,region=null){
  }
  // Route always remains visible ABOVE the FireRed tiles, never hidden below them.
  const routeOverlay=scene.add.graphics().setDepth(2.25);
- pathStroke(routeOverlay,points);
+ pathStroke(routeOverlay,points,hasFRLG);
  // Keep the map art separate from interactive Phaser nodes / information.
  px(g,17,62,376,27,0x054553);
  px(g,19,64,372,23,0x064558);
