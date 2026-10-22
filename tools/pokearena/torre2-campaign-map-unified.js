@@ -53,12 +53,12 @@ const BROCK_CUSTOM_POINTS=Object.freeze([
  // depend on whether the player has defeated another trainer.
  // Pallet Town (1) -> Route 1 (2-3) -> Viridian (4-5)
  // -> Route 2 (6-7) -> Viridian Forest (8-11) -> Pewter (12-13).
- [115,274],
- [112,241],[112,214],
- [111,189],[159,183],
- [185,151],[188,129],
- [221,178],[254,185],[280,227],[302,241],
- [316,210],[325,185]
+ [115,276],
+ [114,245],[106,216],
+ [121,190],[164,190],
+ [179,162],[194,135],
+ [221,178],[254,185],[280,227],[314,238],
+ [314,208],[327,180]
 ]);
 const BROCK_AREAS=Object.freeze([
  'PALLET TOWN','ROTA 1','ROTA 1','VIRIDIAN CITY',
