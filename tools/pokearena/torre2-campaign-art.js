@@ -1,5 +1,6 @@
 import {drawKantoTiles} from './kanto-tiles.js';
 import {WORLD_SHEET,decorateWorldWithSprites} from './cc0-overworld.js';
+import {renderLocationTiles} from './frlg-location.js';
 /* Torre 2 — Kanto premium UI. Native Phaser Graphics/WebGL pixel art,
  * never a pasted mockup, CSS effects or Canvas 2D.
  */
@@ -347,8 +348,11 @@ export function map(scene,stage,points,page=0,region=null){
    px(g,65-j*2,131+j*4,27+j*4,1,0xe4d0a8);
   }
  }
- pathStroke(g,points);
- const hasWorldSprites=scene.textures.exists(WORLD_SHEET);
+ // FireRed source map is tiled as 16x16 Phaser sprites on top of the
+ // native base scene; gameplay nodes render at higher depths.
+ const hasFRLG=renderLocationTiles(scene,region);
+ if(!hasFRLG)pathStroke(g,points);
+ const hasWorldSprites=!hasFRLG&&scene.textures.exists(WORLD_SHEET);
  if(hasWorldSprites){
   // True PNG tile textures at depth 1.05, native road path above at 1.20,
   // then trees/buildings at depth 1.4. Trainer nodes stay clickable on top.
