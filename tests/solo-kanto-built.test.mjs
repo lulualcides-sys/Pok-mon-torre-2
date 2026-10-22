@@ -124,10 +124,19 @@ assert.equal(getLocationViewport('viridian',1360,672).main.w,768,
 assert.equal(getLocationViewport('viridian',1360,672).main.x,8);
 assert.equal(getLocationViewport('route1',400,672).cols,23);
 assert.equal(typeof renderLocationTiles,'function');
-const {zigzagRoutePoints}=await import(pathToFileURL(
+const {trainerRoutePoints}=await import(pathToFileURL(
  path.join(stage,version,'torre2/kanto-route-layout.js')));
-assert.deepEqual(zigzagRoutePoints(3).map(p=>p.x),[99,292,99],
- 'Trainer route must visibly zigzag left-right-left');
+const natural=trainerRoutePoints(5,{stage:0,chapterPage:2,biome:'city'});
+assert.equal(natural.length,5,'Five trainer checkpoints per route');
+assert.ok(natural.every(p=>p.x>=64&&p.x<=342&&p.y>=103&&p.y<=255),
+ 'Checkpoints stay inside the FireRed map viewport');
+assert.ok(natural.every((p,i)=>i===0||p.y<natural[i-1].y),
+ 'The route should progress naturally toward the gym');
+assert.notDeepEqual(natural.map(p=>p.x),[99,292,99,292,99],
+ 'Do not use the previous fixed zigzag');
+const forestTrail=trainerRoutePoints(5,{biome:'forest'});
+assert.ok(forestTrail.some((p,i)=>i>0&&p.x<forestTrail[i-1].x),
+ 'Forest trail should include natural turns');
 assert.ok(zigzagRoutePoints(5).every(p=>p.x>=21&&p.x<=389&&p.y>=90&&p.y<=266),
  'All trainer checkpoints must stay inside actual map image');
 assert.equal(locationForCampaign(campaignRegion(1,3,4)),'cerulean');
