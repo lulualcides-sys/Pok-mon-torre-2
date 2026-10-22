@@ -126,6 +126,24 @@ class Campanha extends Phaser.Scene{
   }));
   const region=campaignRegion(state.stage,page,totalPages,finished);
   richMap(this,state.stage,points,page,region);
+  // Functional world objects. Tap the actual rendered building or tall grass,
+  // not an invisible fullscreen mockup hotspot.
+  const worldZone=(x,y,w,h,action)=>{
+   const zone=this.add.zone(x,y,w,h).setDepth(9)
+    .setInteractive({useHandCursor:true});
+   zone.on('pointerdown',action);
+   return zone;
+  };
+  if(region.biome==='route'||region.biome==='city'){
+   worldZone(74,229,63,43,()=>this.centerScreen(state));
+   worldZone(327,152,65,40,()=>this.martScreen(state));
+  }else if(region.biome==='forest'||region.biome==='safari'){
+   if(gymStage)worldZone(329,169,81,65,()=>this.grassScreen(state));
+  }else if(region.biome.endsWith('-gym')||region.biome==='hall'){
+   // The gym gate is locked until every trainer on the current route is beaten.
+   if(!finished&&state.trainer===limit)
+    worldZone(319,153,84,52,()=>this.enterBattle(state));
+  }
   const art=this.add.graphics().setDepth(2);
   ball(art,32,75,8);
   text(this,46,68,region.title,{
