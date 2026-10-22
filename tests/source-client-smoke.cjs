@@ -461,6 +461,12 @@ const server=http.createServer(async(req,res)=>{
       c.children.list.some(o=>o.text==='SUA EQUIPE');
   },null,{timeout:12000});
 
+  // Track client errors during transfer from world map to native battle.
+  await offline.evaluate(()=>{
+   window.__pt2PartyErrors=[];
+   window.addEventListener('error',e=>window.__pt2PartyErrors.push(String(e.message||e.error?.stack||e.error)));
+   window.addEventListener('unhandledrejection',e=>window.__pt2PartyErrors.push(String(e.reason?.stack||e.reason)));
+  });
   // Campaign party regression: real in-arena switching preserves Kanto
   // checkpoint progress, and the opponent's HP does not reset on switch.
   await offline.evaluate(()=>{
@@ -484,7 +490,10 @@ const server=http.createServer(async(req,res)=>{
      hasParty:!!b.datos?.torre2?.party,
      loading:b.load?.isLoading(),pending:b.load?.totalToLoad,
      loadFailure:b.load?.totalFailed,
-     textures:b.textures.getTextureKeys().filter(k=>k.startsWith('pmd-')).length};
+     textures:b.textures.getTextureKeys().filter(k=>k.startsWith('pmd-')).length,
+     campaignStatus:window.__pt2Game.scene.getScene('campanha').sys.settings.status,
+     sceneManager:window.__pt2Game.scene.scenes.map(s=>[s.sys.settings.key,s.sys.settings.status]),
+     errors:window.__pt2PartyErrors};
    });
    console.error('PARTY_STARTUP_DIAGNOSTIC',JSON.stringify(diag));
    throw error;
