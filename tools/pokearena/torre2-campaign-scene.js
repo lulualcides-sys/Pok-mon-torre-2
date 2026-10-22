@@ -171,6 +171,48 @@ class Campanha extends Phaser.Scene{
   this.button(510,336,198,29,'◀ VOLTAR AO MAPA',
    ()=>this.scene.restart(),false,10);
  }
+ housesScreen(state){
+  const total=Math.max(1,Math.ceil((TRAINERS_PER_GYM(state.stage)+1)/(state.stage===0?3:5)));
+  const region=campaignRegion(state.stage,this.mapPage??0,total,!!state.champion);
+  const location=locationForCampaign(region);
+  const important=new Set(['house','rival','lab','school','museum','bike',
+   'fuji','dojo','bill','safari','tower','silph','harbor']);
+  const homes=buildingInteractions(location).filter(h=>important.has(h.id));
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,35,'CASAS E LUGARES IMPORTANTES',{
+   ...titleStyle,fontSize:'18px'}).setOrigin(.5);
+  text(this,320,74,'LOCAL: '+(location||region.title).toUpperCase(),{
+   fontSize:'13px',color:C.blue}).setOrigin(.5);
+  homes.slice(0,8).forEach((h,i)=>{
+   const x=165+(i%2)*307,y=111+Math.floor(i/2)*49;
+   this.button(x,y,278,36,h.title,()=>this.enterLocalityBuilding(state,location,h),false,10);
+  });
+  if(!homes.length)text(this,320,180,
+   'NENHUMA CASA DISPONÍVEL NESTE TRECHO DA ROTA.',{
+   fontSize:'13px',color:C.muted}).setOrigin(.5);
+  this.button(522,333,198,30,'◀ VOLTAR À ROTA',()=>this.scene.restart());
+ }
+ gymScreen(state){
+  const limit=TRAINERS_PER_GYM(state.stage);
+  const remaining=Math.max(0,limit-state.trainer);
+  const ready=!state.champion&&remaining===0;
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,47,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
+   ...titleStyle,fontSize:'22px'}).setOrigin(.5);
+  text(this,320,104,ready?'LÍDER DISPONÍVEL PARA BATALHA':
+   'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
+    fontSize:'15px',color:ready?'#a9f4bd':'#f5dda0'
+   }).setOrigin(.5);
+  text(this,320,162,ready?'VOCÊ PODE ENTRAR AGORA.':
+   'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
+    fontSize:'12px',color:C.white
+   }).setOrigin(.5);
+  this.button(320,225,278,47,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
+   if(ready)this.enterBattle(state);
+   else this.scene.restart();
+  },ready,13);
+  this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+ }
  card(x,y,w,h,accent=0x4b789b){
   const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
   const line=this.add.rectangle(x+2,y+2,4,h-4,accent,.9).setOrigin(0,0);
