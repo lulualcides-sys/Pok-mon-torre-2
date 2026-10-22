@@ -19,6 +19,7 @@ import {trainerClass,trainerClassName,drawTrainer,drawShopItem} from './campaign
 import {campaignRegion,KANTO_CHAPTERS} from './kanto-regions.js';
 import {drawKantoWorldMap,mapVisitInfo} from './kanto-world-map.js';
 import {currentLevelCap} from './kanto-levels.js';
+import {FRLG_LOCALE_NAMES} from './frlg-location.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -39,6 +40,12 @@ class Campanha extends Phaser.Scene{
   const state=readCampaign();
   if(!this.textures.exists('torre2-cc0-world'))
    this.load.image('torre2-cc0-world','assets/ui/kanto-cc0-world.png');
+  // Local FireRed reference tiles; do not change the Poké Arena Pokémon art.
+  for(const id of FRLG_LOCALE_NAMES){
+   const key='frlg-location-'+id;
+   if(!this.textures.exists(key))
+    this.load.image(key,'assets/ui/frlg/'+id+'.webp');
+  }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
   for(const dex of toLoad){
@@ -125,7 +132,8 @@ class Campanha extends Phaser.Scene{
   const stage=STAGES[state.stage],finished=state.champion||!stage;
   const gymStage=state.stage<=GYMS.length; // Victory Road retains wild encounters and Poké Mart
   const limit=finished?0:TRAINERS_PER_GYM(state.stage);
-  const perPage=5,totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
+  const perPage=state.stage===0?4:5,
+   totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
   const activePage=Math.min(totalPages-1,Math.floor(state.trainer/perPage));
   const page=this.mapPage==null?activePage:Math.max(0,Math.min(totalPages-1,this.mapPage));
   this.mapPage=page;
@@ -133,8 +141,18 @@ class Campanha extends Phaser.Scene{
   const first=page*perPage,count=Math.min(perPage,limit+1-first);
   // These node coordinates are shared by the native routes and their hit zones.
   const xs=[190,144,234,150,232];
+  // Trainer placement follows the local FireRed camera path rather than
+  // reusing the same diagonal dots through buildings on every screen.
+  const firstRoute=[
+   [[239,237],[255,204],[280,168],[244,128]],
+   [[210,241],[260,211],[312,181],[274,147]],
+   [[247,236],[282,205],[303,175],[325,147]],
+   [[190,221],[294,161]]
+  ];
+  const positions=state.stage===0?firstRoute[page]:null;
   const points=Array.from({length:count},(_,i)=>({
-   index:first+i,x:xs[i],y:240-i*32,
+   index:first+i,x:positions?.[i]?.[0]??xs[i],
+   y:positions?.[i]?.[1]??240-i*32,
    kind:routeNode(state.stage,first+i,limit).type
   }));
   const region=campaignRegion(state.stage,page,totalPages,finished);
@@ -147,7 +165,7 @@ class Campanha extends Phaser.Scene{
    zone.on('pointerdown',action);
    return zone;
   };
-  if(region.biome==='route'||region.biome==='city'){
+  if(region.biome==='city'){
    worldZone(74,229,63,43,()=>this.centerScreen(state));
    worldZone(327,152,65,40,()=>this.martScreen(state));
   }else if(region.biome==='forest'||region.biome==='safari'){
