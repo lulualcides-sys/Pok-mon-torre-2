@@ -303,6 +303,19 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(mapState.world,'pewter');
   assert.ok(mapState.realScene,'Brock must still use the original composite image');
+  // gymScreen() removes the header; allow the queued Phaser scene restart
+  // to finish before counting the new fullscreen button and cached textures.
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&
+    c.children.list.some(o=>o.active&&o.type==='Image'&&
+     o.texture?.key==='torre2-brock-custom')&&
+    c.children.list.some(o=>o.active&&o.type==='TileSprite'&&
+     o.texture?.key==='torre2-brock-forest')&&
+    c.__campaignMapObjects?.length>0&&
+    c.__campaignMap?.spec?.id==='pewter'&&
+    c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
+  },null,{timeout:18000});
   const imageIsolation=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const base=c.textures.get('torre2-brock-custom');
@@ -334,19 +347,6 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(imageIsolation.independentMask,
    'Pixel-art watermark cover must use a distinct WebGL atlas from the image');
   assert.equal(imageIsolation.mapId,'brock-hires-v4');
-  // gymScreen() removes the header; allow the queued Phaser scene restart
-  // to finish before counting the new fullscreen button and cached textures.
-  await offline.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&
-    c.children.list.some(o=>o.active&&o.type==='Image'&&
-     o.texture?.key==='torre2-brock-custom')&&
-    c.children.list.some(o=>o.active&&o.type==='TileSprite'&&
-     o.texture?.key==='torre2-brock-forest')&&
-    c.__campaignMapObjects?.length>0&&
-    c.__campaignMap?.spec?.id==='pewter'&&
-    c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
-  },null,{timeout:18000});
   // New mobile UI: down-arrow hides ONLY the sidebar, expanding the
   // map in place. Party moves to a narrow bottom strip and the battle/catch
   // call-to-action is centered at the bottom in both modes.
