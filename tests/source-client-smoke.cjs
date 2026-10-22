@@ -269,9 +269,11 @@ const server=http.createServer(async(req,res)=>{
   });
   await offline.waitForFunction(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
-    return c.__campaignMap?.spec?.id==='pewter'&&c.__campaignMap.locations===13 &&
+    return c.__campaignMap?.spec?.id==='pewter'&&
+      c.__campaignMap?.spec?.customBrock===true&&
+      c.__campaignMap.locations===13&&
       c.children.list.some(x=>x.type==='Image'&&
-       x.texture?.key==='frlg-location-pewter');
+       x.texture?.key==='torre2-brock-custom');
   },null,{timeout:23000});
   // PATCH 1 / PATCH 2: one real Pewter world for all 13 encounters and boss.
   // No PALLET -> ROUTE -> FOREST pagination, no route-line screen changes.
@@ -286,7 +288,7 @@ const server=http.createServer(async(req,res)=>{
       initial:labels(),stage:state.stage,trainer:state.trainer,
       world:c.__campaignMap?.spec?.id,points:c.__campaignMap?.locations,
       realScene:c.children.list.some(o=>o.type==='Image'&&
-       o.texture?.key==='frlg-location-pewter'),
+       o.texture?.key==='torre2-brock-custom'),
       realNPCs:c.children.list.filter(o=>o.type==='Image'&&
        String(o.texture?.key||'').startsWith('frlg-npc-')).length,
       portraits:c.children.list.filter(o=>o.type==='Image'&&
@@ -341,7 +343,7 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(mapState.points,13,'Brock shows all 13 trainers simultaneously');
   assert.equal(mapState.trainer,0);
   assert.ok(mapState.initial.includes('ROTA DE BROCK'));
-  assert.ok(mapState.realScene,'Authentic user-supplied Pewter PNG is rendered');
+  assert.ok(mapState.realScene,'Uploaded custom Brock route image must render as native Phaser sprite');
   assert.ok(mapState.realNPCs>=13,'Trainer markers must use real FireRed NPC sprites');
   assert.ok(mapState.portraits>=1,'Six-slot team uses real Pokémon portraits');
   assert.ok(mapState.zones>=19,'13 nodes, gym, grass, Center and Shop are interactive');
