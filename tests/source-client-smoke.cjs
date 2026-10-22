@@ -593,6 +593,8 @@ const server=http.createServer(async(req,res)=>{
     .map(o=>o.text).join(' | ');
    const foes=b.datos.torre2.party.foes;
    const originalTexture=b.luchadores[0]?.spr?.texture?.key;
+   window.__pt2PreviousDex=String(b.luchadores[0]?.dex||'');
+   window.__pt2PreviousSprite=b.luchadores[0]?.spr;
    // Isolate the swap transition from an unrelated KO in the full
    // running CPU fight: Mewtwo LV50 can knock out a LV6 target before
    // the animation ends. We deliberately test damage separately.
@@ -635,10 +637,20 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(afterSwitch.round,1,'No new countdown after switching');
   const visibleSwapPokemon=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),l=b.luchadores[0];
+   const orphans=b.children.list.filter(obj=>
+    obj.active&&obj.type==='Sprite'&&
+    String(obj.texture?.key||'').startsWith('pmd-'+window.__pt2PreviousDex+'-')&&
+    !b.luchadores.some(a=>a.spr===obj));
+   const old=window.__pt2PreviousSprite;
+   const oldStillVisible=old!==l.spr&&old?.active&&old?.visible;
+   const beam=b.__torre2BeamDebug;
+   const debug=b.__torre2SwapDebug;
    return {dex:l.dex,texture:l.spr?.texture?.key,
     animation:l.spr?.anims?.currentAnim?.key,
     visible:l.spr?.visible,scale:l.spr?.scaleX,phase:b.fase,
-    active:b.scene.isActive()};
+    active:b.scene.isActive(),orphans:orphans.map(x=>x.texture.key),
+    oldStillVisible,debug,beam};
+  
   });
   assert.equal(visibleSwapPokemon.texture,'pmd-'+visibleSwapPokemon.dex+'-Idle',
    'The ACTUAL in-arena sprite texture must match Mewtwo numeric PMD dex');
@@ -648,6 +660,22 @@ const server=http.createServer(async(req,res)=>{
    'PMD animations use numeric dex keys, not the English species name');
   assert.ok(visibleSwapPokemon.visible&&visibleSwapPokemon.scale>.2,
    'The replacement sprite must be visible, not miniaturized or transparent');
+  assert.equal(visibleSwapPokemon.oldStillVisible,false,
+   'No old Pokémon sprite may remain visible after the PMD switch: '+
+    JSON.stringify(visibleSwapPokemon));
+  assert.deepEqual(visibleSwapPokemon.orphans,[],
+   'Orphan PMD sprite from the previous Pokémon must be destroyed');
+  assert.equal(visibleSwapPokemon.debug?.activeTexture,
+   visibleSwapPokemon.texture,'The cleaned animation matches the battle HUD');
+  assert.equal(visibleSwapPokemon.beam?.phase,'release');
+  assert.ok(Math.hypot(
+   visibleSwapPokemon.beam.from.x-visibleSwapPokemon.beam.to.x,
+   visibleSwapPokemon.beam.from.y-visibleSwapPokemon.beam.to.y)>70,
+   'Pokéball red laser must visibly traverse the arena and touch the fighter');
+  assert.ok(Math.hypot(
+   visibleSwapPokemon.beam.currentBody.x-visibleSwapPokemon.beam.to.x,
+   visibleSwapPokemon.beam.currentBody.y-visibleSwapPokemon.beam.to.y)<6,
+   'Final laser endpoint must align with moving visible PMD body');
   assert.equal(visibleSwapPokemon.phase,'lucha',
    'No frozen KO phase or replayed FIGHT countdown after a manual switch');
   assert.ok(afterSwitch.enemyPct>.59&&afterSwitch.enemyPct<.74,
