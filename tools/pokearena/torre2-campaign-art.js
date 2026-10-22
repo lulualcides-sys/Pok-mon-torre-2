@@ -422,18 +422,19 @@ export function map(scene,stage,points,page=0,region=null){
 }
 
 export function node(g,x,y,kind='future'){
- const r=13;
- g.fillStyle(0x173a38,.7);g.fillCircle(x+2,y+4,r+5);
- g.fillStyle(0xf7e6b2);g.fillCircle(x,y,r+3);
- g.fillStyle(0x192a42);g.fillCircle(x,y,r+1);
- g.fillStyle(kind==='done'?0x23754d:kind==='current'?0x2872bf:0x8a9391);
+ // FRLG-sized unobtrusive marker: keep source map tiles visible.
+ const r=8;
+ g.fillStyle(0x0b2535,.8);g.fillCircle(x+1,y+3,r+3);
+ g.fillStyle(0xf9efd8);g.fillCircle(x,y,r+2);
+ g.fillStyle(0x1d3548);g.fillCircle(x,y,r+1);
+ g.fillStyle(kind==='done'?0x237c56:kind==='current'?0xe3ac3e:0x7d8f98);
  g.fillCircle(x,y,r-1);
- g.lineStyle(kind==='current'?3:2,kind==='current'?0xffd25e:0xe8e4cc);
+ g.lineStyle(1,kind==='current'?0xfff0b4:0xc5ddd1);
  g.strokeCircle(x,y,r+1);
  if(kind==='current'){
-  g.lineStyle(2,0xffdb74);g.strokeCircle(x,y,r+4);
+  g.lineStyle(2,0xffdb74);g.strokeCircle(x,y,r+3);
  }
- g.fillStyle(0xffffff,.2);g.fillEllipse(x-3,y-6,12,5);
+ g.fillStyle(0xffffff,.3);g.fillRect(x-3,y-5,6,2);
 }
 export function team(scene){
  const g=scene.add.graphics().setDepth(1);
