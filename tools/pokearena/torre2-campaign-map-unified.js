@@ -65,7 +65,28 @@ function checkpointsFor(total,stage){
   const y=279-row*Math.min(41,Math.floor(159/Math.max(1,rows-1)));
   points.push({x,y});
  }
- return points;
+ // Keep every numbered trainer readable and away from functional
+ // buildings. These positions are deterministic and stable across saves.
+ const world=WORLDS[stage]||WORLDS[9];
+ const landmarks=Object.values(world.buildings);
+ const settled=[];
+ const offsets=[[0,0],[34,0],[-34,0],[0,-30],[0,30],
+  [35,-30],[-35,-30],[35,30],[-35,30],
+  [64,0],[-64,0],[0,-60],[0,60],[70,-40],[-70,-40]];
+ for(const point of points){
+  let chosen=null;
+  for(const [dx,dy] of offsets){
+   const p={x:Math.max(43,Math.min(365,point.x+dx)),
+    y:Math.max(121,Math.min(280,point.y+dy))};
+   const clearBuildings=landmarks.every(([lx,ly])=>
+    Math.abs(p.x-lx)>34||Math.abs(p.y-ly)>32);
+   const clearTrainers=settled.every(q=>
+    Math.abs(p.x-q.x)>28||Math.abs(p.y-q.y)>28);
+   if(clearBuildings&&clearTrainers){chosen=p;break}
+  }
+  settled.push(chosen||point);
+ }
+ return settled;
 }
 export function getCampaignMapSpec(stage,trainerCount){
  const world=stage<0?WORLDS[0]:stage<9?WORLDS[stage]:WORLDS[9];
