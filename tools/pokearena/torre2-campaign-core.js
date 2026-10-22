@@ -169,7 +169,9 @@ export function startBattle(s){
   (s.stage>=8?'maestro':s.stage>=4?'dificil':'normal'):
   (s.stage>=8?'dificil':s.stage>=3?'normal':'facil');
  return {p1:s.team[s.active].id,p2:opponent.id,modo:'cpu',nivel:tier,
-  arena:opponent.arena,mandos:['kbm','cpu'],torre2:{stage:s.stage,trainer:s.trainer,kind:'trainer'}};
+  arena:opponent.arena,mandos:['kbm','cpu'],torre2:{stage:s.stage,trainer:s.trainer,kind:'trainer',
+   playerLevel:s.team[s.active].progression?.level??5,
+   enemyLevel:opponent.level,hardCap:currentLevelCap(s.stage)}};
 }
 export function resolveBattle(s,won,random=Math.random){
  const opponent=currentOpponent(s);
@@ -277,7 +279,9 @@ export function startWildBattle(s){
  if(!wild||wild.stage!==s.stage||!s.team[s.active])throw new Error('Wild encounter no longer active');
  return {p1:s.team[s.active].id,p2:wild.id,modo:'cpu',nivel:'facil',
   arena:STAGES[s.stage].arena,mandos:['kbm','cpu'],
-  torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id}};
+  torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id,
+   playerLevel:s.team[s.active].progression?.level??5,
+   enemyLevel:wild.level,hardCap:currentLevelCap(s.stage)}};
 }
 export function resolveWildBattle(s,won){
  const wild=s.pendingWild;
