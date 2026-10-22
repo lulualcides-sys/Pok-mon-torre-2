@@ -187,18 +187,23 @@ function pathDistance(x,y,points){
  }
  return d;
 }
-export function map(scene,stage,points){
+// Route shapes and palette reflect the Route 01, Route 02 / Viridian Forest,
+ // and Pewter City reference sheets; no downloaded map sheet is overlaid.
+export function map(scene,stage,points,page=0){
  const g=scene.add.graphics().setDepth(1);
- const r=rand(301+(stage*7381));panelMap(g);
- const bright=stage===0;
- const meadow=[0x8dcb66,0x80be58,0x97d36c,0x79b958];
+ const r=rand(301+(stage*7381)+page*5127);panelMap(g);
+ const preBrock=stage===0,forest=preBrock&&page===1,pewter=preBrock&&page>=2;
+ const meadow=forest?[0x407d52,0x4c8f4f,0x38814e,0x5b9b5b]:
+  pewter?[0xb0b88d,0x9eac80,0x9fad82,0xb6be98]:
+  [0x8dcb66,0x80be58,0x97d36c,0x79b958];
  for(let y=90;y<266;y+=6)for(let x=19;x<391;x+=6){
   px(g,x,y,6,6,meadow[Math.floor(r()*meadow.length)]);
   if(r()<.21)px(g,x+1,y+1,2,1,0xc5ea83,.65);
   if(r()<.18)px(g,x+4,y+4,2,1,0x3f9750,.6);
  }
- // Coast is built out of waves, foam and rocks, never a stretched photo.
- for(let y=90;y<266;y+=2){
+ // Route 01 and Viridian Forest are inland; the shoreline belongs to later
+ // Kanto stages. Use the 16-bit vegetation border in the early screenshots.
+ if(!preBrock)for(let y=90;y<266;y+=2){
   const coast=375+Math.floor(Math.sin((y+stage*11)*.085)*5);
   px(g,coast-4,y,7,2,0xefdda2);
   px(g,coast,y,391-coast,2,0x399ad8);
@@ -207,8 +212,12 @@ export function map(scene,stage,points){
    px(g,coast+1,y,5,1,0xe8ffff);px(g,coast+8,y,4,1,0x9fe7f4);
   }
  }
- // Rock plateau above Pewter and Mt. Moon approach.
- for(let x=19;x<155;x+=10){
+ else for(let y=100;y<265;y+=20){
+  pine(g,387,y,1);pine(g,20,y,.65);
+ }
+ // Cliff field only on the Pewter approach or Mt. Moon; the first
+ // two route pages are wooded and grassy as in the GBA reference.
+ if(pewter||!preBrock)for(let x=19;x<155;x+=10){
   const span=26+Math.floor(11*Math.sin((x-19)*.067))+(x<90?8:0);
   for(let y=90;y<90+span;y+=8){
    const dark=r()<.5?0x666e64:0x8b8774;
@@ -218,20 +227,22 @@ export function map(scene,stage,points){
   }
   px(g,x,89+span,10,4,0x344f3d);
  }
- px(g,59,111,29,18,0x283c36);px(g,64,113,20,16,0x0c2429);
- px(g,68,114,11,16,0x040e1c);
- for(let j=0;j<4;j++){
-  px(g,63-j*2,130+j*4,32+j*4,3,0xa9a08b);
-  px(g,65-j*2,131+j*4,27+j*4,1,0xe4d0a8);
+ if(!preBrock||pewter){
+  px(g,59,111,29,18,0x283c36);px(g,64,113,20,16,0x0c2429);
+  px(g,68,114,11,16,0x040e1c);
+  for(let j=0;j<4;j++){
+   px(g,63-j*2,130+j*4,32+j*4,3,0xa9a08b);
+   px(g,65-j*2,131+j*4,27+j*4,1,0xe4d0a8);
+  }
  }
  pathStroke(g,points);
- // Green patches stay out of the passable trail, facilities and stage markers.
- for(let k=0;k<270;k++){
+ // Extra tile-level ground detail in forest; no random dots over the path.
+ for(let k=0;k<(forest?470:pewter?175:310);k++){
   const x=25+Math.floor(r()*350),y=109+Math.floor(r()*149);
   if(x>366||pathDistance(x,y,points)<15||Math.hypot(x-76,y-229)<41
     ||Math.hypot(x-331,y-153)<37||x<135&&y<139)continue;
   const p=r();
-  if(p<.18)tallGrass(g,x,y);
+  if(p<(forest?.4:.18))tallGrass(g,x,y);
   else if(p<.43)px(g,x,y,2,2,0x5baf51);
   else if(p<.57)flower(g,x,y,r()<.52);
   else if(p<.72){px(g,x,y,4,2,0x4a8b44);px(g,x+4,y-1,2,3,0x6cbb62)}
@@ -239,11 +250,11 @@ export function map(scene,stage,points){
  }
  // Deterministic arbor sprites built from layered pixel cells.
  const trees=[];
- for(let i=0;i<120;i++){
+ for(let i=0;i<(forest?230:pewter?54:145);i++){
   const x=27+Math.floor(r()*346),y=109+Math.floor(r()*144);
   if(pathDistance(x,y,points)<24||Math.hypot(x-76,y-228)<39
     ||Math.hypot(x-331,y-145)<40||x<145&&y<145||x>364)continue;
-  if(r()>.63)continue;
+  if(r()>(forest?.3:pewter?.79:.56))continue;
   trees.push({x,y,s:r()<.25?.48:.58+r()*.2});
  }
  trees.sort((a,b)=>a.y-b.y);
@@ -251,14 +262,32 @@ export function map(scene,stage,points){
  // Foreground props and buildings overlay foliage, with functional UI zones
  // supplied by the campaign scene separately.
  fence(g,22,224);fence(g,116,244);fence(g,279,196);
- routeBuilding(g,43,208,true);routeBuilding(g,297,131,false);
- // Storefront signs are live Phaser text, not words painted in a bitmap.
- scene.add.text(67,229,'PC',{fontFamily:'Pixelify Sans,monospace',
-  fontSize:'11px',fontStyle:'bold',color:'#d83c3e',stroke:'#ffefc6',strokeThickness:2})
-  .setOrigin(.5).setDepth(2);
- scene.add.text(326,139,'MART',{fontFamily:'Pixelify Sans,monospace',
-  fontSize:'9px',fontStyle:'bold',color:'#ffffff',stroke:'#15538a',strokeThickness:2})
-  .setOrigin(.5).setDepth(2);
+ if(!preBrock||page===0){
+  routeBuilding(g,43,208,true);routeBuilding(g,297,131,false);
+  scene.add.text(67,229,'PC',{fontFamily:'Pixelify Sans,monospace',
+   fontSize:'11px',fontStyle:'bold',color:'#d83c3e',stroke:'#ffefc6',strokeThickness:2})
+   .setOrigin(.5).setDepth(2);
+  scene.add.text(326,139,'MART',{fontFamily:'Pixelify Sans,monospace',
+   fontSize:'9px',fontStyle:'bold',color:'#ffffff',stroke:'#15538a',strokeThickness:2})
+   .setOrigin(.5).setDepth(2);
+ }else if(forest){
+  // Forest gateway and bugcatcher trail: wood gate + deep rows of trees.
+  for(const x of [53,69,85,309,325,341]){
+   px(g,x,196,9,24,0x765638);px(g,x+2,198,5,16,0xc49450);
+  }
+  px(g,51,194,43,6,0xd3a66a);
+  px(g,307,194,43,6,0xd3a66a);
+  pine(g,61,223,.7);pine(g,330,226,.8);
+ }else{
+  // Pewter gym entrance inspired by FRLG building proportions.
+  px(g,274,128,86,45,0x414e52);px(g,277,130,80,40,0xc2bda0);
+  px(g,271,125,91,13,0x686f68);px(g,275,120,83,10,0x929e9e);
+  px(g,289,148,15,17,0x73969b);px(g,328,148,15,17,0x73969b);
+  px(g,305,149,20,22,0x5d4b41);px(g,309,155,12,15,0x2b3034);
+  px(g,287,121,47,4,0xd6d5b3);px(g,299,135,27,8,0x504e45);
+  scene.add.text(314,136,'GYM',{fontFamily:'Pixelify Sans,monospace',
+   fontSize:'9px',fontStyle:'bold',color:'#fff1b1'}).setOrigin(.5).setDepth(2);
+ }
  // Keep the map art separate from interactive Phaser nodes / information.
  px(g,17,62,376,27,0x054553);
  px(g,19,64,372,23,0x064558);
