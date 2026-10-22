@@ -144,7 +144,7 @@ class Campanha extends Phaser.Scene{
   // Trainer placement follows the local FireRed camera path rather than
   // reusing the same diagonal dots through buildings on every screen.
   const firstRoute=[
-   [[239,237],[255,204],[280,168],[244,128]],
+   [[197,235],[199,203],[251,169],[260,137]],
    [[210,241],[260,211],[312,181],[274,147]],
    [[247,236],[282,205],[303,175],[325,147]],
    [[190,221],[294,161]]
