@@ -268,15 +268,15 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(o=>typeof o.text==='string'&&o.text.toUpperCase().includes('ROTA 1')),
+    .children.list.some(o=>typeof o.text==='string'&&o.text.toUpperCase().includes('PALLET')),
     null,{timeout:15000});
   // The first page is Viridian, the second Viridian Forest, and the
   // gym approach is Pewter. Do not require Pewter on the first page.
   const getRouteLabel=()=>offline.evaluate(()=>window.__pt2Game.scene
     .getScene('campanha').children.list
     .filter(o=>typeof o.text==='string').map(o=>o.text).join(' | '));
-  assert.ok((await getRouteLabel()).includes('ROTA 1'),'First trainer page is Route 1');
-  for(const [page,region] of [[1,'VIRIDIAN'],[2,'FLORESTA'],[3,'PEWTER'],[0,'ROTA 1']]){
+  assert.ok((await getRouteLabel()).includes('PALLET'),'First trainer page is Pallet Town');
+  for(const [page,region] of [[1,'ROTA 1'],[2,'VIRIDIAN'],[3,'FLORESTA'],[4,'PEWTER'],[0,'PALLET']]){
     await offline.evaluate(page=>{
       const c=window.__pt2Game.scene.getScene('campanha');
       c.mapPage=page;c.scene.restart();
@@ -314,9 +314,9 @@ const server=http.createServer(async(req,res)=>{
   await offline.waitForFunction(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
    return scene.scene.isActive()&&scene.children.list.some(x=>
-    typeof x.text==='string'&&x.text.includes('ROTA 1'))&&
+    typeof x.text==='string'&&x.text.includes('PALLET'))&&
     scene.children.list.some(x=>x.type==='Image'&&
-     x.texture?.key==='frlg-location-route1');
+     x.texture?.key==='frlg-location-pallet');
   },null,{timeout:20000});
   const actualSprites=await offline.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
@@ -329,6 +329,16 @@ const server=http.createServer(async(req,res)=>{
     sourceSize:sheet?.source?.[0]?[sheet.source[0].width,sheet.source[0].height]:[]};
   });
   console.log('KANTO CC0 ART DIAG',JSON.stringify(actualSprites));
+  const hotspots=await offline.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   const core=(scene.__torre2FRLGView||{});
+   return {id:core.id,available:scene.textures.exists('frlg-npc-red_normal'),
+    originalNPC:scene.children.list.filter(x=>x.type==='Image'&&
+      String(x.texture?.key||'').startsWith('frlg-npc-')).length};
+  });
+  assert.equal(hotspots.id,'pallet','Pallet Town shows source tilemap');
+  assert.ok(hotspots.available&&hotspots.originalNPC>0,
+   'Map must render authentic FireRed Red and overworld trainers, not handdrawn substitutes');
   // Check each source tilemap as a Phaser texture, with hundreds of
   // separate 16-pixel frames instead of one pasted bitmap.
   const frlgMap=await offline.evaluate(()=>{
@@ -382,7 +392,7 @@ const server=http.createServer(async(req,res)=>{
    fullPage:true});
   await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(x=>typeof x.text==='string'&&x.text.includes('ROTA 1')),
+    .children.list.some(x=>typeof x.text==='string'&&x.text.includes('PALLET')),
     null,{timeout:12000});
 
 
@@ -437,7 +447,7 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('ROTA 1')),
+    .children.list.some(o=>typeof o.text==='string'&&o.text.includes('PALLET')),
     null,{timeout:12000});
 
   await offline.evaluate(async()=>{
