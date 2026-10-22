@@ -353,7 +353,7 @@ patches.push(['luchador.js',[
 // Preload every member before first round: in-place swap never triggers LOADING.
 patches.push(['escenas/combate.js',[[
  'const dexs=formasDe(d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2],d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);',
- 'const ids=d.torre2?.party?[...d.torre2.party.friend,...d.torre2.party.foes].map(m=>m.id):d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2];const dexs=formasDe(ids,d.torre2?.party?null:d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);'
+ 'const ids=d.torre2?.party?[...d.torre2.party.friend,...d.torre2.party.foes].map(m=>m.id):d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2];const dexs=d.torre2?.party?new Set(ids.map(id=>{const found=buscar(id);return found?.etapa?found.def.evoluciones[found.etapa-1]?.dex??found.def.dex:found?.def?.dex}).filter(Boolean)):formasDe(ids,d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);'
 ]]]);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
