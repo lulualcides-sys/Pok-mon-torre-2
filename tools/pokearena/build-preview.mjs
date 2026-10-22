@@ -16,6 +16,9 @@ await fs.cp(source,dest,{recursive:true,force:true});
 const {installCC0WorldTiles}=await import('./install-cc0-world-tiles.mjs');
 const cc0Tiles=await installCC0WorldTiles(dest);
 console.log('Verified CC0 overworld sprites',JSON.stringify(cc0Tiles));
+const {installFRLGMaps}=await import('./install-frlg-location-tiles.mjs');
+const frlgLocations=await installFRLGMaps(dest);
+console.log('Original FireRed locality maps:',Object.keys(frlgLocations.locations));
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');
 await installEarlyKantoSprites(dest);
@@ -112,6 +115,7 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  ['tools/pokearena/torre2-campaign-art.js','campaign-art.js'],
  ['tools/pokearena/torre2-cc0-overworld.js','cc0-overworld.js'],
+ ['tools/pokearena/torre2-frlg-location.js','frlg-location.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
  ['tools/pokearena/torre2-next-batch-fx.js','next-batch-fx.js'],
@@ -323,7 +327,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'
 for(const filename of [
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
- 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
+ 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
 if(versionedSource===clientSource)throw Error('VFX fingerprint collides with upstream dir');
