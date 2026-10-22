@@ -35,21 +35,52 @@ const PAL={
  rocket:{H:0x292d38,S:0xe6c7b0,N:0xb39387,U:0xe0e2e8,A:0xcb444b,
   P:0x282c3b,B:0x151a28},
  brock:{H:0x282f30,S:0xc18e69,N:0x835c48,U:0x9c7862,A:0xd2b293,
-  P:0x496568,B:0x38312b}
+  P:0x496568,B:0x38312b},
+ sailor:{H:0xf2f3ed,S:0xf3ca98,N:0xbc9473,U:0xd1e9f5,A:0x478ac2,P:0x304e7d,B:0x222f52},
+ scientist:{H:0x533e37,S:0xe7bd96,N:0xb58f69,U:0xe6f3f2,A:0x5ca4b9,P:0x3b6870,B:0x283a48},
+ swimmer:{H:0x564334,S:0xefa978,N:0xbe845b,U:0x67bad6,A:0xc1f9ff,P:0x398cae,B:0x2b6585},
+ cyclist:{H:0x394956,S:0xeac19b,N:0xb78e79,U:0xbd5d55,A:0xf4dd7a,P:0x4b4568,B:0x242e45},
+ psychic:{H:0x633e7d,S:0xe2bf99,N:0x957197,U:0x866bd0,A:0xd2b7fb,P:0x58547f,B:0x303458},
+ blackbelt:{H:0x37363f,S:0xe2b088,N:0xb78568,U:0xe2d5bc,A:0x85514a,P:0x59544f,B:0x393438},
+ channeler:{H:0x5f5472,S:0xd9b7a5,N:0x826c8d,U:0x965c93,A:0xdabedb,P:0x685a8c,B:0x464061},
+ ace:{H:0x533b2a,S:0xf0c29b,N:0xa76b4e,U:0xd69a46,A:0xf2d38b,P:0x3b5375,B:0x24364e}
 };
-export function trainerClass(stage,index,type='trainer'){
- if(type==='leader')return stage===0?'brock':'hiker';
+export function trainerClass(stage,index,type='trainer',biome='route'){
+ if(type==='leader')return stage===0?'brock':
+  ['water-gym','electric-gym','grass-gym','poison-gym','psychic-gym',
+   'fire-gym'].includes(biome)?({
+   'water-gym':'swimmer','electric-gym':'scientist','grass-gym':'lass',
+   'poison-gym':'channeler','psychic-gym':'psychic','fire-gym':'scientist'
+  })[biome]:'hiker';
  if(type==='rocket')return 'rocket';
  if(type==='rival')return 'rival';
- return ['youngster','bugcatcher','lass','hiker','youngster','bugcatcher',
-  'lass','youngster','hiker','bugcatcher','lass','youngster','hiker'][index%13];
+ const themed={
+  route:['youngster','lass','bugcatcher','ace'],forest:['bugcatcher','lass','youngster'],
+  pewter:['hiker','youngster'],cliff:['hiker','ace','bugcatcher'],cave:['hiker','rocket','ace'],
+  river:['swimmer','lass','ace'],sea:['swimmer','sailor','ace'],bridge:['ace','youngster'],
+  ship:['sailor','gentleman','ace'],road:['cyclist','ace'],
+  'water-gym':['swimmer','sailor'],'electric-gym':['scientist','ace'],
+  'grass-gym':['lass','ace'],'poison-gym':['channeler','ace'],
+  'psychic-gym':['psychic','ace'],'fire-gym':['scientist','ace'],
+  'ground-gym':['hiker','rocket'],safari:['ace','hiker'],hideout:['rocket','scientist'],
+  tower:['scientist','rocket'],graveyard:['channeler','psychic'],
+  dojo:['blackbelt','ace'],mansion:['scientist','ace'],
+  ice:['swimmer','ace'],volcano:['scientist','hiker'],dragon:['ace','psychic'],
+  victory:['ace','hiker'],gate:['ace'],league:['ace']
+ };
+ const choices=themed[biome]||themed.route;
+ return choices[(index+stage)%choices.length];
 }
 export function trainerClassName(kind){
  return ({youngster:'JOVEM',bugcatcher:'CAÇA-INSETOS',lass:'GAROTA',
- hiker:'MONTANHISTA',rival:'RIVAL',rocket:'EQUIPE ROCKET',brock:'BROCK'})[kind]||'TREINADOR';
+ hiker:'MONTANHISTA',rival:'RIVAL',rocket:'EQUIPE ROCKET',brock:'BROCK',
+ sailor:'MARINHEIRO',scientist:'CIENTISTA',swimmer:'NADADOR',
+ cyclist:'CICLISTA',psychic:'PSÍQUICO',blackbelt:'LUTADOR',
+ channeler:'MÉDIUM',ace:'TREINADOR ELITE',gentleman:'CAVALHEIRO'})[kind]||'TREINADOR';
 }
+
 export function drawTrainer(g,cx,cy,kind='youngster',scale=1){
- const p=PAL[kind]||PAL.youngster;
+ const p=PAL[kind]||PAL.ace;
  const x=Math.round(cx-6*scale),y=Math.round(cy-10*scale);
  for(let row=0;row<SHAPE.length;row++)for(let col=0;col<12;col++){
   let ch=SHAPE[row][col];if(ch==='.')continue;
