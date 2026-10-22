@@ -313,7 +313,7 @@ const server=http.createServer(async(req,res)=>{
     x.texture?.key==='torre2-brock-forest');
    return {baseWidth:base?.get('__BASE')?.width,
     baseHeight:base?.get('__BASE')?.height,
-    sourceFrame:photo?.frame?.name,
+    isFullFrame:photo?.frame===base?.get('__BASE'),
     sourceWidth:photo?.frame?.width,
     independentMask:!!mask&&!!cut&&mask!==base,
     baseFrames:base?.getFrameNames(),filter:base?.source?.[0]?.filter,
@@ -321,8 +321,9 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(imageIsolation.baseWidth,1200);
   assert.equal(imageIsolation.baseHeight,675);
-  assert.equal(imageIsolation.sourceFrame,'__BASE');
-  assert.deepEqual(imageIsolation.baseFrames,['__BASE'],
+  assert.ok(imageIsolation.isFullFrame,
+   'Map must display the 1200x675 source image without a forest sub-frame');
+  assert.ok(imageIsolation.baseFrames.every(key=>key==='__BASE'),
    'Original Brock scene must not share texture frames with the forest patch');
   assert.ok(imageIsolation.independentMask,
    'Pixel-art watermark cover must use a distinct WebGL atlas from the image');
