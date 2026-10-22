@@ -309,6 +309,55 @@ const server=http.createServer(async(req,res)=>{
    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
     c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
   },null,{timeout:18000});
+  // New mobile UI: down-arrow hides ONLY the sidebar, expanding the
+  // map in place. Party moves to a narrow bottom strip and the battle/catch
+  // call-to-action is centered at the bottom in both modes.
+  const panelTest=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const arrow=c.children.list.find(o=>o.getData?.('torre2-panel-toggle'));
+   const cta=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
+   const map=c.__campaignMapObjects.find(x=>x.obj.type==='Image'&&
+     x.obj.texture?.key==='torre2-brock-custom');
+   const sideTitle=c.__campaignSidebarObjects.find(x=>x.text==='SUA EQUIPE');
+   const start={arrow:!!arrow,ctaX:cta?.x,ctaY:cta?.y,
+     width:map?.obj.displayWidth,sidebar:sideTitle?.visible};
+   arrow?.emit('pointerdown');
+   const collapsed={active:c.__campaignPanelCollapsed,
+     width:map?.obj.displayWidth,
+     arrow:c.__campaignArrowLabel?.text,
+     sidebar:sideTitle?.visible,
+     dock:c.__campaignDockObjects.filter(o=>o.visible&&o.type==='Image').length,
+     zoneEnabled:c.__campaignSidebarObjects
+      .filter(o=>o.type==='Zone'&&o.input?.enabled).length};
+   arrow?.emit('pointerdown');
+   const restored={active:c.__campaignPanelCollapsed,
+     width:map?.obj.displayWidth,
+     sidebar:sideTitle?.visible,
+     zoneEnabled:c.__campaignSidebarObjects
+      .filter(o=>o.type==='Zone'&&o.input?.enabled).length};
+   return {start,collapsed,restored};
+  });
+  assert.equal(panelTest.start.arrow,true,
+   'Collapse arrow must be clickable in the campaign');
+  assert.equal(panelTest.start.ctaX,320,
+   'Battle/capture starts at the bottom center, not inside sidebar');
+  assert.equal(panelTest.start.ctaY,339);
+  assert.equal(panelTest.start.sidebar,true);
+  assert.equal(panelTest.collapsed.active,true);
+  assert.ok(panelTest.collapsed.width>panelTest.start.width*1.5,
+   'Hiding the panel must actually enlarge the playable map');
+  assert.equal(panelTest.collapsed.arrow,'▲','Arrow shows expand option');
+  assert.equal(panelTest.collapsed.sidebar,false,
+   'Side menu must disappear from view');
+  assert.ok(panelTest.collapsed.dock>=2,
+   'Player party has a compact, touchable strip at bottom');
+  assert.equal(panelTest.collapsed.zoneEnabled,0,
+   'Hidden buttons cannot intercept clicks intended for the map');
+  assert.equal(panelTest.restored.active,false);
+  assert.equal(panelTest.restored.width,panelTest.start.width,
+   'Toggling back restores exact native pixel-art layout');
+  assert.equal(panelTest.restored.sidebar,true);
+  assert.ok(panelTest.restored.zoneEnabled>=6);
   const mobileResources=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return {
