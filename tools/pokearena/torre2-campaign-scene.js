@@ -17,6 +17,8 @@ import {routeNode,MART_ITEMS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {trainerClass,trainerClassName,drawTrainer,drawShopItem} from './campaign-sprites.js';
 import {campaignRegion,KANTO_CHAPTERS} from './kanto-regions.js';
+import {drawKantoWorldMap,mapVisitInfo} from './kanto-world-map.js';
+import {currentLevelCap} from './kanto-levels.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -49,6 +51,9 @@ class Campanha extends Phaser.Scene{
   header(this);
   this.add.text(52,14,'POKÉMON TORRE 2 / KANTO',{...titleStyle,
    fontSize:'17px',stroke:'#020b1b',strokeThickness:4});
+  this.button(345,24,84,29,'MAPA',()=>{
+   const state=readCampaign();if(state)this.mapScreen(state);
+  },false,12);
   this.button(447,24,100,29,'CENTRO / PC',()=>{const state=readCampaign();if(state)this.centerScreen(state)});
   this.button(537,24,76,29,'MENU',()=>this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
@@ -101,6 +106,12 @@ class Campanha extends Phaser.Scene{
  }
  backdrop(){
   richBackdrop(this);
+ }
+ mapScreen(state){
+  // An actual separately navigable Kanto Town Map, not a screenshot overlay.
+  this.children.removeAll(true);
+  const stage=state.stage??0,limit=TRAINERS_PER_GYM(stage);
+  drawKantoWorldMap(this,state,{trainerLimit:limit,onBack:()=>this.scene.restart()});
  }
  card(x,y,w,h,accent=0x4b789b){
   const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
@@ -204,7 +215,7 @@ class Campanha extends Phaser.Scene{
    fontSize:'11px',fontStyle:'bold',color:'#ffdf95'}).setDepth(5);
   text(this,617,101,'$ '+(state.money||0),{
    fontSize:'12px',fontStyle:'bold',color:'#ffdc71'}).setOrigin(1,0).setDepth(5);
-  text(this,417,117,'TOQUE NO POKÉMON PARA O SUMÁRIO',{
+  text(this,417,117,'LIMITE NV. '+currentLevelCap(state.stage)+'  ·  TOQUE PARA SUMÁRIO',{
    fontSize:'9px',color:'#a9daf1'}).setDepth(5);
   // The first four slots are genuinely live; page two exposes slots 5-6.
   const teamPages=Math.max(1,Math.ceil(state.team.length/4));
