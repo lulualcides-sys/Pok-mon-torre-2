@@ -132,7 +132,7 @@ class Campanha extends Phaser.Scene{
   const stage=STAGES[state.stage],finished=state.champion||!stage;
   const gymStage=state.stage<=GYMS.length; // Victory Road retains wild encounters and Poké Mart
   const limit=finished?0:TRAINERS_PER_GYM(state.stage);
-  const perPage=state.stage===0?4:5,
+  const perPage=state.stage===0?3:5,
    totalPages=Math.max(1,Math.ceil((limit+1)/perPage));
   const activePage=Math.min(totalPages-1,Math.floor(state.trainer/perPage));
   const page=this.mapPage==null?activePage:Math.max(0,Math.min(totalPages-1,this.mapPage));
@@ -144,10 +144,11 @@ class Campanha extends Phaser.Scene{
   // Trainer placement follows the local FireRed camera path rather than
   // reusing the same diagonal dots through buildings on every screen.
   const firstRoute=[
-   [[197,235],[199,203],[251,169],[260,137]],
-   [[210,241],[260,211],[312,181],[274,147]],
-   [[247,236],[282,205],[303,175],[325,147]],
-   [[190,221],[294,161]]
+   [[160,214],[240,216],[312,184]],   // Pallet Town
+   [[186,235],[196,199],[198,158]],   // Route 1
+   [[204,223],[239,186],[274,149]],   // Viridian
+   [[181,234],[235,191],[298,143]],   // Viridian Forest
+   [[170,223],[258,190]]             // Pewter / Brock
   ];
   const positions=state.stage===0?firstRoute[page]:null;
   const points=Array.from({length:count},(_,i)=>({
