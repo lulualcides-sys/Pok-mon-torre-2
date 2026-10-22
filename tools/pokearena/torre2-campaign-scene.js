@@ -14,6 +14,7 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,teachTM} from './campaign-core.js';
 import {routeNode,MART_ITEMS} from './route-data.js';
+import {installWildCapture} from './capture-arena.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -278,6 +279,21 @@ class Campanha extends Phaser.Scene{
   }
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
+  if(wild){
+   // Install the capture HUD when the real battle objects are ready, not in
+   // a fake modal outside combat. Clear the listener when the fight finishes.
+   const game=this.game;let frames=0;
+   const attach=()=>{
+    const battle=game.scene.getScene('combate');
+    if(battle.scene.isActive()&&battle.luchadores?.length===2){
+     game.events.off('step',attach);
+     installWildCapture(battle);
+    }else if(++frames>900||(!battle.scene.isActive()&&frames>180)){
+     game.events.off('step',attach);
+    }
+   };
+   game.events.on('step',attach);
+  }
   this.scene.start('combate',match);
  }
  grassScreen(state){
