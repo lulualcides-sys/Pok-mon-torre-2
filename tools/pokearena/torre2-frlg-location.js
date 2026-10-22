@@ -3,16 +3,33 @@
  * Each tile is its own Phaser GameObject, clipped to the playing field.
  * Trainer buttons, routes, bag and capture remain original game objects.
  */
-export const FRLG_LOCALE_NAMES=Object.freeze(['route1','viridian','forest','pewter']);
+export const FRLG_LOCALE_NAMES=Object.freeze(['route1','viridian','forest','pewter',
+ 'cerulean','vermilion','lavender','celadon','fuchsia','cinnabar']);
 export function locationForCampaign(region){
- if(!region||region.stage!==0)return null;
- return FRLG_LOCALE_NAMES[region.page]||null;
+ if(!region)return null;
+ if(region.stage===0)return FRLG_LOCALE_NAMES[region.page]||null;
+ const stage=region.stage,page=region.page;
+ if(stage===1&&page>=2)return 'cerulean';
+ if(stage===2&&page>=2)return 'vermilion';
+ if(stage===3&&page===2)return 'lavender';
+ if(stage===3&&page>=3)return 'celadon';
+ if(stage===4&&page>=3)return 'fuchsia';
+ if(stage===5&&page>=2)return 'celadon'; // Saffron art not yet verified
+ if(stage===6&&page>=3)return 'cinnabar';
+ if(stage===7&&page>=1)return 'viridian';
+ return null;
 }
 export const TILE_VIEW=Object.freeze({
  route1:{cx:192,cy:315},
  viridian:{cx:472,cy:328},
  forest:{cx:395,cy:525},
- pewter:{cx:264,cy:248}
+ pewter:{cx:264,cy:248},
+ cerulean:{cx:400,cy:315},
+ vermilion:{cx:400,cy:317},
+ lavender:{cx:197,cy:153},
+ celadon:{cx:497,cy:365},
+ fuchsia:{cx:425,cy:335},
+ cinnabar:{cx:220,cy:133}
 });
 export function renderLocationTiles(scene,region){
  const id=locationForCampaign(region),key=id&&'frlg-location-'+id;
