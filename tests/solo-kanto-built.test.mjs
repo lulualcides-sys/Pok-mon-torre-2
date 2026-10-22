@@ -278,9 +278,12 @@ if(area.available.length){
  assert.ok(captureChance({...grass.pendingWild,hpPercent:10})>
   captureChance({...grass.pendingWild,hpPercent:100}),
   'Lower HP must mean higher capture chance');
- assert.ok(captureChance({...grass.pendingWild,hpPercent:10},'ultraball')>
-  captureChance({...grass.pendingWild,hpPercent:10},'pokeball'),
-  'Ultra Ball must improve the catch chance');
+ // Use a challenging wild species; easy targets can reach the 99.5% cap
+ // with either ball, making a strict improvement mathematically impossible.
+ const toughWild={id:'onix',wild:true,hpPercent:10};
+ assert.ok(captureChance(toughWild,'ultraball')>
+  captureChance(toughWild,'pokeball'),
+  'Ultra Ball must improve the catch chance when not capped');
  const low={id:'onix',wild:true,hpPercent:8};
  assert.ok(captureChance(low,'greatball')>captureChance({...low,hpPercent:100},'greatball'));
  assert.equal(rollCapture(low,'pokeball',()=>0).shakes,3);
