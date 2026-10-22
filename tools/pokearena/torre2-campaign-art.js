@@ -1,3 +1,4 @@
+import {drawKantoTiles} from './kanto-tiles.js';
 /* Torre 2 — Kanto premium UI. Native Phaser Graphics/WebGL pixel art,
  * never a pasted mockup, CSS effects or Canvas 2D.
  */
@@ -313,6 +314,9 @@ export function map(scene,stage,points,page=0,region=null){
   if(r()<.21)px(g,x+1,y+1,2,1,0xc5ea83,.65);
   if(r()<.18)px(g,x+4,y+4,2,1,0x3f9750,.6);
  }
+ // Modular 16px pixel tiles are the visual ground, separate from path,
+ // buildings, game-state markers and the Arena 2D Pokémon sprites.
+ drawKantoTiles(g,biome,stage*27+page);
  // Route 01 and Viridian Forest are inland; the shoreline belongs to later
  // Kanto stages. Use the 16-bit vegetation border in the early screenshots.
  if(water)for(let y=90;y<266;y+=2){
