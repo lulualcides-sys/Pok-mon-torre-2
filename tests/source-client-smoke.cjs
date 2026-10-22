@@ -303,6 +303,30 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(mapState.world,'pewter');
   assert.ok(mapState.realScene,'Brock must still use the original composite image');
+  const imageIsolation=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const base=c.textures.get('torre2-brock-custom');
+   const mask=c.textures.get('torre2-brock-forest');
+   const photo=c.children.list.find(x=>x.type==='Image'&&
+    x.texture?.key==='torre2-brock-custom');
+   const cut=c.children.list.find(x=>x.type==='TileSprite'&&
+    x.texture?.key==='torre2-brock-forest');
+   return {baseWidth:base?.get('__BASE')?.width,
+    baseHeight:base?.get('__BASE')?.height,
+    sourceFrame:photo?.frame?.name,
+    sourceWidth:photo?.frame?.width,
+    independentMask:!!mask&&!!cut&&mask!==base,
+    baseFrames:base?.getFrameNames(),filter:base?.source?.[0]?.filter,
+    mapId:c.__torre2WorldView?.id};
+  });
+  assert.equal(imageIsolation.baseWidth,1200);
+  assert.equal(imageIsolation.baseHeight,675);
+  assert.equal(imageIsolation.sourceFrame,'__BASE');
+  assert.deepEqual(imageIsolation.baseFrames,['__BASE'],
+   'Original Brock scene must not share texture frames with the forest patch');
+  assert.ok(imageIsolation.independentMask,
+   'Pixel-art watermark cover must use a distinct WebGL atlas from the image');
+  assert.equal(imageIsolation.mapId,'brock-hires-v4');
   // gymScreen() removes the header; allow the queued Phaser scene restart
   // to finish before counting the new fullscreen button and cached textures.
   await offline.waitForFunction(()=>{

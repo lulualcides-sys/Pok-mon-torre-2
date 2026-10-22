@@ -160,24 +160,39 @@ function landmark(scene,g,label,x,y,accent,callback,locked=false,compact=false){
 }
 function realMap(scene,spec){
  if(spec.customBrock&&scene.textures.exists('torre2-brock-custom')){
+  // Preserve all 1200×675 source pixels. NEVER add atlas frames to this
+  // texture: a second TileSprite drawing a cropped frame of the SAME WebGL
+  // image made the main picture render as huge colored blocks on Android.
   const tex=scene.textures.get('torre2-brock-custom');
   if(typeof Phaser!=='undefined')
-   tex.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  scene.add.image(20,85,'torre2-brock-custom')
+   tex.setFilter(Phaser.Textures.FilterMode.LINEAR);
+  const full=tex.get('__BASE');
+  if(!full||full.width<1000||full.height<550){
+   scene.__torre2MapImageError='Invalid hi-res Brock source frame';
+   return false;
+  }
+  const image=scene.add.image(20,85,'torre2-brock-custom','__BASE')
    .setOrigin(0,0).setDepth(1).setDisplaySize(372,211);
-  // Replace the embedded FireRed watermark with a repeated native forest
-  // tile from the SAME user-provided map. WebGL tile sprites; no CSS overlay,
-  // screenshot of a screen, Canvas 2D drawing or replacement of route art.
-  const scaleX=(tex.source?.[0]?.width||372)/372;
-  const scaleY=(tex.source?.[0]?.height||211)/211;
-  const patch='torre2-brock-forest';
-  if(!tex.has(patch))tex.add(patch,0,
-   Math.round(2*scaleX),Math.round(2*scaleY),
-   Math.max(1,Math.round(12*scaleX)),
-   Math.max(1,Math.round(12*scaleY)));
-  scene.add.tileSprite(32,94,65,36,'torre2-brock-custom',patch)
-   .setOrigin(0,0).setTileScale(1/scaleX,1/scaleY).setDepth(2);
-  scene.__torre2WorldView={id:'brock-user-map',x:0,y:0,w:372,h:211};
+  image.setData('torre2-hires-base',true);
+  // Keep the logo-cover pixel-art forest in its OWN atlas and GPU sampler.
+  // Its crop must never change the base frame, source UV or filtering.
+  if(scene.textures.exists('torre2-brock-forest')){
+   const forest=scene.textures.get('torre2-brock-forest');
+   const scaleX=(forest.source?.[0]?.width||1200)/372;
+   const scaleY=(forest.source?.[0]?.height||675)/211;
+   const patch='torre2-brock-forest-patch';
+   if(!forest.has(patch))forest.add(patch,0,
+    Math.round(2*scaleX),Math.round(2*scaleY),
+    Math.max(1,Math.round(12*scaleX)),
+    Math.max(1,Math.round(12*scaleY)));
+   if(typeof Phaser!=='undefined')
+    forest.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   scene.add.tileSprite(32,94,65,36,'torre2-brock-forest',patch)
+    .setOrigin(0,0).setTileScale(1/scaleX,1/scaleY).setDepth(2);
+  }
+  scene.__torre2WorldView={id:'brock-hires-v4',x:0,y:0,w:372,h:211,
+   fullSourceWidth:full.width,fullSourceHeight:full.height,
+   separateForest:scene.textures.exists('torre2-brock-forest')};
   return true;
  }
  const key='frlg-location-'+spec.id;

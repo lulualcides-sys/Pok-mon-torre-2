@@ -60,9 +60,12 @@ class Campanha extends Phaser.Scene{
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
   const world=getCampaignMapSpec(stage,0).id;
-  if(stage===0&&HAS_CUSTOM_BROCK&&
-      !this.textures.exists('torre2-brock-custom'))
-   this.load.image('torre2-brock-custom','assets/ui/torre2-brock-custom.webp');
+  if(stage===0&&HAS_CUSTOM_BROCK){
+   if(!this.textures.exists('torre2-brock-custom'))
+    this.load.image('torre2-brock-custom','assets/ui/torre2-brock-custom.webp');
+   if(!this.textures.exists('torre2-brock-forest'))
+    this.load.image('torre2-brock-forest','assets/ui/torre2-brock-forest.webp');
+  }
   if(AVAILABLE_FRLG.includes(world)){
    const key='frlg-location-'+world;
    if(!this.textures.exists(key))

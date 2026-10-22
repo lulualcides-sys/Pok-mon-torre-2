@@ -28,6 +28,10 @@ try{
  if(picture.length<2500||picture.toString('ascii',0,4)!=='RIFF'||
    picture.toString('ascii',8,12)!=='WEBP')throw Error('Invalid Brock map');
  await fs.writeFile(path.join(dest,'assets/ui/torre2-brock-custom.webp'),picture);
+ // The forest watermark patch must use a SEPARATE WebGL texture object.
+ // A sub-frame added to the full-map texture could contaminate its UVs
+ // when Phaser tileSprite flushes batches on Android WebGL.
+ await fs.writeFile(path.join(dest,'assets/ui/torre2-brock-forest.webp'),picture);
  hasCustomBrock=true;
 }catch(e){if(e.code!=='ENOENT')throw e}
 console.log('Brock custom illustration found:',hasCustomBrock);
