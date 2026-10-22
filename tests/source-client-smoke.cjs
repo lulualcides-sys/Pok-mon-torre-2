@@ -302,7 +302,7 @@ const server=http.createServer(async(req,res)=>{
    const mask=c.textures.get('torre2-brock-forest');
    const photo=c.children.list.find(x=>x.type==='Image'&&
     x.texture?.key==='torre2-brock-custom');
-   const cut=c.children.list.find(x=>x.type==='TileSprite'&&
+   const cut=c.children.list.find(x=>
     x.texture?.key==='torre2-brock-forest');
    return {baseWidth:base?.get('__BASE')?.width,
     baseHeight:base?.get('__BASE')?.height,
