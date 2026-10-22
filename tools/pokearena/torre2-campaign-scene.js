@@ -407,16 +407,16 @@ class Campanha extends Phaser.Scene{
   // health. Hidden side menu remains touch-free; no card overlaps the CTA.
   const dockStart=this.children.list.length;
   const dockBg=this.add.graphics().setDepth(51);
-  dockBg.fillStyle(0x071d30,.98);dockBg.fillRect(15,305,612,29);
-  dockBg.lineStyle(1,0x719eab,1);dockBg.strokeRect(15.5,305.5,611,28);
+  dockBg.fillStyle(0x071d30,.98);dockBg.fillRect(15,302,612,34);
+  dockBg.lineStyle(1,0x719eab,1);dockBg.strokeRect(15.5,302.5,611,33);
   for(let i=0;i<6;i++){
-   const member=state.team[i],x=27+i*99,y=307;
+   const member=state.team[i],x=27+i*99,y=305;
    dockBg.fillStyle(member?(i===state.active?0x37504c:0x18384a):0x0c2736);
-   dockBg.fillRect(x,y,94,25);
+   dockBg.fillRect(x,y,94,29);
    dockBg.lineStyle(1,i===state.active?0xffd574:member?0x537c8c:0x24495b);
-   dockBg.strokeRect(x+.5,y+.5,93,24);
+   dockBg.strokeRect(x+.5,y+.5,93,28);
    if(!member)continue;
-   this.drawPortrait(member,x+14,y+12,21,54);
+   this.drawPortrait(member,x+14,y+13,23,54);
    const name=member.id.toUpperCase().slice(0,10);
    text(this,x+28,y+4,name,{
     fontSize:name.length>8?'7px':'8px',
@@ -426,10 +426,10 @@ class Campanha extends Phaser.Scene{
     (Number(member.hp??100)<=0?' · K.O.':''),{
     fontSize:'7px',color:'#b7e1d3'}).setDepth(55);
    const hp=Math.max(0,Math.min(100,Number(member.hp??100)));
-   dockBg.fillStyle(0x091724);dockBg.fillRect(x+30,y+21,49,3);
+   dockBg.fillStyle(0x091724);dockBg.fillRect(x+30,y+24,56,3);
    dockBg.fillStyle(hp>50?0x5ce4a1:hp>20?0xf2c859:0xf06b70);
-   dockBg.fillRect(x+30,y+21,49*hp/100,3);
-   this.add.zone(x+47,y+12,94,25).setDepth(58)
+   dockBg.fillRect(x+30,y+24,56*hp/100,3);
+   this.add.zone(x+47,y+14,94,29).setDepth(58)
     .setInteractive({useHandCursor:true})
     .on('pointerdown',()=>this.showSummary(state,i));
   }
