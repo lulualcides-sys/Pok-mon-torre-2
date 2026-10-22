@@ -38,7 +38,21 @@ const server=http.createServer(async(req,res)=>{
   const response=await page.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:30000});
   assert.equal(response.status(),200);
   assert.equal(await page.title(),'Pokémon Torre','The title must use the approved new game name');
-  await page.waitForFunction(()=>!!window.Phaser&&!!document.querySelector('#juego canvas'),null,{timeout:35000});
+  try {
+   await page.waitForFunction(()=>!!window.Phaser&&!!document.querySelector('#juego canvas'),null,{timeout:35000});
+  }catch(err){
+   const diag=await page.evaluate(()=>({
+    title:document.title,
+    scriptSrcs:[...document.scripts].map(x=>x.src).filter(Boolean),
+    gameDiv:!!document.querySelector('#juego'),
+    errorText:document.body?.innerText?.slice(-1400),
+    started:window.__pt2Started,phaser:typeof window.Phaser,
+    moduleTags:[...document.querySelectorAll('script[type="module"]')].map(x=>x.src)
+   }));
+   console.error('PHASER FIRST BOOT DIAGNOSTIC',JSON.stringify({diag,errors,notFound}));
+   await page.screenshot({path:'test-evidence/kanto-phaser-boot-failure.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:45000,polling:250});
   await page.waitForTimeout(800);
   const canvas=await page.evaluate(()=>{
