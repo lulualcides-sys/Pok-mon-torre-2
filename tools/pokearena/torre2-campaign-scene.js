@@ -183,11 +183,15 @@ class Campanha extends Phaser.Scene{
   const kind=next?.kind==='leader'?'LÍDER DO GINÁSIO':
    next?.kind==='rocket'?'EQUIPE ROCKET':next?.kind==='rival'?'RIVAL':'TREINADOR';
   const nextTrainer=trainerClass(state.stage,state.trainer,next?.kind,region.biome);
-  drawTrainer(trainers,35,278,nextTrainer,1);
-  text(this,52,272,finished?'★ TODOS OS DESAFIOS CONCLUÍDOS':
+  // Clear two-line travel HUD; player's location stays visible without
+  // opening the regional Town Map. Real saved state drives the position.
+  text(this,54,267,'VOCÊ ESTÁ: '+region.subtitle.toUpperCase().slice(0,35),{
+   fontSize:'8px',color:'#a5eed1',fontStyle:'bold'}).setDepth(5);
+  drawTrainer(trainers,35,285,nextTrainer,1);
+  text(this,55,281,finished?'★ JORNADA DE KANTO CONCLUÍDA':
    'PRÓXIMO: '+(next?.leader?String(next.name).toUpperCase():trainerClassName(nextTrainer))+
    ' · '+(next?.id||'').toUpperCase(),{
-   fontSize:'12px',fontStyle:'bold',color:'#ffebc1'}).setDepth(5);
+   fontSize:'10px',fontStyle:'bold',color:'#ffebc1'}).setDepth(5);
   ball(art,45,299,6);
   progress(art,64,299,Math.max(0,state.trainer-first),6);
   text(this,363,292,'TRILHA '+(page+1)+'/'+totalPages+' · '+(state.trainer+1)+'/'+(limit+1),{
@@ -215,7 +219,7 @@ class Campanha extends Phaser.Scene{
    fontSize:'11px',fontStyle:'bold',color:'#ffdf95'}).setDepth(5);
   text(this,617,101,'$ '+(state.money||0),{
    fontSize:'12px',fontStyle:'bold',color:'#ffdc71'}).setOrigin(1,0).setDepth(5);
-  text(this,417,117,'LIMITE NV. '+currentLevelCap(state.stage)+'  ·  TOQUE PARA SUMÁRIO',{
+  text(this,417,117,'LIMITE NV. '+currentLevelCap(state.stage)+'   ·   TOQUE NO POKÉMON',{
    fontSize:'9px',color:'#a9daf1'}).setDepth(5);
   // The first four slots are genuinely live; page two exposes slots 5-6.
   const teamPages=Math.max(1,Math.ceil(state.team.length/4));
