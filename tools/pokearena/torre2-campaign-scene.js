@@ -128,9 +128,9 @@ class Campanha extends Phaser.Scene{
   richBackdrop(this);
  }
  mapScreen(state){
-  // PATCH 1: MAPA means the current gym world, not a separate location menu.
-  this.children.removeAll(true);
-  this.renderCampaign(state);
+  // Reopen the SAME stage map through Phaser's scene lifecycle so the
+  // navigation header and all click zones are recreated correctly.
+  this.scene.restart();
  }
  enterLocalityBuilding(state,location,hotspot){
   // Only mark the real accessible landmark. Never cover the map with a
