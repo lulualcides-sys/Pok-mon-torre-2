@@ -48,16 +48,16 @@ export function paintSurge3(g,style,x,y,frame,angle=0){
    stamp(g,'p2star',x+v.x,y+v.y,p,.48,angle,.55);
   }
  }else if(kind==='sonic'){
-  // Concentric metallic-blue sound fronts, crisp 8x8 P2 ring mask.
-  // Three offsets and a tiny stagger yield twelve distinct wave poses.
-  for(let j=0;j<3;j++){
-   const offset=sideways(angle,0,-10-j*12);
-   const size=.92+j*.26+(f%4)*.095;
-   stamp(g,'p2darkring',x+offset.x,y+offset.y,p,size,angle,.90-j*.2);
-  }
-  for(let j=0;j<5;j++){
-   const off=sideways(angle,Math.sin(f*.55+j)*5,-j*9);
-   pixel(g,x+off.x,y+off.y,p[j%2?4:3],j%2?2:3,.75-j*.1);
+  // Sonic Boom: THREE clean WHITE half-moons, one behind the next.
+  // Real pixel masks (shared P2 crescent silhouette), not rings, beams,
+  // Canvas2D curves, CSS or image sprites. Phaser Graphics keeps hard pixels.
+  // The nearest/front crescent travels at the actual projectile position;
+  // the two followers are visual only. Damage still occurs ONCE on contact.
+  const moon=[0x26344e,0xc9d5e4,0xe9f1ff,0xffffff,0xffffff];
+  for(let j=2;j>=0;j--){
+   const lead=sideways(angle,0,3-j*20+Math.sin(f*.43-j*.55)*1.1);
+   const scale=1.35+(f%4)*.045-(j*.035);
+   stamp(g,'crescent',x+lead.x,y+lead.y,moon,scale,angle+Math.PI,1-j*.09);
   }
  }else{
   // Jagged violet audio waveform; deliberately NOT an attacking beam.
