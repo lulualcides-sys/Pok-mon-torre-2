@@ -138,6 +138,35 @@ export function filterMoveLibrary(moves,type='ALL',search=''){
    move.tipo===selected)&&
   (!query||move.nombre.toLowerCase().includes(query)));
 }
+// Characteristic attack defaults use the ALREADY APPROVED VFX, like Persian's
+// Pay Day. This is campaign-only equipment preference, not a new animation.
+// ATK and ULT keep their original roles; HAB 2/3 remain editable afterwards.
+export const CHARACTERISTIC_KANTO_ROLES=Object.freeze({
+ meowth:[[2,'pay-day']],persian:[[2,'pay-day']],
+ cubone:[[1,'bone-club'],[2,'bonemerang']],
+ marowak:[[1,'bone-club'],[2,'bonemerang']],
+ porygon:[[2,'tri-attack']],dugtrio:[[2,'tri-attack']],
+ jigglypuff:[[1,'sing']],wigglytuff:[[1,'sing']],
+ krabby:[[2,'crabhammer']],kingler:[[2,'crabhammer']],
+ koffing:[[2,'smog']],weezing:[[2,'smog']],
+ raticate:[[2,'hyper-fang']],pinsir:[[2,'guillotine']],
+ oddish:[[2,'petal-dance']],gloom:[[2,'petal-dance']],
+ vileplume:[[2,'petal-dance']],
+ clefairy:[[2,'metronome']],clefable:[[2,'metronome']],
+ jynx:[[1,'lovely-kiss']],chansey:[[2,'soft-boiled']],
+ scyther:[[2,'x-scissor']],beedrill:[[2,'x-scissor']],
+ parasect:[[2,'x-scissor']],
+ sandshrew:[[2,'swift']],sandslash:[[2,'swift']],
+ gastly:[[2,'shadow-ball']],haunter:[[2,'shadow-ball']],
+ gengar:[[2,'shadow-ball']],
+ magnemite:[[2,'sonic-boom']],magneton:[[2,'sonic-boom']]
+});
+// X-Scissor postdates FireRed: explicit Torre 2 custom campaign learn levels,
+// never falsely described as official FRLG. TM-only moves stay TM-locked.
+const CHARACTERISTIC_BONUS_LEVELS=Object.freeze({
+ scyther:{'x-scissor':28},beedrill:{'x-scissor':30},
+ parasect:{'x-scissor':30},pinsir:{'x-scissor':28}
+});
 export function availableMoves(member){
  if(member.id==='mewtwo')return TEST_LIBRARY;
  const {def}=buscar(member.id);
@@ -262,6 +291,8 @@ export function availableMoves(member){
   // evolution-only lock. Explicitly unlock these three NEW status moves on
   // their own species/level, without lifting locks on any approved attacks.
   if(specialSurgeUnlocks.has(key))return true;
+  const bonus=CHARACTERISTIC_BONUS_LEVELS[member.id]?.[key];
+  if(Number.isInteger(bonus)&&level>=bonus)return true;
   // Only these 13 new Kanto moves bypass the historical early-Kanto
   // learnset filter when explicitly assigned to their real species above.
   // All PRE-EXISTING moves retain their original evolution/level locks.
@@ -332,6 +363,8 @@ export function moveUnlockLevel(member,moveName){
  if(local?.[key]!==undefined)return local[key];
  const official=frlgUnlockLevel(species,key);
  if(official!==null)return official;
+ const bonus=CHARACTERISTIC_BONUS_LEVELS[species]?.[key];
+ if(Number.isInteger(bonus))return bonus;
  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||kanto151SlotPlan(species);
  const index=(plan||[]).findIndex(n=>canonicalMoveKey(n)===key);
  if(index<0)return null;
@@ -347,6 +380,11 @@ export function defaultLoadout(member){
    const id=canonicalMoveKey(name);
    return byId.has(id)?id:null;
   });
+  // Auto-equip each matching characteristic move only once it REALLY unlocks.
+  // A TM move is never granted solely by being characteristic.
+  for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
+   if(byId.has(id)&&!reserved.includes(id))reserved[slot]=id;
+  }
   // For native/P2 Pokémon, the locked planned ATK must not leave them
   // defenseless on the day they evolve. Use a genuinely learned weak move
   // in an otherwise empty ATK/HAB slot. ULT remains locked until learned.
@@ -370,12 +408,26 @@ export function selectedMoves(member){
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  if(plan){
   const defaults=defaultLoadout(member);
-  // When a species evolves, promote its own four-slot set immediately.
-  // Older saves with no movePlanSpecies also migrate automatically.
-  if(member.moves?.length!==4||member.movePlanSpecies!==member.id)
-   return defaults;
-  return defaults.map((id,i)=>member.moves[i]&&valid.has(member.moves[i])?
-   member.moves[i]:id);
+  // Legacy saves and new level-ups get characteristic skills just once.
+  // After automatic unlock the player may change HAB 2/HAB 3 freely.
+  const fresh=member.moves?.length!==4||member.movePlanSpecies!==member.id;
+  const chosen=fresh?[...defaults]:defaults.map((id,i)=>
+   member.moves[i]&&valid.has(member.moves[i])?member.moves[i]:id);
+  const seen=new Set(member.torre2CharacteristicSeen||[]);
+  let upgraded=false;
+  for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
+   if(!valid.has(id))continue; // not learned yet or no taught TM
+   if(chosen.includes(id)){seen.add(id);continue}
+   if(fresh||!seen.has(id)){
+    chosen[slot]=id;seen.add(id);upgraded=true;
+   }
+  }
+  if(seen.size)member.torre2CharacteristicSeen=[...seen];
+  if(upgraded&&!fresh){
+   member.moves=[...chosen];
+   member.movePlanSpecies=member.id;
+  }
+  return chosen;
  }
  const chosen=member.moves?.length===4&&member.moves.every(id=>valid.has(id))?
   member.moves:defaultLoadout(member);
