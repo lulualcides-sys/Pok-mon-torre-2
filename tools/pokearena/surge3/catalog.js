@@ -1,10 +1,10 @@
 /* FireRed Lt. Surge: independent move definitions, not a second copy of
- * any native Poké Arena 2D effect. Pending VISUAL approval by player. */
+ * any native Poké Arena 2D effect. Visuals approved by player on 23 October 2026. */
 export const SURGE3_MOVES=Object.freeze([
  Object.freeze({
   id:'thunder-wave',nombre:'Thunder Wave',forma:'torre2_surge_thunder_wave',
   tipo:'ELECTRIC',categoria:'STATUS',poder:0,precisao:100,pp:20,
-  approved:false,source:'new-phaser-fx',fazContato:false,dano:0,
+  approved:true,source:'new-phaser-fx',fazContato:false,dano:0,
   alcance:230,speed:282,coste:16,cd:5.7,anim:'Shoot',lanzar:.16,
   frames:12,style:'thunder-wave',status:'paralizado',
   description:'Electric pulse: paralysis on manual hit. Ground-types immune.',
@@ -13,7 +13,7 @@ export const SURGE3_MOVES=Object.freeze([
  Object.freeze({
   id:'sonic-boom',nombre:'Sonic Boom',forma:'torre2_surge_sonic_boom',
   tipo:'NORMAL',categoria:'SPECIAL',poder:0,precisao:90,pp:20,
-  approved:false,source:'new-phaser-fx',fazContato:false,dano:20,
+  approved:true,source:'new-phaser-fx',fazContato:false,dano:20,
   fixedDamage:20,alcance:250,speed:320,coste:18,cd:5.1,
   anim:'Shoot',lanzar:.13,frames:12,style:'sonic-boom',
   description:'Two consecutive supersonic wavefronts; 20 fixed HP damage, Ghost immune.',
@@ -22,7 +22,7 @@ export const SURGE3_MOVES=Object.freeze([
  Object.freeze({
   id:'screech',nombre:'Screech',forma:'torre2_surge_screech',
   tipo:'NORMAL',categoria:'STATUS',poder:0,precisao:85,pp:40,
-  approved:false,source:'new-phaser-fx',fazContato:false,dano:0,
+  approved:true,source:'new-phaser-fx',fazContato:false,dano:0,
   alcance:212,speed:268,coste:19,cd:7,anim:'Charge',lanzar:.16,
   frames:12,style:'screech',status:'torre2Screech',
   description:'Piercing sound waves: target loses two Defense stages, maximum -6.',
