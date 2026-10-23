@@ -98,5 +98,10 @@ export function paginateKantoPokedexSource(original){
   "texto(this,35,276,'◀ ANTES',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(Math.max(0,(this.dexPage-1)*36)));"+
   "texto(this,168,276,'PRÓX ▶',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(Math.min(ROSTER.length-1,(this.dexPage+1)*36)));"+
   "this.time.addEvent({delay:700,loop:true,callback:()=>this.girar()});");
+ // All Pokédex rendering paths must read the validated Kanto evolution
+ // stages, not a second unsanitized upstream etapasDe() calculation.
+ // The helper itself continues to call the original implementation.
+ s=s.replaceAll('etapasDe(', 'kantoDexStages(')
+  .replace('const stages=kantoDexStages(def);','const stages=etapasDe(def);');
  return s;
 }
