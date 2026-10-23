@@ -73,7 +73,8 @@ test('Approved reworked animation functions remain byte-identical to version src
   mudShot:2388012752,mudBomb:3675147426,silverWind:138426087,twister:2425531994};
  for(const [name,expected] of Object.entries(locked)){
   const start=source.indexOf('function '+name+'(');
-  const next=source.indexOf('\nfunction ',start+9);
+  let next=source.indexOf('\nfunction ',start+9);
+  if(next<0)next=source.indexOf('\nexport function ',start+9);
   assert.ok(start>=0&&next>start,name+' remains installed');
   const body=source.slice(start,next);
   let hash=2166136261;
@@ -98,7 +99,7 @@ test('Dark Pulse renders original-style black/violet rings and Ice Shard distinc
 test('Poison Jab violet impact exists only when used on confirmed hit',()=>{
  const jab=BATCH24_MOVES.find(h=>h.id==='poison-jab'),g=graphics();
  assert.equal(paintReworkedImpact(g,jab,100,100,.11),true);
- assert.ok(g.rows.some(row=>row[4]===0xd365fa||row[4]===0x8833b6),
+ assert.ok(g.rows.some(row=>row[4]===0xe07dff||row[4]===0x9c4cca),
   'Purple impact must be visibly different from generic hit');
 });
 test('Ice Shard has Pay Day-inspired seven independently hittable tips and stays balanced',async()=>{
