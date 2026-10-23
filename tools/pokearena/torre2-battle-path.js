@@ -96,10 +96,14 @@ function renderBackdrop(scene,stage){
  if(texture&&src){
   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   // Composite FRLG sheets have the city on the LEFT and rooms on the right.
-  const w=Math.min(768,src.width),h=Math.min(640,src.height);
+  // The Pewter source includes Brock's pink-roof gym at (200..370,30..145).
+  // Crop that real building as our BACKDROP, rather than all of Kanto.
+  const exteriorRect=city==='pewter'?[120,18,380,215]:
+   [0,0,Math.min(768,src.width),Math.min(640,src.height)];
+  const [sx,sy,w,h]=exteriorRect;
   if(w>=160&&h>=160){
    const name='torre2-path-city-'+city;
-   if(!texture.has(name))texture.add(name,0,0,0,w,h);
+   if(!texture.has(name))texture.add(name,0,sx,sy,w,h);
    const cityImage=scene.add.image(249,181,imageKey,name).setDepth(6);
    cityImage.setScale(Math.max(470/w,247/h));
    const mask=scene.make.graphics({x:0,y:0,add:false});
