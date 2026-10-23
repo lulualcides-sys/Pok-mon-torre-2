@@ -8,7 +8,7 @@ const ver=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8')).mod
 const file=p=>path.join(base,ver,p);
 const mod=p=>import(pathToFileURL(file(p)));
 const {ROSTER,buscar}=await mod('datos.js');
-const {EARLY_KANTO_BASE,MISTY_ROUTE_BASE,SURGE_ROUTE_BASE,EARLY_KANTO_FORMS,
+const {EARLY_KANTO_BASE,MISTY_ROUTE_BASE,SURGE_ROUTE_BASE,LATE_GYM_BASE,EARLY_KANTO_FORMS,
  earlyKantoSlotPlan,nativeKantoEvolutionPlan}=await mod('torre2/early-kanto-species.js');
 const {TEST_LIBRARY,availableMoves,defaultLoadout,selectedMoves,resolveLoadout}=await mod('torre2/move-pool.js');
 const {GYMS,TRAINERS_PER_GYM,currentOpponent,createCampaign}=await mod('torre2/campaign-core.js');
@@ -20,8 +20,8 @@ globalThis.localStorage={
  removeItem(k){this.items.delete(k)}
 };
 const manifest=JSON.parse(fs.readFileSync(path.join(base,'assets/pmd/manifest.json'),'utf8'));
-const families=[...EARLY_KANTO_BASE,...MISTY_ROUTE_BASE,...SURGE_ROUTE_BASE];
-assert.equal(families.length,23,'23 distinct Kanto families');
+const families=[...EARLY_KANTO_BASE,...MISTY_ROUTE_BASE,...SURGE_ROUTE_BASE,...LATE_GYM_BASE];
+assert.equal(families.length,31,'31 distinct Kanto families: eight later gym lines');
 for(const id of families){
  const def=ROSTER.find(x=>x.id===id);
  assert.ok(def,'MISSING BATTLE POKÉMON '+id);
@@ -125,7 +125,23 @@ assert.equal(TRAINERS_PER_GYM(2),17);
 assert.equal(GYMS[1].boss,'starmie');
 assert.deepEqual(GYMS[1].leaderTeam,['staryu','starmie']);
 assert.deepEqual(GYMS[2].leaderTeam,['voltorb','pikachu','raichu']);
-for(const stage of [1,2]){
+// All eight gym leaders use their original FRLG team and sprite order,
+ // with exact first-clear levels, while preserving the existing save indexes.
+const officialGymTeams=[
+ [['geodude','onix'],[12,14]],
+ [['staryu','starmie'],[18,21]],
+ [['voltorb','pikachu','raichu'],[21,18,24]],
+ [['victreebel','tangela','vileplume'],[29,24,29]],
+ [['koffing','muk','koffing','weezing'],[37,39,37,43]],
+ [['kadabra','mr-mime','venomoth','alakazam'],[38,37,38,43]],
+ [['growlithe','ponyta','rapidash','arcanine'],[42,40,42,47]],
+ [['rhyhorn','dugtrio','nidoqueen','nidoking','rhyhorn'],[45,42,44,45,50]]
+];
+for(const [stage,[lineup,levels]] of officialGymTeams.entries()){
+ assert.deepEqual(GYMS[stage].leaderTeam,lineup,'FireRed leader roster '+stage);
+ assert.deepEqual(GYMS[stage].leaderLevels,levels,'FireRed leader levels '+stage);
+}
+for(const stage of [0,1,2,3,4,5,6,7]){
  const state=createCampaign('bulbasaur');
  state.stage=stage;
  state.trainer=TRAINERS_PER_GYM(stage);
@@ -136,8 +152,18 @@ for(const stage of [1,2]){
   'Real Gym opponent squad must end with its ace');
  assert.equal(party.foes.at(-1).level,opponent.level,
   'Gym leader ace receives full stage level cap');
+ assert.deepEqual(party.foes.map(p=>p.level),GYMS[stage].leaderLevels,
+  'Leader Pokémon must enter battles at their actual first-clear levels');
  assert.ok(party.foes.every(x=>x.loadout?.lmb&&x.loadout?.rmb),
   'Gym Pokémon must attack with ACTUAL Native / Torre 2 effects');
+ assert.ok(party.foes.every(x=>manifest[x.id==='mr-mime'?'0122':
+  ({tangela:'0114',koffing:'0109',weezing:'0110',
+    grimer:'0088',muk:'0089',kadabra:'0064',alakazam:'0065',
+    venomoth:'0049',growlithe:'0058',arcanine:'0059',
+    rhyhorn:'0111',dugtrio:'0051',victreebel:'0071',
+    vileplume:'0045',nidoqueen:'0031',nidoking:'0034'})[x.id]]||
+  ROSTER.some(p=>p.id===x.id||p.evoluciones?.some(e=>e.nombre.toLowerCase()===x.id))),
+  'Every gym foe must have a real PMD animation in the built client');
 }
 // Confirm full XP reward triggers Kanto branch evolutions automatically.
 for(const [from,to] of [['gloom','vileplume'],['poliwhirl','poliwrath']]){

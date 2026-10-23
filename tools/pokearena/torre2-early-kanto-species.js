@@ -14,6 +14,11 @@ export const MISTY_ROUTE_BASE=Object.freeze([
 export const SURGE_ROUTE_BASE=Object.freeze([
  'oddish','bellsprout','meowth','diglett','voltorb','magnemite'
 ]);
+// Species from Erika through Giovanni that were absent from the captured
+// arena. These are REAL PMD SpriteCollab lines, not placeholder silhouettes.
+export const LATE_GYM_BASE=Object.freeze([
+ 'tangela','koffing','grimer','abra','venonat','mr-mime','growlithe','rhyhorn'
+]);
 // In every stage of every family: [ATK LMB, HAB2 RMB, HAB3 Q, ULT E].
 // ESP is always the genuine non-damaging Kanto dodge. Move names are from
 // P2 native kits, or previously approved batch24; no mock/unimplemented FX.
@@ -65,12 +70,31 @@ export const KANTO_ROUTE_SLOTS=Object.freeze({
  voltorb:['Tackle','Sonic Boom','Screech','Explosion'],
  electrode:['Tackle','Sonic Boom','Discharge','Explosion'],
  magnemite:['Thunder Shock','Charge Beam','Shock Wave','Discharge'],
- magneton:['Thunder Shock','Electro Ball','Discharge','Thunder']
+ magneton:['Thunder Shock','Electro Ball','Discharge','Thunder'],
+ // First-clear gym leaders Erika, Koga, Sabrina, Blaine and Giovanni.
+ tangela:['Tackle','Vine Whip','Razor Leaf','Solar Beam'],
+ koffing:['Tackle','Acid','Sludge Bomb','Smog'],
+ weezing:['Tackle','Acid','Sludge Bomb','Smog'],
+ grimer:['Tackle','Poison Sting','Acid','Sludge Bomb'],
+ muk:['Tackle','Poison Sting','Acid','Sludge Bomb'],
+ abra:['Pound','Confusion','Psybeam','Hyper Beam'],
+ kadabra:['Pound','Confusion','Psybeam','Hyper Beam'],
+ alakazam:['Pound','Confusion','Psybeam','Hyper Beam'],
+ venonat:['Tackle','Gust','Leech Life','Psybeam'],
+ venomoth:['Tackle','Gust','Leech Life','Psybeam'],
+ 'mr-mime':['Pound','Confusion','Psybeam','Hyper Beam'],
+ growlithe:['Tackle','Bite','Flamethrower','Fire Blast'],
+ arcanine:['Tackle','Bite','Flamethrower','Fire Blast'],
+ rhyhorn:['Tackle','Horn Attack','Rock Blast','Earthquake'],
+ rhydon:['Tackle','Horn Attack','Rock Blast','Earthquake']
 });
 const ROUTE2_IDS=new Set([
  'oddish','gloom','vileplume','bellsprout','weepinbell','victreebel',
  'meowth','persian','diglett','dugtrio','voltorb','electrode',
- 'magnemite','magneton'
+ 'magnemite','magneton',
+ 'tangela','koffing','weezing','grimer','muk','abra','kadabra',
+ 'alakazam','venonat','venomoth','mr-mime','growlithe','arcanine',
+ 'rhyhorn','rhydon'
 ]);
 const ID_OF_MOVE=name=>name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ROUTE_LEVELS=Object.freeze(Object.fromEntries(
@@ -166,7 +190,9 @@ const EVO_TO_BASE=Object.freeze({
  starmie:'staryu',golduck:'psyduck',poliwhirl:'poliwag',
  poliwrath:'poliwag',gloom:'oddish',vileplume:'oddish',
  weepinbell:'bellsprout',victreebel:'bellsprout',persian:'meowth',
- dugtrio:'diglett',electrode:'voltorb',magneton:'magnemite'
+ dugtrio:'diglett',electrode:'voltorb',magneton:'magnemite',
+ weezing:'koffing',muk:'grimer',kadabra:'abra',alakazam:'abra',
+ venomoth:'venonat',arcanine:'growlithe',rhydon:'rhyhorn'
 });
 export const isKantoEvolvedForm=species=>Boolean(EVO_TO_BASE[species]);
 // Used only in the campaign and test suite; Arena 2D original evolution
@@ -186,7 +212,10 @@ export const EARLY_KANTO_FORMS=Object.freeze({
  poliwag:['0060','0061','0062'],
  oddish:['0043','0044','0045'],bellsprout:['0069','0070','0071'],
  meowth:['0052','0053'],diglett:['0050','0051'],
- voltorb:['0100','0101'],magnemite:['0081','0082']
+ voltorb:['0100','0101'],magnemite:['0081','0082'],
+ tangela:['0114'],koffing:['0109','0110'],grimer:['0088','0089'],
+ abra:['0063','0064','0065'],venonat:['0048','0049'],
+ 'mr-mime':['0122'],growlithe:['0058','0059'],rhyhorn:['0111','0112']
 });
 function nativeAttacks(original){
  const lookup=new Map();
@@ -233,7 +262,9 @@ const CUSTOM=Object.freeze({
  'mud-slap':['torre2_mudslap','GROUND',4,205,'Throw'],
  'swift':['torre2_swift','NORMAL',10,250,'Shoot'],
  // Reuse the existing player-approved 9-coin Pay Day effect (no new sprite).
- 'pay day':['torre2_payday','NORMAL',10,235,'Shoot']
+ 'pay day':['torre2_payday','NORMAL',10,235,'Shoot'],
+ 'smog':['torre2_smog','POISON',7,190,'Shoot'],
+ 'rock blast':['torre2_rockblast','ROCK',12,250,'Throw']
 });
 function move(name,native){
  const existing=native.get(name.toLowerCase());
@@ -381,7 +412,33 @@ export function addEarlyKantoSpecies(original){
  KANTO_ROUTE_SLOTS.voltorb,[['0101','ELECTRODE',90,['ELECTRIC']]]),
  evolutionaryLine(native,'magnemite','0081','MAGNEMITE',['ELECTRIC','STEEL'],
  {role:'DISTANCIA',hp:67,speed:109,attack:1.05,defense:1.13},
- KANTO_ROUTE_SLOTS.magnemite,[['0082','MAGNETON',96,['ELECTRIC','STEEL']]])
+ KANTO_ROUTE_SLOTS.magnemite,[['0082','MAGNETON',96,['ELECTRIC','STEEL']]]),
+ // New PMD sprite families used by the accurate later gym leader teams.
+ evolutionaryLine(native,'tangela','0114','TANGELA',['GRASS'],
+ {role:'CONTROL',hp:89,speed:108,attack:.95,defense:1.17},
+ KANTO_ROUTE_SLOTS.tangela),
+ evolutionaryLine(native,'koffing','0109','KOFFING',['POISON'],
+ {role:'TANQUE',hp:76,speed:102,attack:.88,defense:1.09},
+ KANTO_ROUTE_SLOTS.koffing,[['0110','WEEZING',107,['POISON']]]),
+ evolutionaryLine(native,'grimer','0088','GRIMER',['POISON'],
+ {role:'TANQUE',hp:86,speed:89,attack:.99,defense:1.04},
+ KANTO_ROUTE_SLOTS.grimer,[['0089','MUK',112,['POISON']]]),
+ evolutionaryLine(native,'abra','0063','ABRA',['PSYCHIC'],
+ {role:'DISTANCIA',hp:50,speed:133,attack:.99,defense:.70},
+ KANTO_ROUTE_SLOTS.abra,[['0064','KADABRA',80,['PSYCHIC']],
+ ['0065','ALAKAZAM',97,['PSYCHIC']]]),
+ evolutionaryLine(native,'venonat','0048','VENONAT',['BUG','POISON'],
+ {role:'CONTROL',hp:73,speed:108,attack:.90,defense:.91},
+ KANTO_ROUTE_SLOTS.venonat,[['0049','VENOMOTH',92,['BUG','POISON']]]),
+ evolutionaryLine(native,'mr-mime','0122','MR. MIME',['PSYCHIC','FAIRY'],
+ {role:'CONTROL',hp:69,speed:122,attack:.91,defense:.83},
+ KANTO_ROUTE_SLOTS['mr-mime']),
+ evolutionaryLine(native,'growlithe','0058','GROWLITHE',['FIRE'],
+ {role:'FISICO',hp:73,speed:131,attack:1.01,defense:.85},
+ KANTO_ROUTE_SLOTS.growlithe,[['0059','ARCANINE',112,['FIRE']]]),
+ evolutionaryLine(native,'rhyhorn','0111','RHYHORN',['GROUND','ROCK'],
+ {role:'TANQUE',hp:104,speed:83,attack:1.16,defense:1.2},
+ KANTO_ROUTE_SLOTS.rhyhorn,[['0112','RHYDON',124,['GROUND','ROCK']]])
  ];
  const known=new Set(original.map(p=>p.id));
  return lines.filter(p=>!known.has(p.id));

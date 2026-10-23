@@ -14,20 +14,36 @@ export const SAVE_BACKUP_KEY=SAVE_KEY+'-backup';
 export const GYMS=Object.freeze([
  {city:'Pewter',leader:'Brock',badge:'Rocha',arena:'crater',type:'ROCK',
   enemy:['pidgey','rattata','caterpie','weedle','pikachu','spearow','mankey','nidoran-f','nidoran-m','geodude'],
-  boss:'onix'},
+  boss:'onix',leaderTeam:['geodude','onix'],leaderLevels:[12,14]},
  {city:'Cerulean',leader:'Misty',badge:'Cascata',arena:'estadio',type:'WATER',
   enemy:['zubat','geodude','paras','clefairy','sandshrew','ekans','poliwag',
    'psyduck','staryu','magikarp'],boss:'starmie',
-  leaderTeam:['staryu','starmie']},
+  leaderTeam:['staryu','starmie'],leaderLevels:[18,21]},
  {city:'Vermilion',leader:'Lt. Surge',badge:'Trovao',arena:'neon',type:'ELECTRIC',
   enemy:['oddish','bellsprout','meowth','diglett','magnemite','voltorb',
    'pikachu','raichu','machop'],boss:'raichu',
-  leaderTeam:['voltorb','pikachu','raichu']},
- {city:'Celadon',leader:'Erika',badge:'Arco-Iris',arena:'ruinas',type:'GRASS',enemy:['bulbasaur','ivysaur','exeggcute'],boss:'venusaur'},
- {city:'Fuchsia',leader:'Koga',badge:'Alma',arena:'ruinas',type:'POISON',enemy:['zubat','golbat','exeggcute'],boss:'golbat'},
- {city:'Saffron',leader:'Sabrina',badge:'Pantano',arena:'neon',type:'PSYCHIC',enemy:['exeggcute','machop','zubat'],boss:'exeggutor'},
- {city:'Cinnabar',leader:'Blaine',badge:'Vulcao',arena:'crater',type:'FIRE',enemy:['ponyta','rapidash','charmander'],boss:'rapidash'},
- {city:'Viridian',leader:'Giovanni',badge:'Terra',arena:'crater',type:'GROUND',enemy:['onix','machoke','machamp'],boss:'onix'}
+  leaderTeam:['voltorb','pikachu','raichu'],leaderLevels:[21,18,24]},
+ // Official FireRed/LeafGreen first-clear lineups. The last species is the
+ // ace. Every member has a real PMD atlas and four working battle slots.
+ {city:'Celadon',leader:'Erika',badge:'Arco-Iris',arena:'ruinas',type:'GRASS',
+  enemy:['oddish','gloom','bellsprout','weepinbell','tangela'],
+  boss:'vileplume',leaderTeam:['victreebel','tangela','vileplume'],leaderLevels:[29,24,29]},
+ {city:'Fuchsia',leader:'Koga',badge:'Alma',arena:'ruinas',type:'POISON',
+  enemy:['venonat','venomoth','ekans','arbok','grimer','koffing'],
+  boss:'weezing',leaderTeam:['koffing','muk','koffing','weezing'],
+  leaderLevels:[37,39,37,43]},
+ {city:'Saffron',leader:'Sabrina',badge:'Pantano',arena:'neon',type:'PSYCHIC',
+  enemy:['abra','kadabra','mr-mime','venomoth','exeggcute'],
+  boss:'alakazam',leaderTeam:['kadabra','mr-mime','venomoth','alakazam'],
+  leaderLevels:[38,37,38,43]},
+ {city:'Cinnabar',leader:'Blaine',badge:'Vulcao',arena:'crater',type:'FIRE',
+  enemy:['growlithe','ponyta','rapidash','charmander'],
+  boss:'arcanine',leaderTeam:['growlithe','ponyta','rapidash','arcanine'],
+  leaderLevels:[42,40,42,47]},
+ {city:'Viridian',leader:'Giovanni',badge:'Terra',arena:'crater',type:'GROUND',
+  enemy:['rhyhorn','diglett','dugtrio','nidorino','geodude'],
+  boss:'rhyhorn',leaderTeam:['rhyhorn','dugtrio','nidoqueen','nidoking','rhyhorn'],
+  leaderLevels:[45,42,44,45,50]}
 ]);
 export const ELITE=Object.freeze([
  {city:'Elite Four',leader:'Lorelei',badge:'Elite 1',arena:'estadio',enemy:['squirtle','wartortle','onix'],boss:'blastoise'},
@@ -129,7 +145,8 @@ export function resetCampaign(storage=localStorage){
 // Pokédex data describes encounters/captures, not which sprites are playable.
 export function recordSeen(s,id){
  // Keep distinct male/female Nidoran IDs while displaying native Dex symbols.
- const dexId=id==='nidoran-f'?'nidoran♀':id==='nidoran-m'?'nidoran♂':String(id||'').toLowerCase();
+ const dexId=id==='nidoran-f'?'nidoran♀':id==='nidoran-m'?'nidoran♂':
+  id==='mr-mime'?'mrmime':String(id||'').toLowerCase();
  if(!id||!KANTO_DEX.some(name=>name.toLowerCase()===dexId))return false;
  s.dexSeen??=[];if(s.dexSeen.includes(id))return false;
  s.dexSeen.push(id);return true;

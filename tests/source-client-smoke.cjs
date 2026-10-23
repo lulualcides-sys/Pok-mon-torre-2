@@ -240,7 +240,9 @@ const server=http.createServer(async(req,res)=>{
     weedle:['kakuna','beedrill'],geodude:['graveler','golem'],
     staryu:['starmie'],paras:['parasect'],
     poliwag:['poliwhirl','poliwrath'],oddish:['gloom','vileplume'],
-    magnemite:['magneton'],voltorb:['electrode'],meowth:['persian']
+    magnemite:['magneton'],voltorb:['electrode'],meowth:['persian'],
+    abra:['kadabra','alakazam'],koffing:['weezing'],grimer:['muk'],
+    growlithe:['arcanine'],rhyhorn:['rhydon'],venonat:['venomoth']
    };
    const results=[];
    for(const [base,evolutions] of Object.entries(families)){
@@ -1585,6 +1587,10 @@ const server=http.createServer(async(req,res)=>{
    const {absorb,xscissor,metronome}=await import(
     new URL('./torre2/next-specific-fx.js',script.src).href);
    const e=window.__pt2Game.scene.getScene('combate');
+   const {TEST_LIBRARY}=await import(
+    new URL('./torre2/move-pool.js',script.src).href);
+   const realPayDay=TEST_LIBRARY.find(m=>m.id==='pay-day');
+   if(!realPayDay?.forma)throw Error('Missing canonical Pay Day in Metronome test');
    const results={};
    function run(fn,kind,miss,aimAway=false){
     const enemy={x:kind==='xscissor'?246:309,y:miss?380:215,
@@ -1610,13 +1616,15 @@ const server=http.createServer(async(req,res)=>{
    const cast= {x:174,y:215,alto:38,ax:450,ay:215,t:0,
     ko:false,escena:e,animar(){},accion:null};
    const drawn=[];
-   const metFx=metronome(cast,{tipo:'NORMAL'},{slot:'lmb'},{
-    torre2_payday(_p,h){drawn.push({id:h.id,forma:h.forma});}
-   });
+   const registry={
+    [realPayDay.forma](_p,h){drawn.push({id:h.id,forma:h.forma});}
+   };
+   const metFx=metronome(cast,{tipo:'NORMAL'},{slot:'lmb'},registry);
    let alive=true;
    for(let k=0;k<100&&alive;k++)alive=metFx.update(.016);
    metFx.destroy();e.efectos=e.efectos.filter(x=>x!==metFx);
-   results.metronome={effects:drawn,completed:!alive};
+   results.metronome={effects:drawn,completed:!alive,
+    expectedForm:realPayDay.forma};
    return results;
   });
   assert.ok(trioPhysics.absorbHit.hits===1&&trioPhysics.absorbHit.heal===48,
@@ -1630,8 +1638,9 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(trioPhysics.xAimMiss.hits,0,'X-Scissor must obey the player aim');
   assert.equal(trioPhysics.metronome.effects.length,1,
    'Metronome must cast a real randomly selected move once');
-  assert.equal(trioPhysics.metronome.effects[0].forma,'torre2_payday',
-   'Metronome uses an actual move renderer, not an imitation');
+  assert.equal(trioPhysics.metronome.effects[0].forma,
+   trioPhysics.metronome.expectedForm,
+   'Metronome must call current canonical Pay Day renderer, not a stale form');
   assert.ok(Object.entries(trioPhysics).every(([,result])=>result.completed),
    'All three attacks release their Phaser Graphics when completed');
 

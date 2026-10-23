@@ -14,7 +14,10 @@ export const EARLY_KANTO_DEX=Object.freeze([
  '0120','0121','0054','0055','0060','0061','0062',
  // Lt. Surge: Routes 24/25, 5/6, Diglett Cave and electric gym
  '0043','0044','0045','0069','0070','0071','0052','0053',
- '0050','0051','0100','0101','0081','0082'
+ '0050','0051','0100','0101','0081','0082',
+ // Erika to Giovanni: original SpriteCollab Idle/Walk/Attack sheets.
+ '0114','0109','0110','0088','0089','0063','0064','0065',
+ '0048','0049','0122','0058','0059','0111','0112'
 ]);
 const REQUIRED=['Idle','Walk','Attack'];
 const OPTIONAL=['Shoot','Swing','Hurt','Charge','Hop'];
