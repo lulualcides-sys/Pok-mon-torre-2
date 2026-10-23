@@ -64,8 +64,16 @@ export function paginateKantoPokedexSource(original){
     ...(slot==='e'?{ulti:true}:{})
    };
   }
-  // Show the fifth defensive action explicitly, never as a fifth attack.
-  if(original.esp?.forma)kit.esp={...original.esp};
+  // Four attacks (ATK/HAB2/HAB3/ULT) are taken from the actual native
+  // Arena kit. The separately documented fifth role is a defensive Dodge,
+  // never an incidental fifth attacking native ESP such as Vine Whip.
+  // Retain species-specific defensive visuals (e.g. flying dodge) when real.
+  const priorDodge=original.esp;
+  const isDefensive=priorDodge?.forma&&(!Number.isFinite(priorDodge.dano)||priorDodge.dano<=0)&&
+   ['dash','vuelo','esquiva','teleport','blink','salto'].includes(priorDodge.forma);
+  kit.esp={...(isDefensive?priorDodge:{
+   forma:'dash',tipo:'NORMAL',dano:0,dist:95,dur:.20,cd:4.2,anim:'Walk'
+  }),nombre:'Dodge',dano:0};
   return {...stage,...stageStats,kit};
  });
 }`;
