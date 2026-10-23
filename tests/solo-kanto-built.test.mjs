@@ -86,7 +86,7 @@ for(const [name,form,power,accuracy,pp] of [
  assert.equal(matching[0].poder,power);
  assert.equal(matching[0].precisao,accuracy);
  assert.equal(matching[0].pp,pp);
- assert.equal(matching[0].approved,false,'New Steel effects await user approval');
+ assert.equal(matching[0].approved,true,'Steel moves were visually approved by user; keep approval consistent with policy');
 }
 const steelModule=path.join(stage,version,'torre2/steel-fx.js');
 assert.ok(fs.existsSync(steelModule),'Steel WebGL FX must be included in published client');
