@@ -1,26 +1,27 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {
- MISTY_ROUTE_BASE,SURGE_ROUTE_BASE,EARLY_KANTO_BASE,EARLY_KANTO_FORMS,
+ MISTY_ROUTE_BASE,SURGE_ROUTE_BASE,LATE_GYM_BASE,EARLY_KANTO_BASE,EARLY_KANTO_FORMS,
  EARLY_KANTO_LEARNSETS,EARLY_KANTO_SLOTS,KANTO_ROUTE_SLOTS,
  nativeKantoEvolutionPlan,addEarlyKantoSpecies
 } from '../tools/pokearena/torre2-early-kanto-species.js';
 import {BATCH24_MOVES} from '../tools/pokearena/batch24/catalog.js';
 import {paintReworkedMove} from '../tools/pokearena/batch24/visual-upgrades.js';
 
-const allBases=[...EARLY_KANTO_BASE,...MISTY_ROUTE_BASE,...SURGE_ROUTE_BASE];
+const allBases=[...EARLY_KANTO_BASE,...MISTY_ROUTE_BASE,...SURGE_ROUTE_BASE,...LATE_GYM_BASE];
 const native=Object.values(EARLY_KANTO_SLOTS).flat();
 const known=[...new Set(native)].map((nombre,i)=>({
  id:'upstream-test-'+i,kit:{lmb:{nombre,forma:'native-test',tipo:'NORMAL',
  dano:6,cd:4,coste:8,alcance:130}}
 }));
-test('Brock + Misty + Surge: 23 unique base families and original Pokémon never overwritten',()=>{
+test('All eight Kanto gyms: 31 unique base families and original Pokémon never overwritten',()=>{
  assert.equal(EARLY_KANTO_BASE.length,10);
  assert.equal(MISTY_ROUTE_BASE.length,7);
  assert.equal(SURGE_ROUTE_BASE.length,6);
- assert.equal(new Set(allBases).size,23);
+ assert.equal(LATE_GYM_BASE.length,8);
+ assert.equal(new Set(allBases).size,31);
  const result=addEarlyKantoSpecies(known);
- assert.equal(result.length,23);
+ assert.equal(result.length,31);
  for(const id of allBases){
   const line=result.find(x=>x.id===id);
   assert.ok(line,'Missing family '+id);
