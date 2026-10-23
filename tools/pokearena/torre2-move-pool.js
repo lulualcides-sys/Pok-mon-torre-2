@@ -4,7 +4,7 @@
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
-import {FINALE_13_MOVES} from './finale13.js';
+import {FINALE_13_MOVES} from './torre2-finale13-catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
