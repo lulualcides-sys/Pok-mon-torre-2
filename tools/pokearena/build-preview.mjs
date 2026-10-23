@@ -397,6 +397,13 @@ for(const [filename,changes] of patches){
     body=body.replace(/\b(?:iniciarAvisos|iniciarChat|iniciarTarjetas|vigilarVersion)\(juego(?:,ajustar)?\);/g,'');
     continue;
    }
+   if(filename==='main.js'&&from.includes('import{iniciarChat,reservaChat}')){
+    // Chat bootstrap no longer has a stable import form in the public client.
+    // The offline game does not use the chat nor reserve any chat width.
+    body=body.replace(/import\s*\{[^}]*\b(?:iniciarChat|reservaChat)\b[^}]*\}\s*from\s*["']\.\/chat\.js["'];?/g,'');
+    body=body.replace(/\breservaChat\s*\(\s*\)/g,'0');
+    continue;
+   }
    if(filename==='ia.js'&&from.startsWith('if(yo.puede')){
     const capability=from.includes('puedeMega')?'puedeMega':'puedeEvolucionar';
     const pattern=new RegExp('if\\s*\\(\\s*yo\\.'+capability+'\\s*&&');
