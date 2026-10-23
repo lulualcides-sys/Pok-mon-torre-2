@@ -365,7 +365,7 @@ export function installPartyBattle(scene){
     if(comingFrame<=20){
      const pt=ballArc(from,landing,comingFrame/20,68);
      drawCaptureBall(ball,pt.x,pt.y,'pokeball',1.15,comingFrame*.45);
-     if(actor.spr?.active)actor.spr.setAlpha(.02).setScale(replacementScale*.15);
+     if(actor.spr?.active)actor.spr.setVisible(true).setAlpha(.02).setScale(replacementScale*.15);
      scene.__torre2BeamDebug={
       phase:'throw',side,frame:comingFrame,from:{...from},to:{...landing},
       currentBody:visibleActorCenter(actor),visible:actor.spr?.visible===true
@@ -384,8 +384,9 @@ export function installPartyBattle(scene){
     };
     drawCaptureBall(ball,landing.x,landing.y,'pokeball',1.15,0,true);
     if(actor.spr?.active)
-     actor.spr.setAlpha(.08+.92*t).setScale(replacementScale*(.15+.85*t));
+     actor.spr.setVisible(true).setAlpha(.08+.92*t).setScale(replacementScale*(.15+.85*t));
     if(comingFrame>=40){
+     if(actor.spr?.active)actor.spr.setVisible(true).setAlpha(1).setScale(replacementScale);
      if(peer&&peerHpRatio!==null&&peer.hpMax>0){
       peer.hp=Math.max(0,Math.min(peer.hpMax,peerHpRatio*peer.hpMax));
       const teammates=side===0?party.foes:party.friend;
