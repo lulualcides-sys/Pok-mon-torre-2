@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "mega-drain",
   "nombre": "Mega Drain",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_mega_drain",
   "tipo": "GRASS",
   "categoria": "SPECIAL",

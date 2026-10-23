@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "pin-missile",
   "nombre": "Pin Missile",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_pin_missile",
   "tipo": "BUG",
   "categoria": "PHYSICAL",

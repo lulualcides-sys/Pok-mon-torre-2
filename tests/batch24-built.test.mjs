@@ -7,7 +7,14 @@ const {BATCH24_MOVES,BATCH24_NATIVE_REUSE}=await import(new URL('catalog.js',dir
 const {BATCH24_FORMS}=await import(new URL('runtime.js',dir));
 const {TEST_LIBRARY,filterMoveLibrary}=await import(new URL('../move-pool.js',dir));
 assert.equal(BATCH24_MOVES.length,23,'No reimplementation of original Dragon Pulse');
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,23);
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,11,
+  'Only the eleven moves requiring visual rework remain in NEW');
+for(const move of BATCH24_MOVES){
+ const indexed=TEST_LIBRARY.find(h=>h.id===move.id);
+ assert.equal(indexed?.approved,move.approved,move.id+' catalog approval was not retained');
+ const inNew=filterMoveLibrary(TEST_LIBRARY,'NEW').some(h=>h.id===move.id);
+ assert.equal(inNew,!move.approved,move.id+' NEW tab must not show an approved move');
+}
 const original=TEST_LIBRARY.filter(h=>h.nombre==='Dragon Pulse');
 assert.equal(original.length,1,'The original Dragon Pulse remains selectable exactly once');
 assert.equal(original[0].source,'arena2d-original','Do not override the original Dragon Pulse');
@@ -42,4 +49,4 @@ try{
   assert.equal(cancel.actor.x,100,h.id+' interrupted dash must return');
  }
 }finally{Math.random=originalRandom;}
-console.log('23 new moves tested: real hit/miss/drain/cleanup; 1 approved native Dragon Pulse preserved, total 24 requested.');
+console.log('23 signature effects work, 12 visually approved and 11 pending; Ice Shard scatters 7 tips; native Dragon Pulse preserved.');

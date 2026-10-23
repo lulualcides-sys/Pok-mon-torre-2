@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "ice-fang",
   "nombre": "Ice Fang",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_ice_fang",
   "tipo": "ICE",
   "categoria": "PHYSICAL",

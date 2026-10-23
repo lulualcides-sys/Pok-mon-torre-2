@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "giga-drain",
   "nombre": "Giga Drain",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_giga_drain",
   "tipo": "GRASS",
   "categoria": "SPECIAL",

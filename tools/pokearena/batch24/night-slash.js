@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "night-slash",
   "nombre": "Night Slash",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_night_slash",
   "tipo": "DARK",
   "categoria": "PHYSICAL",

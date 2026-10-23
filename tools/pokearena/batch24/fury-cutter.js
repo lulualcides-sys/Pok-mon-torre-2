@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "fury-cutter",
   "nombre": "Fury Cutter",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_fury_cutter",
   "tipo": "BUG",
   "categoria": "PHYSICAL",

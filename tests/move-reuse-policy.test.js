@@ -46,11 +46,13 @@ test('No fabricated exception: user authorization is mandatory',()=>{
  assert.ok(errors.some(x=>x.includes('EXPLICIT user authorization')));
  assert.ok(errors.some(x=>x.includes('at least two sources')));
 });
-test('Flash Cannon, Steel Beam, Mirror Shot remain NOT four-source approved',()=>{
+test('Three steel effects visually approved without claiming complete four-source provenance',()=>{
  for(const id of ['flash-cannon','steel-beam','mirror-shot']){
   assert.equal(data.existingNonConformant[id].status,'requires-rework');
   const move=signatureEntries(pool).find(x=>x.id===id);
-  assert.equal(move.approved,false);
+  assert.equal(move.approved,true);
+  assert.equal(data.existingNonConformant[id].visualApproved,true);
+  assert.ok(data.existingNonConformant[id].userApprovalEvidence);
  }
 });
 

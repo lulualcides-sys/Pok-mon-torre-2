@@ -84,8 +84,11 @@ export function validateReusePolicy(pool,policy,{repository=root}={}){
   const move=entries.find(x=>x.id===id),legacy=policy.existingNonConformant?.[id];
   if(!legacy)errors.push('Missing honest debt marker for '+id);
   else if(legacy.status==='requires-rework'){
-   if(legacy.visualApproved!==false||move?.approved!==false)
-    errors.push(id+' cannot be falsely marked approved while requires-rework');
+   // Visual approval is not a claim that all four source bases were reused.
+   if(typeof legacy.visualApproved!=='boolean'||move?.approved!==legacy.visualApproved)
+    errors.push(id+': visual-approval record and catalog approval must agree');
+   if(legacy.visualApproved&&!meaningful(legacy.userApprovalEvidence,35))
+    errors.push(id+': direct user acceptance must be recorded');
   }else if(legacy.status==='reworked'){
    if(!policy.newMoves?.[id])
     errors.push(id+' rework requires complete four-source evidence in newMoves');

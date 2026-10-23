@@ -544,12 +544,17 @@ const server=http.createServer(async(req,res)=>{
    const hits=b.__torre2TrainingHits;
    const last=b.__torre2TrainingLastDamage;
    const meter=b.__torre2TrainingMeter?.text;
+   // Training cooldowns are always zero regardless of which skill fired.
+   for(const key of ['lmb','rmb','q','e','esp'])player.cd[key]=7+key.length;
+   player.sobrecargaHasta=999;
+   b.__torre2Training.freeze();
+   const cds={...player.cd},overload=player.sobrecargaHasta;
    const energy=player.energia,ult=player.ulti;
    const hp=foe.hp,status=!!foe.est?.aturdido;
    b.__torre2Training.leave();
    const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
    return {old,hp,x,y,result,status,
-    dealt,hits,last,meter,energy,ult,
+    dealt,hits,last,meter,energy,ult,cds,overload,
     savedTrainer:state.trainer,savedHp:state.team[0].hp};
   });
   assert.equal(dummy.hp,dummy.old,'Practice target takes absolutely no damage');
@@ -558,6 +563,9 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(dummy.meter.includes('DANO')&&dummy.meter.includes('ACERTOS'),'Training HUD must show real numerical damage');
   assert.equal(dummy.energy,100,'Player energy stays full in training');
   assert.equal(dummy.ult,100,'Player ultimate energy stays full in training');
+  assert.ok(Object.values(dummy.cds).every(value=>value===0),
+   'Training mode removes cooldown from every move slot');
+  assert.equal(dummy.overload,0,'Training must clear basic-attack overheat lock');
   assert.equal(dummy.status,false,'Practice target cannot be stunned');
   assert.equal(dummy.savedTrainer,1,'Training never increments route progress');
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').scene.isActive(),
@@ -1125,7 +1133,7 @@ const server=http.createServer(async(req,res)=>{
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
    if(labels().some(x=>x.includes('TODOS OS GOLPES APROVADOS')))
-    throw Error('NEW should list 24 new pixel moves plus 3 pending Steel moves');
+    throw Error('NEW should show 11 visually pending batch24 moves');
    if(!pendingRows.some(x=>/Acid|Ancient Power/.test(x)))
     throw Error('NEW must show the newly authored batch');
    for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',

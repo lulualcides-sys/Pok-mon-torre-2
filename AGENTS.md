@@ -23,7 +23,7 @@ Este repositório é o **Pokémon Torre 2**, não o Torre 1. Estas são instruç
 
 **Porta de qualidade:** novos movimentos cadastrados em `SIGNATURE_MOVES` devem ter prova por fonte em `data/move-reuse-policy.json`. O teste `npm test` roda `tests/move-reuse-policy.test.js`, que bloqueia **futuras entradas sem documentação completa**, sem comprovação dos quatro ou sem exceção expressa registrada. Esse teste valida documentação/evidências, mas não substitui a revisão humana dos ativos e do código.
 
-**Correção já identificada:** Flash Cannon, Steel Beam e Mirror Shot foram criados praticamente do zero; NÃO são exemplos aprovados da nova regra. Eles constam como `requires-rework` e sem aprovação visual. Não alterá-los sem solicitação.
+**Aprovação visual registrada em 23/10/2026:** o usuário aprovou Flash Cannon, Steel Beam e Mirror Shot e pediu para salvar. **Não modificar** os efeitos. A aprovação visual não comprova reaproveitamento das quatro fontes: a dívida de proveniência continua registrada como `requires-rework` em `data/move-reuse-policy.json`.
 
 **Prioridade futura registrada:** *Mewtwo lifts rocks*, inspirada na demonstração do Emerald Arena: erguer pedras do cenário por telecinese, orbitá-las e arremessá-las com colisão independente. NÃO duplicar Rock Throw, Rock Tomb ou Rock Blast. **Planejado, não implementado.**
 

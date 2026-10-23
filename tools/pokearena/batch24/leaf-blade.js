@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "leaf-blade",
   "nombre": "Leaf Blade",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_leaf_blade",
   "tipo": "GRASS",
   "categoria": "PHYSICAL",

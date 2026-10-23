@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "icicle-spear",
   "nombre": "Icicle Spear",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_icicle_spear",
   "tipo": "ICE",
   "categoria": "PHYSICAL",

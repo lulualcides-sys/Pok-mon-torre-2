@@ -2,6 +2,7 @@
  * Arena 2D, with authored pixel matrices; approved renderers are untouched. */
 import {BATCH24_MOVES} from './catalog.js';
 import {PALETTES,stamp,pixel,impact} from './pixels.js';
+import {paintReworkedMove,paintReworkedImpact} from './visual-upgrades.js';
 import {clashAt} from '../clash-fx.js';
 import {contactDash} from '../early-route-fx.js';
 import {aleatorio} from '../../azar.js';
@@ -73,6 +74,8 @@ function strike(l,r,h,extra,mult=1){
 }
 export function drawMove(g,h,x,y,frame,angle=0){
  const p=PALETTES[h.palette],f=frame%12,s=h.style;
+ // The 11 requested enhancements only. Approved attacks route as before.
+ if(paintReworkedMove(g,h,x,y,frame,angle))return;
  const sprite=(shape,dx=0,dy=0,size=1,a=angle,alpha=1,flip=false)=>stamp(g,shape,x+dx,y+dy,p,size,a,alpha,flip);
  if(s==='mudshot'){sprite('pellet',0,0,1);for(let j=1;j<4;j++)sprite('drop',-Math.cos(angle)*(j*8+f%3),-Math.sin(angle)*(j*8+f%3),1,angle-PI/4,.7/j);}
  else if(s==='mudbomb'||s==='sludge'){sprite('glob',0,Math.sin(f*.6)*2,s==='sludge'?2:1);for(let j=0;j<3;j++)sprite('pellet',-Math.cos(angle)*(12+j*7),-Math.sin(angle)*(12+j*7)+j*3,1,0,.45);}
@@ -138,8 +141,13 @@ export function drawMove(g,h,x,y,frame,angle=0){
 }
 function projectile(l,h,extra){
  const o=start(l,h),p=PALETTES[h.palette],range=h.alcance;
- const count=h.secondary==='multi'?[2,2,2,3,3,3,4,5][Math.floor(aleatorio()*8)]:1;
- const shots=Array.from({length:count},(_,i)=>({delay:i*.12,prev:null,done:false,impact:null,refund:0}));
+ // Approved Pay Day's 7 independently aimed particles, adapted to Ice Shard.
+ // No global lock-on: seven small blades can all miss with bad player aim.
+ const iceFan=h.id==='ice-shard'&&h.style==='shard';
+ const count=iceFan?7:h.secondary==='multi'?[2,2,2,3,3,3,4,5][Math.floor(aleatorio()*8)]:1;
+ const shots=Array.from({length:count},(_,i)=>({
+  delay:i*(iceFan?.075:.12),prev:null,done:false,impact:null,refund:0
+ }));
  let age=0,refundPaid=false,anyHit=false;
  const fx=lifecycle(l,(dt,g,self)=>{
   age+=dt;g.clear();let active=false;
@@ -147,6 +155,7 @@ function projectile(l,h,extra){
    const b=shots[i],t=age-b.delay-(h.secondary==='priority'?.035:.1);if(t<0){active=true;continue}
    if(b.impact){
     const since=age-b.impact.time;impact(g,b.impact.x,b.impact.y,p,since);
+    paintReworkedImpact(g,h,b.impact.x,b.impact.y,since);
     if(b.refund>0&&since<.5){
      const k=clamp(since/.48),to=center(l);
      for(let j=0;j<3;j++){const q=clamp(k-j*.07);stamp(g,'leaf',b.impact.x+(to.x-b.impact.x)*q,b.impact.y+(to.y-b.impact.y)*q-Math.sin(q*PI)*18,p,1,q*PI);}
@@ -158,8 +167,11 @@ function projectile(l,h,extra){
    if(b.done)continue;
    const d=t*h.speed;if(d>range){b.done=true;self.clashBody.live=false;continue}
    active=true;
-   const spread=count>1?(i-(count-1)/2)*.018:0,a=o.a+spread;
-   const x=o.x+Math.cos(a)*(d+12),y=o.y+Math.sin(a)*(d+12);
+   const spread=iceFan?(i-(count-1)/2)*.09:count>1?(i-(count-1)/2)*.018:0;
+   const a=o.a+spread;
+   const scatter=iceFan?Math.sin(d*.048+i*1.73)*3.2:0;
+   const x=o.x+Math.cos(a)*(d+12)-Math.sin(a)*scatter;
+   const y=o.y+Math.sin(a)*(d+12)+Math.cos(a)*scatter;
    const tip={x,y},prev=b.prev||{x:o.x,y:o.y};b.prev=tip;
    self.clashBody={owner:l,type:h.tipo,radius:8,x,y,live:true};
    if(clashAt(l.escena,self,l,tip,8,h.tipo)){b.done=true;self.clashBody.live=false;continue}
@@ -167,7 +179,7 @@ function projectile(l,h,extra){
    const r=l.rival,contact=swept(prev,tip,r,['icywind','silverwind','twister','spray'].includes(h.style)?17:8);
    if(contact){
     b.done=true;self.clashBody.live=false;
-    const result=strike(l,r,h,extra);anyHit||=result.landed;
+    const result=strike(l,r,h,extra,iceFan?1/count:1);anyHit||=result.landed;
     b.impact={...contact,time:age};b.refund=h.secondary==='drain'?result.damage*.5:0;
    }
   }
@@ -191,7 +203,10 @@ function melee(l,h,extra){
    if(contact)landed=strike(l,target,h,extra).landed;
    if(!landed&&h.secondary==='fury')l.__batch24Fury=null;
   }
-  if(contact&&age>=.22)impact(g,contact.x,contact.y,p,age-.22);
+  if(contact&&age>=.22){
+   impact(g,contact.x,contact.y,p,age-.22);
+   paintReworkedImpact(g,h,contact.x,contact.y,age-.22);
+  }
   return age<.72;
  },()=>dash.release());
 }

@@ -81,6 +81,10 @@ export function installTrainingDummy(scene){
    fighter.energia=energyCap;
    fighter.ulti=ultiCap;
    fighter.calor=0;
+   // TRAINING ONLY: every input slot is ready on the next game step.
+   // Do not cancel the current attack's short animation/contact window.
+   for(const slot of Object.keys(fighter.cd||{}))fighter.cd[slot]=0;
+   fighter.sobrecargaHasta=0;
   }
   if(scene.__torre2TrainingMeter)
    scene.__torre2TrainingMeter.setText(
@@ -93,7 +97,7 @@ export function installTrainingDummy(scene){
  const g=scene.add.graphics().setDepth(3500);
  g.fillStyle(0x06182c,.94);g.fillRoundedRect(170,3,315,26,4);
  g.lineStyle(1,0x83cbe1);g.strokeRoundedRect(170,3,315,26,4);
- scene.add.text(326,16,'TREINO · ENERGIA 100% · HP DO ALVO FIXO',{
+ scene.add.text(326,16,'TREINO · SEM COOLDOWN · ENERGIA + ULT 100%',{
   fontFamily:'Pixelify Sans,monospace',fontSize:'12px',color:'#f5df9d',
   stroke:'#061529',strokeThickness:2}).setOrigin(.5).setDepth(3501);
  const meter=scene.add.text(326,43,'DANO 0 · TOTAL 0 · ACERTOS 0',{

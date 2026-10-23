@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "poison-fang",
   "nombre": "Poison Fang",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_poison_fang",
   "tipo": "POISON",
   "categoria": "PHYSICAL",

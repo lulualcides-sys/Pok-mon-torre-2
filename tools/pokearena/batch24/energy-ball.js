@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "energy-ball",
   "nombre": "Energy Ball",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_energy_ball",
   "tipo": "GRASS",
   "categoria": "SPECIAL",

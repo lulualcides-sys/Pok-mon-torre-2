@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "earth-power",
   "nombre": "Earth Power",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_earth_power",
   "tipo": "GROUND",
   "categoria": "SPECIAL",

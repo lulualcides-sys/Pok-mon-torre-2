@@ -44,18 +44,21 @@
   "existingNonConformant": {
     "flash-cannon": {
       "status": "requires-rework",
-      "reason": "Feixe metálico do Steel Beam anterior TRANSFERIDO para Flash Cannon, sem recoil. Reuso real do efeito existente no Torre 2; ainda sem comprovar as quatro fontes; não aprovado visualmente.",
-      "visualApproved": false
+      "reason": "Feixe metálico do Steel Beam anterior TRANSFERIDO para Flash Cannon, sem recoil. Reuso real do efeito existente no Torre 2; ainda sem comprovar as quatro fontes; aprovado visualmente; proveniência das quatro fontes ainda incompleta.",
+      "visualApproved": true,
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário disse 'Os 3 de aço anterior ficou bom, pode salvar', aprovando visualmente Flash Cannon, Steel Beam e Mirror Shot. O reuso efetivo de quatro fontes não foi comprovado."
     },
     "steel-beam": {
       "status": "requires-rework",
-      "reason": "Agora delega de verdade ao motor Chorro original do Aura Storm em Poké Arena 2D com paleta metalTorre2. Zarza/Emerald não integram ESTE golpe; pendente de evidência adicional e aprovação.",
-      "visualApproved": false
+      "reason": "Agora delega de verdade ao motor Chorro original do Aura Storm em Poké Arena 2D com paleta metalTorre2. Zarza/Emerald não integram ESTE golpe; aprovado visualmente; proveniência das quatro fontes ainda incompleta.",
+      "visualApproved": true,
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário disse 'Os 3 de aço anterior ficou bom, pode salvar', aprovando visualmente Flash Cannon, Steel Beam e Mirror Shot. O reuso efetivo de quatro fontes não foi comprovado."
     },
     "mirror-shot": {
       "status": "requires-rework",
       "reason": "Substitui espelho voador por clarão energético do corpo polido; usa projeção existente e fragmentos adaptados da física MIT do Emerald Arena. Zarza usado somente como referência, sem reuso de código.",
-      "visualApproved": false
+      "visualApproved": true,
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário disse 'Os 3 de aço anterior ficou bom, pode salvar', aprovando visualmente Flash Cannon, Steel Beam e Mirror Shot. O reuso efetivo de quatro fontes não foi comprovado."
     }
   },
   "newMoves": {
@@ -192,7 +195,7 @@
       }
     },
     "sludge": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -222,7 +225,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para sludge na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "poison-jab": {
       "review": "ready-for-visual-review",
@@ -258,7 +262,7 @@
       }
     },
     "mega-drain": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -288,10 +292,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para mega-drain na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "giga-drain": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -321,10 +326,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para giga-drain na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "pin-missile": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -354,10 +360,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para pin-missile na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "icicle-spear": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -387,7 +394,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para icicle-spear na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "ice-shard": {
       "review": "ready-for-visual-review",
@@ -423,7 +431,7 @@
       }
     },
     "poison-fang": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -453,10 +461,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para poison-fang na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "ice-fang": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -486,10 +495,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para ice-fang na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "fury-cutter": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -519,10 +529,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para fury-cutter na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "leaf-blade": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -552,10 +563,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para leaf-blade na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "night-slash": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -585,7 +597,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para night-slash na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "icy-wind": {
       "review": "ready-for-visual-review",
@@ -687,7 +700,7 @@
       }
     },
     "energy-ball": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -717,7 +730,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para energy-ball na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "dark-pulse": {
       "review": "ready-for-visual-review",
@@ -786,7 +800,7 @@
       }
     },
     "earth-power": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -816,7 +830,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para earth-power na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     }
   },
   "batch24NativeReuse": {

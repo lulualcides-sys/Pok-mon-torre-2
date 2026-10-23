@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "sludge",
   "nombre": "Sludge",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_sludge",
   "tipo": "POISON",
   "categoria": "SPECIAL",
