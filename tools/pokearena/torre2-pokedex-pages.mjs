@@ -30,6 +30,21 @@ export function paginateKantoPokedexSource(original){
   // current XP of an individual Pokémon in a saved campaign.
   const member={id:species,progression:{species,level:100}};
   const equipped=resolveLoadout(member);
+  // Newly introduced Kanto evolutions can inherit an invalid speed/attack
+  // number from the original Poké Arena stage calculator. A NaN previously
+  // left the right-hand Pokédex panel empty on Nidorino/Nidoking.
+  // Normalize DISPLAY stats only: never change actual battle progression.
+  const safe=(v,fallback)=>Number.isFinite(v)?v:fallback;
+  const evo=def.evoluciones?.[i-1];
+  const baseHp=safe(def.hp,90);
+  const baseVel=safe(def.vel,110);
+  const stageStats={
+   hp:safe(stage.hp,safe(evo?.hp,baseHp)),
+   vel:safe(stage.vel,safe(evo?.vel,Math.round(baseVel*(1+i*.09)))),
+   atk:safe(stage.atk,safe(evo?.atk,safe(def.atk,1))),
+   def:safe(stage.def,safe(evo?.def,safe(def.def,1))),
+   regen:safe(stage.regen,safe(def.regen,4))
+  };
   const original=stage.kit||{};
   const kit={...original};
   for(const slot of ['lmb','rmb','q','e']){
@@ -38,13 +53,15 @@ export function paginateKantoPokedexSource(original){
   }
   // Show the fifth defensive action explicitly, never as a fifth attack.
   if(equipped.esp?.forma)kit.esp={...equipped.esp};
-  return {...stage,kit};
+  return {...stage,...stageStats,kit};
  });
 }`;
  s=once(s,'function cifras(slot,h){',sync+'function cifras(slot,h){');
  s=once(s,'this.etapas=etapasDe(p);','this.etapas=kantoDexStages(p);');
  s=once(s,'const e=etapasDe(ROSTER[this.foco])[i];',
   'const e=kantoDexStages(ROSTER[this.foco])[i];');
+ s=once(s,'this.etapa=i;sfx("confirmar");this.refrescar(true)}',
+  'this.etapa=i;this.etapas=kantoDexStages(ROSTER[this.foco]);sfx("confirmar");this.refrescar(true)}');
  // Preserve exact original control mapping and all RANURAS while giving
  // the five battle roles the same visible labels as the campaign summary.
  s=once(s,
