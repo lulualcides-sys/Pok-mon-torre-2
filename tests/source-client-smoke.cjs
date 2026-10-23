@@ -488,11 +488,26 @@ const server=http.createServer(async(req,res)=>{
    control.emit('pointerdown');
    return true;
   });
+  try{
   await offline.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.scene.isActive()&&b.__torre2TrainingInstalled&&
     b.__torre2PartyInstalled&&b.luchadores?.[1]?.def?.id==='onix';
   },null,{timeout:35000});
+  }catch(error){
+   const diag=await offline.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),
+     c=window.__pt2Game.scene.getScene('campanha');
+    return {battleActive:b.scene.isActive(),battlePhase:b.fase,
+     installed:b.__torre2PartyInstalled,trainingInstalled:b.__torre2TrainingInstalled,
+     data:b.datos?.torre2&&{kind:b.datos.torre2.kind,training:b.datos.torre2.training},
+     foe:b.luchadores?.[1]?.def?.id,
+     trainer:JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')||'{}').trainer,
+     campaignActive:c.scene.isActive(),gameAttach:!!window.__pt2Game.__torre2BattleAttach};
+   });
+   console.error('TRAINING_START_DIAGNOSTIC',JSON.stringify(diag));
+   throw error;
+  }
   const dummy=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    const foe=b.luchadores[1],old=foe.hp,x=foe.x,y=foe.y;
