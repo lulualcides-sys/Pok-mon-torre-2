@@ -25,7 +25,12 @@ for(const p of KANTO_151){
   // All four P2 roles are reserved, but Magikarp/Ditto don't magically
   // acquire noncanonical 4th attacks. Only real FRLG moves are equipped.
   const equipped=['lmb','rmb','q','e'].filter(slot=>kit[slot]?.forma);
-  assert.ok(equipped.length>=1,'No real move at all: '+p.id);
+  if(p.id==='ditto'){
+   // Transform is the ONLY FRLG learnset attack. The installed native
+   // client has no independently usable Transform renderer for campaign:
+   // never fabricate another Pokémon's damage move just to fill its slots.
+   assert.equal(equipped.length,0,'Ditto cannot borrow unrelated attacks');
+  }else assert.ok(equipped.length>=1,'No real move at all: '+p.id);
   assert.equal(kit.esp?.forma,'dash');
   const e=etapa?def.evoluciones[etapa-1]:def;
   assert.ok([e.hp,e.vel,e.atk,e.def].every(Number.isFinite),
