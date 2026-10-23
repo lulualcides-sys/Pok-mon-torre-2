@@ -6,7 +6,7 @@
 import fs from 'node:fs';
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
-import {FINALE_13_MOVES} from './torre2-finale13.js';
+import {FINALE_13_MOVES} from './torre2-finale13-catalog.js';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
