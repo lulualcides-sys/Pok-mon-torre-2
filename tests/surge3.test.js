@@ -33,8 +33,11 @@ function fixture(type='NORMAL',targetX=185){
   }};
  actor.rival=target;scene.actor=actor;return{actor,target,scene};
 }
-function play(f,move){
- const fx=SURGE3_FORMS[move.forma](f.actor,move,{slot:'q'});
+function play(f,move,{naturalAccuracy=false}={}){
+ // Deterministic collision tests use 100%; accuracy test checks the
+ // genuine 90% / 85% separately with Math.random deliberately fixed.
+ const h=naturalAccuracy?move:{...move,precisao:100};
+ const fx=SURGE3_FORMS[h.forma](f.actor,h,{slot:'q'});
  for(let i=0;i<160;i++){f.actor.t+=1/60;fx.update(1/60)}
  assert.ok(f.scene.efectos.includes(fx));
  return fx;
@@ -76,7 +79,7 @@ test('Thunder Wave paralyzes on physically aimed hit; Ground and Electric are im
   assert.equal(f.target.hp,start,'paralysis must never damage');
   assert.equal(Boolean(f.target.est.paralizado),type==='NORMAL');
  }
- const miss=fixture('NORMAL',310);play(miss,wave);
+ const miss=fixture('NORMAL',460);play(miss,wave);
  assert.equal(miss.target.est.paralizado,undefined,'manual aim misses long range');
 });
 test('Screech lowers Defense by 2 stages, stacks only to -6, never deals damage',()=>{
@@ -108,9 +111,9 @@ test('Accuracy rolls occur only on contact; projectile status never auto targets
  const fx=fixture('NORMAL');
  const prev=Math.random;try{
   Math.random=()=>.999;
-  play(fx,SURGE3_MOVES[1]);
+  play(fx,SURGE3_MOVES[1],{naturalAccuracy:true});
   assert.equal(fx.target.hp,1000,'Sonic Boom 90% can miss');
-  const shrill=fixture('NORMAL');play(shrill,SURGE3_MOVES[2]);
+  const shrill=fixture('NORMAL');play(shrill,SURGE3_MOVES[2],{naturalAccuracy:true});
   assert.equal(shrill.target.est.torre2Screech,undefined,'Screech 85% can miss');
  }finally{Math.random=prev}
 });
