@@ -190,35 +190,104 @@ export function installPartyBattle(scene){
   scene.game.events.on('step',sparkle);
   scene.events.once('shutdown',()=>scene.game.events.off('step',sparkle));
  }
+ // Keep only individual pixel Pokéballs below each original HP bar.
+ // No large black scoreboard tables or top-center text swap selector.
  const graphics=scene.add.graphics().setDepth(2480);
  const sharedBeam=scene.add.graphics().setDepth(2603);
  const sharedBall=scene.add.graphics().setDepth(2604);
- const playerLabel=label(scene,96,53,'',9,'#c1efe3');
- const enemyLabel=label(scene,539,53,'',9,'#ffe0d1');
- const switchText=label(scene,322,89,'',10,'#ffe7a3',2482);
+ const memberDex=m=>{
+  try{
+   const {def,etapa}=buscar(m.id);
+   return String((etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150').padStart(4,'0');
+  }catch{return '0150'}
+ };
+ const sidebar=scene.add.graphics().setDepth(2500);
+ const icons=[],slotZones=[];
+ const tooltip=label(scene,111,125,'',10,'#fff0cc',2606).setVisible(false);
+ const slotX=34,slotStart=123,slotStep=33;
+ // Preloaded Pokédex portraits guarantee visible sprites for ALL reserves;
+ // where an Idle PMD frame is already cached, prefer the battle body sprite.
+ for(let i=0;i<6;i++){
+  const member=party.friend[i],y=slotStart+i*slotStep;
+  let img=null;
+  if(member){
+   const dex=memberDex(member),idle='pmd-'+dex+'-Idle';
+   const portrait='torre2-portrait-'+dex;
+   const key=scene.textures.exists(idle)?idle:
+    scene.textures.exists(portrait)?portrait:null;
+   if(key){
+    img=scene.add.image(slotX,y,key).setDepth(2503);
+    const w=Math.max(1,img.frame?.width||32),h=Math.max(1,img.frame?.height||32);
+    img.setScale(Math.min(25/w,25/h));
+    img.setData('torre2-party-sprite',i);
+   }
+  }
+  const zone=scene.add.zone(slotX,y,49,32).setDepth(2506)
+   .setInteractive({useHandCursor:true}).setData('torre2-party-slot',i);
+  zone.on('pointerover',()=>{
+   if(!member)return;
+   const hp=i===party.playerIndex&&actors[0]?.hpMax?
+    clamp(actors[0].hp/actors[0].hpMax*100):clamp(member.hp);
+   tooltip.setPosition(113,Math.max(116,Math.min(300,y)));
+   tooltip.setText(member.id.toUpperCase()+' · '+Math.ceil(hp)+'% HP').setVisible(true);
+  });
+  zone.on('pointerout',()=>tooltip.setVisible(false));
+  zone.on('pointerdown',()=>{
+   tooltip.setVisible(false);
+   if(!member||i===party.playerIndex||member.hp<=0||
+      scene.__torre2Changing||scene.fase!=='lucha')return;
+   recall(0,i);
+  });
+  icons.push(img);slotZones.push(zone);
+ }
+ scene.__torre2SideParty={x:slotX,start:slotStart,step:slotStep,
+  slots:slotZones,icons};
  function redrawPartyHud(){
-  graphics.clear();
-  for(const xx of [12,448]){
-   graphics.fillStyle(0x071d2e,.95);graphics.fillRect(xx,44,178,46);
-   graphics.lineStyle(2,0x77969f,1);
-   graphics.strokeRect(xx+1,45,176,44);
-   graphics.fillStyle(0x143a4c);graphics.fillRect(xx+3,47,172,13);
-   graphics.lineStyle(1,0xd9be77,1);
-   graphics.lineBetween(xx+4,61,xx+174,61);
+  graphics.clear();sidebar.clear();
+  for(const [members,idx,start] of [
+   [party.friend,party.playerIndex,31],[party.foes,party.enemyIndex,477]]){
+   members.slice(0,6).forEach((m,i)=>
+    drawPixelBall(graphics,start+i*21,64,m.hp>0,i===idx));
   }
-  for(const [members,active,start] of [
-   [party.friend,party.playerIndex,30],[party.foes,party.enemyIndex,468]]){
-   members.forEach((m,i)=>
-    drawPixelBall(graphics,start+i*20,76,m.hp>0,i===active));
+  sidebar.fillStyle(0x061726,.88);
+  sidebar.fillRoundedRect(6,103,55,222,7);
+  sidebar.lineStyle(1,0x64879a,.72);
+  sidebar.strokeRoundedRect(6,103,55,222,7);
+  sidebar.fillStyle(0xdac27d);sidebar.fillRect(12,106,43,2);
+  party.friend.slice(0,6).forEach((m,i)=>{
+   const y=slotStart+i*slotStep,selected=i===party.playerIndex,alive=m.hp>0;
+   const hp=selected&&actors[0]?.hpMax?
+    clamp(actors[0].hp/actors[0].hpMax*100):clamp(m.hp);
+   sidebar.fillStyle(selected?0x304956:0x122a3b,alive?1:.65);
+   sidebar.fillRoundedRect(10,y-15,48,30,4);
+   sidebar.lineStyle(selected?2:1,selected?0xffd477:alive?0x628b9e:0x536273,1);
+   sidebar.strokeRoundedRect(10,y-15,48,30,4);
+   sidebar.fillStyle(0x101a28);sidebar.fillRect(16,y+10,36,3);
+   sidebar.fillStyle(!alive?0x657080:hp<25?0xf06f67:hp<50?0xeab95b:0x5bd69c);
+   sidebar.fillRect(16,y+10,Math.max(0,Math.round(36*hp/100)),3);
+   if(selected){
+    sidebar.fillStyle(0xffe3a5);
+    sidebar.fillTriangle(7,y-4,7,y+4,12,y);
+   }
+   const image=icons[i];
+   if(image?.active){
+    image.setAlpha(alive?(selected?1:.94):.32);
+    if(alive)image.clearTint();else image.setTint(0x84909d);
+   }
+  });
+  for(let i=party.friend.length;i<6;i++){
+   const y=slotStart+i*slotStep;
+   sidebar.lineStyle(1,0x365265,.7);
+   sidebar.strokeRoundedRect(10,y-15,48,30,4);
+   sidebar.fillStyle(0x43596a,.4);sidebar.fillCircle(slotX,y,4);
   }
-  playerLabel.setText('SEUS POKÉMON · '+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length);
-  enemyLabel.setText((payload.kind==='wild'?'SELVAGEM':'RIVAL')+' · '+
-   party.foes.filter(m=>m.hp>0).length+'/'+party.foes.length);
-  switchText.setText('TROCAR POKÉMON ('+party.friend.filter(m=>m.hp>0).length+'/'+party.friend.length+') ▾');
  }
  redrawPartyHud();
- const available=()=>party.friend.map((m,i)=>({m,i}))
-  .filter(({m,i})=>i!==party.playerIndex&&m.hp>0);
+ let sidebarTicks=0;
+ const refreshSidebar=()=>{
+  if(scene.scene.isActive()&&++sidebarTicks%14===0)redrawPartyHud();
+ };
+ scene.game.events.on('step',refreshSidebar);
  const announce=(textValue)=>{
   const txt=label(scene,320,141,textValue,13,'#ffe0a9',2600);
   scene.time.delayedCall(900,()=>txt.active&&txt.destroy());
@@ -498,44 +567,7 @@ export function installPartyBattle(scene){
   // leave the player's party stuck on a fainted Pokémon.
   recall(side,next,'faint');
  };
- const menu=scene.add.graphics().setDepth(2600);
- let entries=[];
- let open=false;
- const close=()=>{
-  for(const obj of entries)obj.destroy?.();
-  entries=[];menu.clear();open=false;
-  if(scene.fase==='torre2-select')scene.fase='lucha';
- };
- function showParty(){
-  if(scene.__torre2Changing||scene.fase!=='lucha')return;
-  if(open){close();return}
-  open=true;scene.fase='torre2-select';
-  menu.fillStyle(0x061726,.97);
-  menu.fillRect(118,88,396,204);
-  menu.lineStyle(2,0xf1ca7b);menu.strokeRoundedRect(118,88,396,204,8);
-  entries.push(label(scene,316,111,'ESCOLHA UM POKÉMON',15,'#fff0bf',2602));
-  party.friend.forEach((m,i)=>{
-   const col=i%2,row=Math.floor(i/2),x=220+col*199,y=148+row*40;
-   const selected=i===party.playerIndex,dead=m.hp<=0;
-   const c=label(scene,x,y,(selected?'▶ ':'')+m.id.toUpperCase()+
-     (dead?' · K.O.':' · '+Math.ceil(m.hp)+'%'),10,
-      dead?'#9ca9b3':selected?'#ffdb85':'#ddf8f0',2602);
-   entries.push(c);
-   if(!selected&&!dead){
-    entries.push(scene.add.zone(x,y,189,30).setDepth(2605)
-     .setInteractive({useHandCursor:true}).on('pointerdown',()=>{
-      close();recall(0,i);
-     }));
-   }
-  });
-  const exit=label(scene,320,277,'✕ VOLTAR',11,'#ffc7b3',2602);
-  entries.push(exit,scene.add.zone(320,275,100,28).setDepth(2605)
-   .setInteractive({useHandCursor:true}).on('pointerdown',close));
- }
- // A native clickable Pokémon switch (mouse and touch) independent of
- // the Arena 2D ability buttons. Only available with living reserves.
- const switchHit=scene.add.zone(320,88,177,30).setDepth(2500)
-  .setInteractive({useHandCursor:true}).on('pointerdown',showParty);
+ // A click on the left Pokemon sprite now directly switches the party.
  // If the native engine sets 0 HP without invoking alKO (some move/status
  // paths do), the campaign still recalls the fainted fighter exactly once.
  const monitorKo=()=>{
@@ -583,7 +615,13 @@ export function installPartyBattle(scene){
   scene.game.events.off('step',considerTacticalSwitch);
   scene.game.events.off('step',monitorKo);
   scene.game.events.off('poststep',syncRenderedSpecies);
-  close();scene.__torre2PartyInstalled=false;
+  scene.game.events.off('step',refreshSidebar);
+  scene.__torre2PartyInstalled=false;
+  scene.__torre2SideParty=null;
+  tooltip.destroy();
+  for(const zone of slotZones)zone.destroy();
+  for(const img of icons)img?.destroy();
+  sidebar.destroy();
   sharedBeam.destroy();sharedBall.destroy();graphics.destroy();
  });
 }
