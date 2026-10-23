@@ -196,9 +196,15 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('liga').celdas?.length>0,null,{timeout:35000});
   const leaguePortraits=await league.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('liga');
-   const missed=scene.celdas.filter(cell=>!scene.textures.exists('retrato-'+cell.p.dex))
-      .map(cell=>({name:cell.p.nombre,dex:cell.p.dex}));
-   return {cards:scene.celdas.length,missed};
+   // The original League altered its celdas representation upstream.
+   // Inspect actual known dexes rather than assuming cell.p still exists.
+   const known=scene.celdas.map(c=>c?.p||c?.pokemon||c?.def||null)
+    .filter(c=>c?.dex);
+   const missed=known.filter(p=>!scene.textures.exists('retrato-'+p.dex))
+    .map(p=>({name:p.nombre,dex:p.dex}));
+   const images=scene.children.list.filter(o=>o.active&&o.texture&&
+    String(o.texture.key||'').startsWith('retrato-')).length;
+   return {cards:scene.celdas.length,missed,images,known:known.length};
   });
   assert.ok(leaguePortraits.cards>=15,'League scene must show opponent cards');
   assert.deepEqual(leaguePortraits.missed,[],
