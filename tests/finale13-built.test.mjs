@@ -31,7 +31,8 @@ for(const [id,pokemon] of [
  ['fire-punch','magmar'],['cross-chop','machamp'],['aerial-ace','pidgeot'],
  ['flame-wheel','rapidash'],['light-screen','mr-mime'],
  ['rain-dance','starmie'],['sand-attack','sandshrew'],['protect','blastoise']
-])assert.ok(availableMoves({id:pokemon,progression:{species:pokemon,level:70}})
+])assert.ok(availableMoves({id:pokemon,progression:{species:pokemon,level:70},
+  ...(id==='protect'?{tmMoves:['protect']}:{})})
  .some(x=>x.id===id),id+' not learned by '+pokemon);
 function graphic(){
  return {fillStyle(){return this},fillRect(){return this},

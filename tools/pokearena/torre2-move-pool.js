@@ -203,8 +203,8 @@ export function availableMoves(member){
  };
  for(const [name,species] of Object.entries(kantoFinish))
   if(species.includes(member.id))names.add(name);
- if(ROSTER.some(p=>p.id===member.id||p.evoluciones?.some(e=>e.nombre.toLowerCase()===member.id)))
-  names.add('protect');
+ // Protect is a TM: species must actually be taught the move before use.
+ // Existing tmMoves already enters names above; never auto-grant it.
  const early=EARLY_KANTO_LEARNSETS[member.id];
  if(early)for(const id of Object.keys(early))names.add(id);
  const moves=TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
@@ -235,9 +235,13 @@ export function availableMoves(member){
   // Only these 13 new Kanto moves bypass the historical early-Kanto
   // learnset filter when explicitly assigned to their real species above.
   // All PRE-EXISTING moves retain their original evolution/level locks.
-  if(kantoFinish[key]?.includes(member.id)||key==='protect'&&
-     ROSTER.some(p=>p.id===member.id||p.evoluciones?.some(e=>e.nombre.toLowerCase()===member.id)))
+  const newMoveRequiredLevel={
+   'sand-attack':9,'sleep-powder':10,'aerial-ace':25,
+   'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':25
+  };
+  if(kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??1))
    return true;
+  if(key==='protect'&&tms.has(key))return true;
   // Allow skills of the ACTUAL evolved form immediately after evolution,
   // even at Lv 7 (Metapod), 10 (Butterfree), 18 (Pidgeotto) etc.
   // Other moves remain level-gated, and previous forms cannot borrow the
