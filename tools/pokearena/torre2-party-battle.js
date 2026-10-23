@@ -359,30 +359,33 @@ export function installPartyBattle(scene){
     if(!scene.scene.isActive()){
      scene.game.events.off('step',release);return;
     }
-    const t=Math.min(1,++comingFrame/12);
-    fx.clear();
-    // During materialization, aim at the real visible PMD sprite frame,
-    // not the pre-shrink cached center or the Luchador's logical position.
-    // Beam locks on the full-size sprite's chest while it materializes;
-    // use the live actor position only for subsequent normal battle frames.
+    comingFrame++;
+    fx.clear();ball.clear();
+    const landing={x:stableSpawn.x,y:stableSpawn.y-29};
+    if(comingFrame<=20){
+     const pt=ballArc(from,landing,comingFrame/20,68);
+     drawCaptureBall(ball,pt.x,pt.y,'pokeball',1.15,comingFrame*.45);
+     if(actor.spr?.active)actor.spr.setAlpha(.02).setScale(replacementScale*.15);
+     scene.__torre2BeamDebug={
+      phase:'throw',side,frame:comingFrame,from:{...from},to:{...landing},
+      currentBody:visibleActorCenter(actor),visible:actor.spr?.visible===true
+     };
+     return;
+    }
+    const t=Math.min(1,(comingFrame-20)/20);
     const live=stableSpawn;
-    const targetX=live.x,targetY=live.y;
-    drawRecallBeam(fx,from,live,1-t*.30);
+    drawRecallBeam(fx,landing,live,1-t*.30);
+    drawReleaseBurst(fx,live.x,live.y,t);
     scene.__torre2BeamDebug={
      phase:'release',side,frame:comingFrame,
-     from:{x:from.x,y:from.y},to:{...live},
+     from:{...landing},to:{...live},
      currentBody:visibleActorCenter(actor),
      visible:actor.spr?.visible===true
     };
-    ball.clear();
-    drawCaptureBall(ball,from.x,from.y,'pokeball',1.15,0,true);
-    fx.fillStyle(0xffe0bb,(1-t)*.9);
-    const flash=Math.max(1,Math.round(9*(1-t)));
-    fx.fillRect(Math.round(targetX)-flash,Math.round(targetY)-1,flash*2,2);
-    fx.fillRect(Math.round(targetX)-1,Math.round(targetY)-flash,2,flash*2);
+    drawCaptureBall(ball,landing.x,landing.y,'pokeball',1.15,0,true);
     if(actor.spr?.active)
-     actor.spr.setAlpha(.1+.9*t).setScale(replacementScale*(.15+.85*t));
-    if(comingFrame>=12){
+     actor.spr.setAlpha(.08+.92*t).setScale(replacementScale*(.15+.85*t));
+    if(comingFrame>=40){
      if(peer&&peerHpRatio!==null&&peer.hpMax>0){
       peer.hp=Math.max(0,Math.min(peer.hpMax,peerHpRatio*peer.hpMax));
       const teammates=side===0?party.foes:party.friend;
