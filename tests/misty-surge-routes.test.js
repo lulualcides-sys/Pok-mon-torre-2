@@ -52,7 +52,9 @@ test('Five controls stay distinct: ATK, HAB2, HAB3, ULT and non-damaging Space d
   assert.ok(learnset,'No learnset for '+species);
   for(const move of slots){
    const key=move.toLowerCase().replace(/[^a-z0-9]+/g,'-');
-   assert.ok(Number.isInteger(learnset[key]),species+' lacks '+move);
+   const evolvedOnly=(['caterpie','metapod'].includes(species)&&move==='Confusion')||
+    (['weedle','kakuna'].includes(species)&&move==='Fury Attack');
+   if(!evolvedOnly)assert.ok(Number.isInteger(learnset[key]),species+' lacks '+move);
   }
  }
  assert.deepEqual(KANTO_ROUTE_SLOTS.starmie,

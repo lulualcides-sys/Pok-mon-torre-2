@@ -126,7 +126,7 @@ test('Crystal size is reduced without touching the seven-shot Pay Day trajectory
  const visuals=await fs.readFile(new URL('../tools/pokearena/batch24/visual-upgrades.js',import.meta.url),'utf8');
  const start=visuals.indexOf('function iceShard('),end=visuals.indexOf('function icyWind(',start);
  const body=visuals.slice(start,end);
- assert.ok(body.includes("ICE_GLASS,.68,a-PI/4+tip"),'main crystal is small');
+ assert.ok(body.includes("ICE_GLASS,.68,a-PI/4+spin+tip"),'main crystal is small');
  assert.ok(body.includes("ICE_GLASS,.24,"),'subcrystal is even smaller');
  const runtime=await fs.readFile(new URL('../tools/pokearena/batch24/runtime.js',import.meta.url),'utf8');
  assert.ok(runtime.includes('const count=iceFan?7:'));

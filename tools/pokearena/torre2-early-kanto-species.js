@@ -260,7 +260,7 @@ function evolutionaryLine(native,id,dex,name,types,stats,names,evolutions=[]){
   evoluciones:evolutions.map(([dex,nombre,hp,tipos,attacks])=>{
    const stageId=nombre.toLowerCase().replace(/[^a-z0-9]+/g,'-');
    return {dex,nombre,hp,tipos,
-    kit:kit(native,attacks||EARLY_KANTO_SLOTS[stageId]||names,id,stageId)};
+    kit:kit(native,EARLY_KANTO_SLOTS[stageId]||attacks||names,id,stageId)};
   })
  };
 }
