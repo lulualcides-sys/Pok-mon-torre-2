@@ -458,6 +458,19 @@ for(const [filename,changes] of patches){
     console.warn('Optional League patch moved:',from.slice(0,70));
     continue;
    }
+   // The upstream client occasionally changes the CAMPO renderer's
+   // first statement. Apply the SAME Kanto-only wrong-texture guard at
+   // the actual method entry, without rewriting native drawing logic.
+   if(filename==='luchador.js'&&from.startsWith('actualizarGraficos(dt=0)')){
+    const originalEntry='actualizarGraficos(dt=0){';
+    if(!body.includes(originalEntry))
+     throw Error('Changed Luchador graphics method; refusing unsafe patch');
+    const guarded=to.slice(originalEntry.length).split('const r=CAMPO.ovalo')[0];
+    if(!guarded||!guarded.includes('this.escena.datos?.torre2'))
+     throw Error('Invalid scoped Kanto texture guard');
+    body=body.replace(originalEntry,originalEntry+guarded);
+    continue;
+   }
    if(filename==='ia.js'&&from.startsWith('if(yo.puede')){
     const capability=from.includes('puedeMega')?'puedeMega':'puedeEvolucionar';
     const pattern=new RegExp('if\\s*\\(\\s*yo\\.'+capability+'\\s*&&');
