@@ -61,12 +61,14 @@ for(const [species,level,id,slot] of [
 }
 assert.ok(!availableMoves(member('cubone',10)).some(x=>x.id==='bonemerang'),
  'Cubone must reach Bonemerang level before using the move');
-const ghost=member('gengar',70);
+const ghost=member('gengar',40);
 assert.ok(!availableMoves(ghost).some(x=>x.id==='shadow-ball'),
- 'Shadow Ball is a taught TM, not an automatic level-up for Gengar');
-ghost.tmMoves=['shadow-ball'];
+ 'Gengar must reach its real FireRed Shadow Ball level');
+ghost.progression.level=70;
 assert.equal(resolveLoadout(ghost).q?.id,'shadow-ball',
- 'After teaching the real TM, Gengar equips its approved Shadow Ball');
+ 'At its natural unlock level, Gengar uses approved Shadow Ball in battle');
+assert.ok(!availableMoves(member('bulbasaur',70)).some(x=>x.id==='protect'),
+ 'TM-only Protect stays locked until explicitly taught');
 const oldPorygon=member('porygon',70);
 oldPorygon.moves=['tackle','quick-attack','swift','hyper-beam'];
 oldPorygon.movePlanSpecies='porygon';
