@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
+import {LEVEL_EVOLUTIONS,createPokemonProgression} from '../src/progression.js';
 const base=path.resolve('_site/arena2d');
 const ver=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8')).modules;
 const file=p=>path.join(base,ver,p);
@@ -43,29 +44,52 @@ for(const id of families){
   const formIndex=species===id?0:def.evoluciones.findIndex(
    e=>e.nombre.toLowerCase()===species)+1;
   assert.ok(formIndex>=0,'New Kanto evolution is defined: '+species);
-  const level=50; // inspect the complete unlocked four-slot tree
+  // Test at real evolution levels, not just Lv50. The previous test
+  // passed at 50 while evolved Pokémon actually had blank battle slots.
+  const previous=formIndex>1?forms[formIndex-1]:id;
+  const rule=LEVEL_EVOLUTIONS[previous]?.find(x=>x.to===species);
+  const level=species===id?50:rule?.level||50;
   const member={id:species,progression:{species,level}};
   const plan=earlyKantoSlotPlan(species);
   assert.equal(plan?.length,4,'ATK/RMB/Q/E plan missing '+species);
   const slots=selectedMoves(member);
   assert.equal(slots.length,4,'Four reserved slots '+species);
   const loadout=resolveLoadout(member);
-  const canUseUlt=!['caterpie','metapod','weedle','kakuna'].includes(species);
-  for(const control of ['lmb','rmb','q',...(canUseUlt?['e']:[])]){
+  const evolved=formIndex>0;
+  const mayUseUlt=evolved||!['caterpie','weedle'].includes(species);
+  const active=evolved?['lmb','rmb','q','e']:['lmb'];
+  for(const control of active){
    assert.ok(loadout[control]?.forma,
-    species+' does not have an attack on '+control+' at test level '+level);
+    species+' has no ${control} attack at REAL evolution Lv'+level);
+   assert.notEqual(loadout[control]?.pendiente,true,
+    species+' must not have an unusable '+control);
   }
-  if(canUseUlt)assert.equal(loadout.e.ulti,true,species+' E must be an ultimate');
-  else assert.equal(loadout.e,undefined,
-   'Pre-final cocoon / larva must NOT use the evolved ultimate');
+  if(evolved){
+   assert.equal(loadout.e.ulti,true,species+' E is a real ultimate');
+   assert.equal(new Set(['lmb','rmb','q','e'].map(k=>loadout[k].nombre)).size,4,
+    species+' needs four DIFFERENT skills after evolution');
+   const stale={...member,moves:['tackle','gust','bite','quick-attack'],
+    movePlanSpecies:previous};
+   assert.deepEqual(selectedMoves(stale),slots,
+    species+' migration must remove pre-evolution moves');
+  }
+  if(!mayUseUlt)assert.equal(loadout.e,undefined,
+   'Larvae must not borrow the evolved ultimate');
   const kit=formIndex>0?def.evoluciones[formIndex-1].kit:def.kit;
   assert.equal(kit.esp.dano,0,species+' should dodge without damage');
   assert.equal(kit.esp.forma,'dash');
  }
 }
+// Native P2 starters must gain their own 4-slot evolution skill sets
+// at their FIRST possible evolution levels, not only late-game levels.
 for(const species of ['ivysaur','venusaur','charmeleon','charizard',
  'wartortle','blastoise','golbat']){
- const level=species==='ivysaur'||species==='charmeleon'||species==='wartortle'?20:42;
+ const from={
+  ivysaur:'bulbasaur',venusaur:'ivysaur',charmeleon:'charmander',
+  charizard:'charmeleon',wartortle:'squirtle',blastoise:'wartortle',
+  golbat:'zubat'
+ }[species];
+ const level=LEVEL_EVOLUTIONS[from]?.find(x=>x.to===species)?.level||42;
  const member={id:species,progression:{species,level}};
  const plan=nativeKantoEvolutionPlan(species);
  assert.equal(plan?.length,4,species+' native evolution has 4 slots');
@@ -94,6 +118,23 @@ for(const stage of [1,2]){
   'Gym leader ace receives full stage level cap');
  assert.ok(party.foes.every(x=>x.loadout?.lmb&&x.loadout?.rmb),
   'Gym Pokémon must attack with ACTUAL Native / Torre 2 effects');
+}
+// Confirm full XP reward triggers Kanto branch evolutions automatically.
+for(const [from,to] of [['gloom','vileplume'],['poliwhirl','poliwrath']]){
+ const evolution=LEVEL_EVOLUTIONS[from].find(rule=>rule.to===to);
+ const campaign=createCampaign('bulbasaur');
+ campaign.stage=8;
+ campaign.team=[{id:from,uid:'evo-'+from,hp:100,
+  moves:['tackle','gust','bite','scratch'],movePlanSpecies:from,
+  progression:createPokemonProgression(from,evolution.level)}];
+ const {awardSharedTeamExperience}=await mod('torre2/campaign-core.js');
+ awardSharedTeamExperience(campaign,0);
+ assert.equal(campaign.team[0].id,to,from+' must evolve in Kanto');
+ assert.deepEqual(campaign.team[0].moves,[],
+  from+' invalidates stale pre-evolution skills');
+ const kit=resolveLoadout(campaign.team[0]);
+ for(const slot of ['lmb','rmb','q','e'])
+  assert.ok(kit[slot]?.forma,to+' evolved battle slot '+slot+' is empty');
 }
 assert.equal(TEST_LIBRARY.filter(x=>x.nombre==='Dragon Pulse').length,1);
 const regionSource=fs.readFileSync(file('torre2/battle-path.js'),'utf8');

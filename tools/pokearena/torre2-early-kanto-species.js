@@ -21,9 +21,9 @@ export const KANTO_ROUTE_SLOTS=Object.freeze({
  pidgeotto:['Tackle','Gust','Quick Attack','Air Cutter'],
  pidgeot:['Tackle','Air Cutter','Wing Attack','Brave Bird'],
  raticate:['Tackle','Bite','Hyper Fang','Super Fang'],
- metapod:['Tackle','String Shot','Bug Bite','Confusion'],
+ metapod:['Tackle','String Shot','Bug Bite','Harden'],
  butterfree:['Tackle','Gust','Confusion','Psybeam'],
- kakuna:['Tackle','Poison Sting','Bug Bite','Fury Attack'],
+ kakuna:['Tackle','Poison Sting','Bug Bite','Harden'],
  beedrill:['Poison Sting','Peck','Fury Attack','Cross Poison'],
  raichu:['Thunder Shock','Quick Attack','Thunderbolt','Thunder'],
  fearow:['Peck','Fury Attack','Wing Attack','Drill Peck'],
@@ -106,10 +106,10 @@ export const EARLY_KANTO_LEARNSETS=Object.freeze({
  rattata:{tackle:1,'quick-attack':7,bite:10,'hyper-fang':13,'super-fang':34},
  raticate:{tackle:1,'quick-attack':7,bite:10,'hyper-fang':13,'super-fang':34},
  caterpie:{tackle:1,'string-shot':1,'bug-bite':9},
- metapod:{tackle:1,'string-shot':1,'bug-bite':9},
+ metapod:{tackle:1,'string-shot':1,'bug-bite':7,harden:7},
  butterfree:{tackle:1,'string-shot':1,'bug-bite':9,gust:10,confusion:10},
  weedle:{tackle:1,'poison-sting':1,'bug-bite':9},
- kakuna:{tackle:1,'poison-sting':1,'bug-bite':9},
+ kakuna:{tackle:1,'poison-sting':1,'bug-bite':7,harden:7},
  beedrill:{tackle:1,'poison-sting':1,'bug-bite':9,peck:10,'fury-attack':16},
  pikachu:{'thunder-shock':1,'quick-attack':10,swift:21,thunderbolt:26},
  raichu:{'thunder-shock':1,'quick-attack':10,swift:21,thunderbolt:26},
@@ -149,8 +149,17 @@ const EVO_TO_BASE=Object.freeze({
  metapod:'caterpie',butterfree:'caterpie',kakuna:'weedle',beedrill:'weedle',
  raichu:'pikachu',fearow:'spearow',nidorina:'nidoran-f',nidoqueen:'nidoran-f',
  nidorino:'nidoran-m',nidoking:'nidoran-m',primeape:'mankey',
- graveler:'geodude',golem:'geodude'
+ graveler:'geodude',golem:'geodude',
+ // The stages actually added for Misty and Lt. Surge.
+ parasect:'paras',clefable:'clefairy',sandslash:'sandshrew',arbok:'ekans',
+ starmie:'staryu',golduck:'psyduck',poliwhirl:'poliwag',
+ poliwrath:'poliwag',gloom:'oddish',vileplume:'oddish',
+ weepinbell:'bellsprout',victreebel:'bellsprout',persian:'meowth',
+ dugtrio:'diglett',electrode:'voltorb',magneton:'magnemite'
 });
+export const isKantoEvolvedForm=species=>Boolean(EVO_TO_BASE[species]);
+// Used only in the campaign and test suite; Arena 2D original evolution
+// behavior and its five native input slots must remain intact.
 export function earlyKantoSlotPlan(species){
  return EARLY_KANTO_SLOTS[species]||EARLY_KANTO_SLOTS[EVO_TO_BASE[species]||species]||null;
 }

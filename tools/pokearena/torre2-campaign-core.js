@@ -207,9 +207,22 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
   if(!progress)continue;
   const growth=awardCampaignExperience(progress,reward,state.stage,{
    tester:member.id==='mewtwo'});
-  const evolved=resolveEvolutionAfterBattle(progress,'victory');
+  // FireRed route families with branching later-generation evolutions:
+  // complete the Kanto lineage during the campaign without stalling on a
+  // choice dialog which this one-click map does not implement.
+  const evolved=resolveEvolutionAfterBattle(progress,'victory',({species,choices})=>{
+   const kanto={gloom:'vileplume',poliwhirl:'poliwrath'};
+   return choices.includes(kanto[species])?kanto[species]:null;
+  });
   const before=member.id;
   member.id=progress.species;
+  if(before!==member.id){
+   // A newly evolved form MUST recalculate LMB/RMB/Q/E from its own kit.
+   // Preserve collected TMs, party position, HP, XP and nickname; only the
+   // stale four-slot selection from the pre-evolution form is invalidated.
+   member.moves=[];
+   delete member.movePlanSpecies;
+  }
   gains.push({index,uid:member.uid,id:member.id,before,reward:growth.experienceGained,
    fromLevel:growth.fromLevel,toLevel:growth.toLevel,
    levelsGained:growth.levelsGained,tester:!!growth.tester,kind});

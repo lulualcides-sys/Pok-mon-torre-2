@@ -4,7 +4,7 @@
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
-import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan} from './early-kanto-species.js';
+import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -134,6 +134,14 @@ export function availableMoves(member){
  if(member.id==='mewtwo')return TEST_LIBRARY;
  const {def}=buscar(member.id);
  const names=new Set([...collect(def).map(x=>norm(x.nombre)),...(member.tmMoves||[]).map(norm)]);
+ // A Pokémon that has JUST EVOLVED receives its own four real attacks.
+ // They can already exist in its new evolution kit even if a lower-level
+ // move filter was written for the PREVIOUS form. Include the 4 real names
+ // explicitly, not made-up moves or effects from other Pokémon.
+ if(isKantoEvolvedForm(member.id)){
+  for(const name of earlyKantoSlotPlan(member.id)||[])
+   names.add(canonicalMoveKey(name));
+ }
  if(['cubone','marowak'].includes(member.id)){names.add('bonemerang');names.add('bone-club')}
  if(['meowth','persian'].includes(member.id))names.add('pay-day');
  if(['porygon'].includes(member.id))names.add('tri-attack');
@@ -181,9 +189,19 @@ export function availableMoves(member){
  const evoLocked=new Set(Object.values(activeKit||{})
   .filter(move=>move?.torre2UnlockEvolution)
   .map(move=>canonicalMoveKey(move.nombre)));
- return moves.filter(m=>!evoLocked.has(canonicalMoveKey(m.nombre))&&
-   (tms.has(canonicalMoveKey(m.nombre))||
-    (early[m.id]!==undefined&&level>=early[m.id])));
+ const evolved=isKantoEvolvedForm(member.id);
+ const evolutionSkills=new Set(
+  evolved?(earlyKantoSlotPlan(member.id)||[]).map(canonicalMoveKey):[]);
+ return moves.filter(m=>{
+  const key=canonicalMoveKey(m.nombre);
+  // Allow skills of the ACTUAL evolved form immediately after evolution,
+  // even at Lv 7 (Metapod), 10 (Butterfree), 18 (Pidgeotto) etc.
+  // Other moves remain level-gated, and previous forms cannot borrow the
+  // abilities of an evolution they have not reached.
+  if(evoLocked.has(key))return false;
+  return tms.has(key)||evolutionSkills.has(key)||
+   (early[m.id]!==undefined&&level>=early[m.id]);
+ });
 }
 // New Kanto species keep the exact Arena 2D four attack slots even when
 // an ability is still locked. ESP is the original fifth control and NEVER
