@@ -19,5 +19,15 @@ export const FINALE_13_MOVES=Object.freeze([
  Object.freeze({id:nombre.toLowerCase().replaceAll(' ','-'),nombre,
  forma:'torre2_finale_'+nombre.toLowerCase().replaceAll(' ',''),
  tipo,dano,alcance,coste,cd,anim,lanzar:.15,poder,precisao,pp:10,categoria,
- approved:false,description:'Kanto finishing pass: true physics, hand-pixelled frames; visual review required.'})));
+ approved:['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch'].includes(nombre.toLowerCase().replaceAll(' ','-')),
+ description:'Kanto finishing pass: original pixel frames, real hit checks and status'})));
 export const FINALE_13_NAMES=Object.freeze(FINALE_13_MOVES.map(m=>m.nombre));
+
+/* Custom Poison Punch (NOT a canonical FireRed move): player-requested
+ * purple recolor of the approved physical-punch silhouette and timing. */
+export const POISON_PUNCH_MOVES=Object.freeze([Object.freeze({
+ id:'poison-punch',nombre:'Poison Punch',forma:'torre2_finale_poisonpunch',
+ tipo:'POISON',dano:15,alcance:72,coste:23,cd:5.7,anim:'Punch',
+ lanzar:.15,poder:75,precisao:100,pp:15,categoria:'PHYSICAL',
+ approved:false,description:'Purple variant of the user-approved contact punch; 30% poison on true hit, pending visual review'
+})]);

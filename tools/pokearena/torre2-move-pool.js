@@ -4,7 +4,7 @@
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
-import {FINALE_13_MOVES} from './torre2-finale13-catalog.js';
+import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
@@ -33,6 +33,7 @@ export const SIGNATURE_MOVES=Object.freeze([
  ...BATCH24_MOVES,
  ...SURGE3_MOVES,
  ...FINALE_13_MOVES,
+ ...POISON_PUNCH_MOVES,
  {id:'bonemerang',approved:true,nombre:'Bonemerang',forma:'torre2_bonemerang',tipo:'GROUND',dano:10.5,alcance:245,coste:24,cd:5.7,anim:'Shoot',lanzar:.16,description:'Bone boomerang / two synchronized hits'},
  {id:'bone-club',approved:true,nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
  {id:'tri-attack',approved:true,nombre:'Tri Attack',forma:'torre2_triattack',tipo:'NORMAL',dano:13,alcance:240,coste:30,cd:6.2,anim:'Charge',lanzar:.2,description:'Fire / ice / electric three-point projectile'},
@@ -192,6 +193,9 @@ export function availableMoves(member){
   'sleep-powder':['butterfree','oddish','gloom','vileplume','bellsprout','weepinbell','victreebel','paras','parasect','tangela'],
   'surf':['squirtle','wartortle','blastoise','lapras','vaporeon','gyarados','staryu','starmie','golduck','slowbro','dragonite','poliwrath','seel','dewgong'],
   'ice-punch':['hitmonchan','jynx','electabuzz','magmar','alakazam','mew'],
+  // Poison Punch: custom purple punch, not an official FRLG TM.
+  'poison-punch':['grimer','muk','koffing','weezing','ekans','arbok',
+   'nidorino','nidoking','nidorina','nidoqueen','beedrill','mew'],
   'thunder-punch':['hitmonchan','electabuzz','magmar','alakazam','mew'],
   'fire-punch':['hitmonchan','magmar','electabuzz','alakazam','mew'],
   'cross-chop':['machop','machoke','machamp','mankey','primeape'],

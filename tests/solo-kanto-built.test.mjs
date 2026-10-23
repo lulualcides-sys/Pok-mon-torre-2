@@ -437,10 +437,9 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
 const expectedFinale13=['psychic','sleep-powder','protect','surf',
- 'ice-punch','thunder-punch','fire-punch','cross-chop','aerial-ace',
- 'flame-wheel','light-screen','rain-dance','sand-attack'];
+ 'flame-wheel','light-screen','rain-dance','sand-attack','poison-punch'];
 assert.deepEqual([...pendingIds].sort(),expectedFinale13.sort(),
- 'Only the new 13 Kanto moves belong in NEW; Sonic Boom stays approved');
+ 'Only nine new or revised attacks remain in NEW; five punches/cuts are approved');
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])

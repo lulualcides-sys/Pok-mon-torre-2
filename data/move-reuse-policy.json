@@ -1083,8 +1083,8 @@
       }
     },
     "ice-punch": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1114,11 +1114,12 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026: usuário do Pokémon Torre 2 aprovou Ice Punch com \"salva\", junto dos cinco golpes Fire Punch, Cross Chop, Aerial Ace, Ice Punch e Thunder Punch; preservar a animação como está."
     },
     "thunder-punch": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1148,11 +1149,12 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026: usuário do Pokémon Torre 2 aprovou Thunder Punch com \"salva\", junto dos cinco golpes Fire Punch, Cross Chop, Aerial Ace, Ice Punch e Thunder Punch; preservar a animação como está."
     },
     "fire-punch": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1182,11 +1184,12 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026: usuário do Pokémon Torre 2 aprovou Fire Punch com \"salva\", junto dos cinco golpes Fire Punch, Cross Chop, Aerial Ace, Ice Punch e Thunder Punch; preservar a animação como está."
     },
     "cross-chop": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1216,11 +1219,12 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026: usuário do Pokémon Torre 2 aprovou Cross Chop com \"salva\", junto dos cinco golpes Fire Punch, Cross Chop, Aerial Ace, Ice Punch e Thunder Punch; preservar a animação como está."
     },
     "aerial-ace": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1250,7 +1254,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026: usuário do Pokémon Torre 2 aprovou Aerial Ace com \"salva\", junto dos cinco golpes Fire Punch, Cross Chop, Aerial Ace, Ice Punch e Thunder Punch; preservar a animação como está."
     },
     "flame-wheel": {
       "review": "ready-for-visual-review",
@@ -1377,6 +1382,40 @@
           "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
           "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
           "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "poison-punch": {
+      "review": "ready-for-visual-review",
+      "visualScope": "23/10/2026, new custom Poison Punch, purple recolor of the user-approved melee punch; visual approval pending. Never modify accepted punch VFX.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Reuses the approved physical contact/retreat and overlap hitbox logic from contactDash, tinting purple only this new Poison Punch on physical hit.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "Reuses native P2 raster pixel impact through p2EmeraldImpact for a purple-tinted poison fist without changing any approved hand silhouette.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "Uses the installed MIT Emerald-derived fragment trajectories on exactly the physical hit tick, violet only for the new Poison Punch.",
           "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
         },
         "Z": {

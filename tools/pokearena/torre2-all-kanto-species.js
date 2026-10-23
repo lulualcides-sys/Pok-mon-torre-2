@@ -31,7 +31,7 @@ const choices={
  GROUND:['Mud-Slap','Dig','Earth Power','Earthquake'],
  PSYCHIC:['Confusion','Psybeam','Psychic'],
  GHOST:['Lick','Shadow Ball','Night Shade'],
- POISON:['Poison Sting','Acid','Sludge Bomb'],
+ POISON:['Poison Sting','Acid','Poison Punch','Sludge Bomb'],
  FIGHTING:['Low Kick','Karate Chop','Double Kick','Cross Chop','Close Combat'],
  FLYING:['Gust','Peck','Wing Attack','Aerial Ace','Air Cutter'],
  BUG:['Bug Bite','Fury Cutter','X-Scissor'],

@@ -21,3 +21,12 @@ sem copiar código/sprites não licenciados. Ver registros no move-reuse-policy.
 
 Preservar os golpes originais e os aprovados, sem placeholders. Aprová-los
 somente após inspeção visual real nas batalhas.
+
+## Atualização visual e aprovação (23/10/2026)
+- Cinco golpes salvos com aprovação explícita: Fire Punch, Cross Chop, Aerial Ace, Ice Punch e Thunder Punch. Não redesenhar.
+- Poison Punch: golpe personalizado (não oficial de FireRed), mesmo punho e contato aprovado, apenas roxo e veneno no impacto, aguardando aprovação visual.
+- Flame Wheel: refeito conforme a descrição original FireRed: Pokémon se envolve em chamas e avança fisicamente. Fonte: https://bulbapedia.bulbagarden.net/wiki/Flame_Wheel_(move) e https://pokemondb.net/move/flame-wheel.
+- Protect: escudo de pixels facetados. Light Screen: ampla parede de proteção psíquica refratada.
+- Psychic: impacto psíquico grande, duplo anel de runas e estilhaços.
+- Rain Dance: camada fixada na câmera cobre toda arena proporcionalmente, inclusive fullscreen.
+- São nove golpes ainda visíveis em NEW, preservando os cinco aprovados.

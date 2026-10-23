@@ -14,7 +14,7 @@ test('Project standard: exactly 4 verified sources',()=>{
  assert.deepEqual(SOURCES,['T2','P2','Z','E']);
  assert.equal(signatureEntries(pool).length,data.baselineMoveIds.length+Object.keys(data.newMoves).length,
   'Catalog count: 37 historic + 23 first batch + 3 Surge + 13 Kanto finale moves');
- assert.equal(Object.keys(data.newMoves).length,39);
+ assert.equal(Object.keys(data.newMoves).length,40);
  assert.ok(!signatureEntries(pool).some(m=>m.id==='dragon-pulse'),
   'Dragon Pulse must remain only in the native Poké Arena 2D library');
  assert.deepEqual(validateReusePolicy(pool,data),[]);

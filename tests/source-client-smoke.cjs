@@ -1279,7 +1279,8 @@ const server=http.createServer(async(req,res)=>{
    if(pendingRows.some(x=>/Sonic Boom|Thunder Wave|Screech/.test(x)))
     throw Error('Approved Surge skill leaked into NEW');
    for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',
-    'Metal Claw','Bind','Double Kick','Fury Attack'])
+    'Metal Claw','Bind','Double Kick','Fury Attack','Fire Punch','Ice Punch',
+    'Thunder Punch','Cross Chop','Aerial Ace'])
     if(pendingRows.some(x=>x.includes(name)))
      throw Error('Approved move leaked into empty NEW: '+name);
    // Equipped moves above the library are always visible; only inspect the
