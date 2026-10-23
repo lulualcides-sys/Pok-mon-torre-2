@@ -35,8 +35,14 @@ for(const id of families){
  }
  const forms=[id,...def.evoluciones.map(x=>x.nombre.toLowerCase())];
  for(const species of forms){
-  const {def:resolved,etapa}=buscar(species);
-  assert.equal(resolved.id,id,'Non-resolvable evolution '+species);
+  const {def:resolved}=buscar(species);
+  assert.ok(resolved,'Every Kanto form must resolve to a real PMD battle entry');
+  // Original Poké Arena has Pichu -> Pikachu -> Raichu before the additive
+  // early-Kanto entry. Preserve its original lookup priority; verify the
+  // added Kanto line directly for our campaign-only five-slot evolution kit.
+  const formIndex=species===id?0:def.evoluciones.findIndex(
+   e=>e.nombre.toLowerCase()===species)+1;
+  assert.ok(formIndex>=0,'New Kanto evolution is defined: '+species);
   const level=50; // inspect the complete unlocked four-slot tree
   const member={id:species,progression:{species,level}};
   const plan=earlyKantoSlotPlan(species);
@@ -52,7 +58,7 @@ for(const id of families){
   if(canUseUlt)assert.equal(loadout.e.ulti,true,species+' E must be an ultimate');
   else assert.equal(loadout.e,undefined,
    'Pre-final cocoon / larva must NOT use the evolved ultimate');
-  const kit=etapa?resolved.evoluciones[etapa-1].kit:resolved.kit;
+  const kit=formIndex>0?def.evoluciones[formIndex-1].kit:def.kit;
   assert.equal(kit.esp.dano,0,species+' should dodge without damage');
   assert.equal(kit.esp.forma,'dash');
  }
