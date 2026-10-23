@@ -232,6 +232,12 @@ export function availableMoves(member){
   // evolution-only lock. Explicitly unlock these three NEW status moves on
   // their own species/level, without lifting locks on any approved attacks.
   if(specialSurgeUnlocks.has(key))return true;
+  // Only these 13 new Kanto moves bypass the historical early-Kanto
+  // learnset filter when explicitly assigned to their real species above.
+  // All PRE-EXISTING moves retain their original evolution/level locks.
+  if(kantoFinish[key]?.includes(member.id)||key==='protect'&&
+     ROSTER.some(p=>p.id===member.id||p.evoluciones?.some(e=>e.nombre.toLowerCase()===member.id)))
+   return true;
   // Allow skills of the ACTUAL evolved form immediately after evolution,
   // even at Lv 7 (Metapod), 10 (Butterfree), 18 (Pidgeotto) etc.
   // Other moves remain level-gated, and previous forms cannot borrow the
