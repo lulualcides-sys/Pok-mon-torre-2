@@ -46,7 +46,7 @@ test('three true FRLG attacks: 2 statuses and one exactly fixed HP hit',()=>{
  assert.deepEqual(SURGE3_MOVES.map(h=>h.id),['thunder-wave','sonic-boom','screech']);
  assert.deepEqual(SURGE3_MOVES.map(h=>h.precisao),[100,90,85]);
  assert.deepEqual(SURGE3_MOVES.map(h=>h.pp),[20,20,40]);
- assert.ok(SURGE3_MOVES.every(h=>h.approved===false&&h.frames===12));
+ assert.ok(SURGE3_MOVES.every(h=>h.approved===true&&h.frames===12));
  assert.equal(SURGE3_MOVES.filter(h=>h.dano===0).length,2);
  assert.equal(SURGE3_MOVES.find(h=>h.id==='sonic-boom').fixedDamage,20);
  assert.equal(new Set([...BATCH24_MOVES,...SURGE3_MOVES].map(m=>m.id)).size,26);
