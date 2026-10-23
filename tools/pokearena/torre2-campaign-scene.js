@@ -469,6 +469,10 @@ create(){
   // Campaign-only level HUD, using the real saved levels and leader cap.
   // The original Arena 2D sprites, attacks and other modes remain untouched.
   const game=this.game;let frames=0;
+  // The previous fight may return to the hub before 60 frames have passed.
+  // Never let its stale installer grab the NEXT match (including training).
+  if(game.__torre2BattleAttach)
+   game.events.off('step',game.__torre2BattleAttach);
   const attach=()=>{
    const battle=game.scene.getScene('combate');
    if(battle.scene.isActive()&&battle.luchadores?.length===2&&
@@ -488,10 +492,12 @@ create(){
     // Phaser restarts the SAME battle scene to send out the next Pokémon.
     // Keep this ONE listener while battling so every replacement gets a HUD.
    }
-   if(game.scene.isActive('campanha')&&frames>60)
+   if((game.scene.isActive('campanha')&&frames>60)||++frames>18000){
     game.events.off('step',attach);
-   if(++frames>18000)game.events.off('step',attach);
+    if(game.__torre2BattleAttach===attach)game.__torre2BattleAttach=null;
+   }
   };
+  game.__torre2BattleAttach=attach;
   game.events.on('step',attach);
   this.scene.start('combate',match);
  }
