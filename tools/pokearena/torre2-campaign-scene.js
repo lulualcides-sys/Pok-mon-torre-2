@@ -25,6 +25,7 @@ import {spriteIdForTrainer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec,renderUnifiedCampaignMap} from './campaign-map-unified.js';
+import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -60,6 +61,7 @@ class Campanha extends Phaser.Scene{
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
   const world=getCampaignMapSpec(stage,0).id;
+  const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
   if(stage===0&&HAS_CUSTOM_BROCK){
    // Combat can leave a stale WebGL texture binding for this 1200x675
    // custom world. Re-upload it on victory/defeat return, not on each frame.
@@ -89,12 +91,19 @@ class Campanha extends Phaser.Scene{
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
   const needed=new Set(['red_normal',spriteIdForTrainer(boss),
+   spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
+   spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
-  const desired='frlg-location-'+world;
+  const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld]);
+  if(AVAILABLE_FRLG.includes(pathWorld)){
+   const key='frlg-location-'+pathWorld;
+   if(!this.textures.exists(key))
+    this.load.image(key,AVAILABLE_FRLG_FILES[pathWorld]||'assets/ui/frlg/'+pathWorld+'.webp');
+  }
   for(const key of this.textures.getTextureKeys()){
-   if(key.startsWith('frlg-location-')&&key!==desired)
+   if(key.startsWith('frlg-location-')&&!desired.has(key))
     this.textures.remove(key);
    if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))
     this.textures.remove(key);
@@ -350,6 +359,60 @@ class Campanha extends Phaser.Scene{
   }
  }
  renderCampaign(state){
+  // The image-approved UI is a sequential battle road, not an overworld.
+  // Keep all trainer/leader counters and the existing localStorage save IDs.
+  // Retain older scene helpers below for PC, Center, Mart and summary only.
+  this.children.removeAll(true);
+  this.__torre2PathData={buscar};
+  const movePage=delta=>{
+   const current=this.__torre2BattlePath?.offset||0;
+   this.__torre2PathPage=Math.max(0,current+delta*13);
+   this.renderCampaign(state);
+  };
+  const details=()=>{
+   const foe=currentOpponent(state);
+   if(!foe)return this.gymScreen(state);
+   if(foe.leader)return this.gymScreen(state);
+   this.__torre2PathDetails(text,this,foe);
+  };
+  const path=renderBattlePath(this,state,{
+   battle:()=>this.enterBattle(state),
+   gym:()=>this.gymScreen(state),
+   capture:()=>this.grassScreen(state),
+   pokemon:i=>state.team[i]&&this.showSummary(state,i),
+   bag:()=>this.bagScreen(state),center:()=>this.centerScreen(state),
+   mart:()=>this.martScreen(state),
+   menu:()=>this.scene.start('titulo',{menu:'principal'}),
+   page:movePage,details,
+   locked:()=>this.__torre2PathDetails(text,this,null)
+  });
+  // Expose stable index for smoke tests and safe scene re-entry; no overworld
+  // map, invisible trainer zones or city navigation are created.
+  this.__torre2PathPage=path.offset;
+  return path;
+ }
+ __torre2PathDetails(draw,scene,foe){
+  if(this.__torre2PathNotice?.active)this.__torre2PathNotice.destroy();
+  const g=this.add.graphics().setDepth(190);
+  g.fillStyle(0x071625,.95);g.fillRoundedRect(111,141,420,81,7);
+  g.lineStyle(2,0xf3ce74);g.strokeRoundedRect(111,141,420,81,7);
+  draw(this,320,162,foe?.name||'DESAFIO BLOQUEADO',{
+   fontSize:'18px',fontStyle:'bold',color:'#ffe9a7'
+  }).setOrigin(.5).setDepth(191);
+  draw(this,320,186,foe?
+   'NV.'+foe.level+' · '+foe.id.toUpperCase()+' · CLIQUE NO NÓ DOURADO PARA LUTAR':
+   'VENÇA OS DESAFIOS ANTERIORES PARA AVANÇAR',{
+    fontSize:'11px',color:'#bce9ee'
+   }).setOrigin(.5).setDepth(191);
+  const zone=this.add.zone(320,181,420,84).setDepth(192)
+   .setInteractive({useHandCursor:true}).on('pointerdown',()=>{
+    g.destroy();zone.destroy();for(const o of extra)o.destroy();
+   });
+  const extra=this.children.list.filter(o=>o.depth===191).slice(-2);
+  this.__torre2PathNotice=g;
+  this.time.delayedCall(3000,()=>{g.active&&g.destroy();zone.active&&zone.destroy();extra.forEach(o=>o.active&&o.destroy())});
+ }
+ renderCampaignLegacy(state){
   this.backdrop();
   const finished=state.champion||!STAGES[state.stage];
   const limit=finished?0:TRAINERS_PER_GYM(state.stage);
