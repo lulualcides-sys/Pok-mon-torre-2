@@ -19,12 +19,12 @@ import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './part
 import {drawTrainer,drawShopItem} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
-import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES,HAS_CUSTOM_BROCK} from './frlg-available.js';
+import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
-import {getCampaignMapSpec,renderUnifiedCampaignMap} from './campaign-map-unified.js';
+import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
@@ -62,22 +62,6 @@ class Campanha extends Phaser.Scene{
   const stage=state?.stage??0;
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
-  if(stage===0&&HAS_CUSTOM_BROCK){
-   // Combat can leave a stale WebGL texture binding for this 1200x675
-   // custom world. Re-upload it on victory/defeat return, not on each frame.
-   // Only this map is affected; do not disturb native PMD/move textures.
-   const key='torre2-brock-custom';
-   if(this.result?.finished&&this.textures.exists(key)){
-    this.textures.remove(key);
-    this.__torre2MapGpuRefreshed=true;
-   }
-   if(!this.textures.exists(key))
-    this.load.image(key,'assets/ui/torre2-brock-custom.webp');
-   // The problematic second forest TileSprite has been removed. Do not
-   // upload its extra 1200x675 copy on Android.
-   if(this.textures.exists('torre2-brock-forest'))
-    this.textures.remove('torre2-brock-forest');
-  }
   if(AVAILABLE_FRLG.includes(world)){
    const key='frlg-location-'+world;
    if(!this.textures.exists(key))
@@ -128,43 +112,11 @@ class Campanha extends Phaser.Scene{
    if(!this.textures.exists(key))this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
   }
  }
- create(){
-  // Preserve the original 640x360 Phaser world. The user's landscape phone
-  // expands ONLY the visible WebGL canvas through build-preview's CSS.
-  // Changing scale.resize() here breaks all 13 trainer hit areas and panels.
-  this.registry.set('torre2-wide-map',false);
+create(){
+  // Restore the native Poké Arena 2D camera/viewport; no injected map zoom.
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
-  const viewPreference=this.registry.get('torre2-panel-collapsed');
-  // After an arena fight, Android must return to the same large, readable
-  // FireRed overworld, not a compressed 372-pixel map with a big right bar.
-  // The sidebar remains accessible at any time through the blue arrow.
-  const wideHandset=window.innerWidth>window.innerHeight&&
-   window.innerWidth/Math.max(1,window.innerHeight)>=1.85&&
-   (navigator.maxTouchPoints>0||('ontouchstart' in window));
-  this.__campaignPanelCollapsed=this.result&&wideHandset?true:
-   typeof viewPreference==='boolean'?viewPreference:wideHandset;
-  this.add.rectangle(ANCHO/2,ALTO/2,ANCHO,ALTO,0x090d1c);
-  header(this);
-  this.add.text(52,14,'POKÉMON TORRE 2 / KANTO',{...titleStyle,
-   fontSize:'17px',stroke:'#020b1b',strokeThickness:4});
-  this.button(345,24,84,29,'MAPA',()=>{
-   const state=readCampaign();if(state)this.mapScreen(state);
-  },false,12);
-  // Fullscreen must be requested on pointerup on Android Chrome.
-  // The right sidebar already contains Centro, so its duplicate top button
-  // is replaced by this new control without shrinking the battle UI.
-  const fullButton=this.button(447,24,100,29,'TELA CHEIA',()=>{},false,9);
-  fullButton.setData('torre2-fullscreen',true);
-  fullButton.on('pointerup',()=>{
-   // The canvas is already edge-to-edge in landscape. This button only
-   // hides browser chrome; never resize or restart the Phaser simulation.
-   if(this.scale.isFullscreen)this.scale.stopFullscreen();
-   else this.scale.startFullscreen({navigationUI:'hide'});
-  });
-  this.button(537,24,76,29,'MENU',()=>
-   this.scene.start('titulo',{menu:'principal'}));
   let state=readCampaign();
   if(this.result&&state){
    // Return to the same gym map. Stage changes only after the leader.
@@ -310,54 +262,6 @@ class Campanha extends Phaser.Scene{
   const line=this.add.rectangle(x+2,y+2,4,h-4,accent,.9).setOrigin(0,0);
   return bg;
  }
- // In-place UI switch: no reloading the Phaser scene, no lost map
- // checkpoint, and no extra WebGL textures on low-memory Android phones.
- setCampaignPanelCollapsed(collapsed){
-  const hidden=!!collapsed;
-  this.__campaignPanelCollapsed=hidden;
-  this.registry.set('torre2-panel-collapsed',hidden);
-  // Scale the map into the freed sidebar width while keeping character
-  // sprites/text at pixel-perfect sizes, with interactive hit areas relocated.
-  for(const item of this.__campaignMapObjects||[]){
-   const {obj,x,y,sx,sy}=item;
-   if(!obj.active)continue;
-   const chrome=obj.getData?.('torre2-map-chrome')===true;
-   obj.setVisible(!hidden||!chrome);
-   if(!hidden){
-    obj.setPosition(x,y);obj.setScale(sx,sy);
-   }else{
-    // Fit the entire FireRed artwork into the available screen, including
-    // height. Old layout expanded only WIDTH, leaving the map short and
-    // distorted with large unusable bands on mobile.
-    // Uniform zoom preserves the source map tiles and trainer proportions.
-    const z=Math.min(606/372,256/211),zx=z,zy=z;
-    const tx=14+(606-372*z)/2-20*z,ty=56-85*z;
-    const nativeSprite=obj.type==='Text'||(obj.type==='Image'&&
-      (String(obj.texture?.key||'').startsWith('frlg-npc-')||
-       String(obj.texture?.key||'').startsWith('torre2-portrait-')));
-    obj.setPosition(tx+zx*x,ty+zy*y);
-    obj.setScale(sx*(nativeSprite?1:zx),sy*(nativeSprite?1:zy));
-   }
-  }
-  for(const obj of this.__campaignSidebarObjects||[]){
-   if(!obj.active)continue;
-   obj.setVisible(!hidden);
-   if(obj.input)obj.input.enabled=!hidden;
-  }
-  for(const obj of this.__campaignDockObjects||[]){
-   if(!obj.active)continue;
-   obj.setVisible(hidden);
-   if(obj.input)obj.input.enabled=hidden;
-  }
-  if(this.__campaignArrowLabel?.active)
-   this.__campaignArrowLabel.setText(hidden?'▲':'▼');
-  if(this.__campaignWideLabel?.active)
-   this.__campaignWideLabel.setVisible(hidden);
-  if(this.__campaignArrowBg?.active){
-   this.__campaignArrowBg.clear();
-   buttonFrame(this.__campaignArrowBg,586,56,41,27,'blue');
-  }
- }
  renderCampaign(state){
   // The image-approved UI is a sequential battle road, not an overworld.
   // Keep all trainer/leader counters and the existing localStorage save IDs.
@@ -415,169 +319,6 @@ class Campanha extends Phaser.Scene{
   const extra=this.children.list.filter(o=>o.depth===191).slice(-2);
   this.__torre2PathNotice=g;
   this.time.delayedCall(3000,()=>{g.active&&g.destroy();zone.active&&zone.destroy();extra.forEach(o=>o.active&&o.destroy())});
- }
- renderCampaignLegacy(state){
-  this.backdrop();
-  const finished=state.champion||!STAGES[state.stage];
-  const limit=finished?0:TRAINERS_PER_GYM(state.stage);
-  const message=notice=>{
-   if(this.__routeNotice?.active)this.__routeNotice.destroy();
-   this.__routeNotice=text(this,207,291,notice,{
-    fontSize:'9px',color:'#ffe8ad',fontStyle:'bold',
-    stroke:'#071827',strokeThickness:3}).setOrigin(.5).setDepth(48);
-   this.time.delayedCall(1550,()=>{
-    if(this.__routeNotice?.active)this.__routeNotice.destroy();
-   });
-  };
-  // These objects alone expand when the panel is hidden. The sprites
-  // and trainer hitzones all remain native Phaser objects with their
-  // original index and callback. No scene restart is involved.
-  const mapStart=this.children.list.length;
-  this.__campaignMap=renderUnifiedCampaignMap(this,state,{
-   limit,
-   onTrainer:index=>{
-    if(!finished&&index===state.trainer)this.enterBattle(state);
-   },
-   onGym:()=>this.gymScreen(state),
-   onCenter:()=>this.centerScreen(state),
-   onMart:()=>this.martScreen(state),
-   onGrass:()=>this.grassScreen(state),
-   onLocked:message
-  });
-  this.__campaignMapObjects=this.children.list.slice(mapStart).map(obj=>({
-   obj,x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY
-  }));
-  this.__campaignWideLabel=text(this,327,61,
-    this.__campaignMap.spec.short+' · '+Math.min(state.trainer,limit)+'/'+limit,{
-    fontSize:'9px',fontStyle:'bold',color:'#fff2c5',
-    stroke:'#0a273a',strokeThickness:3
-   }).setOrigin(.5).setDepth(67).setVisible(false);
-  const sideStart=this.children.list.length;
-  richTeam(this);
-  text(this,443,67,'SUA EQUIPE',{fontSize:'15px',fontStyle:'bold',
-   color:'#fff8e0',stroke:'#682f32',strokeThickness:2}).setDepth(5);
-  text(this,416,102,'INSÍGNIAS '+Math.min(8,state.badges.length)+'/8',{
-   fontSize:'10px',fontStyle:'bold',color:'#ffe1a1'}).setDepth(5);
-  text(this,621,102,'$ '+(state.money||0),{
-   fontSize:'11px',fontStyle:'bold',color:'#ffda74'}).setOrigin(1,0).setDepth(5);
-  const menu=[
-   ['BOLSA',()=>this.bagScreen(state)],
-   ['POKÉMON',()=>state.team.length&&this.showSummary(state,state.active)],
-   ['CENTRO',()=>this.centerScreen(state)],
-   ['LOJA',()=>this.martScreen(state)],
-   ['GINÁSIO',()=>this.gymScreen(state)],
-   ['CAPTURA',()=>this.grassScreen(state)]
-  ];
-  menu.forEach(([label,action],i)=>{
-   this.button(466+(i%2)*110,137+Math.floor(i/2)*27,
-    102,24,label,action,false,9);
-  });
-  text(this,416,210,'POKÉMON · TOQUE PARA VER GOLPES',{
-   fontSize:'8px',color:'#bde7ec'}).setDepth(6);
-  const mini=this.add.graphics().setDepth(3);
-  for(let i=0;i<6;i++){
-   const x=416+(i%2)*107,y=222+Math.floor(i/2)*25;
-   const member=state.team[i],selected=i===state.active;
-   mini.fillStyle(member?(selected?0x37585b:0x15394d):0x10283b,1);
-   mini.fillRect(x,y,100,23);
-   mini.lineStyle(1,selected?0xffd77c:member?0x7dc0a4:0x3a6279);
-   mini.strokeRect(x,y,100,23);
-   if(!member)continue;
-   this.drawPortrait(member,x+13,y+11,22,5);
-   const name=member.id.toUpperCase().slice(0,11);
-   text(this,x+27,y+2,name,{
-    fontSize:name.length>9?'7px':'9px',
-    color:selected?'#ffe5a9':'#f7fbff',fontStyle:'bold'}).setDepth(6);
-   text(this,x+27,y+13,'NV.'+(member.progression?.level??'—')+
-    ' · HP '+Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)))+'%',{
-    fontSize:'7px',color:'#baf8d0'}).setDepth(6);
-   const hp=Math.max(0,Math.min(100,Number(member.hp??100)||0));
-   mini.fillStyle(0x192e44);
-   mini.fillRect(x+79,y+18,18,3);
-   mini.fillStyle(hp>50?0x70e8a0:hp>20?0xf1d067:0xe7776c);
-   mini.fillRect(x+79,y+18,18*hp/100,3);
-   this.add.zone(x+50,y+11,100,23).setDepth(10)
-    .setInteractive({useHandCursor:true})
-    .on('pointerdown',()=>this.showSummary(state,i));
-  }
-  this.__campaignSidebarObjects=this.children.list.slice(sideStart);
-  this.__campaignSidebarBaseline=this.__campaignSidebarObjects.map(obj=>({
-   obj,x:obj.x,y:obj.y
-  }));
-  // Bottom-center battle/capture button remains accessible with either UI
-  // state. Placed in the map footer instead of the bulky right-side card.
-  const cta=state.pendingCapture?'CAPTURAR POKÉMON ▶':
-   finished?'★ CAMPEÃO DE KANTO':
-   state.trainer>=limit?'▶ ENFRENTAR O LÍDER':'▶ TREINADOR '+(state.trainer+1);
-  // Battle CTA occupies its own centered footer slot, clear of the team
-  // dock and map artwork even when the sidebar is collapsed.
-  this.battleButton(320,335,248,28,cta,()=>{
-   if(state.pendingCapture)return this.captureScreen(state);
-   if(finished)return;
-   if(state.trainer>=limit)this.gymScreen(state);
-   else this.enterBattle(state);
-  },!finished||!!state.pendingCapture).setData('torre2-central-cta',true);
-  // Compact FireRed-style team tray, lowered twelve pixels so it sits
-  // flush with the map footer and never touches the battle action below it.
-  // Keep every portrait and click area inside its own 98x27 pixel slot.
-  const dockStart=this.children.list.length;
-  const dockBg=this.add.graphics().setDepth(51);
-  dockBg.fillStyle(0x020c1b,.90);dockBg.fillRect(12,282,616,36);
-  dockBg.fillStyle(0x0a2a3d,.98);dockBg.fillRect(14,284,612,31);
-  dockBg.lineStyle(1,0xd8c085);dockBg.strokeRect(13.5,283.5,613,32);
-  dockBg.fillStyle(0x6ddbf1,.75);dockBg.fillRect(17,284,606,2);
-  for(let i=0;i<6;i++){
-   const member=state.team[i],x=25+i*100,y=287;
-   const selected=!!member&&i===state.active;
-   dockBg.fillStyle(selected?0x335d54:member?0x153b4a:0x0c2837);
-   dockBg.fillRect(x,y,97,26);
-   dockBg.lineStyle(1,selected?0xffd574:member?0x66aec1:0x365768);
-   dockBg.strokeRect(x+.5,y+.5,96,25);
-   if(selected){
-    dockBg.fillStyle(0xffd574);dockBg.fillRect(x+2,y+2,2,22);
-   }
-   if(!member)continue;
-   this.drawPortrait(member,x+14,y+13,22,54);
-   const name=member.id.toUpperCase().slice(0,10);
-   text(this,x+27,y+3,name,{
-    fontSize:name.length>8?'7px':'8px',
-    color:selected?'#ffe8af':'#f1fbf6',fontStyle:'bold'
-   }).setDepth(55);
-   const hpValue=Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)));
-   text(this,x+27,y+13,'NV.'+(member.progression?.level??'?')+
-    (hpValue<=0?' · K.O.':' · '+hpValue+'%'),{
-    fontSize:'7px',color:'#bdebdc'}).setDepth(55);
-   const hp=Math.max(0,Math.min(100,Number(member.hp??100)||0));
-   dockBg.fillStyle(0x071724);dockBg.fillRect(x+29,y+23,63,2);
-   dockBg.fillStyle(hp>50?0x62e6a8:hp>20?0xf2c859:0xee6b70);
-   dockBg.fillRect(x+29,y+23,63*hp/100,2);
-   this.add.zone(x+48,y+13,97,27).setDepth(58)
-    .setInteractive({useHandCursor:true})
-    .on('pointerdown',()=>this.showSummary(state,i));
-  }
-  this.__campaignDockObjects=this.children.list.slice(dockStart);
-  this.__campaignDockBaseline=this.__campaignDockObjects.map(obj=>({
-   obj,x:obj.x,y:obj.y
-  }));
-  // A visible down-arrow at the top of the right panel toggles it on
-  // touch and mouse. Tap it again (up arrow) to restore the full menu.
-  this.__campaignArrowBg=this.add.graphics().setDepth(80);
-  this.__campaignArrowLabel=text(this,607,69,'▼',{
-   fontFamily:'Pixelify Sans,monospace',fontSize:'15px',
-   color:'#ffffff',stroke:'#092238',strokeThickness:2
-  }).setOrigin(.5).setDepth(82);
-  const arrowZone=this.add.zone(606,69,44,34).setDepth(83)
-   .setInteractive({useHandCursor:true})
-   .setData('torre2-panel-toggle',true);
-  this.__campaignArrowZone=arrowZone;
-  arrowZone.on('pointerdown',()=>
-   this.setCampaignPanelCollapsed(!this.__campaignPanelCollapsed));
-  this.setCampaignPanelCollapsed(this.__campaignPanelCollapsed);
-  this.button(607,26,56,30,'RESET',()=>{
-   if(window.confirm('Apagar o progresso da campanha Kanto?')){
-    resetCampaign();this.scene.restart();
-   }
-  });
  }
  drawPortrait(member,x,y,size=34,depth=5){
   const key=portraitKey(member);
