@@ -8,9 +8,9 @@ const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'))
 if(!version)throw Error('run capture-client + build-preview first');
 const base=pathToFileURL(path.join(root,version,'datos.js'));
 const {ROSTER,TODOS}=await import(base);
-const {EARLY_KANTO_BASE,MISTY_ROUTE_BASE,SURGE_ROUTE_BASE}=await import(
+const {EARLY_KANTO_BASE,MISTY_ROUTE_BASE,SURGE_ROUTE_BASE,LATE_GYM_BASE}=await import(
  pathToFileURL(path.join(root,version,'torre2/early-kanto-species.js')));
-const addedFamilies=new Set([...EARLY_KANTO_BASE,...MISTY_ROUTE_BASE,...SURGE_ROUTE_BASE]);
+const addedFamilies=new Set([...EARLY_KANTO_BASE,...MISTY_ROUTE_BASE,...SURGE_ROUTE_BASE,...LATE_GYM_BASE]);
 const pool=await import(pathToFileURL(path.join(root,version,'torre2/move-pool.js')));
 const plan=JSON.parse(fs.readFileSync('data/kanto-new-phaser-moves.json','utf8'));
 const slug=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
