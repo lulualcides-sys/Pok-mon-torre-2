@@ -61,9 +61,11 @@ for(const [species,level,id,slot] of [
 }
 assert.ok(!availableMoves(member('cubone',10)).some(x=>x.id==='bonemerang'),
  'Cubone must reach Bonemerang level before using the move');
-const ghost=member('gengar',40);
+const ghost=member('gengar',30);
 assert.ok(!availableMoves(ghost).some(x=>x.id==='shadow-ball'),
- 'Gengar must reach its real FireRed Shadow Ball level');
+ 'The Gastly line must reach its inherited FireRed Shadow Ball level');
+assert.equal(frlgUnlockLevel('gengar','shadow-ball'),36,
+ 'Gengar inherits Gastly natural Shadow Ball from level 36');
 ghost.progression.level=70;
 assert.equal(resolveLoadout(ghost).q?.id,'shadow-ball',
  'At its natural unlock level, Gengar uses approved Shadow Ball in battle');
