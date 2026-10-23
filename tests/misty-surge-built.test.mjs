@@ -136,6 +136,29 @@ for(const [from,to] of [['gloom','vileplume'],['poliwhirl','poliwrath']]){
  for(const slot of ['lmb','rmb','q','e'])
   assert.ok(kit[slot]?.forma,to+' evolved battle slot '+slot+' is empty');
 }
+// Pokédex source must read the exact same evolved loadout as Kanto combat,
+// rather than showing an inherited, outdated native P2 kit.
+const dexCode=fs.readFileSync(file('escenas/pokedex.js'),'utf8');
+assert.match(dexCode,/function kantoDexStages\(def\)/);
+assert.match(dexCode,/const equipped=resolveLoadout\(member\)/);
+assert.match(dexCode,/this\.etapas=kantoDexStages\(p\)/);
+for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
+ assert.ok(dexCode.includes('"'+role+'"'),'Missing Pokédex role '+role);
+
+// Informational gap audit: these are candidates for future custom VFX,
+// not mandatory prerequisites of Misty/Surge battles. Do not invent
+// generic substitutes or touch already approved original moves.
+const optionalForNextPatch=[
+ 'Thunder Wave','Sleep Powder','Protect','Light Screen','Rain Dance',
+ 'Sand Attack','Psychic','Aerial Ace','Fire Punch','Ice Punch',
+ 'Thunder Punch','Cross Chop','Flame Wheel','Psyshock'
+];
+const currentMoves=new Set(TEST_LIBRARY.map(x=>
+ String(x.nombre||'').trim().toLowerCase()));
+const unimplemented=optionalForNextPatch.filter(name=>
+ !currentMoves.has(name.toLowerCase()));
+console.log('OPTIONAL KANTO MOVES NOT PRESENT IN APPROVED LIBRARY: '+
+ unimplemented.join(', '));
 assert.equal(TEST_LIBRARY.filter(x=>x.nombre==='Dragon Pulse').length,1);
 const regionSource=fs.readFileSync(file('torre2/battle-path.js'),'utf8');
 assert.match(regionSource,/ROTA 3  >  MT. MOON/);
