@@ -981,8 +981,8 @@
       }
     },
     "sleep-powder": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "User-approved, locked: do not change this battle VFX/graphic while remastering Surf.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1012,7 +1012,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026, Pokémon Torre 2: usuário confirmou expressamente \"Sleep Powder\" com \"salva\" junto dos movimentos Rain Dance, Sand Attack e Sleep Powder. Preservar animação, mecânica e efeito já aprovados."
     },
     "protect": {
       "review": "ready-for-visual-review",
@@ -1050,13 +1051,13 @@
     },
     "surf": {
       "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "visualScope": "Surf ORIGINAL pixel wave from user's Pokémon Torre 1: effects/moves/_runtime/semantic-vfx.js (Surf wave seven-point swell), faithfully remastered as twelve-frame stepped Phaser/WebGL crest with true contact, impact foam, no Canvas2D, no PNG. User rejected the previous detached Torre 2 projectile; this version awaits user visual review.",
       "sources": {
         "T2": {
           "mode": "reused",
-          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "upstream": "https://github.com/lulualcides-sys/Pok-mon-torre/blob/main/effects/moves/_runtime/semantic-vfx.js#styleName-wave; tools/pokearena/torre2-clash-fx.js#clashAt",
           "local": "tools/pokearena/torre2-finale13.js#contactDash",
-          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "contribution": "Directly ports the existing user's Torre 1 Surf wave geometry (seven-point backward-breaking hooked crest, sin swell height and nine rolling foam droplets) into WebGL pixel fills, with manual overlap at the visible front and synchronized foam crash; reuses proven Torre 2 hit logic without resurrecting old Surf projectile.",
           "license": "User-owned Pokémon Torre 2 original project code."
         },
         "P2": {
@@ -1326,8 +1327,8 @@
       }
     },
     "rain-dance": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "User-approved, locked: do not change this battle VFX/graphic while remastering Surf.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1357,11 +1358,12 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026, Pokémon Torre 2: usuário confirmou expressamente \"Rain Dance\" com \"salva\" junto dos movimentos Rain Dance, Sand Attack e Sleep Powder. Preservar animação, mecânica e efeito já aprovados."
     },
     "sand-attack": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "User-approved, locked: do not change this battle VFX/graphic while remastering Surf.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1391,7 +1393,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026, Pokémon Torre 2: usuário confirmou expressamente \"Sand Attack\" com \"salva\" junto dos movimentos Rain Dance, Sand Attack e Sleep Powder. Preservar animação, mecânica e efeito já aprovados."
     },
     "poison-punch": {
       "review": "ready-for-visual-review",

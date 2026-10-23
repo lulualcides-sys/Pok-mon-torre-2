@@ -391,11 +391,114 @@ function flameWheel(l,h,extra){
  },()=>dash.release());
 }
 
+
+/* Surf — faithful remaster of Pokémon Torre 1's OWN pixel water crest.
+ * Source: effects/moves/_runtime/semantic-vfx.js (styleName==='wave'):
+ * 7-point hooked profile, swell 43+37*sin(pi*t), backward rolling mass
+ * and nine detached foam droplets. Converted to Phaser WEBGL tile/pixel
+ * raster, with a larger blue body and 12 distinct foam poses. No detached
+ * ball, no CSS, no 2D Canvas, no native/approved spell overwritten.
+ * Physics: visual water face actually crosses the target before damage.
+ */
+const TORRE1_SURF_SILHOUETTE=Object.freeze([
+ [-1,32],[-.85,-18],[-.56,-1],[-.33,-.73],[-.16,-.88],[0,-12],[.115,20]
+]);
+const surfEase=t=>{const u=clamp(t);return u*u*(3-2*u);};
+function surfRemastered(l,h,extra){
+ const e=l.escena,r=l.rival,body=e.add.graphics().setDepth(1515);
+ const foam=e.add.graphics().setDepth(1516);
+ const o=setup(l,'Charge',.62);
+ let age=0,hasHit=false,impactAt=-1;
+ const length=Math.min(h.alcance||225,260);
+ const palette=C.water;
+ let former={x:l.x+o.c*10,y:mid(l)+o.s*10};
+ return fxLoop(e,[body,foam],dt=>{
+  age+=dt;body.clear();foam.clear();
+  if(l.ko||l.est?.aturdido||age>1.23)return false;
+  const growing=surfEase(age/.31);
+  const travel=surfEase((age-.08)/.76);
+  const frame=Math.floor(age*16)%12;
+  // Real Torre 1 swell equation and seven-point hooked wave front.
+  const height=(43+37*Math.sin(PI*clamp(age/1.08)))*growing;
+  const width=(92+51*growing+12*Math.sin(PI*travel));
+  const tip=10+length*travel;
+  const x=o.x+o.c*tip,y=o.y+o.s*tip;
+  const fade=clamp((1.23-age)/.18);
+  // Seven-point outline sampled from Torre 1; each band is 7px pixel art,
+  // and curved crest animates rather than travelling as a rigid static PNG.
+  const hull=TORRE1_SURF_SILHOUETTE.map(([u,v],i)=>[
+   u<0?u*width:u*width,
+   i===2?-height:i===3?-height*.73:i===4?-height*.88:v
+  ]);
+  const pixel=7;
+  for(let xi=-width;xi<=width*.115;xi+=pixel){
+   let upper=-12;
+   for(let k=1;k<hull.length;k++){
+    if(xi<hull[k-1][0]||xi>hull[k][0])continue;
+    const t=(xi-hull[k-1][0])/(hull[k][0]-hull[k-1][0]||1);
+    upper=hull[k-1][1]+(hull[k][1]-hull[k-1][1])*t;
+    break;
+   }
+   const curl=Math.sin(frame*PI/6+xi*.078)*3.5*growing;
+   const top=upper+curl;
+   const base=26+Math.sin(xi*.034+frame*.27)*2;
+   for(let yi=top;yi<base;yi+=pixel){
+    const r=(yi-top)/(base-top||1);
+    const darkRim=yi+pixel>=base;
+    const foamEdge=r<.085;
+    const color=foamEdge?palette[4]:r<.23?palette[3]:
+     r<.61?palette[2]:darkRim?palette[0]:palette[1];
+    const flicker=((Math.floor(xi/pixel)+Math.floor(yi/pixel)+frame)%9===0);
+    const col=flicker&&r>.23&&r<.75?palette[3]:color;
+    const px=x+o.c*xi-o.s*yi,py=y+o.s*xi+o.c*yi;
+    dot(body,px,py,pixel+1,pixel+1,col,fade*(foamEdge?1:.91));
+   }
+   // Hooked bright crest and strong ink contour (both pixel stepped).
+   const cx=x+o.c*xi-o.s*top,cy=y+o.s*xi+o.c*top;
+   if(xi<-width*.10&&xi>-width*.74)
+    dot(foam,cx,cy,8,5,palette[4],fade);
+   if(xi<-width*.12&&xi>-width*.92)
+    dot(foam,cx-o.s*7,cy+o.c*7,6,3,palette[0],fade*.80);
+  }
+  // Torre 1 had nine independent foams along the travelling water, now
+  // 12 hand-timed poses / detached beads with changing crest curvature.
+  for(let k=0;k<9;k++){
+   const back=-width*(k+.6)/10;
+   const spray=10+Math.sin(k*3.2+frame*PI/6)*12;
+   const px=x+o.c*back-o.s*(-spray),py=y+o.s*back+o.c*(-spray);
+   const sz=3+(k%3)*2;
+   dot(foam,px,py,sz+2,sz,palette[k%2?3:4],fade*.9);
+   if(k%2===0)dot(foam,px-5,py-4,3,3,palette[4],fade*.68);
+  }
+  // One exact collision at the moving FACE, not when the attack begins.
+  // The whole hooked silhouette travels along the aiming direction.
+  const current={x:x+o.c*width*.1,y:y+o.s*width*.1};
+  if(!hasHit&&r&&!r.ko&&segment(former,current,r,31)){
+   hasHit=true;
+   if(damage(l,h,extra,23))impactAt=age;
+  }
+  former=current;
+  if(impactAt>=0){
+   const t=(age-impactAt)/.39;
+   if(t<1){
+    // Wave CRASH: twelve independent foam shards, synchronized to damage.
+    for(let i=0;i<12;i++){
+     const a=(i*PI/6),radius=7+t*(24+(i%3)*7);
+     const cx=r.x+Math.cos(a)*radius,cy=mid(r)+Math.sin(a)*radius;
+     dot(foam,cx,cy,5+(i%3)*2,5+(i%2)*2,palette[i%4?4:3],1-t);
+    }
+    stamp(foam,SPARK,r.x,mid(r),palette,1.8+t*1.2,t*PI,1-t);
+   }
+  }
+  return true;
+ });
+}
+
 const finale13={
  torre2_finale_psychic:(l,h,x)=>projectile(l,h,x,'psychic'),
  torre2_finale_sleeppowder:(l,h,x)=>projectile(l,h,x,'sleep'),
  torre2_finale_protect:(l,h)=>selfStatus(l,h,'protect'),
- torre2_finale_surf:(l,h,x)=>projectile(l,h,x,'surf'),
+ torre2_finale_surf:(l,h,x)=>surfRemastered(l,h,x),
  torre2_finale_icepunch:(l,h,x)=>melee(l,h,x,'icepunch'),
  torre2_finale_thunderpunch:(l,h,x)=>melee(l,h,x,'thunderpunch'),
  torre2_finale_firepunch:(l,h,x)=>melee(l,h,x,'firepunch'),

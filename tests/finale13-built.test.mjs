@@ -9,7 +9,8 @@ const base=path.join(root,ver);
 const load=p=>import(pathToFileURL(path.join(base,p)));
 const {FINALE_13_MOVES,FINALE_13_NAMES,TORRE2_FINALE_13_FORMS}=await load('torre2/finale13.js');
 const {POISON_PUNCH_MOVES}=await load('torre2/torre2-finale13-catalog.js');
-const userApproved=new Set(['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch']);
+const userApproved=new Set(['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch',
+ 'rain-dance','sand-attack','sleep-powder']);
 const reviewedMoves=[...FINALE_13_MOVES,...POISON_PUNCH_MOVES];
 const {TEST_LIBRARY,availableMoves,filterMoveLibrary}=await load('torre2/move-pool.js');
 const {ROSTER}=await load('datos.js');
@@ -102,8 +103,11 @@ const fighter=fs.readFileSync(path.join(base,'luchador.js'),'utf8');
 for(const name of ['torre2LightScreen','torre2SandAccuracy','__torre2Rain'])
  assert.ok(fighter.includes(name),'Native combat missing status integration '+name);
 const fxText=fs.readFileSync(path.join(base,'torre2/finale13.js'),'utf8');
+assert.ok(fxText.includes("function surfRemastered("),'Missing Torre 1 Surf wave remaster');
+assert.ok(fxText.includes("TORRE1_SURF_SILHOUETTE"),'Torre 1 original seven-point wave must be ported');
+assert.ok(fxText.includes("torre2_finale_surf:(l,h,x)=>surfRemastered"),'Rejected Surf projectile must be replaced');
 for(const piece of ['contactDash','p2EmeraldImpact','clashAt','stamp(g,WAVE','stamp(g,BARRIER'])
  assert.ok(fxText.includes(piece),'Missing reusable real pixel renderer '+piece);
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(x=>reviewedMoves.some(y=>y.id===x.id)).length,9,
- 'Five approved attacks preserved, nine still requiring visual review');
-console.log('Approved five preserved; nine in NEW, full-arena rain, rebuilt Flame Wheel and poison fist PASS.');
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(x=>reviewedMoves.some(y=>y.id===x.id)).length,6,
+ 'Eight approved attacks preserved; Surf and five others still require visual review');
+console.log('Eight approved attacks preserved, only six NEW, Torre 1 remastered Surf and manual physics PASS.');

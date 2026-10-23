@@ -30,3 +30,11 @@ somente após inspeção visual real nas batalhas.
 - Psychic: impacto psíquico grande, duplo anel de runas e estilhaços.
 - Rain Dance: camada fixada na câmera cobre toda arena proporcionalmente, inclusive fullscreen.
 - São nove golpes ainda visíveis em NEW, preservando os cinco aprovados.
+
+## Surf Torre 1 remasterizado (23/10/2026)
+- **Aprovados pelo usuário:** Rain Dance (chuva global), Sand Attack e Sleep Powder. Não modificar animação nem mecânica. Junto dos cinco já aprovados, total de 8 golpes protegidos neste lote.
+- **Surf antigo do Torre 2:** rejeitado; não restaurar. Surf novo continua em NEW.
+- **Fonte realmente reutilizada do Torre 1:** `effects/moves/_runtime/semantic-vfx.js` (mapeamento Surf -> wave), silhueta de sete pontos, altura `43+37*sin(π*t)`, avanço de crista espiralada e nove gotas animadas; referência de renderização reescrita em `tools/pokearena/torre2-finale13.js#surfRemastered`.
+- No Phaser/WebGL o corpo da onda é pintado por bandas retangulares pixeladas, com espuma, crista arqueada e 12 poses; não depende de SVG, Canvas2D ou imagem estática.
+- O dano acontece uma única vez quando a frente visual da onda realmente cruza o Pokémon rival; misses e ausência de contato não causam dano.
+- Os golpes aprovados e os saves permanecem intactos.

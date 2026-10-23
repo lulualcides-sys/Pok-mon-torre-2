@@ -19,7 +19,7 @@ export const FINALE_13_MOVES=Object.freeze([
  Object.freeze({id:nombre.toLowerCase().replaceAll(' ','-'),nombre,
  forma:'torre2_finale_'+nombre.toLowerCase().replaceAll(' ',''),
  tipo,dano,alcance,coste,cd,anim,lanzar:.15,poder,precisao,pp:10,categoria,
- approved:['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch'].includes(nombre.toLowerCase().replaceAll(' ','-')),
+ approved:['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch','rain-dance','sand-attack','sleep-powder'].includes(nombre.toLowerCase().replaceAll(' ','-')),
  description:'Kanto finishing pass: original pixel frames, real hit checks and status'})));
 export const FINALE_13_NAMES=Object.freeze(FINALE_13_MOVES.map(m=>m.nombre));
 
