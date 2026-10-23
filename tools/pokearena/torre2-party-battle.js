@@ -124,7 +124,7 @@ export function installPartyBattle(scene){
    const gfx=scene.add.graphics().setDepth(2605);
    const spawn=visibleActorCenter(actor);
    const from={x:side===0?52:590,y:side===0?281:126};
-   const at={x:spawn.x,y:spawn.y-28};
+   const at={x:Math.max(90,Math.min(540,spawn.x+(side===0?-104:104))),y:spawn.y-23};
    const originalScale=sprite.scaleX||1;
    const shade=actor.sombra,ring=actor.anillo;
    const prevShade=shade?.visible,prevRing=ring?.visible;
@@ -373,7 +373,10 @@ export function installPartyBattle(scene){
     if(scene.__torre2Changing)scene.fase='ko';
     comingFrame++;
     fx.clear();ball.clear();
-    const landing={x:stableSpawn.x,y:stableSpawn.y-29};
+    // Open the thrown ball far enough away for a visible red materialization
+    // laser, then have that laser end at the actual Pokémon body.
+    const landing={x:Math.max(90,Math.min(540,stableSpawn.x+(side===0?-104:104))),
+     y:stableSpawn.y-23};
     if(comingFrame<=20){
      const pt=ballArc(from,landing,comingFrame/20,68);
      drawCaptureBall(ball,pt.x,pt.y,'pokeball',1.15,comingFrame*.45);
