@@ -316,6 +316,29 @@ const server=http.createServer(async(req,res)=>{
    return {combat:c.game.scene.isActive('combate'),stage:c.__torre2BattlePath.stage};
   });
   assert.equal(bossLocked.combat,false,'Brock cannot be accessed early');
+  const gymResetQA=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const nodes=c.__torre2BattlePath.nodes,boss=nodes.at(-1);
+   const trainers=nodes.slice(0,-1).map(z=>z.x);
+   const reset=c.children.list.find(o=>o.getData?.('torre2-reset-journey'));
+   const before=localStorage.getItem('pokemon-torre-2-kanto-campaign-v1');
+   reset?.emit('pointerdown');
+   const choices=c.children.list.filter(o=>o.type==='Zone'&&
+    typeof o.getData?.('torre2-reset-confirm')==='boolean');
+   const opened=choices.length===2&&!!c.__torre2ResetDialog?.active;
+   choices.find(z=>z.getData('torre2-reset-confirm')===false)?.emit('pointerdown');
+   return {bossX:boss.x,bossY:boss.y,trainers,reset:!!reset,opened,
+    closed:!c.__torre2ResetDialog?.active,
+    unchanged:before===localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')};
+  });
+  assert.ok(gymResetQA.bossX>=390&&gymResetQA.bossX<=430&&
+   gymResetQA.bossY>=150&&gymResetQA.bossY<=200,
+   'Brock is the prominent central gym leader, not a regular left-side node');
+  assert.ok(gymResetQA.trainers.every(x=>x<=310),
+   'Ordinary trainers must remain outside the gym interior');
+  assert.ok(gymResetQA.reset&&gymResetQA.opened&&
+   gymResetQA.closed&&gymResetQA.unchanged,
+   'Reset opens a confirmation dialog; cancel never erases the saved journey');
   // A capture tile is optional: tapping it opens a live encounter chooser,
   // without changing stage, trainer or undoing battle completion.
   const grassOverlay=await offline.evaluate(()=>{
