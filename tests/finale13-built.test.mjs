@@ -9,8 +9,10 @@ const base=path.join(root,ver);
 const load=p=>import(pathToFileURL(path.join(base,p)));
 const {FINALE_13_MOVES,FINALE_13_NAMES,TORRE2_FINALE_13_FORMS}=await load('torre2/finale13.js');
 const {POISON_PUNCH_MOVES}=await load('torre2/torre2-finale13-catalog.js');
-const userApproved=new Set(['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch',
- 'rain-dance','sand-attack','sleep-powder','surf','flame-wheel']);
+// All 13 original finishing moves and the extra purple Poison Punch are
+// explicitly approved: none of them may return to the NEW review queue.
+const reviewedMoveIds=FINALE_13_MOVES.map(x=>x.id).concat(POISON_PUNCH_MOVES.map(x=>x.id));
+const userApproved=new Set(reviewedMoveIds);
 const reviewedMoves=[...FINALE_13_MOVES,...POISON_PUNCH_MOVES];
 const {TEST_LIBRARY,availableMoves,filterMoveLibrary}=await load('torre2/move-pool.js');
 const {ROSTER}=await load('datos.js');
@@ -42,10 +44,18 @@ for(const [id,pokemon] of [
   ...(id==='protect'?{tmMoves:['protect']}:{})})
  .some(x=>x.id===id),id+' not learned by '+pokemon);
 let spanX=0,spanY=0,fullScreenRain=false;
-let usedColors=new Set();
+let usedColors=new Set(),renderBounds=null;
 function graphic(){
  return {fillStyle(color){usedColors.add(color);return this},fillRect(x,y,w,h){
-   spanX=Math.max(spanX,x+w);spanY=Math.max(spanY,y+h);return this;},
+   spanX=Math.max(spanX,x+w);spanY=Math.max(spanY,y+h);
+   if(!renderBounds)renderBounds={minX:x,minY:y,maxX:x+w,maxY:y+h};
+   else{
+    renderBounds.minX=Math.min(renderBounds.minX,x);
+    renderBounds.minY=Math.min(renderBounds.minY,y);
+    renderBounds.maxX=Math.max(renderBounds.maxX,x+w);
+    renderBounds.maxY=Math.max(renderBounds.maxY,y+h);
+   }
+   return this;},
   setDepth(){return this},setScrollFactor(f){if(f===0)fullScreenRain=true;return this;},
   clear(){return this},destroy(){this.dead=true}};
 }
@@ -53,7 +63,7 @@ const savedRandom=Math.random;
 try{
  Math.random=()=>0;
  for(const h of reviewedMoves){
-  spanX=0;spanY=0;fullScreenRain=false;usedColors=new Set();
+  spanX=0;spanY=0;fullScreenRain=false;usedColors=new Set();renderBounds=null;
   const scene={efectos:[],t:1,cameras:{main:{width:960,height:540,
    shake(ms,power){scene.shakes=(scene.shakes||0)+1;scene.lastShake={ms,power}}}},
    add:{graphics:graphic},datos:{torre2:true}};
@@ -80,10 +90,20 @@ try{
    assert.ok(actor.est.bloqueo,'Protect missing block status');
    assert.ok(usedColors.has(0x43bd64),'Protect must be GREEN, one simple rectangle');
    assert.ok(!usedColors.has(0x9141c4),'Protect must never render a purple screen');
+   assert.ok(renderBounds,'Protect must draw its small green barrier');
+   assert.ok(renderBounds.maxX-renderBounds.minX<=47,
+    'Protect width must be 30% smaller than original 56px, incl. scaled rim');
+   assert.ok(renderBounds.maxY-renderBounds.minY<=51,
+    'Protect height must be 30% smaller than original 62px, incl. scaled rim');
   }else if(h.id==='light-screen'){
    assert.ok(actor.est.torre2LightScreen,'Light Screen missing special defense');
    assert.ok(usedColors.has(0x9141c4),'Light Screen must be PURPLE, one simple rectangle');
    assert.ok(!usedColors.has(0x43bd64),'Light Screen must never render a green shield');
+   assert.ok(renderBounds,'Light Screen must draw its small purple barrier');
+   assert.ok(renderBounds.maxX-renderBounds.minX<=54,
+    'Light Screen width must shrink to 70% of original 66px, incl. rim');
+   assert.ok(renderBounds.maxY-renderBounds.minY<=59,
+    'Light Screen height must shrink to 70% of original 72px, incl. rim');
   }else if(h.id==='rain-dance'){
    assert.ok(scene.__torre2Rain?.until>1,'Rain Dance missing weather');
    assert.ok(fullScreenRain,'Rain Dance must cover the camera');
@@ -127,6 +147,6 @@ assert.ok(fxText.includes("TORRE1_SURF_SILHOUETTE"),'Torre 1 original seven-poin
 assert.ok(fxText.includes("torre2_finale_surf:(l,h,x)=>surfRemastered"),'Rejected Surf projectile must be replaced');
 for(const piece of ['contactDash','p2EmeraldImpact','clashAt','stamp(g,WAVE','simpleBarrier(g'])
  assert.ok(fxText.includes(piece),'Missing reusable real pixel renderer '+piece);
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(x=>reviewedMoves.some(y=>y.id===x.id)).length,4,
- 'Ten approved attacks preserved; only Psychic, Protect, Light Screen and Poison Punch still pending');
-console.log('Ten visual approvals saved; Protect green, Light Screen purple, heavy Psychic impact and four NEW pass.');
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').length,0,
+ 'User approved all pending custom attacks: NEW queue must be empty');
+console.log('All 14 finale moves approved; NEW empty; Protect and Light Screen 30% smaller, mechanics unchanged.');

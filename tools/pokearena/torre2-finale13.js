@@ -114,18 +114,25 @@ function star(g,x,y,palette,step,fade=1){
 function simpleBarrier(g,l,o,kind,age,fade){
  const protect=kind==='protect',pal=protect?C.protectGreen:C.screenPurple;
  const frame=Math.floor(age*16)%12;
- const w=protect?56:66,h=protect?62:72;
- const x=Math.round(l.x+o.c*(protect?28:33))-Math.floor(w/2);
- const y=Math.round(mid(l)+o.s*(protect?12:17))-Math.floor(h/2);
+ // 2026-10-23 user approved: both existing one-piece pixel barriers
+ // must be scaled uniformly to 70% of their previous WIDTH, HEIGHT,
+ // rim, highlight and placement. Never alter protection mechanics.
+ const shieldScale=.70;
+ const q=n=>Math.max(1,Math.round(n*shieldScale));
+ const w=q(protect?56:66),h=q(protect?62:72);
+ const x=Math.round(l.x+o.c*q(protect?28:33))-Math.floor(w/2);
+ const y=Math.round(mid(l)+o.s*q(protect?12:17))-Math.floor(h/2);
  const a=fade*(.82+Math.sin(frame*PI/6)*.055);
- dot(g,x-4,y-4,w+8,h+8,pal[0],a*.90);
+ const rim=q(4),inner=q(5),border=q(8),line=q(4);
+ dot(g,x-rim,y-rim,w+rim*2,h+rim*2,pal[0],a*.90);
  dot(g,x,y,w,h,pal[2],a*.82);
- dot(g,x+5,y+4,w-10,h-8,pal[1],a*.21);
- dot(g,x+4,y+4,w-8,4,pal[4],a*.98);
- dot(g,x+4,y+h-8,w-8,4,pal[3],a*.91);
- dot(g,x+4,y+8,4,h-16,pal[3],a*.92);
- dot(g,x+w-8,y+8,4,h-16,pal[4],a*.92);
- dot(g,x+10+((frame*4)%(w-22)),y+10,3,h-20,pal[4],a*.26);
+ dot(g,x+inner,y+line,w-inner*2,h-line*2,pal[1],a*.21);
+ dot(g,x+line,y+line,w-line*2,line,pal[4],a*.98);
+ dot(g,x+line,y+h-border,w-line*2,line,pal[3],a*.91);
+ dot(g,x+line,y+border,line,h-border*2,pal[3],a*.92);
+ dot(g,x+w-border,y+border,line,h-border*2,pal[4],a*.92);
+ const shineX=x+q(10)+((frame*q(4))%Math.max(1,w-q(22)));
+ dot(g,shineX,y+q(10),q(3),h-q(20),pal[4],a*.26);
 }
 // Spell and field effects use exact, finite durations, no passive auto-damage.
 function selfStatus(l,h,key){

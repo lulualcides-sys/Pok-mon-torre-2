@@ -19,7 +19,7 @@ export const FINALE_13_MOVES=Object.freeze([
  Object.freeze({id:nombre.toLowerCase().replaceAll(' ','-'),nombre,
  forma:'torre2_finale_'+nombre.toLowerCase().replaceAll(' ',''),
  tipo,dano,alcance,coste,cd,anim,lanzar:.15,poder,precisao,pp:10,categoria,
- approved:['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch','rain-dance','sand-attack','sleep-powder','surf','flame-wheel'].includes(nombre.toLowerCase().replaceAll(' ','-')),
+ approved:['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch','rain-dance','sand-attack','sleep-powder','surf','flame-wheel','psychic','protect','light-screen'].includes(nombre.toLowerCase().replaceAll(' ','-')),
  description:'Kanto finishing pass: original pixel frames, real hit checks and status'})));
 export const FINALE_13_NAMES=Object.freeze(FINALE_13_MOVES.map(m=>m.nombre));
 
@@ -29,5 +29,5 @@ export const POISON_PUNCH_MOVES=Object.freeze([Object.freeze({
  id:'poison-punch',nombre:'Poison Punch',forma:'torre2_finale_poisonpunch',
  tipo:'POISON',dano:15,alcance:72,coste:23,cd:5.7,anim:'Punch',
  lanzar:.15,poder:75,precisao:100,pp:15,categoria:'PHYSICAL',
- approved:false,description:'Purple variant of the user-approved contact punch; 30% poison on true hit, pending visual review'
+ approved:true,description:'Purple variant of the approved contact punch; 30% poison on true hit; approved by user on 2026-10-23'
 })]);

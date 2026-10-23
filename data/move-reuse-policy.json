@@ -947,8 +947,8 @@
       "userApprovalEvidence": "23/10/2026, conversa Pokémon Torre 2: usuário inicialmente confirmou os três novos golpes aprovados e posteriormente corrigiu expressamente somente Sonic Boom ('Sonic boom ainda não está aprovado falei errado'). Screech permanece aprovado; nenhuma modificação visual solicitada."
     },
     "psychic": {
-      "review": "ready-for-visual-review",
-      "visualScope": "Revisão 23/10/2026: Potência 90, dano 22, três ondas concêntricas e tremor breve somente após impacto real. Aguardando aprovação visual do usuário.",
+      "review": "user-approved",
+      "visualScope": "Aprovado pelo usuário sem redesenho adicional: manter efeito, estatísticas e sincronização de impacto.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -978,7 +978,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23: usuário determinou expressamente \"Protect e light faz um pouco menor e pode salvar tudo que está no new\" e esclareceu \"30% de ambas\". Isso autoriza aprovar psychic junto de todos os outros itens pendentes na aba NEW do Pokémon Torre 2."
     },
     "sleep-powder": {
       "review": "user-approved",
@@ -1016,8 +1017,8 @@
       "userApprovalEvidence": "23/10/2026, Pokémon Torre 2: usuário confirmou expressamente \"Sleep Powder\" com \"salva\" junto dos movimentos Rain Dance, Sand Attack e Sleep Powder. Preservar animação, mecânica e efeito já aprovados."
     },
     "protect": {
-      "review": "ready-for-visual-review",
-      "visualScope": "Revisão 23/10/2026: UMA parede verde simples, sem escudo complexo; bloqueio original intacto. Aguardando aprovação visual do usuário.",
+      "review": "user-approved",
+      "visualScope": "Aprovado pelo usuário: única barreira verde 30% menor (dimensões, moldura e brilhos uniformemente ×0.70); mecânica e arte pixel mantidas.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1047,7 +1048,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23: usuário determinou expressamente \"Protect e light faz um pouco menor e pode salvar tudo que está no new\" e esclareceu \"30% de ambas\". Isso autoriza aprovar protect junto de todos os outros itens pendentes na aba NEW do Pokémon Torre 2."
     },
     "surf": {
       "review": "user-approved",
@@ -1295,8 +1297,8 @@
       "userApprovalEvidence": "2026-10-23: no Pokémon Torre 2 o usuário aprovou expressamente \"Flame Wheel\" com as palavras \"surf, fire whell ... salva\"; preservar a animação já aprovada."
     },
     "light-screen": {
-      "review": "ready-for-visual-review",
-      "visualScope": "Revisão 23/10/2026: UMA parede roxa simples, sem enfeites; proteção de dano especial intacta. Aguardando aprovação visual do usuário.",
+      "review": "user-approved",
+      "visualScope": "Aprovado pelo usuário: única barreira roxa 30% menor (dimensões, moldura e brilhos uniformemente ×0.70); mecânica e arte pixel mantidas.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1326,7 +1328,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23: usuário determinou expressamente \"Protect e light faz um pouco menor e pode salvar tudo que está no new\" e esclareceu \"30% de ambas\". Isso autoriza aprovar light-screen junto de todos os outros itens pendentes na aba NEW do Pokémon Torre 2."
     },
     "rain-dance": {
       "review": "user-approved",
@@ -1399,8 +1402,8 @@
       "userApprovalEvidence": "23/10/2026, Pokémon Torre 2: usuário confirmou expressamente \"Sand Attack\" com \"salva\" junto dos movimentos Rain Dance, Sand Attack e Sleep Powder. Preservar animação, mecânica e efeito já aprovados."
     },
     "poison-punch": {
-      "review": "ready-for-visual-review",
-      "visualScope": "23/10/2026, new custom Poison Punch, purple recolor of the user-approved melee punch; visual approval pending. Never modify accepted punch VFX.",
+      "review": "user-approved",
+      "visualScope": "Aprovado pelo usuário sem redesenho adicional: manter efeito, estatísticas e sincronização de impacto.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1430,7 +1433,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23: usuário determinou expressamente \"Protect e light faz um pouco menor e pode salvar tudo que está no new\" e esclareceu \"30% de ambas\". Isso autoriza aprovar poison-punch junto de todos os outros itens pendentes na aba NEW do Pokémon Torre 2."
     }
   },
   "batch24NativeReuse": {

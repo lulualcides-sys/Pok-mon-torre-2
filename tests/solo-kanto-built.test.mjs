@@ -436,9 +436,9 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 // NEW is an approval queue. Native moves and approved custom art never enter it.
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
-const expectedFinale13=['psychic','protect','light-screen','poison-punch'];
+const expectedFinale13=[];
 assert.deepEqual([...pendingIds].sort(),expectedFinale13.sort(),
- 'Only four attacks remain in NEW; ten approved moves stay protected');
+ 'User approved everything from NEW; zero pending effects in the catalog');
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])

@@ -45,3 +45,9 @@ somente após inspeção visual real nas batalhas.
 - **Light Screen:** uma única parede retangular **roxa**, simples e legível; redução de 50% do dano especial por 7,5s preservada. Referência: https://pokemondb.net/move/light-screen.
 - **Psychic:** poder canônico Gen III 90 e dano 22 (antes 18); runas mais densas, choque com três ondas e breve trepidação apenas no impacto real. Sem dano automático.
 - Apenas Psychic, Protect, Light Screen e Poison Punch continuam na aba NEW, para julgamento visual do usuário. Não afetar Surf e Flame Wheel aprovados.
+
+## Aprovação geral e redução proporcional — 23/10/2026
+- O usuário determinou **redução de exatamente 30%** nas barreiras **Protect** (verde) e **Light Screen** (roxa). Renderizador WebGL `simpleBarrier`: dimensões, moldura e realce multiplicados por **0.70**, mantendo as mesmas cores e a mesma mecânica de proteção, sem mexer nos golpes já aprovados.
+- **Aprovar todos os quatro golpes restantes de NEW:** Psychic, Protect, Light Screen, Poison Punch. Os 13 golpes de finalização e Poison Punch constam com `approved:true` e estado `user-approved` na política.
+- A fila **NEW deve ficar vazia**; não duplicar golpes ou restaurar efeitos antigos recusados.
+- Testes protegem ambas as cores, dimensões finais, estados defensivos e a fila vazia.
