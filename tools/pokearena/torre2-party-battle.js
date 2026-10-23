@@ -155,6 +155,9 @@ export function installPartyBattle(scene){
        .setScale(originalScale*(.20+.80*t));
      if(t>.68){shade?.setVisible(prevShade);ring?.setVisible(prevRing)}
     }else{finishIntro();return}
+    // Native combat can reset fase=lucha during its renderer; keep pause
+    // until BOTH throw/burst sequences have completed.
+    if(remaining>0)scene.fase='torre2-sendout';
     scene.__torre2IntroDebug={side,frame:tick,phase:tick<=23?'throw':'release'};
    };
    scene.game.events.on('poststep',animate);
@@ -355,10 +358,19 @@ export function installPartyBattle(scene){
    actor.anillo?.setVisible(true);
    fx.clear();ball.clear();
    let comingFrame=0;
+   // Native battle can force fase=lucha while the ball is still flying.
+   // Block combat from restarting until the replacement has FULLY appeared.
+   const holdSwitch=()=>{
+    if(scene.__torre2Changing&&scene.scene.isActive())scene.fase='ko';
+   };
+   scene.game.events.on('poststep',holdSwitch);
+   const detachHold=()=>scene.game.events.off('poststep',holdSwitch);
+   scene.events.once('shutdown',detachHold);
    const release=()=>{
     if(!scene.scene.isActive()){
      scene.game.events.off('step',release);return;
     }
+    if(scene.__torre2Changing)scene.fase='ko';
     comingFrame++;
     fx.clear();ball.clear();
     const landing={x:stableSpawn.x,y:stableSpawn.y-29};
@@ -395,6 +407,7 @@ export function installPartyBattle(scene){
      }
      fx.clear();ball.clear();scene.game.events.off('step',release);
      scene.events.off('shutdown',detachRelease);
+     detachHold();scene.events.off('shutdown',detachHold);
      scene.__torre2Changing=false;scene.fase='lucha';
     }
    };
