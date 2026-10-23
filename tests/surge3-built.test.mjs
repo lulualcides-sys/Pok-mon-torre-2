@@ -32,7 +32,11 @@ const pairs=[
 ];
 for(const [species,move] of pairs){
  const member={id:species,progression:{species,level:40}};
- assert.ok(availableMoves(member).some(x=>x.id===move),species+' missing '+move);
+ assert.ok(availableMoves(member).some(x=>x.id===move),
+  species+' missing '+move+
+  ' | catalog='+JSON.stringify(TEST_LIBRARY.filter(x=>x.id===move))+
+  ' | available='+JSON.stringify(availableMoves(member).map(x=>x.id))+
+  ' | plan='+JSON.stringify(earlyKantoSlotPlan(species)));
 }
 assert.deepEqual(KANTO_ROUTE_SLOTS.voltorb,['Tackle','Sonic Boom','Screech','Explosion']);
 assert.deepEqual(KANTO_ROUTE_SLOTS.electrode,['Tackle','Sonic Boom','Discharge','Explosion']);
