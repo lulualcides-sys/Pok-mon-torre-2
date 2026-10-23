@@ -543,8 +543,13 @@ assert.equal(equipMove(tester,1,'tri-attack'),false,'prevent duplicate moves in 
 saveCampaign(state);
 assert.equal(readCampaign().team.find(x=>x.id==='mewtwo').moves[0],confusion.id,
  'selected moves must persist in saved campaign');
-assert.equal(allMoves.some(x=>x.id==='surf'),false,'unapproved Surf must be hidden from the Kanto move catalog');
-assert.equal(equipMove(tester,0,'surf'),false,'unapproved Surf may not be equipped');
+assert.equal(allMoves.filter(x=>x.id==='surf').length,1,'Reworked Surf must be unique');
+assert.equal(allMoves.find(x=>x.id==='surf')?.forma,'torre2_finale_surf',
+ 'Old rejected Surf must not be restored: test only the NEW pixel wave');
+assert.equal(allMoves.find(x=>x.id==='surf')?.approved,false,
+ 'New Surf requires user visual approval before it can be marked approved');
+assert.equal(equipMove(tester,0,'surf'),true,
+ 'Test Mewtwo can equip new Surf in battle for visual review');
 assert.equal(equipMove(tester,0,'swift'),true,'new Swift must equip');
 assert.equal(resolveLoadout(tester).lmb.forma,'torre2_swift');
 assert.equal(equipMove(tester,0,'shadow-ball'),true,'new Shadow Ball must equip');
