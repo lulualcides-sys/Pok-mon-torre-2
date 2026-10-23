@@ -78,8 +78,17 @@ const ROUTE_LEVELS=Object.freeze(Object.fromEntries(
   // Every evolution has its OWN move list and four unlock thresholds.
   const tier=id==='butterfree'?[1,5,10,18]:
    ROUTE2_IDS.has(id)?[1,12,18,24]:[1,6,12,18];
-  return [id,Object.freeze(Object.fromEntries(names.map(
-   (name,i)=>[ID_OF_MOVE(name),tier[i]])))];
+  // Accessible additional status/sound skills for Lv 21 Surge: they
+  // belong in the move library without replacing approved evolution slots.
+  const optional={
+   ...(id==='electrode'?{'screech':18}:{}),
+   ...(['magnemite','magneton'].includes(id)?
+    {'sonic-boom':15,'thunder-wave':21}:{})
+  };
+  return [id,Object.freeze({
+   ...Object.fromEntries(names.map((name,i)=>[ID_OF_MOVE(name),tier[i]])),
+   ...optional
+  })];
  })
 ));
 // Native P2 species already on the first map keep their genuine original
