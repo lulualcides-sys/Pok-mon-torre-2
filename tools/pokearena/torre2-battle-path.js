@@ -7,12 +7,13 @@ import {routeNode} from './route-data.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
+import {ROOM_CROPS} from './frlg-interiors.js';
 import {ball} from './campaign-art.js';
 import {TRAINERS_PER_GYM,STAGES,currentOpponent} from './campaign-core.js';
 
 export const BATTLE_PATH_BACKDROP=Object.freeze([
- 'forest','mtmoon','vermilion','celadon','safari',
- 'saffron','cinnabar','viridian','victory','indigo',
+ 'pewter','cerulean','vermilion','celadon','fuchsia',
+ 'saffron','cinnabar','viridian','indigo','indigo',
  'indigo','indigo','indigo'
 ]);
 const COLORS={ink:0x071729,navy:0x0a223a,edge:0x508cb4,gold:0xffd573,
@@ -85,27 +86,48 @@ function hudSprite(scene,member,x,y,depth=34){
  scene.add.image(x,y,key).setDisplaySize(23,23).setDepth(depth);
 }
 function renderBackdrop(scene,stage){
- const bg=scene.add.graphics().setDepth(5);
- frame(bg,10,54,478,255,{fill:0x0b2130,border:0xd9ae67,radius:3});
- const imageKey='frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo');
- if(scene.textures.exists(imageKey)){
-  const tex=scene.textures.get(imageKey),source=tex.source?.[0];
-  const img=scene.add.image(249,182,imageKey).setDepth(6).setAlpha(.96);
-  const w=source?.width||img.width,h=source?.height||img.height;
-  img.setScale(Math.max(470/w,247/h));
-  // Crop by WebGL geometry mask: image aspect ratio always remains original.
-  const crop=scene.make.graphics({x:0,y:0,add:false});
-  crop.fillStyle(0xffffff);crop.fillRect(14,58,470,247);
-  img.setMask(crop.createGeometryMask());
-  scene.events.once('shutdown',()=>{img.clearMask();crop.destroy()});
- }else{
-  bg.fillStyle(0x275445);bg.fillRect(14,58,470,247);
+ // Use ORIGINAL FireRed exterior and gym interior from a loaded map sheet.
+ // No screenshot-as-UI, no generated facade, no CSS/native-canvas zoom.
+ const city=BATTLE_PATH_BACKDROP[stage]||'indigo',imageKey='frlg-location-'+city;
+ const base=scene.add.graphics().setDepth(5);
+ frame(base,10,54,478,255,{fill:0x163849,border:0xe0bd7b,radius:4});
+ const texture=scene.textures.exists(imageKey)?scene.textures.get(imageKey):null;
+ const src=texture?.source?.[0];let realExterior=false,realGym=false;
+ if(texture&&src){
+  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  // Composite FRLG sheets have the city on the LEFT and rooms on the right.
+  const w=Math.min(768,src.width),h=Math.min(640,src.height);
+  if(w>=160&&h>=160){
+   const name='torre2-path-city-'+city;
+   if(!texture.has(name))texture.add(name,0,0,0,w,h);
+   const cityImage=scene.add.image(249,181,imageKey,name).setDepth(6);
+   cityImage.setScale(Math.max(470/w,247/h));
+   const mask=scene.make.graphics({x:0,y:0,add:false});
+   mask.fillStyle(0xffffff);mask.fillRect(14,58,470,247);
+   cityImage.setMask(mask.createGeometryMask());
+   scene.events.once('shutdown',()=>{cityImage.clearMask();mask.destroy()});
+   realExterior=true;
+  }
+  const rect=ROOM_CROPS[city]?.gym;
+  if(rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
+   const name='torre2-path-gym-'+city;
+   if(!texture.has(name))texture.add(name,0,...rect);
+   const arch=scene.add.graphics().setDepth(7);
+   arch.fillStyle(0x071624,.9);arch.fillRoundedRect(346,65,135,240,7);
+   arch.lineStyle(2,0xeec376,1);arch.strokeRoundedRect(346,65,135,240,7);
+   arch.fillStyle(0x264862);arch.fillRoundedRect(351,71,125,19,3);
+   const scale=Math.min(117/rect[2],197/rect[3]);
+   scene.add.image(414,198,imageKey,name).setDepth(8).setScale(scale);
+   txt(scene,414,81,'GINÁSIO',9,'#ffe3a0',10);
+   realGym=true;
+  }
  }
- // Dark glass improves readability over the FireRed environment tiles.
- const veil=scene.add.graphics().setDepth(7);
- veil.fillStyle(0x061f29,.19);veil.fillRect(14,58,470,247);
- veil.fillStyle(0x061827,.88);veil.fillRoundedRect(18,62,267,36,5);
- veil.lineStyle(1,0x3c7084,.85);veil.strokeRoundedRect(18,62,267,36,5);
+ if(!realExterior){base.fillStyle(0x244959);base.fillRect(14,58,470,247)}
+ const glass=scene.add.graphics().setDepth(9);
+ glass.fillStyle(0x081b2a,.13);glass.fillRect(14,58,470,247);
+ glass.fillStyle(0x061827,.88);glass.fillRoundedRect(18,62,267,36,5);
+ glass.lineStyle(1,0x638ba0,.94);glass.strokeRoundedRect(18,62,267,36,5);
+ scene.__torre2GymBackdrop={city,realExterior,realGym,texture:imageKey};
  return {imageKey};
 }
 export function renderBattlePath(scene,state,handlers){
@@ -147,7 +169,7 @@ export function renderBattlePath(scene,state,handlers){
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
   const px=ROWS[Math.min(2,row)][column]??ROWS[2][ROWS[2].length-1];
-  const y=[151,219,282][Math.min(row,2)];
+  const y=[278,211,147][Math.min(row,2)];
   spots.push({x:px,y,global:offset+i});
  }
  const pathGraphics=scene.add.graphics().setDepth(14);
@@ -196,7 +218,14 @@ export function renderBattlePath(scene,state,handlers){
    node.type==='rocket'?'EQUIPE ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
    boss?8:node.type==='rocket'?7:8,
    active?'#ffe29a':available?'#f1f8f3':'#afbdc8',23);
-  txt(scene,p.x,p.y+22,String(i+1),8,'#a9cbd3',24);
+  g.fillStyle(active?0xf5c75d:done?0x56be86:0x40647e);
+  g.fillRoundedRect(p.x-width/2+2,p.y-17,15,17,3);
+  txt(scene,p.x-width/2+9.5,p.y-8,String(i+1),8,
+   active?'#30220f':'#fff7d4',24);
+  for(let d=0;d<3;d++){
+   g.lineStyle(1,done?0x76e0a6:0xb6ced9,.98);
+   g.strokeCircle(p.x-10+d*10,p.y+23,2.1);
+  }
   if(done){
    g.fillStyle(0x28c868);g.fillCircle(p.x+width/2-8,p.y-17,7);
    g.lineStyle(2,0xffffff);g.lineBetween(p.x+width/2-11,p.y-17,p.x+width/2-9,p.y-14);
@@ -265,6 +294,7 @@ export function renderBattlePath(scene,state,handlers){
  cta.setData('torre2-central-cta',true);
  button(scene,568,336,113,27,'DETALHES',handlers.details,{depth:70,small:true});
  scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
-  nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo')};
+  nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
+  gym:scene.__torre2GymBackdrop};
  return scene.__torre2BattlePath;
 }
