@@ -714,7 +714,8 @@ const server=http.createServer(async(req,res)=>{
   assert.ok((visibleSwapPokemon.animation||'').startsWith(visibleSwapPokemon.dex+'-'),
    'PMD animations use numeric dex keys, not the English species name');
   assert.ok(visibleSwapPokemon.visible&&visibleSwapPokemon.scale>.2,
-   'The replacement sprite must be visible, not miniaturized or transparent');
+   'The replacement sprite must be visible, not miniaturized or transparent: '+
+    JSON.stringify(visibleSwapPokemon));
   assert.equal(visibleSwapPokemon.oldStillVisible,false,
    'No old Pokémon sprite may remain visible after the PMD switch: '+
     JSON.stringify(visibleSwapPokemon));
