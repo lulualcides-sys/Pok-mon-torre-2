@@ -84,6 +84,16 @@ export function upgradeKantoEvolutionBattleKits(roster){
    const next=[...old];
    const parentNames=new Set(SLOTS.map(s=>idOf(parentKit[s]?.nombre)).filter(Boolean));
    const unique=(slot,h)=>h&&!next.some((x,j)=>j!==slot&&idOf(x?.nombre)===idOf(h.nombre));
+   // A newborn evolved form can come from a nonattacking base
+   // (Magikarp -> Gyarados). Give it the weakest REAL species-compatible
+   // installed attack in ATK, without granting that move to the base form.
+   if(!next[0]?.forma){
+    const basic=values.filter(h=>scoreMove(h)>0&&
+      !next.slice(1).some(x=>idOf(x?.nombre)===idOf(h.nombre)))
+     .sort((a,b)=>scoreMove(a)-scoreMove(b)||
+       Number(kinds.includes(b.tipo))-Number(kinds.includes(a.tipo)))[0];
+    if(basic)next[0]=basic;
+   }
    // A special evolved move is preferably HAB3; keep ATK weak and
    // preserve the conventional high-energy ULT for E.
    const featured=signature&&lookup.get(signature.toLowerCase());
