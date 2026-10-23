@@ -64,9 +64,8 @@ html=html.replace('</head>',`<style id="torre2-landscape-map">
 html,body{background:#081b30!important;min-height:100%;margin:0;overflow:hidden}
 html.torre2-edge-to-edge body::before{
  content:"";position:fixed;inset:-2%;pointer-events:none;z-index:890;
- background:linear-gradient(90deg,rgba(4,18,29,.36),rgba(5,24,35,.4)),
- url("assets/ui/torre2-brock-custom.webp") center/cover no-repeat;
- filter:blur(12px) saturate(.88)
+ background:radial-gradient(ellipse at 35% 38%,#17334c 0%,#0b2039 55%,#061326 100%);
+ filter:none
 }
 html.torre2-edge-to-edge body.torre2-battle-active::before{
  background:radial-gradient(ellipse at center,#564344 0%,#151a30 68%,#091123 100%)
