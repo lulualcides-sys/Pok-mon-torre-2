@@ -165,7 +165,10 @@ export function renderBattlePath(scene,state,handlers){
  renderBackdrop(scene,stage);
  const mapTitle=txt(scene,25,69,'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
  mapTitle.setOrigin(0,.5);
- txt(scene,28,89,'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase(),8,'#cdeaf4',28)
+ const areaLegend=stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':
+  stage===2?'ROTAS 24/25  >  5/6  >  S.S. ANNE  >  VERMILION':
+  'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
+ txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
  const requested=scene.__torre2PathPage;
  const offset=Math.max(0,Math.min(total,Math.floor((requested??progress)/13)*13));
@@ -178,6 +181,14 @@ export function renderBattlePath(scene,state,handlers){
   const y=boss?178:[275,211,147][Math.min(row,2)];
   spots.push({x:px,y,global:offset+i});
  }
+ // Map region labels reference existing FireRed town/mountain sheets.
+ // One connected zigzag and the leader at its end; no extra pages/maps.
+ const checkpointZone=(n)=>{
+  if(stage===1)return n<4?'ROTA 3':n<9?'MT. MOON':n<13?'ROTA 4':'CERULEAN';
+  if(stage===2)return n<4?'ROTAS 24/25':n<9?'ROTAS 5/6':
+   n<13?'S.S. ANNE':'VERMILION';
+  return null;
+ };
  const pathGraphics=scene.add.graphics().setDepth(14);
  for(let i=1;i<spots.length;i++){
   const a=spots[i-1],b=spots[i];
@@ -244,6 +255,15 @@ export function renderBattlePath(scene,state,handlers){
   const zone=scene.add.zone(p.x,p.y-1,width,63).setDepth(31)
    .setInteractive({useHandCursor:true}).setData('torre2-path-node',i)
    .setData('torre2-path-type',capture?'capture':node.type);
+  if(checkpointZone(i))zone.setData('torre2-route-zone',checkpointZone(i));
+  zone.on('pointerover',()=>{
+   if(scene.__torre2RegionHover?.active)scene.__torre2RegionHover.destroy();
+   const region=checkpointZone(i);
+   if(region)scene.__torre2RegionHover=txt(scene,325,69,region,9,'#b3f4e8',56);
+  });
+  zone.on('pointerout',()=>{
+   if(scene.__torre2RegionHover?.active)scene.__torre2RegionHover.destroy();
+  });
   zone.on('pointerdown',()=>{
    if(capture&&available)return handlers.capture();
    if(active)return boss?handlers.gym():handlers.battle();
@@ -310,6 +330,8 @@ export function renderBattlePath(scene,state,handlers){
  button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
   .setData('torre2-reset-journey',true);
  scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
+  regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
+   stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
   nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
   gym:scene.__torre2GymBackdrop};
  return scene.__torre2BattlePath;

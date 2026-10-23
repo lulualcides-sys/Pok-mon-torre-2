@@ -3,6 +3,98 @@
  * and user-approved Torre 2 effects where a move was missing. Never changes
  * the native species, their sprites, approved attacks or battle UI.
  */
+import {BATCH24_MOVES} from './batch24/catalog.js';
+
+// The two maps are part of the existing Kanto campaign. DO NOT change the
+// original licensed Poké Arena 2D kits or its non-campaign EVO rules.
+export const MISTY_ROUTE_BASE=Object.freeze([
+ 'paras','clefairy','sandshrew','ekans','staryu','psyduck','poliwag'
+]);
+export const SURGE_ROUTE_BASE=Object.freeze([
+ 'oddish','bellsprout','meowth','diglett','voltorb','magnemite'
+]);
+// In every stage of every family: [ATK LMB, HAB2 RMB, HAB3 Q, ULT E].
+// ESP is always the genuine non-damaging Kanto dodge. Move names are from
+// P2 native kits, or previously approved batch24; no mock/unimplemented FX.
+export const KANTO_ROUTE_SLOTS=Object.freeze({
+ // Pre-Brock evolutions: different real skills, never copy basic moves blindly
+ pidgeotto:['Tackle','Gust','Quick Attack','Air Cutter'],
+ pidgeot:['Tackle','Air Cutter','Wing Attack','Brave Bird'],
+ raticate:['Tackle','Bite','Hyper Fang','Super Fang'],
+ metapod:['Tackle','String Shot','Bug Bite','Confusion'],
+ butterfree:['Tackle','Gust','Confusion','Psybeam'],
+ kakuna:['Tackle','Poison Sting','Bug Bite','Fury Attack'],
+ beedrill:['Poison Sting','Peck','Fury Attack','Cross Poison'],
+ raichu:['Thunder Shock','Quick Attack','Thunderbolt','Thunder'],
+ fearow:['Peck','Fury Attack','Wing Attack','Drill Peck'],
+ nidorina:['Tackle','Poison Sting','Double Kick','Horn Attack'],
+ nidoqueen:['Poison Sting','Horn Attack','Earthquake','Sludge Bomb'],
+ nidorino:['Tackle','Poison Sting','Double Kick','Horn Attack'],
+ nidoking:['Poison Sting','Horn Attack','Earthquake','Sludge Bomb'],
+ primeape:['Karate Chop','Low Sweep','Revenge','Close Combat'],
+ graveler:['Tackle','Rock Throw','Mud-Slap','Rock Slide'],
+ golem:['Tackle','Rock Slide','Earthquake','Stone Edge'],
+ // Brock → Misty: Mt. Moon, Route 4, Cerulean
+ paras:['Tackle','Leech Life','String Shot','Razor Leaf'],
+ parasect:['Tackle','Leech Life','Razor Leaf','Solar Beam'],
+ clefairy:['Pound','Charm','Psybeam','Hyper Beam'],
+ clefable:['Pound','Charm','Psybeam','Hyper Beam'],
+ sandshrew:['Tackle','Rapid Spin','Dig','Earthquake'],
+ sandslash:['Tackle','Dig','Rock Slide','Earthquake'],
+ ekans:['Bite','Poison Sting','Acid','Sludge Bomb'],
+ arbok:['Bite','Acid','Sludge Bomb','Dark Pulse'],
+ staryu:['Water Gun','Rapid Spin','Bubble Beam','Water Pulse'],
+ starmie:['Water Gun','Bubble Beam','Psybeam','Water Pulse'],
+ psyduck:['Water Gun','Confusion','Water Pulse','Hydro Pump'],
+ golduck:['Water Gun','Water Pulse','Psybeam','Hydro Pump'],
+ poliwag:['Water Gun','Bubble','Hypnosis','Hydro Pump'],
+ poliwhirl:['Water Gun','Bubble Beam','Hypnosis','Hydro Pump'],
+ poliwrath:['Water Gun','Bubble Beam','Low Sweep','Hydro Pump'],
+ // Misty → Lt. Surge: Route 24/25, Routes 5/6, port, Diglett Cave
+ oddish:['Tackle','Growth','Razor Leaf','Solar Beam'],
+ gloom:['Tackle','Razor Leaf','Leech Seed','Solar Beam'],
+ vileplume:['Tackle','Razor Leaf','Sludge Bomb','Solar Beam'],
+ bellsprout:['Vine Whip','Growth','Razor Leaf','Solar Beam'],
+ weepinbell:['Vine Whip','Razor Leaf','Leech Seed','Solar Beam'],
+ victreebel:['Vine Whip','Razor Leaf','Sludge Bomb','Solar Beam'],
+ meowth:['Tackle','Quick Attack','Knock Off','Hyper Beam'],
+ persian:['Tackle','Quick Attack','Knock Off','Hyper Beam'],
+ diglett:['Tackle','Dig','Rock Slide','Earthquake'],
+ dugtrio:['Tackle','Dig','Rock Slide','Earthquake'],
+ voltorb:['Tackle','Shock Wave','Charge Beam','Explosion'],
+ electrode:['Tackle','Shock Wave','Discharge','Explosion'],
+ magnemite:['Thunder Shock','Charge Beam','Shock Wave','Discharge'],
+ magneton:['Thunder Shock','Electro Ball','Discharge','Thunder']
+});
+const ROUTE2_IDS=new Set([
+ 'oddish','gloom','vileplume','bellsprout','weepinbell','victreebel',
+ 'meowth','persian','diglett','dugtrio','voltorb','electrode',
+ 'magnemite','magneton'
+]);
+const ID_OF_MOVE=name=>name.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const ROUTE_LEVELS=Object.freeze(Object.fromEntries(
+ Object.entries(KANTO_ROUTE_SLOTS).map(([id,names])=>{
+  // Every evolution has its OWN move list and four unlock thresholds.
+  const tier=id==='butterfree'?[1,5,10,18]:
+   ROUTE2_IDS.has(id)?[1,12,18,24]:[1,6,12,18];
+  return [id,Object.freeze(Object.fromEntries(names.map(
+   (name,i)=>[ID_OF_MOVE(name),tier[i]])))];
+ })
+));
+// Native P2 species already on the first map keep their genuine original
+// non-campaign kits. Only campaign evolution loadouts change.
+export const KANTO_NATIVE_EVOLUTION_SLOTS=Object.freeze({
+ ivysaur:['Razor Leaf','Growth','Leech Seed','Solar Beam'],
+ venusaur:['Razor Leaf','Sludge Bomb','Ingrain','Frenzy Plant'],
+ charmeleon:['Ember','Flamethrower','Fire Spin','Fire Blast'],
+ charizard:['Ember','Flamethrower','Fire Spin','Blast Burn'],
+ wartortle:['Water Gun','Bubble Beam','Hydro Typhoon','Hydro Pump'],
+ blastoise:['Water Gun','Bubble Beam','Hydro Typhoon','Hydro Cannon'],
+ golbat:['Wing Attack','Air Cutter','Leech Life','Supersonic']
+});
+export const nativeKantoEvolutionPlan=id=>
+ KANTO_NATIVE_EVOLUTION_SLOTS[id]||null;
+
 export const EARLY_KANTO_BASE=Object.freeze([
  'pidgey','rattata','caterpie','weedle','pikachu',
  'spearow','nidoran-f','nidoran-m','mankey','geodude'
@@ -33,7 +125,8 @@ export const EARLY_KANTO_LEARNSETS=Object.freeze({
  primeape:{'low-kick':1,'karate-chop':10,'quick-attack':12,'close-combat':38},
  geodude:{tackle:1,'rock-throw':11,'rock-tomb':13,'mud-slap':15},
  graveler:{tackle:1,'rock-throw':11,'rock-tomb':13,'mud-slap':15},
- golem:{tackle:1,'rock-throw':11,'rock-tomb':13,'mud-slap':15}
+ golem:{tackle:1,'rock-throw':11,'rock-tomb':13,'mud-slap':15},
+ ...ROUTE_LEVELS
 });
 // Arena 2D original control order: LMB weak BASIC, RMB skill, ESP
 // defensive DODGE, Q second skill and E meter-gated ULT. These are
@@ -48,7 +141,8 @@ export const EARLY_KANTO_SLOTS=Object.freeze({
  'nidoran-f':['Tackle','Poison Sting','Double Kick','Horn Attack'],
  'nidoran-m':['Tackle','Poison Sting','Double Kick','Horn Attack'],
  mankey:['Low Kick','Karate Chop','Quick Attack','Close Combat'],
- geodude:['Tackle','Rock Throw','Mud-Slap','Rock Tomb']
+ geodude:['Tackle','Rock Throw','Mud-Slap','Rock Tomb'],
+ ...KANTO_ROUTE_SLOTS
 });
 const EVO_TO_BASE=Object.freeze({
  pidgeotto:'pidgey',pidgeot:'pidgey',raticate:'rattata',
@@ -58,14 +152,21 @@ const EVO_TO_BASE=Object.freeze({
  graveler:'geodude',golem:'geodude'
 });
 export function earlyKantoSlotPlan(species){
- return EARLY_KANTO_SLOTS[EVO_TO_BASE[species]||species]||null;
+ return EARLY_KANTO_SLOTS[species]||EARLY_KANTO_SLOTS[EVO_TO_BASE[species]||species]||null;
 }
 export const EARLY_KANTO_FORMS=Object.freeze({
  pidgey:['0016','0017','0018'],rattata:['0019','0020'],
  caterpie:['0010','0011','0012'],weedle:['0013','0014','0015'],
  pikachu:['0025','0026'],spearow:['0021','0022'],
  'nidoran-f':['0029','0030','0031'],'nidoran-m':['0032','0033','0034'],
- mankey:['0056','0057'],geodude:['0074','0075','0076']
+ mankey:['0056','0057'],geodude:['0074','0075','0076'],
+ paras:['0046','0047'],clefairy:['0035','0036'],
+ sandshrew:['0027','0028'],ekans:['0023','0024'],
+ staryu:['0120','0121'],psyduck:['0054','0055'],
+ poliwag:['0060','0061','0062'],
+ oddish:['0043','0044','0045'],bellsprout:['0069','0070','0071'],
+ meowth:['0052','0053'],diglett:['0050','0051'],
+ voltorb:['0100','0101'],magnemite:['0081','0082']
 });
 function nativeAttacks(original){
  const lookup=new Map();
@@ -88,6 +189,12 @@ function nativeAttacks(original){
    read(inherited);
    if(e.mega?.kit)read(merge(inherited,e.mega.kit));
   }
+ }
+ // Approved Torre 2 additions are available to the new families, but
+ // native Poké Arena moves always win name collisions.
+ for(const h of BATCH24_MOVES){
+  const key=h.nombre.trim().toLowerCase();
+  if(!lookup.has(key))lookup.set(key,h);
  }
  return lookup;
 }
@@ -153,7 +260,7 @@ function evolutionaryLine(native,id,dex,name,types,stats,names,evolutions=[]){
   evoluciones:evolutions.map(([dex,nombre,hp,tipos,attacks])=>{
    const stageId=nombre.toLowerCase().replace(/[^a-z0-9]+/g,'-');
    return {dex,nombre,hp,tipos,
-    kit:kit(native,attacks||names,id,stageId)};
+    kit:kit(native,attacks||EARLY_KANTO_SLOTS[stageId]||names,id,stageId)};
   })
  };
 }
@@ -203,9 +310,56 @@ export function addEarlyKantoSpecies(original){
  ['0057','PRIMEAPE',87,['FIGHTING']]]),
  evolutionaryLine(native,'geodude','0074','GEODUDE',['ROCK','GROUND'],
  {role:'TANQUE',hp:82,speed:80,attack:1.05,defense:1.20},
- ['Tackle','Rock Throw','Rock Tomb','Mud-Slap'],[
+ ['Tackle','Rock Throw','Mud-Slap','Rock Tomb'],[
  ['0075','GRAVELER',94,['ROCK','GROUND']],
- ['0076','GOLEM',109,['ROCK','GROUND']]])
+ ['0076','GOLEM',109,['ROCK','GROUND']]]),
+ // Misty's chapter: Mount Moon, Route 4 and Cerulean
+ evolutionaryLine(native,'paras','0046','PARAS',['BUG','GRASS'],
+ {role:'CONTROL',hp:59,speed:108,attack:.80,defense:.87},
+ KANTO_ROUTE_SLOTS.paras,[['0047','PARASECT',82,['BUG','GRASS']]]),
+ evolutionaryLine(native,'clefairy','0035','CLEFAIRY',['FAIRY'],
+ {role:'CONTROL',hp:75,speed:105,attack:.76,defense:.86},
+ KANTO_ROUTE_SLOTS.clefairy,[['0036','CLEFABLE',100,['FAIRY']]]),
+ evolutionaryLine(native,'sandshrew','0027','SANDSHREW',['GROUND'],
+ {role:'FISICO',hp:69,speed:117,attack:.98,defense:1.05},
+ KANTO_ROUTE_SLOTS.sandshrew,[['0028','SANDSLASH',95,['GROUND']]]),
+ evolutionaryLine(native,'ekans','0023','EKANS',['POISON'],
+ {role:'FISICO',hp:64,speed:119,attack:.91,defense:.94},
+ KANTO_ROUTE_SLOTS.ekans,[['0024','ARBOK',91,['POISON']]]),
+ evolutionaryLine(native,'staryu','0120','STARYU',['WATER'],
+ {role:'DISTANCIA',hp:66,speed:140,attack:.90,defense:.97},
+ KANTO_ROUTE_SLOTS.staryu,[['0121','STARMIE',98,['WATER','PSYCHIC']]]),
+ evolutionaryLine(native,'psyduck','0054','PSYDUCK',['WATER'],
+ {role:'DISTANCIA',hp:68,speed:116,attack:.92,defense:.90},
+ KANTO_ROUTE_SLOTS.psyduck,[['0055','GOLDUCK',92,['WATER']]]),
+ evolutionaryLine(native,'poliwag','0060','POLIWAG',['WATER'],
+ {role:'CONTROL',hp:64,speed:138,attack:.87,defense:.90},
+ KANTO_ROUTE_SLOTS.poliwag,[
+ ['0061','POLIWHIRL',84,['WATER']],
+ ['0062','POLIWRATH',100,['WATER','FIGHTING']]]),
+ // Surge's chapter: Cerulean north, Routes 5/6 and Vermilion
+ evolutionaryLine(native,'oddish','0043','ODDISH',['GRASS','POISON'],
+ {role:'CONTROL',hp:64,speed:104,attack:.88,defense:.92},
+ KANTO_ROUTE_SLOTS.oddish,[
+ ['0044','GLOOM',84,['GRASS','POISON']],
+ ['0045','VILEPLUME',101,['GRASS','POISON']]]),
+ evolutionaryLine(native,'bellsprout','0069','BELLSPROUT',['GRASS','POISON'],
+ {role:'DISTANCIA',hp:60,speed:107,attack:.97,defense:.81},
+ KANTO_ROUTE_SLOTS.bellsprout,[
+ ['0070','WEEPINBELL',83,['GRASS','POISON']],
+ ['0071','VICTREEBEL',103,['GRASS','POISON']]]),
+ evolutionaryLine(native,'meowth','0052','MEOWTH',['NORMAL'],
+ {role:'FISICO',hp:60,speed:148,attack:.97,defense:.80},
+ KANTO_ROUTE_SLOTS.meowth,[['0053','PERSIAN',89,['NORMAL']]]),
+ evolutionaryLine(native,'diglett','0050','DIGLETT',['GROUND'],
+ {role:'FISICO',hp:53,speed:169,attack:1.06,defense:.70},
+ KANTO_ROUTE_SLOTS.diglett,[['0051','DUGTRIO',80,['GROUND']]]),
+ evolutionaryLine(native,'voltorb','0100','VOLTORB',['ELECTRIC'],
+ {role:'DISTANCIA',hp:63,speed:163,attack:.96,defense:.90},
+ KANTO_ROUTE_SLOTS.voltorb,[['0101','ELECTRODE',90,['ELECTRIC']]]),
+ evolutionaryLine(native,'magnemite','0081','MAGNEMITE',['ELECTRIC','STEEL'],
+ {role:'DISTANCIA',hp:67,speed:109,attack:1.05,defense:1.13},
+ KANTO_ROUTE_SLOTS.magnemite,[['0082','MAGNETON',96,['ELECTRIC','STEEL']]])
  ];
  const known=new Set(original.map(p=>p.id));
  return lines.filter(p=>!known.has(p.id));

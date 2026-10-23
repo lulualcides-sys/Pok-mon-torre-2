@@ -26,6 +26,8 @@ const DARK_CORE=[0x090b15,0x2a103e,0x542073,0x9240b3,0xd786ff];
 const ICE_GLASS=[0x12243f,0x285e8c,0x65c0e6,0xbbf3ff,0xffffff];
 const TWISTER=[0x172b36,0x395668,0x6c91a1,0xb2d1d7,0xf0f7ed];
 const ROCK_DUST=PALETTES.rock;
+// Mint-green contour requested for Ancient Power, original rock fill intact.
+const ANCIENT_MINT=[0xb5f8a1,...ROCK_DUST.slice(1)];
 const SNOW=PALETTES.ice;
 
 export const REWORKED_STYLES=Object.freeze([
@@ -70,17 +72,17 @@ function ancient(g,x,y,f,a){
  for(let i=0;i<orbit;i++){
   const phi=i*TAU/orbit+.19*f;
   const near=wave(phi)>0;
-  const r=20+(i%3)*4;
+  const r=(20+(i%3)*4)*1.2;
   const dx=wave(phi)*r,dy=Math.cos(phi)*r*.48;
-  const size=near?.7+(i%2)*.13:.45+(i%3)*.06;
-  S(g,'rock',x+dx,y+dy,ROCK_DUST,size,phi*.19,near?1:.57);
+  const size=(near?.7+(i%2)*.13:.45+(i%3)*.06)*1.2;
+  S(g,'rock',x+dx,y+dy,ANCIENT_MINT,size,phi*.19,near?1:.57);
   if(near&&i%3===0){
    const o=v(phi,5);
-   S(g,'shard',x+dx+o.x*.4,y+dy+o.y*.4,ROCK_DUST,.37,
+   S(g,'shard',x+dx+o.x*.4,y+dy+o.y*.4,ANCIENT_MINT,.37*1.2,
     phi-PI/4,.9);
   }
  }
- S(g,'rock',x,y,ROCK_DUST,.64+wave(f*.65)*.08,a*.1,.84);
+ S(g,'rock',x,y,ANCIENT_MINT,(.64+wave(f*.65)*.08)*1.2,a*.1,.84);
  for(let j=0;j<6;j++){
   const q=v(a,-10-j*7,wave(f*.7+j*2.1)*(8+j));
   dot(g,x+q.x,y+q.y,j%2?ROCK_DUST[1]:ROCK_DUST[3],
@@ -93,21 +95,23 @@ function iceShard(g,x,y,f,a){
  // trajectories and timings are untouched. Sharper translucent-white ice
  // crystals with beveled blue facets and tiny frost fragments replace
  // generic blue needles. Twelve facing/spark phases.
- const tip=wave(f*.52)*.07;
- S(g,'iceDagger',x,y,ICE_GLASS,.68,a-PI/4+tip,.98);
+ // Keep seven projectile trajectories and small ice crystal shapes, but
+ // give EACH drawn crystal a 12-pose tumble and glint.
+ const spin=(f%12)*PI/14,tip=wave(f*.82)*.19;
+ S(g,'iceDagger',x,y,ICE_GLASS,.68,a-PI/4+spin+tip,.96);
  const pale=v(a,-3,2);
  S(g,'iceDagger',x+pale.x,y+pale.y,ICE_GLASS,.24,
-  a-PI/4-tip,.73);
+  a-PI/4-spin*.8-tip,.62+.20*(.5+.5*wave(f*1.4)));
  for(let i=0;i<5;i++){
   const pos=v(a,-7-i*8,wave(f*.48+i*2.1)*(2+i*.8));
   S(g,i%2===0?'frostChip':'spark',
    x+pos.x,y+pos.y,ICE_GLASS,i<2?.30:.19,
-   a+PI/4+i*.28,.81-i*.13);
+   a+PI/4+i*.28+spin*(i%2?1:-1),(.72+.15*wave(f*.9+i))*(1-i*.13));
  }
  for(let i=0;i<4;i++){
   const pos=v(a,6+i*4,(i%2?1:-1)*(4+i*2));
   dot(g,x+pos.x,y+pos.y,i%2?ICE_GLASS[3]:ICE_GLASS[4],
-   2,.78-i*.11);
+   2,(.63+.20*wave(f*.85+i*1.6))*(1-i*.09));
  }
 }
 

@@ -51,18 +51,23 @@ export function createPartyMatch(state,opponent,wild=false){
   id:m.id,uid:m.uid,level:m.progression?.level||5,
   hp:clamp(m.hp??100),loadout:resolveLoadout(m)
  }));
- const pool=GYMS[state.stage]?.enemy||[opponent.id];
- const count=wild?1:opponent.leader?
+ const gym=GYMS[state.stage];
+ const pool=gym?.enemy||[opponent.id];
+ const leaderTeam=opponent.leader&&Array.isArray(gym?.leaderTeam)?
+  gym.leaderTeam:null;
+ const count=wild?1:leaderTeam?leaderTeam.length:opponent.leader?
   Math.min(6,state.stage>=8?4:state.stage>=4?3:2):
   Math.min(4,1+Math.floor((state.trainer+(state.stage||0))/5));
- const foes=Array.from({length:count},(_,i)=>({
-  id:i===0?opponent.id:pool[(state.trainer+i)%pool.length]||opponent.id,
-  level:opponent.level,hp:100,
-  loadout:resolveLoadout({id:i===0?opponent.id:
-   pool[(state.trainer+i)%pool.length]||opponent.id,
-   progression:{species:i===0?opponent.id:pool[(state.trainer+i)%pool.length]||opponent.id,
-    level:opponent.level}})
- }));
+ const foes=Array.from({length:count},(_,i)=>{
+  const id=leaderTeam?leaderTeam[i]:i===0?opponent.id:
+   pool[(state.trainer+i)%pool.length]||opponent.id;
+  // The true gym ace is the LAST enemy, not the first. Preserves 15/17
+  // trainer checkpoints and saved opponent indices for existing journeys.
+  const level=leaderTeam&&i<count-1?
+   Math.max(7,opponent.level-(count-i)*2):opponent.level;
+  return {id,level,hp:100,
+   loadout:resolveLoadout({id,progression:{species:id,level}})};
+ });
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))
   playerIndex=friend.findIndex(m=>m.hp>0);

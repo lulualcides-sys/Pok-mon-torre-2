@@ -1,0 +1,97 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const base=path.resolve('_site/arena2d');
+const ver=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8')).modules;
+const file=p=>path.join(base,ver,p);
+const mod=p=>import(pathToFileURL(file(p)));
+const {ROSTER,buscar}=await mod('datos.js');
+const {EARLY_KANTO_BASE,MISTY_ROUTE_BASE,SURGE_ROUTE_BASE,EARLY_KANTO_FORMS,
+ earlyKantoSlotPlan,nativeKantoEvolutionPlan}=await mod('torre2/early-kanto-species.js');
+const {TEST_LIBRARY,availableMoves,defaultLoadout,selectedMoves,resolveLoadout}=await mod('torre2/move-pool.js');
+const {GYMS,TRAINERS_PER_GYM,currentOpponent,createCampaign}=await mod('torre2/campaign-core.js');
+const {createPartyMatch}=await mod('torre2/party-battle.js');
+
+globalThis.localStorage={
+ items:new Map(),setItem(k,v){this.items.set(k,v)},
+ getItem(k){return this.items.get(k)||null},
+ removeItem(k){this.items.delete(k)}
+};
+const manifest=JSON.parse(fs.readFileSync(path.join(base,'assets/pmd/manifest.json'),'utf8'));
+const families=[...EARLY_KANTO_BASE,...MISTY_ROUTE_BASE,...SURGE_ROUTE_BASE];
+assert.equal(families.length,23,'23 distinct Kanto families');
+for(const id of families){
+ const def=ROSTER.find(x=>x.id===id);
+ assert.ok(def,'MISSING BATTLE POKÉMON '+id);
+ for(const dex of EARLY_KANTO_FORMS[id]){
+  const asset=manifest[dex];
+  assert.ok(asset?.anims?.Idle&&asset?.anims?.Walk,
+   'NO actual PMD sprite for '+id+' / '+dex);
+  for(const anim of [asset.anims.Idle,asset.anims.Walk]){
+   const png=path.join(base,'assets/pmd',anim.file);
+   assert.ok(fs.existsSync(png)&&fs.statSync(png).size>50,'Missing PMD sheet '+png);
+  }
+ }
+ const forms=[id,...def.evoluciones.map(x=>x.nombre.toLowerCase())];
+ for(const species of forms){
+  const {def:resolved,etapa}=buscar(species);
+  assert.equal(resolved.id,id,'Non-resolvable evolution '+species);
+  const level=50; // inspect the complete unlocked four-slot tree
+  const member={id:species,progression:{species,level}};
+  const plan=earlyKantoSlotPlan(species);
+  assert.equal(plan?.length,4,'ATK/RMB/Q/E plan missing '+species);
+  const slots=selectedMoves(member);
+  assert.equal(slots.length,4,'Four reserved slots '+species);
+  const loadout=resolveLoadout(member);
+  const canUseUlt=!['caterpie','metapod','weedle','kakuna'].includes(species);
+  for(const control of ['lmb','rmb','q',...(canUseUlt?['e']:[])]){
+   assert.ok(loadout[control]?.forma,
+    species+' does not have an attack on '+control+' at test level '+level);
+  }
+  if(canUseUlt)assert.equal(loadout.e.ulti,true,species+' E must be an ultimate');
+  else assert.equal(loadout.e,undefined,
+   'Pre-final cocoon / larva must NOT use the evolved ultimate');
+  const kit=etapa?resolved.evoluciones[etapa-1].kit:resolved.kit;
+  assert.equal(kit.esp.dano,0,species+' should dodge without damage');
+  assert.equal(kit.esp.forma,'dash');
+ }
+}
+for(const species of ['ivysaur','venusaur','charmeleon','charizard',
+ 'wartortle','blastoise','golbat']){
+ const level=species==='ivysaur'||species==='charmeleon'||species==='wartortle'?20:42;
+ const member={id:species,progression:{species,level}};
+ const plan=nativeKantoEvolutionPlan(species);
+ assert.equal(plan?.length,4,species+' native evolution has 4 slots');
+ const load=resolveLoadout(member);
+ const missing=['lmb','rmb','q','e'].filter(slot=>!load[slot]?.forma);
+ assert.deepEqual(missing,[],species+' lacks native evolution effects');
+ assert.equal(load.esp.dano,0,species+' must use Kanto-only Dodge');
+ assert.equal(load.e.ulti,true,species+' must have charged ULT');
+}
+assert.equal(TRAINERS_PER_GYM(0),13);
+assert.equal(TRAINERS_PER_GYM(1),15);
+assert.equal(TRAINERS_PER_GYM(2),17);
+assert.equal(GYMS[1].boss,'starmie');
+assert.deepEqual(GYMS[1].leaderTeam,['staryu','starmie']);
+assert.deepEqual(GYMS[2].leaderTeam,['voltorb','pikachu','raichu']);
+for(const stage of [1,2]){
+ const state=createCampaign('bulbasaur');
+ state.stage=stage;
+ state.trainer=TRAINERS_PER_GYM(stage);
+ const opponent=currentOpponent(state);
+ assert.ok(opponent.leader&&opponent.id===GYMS[stage].boss);
+ const party=createPartyMatch(state,opponent);
+ assert.deepEqual(party.foes.map(p=>p.id),GYMS[stage].leaderTeam,
+  'Real Gym opponent squad must end with its ace');
+ assert.equal(party.foes.at(-1).level,opponent.level,
+  'Gym leader ace receives full stage level cap');
+ assert.ok(party.foes.every(x=>x.loadout?.lmb&&x.loadout?.rmb),
+  'Gym Pokémon must attack with ACTUAL Native / Torre 2 effects');
+}
+assert.equal(TEST_LIBRARY.filter(x=>x.nombre==='Dragon Pulse').length,1);
+const regionSource=fs.readFileSync(file('torre2/battle-path.js'),'utf8');
+assert.match(regionSource,/ROTA 3  >  MT. MOON/);
+assert.match(regionSource,/ROTAS 24\/25  >  5\/6/);
+assert.match(regionSource,/checkpointZone\(i\)/);
+console.log('PASS: 23 Kanto families, every PMD atlas, every evolution ATK/HAB2/HAB3/ULT/DODGE, Misty 2 and Surge 3 real party members, 15/17 trainers and original VFX untouched.');

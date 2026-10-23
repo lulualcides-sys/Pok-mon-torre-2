@@ -4,7 +4,7 @@
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
-import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan} from './early-kanto-species.js';
+import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan} from './early-kanto-species.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -174,8 +174,16 @@ export function availableMoves(member){
  if(!early)return moves;
  const level=member.progression?.level??5;
  const tms=new Set((member.tmMoves||[]).map(canonicalMoveKey));
- return moves.filter(m=>tms.has(canonicalMoveKey(m.nombre))||
-   (early[m.id]!==undefined&&level>=early[m.id]));
+ const {def:memberDef,etapa}=buscar(member.id);
+ const activeKit=etapa?memberDef.evoluciones[etapa-1]?.kit:memberDef.kit;
+ // Never unlock Caterpie/Metapod Confusion or Weedle/Kakuna Fury Attack
+ // just because the LEVEL was reached: the real final evolution is needed.
+ const evoLocked=new Set(Object.values(activeKit||{})
+  .filter(move=>move?.torre2UnlockEvolution)
+  .map(move=>canonicalMoveKey(move.nombre)));
+ return moves.filter(m=>!evoLocked.has(canonicalMoveKey(m.nombre))&&
+   (tms.has(canonicalMoveKey(m.nombre))||
+    (early[m.id]!==undefined&&level>=early[m.id])));
 }
 // New Kanto species keep the exact Arena 2D four attack slots even when
 // an ability is still locked. ESP is the original fifth control and NEVER
@@ -183,7 +191,7 @@ export function availableMoves(member){
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
- const plan=earlyKantoSlotPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
  if(plan)return plan.map(name=>{
   const id=canonicalMoveKey(name);
   return byId.has(id)?id:null;
@@ -194,12 +202,13 @@ export function defaultLoadout(member){
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
- const plan=earlyKantoSlotPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
  if(plan){
   const defaults=defaultLoadout(member);
-  if(member.moves?.length!==4)return defaults;
-  // Keep each slot in place. Future moves unlock automatically as the
-  // level rises and the team member evolves; old saves need no migration.
+  // When a species evolves, promote its own four-slot set immediately.
+  // Older saves with no movePlanSpecies also migrate automatically.
+  if(member.moves?.length!==4||member.movePlanSpecies!==member.id)
+   return defaults;
   return defaults.map((id,i)=>member.moves[i]&&valid.has(member.moves[i])?
    member.moves[i]:id);
  }
@@ -211,14 +220,13 @@ export function equipMove(member,slot,moveId){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return false;
  const pool=availableMoves(member);
  if(!pool.some(m=>m.id===moveId))return false;
- const early=earlyKantoSlotPlan(member.id);
- // New first-route Pokémon always have a weak basic and a dedicated
- // meter-gated ultimate, respecting the original client control roles.
+ const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
+ // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
  if(early&&slot===0&&moveId!==canonicalMoveKey(early[0]))return false;
  if(early&&slot===3&&moveId!==canonicalMoveKey(early[3]))return false;
  const chosen=selectedMoves(member);
  if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;
- if(early){chosen[slot]=moveId;member.moves=chosen;return true;}
+ if(early){chosen[slot]=moveId;member.moves=chosen;member.movePlanSpecies=member.id;return true;}
  while(chosen.length<4)chosen.push(pool[chosen.length]?.id);
  chosen[slot]=moveId;member.moves=chosen;
  return true;
@@ -228,8 +236,15 @@ export function resolveLoadout(member){
  const out={};
  selectedMoves(member).forEach((id,i)=>{
   const attack=dict.get(id);
-  if(attack)out[SLOTS[i]]={...attack,pendiente:false};
+  if(attack)out[SLOTS[i]]={...attack,pendiente:false,
+   ...(i===3?{ulti:true}:{})};
  });
+ // Native P2 evolution skills are re-slotted ONLY inside the Kanto campaign;
+ // the Arena and VS CPU keep their original kits untouched.
+ if(nativeKantoEvolutionPlan(member.id))out.esp={
+  nombre:'Dodge',forma:'dash',tipo:'NORMAL',dano:0,
+  dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
+ };
  return out;
 }
 export function pokemonStats(member){

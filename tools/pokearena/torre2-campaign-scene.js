@@ -7,7 +7,7 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
-import {earlyKantoSlotPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
+import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
@@ -677,10 +677,10 @@ create(){
   const stats=pokemonStats(member),pool=availableMoves(member);
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
-  const earlyPlan=earlyKantoSlotPlan(member.id);
+  const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
   this.summaryFilter??='ALL';this.summarySearch??='';
-  const slotCodes=['LMB','RMB','Q','E / ULT'];
-  const slotNames=earlyPlan?['BÁSICO FRACO','GOLPE 1','GOLPE 2','ULTIMATE']:
+  const slotCodes=['LMB','RMB','Q','E'];
+  const slotNames=earlyPlan?['ATK','HAB 2','HAB 3','ULT']:
    ['ATAQUE 1','ATAQUE 2','ESPECIAL','FINALIZADOR'];
   const types={NORMAL:0xb9c4d2,FIRE:0xf0804d,WATER:0x6fb7f0,ELECTRIC:0xeec95d,
     GRASS:0x83d18a,ICE:0x9bdcee,FIGHTING:0xdb8e77,POISON:0xb98cd9,
@@ -748,8 +748,8 @@ create(){
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
-  label(231,78,earlyPlan?'ESPAÇO = ESQUIVA · Q 2º GOLPE · E ULTIMATE':
-   'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,9);
+  label(231,78,earlyPlan?'LMB ATK  ·  RMB HAB 2  ·  Q HAB 3  ·  E ULT  ·  ESP ESQUIVA':
+   'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,earlyPlan?8:9);
   chosen.forEach((id,i)=>{
    const move=pool.find(m=>m.id===id);
    const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
@@ -768,9 +768,14 @@ create(){
    label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
    label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
   });
-  // Separated library with filters and paging: can navigate 137 Mewtwo moves.
-  this.add.rectangle(424,183,384,1,0x446580);
-  label(230,192,'BIBLIOTECA · '+pool.length+' GOLPES',C.gold,12);
+  // Fifth dedicated action is ALWAYS defensive and never consumes an
+  // attack slot: native Phaser Space Dodge, untouched original ATK visuals.
+  if(earlyPlan){
+   label(230,179,'ESQUIVA  ·  ESP / SPACE  ·  DODGE (SEM DANO)','#9ddcf0',8);
+  }
+  // Separated library with filters and paging: can navigate Mewtwo moves.
+  this.add.rectangle(424,189,384,1,0x446580);
+  label(230,195,'BIBLIOTECA · '+pool.length+' GOLPES',C.gold,12);
   button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
   button(541,187,75,25,'BUSCAR',()=>{
    const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
