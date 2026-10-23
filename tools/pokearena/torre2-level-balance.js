@@ -5,6 +5,9 @@
  * replacing moves, collision, STAB/type rules, animations or other game modes.
  */
 export const REFERENCE_LEVEL=30;
+// Small Kanto-only 25% boost for PLAYER dealt damage. Never changes the
+// original Poké Arena 2D multiplayer modes, damage previews or enemy hits.
+export const CAMPAIGN_PLAYER_DAMAGE_BOOST=1.25;
 export function combatLevel(value){
  const n=Number(value);
  return Number.isFinite(n)?Math.min(100,Math.max(1,Math.floor(n))):REFERENCE_LEVEL;
