@@ -353,6 +353,22 @@ patches.push(['habilidades.js',[
  ['const aAspecto=',"PALETAS.hieloTorre2={contorno:0x0b2843,borde:0x5daaca,cuerpo:0x40b9e2,nucleo:0xe4fcff,hebra:0xffffff,hebraAtras:0x66c0dc,claro:0xdaf6ff,particula:\"chispa\"};HAZ.hieloTorre2={halo:0x65bbec,borde:0x143b61,cuerpo:0x68c6e8,nucleo:0xeaffff,veta:0xb0edff,motas:[0xffffff,0xacecff,0x54bbda,0x2787ad]};const aAspecto="],
  ["if(h.haz&&frente>cola)this.pintarHaz(dt,dispara,S,cos,sin,cola,frente,tc);","if(h.haz&&frente>cola)this.pintarHaz(dt,dispara,S,cos,sin,cola,frente,tc);if(h.paleta===\"hieloTorre2\"&&frente>cola){const gg=this.g,span=Math.max(1,frente-cola-14),step=Math.floor(tc*30);for(const b of S)for(let k=0;k<7;k++){const s=cola+8+((k*43+step*9)%span),side=k%2?1:-1,offset=side*(h.ancho*.69+3+Math.sin(tc*22+k*1.9)*2);const xx=Math.round(b.x+cos*s-sin*offset),yy=Math.round(b.y+sin*s+cos*offset-alturaRayo(b.alt,s));gg.fillStyle(0x113e5e,.9);gg.fillRect(xx-2,yy-4,5,9);gg.fillRect(xx-4,yy-2,9,5);gg.fillStyle(k%3===0?0xffffff:0x9eeafb,1);gg.fillRect(xx-1,yy-4,3,9);gg.fillRect(xx-4,yy-1,9,3);gg.fillStyle(0x49acdf,.9);gg.fillRect(xx-1,yy-1,3,3);}}"]
 ]]);
+// New Steel Beam delegates the ORIGINAL Lucario Aura Storm Chorro renderer.
+// The source renderer and its approved colors remain unchanged; only this
+// named optional palette is installed. Native beam fragments/hit timing,
+// real cursor steering, Clash, impact and depth stay owned by habilidades.js.
+patches.push(['habilidades.js',[
+ ['const aAspecto=',
+  'PALETAS.metalTorre2={contorno:0x101f30,borde:0x5c788b,cuerpo:0x8fb9cb,nucleo:0xf8ffff,hebra:0xffffff,hebraAtras:0x91b7c9,claro:0xf0ffff,particula:"chispa"};HAZ.metalTorre2={halo:0x8fdde9,borde:0x213b51,cuerpo:0xb6d7e1,nucleo:0xffffff,veta:0xe7fcff,motas:[0xffffff,0xe6fbff,0xb5d9e4,0x739cab]};const aAspecto='
+ ]
+]]);
+// Delegate Steel Beam to the EXACT original chorro function. No clone of
+// its visual engine or modified native Aura Storm metadata.
+patches.push(['habilidades.js',[
+ ['torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(l,h,extra,FORMAS),proyectil,chorro,',
+  'torre2_steelbeam:(l,h,extra)=>TORRE2_FORMS.torre2_steelbeam(l,h,extra,chorro),torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(l,h,extra,FORMAS),proyectil,chorro,'
+ ]
+]]);
 // Level 50 versus level 6: adapt the FireRed level term and HP to the
 // original Arena 2D damage pipeline without touching moves or visual effects.
 patches.push(['luchador.js',[

@@ -1,9 +1,11 @@
-/* Pokémon Torre 2 — three ORIGINAL Steel special-move visuals, October 2026.
- * Sources of technique: Poké Arena 2D Chorro/projectiles; approved Ice Beam,
- * Shadow Ball, Metal Claw and Rock Blast; Zarza VFX phase/impact design.
- * Emerald Arena serves as a reference for recoil/terrain interactions only.
- * Pixel cells rendered with Phaser Graphics/WebGL; NO Canvas2D, CSS or video.
- * All native and user-approved attack modules remain unchanged.
+/* Pokémon Torre 2 — Steel FX revisions, 23/10/2026.
+ * Flash Cannon: previous Steel Beam metallic pixel ray TRANSFERRED.
+ * Steel Beam: delegates actual original Poké Arena 2D Aura Storm/Chorro,
+ *             recolored by opt-in metalTorre2 palette in build-preview.
+ * Mirror Shot: flashes of polished light, not rotating mirror plates.
+ * T2 approved moves untouched; Zarza+Emerald are concept references until
+ * their exact assets/routines have been ported with verified permission.
+ * Phaser/WebGL only; no Canvas2D/CSS/video.
  */
 import {clashAt} from './clash-fx.js';
 
@@ -38,14 +40,26 @@ const FLASH_CORE=[
 ];
 // Mirror Shot is a SILVER REFLECTIVE PLATE with sharp triangular highlights,
 // not a recoloured Shadow Ball. Its silhouette flips every animation phase.
-const MIRROR_PLATE=[
- '.......KK.......','.....KKSSKK.....','...KKSDLLDSKK...',
- '..KSDLLWWWLDSK..','.KSDLLWCWWLDSK.',
- 'KSDLLWWCCWWLDSK','KDLLWCCWWCCWLDK',
- 'KLLWCCWBBWWCCLK','KDLLWCCWWCCWLDK',
- 'KSDLLWWCCWWLDSK','.KSDLLWCWWLDSK.',
- '..KSDLLWWWLDSK..','...KKSDLLDSKK...',
- '.....KKSSKK.....','.......KK.......'
+// Mirror Shot: the CORE-SERIES attack is a FLASH emitted by the user's
+// polished body (not a flying metal plate). Twelve-phase reflective energy
+// flare, with diagonal mirrored rays and sharp white-silver scintillations.
+// Adapted from the approved Metal Claw palette and the native projectile cycle.
+const MIRROR_FLASH=[
+ '...........K...........',
+ '..........KSK..........',
+ '.........KSLSK.........',
+ '.....K...KSLWSK...K.....',
+ '......KKKSLWWLSKKK......',
+ '...KKKSSSLWCCWLSSSKKK...',
+ '..KSSLLLWWCCCCWWLLLSSK..',
+ 'KSSLLWWWCCBBBBCCWWWLLSSK',
+ '..KSSLLLWWCCCCWWLLLSSK..',
+ '...KKKSSSLWCCWLSSSKKK...',
+ '......KKKSLWWLSKKK......',
+ '.....K...KSLWSK...K.....',
+ '.........KSLSK.........',
+ '..........KSK..........',
+ '...........K...........'
 ];
 const SPARK=[
  '..W..','W.C.W','.CWC.','W.C.W','..W..'
@@ -98,7 +112,26 @@ function strike(l,h,extra,target){
   dirX:(target.x-l.x)/dist,dirY:(target.y-l.y)/dist,
   empuje:11,slot:extra?.slot,surge:extra?.surge
  });
- return result==='golpe'&&(!Number.isFinite(before)||target.hp<before);
+ return result==='golpe'&&(target.__torre2TrainingDummy===true||!Number.isFinite(before)||target.hp<before);
+}
+// Reflective impact uses fragment bounce/damping constants from
+// the MIT-licensed arena_physics.c by German Burgardt (2026).
+function mirrorFragments(g,x,y,age,opacity){
+ const q=256,steps=Math.min(15,Math.floor(age*60));
+ for(let i=0;i<8;i++){
+  const angle=i*Math.PI/4;
+  let vx=Math.cos(angle)*240,vy=Math.sin(angle)*200;
+  let z=(2+i%3)*q,vz=520+i*50,bounces=0,px=0,py=0;
+  for(let j=0;j<steps;j++){
+   px+=vx;py+=vy;z+=vz;vz-=42;
+   if(z<=0){
+    z=0;
+    vz=vz< -100&&bounces++<3?-vz*150/256:0;
+    vx*=180/256;vy*=180/256;
+   }else{vx*=251/256;vy*=251/256}
+  }
+  rect(g,x+px/q,y+py/q-z/q*.3,2,2,i%2?P.C:P.W,opacity);
+ }
 }
 function impact(g,x,y,age,kind){
  const p=clamp(age/.25),fade=1-p;
@@ -108,6 +141,7 @@ function impact(g,x,y,age,kind){
   rect(g,x+Math.cos(a)*d,y+Math.sin(a)*d*.73,3,3,c,fade);
  }
  if(p<.68)stamp(g,SPARK,x,y,1.5+p*1.7,0,fade);
+ if(kind==='mirror')mirrorFragments(g,x,y,age,fade);
 }
 function projectile(l,h,extra,kind){
  const a=aim(l),ux=Math.cos(a),uy=Math.sin(a);
@@ -174,30 +208,42 @@ function projectile(l,h,extra,kind){
     a+(pose%4-1.5)*.025);
    if(pose%3===0)stamp(g,SPARK,point.x,point.y,1.75,pose*.1,.65);
   }else{
-   // Twelve visible orientations: turning flat mirrored-metal diamond.
-   const frame=Math.floor(age*18)%12;
-   const rotation=a+frame*PI/18;
-   stamp(g,MIRROR_PLATE,point.x,point.y,1.02,rotation);
-   for(let i=1;i<4;i++){
-    const back=dist-i*13;if(back<0)continue;
-    const x=source.x+ux*back-uy*Math.sin(age*14+i)*5;
-    const y=source.y+uy*back+ux*Math.sin(age*14+i)*5;
-    stamp(trail,SPARK,x,y,.55+(i===1?.25:0),0,.72-i*.16);
+   // Core-series Mirror Shot: a concentrated luminous metallic FLASH,
+   // emerging from a polished body and passing as one aimed projectile.
+   // Not a flying mirror, a generic sphere, or a steel-coloured bite.
+   const frame=Math.floor(age*24)%12,twinkle=frame%4;
+   stamp(g,MIRROR_FLASH,point.x,point.y,twinkle===0?1.07:.86,
+     a*.12+(twinkle-1.5)*.05,1);
+   for(let i=1;i<=5;i++){
+    const back=dist-i*10;if(back<0)continue;
+    const phase=age*30-i*.8,side=(i%2?1:-1)*(4+i*1.4);
+    const x=source.x+ux*back-uy*(Math.sin(phase)*side);
+    const y=source.y+uy*back+ux*(Math.sin(phase)*side);
+    stamp(trail,SPARK,x,y,i===1?1.06:.62,phase*.1,.76-i*.10);
+    rect(trail,x-1,y-1,3,3,i%3===0?P.W:P.C,.85-i*.08);
+   }
+   if(frame<4||frame===8){
+    for(let k=0;k<4;k++){
+     const spin=k*PI/2+frame*.11;
+     const rad=11+(frame%4)*2.3;
+     rect(g,point.x+Math.cos(spin)*rad,point.y+Math.sin(spin)*rad,
+      frame%2?3:2,2,k%2?P.W:P.M,.95);
+    }
    }
   }
   return true;
  });
 }
-export function flashcannon(l,h,extra){return projectile(l,h,extra,'flash')}
+// Flash Cannon uses the TRANSFERRED former Steel Beam metallic ray below.
 export function mirrorshot(l,h,extra){return projectile(l,h,extra,'mirror')}
 
-export function steelbeam(l,h,extra){
+export function flashcannon(l,h,extra){
  const e=l.escena,target=l.rival,a=aim(l),ux=Math.cos(a),uy=Math.sin(a);
- const nx=-uy,ny=ux,charge=.38,duration=.76;
- const reach=Math.min(h.alcance||315,335);
- const accuracy=clamp((h.precisao??95)/100);
+ const nx=-uy,ny=ux,charge=.29,duration=.68;
+ const reach=Math.min(h.alcance||265,280);
+ const accuracy=clamp((h.precisao??100)/100);
  let age=0,charged=false,hit=false,failed=false,resolved=false;
- animate(l,'Charge',1.22,a);
+ animate(l,'Charge',.92,a);
  return create(l,(dt,g,glint,fx)=>{
   age+=dt;g.clear();glint.clear();
   const origin={x:l.x+ux*10,y:l.y-(l.alto||36)*.5};
@@ -214,10 +260,8 @@ export function steelbeam(l,h,extra){
   }
   if(!charged){
    charged=true;
-   // Steel Beam consumes exactly one half MAXIMUM HP per use, hit OR miss.
-   // Native pure damage permits the canonical self-KO and HP/KO handling.
-   const recoil=Math.max(1,Math.ceil((l.hpMax||l.hp||1)*.5));
-   l.recibir(l,{dano:recoil,tipo:'NORMAL',puro:true,tick:true});
+   // Flash Cannon inherits the former Steel Beam's metallic beam VISUAL.
+   // It must not inherit Steel Beam's user recoil.
    failed=Math.random()>=accuracy;
   }
   if(age>charge+duration)return false;
@@ -258,6 +302,10 @@ export function steelbeam(l,h,extra){
     resolved=true;
     if(!failed&&strike(l,h,extra,target)){
      hit=true;fx.__hitAt=age;fx.__hitPoint=intersection;
+     if(target.est&&Math.random()<.10){
+      const prev=target.est.torre2SteelSpDef?.stacks||0;
+      target.est.torre2SteelSpDef={stacks:Math.min(6,prev+1)};
+     }
     }
    }
   }
@@ -266,6 +314,39 @@ export function steelbeam(l,h,extra){
   return true;
  });
 }
+
+// This is the ACTUAL original Poké Arena 2D Chorro implementation used
+// by Lucario's Aura Storm, reusing its native physics, sprite pipeline,
+// aiming, pulses, clashes, status/damage, stage depth and release timing.
+// Only the opt-in metallic palette and Steel Beam's canonical recoil differ.
+// Chorro is injected from habilidades.js, never copied or overwritten.
+export function steelbeam(l,h,extra,nativeChorro){
+ if(typeof nativeChorro!=='function')
+  throw new Error('Steel Beam requires the ORIGINAL Aura Storm / Chorro');
+ const cast={...h,forma:'chorro',tipo:'STEEL',paleta:'metalTorre2',
+  haz:true,trozos:undefined,desdeBoca:true,
+  ancho:h.ancho??24,anchoVisual:h.anchoVisual??38,
+  largo:h.largo??320,carga:h.carga??.38,dur:h.dur??.80,
+  pulsos:h.pulsos??5,giro:h.giro??2.4,giroCarga:h.giroCarga??2.4,
+  velTrozos:h.velTrozos??700,empuje:h.empuje??18,
+  empujePulso:h.empujePulso??3};
+ const scene=l.escena;
+ // Exact half maximum HP ONCE, on use, whether aim hits or misses.
+ // Queue at beam release just as native Chorro enters its firing phase.
+ let paid=false;
+ const recoil=()=>{
+  if(paid)return;
+  paid=true;
+  l.recibir(l,{dano:Math.max(1,Math.ceil((l.hpMax||l.hp||1)*.5)),
+   tipo:'NORMAL',puro:true,tick:true});
+ };
+ const result=nativeChorro(l,cast,extra);
+ if(typeof scene.programar==='function')scene.programar(cast.carga,recoil);
+ else if(scene.time?.delayedCall)scene.time.delayedCall(cast.carga*1000,recoil);
+ else recoil();
+ return result;
+}
+
 export const TORRE2_STEEL_FORMS=Object.freeze({
  torre2_flashcannon:flashcannon,
  torre2_steelbeam:steelbeam,

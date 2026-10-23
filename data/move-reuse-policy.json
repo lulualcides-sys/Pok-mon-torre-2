@@ -44,17 +44,17 @@
   "existingNonConformant": {
     "flash-cannon": {
       "status": "requires-rework",
-      "reason": "Implementação de sprites criada praticamente do zero; não há comprovação de reaproveitamento efetivo das quatro fontes. Motor Phaser, colisão e inspirações não contam como quatro reaproveitamentos.",
+      "reason": "Feixe metálico do Steel Beam anterior TRANSFERIDO para Flash Cannon, sem recoil. Reuso real do efeito existente no Torre 2; ainda sem comprovar as quatro fontes; não aprovado visualmente.",
       "visualApproved": false
     },
     "steel-beam": {
       "status": "requires-rework",
-      "reason": "Feixe novo pixelado sem port direto dos recursos prometidos das quatro fontes; efeito e mecânica funcionais não significam reaproveitamento cumprido.",
+      "reason": "Agora delega de verdade ao motor Chorro original do Aura Storm em Poké Arena 2D com paleta metalTorre2. Zarza/Emerald não integram ESTE golpe; pendente de evidência adicional e aprovação.",
       "visualApproved": false
     },
     "mirror-shot": {
       "status": "requires-rework",
-      "reason": "Placa pixelada desenhada do zero; não há rastreabilidade de sprites/algoritmos reais reutilizados de P2/Zarza/Emerald.",
+      "reason": "Substitui espelho voador por clarão energético do corpo polido; usa projeção existente e fragmentos adaptados da física MIT do Emerald Arena. Zarza usado somente como referência, sem reuso de código.",
       "visualApproved": false
     }
   },

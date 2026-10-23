@@ -508,17 +508,56 @@ const server=http.createServer(async(req,res)=>{
    console.error('TRAINING_START_DIAGNOSTIC',JSON.stringify(diag));
    throw error;
   }
+  // Actual battle: route the new Steel Beam through ORIGINAL native
+  // Poké Arena 2D Chorro (Aura Storm renderer), not a fake renderer stub.
+  const actualSteel=await offline.evaluate(async()=>{
+   const scene=window.__pt2Game.scene.getScene('combate');
+   const entry=[...document.querySelectorAll('script[src]')]
+     .find(x=>x.src.includes('/main.js'));
+   const root=new URL('./',entry.src);
+   const {TEST_LIBRARY}=await import(new URL('torre2/move-pool.js',root).href);
+   const {usarHabilidad}=await import(new URL('habilidades.js',root).href);
+   const user=scene.luchadores[0],foe=scene.luchadores[1];
+   const steel=TEST_LIBRARY.find(x=>x.nombre==='Steel Beam');
+   user.kit.q={...steel,pendiente:false};
+   user.cd.q=0;user.accion=null;user.energia=999;
+   user.ax=foe.x;user.ay=foe.y;
+   const fired=usarHabilidad(user,'q');
+   const chorro=scene.efectos.find(x=>
+    x.constructor?.name==='Chorro'&&x.h?.nombre==='Steel Beam');
+   return{fired,found:!!chorro,palette:chorro?.h?.paleta,
+    originalEngine:chorro?.constructor?.name,energyAfter:user.energia};
+  });
+  assert.equal(actualSteel.fired,true,'Training must launch Steel Beam');
+  assert.equal(actualSteel.found,true,
+   'Steel Beam MUST instantiate native Poké Arena Aura Storm / Chorro');
+  assert.equal(actualSteel.palette,'metalTorre2');
+
   const dummy=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    const foe=b.luchadores[1],old=foe.hp,x=foe.x,y=foe.y;
-   const result=foe.recibir(b.luchadores[0],{dano:999,tipo:'STEEL',slot:'q',empuje:55});
+   const player=b.luchadores[0];player.energia=1;player.ulti=0;
+   const result=foe.recibir(player,{dano:999,tipo:'STEEL',slot:'q',empuje:55});
    foe.ponerEstado('aturdido',2);
+   b.__torre2Training.freeze(); // training meter refill after attack
+   const dealt=b.__torre2TrainingTotalDamage;
+   const hits=b.__torre2TrainingHits;
+   const last=b.__torre2TrainingLastDamage;
+   const meter=b.__torre2TrainingMeter?.text;
+   const energy=player.energia,ult=player.ulti;
+   const hp=foe.hp,status=!!foe.est?.aturdido;
    b.__torre2Training.leave();
    const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
-   return {old,hp:foe.hp,x,y,result,status:!!foe.est?.aturdido,
+   return {old,hp,x,y,result,status,
+    dealt,hits,last,meter,energy,ult,
     savedTrainer:state.trainer,savedHp:state.team[0].hp};
   });
   assert.equal(dummy.hp,dummy.old,'Practice target takes absolutely no damage');
+  assert.equal(dummy.result,'golpe','Dummy takes authentic damage events');
+  assert.ok(dummy.dealt>0&&dummy.last>0&&dummy.hits>0,'Damage is calculated and counted before HP is restored');
+  assert.ok(dummy.meter.includes('DANO')&&dummy.meter.includes('ACERTOS'),'Training HUD must show real numerical damage');
+  assert.equal(dummy.energy,100,'Player energy stays full in training');
+  assert.equal(dummy.ult,100,'Player ultimate energy stays full in training');
   assert.equal(dummy.status,false,'Practice target cannot be stunned');
   assert.equal(dummy.savedTrainer,1,'Training never increments route progress');
   await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').scene.isActive(),
@@ -1001,11 +1040,17 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(summaryState.level,50);
   assert.ok(summaryState.count>=8&&summaryState.signature,'Mewtwo has ALL captured/created moves unlocked for testing');
   await tester.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:14000});
-  // Smoke-test the three Steel moves with REAL Phaser Graphics/WebGL.
+  // Test EXACT visual transfer: former Steel Beam ray -> Flash Cannon;
+  // and Mirror Shot's polished-body flash. Steel Beam is NOT fake-rendered
+  // here: it is delegated to native Chorro, which is tested in real battle.
   const steelLive=await tester.evaluate(async()=>{
    const script=[...document.querySelectorAll('script[src]')]
     .find(x=>x.src.includes('/main.js'));
-   const mod=await import(new URL('./torre2/steel-fx.js',script.src).href);
+   const base=new URL('./',script.src);
+   const mod=await import(new URL('torre2/steel-fx.js',base).href);
+   const {TEST_LIBRARY}=await import(new URL('torre2/move-pool.js',base).href);
+   const native=await (await fetch(new URL('habilidades.js',base))).text();
+   const steel=TEST_LIBRARY.find(x=>x.nombre==='Steel Beam');
    const e=window.__pt2Game.scene.getScene('campanha'),prior=e.efectos;
    const originalGraphics=e.add.graphics,priorRandom=Math.random;
    let cells=0;
@@ -1019,7 +1064,6 @@ const server=http.createServer(async(req,res)=>{
     const results=[];
     for(const [form,damage,accuracy] of [
      ['torre2_flashcannon',16,100],
-     ['torre2_steelbeam',28,95],
      ['torre2_mirrorshot',13,85]]){
      const foe={x:340,y:300,alto:40,hp:320,hpMax:320,ko:false,est:{},
       recibir(source,h){this.hp-=h.dano;return 'golpe'}};
@@ -1032,17 +1076,29 @@ const server=http.createServer(async(req,res)=>{
      results.push({form,damage:320-foe.hp,recoil:300-user.hp});
      fx.destroy();e.efectos=e.efectos.filter(x=>x!==fx);
     }
-    return{results,cells};
+    return{results,cells,
+     steelNativePalette:steel?.paleta,
+     steelNativeHaz:steel?.haz,
+     steelForm:steel?.forma,
+     nativePaletteRegistered:native.includes('HAZ.metalTorre2='),
+     nativeDelegation:native.includes('torre2_steelbeam:(l,h,extra)=>TORRE2_FORMS.torre2_steelbeam(l,h,extra,chorro)')};
    }finally{
     e.add.graphics=originalGraphics;Math.random=priorRandom;
     if(prior===undefined)delete e.efectos;else e.efectos=prior;
    }
   });
-  assert.ok(steelLive.cells>3000,'Steel attacks must render real Phaser pixel cells');
-  assert.deepEqual(steelLive.results.map(x=>x.damage),[16,28,13],
-   'All 3 Steel hits must be resolved in the browser with manual aim');
-  assert.deepEqual(steelLive.results.map(x=>x.recoil),[0,150,0],
-   'Only Steel Beam costs 50% max HP');
+  assert.ok(steelLive.cells>2500,'Transferred Flash Cannon and Mirror Shot must render pixel cells');
+  assert.deepEqual(steelLive.results.map(x=>x.damage),[16,13],
+   'New Steel designs must hit with actual aim and rendered contact');
+  assert.deepEqual(steelLive.results.map(x=>x.recoil),[0,0],
+   'Flash Cannon does not inherit the Steel Beam recoil');
+  assert.equal(steelLive.steelNativePalette,'metalTorre2');
+  assert.equal(steelLive.steelNativeHaz,true);
+  assert.equal(steelLive.steelForm,'torre2_steelbeam');
+  assert.equal(steelLive.nativePaletteRegistered,true,
+   'Native original P2 beam must include the steel-only palette');
+  assert.equal(steelLive.nativeDelegation,true,
+   'Steel Beam must call ORIGINAL Aura Storm/Chorro, not a custom imitation');
 
   await tester.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
