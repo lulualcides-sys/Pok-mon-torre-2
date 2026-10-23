@@ -80,6 +80,26 @@ for(const id of families){
   assert.equal(kit.esp.forma,'dash');
  }
 }
+// Persian receives the already-approved Pay Day rather than a new
+// projectile. Its four combat inputs and Kanto Pokédex must match.
+const persian={id:'persian',progression:{species:'persian',level:28}};
+const payDay=TEST_LIBRARY.filter(h=>h.id==='pay-day');
+assert.equal(payDay.length,1,'Only one canonical approved Pay Day exists');
+assert.equal(payDay[0].approved,true,'Pay Day artwork is already user-approved');
+assert.equal(payDay[0].forma,'torre2_payday','Reuse nine-coin Phaser VFX');
+assert.ok(availableMoves(persian).some(h=>h.id==='pay-day'),
+ 'Persian should learn Pay Day upon evolving, not just in the full Mewtwo library');
+assert.deepEqual(defaultLoadout(persian),
+ ['tackle','quick-attack','pay-day','hyper-beam'],
+ 'Persian third skill must be Pay Day, without replacing its ultimate');
+assert.equal(resolveLoadout(persian).q?.forma,'torre2_payday',
+ 'Persian battle third skill must use the existing approved coin animation');
+const meowthEarly={id:'meowth',progression:{species:'meowth',level:19}};
+const meowthLearned={id:'meowth',progression:{species:'meowth',level:20}};
+assert.equal(availableMoves(meowthEarly).some(h=>h.id==='pay-day'),false,
+ 'Meowth should not unlock Pay Day prematurely');
+assert.equal(availableMoves(meowthLearned).some(h=>h.id==='pay-day'),true,
+ 'Meowth Pay Day unlock remains available at level 20');
 // Native P2 starters must gain their own 4-slot evolution skill sets
 // at their FIRST possible evolution levels, not only late-game levels.
 for(const species of ['ivysaur','venusaur','charmeleon','charizard',
