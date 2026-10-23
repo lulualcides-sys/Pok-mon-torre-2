@@ -687,8 +687,16 @@ assert.ok(partySource.includes('drawPixelBall('),
 const fightSource=fs.readFileSync(path.join(stage,version,'escenas/combate.js'),'utf8');
 assert.ok(fightSource.includes('d.torre2?.party?'),
  'Every party species preloaded before combat; never load on swap');
-assert.ok(menuCampaign.includes('renderUnifiedCampaignMap(this,state,'),
- 'Campaign should use one persistent FireRed world per leader');
+assert.ok(menuCampaign.includes('renderBattlePath(this,state,'),
+ 'Campaign must render the gym-bound zigzag battle road, not the old world map');
+assert.ok(!menuCampaign.includes('setCampaignPanelCollapsed(')&&
+ !menuCampaign.includes('renderCampaignLegacy('),
+ 'Old zoom/collapsible map modes must be fully deleted');
+const battlePath=fs.readFileSync(path.join(stage,version,'torre2/battle-path.js'),'utf8');
+assert.ok(battlePath.includes('ROOM_CROPS')&&
+ battlePath.includes('torre2-path-gym-')&&
+ battlePath.includes(" 'pewter','cerulean'"),
+ 'Battle Road must display authentic FireRed gym interior and current city exterior');
 assert.ok(!menuCampaign.includes('richMap(this,state.stage,points,page,region)'),
  'Trainer progression must not change the background every three battles');
 const {getCampaignMapSpec}=await import(pathToFileURL(
