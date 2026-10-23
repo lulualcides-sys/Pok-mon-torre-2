@@ -197,8 +197,17 @@ export function availableMoves(member){
  const evolved=isKantoEvolvedForm(member.id);
  const evolutionSkills=new Set(
   evolved?(earlyKantoSlotPlan(member.id)||[]).map(canonicalMoveKey):[]);
+ const specialSurgeUnlocks=new Set([
+  ...(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id)&&level>=14?['thunder-wave']:[]),
+  ...(['voltorb','electrode','magnemite','magneton'].includes(member.id)&&level>=15?['sonic-boom']:[]),
+  ...(['voltorb','electrode'].includes(member.id)&&level>=18?['screech']:[])
+ ]);
  return moves.filter(m=>{
   const key=canonicalMoveKey(m.nombre);
+  // Some original Poké Arena Raichu evolutions still carry an older
+  // evolution-only lock. Explicitly unlock these three NEW status moves on
+  // their own species/level, without lifting locks on any approved attacks.
+  if(specialSurgeUnlocks.has(key))return true;
   // Allow skills of the ACTUAL evolved form immediately after evolution,
   // even at Lv 7 (Metapod), 10 (Butterfree), 18 (Pidgeotto) etc.
   // Other moves remain level-gated, and previous forms cannot borrow the
