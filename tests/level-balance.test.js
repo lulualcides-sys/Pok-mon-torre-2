@@ -55,7 +55,7 @@ test('real build patches only move hits, leaving recoil/status unchanged',()=>{
 test('Kanto increases only player move damage by 25%, never enemy or status hits',()=>{
  assert.equal(CAMPAIGN_PLAYER_DAMAGE_BOOST,1.25);
  assert.ok(CAMPAIGN_PLAYER_DAMAGE_BOOST<1.5,
-  'Avoid making battles too short after the user's 0.25x/0.5x choice');
+  'Avoid making battles too short after the 0.25x/0.5x choice');
  const build=readFileSync(new URL('../tools/pokearena/build-preview.mjs',import.meta.url),'utf8');
  assert.ok(build.includes('if(fuente.lado===0)d*=torre2PlayerDamageBoost'),
   'Native Arena 2D combat uses 1.25x damage ONLY for Kanto player source');
