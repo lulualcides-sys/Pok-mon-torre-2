@@ -1,0 +1,245 @@
+{
+  "url": "http://127.0.0.1:4274/arena2d/?original=1",
+  "title": "Pokémon Torre",
+  "canvas": {
+    "width": 980,
+    "height": 650,
+    "visible": true,
+    "renderer": true,
+    "html": "Pokémon Torre"
+  },
+  "errors": [],
+  "notFound": [],
+  "mobile": {
+    "started": true,
+    "canvasWidth": 1688,
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "rotateOverlay": "none",
+    "bootMs": 2038,
+    "errors": [],
+    "missing": []
+  },
+  "source": "pokearena2d.com",
+  "offline": {
+    "initial": true,
+    "combat": {
+      "mode": "cpu",
+      "online": false,
+      "species": [
+        "charmander",
+        "onix"
+      ]
+    },
+    "aiRegression": {
+      "canEvolve": true,
+      "attacks": 23,
+      "moveChoices": 85,
+      "blockedEvo": 0,
+      "otherModeEvo": true
+    },
+    "trainerAfterVictory": 1
+  },
+  "mewtwo": {
+    "summary": {
+      "level": 50,
+      "team": [
+        "squirtle",
+        "mewtwo"
+      ],
+      "count": 213,
+      "signature": true
+    },
+    "ui": {
+      "equipped": true,
+      "search": true,
+      "paging": true,
+      "typePicker": true,
+      "typeFiltering": true,
+      "searchFiltering": true,
+      "newApprovalTab": true
+    },
+    "moves": {
+      "species": "mewtwo",
+      "level": 50,
+      "enemy": "onix",
+      "forms": [
+        {
+          "slot": "lmb",
+          "ok": true,
+          "forma": "torre2_bonemerang",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "rmb",
+          "ok": true,
+          "forma": "torre2_boneclub",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "q",
+          "ok": true,
+          "forma": "torre2_triattack",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "e",
+          "ok": true,
+          "forma": "torre2_payday",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "rmb",
+          "ok": true,
+          "forma": "torre2_swift",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "q",
+          "ok": true,
+          "forma": "torre2_shadowball",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "e",
+          "ok": true,
+          "forma": "torre2_lovelykiss",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "lmb",
+          "ok": true,
+          "forma": "chorro",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "rmb",
+          "ok": true,
+          "forma": "torre2_rockblast",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "q",
+          "ok": true,
+          "forma": "torre2_confuseray",
+          "rendered": true,
+          "initialEnemyHp": 48
+        },
+        {
+          "slot": "lmb",
+          "ok": true,
+          "forma": "torre2_softboiled",
+          "rendered": true,
+          "initialEnemyHp": 48
+        }
+      ]
+    },
+    "swiftCollision": [
+      {
+        "mode": "still",
+        "hits": 4,
+        "hp": 93.60000000000002,
+        "expired": true
+      },
+      {
+        "mode": "miss",
+        "hits": 0,
+        "hp": 100,
+        "expired": true
+      },
+      {
+        "mode": "dodge",
+        "hits": 0,
+        "hp": 100,
+        "expired": true
+      }
+    ],
+    "kissPhysics": [
+      {
+        "mode": "hit",
+        "applied": 1,
+        "expired": true
+      },
+      {
+        "mode": "miss",
+        "applied": 0,
+        "expired": true
+      },
+      {
+        "mode": "dodge",
+        "applied": 0,
+        "expired": true
+      },
+      {
+        "mode": "rollfail",
+        "applied": 0,
+        "expired": true
+      }
+    ],
+    "megaLogic": {
+      "iceHit": {
+        "hp": 188,
+        "hits": 1,
+        "statuses": [],
+        "ownHp": 40,
+        "done": true
+      },
+      "iceMiss": {
+        "hp": 200,
+        "hits": 0,
+        "statuses": [],
+        "ownHp": 40,
+        "done": true
+      },
+      "rockHit": {
+        "hp": 184.88000000000002,
+        "hits": 7,
+        "statuses": [],
+        "ownHp": 40,
+        "done": true
+      },
+      "rockMiss": {
+        "hp": 200,
+        "hits": 0,
+        "statuses": [],
+        "ownHp": 40,
+        "done": true
+      },
+      "confuseHit": {
+        "hp": 200,
+        "hits": 1,
+        "statuses": [
+          "confuso"
+        ],
+        "ownHp": 40,
+        "done": true
+      },
+      "confuseMiss": {
+        "hp": 200,
+        "hits": 0,
+        "statuses": [],
+        "ownHp": 40,
+        "done": true
+      },
+      "heal": {
+        "hp": 200,
+        "hits": 0,
+        "statuses": [],
+        "ownHp": 100,
+        "done": true
+      }
+    }
+  },
+  "result": "Original Phaser + solo Kanto verified"
+}

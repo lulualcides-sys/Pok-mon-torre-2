@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 const root=path.resolve('_site/arena2d');
-const version=fs.readdirSync(root).find(x=>/^src-[a-f0-9]{10}$/.test(x));
+const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 if(!version)throw Error('run capture-client + build-preview first');
 const base=pathToFileURL(path.join(root,version,'datos.js'));
 const {ROSTER,TODOS}=await import(base);

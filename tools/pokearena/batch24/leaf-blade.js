@@ -1,0 +1,26 @@
+// Leaf Blade — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "leaf-blade",
+  "nombre": "Leaf Blade",
+  "approved": false,
+  "forma": "torre2_batch24_leaf_blade",
+  "tipo": "GRASS",
+  "categoria": "PHYSICAL",
+  "poder": 90,
+  "precisao": 100,
+  "pp": 15,
+  "fazContato": true,
+  "dano": 18,
+  "alcance": 78,
+  "coste": 27,
+  "cd": 6.3,
+  "anim": "Swing",
+  "lanzar": 0.14,
+  "style": "blade",
+  "palette": "leaf",
+  "speed": 0,
+  "secondary": "critical",
+  "frames": 12,
+  "description": "Leaf Blade — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/leaf-blade"
+});

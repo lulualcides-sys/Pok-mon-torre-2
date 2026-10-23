@@ -1,0 +1,26 @@
+// Poison Fang — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "poison-fang",
+  "nombre": "Poison Fang",
+  "approved": false,
+  "forma": "torre2_batch24_poison_fang",
+  "tipo": "POISON",
+  "categoria": "PHYSICAL",
+  "poder": 50,
+  "precisao": 100,
+  "pp": 15,
+  "fazContato": true,
+  "dano": 10,
+  "alcance": 73,
+  "coste": 21,
+  "cd": 5.3,
+  "anim": "Swing",
+  "lanzar": 0.14,
+  "style": "fang",
+  "palette": "poison",
+  "speed": 0,
+  "secondary": "toxic50",
+  "frames": 12,
+  "description": "Poison Fang — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/poison-fang"
+});

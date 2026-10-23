@@ -1,0 +1,26 @@
+// Mega Drain — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "mega-drain",
+  "nombre": "Mega Drain",
+  "approved": false,
+  "forma": "torre2_batch24_mega_drain",
+  "tipo": "GRASS",
+  "categoria": "SPECIAL",
+  "poder": 40,
+  "precisao": 100,
+  "pp": 15,
+  "fazContato": false,
+  "dano": 8,
+  "alcance": 220,
+  "coste": 19,
+  "cd": 5,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "megadrain",
+  "palette": "leaf",
+  "speed": 270,
+  "secondary": "drain",
+  "frames": 12,
+  "description": "Mega Drain — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/mega-drain"
+});

@@ -1,0 +1,26 @@
+// Sludge — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "sludge",
+  "nombre": "Sludge",
+  "approved": false,
+  "forma": "torre2_batch24_sludge",
+  "tipo": "POISON",
+  "categoria": "SPECIAL",
+  "poder": 65,
+  "precisao": 100,
+  "pp": 20,
+  "fazContato": false,
+  "dano": 13,
+  "alcance": 215,
+  "coste": 23,
+  "cd": 5.6,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "sludge",
+  "palette": "poison",
+  "speed": 245,
+  "secondary": "poison30",
+  "frames": 12,
+  "description": "Sludge — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/sludge"
+});

@@ -3,6 +3,7 @@
  * Every impact is resolved at the rendered contact frame.
  */
 import * as vfx from '../vfx.js';
+import {BATCH24_FORMS} from './batch24/runtime.js';
 import {TORRE2_NEW_FORMS} from './next-batch-fx.js';
 import {TORRE2_MEGA_FORMS} from './mega-patch-fx.js';
 import {TORRE2_SPECIES_FORMS} from './species-fx.js';
@@ -292,6 +293,7 @@ export function payday(l,h,extra){
  }});
 }
 export const TORRE2_FORMS={
+ ...BATCH24_FORMS,
  torre2_bonemerang:bonemerang,torre2_boneclub:boneclub,
  torre2_triattack:triattack,torre2_payday:payday,
  ...TORRE2_NEW_FORMS,

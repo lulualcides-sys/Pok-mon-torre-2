@@ -58,5 +58,798 @@
       "visualApproved": false
     }
   },
-  "newMoves": {}
+  "newMoves": {
+    "mud-shot": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "mud-bomb": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "acid": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "acid-spray": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "sludge": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "poison-jab": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "mega-drain": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "giga-drain": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "pin-missile": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "icicle-spear": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "ice-shard": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "poison-fang": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "ice-fang": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "fury-cutter": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "leaf-blade": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "night-slash": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "icy-wind": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "silver-wind": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "twister": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "energy-ball": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "dragon-pulse": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "dark-pulse": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "ancient-power": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    },
+    "earth-power": {
+      "review": "ready-for-visual-review",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-adapted-moves-fx.js#collision (approved adapted-move catalog)",
+          "local": "tools/pokearena/batch24/runtime.js#swept",
+          "contribution": "Segment-to-target collision adapted for manually aimed contact and projectiles; contact moves also call existing contactDash without modifying originals.",
+          "license": "Existing Torre 2 code reused within the same user-authorized project."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "https://www.pokearena2d.com/src-d06287cdeb/vfx.js#MAPAS.estrella",
+          "local": "tools/pokearena/batch24/pixels.js#p2star",
+          "contribution": "Exact native five-row pixel star mask mapped from w to palette[4], rendered in the first four impact poses for every move. This is actual raster data reuse, not a claim of reusing an entire native attack.",
+          "license": "Project owner permission for P2 source/assets recorded in docs/CREDITOS-E-LICENCAS.md; upstream identification preserved in module."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/batch24/emerald-fragments.js#stepFragment",
+          "contribution": "Port of fixed-point gravity, 90/256 ground restitution, 180/256 and 251/256 drag, and three-bounce cap. Seven cached debris trajectories used by impact for all 24 moves.",
+          "license": "MIT Copyright (c) 2026 German Burgardt; full notice shipped in batch24/EMERALD-LICENSE.txt. No GBA engine or third-party artwork copied."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Public surface-reaction module inspected, redistribution permission unconfirmed. User explicitly authorized this 24-move batch without copying Zarza code/assets; Zarza remains reference only.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
+        }
+      }
+    }
+  }
 }

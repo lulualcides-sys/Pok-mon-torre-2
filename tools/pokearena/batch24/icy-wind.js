@@ -1,0 +1,26 @@
+// Icy Wind — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "icy-wind",
+  "nombre": "Icy Wind",
+  "approved": false,
+  "forma": "torre2_batch24_icy_wind",
+  "tipo": "ICE",
+  "categoria": "SPECIAL",
+  "poder": 55,
+  "precisao": 95,
+  "pp": 15,
+  "fazContato": false,
+  "dano": 11,
+  "alcance": 235,
+  "coste": 21,
+  "cd": 5.4,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "icywind",
+  "palette": "ice",
+  "speed": 245,
+  "secondary": "slow",
+  "frames": 12,
+  "description": "Icy Wind — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/icy-wind"
+});

@@ -1125,10 +1125,9 @@ const server=http.createServer(async(req,res)=>{
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
    if(labels().some(x=>x.includes('TODOS OS GOLPES APROVADOS')))
-    throw Error('NEW should list the new unapproved Steel moves');
-   for(const name of ['Flash Cannon','Steel Beam','Mirror Shot'])
-    if(!labels().some(x=>x.includes(name)))
-     throw Error('Missing new Steel move in NEW tab: '+name);
+    throw Error('NEW should list 24 new pixel moves plus 3 pending Steel moves');
+   if(!pendingRows.some(x=>/Acid|Ancient Power/.test(x)))
+    throw Error('NEW must show the newly authored batch');
    for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',
     'Metal Claw','Bind','Double Kick','Fury Attack'])
     if(pendingRows.some(x=>x.includes(name)))

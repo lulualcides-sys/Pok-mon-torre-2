@@ -103,7 +103,7 @@ await fs.writeFile(index,html);
 
 // Load startup visuals in batches. Initial title/selection should not load
 // every animation for every Pokémon before showing the menu on Android.
-const clientSource=(await fs.readdir(dest)).find(x=>/^src-[0-9a-f]{10}$/.test(x));
+const clientSource=html.match(/src="(src-[0-9a-f]{10})\/main\.js"/)?.[1];
 if(!clientSource)throw Error('Original Phaser source directory missing');
 const patches=[
  ['escenas/carga.js',[
@@ -182,6 +182,7 @@ await Promise.all([
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
+await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
 patches.push(
  ['datos.js',[
   ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";const TIPOS={'],
@@ -471,6 +472,8 @@ for(const filename of [
  'torre2/party-battle.js','torre2/training.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
+for(const name of (await fs.readdir('tools/pokearena/batch24')).sort())
+ vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,'torre2/batch24',name)));
 const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
 if(versionedSource===clientSource)throw Error('VFX fingerprint collides with upstream dir');
 const finalHTML=await fs.readFile(index,'utf8');
