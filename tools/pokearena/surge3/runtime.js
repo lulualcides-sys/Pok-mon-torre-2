@@ -4,9 +4,7 @@
  */
 import {SURGE3_MOVES} from './catalog.js';
 import {stamp,pixel} from '../batch24/pixels.js';
-import {swept} from '../batch24/runtime.js';
 import {FRAGMENT_POSES} from '../batch24/emerald-fragments.js';
-import {clashAt} from '../clash-fx.js';
 const TAU=Math.PI*2,clamp=x=>Math.max(0,Math.min(1,x));
 const COLORS=Object.freeze({
  thunder:Object.freeze([0x17233a,0x34658f,0x62c8e9,0xf6e44e,0xffffff]),
@@ -14,6 +12,17 @@ const COLORS=Object.freeze({
  screech:Object.freeze([0x231c34,0x665075,0xa77bb6,0xf0bddb,0xffffff])
 });
 const center=l=>({x:l.x,y:l.y-(l.alto||36)*.5});
+// Port of the EXACT segment-swept contact geometry already used by the
+// Torre 2 batch24 runtime. Copied into this standalone three-move module so
+// pre-publish unit tests run without the captured Phaser client.
+export function swept(a,b,r,radius=10){
+ if(!r||r.ko)return null;
+ const c=center(r),dx=b.x-a.x,dy=b.y-a.y,den=dx*dx+dy*dy;
+ const t=den?clamp(((c.x-a.x)*dx+(c.y-a.y)*dy)/den):0;
+ const p={x:a.x+dx*t,y:a.y+dy*t};
+ return Math.hypot(p.x-c.x,p.y-c.y)<=
+  radius+Math.min(12,(r.alto||36)*.22)?p:null;
+}
 const sideways=(a,normal,tangential)=>({
  x:Math.cos(a)*tangential-Math.sin(a)*normal,
  y:Math.sin(a)*tangential+Math.cos(a)*normal
