@@ -948,14 +948,15 @@ const server=http.createServer(async(req,res)=>{
     const choice=c.children.list.find(o=>o.type==='Zone'&&
       Math.abs(o.x-316)<2&&Math.abs(o.y-187)<2&&o.input?.enabled);
     if(!choice)return {opener:true,menu,choice:false};
-    const orig=Math.random;
-    Math.random=()=>0;
-    try{choice.emit('pointerdown')}finally{Math.random=orig}
+    // Capture is rolled at physical impact, NOT on the menu click.
+    // Inject a deterministic RNG into the isolated test scene.
+    c.__torre2CaptureRandom=()=>0;
+    choice.emit('pointerdown');
     return {opener:true,choice:true,menu,phase:c.fase};
   });
   assert.ok(captureHud.opener&&captureHud.choice,
    'Wild battle must expose clickable Phaser Pokéball controls');
-  assert.ok(captureHud.menu.includes('LANÇAR POKÉBOLA'),
+  assert.ok(captureHud.menu.includes('LANÇAR POKÉBOLA')&&captureHud.menu.includes('AJUSTE O ALVO'),
    'Three selectable balls appear in the native capture HUD');
   assert.equal(captureHud.phase,'capturando',
    'Throwing a ball must pause real attacks while animation plays');
