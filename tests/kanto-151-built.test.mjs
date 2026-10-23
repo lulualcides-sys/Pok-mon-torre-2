@@ -8,6 +8,7 @@ const ver=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).mod
 const load=p=>import(pathToFileURL(path.join(root,ver,p)));
 const {ROSTER,buscar}=await load('datos.js');
 const {KANTO_151,KANTO_151_IDS,kanto151SlotPlan}=await load('torre2/all-kanto-species.js');
+const {KANTO_LEVEL_EVOLUTIONS}=await load('torre2/frlg-learnsets.js');
 const {resolveLoadout}=await load('torre2/move-pool.js');
 const manifest=JSON.parse(fs.readFileSync(path.join(root,'assets/pmd/manifest.json'),'utf8'));
 assert.equal(KANTO_151.length,151);
@@ -37,4 +38,40 @@ for(const p of KANTO_151){
    'No invalid NaN stat allowed: '+p.id);
  }
 }
-console.log('PASS: 151 Kanto Pokémon with real PMD sprites, four attacks and working evolution tabs.');
+
+// Non-campaign evolution stages must produce REAL usable battle moves.
+// Pokédex shows exactly these stage.kit entries, not the campaign loadout.
+const roleSlots=['lmb','rmb','q','e'];
+const name=h=>String(h?.nombre||'').toLowerCase();
+let totalEvolutions=0,changedEvolutions=0;
+for(const def of ROSTER){
+ if(!def.evoluciones?.length)continue;
+ const family=new Map([[def.id,def],
+  ...def.evoluciones.map(e=>[String(e.nombre||'').toLowerCase(),e])]);
+ for(const stage of def.evoluciones){
+  const id=String(stage.nombre||'').toLowerCase();
+  if(!KANTO_151_IDS.includes(id))continue;
+  totalEvolutions++;
+  const parent=family.get(KANTO_LEVEL_EVOLUTIONS[id]?.[0])||def;
+  const parentKit={...(def.kit||{}),...(parent.kit||{})};
+  const realKit={...parentKit,...(stage.kit||{})};
+  if(roleSlots.some(slot=>name(realKit[slot])!==name(parentKit[slot])))
+   changedEvolutions++;
+  for(const slot of roleSlots){
+   if(!realKit[slot]?.nombre)continue;
+   assert.ok(realKit[slot].forma&&!realKit[slot].pendiente,
+    'Evolved '+id+' must have real unlocked attack for '+slot);
+  }
+  assert.equal(realKit.esp?.forma,'dash','Dodge must stay separate for '+id);
+ }
+}
+assert.ok(totalEvolutions>=60,'Must cover all Kanto evolution species');
+assert.ok(changedEvolutions>=45,
+ 'Most Kanto evolutions must replace at least one attack, not clone their base forms');
+const diglett=ROSTER.find(p=>p.id==='diglett');
+assert.ok(diglett,'Diglett family absent');
+const dugtrio=diglett.evoluciones.find(e=>e.nombre.toLowerCase()==='dugtrio');
+assert.equal(dugtrio.kit.q?.nombre,'Tri Attack','Dugtrio HAB 3 must be Tri Attack');
+assert.equal(dugtrio.kit.q?.forma,'torre2_triattack','Use real approved Tri Attack FX');
+assert.notEqual(diglett.kit.q?.nombre,'Tri Attack','Diglett must not inherit its future form');
+console.log('PASS: 151 Kanto Pokémon with real PMD sprites, '+changedEvolutions+'/'+totalEvolutions+' improved evolutions, four attacks and working evolution tabs.');

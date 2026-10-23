@@ -18,3 +18,6 @@ ATK = ataque básico (LMB); HAB 2 = habilidade secundária (RMB); HAB 3 = habili
 
 ## Validação
 Testes verificam as 151 espécies, movimentação dos slots, inexistência de ataques extras, biblioteca de golpes aprovados, desbloqueios de nível e TM, e separação de evolução da campanha dos demais modos.
+
+## Atualização dos golpes das evoluções nos outros modos (23/10/2026)
+Na Pokédex, a ficha principal mostra agora **o kit real da forma em VS CPU, Arena e Training**, não a seleção de campanha no nível 100. Todas as evoluções de Kanto são auditadas; a configuração das 4 habilidades busca golpes da própria espécie já existentes no motor Phaser, priorizando habilidades distintas de suas pré-evoluções e mantendo o ataque normal, a ULT e a esquiva. **Dugtrio possui Tri Attack no HAB 3 com `torre2_triattack`**; Diglett não. O botão *GOLPES POR LEVEL* continua exibindo apenas o arsenal desbloqueável **na campanha**, por nível e TM. A evolução livre durante o combate permanece permitida fora da campanha; nenhuma sprite/arte previamente aprovada foi modificada.

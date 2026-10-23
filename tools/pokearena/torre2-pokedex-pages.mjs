@@ -29,10 +29,10 @@ export function paginateKantoPokedexSource(original){
   const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||
    kanto151SlotPlan(species)||['lmb','rmb','q','e'].map(slot=>stage.kit?.[slot]?.nombre||null);
   if(!plan?.some(Boolean))return stage;
-  // The Pokédex documents the COMPLETE moveset of this form, not the
-  // current XP of an individual Pokémon in a saved campaign.
+  // These are the same REAL stage kits as VS CPU/Training/Arena, never
+  // the campaign level-100 chosen moves. Campaign level/TM data is
+  // available separately through the GOLPES POR LEVEL overlay.
   const member={id:species,progression:{species,level:100}};
-  const equipped=resolveLoadout(member);
   // Newly introduced Kanto evolutions can inherit an invalid speed/attack
   // number from the original Poké Arena stage calculator. A NaN previously
   // left the right-hand Pokédex panel empty on Nidorino/Nidoking.
@@ -52,23 +52,20 @@ export function paginateKantoPokedexSource(original){
   const kit={...original},slots=['lmb','rmb','q','e'];
   for(let i=0;i<slots.length;i++){
    const slot=slots[i],named=canonicalMoveKey(plan[i]);
-   const h=equipped[slot]||
-    TEST_LIBRARY.find(x=>x.id===named||canonicalMoveKey(x.nombre)===named)||
-    original[slot];
+   const h=original[slot];
    if(!h?.nombre||!h?.forma){
     kit[slot]={nombre:'LOCKED',forma:'golpe',tipo:'NORMAL',dano:0,
      coste:0,cd:0,pendiente:true,torre2Unavailable:true};
     continue;
    }
-   const lv=moveUnlockLevel(member,h.nombre);
-   const machine=frlgMachineCompatible(species,named)&&lv===null;
-   kit[slot]={...h,
-    ...(Number.isInteger(lv)?{torre2UnlockLevel:lv}:machine?{torre2RequiresTM:true}:{}),
+   // No misleading campaign-lock labels in the OTHER-MODE Pokédex.
+   // Its full learnset panel still lists true levels/TMs separately.
+   kit[slot]={...h,pendiente:false,
     ...(slot==='e'?{ulti:true}:{})
    };
   }
   // Show the fifth defensive action explicitly, never as a fifth attack.
-  if(equipped.esp?.forma)kit.esp={...equipped.esp};
+  if(original.esp?.forma)kit.esp={...original.esp};
   return {...stage,...stageStats,kit};
  });
 }`;

@@ -194,6 +194,7 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-world-map.js','kanto-world-map.js'],
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
+ ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
@@ -202,9 +203,9 @@ await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch2
 await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
 patches.push(
  ['datos.js',[
-  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";const TIPOS={'],
+  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
   ['const ROSTER=TODOS.filter(p=>!p.desactivado);',
-   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));const ROSTER=TODOS.filter(p=>!p.desactivado);']
+   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
  ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
