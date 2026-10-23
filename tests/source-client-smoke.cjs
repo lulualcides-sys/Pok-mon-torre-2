@@ -656,20 +656,32 @@ const server=http.createServer(async(req,res)=>{
    b.luchadores[0].inmortal=true;
    b.luchadores[1].inmortal=true;
    b.luchadores[1].hp=Math.round(b.luchadores[1].hpMax*.67);
-   const control=b.children.list.find(o=>o.type==='Zone'&&
-    Math.abs(o.x-320)<2&&Math.abs(o.y-88)<2&&o.input?.enabled);
-   if(control)control.emit('pointerdown');
-   const target=b.children.list.find(o=>o.type==='Zone'&&
-    Math.abs(o.x-419)<2&&Math.abs(o.y-148)<2&&o.input?.enabled);
-   if(target)target.emit('pointerdown');
-   return {panel,foes:foes.length,control:!!control,target:!!target,
-    originalTexture};
+   const sidebar=b.__torre2SideParty;
+   const target=sidebar?.slots?.[1];
+   const portrait=sidebar?.icons?.[1];
+   const left=sidebar?.slots?.[0],last=sidebar?.slots?.[5];
+   const targetReady=!!target?.input?.enabled;
+   // Switch directly by the second Pokémon icon. No pop-up menu or
+   // old text control at the top may intercept the click.
+   if(targetReady)target.emit('pointerdown');
+   return {panel,foes:foes.length,sideVisible:!!sidebar,
+    slotCount:sidebar?.slots?.length,texture:portrait?.texture?.key,
+    first:left&&{x:left.x,y:left.y},
+    last:last&&{x:last.x,y:last.y},
+    target:targetReady,originalTexture};
   });
-  assert.ok(partyUi.panel.includes('TROCAR POKÉMON'),
-   'Real Phaser combat exposes party selector');
-  assert.ok(partyUi.panel.includes('SEUS POKÉMON')&&partyUi.panel.includes('RIVAL'),
-   'Pokéball badges show both combat parties below their life HUDs');
-  assert.ok(partyUi.control&&partyUi.target,'Switch must be clickable by touch');
+  assert.ok(partyUi.sideVisible&&partyUi.slotCount===6,
+   'Six touchable portrait slots must appear in the left sidebar');
+  assert.ok(partyUi.texture?.startsWith('pmd-')||
+    partyUi.texture?.startsWith('torre2-portrait-'),
+   'The second team member must display a REAL Pokémon sprite');
+  assert.ok(partyUi.first.x<70&&partyUi.last.y<330,
+   'Vertical party bar must fit left of the battle field above ability bar');
+  assert.ok(!partyUi.panel.includes('TROCAR POKÉMON')&&
+    !partyUi.panel.includes('SEUS POKÉMON')&&
+    !partyUi.panel.includes('RIVAL ·'),
+   'Old party tables and centered text switcher must be removed');
+  assert.ok(partyUi.target,'Touching reserve sprite must start direct swap');
   await offline.evaluate(x=>{window.__pt2FirstTexture=x},partyUi.originalTexture);
   await offline.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
