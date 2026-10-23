@@ -144,6 +144,60 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(dex.captions.some(s=>s.includes('ULT')),
     'Ultimate must be visible in Pokédex '+dex.id);
   }
+  // The Pokédex must show the very same ATK/HAB2/HAB3/ULT as campaign
+  // battles for every evolution, not the old inherited native kit.
+  const checkedDexEvolutions=await dexPage.evaluate(async()=>{
+   const scene=window.__pt2Game.scene.getScene('pokedex');
+   const entry=[...document.querySelectorAll('script[src]')]
+    .find(x=>x.src.includes('/main.js'));
+   const root=new URL('./',entry.src);
+   const {resolveLoadout}=await import(new URL('torre2/move-pool.js',root).href);
+   const families={
+    bulbasaur:['ivysaur','venusaur'],charmander:['charmeleon','charizard'],
+    squirtle:['wartortle','blastoise'],pidgey:['pidgeotto','pidgeot'],
+    rattata:['raticate'],caterpie:['metapod','butterfree'],
+    weedle:['kakuna','beedrill'],geodude:['graveler','golem'],
+    staryu:['starmie'],paras:['parasect'],pol iwag:[],
+    poliwag:['poliwhirl','poliwrath'],oddish:['gloom','vileplume'],
+    magnemite:['magneton'],voltorb:['electrode']
+   };
+   const results=[];
+   for(const [base,evolutions] of Object.entries(families)){
+    const idx=scene.casillas.findIndex(x=>x.p.id===base);
+    if(idx<0){results.push({base,error:'missing Pokédex card'});continue;}
+    scene.elegir(idx);
+    for(const species of evolutions){
+     const stage=scene.etapas.find(x=>x.nombre.toLowerCase()===species);
+     if(!stage){results.push({base,species,error:'missing evolved form'});continue;}
+     const loadout=resolveLoadout({id:species,
+      progression:{species,level:100}});
+     const slots=['lmb','rmb','q','e'];
+     const displayed=slots.map(k=>stage.kit[k]?.nombre);
+     const inBattle=slots.map(k=>loadout[k]?.nombre);
+     const dodge=stage.kit.esp?.nombre;
+     results.push({base,species,displayed,inBattle,dodge});
+    }
+   }
+   return results;
+  });
+  assert.ok(checkedDexEvolutions.length>=20,
+   'Pokedex must list all key Kanto evolution stages');
+  for(const evo of checkedDexEvolutions){
+   assert.ok(!evo.error,'Missing evolved Pokédex data: '+JSON.stringify(evo));
+   assert.deepEqual(evo.displayed,evo.inBattle,
+    'Pokédex and battle attack slots disagree: '+evo.species);
+   assert.equal(evo.dodge,'Dodge',
+    'Fifth defensive move missing from Pokédex '+evo.species);
+   assert.ok(evo.displayed.every(Boolean),
+    'Pokédex has blank unlocked evolution slot '+evo.species);
+  }
+  const dexControls=await dexPage.evaluate(()=>{
+   const p=window.__pt2Game.scene.getScene('pokedex');
+   return p.movs.list.filter(x=>typeof x.text==='string').map(x=>x.text);
+  });
+  for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
+   assert.ok(dexControls.includes(role),
+    'Pokédex missing explicit input role: '+role);
   assert.deepEqual(dexErr,[],'Pokedex and evolution buttons must not throw');
   await dexPage.screenshot({path:'test-evidence/pokedex-real-pmd-and-venusaur-evolution.png',fullPage:true});
   await dexPage.close();
