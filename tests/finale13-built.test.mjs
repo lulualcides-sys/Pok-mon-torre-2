@@ -117,6 +117,8 @@ assert.ok(fxText.includes('function simpleBarrier('),
  'Both shields must use the ONE simple rectangular pixel barrier');
 assert.ok(!fxText.includes('PROTECT_OCTAGON')&&!fxText.includes('LIGHT_PANEL'),
  'Old decorative complex shields must be entirely removed');
+for(const wheel of ['const WHEEL_FLAME=','const WHEEL_EMBER='])
+ assert.ok(fxText.includes(wheel),'Approved Flame Wheel pixel silhouette must never be removed: '+wheel);
 const psychic=FINALE_13_MOVES.find(x=>x.id==='psychic');
 assert.equal(psychic.poder,90,'FireRed Psychic power must be 90');
 assert.equal(psychic.dano,22,'Psychic must be stronger than the old value 18');
