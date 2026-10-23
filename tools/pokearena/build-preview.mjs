@@ -355,7 +355,7 @@ patches.push(['habilidades.js',[
 // original Arena 2D damage pipeline without touching moves or visual effects.
 patches.push(['luchador.js',[
  ['import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}from"./datos.js";',
-  'import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}from"./datos.js";import{campaignFighterLevel as torre2FighterLevel,campaignDamageMultiplier as torre2DamageMultiplier,campaignScaledHp as torre2ScaledHp}from"./torre2/level-balance.js";'],
+  'import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}from"./datos.js";import{campaignFighterLevel as torre2FighterLevel,campaignDamageMultiplier as torre2DamageMultiplier,campaignScaledHp as torre2ScaledHp,CAMPAIGN_PLAYER_DAMAGE_BOOST as torre2PlayerDamageBoost}from"./torre2/level-balance.js";'],
  ['get hpMax(){return this.jefe?.vidaFija??Math.round(this.forma.hp*REGLAS.vidaGlobal*(this.jefe?.vida??1))}',
   'get hpMax(){const base=this.jefe?.vidaFija??Math.round(this.forma.hp*REGLAS.vidaGlobal*(this.jefe?.vida??1));return this.escena.datos?.torre2?torre2ScaledHp(base,torre2FighterLevel(this)):base}'],
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(!g.puro){',
