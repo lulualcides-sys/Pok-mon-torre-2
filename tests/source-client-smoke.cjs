@@ -883,6 +883,49 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(summaryState.level,50);
   assert.ok(summaryState.count>=8&&summaryState.signature,'Mewtwo has ALL captured/created moves unlocked for testing');
   await tester.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:14000});
+  // Smoke-test the three Steel moves with REAL Phaser Graphics/WebGL.
+  const steelLive=await tester.evaluate(async()=>{
+   const script=[...document.querySelectorAll('script[src]')]
+    .find(x=>x.src.includes('/main.js'));
+   const mod=await import(new URL('./torre2/steel-fx.js',script.src).href);
+   const e=window.__pt2Game.scene.getScene('campanha'),prior=e.efectos;
+   const originalGraphics=e.add.graphics,priorRandom=Math.random;
+   let cells=0;
+   try{
+    e.efectos=[];Math.random=()=>0;
+    e.add.graphics=function(...args){
+     const g=originalGraphics.apply(this,args),fill=g.fillRect;
+     g.fillRect=function(...params){cells++;return fill.apply(this,params)};
+     return g;
+    };
+    const results=[];
+    for(const [form,damage,accuracy] of [
+     ['torre2_flashcannon',16,100],
+     ['torre2_steelbeam',28,95],
+     ['torre2_mirrorshot',13,85]]){
+     const foe={x:340,y:300,alto:40,hp:320,hpMax:320,ko:false,est:{},
+      recibir(source,h){this.hp-=h.dano;return 'golpe'}};
+     const user={x:210,y:300,alto:40,ax:430,ay:300,t:0,ko:false,
+      hp:300,hpMax:300,est:{},escena:e,rival:foe,animar(){},
+      recibir(source,h){this.hp-=h.dano;return 'golpe'}};
+     const fx=mod.TORRE2_STEEL_FORMS[form](user,
+      {dano:damage,precisao:accuracy,alcance:320,tipo:'STEEL'}, {slot:'q'});
+     for(let f=0;f<145;f++)if(!fx.update(1/60))break;
+     results.push({form,damage:320-foe.hp,recoil:300-user.hp});
+     fx.destroy();e.efectos=e.efectos.filter(x=>x!==fx);
+    }
+    return{results,cells};
+   }finally{
+    e.add.graphics=originalGraphics;Math.random=priorRandom;
+    if(prior===undefined)delete e.efectos;else e.efectos=prior;
+   }
+  });
+  assert.ok(steelLive.cells>3000,'Steel attacks must render real Phaser pixel cells');
+  assert.deepEqual(steelLive.results.map(x=>x.damage),[16,28,13],
+   'All 3 Steel hits must be resolved in the browser with manual aim');
+  assert.deepEqual(steelLive.results.map(x=>x.recoil),[0,150,0],
+   'Only Steel Beam costs 50% max HP');
+
   await tester.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
     const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
@@ -907,8 +950,11 @@ const server=http.createServer(async(req,res)=>{
    // NEW rows are distinct from the equipped slots above them.
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
-   if(!labels().some(x=>x.includes('TODOS OS GOLPES APROVADOS')))
-    throw Error('Empty NEW tab must confirm all moves have been approved');
+   if(labels().some(x=>x.includes('TODOS OS GOLPES APROVADOS')))
+    throw Error('NEW should list the new unapproved Steel moves');
+   for(const name of ['Flash Cannon','Steel Beam','Mirror Shot'])
+    if(!labels().some(x=>x.includes(name)))
+     throw Error('Missing new Steel move in NEW tab: '+name);
    for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',
     'Metal Claw','Bind','Double Kick','Fury Attack'])
     if(pendingRows.some(x=>x.includes(name)))
