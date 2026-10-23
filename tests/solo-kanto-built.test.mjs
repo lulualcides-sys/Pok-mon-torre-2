@@ -355,6 +355,34 @@ if(area.available.length){
 assert.equal(TRAINERS_PER_GYM(0),13);
 assert.equal(TRAINERS_PER_GYM(7),27,'Giovanni route has more trainers than Brock');
 assert.equal(TRAINERS_PER_GYM(8),17,'Victory Road has additional encounters');
+// Indigo League is five successive trainer battles with exact first
+// clear teams. Rival starter must never depend on current active/party slot.
+const {ELITE,rivalChampionTeam,campaignStarter}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-core.js')));
+const leagueLineups=[
+ [['dewgong','cloyster','slowbro','jynx','lapras'],[52,51,52,54,54]],
+ [['onix','hitmonchan','hitmonlee','onix','machamp'],[51,53,53,54,56]],
+ [['gengar','golbat','haunter','arbok','gengar'],[54,54,53,56,58]],
+ [['gyarados','dragonair','dragonair','aerodactyl','dragonite'],[56,54,54,58,60]],
+ [['pidgeot','alakazam','rhydon','exeggutor','gyarados','charizard'],[59,57,59,59,61,63]]
+];
+for(const [i,[expected,levels]] of leagueLineups.entries()){
+ const state=createCampaign('bulbasaur');state.stage=i+8;state.trainer=TRAINERS_PER_GYM(i+8);
+ const match=createPartyMatch(state,currentOpponent(state));
+ assert.deepEqual(match.foes.map(x=>x.id),expected,'FireRed Elite/Champion roster '+i);
+ assert.deepEqual(match.foes.map(x=>x.level),levels,'FireRed Elite/Champion levels '+i);
+ assert.ok(match.foes.every(x=>x.loadout.lmb?.forma&&x.loadout.rmb?.forma),
+  'Every Elite opponent must be able to use actual existing VFX');
+}
+for(const starter of ['bulbasaur','charmander','squirtle']){
+ const state=createCampaign(starter);state.stage=12;
+ // Swapping the first Pokémon in a team MUST NOT alter the rival's starter.
+ state.team.unshift({id:'geodude',uid:'temporary',hp:100,progression:{species:'geodude',level:50}});
+ assert.equal(campaignStarter(state),starter,'Starter identity survives changes to party');
+ const team=createPartyMatch(state,currentOpponent(state)).foes;
+ assert.deepEqual(team.map(x=>x.id),rivalChampionTeam(starter));
+ assert.equal(team.at(-1).id,currentOpponent(state).id,'Correct champion ace');
+}
 assert.equal(TRAINERS_PER_GYM(9),0,'Elite Four Bruno fights once, not 31 times');
 assert.equal(TRAINERS_PER_GYM(12),0,'Champion follows Lance without filler trainers');
 const finale=createCampaign('bulbasaur');

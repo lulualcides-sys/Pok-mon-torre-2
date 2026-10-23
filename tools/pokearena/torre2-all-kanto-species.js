@@ -47,7 +47,9 @@ function kitFor(p,lib){
  const named=new Map(pool.map(m=>[m.nombre.toLowerCase(),m]));
  const pref=p.tipos.flatMap(t=>(choices[t]||[]).map(n=>named.get(n.toLowerCase()))).filter(Boolean);
  const sorted=[...pool].sort((a,b)=>damage(a)-damage(b));
- const basic=[...choices.NORMAL.map(n=>named.get(n.toLowerCase())),...pref,...sorted]
+ // Prefer an affordable STAB move; only fall back to Normal when the
+ // captured native catalog lacks a weak move of this Pokémon's actual type.
+ const basic=[...pref,...choices.NORMAL.map(n=>named.get(n.toLowerCase())),...sorted]
   .find(x=>x&&damage(x)<=12);
  const themed=pool.filter(m=>p.tipos.includes(m.tipo)).sort((a,b)=>damage(a)-damage(b));
  const arr=[],seen=new Set();
@@ -56,7 +58,9 @@ function kitFor(p,lib){
   seen.add(m.nombre.toLowerCase());arr.push(m);
  }
  if(arr.length<4)throw Error('No installed Kanto moves: '+p.id);
- const ultimate=arr.slice(1).sort((a,b)=>damage(b)-damage(a))[0];
+ const typeFinishers=arr.slice(1).filter(m=>p.tipos.includes(m.tipo));
+ const ultimate=(typeFinishers.length?typeFinishers:arr.slice(1))
+  .sort((a,b)=>damage(b)-damage(a))[0];
  const chosen=[arr[0],...arr.filter(m=>m!==arr[0]&&m!==ultimate).slice(0,2),ultimate];
  if(chosen.length!==4||new Set(chosen.map(m=>m.nombre)).size!==4)
   throw Error('Invalid Kanto moves: '+p.id);

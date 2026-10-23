@@ -120,6 +120,8 @@ for(const species of ['ivysaur','venusaur','charmeleon','charizard',
  assert.equal(load.e.ulti,true,species+' must have charged ULT');
 }
 assert.equal(TRAINERS_PER_GYM(0),13);
+assert.equal(TRAINERS_PER_GYM(8),17,'Victory Road precedes Elite Four');
+assert.equal(TRAINERS_PER_GYM(9),0,'Elite is consecutive without filler');
 assert.equal(TRAINERS_PER_GYM(1),15);
 assert.equal(TRAINERS_PER_GYM(2),17);
 assert.equal(GYMS[1].boss,'starmie');

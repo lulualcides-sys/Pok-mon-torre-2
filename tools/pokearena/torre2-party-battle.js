@@ -3,7 +3,7 @@
  * knockouts transition to the next Pokémon without advancing trainer progress.
  * The fight ends only when one entire party is defeated.
  */
-import {STAGES} from './campaign-core.js';
+import {STAGES,campaignStarter,rivalChampionTeam} from './campaign-core.js';
 import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar} from '../datos.js';
@@ -55,7 +55,7 @@ export function createPartyMatch(state,opponent,wild=false){
  const gym=STAGES[state.stage];
  const pool=gym?.enemy||[opponent.id];
  const leaderTeam=opponent.leader&&Array.isArray(gym?.leaderTeam)?
-  gym.leaderTeam:null;
+  (state.stage===12?rivalChampionTeam(campaignStarter(state)):gym.leaderTeam):null;
  const count=wild?1:leaderTeam?leaderTeam.length:opponent.leader?
   Math.min(6,state.stage>=8?4:state.stage>=4?3:2):
   Math.min(4,1+Math.floor((state.trainer+(state.stage||0))/5));

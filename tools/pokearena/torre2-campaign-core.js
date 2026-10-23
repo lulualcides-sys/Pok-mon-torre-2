@@ -45,14 +45,49 @@ export const GYMS=Object.freeze([
   boss:'rhyhorn',leaderTeam:['rhyhorn','dugtrio','nidoqueen','nidoking','rhyhorn'],
   leaderLevels:[45,42,44,45,50]}
 ]);
+// FireRed/LeafGreen first-clear Indigo League: authentic lineups and levels.
+// Existing stage indexes 8–12 remain unchanged for old saves.
 export const ELITE=Object.freeze([
- {city:'Elite Four',leader:'Lorelei',badge:'Elite 1',arena:'estadio',enemy:['squirtle','wartortle','onix'],boss:'blastoise'},
- {city:'Elite Four',leader:'Bruno',badge:'Elite 2',arena:'crater',enemy:['machop','onix','machoke'],boss:'machamp'},
- {city:'Elite Four',leader:'Agatha',badge:'Elite 3',arena:'ruinas',enemy:['zubat','golbat','exeggcute'],boss:'golbat'},
- {city:'Elite Four',leader:'Lance',badge:'Elite 4',arena:'estadio',enemy:['magikarp','gyarados','onix'],boss:'gyarados'},
- {city:'Indigo Plateau',leader:'Campeão',badge:'Campeão',arena:'estadio',
-  enemy:['pidgeot','rhydon','alakazam'],boss:'charizard'}
+ {city:'Indigo Plateau',leader:'Lorelei',badge:'Elite 1',arena:'estadio',type:'ICE',
+  enemy:['seel','dewgong','shellder','cloyster','lapras','jynx','slowpoke'],
+  boss:'lapras',leaderTeam:['dewgong','cloyster','slowbro','jynx','lapras'],
+  leaderLevels:[52,51,52,54,54]},
+ {city:'Indigo Plateau',leader:'Bruno',badge:'Elite 2',arena:'crater',type:'FIGHTING',
+  enemy:['onix','machop','machoke','hitmonlee','hitmonchan'],
+  boss:'machamp',leaderTeam:['onix','hitmonchan','hitmonlee','onix','machamp'],
+  leaderLevels:[51,53,53,54,56]},
+ {city:'Indigo Plateau',leader:'Agatha',badge:'Elite 3',arena:'ruinas',type:'GHOST',
+  enemy:['gastly','haunter','gengar','golbat','arbok','cubone'],
+  boss:'gengar',leaderTeam:['gengar','golbat','haunter','arbok','gengar'],
+  leaderLevels:[54,54,53,56,58]},
+ {city:'Indigo Plateau',leader:'Lance',badge:'Elite 4',arena:'estadio',type:'DRAGON',
+  enemy:['dratini','dragonair','gyarados','aerodactyl'],
+  boss:'dragonite',leaderTeam:['gyarados','dragonair','dragonair','aerodactyl','dragonite'],
+  leaderLevels:[56,54,54,58,60]},
+ {city:'Indigo Plateau',leader:'Campeão',badge:'Campeão',arena:'estadio',type:'MIXED',
+  enemy:['pidgeot','rhydon','alakazam','exeggutor','gyarados','arcanine'],
+  boss:'charizard',leaderTeam:['pidgeot','alakazam','rhydon','exeggutor','gyarados','charizard'],
+  leaderLevels:[59,57,59,59,61,63]}
 ]);
+// Rival team varies with the player's ORIGINAL starter, not party order,
+// evolutions or Pokémon swaps. FireRed Lv59/57/59/59/61/63.
+export function rivalChampionTeam(starter){
+ if(starter==='charmander')
+  return ['pidgeot','alakazam','rhydon','arcanine','exeggutor','blastoise'];
+ if(starter==='squirtle')
+  return ['pidgeot','alakazam','rhydon','gyarados','arcanine','venusaur'];
+ return ['pidgeot','alakazam','rhydon','exeggutor','gyarados','charizard'];
+}
+export function campaignStarter(s){
+ if(STARTERS.includes(s?.starter))return s.starter;
+ const known=[...(s?.dexCaught||[]),...(s?.dexSeen||[])];
+ const base={bulbasaur:'bulbasaur',ivysaur:'bulbasaur',venusaur:'bulbasaur',
+  charmander:'charmander',charmeleon:'charmander',charizard:'charmander',
+  squirtle:'squirtle',wartortle:'squirtle',blastoise:'squirtle'};
+ for(const id of known)if(base[id])return base[id];
+ for(const m of s?.team||[])if(base[m.id])return base[m.id];
+ return 'bulbasaur';
+}
 export const STAGES=Object.freeze([...GYMS,...ELITE]);
 export const STARTERS=Object.freeze(['bulbasaur','charmander','squirtle']);
 export const KANTO_DEX=Object.freeze('Bulbasaur,Ivysaur,Venusaur,Charmander,Charmeleon,Charizard,Squirtle,Wartortle,Blastoise,Caterpie,Metapod,Butterfree,Weedle,Kakuna,Beedrill,Pidgey,Pidgeotto,Pidgeot,Rattata,Raticate,Spearow,Fearow,Ekans,Arbok,Pikachu,Raichu,Sandshrew,Sandslash,Nidoran♀,Nidorina,Nidoqueen,Nidoran♂,Nidorino,Nidoking,Clefairy,Clefable,Vulpix,Ninetales,Jigglypuff,Wigglytuff,Zubat,Golbat,Oddish,Gloom,Vileplume,Paras,Parasect,Venonat,Venomoth,Diglett,Dugtrio,Meowth,Persian,Psyduck,Golduck,Mankey,Primeape,Growlithe,Arcanine,Poliwag,Poliwhirl,Poliwrath,Abra,Kadabra,Alakazam,Machop,Machoke,Machamp,Bellsprout,Weepinbell,Victreebel,Tentacool,Tentacruel,Geodude,Graveler,Golem,Ponyta,Rapidash,Slowpoke,Slowbro,Magnemite,Magneton,Farfetchd,Doduo,Dodrio,Seel,Dewgong,Grimer,Muk,Shellder,Cloyster,Gastly,Haunter,Gengar,Onix,Drowzee,Hypno,Krabby,Kingler,Voltorb,Electrode,Exeggcute,Exeggutor,Cubone,Marowak,Hitmonlee,Hitmonchan,Lickitung,Koffing,Weezing,Rhyhorn,Rhydon,Chansey,Tangela,Kangaskhan,Horsea,Seadra,Goldeen,Seaking,Staryu,Starmie,MrMime,Scyther,Jynx,Electabuzz,Magmar,Pinsir,Tauros,Magikarp,Gyarados,Lapras,Ditto,Eevee,Vaporeon,Jolteon,Flareon,Porygon,Omanyte,Omastar,Kabuto,Kabutops,Aerodactyl,Snorlax,Articuno,Zapdos,Moltres,Dratini,Dragonair,Dragonite,Mewtwo,Mew'.split(','));
@@ -67,7 +102,7 @@ function newMember(species,level=5){
 }
 export function createCampaign(starter){
  if(!STARTERS.includes(starter))throw new Error('Choose an original Kanto starter');
- return {version:1,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],dexSeen:[starter],dexCaught:[starter],
+ return {version:1,starter,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],dexSeen:[starter],dexCaught:[starter],
   active:0,wins:0,losses:0,capturesInStage:0,pendingCapture:null,
   money:1400,inventory:{pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]},
   wildEncountersStage:0,pendingWild:null,
@@ -90,6 +125,7 @@ export function readCampaign(storage=localStorage){
     !Number.isInteger(s.trainer)||s.trainer<0)return null;
   // Additive v1 migration. Do not reset saves or lose stored Pokémon.
   let migrated=false;
+  if(!STARTERS.includes(s.starter)){s.starter=campaignStarter(s);migrated=true;}
   if(!Array.isArray(s.box)){s.box=[];migrated=true}
   if(s.team.length>6){s.box.unshift(...s.team.splice(6));migrated=true}
   if(!Number.isInteger(s.active)||s.active<0||s.active>=s.team.length){
@@ -186,10 +222,10 @@ export function currentOpponent(s){
  const list=gym.enemy;
  const node=routeNode(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage));
  const role=leader?'leader':node.type;
- const rivalId=s.team[0]?.id==='charmander'?'squirtle':
-  s.team[0]?.id==='squirtle'?'bulbasaur':'charmander';
- const championId=({charmander:'charizard',squirtle:'blastoise',
-  bulbasaur:'venusaur'})[rivalId]||rivalId;
+ const originalStarter=campaignStarter(s);
+ const rivalId=originalStarter==='charmander'?'squirtle':
+  originalStarter==='squirtle'?'bulbasaur':'charmander';
+ const championId=rivalChampionTeam(originalStarter).at(-1);
  const species=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
   role==='rocket'?(['zubat','machop','ekans'].includes(list[s.trainer%list.length])?
    list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
