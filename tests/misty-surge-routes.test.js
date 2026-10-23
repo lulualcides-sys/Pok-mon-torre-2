@@ -89,7 +89,7 @@ test('Ancient Power scales +20% and rock outline is MINT without recoloring orig
 });
 test('Ice Shard keeps seven-shot physics; crystal sparkle/tumbling has independent 12-frame motion',async()=>{
  const ice=BATCH24_MOVES.find(h=>h.id==='ice-shard');
- assert.equal(ice.approved,false);
+ assert.equal(ice.approved,true);
  const frames=[];
  for(let i=0;i<12;i++){
   const g=draw();paintReworkedMove(g,ice,100,100,i,.2);

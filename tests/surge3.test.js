@@ -25,7 +25,7 @@ function fixture(type='NORMAL',targetX=185){
   est:{},tipos:[type],
   recibir(actor,move){
    assert.equal(actor,scene.actor);
-   assert.ok(move.puro,'SonicBoom must ignore the game's Defense and HP multiplier');
+   assert.ok(move.puro,'Sonic Boom ignores the original engine Defense and HP multiplier');
    this.hp-=move.dano;return 'golpe'
   },
   ponerEstado(name,duration,data={}){
