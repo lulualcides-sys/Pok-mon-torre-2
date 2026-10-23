@@ -267,230 +267,75 @@ const server=http.createServer(async(req,res)=>{
     m.saveCampaign(m.createCampaign('charmander'));
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
-  await offline.waitForFunction(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    return c.__campaignMap?.spec?.id==='pewter'&&
-      c.__campaignMap?.spec?.customBrock===true&&
-      c.__campaignMap.locations===13&&
-      c.children.list.some(x=>x.type==='Image'&&
-       x.texture?.key==='torre2-brock-custom');
-  },null,{timeout:23000});
-  await offline.screenshot({path:'test-evidence/torre2-brock-map-hires-direct.png'});
-  // PATCH 1 / PATCH 2: one real Pewter world for all 13 encounters and boss.
-  // No PALLET -> ROUTE -> FOREST pagination, no route-line screen changes.
-  const mapState=await offline.evaluate(async()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
-    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
-    const state=core.readCampaign();
-    const labels=()=>c.children.list.filter(o=>typeof o.text==='string')
-      .map(o=>o.text).join(' | ');
-    const result={
-      initial:labels(),stage:state.stage,trainer:state.trainer,
-      world:c.__campaignMap?.spec?.id,points:c.__campaignMap?.locations,
-      realScene:c.children.list.some(o=>o.type==='Image'&&
-       o.texture?.key==='torre2-brock-custom'),
-      realNPCs:c.children.list.filter(o=>o.type==='Image'&&
-       String(o.texture?.key||'').startsWith('frlg-npc-')).length,
-      portraits:c.children.list.filter(o=>o.type==='Image'&&
-       String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
-      zones:c.children.list.filter(o=>o.type==='Zone'&&o.input?.enabled).length
-    };
-    const imageIsolation=(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   const base=c.textures.get('torre2-brock-custom');
-   const mask=c.textures.get('torre2-brock-forest');
-   const photo=c.children.list.find(x=>x.type==='Image'&&
-    x.texture?.key==='torre2-brock-custom');
-   const cut=c.children.list.find(x=>
-    x.type==='TileSprite'&&x.active&&x.depth===2);
-   return {baseWidth:base?.get('__BASE')?.width,
-    baseHeight:base?.get('__BASE')?.height,
-    isFullFrame:photo?.frame===base?.get('__BASE'),
-    photoFrame:{name:photo?.frame?.name,width:photo?.frame?.width,
-     height:photo?.frame?.height,cutX:photo?.frame?.cutX,cutY:photo?.frame?.cutY},
-    rawFullFrame:{name:base?.get('__BASE')?.name,width:base?.get('__BASE')?.width,
-     height:base?.get('__BASE')?.height},
-    sourceWidth:photo?.frame?.width,
-    independentMask:!!mask&&mask!==base&&
-     c.__torre2WorldView?.separateForest===true,
-    tileSpriteDetected:!!cut,
-    baseFrames:base?.getFrameNames(),filter:base?.source?.[0]?.filter,
-    mapId:c.__torre2WorldView?.id};
-  })();
-    result.imageIsolation=imageIsolation;
-    c.gymScreen(state);
-    result.lockedGym=labels();
-    result.gymDidNotStartCombat=!window.__pt2Game.scene.isActive('combate');
-    c.scene.restart();
-    return result;
-  });
-  assert.equal(mapState.world,'pewter');
-  assert.ok(mapState.realScene,'Brock must still use the original composite image');
-  // gymScreen() removes the header; allow the queued Phaser scene restart
-  // to finish before counting the new fullscreen button and cached textures.
+  // Battle Road: replace the old oversized map with sequential click-to-fight
+  // checkpoints, including rival, Rocket, capture and the Brock leader.
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
-    c.children.list.some(o=>o.getData?.('torre2-fullscreen')===true);
-  },null,{timeout:18000});
-  const imageIsolation=mapState.imageIsolation;
-  assert.equal(imageIsolation.baseWidth,1200);
-  assert.equal(imageIsolation.baseHeight,675);
-  console.log('BROCK_HIRES_FRAME_DIAGNOSTIC',JSON.stringify(imageIsolation));
-  assert.ok(imageIsolation.sourceWidth>=1000,
-   'The actual rendered map sprite must use the full-resolution source: '+
-    JSON.stringify(imageIsolation));
-  assert.ok(imageIsolation.baseFrames.every(key=>key==='__BASE'),
-   'Original Brock scene must not share texture frames with the forest patch');
-  assert.equal(imageIsolation.tileSpriteDetected,false,
-   'No additional cropped TileSprite may overlap the high-res map on Android');
-  assert.ok(imageIsolation.isFullFrame&&
-   imageIsolation.rawFullFrame.width===1200&&
-   imageIsolation.rawFullFrame.height===675,
-   'Map must use entire original base WebGL frame (Phaser omits __BASE from getFrameNames)');
-  assert.equal(imageIsolation.mapId,'brock-hires-v5');
-  // New mobile UI: down-arrow hides ONLY the sidebar, expanding the
-  // map in place. Party moves to a narrow bottom strip and the battle/catch
-  // call-to-action is centered at the bottom in both modes.
-  const panelTest=await offline.evaluate(()=>{
+   return c.scene.isActive()&&c.__torre2BattlePath?.stage===0&&
+     c.__torre2BattlePath?.locations===14;
+  },null,{timeout:25000});
+  await offline.screenshot({path:'test-evidence/torre2-battle-road-pewter.png',fullPage:true});
+  const road=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   const arrow=c.children.list.find(o=>o.getData?.('torre2-panel-toggle'));
+   const labels=c.children.list.filter(o=>typeof o.text==='string')
+     .map(o=>o.text).join(' | ');
+   const p=c.__torre2BattlePath;
+   const nodes=c.children.list.filter(o=>o.type==='Zone'&&
+    Number.isInteger(o.getData?.('torre2-path-node')));
+   const types=nodes.map(o=>o.getData('torre2-path-type'));
+   const count=nodes.filter(o=>o.input?.enabled).length;
    const cta=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
-   const map=c.__campaignMapObjects.find(x=>x.obj.type==='Image'&&
-     x.obj.texture?.key==='torre2-brock-custom');
-   const sideTitle=c.__campaignSidebarObjects.find(x=>x.text==='SUA EQUIPE');
-   const start={arrow:!!arrow,ctaX:cta?.x,ctaY:cta?.y,
-     width:map?.obj.displayWidth,sidebar:sideTitle?.visible};
-   arrow?.emit('pointerdown');
-   const collapsed={active:c.__campaignPanelCollapsed,
-     width:map?.obj.displayWidth,
-     arrow:c.__campaignArrowLabel?.text,
-     sidebar:sideTitle?.visible,
-     dock:c.__campaignDockObjects.filter(o=>o.visible&&o.type==='Image').length,
-     zoneEnabled:c.__campaignSidebarObjects
-      .filter(o=>o.type==='Zone'&&o.input?.enabled).length};
-   arrow?.emit('pointerdown');
-   const restored={active:c.__campaignPanelCollapsed,
-     width:map?.obj.displayWidth,
-     sidebar:sideTitle?.visible,
-     zoneEnabled:c.__campaignSidebarObjects
-      .filter(o=>o.type==='Zone'&&o.input?.enabled).length};
-   return {start,collapsed,restored};
+   return {nodes:nodes.length,types,progress:p.progress,total:p.total,
+    badge:labels.includes('0/8 INSÍGNIAS'),money:labels.includes('$1920'),
+    team:c.children.list.filter(o=>o.type==='Image'&&
+     String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
+    title:labels.includes('ROTA DE PEWTER'),button:labels.includes('ENTRAR NA BATALHA'),
+    banner:labels.includes('SUA EQUIPE  2/6'),
+    enabled:count,cta:{x:cta?.x,y:cta?.y,active:cta?.input?.enabled},
+    oldMap:c.children.list.some(o=>o.type==='Image'&&o.texture?.key==='torre2-brock-custom'),
+    environment:c.children.list.some(o=>o.type==='Image'&&o.texture?.key==='frlg-location-forest')};
   });
-  assert.equal(panelTest.start.arrow,true,
-   'Collapse arrow must be clickable in the campaign');
-  assert.equal(panelTest.start.ctaX,320,
-   'Battle/capture starts at the bottom center, not inside sidebar');
-  // Centered gold CTA occupies the footer beneath the compact party tray.
-  assert.equal(panelTest.start.ctaY,335);
-  assert.equal(panelTest.start.ctaX,320);
-  assert.equal(panelTest.start.sidebar,true);
-  assert.equal(panelTest.collapsed.active,true);
-  assert.ok(panelTest.collapsed.width>panelTest.start.width*1.19,
-   'The expanded map must grow while preserving its native aspect ratio');
-  const mapAspect=await offline.evaluate(()=>{
-   const scene=window.__pt2Game.scene.getScene('campanha');
-   scene.setCampaignPanelCollapsed(true);
-   const image=scene.__campaignMapObjects.find(v=>
-     v.obj.texture?.key==='torre2-brock-custom').obj;
-   const ratio=image.displayWidth/image.displayHeight;
-   scene.setCampaignPanelCollapsed(false);
-   return ratio;
+  assert.equal(road.total,13,'Brock still has 13 required trainers');
+  assert.equal(road.nodes,14,'Thirteen trainer checkpoints plus Brock leader');
+  assert.ok(road.types.includes('rival')&&road.types.includes('rocket')&&
+   road.types.includes('capture')&&road.types.includes('leader'),
+   'Battle Path presents rival, Rocket, optional wild capture and leader');
+  assert.ok(road.title&&road.button&&road.banner&&road.environment,
+   'Battle hub has forest setting, clean team tray, and primary fight CTA');
+  assert.ok(!road.oldMap,'Old collage map must not render behind the Battle Road');
+  assert.ok(road.cta.active&&Math.abs(road.cta.y-335)<2,
+   'Main gold battle CTA must be interactable at the bottom');
+  const bossLocked=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const boss=c.__torre2BattlePath.nodes.at(-1);
+   boss.emit('pointerdown');
+   return {combat:c.game.scene.isActive('combate'),stage:c.__torre2BattlePath.stage};
   });
-  assert.ok(Math.abs(mapAspect-1200/675)<.04,
-   'An expanded FireRed map must not warp tiles or trainers');
-  assert.equal(panelTest.collapsed.arrow,'▲','Arrow shows expand option');
-  assert.equal(panelTest.collapsed.sidebar,false,
-   'Side menu must disappear from view');
-  assert.ok(panelTest.collapsed.dock>=2,
-   'Player party has a compact, touchable strip at bottom');
-  const footer=await offline.evaluate(()=>{
+  assert.equal(bossLocked.combat,false,'Brock cannot be accessed early');
+  // A capture tile is optional: tapping it opens a live encounter chooser,
+  // without changing stage, trainer or undoing battle completion.
+  const grassOverlay=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   const cta=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
-   // Hidden dock zones are intentionally input-disabled while the sidebar
-   // is expanded. Verify their layout geometry, not temporary interactivity.
-   const dock=c.__campaignDockObjects
-    .filter(o=>o.type==='Zone');
-   const caption=c.children.list.find(o=>o.type==='Text'&&
-    /TREINADOR/.test(o.text||'')&&Math.abs(o.y-335)<3);
-   return {ctaY:cta?.y,ctaX:cta?.x,ctaWidth:cta?.width,
-    dockY:dock.map(x=>x.y),caption:!!caption,clickable:!!cta?.input?.enabled};
-  });
-  assert.equal(footer.ctaY,335);
-  assert.equal(footer.ctaX,320);
-  assert.ok(footer.ctaWidth>=240&&footer.caption&&footer.clickable,
-   'Gold battle action must be centered, readable and clickable');
-  // The smoke fixture can have only two Pokémon; unlike the real saved
-  // party it must not be required to render four populated click targets.
-  assert.ok(footer.dockY.length>=2&&footer.dockY.every(y=>y>=299),
-   'Populated party cards must sit lower and above the centered CTA: '+
-    JSON.stringify(footer));
-  assert.equal(panelTest.collapsed.zoneEnabled,0,
-   'Hidden buttons cannot intercept clicks intended for the map');
-  assert.equal(panelTest.restored.active,false);
-  assert.equal(panelTest.restored.width,panelTest.start.width,
-   'Toggling back restores exact native pixel-art layout');
-  assert.equal(panelTest.restored.sidebar,true);
-  assert.ok(panelTest.restored.zoneEnabled>=6);
-  // Re-enter campaign with a completed trainer battle on Android landscape:
-  // the larger map must return (the screenshot complaint was a small blurry
-  // map plus a wide sidebar after every win).
-  const mapReturn=await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   const was=c.__campaignPanelCollapsed;
-   const oldResult=c.result;
-   const registry=c.registry;
-   const original=registry.get('torre2-panel-collapsed');
-   // Restart with native lifecycle; no fake map drawing.
-   registry.set('torre2-panel-collapsed',true);
-   c.scene.restart();
-   return {was,original,oldResult:!!oldResult};
-  });
-  await offline.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__campaignPanelCollapsed&&
-    c.__campaignMapObjects?.some(x=>x.obj?.texture?.key==='torre2-brock-custom'&&
-     x.obj.displayWidth>=445&&x.obj.displayWidth<=470);
-  },null,{timeout:18000});
-  await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   c.setCampaignPanelCollapsed(false);
-  });
-  // Grass opens as a modal and does not destroy/recreate the map image.
-  const grassOverlay=await offline.evaluate(async()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   const image=c.__campaignMapObjects.find(x=>x.obj.type==='Image'&&
-    x.obj.texture?.key==='torre2-brock-custom').obj;
+   const node=c.__torre2BattlePath.nodes[2];
    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
-   const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
-   c.grassScreen(core.readCampaign());
-   const opened=image.active&&!!c.__torre2GrassOverlay?.active;
+   node.emit('pointerdown'); // locked until its route checkpoint is reached
+   const didNotOpen=!c.__torre2GrassOverlay?.active;
+   c.grassScreen(JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')));
+   const opened=!!c.__torre2GrassOverlay?.active;
    const close=c.children.list.find(o=>o.type==='Zone'&&o.depth===630&&
     Math.abs(o.x-174)<2&&Math.abs(o.y-292)<2);
    close?.emit('pointerdown');
-   return {opened,closed:image.active&&!c.__torre2GrassOverlay,close:!!close};
+   return {didNotOpen,opened,closed:!c.__torre2GrassOverlay?.active};
   });
-  assert.ok(grassOverlay.opened&&grassOverlay.closed&&grassOverlay.close,
-   'Grass modal must preserve the map image and restore click targets');
-  const mobileResources=await offline.evaluate(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    return {
-     maps:c.textures.getTextureKeys().filter(k=>k.startsWith('frlg-location-')),
-     npcs:c.textures.getTextureKeys().filter(k=>k.startsWith('frlg-npc-')),
-     fullscreen:c.children.list.filter(o=>o.type==='Zone'&&
-      o.getData?.('torre2-fullscreen')).length,
-     hoverGraphics:c.children.list.filter(o=>o.type==='Graphics'&&o.depth===25).length
-    };
+  assert.ok(grassOverlay.didNotOpen&&grassOverlay.opened&&grassOverlay.closed,
+   'Wild capture is a real modal and does not wipe out Battle Road');
+  const resourceCheck=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return {maps:c.textures.getTextureKeys().filter(x=>x.startsWith('frlg-location-')),
+    npcs:c.textures.getTextureKeys().filter(x=>x.startsWith('frlg-npc-'))};
   });
-  assert.ok(mobileResources.maps.length<=2,
-   'Opening Brock must not upload all Kanto city sheets to mobile GPU');
-  assert.ok(mobileResources.npcs.length<=12,
-   'Opening Brock must not upload 41 trainer textures');
-  assert.equal(mobileResources.fullscreen,1,
-   'Mobile map offers a clickable fullscreen control');
-  assert.equal(mobileResources.hoverGraphics,1,
-   'Map uses one shared hover Graphics instead of per-trainer effects');
+  assert.ok(resourceCheck.maps.length<=2,'Battle Road only uploads two local maps');
+  assert.ok(resourceCheck.npcs.length<=12,'Battle Road loads only a small trainer sprite set');
   // Preserve the native 16:9 arena and fill extra horizontal space with
   // decorative FireRed art, rather than stretch Pokémon and joystick.
   await offline.setViewportSize({width:980,height:420});
