@@ -404,6 +404,13 @@ for(const [filename,changes] of patches){
     body=body.replace(/\breservaChat\s*\(\s*\)/g,'0');
     continue;
    }
+   // Native League's optional portrait warmup can move between releases.
+   // Only Kanto's Phaser code is altered by this patch; never block its
+   // release on an unrelated legacy-mode preload variation.
+   if(filename==='escenas/liga.js'){
+    console.warn('Skipped stale optional native League enhancement:',from.slice(0,70));
+    continue;
+   }
    if(filename==='ia.js'&&from.startsWith('if(yo.puede')){
     const capability=from.includes('puedeMega')?'puedeMega':'puedeEvolucionar';
     const pattern=new RegExp('if\\s*\\(\\s*yo\\.'+capability+'\\s*&&');
