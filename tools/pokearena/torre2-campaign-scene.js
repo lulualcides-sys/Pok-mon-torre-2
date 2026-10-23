@@ -291,13 +291,63 @@ create(){
    bag:()=>this.bagScreen(state),center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),
    menu:()=>this.scene.start('titulo',{menu:'principal'}),
-   page:movePage,details,
+   page:movePage,details,reset:()=>this.confirmResetJourney(),
    locked:()=>this.__torre2PathDetails(text,this,null)
   });
   // Expose stable index for smoke tests and safe scene re-entry; no overworld
   // map, invisible trainer zones or city navigation are created.
   this.__torre2PathPage=path.offset;
   return path;
+ }
+ // Reset is intentionally a two-step action; a single stray tap may
+ // never erase the campaign, team, PC, badges or saved inventory.
+ confirmResetJourney(){
+  if(this.__torre2ResetDialog?.active)return;
+  const objects=[];
+  const overlay=this.add.graphics().setDepth(3000);
+  overlay.fillStyle(0x050b16,.83);overlay.fillRect(0,0,640,360);
+  overlay.fillStyle(0x102b40,.99);overlay.fillRoundedRect(115,102,410,160,9);
+  overlay.lineStyle(3,0xf7d17b,.96);overlay.strokeRoundedRect(115,102,410,160,9);
+  objects.push(overlay);
+  const blocker=this.add.zone(320,180,640,360).setDepth(3001).setInteractive();
+  objects.push(blocker);
+  const addLabel=(x,y,label,size,color='#fff4dc')=>{
+   const obj=text(this,x,y,label,{
+    fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',
+    fontStyle:'bold',color,stroke:'#07121f',strokeThickness:2})
+    .setOrigin(.5).setDepth(3005);
+   objects.push(obj);return obj;
+  };
+  addLabel(320,133,'REINICIAR JORNADA?',19,'#ffe09a');
+  addLabel(320,164,'Apaga equipe, insígnias, capturas e progresso.',11);
+  addLabel(320,184,'A ação não poderá ser desfeita.',10,'#ffad9f');
+  const close=()=>{
+   for(const obj of objects)if(obj?.active)obj.destroy();
+   this.__torre2ResetDialog=null;
+  };
+  const option=(x,title,confirm)=>{
+   const bg=this.add.graphics().setDepth(3003);
+   bg.fillStyle(confirm?0xa3423e:0x1b6186,.99);
+   bg.fillRoundedRect(x-89,207,178,34,5);
+   bg.lineStyle(2,confirm?0xffb39f:0x9cd5ea);
+   bg.strokeRoundedRect(x-89,207,178,34,5);
+   objects.push(bg);
+   addLabel(x,224,title,12);
+   const zone=this.add.zone(x,224,178,36).setDepth(3006)
+    .setInteractive({useHandCursor:true})
+    .setData('torre2-reset-confirm',confirm);
+   zone.on('pointerdown',()=>{
+    close();
+    if(!confirm)return;
+    resetCampaign();
+    // Fresh starter selection on original Phaser scene; no stale saved team.
+    this.scene.restart();
+   });
+   objects.push(zone);
+  };
+  option(229,'CANCELAR',false);
+  option(411,'SIM, REINICIAR',true);
+  this.__torre2ResetDialog=overlay;
  }
  __torre2PathDetails(draw,scene,foe){
   if(this.__torre2PathNotice?.active)this.__torre2PathNotice.destroy();
