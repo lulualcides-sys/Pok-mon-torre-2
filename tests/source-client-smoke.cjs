@@ -127,6 +127,33 @@ const server=http.createServer(async(req,res)=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
    return p.etapa===2&&p.anims.exists('0003-Idle-0')&&p.sprite?.dex==='0003';
   },null,{timeout:16000});
+  // Regression: the user's screenshots showed SPD NaN and blank moves
+  // on Nidorino/Nidoking. Visit EVERY added Kanto evolution in the actual
+  // Phaser Pokédex to catch the same failure across all new families.
+  const allKantoStageStats=await dexPage.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('pokedex');
+   const results=[];
+   for(let i=0;i<scene.casillas.length;i++){
+    if(!['nidoran-m','nidoran-f','pidgey','rattata','caterpie',
+       'weedle','geodude','paras','clefairy','sandshrew','ekans',
+       'staryu','psyduck','poliwag','oddish','bellsprout','meowth',
+       'diglett','voltorb','magnemite'].includes(scene.casillas[i].p.id))continue;
+    scene.elegir(i);
+    for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
+     const stage=scene.etapas[stageIndex];
+     results.push({id:scene.casillas[i].p.id,stage:stage.nombre,
+      stats:[stage.hp,stage.vel,stage.atk,stage.def],
+      moves:['lmb','rmb','q','e','esp'].map(k=>stage.kit?.[k]?.nombre)});
+    }
+   }
+   return results;
+  });
+  for(const result of allKantoStageStats){
+   assert.ok(result.stats.every(Number.isFinite),
+    'Pokédex has NaN / missing stage stats: '+JSON.stringify(result));
+   assert.ok(result.moves.every(Boolean),
+    'Pokédex has empty move panel: '+JSON.stringify(result));
+  }
   const newKantoDex=await dexPage.evaluate(()=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
    return ['pidgey','caterpie','weedle','geodude','mankey'].map(id=>{
@@ -1189,10 +1216,10 @@ const server=http.createServer(async(req,res)=>{
    // NEW rows are distinct from the equipped slots above them.
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
-   if(labels().some(x=>x.includes('TODOS OS GOLPES APROVADOS')))
-    throw Error('NEW must show Thunder Wave, Sonic Boom and Screech as the pending Surge3 FX');
-   if(!pendingRows.some(x=>/Thunder Wave|Sonic Boom|Screech/.test(x)))
-    throw Error('NEW must show the newly authored batch');
+   // The three Surge moves were visually approved on 23 Oct. 2026.
+   // The NEW tab may be empty; it must never list an approved move.
+   if(pendingRows.some(x=>/Thunder Wave|Sonic Boom|Screech/.test(x)))
+    throw Error('Approved Surge move leaked into NEW');
    for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',
     'Metal Claw','Bind','Double Kick','Fury Attack'])
     if(pendingRows.some(x=>x.includes(name)))
