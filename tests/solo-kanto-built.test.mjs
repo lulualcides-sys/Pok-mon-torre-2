@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
 const stage=path.resolve('_site/arena2d');
-const version=fs.readdirSync(stage).find(x=>/^src-[a-f0-9]{10}$/.test(x));
+const version=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8')).modules;
 assert.ok(version,'Captured Phaser original client not staged');
 // Browser startup must never be blocked by malformed JS in campaign,
 // trainer art, shops or capture modules. Check each staged ES module.
@@ -392,7 +392,7 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 // NEW is an approval queue. Native moves and approved custom art never enter it.
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
-assert.equal(pendingIds.length,0,'User approved ALL items of NEW, including Metronome, Absorb, X-Scissor, Horn Attack and Rock Tomb');
+assert.equal(pendingIds.length,27,'24 new moves and 3 steel moves await approval; prior approvals remain frozen');
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
@@ -807,8 +807,10 @@ assert.ok(!npcFrames.includes('image.setCrop(0,0,'),
 for(let stage=9;stage<=12;stage++)
  assert.equal(getCampaignMapSpec(stage,0).id,'indigo',
   'Elite Four and Champion share the same themed map');
-assert.ok(menuCampaign.includes('TREINAMENTO')&&
- menuCampaign.includes('CAPTURA')&&!menuCampaign.includes("['GINÁSIO',handlers.gym]"),
+const sidebar=fs.readFileSync(path.join(stage,version,'torre2/battle-path.js'),'utf8');
+assert.ok(sidebar.includes("['TREINAMENTO',handlers.training]")&&
+ sidebar.includes("['CAPTURA',handlers.capture]")&&!sidebar.includes("['GINÁSIO',handlers.gym]")&&
+ menuCampaign.includes('training:()=>this.enterTraining(state)'),
  'Sidebar replaces gym shortcut with training and keeps grass capture');
 const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
 for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',

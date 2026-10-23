@@ -1,0 +1,197 @@
+{
+  "moves": [
+    {
+      "id": "mud-shot",
+      "renderer": 2,
+      "children": 69,
+      "damage": 113.82586367880867,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "mud-bomb",
+      "renderer": 2,
+      "children": 73,
+      "damage": 134.52147525676992,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "acid",
+      "renderer": 2,
+      "children": 75,
+      "damage": 82.78244631185953,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "acid-spray",
+      "renderer": 2,
+      "children": 77,
+      "damage": 82.78244631185953,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "sludge",
+      "renderer": 2,
+      "children": 78,
+      "damage": 134.52147525676992,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "poison-jab",
+      "renderer": 2,
+      "children": 81,
+      "damage": 165.56489262371906,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "mega-drain",
+      "renderer": 2,
+      "children": 80,
+      "damage": 82.78244631185953,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "giga-drain",
+      "renderer": 2,
+      "children": 82,
+      "damage": 155.21708683473116,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "pin-missile",
+      "renderer": 2,
+      "children": 83,
+      "damage": 155.21708683473116,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "icicle-spear",
+      "renderer": 2,
+      "children": 87,
+      "damage": 103.47805788982078,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "ice-shard",
+      "renderer": 2,
+      "children": 92,
+      "damage": 82.78244631185953,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "poison-fang",
+      "renderer": 2,
+      "children": 94,
+      "damage": 103.47805788982078,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "ice-fang",
+      "renderer": 2,
+      "children": 94,
+      "damage": 134.52147525676992,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "fury-cutter",
+      "renderer": 2,
+      "children": 95,
+      "damage": 82.78244631185953,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "leaf-blade",
+      "renderer": 2,
+      "children": 96,
+      "damage": 186.2605042016803,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "night-slash",
+      "renderer": 2,
+      "children": 98,
+      "damage": 144.86928104575782,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "icy-wind",
+      "renderer": 2,
+      "children": 97,
+      "damage": 113.82586367880867,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "silver-wind",
+      "renderer": 2,
+      "children": 98,
+      "damage": 124.17366946778202,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "twister",
+      "renderer": 2,
+      "children": 99,
+      "damage": 82.78244631185953,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "energy-ball",
+      "renderer": 2,
+      "children": 101,
+      "damage": 186.2605042016803,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "dragon-pulse",
+      "renderer": 2,
+      "children": 102,
+      "damage": 175.9126984126924,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "dark-pulse",
+      "renderer": 2,
+      "children": 103,
+      "damage": 165.56489262371906,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "ancient-power",
+      "renderer": 2,
+      "children": 104,
+      "damage": 124.17366946778202,
+      "returned": true,
+      "disposed": true
+    },
+    {
+      "id": "earth-power",
+      "renderer": 2,
+      "children": 108,
+      "damage": 186.2605042016803,
+      "returned": true,
+      "disposed": true
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,26 @@
+// Dragon Pulse — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "dragon-pulse",
+  "nombre": "Dragon Pulse",
+  "approved": false,
+  "forma": "torre2_batch24_dragon_pulse",
+  "tipo": "DRAGON",
+  "categoria": "SPECIAL",
+  "poder": 85,
+  "precisao": 100,
+  "pp": 10,
+  "fazContato": false,
+  "dano": 17,
+  "alcance": 260,
+  "coste": 26,
+  "cd": 6.1,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "dragon",
+  "palette": "dragon",
+  "speed": 330,
+  "secondary": "none",
+  "frames": 12,
+  "description": "Dragon Pulse — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/dragon-pulse"
+});

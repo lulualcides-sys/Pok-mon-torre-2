@@ -12,7 +12,7 @@ const add=pool.replace("export const SIGNATURE_MOVES=Object.freeze([",
  "export const SIGNATURE_MOVES=Object.freeze([\n {id:'four-source-test',approved:false,nombre:'Four Source Test',forma:'torre2_foursourcetest'},");
 test('Project standard: exactly 4 verified sources',()=>{
  assert.deepEqual(SOURCES,['T2','P2','Z','E']);
- assert.equal(signatureEntries(pool).length,37);
+ assert.equal(signatureEntries(pool).length,61);
  assert.deepEqual(validateReusePolicy(pool,data),[]);
 });
 test('Future custom move is BLOCKED if the four-source evidence is missing',()=>{
@@ -48,4 +48,8 @@ test('Flash Cannon, Steel Beam, Mirror Shot remain NOT four-source approved',()=
   const move=signatureEntries(pool).find(x=>x.id===id);
   assert.equal(move.approved,false);
  }
+});
+
+test('Unknown imported catalogs cannot bypass the evidence gate',()=>{
+ assert.throws(()=>signatureEntries(pool.replace('...BATCH24_MOVES','...UNREVIEWED_MOVES')),/Unrecognized/);
 });

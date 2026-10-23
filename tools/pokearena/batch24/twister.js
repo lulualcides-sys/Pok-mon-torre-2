@@ -1,0 +1,26 @@
+// Twister — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "twister",
+  "nombre": "Twister",
+  "approved": false,
+  "forma": "torre2_batch24_twister",
+  "tipo": "DRAGON",
+  "categoria": "SPECIAL",
+  "poder": 40,
+  "precisao": 100,
+  "pp": 20,
+  "fazContato": false,
+  "dano": 8,
+  "alcance": 230,
+  "coste": 19,
+  "cd": 5,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "twister",
+  "palette": "dragon",
+  "speed": 215,
+  "secondary": "flinch20",
+  "frames": 12,
+  "description": "Twister — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/twister"
+});

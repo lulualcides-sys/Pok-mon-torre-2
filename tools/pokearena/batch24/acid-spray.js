@@ -1,0 +1,26 @@
+// Acid Spray — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "acid-spray",
+  "nombre": "Acid Spray",
+  "approved": false,
+  "forma": "torre2_batch24_acid_spray",
+  "tipo": "POISON",
+  "categoria": "SPECIAL",
+  "poder": 40,
+  "precisao": 100,
+  "pp": 20,
+  "fazContato": false,
+  "dano": 8,
+  "alcance": 190,
+  "coste": 19,
+  "cd": 5,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "spray",
+  "palette": "acid",
+  "speed": 320,
+  "secondary": "spdef2",
+  "frames": 12,
+  "description": "Acid Spray — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/acid-spray"
+});

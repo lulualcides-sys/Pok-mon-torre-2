@@ -1,0 +1,26 @@
+// Fury Cutter — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "fury-cutter",
+  "nombre": "Fury Cutter",
+  "approved": false,
+  "forma": "torre2_batch24_fury_cutter",
+  "tipo": "BUG",
+  "categoria": "PHYSICAL",
+  "poder": 40,
+  "precisao": 95,
+  "pp": 20,
+  "fazContato": true,
+  "dano": 8,
+  "alcance": 74,
+  "coste": 19,
+  "cd": 4.2,
+  "anim": "Swing",
+  "lanzar": 0.14,
+  "style": "fury",
+  "palette": "needle",
+  "speed": 0,
+  "secondary": "fury",
+  "frames": 12,
+  "description": "Fury Cutter — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/fury-cutter"
+});

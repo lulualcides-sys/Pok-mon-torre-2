@@ -1,0 +1,26 @@
+// Ancient Power — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "ancient-power",
+  "nombre": "Ancient Power",
+  "approved": false,
+  "forma": "torre2_batch24_ancient_power",
+  "tipo": "ROCK",
+  "categoria": "SPECIAL",
+  "poder": 60,
+  "precisao": 100,
+  "pp": 5,
+  "fazContato": false,
+  "dano": 12,
+  "alcance": 235,
+  "coste": 22,
+  "cd": 5.5,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "ancient",
+  "palette": "rock",
+  "speed": 255,
+  "secondary": "omni10",
+  "frames": 12,
+  "description": "Ancient Power — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/ancient-power"
+});

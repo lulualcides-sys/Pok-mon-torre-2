@@ -82,11 +82,13 @@ jobs:
         run: |
           set -euo pipefail
           node tools/pokearena/audit-moves.mjs
+          node tests/batch24-built.test.mjs
           echo "Inventário checado: ataques nativos preservados; nenhum golpe repetido permitido."
       - name: Testar a arena Phaser original no Chromium antes de publicar
         shell: bash
         run: |
           npm install --no-audit --no-fund
+          CHROME_BIN="$(command -v google-chrome)" node tests/batch24-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
       - name: Arquivar evidência visual do motor Phaser
         if: always()
@@ -162,7 +164,9 @@ jobs:
                 && grep -Fq 'export function doublekick(' /tmp/torre-prebrock.js \
                 && grep -Fq 'export function furyattack(' /tmp/torre-prebrock.js \
                 && grep -Fq 'export function metalclaw(' /tmp/torre-prebrock.js \
-                && grep -Fq 'export function bind(' /tmp/torre-prebrock.js; then
+                && grep -Fq 'export function bind(' /tmp/torre-prebrock.js \
+                && curl -fsSL --max-time 18 "$base/$version/torre2/batch24/catalog.js" -o /tmp/torre-batch24.js \
+                && grep -Fq 'earth_power' /tmp/torre-batch24.js; then
               echo "CONFIRMADO: GitHub Pages esta servindo a versao $version com golpes atualizados."
               exit 0
             fi
