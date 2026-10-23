@@ -10,7 +10,8 @@ const mod=p=>import(pathToFileURL(file(p)));
 const {ROSTER,buscar}=await mod('datos.js');
 const {EARLY_KANTO_BASE,MISTY_ROUTE_BASE,SURGE_ROUTE_BASE,LATE_GYM_BASE,EARLY_KANTO_FORMS,
  earlyKantoSlotPlan,nativeKantoEvolutionPlan}=await mod('torre2/early-kanto-species.js');
-const {TEST_LIBRARY,availableMoves,defaultLoadout,selectedMoves,resolveLoadout}=await mod('torre2/move-pool.js');
+const {TEST_LIBRARY,availableMoves,defaultLoadout,selectedMoves,resolveLoadout,
+ canonicalMoveKey}=await mod('torre2/move-pool.js');
 const {GYMS,TRAINERS_PER_GYM,currentOpponent,createCampaign}=await mod('torre2/campaign-core.js');
 const {createPartyMatch}=await mod('torre2/party-battle.js');
 
@@ -56,24 +57,28 @@ for(const id of families){
   assert.equal(slots.length,4,'Four reserved slots '+species);
   const loadout=resolveLoadout(member);
   const evolved=formIndex>0;
-  const mayUseUlt=evolved||!['caterpie','weedle'].includes(species);
-  const active=evolved?['lmb','rmb','q','e']:['lmb'];
-  for(const control of active){
-   assert.ok(loadout[control]?.forma,
-    species+' has no ${control} attack at REAL evolution Lv'+level);
+  // The game now honours ALL unlock levels, including levels higher than
+  // evolution. Four roles are RESERVED; they are not prematurely activated.
+  assert.ok(loadout.lmb?.forma,species+' must have a REAL attack at Lv'+level);
+  const active=['lmb','rmb','q','e'].filter(slot=>loadout[slot]?.forma);
+  assert.equal(new Set(active.map(slot=>loadout[slot].nombre)).size,active.length,
+   species+' must not duplicate attacks when gradually unlocking');
+  for(const control of active)
    assert.notEqual(loadout[control]?.pendiente,true,
-    species+' must not have an unusable '+control);
-  }
+    species+' must not equip a LOCKED '+control);
+  const ultimate=canonicalMoveKey(plan[3]);
+  const unlocked=availableMoves(member).some(move=>move.id===ultimate);
+  if(unlocked&&slots[3]===ultimate)assert.equal(loadout.e?.ulti,true,
+   species+' should activate its ULT once really unlocked');
+  if(!unlocked)assert.equal(loadout.e,undefined,
+   species+' must not borrow a locked/future ultimate');
   if(evolved){
-   assert.equal(loadout.e.ulti,true,species+' E is a real ultimate');
-   assert.equal(new Set(['lmb','rmb','q','e'].map(k=>loadout[k].nombre)).size,4,
-    species+' needs four DIFFERENT skills after evolution');
    const stale={...member,moves:['tackle','gust','bite','quick-attack'],
     movePlanSpecies:previous};
    assert.deepEqual(selectedMoves(stale),slots,
     species+' migration must remove pre-evolution moves');
   }
-  if(!mayUseUlt)assert.equal(loadout.e,undefined,
+  if(['caterpie','weedle'].includes(species))assert.equal(loadout.e,undefined,
    'Larvae must not borrow the evolved ultimate');
   const kit=formIndex>0?def.evoluciones[formIndex-1].kit:def.kit;
   assert.equal(kit.esp.dano,0,species+' should dodge without damage');
@@ -114,10 +119,13 @@ for(const species of ['ivysaur','venusaur','charmeleon','charizard',
  const plan=nativeKantoEvolutionPlan(species);
  assert.equal(plan?.length,4,species+' native evolution has 4 slots');
  const load=resolveLoadout(member);
- const missing=['lmb','rmb','q','e'].filter(slot=>!load[slot]?.forma);
- assert.deepEqual(missing,[],species+' lacks native evolution effects');
+ assert.ok(load.lmb?.forma,species+' must have an unlocked basic ATK at evolution');
+ for(const [i,slot] of ['lmb','rmb','q','e'].entries()){
+  if(load[slot])assert.ok(availableMoves(member).some(m=>m.id===selectedMoves(member)[i]),
+   species+' cannot equip a skill before learning it');
+ }
  assert.equal(load.esp.dano,0,species+' must use Kanto-only Dodge');
- assert.equal(load.e.ulti,true,species+' must have charged ULT');
+ if(load.e)assert.equal(load.e.ulti,true,species+' unlocked ultimate must remain charged');
 }
 assert.equal(TRAINERS_PER_GYM(0),13);
 assert.equal(TRAINERS_PER_GYM(8),17,'Victory Road precedes Elite Four');

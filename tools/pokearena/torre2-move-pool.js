@@ -273,7 +273,11 @@ export function availableMoves(member){
   // Strict FireRed unlock for all official level-up moves (inherits prior
   // evolution learnsets). An unlearned TM is NEVER auto-granted.
   const official=frlgUnlockLevel(member.id,key);
-  if(early&&early[key]!==undefined&&level<early[key])return false;
+  // The first gyms and their real evolutionary forms already have vetted
+  // per-species levels. Respect those authorial thresholds over the newly
+  // imported Gen3 table (which lacks our user-approved bonus moves).
+  if(early&&early[key]!==undefined)
+   return level>=early[key]&&!evoLocked.has(key);
   if(early&&newMoveRequiredLevel[key]!==undefined&&level<newMoveRequiredLevel[key])
    return false;
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
@@ -338,10 +342,25 @@ export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
- if(plan)return plan.map(name=>{
-  const id=canonicalMoveKey(name);
-  return byId.has(id)?id:null;
- });
+ if(plan){
+  const reserved=plan.map(name=>{
+   const id=canonicalMoveKey(name);
+   return byId.has(id)?id:null;
+  });
+  // For native/P2 Pokémon, the locked planned ATK must not leave them
+  // defenseless on the day they evolve. Use a genuinely learned weak move
+  // in an otherwise empty ATK/HAB slot. ULT remains locked until learned.
+  const used=new Set(reserved.filter(Boolean));
+  const pool=available.filter(m=>m?.id&&Number.isFinite(m.dano)&&m.dano>0)
+   .sort((a,b)=>Number(a.dano)-Number(b.dano));
+  for(const i of [0,1,2]){
+   if(reserved[i])continue;
+   const next=pool.find(m=>!used.has(m.id)&&(i!==0||m.dano<=12))||
+    (i===0?pool.find(m=>!used.has(m.id)):null);
+   if(next){reserved[i]=next.id;used.add(next.id)}
+  }
+  return reserved;
+ }
  const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
  const ids=slots.map(slot=>canonicalMoveKey(def.kit[slot]?.nombre));
  return ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4);
