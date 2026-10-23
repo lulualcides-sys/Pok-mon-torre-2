@@ -52,10 +52,12 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
 function connector(g,ax,ay,bx,by,lit){
  const dx=bx-ax,dy=by-ay,length=Math.hypot(dx,dy);
  const steps=Math.ceil(length/10);
+ // Contrast backing makes the dashed route legible over dense FireRed trees.
+ g.lineStyle(3,0x102a2d,.76);g.lineBetween(ax,ay,bx,by);
  for(let n=1;n<steps;n++){
   const t=n/steps,x=ax+dx*t,y=ay+dy*t;
-  g.fillStyle(lit?0xffe9b3:0xe0ebd9,lit ? .95 : .64);
-  g.fillCircle(x,y,lit?1.6:1.1);
+  g.fillStyle(lit?0xffe9b3:0xf3f3ce,lit ? .98 : .93);
+  g.fillCircle(x,y,lit?2.4:2.05);
  }
 }
 function trainerKind(stage,node){
@@ -168,13 +170,17 @@ export function renderBattlePath(scene,state,handlers){
   if(active){
    g.fillStyle(0xffd374,.17);g.fillCircle(p.x,p.y-5,boss?36:29);
   }
-  g.fillStyle(0x061a2e,.97);g.fillRoundedRect(p.x-width/2,top+10,width,37,5);
+  g.fillStyle(0x061a2e,.88);g.fillRoundedRect(p.x-width/2,top+10,width,37,5);
   g.lineStyle(active?2:1,active?0xffd15f:done?0x54d99a:0x768a95,1);
   g.strokeRoundedRect(p.x-width/2,top+10,width,37,5);
   g.fillStyle(active?0x7c5521:done?0x255b4b:0x304755,.95);
   g.fillEllipse(p.x,top+8,boss?50:42,18);
   g.lineStyle(2,active?0xffe9aa:done?0x66d5a6:0x778f9c);
   g.strokeEllipse(p.x,top+8,boss?50:42,18);
+  if(boss){
+   g.fillStyle(0xc7ac79,.92);g.fillRoundedRect(p.x-30,top-3,60,13,3);
+   g.lineStyle(1,0xfde4ad,1);g.strokeRoundedRect(p.x-30,top-3,60,13,3);
+  }
   if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
    g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
@@ -182,9 +188,9 @@ export function renderBattlePath(scene,state,handlers){
    ball(g,p.x,top-2,9);
   }else{
    const kind=trainerKind(stage,node);
-   const npc=addFireRedNPC(scene,kind,p.x,top+12,{scale:boss?1.02:.82,depth:21});
+   const npc=addFireRedNPC(scene,kind,p.x,top+12,{scale:boss?1.35:1.20,depth:21});
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
-   if(!available&&npc)npc.setTint(0x8594a4).setAlpha(.75);
+   if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
   txt(scene,p.x,p.y+8,boss?leader.toUpperCase():capture?'CAPTURA':
    node.type==='rocket'?'EQUIPE ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
@@ -224,7 +230,11 @@ export function renderBattlePath(scene,state,handlers){
   side.fillRoundedRect(502,y-9,124,21,3);
   side.lineStyle(1,i===state.active?0xf2c267:0x345d76,1);
   side.strokeRoundedRect(502,y-9,124,21,3);
-  if(!m)continue;
+  if(!m){
+   txt(scene,517,y,'◌',10,'#47677b',24);
+   txt(scene,535,y,'ESPAÇO LIVRE',7,'#5f839b',24).setOrigin(0,.5);
+   continue;
+  }
   hudSprite(scene,m,514,y+1,23);
   txt(scene,530,y-4,m.id.toUpperCase().slice(0,12),8,'#fff5e3',24).setOrigin(0,.5);
   txt(scene,531,y+5,'NV.'+(m.progression?.level||5),7,'#b7dfea',24).setOrigin(0,.5);
