@@ -58,6 +58,9 @@ assert.ok(pokedex.includes('moveUnlockLevel')&&pokedex.includes('torre2RequiresT
 assert.ok(pokedex.includes('HAB 2')&&pokedex.includes('HAB 3')&&pokedex.includes('ESQUIVA'),
  'Dex needs original ATK/HAB 2/HAB 3/ULT/ESQUIVA roles');
 const original=fs.readFileSync(path.join(root,modules,'luchador.js'),'utf8');
-assert.ok(original.includes('torre2?{lmb:null,rmb:null,q:null,e:null}'),
- 'Locked move slots may not silently reactivate old abilities during Kanto battle');
+assert.ok(original.includes('nome:"LOCKED"')||
+ original.includes('nombre:"LOCKED"'),
+ 'Locked campaign moves must be inert dummies to keep native AI safe');
+assert.ok(original.includes('coste:999999')&&original.includes('pendiente:true'),
+ 'Native IA needs safe inert slot objects, never real skills before level unlock');
 console.log('PASS FireRed/LeafGreen: 151 species level/TM data, 4 Kanto roles, locked battle abilities, Pokedex, test Mewtwo.');

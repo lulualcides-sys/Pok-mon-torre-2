@@ -214,7 +214,7 @@ patches.push(
  ]],
  ['luchador.js',[
   ['return this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit',
-   'return {...(this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit),...(this.escena.datos?.torre2?{lmb:null,rmb:null,q:null,e:null}:{}),...(this.escena.datos?.torre2?(this.lado===0?this.escena.datos.torre2Loadout:this.escena.datos.torre2OpponentLoadout):{})}']
+   'return {...(this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit),...(this.escena.datos?.torre2?Object.fromEntries(["lmb","rmb","q","e"].map(slot=>[slot,{nombre:"LOCKED",forma:"dash",tipo:"NORMAL",dano:0,alcance:0,coste:999999,cd:999999,anim:"Walk",pendiente:true}])):{}),...(this.escena.datos?.torre2?(this.lado===0?this.escena.datos.torre2Loadout:this.escena.datos.torre2OpponentLoadout):{})}']
  ]]
 );
 patches.push(
