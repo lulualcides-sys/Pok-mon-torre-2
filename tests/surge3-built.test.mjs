@@ -19,9 +19,10 @@ for(const h of SURGE3_MOVES){
  assert.equal(TEST_LIBRARY.filter(x=>x.nombre===h.nombre).length,1,h.id+' duplicate name');
  assert.equal(typeof TORRE2_FORMS[h.forma],'function','Form missing in real Phaser forms '+h.id);
  assert.equal(typeof SURGE3_FORMS[h.forma],'function',h.id);
- assert.equal(h.approved,true,'Player approved the three Surge moves');
- assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').some(m=>m.id===h.id),false,
-  'Approved Surge move must not appear in NEW');
+ assert.equal(h.approved,h.id!=='sonic-boom',
+  'Only Sonic Boom remains pending its three-white-crescents review');
+ assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').some(m=>m.id===h.id),
+  h.id==='sonic-boom','Only Sonic Boom must be in NEW');
 }
 assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(x=>x.id==='ancient-power'||x.id==='ice-shard').length,0,
  'Ice Shard and Ancient Power must NOT reappear in NEW');
@@ -61,4 +62,4 @@ for(const foe of foes){
 const captured=fs.readFileSync(path.join(root,dir,'luchador.js'),'utf8');
 assert.ok(captured.includes('torre2Screech?.stages||0'),
  'Screech must actually affect Kanto Defense getter by two stages');
-console.log('Surge 3 built: real Phaser VFX, boss FireRed party, 20 fixed damage, status mapping, Pokédex and confirmed visual approval');
+console.log('Surge 3 built: real Phaser VFX, boss FireRed party, 20 fixed damage, status mapping, Pokédex and correct approved and pending statuses');
