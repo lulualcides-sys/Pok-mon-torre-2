@@ -15,17 +15,17 @@ export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opene
 }
 function txt(scene,x,y,value,size=11,color='#f5f4e5'){
  return scene.add.text(x,y,value,{fontFamily:FONT,fontSize:size+'px',
-  fontStyle:'bold',color,stroke:'#0a233b',strokeThickness:3}).setDepth(1206);
+  fontStyle:'bold',color,stroke:'#0a233b',strokeThickness:3}).setDepth(2706);
 }
 function frame(scene,x,y,w,h){
- const g=scene.add.graphics().setDepth(1203);
+ const g=scene.add.graphics().setDepth(2703);
  px(g,x+2,y+3,w,h,0x061120);
  px(g,x,y,w,h,0x091b2c);px(g,x+1,y+1,w-2,h-2,0xf0d07d);
  px(g,x+3,y+3,w-6,h-6,0x113952);px(g,x+5,y+4,w-10,2,0x67b8a2);
  return g;
 }
 function hit(scene,x,y,w,h,onClick){
- return scene.add.zone(x,y,w,h).setDepth(1215).setInteractive({useHandCursor:true})
+ return scene.add.zone(x,y,w,h).setDepth(2715).setInteractive({useHandCursor:true})
  .on('pointerdown',onClick);
 }
 function statusName(enemy){
@@ -49,17 +49,16 @@ export function installWildCapture(scene){
  hit(scene,539,61,171,42,showChoices);
  let menu=[],busy=false,activeVisuals=[],aim={x:440,y:200},aimModified=false;
  const portraitCenter=()=>{
-  const sprite=enemyPortrait(enemy),body=sprite?snapshotBody(enemy):null;
-  const bounds=body?{centerX:body.center.x,centerY:body.center.y}:null;
-  return {x:Math.max(145,Math.min(570,Number.isFinite(bounds?.centerX)?
-     bounds.centerX:Number(enemy.x)||444)),
-    y:Math.max(112,Math.min(311,Number.isFinite(bounds?.centerY)?
-     bounds.centerY:Number(enemy.y)||221))};
+  const sprite=enemyPortrait(enemy);
+  return sprite?snapshotBody(enemy).center:{x:Number(enemy.x)||444,y:Number(enemy.y)||221};
  };
- const targetRadius=()=>{
-  const bounds=enemyPortrait(enemy)?.getBounds?.();
-  return Math.max(23,Math.min(39,Math.max(bounds?.width||0,bounds?.height||0)*.30));
+ const clampAim=()=>{
+  const v=scene.cameras.main.worldView;
+  aim.x=Math.max(v.x+12,Math.min(v.x+v.width-12,aim.x));
+  aim.y=Math.max(v.y+24,Math.min(v.y+v.height-24,aim.y));
  };
+ const targetRadius=()=>Math.max(12,Math.min(30,
+  (enemy.manif?.width||24)*Math.abs(enemyPortrait(enemy)?.scaleX||1)*.5));
  const drawAimMarker=g=>{
   g.clear();drawCaptureReticle(g,aim.x,aim.y,captureImpact(aim,portraitCenter(),targetRadius()));
  };
@@ -68,8 +67,7 @@ export function installWildCapture(scene){
   const dir={ArrowUp:[0,-8],ArrowDown:[0,8],ArrowLeft:[-8,0],ArrowRight:[8,0]}[event.key];
   if(!dir)return;
   event.preventDefault?.();
-  aim.x=Math.max(145,Math.min(570,aim.x+dir[0]));
-  aim.y=Math.max(112,Math.min(311,aim.y+dir[1]));
+  aim.x+=dir[0];aim.y+=dir[1];clampAim();
   aimModified=true;
   for(const visual of menu)if(visual.__torre2Reticle)drawAimMarker(visual);
  };
@@ -98,7 +96,7 @@ export function installWildCapture(scene){
   const state=readCampaign();if(!state?.pendingWild)return;
   if(!aimModified)aim=portraitCenter();
   scene.fase='torre2-aim';
-  const reticle=add(scene.add.graphics().setDepth(1221));
+  const reticle=add(scene.add.graphics().setDepth(2301));
   reticle.__torre2Reticle=true;drawAimMarker(reticle);
   add(frame(scene,173,109,299,169));
   add(txt(scene,188,119,'LANÇAR POKÉBOLA',15,'#ffe5a4'));
@@ -108,7 +106,7 @@ export function installWildCapture(scene){
   const labels={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL'};
   for(const [i,kind]of ['pokeball','greatball','ultraball'].entries()){
    const y=178+i*27,owned=state.inventory[kind]||0;
-   const draw=add(scene.add.graphics().setDepth(1208));
+   const draw=add(scene.add.graphics().setDepth(2708));
    drawCaptureBall(draw,200,y+4,kind,1);
    const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,
     status:statusName(enemy)},kind);
@@ -124,8 +122,7 @@ export function installWildCapture(scene){
   ]){
    add(txt(scene,x,y,glyph,17,'#a5fbea').setOrigin(.5));
    add(hit(scene,x,y,29,29,()=>{
-    aim.x=Math.max(145,Math.min(570,aim.x+dx));
-    aim.y=Math.max(112,Math.min(311,aim.y+dy));
+    aim.x+=dx;aim.y+=dy;clampAim();
     aimModified=true;drawAimMarker(reticle);
    }));
   }
@@ -153,7 +150,8 @@ export function installWildCapture(scene){
   const oldPhase=scene.fase;scene.fase='capturando';
   // Award only when projectile actually touches the enemy.
   let result=null;
-  const gfx=scene.add.graphics().setDepth(1208);
+  const gfx=scene.add.graphics().setDepth(2308);
+  gfx.__torre2BallWorld=true;
   const caption=txt(scene,320,100,'POKÉBOLA, VAI!',13,'#ffe5aa').setOrigin(.5);
   activeVisuals.push(gfx,caption);
   const obj=enemyPortrait(enemy);
@@ -263,7 +261,7 @@ export function installWildCapture(scene){
       scene.__torre2CaptureDebug.state='DROP';
       hideGround();
       caption.setText('A POKÉBOLA CAIU...');
-      const floorY=Math.min(315,enemyY+37),drop={t:0};
+      const floorY=enemyY+37,drop={t:0};
       scene.tweens.add({targets:drop,t:1,duration:350,ease:'Bounce.easeOut',
        onUpdate:()=>drawBall(end.x,end.y+(floorY-end.y)*drop.t),
        onComplete:()=>{

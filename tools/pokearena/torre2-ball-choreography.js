@@ -91,7 +91,16 @@ export function restoreBody(body){
 // the native renderer has positioned its sprites, before WebGL draws them.
 export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0}){
  actor.actualizarGraficos?.(0);
- const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2605);
+ const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
+ g.__torre2BallWorld=true;
+ // The oval arena camera pans/zooms over a world wider than the 640px HUD.
+ // Keep the hand in that world, near the actor, rather than using HUD edges.
+ const view=scene.cameras?.main?.worldView;
+ from={x:body.center.x+(side===0?-64:64),y:body.center.y+42};
+ if(view?.width>0&&view?.height>0){
+  from.x=Math.max(view.x+16,Math.min(view.x+view.width-16,from.x));
+  from.y=Math.max(view.y+30,Math.min(view.y+view.height-24,from.y));
+ }
  const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
  const origin=mode==='recall'?from:landing;
  let elapsed=0,done=false;

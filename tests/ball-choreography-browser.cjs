@@ -57,11 +57,22 @@ const server=http.createServer(async(req,res)=>{
  for(let i=0;i<5;i++){
   await page.evaluate(i=>{const b=window.__pt2Game.scene.getScene('combate');b.__torre2SideParty.slots[i%2?0:1].emit('pointerdown');},i);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='absorb');
-  if(i===0)await page.screenshot({path:'test-evidence/ball-recall.png'});
+  if(i===0){
+   await page.waitForTimeout(100);
+   const alignment=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0],g=b.children.list.find(o=>o.__torre2BallWorld);
+    const offset=((a.manif.head??-16)+(a.manif.feet??5))/2;
+    return {spriteCamera:a.spr.cameraFilter,beamCamera:g.cameraFilter,
+     error:Math.hypot(a.spr.x-b.__torre2BeamDebug.to.x,a.spr.y+offset*a.spr.scaleY-b.__torre2BeamDebug.to.y)};
+   });
+   assert.equal(alignment.spriteCamera,alignment.beamCamera,'Beam must use the world camera, never UI camera');
+   assert.ok(alignment.error<2,'Beam endpoint must touch the currently rendered body');
+   await page.screenshot({path:'test-evidence/ball-recall.png'});
+  }
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='throw');
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').luchadores[0].spr.visible),false);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='release');
-  if(i===0)await page.screenshot({path:'test-evidence/ball-release.png'});
+  if(i===0){await page.waitForTimeout(150);await page.screenshot({path:'test-evidence/ball-release.png'});}
   await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('combate').__torre2Changing);
   console.log('swap',i+1);
  }
