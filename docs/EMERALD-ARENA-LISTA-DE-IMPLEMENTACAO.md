@@ -4,6 +4,14 @@ Auditoria técnica: 22/10/2026. Fonte original: https://github.com/GBurgardt/pok
 
 **IMPORTANTE:** o Emerald Arena é código C para GBA e o Torre 2 usa Phaser/WebGL. Não inserir ROM nem código GBA diretamente. Código novo MIT pode ser adaptado mantendo licença; sprites PMDCollab, Pokémon e cenários de colaboradores devem ser tratados separadamente. Golpes originais do Poké Arena 2D e efeitos customizados já aprovados são intocáveis.
 
+## Autorização do projeto e política de reaproveitamento
+
+**Diretriz do responsável pelo Pokémon Torre 2:** o jogo é um projeto pessoal, sem finalidade comercial. O usuário informou que o autor do Emerald Arena disponibilizou o projeto para utilização. Assim, ao preparar cada patch, **priorizar o reaproveitamento máximo e a fidelidade do material que esteja efetivamente liberado**, em vez de reconstruir por padrão aquilo que já funciona. Isso inclui portar integralmente as rotinas, matemática, temporização, estados e algoritmos de animação e captura do **código novo sob MIT**, com aviso de copyright e licença preservados.
+
+**Escopo da autorização:** o MIT declara expressamente que cobre apenas código novo da arena, instalador e ferramentas; não concede automaticamente autorização sobre recursos de terceiros, sprites PMDCollab/SpriteCollab, arte de Oswarlin, marcas/personagens Pokémon ou o motor decompilado de Emerald. O fato de o projeto não ser comercial **não** afasta essas restrições. A autorização informada do autor deve ser respeitada naquilo que ele próprio pode licenciar; consultar os termos e créditos de outros detentores e usar versões alternativas autorizadas quando necessário.
+
+**Regra de implementação:** quando o usuário pedir "igual", reproduzir com o máximo de fidelidade técnica possível a coreografia, sprite legítimo reutilizável, timings, escala, som e mecânica; portar C/GBA para Phaser/WebGL e testar dentro da batalha. Documentar a procedência dos recursos efetivamente copiados. Nunca sobrescrever golpes aprovados; trabalhar em módulos independentes, com backup, testes e publicação confirmada.
+
 ## Seleção para próximos patches
 
 | Ordem | Recurso | O que estudar no Emerald Arena | Diretriz de implementação no Torre 2 | Estado |
