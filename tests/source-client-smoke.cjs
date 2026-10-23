@@ -887,8 +887,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(visibleSwapPokemon.beam?.phase,'release');
   assert.ok(Math.hypot(
    visibleSwapPokemon.beam.from.x-visibleSwapPokemon.beam.to.x,
-   visibleSwapPokemon.beam.from.y-visibleSwapPokemon.beam.to.y)>70,
-   'Pokéball red laser must visibly traverse the arena and touch the fighter');
+   visibleSwapPokemon.beam.from.y-visibleSwapPokemon.beam.to.y)>30,
+   'Pokéball red laser must connect the nearby opened ball to the fighter');
   assert.ok(Math.hypot(
    visibleSwapPokemon.beam.currentBody.x-visibleSwapPokemon.beam.to.x,
    visibleSwapPokemon.beam.currentBody.y-visibleSwapPokemon.beam.to.y)<6,
@@ -1046,7 +1046,8 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('campanha').enterBattle(state,true);
   });
   await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&
-    window.__pt2Game.scene.getScene('combate').__torre2WildCapture===true,
+    window.__pt2Game.scene.getScene('combate').__torre2WildCapture===true&&
+    window.__pt2Game.scene.getScene('combate').fase==='lucha',
     null,{timeout:24000});
   const captureHud=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('combate'),enemy=c.luchadores[1];

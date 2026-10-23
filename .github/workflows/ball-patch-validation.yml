@@ -1,0 +1,30 @@
+name: Ball patch — Phaser visual validation
+on:
+  push:
+    branches: [fix/ball-choreography-20261023]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: npm test && npm run check
+      - run: node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs
+      - run: CHROME_BIN="$(command -v google-chrome)" node tests/ball-choreography-browser.cjs
+      - run: CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ball-patch-evidence
+          path: test-evidence/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ball-patch-site
+          path: _site/

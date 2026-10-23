@@ -6,7 +6,7 @@
 import {captureChance} from './capture-mechanics.js';
 import {drawBallSprite} from './ball-sprites.js';
 import {readCampaign,attemptCapture,saveCampaign} from './campaign-core.js';
-import {ballArc,captureImpact,drawCaptureReticle,drawRedBeam,drawReleaseBurst} from './ball-choreography.js';
+import {ballArc,captureImpact,drawCaptureReticle,drawRedBeam,drawReleaseBurst,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
 const FONT='Pixelify Sans,monospace';
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 // One ball atlas drives captures, party switch, and Pokéball HUD.
@@ -49,7 +49,8 @@ export function installWildCapture(scene){
  hit(scene,539,61,171,42,showChoices);
  let menu=[],busy=false,activeVisuals=[],aim={x:440,y:200},aimModified=false;
  const portraitCenter=()=>{
-  const sprite=enemyPortrait(enemy),bounds=sprite?.getBounds?.();
+  const sprite=enemyPortrait(enemy),body=sprite?snapshotBody(enemy):null;
+  const bounds=body?{centerX:body.center.x,centerY:body.center.y}:null;
   return {x:Math.max(145,Math.min(570,Number.isFinite(bounds?.centerX)?
      bounds.centerX:Number(enemy.x)||444)),
     y:Math.max(112,Math.min(311,Number.isFinite(bounds?.centerY)?
@@ -92,7 +93,7 @@ export function installWildCapture(scene){
  function close(){for(const item of menu)item.destroy?.();menu=[];
   if(scene.fase==='torre2-aim')scene.fase='lucha';}
  function showChoices(){
-  if(busy||enemy.hp<=0)return;
+  if(busy||enemy.hp<=0||scene.__torre2Changing||!['lucha','torre2-aim'].includes(scene.fase))return;
   close();
   const state=readCampaign();if(!state?.pendingWild)return;
   if(!aimModified)aim=portraitCenter();
@@ -146,6 +147,14 @@ export function installWildCapture(scene){
   const caption=txt(scene,320,100,'POKÉBOLA, VAI!',13,'#ffe5aa').setOrigin(.5);
   activeVisuals.push(gfx,caption);
   const obj=enemyPortrait(enemy);
+  const body=obj?snapshotBody(enemy):null;
+  let pose=null;
+  const applyPose=()=>{if(body&&pose)poseBody(body,pose.center,pose.scale,pose.alpha)};
+  const holdCapture=()=>{if(busy)scene.fase='capturando'};
+  scene.game.events.on('poststep',applyPose);
+  scene.events.on('preupdate',holdCapture);
+  const detachPose=()=>{scene.game.events.off('poststep',applyPose);scene.events.off('preupdate',holdCapture)};
+  scene.events.once('shutdown',detachPose);
   // The native Arena 2D fighter also owns a ground ring/shadow. The ball
   // must absorb those visuals too, or a red oval remains under an empty tile.
   const ground=[enemy.sombra,enemy.anillo].filter(x=>x?.active!==false&&x);
@@ -181,8 +190,8 @@ export function installWildCapture(scene){
    drawCaptureBall(gfx,x,y,kind,2,angle);
   };
   const restore=()=>{
-   absorbed=false;
-   scene.game.events.off('poststep',hideGround);
+   absorbed=false;pose=null;detachPose();
+   scene.events.off('poststep',hideGround);
    ground.forEach((effect,i)=>{
     if(effect.active!==false)
      effect.setAlpha(groundAlpha[i]).setVisible(groundVisible[i]);
@@ -214,7 +223,7 @@ export function installWildCapture(scene){
       onComplete:()=>{
        scene.time.delayedCall(430,()=>{
         if(!scene.scene.isActive())return;
-        gfx.destroy();caption.destroy();busy=false;
+        restore();gfx.destroy();caption.destroy();busy=false;
         scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';
        });
       }
@@ -226,25 +235,25 @@ export function installWildCapture(scene){
     scene.__torre2CaptureDebug.state='ABSORB';
     caption.setText('O RAIO VERMELHO ENVOLVEU O POKÉMON!');
     const beam={t:0},focus={x:enemyX,y:enemyY};
-    if(obj){
-     scene.tweens.add({targets:obj,x:end.x,y:end.y,
-      scaleX:Math.max(.03,before.sx*.05),scaleY:Math.max(.03,before.sy*.05),
-      alpha:.12,duration:370,ease:'Cubic.easeIn'});
-    }
     scene.tweens.add({targets:beam,t:1,duration:400,
      onUpdate:()=>{
-      gfx.clear();drawRedBeam(gfx,{x:end.x,y:end.y},focus,1-beam.t*.5);
+      const t=beam.t,u=t*t;
+      const center={x:focus.x+(end.x-focus.x)*u,y:focus.y+(end.y-focus.y)*u};
+      pose={center,scale:1-.98*t,alpha:1-t};applyPose();
+      scene.__torre2CaptureDebug.beam={from:{...end},to:{...center}};
+      gfx.clear();drawRedBeam(gfx,end,center,1-beam.t*.5,body?.width);
       drawReleaseBurst(gfx,focus.x,focus.y,beam.t);
       drawCaptureBall(gfx,end.x,end.y,kind,2,0,true);
      },onComplete:()=>{
       absorbed=true;
-      scene.__torre2CaptureDebug.state='SHAKE';
+      scene.__torre2CaptureDebug.state='DROP';
       hideGround();
       caption.setText('A POKÉBOLA CAIU...');
       const floorY=Math.min(315,enemyY+37),drop={t:0};
       scene.tweens.add({targets:drop,t:1,duration:350,ease:'Bounce.easeOut',
        onUpdate:()=>drawBall(end.x,end.y+(floorY-end.y)*drop.t),
        onComplete:()=>{
+        scene.__torre2CaptureDebug.state='SHAKE';
         let completed=0;
         const wobble=()=>{
          if(!scene.scene.isActive())return;
@@ -276,14 +285,20 @@ export function installWildCapture(scene){
            }else{
             scene.__torre2CaptureDebug.state='BREAK';
             caption.setText('O POKÉMON ESCAPOU!').setColor('#ffdeae');
-            gfx.fillStyle(0xfff8e1,.8);gfx.fillCircle(end.x,floorY,12);
-            drawCaptureBall(gfx,end.x,floorY,kind,2,0,true);
-            restore();scene.fase=oldPhase;
-            scene.time.delayedCall(850,()=>{
-             if(scene.scene.isActive()){
-              gfx.destroy();caption.destroy();busy=false;refresh();
-             }
-            });
+            absorbed=false;
+            const emerge={t:0},origin={x:end.x,y:floorY};
+            scene.tweens.add({targets:emerge,t:1,duration:440,
+             onUpdate:()=>{
+              const t=emerge.t;
+              const center={x:origin.x+(focus.x-origin.x)*t,y:origin.y+(focus.y-origin.y)*t};
+              pose={center,scale:.02+.98*t,alpha:t};applyPose();
+              gfx.clear();drawRedBeam(gfx,origin,center,1-t*.7,body?.width);
+              drawReleaseBurst(gfx,center.x,center.y,t);
+              drawCaptureBall(gfx,origin.x,origin.y,kind,2,0,true);
+             },onComplete:()=>{
+              restore();gfx.destroy();caption.destroy();busy=false;
+              scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';refresh();
+             }});
            }
           });
           return;
@@ -292,7 +307,7 @@ export function installWildCapture(scene){
          const wob={t:0};
          scene.tweens.add({targets:wob,t:1,duration:430,
           onUpdate:()=>drawBall(end.x+Math.sin(wob.t*Math.PI*2)*6,
-           floorY+Math.sin(wob.t*Math.PI)*2,wob.t*Math.PI*2),
+           floorY-Math.sin(wob.t*Math.PI)*2,Math.sin(wob.t*Math.PI*2)*.45),
           onComplete:()=>{
            caption.setText('...');
            scene.time.delayedCall(130,wobble);

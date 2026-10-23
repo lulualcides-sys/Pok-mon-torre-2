@@ -65,6 +65,7 @@ export function drawBallSprite(g,cx,cy,kind='pokeball',scale=2,angle=0,opened=fa
  const atlas=BALL_FRAMES[kind]||BALL_FRAMES.pokeball;
  const rows=atlas[Math.abs(Math.sin(angle))>.48?1:0];
  const ox=Math.round(cx-8*scale),oy=Math.round(cy-8*scale);
+ const cos=Math.cos(angle),sin=Math.sin(angle);
  let last=null;
  for(let y=0;y<16;y++){
   for(let x=0;x<16;x++){
@@ -73,12 +74,13 @@ export function drawBallSprite(g,cx,cy,kind='pokeball',scale=2,angle=0,opened=fa
    // When releasing, split the top of the ball without scaling the whole sprite.
    const dy=opened?(y<7?-4*scale:y>8?2*scale:0):0;
    if(color!==last){g.fillStyle(color);last=color;}
-   g.fillRect(ox+x*scale,oy+y*scale+dy,scale,scale);
+   const rx=(x-7.5)*scale,ry=(y-7.5)*scale;
+   g.fillRect(Math.round(cx+rx*cos-ry*sin-scale/2),Math.round(cy+rx*sin+ry*cos-scale/2+dy),scale,scale);
   }
  }
  if(opened){
-  g.fillStyle(0x3b152b);g.fillRect(ox+4*scale,oy+6*scale,8*scale,2*scale);
+  g.fillStyle(0x3b152b);g.fillRect(ox+4*scale,oy+8*scale,8*scale,2*scale);
   g.fillStyle(0xff6f79);g.fillRect(ox+5*scale,oy+6*scale,6*scale,scale);
-  g.fillStyle(0xfff4b5);g.fillRect(ox+7*scale,oy+5*scale,2*scale,2*scale);
+  g.fillStyle(0xfff4b5);g.fillRect(ox+7*scale,oy+7*scale,2*scale,2*scale);
  }
 }

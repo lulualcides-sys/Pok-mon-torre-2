@@ -8,7 +8,7 @@ import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
-import {ballArc,drawRedBeam,drawReleaseBurst} from './ball-choreography.js';
+import {ballArc,drawRedBeam,drawReleaseBurst,animateBallActor} from './ball-choreography.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 // The fighter's logical simulation location can differ from the PMD sprite.
@@ -124,6 +124,16 @@ export function installPartyBattle(scene){
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
  const actors=scene.luchadores;
+ // fase alone blocks input in P2, but its paso still advances projectiles,
+ // status damage and regeneration. Suspend simulation, not the Phaser clock.
+ const nativeStep=scene.paso;
+ scene.paso=function(dt){
+  if(this.__torre2Changing||['torre2-sendout','capturando','torre2-aim'].includes(this.fase)){
+   this.hud?.update();return;
+  }
+  return nativeStep.call(this,dt);
+ };
+ scene.events.once('shutdown',()=>{scene.paso=nativeStep});
  for(const [side,member]of [[0,party.friend[party.playerIndex]],
                             [1,party.foes[party.enemyIndex]]]){
   if(member&&member.hp>0)actors[side].hp=Math.max(1,
@@ -132,82 +142,13 @@ export function installPartyBattle(scene){
  // Emerald Arena inspired first sendout: Pokéballs travel in an arc,
  // burst open, and materialize the REAL PMD fighter. Wild opponents
  // already inhabit the arena, so only the player throws in wild battles.
- if(!scene.__torre2FirstSendout&&party.changes===0){
-  scene.__torre2FirstSendout=true;
+ if(party.changes===0){
   const sides=payload.kind==='wild'?[0]:[0,1];
   let remaining=sides.length;
-  scene.fase='torre2-sendout';
-  for(const side of sides){
-   const actor=actors[side],sprite=actor.spr;
-   if(!sprite?.active){if(!--remaining)scene.fase='lucha';continue}
-   const gfx=scene.add.graphics().setDepth(2605);
-   const spawn=visibleActorCenter(actor);
-   const from={x:side===0?52:590,y:side===0?281:126};
-   const at={x:Math.max(90,Math.min(540,spawn.x+(side===0?-104:104))),y:spawn.y-23};
-   const originalScale=sprite.scaleX||1;
-   const shade=actor.sombra,ring=actor.anillo;
-   const prevShade=shade?.visible,prevRing=ring?.visible;
-   let tick=0;
-   sprite.setAlpha(0).setVisible(false);
-   shade?.setVisible(false);ring?.setVisible(false);
-   const finishIntro=()=>{
-    scene.game.events.off('poststep',animate);
-    if(sprite.active)sprite.setVisible(true).setAlpha(1).setScale(originalScale);
-    if(shade?.active!==false)shade?.setVisible(prevShade);
-    if(ring?.active!==false)ring?.setVisible(prevRing);
-    if(gfx.active)gfx.destroy();
-    remaining--;
-    if(remaining===0&&scene.scene.isActive())scene.fase='lucha';
-   };
-   const animate=()=>{
-    if(!scene.scene.isActive()||!gfx.active){scene.game.events.off('poststep',animate);return}
-    tick++;gfx.clear();
-    if(tick<=23){
-     const pt=ballArc(from,at,tick/23,70);
-     drawCaptureBall(gfx,pt.x,pt.y,'pokeball',1.25,tick*.4,false);
-    }else if(tick<=47){
-     const t=(tick-23)/24;
-     drawRedBeam(gfx,at,spawn,1-.45*t);
-     drawReleaseBurst(gfx,spawn.x,spawn.y,t);
-     drawCaptureBall(gfx,at.x,at.y,'pokeball',1.25,0,true);
-     if(sprite.active)sprite.setVisible(true).setAlpha(Math.max(.03,t))
-       .setScale(originalScale*(.20+.80*t));
-     if(t>.68){shade?.setVisible(prevShade);ring?.setVisible(prevRing)}
-    }else{finishIntro();return}
-    // Native combat can reset fase=lucha during its renderer; keep pause
-    // until BOTH throw/burst sequences have completed.
-    if(remaining>0)scene.fase='torre2-sendout';
-    scene.__torre2IntroDebug={side,frame:tick,phase:tick<=23?'throw':'release'};
-   };
-   scene.game.events.on('poststep',animate);
-   scene.events.once('shutdown',()=>scene.game.events.off('poststep',animate));
-  }
- }
- // Arrival flash after a recall/switch: red Pokéball beam releases the
- // replacement Pokémon before regular combat resumes.
- if(party.changes>0){
-  const release=scene.add.graphics().setDepth(2604);
-  const actor=actors[scene.datos?.torre2?.lastSwitchedSide===1?1:0];
-  const initialTarget=visibleActorCenter(actor);
-  const bx=actor.lado===1?560:80,by=296;
-  let frame=0;
-  if(actor.spr?.active)actor.spr.setAlpha(.05);
-  const sparkle=()=>{
-   if(!scene.scene.isActive()||!release.active){
-    scene.game.events.off('step',sparkle);return
-   }
-   const t=Math.min(1,++frame/26);
-   const live=visibleActorCenter(actor);
-   drawRecallBeam(release,{x:bx,y:by},live,1-t*.80);
-   if(actor.spr?.active)actor.spr.setAlpha(Math.min(1,.05+t*.95));
-   if(frame>=26){
-    if(actor.spr?.active)actor.spr.setAlpha(1);
-    scene.game.events.off('step',sparkle);
-    release.destroy();
-   }
-  };
-  scene.game.events.on('step',sparkle);
-  scene.events.once('shutdown',()=>scene.game.events.off('step',sparkle));
+  for(const side of sides)animateBallActor(scene,actors[side],{
+   side,from:{x:side===0?52:590,y:side===0?281:126},drawBall:drawCaptureBall,
+   onComplete:()=>{if(--remaining===0)scene.fase='lucha'}
+  });
  }
  // Keep only individual pixel Pokéballs below each original HP bar.
  // No large black scoreboard tables or top-center text swap selector.
@@ -348,25 +289,11 @@ export function installPartyBattle(scene){
   };
   const fx=sharedBeam;
   const ball=sharedBall;
-  let frames=0,restarted=false;
-  // Exact same crisp FireRed pixel-ball art as inventory/team HUD.
-  // Draw into an existing Phaser Graphics surface; never generate circles
-  // or allocate a new PNG/canvas for every swap.
-  const drawBall=()=>{
-   ball.clear();
-   drawCaptureBall(ball,Math.round(from.x),Math.round(from.y),'pokeball',1.15,0,frames<12);
-  };
-  drawBall();
-  // Keep the rendered target synchronized with the actual moving PMD sprite
-  // while the laser is travelling. Capture a copy at the end of recollection
-  // only, when the outgoing Pokémon is fully inside the ball.
-  const recallTarget={x:target.x,y:target.y};
-  const detachRecall=()=>scene.game.events.off('step',step);
+  let restarted=false;
   const enterNext=()=>{
    if(restarted||!scene.scene.isActive())return;
    restarted=true;
-   detachRecall();
-   scene.events.off('shutdown',detachRecall);
+
    if(next<0){
     fx.clear();ball.clear();
     finish(side===1);
@@ -433,118 +360,20 @@ export function installPartyBattle(scene){
     staleCleared,oldSpriteSame:previousSprite===actor.spr,
     activeTexture:actor.spr?.texture?.key,side
    };
-   actor.spr.setVisible(true).setAlpha(1);
+   actor.spr.setVisible(true).setAlpha(1).setScale(actor.escala||1);
    actor.kit=actor.kitActual();
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
-   const replacementScale=actor.escala||actor.spr.scaleX||1;
-   // Snapshot the native full-size body position BEFORE materializing. The
-   // target must not jump around because a sprite is temporarily 15% size.
-   const stableSpawn=visibleActorCenter(actor);
-   actor.spr.setAlpha(.1).setScale(.15*replacementScale).setVisible(true);
-   actor.sombra?.setVisible(true);
-   actor.anillo?.setVisible(true);
    fx.clear();ball.clear();
-   let comingFrame=0;
-   // Native battle can force fase=lucha while the ball is still flying.
-   // Block combat from restarting until the replacement has FULLY appeared.
-   const holdSwitch=()=>{
-    if(scene.__torre2Changing&&scene.scene.isActive())scene.fase='ko';
-   };
-   scene.game.events.on('poststep',holdSwitch);
-   const detachHold=()=>scene.game.events.off('poststep',holdSwitch);
-   scene.events.once('shutdown',detachHold);
-   const release=()=>{
-    if(!scene.scene.isActive()){
-     scene.game.events.off('step',release);return;
+   animateBallActor(scene,actor,{side,from,drawBall:drawCaptureBall,onComplete:()=>{
+    if(peer&&peerHpRatio!==null&&peer.hpMax>0){
+     peer.hp=Math.max(0,Math.min(peer.hpMax,peerHpRatio*peer.hpMax));
     }
-    if(scene.__torre2Changing)scene.fase='ko';
-    comingFrame++;
-    fx.clear();ball.clear();
-    // Open the thrown ball far enough away for a visible red materialization
-    // laser, then have that laser end at the actual Pokémon body.
-    const landing={x:Math.max(90,Math.min(540,stableSpawn.x+(side===0?-104:104))),
-     y:stableSpawn.y-23};
-    if(comingFrame<=20){
-     const pt=ballArc(from,landing,comingFrame/20,68);
-     drawCaptureBall(ball,pt.x,pt.y,'pokeball',1.15,comingFrame*.45);
-     if(actor.spr?.active)actor.spr.setVisible(true).setAlpha(.02).setScale(replacementScale*.15);
-     scene.__torre2BeamDebug={
-      phase:'throw',side,frame:comingFrame,from:{...from},to:{...landing},
-      currentBody:visibleActorCenter(actor),visible:actor.spr?.visible===true
-     };
-     return;
-    }
-    const t=Math.min(1,(comingFrame-20)/20);
-    const live=stableSpawn;
-    drawRecallBeam(fx,landing,live,1-t*.30);
-    drawReleaseBurst(fx,live.x,live.y,t);
-    scene.__torre2BeamDebug={
-     phase:'release',side,frame:comingFrame,
-     from:{...landing},to:{...live},
-     currentBody:visibleActorCenter(actor),
-     visible:actor.spr?.visible===true
-    };
-    drawCaptureBall(ball,landing.x,landing.y,'pokeball',1.15,0,true);
-    if(actor.spr?.active)
-     actor.spr.setVisible(true).setAlpha(.08+.92*t).setScale(replacementScale*(.15+.85*t));
-    if(comingFrame>=40){
-     if(actor.spr?.active)actor.spr.setVisible(true).setAlpha(1).setScale(replacementScale);
-     if(peer&&peerHpRatio!==null&&peer.hpMax>0){
-      peer.hp=Math.max(0,Math.min(peer.hpMax,peerHpRatio*peer.hpMax));
-      const teammates=side===0?party.foes:party.friend;
-      const index=side===0?party.enemyIndex:party.playerIndex;
-      if(teammates[index])teammates[index].hp=clamp(100*peerHpRatio);
-     }
-     fx.clear();ball.clear();scene.game.events.off('step',release);
-     scene.events.off('shutdown',detachRelease);
-     detachHold();scene.events.off('shutdown',detachHold);
-     scene.__torre2Changing=false;scene.fase='lucha';
-    }
-   };
-   const detachRelease=()=>scene.game.events.off('step',release);
-   scene.game.events.on('step',release);
-   scene.events.once('shutdown',detachRelease);
+    scene.__torre2Changing=false;scene.fase='lucha';
+   }});
    redrawPartyHud();
   };
-  // A global frame-step remains live during native KO hitstop. The original
-  // combat scene's local clock/tween may be suspended for animations, which
-  // previously left battles frozen for good at the replacement moment.
-  const step=()=>{
-   if(!scene.scene.isActive()){scene.game.events.off('step',step);return}
-   scene.fase='ko';
-   const t=Math.min(1,++frames/44);
-   // The PMD sprite moves while in combat; read its current on-screen bounds
-   // BEFORE shrinking. This keeps the red ray touching the Pokémon itself.
-   const live=visibleActorCenter(actor);
-   if(frames<=32){recallTarget.x=live.x;recallTarget.y=live.y;}
-   const fade=1-t*.30;
-   drawRecallBeam(fx,from,recallTarget,fade);
-   scene.__torre2BeamDebug={
-    phase:'recall',side,frame:frames,
-    from:{x:from.x,y:from.y},
-    to:{x:recallTarget.x,y:recallTarget.y},
-    currentBody:visibleActorCenter(actor),
-    visible:actor.spr?.visible===true
-   };
-   ball.clear();
-   drawCaptureBall(ball,Math.round(from.x),Math.round(from.y),
-    'pokeball',1.15,0,frames<=24);
-   if(actor.spr?.active){
-    actor.spr.setAlpha(Math.max(.02,1-t));
-    actor.spr.setScale(Math.max(.035,(actor.escala||1)*(1-t*.95)));
-   }
-   if(frames>=44)enterNext();
-  };
-  // Always show the red recollection beam and shrinking Pokémon (including
-  // K.O.) before sending the replacement. A scene clock can be paused by
-  // native hitstop, so game-level frames and a guarded fallback are used.
-  scene.game.events.on('step',step);
-  // The game-wide frame callback is the primary completion mechanism:
-  // battle-scene timers may pause during the engine's native KO hitstop.
-  // DelayedCall only acts as a fallback when the local clock is running.
-  scene.time.delayedCall(1400,enterNext);
-  scene.events.once('shutdown',detachRecall);
+  animateBallActor(scene,actor,{mode:'recall',side,from,drawBall:drawCaptureBall,onComplete:enterNext});
  }
  function finish(won){
   scene.fase='ko';

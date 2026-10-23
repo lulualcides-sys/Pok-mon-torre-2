@@ -28,16 +28,22 @@ export function drawCaptureReticle(g,x,y,valid=true){
  g.lineBetween(x,y+8,x,y+25);
  g.fillStyle(0xfff2cc,1);g.fillRect(Math.round(x)-2,Math.round(y)-2,4,4);
 }
-export function drawRedBeam(g,origin,target,strength=1){
+export function drawRedBeam(g,origin,target,strength=1,width=6){
  const a=clamp01(strength);
  const dx=target.x-origin.x,dy=target.y-origin.y;
  const dist=Math.max(1,Math.hypot(dx,dy));
  const nx=-dy/dist,ny=dx/dist;
- g.lineStyle(12,0x9e1b48,.32*a);g.lineBetween(origin.x,origin.y,target.x,target.y);
- g.lineStyle(6,0xf73d67,.7*a);g.lineBetween(origin.x,origin.y,target.x,target.y);
- g.lineStyle(2,0xffecd1,.98*a);g.lineBetween(origin.x,origin.y,target.x,target.y);
- g.fillStyle(0xff456e,.27*a);
- g.fillTriangle(origin.x,origin.y,target.x+nx*12,target.y+ny*12,target.x-nx*12,target.y-ny*12);
+ const w=Math.max(3,Math.min(8,width));
+ // Parallel pixel steps, never a widening triangle. Coordinates are world
+ // coordinates, so Phaser applies the same camera as the actor sprite.
+ for(const [size,color,opacity] of [[w+4,0x92183f,.24],[w,0xf73d67,.85],[2,0xffeef0,1]]){
+  g.fillStyle(color,opacity*a);
+  const steps=Math.ceil(dist/2);
+  for(let i=0;i<=steps;i++){
+   const t=i/steps;
+   g.fillRect(Math.round(origin.x+dx*t-size/2),Math.round(origin.y+dy*t-size/2),size,size);
+  }
+ }
  for(let i=1;i<6;i++){
   const p=i/6;
   const x=origin.x+dx*p,y=origin.y+dy*p;
@@ -54,4 +60,73 @@ export function drawReleaseBurst(g,x,y,progress=0){
   g.fillStyle(i%2?0xffffff:0xffbb72,alpha);
   g.fillRect(Math.round(x+Math.cos(a)*r)-2,Math.round(y+Math.sin(a)*r)-2,4,4);
  }
+}
+
+// Snapshot the full-size body's center ONCE. PMD frames contain transparent
+// padding; manifest head/feet describe the actual body, not the image bounds.
+export function snapshotBody(actor){
+ const sprite=actor.spr||actor.sprite;
+ const sx=sprite.scaleX||1,sy=sprite.scaleY||1;
+ const offset=((actor.manif?.head??-16)+(actor.manif?.feet??5))/2;
+ const center={x:sprite.x,y:sprite.y+offset*sy};
+ return {sprite,x:sprite.x,y:sprite.y,sx,sy,center,offset,
+  alpha:sprite.alpha,visible:sprite.visible,
+  ground:[actor.sombra,actor.anillo].filter(Boolean).map(o=>({o,visible:o.visible,alpha:o.alpha})),
+  width:Math.max(3,Math.min(8,(actor.manif?.width||18)*Math.abs(sx)*.18))};
+}
+export function poseBody(body,center,scale,alpha){
+ const s=body.sprite;if(!s?.active)return;
+ s.setScale(body.sx*scale,body.sy*scale)
+  .setPosition(center.x,center.y-body.offset*body.sy*scale)
+  .setAlpha(alpha).setVisible(alpha>0);
+ body.ground.forEach(({o})=>{if(o.active)o.setVisible(false)});
+}
+export function restoreBody(body){
+ const s=body.sprite;
+ if(s?.active)s.setPosition(body.x,body.y).setScale(body.sx,body.sy)
+  .setAlpha(body.alpha).setVisible(body.visible);
+ body.ground.forEach(({o,visible,alpha})=>{if(o.active)o.setVisible(visible).setAlpha(alpha)});
+}
+// One lifecycle for first entry, manual/KO replacement and recall. Run after
+// the native renderer has positioned its sprites, before WebGL draws them.
+export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0}){
+ actor.actualizarGraficos?.(0);
+ const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2605);
+ const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
+ const origin=mode==='recall'?from:landing;
+ let elapsed=0,done=false;
+ const phase=mode==='recall'?'ko':'torre2-sendout';
+ const hold=()=>{scene.fase=phase};hold();
+ const clean=()=>{if(done)return;done=true;
+  scene.game.events.off('poststep',step);scene.events.off('preupdate',hold);
+  scene.events.off('shutdown',clean);g.destroy();};
+ const step=(_time,delta)=>{
+  if(done||!scene.scene.isActive())return clean();
+  elapsed+=Math.min(64,Math.max(1,Number(delta)||16.667));hold();g.clear();
+  let state,center=body.center;
+  if(mode==='release'&&elapsed<360){
+   state='THROW';poseBody(body,center,.01,0);
+   const p=ballArc(from,landing,elapsed/360,48);
+   drawBall(g,p.x,p.y,'pokeball',1.15,elapsed/60);
+  }else{
+   const t=clamp01((elapsed-(mode==='release'?360:80))/420);
+   state=t===0?'OPEN':mode==='recall'?'ABSORB':'RELEASE';
+   if(mode==='recall'){
+    const u=t*t;center={x:body.center.x+(origin.x-body.center.x)*u,y:body.center.y+(origin.y-body.center.y)*u};
+    poseBody(body,center,1-.98*t,1-t);
+   }else poseBody(body,center,.04+.96*t,t);
+   drawRedBeam(g,origin,center,Math.min(1,(1-t)*4),body.width);
+   drawReleaseBurst(g,center.x,center.y,t);
+   drawBall(g,origin.x,origin.y,'pokeball',1.15,0,true);
+   if(t>=1){
+    if(mode==='release')restoreBody(body);else poseBody(body,origin,.01,0);
+    clean();onComplete();return;
+   }
+  }
+  scene.__torre2BeamDebug={phase:state.toLowerCase(),side,from:{...origin},to:{...center},currentBody:{...center},visible:body.sprite.visible};
+  scene.__torre2IntroDebug={side,phase:state.toLowerCase(),elapsed};
+ };
+ poseBody(body,body.center,mode==='release'?.01:1,mode==='release'?0:1);
+ scene.events.on('preupdate',hold);scene.game.events.on('poststep',step);scene.events.once('shutdown',clean);
+ return clean;
 }
