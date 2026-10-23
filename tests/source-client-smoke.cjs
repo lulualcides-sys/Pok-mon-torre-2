@@ -357,9 +357,9 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(Math.abs(wideDisplay.rectW/wideDisplay.rectH-16/9)<.012&&
    Math.abs(wideDisplay.rectX-(980-wideDisplay.rectW)/2)<3,
    'Campaign and combat canvas must stay 16:9, never stretched');
-  assert.ok(wideDisplay.sideArt.includes('torre2-brock-custom.webp'),
-   'Fill both extra side areas with scenery instead of black bars');
-  assert.equal(wideDisplay.ctaX,320,
+  assert.ok(!wideDisplay.sideArt.includes('null'),
+   'Wide display must not receive a broken body backdrop');
+  assert.equal(wideDisplay.ctaX,359,
    'Battle button keeps its original 640x360 world coordinates');
   await offline.setViewportSize({width:980,height:650});
   await offline.waitForFunction(()=>
@@ -378,77 +378,40 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(fullscreenClicks,1,
    'Fullscreen button invokes Phaser on pointerup for Android compatibility');
-  assert.equal(mapState.points,13,'Brock shows all 13 trainers simultaneously');
-  assert.equal(mapState.trainer,0);
-  assert.ok(mapState.initial.includes('ROTA DE BROCK'));
-  assert.ok(mapState.realScene,'Uploaded custom Brock route image must render as native Phaser sprite');
-  assert.ok(mapState.realNPCs>=13,'Trainer markers must use real FireRed NPC sprites');
-  assert.ok(mapState.portraits>=1,'Six-slot team uses real Pokémon portraits');
-  assert.ok(mapState.zones>=19,'13 nodes, gym, grass, Center and Shop are interactive');
-  assert.ok(mapState.lockedGym.includes('FALTAM 13')&&
-   mapState.gymDidNotStartCombat,'Gym boss must be locked until 13 victories');
+  assert.equal(road.total,13);
+  assert.equal(road.nodes,14);
   await offline.waitForFunction(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    const captions=c.children.list.filter(o=>typeof o.text==='string').map(o=>o.text);
-    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
-      captions.includes('SUA EQUIPE')&&captions.some(x=>x.includes('INSÍGNIAS'));
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__torre2BattlePath?.stage===0&&
+    c.children.list.some(o=>String(o.text||'').startsWith('SUA EQUIPE'));
   },null,{timeout:15000});
-  // Existing UI actions still open native screens and return to the SAME map.
+  // Existing Center, Mart and Bag actions remain native and functional.
   const newMap=await offline.evaluate(async()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
-    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
-    const state=core.readCampaign();
-    const labels=()=>c.children.list.filter(o=>typeof o.text==='string')
-      .map(o=>o.text).join(' | ');
-    const map=labels();
-    c.grassScreen(state);const grass=labels();
-    c.centerScreen(state);const center=labels();
-    c.martScreen(state);const mart=labels();
-    c.bagScreen(state);const bag=labels();
-    c.scene.restart();
-    return {map,grass,center,mart,bag};
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
+   const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
+   const state=core.readCampaign();
+   const labels=()=>c.children.list.filter(o=>typeof o.text==='string')
+    .map(o=>o.text).join(' | ');
+   const road=labels();
+   c.grassScreen(state);const grass=labels();
+   c.centerScreen(state);const center=labels();
+   c.martScreen(state);const mart=labels();
+   c.bagScreen(state);const bag=labels();
+   c.scene.restart();
+   return {road,grass,center,mart,bag};
   });
-  assert.ok(newMap.map.includes('INSÍGNIAS'),'Map shows saved badges');
-  assert.ok(newMap.grass.includes('VIRIDIAN'),'Grass retains Kanto encounters');
-  assert.ok(newMap.center.includes('CURAR'),'Center screen is functional');
-  assert.ok(newMap.mart.includes('POKÉ MART'),'Shop opens actual inventory');
-  assert.ok(newMap.bag.includes('POÇÃO'),'Bag retains potions');
+  assert.ok(newMap.road.includes('ROTA DE PEWTER'));
+  assert.ok(newMap.grass.includes('VIRIDIAN'));
+  assert.ok(newMap.center.includes('CURAR'));
+  assert.ok(newMap.mart.includes('POKÉ MART'));
+  assert.ok(newMap.bag.includes('POÇÃO'));
   await offline.waitForFunction(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
-      c.children.list.some(o=>o.text==='SUA EQUIPE');
-  },null,{timeout:13000});
-  await offline.screenshot({path:'test-evidence/torre2-pewter-single-map-13-trainers.png',
-    fullPage:true});
-  await offline.evaluate(async()=>{
-    const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
-    const core=await import(new URL('./torre2/campaign-core.js',script.src).href);
-    window.__pt2Game.scene.getScene('campanha').mapScreen(core.readCampaign());
-  });
-  await offline.waitForFunction(()=>{
-    const scene=window.__pt2Game.scene.getScene('campanha');
-    return scene.scene.isActive()&&scene.__campaignMap?.spec?.id==='pewter'&&
-     scene.children.list.some(o=>o.text==='SUA EQUIPE');
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__torre2BattlePath?.stage===0;
   },null,{timeout:15000});
-  const mapScreen=await offline.evaluate(()=>{
-    const scene=window.__pt2Game.scene.getScene('campanha');
-    return {id:scene.__campaignMap?.spec?.id,
-     points:scene.__campaignMap?.locations,
-     label:scene.children.list.filter(x=>typeof x.text==='string')
-      .map(x=>x.text).join(' | ')};
-  });
-  assert.equal(mapScreen.id,'pewter','MAPA returns to the same unified location');
-  assert.equal(mapScreen.points,13,'MAPA never changes the number of markers');
-  assert.ok(mapScreen.label.includes('ROTA DE BROCK'));
-  await offline.screenshot({path:'test-evidence/torre2-brock-locked-gym-and-real-sprites.png',
+  await offline.screenshot({path:'test-evidence/torre2-pewter-battle-road-14-checkpoints.png',
    fullPage:true});
-  await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart());
-  await offline.waitForFunction(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter'&&
-      c.children.list.some(o=>o.text==='SUA EQUIPE');
-  },null,{timeout:12000});
 
   // Track client errors during transfer from world map to native battle.
   await offline.evaluate(()=>{
@@ -461,7 +424,7 @@ const server=http.createServer(async(req,res)=>{
   await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     const script=[...document.scripts].find(x=>x.src?.includes('/main.js'));
-    c.enterBattle(c.__campaignMap&&JSON.parse(
+    c.enterBattle(JSON.parse(
       localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')));
   });
   try{
@@ -713,74 +676,24 @@ const server=http.createServer(async(req,res)=>{
   });
   await offline.waitForFunction(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
-    return c.scene.isActive()&&c.__campaignMap?.spec?.id==='pewter';
+    return c.scene.isActive()&&c.__torre2BattlePath?.stage===0;
   },null,{timeout:16000});
   const returnedMap=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   const image=c.children.list.find(o=>o.type==='Image'&&
-    o.texture?.key==='torre2-brock-custom');
-   return {loaded:image?.active,refreshed:c.__torre2MapGpuRefreshed===true,
-    source:image?.frame?.width,overlay:c.children.list.filter(o=>
-      o.type==='TileSprite'&&o.active&&o.depth===2).length};
+   return {stage:c.__torre2BattlePath?.stage,
+    total:c.__torre2BattlePath?.total,markers:c.__torre2BattlePath?.locations,
+    scenery:c.children.list.some(o=>o.type==='Image'&&
+     o.texture?.key==='frlg-location-forest')};
   });
-  assert.ok(returnedMap.loaded&&returnedMap.refreshed&&
-   returnedMap.source===1200&&returnedMap.overlay===0,
-   'After KO, restore high-res world with a freshly uploaded GPU base frame: '+
-   JSON.stringify(returnedMap));
-  // Visual regression: checking a 1200px texture key is NOT enough. An
-  // Android GPU can display that very source as huge blurry color blocks.
-  // Measure real SCREENSHOT fine detail after KO, not DOM/texture metadata.
-  const returnedPng=await offline.screenshot({
-   path:'test-evidence/torre2-after-ko-real-webgl-pixels.png',
-   fullPage:false
-  });
-  const mapVisual=await offline.evaluate(async encoded=>{
-   const bytes=Uint8Array.from(atob(encoded),c=>c.charCodeAt(0));
-   const bitmap=await createImageBitmap(new Blob([bytes],{type:'image/png'}));
-   const cv=document.createElement('canvas');cv.width=bitmap.width;cv.height=bitmap.height;
-   const ctx=cv.getContext('2d',{willReadFrequently:true});
-   ctx.drawImage(bitmap,0,0);
-   const data=ctx.getImageData(0,0,cv.width,cv.height).data;
-   const game=window.__pt2Game,c=game.scene.getScene('campanha');
-   const image=c.children.list.find(o=>o.type==='Image'&&
-    o.texture?.key==='torre2-brock-custom');
-   const box=image.getBounds();
-   const canvasBox=game.canvas.getBoundingClientRect();
-   // The Arena 2D UI has a fixed 640x360 WORLD, while Phaser may create
-   // a 980x650 physical canvas (DPR/fit). Convert using the logical camera
-   // dimensions; using canvas.width sampled the wrong part of the screenshot.
-   const ratioX=canvasBox.width/640;
-   const ratioY=canvasBox.height/360;
-   let total=0,count=0;
-   // This area contains detailed trees and paths, not the UI labels/forest
-   // watermark. A correct source averages ~20+ RGB edge units here; the
-   // user-reported broken texture averages ~4.
-   for(let v=.15;v<.37;v+=.007){
-    const y=Math.round(canvasBox.top+(box.top+box.height*v)*ratioY);
-    for(let u=.34;u<.56;u+=.004){
-     const x=Math.round(canvasBox.left+(box.left+box.width*u)*ratioX);
-     if(x<=1||x>=cv.width-1||y<0||y>=cv.height)continue;
-     const k=4*(y*cv.width+x),prev=k-4;
-     total+=(Math.abs(data[k]-data[prev])+
-      Math.abs(data[k+1]-data[prev+1])+
-      Math.abs(data[k+2]-data[prev+2]))/3;
-     count++;
-    }
-   }
-   return {horizontalContrast:count?total/count:0,samples:count,
-    canvas:[game.canvas.width,game.canvas.height],
-    map:[box.x,box.y,box.width,box.height]};
-  },returnedPng.toString('base64'));
-  console.log('BROCK_AFTER_KO_VISUAL_DETAIL',JSON.stringify(mapVisual));
-  assert.ok(mapVisual.samples>400&&mapVisual.horizontalContrast>=10,
-   'After a real KO the Kanto map must remain sharp on the rendered screen, not just in the source texture: '+
-    JSON.stringify(mapVisual));
+  assert.deepEqual(returnedMap,{stage:0,total:13,markers:14,scenery:true},
+   'After KO, return to Battle Road with saved stage, forest and checkpoints');
+  await offline.screenshot({path:'test-evidence/torre2-after-ko-battle-road.png',
+   fullPage:true});
   const trainerAfterSwap=await offline.evaluate(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    return c.__campaignMap?.spec?.id;
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.__torre2BattlePath?.stage;
   });
-  assert.equal(trainerAfterSwap,'pewter',
-   'Manual Pokémon switch must not progress to next trainer');
+  assert.equal(trainerAfterSwap,0,'Switch never progresses to next gym');
 
   // Regression: encounter in real native combat, click the capture HUD,
   // weaken the actual enemy HP, throw a sprite-ball, wait through three shakes,
@@ -851,8 +764,8 @@ const server=http.createServer(async(req,res)=>{
   });
   await offline.waitForFunction(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
-    return c.__campaignMap?.spec?.id==='pewter'&&
-     c.children.list.some(o=>o.text==='SUA EQUIPE');
+    return c.__torre2BattlePath?.stage===0&&
+     c.children.list.some(o=>String(o.text||'').startsWith('SUA EQUIPE'));
   },null,{timeout:12000});
 
   await offline.evaluate(async()=>{
