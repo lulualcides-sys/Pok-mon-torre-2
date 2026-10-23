@@ -102,6 +102,7 @@ export function paginateKantoPokedexSource(original){
  // stages, not a second unsanitized upstream etapasDe() calculation.
  // The helper itself continues to call the original implementation.
  s=s.replaceAll('etapasDe(', 'kantoDexStages(')
+  .replace('function kantoDexStages(', 'function etapasDe(')
   .replace('const stages=kantoDexStages(def);','const stages=etapasDe(def);');
  return s;
 }
