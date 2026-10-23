@@ -2,7 +2,7 @@ import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {campaignDamageMultiplier,campaignHpMultiplier,campaignScaledHp,
- campaignFighterLevel,combatLevel} from '../tools/pokearena/torre2-level-balance.js';
+ campaignFighterLevel,combatLevel,CAMPAIGN_PLAYER_DAMAGE_BOOST} from '../tools/pokearena/torre2-level-balance.js';
 
 const nearly=(got,want)=>assert.ok(Math.abs(got-want)<1e-9,String(got)+' != '+want);
 
@@ -50,4 +50,15 @@ test('real build patches only move hits, leaving recoil/status unchanged',()=>{
   'Actual original combat HP getter scales by level');
  assert.ok(build.includes('this.escena.datos?.torre2?torre2ScaledHp('),
   'Only the Kanto campaign changes native HP');
+});
+
+test('Kanto increases only player move damage by 25%, never enemy or status hits',()=>{
+ assert.equal(CAMPAIGN_PLAYER_DAMAGE_BOOST,1.25);
+ assert.ok(CAMPAIGN_PLAYER_DAMAGE_BOOST<1.5,
+  'Avoid making battles too short after the user's 0.25x/0.5x choice');
+ const build=readFileSync(new URL('../tools/pokearena/build-preview.mjs',import.meta.url),'utf8');
+ assert.ok(build.includes('if(fuente.lado===0)d*=torre2PlayerDamageBoost'),
+  'Native Arena 2D combat uses 1.25x damage ONLY for Kanto player source');
+ assert.ok(build.includes('!g.puro&&fuente&&fuente!==this'),
+  'Non-move damage/status/recoil remain identical to native engine');
 });
