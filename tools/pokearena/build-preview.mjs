@@ -359,7 +359,7 @@ patches.push(['luchador.js',[
  ['get hpMax(){return this.jefe?.vidaFija??Math.round(this.forma.hp*REGLAS.vidaGlobal*(this.jefe?.vida??1))}',
   'get hpMax(){const base=this.jefe?.vidaFija??Math.round(this.forma.hp*REGLAS.vidaGlobal*(this.jefe?.vida??1));return this.escena.datos?.torre2?torre2ScaledHp(base,torre2FighterLevel(this)):base}'],
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(!g.puro){',
-  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro&&fuente&&fuente!==this&&Number.isInteger(fuente.lado)&&fuente.lado!==this.lado){d*=torre2DamageMultiplier(torre2FighterLevel(fuente),torre2FighterLevel(this));}if(!g.puro){']
+  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro&&fuente&&fuente!==this&&Number.isInteger(fuente.lado)&&fuente.lado!==this.lado){d*=torre2DamageMultiplier(torre2FighterLevel(fuente),torre2FighterLevel(this));if(fuente.lado===0)d*=torre2PlayerDamageBoost;}if(!g.puro){']
 ]]);
 // Preload every member before first round: in-place swap never triggers LOADING.
 patches.push(['escenas/combate.js',[[
