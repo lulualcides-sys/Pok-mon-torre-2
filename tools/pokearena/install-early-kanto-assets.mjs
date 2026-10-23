@@ -87,7 +87,9 @@ export async function installEarlyKantoSprites(destination){
  const manifest=JSON.parse(await fs.readFile(manifestPath,'utf8'));
  let installed=0,existing=0,portraits=0;
  // Run independent species concurrently, but no more than four active groups.
- await eachLimited(EARLY_KANTO_DEX,4,async dex=>{
+ // Kanto 001–151, all local sprites with bounded concurrent downloads.
+ const dex151=Array.from({length:151},(_,i)=>String(i+1).padStart(4,'0'));
+ await eachLimited([...new Set([...EARLY_KANTO_DEX,...dex151])],8,async dex=>{
   if(manifest[dex]){existing++;return;}
   const xml=(await download('sprite/'+dex+'/AnimData.xml')).toString('utf8');
   const entry=parseAnimationManifest(xml,dex);

@@ -217,7 +217,7 @@ export const EARLY_KANTO_FORMS=Object.freeze({
  abra:['0063','0064','0065'],venonat:['0048','0049'],
  'mr-mime':['0122'],growlithe:['0058','0059'],rhyhorn:['0111','0112']
 });
-function nativeAttacks(original){
+export function nativeAttacks(original){
  const lookup=new Map();
  function read(kit){for(const move of Object.values(kit||{})){
   if(!move?.nombre||!move.forma)continue;

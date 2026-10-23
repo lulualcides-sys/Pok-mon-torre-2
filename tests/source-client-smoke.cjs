@@ -1275,12 +1275,9 @@ const server=http.createServer(async(req,res)=>{
    // NEW rows are distinct from the equipped slots above them.
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
-   // Thunder Wave and Screech are approved; Sonic Boom is awaiting
-   // review after its new triple white half-moon pixel-art redesign.
-   if(!pendingRows.some(x=>x.includes('Sonic Boom')))
-    throw Error('Sonic Boom must stay available for visual review in NEW');
-   if(pendingRows.some(x=>/Thunder Wave|Screech/.test(x)))
-    throw Error('Approved Surge move leaked into NEW');
+   // User-approved Surge skills, including triple white-crescent Sonic Boom.
+   if(pendingRows.some(x=>/Sonic Boom|Thunder Wave|Screech/.test(x)))
+    throw Error('Approved Surge skill leaked into NEW');
    for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',
     'Metal Claw','Bind','Double Kick','Fury Attack'])
     if(pendingRows.some(x=>x.includes(name)))

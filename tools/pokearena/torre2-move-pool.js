@@ -6,6 +6,7 @@ import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
+import {kanto151SlotPlan} from './all-kanto-species.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -140,8 +141,8 @@ export function availableMoves(member){
  // They can already exist in its new evolution kit even if a lower-level
  // move filter was written for the PREVIOUS form. Include the 4 real names
  // explicitly, not made-up moves or effects from other Pokémon.
- if(isKantoEvolvedForm(member.id)){
-  for(const name of earlyKantoSlotPlan(member.id)||[])
+ if(isKantoEvolvedForm(member.id)||kanto151SlotPlan(member.id)){
+  for(const name of earlyKantoSlotPlan(member.id)||kanto151SlotPlan(member.id)||[])
    names.add(canonicalMoveKey(name));
  }
  if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
@@ -232,7 +233,7 @@ export function availableMoves(member){
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
- const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  if(plan)return plan.map(name=>{
   const id=canonicalMoveKey(name);
   return byId.has(id)?id:null;
@@ -243,7 +244,7 @@ export function defaultLoadout(member){
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
- const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  if(plan){
   const defaults=defaultLoadout(member);
   // When a species evolves, promote its own four-slot set immediately.
@@ -261,7 +262,7 @@ export function equipMove(member,slot,moveId){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return false;
  const pool=availableMoves(member);
  if(!pool.some(m=>m.id===moveId))return false;
- const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
+ const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
  if(early&&slot===0&&moveId!==canonicalMoveKey(early[0]))return false;
  if(early&&slot===3&&moveId!==canonicalMoveKey(early[3]))return false;
@@ -282,7 +283,7 @@ export function resolveLoadout(member){
  });
  // Native P2 evolution skills are re-slotted ONLY inside the Kanto campaign;
  // the Arena and VS CPU keep their original kits untouched.
- if(nativeKantoEvolutionPlan(member.id))out.esp={
+ if(nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id))out.esp={
   nombre:'Dodge',forma:'dash',tipo:'NORMAL',dano:0,
   dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
  };

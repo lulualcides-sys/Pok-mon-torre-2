@@ -879,7 +879,7 @@
       "userApprovalEvidence": "23/10/2026, conversa Pokémon Torre 2: usuário inicialmente confirmou os três novos golpes aprovados e posteriormente corrigiu expressamente somente Sonic Boom ('Sonic boom ainda não está aprovado falei errado'). Thunder Wave permanece aprovado; nenhuma modificação visual solicitada."
     },
     "sonic-boom": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -909,7 +909,8 @@
           "userApprovedException": true,
           "approvalEvidence": "In this continuing Pokémon Torre 2 thread the user authorized proceeding with visual reworks based on all four repositories, explicitly approving the prior documented Zarza no-copy exception and requesting these three moves on 2026-10-23."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026, Pokémon Torre 2: usuário disse 'Sonic tá aprovado' sobre as três meias-luas brancas, dano fixo de 20 HP e contato manual. Preservar a arte aprovada sem modificação."
     },
     "screech": {
       "review": "user-approved",

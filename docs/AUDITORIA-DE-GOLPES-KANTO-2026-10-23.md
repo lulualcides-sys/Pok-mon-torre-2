@@ -6,7 +6,7 @@ O catálogo do Poké Arena 2D tem prioridade. Os movimentos customizados já apr
 
 ## Estado visual confirmado pelo usuário
 - Thunder Wave e Screech: aprovados
-- Sonic Boom: NÃO aprovado; novo desenho no patch: **três meias-luas brancas pixeladas em sequência**, com rastro e impacto branco. Aguardar avaliação em NEW. Não modificar mecânica: um impacto, 20 HP fixos, acerto manual e imunidade Ghost
+- Sonic Boom: **APROVADO pelo usuário** em 23/10/2026. Preservar as três meias-luas brancas pixeladas em sequência, com rastro e impacto branco, dano fixo de 20 HP e imunidade Ghost. Não reaparecer em NEW.
 - Ancient Power e Ice Shard: aprovados
 - Preservar as demais artes já aprovadas
 

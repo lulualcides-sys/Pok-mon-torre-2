@@ -33,7 +33,7 @@ for(const d of TODOS){
  // may reuse a pre-approved custom renderer (e.g. Gust), but that does NOT
  // suddenly make that renderer a native-original move or a duplicate.
  // All actual native source files and the strict collision check stay frozen.
- if(addedFamilies.has(d.id))continue;
+ if(addedFamilies.has(d.id)||d.torre2Kanto151)continue;
  const scope=d.desactivado?'disabled':'active';
  let kit=d.kit||{};record(kit,d.id,d.nombre,scope);
  for(const ev of d.evoluciones||[]){

@@ -190,7 +190,8 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-tiles.js','kanto-tiles.js'],
  ['tools/pokearena/torre2-kanto-levels.js','kanto-levels.js'],
  ['tools/pokearena/torre2-kanto-world-map.js','kanto-world-map.js'],
- ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js']
+ ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
+ ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
@@ -198,9 +199,9 @@ await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch2
 await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
 patches.push(
  ['datos.js',[
-  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";const TIPOS={'],
+  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";const TIPOS={'],
   ['const ROSTER=TODOS.filter(p=>!p.desactivado);',
-   'TODOS.push(...addEarlyKantoSpecies(TODOS));const ROSTER=TODOS.filter(p=>!p.desactivado);']
+   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));const ROSTER=TODOS.filter(p=>!p.desactivado);']
  ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
@@ -489,7 +490,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'
 for(const filename of [
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
- 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
+ 'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
  'torre2/party-battle.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));

@@ -18,13 +18,14 @@ export function paginateKantoPokedexSource(original){
   'import{describir}from"../guia.js";',
   'import{describir}from"../guia.js";'+
   'import{earlyKantoSlotPlan,nativeKantoEvolutionPlan}from"../torre2/early-kanto-species.js";'+
-  'import{resolveLoadout}from"../torre2/move-pool.js";');
+  'import{resolveLoadout}from"../torre2/move-pool.js";'+
+  'import{kanto151SlotPlan}from"../torre2/all-kanto-species.js";');
  const sync=String.raw`function kantoDexStages(def){
  const stages=etapasDe(def);
  return stages.map((stage,i)=>{
   if(stage.mega)return stage;
   const species=(i===0?def.id:(def.evoluciones?.[i-1]?.nombre||'')).toLowerCase();
-  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species);
+  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||kanto151SlotPlan(species);
   if(!plan)return stage;
   // The Pokédex documents the COMPLETE moveset of this form, not the
   // current XP of an individual Pokémon in a saved campaign.

@@ -19,10 +19,9 @@ for(const h of SURGE3_MOVES){
  assert.equal(TEST_LIBRARY.filter(x=>x.nombre===h.nombre).length,1,h.id+' duplicate name');
  assert.equal(typeof TORRE2_FORMS[h.forma],'function','Form missing in real Phaser forms '+h.id);
  assert.equal(typeof SURGE3_FORMS[h.forma],'function',h.id);
- assert.equal(h.approved,h.id!=='sonic-boom',
-  'Only Sonic Boom remains pending its three-white-crescents review');
+ assert.equal(h.approved,true,'All Surge VFX have explicit user approval');
  assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').some(m=>m.id===h.id),
-  h.id==='sonic-boom','Only Sonic Boom must be in NEW');
+  false,'Approved Sonic Boom, Thunder Wave and Screech must not be NEW');
 }
 assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(x=>x.id==='ancient-power'||x.id==='ice-shard').length,0,
  'Ice Shard and Ancient Power must NOT reappear in NEW');

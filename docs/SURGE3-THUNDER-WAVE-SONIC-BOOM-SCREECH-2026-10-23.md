@@ -7,7 +7,7 @@ Versão: 23/10/2026. Patch integrado ao jogo Phaser/WebGL.
 - **Ancient Power**: aprovado no chat. Mantidas pedras 20% maiores com contorno verde-claro e todas as 12 poses.
 - Todos os 23 golpes novos do lote original estão visualmente aprovados; Dragon Pulse original do Poké Arena permanece sem duplicação.
 
-## Situação visual em 23/10/2026: Thunder Wave e Screech aprovados, Sonic Boom pendente
+## Situação visual em 23/10/2026: Thunder Wave, Sonic Boom e Screech aprovados
 - **Thunder Wave**, elétrico, STATUS, 0 dano, 100% precisão FRLG, PP20: descarga de raio amarelo com ramificações ciano. O projétil deve tocar fisicamente no alvo. Paralisa no motor de status original por 7 s no tempo da arena; não afeta Ground; Electric pode ser paralisado em FireRed. Não tenta simular dano elétrico nem ataque automático.
 - **Sonic Boom**, normal, dano fixo de **20 HP**, precisão 90%, PP20: três meias-luas brancas pixeladas, uma atrás da outra, em sequência com rastro. Colisão manual pelo segmento de trajetória, sem homing. Usa `puro:true` da API real `recibir` e imunidade Ghost explícita. Não modifica dano fixo por nível, Defesa ou fraqueza. Ao errar, não causa nenhum dano.
 - **Screech**, normal, STATUS, 0 dano, precisão 85%, PP40: rajada aguda de anéis violeta discretos, sem projétil de dano. No impacto, reduz **Defesa em dois estágios** (acumula até -6, dura 7 s na arena). A função `get defensa` original só é estendida quando `escena.datos.torre2` está presente; o motor original fora da campanha permanece igual. O jogo Phaser usa um atributo de Defesa combinado, portanto afeta a Defesa única, não duas estatísticas separadas.
