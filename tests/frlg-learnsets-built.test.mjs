@@ -41,6 +41,40 @@ assert.equal(moveUnlockLevel(member('bulbasaur',5),'vine-whip'),10,
  'Pokédex must know Gen3 Vine Whip learning level');
 assert.equal(availableMoves(member('mewtwo',50)).length,TEST_LIBRARY.length,
  'Test Mewtwo must remain unrestricted');
+
+/* Species signatures must actually appear in the battle kit, not only Dex. */
+for(const [species,level,id,slot] of [
+ ['meowth',30,'pay-day','q'],['persian',50,'pay-day','q'],
+ ['cubone',70,'bone-club','rmb'],['cubone',70,'bonemerang','q'],
+ ['marowak',70,'bone-club','rmb'],['marowak',70,'bonemerang','q'],
+ ['porygon',70,'tri-attack','q'],['dugtrio',70,'tri-attack','q'],
+ ['jigglypuff',70,'sing','rmb'],['krabby',70,'crabhammer','q'],
+ ['kingler',70,'crabhammer','q'],['pinsir',70,'guillotine','q'],
+ ['vileplume',70,'petal-dance','q'],['clefairy',70,'metronome','q'],
+ ['jynx',70,'lovely-kiss','rmb'],['chansey',70,'soft-boiled','q'],
+ ['scyther',70,'x-scissor','q'],['beedrill',70,'x-scissor','q'],
+ ['sandshrew',70,'swift','q'],['magnemite',70,'sonic-boom','q']
+]){
+ const kit=resolveLoadout(member(species,level));
+ assert.equal(kit[slot]?.id,id,
+  'Characteristic move needs to be ACTIVE in battle: '+species+' '+slot+' '+id);
+}
+assert.ok(!availableMoves(member('cubone',10)).some(x=>x.id==='bonemerang'),
+ 'Cubone must reach Bonemerang level before using the move');
+const ghost=member('gengar',70);
+assert.ok(!availableMoves(ghost).some(x=>x.id==='shadow-ball'),
+ 'Shadow Ball is a taught TM, not an automatic level-up for Gengar');
+ghost.tmMoves=['shadow-ball'];
+assert.equal(resolveLoadout(ghost).q?.id,'shadow-ball',
+ 'After teaching the real TM, Gengar equips its approved Shadow Ball');
+const oldPorygon=member('porygon',70);
+oldPorygon.moves=['tackle','quick-attack','swift','hyper-beam'];
+oldPorygon.movePlanSpecies='porygon';
+assert.equal(resolveLoadout(oldPorygon).q?.id,'tri-attack',
+ 'Old campaign saves must install Porygons signature once');
+assert.equal(oldPorygon.moves[2],'tri-attack',
+ 'One-time upgrade should survive the next campaign save');
+
 for(const p of KANTO_151){
  const older=member(p.id,5),later=member(p.id,100);
  const oldMoves=availableMoves(older).map(x=>x.id);
