@@ -37,7 +37,10 @@ for(const d of TODOS){
  const scope=d.desactivado?'disabled':'active';
  let kit=d.kit||{};record(kit,d.id,d.nombre,scope);
  for(const ev of d.evoluciones||[]){
-  kit=merge(kit,ev.kit||{});
+  // The game equips remastered Kanto evolution roles at runtime; do not
+  // mistake approved Torre 2 custom moves for native Poké Arena sources.
+  // This snapshot was saved before upgradeKantoEvolutionBattleKits ran.
+  kit=merge(kit,ev.torre2OriginalKit||ev.kit||{});
   record(kit,d.id,ev.nombre,scope);
   if(ev.mega?.kit)record(merge(kit,ev.mega.kit),d.id,ev.mega.nombre||'Mega',scope);
  }

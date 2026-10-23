@@ -110,6 +110,9 @@ export function upgradeKantoEvolutionBattleKits(roster){
      next[2]=h;break;
     }
    }
+   // Preserve the untouched upstream snapshot for the native-art auditor.
+   // The approved custom renderer is only a role change, never native art.
+   evo.torre2OriginalKit=structuredClone(evo.kit||{});
    evo.kit={...(evo.kit||{})};
    for(let i=0;i<4;i++){
     const attack=next[i];
