@@ -149,7 +149,7 @@ for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
 // not mandatory prerequisites of Misty/Surge battles. Do not invent
 // generic substitutes or touch already approved original moves.
 const optionalForNextPatch=[
- 'Thunder Wave','Sleep Powder','Protect','Light Screen','Rain Dance',
+ 'Sleep Powder','Protect','Light Screen','Rain Dance',
  'Sand Attack','Psychic','Aerial Ace','Fire Punch','Ice Punch',
  'Thunder Punch','Cross Chop','Flame Wheel','Psyshock'
 ];
