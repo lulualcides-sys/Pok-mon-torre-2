@@ -397,6 +397,14 @@ for(const [filename,changes] of patches){
     body=body.replace(/\b(?:iniciarAvisos|iniciarChat|iniciarTarjetas|vigilarVersion)\(juego(?:,ajustar)?\);/g,'');
     continue;
    }
+   if(filename==='ia.js'&&from.startsWith('if(yo.puede')){
+    const capability=from.includes('puedeMega')?'puedeMega':'puedeEvolucionar';
+    const pattern=new RegExp('if\\s*\\(\\s*yo\\.'+capability+'\\s*&&');
+    if(pattern.test(body))body=body.replace(pattern,
+     'if(!yo.escena.datos?.torre2&&yo.'+capability+'&&');
+    else console.warn('Native Arena AI has changed its optional '+capability+' branch');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
