@@ -751,8 +751,9 @@ for(let stage=1;stage<8;stage++){
   assert.ok(Math.abs(p.x-xy[0])>33||Math.abs(p.y-xy[1])>31,
    'Trainer marker must not hide building entrance on '+map.id);
 }
-assert.ok(menuCampaign.includes("fullButton.on('pointerup'"),
- 'Fullscreen uses Android-compatible pointerup, not pointerdown');
+assert.ok(battlePath.includes(".on('pointerup'")&&
+ battlePath.includes(".setData('torre2-fullscreen',true)"),
+ 'Fullscreen must use original Phaser ScaleManager on pointerup, not DOM zoom');
 assert.ok(menuCampaign.includes('const needed=new Set(')&&
  menuCampaign.includes('AVAILABLE_FRLG.includes(world)'),
  'The campaign loads only current-map art and relevant overworld NPCs');
