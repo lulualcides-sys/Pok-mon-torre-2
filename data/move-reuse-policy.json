@@ -845,7 +845,7 @@
       "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para earth-power na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "thunder-wave": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -875,7 +875,8 @@
           "userApprovedException": true,
           "approvalEvidence": "In this continuing Pokémon Torre 2 thread the user authorized proceeding with visual reworks based on all four repositories, explicitly approving the prior documented Zarza no-copy exception and requesting these three moves on 2026-10-23."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026, conversa Pokémon Torre 2: usuário inicialmente confirmou os três novos golpes aprovados e posteriormente corrigiu expressamente somente Sonic Boom ('Sonic boom ainda não está aprovado falei errado'). Thunder Wave permanece aprovado; nenhuma modificação visual solicitada."
     },
     "sonic-boom": {
       "review": "ready-for-visual-review",
@@ -911,7 +912,7 @@
       }
     },
     "screech": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -941,7 +942,8 @@
           "userApprovedException": true,
           "approvalEvidence": "In this continuing Pokémon Torre 2 thread the user authorized proceeding with visual reworks based on all four repositories, explicitly approving the prior documented Zarza no-copy exception and requesting these three moves on 2026-10-23."
         }
-      }
+      },
+      "userApprovalEvidence": "23/10/2026, conversa Pokémon Torre 2: usuário inicialmente confirmou os três novos golpes aprovados e posteriormente corrigiu expressamente somente Sonic Boom ('Sonic boom ainda não está aprovado falei errado'). Screech permanece aprovado; nenhuma modificação visual solicitada."
     }
   },
   "batch24NativeReuse": {
