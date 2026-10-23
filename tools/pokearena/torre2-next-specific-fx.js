@@ -181,9 +181,14 @@ function intersection(a,b,target,radius=13){
  return Math.hypot(x-u,y-v)<=Math.max(radius,(target.alto||36)*.32)?{x:u,y:v}:null;
 }
 function selection(registry){
+ // A per-species level lock (pendiente) may survive canonical catalog
+ // deduplication even after the user APPROVED the visual attack. Metronome
+ // chooses from actual installed/approved move effects, not a Pokémon's
+ // personal learnset. Do not mutate that learnset or bypass its unlock rules.
  return TEST_LIBRARY.filter(m=>m.id!=='metronome'&&
   m.forma!=='torre2_metronome'&&
-  !m.pendiente&&typeof registry?.[m.forma]==='function'&&
+  (m.approved===true||!m.pendiente)&&
+  typeof registry?.[m.forma]==='function'&&
   !['evolucionar','megaevolucionar','renacer'].includes(m.forma));
 }
 export function metronome(l,h,extra,registry){
