@@ -18,7 +18,7 @@ export function paginateKantoPokedexSource(original){
   'import{describir}from"../guia.js";',
   'import{describir}from"../guia.js";'+
   'import{earlyKantoSlotPlan,nativeKantoEvolutionPlan}from"../torre2/early-kanto-species.js";'+
-  'import{resolveLoadout,moveUnlockLevel,canonicalMoveKey,TEST_LIBRARY}from"../torre2/move-pool.js";'+
+  'import{resolveLoadout,moveUnlockLevel,canonicalMoveKey,TEST_LIBRARY,campaignLearnset}from"../torre2/move-pool.js";'+
   'import{frlgMachineCompatible}from"../torre2/frlg-learnsets.js";'+
   'import{kanto151SlotPlan}from"../torre2/all-kanto-species.js";');
  const sync=String.raw`function kantoDexStages(def){
@@ -55,7 +55,11 @@ export function paginateKantoPokedexSource(original){
    const h=equipped[slot]||
     TEST_LIBRARY.find(x=>x.id===named||canonicalMoveKey(x.nombre)===named)||
     original[slot];
-   if(!h?.nombre||!h?.forma){delete kit[slot];continue;}
+   if(!h?.nombre||!h?.forma){
+    kit[slot]={nombre:'LOCKED',forma:'golpe',tipo:'NORMAL',dano:0,
+     coste:0,cd:0,pendiente:true,torre2Unavailable:true};
+    continue;
+   }
    const lv=moveUnlockLevel(member,h.nombre);
    const machine=frlgMachineCompatible(species,named)&&lv===null;
    kit[slot]={...h,
@@ -68,7 +72,7 @@ export function paginateKantoPokedexSource(original){
   return {...stage,...stageStats,kit};
  });
 }`;
- s=once(s,'function cifras(slot,h){',sync+'function cifras(slot,h){');
+ s=once(s,'function cifras(slot,h){',sync+"function showKantoCampaignLearnset(scene){\n if(scene.__kantoMovesOverlay){scene.__kantoMovesOverlay.close();return;}\n const def=ROSTER[scene.foco],i=scene.etapa||0;\n const id=String(i===0?def.id:(def.evoluciones?.[i-1]?.nombre||def.id)).toLowerCase();\n const moves=campaignLearnset(id),items=[];\n let page=0;\n const add=o=>{o.setDepth(2600);items.push(o);return o};\n const close=()=>{for(const o of items.splice(0))o.destroy();scene.__kantoMovesOverlay=null};\n scene.__kantoMovesOverlay={close};\n const render=()=>{\n  for(const o of items.splice(0))o.destroy();\n  add(scene.add.rectangle(320,180,632,350,0x061426,.99)\n   .setStrokeStyle(2,0x94bad8).setInteractive());\n  add(texto(scene,28,14,'KANTO · GOLPES POR LEVEL',{tam:14,color:'#ffe5aa'}));\n  add(texto(scene,28,37,id.toUpperCase()+' · '+moves.length+' GOLPES INSTALADOS',\n   {tam:10,color:'#b8d9ef'}));\n  add(texto(scene,28,57,'ATK · HAB 2 · HAB 3 · ULT · ESQUIVA',\n   {tam:9,color:'#7de5b1'}));\n  add(texto(scene,549,18,'FECHAR X',{tam:10,color:'#ffffff'})\n   .setInteractive({useHandCursor:true}).on('pointerdown',close));\n  moves.slice(page*18,page*18+18).forEach((m,j)=>{\n   const x=28+Math.floor(j/9)*302,y=82+(j%9)*25;\n   const prefix=m.level===null?'TM     ':'NV '+String(m.level).padStart(2,'0');\n   add(texto(scene,x,y,prefix+'  '+m.name.toUpperCase().slice(0,22),\n    {tam:9,color:m.method==='TM'?'#ffe1a0':'#e0f2ff'}));\n   add(texto(scene,x,y+12,String(m.type||'').toUpperCase()+\n    (m.level===null?' · ENSINAR TM':' · DESBLOQUEIA POR LV'),\n    {tam:7,color:'#8faec7'}));\n  });\n  if(!moves.length)add(texto(scene,28,110,'SEM GOLPE INSTALADO PARA ESTA FORMA',\n   {tam:10,color:'#d5c0a6'}));\n  const total=Math.max(1,Math.ceil(moves.length/18));\n  add(texto(scene,292,322,(page+1)+' / '+total,{tam:10,color:'#ffe2ab'}));\n  if(page>0)add(texto(scene,28,322,'◀ ANTERIOR',{tam:10,color:'#cce9ff'})\n   .setInteractive({useHandCursor:true}).on('pointerdown',()=>{page--;render()}));\n  if(page+1<total)add(texto(scene,490,322,'PRÓXIMO ▶',{tam:10,color:'#cce9ff'})\n   .setInteractive({useHandCursor:true}).on('pointerdown',()=>{page++;render()}));\n };\n render();\n}\n"+'function cifras(slot,h){');
  s=once(s,'this.etapas=etapasDe(p);','this.etapas=kantoDexStages(p);');
  s=once(s,'const e=etapasDe(ROSTER[this.foco])[i];',
   'const e=kantoDexStages(ROSTER[this.foco])[i];');
@@ -107,6 +111,7 @@ export function paginateKantoPokedexSource(original){
   'this.fila=0;this.time.addEvent({delay:700,loop:true,callback:()=>this.girar()});',
   "this.fila=0;"+
   "this.dexPageLabel=texto(this,114,276,(this.dexPage+1)+' / '+this.dexPages,{tam:10,color:'#c5ddf6'}).setDepth(22).setOrigin(.5);"+
+  "texto(this,456,348,'GOLPES POR LEVEL',{tam:10,color:'#ffe1a1'}).setDepth(30).setOrigin(.5).setInteractive({useHandCursor:true}).on('pointerdown',()=>showKantoCampaignLearnset(this));"+
   "texto(this,35,276,'◀ ANTES',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(Math.max(0,(this.dexPage-1)*36)));"+
   "texto(this,168,276,'PRÓX ▶',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(Math.min(ROSTER.length-1,(this.dexPage+1)*36)));"+
   "this.time.addEvent({delay:700,loop:true,callback:()=>this.girar()});");

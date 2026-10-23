@@ -364,6 +364,31 @@ export function availableMoves(member){
  * original species learnset. A separate user-approved campaign skill has
  * an explicit, species-limited level instead of copying another Pokémon.
  */
+// A read-only per-species index of ALL installed campaign moves and
+// their first truly available level, built using the battle resolver.
+// TM-only skills are listed, but not granted by experience points.
+const KANTO_LEARNSET_CACHE=new Map();
+export function campaignLearnset(species){
+ const id=String(species||'').toLowerCase();
+ if(KANTO_LEARNSET_CACHE.has(id))return KANTO_LEARNSET_CACHE.get(id);
+ const member={id,progression:{species:id,level:1},tmMoves:[]};
+ const list=new Map();
+ for(let level=1;level<=100;level++){
+  member.progression.level=level;
+  for(const move of availableMoves(member))
+   if(!list.has(move.id))list.set(move.id,Object.freeze({
+    id:move.id,name:move.nombre,type:move.tipo,level,method:'LEVEL'}));
+ }
+ for(const move of TEST_LIBRARY)
+  if(!list.has(move.id)&&frlgMachineCompatible(id,move.id))
+   list.set(move.id,Object.freeze({
+    id:move.id,name:move.nombre,type:move.tipo,level:null,method:'TM'}));
+ const result=Object.freeze([...list.values()].sort((a,b)=>
+  (a.level??999)-(b.level??999)||a.name.localeCompare(b.name)));
+ KANTO_LEARNSET_CACHE.set(id,result);
+ return result;
+}
+
 export function moveUnlockLevel(member,moveName){
  const key=canonicalMoveKey(moveName),species=member?.id;
  if(!species)return null;

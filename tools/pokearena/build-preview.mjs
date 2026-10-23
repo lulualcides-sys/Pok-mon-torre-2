@@ -276,7 +276,7 @@ patches.push(
  ['escenas/pokedex.js',[
   // Pending levels are visible in the native Pokédex, original sprites kept.
   ['const out=slot==="e"?["ULT"]:[];',
-   'const out=slot==="e"?["ULT"]:[];if(h.pendiente&&h.torre2UnlockLevel)out.push("LOCKED LV "+h.torre2UnlockLevel);if(h.pendiente&&h.torre2UnlockEvolution)out.push("EVOLVE "+h.torre2UnlockEvolution);'],
+   'const out=slot==="e"?["ULT"]:[];if(h.torre2Unavailable)out.push("INATIVO");else if(h.torre2RequiresTM)out.push("ENSINAR TM");else if(Number.isInteger(h.torre2UnlockLevel))out.push("DESBLOQUEIA LV "+h.torre2UnlockLevel);if(h.pendiente&&h.torre2UnlockEvolution)out.push("EVOLVE "+h.torre2UnlockEvolution);'],
   // Original styled Pokedex: adjust only the card grid for 36 families.
   ['const COLS=5,CEL=44,GX=10,GY=36;',
    'const COLS=6,CEL=36,GX=10,GY=36;'],
