@@ -18,15 +18,17 @@ export function paginateKantoPokedexSource(original){
   'import{describir}from"../guia.js";',
   'import{describir}from"../guia.js";'+
   'import{earlyKantoSlotPlan,nativeKantoEvolutionPlan}from"../torre2/early-kanto-species.js";'+
-  'import{resolveLoadout}from"../torre2/move-pool.js";'+
+  'import{resolveLoadout,moveUnlockLevel,canonicalMoveKey,TEST_LIBRARY}from"../torre2/move-pool.js";'+
+  'import{frlgMachineCompatible}from"../torre2/frlg-learnsets.js";'+
   'import{kanto151SlotPlan}from"../torre2/all-kanto-species.js";');
  const sync=String.raw`function kantoDexStages(def){
  const stages=etapasDe(def);
  return stages.map((stage,i)=>{
   if(stage.mega)return stage;
   const species=(i===0?def.id:(def.evoluciones?.[i-1]?.nombre||'')).toLowerCase();
-  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||kanto151SlotPlan(species);
-  if(!plan)return stage;
+  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||
+   kanto151SlotPlan(species)||['lmb','rmb','q','e'].map(slot=>stage.kit?.[slot]?.nombre||null);
+  if(!plan?.some(Boolean))return stage;
   // The Pokédex documents the COMPLETE moveset of this form, not the
   // current XP of an individual Pokémon in a saved campaign.
   const member={id:species,progression:{species,level:100}};
@@ -47,10 +49,19 @@ export function paginateKantoPokedexSource(original){
    regen:safe(stage.regen,safe(def.regen,4))
   };
   const original=stage.kit||{};
-  const kit={...original};
-  for(const slot of ['lmb','rmb','q','e']){
-   const h=equipped[slot];
-   if(h?.nombre&&h?.forma)kit[slot]={...h};
+  const kit={...original},slots=['lmb','rmb','q','e'];
+  for(let i=0;i<slots.length;i++){
+   const slot=slots[i],named=canonicalMoveKey(plan[i]);
+   const h=equipped[slot]||
+    TEST_LIBRARY.find(x=>x.id===named||canonicalMoveKey(x.nombre)===named)||
+    original[slot];
+   if(!h?.nombre||!h?.forma){delete kit[slot];continue;}
+   const lv=moveUnlockLevel(member,h.nombre);
+   const machine=frlgMachineCompatible(species,named)&&lv===null;
+   kit[slot]={...h,
+    ...(Number.isInteger(lv)?{torre2UnlockLevel:lv}:machine?{torre2RequiresTM:true}:{}),
+    ...(slot==='e'?{ulti:true}:{})
+   };
   }
   // Show the fifth defensive action explicitly, never as a fifth attack.
   if(equipped.esp?.forma)kit.esp={...equipped.esp};

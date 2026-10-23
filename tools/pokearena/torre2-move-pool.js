@@ -8,6 +8,8 @@ import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
+import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
+ from './frlg-learnsets.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -148,6 +150,9 @@ export function availableMoves(member){
   for(const name of earlyKantoSlotPlan(member.id)||kanto151SlotPlan(member.id)||[])
    names.add(canonicalMoveKey(name));
  }
+ // FireRed/LeafGreen level-up data for EVERY Kanto species (151).
+ // Only real installed renderers can enter the list; TMs require teaching.
+ for(const name of frlgKnownMoves(member.id))names.add(canonicalMoveKey(name));
  if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
  if(['voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('sonic-boom');
  if(['voltorb','electrode'].includes(member.id))names.add('screech');
@@ -212,9 +217,7 @@ export function availableMoves(member){
  const early=EARLY_KANTO_LEARNSETS[member.id];
  if(early)for(const id of Object.keys(early))names.add(id);
  const moves=TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
- if(!early)return moves;
  const level=member.progression?.level??5;
- const tms=new Set((member.tmMoves||[]).map(canonicalMoveKey));
  const {def:memberDef,etapa}=buscar(member.id);
  const activeKit=etapa?memberDef.evoluciones[etapa-1]?.kit:memberDef.kit;
  // Never unlock Caterpie/Metapod Confusion or Weedle/Kakuna Fury Attack
@@ -230,6 +233,29 @@ export function availableMoves(member){
   ...(['voltorb','electrode','magnemite','magneton'].includes(member.id)&&level>=15?['sonic-boom']:[]),
   ...(['voltorb','electrode'].includes(member.id)&&level>=18?['screech']:[])
  ]);
+
+ // Canonical FireRed levels take precedence over guessed strength-based
+ // access. Kanto-specific approved original bonuses are the only exception.
+ const ordinaryBonus={
+  'poison-punch':24,'ice-punch':26,'thunder-punch':26,'fire-punch':26,
+  'flame-wheel':18,'surf':30,'psychic':30,'cross-chop':35,
+  'aerial-ace':25,'light-screen':25,'rain-dance':25,
+  'sand-attack':9,'sleep-powder':10,'protect':99
+ };
+ const plan=earlyKantoSlotPlan(member.id)||
+  nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
+ const activeStage=frlgEvolutionLevel(member.id);
+ const tms=new Set((member.tmMoves||[]).map(canonicalMoveKey));
+ // NPC/native evolved-form special attacks from the original Poké Arena 2D
+ // retain their existing VFX and can be earned via the actual evolution
+ // level; never give a pre-evolution Pokémon its successor's attacks.
+ const legacySlotLevel=(key)=>{
+  const index=(plan||[]).findIndex(m=>canonicalMoveKey(m)===key);
+  if(index<0)return null;
+  return [activeStage,Math.max(activeStage,10),Math.max(activeStage,20),
+   Math.max(activeStage,32)][index];
+ };
+
  const filtered=moves.filter(m=>{
   const key=canonicalMoveKey(m.nombre);
   // Some original Poké Arena Raichu evolutions still carry an older
@@ -243,15 +269,38 @@ export function availableMoves(member){
    'sand-attack':9,'sleep-powder':10,'aerial-ace':25,
    'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':25
   };
-  if(kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??1))
+  if(key==='protect')return tms.has(key);
+  // Strict FireRed unlock for all official level-up moves (inherits prior
+  // evolution learnsets). An unlearned TM is NEVER auto-granted.
+  const official=frlgUnlockLevel(member.id,key);
+  if(early&&early[key]!==undefined&&level<early[key])return false;
+  if(early&&newMoveRequiredLevel[key]!==undefined&&level<newMoveRequiredLevel[key])
+   return false;
+  if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
-  if(key==='protect'&&tms.has(key))return true;
+  if(tms.has(key))return true;
+  if(!early){
+   if(official!==null&&level>=official)return true;
+   if(kantoFinish[key]?.includes(member.id)&&level>=(ordinaryBonus[key]??25))
+    return true;
+   // Only existing fixed Arena/Kanto roles may allow custom effects not
+   // present in FRLG. They stay level-gated; never borrow another species'.
+   if(official===null&&!frlgMachineCompatible(member.id,key)){
+    const tier=legacySlotLevel(key);
+    if(tier!==null&&level>=tier)return true;
+   }
+   return false;
+  }
+  // The curated first two gym/early-route learnsets were already approved.
+  // Keep their known special evolution locks and custom slot thresholds.
+  if(official!==null&&!evoLocked.has(key)&&
+     level>=Math.max(official,newMoveRequiredLevel[key]??1))return true;
   // Allow skills of the ACTUAL evolved form immediately after evolution,
   // even at Lv 7 (Metapod), 10 (Butterfree), 18 (Pidgeotto) etc.
   // Other moves remain level-gated, and previous forms cannot borrow the
   // abilities of an evolution they have not reached.
   if(evoLocked.has(key))return false;
-  return tms.has(key)||evolutionSkills.has(key)||
+  return evolutionSkills.has(key)||
    (early[m.id]!==undefined&&level>=early[m.id]);
  });
  // A native Raichu entry can resolve through the Pichu line instead of
@@ -267,6 +316,24 @@ export function availableMoves(member){
 // New Kanto species keep the exact Arena 2D four attack slots even when
 // an ability is still locked. ESP is the original fifth control and NEVER
 // belongs in the editor: it remains the non-damaging defensive dodge.
+/** Learn level shown in Pokédex. Null means TM-only or not in the
+ * original species learnset. A separate user-approved campaign skill has
+ * an explicit, species-limited level instead of copying another Pokémon.
+ */
+export function moveUnlockLevel(member,moveName){
+ const key=canonicalMoveKey(moveName),species=member?.id;
+ if(!species)return null;
+ if(species==='mewtwo')return 1; // unrestricted Lv50 test Pokémon
+ const local=EARLY_KANTO_LEARNSETS[species];
+ if(local?.[key]!==undefined)return local[key];
+ const official=frlgUnlockLevel(species,key);
+ if(official!==null)return official;
+ const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||kanto151SlotPlan(species);
+ const index=(plan||[]).findIndex(n=>canonicalMoveKey(n)===key);
+ if(index<0)return null;
+ const stage=frlgEvolutionLevel(species);
+ return [stage,Math.max(10,stage),Math.max(20,stage),Math.max(32,stage)][index];
+}
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];

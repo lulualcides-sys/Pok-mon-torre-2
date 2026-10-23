@@ -213,7 +213,7 @@ patches.push(
  ]],
  ['luchador.js',[
   ['return this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit',
-   'return {...(this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit),...(this.escena.datos?.torre2?(this.lado===0?this.escena.datos.torre2Loadout:this.escena.datos.torre2OpponentLoadout):{})}']
+   'return {...(this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit),...(this.escena.datos?.torre2?{lmb:null,rmb:null,q:null,e:null}:{}),...(this.escena.datos?.torre2?(this.lado===0?this.escena.datos.torre2Loadout:this.escena.datos.torre2OpponentLoadout):{})}']
  ]]
 );
 patches.push(
