@@ -120,6 +120,17 @@ const patches=[
    'crearAnimsHojas(this);generarTexturas(this);texturasUI(this);this.arrancar();window.__pt2Started=true']
  ]],
  ['escenas/titulo.js',[
+  // Pokémon Torre 2: larger native Phaser pixel buttons (not CSS scaling).
+  // Keep the original menu actions, keyboard navigation, frame art and
+  // native fullscreen untouched. Fit all six PLAY buttons above the floor.
+  ['const BX=320,BW=210,BH=MOVIL.activo?30:24,PASO=MOVIL.activo?32:27;',
+   'const BX=320,BW=260,BH=MOVIL.activo?32:30,PASO=MOVIL.activo?33:31;'],
+  ['const DISPOSICION={principal:MOVIL.activo?{y:114+BAJA,paso:27,alto:25}:{y:112+BAJA,paso:25,alto:23},jugar:{y:114+BAJA,paso:PASO},online:{y:113+BAJA,paso:PASO},ajustes:{y:114+BAJA,paso:PASO}};',
+   'const DISPOSICION={principal:MOVIL.activo?{y:116+BAJA,paso:34,alto:32}:{y:112+BAJA,paso:32,alto:30},jugar:{y:107+BAJA,paso:PASO},online:{y:107+BAJA,paso:PASO},ajustes:{y:112+BAJA,paso:PASO}};'],
+  ['textoBoton(o),{tam:16,borde:4','textoBoton(o),{tam:18,borde:4'],
+  // This single call creates all four icons AND their clickable HTML links.
+  // No external social controls are created; fullscreen at x=624 remains.
+  ['this.redes();','/* Torre 2: no social icons or link hitboxes beside fullscreen. */'],
   ['return m&&(m.feet??5)-(m.head??-16)<=36',
    'return m&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36'],
   ['if(!m||(m.feet??5)-(m.head??-16)>50)return;',
