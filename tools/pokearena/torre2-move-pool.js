@@ -4,6 +4,7 @@
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
+import {FINALE_13_MOVES} from './finale13.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
@@ -31,6 +32,7 @@ export const canonicalMoveKey=name=>MOVE_ALIASES[norm(name)]||norm(name);
 export const SIGNATURE_MOVES=Object.freeze([
  ...BATCH24_MOVES,
  ...SURGE3_MOVES,
+ ...FINALE_13_MOVES,
  {id:'bonemerang',approved:true,nombre:'Bonemerang',forma:'torre2_bonemerang',tipo:'GROUND',dano:10.5,alcance:245,coste:24,cd:5.7,anim:'Shoot',lanzar:.16,description:'Bone boomerang / two synchronized hits'},
  {id:'bone-club',approved:true,nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
  {id:'tri-attack',approved:true,nombre:'Tri Attack',forma:'torre2_triattack',tipo:'NORMAL',dano:13,alcance:240,coste:30,cd:6.2,anim:'Charge',lanzar:.2,description:'Fire / ice / electric three-point projectile'},
@@ -182,6 +184,27 @@ export function availableMoves(member){
  if(['nidoran-m','nidorino','nidoking','nidoran-f','nidorina','nidoqueen'].includes(member.id))names.add('double-kick');
  if(['spearow','fearow','doduo','dodrio','nidoran-m','nidorino','beedrill'].includes(member.id))names.add('fury-attack');
  if(member.id==='chansey')names.add('soft-boiled');
+
+ // Newly created, pending-visual-review moves are available to appropriate
+ // Kanto species in their move editor, never injected over approved VFX.
+ const kantoFinish={
+  'psychic':['abra','kadabra','alakazam','drowzee','hypno','staryu','starmie','slowpoke','slowbro','jynx','mew','mewtwo','exeggcute','exeggutor','mr-mime'],
+  'sleep-powder':['butterfree','oddish','gloom','vileplume','bellsprout','weepinbell','victreebel','paras','parasect','tangela'],
+  'surf':['squirtle','wartortle','blastoise','lapras','vaporeon','gyarados','staryu','starmie','golduck','slowbro','dragonite','poliwrath','seel','dewgong'],
+  'ice-punch':['hitmonchan','jynx','electabuzz','magmar','alakazam','mew'],
+  'thunder-punch':['hitmonchan','electabuzz','magmar','alakazam','mew'],
+  'fire-punch':['hitmonchan','magmar','electabuzz','alakazam','mew'],
+  'cross-chop':['machop','machoke','machamp','mankey','primeape'],
+  'aerial-ace':['pidgeotto','pidgeot','fearow','scyther','farfetchd','dodrio','aerodactyl','charizard'],
+  'flame-wheel':['growlithe','arcanine','vulpix','ninetales','ponyta','rapidash'],
+  'light-screen':['abra','kadabra','alakazam','mr-mime','clefairy','clefable','starmie','magnemite','magneton'],
+  'rain-dance':['squirtle','wartortle','blastoise','lapras','vaporeon','gyarados','starmie','slowbro','poliwag','poliwhirl','poliwrath'],
+  'sand-attack':['pidgey','pidgeotto','pidgeot','sandshrew','sandslash','cubone','marowak','diglett','dugtrio','eevee']
+ };
+ for(const [name,species] of Object.entries(kantoFinish))
+  if(species.includes(member.id))names.add(name);
+ if(ROSTER.some(p=>p.id===member.id||p.evoluciones?.some(e=>e.nombre.toLowerCase()===member.id)))
+  names.add('protect');
  const early=EARLY_KANTO_LEARNSETS[member.id];
  if(early)for(const id of Object.keys(early))names.add(id);
  const moves=TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));

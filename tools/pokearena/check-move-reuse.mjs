@@ -6,6 +6,7 @@
 import fs from 'node:fs';
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
+import {FINALE_13_MOVES} from './torre2-finale13.js';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 
@@ -25,9 +26,9 @@ export function signatureEntries(pool){
   entries.push({id:m[1],approved:m[2]==='true',name:m[3],form:m[4]});
  const spreads=[...section.matchAll(/\.\.\.([A-Za-z_$][\w$]*)/g)].map(m=>m[1]);
  for(const name of spreads){
-  if(!['BATCH24_MOVES','SURGE3_MOVES'].includes(name))
+  if(!['BATCH24_MOVES','SURGE3_MOVES','FINALE_13_MOVES'].includes(name))
    throw Error('Unrecognized SIGNATURE_MOVES spread: '+name);
-  const source=name==='BATCH24_MOVES'?BATCH24_MOVES:SURGE3_MOVES;
+  const source=name==='BATCH24_MOVES'?BATCH24_MOVES:name==='SURGE3_MOVES'?SURGE3_MOVES:FINALE_13_MOVES;
   entries.push(...source.map(m=>({id:m.id,approved:m.approved,name:m.nombre,form:m.forma})));
  }
  if(entries.length<37)throw Error('Incomplete SIGNATURE_MOVES parser: fewer than the 37 grandfathered entries');

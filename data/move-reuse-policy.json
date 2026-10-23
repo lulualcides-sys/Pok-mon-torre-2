@@ -945,6 +945,448 @@
         }
       },
       "userApprovalEvidence": "23/10/2026, conversa Pokémon Torre 2: usuário inicialmente confirmou os três novos golpes aprovados e posteriormente corrigiu expressamente somente Sonic Boom ('Sonic boom ainda não está aprovado falei errado'). Screech permanece aprovado; nenhuma modificação visual solicitada."
+    },
+    "psychic": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "sleep-powder": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "protect": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "surf": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "ice-punch": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "thunder-punch": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "fire-punch": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "cross-chop": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "aerial-ace": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "flame-wheel": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "light-screen": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "rain-dance": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
+    },
+    "sand-attack": {
+      "review": "ready-for-visual-review",
+      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "sources": {
+        "T2": {
+          "mode": "reused",
+          "upstream": "tools/pokearena/torre2-early-route-fx.js#contactDash; tools/pokearena/torre2-clash-fx.js#clashAt",
+          "local": "tools/pokearena/torre2-finale13.js#contactDash",
+          "contribution": "Exact already approved contact dash and clash collision lifecycle used by all hand-pixelled melee moves, while projectile spells reuse Clash checks and sweeping real hit tests.",
+          "license": "User-owned Pokémon Torre 2 original project code."
+        },
+        "P2": {
+          "mode": "reused",
+          "upstream": "Poké Arena 2D original vfx.js#MAPAS.estrella via tools/pokearena/batch24/pixels.js#impact",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "On contact the native five-row P2 star mask is repaletted and stamped through the audited battle impact renderer, with contact time used for 12 impact animation poses.",
+          "license": "Existing user-authorized P2 client, project credits retained."
+        },
+        "E": {
+          "mode": "reused",
+          "upstream": "https://github.com/GBurgardt/pokemon-emerald-arena/blob/main/game/overlay/src/arena_physics.c#ArenaPhysics_Update",
+          "local": "tools/pokearena/torre2-finale13.js#p2EmeraldImpact",
+          "contribution": "The imported batch24 pixel impact computes and renders real 12-pose debris trajectories using FRAGMENT_POSES derived from the MIT Emerald fixed-point physics solver.",
+          "license": "MIT, German Burgardt (2026); EMERALD-LICENSE.txt bundled with batch24."
+        },
+        "Z": {
+          "mode": "exception",
+          "reason": "Zarza serves only as a previously supplied visual and interaction reference. Its public source redistribution is unconfirmed; this patch does not copy Zarza code or artwork, respecting the existing no-unlicensed-copy rule.",
+          "reviewedUpstream": "https://pokemonzarza.com/poke-arena-surface-reactions.js#reactArenaSurface; docs/REA-POKEMON-ZARZA-2026-10-21.md",
+          "userApprovedException": true,
+          "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
+        }
+      }
     }
   },
   "batch24NativeReuse": {

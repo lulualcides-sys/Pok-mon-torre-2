@@ -5,6 +5,7 @@
 import * as vfx from '../vfx.js';
 import {BATCH24_FORMS} from './batch24/runtime.js';
 import {SURGE3_FORMS} from './surge3/runtime.js';
+import {TORRE2_FINALE_13_FORMS} from './finale13.js';
 import {TORRE2_NEW_FORMS} from './next-batch-fx.js';
 import {TORRE2_MEGA_FORMS} from './mega-patch-fx.js';
 import {TORRE2_SPECIES_FORMS} from './species-fx.js';
@@ -295,6 +296,7 @@ export function payday(l,h,extra){
 }
 export const TORRE2_FORMS={
  ...BATCH24_FORMS,
+ ...TORRE2_FINALE_13_FORMS,
  ...SURGE3_FORMS,
  torre2_bonemerang:bonemerang,torre2_boneclub:boneclub,
  torre2_triattack:triattack,torre2_payday:payday,

@@ -5,6 +5,7 @@
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
+import {FINALE_13_MOVES} from './finale13.js';
 
 // The two maps are part of the existing Kanto campaign. DO NOT change the
 // original licensed Poké Arena 2D kits or its non-campaign EVO rules.
@@ -241,7 +242,7 @@ export function nativeAttacks(original){
  }
  // Approved Torre 2 additions are available to the new families, but
  // native Poké Arena moves always win name collisions.
- for(const h of [...BATCH24_MOVES,...SURGE3_MOVES]){
+ for(const h of [...BATCH24_MOVES,...SURGE3_MOVES,...FINALE_13_MOVES]){
   const key=h.nombre.trim().toLowerCase();
   if(!lookup.has(key))lookup.set(key,h);
  }

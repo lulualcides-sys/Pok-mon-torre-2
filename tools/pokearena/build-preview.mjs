@@ -175,6 +175,7 @@ await Promise.all([
  ['tools/pokearena/torre2-frlg-interiors.js','frlg-interiors.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
+ ['tools/pokearena/torre2-finale13.js','finale13.js'],
  ['tools/pokearena/torre2-next-batch-fx.js','next-batch-fx.js'],
  ['tools/pokearena/torre2-mega-patch-fx.js','mega-patch-fx.js'],
  ['tools/pokearena/torre2-species-fx.js','species-fx.js'],
@@ -402,6 +403,16 @@ patches.push(['luchador.js',[[
  'd*=(fuente?.atk??1)/this.defensa;',
  'd*=(fuente?.atk??1)/this.defensa;if(e.datos?.torre2&&(g.categoria==="SPECIAL"||g.especial===true)&&this.est.torre2SteelSpDef?.stacks)d*=(2+Math.min(6,this.est.torre2SteelSpDef.stacks))/2;'
 ]]]);
+// Final 13 only: status effects use native Luchador state lifetimes.
+// Sand Attack: 28% accuracy loss on physical collision, never blind all hits.
+// Light Screen: halve Special damage; Rain Dance affects Water and Fire.
+// Preserve all approved VFX and non-Kanto game modes.
+patches.push(['luchador.js',[
+ ['recibir(fuente,g){if(this.ko)return"nada";',
+  'recibir(fuente,g){if(this.ko)return"nada";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente?.est?.torre2SandAccuracy&&Math.random()<(fuente.est.torre2SandAccuracy.chance??.28))return"miss";'],
+ ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);',
+  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&(g.categoria==="SPECIAL"||g.especial===true))d*=.5;if(e.__torre2Rain?.until>e.t){if(g.tipo==="WATER")d*=1.35;else if(g.tipo==="FIRE")d*=.65}}']
+]]);
 // Preload every member before first round: in-place swap never triggers LOADING.
 patches.push(['escenas/combate.js',[[
  'const dexs=formasDe(d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2],d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);',
@@ -502,7 +513,7 @@ const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 for(const filename of [
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
- 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
+ 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
  'torre2/party-battle.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
