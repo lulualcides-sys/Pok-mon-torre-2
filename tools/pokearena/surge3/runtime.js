@@ -11,6 +11,7 @@ const COLORS=Object.freeze({
  sonic:Object.freeze([0x1b2636,0x52687e,0x8da9c2,0xcbe9f4,0xffffff]),
  screech:Object.freeze([0x231c34,0x665075,0xa77bb6,0xf0bddb,0xffffff])
 });
+const SONIC_MOON=Object.freeze([0x26344e,0xc9d5e4,0xe9f1ff,0xffffff,0xffffff]);
 const center=l=>({x:l.x,y:l.y-(l.alto||36)*.5});
 // Port of the EXACT segment-swept contact geometry already used by the
 // Torre 2 batch24 runtime. Copied into this standalone three-move module so
@@ -53,7 +54,7 @@ export function paintSurge3(g,style,x,y,frame,angle=0){
   // Canvas2D curves, CSS or image sprites. Phaser Graphics keeps hard pixels.
   // The nearest/front crescent travels at the actual projectile position;
   // the two followers are visual only. Damage still occurs ONCE on contact.
-  const moon=[0x26344e,0xc9d5e4,0xe9f1ff,0xffffff,0xffffff];
+  const moon=SONIC_MOON;
   for(let j=2;j>=0;j--){
    const lead=sideways(angle,0,3-j*20+Math.sin(f*.43-j*.55)*1.1);
    const scale=1.35+(f%4)*.045-(j*.035);
@@ -77,8 +78,8 @@ export function paintSurge3(g,style,x,y,frame,angle=0){
 export function paintSurge3Impact(g,style,x,y,elapsed){
  if(elapsed<0||elapsed>=.38)return false;
  const frame=Math.min(11,Math.floor(elapsed*32)),k=clamp(elapsed/.38);
- const p=COLORS[style==='thunder-wave'?'thunder':
-  style==='sonic-boom'?'sonic':'screech'];
+ const p=style==='sonic-boom'?SONIC_MOON:COLORS[
+  style==='thunder-wave'?'thunder':'screech'];
  const arms=style==='screech'?5:7;
  for(let j=0;j<arms;j++){
   const a=TAU*j/arms+frame*.07,d=(4+j%2*2)+(frame*1.25);
@@ -89,8 +90,11 @@ export function paintSurge3Impact(g,style,x,y,elapsed){
    y+Math.sin(a)*d*.65+debris.y*.25,
    p[j%3+2],size,1-k);
  }
- stamp(g,style==='thunder-wave'?'p2star':'p2darkring',
-  x,y,p,Math.max(.35,1-k)*1.2,frame*.06,1-k);
+ // White crescent burst on contact; no old blue ring for Sonic Boom.
+ const symbol=style==='thunder-wave'?'p2star':
+  style==='sonic-boom'?'crescent':'p2darkring';
+ const facing=style==='sonic-boom'?Math.PI:frame*.06;
+ stamp(g,symbol,x,y,p,Math.max(.35,1-k)*1.2,facing,1-k);
  return true;
 }
 export function surgeTargetEffect(target,move){
