@@ -233,7 +233,7 @@
       "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para sludge na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "poison-jab": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -263,7 +263,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23: usuário declarou 'Poison jab tbm pode salvar'; refere-se ao efeito de golpe físico de contato e brilho roxo sutil que foi publicado na versão src-65c7047ec7. Não alterar o efeito aprovado; aprovação não equivale a licença Zarza."
     },
     "mega-drain": {
       "review": "user-approved",

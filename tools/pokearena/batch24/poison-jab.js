@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "poison-jab",
   "nombre": "Poison Jab",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_poison_jab",
   "tipo": "POISON",
   "categoria": "PHYSICAL",

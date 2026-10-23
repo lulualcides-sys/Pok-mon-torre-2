@@ -1136,8 +1136,8 @@ const server=http.createServer(async(req,res)=>{
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
    if(labels().some(x=>x.includes('TODOS OS GOLPES APROVADOS')))
-    throw Error('NEW should show 3 visually pending batch24 moves');
-   if(!pendingRows.some(x=>/Ancient Power|Poison Jab/.test(x)))
+    throw Error('NEW should show 2 visually pending batch24 moves');
+   if(!pendingRows.some(x=>/Ancient Power|Ice Shard/.test(x)))
     throw Error('NEW must show the newly authored batch');
    for(const name of ['Horn Attack','Rock Tomb','Metronome','Absorb','X-Scissor',
     'Metal Claw','Bind','Double Kick','Fury Attack'])
