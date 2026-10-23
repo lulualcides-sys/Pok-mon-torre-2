@@ -264,7 +264,7 @@
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
       },
-      "userApprovalEvidence": "2026-10-23: usuário declarou 'Poison jab tbm pode salvar'; refere-se ao efeito de golpe físico de contato e brilho roxo sutil que foi publicado na versão src-65c7047ec7. Não alterar o efeito aprovado; aprovação não equivale a licença Zarza."
+      "userApprovalEvidence": "2026-10-23: o usuário reafirmou a aprovação de Poison Jab: \"surf, fire whell, Poison jab salva\". Manter exatamente o renderer existente de Poison Jab."
     },
     "mega-drain": {
       "review": "user-approved",
@@ -948,7 +948,7 @@
     },
     "psychic": {
       "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "visualScope": "Revisão 23/10/2026: Potência 90, dano 22, três ondas concêntricas e tremor breve somente após impacto real. Aguardando aprovação visual do usuário.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1017,7 +1017,7 @@
     },
     "protect": {
       "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "visualScope": "Revisão 23/10/2026: UMA parede verde simples, sem escudo complexo; bloqueio original intacto. Aguardando aprovação visual do usuário.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1050,8 +1050,8 @@
       }
     },
     "surf": {
-      "review": "ready-for-visual-review",
-      "visualScope": "Surf ORIGINAL pixel wave from user's Pokémon Torre 1: effects/moves/_runtime/semantic-vfx.js (Surf wave seven-point swell), faithfully remastered as twelve-frame stepped Phaser/WebGL crest with true contact, impact foam, no Canvas2D, no PNG. User rejected the previous detached Torre 2 projectile; this version awaits user visual review.",
+      "review": "user-approved",
+      "visualScope": "User-approved on 2026-10-23: Surf renderer must be frozen. This patch changes only Protect, Light Screen, Psychic.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1081,7 +1081,8 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23: no Pokémon Torre 2 o usuário aprovou expressamente \"Surf\" com as palavras \"surf, fire whell ... salva\"; preservar a animação já aprovada."
     },
     "ice-punch": {
       "review": "user-approved",
@@ -1259,8 +1260,8 @@
       "userApprovalEvidence": "23/10/2026: usuário do Pokémon Torre 2 aprovou Aerial Ace com \"salva\", junto dos cinco golpes Fire Punch, Cross Chop, Aerial Ace, Ice Punch e Thunder Punch; preservar a animação como está."
     },
     "flame-wheel": {
-      "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "review": "user-approved",
+      "visualScope": "User-approved on 2026-10-23: Flame Wheel renderer must be frozen. This patch changes only Protect, Light Screen, Psychic.",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -1290,11 +1291,12 @@
           "userApprovedException": true,
           "approvalEvidence": "User earlier approved Zarza-reference-only handling for this Pokémon Torre 2 project and now explicitly requests the final Kanto batch using existing effects. Provenance states no Zarza source code was reused."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23: no Pokémon Torre 2 o usuário aprovou expressamente \"Flame Wheel\" com as palavras \"surf, fire whell ... salva\"; preservar a animação já aprovada."
     },
     "light-screen": {
       "review": "ready-for-visual-review",
-      "visualScope": "2026-10-23, 13 Kanto missing moves requested. Do not mark visually approved until user tests gameplay. Kanto code additive only.",
+      "visualScope": "Revisão 23/10/2026: UMA parede roxa simples, sem enfeites; proteção de dano especial intacta. Aguardando aprovação visual do usuário.",
       "sources": {
         "T2": {
           "mode": "reused",

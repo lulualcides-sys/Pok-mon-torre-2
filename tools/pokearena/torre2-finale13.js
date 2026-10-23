@@ -19,7 +19,9 @@ const C={
  electric:[0x27214d,0x6652ae,0xe0b944,0xf8e875,0xffffff],
  poison:[0x27122e,0x572365,0x9942b9,0xce7aec,0xffd5ff],
  steel:[0x202a3f,0x527b93,0x86b8ca,0xc5e6ea,0xffffff],
- light:[0x193d49,0x3996a6,0x6fe0d7,0xb9ffe6,0xffffff]
+ light:[0x193d49,0x3996a6,0x6fe0d7,0xb9ffe6,0xffffff],
+ protectGreen:[0x0d3021,0x1c713e,0x43bd64,0x82ed98,0xdfffe2],
+ screenPurple:[0x291336,0x572478,0x9141c4,0xc37fe8,0xf2d8ff]
 };
 export {FINALE_13_MOVES,FINALE_13_NAMES} from './torre2-finale13-catalog.js';
 const colors=type=>C[type]||C.light;
@@ -60,34 +62,6 @@ const FIRE_RING=[
  '.012344...443210.','01234.......43210','1234.........4321',
  '1234.........4321','01234.......43210','.012344...443210.',
  '..0012333332100..','....001222100....','......00000......'];
-const BARRIER=[
- '0000000000000000','0122222222222210','0123333333333210',
- '01234........3210','01234........3210','01234........3210',
- '01234........3210','0123333333333210','0122222222222210','0000000000000000'];
-
-/* 12 original, hand-inked pixel flame silhouettes (black rim, red shell,
- * orange flame and yellow core). Flame Wheel surrounds the ACTOR during
- * contact; no travelling fireball and no modification to approved punches. */
-const WHEEL_FLAME=[
- '...00...', '..0120..','.012320.','01234320','12344432',
- '.1234432','..123320','...0120.','....00..'];
-const WHEEL_EMBER=[
- '..0...','0120..','12320.','.12320','..0120','...00.'];
-const PROTECT_OCTAGON=[
- '......000000......','....0011111100....','...012222222210...',
- '..012333333333210..','.01234......43210.',
- '01234..........43210','01234..........43210',
- '01234..........43210','01234..........43210',
- '.01234......43210.','..012333333333210..',
- '...012222222210...','....0011111100....','......000000......'];
-const LIGHT_PANEL=[
- '00000000000000000000','01222222222222222210',
- '01233333333333333310','0123..............3210',
- '0123..............3210','0123..............3210',
- '0123..............3210','0123..............3210',
- '01233333333333333310','01222222222222222210',
- '00000000000000000000'];
-
 const CROSS=[
  '000........000','01210......01210','0123210..0123210',
  '..0123210123210','....012343210','.....012443210',
@@ -130,10 +104,28 @@ function star(g,x,y,palette,step,fade=1){
  stamp(g,SPARK,x,y,palette,Math.max(1.2,2.3-step*.08),step*.7,fade);
  p2EmeraldImpact(g,x,y,palette,step/30,1);
 }
+// Minimal Gen-III-like protection: ONE green wall for Protect, ONE
+// purple wall for Light Screen, no old octagons or layered ornate panes.
+function simpleBarrier(g,l,o,kind,age,fade){
+ const protect=kind==='protect',pal=protect?C.protectGreen:C.screenPurple;
+ const frame=Math.floor(age*16)%12;
+ const w=protect?56:66,h=protect?62:72;
+ const x=Math.round(l.x+o.c*(protect?28:33))-Math.floor(w/2);
+ const y=Math.round(mid(l)+o.s*(protect?12:17))-Math.floor(h/2);
+ const a=fade*(.82+Math.sin(frame*PI/6)*.055);
+ dot(g,x-4,y-4,w+8,h+8,pal[0],a*.90);
+ dot(g,x,y,w,h,pal[2],a*.82);
+ dot(g,x+5,y+4,w-10,h-8,pal[1],a*.21);
+ dot(g,x+4,y+4,w-8,4,pal[4],a*.98);
+ dot(g,x+4,y+h-8,w-8,4,pal[3],a*.91);
+ dot(g,x+4,y+8,4,h-16,pal[3],a*.92);
+ dot(g,x+w-8,y+8,4,h-16,pal[4],a*.92);
+ dot(g,x+10+((frame*4)%(w-22)),y+10,3,h-20,pal[4],a*.26);
+}
 // Spell and field effects use exact, finite durations, no passive auto-damage.
 function selfStatus(l,h,key){
  const e=l.escena,g=e.add.graphics().setDepth(key==='rain'?1800:1514);
- const pal=key==='rain'?C.water:key==='protect'?C.light:C.psychic;
+ const pal=key==='rain'?C.water:key==='protect'?C.protectGreen:C.screenPurple;
  if(key==='rain')g.setScrollFactor?.(0); // Covers full camera, not a local aura.
  const o=setup(l,'Charge',.42);let age=0;
  if(key==='protect')l.ponerEstado?.('bloqueo',.72);
@@ -168,32 +160,8 @@ function selfStatus(l,h,key){
     const y=((i*139+Math.floor(age*315))%(height+10))-5;
     dot(g,x,y,2,11,pal[4],fade*.66);
    }
-  }else if(key==='protect'){
-   // Twelve pixel shield poses: tiered hexagonal plates, thick black outline,
-   // moving cyan edge and hard bright corners. Centered on protected Pokémon.
-   const phase=Math.floor(age*16)%12,x=l.x,y=mid(l);
-   const scale=2.25+Math.sin(phase*PI/6)*.095;
-   stamp(g,PROTECT_OCTAGON,x,y,C.light,scale,0,fade*.98);
-   for(let i=0;i<8;i++){
-    const a=(i*PI/4),w=22+((phase+i)%4)*2;
-    dot(g,x+Math.cos(a)*w,y+Math.sin(a)*w,3,3,pal[4],fade);
-   }
-   stamp(g,BARRIER,x,y,pal,.87,0,fade*.28);
   }else{
-   // Light Screen is a big stationary, refracting PANEL IN FRONT of its user:
-   // cool iridescent layered panes, vertical diffraction bars and bright edges.
-   const phase=Math.floor(age*16)%12;
-   const x=l.x+o.c*31,y=mid(l)+o.s*18;
-   stamp(g,LIGHT_PANEL,x,y,pal,3.00,0,fade*.78);
-   stamp(g,BARRIER,x,y,pal,1.94,0,fade*.30);
-   for(let k=0;k<8;k++){
-    const barX=x-34+k*10;
-    dot(g,barX,y-16+(phase+k)%6*5,3,17,pal[(k+phase)%3+1],fade*.33);
-   }
-   for(let k=0;k<4;k++){
-    const sy=k%2?1:-1;
-    dot(g,x-33+k*22,y+sy*20,7,3,pal[4],fade*.89);
-   }
+   simpleBarrier(g,l,o,key,age,fade);
   }
   return true;
  });
@@ -212,19 +180,31 @@ function projectile(l,h,extra,kind){
   age+=dt;g.clear();trail.clear();
   if(l.ko||l.est?.aturdido||age>1.65)return false;
   if(impactAt>=0){
-   const t=(age-impactAt)/.28;
+   const t=(age-impactAt)/(kind==='psychic'?.46:.28);
    if(t<1&&hit){
     if(kind==='psychic'){
-     // A heavy psychic crush: a growing double rune and inward shock spokes.
-     const frame=Math.min(11,Math.floor(t*12)),cx=r.x,cy=mid(r);
-     stamp(g,RUNE,cx,cy,C.psychic,2.35+t*2.25,frame*PI/8,1-t*.63);
-     stamp(trail,RUNE,cx,cy,C.psychic,3.25+t*.95,-frame*PI/10,(1-t)*.7);
-     for(let n=0;n<12;n++){
-      const angle=(n*PI/6)+t*.33;
-      const d=50-(1-t)*24;
-      dot(g,cx+Math.cos(angle)*d,cy+Math.sin(angle)*d,4,6,theme[n%2?3:4],1-t);
-      if(n%3===0)star(g,cx+Math.cos(angle)*d*.73,cy+Math.sin(angle)*d*.73,theme,frame,1-t);
+     // Heavy crush then 3 successive broad shock fronts; 12 hit poses.
+     const frame=Math.min(11,Math.floor(t*12)),cx=r.x,cy=mid(r),fade=1-t;
+     stamp(g,RUNE,cx,cy,C.psychic,3.7+frame*.16,frame*PI/12,fade*.92);
+     stamp(trail,RUNE,cx,cy,C.psychic,2.4+frame*.31,-frame*PI/14,fade*.55);
+     for(let ring=0;ring<3;ring++){
+      const radius=17+ring*17+t*(36+ring*17),count=24+ring*8;
+      for(let n=0;n<count;n++){
+       const a=n*2*PI/count+frame*.025*(ring%2?1:-1);
+       dot(g,cx+Math.cos(a)*radius,cy+Math.sin(a)*radius*.79,
+        ring===0?5:4,ring===0?5:4,
+        C.psychic[ring===0?4:ring===1?3:1],fade*(ring===2?.60:.93));
+      }
      }
+     for(let n=0;n<8;n++){
+      const a=n*PI/4+PI/8,reach=21+(1-t)*20+n%2*8;
+      const x=cx+Math.cos(a)*reach,y=cy+Math.sin(a)*reach;
+      dot(trail,x-3,y-3,6,6,C.psychic[n%2?3:4],fade);
+      dot(trail,x+Math.cos(a)*6,y+Math.sin(a)*6,3,3,C.psychic[0],fade*.8);
+     }
+     for(let k=0;k<4;k++)
+      dot(trail,cx-27-frame*2,cy-15+k*10,54+frame*4,3,
+       C.psychic[k%2?2:4],fade*.45);
     }else for(let n=0;n<5;n++)
      star(g,r.x+Math.cos(n*PI*2/5)*t*15,mid(r)+Math.sin(n*PI*2/5)*t*15,theme,t,1-t);
    }
@@ -241,7 +221,7 @@ function projectile(l,h,extra,kind){
    const pos={x:o.x+o.c*(12+d)-o.s*(side+wav),
     y:o.y+o.s*(12+d)+o.c*(side+wav)};
    const prev=points[i];points[i]=pos;
-   const radius=kind==='surf'?34:kind==='psychic'?19:kind==='sleep'?11:9;
+   const radius=kind==='surf'?34:kind==='psychic'?24:kind==='sleep'?11:9;
    if(clashAt(e,effect,l,pos,radius,h.tipo)){done.add(i);continue;}
    if(segment(prev,pos,r,radius)){
     done.add(i);
@@ -254,7 +234,8 @@ function projectile(l,h,extra,kind){
       r.ponerEstado?.('torre2SandAccuracy',6,{chance:.28});hit=true;
      }
     }else{
-     hit=damage(l,h,extra,kind==='surf'?25:15);
+     hit=damage(l,h,extra,kind==='surf'?25:kind==='psychic'?24:15);
+     if(kind==='psychic'&&hit)e.cameras?.main?.shake?.(155,.0065);
      if(kind==='psychic'&&hit&&Math.random()<.1)
       r.ponerEstado?.('confuso',2,{fonte:l});
     }
@@ -262,7 +243,7 @@ function projectile(l,h,extra,kind){
    }
    const frame=Math.floor(elapsed*16)%12;
    if(kind==='psychic'){
-    stamp(g,RUNE,pos.x,pos.y,theme,2.05+frame*.15,o.a+frame*.31,1-frame*.018);
+    stamp(g,RUNE,pos.x,pos.y,theme,2.6+frame*.17,o.a+frame*.31,1-frame*.018);
     for(let k=1;k<=5;k++){
      dot(trail,pos.x-o.c*k*11,pos.y-o.s*k*11,3+k%2,3+k%2,theme[(k+frame)%5],.62);
      const a=k*PI*2/5+elapsed*8;

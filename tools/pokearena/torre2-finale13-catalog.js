@@ -2,7 +2,7 @@
  * Never import WebGL FX into Node policy checks prior to build copying.
  */
 export const FINALE_13_MOVES=Object.freeze([
- ['Psychic','PSYCHIC',18,246,31,7,'Charge',80,100,'SPECIAL'],
+ ['Psychic','PSYCHIC',22,246,35,7.6,'Charge',90,100,'SPECIAL'],
  ['Sleep Powder','GRASS',0,206,22,10,'Charge',0,75,'STATUS'],
  ['Protect','NORMAL',0,0,31,13,'Charge',0,100,'STATUS'],
  ['Surf','WATER',19,225,35,8,'Charge',95,100,'SPECIAL'],
@@ -19,7 +19,7 @@ export const FINALE_13_MOVES=Object.freeze([
  Object.freeze({id:nombre.toLowerCase().replaceAll(' ','-'),nombre,
  forma:'torre2_finale_'+nombre.toLowerCase().replaceAll(' ',''),
  tipo,dano,alcance,coste,cd,anim,lanzar:.15,poder,precisao,pp:10,categoria,
- approved:['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch','rain-dance','sand-attack','sleep-powder'].includes(nombre.toLowerCase().replaceAll(' ','-')),
+ approved:['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch','rain-dance','sand-attack','sleep-powder','surf','flame-wheel'].includes(nombre.toLowerCase().replaceAll(' ','-')),
  description:'Kanto finishing pass: original pixel frames, real hit checks and status'})));
 export const FINALE_13_NAMES=Object.freeze(FINALE_13_MOVES.map(m=>m.nombre));
 

@@ -38,3 +38,10 @@ somente após inspeção visual real nas batalhas.
 - No Phaser/WebGL o corpo da onda é pintado por bandas retangulares pixeladas, com espuma, crista arqueada e 12 poses; não depende de SVG, Canvas2D ou imagem estática.
 - O dano acontece uma única vez quando a frente visual da onda realmente cruza o Pokémon rival; misses e ausência de contato não causam dano.
 - Os golpes aprovados e os saves permanecem intactos.
+
+## Patch de acabamento (23/10/2026)
+- Aprovados pelo usuário: **Surf**, **Flame Wheel**. **Poison Jab** já estava aprovado; confirmado novamente sem alterar seu renderer. Junto dos cinco golpes físicos e Rain Dance/Sand Attack/Sleep Powder, ficam 10 aprovações neste lote de Kanto.
+- **Protect:** uma única parede retangular **verde**, borda escura discreta, sem octágonos e sem decoração; bloqueio nativo preservado. Referência Gen III: https://pokemon.fandom.com/wiki/Protect.
+- **Light Screen:** uma única parede retangular **roxa**, simples e legível; redução de 50% do dano especial por 7,5s preservada. Referência: https://pokemondb.net/move/light-screen.
+- **Psychic:** poder canônico Gen III 90 e dano 22 (antes 18); runas mais densas, choque com três ondas e breve trepidação apenas no impacto real. Sem dano automático.
+- Apenas Psychic, Protect, Light Screen e Poison Punch continuam na aba NEW, para julgamento visual do usuário. Não afetar Surf e Flame Wheel aprovados.

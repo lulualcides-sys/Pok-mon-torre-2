@@ -436,10 +436,9 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 // NEW is an approval queue. Native moves and approved custom art never enter it.
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
-const expectedFinale13=['psychic','protect','surf',
- 'flame-wheel','light-screen','poison-punch'];
+const expectedFinale13=['psychic','protect','light-screen','poison-punch'];
 assert.deepEqual([...pendingIds].sort(),expectedFinale13.sort(),
- 'Only six new or revised attacks remain in NEW; eight approved moves stay protected');
+ 'Only four attacks remain in NEW; ten approved moves stay protected');
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
@@ -545,8 +544,8 @@ assert.equal(readCampaign().team.find(x=>x.id==='mewtwo').moves[0],confusion.id,
 assert.equal(allMoves.filter(x=>x.id==='surf').length,1,'Reworked Surf must be unique');
 assert.equal(allMoves.find(x=>x.id==='surf')?.forma,'torre2_finale_surf',
  'Old rejected Surf must not be restored: test only the NEW pixel wave');
-assert.equal(allMoves.find(x=>x.id==='surf')?.approved,false,
- 'New Surf requires user visual approval before it can be marked approved');
+assert.equal(allMoves.find(x=>x.id==='surf')?.approved,true,
+ 'User explicitly approved the remastered Torre 1 Surf; freeze its renderer');
 assert.equal(equipMove(tester,0,'surf'),true,
  'Test Mewtwo can equip new Surf in battle for visual review');
 assert.equal(equipMove(tester,0,'swift'),true,'new Swift must equip');

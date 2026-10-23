@@ -10,7 +10,7 @@ const load=p=>import(pathToFileURL(path.join(base,p)));
 const {FINALE_13_MOVES,FINALE_13_NAMES,TORRE2_FINALE_13_FORMS}=await load('torre2/finale13.js');
 const {POISON_PUNCH_MOVES}=await load('torre2/torre2-finale13-catalog.js');
 const userApproved=new Set(['fire-punch','cross-chop','aerial-ace','ice-punch','thunder-punch',
- 'rain-dance','sand-attack','sleep-powder']);
+ 'rain-dance','sand-attack','sleep-powder','surf','flame-wheel']);
 const reviewedMoves=[...FINALE_13_MOVES,...POISON_PUNCH_MOVES];
 const {TEST_LIBRARY,availableMoves,filterMoveLibrary}=await load('torre2/move-pool.js');
 const {ROSTER}=await load('datos.js');
@@ -42,8 +42,9 @@ for(const [id,pokemon] of [
   ...(id==='protect'?{tmMoves:['protect']}:{})})
  .some(x=>x.id===id),id+' not learned by '+pokemon);
 let spanX=0,spanY=0,fullScreenRain=false;
+let usedColors=new Set();
 function graphic(){
- return {fillStyle(){return this},fillRect(x,y,w,h){
+ return {fillStyle(color){usedColors.add(color);return this},fillRect(x,y,w,h){
    spanX=Math.max(spanX,x+w);spanY=Math.max(spanY,y+h);return this;},
   setDepth(){return this},setScrollFactor(f){if(f===0)fullScreenRain=true;return this;},
   clear(){return this},destroy(){this.dead=true}};
@@ -52,8 +53,9 @@ const savedRandom=Math.random;
 try{
  Math.random=()=>0;
  for(const h of reviewedMoves){
-  spanX=0;spanY=0;fullScreenRain=false;
-  const scene={efectos:[],t:1,cameras:{main:{width:960,height:540}},
+  spanX=0;spanY=0;fullScreenRain=false;usedColors=new Set();
+  const scene={efectos:[],t:1,cameras:{main:{width:960,height:540,
+   shake(ms,power){scene.shakes=(scene.shakes||0)+1;scene.lastShake={ms,power}}}},
    add:{graphics:graphic},datos:{torre2:true}};
   const foe={x:98,y:120,alto:36,hp:100,est:{},ko:false,invulnerable:false,
    recibir(_att,args){this.hp-=args.dano||0;this.hits=(this.hits||0)+1;return 'golpe'},
@@ -76,8 +78,12 @@ try{
   assert.equal(scene.efectos.length,0,'GPU effect leaked '+h.nombre);
   if(h.id==='protect'){
    assert.ok(actor.est.bloqueo,'Protect missing block status');
+   assert.ok(usedColors.has(0x43bd64),'Protect must be GREEN, one simple rectangle');
+   assert.ok(!usedColors.has(0x9141c4),'Protect must never render a purple screen');
   }else if(h.id==='light-screen'){
    assert.ok(actor.est.torre2LightScreen,'Light Screen missing special defense');
+   assert.ok(usedColors.has(0x9141c4),'Light Screen must be PURPLE, one simple rectangle');
+   assert.ok(!usedColors.has(0x43bd64),'Light Screen must never render a green shield');
   }else if(h.id==='rain-dance'){
    assert.ok(scene.__torre2Rain?.until>1,'Rain Dance missing weather');
    assert.ok(fullScreenRain,'Rain Dance must cover the camera');
@@ -92,6 +98,10 @@ try{
     assert.ok(foe.est.veneno,'Purple contact punch must poison only on hit');
    assert.equal(foe.hits,1,'Must hit once on contact '+h.nombre);
    assert.ok(foe.hp<100,'Attack did not deal damage '+h.nombre);
+   if(h.id==='psychic'){
+    assert.ok(foe.hp<=78,'Psychic must actually have more battle damage');
+    assert.equal(scene.shakes,1,'One camera kick on real Psychic impact');
+   }
   }
   if(['protect','light-screen','rain-dance','sand-attack','sleep-powder'].includes(h.id))
    assert.equal(foe.hits||0,0,'Status may not damage target '+h.nombre);
@@ -103,11 +113,18 @@ const fighter=fs.readFileSync(path.join(base,'luchador.js'),'utf8');
 for(const name of ['torre2LightScreen','torre2SandAccuracy','__torre2Rain'])
  assert.ok(fighter.includes(name),'Native combat missing status integration '+name);
 const fxText=fs.readFileSync(path.join(base,'torre2/finale13.js'),'utf8');
+assert.ok(fxText.includes('function simpleBarrier('),
+ 'Both shields must use the ONE simple rectangular pixel barrier');
+assert.ok(!fxText.includes('PROTECT_OCTAGON')&&!fxText.includes('LIGHT_PANEL'),
+ 'Old decorative complex shields must be entirely removed');
+const psychic=FINALE_13_MOVES.find(x=>x.id==='psychic');
+assert.equal(psychic.poder,90,'FireRed Psychic power must be 90');
+assert.equal(psychic.dano,22,'Psychic must be stronger than the old value 18');
 assert.ok(fxText.includes("function surfRemastered("),'Missing Torre 1 Surf wave remaster');
 assert.ok(fxText.includes("TORRE1_SURF_SILHOUETTE"),'Torre 1 original seven-point wave must be ported');
 assert.ok(fxText.includes("torre2_finale_surf:(l,h,x)=>surfRemastered"),'Rejected Surf projectile must be replaced');
-for(const piece of ['contactDash','p2EmeraldImpact','clashAt','stamp(g,WAVE','stamp(g,BARRIER'])
+for(const piece of ['contactDash','p2EmeraldImpact','clashAt','stamp(g,WAVE','simpleBarrier(g'])
  assert.ok(fxText.includes(piece),'Missing reusable real pixel renderer '+piece);
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(x=>reviewedMoves.some(y=>y.id===x.id)).length,6,
- 'Eight approved attacks preserved; Surf and five others still require visual review');
-console.log('Eight approved attacks preserved, only six NEW, Torre 1 remastered Surf and manual physics PASS.');
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(x=>reviewedMoves.some(y=>y.id===x.id)).length,4,
+ 'Ten approved attacks preserved; only Psychic, Protect, Light Screen and Poison Punch still pending');
+console.log('Ten visual approvals saved; Protect green, Light Screen purple, heavy Psychic impact and four NEW pass.');
