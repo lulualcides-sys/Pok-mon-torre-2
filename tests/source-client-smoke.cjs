@@ -157,7 +157,7 @@ const server=http.createServer(async(req,res)=>{
     squirtle:['wartortle','blastoise'],pidgey:['pidgeotto','pidgeot'],
     rattata:['raticate'],caterpie:['metapod','butterfree'],
     weedle:['kakuna','beedrill'],geodude:['graveler','golem'],
-    staryu:['starmie'],paras:['parasect'],pol iwag:[],
+    staryu:['starmie'],paras:['parasect'],
     poliwag:['poliwhirl','poliwrath'],oddish:['gloom','vileplume'],
     magnemite:['magneton'],voltorb:['electrode']
    };
