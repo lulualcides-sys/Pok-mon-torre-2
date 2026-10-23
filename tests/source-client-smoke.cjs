@@ -154,6 +154,38 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(result.moves.every(Boolean),
     'Pokédex has empty move panel: '+JSON.stringify(result));
   }
+  // Reproduce the real user report, not just the stored Pokédex data:
+  // Nidorino and Nidoking were showing 'SPD NaN' and empty move panels.
+  for(const [id,stages] of [
+   ['nidoran-m',[[1,'0033'],[2,'0034']]],
+   ['nidoran-f',[[1,'0030'],[2,'0031']]]
+  ]){
+   await dexPage.evaluate(base=>{
+    const scene=window.__pt2Game.scene.getScene('pokedex');
+    scene.elegir(scene.casillas.findIndex(x=>x.p.id===base));
+   },id);
+   for(const [stage,dex] of stages){
+    await dexPage.evaluate(index=>{
+     window.__pt2Game.scene.getScene('pokedex').irEtapa(index);
+    },stage);
+    await dexPage.waitForFunction(([index,spriteDex])=>{
+     const scene=window.__pt2Game.scene.getScene('pokedex');
+     return scene.etapa===index&&scene.sprite?.dex===spriteDex;
+    },[stage,dex],{timeout:20000});
+    const visible=await dexPage.evaluate(()=>{
+     const scene=window.__pt2Game.scene.getScene('pokedex');
+     return {
+      labels:scene.children.list.filter(x=>typeof x.text==='string').map(x=>x.text),
+      moves:scene.movs.list.filter(x=>typeof x.text==='string').map(x=>x.text)
+     };
+    });
+    assert.ok(!visible.labels.some(t=>String(t).includes('NaN')),
+     id+' '+dex+' rendered an invalid numeric stat: '+JSON.stringify(visible.labels));
+    for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
+     assert.ok(visible.moves.includes(role),
+      id+' '+dex+' missing visible '+role+' in evolved Pokédex');
+   }
+  }
   const newKantoDex=await dexPage.evaluate(()=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
    return ['pidgey','caterpie','weedle','geodude','mankey'].map(id=>{
