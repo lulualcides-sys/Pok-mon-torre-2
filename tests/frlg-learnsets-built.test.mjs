@@ -115,8 +115,10 @@ assert.ok(campaignLearnset('mewtwo').length===TEST_LIBRARY.length,
  'Test Mewtwo can display every installed attack');
 
 const pokedex=fs.readFileSync(path.join(root,modules,'escenas/pokedex.js'),'utf8');
-assert.ok(pokedex.includes('moveUnlockLevel')&&pokedex.includes('torre2RequiresTM'),
- 'Dex must display level and TM-gated moves next to five standardized slots');
+assert.ok(pokedex.includes('campaignLearnset')&&pokedex.includes('GOLPES POR LEVEL'),
+ 'Separate campaign learnset must display level and TM requirements');
+assert.ok(pokedex.includes('const h=original[slot]'),
+ 'Main Pokédex stage must match the real Arena/Training evolution kit');
 assert.ok(pokedex.includes('showKantoCampaignLearnset')&&pokedex.includes('GOLPES POR LEVEL'),
  'Native Pokédex must expose all installed compatible moves for selected evolution');
 assert.ok(pokedex.includes('NÃO DISPONÍVEL')||pokedex.includes('INATIVO'),

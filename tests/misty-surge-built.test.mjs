@@ -192,11 +192,13 @@ for(const [from,to] of [['gloom','vileplume'],['poliwhirl','poliwrath']]){
  for(const slot of ['lmb','rmb','q','e'])
   assert.ok(kit[slot]?.forma,to+' evolved battle slot '+slot+' is empty');
 }
-// Pokédex source must read the exact same evolved loadout as Kanto combat,
-// rather than showing an inherited, outdated native P2 kit.
+// Pokédex uses the exact active Arena/VS CPU evolved kit, whereas the
+// Kanto campaign has its own level/TM-gated selectable loadouts.
 const dexCode=fs.readFileSync(file('escenas/pokedex.js'),'utf8');
 assert.match(dexCode,/function kantoDexStages\(def\)/);
-assert.match(dexCode,/const equipped=resolveLoadout\(member\)/);
+assert.match(dexCode,/const h=original\[slot\]/);
+assert.doesNotMatch(dexCode,/const equipped=resolveLoadout\(member\)/,
+ 'Other-mode Pokédex must not be replaced by campaign level-100 kit');
 assert.match(dexCode,/this\.etapas=kantoDexStages\(p\)/);
 for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
  assert.ok(dexCode.includes('"'+role+'"'),'Missing Pokédex role '+role);
