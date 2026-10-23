@@ -459,6 +459,13 @@ for(const [filename,changes] of patches){
  await fs.writeFile(filenameFull,body);
 }
 
+// Expand Pokedex without overlapping its original animated Pokémon
+// pedestal: six rows of six cards with tiny previous/next Phaser controls.
+const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
+const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
+await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
+ await fs.readFile(pokedexPath,'utf8')));
+
 // Avoid stale attack VFX on mobile browsers and GitHub Pages caching.
 // Previously all revisions imported exactly the same /src-8d89349697/*.js
 // URL: a ?v= query added to /arena2d/ never invalidated those modules.
