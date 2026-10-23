@@ -392,7 +392,7 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 // NEW is an approval queue. Native moves and approved custom art never enter it.
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
-assert.equal(pendingIds.length,27,'24 new moves and 3 steel moves await approval; prior approvals remain frozen');
+assert.deepEqual(pendingIds,['sonic-boom'],'Sonic Boom remains the only pending visual approval; all previously user-approved moves stay out of NEW');
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
