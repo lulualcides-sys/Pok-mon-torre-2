@@ -526,12 +526,15 @@ const server=http.createServer(async(req,res)=>{
    const chorro=scene.efectos.find(x=>
     x.constructor?.name==='Chorro'&&x.h?.nombre==='Steel Beam');
    return{fired,found:!!chorro,palette:chorro?.h?.paleta,
-    originalEngine:chorro?.constructor?.name,energyAfter:user.energia};
+    originalEngine:chorro?.constructor?.name,energyAfter:user.energia,
+    trainingSingleInput:scene.controles?.[0]?.leer?.__torre2SingleTrainingCast===true};
   });
   assert.equal(actualSteel.fired,true,'Training must launch Steel Beam');
   assert.equal(actualSteel.found,true,
    'Steel Beam MUST instantiate native Poké Arena Aura Storm / Chorro');
   assert.equal(actualSteel.palette,'metalTorre2');
+  assert.equal(actualSteel.trainingSingleInput,true,
+   'Training must prevent simultaneous / held dual move inputs on native controls');
 
   const dummy=await offline.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');

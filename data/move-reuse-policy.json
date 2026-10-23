@@ -63,7 +63,7 @@
   },
   "newMoves": {
     "mud-shot": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -93,10 +93,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, usuário da conversa Pokémon Torre 2: \"mud-shot\" na lista explícita \"Earth Power, acid e acid spray pode salvar ... icy Wind salva, mud shot e mud bomb salva ... silver Wind salva, Twister salva\". A aprovação refere-se ao design da versão src-934c8c7dab, não à comprovação de reuso Zarza."
     },
     "mud-bomb": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -126,10 +127,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, usuário da conversa Pokémon Torre 2: \"mud-bomb\" na lista explícita \"Earth Power, acid e acid spray pode salvar ... icy Wind salva, mud shot e mud bomb salva ... silver Wind salva, Twister salva\". A aprovação refere-se ao design da versão src-934c8c7dab, não à comprovação de reuso Zarza."
     },
     "acid": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -159,10 +161,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, usuário da conversa Pokémon Torre 2: \"acid\" na lista explícita \"Earth Power, acid e acid spray pode salvar ... icy Wind salva, mud shot e mud bomb salva ... silver Wind salva, Twister salva\". A aprovação refere-se ao design da versão src-934c8c7dab, não à comprovação de reuso Zarza."
     },
     "acid-spray": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -192,7 +195,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, usuário da conversa Pokémon Torre 2: \"acid-spray\" na lista explícita \"Earth Power, acid e acid spray pode salvar ... icy Wind salva, mud shot e mud bomb salva ... silver Wind salva, Twister salva\". A aprovação refere-se ao design da versão src-934c8c7dab, não à comprovação de reuso Zarza."
     },
     "sludge": {
       "review": "user-approved",
@@ -601,7 +605,7 @@
       "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para night-slash na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "icy-wind": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -631,10 +635,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, usuário da conversa Pokémon Torre 2: \"icy-wind\" na lista explícita \"Earth Power, acid e acid spray pode salvar ... icy Wind salva, mud shot e mud bomb salva ... silver Wind salva, Twister salva\". A aprovação refere-se ao design da versão src-934c8c7dab, não à comprovação de reuso Zarza."
     },
     "silver-wind": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -664,10 +669,11 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, usuário da conversa Pokémon Torre 2: \"silver-wind\" na lista explícita \"Earth Power, acid e acid spray pode salvar ... icy Wind salva, mud shot e mud bomb salva ... silver Wind salva, Twister salva\". A aprovação refere-se ao design da versão src-934c8c7dab, não à comprovação de reuso Zarza."
     },
     "twister": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -697,7 +703,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, usuário da conversa Pokémon Torre 2: \"twister\" na lista explícita \"Earth Power, acid e acid spray pode salvar ... icy Wind salva, mud shot e mud bomb salva ... silver Wind salva, Twister salva\". A aprovação refere-se ao design da versão src-934c8c7dab, não à comprovação de reuso Zarza."
     },
     "energy-ball": {
       "review": "user-approved",

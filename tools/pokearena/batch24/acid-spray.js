@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "acid-spray",
   "nombre": "Acid Spray",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_acid_spray",
   "tipo": "POISON",
   "categoria": "SPECIAL",

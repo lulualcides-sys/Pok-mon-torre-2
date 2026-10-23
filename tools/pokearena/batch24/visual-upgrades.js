@@ -22,7 +22,8 @@ const S=(g,shape,x,y,p,size=1,angle=0,alpha=1,flip=false)=>
 const ACID_JET=[0x192a26,0x376c51,0x69a949,0xc5e76d,0xf1ffba];
 const ACID_MIST=[0x1f2d24,0x346840,0x59b837,0xa5f24b,0xf5ffc8];
 const POISON_JAB=[0x21182c,0x542c74,0x9c4cca,0xe07dff,0xffdcfa];
-const DARK_CORE=[0x0c101f,0x24122f,0x51245f,0x893d9d,0xcd8cde];
+const DARK_CORE=[0x090b15,0x2a103e,0x542073,0x9240b3,0xd786ff];
+const ICE_GLASS=[0x12243f,0x285e8c,0x65c0e6,0xbbf3ff,0xffffff];
 const TWISTER=[0x172b36,0x395668,0x6c91a1,0xb2d1d7,0xf0f7ed];
 const ROCK_DUST=PALETTES.rock;
 const SNOW=PALETTES.ice;
@@ -34,28 +35,31 @@ export const REWORKED_STYLES=Object.freeze([
 const REWORKED=new Set(REWORKED_STYLES);
 
 function darkPulse(g,x,y,f,a){
- // The core is DARK, not a brightly colored Shadow Ball clone. Layered
- // angular rotating crescents and a jagged ink-black aura drifting backwards.
- const t=f/12,rad=13+3*wave(f*.9);
- S(g,'crescent',x,y,DARK_CORE,1.05,a+PI*.55+t*TAU,.95);
- for(let k=0;k<5;k++){
-  const angle=a+k*TAU/5-f*.23;
-  const r=rad+(k%2)*6;
-  const o=v(angle,r);
-  S(g,'crescent',x+o.x,y+o.y,DARK_CORE,.7+(k%2)*.10,
-   angle+(k%2?PI:0),.8);
+ // Faithful Pokémon Dark Pulse motif: a stream of BLACK/PURPLE ENERGY RINGS,
+ // not a Shadow Ball, a cluster of crescents or a generic purple projectile.
+ // The pixels for each circular pulse are a literal *mask adaptation* of
+ // Poké Arena 2D's MAPAS['p-pulsoAgua'] via pixels.js#p2darkring.
+ // This is the original P2 ring renderer's 8x8 silhouette, not claimed to
+ // be a pre-existing native Dark Pulse attack in the captured P2 client.
+ const t=f/12;
+ for(let i=3;i>=0;i--){
+  const d=i*(11+(f%3)*.6),sway=wave(f*.62+i*2.1)*1.5;
+  const pos=v(a,-d,sway);
+  const scale=(1.52-i*.19)+(f%4)*.06;
+  // Ink outlines and luminous violet rim, with hollow black centers.
+  S(g,'p2darkring',x+pos.x,y+pos.y,DARK_CORE,
+   scale,a+(i%2?-.11:.11),.98-i*.17);
+  const mid=v(a,-d);
+  dot(g,x+mid.x-1,y+mid.y-1,DARK_CORE[0],
+   Math.max(2,3-i*.25),.8-i*.12);
  }
- for(let i=0;i<6;i++){
-  const lag=10+i*7+f%4,offset=(i%2?1:-1)*(3+i*1.5);
-  const o=v(a,-lag,offset);
-  S(g,i%2?'spark':'crescent',x+o.x,y+o.y,DARK_CORE,
-   i<2?.56:.37,a+PI/3+i*.2,.5+i*.035);
- }
- dot(g,x-3,y-1,0x0b0915,4,.98);
- for(let i=0;i<4;i++){
-  const angle=a+(f+i*3)*.5;
-  const o=v(angle,12+i*2);
-  dot(g,x+o.x,y+o.y,i%2?0x2a183b:0x7f46a1,2,.75);
+ // Ripple fragments shed sideways from each ring, not random circles.
+ for(let j=0;j<9;j++){
+  const back=8+j*6,side=(j%2?1:-1)*(8+j%3*3);
+  const pos=v(a,-back,side+wave(f*.58+j*1.3)*2);
+  S(g,j%3===0?'spark':'frostChip',x+pos.x,y+pos.y,DARK_CORE,
+   j%3===0?.28:.35,(j%2?1:-1)*.3,
+   .65-j*.042);
  }
 }
 
@@ -85,19 +89,26 @@ function ancient(g,x,y,f,a){
 }
 
 function iceShard(g,x,y,f,a){
- // Pay Day-style lightweight separate dagger silhouette, bright edge,
- // diagonal spin and short crystalline trail. This is NOT seven copies
- // glued into one hitbox: runtime launches seven independent projectiles.
- const tip=wave(f*.52)*.09;
- S(g,'shard',x,y,SNOW,1.05,a-PI/4+tip);
- S(g,'shard',x+2,y-1,SNOW,.44,a-PI/4-tip,.8);
- for(let i=0;i<4;i++){
-  const o=v(a,-8-i*8,wave(f*.4+i*2)*(2+i*.6));
-  S(g,'spark',x+o.x,y+o.y,SNOW,i===0?.48:.28,
-   i*.9,.78-i*.14);
+ // Visual-only upgrade: the already approved Pay Day-style seven-hit fan,
+ // trajectories and timings are untouched. Sharper translucent-white ice
+ // crystals with beveled blue facets and tiny frost fragments replace
+ // generic blue needles. Twelve facing/spark phases.
+ const tip=wave(f*.52)*.07;
+ S(g,'iceDagger',x,y,ICE_GLASS,1.15,a-PI/4+tip,.98);
+ const pale=v(a,-3,2);
+ S(g,'iceDagger',x+pale.x,y+pale.y,ICE_GLASS,.39,
+  a-PI/4-tip,.73);
+ for(let i=0;i<5;i++){
+  const pos=v(a,-7-i*8,wave(f*.48+i*2.1)*(2+i*.8));
+  S(g,i%2===0?'frostChip':'spark',
+   x+pos.x,y+pos.y,ICE_GLASS,i<2?.45:.27,
+   a+PI/4+i*.28,.81-i*.13);
  }
- const gl=v(a,12,0);
- dot(g,x+gl.x,y+gl.y,SNOW[4],2,.92);
+ for(let i=0;i<4;i++){
+  const pos=v(a,6+i*4,(i%2?1:-1)*(4+i*2));
+  dot(g,x+pos.x,y+pos.y,i%2?ICE_GLASS[3]:ICE_GLASS[4],
+   i%2?2:3,.88-i*.11);
+ }
 }
 
 function icyWind(g,x,y,f,a){
@@ -271,17 +282,33 @@ export function paintReworkedImpact(g,h,x,y,elapsed){
  const p=h.palette&&PALETTES[h.palette]||SNOW;
  const k=clamp(elapsed/.42),style=h.style;
  const liquid=style==='acid'||style==='spray'||style==='mudshot'||style==='mudbomb';
- const pp=style==='acid'?ACID_JET:style==='spray'?ACID_MIST:p;
+ const pp=style==='acid'?ACID_JET:style==='spray'?ACID_MIST:
+  style==='jab'?POISON_JAB:style==='darkpulse'?DARK_CORE:p;
  const count=style==='ancient'?10:liquid?9:style==='darkpulse'?7:5;
- const shape=liquid?'drop':style==='ancient'?'rock':style==='darkpulse'?'crescent':'spark';
+ const shape=liquid?'drop':style==='ancient'?'rock':
+  style==='darkpulse'?'p2darkring':style==='jab'?'needle':'spark';
  for(let i=0;i<count;i++){
   const ang=i*TAU/count+(i%2)*.27;
   const radius=(4+20*k)*(i%3===0?1.32:.77);
   const o=v(ang,radius);
   S(g,shape,x+o.x,y+o.y,pp,
-   (1-k)*(style==='ancient'?.62:.35)+.18,
+   (1-k)*(style==='ancient'?.62:style==='darkpulse'?.72:.35)+.18,
    ang+(style==='darkpulse'?k*PI:0),
    (1-k)*.85);
+ }
+  if(style==='jab'){
+  // Only a CONFIRMED Poison Jab hit gets these purple radial spikes.
+  for(let i=0;i<8;i++){
+   const angle=i*TAU/8+.1,off=v(angle,5+k*21);
+   S(g,i%2?'spark':'needle',x+off.x,y+off.y,POISON_JAB,
+    .63*(1-k)+.18,angle-PI/4,(1-k)*.95);
+  }
+  S(g,'spark',x,y,POISON_JAB,1.1*(1-k)+.35,.1,(1-k)*.95);
+ }
+ if(style==='darkpulse'){
+  for(let i=0;i<3;i++)
+   S(g,'p2darkring',x,y,DARK_CORE,
+    .9+k*(1.5+i*.52),i*.2,(1-k)*(.93-i*.16));
  }
  return true;
 }

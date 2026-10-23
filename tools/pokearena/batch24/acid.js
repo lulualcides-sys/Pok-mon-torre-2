@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "acid",
   "nombre": "Acid",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_acid",
   "tipo": "POISON",
   "categoria": "SPECIAL",

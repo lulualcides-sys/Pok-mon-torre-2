@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "silver-wind",
   "nombre": "Silver Wind",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_silver_wind",
   "tipo": "BUG",
   "categoria": "SPECIAL",

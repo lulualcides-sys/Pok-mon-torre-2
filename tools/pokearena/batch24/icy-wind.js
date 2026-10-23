@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "icy-wind",
   "nombre": "Icy Wind",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_icy_wind",
   "tipo": "ICE",
   "categoria": "SPECIAL",

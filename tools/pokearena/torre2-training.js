@@ -1,5 +1,6 @@
 /* Torre 2: training without altering approved attacks or campaign saves. */
 import {REGLAS} from '../datos.js';
+import {singleTrainingCastReader} from './training-input.js';
 import {createPartyMatch} from './party-battle.js';
 import {resolveLoadout} from './move-pool.js';
 import {currentLevelCap} from './kanto-levels.js';
@@ -63,6 +64,17 @@ export function installTrainingDummy(scene){
   return result;
  };
  dummy.ponerEstado=()=>{};
+ // ORIGINAL keyboard/touch controller is unchanged outside this battle.
+ // Native combat otherwise processes all five held input flags in ONE frame.
+ // With zero cooldown, that resulted in two overlapping moves. A single,
+ // fresh press wins while the current move's animation is still executing.
+ const playerControl=scene.controles?.[0];
+ const normalReader=typeof playerControl?.leer==='function'?playerControl.leer:null;
+ let gatedReader=null;
+ if(normalReader){
+  gatedReader=singleTrainingCastReader(normalReader,()=>scene.luchadores?.[0]);
+  playerControl.leer=gatedReader;
+ }
  const energyCap=Number.isFinite(REGLAS.energiaMax)?REGLAS.energiaMax:100;
  const ultiCap=Number.isFinite(REGLAS.ultiMax)?REGLAS.ultiMax:100;
  const freeze=()=>{
@@ -119,6 +131,8 @@ export function installTrainingDummy(scene){
   scene.game.events.off('step',freeze);
   scene.game.events.off('poststep',freeze);
   scene.input.keyboard?.off('keydown-ESC',leave);
+  if(playerControl&&normalReader&&playerControl.leer===gatedReader)
+   playerControl.leer=normalReader;
   dummy.recibir=originalReceive;dummy.ponerEstado=originalStatus;
   if(originalHpDescriptor)Object.defineProperty(dummy,'hp',originalHpDescriptor);
   else{delete dummy.hp;dummy.hp=dummy.hpMax}
@@ -126,6 +140,6 @@ export function installTrainingDummy(scene){
   scene.__torre2TrainingMeter=null;
   scene.__torre2TrainingInstalled=false;
  });
- scene.__torre2Training={target:dummy,position,exitZone,leave,freeze};
+ scene.__torre2Training={target:dummy,position,exitZone,leave,freeze,playerControl};
  return true;
 }

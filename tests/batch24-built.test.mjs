@@ -7,8 +7,8 @@ const {BATCH24_MOVES,BATCH24_NATIVE_REUSE}=await import(new URL('catalog.js',dir
 const {BATCH24_FORMS}=await import(new URL('runtime.js',dir));
 const {TEST_LIBRARY,filterMoveLibrary}=await import(new URL('../move-pool.js',dir));
 assert.equal(BATCH24_MOVES.length,23,'No reimplementation of original Dragon Pulse');
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,11,
-  'Only the eleven moves requiring visual rework remain in NEW');
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,4,
+  'Only Dark Pulse, Ancient Power, Ice Shard and Poison Jab remain pending');
 for(const move of BATCH24_MOVES){
  const indexed=TEST_LIBRARY.find(h=>h.id===move.id);
  assert.equal(indexed?.approved,move.approved,move.id+' catalog approval was not retained');
@@ -49,4 +49,39 @@ try{
   assert.equal(cancel.actor.x,100,h.id+' interrupted dash must return');
  }
 }finally{Math.random=originalRandom;}
-console.log('23 signature effects work, 12 visually approved and 11 pending; Ice Shard scatters 7 tips; native Dragon Pulse preserved.');
+// Regression: Poison Jab must reach with its actual physical SPIKE, and its
+// purple impact is drawn ONLY after contact. No projectile/auto-target added.
+{
+ const h=BATCH24_MOVES.find(move=>move.id==='poison-jab');
+ const sample=fixture();sample.target.x=227;sample.actor.ax=227;
+ const colors=new Set();
+ const graphics=sample.scene.add.graphics;
+ sample.scene.add.graphics=function(){
+  const g=graphics();
+  const fill=g.fillStyle;
+  g.fillStyle=function(color,...args){colors.add(color);return fill.call(this,color,...args)};
+  return g;
+ };
+ const fx=BATCH24_FORMS[h.forma](sample.actor,h,{slot:'q'});
+ for(let i=0;i<100;i++){sample.actor.t+=1/60;fx.update(1/60)}
+ assert.ok(sample.target.hp<1000,'Poison Jab damages target at correct physical spike reach');
+ assert.ok(colors.has(0xd365fa)||colors.has(0xf6c4ff),
+  'A landed jab leaves a distinctly purple contact explosion');
+ const whiff=fixture();whiff.target.x=227;whiff.actor.ax=25;
+ const failed=BATCH24_FORMS[h.forma](whiff.actor,h,{slot:'q'});
+ for(let i=0;i<100;i++){whiff.actor.t+=1/60;failed.update(1/60)}
+ assert.equal(whiff.target.hp,1000,'Aimed away Poison Jab must not magically hit');
+ const practice=fixture();practice.target.x=227;practice.actor.ax=227;
+ practice.target.__torre2TrainingDummy=true;
+ practice.scene.__torre2TrainingHits=0;practice.scene.__torre2TrainingLastDamage=0;
+ practice.target.recibir=function(_src,hit){
+  practice.scene.__torre2TrainingHits++;
+  practice.scene.__torre2TrainingLastDamage=hit.dano;
+  return 'golpe';
+ };
+ const dummyFx=BATCH24_FORMS[h.forma](practice.actor,h,{slot:'q'});
+ for(let i=0;i<100;i++){practice.actor.t+=1/60;dummyFx.update(1/60)}
+ assert.equal(practice.target.hp,1000,'Onix training HP stays fixed');
+ assert.equal(practice.scene.__torre2TrainingHits,1,'Training receives one genuine Poison Jab hit');
+}
+console.log('23 signature moves tested, 19 approved and 4 pending; Poison Jab validated on real and training targets.');

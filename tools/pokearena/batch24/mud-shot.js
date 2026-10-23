@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "mud-shot",
   "nombre": "Mud Shot",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_mud_shot",
   "tipo": "GROUND",
   "categoria": "SPECIAL",

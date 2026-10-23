@@ -7,6 +7,7 @@ import {clashAt} from '../clash-fx.js';
 import {contactDash} from '../early-route-fx.js';
 import {aleatorio} from '../../azar.js';
 const PI=Math.PI,clamp=n=>Math.max(0,Math.min(1,n));
+const POISON_JAB_HIT=[0x160a27,0x3e1b68,0x8833b6,0xd365fa,0xf6c4ff];
 const center=l=>({x:l.x,y:l.y-(l.alto||36)*.5});
 export function swept(a,b,r,radius=10){
  if(!r||r.ko)return null;
@@ -64,10 +65,18 @@ function strike(l,r,h,extra,mult=1){
   scale*=c&&l.t-c.time<9?Math.min(4,c.mult*2):1;
  }
  const d=Math.hypot(r.x-l.x,r.y-l.y)||1,before=r.hp;
+ const trainingHitCount=l.escena?.__torre2TrainingHits||0;
  const result=r.recibir(l,{dano:h.dano*scale,tipo:h.tipo,estado:'BATCH24_MANUAL',
   categoria:h.categoria,slot:extra?.slot,surge:extra?.surge,empuje:4,
   dirX:(r.x-l.x)/d,dirY:(r.y-l.y)/d});
- const damage=Math.max(0,before-r.hp),landed=result==='golpe'&&damage>0;
+ // The passive training Onix restores HP synchronously while preserving
+ // actual native damage events: use its new hit counter to recognize impact.
+ // Ordinary battles still rely strictly on the enemy's reduced HP.
+ const trainingHit=r.__torre2TrainingDummy===true&&
+  (l.escena?.__torre2TrainingHits||0)>trainingHitCount;
+ const damage=trainingHit?(l.escena?.__torre2TrainingLastDamage||0):
+  Math.max(0,before-r.hp);
+ const landed=result==='golpe'&&damage>0;
  if(landed){secondary(l,r,h);if(h.secondary==='fury')l.__batch24Fury={time:l.t,mult:scale};}
  else if(h.secondary==='fury')l.__batch24Fury=null;
  return {landed,damage};
@@ -189,23 +198,34 @@ function projectile(l,h,extra){
  fx.clashBody={owner:l,type:h.tipo,radius:8,x:o.x,y:o.y,live:false};return fx;
 }
 function melee(l,h,extra){
- const o=start(l,h),p=PALETTES[h.palette],dash=contactDash(l,o,h.alcance-12,.21,.36,.65);
- let age=0,checked=false,contact=null,landed=false;
+ const jab=h.id==='poison-jab'&&h.style==='jab';
+ const o=start(l,h),p=PALETTES[h.palette];
+ // Poison Jab's purple spike travels farther than the old 17px contact
+ // probe. Other approved contact attacks retain EXACT original geometry.
+ const dash=contactDash(l,o,jab?Math.min(82,h.alcance+10):h.alcance-12,.21,.36,.65);
+ let age=0,checked=false,contact=null,landed=false,impactAt=0;
  return lifecycle(l,(dt,g)=>{
   age+=dt;g.clear();
   if(l.est?.aturdido)return false;
   dash.step(age);
-  const c=center(l),x=c.x+o.c*17,y=c.y+o.s*17;
+  const c=center(l),tipLength=jab?38:17;
+  const x=c.x+o.c*tipLength,y=c.y+o.s*tipLength;
   if(age<.48)drawMove(g,h,x,y,Math.min(11,Math.floor(age/.04)),o.a);
-  if(!checked&&age>=.22){
+  if(!checked&&age>=(jab?.27:.22)){
    checked=true;const target=l.rival;
-   contact=swept(c,{x,y},target,12);
-   if(contact)landed=strike(l,target,h,extra).landed;
+   const probe=swept(c,{x,y},target,jab?16:12);
+   if(probe){
+    landed=strike(l,target,h,extra).landed;
+    if(landed){contact=probe;impactAt=age;}
+   }
    if(!landed&&h.secondary==='fury')l.__batch24Fury=null;
   }
-  if(contact&&age>=.22){
-   impact(g,contact.x,contact.y,p,age-.22);
-   paintReworkedImpact(g,h,contact.x,contact.y,age-.22);
+  // Purple contact impact is emitted ONLY on a verified, damaging hit.
+  // Bad aim and enemy dodges do not cause cosmetic or real damage.
+  if(contact&&landed&&age>=impactAt){
+   const elapsed=age-impactAt;
+   impact(g,contact.x,contact.y,jab?POISON_JAB_HIT:p,elapsed);
+   paintReworkedImpact(g,h,contact.x,contact.y,elapsed);
   }
   return age<.72;
  },()=>dash.release());

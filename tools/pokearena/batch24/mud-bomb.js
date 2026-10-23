@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "mud-bomb",
   "nombre": "Mud Bomb",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_mud_bomb",
   "tipo": "GROUND",
   "categoria": "SPECIAL",

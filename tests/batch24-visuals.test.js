@@ -7,7 +7,11 @@ const expected=['mudshot','mudbomb','acid','spray','jab','shard',
  'darkpulse','ancient','icywind','silverwind','twister'];
 const approved=new Set(['fury-cutter','earth-power','giga-drain','energy-ball',
  'ice-fang','icicle-spear','mega-drain','leaf-blade','pin-missile',
- 'night-slash','poison-fang','sludge']);
+ 'night-slash','poison-fang','sludge','acid','acid-spray','icy-wind',
+ 'mud-shot','mud-bomb','silver-wind','twister']);
+const approvedReworked=new Set(['acid','acid-spray','icy-wind','mud-shot',
+ 'mud-bomb','silver-wind','twister']);
+const stillPending=new Set(['dark-pulse','ice-shard','poison-jab','ancient-power']);
 function graphics(){
  const rows=[];let color=0,opacity=1;
  return{rows,
@@ -24,11 +28,11 @@ function graphics(){
   }
  };
 }
-test('Exactly the 11 requested upgrades, never an approved animation',()=>{
+test('The seven newly accepted visual designs are locked; pending effects remain isolated',()=>{
  assert.equal(new Set(REWORKED_STYLES).size,11);
  assert.deepEqual([...REWORKED_STYLES].sort(),[...expected].sort());
  assert.deepEqual(new Set(BATCH24_MOVES.filter(h=>h.approved).map(h=>h.id)),approved);
- for(const move of BATCH24_MOVES.filter(h=>h.approved)){
+ for(const move of BATCH24_MOVES.filter(h=>h.approved&&!approvedReworked.has(h.id))){
   const g=graphics();
   assert.equal(paintReworkedMove(g,move,100,100,0,0),false,
    'MUST NOT overpaint approved '+move.id);
@@ -40,7 +44,9 @@ test('Exactly the 11 requested upgrades, never an approved animation',()=>{
 test('Each upgraded attack draws 12 deterministic pixel-art phases with bounded cost',()=>{
  for(const style of REWORKED_STYLES){
   const move=BATCH24_MOVES.find(h=>h.style===style);
-  assert.ok(move&&!move.approved,style+' must be unapproved pending review');
+  assert.ok(move,style+' move must exist');
+  assert.equal(move.approved,!stillPending.has(move.id),
+   style+' must respect user approval');
   const frames=[];
   for(let f=0;f<12;f++){
    const g=graphics();
@@ -57,6 +63,43 @@ test('Each upgraded attack draws 12 deterministic pixel-art phases with bounded 
   assert.equal(paintReworkedImpact(cleared,move,100,100,.6),false);
   assert.equal(cleared.rows.length,0,'Impact must disappear after ~0.4s');
  }
+});
+test('Approved reworked animation functions remain byte-identical to version src-934c8c7dab',async()=>{
+ const fs=await import('node:fs/promises');
+ const source=await fs.readFile(new URL('../tools/pokearena/batch24/visual-upgrades.js',import.meta.url),'utf8');
+ // Exact FNV hashes of the original approved visual function bodies:
+ // any later accidental change MUST fail the pipeline.
+ const locked={acidJet:173985606,acidSpray:675398617,icyWind:2451380280,
+  mudShot:2388012752,mudBomb:3675147426,silverWind:138426087,twister:2425531994};
+ for(const [name,expected] of Object.entries(locked)){
+  const start=source.indexOf('function '+name+'(');
+  const next=source.indexOf('\nfunction ',start+9);
+  assert.ok(start>=0&&next>start,name+' remains installed');
+  const body=source.slice(start,next);
+  let hash=2166136261;
+  for(let i=0;i<body.length;i++)hash=Math.imul(hash^body.charCodeAt(i),16777619)>>>0;
+  assert.equal(hash,expected,name+' approved artwork was modified unexpectedly');
+ }
+});
+test('Dark Pulse renders original-style black/violet rings and Ice Shard distinct ice crystals',async()=>{
+ const {SHAPES}=await import('../tools/pokearena/batch24/pixels.js');
+ assert.deepEqual(SHAPES.p2darkring,['..0000..','.011110.','01....10','01.33.10',
+  '01.33.10','01....10','.011110.','..0000..']);
+ assert.ok(SHAPES.iceDagger.length>=12);
+ assert.ok(SHAPES.frostChip.length>=6);
+ const ice=BATCH24_MOVES.find(h=>h.id==='ice-shard');
+ const dark=BATCH24_MOVES.find(h=>h.id==='dark-pulse');
+ const gIce=graphics(),gDark=graphics();
+ paintReworkedMove(gIce,ice,100,100,4,0);
+ paintReworkedMove(gDark,dark,100,100,4,0);
+ assert.ok(gIce.rows.some(row=>row[4]===0xffffff),'Ice has bright white facets');
+ assert.ok(gDark.rows.some(row=>row[4]===0x090b15),'Dark Pulse has a black ink core');
+});
+test('Poison Jab violet impact exists only when used on confirmed hit',()=>{
+ const jab=BATCH24_MOVES.find(h=>h.id==='poison-jab'),g=graphics();
+ assert.equal(paintReworkedImpact(g,jab,100,100,.11),true);
+ assert.ok(g.rows.some(row=>row[4]===0xd365fa||row[4]===0x8833b6),
+  'Purple impact must be visibly different from generic hit');
 });
 test('Ice Shard has Pay Day-inspired seven independently hittable tips and stays balanced',async()=>{
  const fs=await import('node:fs/promises');

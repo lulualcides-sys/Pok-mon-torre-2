@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "twister",
   "nombre": "Twister",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_twister",
   "tipo": "DRAGON",
   "categoria": "SPECIAL",
