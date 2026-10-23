@@ -193,7 +193,8 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-levels.js','kanto-levels.js'],
  ['tools/pokearena/torre2-kanto-world-map.js','kanto-world-map.js'],
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
- ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js']
+ ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
+ ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
