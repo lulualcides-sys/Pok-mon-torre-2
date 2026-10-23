@@ -7,7 +7,7 @@ const root=path.resolve('_site/arena2d');
 const modules=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const load=name=>import(pathToFileURL(path.join(root,modules,name)));
 const [{FRLG_LEVEL_UP,FRLG_MACHINES,frlgUnlockLevel,frlgKnownMoves,frlgMachineCompatible},
- {KANTO_151}, {availableMoves,moveUnlockLevel,TEST_LIBRARY,selectedMoves,resolveLoadout}, {buscar}]
+ {KANTO_151}, {availableMoves,moveUnlockLevel,TEST_LIBRARY,selectedMoves,resolveLoadout,campaignLearnset}, {buscar}]
  =await Promise.all([
   load('torre2/frlg-learnsets.js'),load('torre2/all-kanto-species.js'),
   load('torre2/move-pool.js'),load('datos.js')
@@ -90,9 +90,37 @@ for(const p of KANTO_151){
  assert.ok(Object.keys(kit).filter(s=>['lmb','rmb','q','e'].includes(s)).length<=4,
   'No fifth attack slot: '+p.id);
 }
+
+// Regression: all 151 Kanto families can inspect the full installed
+// learnset in Pokédex without silently auto-learning TMs, wrong-species
+// moves, or an extra fifth attack slot.
+let availableFamilies=0;
+for(const entry of KANTO_151){
+ const levels=campaignLearnset(entry.id);
+ const ids=levels.map(x=>x.id);
+ assert.equal(new Set(ids).size,ids.length,'One renderer per installed move '+entry.id);
+ assert.ok(ids.every(id=>TEST_LIBRARY.some(x=>x.id===id)),
+  'The Pokédex cannot invent an unavailable VFX: '+entry.id);
+ const atMax=availableMoves(member(entry.id,100)).map(x=>x.id).sort();
+ const learned=levels.filter(x=>x.method==='LEVEL').map(x=>x.id).sort();
+ assert.deepEqual(learned,atMax,'Pokédex must exactly match combat unlocks '+entry.id);
+ assert.ok(levels.every(x=>x.method==='TM'||Number.isInteger(x.level)),
+  'Missing level or TM gate '+entry.id);
+ availableFamilies++;
+}
+assert.equal(availableFamilies,151);
+assert.equal(campaignLearnset('bulbasaur').find(x=>x.id==='vine-whip')?.level,10);
+assert.ok(campaignLearnset('bulbasaur').some(x=>x.id==='protect'&&x.method==='TM'));
+assert.ok(campaignLearnset('mewtwo').length===TEST_LIBRARY.length,
+ 'Test Mewtwo can display every installed attack');
+
 const pokedex=fs.readFileSync(path.join(root,modules,'escenas/pokedex.js'),'utf8');
 assert.ok(pokedex.includes('moveUnlockLevel')&&pokedex.includes('torre2RequiresTM'),
  'Dex must display level and TM-gated moves next to five standardized slots');
+assert.ok(pokedex.includes('showKantoCampaignLearnset')&&pokedex.includes('GOLPES POR LEVEL'),
+ 'Native Pokédex must expose all installed compatible moves for selected evolution');
+assert.ok(pokedex.includes('NÃO DISPONÍVEL')||pokedex.includes('INATIVO'),
+ 'Missing ultimate slots must remain visible but non-playable');
 assert.ok(pokedex.includes('HAB 2')&&pokedex.includes('HAB 3')&&pokedex.includes('ESQUIVA'),
  'Dex needs original ATK/HAB 2/HAB 3/ULT/ESQUIVA roles');
 const original=fs.readFileSync(path.join(root,modules,'luchador.js'),'utf8');
