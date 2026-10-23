@@ -18,6 +18,10 @@ const server=http.createServer(async(req,res)=>{const key=new URL(req.url,'http:
   window.batchRng=await import(new URL('./azar.js',entry));window.batchRng.sembrar(42);
   window.batch=await import(new URL('./torre2/batch24/catalog.js',entry));
   window.batchFX=await import(new URL('./torre2/batch24/runtime.js',entry));
+  const dragon=pool.TEST_LIBRARY.filter(h=>h.nombre==='Dragon Pulse');
+  if(dragon.length!==1||dragon[0].source!=='arena2d-original')
+   throw Error('Dragon Pulse must reuse the original approved Poké Arena 2D move');
+  if(window.batch.BATCH24_MOVES.length!==23)throw Error('Expected 23 new FX plus native Dragon Pulse');
   const state=core.createCampaign('bulbasaur');state.active=1;
   const duel=core.startBattle(state);duel.torre2Loadout=pool.resolveLoadout(state.team[1]);duel.mandos=['kbm','cpu'];
   window.__pt2Game.scene.getScene('titulo').scene.start('combate',duel);
@@ -63,6 +67,6 @@ const server=http.createServer(async(req,res)=>{const key=new URL(req.url,'http:
  }
  assert.deepEqual(errors,[]);
  fs.writeFileSync('test-evidence/batch24/report.json',JSON.stringify({moves:report,errors},null,2));
- console.log('24 real Phaser/WebGL battle animations passed; screenshots saved.');
+ console.log('23 NEW Phaser/WebGL animations passed + 1 original Dragon Pulse preserved (24 requested moves).');
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

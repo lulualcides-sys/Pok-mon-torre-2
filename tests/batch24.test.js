@@ -1,10 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {BATCH24_MOVES} from '../tools/pokearena/batch24/catalog.js';
+import {BATCH24_MOVES,BATCH24_NATIVE_REUSE} from '../tools/pokearena/batch24/catalog.js';
 import {PALETTES,SHAPES} from '../tools/pokearena/batch24/pixels.js';
-test('the requested 24 moves are distinct, pending and completely specified',()=>{
- assert.equal(BATCH24_MOVES.length,24);
- assert.equal(new Set(BATCH24_MOVES.map(x=>x.id)).size,24);
+test('the requested 24 move names consist of 23 new plus 1 existing approved native Dragon Pulse',()=>{
+ assert.equal(BATCH24_MOVES.length,23);
+ assert.equal(new Set(BATCH24_MOVES.map(x=>x.id)).size,23);
+ assert.equal(BATCH24_NATIVE_REUSE.id,'dragon-pulse');
+ assert.equal(BATCH24_NATIVE_REUSE.source,'arena2d-original');
+ assert.ok(!BATCH24_MOVES.some(x=>x.id===BATCH24_NATIVE_REUSE.id));
+ assert.equal(new Set([...BATCH24_MOVES.map(x=>x.id),BATCH24_NATIVE_REUSE.id]).size,24);
  for(const h of BATCH24_MOVES){
   assert.equal(h.approved,false);assert.equal(h.frames,12);
   assert.ok(PALETTES[h.palette]);assert.ok(h.poder>0&&h.dano>0);

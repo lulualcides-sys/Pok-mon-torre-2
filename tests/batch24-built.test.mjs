@@ -3,10 +3,16 @@ import fs from 'node:fs';
 const root=new URL('../_site/arena2d/',import.meta.url);
 const version=JSON.parse(fs.readFileSync(new URL('version.json',root))).modules;
 const dir=new URL(version+'/torre2/batch24/',root);
-const {BATCH24_MOVES}=await import(new URL('catalog.js',dir));
+const {BATCH24_MOVES,BATCH24_NATIVE_REUSE}=await import(new URL('catalog.js',dir));
 const {BATCH24_FORMS}=await import(new URL('runtime.js',dir));
 const {TEST_LIBRARY,filterMoveLibrary}=await import(new URL('../move-pool.js',dir));
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,24);
+assert.equal(BATCH24_MOVES.length,23,'No reimplementation of original Dragon Pulse');
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,23);
+const original=TEST_LIBRARY.filter(h=>h.nombre==='Dragon Pulse');
+assert.equal(original.length,1,'The original Dragon Pulse remains selectable exactly once');
+assert.equal(original[0].source,'arena2d-original','Do not override the original Dragon Pulse');
+assert.ok(!original[0].forma?.startsWith('torre2_batch24_'));
+assert.equal(BATCH24_NATIVE_REUSE.nombre,'Dragon Pulse');
 for(const h of BATCH24_MOVES)assert.equal(TEST_LIBRARY.filter(x=>x.id===h.id).length,1,h.id+' duplicated');
 function fixture(y=100){
  const parts=[];
@@ -36,4 +42,4 @@ try{
   assert.equal(cancel.actor.x,100,h.id+' interrupted dash must return');
  }
 }finally{Math.random=originalRandom;}
-console.log('24 moves: real hit, manual miss, drain, cleanup and cancellation passed.');
+console.log('23 new moves tested: real hit/miss/drain/cleanup; 1 approved native Dragon Pulse preserved, total 24 requested.');

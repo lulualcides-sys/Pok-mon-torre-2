@@ -1,4 +1,4 @@
-/* Additive 24-move patch. Runtime uses the same actor/contact lifecycle as
+/* Additive patch for 23 NEW moves + 1 existing native Dragon Pulse. Runtime uses the same actor/contact lifecycle as
  * Arena 2D, with authored pixel matrices; approved renderers are untouched. */
 import {BATCH24_MOVES} from './catalog.js';
 import {PALETTES,stamp,pixel,impact} from './pixels.js';
