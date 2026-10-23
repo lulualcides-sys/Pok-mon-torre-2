@@ -408,7 +408,22 @@ for(const [filename,changes] of patches){
    // Only Kanto's Phaser code is altered by this patch; never block its
    // release on an unrelated legacy-mode preload variation.
    if(filename==='escenas/liga.js'){
-    console.warn('Skipped stale optional native League enhancement:',from.slice(0,70));
+    // The native League has changed its init signature, but its PMD
+    // portraits still must be preloaded BEFORE create() builds the cards.
+    if(from.startsWith('init(datos)')){
+     const begin=to.indexOf('preload(){'),end=to.lastIndexOf('create(){');
+     if(begin<0||end<=begin||!body.includes('create(){'))
+      throw Error('League bootstrap changed beyond safe preload injection');
+     if(!body.includes('preload(){'))body=body.replace('create(){',
+      to.slice(begin,end)+'create(){');
+     continue;
+    }
+    if(from.startsWith('if(dex!==p.dex)')){
+     body=body.replace(/if\([^)]*\)ponerRetrato\(this,img,dex\);/g,
+      'ponerRetrato(this,img,dex);');
+     continue;
+    }
+    console.warn('Optional League patch moved:',from.slice(0,70));
     continue;
    }
    if(filename==='ia.js'&&from.startsWith('if(yo.puede')){
