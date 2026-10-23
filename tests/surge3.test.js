@@ -72,12 +72,12 @@ test('12 separate pixel frames per move, real varied shock/audio/sound designs',
   assert.equal(clear.rows.length,0);
  }
 });
-test('Thunder Wave paralyzes on physically aimed hit; Ground and Electric are immune',()=>{
+test('Thunder Wave paralyzes on aimed hit; Ground is immune, Electric can be paralyzed in FireRed',()=>{
  const wave=SURGE3_MOVES[0];
  for(const type of ['NORMAL','GROUND','ELECTRIC']){
   const f=fixture(type);const start=f.target.hp;play(f,wave);
   assert.equal(f.target.hp,start,'paralysis must never damage');
-  assert.equal(Boolean(f.target.est.paralizado),type==='NORMAL');
+  assert.equal(Boolean(f.target.est.paralizado),type!=='GROUND');
  }
  const miss=fixture('NORMAL',460);play(miss,wave);
  assert.equal(miss.target.est.paralizado,undefined,'manual aim misses long range');

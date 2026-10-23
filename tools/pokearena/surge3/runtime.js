@@ -96,8 +96,11 @@ export function paintSurge3Impact(g,style,x,y,elapsed){
 export function surgeTargetEffect(target,move){
  if(!target||target.ko||!Array.isArray(target.tipos))return false;
  if(move.id==='thunder-wave'){
+  // FireRed Gen III permits paralysis of Electric-types; immunity to
+  // paralysis by Electric typing was introduced in Gen VI. Ground-type
+  // immunity still applies to the aimed Electric attack.
   // FireRed Electric Wave is a pure status move, not an attack.
-  if(target.tipos.includes('GROUND')||target.tipos.includes('ELECTRIC')||
+  if(target.tipos.includes('GROUND')||
      target.est?.paralizado)return false;
   target.ponerEstado?.('paralizado',7);
   return true;

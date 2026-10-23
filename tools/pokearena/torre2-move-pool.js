@@ -202,7 +202,7 @@ export function availableMoves(member){
   ...(['voltorb','electrode','magnemite','magneton'].includes(member.id)&&level>=15?['sonic-boom']:[]),
   ...(['voltorb','electrode'].includes(member.id)&&level>=18?['screech']:[])
  ]);
- return moves.filter(m=>{
+ const filtered=moves.filter(m=>{
   const key=canonicalMoveKey(m.nombre);
   // Some original Poké Arena Raichu evolutions still carry an older
   // evolution-only lock. Explicitly unlock these three NEW status moves on
@@ -216,6 +216,15 @@ export function availableMoves(member){
   return tms.has(key)||evolutionSkills.has(key)||
    (early[m.id]!==undefined&&level>=early[m.id]);
  });
+ // A native Raichu entry can resolve through the Pichu line instead of
+ // our additive Kanto line. Pull genuinely unlocked Surge moves from the
+ // unique canonical library, never from an evolution-only native kit.
+ for(const id of specialSurgeUnlocks){
+  if(filtered.some(move=>move.id===id))continue;
+  const move=TEST_LIBRARY.find(candidate=>candidate.id===id);
+  if(move)filtered.push(move);
+ }
+ return filtered;
 }
 // New Kanto species keep the exact Arena 2D four attack slots even when
 // an ability is still locked. ESP is the original fifth control and NEVER

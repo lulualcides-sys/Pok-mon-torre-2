@@ -30,6 +30,8 @@ const pairs=[
  ['magnemite','sonic-boom'],['magneton','sonic-boom'],
  ['pikachu','thunder-wave'],['raichu','thunder-wave']
 ];
+// Verify the inherited Poké Arena Raichu lineup still lists the genuinely
+// unlocked new electric status move, not an unrelated native move.
 for(const [species,move] of pairs){
  const member={id:species,progression:{species,level:40}};
  assert.ok(availableMoves(member).some(x=>x.id===move),
