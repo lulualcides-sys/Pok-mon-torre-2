@@ -190,6 +190,28 @@ export function startBattle(s){
    playerLevel:s.team[s.active].progression?.level??5,
    enemyLevel:opponent.level,hardCap:currentLevelCap(s.stage)}};
 }
+// Kanto-only whole-party Exp Share. Award FULL reward to every owned
+// party member (never split one reward six ways), with level caps enforced.
+// The special level-50 Mewtwo is a fixed tester and deliberately gains no EXP.
+// Evolution remains AFTER the battle; no approved combat sprite is modified.
+export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
+ const gains=[],evolutions=[];
+ for(let index=0;index<state.team.length;index++){
+  const member=state.team[index],progress=member?.progression;
+  if(!progress)continue;
+  const growth=awardCampaignExperience(progress,reward,state.stage,{
+   tester:member.id==='mewtwo'});
+  const evolved=resolveEvolutionAfterBattle(progress,'victory');
+  const before=member.id;
+  member.id=progress.species;
+  gains.push({index,uid:member.uid,id:member.id,before,reward:growth.experienceGained,
+   fromLevel:growth.fromLevel,toLevel:growth.toLevel,
+   levelsGained:growth.levelsGained,tester:!!growth.tester,kind});
+  for(const event of evolved.evolutions||[])
+   evolutions.push({index,uid:member.uid,...event});
+ }
+ return {gains,evolutions,totalRecipients:gains.filter(x=>!x.tester).length};
+}
 export function resolveBattle(s,won,random=Math.random){
  const opponent=currentOpponent(s);
  if(!opponent)throw new Error('No battle pending');
@@ -201,13 +223,13 @@ export function resolveBattle(s,won,random=Math.random){
   return {won:false,message:s.lastMessage,evolutions:[]};
  }
  recordSeen(s,opponent.id);
- const member=s.team[s.active],p=member.progression;
- // The species remains unchanged throughout the battle and evolves now only
- // because the Phaser battle scene already sent its confirmed result.
+ const member=s.team[s.active];
+ // Full team EXP, including teammates left on the bench. The active fighter
+ // still gets its post-victory recovery; bench HP and statuses are untouched.
  const reward=xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),opponent.leader?'leader':'trainer');
- const growth=awardCampaignExperience(p,reward,s.stage,{tester:member.id==='mewtwo'});
- const evolved=resolveEvolutionAfterBattle(p,'victory');
- member.id=p.species;member.hp=100;
+ const shared=awardSharedTeamExperience(s,reward,{kind:'trainer'});
+ const growth=shared.gains.find(g=>g.index===s.active);
+ member.hp=100;
  s.wins++;
  s.money=(s.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+s.stage*60);
  s.pendingCapture=(opponent.leader||s.capturesInStage<5)?{
@@ -222,10 +244,12 @@ export function resolveBattle(s,won,random=Math.random){
   s.stage++;s.trainer=0;s.capturesInStage=0;s.wildEncountersStage=0;s.pendingWild=null;
   if(s.stage>=STAGES.length)s.champion=true;
  }else s.trainer++;
- s.lastMessage='Vitória! +'+reward+' EXP. '+(growth.levelsGained?'Nv. '+p.level+'. ':'')+
-   (evolved.evolutions.length?'Evoluiu para '+member.id+' apos a batalha!':'');
+ s.lastMessage='Vitória! +'+reward+' EXP para toda a equipe ('+
+   shared.totalRecipients+' Pokémon). '+(shared.evolutions.length?
+   shared.evolutions.length+' evolução(ões) após a batalha!':'');
  saveCampaign(s);
- return {won:true,message:s.lastMessage,reward,growth,evolutions:evolved.evolutions,opponent};
+ return {won:true,message:s.lastMessage,reward,growth,sharedExp:shared.gains,
+  evolutions:shared.evolutions,opponent};
 }
 // Wild captures are requested from the live battle while the foe still has HP.
 // Previously finished trainer fights keep their existing reward-capture flow.
@@ -311,14 +335,14 @@ export function resolveWildBattle(s,won){
   s.lastMessage='O '+wild.id+' selvagem escapou após a batalha.';
   saveCampaign(s);return {won:false,message:s.lastMessage};
  }
- const member=s.team[s.active],growth=awardCampaignExperience(member.progression,
-  xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),'wild'),s.stage,{tester:member.id==='mewtwo'});
- const evolved=resolveEvolutionAfterBattle(member.progression,'victory');
- member.id=member.progression.species;
+ const shared=awardSharedTeamExperience(s,
+  xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),'wild'),{kind:'wild'});
+ const growth=shared.gains.find(g=>g.index===s.active);
  s.wins++;
  s.pendingCapture=null;
  s.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
- saveCampaign(s);return {won:true,message:s.lastMessage,growth,evolutions:evolved.evolutions};
+ saveCampaign(s);return {won:true,message:s.lastMessage,growth,
+  sharedExp:shared.gains,evolutions:shared.evolutions};
 }
 export function purchaseItem(s,itemId){
  const item=MART_ITEMS.find(i=>i.id===itemId&&s.stage>=(i.minStage??0));
