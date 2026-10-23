@@ -438,6 +438,103 @@ const server=http.createServer(async(req,res)=>{
   await offline.screenshot({path:'test-evidence/torre2-pewter-battle-road-14-checkpoints.png',
    fullPage:true});
 
+  // On a real player save, winning Trainer 1 offers an OPTIONAL capture.
+  // Regression: the former guard silently reloaded the road at Trainer 2.
+  const secondSetup=await offline.evaluate(async()=>{
+   const main=[...document.scripts].find(s=>s.src?.includes('/main.js'));
+   const core=await import(new URL('./torre2/campaign-core.js',main.src).href);
+   const state=core.readCampaign(),initial=state.trainer;
+   core.resolveBattle(state,true,()=>.42);
+   window.__pt2Game.scene.getScene('campanha').scene.restart();
+   return{initial,trainer:core.readCampaign().trainer,
+    pending:!!core.readCampaign().pendingCapture};
+  });
+  assert.equal(secondSetup.initial,0);
+  assert.equal(secondSetup.trainer,1);
+  assert.equal(secondSetup.pending,true,'Trainer 1 produces an optional capture');
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__torre2BattlePath?.progress===1;
+  },null,{timeout:13000});
+  const clickPoint=await offline.evaluate(()=>window.aPantalla(359,335));
+  await offline.mouse.click(...clickPoint);
+  await offline.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.datos?.torre2?.trainer===1;
+  },null,{timeout:35000});
+  const secondBattle=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const s=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
+   return {foe:b.datos?.p2,trainer:s.trainer,pending:s.pendingCapture};
+  });
+  assert.equal(secondBattle.trainer,1,'Starting second fight must not advance checkpoint');
+  assert.equal(secondBattle.pending,null,'Optional capture does not lock future fights');
+  await offline.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
+  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').scene.isActive(),
+   null,{timeout:18000});
+  // Sidebar TREINAMENTO opens a normal Phaser fight with a passive onix;
+  // the dummy is invulnerable and cannot attack or alter the real campaign.
+  const practice=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const control=c.children.list.find(o=>o.type==='Zone'&&
+    o.getData?.('torre2-path-action')==='TREINAMENTO');
+   if(!control)throw Error('No TREINAMENTO sidebar button');
+   control.emit('pointerdown');
+   return true;
+  });
+  await offline.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.__torre2TrainingInstalled&&
+    b.__torre2PartyInstalled&&b.luchadores?.[1]?.def?.id==='onix';
+  },null,{timeout:35000});
+  const dummy=await offline.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const foe=b.luchadores[1],old=foe.hp,x=foe.x,y=foe.y;
+   const result=foe.recibir(b.luchadores[0],{dano:999,tipo:'STEEL',slot:'q',empuje:55});
+   foe.ponerEstado('aturdido',2);
+   b.__torre2Training.leave();
+   const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
+   return {old,hp:foe.hp,x,y,result,status:!!foe.est?.aturdido,
+    savedTrainer:state.trainer,savedHp:state.team[0].hp};
+  });
+  assert.equal(dummy.hp,dummy.old,'Practice target takes absolutely no damage');
+  assert.equal(dummy.status,false,'Practice target cannot be stunned');
+  assert.equal(dummy.savedTrainer,1,'Training never increments route progress');
+  await offline.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').scene.isActive(),
+   null,{timeout:16000});
+  // Reset confirmation must DELETE both save slots and show starter picker,
+  // not restart at Trainer 2 using a stale backup or stored result.
+  await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const reset=c.children.list.find(o=>o.getData?.('torre2-reset-journey'));
+   if(!reset)throw Error('Missing REINICIAR button');
+   reset.emit('pointerdown');
+   const confirm=c.children.list.find(o=>o.getData?.('torre2-reset-confirm')===true);
+   if(!confirm)throw Error('Reset confirmation missing');
+   confirm.emit('pointerdown');
+  });
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&
+    c.children.list.some(o=>String(o.text||'').includes('ESCOLHA SEU PRIMEIRO'));
+  },null,{timeout:14000});
+  const erased=await offline.evaluate(()=>({
+   main:localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'),
+   backup:localStorage.getItem('pokemon-torre-2-kanto-campaign-v1-backup')
+  }));
+  assert.deepEqual(erased,{main:null,backup:null},
+   'Reset must clear both the old save and backup');
+  await offline.evaluate(async()=>{
+   const main=[...document.scripts].find(s=>s.src?.includes('/main.js'));
+   const core=await import(new URL('./torre2/campaign-core.js',main.src).href);
+   core.saveCampaign(core.createCampaign('charmander'));
+   window.__pt2Game.scene.getScene('campanha').scene.restart();
+  });
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__torre2BattlePath?.progress===0;
+  },null,{timeout:15000});
+
   // Track client errors during transfer from world map to native battle.
   await offline.evaluate(()=>{
    window.__pt2PartyErrors=[];

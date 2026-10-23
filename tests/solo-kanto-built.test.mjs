@@ -708,6 +708,20 @@ assert.ok(partySource.includes('drawPixelBall('),
 const fightSource=fs.readFileSync(path.join(stage,version,'escenas/combate.js'),'utf8');
 assert.ok(fightSource.includes('d.torre2?.party?'),
  'Every party species preloaded before combat; never load on swap');
+assert.ok(menuCampaign.includes('this.launchBattle(match,wild)')&&
+ menuCampaign.includes('if(!wild&&state.pendingCapture)')&&
+ !menuCampaign.includes("state.lastMessage='Resolva a captura antes de continuar.'"),
+ 'Optional pending capture never locks the second trainer');
+const trainingSrc=fs.readFileSync(path.join(stage,version,'torre2/training.js'),'utf8');
+assert.ok(trainingSrc.includes('export function installTrainingDummy')&&
+ trainingSrc.includes('dummy.recibir=function')&&
+ trainingSrc.includes('ai.leer=()=>')&&
+ trainingSrc.includes("scene.scene.start('campanha')"),
+ 'Training runs inside real Phaser with an immobile invulnerable target and exit');
+const trainingModule=await import(pathToFileURL(path.join(stage,version,'torre2/training.js')));
+assert.equal(trainingModule.TRAINING_TARGET,'onix');
+assert.ok(buildDefinition.slice(buildDefinition.indexOf('const vfxFingerprint='))
+ .includes('torre2/training.js'),'Training code must invalidate mobile module cache');
 assert.ok(menuCampaign.includes('renderBattlePath(this,state,'),
  'Campaign must render the gym-bound zigzag battle road, not the old world map');
 assert.ok(!menuCampaign.includes('setCampaignPanelCollapsed(')&&
@@ -793,9 +807,9 @@ assert.ok(!npcFrames.includes('image.setCrop(0,0,'),
 for(let stage=9;stage<=12;stage++)
  assert.equal(getCampaignMapSpec(stage,0).id,'indigo',
   'Elite Four and Champion share the same themed map');
-assert.ok(menuCampaign.includes('GINÁSIO')&&
- menuCampaign.includes('CAPTURA'),
- 'Sidebar exposes click-accessible gym and grass');
+assert.ok(menuCampaign.includes('TREINAMENTO')&&
+ menuCampaign.includes('CAPTURA')&&!menuCampaign.includes("['GINÁSIO',handlers.gym]"),
+ 'Sidebar replaces gym shortcut with training and keeps grass capture');
 const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
 for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',
  'function stone(','function tallGrass(','export function map(']){

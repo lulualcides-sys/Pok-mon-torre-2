@@ -16,6 +16,7 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
 import {MART_ITEMS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
+import {prepareTrainingMatch,installTrainingDummy} from './training.js';
 import {drawTrainer,drawShopItem} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
@@ -286,6 +287,7 @@ create(){
   const path=renderBattlePath(this,state,{
    battle:()=>this.enterBattle(state),
    gym:()=>this.gymScreen(state),
+   training:()=>this.enterTraining(state),
    capture:()=>this.grassScreen(state),
    pokemon:i=>state.team[i]&&this.showSummary(state,i),
    bag:()=>this.bagScreen(state),center:()=>this.centerScreen(state),
@@ -340,7 +342,8 @@ create(){
     close();
     if(!confirm)return;
     resetCampaign();
-    // Fresh starter selection on original Phaser scene; no stale saved team.
+    this.result=null;this.__torre2PathPage=0;this.__torre2PathStage=null;
+    // The fresh starter picker must not replay old win results.
     this.scene.restart();
    });
    objects.push(zone);
@@ -430,8 +433,20 @@ create(){
    fontSize:'12px',color:C.muted}).setOrigin(.5);
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
+ enterTraining(state){
+  const match=prepareTrainingMatch(state);
+  const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+  match.mandos=[touch?'tactil':'kbm','cpu'];
+  this.launchBattle(match,false);
+ }
  enterBattle(state,wild=false){
-  if(state.pendingCapture){state.lastMessage='Resolva a captura antes de continuar.';saveCampaign(state);return this.scene.restart()}
+  // Captures offered after victories are optional. The old guard silently
+  // restarted the map forever from Trainer 2 onward.
+  if(!wild&&state.pendingCapture){
+   state.pendingCapture=null;
+   state.lastMessage='Captura opcional dispensada; próximo treinador liberado.';
+   saveCampaign(state);
+  }
   const match=wild?startWildBattle(state):startBattle(state);
   const foe={id:match.p2,level:match.torre2.enemyLevel,
    leader:state.trainer>=TRAINERS_PER_GYM(state.stage)};
@@ -448,6 +463,9 @@ create(){
   }
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
+  this.launchBattle(match,wild);
+ }
+ launchBattle(match,wild=false){
   // Campaign-only level HUD, using the real saved levels and leader cap.
   // The original Arena 2D sprites, attacks and other modes remain untouched.
   const game=this.game;let frames=0;
@@ -465,7 +483,8 @@ create(){
      '   TETO NV.'+match.torre2.hardCap,{
      fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
     installPartyBattle(battle);
-    if(wild)installWildCapture(battle);
+    if(match.torre2.training)installTrainingDummy(battle);
+    else if(wild)installWildCapture(battle);
     // Phaser restarts the SAME battle scene to send out the next Pokémon.
     // Keep this ONE listener while battling so every replacement gets a HUD.
    }

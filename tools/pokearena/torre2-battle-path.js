@@ -291,7 +291,7 @@ export function renderBattlePath(scene,state,handlers){
  }
  [['BOLSA',handlers.bag],['POKÉMON',()=>handlers.pokemon(state.active)],
   ['CENTRO',handlers.center],['LOJA',handlers.mart],
-  ['GINÁSIO',handlers.gym],['CAPTURA',handlers.capture]
+  ['TREINAMENTO',handlers.training],['CAPTURA',handlers.capture]
  ].forEach(([label,action],i)=>button(scene,533+(i%2)*64,261+Math.floor(i/2)*19,
   60,17,label,action,{depth:39,small:true}));
  // Bottom action bar: the only primary gameplay action, directly starts battle.
