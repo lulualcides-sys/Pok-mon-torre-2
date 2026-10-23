@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "ancient-power",
   "nombre": "Ancient Power",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_ancient_power",
   "tipo": "ROCK",
   "categoria": "SPECIAL",

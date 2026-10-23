@@ -184,6 +184,7 @@ await Promise.all([
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
 await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
+await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
 patches.push(
  ['datos.js',[
   ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";const TIPOS={'],
@@ -220,6 +221,7 @@ patches.push(
    'salir(){this.soltarTiempo();if(this.datos.torre2)return this.scene.start("campanha");']
  ]],
  ['luchador.js',[
+  ['get defensa(){return(this.forma.def+(this.mega?this.forma.mega.def:0))*(this.jefe?.def??1)}','get defensa(){return(this.forma.def+(this.mega?this.forma.mega.def:0))*(this.jefe?.def??1)*(this.escena.datos?.torre2?2/(2+(this.est?.torre2Screech?.stages||0)):1)}'],
   ['if(intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)',
    'if(!this.escena.datos?.torre2&&intento?.mega&&!aturdido&&!this.dash&&!this.accion?.bloquea)'],
   ['if(antes<this.expNecesaria&&this.exp>=this.expNecesaria&&!this.escena.sim){',
@@ -482,6 +484,8 @@ for(const filename of [
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 for(const name of (await fs.readdir('tools/pokearena/batch24')).sort())
  vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,'torre2/batch24',name)));
+for(const name of (await fs.readdir('tools/pokearena/surge3')).sort())
+ vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,'torre2/surge3',name)));
 const versionedSource='src-'+vfxFingerprint.digest('hex').slice(0,10);
 if(versionedSource===clientSource)throw Error('VFX fingerprint collides with upstream dir');
 const finalHTML=await fs.readFile(index,'utf8');

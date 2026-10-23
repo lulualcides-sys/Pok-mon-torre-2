@@ -8,10 +8,10 @@ const expected=['mudshot','mudbomb','acid','spray','jab','shard',
 const approved=new Set(['fury-cutter','earth-power','giga-drain','energy-ball',
  'ice-fang','icicle-spear','mega-drain','leaf-blade','pin-missile',
  'night-slash','poison-fang','sludge','acid','acid-spray','icy-wind',
- 'mud-shot','mud-bomb','silver-wind','twister','dark-pulse','poison-jab']);
+ 'mud-shot','mud-bomb','silver-wind','twister','dark-pulse','poison-jab','ice-shard','ancient-power']);
 const approvedReworked=new Set(['acid','acid-spray','icy-wind','mud-shot',
- 'mud-bomb','silver-wind','twister','dark-pulse','poison-jab']);
-const stillPending=new Set(['ice-shard','ancient-power']);
+ 'mud-bomb','silver-wind','twister','dark-pulse','poison-jab','ice-shard','ancient-power']);
+const stillPending=new Set();
 function graphics(){
  const rows=[];let color=0,opacity=1;
  return{rows,

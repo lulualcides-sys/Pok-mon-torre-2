@@ -13,8 +13,8 @@ const add=pool.replace("export const SIGNATURE_MOVES=Object.freeze([",
 test('Project standard: exactly 4 verified sources',()=>{
  assert.deepEqual(SOURCES,['T2','P2','Z','E']);
  assert.equal(signatureEntries(pool).length,data.baselineMoveIds.length+Object.keys(data.newMoves).length,
-  'Catalog count must equal 37 historic moves + 23 new additions, with no duplicate native Dragon Pulse');
- assert.equal(Object.keys(data.newMoves).length,23);
+  'Catalog count must equal 37 historic + 23 first batch + 3 Surge moves without native duplicates');
+ assert.equal(Object.keys(data.newMoves).length,26);
  assert.ok(!signatureEntries(pool).some(m=>m.id==='dragon-pulse'),
   'Dragon Pulse must remain only in the native Poké Arena 2D library');
  assert.deepEqual(validateReusePolicy(pool,data),[]);

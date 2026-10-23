@@ -4,6 +4,7 @@
  * the native species, their sprites, approved attacks or battle UI.
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
+import {SURGE3_MOVES} from './surge3/catalog.js';
 
 // The two maps are part of the existing Kanto campaign. DO NOT change the
 // original licensed Poké Arena 2D kits or its non-campaign EVO rules.
@@ -61,8 +62,8 @@ export const KANTO_ROUTE_SLOTS=Object.freeze({
  persian:['Tackle','Quick Attack','Knock Off','Hyper Beam'],
  diglett:['Tackle','Dig','Rock Slide','Earthquake'],
  dugtrio:['Tackle','Dig','Rock Slide','Earthquake'],
- voltorb:['Tackle','Shock Wave','Charge Beam','Explosion'],
- electrode:['Tackle','Shock Wave','Discharge','Explosion'],
+ voltorb:['Tackle','Sonic Boom','Screech','Explosion'],
+ electrode:['Tackle','Sonic Boom','Discharge','Explosion'],
  magnemite:['Thunder Shock','Charge Beam','Shock Wave','Discharge'],
  magneton:['Thunder Shock','Electro Ball','Discharge','Thunder']
 });
@@ -111,8 +112,8 @@ export const EARLY_KANTO_LEARNSETS=Object.freeze({
  weedle:{tackle:1,'poison-sting':1,'bug-bite':9},
  kakuna:{tackle:1,'poison-sting':1,'bug-bite':7,harden:7},
  beedrill:{tackle:1,'poison-sting':1,'bug-bite':9,peck:10,'fury-attack':16},
- pikachu:{'thunder-shock':1,'quick-attack':10,swift:21,thunderbolt:26},
- raichu:{'thunder-shock':1,'quick-attack':10,swift:21,thunderbolt:26},
+ pikachu:{'thunder-shock':1,'quick-attack':10,swift:21,thunderbolt:26,'thunder-wave':14},
+ raichu:{'thunder-shock':1,'quick-attack':10,swift:21,thunderbolt:26,'thunder-wave':14},
  spearow:{peck:1,'quick-attack':9,'fury-attack':17,'wing-attack':20},
  fearow:{peck:1,'quick-attack':9,'fury-attack':17,'wing-attack':20},
  'nidoran-f':{tackle:1,'poison-sting':1,'double-kick':12,'horn-attack':20},
@@ -201,7 +202,7 @@ function nativeAttacks(original){
  }
  // Approved Torre 2 additions are available to the new families, but
  // native Poké Arena moves always win name collisions.
- for(const h of BATCH24_MOVES){
+ for(const h of [...BATCH24_MOVES,...SURGE3_MOVES]){
   const key=h.nombre.trim().toLowerCase();
   if(!lookup.has(key))lookup.set(key,h);
  }

@@ -4,7 +4,8 @@
  * The fight ends only when one entire party is defeated.
  */
 import {GYMS} from './campaign-core.js';
-import {resolveLoadout} from './move-pool.js';
+import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
+import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
 import {ballArc,drawRedBeam,drawReleaseBurst} from './ball-choreography.js';
@@ -65,8 +66,20 @@ export function createPartyMatch(state,opponent,wild=false){
   // trainer checkpoints and saved opponent indices for existing journeys.
   const level=leaderTeam&&i<count-1?
    Math.max(7,opponent.level-(count-i)*2):opponent.level;
-  return {id,level,hp:100,
-   loadout:resolveLoadout({id,progression:{species:id,level}})};
+  const loadout=resolveLoadout({id,progression:{species:id,level}});
+  if(leaderTeam&&state.stage===2&&SURGE_LEADER_LOADOUTS[id]){
+   // Original FireRed leader team, not a generic Electric template:
+   // Voltorb: Tackle / Sonic Boom / Screech / Shock Wave;
+   // Pikachu & Raichu: Quick Attack / Thunder Wave / Double Team / Shock Wave.
+   const role=['lmb','rmb','q','e'];
+   SURGE_LEADER_LOADOUTS[id].forEach((name,index)=>{
+    const move=TEST_LIBRARY.find(m=>m.nombre===name);
+    if(!move)throw Error('Lt. Surge needs real VFX for '+name);
+    loadout[role[index]]={...move,pendiente:false,
+     ...(index===3?{ulti:true}:{})};
+   });
+  }
+  return {id,level,hp:100,loadout};
  });
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))

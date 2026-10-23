@@ -2,7 +2,7 @@
 export default Object.freeze({
   "id": "ice-shard",
   "nombre": "Ice Shard",
-  "approved": false,
+  "approved": true,
   "forma": "torre2_batch24_ice_shard",
   "tipo": "ICE",
   "categoria": "PHYSICAL",

@@ -3,6 +3,7 @@
  * Poké Arena client, plus all four brand-new signature VFX in this project.
  */
 import {BATCH24_MOVES} from './batch24/catalog.js';
+import {SURGE3_MOVES} from './surge3/catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 
@@ -28,6 +29,7 @@ const MOVE_ALIASES=Object.freeze({
 export const canonicalMoveKey=name=>MOVE_ALIASES[norm(name)]||norm(name);
 export const SIGNATURE_MOVES=Object.freeze([
  ...BATCH24_MOVES,
+ ...SURGE3_MOVES,
  {id:'bonemerang',approved:true,nombre:'Bonemerang',forma:'torre2_bonemerang',tipo:'GROUND',dano:10.5,alcance:245,coste:24,cd:5.7,anim:'Shoot',lanzar:.16,description:'Bone boomerang / two synchronized hits'},
  {id:'bone-club',approved:true,nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
  {id:'tri-attack',approved:true,nombre:'Tri Attack',forma:'torre2_triattack',tipo:'NORMAL',dano:13,alcance:240,coste:30,cd:6.2,anim:'Charge',lanzar:.2,description:'Fire / ice / electric three-point projectile'},
@@ -142,6 +144,9 @@ export function availableMoves(member){
   for(const name of earlyKantoSlotPlan(member.id)||[])
    names.add(canonicalMoveKey(name));
  }
+ if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
+ if(['voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('sonic-boom');
+ if(['voltorb','electrode'].includes(member.id))names.add('screech');
  if(['cubone','marowak'].includes(member.id)){names.add('bonemerang');names.add('bone-club')}
  if(['meowth','persian'].includes(member.id))names.add('pay-day');
  if(['porygon'].includes(member.id))names.add('tri-attack');

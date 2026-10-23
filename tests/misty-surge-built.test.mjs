@@ -159,6 +159,32 @@ const unimplemented=optionalForNextPatch.filter(name=>
  !currentMoves.has(name.toLowerCase()));
 console.log('OPTIONAL KANTO MOVES NOT PRESENT IN APPROVED LIBRARY: '+
  unimplemented.join(', '));
+const {SURGE3_MOVES,SURGE_LEADER_LOADOUTS}=await mod('torre2/surge3/catalog.js');
+assert.equal(SURGE3_MOVES.length,3,'Three distinct Lt. Surge FX');
+for(const m of SURGE3_MOVES){
+ const found=TEST_LIBRARY.filter(x=>x.nombre===m.nombre);
+ assert.equal(found.length,1,'Original P2 move must never be duplicated: '+m.nombre);
+ assert.equal(found[0].forma,m.forma,'New SURGE move missing from loaded build');
+}
+for(const id of ['voltorb','pikachu','raichu']){
+ const member={id,progression:{species:id,level:24}};
+ const loadout=resolveLoadout(member);
+ assert.ok(loadout.lmb?.forma,'Playable '+id+' must keep ATK');
+ assert.ok(Array.isArray(SURGE_LEADER_LOADOUTS[id]));
+}
+const surgeState=createCampaign('bulbasaur');
+surgeState.stage=2;surgeState.trainer=TRAINERS_PER_GYM(2);
+const surgeMatch=createPartyMatch(surgeState,currentOpponent(surgeState));
+assert.equal(surgeMatch.foes.length,3);
+for(const foe of surgeMatch.foes){
+ const expected=SURGE_LEADER_LOADOUTS[foe.id];
+ const names=['lmb','rmb','q','e'].map(k=>foe.loadout[k]?.nombre);
+ assert.deepEqual(names,expected,'Lt. Surge original FRLG moves must render in battle');
+}
+assert.equal(surgeMatch.foes[0].loadout.rmb.forma,'torre2_surge_sonic_boom');
+assert.equal(surgeMatch.foes[0].loadout.q.forma,'torre2_surge_screech');
+for(const foe of surgeMatch.foes.slice(1))
+ assert.equal(foe.loadout.rmb.forma,'torre2_surge_thunder_wave');
 assert.equal(TEST_LIBRARY.filter(x=>x.nombre==='Dragon Pulse').length,1);
 const regionSource=fs.readFileSync(file('torre2/battle-path.js'),'utf8');
 assert.match(regionSource,/ROTA 3  >  MT. MOON/);

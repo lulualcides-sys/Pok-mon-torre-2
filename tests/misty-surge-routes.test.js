@@ -60,7 +60,7 @@ test('Five controls stay distinct: ATK, HAB2, HAB3, ULT and non-damaging Space d
  assert.deepEqual(KANTO_ROUTE_SLOTS.starmie,
   ['Water Gun','Bubble Beam','Psybeam','Water Pulse']);
  assert.deepEqual(KANTO_ROUTE_SLOTS.electrode,
-  ['Tackle','Shock Wave','Discharge','Explosion']);
+  ['Tackle','Sonic Boom','Discharge','Explosion']);
  assert.deepEqual(KANTO_ROUTE_SLOTS.beedrill,
   ['Poison Sting','Peck','Fury Attack','Cross Poison']);
  assert.deepEqual(nativeKantoEvolutionPlan('venusaur'),
@@ -79,7 +79,7 @@ function draw(){
 }
 test('Ancient Power scales +20% and rock outline is MINT without recoloring originals',()=>{
  const h=BATCH24_MOVES.find(h=>h.id==='ancient-power');
- assert.equal(h.approved,false);
+ assert.equal(h.approved,true);
  const g=draw();assert.equal(paintReworkedMove(g,h,100,100,3,.3),true);
  assert.ok(g.rows.some(r=>r[4]===0xb5f8a1),'green outline must be clearly rendered');
  assert.ok(g.rows.length>130,'nine textured rocks and dust remain visible');

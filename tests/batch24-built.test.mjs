@@ -7,8 +7,8 @@ const {BATCH24_MOVES,BATCH24_NATIVE_REUSE}=await import(new URL('catalog.js',dir
 const {BATCH24_FORMS}=await import(new URL('runtime.js',dir));
 const {TEST_LIBRARY,filterMoveLibrary}=await import(new URL('../move-pool.js',dir));
 assert.equal(BATCH24_MOVES.length,23,'No reimplementation of original Dragon Pulse');
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,2,
-  'Only Ancient Power and Ice Shard remain pending');
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,0,
+  'All batch24 effects are now user-approved');
 for(const move of BATCH24_MOVES){
  const indexed=TEST_LIBRARY.find(h=>h.id===move.id);
  assert.equal(indexed?.approved,move.approved,move.id+' catalog approval was not retained');

@@ -65,6 +65,66 @@ const server=http.createServer(async(req,res)=>{const key=new URL(req.url,'http:
   assert.equal(begin.renderer,2,'WebGL required');assert.ok(end.damage>0,id+' no real actor damage');assert.ok(end.returned,id+' failed retreat');assert.ok(end.disposed,id+' graphics leaked');
   report.push({...begin,...end});
  }
+ // Real Phaser/WebGL battle validation for the three pending Lt. Surge moves.
+ fs.mkdirSync('test-evidence/surge3',{recursive:true});
+ const surgeNames=await page.evaluate(async()=>{
+  const entry=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+  const mods=await Promise.all([
+   import(new URL('./torre2/surge3/catalog.js',entry)),
+   import(new URL('./torre2/surge3/runtime.js',entry)),
+   import(new URL('./torre2/signature-fx.js',entry))
+  ]);
+  window.surge3=mods[0];window.surge3Fx=mods[1];
+  for(const h of window.surge3.SURGE3_MOVES)
+   if(typeof mods[2].TORRE2_FORMS[h.forma]!=='function')
+    throw Error('Lt. Surge real P2 move renderer missing: '+h.id);
+  return window.surge3.SURGE3_MOVES.map(h=>h.id);
+ });
+ const surgeReport=[];
+ for(const id of surgeNames){
+  await page.evaluate(id=>{
+   const e=window.__pt2Game.scene.getScene('combate'),
+    l=e.luchadores[0],r=e.luchadores[1];
+   for(const effect of e.efectos)effect.destroy?.();e.efectos=[];
+   l.x=270;l.y=240;l.ko=false;l.est={};l.accion=null;
+   l.hp=l.hpMax*.8; l.t+=4;
+   r.x=415;r.y=240;r.ko=false;r.est={};r.accion=null;
+   r.hp=100000;r.invulnerable=false;
+   Object.defineProperty(r,'tipos',{configurable:true,value:['NORMAL']});
+   l.ax=r.x;l.ay=r.y;l.rival=r;r.rival=l;
+   l.actualizarGraficos(0);r.actualizarGraficos(0);
+   const h={...window.surge3.SURGE3_MOVES.find(h=>h.id===id),precisao:100};
+   window.liveSurge=window.surge3Fx.SURGE3_FORMS[h.forma](l,h,{slot:'q'});
+   for(let i=0;i<17;i++)window.liveSurge.update(1/60);
+   window.surgeLabel=e.add.text(22,35,h.nombre+'  ·  NEW / PIXEL ART',
+    {fontSize:'13px',color:'#fff0ce',backgroundColor:'#172433',padding:{x:8,y:5}})
+     .setDepth(99999);
+  },id);
+  await page.screenshot({path:'test-evidence/surge3/'+id+'.png'});
+  const outcome=await page.evaluate(id=>{
+   const e=window.__pt2Game.scene.getScene('combate'),r=e.luchadores[1];
+   for(let i=0;i<160;i++)window.liveSurge.update(1/60);
+   window.surgeLabel.destroy();
+   return {id,damage:100000-r.hp,
+    paralysis:!!r.est.paralizado,defStages:r.est.torre2Screech?.stages||0,
+    disposed:!window.liveSurge.g?.scene};
+  },id);
+  if(id==='thunder-wave'){
+   assert.equal(outcome.damage,0,'Thunder Wave MUST NOT damage');
+   assert.equal(outcome.paralysis,true,'Thunder Wave failed to paralyze');
+  }
+  if(id==='screech'){
+   assert.equal(outcome.damage,0,'Screech MUST NOT damage');
+   assert.equal(outcome.defStages,2,'Screech did not lower Defense two stages');
+  }
+  if(id==='sonic-boom')
+   assert.equal(outcome.damage,20,'Sonic Boom must deal exactly 20 fixed HP');
+  assert.equal(outcome.disposed,true,id+' VFX leaked graphics');
+  surgeReport.push(outcome);
+ }
+ fs.writeFileSync('test-evidence/surge3/report.json',
+  JSON.stringify({moves:surgeReport},null,2));
+ console.log('3 Lt. Surge pixel-art moves passed in REAL Phaser/WebGL battle.');
  assert.deepEqual(errors,[]);
  fs.writeFileSync('test-evidence/batch24/report.json',JSON.stringify({moves:report,errors},null,2));
  console.log('23 NEW Phaser/WebGL animations passed + 1 original Dragon Pulse preserved (24 requested moves).');
