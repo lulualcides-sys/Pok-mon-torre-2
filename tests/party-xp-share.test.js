@@ -13,7 +13,12 @@ test('trainer and wild wins call one whole-party EXP Share, not active-only',()=
  assert.equal((src.match(/const shared=awardSharedTeamExperience\(s,/g)||[]).length,2);
  assert.ok(src.includes("tester:member.id==='mewtwo'"));
  assert.ok(src.includes('for(let index=0;index<state.team.length;index++)'));
- assert.ok(src.includes("resolveEvolutionAfterBattle(progress,'victory')"));
+ assert.ok(src.includes("resolveEvolutionAfterBattle(progress,'victory',"),
+  'Shared EXP should still evolve only AFTER battle, with Kanto branch callback');
+ assert.ok(src.includes("gloom:'vileplume',poliwhirl:'poliwrath'"),
+  'FireRed branching evolves to the Kanto forms without an inaccessible choice');
+ assert.ok(src.includes("member.moves=[]"),
+  'Stale unevolved move slots must reset on evolution');
  assert.ok(src.includes("return {won:true,message:s.lastMessage,reward,growth,sharedExp:shared.gains,"));
 });
 test('Brock stands in gym center and common trainers stay outside',()=>{
