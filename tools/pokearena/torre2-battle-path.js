@@ -19,9 +19,10 @@ export const BATTLE_PATH_BACKDROP=Object.freeze([
 const COLORS={ink:0x071729,navy:0x0a223a,edge:0x508cb4,gold:0xffd573,
  green:0x43d881,blue:0x5ba9dc,muted:0x768ca0};
 const ROWS=Object.freeze([
- [65,157,249,342,437],
- [437,342,249,157,65],
- [70,175,282,419]
+ // Normal trainers stay outside the gym; Brock owns the central platform.
+ [53,116,179,242,305],
+ [305,242,179,116,53],
+ [70,148,226,304]
 ]);
 const TX={fontFamily:'Pixelify Sans,monospace',fontStyle:'bold'};
 function txt(scene,x,y,value,size=10,color='#f5f8fc',depth=26){
@@ -172,8 +173,9 @@ export function renderBattlePath(scene,state,handlers){
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
-  const px=ROWS[Math.min(2,row)][column]??ROWS[2][ROWS[2].length-1];
-  const y=[278,211,147][Math.min(row,2)];
+  const boss=offset+i===total;
+  const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
+  const y=boss?178:[275,211,147][Math.min(row,2)];
   spots.push({x:px,y,global:offset+i});
  }
  const pathGraphics=scene.add.graphics().setDepth(14);
@@ -192,7 +194,7 @@ export function renderBattlePath(scene,state,handlers){
   const capture=!boss&&(i%13===2||i%13===8);
   const available=done||active;
   const g=scene.add.graphics().setDepth(18);
-  const width=boss?74:67,top=p.y-23;
+  const width=boss?82:60,top=p.y-23;
   if(active){
    g.fillStyle(0xffd374,.17);g.fillCircle(p.x,p.y-5,boss?36:29);
   }
@@ -204,8 +206,10 @@ export function renderBattlePath(scene,state,handlers){
   g.lineStyle(2,active?0xffe9aa:done?0x66d5a6:0x778f9c);
   g.strokeEllipse(p.x,top+8,boss?50:42,18);
   if(boss){
-   g.fillStyle(0xc7ac79,.92);g.fillRoundedRect(p.x-30,top-3,60,13,3);
-   g.lineStyle(1,0xfde4ad,1);g.strokeRoundedRect(p.x-30,top-3,60,13,3);
+   g.fillStyle(0xffe0a0,.18);g.fillEllipse(p.x,p.y+9,90,50);
+   g.lineStyle(3,0xffda77,1);g.strokeEllipse(p.x,p.y+9,80,38);
+   g.fillStyle(0x93713b,.9);g.fillRoundedRect(p.x-34,top-5,68,15,3);
+   g.lineStyle(1,0xffedb5,1);g.strokeRoundedRect(p.x-34,top-5,68,15,3);
   }
   if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
@@ -214,13 +218,13 @@ export function renderBattlePath(scene,state,handlers){
    ball(g,p.x,top-2,9);
   }else{
    const kind=trainerKind(stage,node);
-   const npc=addFireRedNPC(scene,kind,p.x,top+12,{scale:boss?1.35:1.20,depth:21});
+   const npc=addFireRedNPC(scene,kind,p.x,top+12,{scale:boss?1.68:1.20,depth:21});
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
    if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
-  txt(scene,p.x,p.y+8,boss?leader.toUpperCase():capture?'CAPTURA':
+  txt(scene,p.x,boss?p.y+11:p.y+8,boss?leader.toUpperCase():capture?'CAPTURA':
    node.type==='rocket'?'EQUIPE ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
-   boss?8:node.type==='rocket'?7:8,
+   boss?12:node.type==='rocket'?7:8,
    active?'#ffe29a':available?'#f1f8f3':'#afbdc8',23);
   g.fillStyle(active?0xf5c75d:done?0x56be86:0x40647e);
   g.fillRoundedRect(p.x-width/2+2,p.y-17,15,17,3);
@@ -246,6 +250,13 @@ export function renderBattlePath(scene,state,handlers){
    if(!done)handlers.locked();
   });
   hitZones.push(zone);
+ }
+ // NPCs flanking the leader are gym attendants; not extra opponents.
+ if(spots.some(p=>p.global===total)&&stage<8&&scene.__torre2GymBackdrop?.realGym){
+  for(const [kind,x] of [['hiker',359],['youngster',469]]){
+   const sideTrainer=addFireRedNPC(scene,kind,x,220,{scale:1.07,depth:20});
+   if(sideTrainer)sideTrainer.setAlpha(.93);
+  }
  }
  // Stable page navigation for Misty and later routes with >13 battles.
  if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
@@ -296,7 +307,8 @@ export function renderBattlePath(scene,state,handlers){
   handlers.battle();
  },{gold:true,enabled:!finished,depth:70});
  cta.setData('torre2-central-cta',true);
- button(scene,568,336,113,27,'DETALHES',handlers.details,{depth:70,small:true});
+ button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
+  .setData('torre2-reset-journey',true);
  scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
   nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
   gym:scene.__torre2GymBackdrop};
