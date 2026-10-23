@@ -1,5 +1,5 @@
 /* FireRed Lt. Surge: independent move definitions, not a second copy of
- * any native Poké Arena 2D effect. Visuals approved by player on 23 October 2026. */
+ * any native Poké Arena 2D effect. Thunder Wave/Screech approved; Sonic Boom redesign pending player review. */
 export const SURGE3_MOVES=Object.freeze([
  Object.freeze({
   id:'thunder-wave',nombre:'Thunder Wave',forma:'torre2_surge_thunder_wave',
@@ -13,10 +13,10 @@ export const SURGE3_MOVES=Object.freeze([
  Object.freeze({
   id:'sonic-boom',nombre:'Sonic Boom',forma:'torre2_surge_sonic_boom',
   tipo:'NORMAL',categoria:'SPECIAL',poder:0,precisao:90,pp:20,
-  approved:true,source:'new-phaser-fx',fazContato:false,dano:20,
+  approved:false,source:'new-phaser-fx',fazContato:false,dano:20,
   fixedDamage:20,alcance:250,speed:320,coste:18,cd:5.1,
   anim:'Shoot',lanzar:.13,frames:12,style:'sonic-boom',
-  description:'Two consecutive supersonic wavefronts; 20 fixed HP damage, Ghost immune.',
+  description:'Three white pixel-art crescents in a trailing sequence; one aimed impact for 20 fixed HP damage, Ghost immune.',
   reference:'https://pokemondb.net/move/sonic-boom'
  }),
  Object.freeze({
