@@ -8,40 +8,9 @@ import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
-import {ballArc,drawRedBeam,drawReleaseBurst,animateBallActor} from './ball-choreography.js';
+import {animateBallActor} from './ball-choreography.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
-// The fighter's logical simulation location can differ from the PMD sprite.
-// Use actual displayed sprite bounds so the Pokéball beam never points at an
-// old spawn position, especially after a KO or a teammate swap.
-// Coordinates come from the native Luchador renderer's world position.
-// A PMD image rectangle has invisible padding, and when the sprite shrinks
-// during return it cannot be used as a stable laser target on its own.
-function visibleActorCenter(actor){
- const visual=actor?.spr||actor?.sprite;
- const logicalX=Number(actor?.x),logicalY=Number(actor?.y);
- const alto=Number(actor?.alto),salto=Number(actor?.salto)||0;
- const chest=(Number.isFinite(logicalY)?logicalY:180)-
-  Math.max(8,(Number.isFinite(alto)?alto:24)*.53)-salto;
- if(visual?.getBounds&&visual.active!==false){
-  const b=visual.getBounds();
-  if(Number.isFinite(b.centerX)&&Number.isFinite(b.centerY)&&
-     b.width>0&&b.height>0){
-   const x=Number.isFinite(logicalX)?logicalX:b.centerX;
-   // On full-size frames use the body's physical y. While recalled and
-   // shrinking, clamp it to the actual visible sprite rectangle.
-   const inset=Math.max(1,Math.min(4,b.height*.12));
-   return {x:Math.round(Math.max(b.left+1,Math.min(b.right-1,x))),
-    y:Math.round(Math.max(b.top+inset,Math.min(b.bottom-inset,chest)))};
-  }
- }
- return {x:Number.isFinite(logicalX)?logicalX:320,y:chest};
-}
-function drawRecallBeam(g,from,target,strength=1){
- g.clear();drawRedBeam(g,from,target,strength);
- g.fillStyle(0xffe4c1,Math.max(.1,Math.min(1,strength)));
- g.fillRect(Math.round(target.x)-2,Math.round(target.y)-2,5,5);
-}
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
  return scene.add.text(x,y,value,{fontFamily:'Pixelify Sans,monospace',
   fontSize:size+'px',fontStyle:'bold',color,stroke:'#031628',
@@ -275,7 +244,6 @@ export function installPartyBattle(scene){
   // Native faint logic may hide/alpha-fade sprites before this handler runs.
   // Restore a drawable PMD silhouette so the red recall ray visibly pulls it.
   if(actor.spr?.active)actor.spr.setVisible(true).setAlpha(1);
-  const target=visibleActorCenter(actor);
   // Combat is paused while the Pokéball acts. Remember the other fighter's
   // exact HP: stale native hit effects must not heal/damage it during recall.
   const peer=actors[1-side];

@@ -33,12 +33,12 @@ const server=http.createServer(async(req,res)=>{
  const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
  await page.goto('http://127.0.0.1:4275/arena2d/');
- await page.waitForFunction(()=>window.__pt2Game?.scene?.getScene('campanha'),null,{timeout:45000});
+ await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
  await page.evaluate(async()=>{
   const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
   window.core=await import(new URL('./torre2/campaign-core.js',src));
   core.saveCampaign(core.createCampaign('bulbasaur'));
-  window.__pt2Game.scene.start('campanha');
+  window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
  });
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  const battle=async(wild=false,full=false)=>{
@@ -100,7 +100,24 @@ const server=http.createServer(async(req,res)=>{
  await page.reload();
  await page.waitForFunction(()=>window.__pt2Game);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')).box.length),1);
- console.log('PASS: 5 swaps, hidden throw, breakout, miss, caught full party/PC, single consumption, reload',errors);
+ await page.setViewportSize({width:390,height:844});
+ await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'));
+ await page.evaluate(async()=>{
+  const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+  window.core=await import(new URL('./torre2/campaign-core.js',src));
+  window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+ });
+ await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
+ await battle();
+ await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.__torre2SideParty.slots[b.datos.torre2.party.playerIndex===0?1:0].emit('pointerdown');});
+ await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='release');
+ await page.screenshot({path:'test-evidence/ball-release-mobile.png'});
+ await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('combate').__torre2Changing);
+ const metrics=await page.evaluate(()=>({fps:window.__pt2Game.loop.actualFps,renderer:window.__pt2Game.renderer.type,
+  frameErrors:window.__pt2Game.scene.getScene('combate').erroresFotograma||0}));
+ assert.equal(metrics.frameErrors,0);
+ fs.writeFileSync('test-evidence/ball-metrics.json',JSON.stringify(metrics));
+ console.log('PASS: 5 swaps, hidden throw, breakout, miss, caught full party/PC, single consumption, reload, mobile',metrics,errors);
  assert.deepEqual(errors,[]);
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});

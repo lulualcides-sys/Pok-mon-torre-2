@@ -136,6 +136,16 @@ export function installWildCapture(scene){
  function throwBall(kind){
   if(busy||enemy.hp<=0||!enemy.hpMax)return;
   const save=readCampaign();if(!save?.pendingWild||(save.inventory?.[kind]??0)<1)return;
+  // Capture returns directly to the campaign: preserve the current party HP
+  // instead of restoring the pre-battle save when awarding the wild Pokémon.
+  const party=scene.datos?.torre2?.party;
+  if(party){
+   const active=scene.luchadores?.[0];
+   if(active?.hpMax&&party.friend[party.playerIndex])
+    party.friend[party.playerIndex].hp=Math.max(0,active.hp/active.hpMax*100);
+   for(const member of save.team){const live=party.friend.find(p=>p.uid===member.uid);if(live)member.hp=live.hp;}
+   save.active=party.playerIndex;
+  }
   const aimed={...aim};
   busy=true;close();
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
@@ -174,14 +184,17 @@ export function installWildCapture(scene){
    });
   };
   scene.game.events.on('poststep',hideGround);
-  scene.events.once('shutdown',()=>scene.game.events.off('poststep',hideGround));
+  const detachGround=()=>scene.game.events.off('poststep',hideGround);
+  scene.events.once('shutdown',detachGround);
   const before=obj?{x:obj.x,y:obj.y,sx:obj.scaleX,sy:obj.scaleY,
    alpha:obj.alpha,visible:obj.visible}:null;
   // The sprite can be offset from its logical fighter spawn: aim at the
   // visible Pokémon, not the (possibly stale) combat coordinates.
   const focus=portraitCenter();
   const enemyX=focus.x,enemyY=focus.y;
-  const shot={x:116,y:281},end={x:aimed.x,y:aimed.y-18};
+  const player=scene.luchadores?.[0];
+  const shot=player?.spr?snapshotBody(player).center:{x:116,y:281};
+  const end={x:aimed.x,y:aimed.y-18};
   const ballPos={t:0,angle:0};
   scene.__torre2CaptureDebug={state:'THROW',aim:{...aimed},target:{...focus},hits:false};
   const drawBall=(x,y,angle=0)=>{
@@ -191,6 +204,7 @@ export function installWildCapture(scene){
   };
   const restore=()=>{
    absorbed=false;pose=null;detachPose();
+   scene.events.off('shutdown',detachPose);scene.events.off('shutdown',detachGround);
    scene.events.off('poststep',hideGround);
    ground.forEach((effect,i)=>{
     if(effect.active!==false)
