@@ -10,6 +10,50 @@ export function paginateKantoPokedexSource(original){
  s=once(s,
   'this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+i%COLS*CEL,GY+Math.floor(i/COLS)*CEL,i));',
   'this.dexPage=Math.floor(this.foco/36);this.dexPages=Math.ceil(ROSTER.length/36);this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+(i%36)%COLS*CEL,GY+Math.floor((i%36)/COLS)*CEL,i));');
+ // Match the Kanto campaign's actual equipped attack names per evolution.
+ // The native Poké Arena 2D Pokédex does not know about Torre 2 loadouts.
+ // Only recognized Kanto forms are adapted; all other original entries,
+ // Pokémon portraits, old evolution tabs and sprite animations are untouched.
+ s=once(s,
+  'import{describir}from"../guia.js";',
+  'import{describir}from"../guia.js";'+
+  'import{earlyKantoSlotPlan,nativeKantoEvolutionPlan}from"../torre2/early-kanto-species.js";'+
+  'import{resolveLoadout}from"../torre2/move-pool.js";');
+ const sync=String.raw`function kantoDexStages(def){
+ const stages=etapasDe(def);
+ return stages.map((stage,i)=>{
+  if(stage.mega)return stage;
+  const species=(i===0?def.id:(def.evoluciones?.[i-1]?.nombre||'')).toLowerCase();
+  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species);
+  if(!plan)return stage;
+  // The Pokédex documents the COMPLETE moveset of this form, not the
+  // current XP of an individual Pokémon in a saved campaign.
+  const member={id:species,progression:{species,level:100}};
+  const equipped=resolveLoadout(member);
+  const original=stage.kit||{};
+  const kit={...original};
+  for(const slot of ['lmb','rmb','q','e']){
+   const h=equipped[slot];
+   if(h?.nombre&&h?.forma)kit[slot]={...h};
+  }
+  // Show the fifth defensive action explicitly, never as a fifth attack.
+  if(equipped.esp?.forma)kit.esp={...equipped.esp};
+  return {...stage,kit};
+ });
+}`;
+ s=once(s,'function cifras(slot,h){',sync+'function cifras(slot,h){');
+ s=once(s,'this.etapas=etapasDe(p);','this.etapas=kantoDexStages(p);');
+ s=once(s,'const e=etapasDe(ROSTER[this.foco])[i];',
+  'const e=kantoDexStages(ROSTER[this.foco])[i];');
+ // Preserve exact original control mapping and all RANURAS while giving
+ // the five battle roles the same visible labels as the campaign summary.
+ s=once(s,
+  'const BOTON_TACTIL={lmb:"BASIC",rmb:"SKILL",esp:"DASH",q:"Q",e:"ULT"};',
+  'const BOTON_TACTIL={lmb:"ATK",rmb:"HAB 2",esp:"ESQUIVA",q:"HAB 3",e:"ULT"};');
+ s=once(s,'const nx=TX+(esTactil()?52:38);',
+  'const nx=TX+72;');
+ s=once(s,'esTactil()?BOTON_TACTIL[slot]:tecla',
+  'BOTON_TACTIL[slot]');
  const start=s.indexOf('casilla(p,x,y,i){'),end=s.indexOf('elegir(i){',start);
  if(start<0||end<0||!s.slice(start,end).includes('return{p,x,y,w:CEL-2,h:CEL-2}'))
   throw Error('Upstream Pokédex card shape unexpected');
