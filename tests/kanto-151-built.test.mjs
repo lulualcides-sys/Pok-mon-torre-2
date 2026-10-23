@@ -50,7 +50,7 @@ for(const def of ROSTER){
   ...def.evoluciones.map(e=>[String(e.nombre||'').toLowerCase(),e])]);
  for(const stage of def.evoluciones){
   const id=String(stage.nombre||'').toLowerCase();
-  if(!KANTO_151_IDS.includes(id))continue;
+  if(!KANTO_151_IDS.includes(id)||!KANTO_LEVEL_EVOLUTIONS[id])continue;
   totalEvolutions++;
   const parent=family.get(KANTO_LEVEL_EVOLUTIONS[id]?.[0])||def;
   const parentKit={...(def.kit||{}),...(parent.kit||{})};

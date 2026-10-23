@@ -57,7 +57,9 @@ export function upgradeKantoEvolutionBattleKits(roster){
    ...def.evoluciones.map(x=>[String(x.nombre||'').toLowerCase(),x])]);
   for(const evo of def.evoluciones){
    const id=String(evo.nombre||'').toLowerCase();
-   if(!allowed.has(id))continue;
+   // Same-species POWER UP stages (Snorlax etc.) are not actual
+   // FireRed evolutions. Preserve their original kits unmodified.
+   if(!allowed.has(id)||!KANTO_LEVEL_EVOLUTIONS[id])continue;
    const parentId=KANTO_LEVEL_EVOLUTIONS[id]?.[0]||def.id;
    const parent=byStage.get(parentId)||def;
    const parentKit={...(def.kit||{}),...(parent.kit||{})};
