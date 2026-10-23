@@ -59,7 +59,8 @@ function connector(g,ax,ay,bx,by,lit){
  }
 }
 function trainerKind(stage,node){
- if(node.type==='leader')return STAGES[stage]?.leader?.toLowerCase().replace(/[^a-z]+/g,'')||'brock';
+ if(node.type==='leader')return ['brock','misty','surge','erika','koga',
+  'sabrina','blaine','giovanni','lorelei','bruno','agatha','lance','rival'][stage]||'brock';
  return trainerClass(stage,node.index,node.type,stage===0?'forest':'route');
 }
 function titleFor(stage,i,count){
