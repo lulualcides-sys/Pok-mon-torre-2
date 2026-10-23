@@ -7,6 +7,7 @@ import {GYMS} from './campaign-core.js';
 import {resolveLoadout} from './move-pool.js';
 import {buscar} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
+import {ballArc,drawRedBeam,drawReleaseBurst} from './ball-choreography.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 // The fighter's logical simulation location can differ from the PMD sprite.
@@ -36,21 +37,9 @@ function visibleActorCenter(actor){
  return {x:Number.isFinite(logicalX)?logicalX:320,y:chest};
 }
 function drawRecallBeam(g,from,target,strength=1){
- const a=Math.max(0,Math.min(1,strength));
- const x=Math.round(target.x),y=Math.round(target.y);
- g.clear();
- // Distinct, continuous red beam from the opened Pokéball right through
- // the Pokémon's visible body. Strong enough for a phone screen at 60 FPS.
- g.lineStyle(11,0xb4163d,a*.82);
- g.lineBetween(from.x,from.y,x,y);
- g.lineStyle(6,0xff3152,a);
- g.lineBetween(from.x,from.y,x,y);
- g.lineStyle(3,0xffe9d9,a);
- g.lineBetween(from.x,from.y,x,y);
- g.fillStyle(0xff4f75,a*.84);
- g.fillCircle(x,y,Math.max(3,Math.round(8*a)));
- g.fillStyle(0xfff0dd,a);
- g.fillRect(x-3,y-3,6,6);
+ g.clear();drawRedBeam(g,from,target,strength);
+ g.fillStyle(0xffe4c1,Math.max(.1,Math.min(1,strength)));
+ g.fillRect(Math.round(target.x)-2,Math.round(target.y)-2,5,5);
 }
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
  return scene.add.text(x,y,value,{fontFamily:'Pixelify Sans,monospace',
@@ -120,6 +109,57 @@ export function installPartyBattle(scene){
                             [1,party.foes[party.enemyIndex]]]){
   if(member&&member.hp>0)actors[side].hp=Math.max(1,
     Math.round(actors[side].hpMax*member.hp/100));
+ }
+ // Emerald Arena inspired first sendout: Pokéballs travel in an arc,
+ // burst open, and materialize the REAL PMD fighter. Wild opponents
+ // already inhabit the arena, so only the player throws in wild battles.
+ if(!scene.__torre2FirstSendout&&party.changes===0){
+  scene.__torre2FirstSendout=true;
+  const sides=payload.kind==='wild'?[0]:[0,1];
+  let remaining=sides.length;
+  scene.fase='torre2-sendout';
+  for(const side of sides){
+   const actor=actors[side],sprite=actor.spr;
+   if(!sprite?.active){if(!--remaining)scene.fase='lucha';continue}
+   const gfx=scene.add.graphics().setDepth(2605);
+   const spawn=visibleActorCenter(actor);
+   const from={x:side===0?52:590,y:side===0?281:126};
+   const at={x:spawn.x,y:spawn.y-28};
+   const originalScale=sprite.scaleX||1;
+   const shade=actor.sombra,ring=actor.anillo;
+   const prevShade=shade?.visible,prevRing=ring?.visible;
+   let tick=0;
+   sprite.setAlpha(0).setVisible(false);
+   shade?.setVisible(false);ring?.setVisible(false);
+   const finishIntro=()=>{
+    scene.game.events.off('poststep',animate);
+    if(sprite.active)sprite.setVisible(true).setAlpha(1).setScale(originalScale);
+    if(shade?.active!==false)shade?.setVisible(prevShade);
+    if(ring?.active!==false)ring?.setVisible(prevRing);
+    if(gfx.active)gfx.destroy();
+    remaining--;
+    if(remaining===0&&scene.scene.isActive())scene.fase='lucha';
+   };
+   const animate=()=>{
+    if(!scene.scene.isActive()||!gfx.active){scene.game.events.off('poststep',animate);return}
+    tick++;gfx.clear();
+    if(tick<=23){
+     const pt=ballArc(from,at,tick/23,70);
+     drawCaptureBall(gfx,pt.x,pt.y,'pokeball',1.25,tick*.4,false);
+    }else if(tick<=47){
+     const t=(tick-23)/24;
+     drawRedBeam(gfx,at,spawn,1-.45*t);
+     drawReleaseBurst(gfx,spawn.x,spawn.y,t);
+     drawCaptureBall(gfx,at.x,at.y,'pokeball',1.25,0,true);
+     if(sprite.active)sprite.setVisible(true).setAlpha(Math.max(.03,t))
+       .setScale(originalScale*(.20+.80*t));
+     if(t>.68){shade?.setVisible(prevShade);ring?.setVisible(prevRing)}
+    }else{finishIntro();return}
+    scene.__torre2IntroDebug={side,frame:tick,phase:tick<=23?'throw':'release'};
+   };
+   scene.game.events.on('poststep',animate);
+   scene.events.once('shutdown',()=>scene.game.events.off('poststep',animate));
+  }
  }
  // Arrival flash after a recall/switch: red Pokéball beam releases the
  // replacement Pokémon before regular combat resumes.
