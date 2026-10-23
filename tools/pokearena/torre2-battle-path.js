@@ -54,7 +54,7 @@ function connector(g,ax,ay,bx,by,lit){
  const steps=Math.ceil(length/10);
  for(let n=1;n<steps;n++){
   const t=n/steps,x=ax+dx*t,y=ay+dy*t;
-  g.fillStyle(lit?0xffe9b3:0xe0ebd9,lit?.95:.64);
+  g.fillStyle(lit?0xffe9b3:0xe0ebd9,lit ? .95 : .64);
   g.fillCircle(x,y,lit?1.6:1.1);
  }
 }
@@ -128,6 +128,7 @@ export function renderBattlePath(scene,state,handlers){
  progressG.fillStyle(0x40d48c);progressG.fillRoundedRect(400,42,
   Math.max(1,66*progress/Math.max(1,total)),4,2);
  button(scene,517,23,69,29,'TELA CHEIA',()=>{}, {depth:41,small:true})
+  .setData('torre2-fullscreen',true)
   .on('pointerup',()=>scene.scale.isFullscreen?
    scene.scale.stopFullscreen():scene.scale.startFullscreen({navigationUI:'hide'}));
  button(scene,599,23,65,29,'MENU',handlers.menu,{depth:41});
@@ -136,7 +137,8 @@ export function renderBattlePath(scene,state,handlers){
  mapTitle.setOrigin(0,.5);
  txt(scene,28,89,'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase(),8,'#cdeaf4',28)
   .setOrigin(0,.5);
- const offset=Math.floor(progress/13)*13;
+ const requested=scene.__torre2PathPage;
+ const offset=Math.max(0,Math.min(total,Math.floor((requested??progress)/13)*13));
  const length=Math.min(14,Math.max(0,total+1-offset));
  const spots=[];
  for(let i=0;i<length;i++){
