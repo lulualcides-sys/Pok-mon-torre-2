@@ -293,7 +293,9 @@ const server=http.createServer(async(req,res)=>{
     banner:labels.includes('SUA EQUIPE  2/6'),
     enabled:count,cta:{x:cta?.x,y:cta?.y,active:cta?.input?.enabled},
     oldMap:c.children.list.some(o=>o.type==='Image'&&o.texture?.key==='torre2-brock-custom'),
-    environment:c.children.list.some(o=>o.type==='Image'&&o.texture?.key==='frlg-location-forest')};
+    environment:c.children.list.some(o=>o.type==='Image'&&
+     o.texture?.key==='frlg-location-pewter'),
+    gym:c.__torre2GymBackdrop};
   });
   assert.equal(road.total,13,'Brock still has 13 required trainers');
   assert.equal(road.nodes,14,'Thirteen trainer checkpoints plus Brock leader');
@@ -301,7 +303,9 @@ const server=http.createServer(async(req,res)=>{
    road.types.includes('capture')&&road.types.includes('leader'),
    'Battle Path presents rival, Rocket, optional wild capture and leader');
   assert.ok(road.title&&road.button&&road.banner&&road.environment,
-   'Battle hub has forest setting, clean team tray, and primary fight CTA');
+   'Battle hub displays original Pewter art, a compact team and fight CTA');
+  assert.ok(road.gym?.realExterior&&road.gym?.realGym,
+   'Pewter route must show BOTH original FireRed city exterior and Brock gym interior');
   assert.ok(!road.oldMap,'Old collage map must not render behind the Battle Road');
   assert.ok(road.cta.active&&Math.abs(road.cta.y-335)<2,
    'Main gold battle CTA must be interactable at the bottom');
@@ -336,35 +340,33 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(resourceCheck.maps.length<=2,'Battle Road only uploads two local maps');
   assert.ok(resourceCheck.npcs.length<=12,'Battle Road loads only a small trainer sprite set');
-  // Preserve the native 16:9 arena and fill extra horizontal space with
-  // decorative FireRed art, rather than stretch Pokémon and joystick.
+  // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
+  // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
-  await offline.waitForFunction(()=>{
+  const nativeDisplay=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-   return c.scene.isActive()&&
-    document.body.classList.contains('torre2-landscape-map')&&
-    rect.width>700&&rect.width<770;
-  },null,{timeout:18000});
-  const wideDisplay=await offline.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-   const cta=c.children.list.find(x=>x.getData?.('torre2-central-cta'));
-   return {sizeX:c.scale.gameSize.width,rectX:rect.x,rectY:rect.y,
-    rectW:rect.width,rectH:rect.height,ctaX:cta.x,
-    sideArt:getComputedStyle(document.body,'::before').backgroundImage};
+   const rect=document.querySelector('#juego canvas')?.getBoundingClientRect();
+   const canvas=document.querySelector('#juego canvas');
+   const holder=document.getElementById('juego');
+   const action=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
+   return {zoomStyle:!!document.getElementById('torre2-landscape-map'),
+    zoomScript:!!document.getElementById('torre2-landscape-display'),
+    reparent:document.documentElement.classList.contains('torre2-edge-to-edge')||
+      document.body.classList.contains('torre2-landscape-map'),
+    rectWidth:rect?.width,rectHeight:rect?.height,
+    canvasRatio:canvas?.width/canvas?.height,
+    holder:holder?.tagName,buttonX:action?.x};
   });
-  assert.ok(Math.abs(wideDisplay.rectW/wideDisplay.rectH-16/9)<.012&&
-   Math.abs(wideDisplay.rectX-(980-wideDisplay.rectW)/2)<3,
-   'Campaign and combat canvas must stay 16:9, never stretched');
-  assert.ok(!wideDisplay.sideArt.includes('null'),
-   'Wide display must not receive a broken body backdrop');
-  assert.equal(wideDisplay.ctaX,359,
-   'Battle button keeps its original 640x360 world coordinates');
+  assert.equal(nativeDisplay.zoomStyle,false,'Delete custom zoom stylesheet entirely');
+  assert.equal(nativeDisplay.zoomScript,false,'Delete forced landscape resize polling');
+  assert.equal(nativeDisplay.reparent,false,'Keep original Poké Arena 2D DOM hierarchy');
+  assert.ok(nativeDisplay.rectWidth>200&&nativeDisplay.rectHeight>100,
+   'Native game remains visible without forced zoom on landscape Android');
+  assert.ok(nativeDisplay.canvasRatio>1.5&&nativeDisplay.canvasRatio<2,
+   'Original 16:9 canvas retains correct logical aspect ratio');
+  assert.equal(nativeDisplay.buttonX,359,'Native game coordinates are unchanged');
+  await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:true});
   await offline.setViewportSize({width:980,height:650});
-  await offline.waitForFunction(()=>
-   !document.body.classList.contains('torre2-landscape-map'),
-   null,{timeout:18000});
   // Fullscreen APIs are browser gesture-restricted; stub the Phaser manager
   // here and exercise the real button's pointerup handler.
   const fullscreenClicks=await offline.evaluate(()=>{
@@ -683,9 +685,9 @@ const server=http.createServer(async(req,res)=>{
    return {stage:c.__torre2BattlePath?.stage,
     total:c.__torre2BattlePath?.total,markers:c.__torre2BattlePath?.locations,
     scenery:c.children.list.some(o=>o.type==='Image'&&
-     o.texture?.key==='frlg-location-forest')};
+     o.texture?.key==='frlg-location-pewter'),gym:c.__torre2GymBackdrop?.realGym};
   });
-  assert.deepEqual(returnedMap,{stage:0,total:13,markers:14,scenery:true},
+  assert.deepEqual(returnedMap,{stage:0,total:13,markers:14,scenery:true,gym:true},
    'After KO, return to Battle Road with saved stage, forest and checkpoints');
   await offline.screenshot({path:'test-evidence/torre2-after-ko-battle-road.png',
    fullPage:true});
