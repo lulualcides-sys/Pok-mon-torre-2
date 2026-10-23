@@ -218,7 +218,7 @@ const server=http.createServer(async(req,res)=>{
     weedle:['kakuna','beedrill'],geodude:['graveler','golem'],
     staryu:['starmie'],paras:['parasect'],
     poliwag:['poliwhirl','poliwrath'],oddish:['gloom','vileplume'],
-    magnemite:['magneton'],voltorb:['electrode']
+    magnemite:['magneton'],voltorb:['electrode'],meowth:['persian']
    };
    const results=[];
    for(const [base,evolutions] of Object.entries(families)){
@@ -247,6 +247,9 @@ const server=http.createServer(async(req,res)=>{
     'Pokédex and battle attack slots disagree: '+evo.species);
    assert.equal(evo.dodge,'Dodge',
     'Fifth defensive move missing from Pokédex '+evo.species);
+   if(evo.species==='persian')
+    assert.equal(evo.displayed[2],'Pay Day',
+     'Persian Pokédex must display the approved Pay Day in HAB 3');
    assert.ok(evo.displayed.every(Boolean),
     'Pokédex has blank unlocked evolution slot '+evo.species);
   }
