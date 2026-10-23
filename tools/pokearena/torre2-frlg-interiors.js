@@ -14,7 +14,7 @@ export const ROOM_CROPS=Object.freeze({
  },
  pewter:{
   center:[782,24,243,153],mart:[782,198,243,150],
-  gym:[787,534,198,363],museum:[4,688,451,208]
+  gym:[790,544,190,247],museum:[4,688,451,208]
  },
  cerulean:{
   center:[780,24,245,152],mart:[780,204,246,145],
