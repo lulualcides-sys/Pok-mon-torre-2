@@ -68,6 +68,11 @@ test('12 separate pixel frames per move, real varied shock/audio/sound designs',
   const impact=graphics();
   assert.equal(paintSurge3Impact(impact,move.style,110,110,.14),true);
   assert.ok(impact.rows.length>=15,'visible impact from existing pixel masks');
+  if(move.id==='sonic-boom'){
+   assert.ok(impact.rows.some(r=>r.color===0xffffff),'Sonic Boom impact must stay white');
+   assert.ok(!impact.rows.some(r=>r.color===0x8da9c2),
+    'Sonic Boom impact must have no old blue rings');
+  }
   const clear=graphics();
   assert.equal(paintSurge3Impact(clear,move.style,110,110,.4),false);
   assert.equal(clear.rows.length,0);
