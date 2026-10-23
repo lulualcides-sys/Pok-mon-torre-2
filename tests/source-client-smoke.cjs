@@ -82,7 +82,11 @@ const server=http.createServer(async(req,res)=>{
     const logo=game.textures.get('ui-logo').getSourceImage();
     return {width:logo.width,height:logo.height,
       menu:title.menu,buttons:title.botones.map(b=>b.id),
-      fixedButtons:title.botones.map(b=>({x:b.x,y:b.y,w:b.w,h:b.h}))};
+      fixedButtons:title.botones.map(b=>({x:b.x,y:b.y,w:b.w,h:b.h})),
+      socialIcons:title.children.list.filter(obj=>['ico-instagram','ico-youtube',
+       'ico-tiktok','ico-discord'].includes(obj.texture?.key)).map(obj=>obj.texture.key),
+      socialLinks:[...document.querySelectorAll('a[href]')].filter(node=>
+       /(?:instagram|youtube|tiktok|discord)/i.test(node.href)).map(node=>node.href)};
   });
   assert.deepEqual([brand.width,brand.height],[240,80],
    'The approved pixel-art Pokémon Torre sprite replaces only the old menu title texture');
@@ -91,6 +95,24 @@ const server=http.createServer(async(req,res)=>{
    'Keep every original menu button and its exact navigation');
   assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320],
    'Keep original menu button positions');
+  assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=30),
+   'Main menu buttons must be substantially wider and taller for touch use');
+  assert.deepEqual(brand.socialIcons,[],
+   'Social icons must not render beside original fullscreen');
+  assert.deepEqual(brand.socialLinks,[],
+   'Social link hit targets must not remain invisible on top of fullscreen');
+  const subMenuLayout=await page.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('titulo');
+   scene.abrirMenu('jugar');
+   const bottoms=scene.botones.map(b=>b.y+b.h/2);
+   const widths=scene.botones.map(b=>b.w);
+   scene.abrirMenu('principal');
+   return {bottoms,widths};
+  });
+  assert.ok(subMenuLayout.widths.every(w=>w===260),
+   'Enlarged buttons must be consistent in PLAY submenus');
+  assert.ok(subMenuLayout.bottoms.every(bottom=>bottom<312),
+   'PLAY submenu must not overlap the decorative ground line');
   // Pokédex retains 26 native families and adds ten licensed PMD sprite families:
   // native layout and clickable evolution tabs must remain unchanged.
   const dexPage=await browser.newPage({viewport:{width:980,height:650}});
