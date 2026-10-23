@@ -499,7 +499,12 @@ create(){
   };
   game.__torre2BattleAttach=attach;
   game.events.on('step',attach);
-  this.scene.start('combate',match);
+  // Defer scene transition until the current pointer event finishes.
+  // On mobile, starting combate during a pointerdown can route the same
+  // tap to the battle scene and immediately close/restart it.
+  this.time.delayedCall(0,()=>{
+   if(this.scene.isActive())this.scene.start('combate',match);
+  });
  }
  grassScreen(state){
   // Do not destroy the loaded overworld when entering tall grass. Removing
