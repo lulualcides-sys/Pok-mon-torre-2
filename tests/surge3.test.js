@@ -46,7 +46,8 @@ test('three true FRLG attacks: 2 statuses and one exactly fixed HP hit',()=>{
  assert.deepEqual(SURGE3_MOVES.map(h=>h.id),['thunder-wave','sonic-boom','screech']);
  assert.deepEqual(SURGE3_MOVES.map(h=>h.precisao),[100,90,85]);
  assert.deepEqual(SURGE3_MOVES.map(h=>h.pp),[20,20,40]);
- assert.ok(SURGE3_MOVES.every(h=>h.approved===true&&h.frames===12));
+ assert.deepEqual(SURGE3_MOVES.map(h=>h.approved),[true,false,true]);
+ assert.ok(SURGE3_MOVES.every(h=>h.frames===12));
  assert.equal(SURGE3_MOVES.filter(h=>h.dano===0).length,2);
  assert.equal(SURGE3_MOVES.find(h=>h.id==='sonic-boom').fixedDamage,20);
  assert.equal(new Set([...BATCH24_MOVES,...SURGE3_MOVES].map(m=>m.id)).size,26);
@@ -70,6 +71,19 @@ test('12 separate pixel frames per move, real varied shock/audio/sound designs',
   const clear=graphics();
   assert.equal(paintSurge3Impact(clear,move.style,110,110,.4),false);
   assert.equal(clear.rows.length,0);
+ }
+});
+test('Sonic Boom paints three separated white pixel crescents, never blue rings',()=>{
+ const sonic=SURGE3_MOVES[1];
+ for(let frame=0;frame<12;frame++){
+  const g=graphics();
+  paintSurge3(g,sonic.style,160,120,frame,0);
+  const bright=g.rows.filter(r=>r.color===0xffffff||r.color===0xe9f1ff);
+  assert.ok(bright.length>=35,'all three moons should be filled white pixel art');
+  assert.ok(bright.some(r=>r.x<130),'a visible rear moon must trail the projectile');
+  assert.ok(bright.some(r=>r.x>=155),'the leading moon must face forward');
+  assert.ok(!g.rows.some(r=>r.color===0x8da9c2||r.color===0x52687e),
+   'old blue ring pixels must not return');
  }
 });
 test('Thunder Wave paralyzes on aimed hit; Ground is immune, Electric can be paralyzed in FireRed',()=>{
