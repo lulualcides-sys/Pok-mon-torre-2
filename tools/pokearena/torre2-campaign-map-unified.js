@@ -42,6 +42,26 @@ const WORLDS=Object.freeze([
   theme:0xe6c884,leader:'ELITE FOUR',biome:'league',
   buildings:{gym:[291,106],center:[88,278],mart:[157,278],grass:[341,273]}}
 ]);
+// One connected Indigo Plateau, five successive accessible chambers.
+// Uses the EXISTING FireRed/Indigo sprite, not a flat replacement image;
+// only the next opponent is activated and each save retains its stage number.
+export const ELITE_CHAMBERS=Object.freeze([
+ {stage:8,leader:'LORELEI',world:'victory',room:'PORTÃO DA ELITE',color:0xa5d9ff},
+ {stage:9,leader:'BRUNO',world:'indigo',room:'CÂMARA DE BRUNO',color:0xc9b18e},
+ {stage:10,leader:'AGATHA',world:'indigo',room:'CÂMARA DE AGATHA',color:0xc8a5ea},
+ {stage:11,leader:'LANCE',world:'indigo',room:'CÂMARA DE LANCE',color:0x9cbaff},
+ {stage:12,leader:'CAMPEÃO',world:'indigo',room:'SALÃO DO CAMPEÃO',color:0xffd983}
+]);
+const INDIGO_CHAMBERS=Object.freeze([
+ {id:'indigo',title:'INDIGO · BRUNO',short:'ELITE FOUR · BRUNO',theme:0xc9b18e,
+  leader:'BRUNO',biome:'league',buildings:{gym:[292,135]},focusY:.40},
+ {id:'indigo',title:'INDIGO · AGATHA',short:'ELITE FOUR · AGATHA',theme:0xc8a5ea,
+  leader:'AGATHA',biome:'league',buildings:{gym:[292,135]},focusY:.40},
+ {id:'indigo',title:'INDIGO · LANCE',short:'ELITE FOUR · LANCE',theme:0x9cbaff,
+  leader:'LANCE',biome:'league',buildings:{gym:[292,135]},focusY:.40},
+ {id:'indigo',title:'INDIGO · CAMPEÃO',short:'RIVAL · BATALHA FINAL',theme:0xffd983,
+  leader:'CAMPEÃO',biome:'hall',buildings:{gym:[292,135]},focusY:.40}
+]);
 // Deliberately manually staged positions so Brock's first 13 trainers have
 // a fixed location that does not change when any prior fight is won.
 // Exact 13 trainer route drawn over the supplied Pallet -> Route 1 ->
@@ -116,7 +136,8 @@ function checkpointsFor(total,stage,custom=false){
  return settled;
 }
 export function getCampaignMapSpec(stage,trainerCount,customBrock=false){
- const world=stage<0?WORLDS[0]:stage<9?WORLDS[stage]:WORLDS[9];
+ const world=stage<0?WORLDS[0]:stage<9?WORLDS[stage]:
+  INDIGO_CHAMBERS[Math.min(3,Math.max(0,stage-9))];
  const count=Math.max(0,Math.min(60,Math.floor(Number(trainerCount)||0)));
  return {id:world.id,title:world.title,short:world.short,
   theme:world.theme,leader:world.leader,biome:world.biome,
@@ -263,10 +284,14 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
  hud.lineStyle(1,0xffe2a0);hud.lineBetween(19,84,391,84);
  font(scene,133,71,spec.short,11,'#ffe7b3',12).setData('torre2-map-chrome',true);
  const completed=Math.min(limit,state.trainer);
- font(scene,335,71,String(completed)+' / '+String(limit),11,'#b4f5cf',12).setData('torre2-map-chrome',true);
+ const counter=state.stage>=8?'ELITE '+(state.stage-7)+' / 5':
+  String(completed)+' / '+String(limit);
+ font(scene,335,71,counter,11,'#b4f5cf',12).setData('torre2-map-chrome',true);
  const foot=scene.add.graphics().setDepth(10).setData('torre2-map-chrome',true);
  foot.fillStyle(0x082538,.96);foot.fillRect(19,296,373,12);
- font(scene,191,301,'TOQUE NO PRÓXIMO TREINADOR • SEM TROCAR DE MAPA',8,'#d3f4ec',12).setData('torre2-map-chrome',true);
+ font(scene,191,301,state.stage>=9?
+  'VENÇA A CÂMARA ATUAL PARA ABRIR A PRÓXIMA':
+  'TOQUE NO PRÓXIMO TREINADOR • SEM TROCAR DE MAPA',8,'#d3f4ec',12).setData('torre2-map-chrome',true);
  // One shared highlight, instead of 13-27 independent Graphics objects
  // and draw commands being retained by WebGL each time the map is opened.
  scene.__torre2MapHover=scene.add.graphics().setDepth(25);
@@ -295,17 +320,24 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
  const unlocked=state.trainer>=limit&&!state.champion;
  // Landmark hotspots align with the authentic building pixels in the
  // FireRed city PNG; the gym is visible but not bypassable.
- landmark(scene,marker,'GINÁSIO',...b.gym,spec.theme,
+ const gateLabel=state.stage===12?'CAMPEÃO':state.stage>=9?'CÂMARA':
+  state.stage===8?'ELITE 1':'GINÁSIO';
+ landmark(scene,marker,gateLabel,...b.gym,spec.theme,
   ()=>onGym?.(),!unlocked,spec.customBrock);
- landmark(scene,marker,'CENTRO',...b.center,0xf4796d,
-  ()=>onCenter?.(),false,spec.customBrock);
- landmark(scene,marker,'LOJA',...b.mart,0x72c8f7,
-  ()=>onMart?.(),false,spec.customBrock);
- landmark(scene,marker,'GRAMA',...b.grass,0x8fe0a3,
-  ()=>onGrass?.(),false,spec.customBrock);
+ if(state.stage<9){
+  landmark(scene,marker,'CENTRO',...b.center,0xf4796d,
+   ()=>onCenter?.(),false,spec.customBrock);
+  landmark(scene,marker,'LOJA',...b.mart,0x72c8f7,
+   ()=>onMart?.(),false,spec.customBrock);
+  landmark(scene,marker,'GRAMA',...b.grass,0x8fe0a3,
+   ()=>onGrass?.(),false,spec.customBrock);
+ }
  // The gym itself IS checkpoint N+1; avoid a second number/bubble over the
  // entrance (the previous image looked like two trainers in the same spot).
- const bossText=unlocked?'LÍDER '+(limit+1)+' LIBERADO':
+ const bossText=state.stage>=9?
+  (state.stage===12?'CAMPEÃO · DESAFIO FINAL':
+   'ELITE '+(state.stage-7)+' · '+spec.leader):
+  unlocked?'LÍDER '+(limit+1)+' LIBERADO':
   'LÍDER '+(limit+1)+' BLOQUEADO';
  if(spec.customBrock){
   // The entrance itself is checkpoint 14. Keep its status above the door,
@@ -319,8 +351,8 @@ export function renderUnifiedCampaignMap(scene,state,{limit,onTrainer,onGym,
   font(scene,305,302,bossText,8,
    unlocked?'#a5ffc7':'#d2dbe2',13);
  }
- const npc=state.stage===0?'brock':
-  ['misty','surge','erika','koga','sabrina','blaine','giovanni'][state.stage-1]||'lorelei';
+ const npc=['brock','misty','surge','erika','koga','sabrina','blaine',
+  'giovanni','lorelei','bruno','agatha','lance','rival'][state.stage]||'rival';
  addFireRedNPC(scene,npc,
   spec.customBrock?b.gym[0]:b.gym[0]+26,
   spec.customBrock?b.gym[1]+10:b.gym[1]+6,

@@ -355,10 +355,26 @@ if(area.available.length){
 assert.equal(TRAINERS_PER_GYM(0),13);
 assert.equal(TRAINERS_PER_GYM(7),27,'Giovanni route has more trainers than Brock');
 assert.equal(TRAINERS_PER_GYM(8),17,'Victory Road has additional encounters');
+// The original Indigo PNG remains the single map asset, but the stage-specific
+// gate, color, NPC and caption must follow the Elite opponent accurately.
+const {getCampaignMapSpec:indigoWorld,ELITE_CHAMBERS}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-map-unified.js')));
+assert.deepEqual(ELITE_CHAMBERS.map(c=>c.leader),
+ ['LORELEI','BRUNO','AGATHA','LANCE','CAMPEÃO']);
+for(const chamber of ELITE_CHAMBERS){
+ const room=indigoWorld(chamber.stage,0);
+ assert.equal(room.id,chamber.world,'Elite stage renders the intended FireRed sprite');
+ assert.equal(room.leader,chamber.stage===8?'LORELEI':chamber.leader,
+  'Visible chamber must identify the actual trainer');
+ assert.equal(room.points.length,0,'No filler trainers inside the Elite rooms');
+ assert.ok(room.buildings.gym,'Elite challenge must have a clickable entry');
+}
 // Indigo League is five successive trainer battles with exact first
 // clear teams. Rival starter must never depend on current active/party slot.
 const {ELITE,rivalChampionTeam,campaignStarter}=await import(pathToFileURL(
  path.join(stage,version,'torre2/campaign-core.js')));
+const {createPartyMatch}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/party-battle.js')));
 const leagueLineups=[
  [['dewgong','cloyster','slowbro','jynx','lapras'],[52,51,52,54,54]],
  [['onix','hitmonchan','hitmonlee','onix','machamp'],[51,53,53,54,56]],

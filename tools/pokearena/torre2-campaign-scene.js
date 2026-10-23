@@ -71,7 +71,7 @@ class Campanha extends Phaser.Scene{
    this.load.image('torre2-cc0-world','assets/ui/kanto-cc0-world.png');
   }
   const boss=['brock','misty','surge','erika','koga','sabrina',
-   'blaine','giovanni','lorelei','lorelei','lorelei','lorelei','lorelei'][stage]||'brock';
+   'blaine','giovanni','lorelei','bruno','agatha','lance','rival'][stage]||'brock';
   const archetypes=stage===0?
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
