@@ -59,7 +59,7 @@ export const KANTO_ROUTE_SLOTS=Object.freeze({
  weepinbell:['Vine Whip','Razor Leaf','Leech Seed','Solar Beam'],
  victreebel:['Vine Whip','Razor Leaf','Sludge Bomb','Solar Beam'],
  meowth:['Tackle','Quick Attack','Knock Off','Hyper Beam'],
- persian:['Tackle','Quick Attack','Knock Off','Hyper Beam'],
+ persian:['Tackle','Quick Attack','Pay Day','Hyper Beam'],
  diglett:['Tackle','Dig','Rock Slide','Earthquake'],
  dugtrio:['Tackle','Dig','Rock Slide','Earthquake'],
  voltorb:['Tackle','Sonic Boom','Screech','Explosion'],
@@ -82,6 +82,7 @@ const ROUTE_LEVELS=Object.freeze(Object.fromEntries(
   // belong in the move library without replacing approved evolution slots.
   const optional={
    ...(id==='electrode'?{'screech':18}:{}),
+   ...(id==='meowth'?{'pay-day':20}:{}),
    ...(['magnemite','magneton'].includes(id)?
     {'sonic-boom':15,'thunder-wave':21}:{})
   };
@@ -230,7 +231,9 @@ const CUSTOM=Object.freeze({
  'super fang':['torre2_superfang','NORMAL',0,82,'Swing'],
  'rock tomb':['torre2_rocktomb','ROCK',12,235,'Throw'],
  'mud-slap':['torre2_mudslap','GROUND',4,205,'Throw'],
- 'swift':['torre2_swift','NORMAL',10,250,'Shoot']
+ 'swift':['torre2_swift','NORMAL',10,250,'Shoot'],
+ // Reuse the existing player-approved 9-coin Pay Day effect (no new sprite).
+ 'pay day':['torre2_payday','NORMAL',10,235,'Shoot']
 });
 function move(name,native){
  const existing=native.get(name.toLowerCase());
