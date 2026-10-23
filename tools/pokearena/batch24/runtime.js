@@ -7,7 +7,6 @@ import {clashAt} from '../clash-fx.js';
 import {contactDash} from '../early-route-fx.js';
 import {aleatorio} from '../../azar.js';
 const PI=Math.PI,clamp=n=>Math.max(0,Math.min(1,n));
-const POISON_JAB_HIT=[0x160a27,0x3e1b68,0x8833b6,0xd365fa,0xf6c4ff];
 const center=l=>({x:l.x,y:l.y-(l.alto||36)*.5});
 export function swept(a,b,r,radius=10){
  if(!r||r.ko)return null;
@@ -224,8 +223,14 @@ function melee(l,h,extra){
   // Bad aim and enemy dodges do not cause cosmetic or real damage.
   if(contact&&landed&&age>=impactAt){
    const elapsed=age-impactAt;
-   impact(g,contact.x,contact.y,jab?POISON_JAB_HIT:p,elapsed);
-   paintReworkedImpact(g,h,contact.x,contact.y,elapsed);
+   if(jab){
+    // One small translucent violet FLASH on confirmed impact only.
+    // No generic explosion, no extra effect, no extra damage.
+    paintReworkedImpact(g,h,contact.x,contact.y,elapsed);
+   }else{
+    impact(g,contact.x,contact.y,p,elapsed);
+    paintReworkedImpact(g,h,contact.x,contact.y,elapsed);
+   }
   }
   return age<.72;
  },()=>dash.release());

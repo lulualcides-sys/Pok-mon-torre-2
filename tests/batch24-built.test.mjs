@@ -7,8 +7,8 @@ const {BATCH24_MOVES,BATCH24_NATIVE_REUSE}=await import(new URL('catalog.js',dir
 const {BATCH24_FORMS}=await import(new URL('runtime.js',dir));
 const {TEST_LIBRARY,filterMoveLibrary}=await import(new URL('../move-pool.js',dir));
 assert.equal(BATCH24_MOVES.length,23,'No reimplementation of original Dragon Pulse');
-assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,4,
-  'Only Dark Pulse, Ancient Power, Ice Shard and Poison Jab remain pending');
+assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,3,
+  'Only Ancient Power, Ice Shard and Poison Jab remain pending');
 for(const move of BATCH24_MOVES){
  const indexed=TEST_LIBRARY.find(h=>h.id===move.id);
  assert.equal(indexed?.approved,move.approved,move.id+' catalog approval was not retained');
@@ -50,7 +50,7 @@ try{
  }
 }finally{Math.random=originalRandom;}
 // Regression: Poison Jab must reach with its actual physical SPIKE, and its
-// purple impact is drawn ONLY after contact. No projectile/auto-target added.
+// subtle violet contact flash is drawn ONLY after contact. No projectile/auto-target added.
 {
  const h=BATCH24_MOVES.find(move=>move.id==='poison-jab');
  const sample=fixture();sample.target.x=227;sample.actor.ax=227;
@@ -65,8 +65,8 @@ try{
  const fx=BATCH24_FORMS[h.forma](sample.actor,h,{slot:'q'});
  for(let i=0;i<100;i++){sample.actor.t+=1/60;fx.update(1/60)}
  assert.ok(sample.target.hp<1000,'Poison Jab damages target at correct physical spike reach');
- assert.ok(colors.has(0xd365fa)||colors.has(0xf6c4ff),
-  'A landed jab leaves a distinctly purple contact explosion');
+ assert.ok(colors.has(0xb08abe)||colors.has(0xd2b2de),
+  'A landed Poison Jab leaves a small violet contact flash');
  const whiff=fixture();whiff.target.x=227;whiff.actor.ax=25;
  const failed=BATCH24_FORMS[h.forma](whiff.actor,h,{slot:'q'});
  for(let i=0;i<100;i++){whiff.actor.t+=1/60;failed.update(1/60)}
@@ -84,4 +84,4 @@ try{
  assert.equal(practice.target.hp,1000,'Onix training HP stays fixed');
  assert.equal(practice.scene.__torre2TrainingHits,1,'Training receives one genuine Poison Jab hit');
 }
-console.log('23 signature moves tested, 19 approved and 4 pending; Poison Jab validated on real and training targets.');
+console.log('23 signature moves tested, 20 approved and 3 pending; Poison Jab validated on real and training targets.');

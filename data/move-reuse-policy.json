@@ -741,7 +741,7 @@
       "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2: usuário solicitou 'pode salvar' expressamente para energy-ball na lista dos golpes aprovados. Aprovação visual, não alegação de reuso do Zarza."
     },
     "dark-pulse": {
-      "review": "ready-for-visual-review",
+      "review": "user-approved",
       "sources": {
         "T2": {
           "mode": "reused",
@@ -771,7 +771,8 @@
           "userApprovedException": true,
           "approvalEvidence": "2026-10-23: Lucas explicitly answered “Sim, está autorizado já já te falei” to publishing this batch with T2, P2 and Emerald, with Zarza studied only."
         }
-      }
+      },
+      "userApprovalEvidence": "2026-10-23, conversa Pokémon Torre 2, usuário aprovou o efeito Dark Pulse com ajuste final de tamanho: 'Dark pulse aumenta um pouco mais e salva'. Versão de anéis negros/violetas aproximadamente 16% maior. Aprovação visual não certifica reuso do Zarza."
     },
     "ancient-power": {
       "review": "ready-for-visual-review",

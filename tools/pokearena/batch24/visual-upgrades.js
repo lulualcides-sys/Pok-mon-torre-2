@@ -45,7 +45,7 @@ function darkPulse(g,x,y,f,a){
  for(let i=3;i>=0;i--){
   const d=i*(11+(f%3)*.6),sway=wave(f*.62+i*2.1)*1.5;
   const pos=v(a,-d,sway);
-  const scale=(1.52-i*.19)+(f%4)*.06;
+  const scale=(1.76-i*.22)+(f%4)*.06; // +~16%: visual size ONLY
   // Ink outlines and luminous violet rim, with hollow black centers.
   S(g,'p2darkring',x+pos.x,y+pos.y,DARK_CORE,
    scale,a+(i%2?-.11:.11),.98-i*.17);
@@ -94,20 +94,20 @@ function iceShard(g,x,y,f,a){
  // crystals with beveled blue facets and tiny frost fragments replace
  // generic blue needles. Twelve facing/spark phases.
  const tip=wave(f*.52)*.07;
- S(g,'iceDagger',x,y,ICE_GLASS,1.15,a-PI/4+tip,.98);
+ S(g,'iceDagger',x,y,ICE_GLASS,.68,a-PI/4+tip,.98);
  const pale=v(a,-3,2);
- S(g,'iceDagger',x+pale.x,y+pale.y,ICE_GLASS,.39,
+ S(g,'iceDagger',x+pale.x,y+pale.y,ICE_GLASS,.24,
   a-PI/4-tip,.73);
  for(let i=0;i<5;i++){
   const pos=v(a,-7-i*8,wave(f*.48+i*2.1)*(2+i*.8));
   S(g,i%2===0?'frostChip':'spark',
-   x+pos.x,y+pos.y,ICE_GLASS,i<2?.45:.27,
+   x+pos.x,y+pos.y,ICE_GLASS,i<2?.30:.19,
    a+PI/4+i*.28,.81-i*.13);
  }
  for(let i=0;i<4;i++){
   const pos=v(a,6+i*4,(i%2?1:-1)*(4+i*2));
   dot(g,x+pos.x,y+pos.y,i%2?ICE_GLASS[3]:ICE_GLASS[4],
-   i%2?2:3,.88-i*.11);
+   2,.78-i*.11);
  }
 }
 
@@ -170,21 +170,16 @@ function acidSpray(g,x,y,f,a){
 }
 
 function poisonJab(g,x,y,f,a){
- // Close-range forward jab with dense purple spike, prongs and brief
- // striking-line spark at the fist. Never a ranged projectile.
- const thrust=6+12*Math.sin(PI*clamp(f/11));
- const edge=v(a,thrust),p=POISON_JAB;
- S(g,'needle',x+edge.x,y+edge.y,p,1.7,a-PI/4,.98);
- S(g,'needle',x+edge.x*.6-3,y+edge.y*.6-3,p,.65,
-   a-PI/4-.24,.72);
- const strike=v(a,30+thrust);
- for(let i=0;i<6;i++){
-  const o=v(a,15+thrust+i*3,(i%2?1:-1)*(3+i*.9));
-  dot(g,x+o.x,y+o.y,i%3===0?p[4]:p[2],
-   i%3?2:3,.90-i*.10);
+ // Plain SHORT-RANGE jab: one small contact stroke, not a purple projectile
+ // or a trail of toxic needles. Contact / damage remain in runtime.melee.
+ const advance=Math.round(3+5*Math.sin(PI*clamp(f/11)));
+ const pos=v(a,advance);
+ S(g,'needle',x+pos.x,y+pos.y,POISON_JAB,.65,a-PI/4,.80);
+ // A tiny, muted violet glint on the attacking hand only.
+ if(f>=3&&f<=7){
+  const tip=v(a,advance+5);
+  dot(g,x+tip.x,y+tip.y,POISON_JAB[2],2,.40);
  }
- if(f>3&&f<9)S(g,'spark',x+strike.x,y+strike.y,p,.58,
-   a+.18,.87);
 }
 
 function silverWind(g,x,y,f,a){
@@ -281,6 +276,18 @@ export function paintReworkedImpact(g,h,x,y,elapsed){
  // never applied from this function, and every particle has fixed lifetime.
  const p=h.palette&&PALETTES[h.palette]||SNOW;
  const k=clamp(elapsed/.42),style=h.style;
+ if(style==='jab'){
+  // Subtle purple TOUCH, not an explosion: approximately 0.19 seconds and
+  // just one miniature translucent spark. Rendered only after strike() says
+  // a real contact landed. No ambient poison aura while traveling.
+  if(elapsed>.19)return false;
+  const fade=1-elapsed/.19;
+  const violet=[0x281a34,0x543265,0x86539a,0xb08abe,0xd2b2de];
+  S(g,'spark',x,y,violet,.38+elapsed*.45,0,.44*fade);
+  dot(g,x-3,y+2,violet[3],2,.34*fade);
+  dot(g,x+3,y-1,violet[2],2,.25*fade);
+  return true;
+ }
  const liquid=style==='acid'||style==='spray'||style==='mudshot'||style==='mudbomb';
  const pp=style==='acid'?ACID_JET:style==='spray'?ACID_MIST:
   style==='jab'?POISON_JAB:style==='darkpulse'?DARK_CORE:p;
@@ -295,15 +302,6 @@ export function paintReworkedImpact(g,h,x,y,elapsed){
    (1-k)*(style==='ancient'?.62:style==='darkpulse'?.72:.35)+.18,
    ang+(style==='darkpulse'?k*PI:0),
    (1-k)*.85);
- }
-  if(style==='jab'){
-  // Only a CONFIRMED Poison Jab hit gets these purple radial spikes.
-  for(let i=0;i<8;i++){
-   const angle=i*TAU/8+.1,off=v(angle,5+k*21);
-   S(g,i%2?'spark':'needle',x+off.x,y+off.y,POISON_JAB,
-    .63*(1-k)+.18,angle-PI/4,(1-k)*.95);
-  }
-  S(g,'spark',x,y,POISON_JAB,1.1*(1-k)+.35,.1,(1-k)*.95);
  }
  if(style==='darkpulse'){
   for(let i=0;i<3;i++)

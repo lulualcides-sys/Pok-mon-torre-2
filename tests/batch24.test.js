@@ -5,9 +5,9 @@ import {PALETTES,SHAPES} from '../tools/pokearena/batch24/pixels.js';
 test('the requested 24 move names consist of 23 new plus 1 existing approved native Dragon Pulse',()=>{
  assert.equal(BATCH24_MOVES.length,23);
  assert.equal(new Set(BATCH24_MOVES.map(x=>x.id)).size,23);
- const visuallyApproved=new Set(["fury-cutter","earth-power","giga-drain","energy-ball","ice-fang","icicle-spear","mega-drain","leaf-blade","pin-missile","night-slash","poison-fang","sludge","acid","acid-spray","icy-wind","mud-shot","mud-bomb","silver-wind","twister"]);
- assert.equal(BATCH24_MOVES.filter(h=>h.approved).length,19);
- assert.equal(BATCH24_MOVES.filter(h=>!h.approved).length,4);
+ const visuallyApproved=new Set(["fury-cutter","earth-power","giga-drain","energy-ball","ice-fang","icicle-spear","mega-drain","leaf-blade","pin-missile","night-slash","poison-fang","sludge","acid","acid-spray","icy-wind","mud-shot","mud-bomb","silver-wind","twister","dark-pulse"]);
+ assert.equal(BATCH24_MOVES.filter(h=>h.approved).length,20);
+ assert.equal(BATCH24_MOVES.filter(h=>!h.approved).length,3);
  assert.equal(BATCH24_NATIVE_REUSE.id,'dragon-pulse');
  assert.equal(BATCH24_NATIVE_REUSE.source,'arena2d-original');
  assert.ok(!BATCH24_MOVES.some(x=>x.id===BATCH24_NATIVE_REUSE.id));

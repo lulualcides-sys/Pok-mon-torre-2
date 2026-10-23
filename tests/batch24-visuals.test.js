@@ -8,10 +8,10 @@ const expected=['mudshot','mudbomb','acid','spray','jab','shard',
 const approved=new Set(['fury-cutter','earth-power','giga-drain','energy-ball',
  'ice-fang','icicle-spear','mega-drain','leaf-blade','pin-missile',
  'night-slash','poison-fang','sludge','acid','acid-spray','icy-wind',
- 'mud-shot','mud-bomb','silver-wind','twister']);
+ 'mud-shot','mud-bomb','silver-wind','twister','dark-pulse']);
 const approvedReworked=new Set(['acid','acid-spray','icy-wind','mud-shot',
- 'mud-bomb','silver-wind','twister']);
-const stillPending=new Set(['dark-pulse','ice-shard','poison-jab','ancient-power']);
+ 'mud-bomb','silver-wind','twister','dark-pulse']);
+const stillPending=new Set(['ice-shard','poison-jab','ancient-power']);
 function graphics(){
  const rows=[];let color=0,opacity=1;
  return{rows,
@@ -28,7 +28,7 @@ function graphics(){
   }
  };
 }
-test('The seven newly accepted visual designs are locked; pending effects remain isolated',()=>{
+test('Accepted visual designs remain protected, pending effects isolated',()=>{
  assert.equal(new Set(REWORKED_STYLES).size,11);
  assert.deepEqual([...REWORKED_STYLES].sort(),[...expected].sort());
  assert.deepEqual(new Set(BATCH24_MOVES.filter(h=>h.approved).map(h=>h.id)),approved);
@@ -70,7 +70,8 @@ test('Approved reworked animation functions remain byte-identical to version src
  // Exact FNV hashes of the original approved visual function bodies:
  // any later accidental change MUST fail the pipeline.
  const locked={acidJet:173985606,acidSpray:675398617,icyWind:2451380280,
-  mudShot:2388012752,mudBomb:3675147426,silverWind:138426087,twister:2425531994};
+  mudShot:2388012752,mudBomb:3675147426,silverWind:138426087,twister:2425531994,
+  darkPulse:3417482802};
  for(const [name,expected] of Object.entries(locked)){
   const start=source.indexOf('function '+name+'(');
   let next=source.indexOf('\nfunction ',start+9);
@@ -99,8 +100,39 @@ test('Dark Pulse renders original-style black/violet rings and Ice Shard distinc
 test('Poison Jab violet impact exists only when used on confirmed hit',()=>{
  const jab=BATCH24_MOVES.find(h=>h.id==='poison-jab'),g=graphics();
  assert.equal(paintReworkedImpact(g,jab,100,100,.11),true);
- assert.ok(g.rows.some(row=>row[4]===0xe07dff||row[4]===0x9c4cca),
-  'Purple impact must be visibly different from generic hit');
+ assert.ok(g.rows.some(row=>row[4]===0xb08abe||row[4]===0x86539a),
+  'Purple contact flash must be recognizable without being oversized');
+});
+test('Poison Jab contact flash stays small and translucent; no generic explosion',async()=>{
+ const jab=BATCH24_MOVES.find(h=>h.id==='poison-jab');
+ const impact=graphics();
+ assert.equal(paintReworkedImpact(impact,jab,100,100,.08),true);
+ assert.ok(impact.rows.length>=25&&impact.rows.length<100,'a single tiny pixel spark');
+ assert.ok(impact.rows.every(row=>Math.abs(row[0]-100)<10&&Math.abs(row[1]-100)<10),
+  'Poison Jab impact must occupy only a small contact radius');
+ assert.ok(impact.rows.every(row=>row[5]<=.45),'the violet effect must be subtle');
+ const late=graphics();
+ assert.equal(paintReworkedImpact(late,jab,100,100,.20),false);
+ assert.equal(late.rows.length,0,'brief effect disappears within 200ms');
+ const fs=await import('node:fs/promises');
+ const runtime=await fs.readFile(new URL('../tools/pokearena/batch24/runtime.js',import.meta.url),'utf8');
+ assert.ok(runtime.includes('if(contact&&landed&&age>=impactAt)'),
+  'no impact when the real physical hit misses');
+ assert.ok(runtime.includes('if(jab){\n    // One small translucent violet FLASH on confirmed impact only.'));
+ assert.ok(!runtime.includes('POISON_JAB_HIT'),'giant generic poison explosion was removed');
+});
+test('Crystal size is reduced without touching the seven-shot Pay Day trajectory',async()=>{
+ const fs=await import('node:fs/promises');
+ const visuals=await fs.readFile(new URL('../tools/pokearena/batch24/visual-upgrades.js',import.meta.url),'utf8');
+ const start=visuals.indexOf('function iceShard('),end=visuals.indexOf('function icyWind(',start);
+ const body=visuals.slice(start,end);
+ assert.ok(body.includes("ICE_GLASS,.68,a-PI/4+tip"),'main crystal is small');
+ assert.ok(body.includes("ICE_GLASS,.24,"),'subcrystal is even smaller');
+ const runtime=await fs.readFile(new URL('../tools/pokearena/batch24/runtime.js',import.meta.url),'utf8');
+ assert.ok(runtime.includes('const count=iceFan?7:'));
+ assert.ok(runtime.includes('delay:i*(iceFan?.075:.12)'));
+ assert.ok(runtime.includes("(i-(count-1)/2)*.09"));
+ assert.ok(runtime.includes('iceFan?1/count:1'));
 });
 test('Ice Shard has Pay Day-inspired seven independently hittable tips and stays balanced',async()=>{
  const fs=await import('node:fs/promises');
