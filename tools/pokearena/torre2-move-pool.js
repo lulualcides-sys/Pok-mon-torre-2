@@ -432,7 +432,9 @@ export function selectedMoves(member){
    }
   }
   if(seen.size)member.torre2CharacteristicSeen=[...seen];
-  if(upgraded&&!fresh){
+  // Persist even when the unlocked signature came from a fallback for an
+  // invalid legacy slot, rather than from the explicit auto-upgrade branch.
+  if(!fresh&&(upgraded||chosen.some((id,i)=>id!==member.moves[i]))){
    member.moves=[...chosen];
    member.movePlanSpecies=member.id;
   }
