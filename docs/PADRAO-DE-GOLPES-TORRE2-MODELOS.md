@@ -1,5 +1,18 @@
 # Padrão permanente de efeitos — Pokémon Torre 2
 
+## Atualização obrigatória de 23/10/2026 — QUATRO FONTES, REAPROVEITAMENTO DE VERDADE
+
+**Esta seção prevalece sobre instruções anteriores que recomendavam meramente estudar referências visuais.** Para TODOS os golpes novos, primeiro conferir e tentar reutilizar **recursos reais** de (1) Pokémon Torre 2 aprovado, (2) Poké Arena 2D, (3) Pokémon Zarza e (4) Emerald Arena. Cada contribuição precisa ter **origem verificável e integração local comprovável**, descritas na ficha. Inspirar-se nos quatro ou usar apenas Phaser/WebGL não conta como reaproveitar os quatro. Se houver impossibilidade técnica ou de licença, documentar e consultar o usuário antes de dispensar a fonte.
+
+Padrão operacional: auditar duplicatas; consultar as quatro bibliotecas; selecionar as animações/mecânicas efetivamente disponíveis; combinar/adaptar componentes sob licença válida; criar só as partes realmente ausentes; manter estilo pixel art P2, 8–16 fases, mecânicas oficiais, colisão/dano sincronizados; preservar os aprovados; testar em batalha e publicar apenas após CI e confirmação.
+
+**Critério automático:** as adições futuras à lista de movimentos customizados devem ter ficha válida em `data/move-reuse-policy.json`, com todas as quatro fontes ou exceção expressa registrada; `tests/move-reuse-policy.test.js` testa esse contrato. A checagem documental não comprova por si só a fidelidade do efeito: ainda exige conferência visual e de procedência. Ver `AGENTS.md` e `docs/FICHA-REAPROVEITAMENTO-4-FONTES.md`.
+
+**Débito técnico confirmado:** Flash Cannon, Steel Beam e Mirror Shot do primeiro patch foram desenhados quase do zero; permanecem `requires-rework` (não aprovados) e NÃO devem ser citados como reaproveitamento das quatro fontes. Ajustar futuramente sob pedido. Prioridade posterior: **Mewtwo lifts rocks**, referência do Emerald Arena.
+
+---
+
+
 ## Escopo ATUAL — terminar exclusivamente os golpes específicos (21/10/2026)
 
 **Regra acima de qualquer sugestão anterior:** só modificar um golpe se ele **não possuir visual próprio no Poké Arena 2D**. Todas as animações já existentes no cliente original Poké Arena 2D são finais e devem permanecer **exatamente como estão**. O Pokémon Zarza serve para pesquisar conceitos e modelos, nunca como motivo para trocar golpes nativos por outros.

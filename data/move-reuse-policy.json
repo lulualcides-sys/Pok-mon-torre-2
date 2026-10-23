@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "policyDate": "2026-10-23",
+  "baselineNote": "37 movimentos personalizados já presentes antes da exigência de reaproveitamento comprovado das quatro fontes. Baseline preserva golpes existentes, NÃO aprova a origem nem atesta conformidade.",
+  "baselineMoveIds": [
+    "bonemerang",
+    "bone-club",
+    "tri-attack",
+    "pay-day",
+    "swift",
+    "shadow-ball",
+    "lovely-kiss",
+    "ice-beam",
+    "rock-blast",
+    "confuse-ray",
+    "sing",
+    "crabhammer",
+    "smog",
+    "hyper-fang",
+    "guillotine",
+    "petal-dance",
+    "metronome",
+    "absorb",
+    "x-scissor",
+    "mud-slap",
+    "seed-bomb",
+    "super-fang",
+    "gust",
+    "poison-sting",
+    "flash-cannon",
+    "steel-beam",
+    "mirror-shot",
+    "metal-claw",
+    "bind",
+    "rock-tomb",
+    "horn-attack",
+    "double-kick",
+    "fury-attack",
+    "peck",
+    "bug-bite",
+    "bite",
+    "soft-boiled"
+  ],
+  "existingNonConformant": {
+    "flash-cannon": {
+      "status": "requires-rework",
+      "reason": "Implementação de sprites criada praticamente do zero; não há comprovação de reaproveitamento efetivo das quatro fontes. Motor Phaser, colisão e inspirações não contam como quatro reaproveitamentos.",
+      "visualApproved": false
+    },
+    "steel-beam": {
+      "status": "requires-rework",
+      "reason": "Feixe novo pixelado sem port direto dos recursos prometidos das quatro fontes; efeito e mecânica funcionais não significam reaproveitamento cumprido.",
+      "visualApproved": false
+    },
+    "mirror-shot": {
+      "status": "requires-rework",
+      "reason": "Placa pixelada desenhada do zero; não há rastreabilidade de sprites/algoritmos reais reutilizados de P2/Zarza/Emerald.",
+      "visualApproved": false
+    }
+  },
+  "newMoves": {}
+}

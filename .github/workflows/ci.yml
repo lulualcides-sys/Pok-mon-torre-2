@@ -30,6 +30,7 @@ jobs:
         run: |
           set -euo pipefail
           npm run check
+          npm run check:reuse
           for source in tools/pokearena/torre2-*.js; do
             node --check "$source"
           done
