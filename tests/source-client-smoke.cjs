@@ -676,6 +676,8 @@ const server=http.createServer(async(req,res)=>{
     const l=b.luchadores?.[0];
     return b.scene.isActive()&&b.__torre2PartyInstalled&&
       b.datos?.torre2?.party?.playerIndex===1&&
+      !b.__torre2Changing&&
+      b.__torre2BeamDebug?.phase==='release'&&
       l?.def?.id==='mewtwo'&&b.fase==='lucha'&&
       l.spr?.texture?.key===('pmd-'+l.dex+'-Idle')&&
       l.spr?.texture?.key!==window.__pt2FirstTexture&&
