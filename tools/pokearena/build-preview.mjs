@@ -171,6 +171,7 @@ await Promise.all([
  ['tools/pokearena/torre2-early-route-fx.js','early-route-fx.js'],
  ['tools/pokearena/torre2-prebrock-damage-fx.js','prebrock-damage-fx.js'],
  ['tools/pokearena/torre2-clash-fx.js','clash-fx.js'],
+ ['tools/pokearena/torre2-steel-fx.js','steel-fx.js'],
  ['tools/pokearena/torre2-route-data.js','route-data.js'],
  ['tools/pokearena/torre2-kanto-regions.js','kanto-regions.js'],
  ['tools/pokearena/torre2-kanto-tiles.js','kanto-tiles.js'],
@@ -361,6 +362,13 @@ patches.push(['luchador.js',[
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(!g.puro){',
   'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro&&fuente&&fuente!==this&&Number.isInteger(fuente.lado)&&fuente.lado!==this.lado){d*=torre2DamageMultiplier(torre2FighterLevel(fuente),torre2FighterLevel(this));if(fuente.lado===0)d*=torre2PlayerDamageBoost;}if(!g.puro){']
 ]]);
+// Flash Cannon lowers Special Defense on an actual successful hit.
+// The Arena 2D base has one generic defensive stat: apply the stage modifier
+// ONLY to explicitly tagged SPECIAL Torre 2 moves, never to physical natives.
+patches.push(['luchador.js',[[
+ 'd*=(fuente?.atk??1)/this.defensa;',
+ 'd*=(fuente?.atk??1)/this.defensa;if(e.datos?.torre2&&(g.categoria==="SPECIAL"||g.especial===true)&&this.est.torre2SteelSpDef?.stacks)d*=(2+Math.min(6,this.est.torre2SteelSpDef.stacks))/2;'
+]]]);
 // Preload every member before first round: in-place swap never triggers LOADING.
 patches.push(['escenas/combate.js',[[
  'const dexs=formasDe(d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2],d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);',
@@ -394,7 +402,7 @@ const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 for(const filename of [
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
- 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/signature-fx.js',
+ 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
  'torre2/party-battle.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'

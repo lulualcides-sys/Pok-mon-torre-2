@@ -75,6 +75,27 @@ const {availableMoves,equipMove,selectedMoves,resolveLoadout,
  TEST_LIBRARY,SIGNATURE_MOVES,canonicalMoveKey,
  isPendingApprovalMove,filterMoveLibrary}=await import(
  pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
+// New Steel moves are unique, equipable for test Mewtwo and visually isolated.
+for(const [name,form,power,accuracy,pp] of [
+ ['Flash Cannon','torre2_flashcannon',80,100,10],
+ ['Steel Beam','torre2_steelbeam',140,95,5],
+ ['Mirror Shot','torre2_mirrorshot',65,85,10]]){
+ const matching=TEST_LIBRARY.filter(x=>canonicalMoveKey(x.nombre)===canonicalMoveKey(name));
+ assert.equal(matching.length,1,'No duplicate '+name+' in original/native library');
+ assert.equal(matching[0].forma,form);
+ assert.equal(matching[0].poder,power);
+ assert.equal(matching[0].precisao,accuracy);
+ assert.equal(matching[0].pp,pp);
+ assert.equal(matching[0].approved,false,'New Steel effects await user approval');
+}
+const steelModule=path.join(stage,version,'torre2/steel-fx.js');
+assert.ok(fs.existsSync(steelModule),'Steel WebGL FX must be included in published client');
+const steelSource=fs.readFileSync(steelModule,'utf8');
+for(const id of ['flashcannon','steelbeam','mirrorshot'])
+ assert.ok(steelSource.includes('export function '+id+'('),'Missing rendered Steel effect '+id);
+assert.ok(buildDefinition.slice(buildDefinition.indexOf('const vfxFingerprint='))
+ .includes('torre2/steel-fx.js'),'Steel visual changes must bust cached Phaser modules');
+
 assert.equal(KANTO_DEX.length,151);
 assert.equal(GYMS.length,8);
 assert.deepEqual(STARTERS,['bulbasaur','charmander','squirtle']);
