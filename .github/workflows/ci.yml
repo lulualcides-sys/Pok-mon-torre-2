@@ -51,6 +51,10 @@ jobs:
       # Phaser Kanto game because the old laboratory missed a target.
       # The GitHub Pages deploy STILL gates on a full Phaser battle smoke.
       - name: Testar laboratorio legado PixiJS (diagnostico nao bloqueante)
+        # The legacy PixiJS laboratory is not the Phaser Kanto runtime.
+        # Keep it available on manual CI, not as a 2-minute delay for every
+        # emergency fix. Pages always executes full Chromium Phaser smoke.
+        if: github.event_name == 'workflow_dispatch'
         continue-on-error: true
         run: |
           CHROME_BIN="$(command -v google-chrome)" npm run test:browser
