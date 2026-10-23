@@ -364,6 +364,10 @@ class Campanha extends Phaser.Scene{
   // Retain older scene helpers below for PC, Center, Mart and summary only.
   this.children.removeAll(true);
   this.__torre2PathData={buscar};
+  if(this.__torre2PathStage!==state.stage){
+   this.__torre2PathPage=undefined;
+   this.__torre2PathStage=state.stage;
+  }
   const movePage=delta=>{
    const current=this.__torre2BattlePath?.offset||0;
    this.__torre2PathPage=Math.max(0,current+delta*13);
