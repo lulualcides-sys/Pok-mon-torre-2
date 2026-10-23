@@ -77,7 +77,7 @@ export function installWildCapture(scene){
  const cleanup=()=>{
   scene.events.off('update',refresh);
   scene.input.keyboard?.off('keydown',onAimKey);
-  scene.__torre2WildCapture=false;
+  scene.__torre2WildCapture=false;scene.__torre2CaptureBusy=false;
   for(const item of activeVisuals)item.destroy?.();
   activeVisuals=[];
  };
@@ -93,7 +93,7 @@ export function installWildCapture(scene){
  function close(){for(const item of menu)item.destroy?.();menu=[];
   if(scene.fase==='torre2-aim')scene.fase='lucha';}
  function showChoices(){
-  if(busy||enemy.hp<=0||scene.__torre2Changing||!['lucha','torre2-aim'].includes(scene.fase))return;
+  if(busy||enemy.hp<=0||scene.__torre2Changing||scene.__torre2BallTransitions||!['lucha','torre2-aim'].includes(scene.fase))return;
   close();
   const state=readCampaign();if(!state?.pendingWild)return;
   if(!aimModified)aim=portraitCenter();
@@ -147,7 +147,7 @@ export function installWildCapture(scene){
    save.active=party.playerIndex;
   }
   const aimed={...aim};
-  busy=true;close();
+  busy=true;scene.__torre2CaptureBusy=true;close();
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
   // Exactly one inventory decrement, one capture roll and one projectile.
   const oldPhase=scene.fase;scene.fase='capturando';
@@ -237,7 +237,7 @@ export function installWildCapture(scene){
       onComplete:()=>{
        scene.time.delayedCall(430,()=>{
         if(!scene.scene.isActive())return;
-        restore();gfx.destroy();caption.destroy();busy=false;
+        restore();gfx.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
         scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';
        });
       }
@@ -310,7 +310,7 @@ export function installWildCapture(scene){
               drawReleaseBurst(gfx,center.x,center.y,t);
               drawCaptureBall(gfx,origin.x,origin.y,kind,2,0,true);
              },onComplete:()=>{
-              restore();gfx.destroy();caption.destroy();busy=false;
+              restore();gfx.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
               scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';refresh();
              }});
            }

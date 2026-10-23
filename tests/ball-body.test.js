@@ -22,3 +22,26 @@ test('beam uses bounded pixel cells rather than a widening triangle',()=>{
  drawRedBeam(g,{x:90,y:200},{x:190,y:100},1,6);
  assert.ok(cells>100&&cells<300);
 });
+
+import {EventEmitter} from 'node:events';
+import {animateBallActor} from '../tools/pokearena/torre2-ball-choreography.js';
+test('release duration follows elapsed time and clears listeners on completion/shutdown',()=>{
+ for(const fps of [30,60,120]){
+  const events=new EventEmitter(),game={events:new EventEmitter()};
+  const g={active:true,setDepth(){return this},clear(){},fillStyle(){},fillRect(){},lineStyle(){},strokeCircle(){},destroy(){this.active=false}};
+  const scene={events,game,scene:{isActive:()=>true},add:{graphics:()=>g}};
+  const sprite=visual(),actor={spr:sprite,manif:{head:-18,feet:6,width:22}};
+  let completed=0;
+  animateBallActor(scene,actor,{from:{x:50,y:240},drawBall(){},onComplete:()=>completed++});
+  assert.equal(sprite.visible,false);
+  let elapsed=0;
+  while(!completed&&elapsed<1000){game.events.emit('poststep',elapsed,1000/fps);elapsed+=1000/fps;}
+  assert.equal(completed,1);assert.ok(elapsed>=780&&elapsed<820);
+  assert.equal(sprite.visible,true);assert.equal(sprite.scaleY,2);
+  assert.equal(scene.__torre2BallTransitions,0);
+  assert.equal(game.events.listenerCount('poststep'),0);
+  animateBallActor(scene,actor,{from:{x:50,y:240},drawBall(){}});
+  events.emit('shutdown');
+  assert.equal(scene.__torre2BallTransitions,0);assert.equal(game.events.listenerCount('poststep'),0);
+ }
+});

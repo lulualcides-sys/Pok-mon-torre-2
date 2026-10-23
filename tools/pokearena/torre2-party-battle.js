@@ -97,7 +97,7 @@ export function installPartyBattle(scene){
  // status damage and regeneration. Suspend simulation, not the Phaser clock.
  const nativeStep=scene.paso;
  scene.paso=function(dt){
-  if(this.__torre2Changing||['torre2-sendout','capturando','torre2-aim'].includes(this.fase)){
+  if(this.__torre2Changing||this.__torre2BallTransitions||this.__torre2CaptureBusy||['torre2-sendout','capturando','torre2-aim'].includes(this.fase)){
    this.hud?.update();return;
   }
   return nativeStep.call(this,dt);
@@ -164,7 +164,7 @@ export function installPartyBattle(scene){
   zone.on('pointerdown',()=>{
    tooltip.setVisible(false);
    if(!member||i===party.playerIndex||member.hp<=0||
-      scene.__torre2Changing||scene.fase!=='lucha')return;
+      scene.__torre2Changing||scene.__torre2BallTransitions||scene.fase!=='lucha')return;
    recall(0,i);
   });
   icons.push(img);slotZones.push(zone);

@@ -95,9 +95,11 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
  const origin=mode==='recall'?from:landing;
  let elapsed=0,done=false;
+ scene.__torre2BallTransitions=(scene.__torre2BallTransitions||0)+1;
  const phase=mode==='recall'?'ko':'torre2-sendout';
  const hold=()=>{scene.fase=phase};hold();
  const clean=()=>{if(done)return;done=true;
+  scene.__torre2BallTransitions=Math.max(0,(scene.__torre2BallTransitions||1)-1);
   scene.game.events.off('poststep',step);scene.events.off('preupdate',hold);
   scene.events.off('shutdown',clean);g.destroy();};
  const step=(_time,delta)=>{
