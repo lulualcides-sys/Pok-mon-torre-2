@@ -62,7 +62,13 @@ for(const def of ROSTER){
    assert.ok(realKit[slot].forma&&!realKit[slot].pendiente,
     'Evolved '+id+' must have real unlocked attack for '+slot);
   }
-  assert.equal(realKit.esp?.forma,'dash','Dodge must stay separate for '+id);
+  // Native Poké Arena has species-specific defensive actions (e.g.
+  // Charizard's Flying dodge = 'vuelo'). Keep EXACT original action,
+  // never force every evolution to use the generic Kanto 'dash'.
+  const expectedDodge=stage.torre2OriginalKit?.esp?.forma||
+   parentKit.esp?.forma||'dash';
+  assert.equal(realKit.esp?.forma,expectedDodge,
+   'Evolution must preserve its original non-damaging Dodge: '+id);
  }
 }
 assert.ok(totalEvolutions>=60,'Must cover all Kanto evolution species');
