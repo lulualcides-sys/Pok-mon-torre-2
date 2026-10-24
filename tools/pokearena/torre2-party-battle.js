@@ -112,11 +112,12 @@ export function installPartyBattle(scene){
  // burst open, and materialize the REAL PMD fighter. Wild opponents
  // already inhabit the arena, so only the player throws in wild battles.
  if(party.changes===0){
+  const entryPhase=scene.fase;
   const sides=payload.kind==='wild'?[0]:[0,1];
   let remaining=sides.length;
   for(const side of sides)animateBallActor(scene,actors[side],{
    side,from:{x:side===0?52:590,y:side===0?281:126},drawBall:drawCaptureBall,
-   onComplete:()=>{if(--remaining===0)scene.fase='lucha'}
+   onComplete:()=>{if(--remaining===0)scene.fase=entryPhase==='intro'?'intro':'lucha'}
   });
  }
  // Keep only individual pixel Pokéballs below each original HP bar.

@@ -43,10 +43,10 @@ export function installWildCapture(scene){
  const enemy=scene.luchadores?.[1];
  if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
- const hud=frame(scene,458,41,169,42);
- txt(scene,467,47,'BOLSA  /  POKÉBOLA',11,'#fff0b9');
- const hpLine=txt(scene,469,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
- hit(scene,539,61,171,42,showChoices);
+ const hud=frame(scene,390,41,160,42);
+ txt(scene,399,47,'BOLSA  /  POKÉBOLA',11,'#fff0b9');
+ const hpLine=txt(scene,401,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
+ hit(scene,470,61,160,42,showChoices);
  let menu=[],busy=false,activeVisuals=[],aim={x:440,y:200},aimModified=false;
  const portraitCenter=()=>{
   const sprite=enemyPortrait(enemy);

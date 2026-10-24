@@ -83,7 +83,7 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(mode=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>mode==='caught'?0:.999999;
    const zone=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
-   zone(539,61).emit('pointerdown');
+   zone(470,61).emit('pointerdown');
    if(mode==='miss')for(let i=0;i<20;i++)zone(522,184).emit('pointerdown');
    if(mode==='caught')for(let i=0;i<20;i++)zone(586,184)?.emit('pointerdown');
    zone(316,186).emit('pointerdown');zone(316,186)?.emit('pointerdown');
@@ -102,7 +102,7 @@ const server=http.createServer(async(req,res)=>{
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
- await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>0;const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);z(539,61).emit('pointerdown');z(316,186).emit('pointerdown');});
+ await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>0;const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);z(470,61).emit('pointerdown');z(316,186).emit('pointerdown');});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:15000});
  await page.screenshot({path:'test-evidence/ball-gotcha.png'});
  assert.equal(await page.evaluate(()=>core.readCampaign().box.length),1);
