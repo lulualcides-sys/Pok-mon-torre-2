@@ -1,3 +1,4 @@
+import {clearDepartingCombat} from './combat-boundary.js';
 /* Pokémon Torre 2 — party battles, campaign only.
  * The original Phaser combat/VFX remain untouched. Manual switching and
  * knockouts transition to the next Pokémon without advancing trainer progress.
@@ -232,6 +233,7 @@ export function installPartyBattle(scene){
  function recall(side,next,kind='switch'){
   if(scene.__torre2Changing||!scene.scene.isActive())return;
   scene.__torre2Changing=true;
+  clearDepartingCombat(scene);
   scene.fase='ko';
   syncHp();
   // The native damage/regen logic may tick briefly during KO animation.

@@ -327,8 +327,8 @@ if(area.available.length){
  assert.equal(fight.p2,found.encounter.id);
  const {captureChance,rollCapture}=await import(pathToFileURL(
   path.join(stage,version,'torre2/capture-mechanics.js')));
- assert.ok(captureChance({...grass.pendingWild,hpPercent:10})>
-  captureChance({...grass.pendingWild,hpPercent:100}),
+ assert.ok(captureChance({...grass.pendingWild,wild:true,hpPercent:10})>
+  captureChance({...grass.pendingWild,wild:true,hpPercent:100}),
   'Lower HP must mean higher capture chance');
  // Use a challenging wild species; easy targets can reach the 99.5% cap
  // with either ball, making a strict improvement mathematically impossible.
@@ -928,6 +928,12 @@ assert.equal(state.stage,1);
 assert.equal(state.badges.length,beforeBadge+1);
 if(state.pendingCapture){state.inventory.pokeball=Math.max(1,state.inventory.pokeball);assert.equal(attemptCapture(state,()=>0).ok,true)}
 assert.equal(readCampaign().stage,1);
+// Fill party/PC through wild encounters; trainer prizes were explicitly removed.
+for(let encounter=0;encounter<5;encounter++){
+ state.inventory.pokeball=Math.max(1,state.inventory.pokeball);
+ assert.equal(startWildEncounter(state,()=>0).ok,true);
+ assert.equal(attemptCapture(state,()=>0,'pokeball',{duringBattle:true,hpPercent:10}).ok,true);
+}
 assert.equal(state.team.length,6);
 assert.ok(state.box.length>0);
 const beforeParty=state.team.map(x=>x.uid),beforeBox=state.box.map(x=>x.uid);

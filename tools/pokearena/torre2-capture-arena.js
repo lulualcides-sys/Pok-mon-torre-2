@@ -3,10 +3,10 @@
  * Four internal RNG checks determine the outcome, never four attempts.
  * Separate from approved Arena 2D Pokémon sprites and move effects.
  */
-import {captureChance} from './capture-mechanics.js';
+import {captureChance,fighterCaptureStatus} from './capture-mechanics.js';
 import {drawBallSprite} from './ball-sprites.js';
-import {readCampaign,attemptCapture,saveCampaign} from './campaign-core.js';
-import {ballArc,captureImpact,drawCaptureReticle,drawRedBeam,drawReleaseBurst,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
+import {readCampaign,attemptCapture} from './campaign-core.js';
+import {ballArc,drawRedBeam,drawReleaseBurst,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
 const FONT='Pixelify Sans,monospace';
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 // One ball atlas drives captures, party switch, and Pokéball HUD.
@@ -28,11 +28,6 @@ function hit(scene,x,y,w,h,onClick){
  return scene.add.zone(x,y,w,h).setDepth(2715).setInteractive({useHandCursor:true})
  .on('pointerdown',onClick);
 }
-function statusName(enemy){
- const raw=enemy?.status?.nombre??enemy?.estado?.nombre??enemy?.estado??
-  enemy?.est?.estado??enemy?.statuses?.map(x=>x?.name||x?.tipo).join(' ')??'';
- return typeof raw==='string'?raw:'';
-}
 function enemyPortrait(enemy){
  const s=enemy?.spr||enemy?.sprite;
  if(s?.setAlpha&&s?.setScale)return s;
@@ -44,37 +39,17 @@ export function installWildCapture(scene){
  if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
  const hud=frame(scene,390,41,160,42);
- txt(scene,399,47,'BOLSA  /  POKÉBOLA',11,'#fff0b9');
+ const icon=scene.add.graphics().setDepth(2705);drawCaptureBall(icon,405,53,'pokeball',1);
+ txt(scene,422,47,'CAPTURAR',11,'#fff0b9');
  const hpLine=txt(scene,401,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
  hit(scene,470,61,160,42,showChoices);
- let menu=[],busy=false,activeVisuals=[],aim={x:440,y:200},aimModified=false;
+ let menu=[],busy=false,activeVisuals=[];
  const portraitCenter=()=>{
   const sprite=enemyPortrait(enemy);
   return sprite?snapshotBody(enemy).center:{x:Number(enemy.x)||444,y:Number(enemy.y)||221};
  };
- const clampAim=()=>{
-  const v=scene.cameras.main.worldView;
-  aim.x=Math.max(v.x+12,Math.min(v.x+v.width-12,aim.x));
-  aim.y=Math.max(v.y+24,Math.min(v.y+v.height-24,aim.y));
- };
- const targetRadius=()=>Math.max(12,Math.min(30,
-  (enemy.manif?.width||24)*Math.abs(enemyPortrait(enemy)?.scaleX||1)*.5));
- const drawAimMarker=g=>{
-  g.clear();drawCaptureReticle(g,aim.x,aim.y,captureImpact(aim,portraitCenter(),targetRadius()));
- };
- const onAimKey=event=>{
-  if(scene.fase!=='torre2-aim')return;
-  const dir={ArrowUp:[0,-8],ArrowDown:[0,8],ArrowLeft:[-8,0],ArrowRight:[8,0]}[event.key];
-  if(!dir)return;
-  event.preventDefault?.();
-  aim.x+=dir[0];aim.y+=dir[1];clampAim();
-  aimModified=true;
-  for(const visual of menu)if(visual.__torre2Reticle)drawAimMarker(visual);
- };
- scene.input.keyboard?.on('keydown',onAimKey);
  const cleanup=()=>{
   scene.events.off('update',refresh);
-  scene.input.keyboard?.off('keydown',onAimKey);
   scene.__torre2WildCapture=false;scene.__torre2CaptureBusy=false;
   for(const item of activeVisuals)item.destroy?.();
   activeVisuals=[];
@@ -94,10 +69,7 @@ export function installWildCapture(scene){
   if(busy||enemy.hp<=0||scene.__torre2Changing||scene.__torre2BallTransitions||!['lucha','torre2-aim'].includes(scene.fase))return;
   close();
   const state=readCampaign();if(!state?.pendingWild)return;
-  if(!aimModified)aim=portraitCenter();
   scene.fase='torre2-aim';
-  const reticle=add(scene.add.graphics().setDepth(2301));
-  reticle.__torre2Reticle=true;drawAimMarker(reticle);
   add(frame(scene,173,109,299,169));
   add(txt(scene,188,119,'LANÇAR POKÉBOLA',15,'#ffe5a4'));
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
@@ -108,25 +80,12 @@ export function installWildCapture(scene){
    const y=178+i*27,owned=state.inventory[kind]||0;
    const draw=add(scene.add.graphics().setDepth(2708));
    drawCaptureBall(draw,200,y+4,kind,1);
-   const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,
-    status:statusName(enemy)},kind);
+   const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,
+    status:fighterCaptureStatus(enemy)},kind);
    add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
     '  '+Math.round(chance*100)+'%',10,owned?'#f9f6e9':'#a88c9b'));
    if(owned)add(hit(scene,316,y+8,275,25,()=>throwBall(kind)));
   }
-  add(txt(scene,498,113,'MIRA',12,'#ffefa4'));
-  add(txt(scene,486,128,'AJUSTE O ALVO',8,'#e1e9cd'));
-  for(const [dx,dy,x,y,glyph] of [
-   [0,-12,554,154,'▲'],[-12,0,522,184,'◀'],
-   [12,0,586,184,'▶'],[0,12,554,213,'▼']
-  ]){
-   add(txt(scene,x,y,glyph,17,'#a5fbea').setOrigin(.5));
-   add(hit(scene,x,y,29,29,()=>{
-    aim.x+=dx;aim.y+=dy;clampAim();
-    aimModified=true;drawAimMarker(reticle);
-   }));
-  }
-  add(txt(scene,470,248,'FORA DO ALVO = ERRO',8,'#ffcab3'));
   add(txt(scene,225,265,'TOQUE NA MARGEM PARA VOLTAR',8,'#9bd9dc'));
   add(hit(scene,324,290,250,17,close));
  }
@@ -143,7 +102,7 @@ export function installWildCapture(scene){
    for(const member of save.team){const live=party.friend.find(p=>p.uid===member.uid);if(live)member.hp=live.hp;}
    save.active=party.playerIndex;
   }
-  const aimed={...aim};
+  const aimed=portraitCenter();
   busy=true;scene.__torre2CaptureBusy=true;close();
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
   // Exactly one inventory decrement, one capture roll and one projectile.
@@ -203,7 +162,7 @@ export function installWildCapture(scene){
   const restore=()=>{
    absorbed=false;pose=null;detachPose();
    scene.events.off('shutdown',detachPose);scene.events.off('shutdown',detachGround);
-   scene.events.off('poststep',hideGround);
+   detachGround();
    ground.forEach((effect,i)=>{
     if(effect.active!==false)
      effect.setAlpha(groundAlpha[i]).setVisible(groundVisible[i]);
@@ -221,29 +180,9 @@ export function installWildCapture(scene){
     const pt=ballArc(shot,end,t,83);
     drawBall(pt.x,pt.y,t*7);
    },onComplete:()=>{
-    const hitTarget=captureImpact(aimed,portraitCenter(),targetRadius());
-    scene.__torre2CaptureDebug.hits=hitTarget;
-    if(!hitTarget){
-     save.inventory[kind]--;
-     save.lastMessage='Pokébola errou o alvo selvagem.';
-     saveCampaign(save);
-     scene.__torre2CaptureDebug.state='MISS';
-     caption.setText('A POKÉBOLA ERROU!').setColor('#ffcfaa');
-     const fall={t:0};
-     scene.tweens.add({targets:fall,t:1,duration:350,ease:'Bounce.easeOut',
-      onUpdate:()=>drawBall(end.x+fall.t*22,end.y+fall.t*36,fall.t*6),
-      onComplete:()=>{
-       scene.time.delayedCall(430,()=>{
-        if(!scene.scene.isActive())return;
-        restore();gfx.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
-        scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';
-       });
-      }
-     });
-     return;
-    }
+    scene.__torre2CaptureDebug.hits=true;
     result=attemptCapture(save,scene.__torre2CaptureRandom||Math.random,kind,
-      {duringBattle:true,hpPercent:hp,status:statusName(enemy)});
+      {duringBattle:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,status:fighterCaptureStatus(enemy)});
     scene.__torre2CaptureDebug.state='ABSORB';
     caption.setText('O RAIO VERMELHO ENVOLVEU O POKÉMON!');
     const beam={t:0},focus={x:enemyX,y:enemyY};

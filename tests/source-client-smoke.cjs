@@ -603,7 +603,7 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(secondSetup.initial,0);
   assert.equal(secondSetup.trainer,1);
-  assert.equal(secondSetup.pending,true,'Trainer 1 produces an optional capture');
+  assert.equal(secondSetup.pending,false,'Trainer-owned Pokémon are never offered for capture');
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&c.__torre2BattlePath?.progress===1;
@@ -1069,7 +1069,7 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(captureHud.opener&&captureHud.choice,
    'Wild battle must expose clickable Phaser Pokéball controls');
-  assert.ok(captureHud.menu.includes('LANÇAR POKÉBOLA')&&captureHud.menu.includes('AJUSTE O ALVO'),
+  assert.ok(captureHud.menu.includes('LANÇAR POKÉBOLA')&&!captureHud.menu.includes('AJUSTE O ALVO'),
    'Three selectable balls appear in the native capture HUD');
   assert.equal(captureHud.phase,'capturando',
    'Throwing a ball must pause real attacks while animation plays');

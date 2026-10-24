@@ -85,8 +85,9 @@ const server=http.createServer(async(req,res)=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>mode==='caught'?0:.999999;
    const zone=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
    zone(470,61).emit('pointerdown');
-   if(mode==='miss')for(let i=0;i<20;i++)zone(522,184).emit('pointerdown');
-   if(mode==='caught')for(let i=0;i<20;i++)zone(586,184)?.emit('pointerdown');
+   const assertNoManualAim = !zone(522,184);
+   if(!assertNoManualAim)throw Error('Manual capture aim must not exist');
+
    zone(316,186).emit('pointerdown');zone(316,186)?.emit('pointerdown');
   },mode);
  };
@@ -95,11 +96,7 @@ const server=http.createServer(async(req,res)=>{
  await page.screenshot({path:'test-evidence/ball-capture-absorb.png'});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='RESUME',null,{timeout:15000});
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
- await throwBall('miss');
- await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='MISS');
- await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='RESUME');
- assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),13);
- // Re-enter to reset the explicitly adjusted aim to the actual body.
+ // Re-enter for a successful capture into a full party.
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
@@ -129,7 +126,7 @@ const server=http.createServer(async(req,res)=>{
   frameErrors:window.__pt2Game.scene.getScene('combate').erroresFotograma||0}));
  assert.equal(metrics.frameErrors,0);
  fs.writeFileSync('test-evidence/ball-metrics.json',JSON.stringify(metrics));
- console.log('PASS: 5 swaps, hidden throw, breakout, miss, caught full party/PC, single consumption, reload, mobile',metrics,errors);
+ console.log('PASS: 5 swaps, hidden throw, breakout, automatic target, caught full party/PC, single consumption, reload, mobile',metrics,errors);
  assert.deepEqual(errors,[]);
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});

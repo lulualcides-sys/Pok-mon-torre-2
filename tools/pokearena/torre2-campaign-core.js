@@ -148,6 +148,7 @@ export function readCampaign(storage=localStorage){
   }
   if(!Array.isArray(s.inventory.tms)){s.inventory.tms=[];migrated=true}
   if(!Number.isInteger(s.wildEncountersStage)||s.wildEncountersStage<0){s.wildEncountersStage=0;migrated=true}
+  if(s.pendingCapture){s.pendingCapture=null;migrated=true}
   if(!('pendingWild'in s)){s.pendingWild=null;migrated=true}
   if(s.pendingWild&&(!Number.isFinite(s.pendingWild.hpPercent)||s.pendingWild.hpPercent<1)){
    s.pendingWild.hpPercent=100;migrated=true;
@@ -304,10 +305,7 @@ export function resolveBattle(s,won,random=Math.random){
  member.hp=100;
  s.wins++;
  s.money=(s.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+s.stage*60);
- s.pendingCapture=(opponent.leader||s.capturesInStage<5)?{
-  id:opponent.id,level:opponent.level,leader:opponent.leader,
-  chance:opponent.leader?30+Math.floor(random()*61):Math.max(35,75-Math.floor(s.stage*3))
- }:null;
+ s.pendingCapture=null; // Trainer-owned Pokémon cannot be captured.
  if(opponent.leader){
   s.badges.push(STAGES[s.stage].badge);
   if(s.stage===0&&!s.inventory.tms.includes('tm-rock-tomb')){
@@ -327,6 +325,7 @@ export function resolveBattle(s,won,random=Math.random){
 // Previously finished trainer fights keep their existing reward-capture flow.
 export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  const inWild=options?.duringBattle===true;
+ if(!inWild)return {ok:false,reason:'Pokémon de treinadores não podem ser capturados.'};
  const candidate=inWild?s.pendingWild:s.pendingCapture;
  if(!candidate)return {ok:false,reason:'Nenhum Pokémon disponível para captura.'};
  if(!['pokeball','greatball','ultraball'].includes(ball)||!(s.inventory?.[ball]>0))
@@ -336,6 +335,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  // Enemy HP and status are read at the instant of the throw.
  const target={...candidate,wild:inWild,
   hpPercent:inWild?Math.max(1,Math.min(100,Number(options.hpPercent??candidate.hpPercent??100))):100,
+  hp:options.hp,hpMax:options.hpMax,
   status:inWild?options.status:'none'};
  const outcome=rollCapture(target,ball,typeof random==='function'?random:Math.random);
  s.inventory[ball]--;
@@ -349,6 +349,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  }
  if(inWild)s.pendingWild=null;
  const member=newMember(candidate.id,Math.min(currentLevelCap(s.stage),candidate.level));
+ member.shiny=candidate.shiny===true;
  recordCaught(s,candidate.id);
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC')+
@@ -359,7 +360,7 @@ export function selectTeamMember(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length)return false;
  s.active=index;saveCampaign(s);return true;
 }
-export function healTeam(s){for(const member of s.team)member.hp=100;s.lastMessage='Equipe restaurada.';saveCampaign(s)}
+export function healTeam(s){for(const member of s.team){member.hp=100;member.status=null;member.confusion=null;}s.lastMessage='Equipe restaurada.';saveCampaign(s)}
 
 const supportedKanto=new Set();
 for(const species of ROSTER){

@@ -48,7 +48,7 @@ export function paginateKantoPokedexSource(original){
    def:safe(stage.def,safe(evo?.def,safe(def.def,1))),
    regen:safe(stage.regen,safe(def.regen,4))
   };
-  const original=stage.kit||{};
+  const original=resolveLoadout(member);
   const kit={...original},slots=['lmb','rmb','q','e'];
   for(let i=0;i<slots.length;i++){
    const slot=slots[i],named=canonicalMoveKey(plan[i]);
