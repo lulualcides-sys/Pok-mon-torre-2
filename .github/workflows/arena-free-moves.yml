@@ -1,0 +1,36 @@
+name: Arena — validação isolada dos golpes
+on:
+  push:
+    branches: [fix/arena-free-moves-2026-10-24]
+permissions:
+  contents: read
+jobs:
+  arena:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Verificar desbloqueio isolado, campanha e sintaxe
+        run: npm test && npm run check
+      - name: Construir o cliente Phaser isoladamente
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 5
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Validar em Chromium com WebGL
+        run: CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Armazenar apenas evidências da branch isolada
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arena-free-moves-evidence
+          path: test-evidence/
+          if-no-files-found: ignore
