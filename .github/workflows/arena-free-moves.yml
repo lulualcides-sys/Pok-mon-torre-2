@@ -38,6 +38,8 @@ jobs:
             _site/arena2d/src-*/ia.js
             _site/arena2d/src-*/escenas/combate.js
             _site/arena2d/src-*/datos.js
+            _site/arena2d/src-*/habilidades.js
+            _site/arena2d/src-*/config.js
           if-no-files-found: ignore
       - name: Validar em Chromium com WebGL
         run: CHROME_BIN="$(command -v google-chrome)" npm run test:browser
