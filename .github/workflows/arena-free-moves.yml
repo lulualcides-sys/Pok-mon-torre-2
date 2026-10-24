@@ -25,6 +25,8 @@ jobs:
             sleep 5
           done
           node tools/pokearena/build-preview.mjs
+      - name: Testar Acid e Sludge Bomb tocando nos botões reais
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-real-touch-browser.cjs
       - name: Snapshot apenas do código de controles para depuração
         if: always()
         uses: actions/upload-artifact@v4
