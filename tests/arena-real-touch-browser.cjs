@@ -40,9 +40,12 @@ const server=http.createServer(async(req,res)=>{
    await page.evaluate(slot=>{
     const p=window.__pt2Game.scene.getScene('combate').panelTactil;
     const b=p.botones.find(x=>x.slot===slot),at=p.pos(b);
-    // Touch down through the real Phaser mobile panel, not a synthetic
-    // fighter ability call. Coordinate conversion is provided by panel.cam().
-    const pointer={id:91,x:at.x,y:at.y};p.abajo(pointer);
+    // Convert UI-world button center back to the real screen-pointer space.
+    const origin=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
+    const pointer={id:91,x:(at.x-origin.x)/(unit.x-origin.x),y:(at.y-origin.y)/(unit.y-origin.y)};
+    p.abajo(pointer);
+    const read=p.controle?null:p.leer(x=>({ax:x.x,ay:x.y}));
+    console.log('TOUCH_POINTER',JSON.stringify({slot,at,origin,unit,pointer,mapped:p.punto(pointer),pressed:[...p.pulsados],readKeys:{rmb:read.rmb,q:read.q}}));
    },slot);
    await page.waitForTimeout(400);
    const after=await page.evaluate(slot=>{
