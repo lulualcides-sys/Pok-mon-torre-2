@@ -28,7 +28,7 @@ const starters=['bulbasaur','charmander','squirtle','pidgey','rattata','caterpie
    },species);
    await page.waitForFunction(id=>{
     const game=window.__pt2Game,scene=game.scene.getScene('combate');
-    return game.scene.isActive('combate')&&scene.panelTactil&&scene.fase==='lucha'&&scene.luchadores[0]?.def?.id===id;
+    return game.scene.isActive('combate')&&scene.panelTactil&&scene.fase==='lucha'&&(scene.luchadores[0]?.def?.id===id||scene.luchadores[0]?.forma?.nombre?.toLowerCase()===id);
    },species,{timeout:25000});
    const initial=await page.evaluate(()=>{
     const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
