@@ -28,7 +28,7 @@ const server=http.createServer(async(req,res)=>{
     import(new URL('./torre2/early-kanto-species.js',src)),
     import(new URL('./luchador.js',src))
    ]);
-   const ids=KANTO_151.map(p=>p[1]),slots=['lmb','rmb','q','e'],modes=['cpu','entreno','arena','liga'];
+   const ids=KANTO_151.map(p=>p.id),slots=['lmb','rmb','q','e'],modes=['cpu','entreno','arena','liga'];
    const problematic=[],missing=[],bySpecies=[],stillLocked=[],originallyLocked=[];
    for(const species of ids){
     const {def,etapa}=buscar(species);
