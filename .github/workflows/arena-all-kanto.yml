@@ -1,0 +1,30 @@
+name: Arena — auditoria dos 151 Pokémon fora da campanha
+on:
+  push:
+    branches: [fix/arena-all-kanto-skills-20261024]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Testes de regras e sintaxe
+        run: npm test && npm run check
+      - name: Construir cliente Phaser sem publicação
+        run: |
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 8
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Auditar 151 Pokémon e modos Arena, VS CPU, Training e League
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-all-kanto-browser.cjs
+      - name: Confirmar botões de ataque em Koffing
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-real-touch-browser.cjs
