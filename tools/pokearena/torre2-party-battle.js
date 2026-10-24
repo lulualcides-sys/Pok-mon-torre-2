@@ -330,6 +330,7 @@ export function installPartyBattle(scene){
     activeTexture:actor.spr?.texture?.key,side
    };
    actor.spr.setVisible(true).setAlpha(1).setScale(actor.escala||1);
+   actor.sombra?.setVisible(true);actor.anillo?.setVisible(true);
    actor.kit=actor.kitActual();
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;

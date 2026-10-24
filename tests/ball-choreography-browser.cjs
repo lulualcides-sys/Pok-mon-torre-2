@@ -74,6 +74,7 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='release');
   if(i===0){await page.waitForTimeout(150);await page.screenshot({path:'test-evidence/ball-release.png'});}
   await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('combate').__torre2Changing);
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').luchadores[0].sombra.visible),true,'Replacement restores its own ground shadow');
   console.log('swap',i+1);
  }
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
