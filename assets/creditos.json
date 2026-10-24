@@ -1,0 +1,850 @@
+{
+ "0001": {
+  "nombre": "Bulbasaur",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0002": {
+  "nombre": "Ivysaur",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0003": {
+  "nombre": "Venusaur",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "anonymous contributor",
+   "G〜"
+  ]
+ },
+ "0004": {
+  "nombre": "Charmander",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0005": {
+  "nombre": "Charmeleon",
+  "sprite": [
+   "CHUNSOFT",
+   "anonymous contributor",
+   "bwappi",
+   "Grimlin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0006": {
+  "nombre": "Charizard",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0006-0001": {
+  "nombre": "Mega Charizard X",
+  "sprite": [
+   "Kevin0itachi",
+   "G〜",
+   "Kevin"
+  ],
+  "retrato": [
+   "Emboarger",
+   "Soulja"
+  ]
+ },
+ "0007": {
+  "nombre": "Squirtle",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0008": {
+  "nombre": "Wartortle",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0009": {
+  "nombre": "Blastoise",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Top_Kec"
+  ]
+ },
+ "0025": {
+  "nombre": "Pikachu",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0026": {
+  "nombre": "Raichu",
+  "sprite": [
+   "CHUNSOFT",
+   "Grimlin",
+   "Top_Kec"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0041": {
+  "nombre": "Zubat",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "fledermaus"
+  ]
+ },
+ "0042": {
+  "nombre": "Golbat",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0052": {
+  "nombre": "Meowth",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "PhillipsYoung"
+  ]
+ },
+ "0066": {
+  "nombre": "Machop",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Felis-Licht",
+   "Morei"
+  ]
+ },
+ "0067": {
+  "nombre": "Machoke",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0068": {
+  "nombre": "Machamp",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0077": {
+  "nombre": "Ponyta",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0077-azul": {
+  "nombre": "0077-azul",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0078": {
+  "nombre": "Rapidash",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "deltaflare",
+   "baronessfaron"
+  ]
+ },
+ "0078-azul": {
+  "nombre": "0078-azul",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "deltaflare",
+   "baronessfaron"
+  ]
+ },
+ "0095": {
+  "nombre": "Onix",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0102": {
+  "nombre": "Exeggcute",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0103": {
+  "nombre": "Exeggutor",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "bwappi"
+  ]
+ },
+ "0129": {
+  "nombre": "Magikarp",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JemDragons"
+  ]
+ },
+ "0129-shiny": {
+  "nombre": "0129-shiny",
+  "sprite": [
+   "Scizivire",
+   "Noo"
+  ],
+  "retrato": [
+   "Tacocoa",
+   "JemDragons"
+  ]
+ },
+ "0130": {
+  "nombre": "Gyarados",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0130-shiny": {
+  "nombre": "0130-shiny",
+  "sprite": [
+   "Noo",
+   "Emmuffin"
+  ],
+  "retrato": [
+   "G〜",
+   "Magu"
+  ]
+ },
+ "0143": {
+  "nombre": "Snorlax",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "NOLASMOR",
+   "Emboarger"
+  ]
+ },
+ "0145": {
+  "nombre": "Zapdos",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0145-negro": {
+  "nombre": "0145-negro",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0150": {
+  "nombre": "Mewtwo",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0150-0002": {
+  "nombre": "Mega Mewtwo Y",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0150-0002-dorado": {
+  "nombre": "0150-0002-dorado",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0150-dorado": {
+  "nombre": "0150-dorado",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0169": {
+  "nombre": "Crobat",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "<ElGian>",
+   "Emmuffin"
+  ]
+ },
+ "0172": {
+  "nombre": "Pichu",
+  "sprite": [
+   "CHUNSOFT",
+   "Spikey-Valentine"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "C_Pariah"
+  ]
+ },
+ "0208": {
+  "nombre": "Steelix",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0208-0001": {
+  "nombre": "Mega Steelix",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Ichor"
+  ]
+ },
+ "0229": {
+  "nombre": "Houndoom",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "PhillipsYoung",
+   "anonymous contributor",
+   "Morei"
+  ]
+ },
+ "0243": {
+  "nombre": "Raikou",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "programmedsleepstate"
+  ]
+ },
+ "0244": {
+  "nombre": "Entei",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec"
+  ]
+ },
+ "0245": {
+  "nombre": "Suicune",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0249": {
+  "nombre": "Lugia",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0249-0001": {
+  "nombre": "Shadow Lugia",
+  "sprite": [
+   "Mr_L"
+  ],
+  "retrato": [
+   "CamusZekeSirius",
+   "ShyStarryRain"
+  ]
+ },
+ "0250": {
+  "nombre": "Ho-Oh",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "CamusZekeSirius"
+  ]
+ },
+ "0273": {
+  "nombre": "Seedot",
+  "sprite": [
+   "CHUNSOFT",
+   "Caitemis"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "anonymous contributor"
+  ]
+ },
+ "0274": {
+  "nombre": "Nuzleaf",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0275": {
+  "nombre": "Shiftry",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emboarger",
+   "Tainted#3886",
+   "Gust"
+  ]
+ },
+ "0319": {
+  "nombre": "Sharpedo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0323": {
+  "nombre": "Camerupt",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0427": {
+  "nombre": "Buneary",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Gust"
+  ]
+ },
+ "0428": {
+  "nombre": "Lopunny",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0428-0001": {
+  "nombre": "Mega Lopunny",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0431": {
+  "nombre": "Glameow",
+  "sprite": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain",
+   "ShyStarryRain"
+  ]
+ },
+ "0443": {
+  "nombre": "Gible",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain",
+   "G〜"
+  ]
+ },
+ "0444": {
+  "nombre": "Gabite",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "dmDash"
+  ]
+ },
+ "0445": {
+  "nombre": "Garchomp",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec",
+   "G〜"
+  ]
+ },
+ "0446": {
+  "nombre": "Munchlax",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0447": {
+  "nombre": "Riolu",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Fearless-Quit"
+  ]
+ },
+ "0448": {
+  "nombre": "Lucario",
+  "sprite": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Deeshura",
+   "G〜"
+  ]
+ },
+ "0448-0001": {
+  "nombre": "Mega Lucario",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Caitemis"
+  ]
+ },
+ "0486": {
+  "nombre": "Regigigas",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0493": {
+  "nombre": "Arceus",
+  "sprite": [
+   "JFain",
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0493-oro": {
+  "nombre": "0493-oro",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0493-oscuro": {
+  "nombre": "0493-oscuro",
+  "sprite": [
+   "JFain",
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0494": {
+  "nombre": "Victini",
+  "sprite": [
+   "MonochromeKirby"
+  ],
+  "retrato": [
+   "MonochromeKirby",
+   "baronessfaron"
+  ]
+ },
+ "0509": {
+  "nombre": "Purrloin",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0595": {
+  "nombre": "Joltik",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Top_Kec"
+  ]
+ },
+ "0596": {
+  "nombre": "Galvantula",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "Gust"
+  ]
+ },
+ "0656": {
+  "nombre": "Froakie",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin",
+   "G〜",
+   "Cloudy",
+   "◥θ┴θ◤",
+   "baronessfaron"
+  ]
+ },
+ "0657": {
+  "nombre": "Frogadier",
+  "sprite": [
+   "Caitemis"
+  ],
+  "retrato": [
+   "baronessfaron",
+   "◥θ┴θ◤",
+   "NOLASMOR",
+   "JustAGunk"
+  ]
+ },
+ "0658": {
+  "nombre": "Greninja",
+  "sprite": [
+   "Jhony-Rex",
+   "Soulja"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0757": {
+  "nombre": "Salandit",
+  "sprite": [
+   "baronessfaron",
+   "Soulja"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0778": {
+  "nombre": "Mimikyu",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0823": {
+  "nombre": "Corviknight",
+  "sprite": [
+   "nataniel-sama",
+   "◥θ┴θ◤",
+   "G〜",
+   "Soulja"
+  ],
+  "retrato": [
+   "EzerArt",
+   "Soulja"
+  ]
+ },
+ "0877": {
+  "nombre": "Morpeko",
+  "sprite": [
+   "Emmuffin",
+   "Uni"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0885": {
+  "nombre": "Dreepy",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "G〜",
+   "Deeshura",
+   "NOLASMOR",
+   "Top_Kec"
+  ]
+ },
+ "0886": {
+  "nombre": "Drakloak",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0887": {
+  "nombre": "Dragapult",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0966": {
+  "nombre": "Revavroom",
+  "sprite": [
+   "Soulja"
+  ],
+  "retrato": [
+   "G〜",
+   "Soulja"
+  ]
+ }
+}

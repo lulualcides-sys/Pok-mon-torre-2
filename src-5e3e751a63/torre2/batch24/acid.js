@@ -1,0 +1,26 @@
+// Acid — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "acid",
+  "nombre": "Acid",
+  "approved": true,
+  "forma": "torre2_batch24_acid",
+  "tipo": "POISON",
+  "categoria": "SPECIAL",
+  "poder": 40,
+  "precisao": 100,
+  "pp": 30,
+  "fazContato": false,
+  "dano": 8,
+  "alcance": 195,
+  "coste": 19,
+  "cd": 5,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "acid",
+  "palette": "acid",
+  "speed": 310,
+  "secondary": "spdef10",
+  "frames": 12,
+  "description": "Acid — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/acid"
+});

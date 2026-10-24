@@ -1,0 +1,26 @@
+// Silver Wind — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "silver-wind",
+  "nombre": "Silver Wind",
+  "approved": true,
+  "forma": "torre2_batch24_silver_wind",
+  "tipo": "BUG",
+  "categoria": "SPECIAL",
+  "poder": 60,
+  "precisao": 100,
+  "pp": 5,
+  "fazContato": false,
+  "dano": 12,
+  "alcance": 235,
+  "coste": 22,
+  "cd": 5.5,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "silverwind",
+  "palette": "silver",
+  "speed": 265,
+  "secondary": "omni10",
+  "frames": 12,
+  "description": "Silver Wind — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/silver-wind"
+});

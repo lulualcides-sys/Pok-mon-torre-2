@@ -1,0 +1,1 @@
+const vistos=new Set;function evento(nombre,props){try{window.plausible?.(nombre,props?{props}:void 0)}catch{}}function modoJugado(modo){if(!modo||vistos.has(modo))return;vistos.add(modo);evento("Modo",{modo})}export{evento,modoJugado};

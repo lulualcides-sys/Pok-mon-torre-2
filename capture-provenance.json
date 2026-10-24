@@ -1,0 +1,9 @@
+{
+  "source": "https://www.pokearena2d.com",
+  "files": 1233,
+  "version": "src-bf2b6eb2f1",
+  "originalCatalog": "https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json",
+  "capturedAt": "2026-10-24T19:23:52.255Z",
+  "personalUse": true,
+  "notice": "Source client reproduction in Phaser: standalone training/lobby only. Pokémon Torre 1 Kanto campaign integration pending."
+}

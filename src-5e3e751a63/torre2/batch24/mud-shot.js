@@ -1,0 +1,26 @@
+// Mud Shot — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "mud-shot",
+  "nombre": "Mud Shot",
+  "approved": true,
+  "forma": "torre2_batch24_mud_shot",
+  "tipo": "GROUND",
+  "categoria": "SPECIAL",
+  "poder": 55,
+  "precisao": 95,
+  "pp": 15,
+  "fazContato": false,
+  "dano": 11,
+  "alcance": 225,
+  "coste": 21,
+  "cd": 5.4,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "mudshot",
+  "palette": "mud",
+  "speed": 325,
+  "secondary": "slow",
+  "frames": 12,
+  "description": "Mud Shot — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/mud-shot"
+});
