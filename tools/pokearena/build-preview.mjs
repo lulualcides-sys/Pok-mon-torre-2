@@ -163,6 +163,9 @@ await Promise.all([
  ['tools/pokearena/torre2-ball-choreography.js','ball-choreography.js'],
  ['tools/pokearena/torre2-party-battle.js','party-battle.js'],
  ['tools/pokearena/torre2-combat-boundary.js','combat-boundary.js'],
+ ['tools/pokearena/torre2-gen3-types.js','gen3-types.js'],
+ ['tools/pokearena/torre2-gen3-status.js','gen3-status.js'],
+ ['tools/pokearena/torre2-trainer-items.js','trainer-items.js'],
  ['tools/pokearena/torre2-training.js','training.js'],
  ['tools/pokearena/torre2-training-input.js','training-input.js'],
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
@@ -405,6 +408,24 @@ patches.push(['luchador.js',[
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(!g.puro){',
   'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro&&fuente&&fuente!==this&&Number.isInteger(fuente.lado)&&fuente.lado!==this.lado){d*=torre2DamageMultiplier(torre2FighterLevel(fuente),torre2FighterLevel(this));if(fuente.lado===0)d*=torre2PlayerDamageBoost;}if(!g.puro){']
 ]]);
+// Campaign-only Gen III matchups and STAB, preserving all approved renderers.
+patches.push(['luchador.js',[
+ ['import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";',
+  'import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";import{gen3Effectiveness,gen3Stab,gen3BurnModifier,gen3Category,gen3Types}from"./torre2/gen3-types.js";'],
+ ['const mult=g.puro||REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);',
+  'const mult=g.puro?1:e.datos?.torre2?gen3Effectiveness(g.tipo,this.tipos):REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);if(e.datos?.torre2&&!mult){this.avisar("immune",()=>vfx.textoFlotante(e,this.x,this.y-this.alto-14,"NÃO AFETOU!",{color:"#b0bfcd",dur:700,sube:8}),1);return"miss"}'],
+ ['if(fuente?.est.quemado)d*=ESTADOS_TIPO.FIRE.dano;',
+  'if(e.datos?.torre2){d*=gen3Stab(g.tipo,fuente?.tipos);d*=gen3BurnModifier(g.tipo,fuente?.est)}else if(fuente?.est.quemado)d*=ESTADOS_TIPO.FIRE.dano;']
+]]);
+patches.push(['luchador.js',[
+ ['get tipos(){return this.mega&&this.forma.mega.tipos||this.forma.tipos}',
+  'get tipos(){const types=this.mega&&this.forma.mega.tipos||this.forma.tipos;return this.escena.datos?.torre2?gen3Types(types):types}'],
+ ['if(this.est.congelado&&fuente!==this)d*=1-REGLAS.congelaReduce;',
+  'if(!e.datos?.torre2&&this.est.congelado&&fuente!==this)d*=1-REGLAS.congelaReduce;']
+]]);
+// Persistent campaign status; native renderers still read the same est object.
+patches.push(['luchador.js',[["import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";","import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";import{applyGen3Status,tickGen3Status,gen3StatusInput}from\"./torre2/gen3-status.js\";"],["ponerEstado(nombre,dur,datos={}){","ponerEstado(nombre,dur,datos={}){if(this.escena.datos?.torre2&&applyGen3Status(this,nombre,datos))return;"],["update(dt,intento){if(this.remoto)","update(dt,intento){if(this.escena.datos?.torre2&&!this.remoto){tickGen3Status(this,dt);intento=gen3StatusInput(this,intento)}if(this.remoto)"],["const ritmo=this.est.paralizado?ESTADOS_TIPO.ELECTRIC.ataque:1;","const ritmo=this.est.paralizado&&!this.est.paralizado.torre2Status?ESTADOS_TIPO.ELECTRIC.ataque:1;"],["const q=this.est[clave];if(!q)continue;","const q=this.est[clave];if(!q||q.torre2Status)continue;"],["if(this.est.confuso){mx=-mx;my=-my}","if(this.est.confuso&&!this.est.confuso.torre2Status){mx=-mx;my=-my}"],["const zz=this.est.dormido;if(zz){","const zz=this.est.dormido;if(zz&&!zz.torre2Status){"]]]);
+patches.push(['luchador.js',[["this.hp=Math.max(this.inmortal?1:0,this.hp-d);","if(e.datos?.torre2&&d>0&&g.tipo===\"FIRE\"&&!g.puro&&this.est.congelado?.torre2Status)delete this.est.congelado;this.hp=Math.max(this.inmortal?1:0,this.hp-d);"],["this.ponerEstado(\"veneno\",v.dur,{dps:v.dps,fuente})","this.ponerEstado(v.toxic?\"toxic\":\"veneno\",v.dur,{dps:v.dps,fuente,toxic:v.toxic===true})"]]]);
 // Flash Cannon lowers Special Defense on an actual successful hit.
 // The Arena 2D base has one generic defensive stat: apply the stage modifier
 // ONLY to explicitly tagged SPECIAL Torre 2 moves, never to physical natives.
@@ -420,7 +441,7 @@ patches.push(['luchador.js',[
  ['recibir(fuente,g){if(this.ko)return"nada";',
   'recibir(fuente,g){if(this.ko)return"nada";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente?.est?.torre2SandAccuracy&&Math.random()<(fuente.est.torre2SandAccuracy.chance??.28))return"miss";'],
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);',
-  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&(g.categoria==="SPECIAL"||g.especial===true))d*=.5;if(e.__torre2Rain?.until>e.t){if(g.tipo==="WATER")d*=1.35;else if(g.tipo==="FIRE")d*=.65}}']
+  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;if(e.__torre2Rain?.until>e.t){if(g.tipo==="WATER")d*=1.35;else if(g.tipo==="FIRE")d*=.65}}']
 ]]);
 // Preload every member before first round: in-place swap never triggers LOADING.
 patches.push(['escenas/combate.js',[[
@@ -521,7 +542,7 @@ await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 for(const filename of [
- 'escenas/seleccion.js','torre2/combat-boundary.js','torre2/campaign-core.js',
+ 'escenas/seleccion.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/campaign-core.js',
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',

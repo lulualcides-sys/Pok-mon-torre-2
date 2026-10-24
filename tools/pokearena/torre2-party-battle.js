@@ -1,3 +1,5 @@
+import {serializeGen3Status,restoreGen3Status,statusLabel} from './gen3-status.js';
+import {trainerInventory,createTrainerItems,trainerItemStep,TRAINER_ITEM_RULES} from './trainer-items.js';
 import {clearDepartingCombat} from './combat-boundary.js';
 /* Pokémon Torre 2 — party battles, campaign only.
  * The original Phaser combat/VFX remain untouched. Manual switching and
@@ -20,7 +22,7 @@ const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
 export function createPartyMatch(state,opponent,wild=false){
  const friend=state.team.slice(0,6).map(m=>({
   id:m.id,uid:m.uid,level:m.progression?.level||5,
-  hp:clamp(m.hp??100),loadout:resolveLoadout(m)
+  hp:clamp(m.hp??100),status:m.status??null,loadout:resolveLoadout(m)
  }));
  const gym=STAGES[state.stage];
  const pool=gym?.enemy||[opponent.id];
@@ -56,14 +58,14 @@ export function createPartyMatch(state,opponent,wild=false){
  if(!(friend[playerIndex]?.hp>0))
   playerIndex=friend.findIndex(m=>m.hp>0);
  if(playerIndex<0)playerIndex=0;
- return {friend,foes,playerIndex,enemyIndex:0,changes:0};
+ return {friend,foes,playerIndex,enemyIndex:0,changes:0,trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
 }
 export function applyPartyBattleResult(state,party){
  if(!party||!Array.isArray(party.friend))return;
  const byUid=new Map(party.friend.map(m=>[m.uid,m]));
  for(const m of state.team){
   const from=byUid.get(m.uid);
-  if(from)m.hp=clamp(from.hp);
+  if(from){m.hp=clamp(from.hp);m.status=from.status??null;}
  }
  if(Number.isInteger(party.playerIndex)&&party.playerIndex>=0&&
     party.playerIndex<state.team.length)
@@ -94,6 +96,13 @@ export function installPartyBattle(scene){
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
  const actors=scene.luchadores;
+ const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));
+ scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));
+ const trainerItems=createTrainerItems(party.trainerItems||{});
+ scene.__torre2TrainerItems=trainerItems;
+ const enemyControl=scene.controles?.[1],readControl=enemyControl?.leer;
+ if(readControl)enemyControl.leer=function(dt){return trainerItems.pending?null:readControl.call(this,dt)};
+ scene.events.once('shutdown',()=>{if(readControl)enemyControl.leer=readControl;scene.__torre2TrainerItems=null});
  // fase alone blocks input in P2, but its paso still advances projectiles,
  // status damage and regeneration. Suspend simulation, not the Phaser clock.
  const nativeStep=scene.paso;
@@ -101,13 +110,20 @@ export function installPartyBattle(scene){
   if(this.__torre2Changing||this.__torre2BallTransitions||this.__torre2CaptureBusy||['torre2-sendout','capturando','torre2-aim'].includes(this.fase)){
    this.hud?.update();return;
   }
-  return nativeStep.call(this,dt);
+  const result=nativeStep.call(this,dt);
+  if(this.fase==='lucha'&&!this.__torre2Changing){
+   const event=trainerItemStep(trainerItems,actors[1],party.enemyIndex,this.t);
+   if(event?.kind==='started')announce('RIVAL USA '+TRAINER_ITEM_RULES[event.item].name+'!');
+   if(event?.kind==='healed')announce('+'+Math.round(event.hp)+' HP');
+  }
+  return result;
  };
  scene.events.once('shutdown',()=>{scene.paso=nativeStep});
  for(const [side,member]of [[0,party.friend[party.playerIndex]],
                             [1,party.foes[party.enemyIndex]]]){
   if(member&&member.hp>0)actors[side].hp=Math.max(1,
     Math.round(actors[side].hpMax*member.hp/100));
+  restoreGen3Status(actors[side],member?.status);
  }
  // Emerald Arena inspired first sendout: Pokéballs travel in an arc,
  // burst open, and materialize the REAL PMD fighter. Wild opponents
@@ -227,12 +243,13 @@ export function installPartyBattle(scene){
   for(const [side,entries,idx]of [[0,party.friend,party.playerIndex],
                                    [1,party.foes,party.enemyIndex]]){
    const a=actors[side],m=entries[idx];
-   if(a&&m)m.hp=clamp(a.hp/a.hpMax*100);
+   if(a&&m){m.hp=clamp(a.hp/a.hpMax*100);m.status=serializeGen3Status(a);}
   }
  }
  function recall(side,next,kind='switch'){
   if(scene.__torre2Changing||!scene.scene.isActive())return;
   scene.__torre2Changing=true;
+  levelLabels.forEach(o=>o.setVisible(false));
   clearDepartingCombat(scene);
   scene.fase='ko';
   syncHp();
@@ -336,6 +353,7 @@ export function installPartyBattle(scene){
    actor.kit=actor.kitActual();
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
+   restoreGen3Status(actor,member.status);
    fx.clear();ball.clear();
    animateBallActor(scene,actor,{side,from,drawBall:drawCaptureBall,onComplete:()=>{
     if(peer&&peerHpRatio!==null&&peer.hpMax>0){
@@ -400,6 +418,8 @@ export function installPartyBattle(scene){
  const syncRenderedSpecies=()=>{
   if(!scene.scene.isActive()||scene.__torre2Changing)return;
   for(const actor of actors){
+   const member=actor.lado===0?party.friend[party.playerIndex]:party.foes[party.enemyIndex];
+   levelLabels[actor.lado]?.setText('Nv.'+(member?.level||5)+' '+statusLabel(actor)).setPosition(actor.x,actor.y+9).setVisible(actor.spr?.visible&&!scene.__torre2BallTransitions&&!scene.__torre2CaptureBusy);
    const spr=actor?.spr;
    if(!spr?.active||!actor.dex)continue;
    const prefix='pmd-'+actor.dex+'-',current=String(spr.texture?.key||'');
@@ -417,7 +437,7 @@ export function installPartyBattle(scene){
  let tacticalFrames=0,tacticalSwaps=0;
  const considerTacticalSwitch=()=>{
   if(++tacticalFrames%75!==0||scene.__torre2Changing||
-     scene.fase!=='lucha'||(payload.stage??0)<1||
+     scene.fase!=='lucha'||trainerItems.pending||(payload.stage??0)<1||
      party.foes.length<2||tacticalSwaps>=2)return;
   const active=actors[1];
   if(!active?.hpMax||active.hp<=0||active.hp/active.hpMax>.23)return;

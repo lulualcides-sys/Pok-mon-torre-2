@@ -1,3 +1,4 @@
+import {serializeGen3Status} from './gen3-status.js';
 /* Pokémon Torre 2 — animated FireRed-style single-ball capture.
  * One ball = one throw, one red recall beam and up to three shakes.
  * Four internal RNG checks determine the outcome, never four attempts.
@@ -182,7 +183,7 @@ export function installWildCapture(scene){
    },onComplete:()=>{
     scene.__torre2CaptureDebug.hits=true;
     result=attemptCapture(save,scene.__torre2CaptureRandom||Math.random,kind,
-      {duringBattle:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,status:fighterCaptureStatus(enemy)});
+      {duringBattle:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,status:fighterCaptureStatus(enemy),persistentStatus:serializeGen3Status(enemy)});
     scene.__torre2CaptureDebug.state='ABSORB';
     caption.setText('O RAIO VERMELHO ENVOLVEU O POKÉMON!');
     const beam={t:0},focus={x:enemyX,y:enemyY};

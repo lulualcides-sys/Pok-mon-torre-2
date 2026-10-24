@@ -19,8 +19,9 @@ assert.equal(attemptCapture(state,()=>0).ok,false);assert.equal(state.inventory.
 saveCampaign(state);assert.equal(readCampaign().pendingCapture,null,'legacy capture offer safely removed');
 const hp=(id,ball='pokeball')=>({id,stage:0,level:5,hpPercent:10});
 state.pendingWild=hp('caterpie');state.stage=0;saveCampaign(state);
-assert.equal(attemptCapture(state,()=>0,'pokeball',{duringBattle:true,hp:1,hpMax:100}).ok,true);
+assert.equal(attemptCapture(state,()=>0,'pokeball',{duringBattle:true,hp:1,hpMax:100,hpPercent:1,status:'poison',persistentStatus:{kind:'veneno',toxic:false,turns:null,elapsed:2}}).ok,true);
 assert.equal(state.inventory.pokeball,count-1);
+const caught=state.team.find(m=>m.id==='caterpie');assert.equal(caught.hp,1);assert.equal(caught.status.kind,'veneno');saveCampaign(state);assert.equal(readCampaign().team.find(m=>m.uid===caught.uid).status.kind,'veneno');
 for(const species of ['rattata','raticate']){
  const kit=resolveLoadout({id:species,progression:{species,level:40}});
  assert.ok(!Object.values(kit).some(h=>h.nombre==='Blizzard'),species+' no unlearned Blizzard');

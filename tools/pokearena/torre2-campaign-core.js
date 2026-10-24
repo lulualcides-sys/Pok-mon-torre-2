@@ -350,6 +350,8 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  if(inWild)s.pendingWild=null;
  const member=newMember(candidate.id,Math.min(currentLevelCap(s.stage),candidate.level));
  member.shiny=candidate.shiny===true;
+ member.hp=target.hpPercent;
+ member.status=options.persistentStatus?JSON.parse(JSON.stringify(options.persistentStatus)):null;
  recordCaught(s,candidate.id);
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC')+
