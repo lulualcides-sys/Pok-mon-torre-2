@@ -457,6 +457,14 @@ patches.push(['luchador.js',[[
  'actualizarGraficos(dt=0){const r=CAMPO.ovalo?v=>v:Math.round;',
  'actualizarGraficos(dt=0){if(this.escena.datos?.torre2&&this.spr?.active){const actual=String(this.spr.texture?.key||""),due="pmd-"+this.dex+"-";if(actual.startsWith("pmd-")&&!actual.startsWith(due)){this.spr.anims.stop();const idle=due+"Idle";if(this.escena.textures.exists(idle))this.spr.setTexture(idle);this.claveAnim=null;this.__torre2RenderCorrections=(this.__torre2RenderCorrections||0)+1}}const r=CAMPO.ovalo?v=>v:Math.round;'
 ]]]);
+// Only freshly-added Kanto BASE forms outside the campaign need enough
+// opening energy to use both SKL (rmb) and Q once before they evolve.
+// Native Poké Arena rosters, all evolved forms, and Kanto remain unchanged.
+// Ultimates still need their authentic 100% charge.
+patches.push(['luchador.js',[[
+ 'this.energia=energiaInicialDe(this.def);',
+ 'this.energia=!this.escena.datos?.torre2&&this.etapa===0&&this.def.torre2ArenaAdded?Math.min(REGLAS.energiaMax,Math.max(energiaInicialDe(this.def),(this.kit.rmb?.coste??0)+(this.kit.q?.coste??0)+5)):energiaInicialDe(this.def);'
+]]]);
 // Outside campaign, evolved forms may introduce new attack slots.
 // Native kitActual enumerated base-only keys and silently lost those skills.
 patches.push(['luchador.js',[[
