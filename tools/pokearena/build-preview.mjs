@@ -199,6 +199,7 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-tiles.js','kanto-tiles.js'],
  ['tools/pokearena/torre2-kanto-levels.js','kanto-levels.js'],
  ['tools/pokearena/torre2-kanto-world-map.js','kanto-world-map.js'],
+ ['tools/pokearena/torre2-arena-tempo.js','arena-tempo.js'],
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
@@ -457,6 +458,19 @@ patches.push(['luchador.js',[[
  'actualizarGraficos(dt=0){const r=CAMPO.ovalo?v=>v:Math.round;',
  'actualizarGraficos(dt=0){if(this.escena.datos?.torre2&&this.spr?.active){const actual=String(this.spr.texture?.key||""),due="pmd-"+this.dex+"-";if(actual.startsWith("pmd-")&&!actual.startsWith(due)){this.spr.anims.stop();const idle=due+"Idle";if(this.escena.textures.exists(idle))this.spr.setTexture(idle);this.claveAnim=null;this.__torre2RenderCorrections=(this.__torre2RenderCorrections||0)+1}}const r=CAMPO.ovalo?v=>v:Math.round;'
 ]]]);
+// Movement only: new Pokémon walk at the same general tempo as the
+// original Poké Arena 2D roster. Native Pokémon, campaign, status effects,
+// attack speeds, animation FPS, hitboxes and approved VFX stay untouched.
+patches.push(['luchador.js',[
+ [
+  'import*as vfx from"./vfx.js";',
+  'import*as vfx from"./vfx.js";import{synchronizedArenaSpeed}from"./torre2/arena-tempo.js";'
+ ],
+ [
+  'get velBase(){return(this.forma.vel+(this.mega?this.forma.mega.vel:0))*(this.jefe?.vel??1)}',
+  'get velBase(){return synchronizedArenaSpeed(this.forma.vel+(this.mega?this.forma.mega.vel:0),{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,campaign:!!this.escena.datos?.torre2})*(this.jefe?.vel??1)}'
+ ]
+]]);
 // Only freshly-added Kanto BASE forms outside the campaign need enough
 // opening energy to use both SKL (rmb) and Q once before they evolve.
 // Native Poké Arena rosters, all evolved forms, and Kanto remain unchanged.
