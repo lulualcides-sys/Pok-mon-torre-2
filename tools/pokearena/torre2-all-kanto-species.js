@@ -99,7 +99,7 @@ export function addAllKantoSpecies(original){
  for(const [id,members] of families){
   if(known.has(id))continue;
   const p=byId.get(id);
-  added.push({id,dex:String(p.num).padStart(4,'0'),nombre:id.toUpperCase(),
+  added.push({id,dex:String(p.num).padStart(4,'0'),nombre:id.toUpperCase(),torre2ArenaAdded:true,
    tipos:[...p.tipos],rol:'DISTANCIA',lema:'KANTO POKÉMON',
    ...stats(p),ia:{rango:115},torre2Kanto151:true,
    kit:kitFor(p,pool),evoluciones:members.filter(e=>e.id!==id&&!known.has(e.id))
