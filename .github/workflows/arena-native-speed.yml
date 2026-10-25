@@ -1,0 +1,35 @@
+name: Arena — sincronização de velocidade (isolado)
+on:
+  push:
+    branches: [fix/arena-native-speed-20261025]
+permissions:
+  contents: read
+jobs:
+  tempo:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Testes unitários e sintaxe, sem modificar o jogo publicado
+        run: npm test && npm run check
+      - name: Construir cliente Phaser original com correção isolada
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 8
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Medir velocidade nativa versus adicionados no Chromium/WebGL
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-native-speed-browser.cjs
+      - name: Garantir evolução sem regressões
+        run: node tests/evolution-modes-built.test.mjs
+      - name: Garantir controles e golpes pré-evolução
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-base-form-touch-browser.cjs
+      - name: Garantir ataques após evolução
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-evolved-selection-browser.cjs
