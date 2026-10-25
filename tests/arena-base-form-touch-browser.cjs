@@ -9,7 +9,7 @@ const server=http.createServer(async(req,res)=>{
  if(!target.startsWith(root+path.sep)){res.writeHead(403);return res.end('forbidden');}
  try{const bytes=await fsp.readFile(target);res.writeHead(200,{'content-type':mime[path.extname(target)]||'application/octet-stream'});res.end(bytes)}catch{res.writeHead(404);res.end('missing')}
 });
-const species=['bulbasaur','charmander','squirtle','pidgey','rattata','caterpie','weedle','pikachu','spearow','nidoran-f','nidoran-m','mankey','geodude','paras','clefairy','sandshrew','ekans','staryu','psyduck','poliwag','oddish','bellsprout','meowth','diglett','voltorb','magnemite','tangela','koffing','grimer','abra','venonat','mr-mime','growlithe','rhyhorn','magikarp','joltik','buneary'];
+const species=['oddish','koffing','pidgey','rattata','magikarp','joltik'];
 (async()=>{
  await new Promise(ok=>server.listen(port,'127.0.0.1',ok));
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
@@ -58,7 +58,7 @@ const species=['bulbasaur','charmander','squirtle','pidgey','rattata','caterpie'
      const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];s.panelTactil.arriba({id:76});
      return {uses:me.stats.usosSlot?.[k]||0,cd:me.cd[k],energy:me.energia,ult:me.ulti,stage:me.etapa};
     },slot);
-    results.push({id,slot,initial:{stage:initial.stage,form:initial.form,attack:initial.name,renderer:initial.formId,pending:initial.pending},used:after.uses>initial.prior,after});
+    console.log('BASE_FORM_CAST',JSON.stringify({id,slot,initial,after}));results.push({id,slot,initial:{stage:initial.stage,form:initial.form,attack:initial.name,renderer:initial.formId,pending:initial.pending},used:after.uses>initial.prior,after});
    }
    await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('titulo'));
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('titulo'),null,{timeout:10000});
