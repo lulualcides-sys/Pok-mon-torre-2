@@ -457,11 +457,32 @@ patches.push(['luchador.js',[[
  'actualizarGraficos(dt=0){const r=CAMPO.ovalo?v=>v:Math.round;',
  'actualizarGraficos(dt=0){if(this.escena.datos?.torre2&&this.spr?.active){const actual=String(this.spr.texture?.key||""),due="pmd-"+this.dex+"-";if(actual.startsWith("pmd-")&&!actual.startsWith(due)){this.spr.anims.stop();const idle=due+"Idle";if(this.escena.textures.exists(idle))this.spr.setTexture(idle);this.claveAnim=null;this.__torre2RenderCorrections=(this.__torre2RenderCorrections||0)+1}}const r=CAMPO.ovalo?v=>v:Math.round;'
 ]]]);
+// Outside campaign, evolved forms may introduce new attack slots.
+// Native kitActual enumerated base-only keys and silently lost those skills.
+patches.push(['luchador.js',[[
+ 'Object.entries(this.def.kit).map(([k,v])=>[k,Object.assign({},v,...capas.map(c=>c[k]??{}))])',
+ '[...new Set([...Object.keys(this.def.kit),...capas.flatMap(c=>Object.keys(c))])].map(k=>[k,Object.assign({},this.def.kit[k]??{},...capas.map(c=>c[k]??{}))])'
+]]]);
+// Guard old/unknown role names and genuinely absent slots in selection.
+// Otherwise ficha() aborts halfway and the moves/evolution panel disappears.
+patches.push(['escenas/seleccion.js',[
+ ['const R=ROLES[r];','const R=ROLES[r]??ROLES.MIXTO;'],
+ ['const h=p.kit[slot];const ky=','const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=']
+]]);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // The native client sometimes reorders imported data symbols.
+   // Keep the original import and add only this self-contained helper.
+   if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){
+    const dataImport=body.match(/import\{[^}]*\}from["']\.\/datos\.js["'];/);
+    const helper='import{campaignFighterLevel as torre2FighterLevel,campaignDamageMultiplier as torre2DamageMultiplier,campaignScaledHp as torre2ScaledHp,CAMPAIGN_PLAYER_DAMAGE_BOOST as torre2PlayerDamageBoost}from"./torre2/level-balance.js";';
+    if(!dataImport)throw Error('Native fighter data import changed beyond safe scope');
+    if(!body.includes(helper))body=body.replace(dataImport[0],dataImport[0]+helper);
+    continue;
+   }
    // Original site startup calls change; no optional online code in Torre 2.
    if(filename==='main.js'&&from.startsWith('iniciarAvisos(juego);')){
     const marker='if(DEBUG)window.juego=juego;';
