@@ -75,6 +75,9 @@ const server=http.createServer(async(req,res)=>{
   if(i===0){await page.waitForTimeout(150);await page.screenshot({path:'test-evidence/ball-release.png'});}
   await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('combate').__torre2Changing);
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').luchadores[0].sombra.visible),true,'Replacement restores its own ground shadow');
+  const identity=await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0],h=b.hud.lados[0];return {name:a.nombre,hudName:h.identidad[0].text,dex:a.dex,portrait:h.retrato.texture.key}});
+  assert.equal(identity.hudName,identity.name,'HUD name follows the incoming Pokemon');
+  assert.equal(identity.portrait,'retrato-'+identity.dex,'HUD portrait follows the incoming Pokemon');
   console.log('swap',i+1);
  }
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));

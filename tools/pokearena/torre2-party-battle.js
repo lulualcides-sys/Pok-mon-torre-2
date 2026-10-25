@@ -371,6 +371,10 @@ export function installPartyBattle(scene){
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
    restoreGen3Status(actor,member.status);
+   // Native HUD caches names, portraits, types and move captions. Refresh it
+   // after the same fighter object has become the incoming party member.
+   scene.hud?.alEvolucionar?.(actor);
+   const hudSide=scene.hud?.lados?.[side];if(hudSide)hudSide.estela=actor.hp;
    fx.clear();ball.clear();
    animateBallActor(scene,actor,{side,from,drawBall:drawCaptureBall,onComplete:()=>{
     if(peer&&peerHpRatio!==null&&peer.hpMax>0){

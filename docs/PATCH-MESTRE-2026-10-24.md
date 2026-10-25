@@ -81,3 +81,18 @@ Primeira avaliação após oito segundos simulados, reavaliação a cada quatro,
 O lote anterior 17683ef passou localmente no npm run test:browser completo e no source-client-smoke, com captura, PC, trocas, mobile, prévias da Arena e efeitos existentes. A publicação e validação remota devem ser confirmadas separadamente.
 
 A validação remota 40164706150 interrompeu no teste climático, com dano medido zero; nenhuma publicação desse lote foi feita. O teste agora desabilita o controle de combate antes da medição e estabelece explicitamente o clima, evitando que ações autônomas ou tempo decorrido alterem a amostra. A medição isolada passou localmente: areia 13 HP no Charizard e 0 no Onix; dano de Água 106,70 normal, 160,05 na chuva e 53,35 no sol. A nova execução remota continua sendo necessária.
+
+
+## Continuação: percurso dos 13 chefes e identidade do HUD
+
+O primeiro percurso no navegador detectou que o descritor do encontro apontava para o ás do líder, enquanto a equipe começava pelo primeiro integrante. Brock abria com nível 14 e sprite de Onix, embora o primeiro membro fosse Geodude nível 12. A entrada agora toma espécie, nível e golpes do mesmo membro de cada equipe, sem recalcular o primeiro moveset pelo nível do ás.
+
+A revisão visual encontrou também nome/retrato antigos no HUD após uma troca. O HUD nativo agora é atualizado junto do lutador, incluindo tipos e nomes dos golpes; a barra de HP não herda o rastro do membro anterior. As regressões conferem nome e retrato, além do sprite de batalha.
+
+O percurso automatizado local verificou Brock, Misty, Lt. Surge, Erika, Koga, Sabrina, Blaine, Giovanni, Lorelei, Bruno, Agatha, Lance e Campeão: 53 entradas de equipe, progressão, dinheiro e salvamento. Usa pulos de rota e nocautes forçados; NÃO é uma campanha jogada normalmente nem teste de balanceamento. A versão com a conferência adicional do HUD está sendo retestada.
+
+Insígnias agora se limitam aos oito ginásios; conquistas da Elite e Campeão ficam em leagueHonors. Migração idempotente mantém vitórias antigas, equipe, dinheiro e progresso. O teste do cliente construído confirmou oito insígnias e cinco honras ao terminar, inclusive lendo um save antigo com as 13 marcas juntas.
+
+A execução remota 40165034819 revelou que o teste climático lançava o laboratório com a configuração antiga. A configuração agora é alterada no mesmo objeto usado pelos controles, aguarda dois quadros de renderização e calcula o clique pelos limites reais do canvas. A checagem explícita da configuração permanece. O teste passou localmente; sucesso remoto ainda deve ser confirmado.
+
+Pendências observadas no percurso: somente Brock concede TM; demais recompensas de ginásio, apresentação/relatório completo e campanha normal continuam pendentes. Não extrapolar o percurso de depuração para alegar que o Script Mestre inteiro foi concluído.

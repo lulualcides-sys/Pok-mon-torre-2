@@ -9,7 +9,8 @@
     "check": "node --check src/combat-core.js && node --check src/art.js && node --check src/arena-v03.js && node --check src/effects-v03.js && node --check src/spritecollab-v02.js && node --check src/joystick.js && node --check src/main.js && node --check src/effects-v08.js && node --check src/progression.js",
     "test:browser": "node tests/master-patch-browser.cjs && node tests/combat-rules-browser.cjs && node tests/weather-laboratory-browser.cjs && node tests/rematches-browser.cjs && node tests/ball-choreography-browser.cjs && node tests/arena-real-touch-browser.cjs && node tests/arena-preview-browser.cjs && node tests/trainer-strategy-browser.cjs",
     "check:reuse": "node tools/pokearena/check-move-reuse.mjs",
-    "test:browser:legacy": "node tests/browser-smoke.cjs"
+    "test:browser:legacy": "node tests/browser-smoke.cjs",
+    "test:campaign": "node tests/campaign-tour-browser.cjs"
   },
   "devDependencies": {
     "playwright-core": "1.56.1"

@@ -495,15 +495,13 @@ create(){
    leader:state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
-  match.p1=party.friend[party.playerIndex].id;
-  match.torre2Loadout=party.friend[party.playerIndex].loadout;
-  match.torre2OpponentLoadout=party.foes[0].loadout;
-  if(earlyKantoSlotPlan(match.p2)){
-   const level=wild?(state.pendingWild?.level??5):(currentOpponent(state)?.level??5);
-   match.torre2OpponentLoadout=resolveLoadout({
-    id:match.p2,progression:{species:match.p2,level}
-   });
-  }
+  // The encounter descriptor names the ace; the party opens with its first
+  // member. Sprite, level, stats and loadout must all use that same member.
+  const firstPlayer=party.friend[party.playerIndex],firstEnemy=party.foes[party.enemyIndex];
+  match.p1=firstPlayer.id;match.p2=firstEnemy.id;
+  match.torre2.playerLevel=firstPlayer.level;match.torre2.enemyLevel=firstEnemy.level;
+  match.torre2Loadout=firstPlayer.loadout;
+  match.torre2OpponentLoadout=firstEnemy.loadout;
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
   this.launchBattle(match,wild);

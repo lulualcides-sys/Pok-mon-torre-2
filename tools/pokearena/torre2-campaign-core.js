@@ -108,7 +108,7 @@ export function createCampaign(starter){
   active:0,wins:0,losses:0,capturesInStage:0,pendingCapture:null,
   money:1400,inventory:{pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]},
   wildEncountersStage:0,pendingWild:null,
-  badges:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
+  badges:[],leagueHonors:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
 }
 export function readCampaign(storage=localStorage){
  try{
@@ -127,6 +127,15 @@ export function readCampaign(storage=localStorage){
     !Number.isInteger(s.trainer)||s.trainer<0)return null;
   // Additive v1 migration. Do not reset saves or lose stored Pokémon.
   let migrated=false;
+  // Old saves stored Elite victories alongside gym badges. Preserve them in
+  // a separate field so the badge case contains only the eight Kanto awards.
+  const legacyHonors=new Set(ELITE.map(stage=>stage.badge));
+  const oldBadges=Array.isArray(s.badges)?s.badges:[];
+  const badges=[...new Set(oldBadges.filter(b=>!legacyHonors.has(b)))];
+  const leagueHonors=[...new Set([...(Array.isArray(s.leagueHonors)?s.leagueHonors:[]),...oldBadges.filter(b=>legacyHonors.has(b))])];
+  if(JSON.stringify(s.badges)!==JSON.stringify(badges)||JSON.stringify(s.leagueHonors)!==JSON.stringify(leagueHonors)){
+   s.badges=badges;s.leagueHonors=leagueHonors;migrated=true;
+  }
   if(!STARTERS.includes(s.starter)){s.starter=campaignStarter(s);migrated=true;}
   if(!Array.isArray(s.box)){s.box=[];migrated=true}
   if(s.team.length>6){s.box.unshift(...s.team.splice(6));migrated=true}
@@ -309,7 +318,8 @@ export function resolveBattle(s,won,random=Math.random){
  s.money=(s.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+s.stage*60);
  s.pendingCapture=null; // Trainer-owned Pokémon cannot be captured.
  if(opponent.leader){
-  s.badges.push(STAGES[s.stage].badge);
+  const awards=s.stage<GYMS.length?s.badges:(s.leagueHonors??=[]);
+  if(!awards.includes(STAGES[s.stage].badge))awards.push(STAGES[s.stage].badge);
   if(s.stage===0&&!s.inventory.tms.includes('tm-rock-tomb')){
    s.inventory.tms.push('tm-rock-tomb');s.lastRewardTM='TM39 ROCK TOMB';
   }

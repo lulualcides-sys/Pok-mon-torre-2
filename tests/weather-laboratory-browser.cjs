@@ -45,8 +45,10 @@ const server=http.createServer(async(req,res)=>{
  const snapshot=await page.evaluate(()=>localStorage.getItem(core.SAVE_KEY));
  await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').enterTraining(core.readCampaign()));
  await page.screenshot({path:'test-evidence/laboratory-menu.png'});
- await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('campanha');c.__labConfig={player:'charizard',enemy:'onix',level:50,weather:'sand'};c.enterTraining(core.readCampaign());});
- await page.mouse.click(640,620);
+ await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('campanha');Object.assign(c.__labConfig,{player:'charizard',enemy:'onix',level:50,weather:'sand'});c.enterTraining(core.readCampaign());});
+ await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+ const launch=await page.evaluate(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {x:r.x+r.width*.5,y:r.y+r.height*310/360}});
+ await page.mouse.click(launch.x,launch.y);
  await page.waitForFunction(()=>{const b=window.__pt2Game.scene.getScene('combate');return b.scene.isActive()&&b.__torre2LabInstalled},null,{timeout:30000});
  await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.controles.forEach(c=>c.leer=()=>null)});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:30000});
