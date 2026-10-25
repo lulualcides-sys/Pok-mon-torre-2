@@ -1,0 +1,42 @@
+name: Arena — seleção e golpes após evolução (isolado)
+on:
+  push:
+    branches: [fix/arena-selection-evolution-moves-20261025]
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Testes e integridade do código
+        run: npm test && npm run check
+      - name: Construir o cliente Phaser sem publicar
+        run: |
+          set -euo pipefail
+          for try in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$try" = 3 ]; then exit 1; fi
+            sleep 8
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Verificar seleção de Oddish e evolução Magikarp → Gyarados
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-evolved-selection-browser.cjs
+      - name: Verificar Kanto e golpes já aprovados
+        run: |
+          node tests/evolution-modes-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+      - name: Revalidar toque de habilidades na Arena
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-real-touch-browser.cjs
+      - name: Arquivar evidências isoladas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arena-evolved-selection-evidence
+          path: test-evidence/
+          if-no-files-found: ignore
