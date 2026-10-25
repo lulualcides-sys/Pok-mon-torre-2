@@ -47,13 +47,17 @@ const server=http.createServer(async(req,res)=>{
  await page.screenshot({path:'test-evidence/laboratory-menu.png'});
  await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('campanha');c.__labConfig={player:'charizard',enemy:'onix',level:50,weather:'sand'};c.enterTraining(core.readCampaign());});
  await page.mouse.click(640,620);
- await page.waitForFunction(()=>{const b=window.__pt2Game.scene.getScene('combate');return b.scene.isActive()&&b.__torre2LabInstalled&&b.fase==='lucha'},null,{timeout:30000});
+ await page.waitForFunction(()=>{const b=window.__pt2Game.scene.getScene('combate');return b.scene.isActive()&&b.__torre2LabInstalled},null,{timeout:30000});
+ await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.controles.forEach(c=>c.leer=()=>null)});
+ await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:30000});
  const result=await page.evaluate(async()=>{
   const b=window.__pt2Game.scene.getScene('combate'),[p,e]=b.luchadores;
   const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
   const weather=await import(new URL('./torre2/weather.js',src));window.weather=weather;
   const lab=await import(new URL('./torre2/laboratory.js',src));
   const all=lab.KANTO_151_IDS.map(id=>lab.prepareLaboratoryMatch({player:id,enemy:id,level:50}));
+  if(b.datos.torre2.weather!=='sand')throw Error('Laboratory must launch with configured sand');
+  weather.setWeather(b.__torre2Weather,'sand');
   p.est={};e.est={};p.hp=p.hpMax;e.hp=e.hpMax;
   const before=[p.hp,e.hp];weather.tickWeather(b.__torre2Weather,4,[p,e]);
   const losses=[before[0]-p.hp,before[1]-e.hp];
@@ -64,6 +68,7 @@ const server=http.createServer(async(req,res)=>{
   weather.setWeather(b.__torre2Weather,'hail');b.__torre2Weather.remaining=.05;
   return {count:all.length,ids:all.every((m,i)=>m.p1===lab.KANTO_151_IDS[i]),losses,normal,rain,sun,freezeImmune};
  });
+ console.log('WEATHER_MEASUREMENT',result);
  assert.equal(result.count,151);assert.equal(result.ids,true);assert.ok(result.losses[0]>0);assert.equal(result.losses[1],0);
  assert.ok(result.rain.lost>result.normal.lost);assert.ok(result.sun.lost<result.normal.lost);assert.equal(result.freezeImmune,true);
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2Weather.kind==='none');

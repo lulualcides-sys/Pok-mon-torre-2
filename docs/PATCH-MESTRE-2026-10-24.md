@@ -68,3 +68,16 @@ A tela de preparação da Arena carregava sprites somente quando a aparência di
 Cliente-base capturado nesta continuação: src-bf2b6eb2f1. Versão local construída: src-944d16417a. Os testes usam uma saída isolada (_validation), evitando reconstrução dos arquivos durante a execução. Testes do cliente construído agora aceitam PREVIEW_ROOT, com _site como padrão de CI.
 
 121 testes unitários, checagem de sintaxe e política de reaproveitamento passaram. Regressões do cliente construído passaram para atributos das 151 formas, learnsets, progressão por chamadas diretas, revanches e preservação dos movimentos do lote finale13. Laboratório e revanche passaram também no navegador. A suíte completa e a publicação desta continuação devem ser registradas após sua execução, sem presumir sucesso.
+
+
+## Continuação: troca estratégica dos líderes
+
+Líderes, Elite Four e Campeão avaliam tipos visíveis do oponente, os próprios golpes desbloqueados e HP da reserva. A política é uma adaptação do Torre 2, não reprodução da IA original de FRLG. Considera desvantagem de tipo, ataque pouco eficaz ou HP baixo; exige reserva viva, saudável e útil. Treinadores comuns e selvagens continuam usando a IA simples.
+
+Primeira avaliação após oito segundos simulados, reavaliação a cada quatro, intervalo mínimo de vinte entre trocas e limite de três por batalha. Não troca durante ataque, dash, uso de item, desmaio ou transição. Reusa o recolhimento/lançamento existente, limpeza de projéteis e estados por integrante; não cria novos VFX.
+
+125 testes unitários passaram. Chromium confirmou troca tática de Charmander para Bulbasaur diante de Squirtle, com animação completa: Charmander permaneceu vivo, Bulbasaur entrou com seus 73% de HP (133/182), HP do jogador permaneceu 176, e uma nova troca foi bloqueada pelo intervalo. A configuração e o relógio foram ajustados por depuração para testar a decisão; isso não representa uma campanha jogada.
+
+O lote anterior 17683ef passou localmente no npm run test:browser completo e no source-client-smoke, com captura, PC, trocas, mobile, prévias da Arena e efeitos existentes. A publicação e validação remota devem ser confirmadas separadamente.
+
+A validação remota 40164706150 interrompeu no teste climático, com dano medido zero; nenhuma publicação desse lote foi feita. O teste agora desabilita o controle de combate antes da medição e estabelece explicitamente o clima, evitando que ações autônomas ou tempo decorrido alterem a amostra. A medição isolada passou localmente: areia 13 HP no Charizard e 0 no Onix; dano de Água 106,70 normal, 160,05 na chuva e 53,35 no sol. A nova execução remota continua sendo necessária.

@@ -166,6 +166,7 @@ await Promise.all([
  ['tools/pokearena/torre2-gen3-types.js','gen3-types.js'],
  ['tools/pokearena/torre2-gen3-status.js','gen3-status.js'],
  ['tools/pokearena/torre2-trainer-items.js','trainer-items.js'],
+ ['tools/pokearena/torre2-trainer-strategy.js','trainer-strategy.js'],
  ['tools/pokearena/torre2-training.js','training.js'],
  ['tools/pokearena/torre2-weather.js','weather.js'],
  ['tools/pokearena/torre2-rematch-policy.js','rematch-policy.js'],
@@ -547,7 +548,7 @@ await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 for(const filename of [
- 'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/campaign-core.js',
+ 'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','datos.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
