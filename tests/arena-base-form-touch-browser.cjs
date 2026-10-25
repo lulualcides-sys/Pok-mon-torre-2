@@ -45,9 +45,10 @@ const species=['oddish','koffing','pidgey','rattata','magikarp','joltik'];
    for(const slot of ['rmb','q','e']){
     const initial=await page.evaluate(k=>{
      const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0];
-     me.energia=100;me.ulti=100;me.cd[k]=0;me.accion=null;me.animAccion=null;me.dash=null;me.ko=false;me.est={};me.dolorHasta=-1;me.ultimoAtaque=-100;me.ultimoBasico=-100;me.sobrecargaHasta=0;scene.pausado=false;scene.pausaGolpe=0;scene.fase='lucha';
-     return {form:me.forma.nombre,stage:me.etapa,name:me.kit[k]?.nombre,formId:me.kit[k]?.forma,pending:me.kit[k]?.pendiente,prior:me.stats.usosSlot?.[k]||0,buttons:scene.panelTactil.botones.map(b=>b.slot)};
+     if(k==='e'){me.energia=100;me.ulti=100;}else if(!me.def.torre2ArenaAdded)me.energia=100;me.cd[k]=0;me.accion=null;me.animAccion=null;me.dash=null;me.ko=false;me.est={};me.dolorHasta=-1;me.ultimoAtaque=-100;me.ultimoBasico=-100;me.sobrecargaHasta=0;scene.pausado=false;scene.pausaGolpe=0;scene.fase='lucha';
+     return {form:me.forma.nombre,stage:me.etapa,name:me.kit[k]?.nombre,formId:me.kit[k]?.forma,pending:me.kit[k]?.pendiente,energy:me.energia,cost:me.kit[k]?.coste||0,added:!!me.def.torre2ArenaAdded,prior:me.stats.usosSlot?.[k]||0,buttons:scene.panelTactil.botones.map(b=>b.slot)};
     },slot);
+    if(initial.added&&slot!=='e')assert.ok(initial.energy>=initial.cost,id+' '+slot+' should start with enough natural energy: '+JSON.stringify(initial));
     await page.evaluate(k=>{
      const p=window.__pt2Game.scene.getScene('combate').panelTactil,b=p.botones.find(x=>x.slot===k),pos=p.pos(b),base=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
      const touch={id:76,x:(pos.x-base.x)/(unit.x-base.x),y:(pos.y-base.y)/(unit.y-base.y)};
