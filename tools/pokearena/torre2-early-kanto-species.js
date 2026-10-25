@@ -316,7 +316,7 @@ function kit(native,names,baseId,stageId){
  return out;
 }
 function evolutionaryLine(native,id,dex,name,types,stats,names,evolutions=[]){
- return {id,dex,nombre:name,tipos:types,rol:({CONTROL:'DISTANCIA',TANQUE:'FISICO'}[stats.role]??stats.role),
+ return {id,dex,nombre:name,tipos:types,torre2ArenaAdded:true,rol:({CONTROL:'DISTANCIA',TANQUE:'FISICO'}[stats.role]??stats.role),
   lema:'KANTO WILD POKÉMON',hp:stats.hp,vel:stats.speed,
   atk:stats.attack,def:stats.defense,regen:4,ia:{rango:stats.range||102},
   kit:kit(native,names,id,id),
