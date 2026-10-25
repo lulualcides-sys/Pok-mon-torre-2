@@ -55,25 +55,28 @@ const server=http.createServer(async(req,res)=>{
  };
  await battle();
  for(let i=0;i<5;i++){
-  await page.evaluate(i=>{const b=window.__pt2Game.scene.getScene('combate');b.__torre2SideParty.slots[i%2?0:1].emit('pointerdown');},i);
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='absorb');
-  if(i===0){
-   await page.waitForTimeout(100);
-   const alignment=await page.evaluate(()=>{
-    const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0],g=b.children.list.find(o=>o.__torre2BallWorld);
+  await page.evaluate(i=>{
+   const b=window.__pt2Game.scene.getScene('combate');b.__testBallTrace=[];b.__torre2BeamDebug=null;
+   const collect=()=>{
+    const d=b.__torre2BeamDebug;if(!d||d.side!==0||b.__testBallTrace.some(x=>x.phase===d.phase))return;
+    const a=b.luchadores[0],g=b.children.list.find(o=>o.__torre2BallWorld);
     const offset=((a.manif.head??-16)+(a.manif.feet??5))/2;
-    return {spriteCamera:a.spr.cameraFilter,beamCamera:g.cameraFilter,
-     error:Math.hypot(a.spr.x-b.__torre2BeamDebug.to.x,a.spr.y+offset*a.spr.scaleY-b.__torre2BeamDebug.to.y)};
-   });
-   assert.equal(alignment.spriteCamera,alignment.beamCamera,'Beam must use the world camera, never UI camera');
-   assert.ok(alignment.error<2,'Beam endpoint must touch the currently rendered body');
-   await page.screenshot({path:'test-evidence/ball-recall.png'});
-  }
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='throw');
-  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').luchadores[0].spr.visible),false);
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BeamDebug?.phase==='release');
-  if(i===0){await page.waitForTimeout(150);await page.screenshot({path:'test-evidence/ball-release.png'});}
+    b.__testBallTrace.push({phase:d.phase,visible:d.visible,spriteCamera:a.spr.cameraFilter,beamCamera:g?.cameraFilter,
+     error:Math.hypot(a.spr.x-d.to.x,a.spr.y+offset*a.spr.scaleY-d.to.y)});
+   };
+   b.__testBallCollect=collect;b.game.events.on('poststep',collect);
+   b.__torre2SideParty.slots[i%2?0:1].emit('pointerdown');
+  },i);
+  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__testBallTrace.some(x=>x.phase==='absorb'));
+  if(i===0)await page.screenshot({path:'test-evidence/ball-recall.png'});
   await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('combate').__torre2Changing);
+  const trace=await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.game.events.off('poststep',b.__testBallCollect);return b.__testBallTrace});
+  const alignment=trace.find(x=>x.phase==='absorb');
+  assert.equal(alignment.spriteCamera,alignment.beamCamera,'Beam and sprite use the same world camera');
+  assert.ok(alignment.error<2,'Beam endpoint touches the rendered body');
+  assert.equal(trace.find(x=>x.phase==='throw')?.visible,false,'Incoming body stays hidden during throw');
+  assert.ok(trace.some(x=>x.phase==='release'),'Native release phase was rendered');
+  if(i===0)await page.screenshot({path:'test-evidence/ball-release.png'});
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').luchadores[0].sombra.visible),true,'Replacement restores its own ground shadow');
   const identity=await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0],h=b.hud.lados[0];return {name:a.nombre,hudName:h.identidad[0].text,dex:a.dex,portrait:h.retrato.texture.key}});
   assert.equal(identity.hudName,identity.name,'HUD name follows the incoming Pokemon');

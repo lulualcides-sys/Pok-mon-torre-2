@@ -89,10 +89,12 @@ O primeiro percurso no navegador detectou que o descritor do encontro apontava p
 
 A revisão visual encontrou também nome/retrato antigos no HUD após uma troca. O HUD nativo agora é atualizado junto do lutador, incluindo tipos e nomes dos golpes; a barra de HP não herda o rastro do membro anterior. As regressões conferem nome e retrato, além do sprite de batalha.
 
-O percurso automatizado local verificou Brock, Misty, Lt. Surge, Erika, Koga, Sabrina, Blaine, Giovanni, Lorelei, Bruno, Agatha, Lance e Campeão: 53 entradas de equipe, progressão, dinheiro e salvamento. Usa pulos de rota e nocautes forçados; NÃO é uma campanha jogada normalmente nem teste de balanceamento. A versão com a conferência adicional do HUD está sendo retestada.
+O percurso automatizado local verificou Brock, Misty, Lt. Surge, Erika, Koga, Sabrina, Blaine, Giovanni, Lorelei, Bruno, Agatha, Lance e Campeão: 53 entradas de equipe, progressão, dinheiro e salvamento. Usa pulos de rota e nocautes forçados; NÃO é uma campanha jogada normalmente nem teste de balanceamento. A versão src-5cc7bffeee com a conferência adicional do HUD também passou nos 13 chefes e 53 entradas. O relatório está em evidence/campaign-debug-tour-20261025.json.
 
 Insígnias agora se limitam aos oito ginásios; conquistas da Elite e Campeão ficam em leagueHonors. Migração idempotente mantém vitórias antigas, equipe, dinheiro e progresso. O teste do cliente construído confirmou oito insígnias e cinco honras ao terminar, inclusive lendo um save antigo com as 13 marcas juntas.
 
 A execução remota 40165034819 revelou que o teste climático lançava o laboratório com a configuração antiga. A configuração agora é alterada no mesmo objeto usado pelos controles, aguarda dois quadros de renderização e calcula o clique pelos limites reais do canvas. A checagem explícita da configuração permanece. O teste passou localmente; sucesso remoto ainda deve ser confirmado.
 
 Pendências observadas no percurso: somente Brock concede TM; demais recompensas de ginásio, apresentação/relatório completo e campanha normal continuam pendentes. Não extrapolar o percurso de depuração para alegar que o Script Mestre inteiro foi concluído.
+
+A regressão das Pokébolas agora registra as fases no evento poststep, em vez de depender de capturar uma fase de 360 ms após uma operação de screenshot. Conserva verificações de alinhamento do raio, corpo oculto no lançamento, liberação, cinco trocas e identidade do HUD. Passou localmente com zero erros de frame.
