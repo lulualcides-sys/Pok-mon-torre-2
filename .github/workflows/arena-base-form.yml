@@ -1,0 +1,33 @@
+name: Arena — golpes antes da evolução
+on:
+  push:
+    branches: [fix/arena-base-form-attacks-20261025]
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Criar build Phaser isolado, sem publicar
+        run: |
+          set -euo pipefail
+          for try in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$try" = 3 ]; then exit 1; fi
+            sleep 8
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Testar formas iniciais antes da evolução
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/arena-base-form-touch-browser.cjs
+      - name: Testar regressões de combate e evolução
+        run: |
+          npm test
+          node tests/evolution-modes-built.test.mjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-real-touch-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-evolved-selection-browser.cjs
