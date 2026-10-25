@@ -96,7 +96,7 @@ const server=http.createServer(async(req,res)=>{
  console.log('AFTER_EVOLUTION',JSON.stringify(after));
  assert.equal(after.stage,1);
  for(const slot of ['lmb','rmb','q','e']){assert.ok(after.kit[slot].name,slot+' must survive evolution');assert.equal(after.kit[slot].pending,false)}
- for(const slot of ['rmb','q']){
+ for(const slot of ['rmb','q','e']){
   const prior=await page.evaluate(slot=>{
    const s=window.__pt2Game.scene.getScene('combate'),a=s.luchadores[0];
    a.energia=100;a.ulti=100;a.cd[slot]=0;a.accion=null;a.ko=false;a.est={};a.dash=null;s.fase='lucha';
