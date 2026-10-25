@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-const root=path.resolve('_site/arena2d');
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const modules=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const load=name=>import(pathToFileURL(path.join(root,modules,name)));
 const [{FRLG_LEVEL_UP,FRLG_MACHINES,frlgUnlockLevel,frlgKnownMoves,frlgMachineCompatible},

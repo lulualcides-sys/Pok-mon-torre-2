@@ -1,3 +1,4 @@
+import {createWeather,setWeather,tickWeather,WEATHER_NAMES} from './weather.js';
 import {serializeGen3Status,restoreGen3Status,statusLabel} from './gen3-status.js';
 import {trainerInventory,createTrainerItems,trainerItemStep,TRAINER_ITEM_RULES} from './trainer-items.js';
 import {clearDepartingCombat} from './combat-boundary.js';
@@ -96,6 +97,10 @@ export function installPartyBattle(scene){
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
  const actors=scene.luchadores;
+ const weather=scene.__torre2Weather=createWeather();
+ setWeather(weather,payload.weather||'none');
+ const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2302).setScrollFactor(0);
+ scene.events.once('shutdown',()=>{weatherHud.destroy();scene.__torre2Weather=null;scene.__torre2Rain=null;});
  const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));
  scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));
  const trainerItems=createTrainerItems(party.trainerItems||{});
@@ -112,6 +117,9 @@ export function installPartyBattle(scene){
   }
   const result=nativeStep.call(this,dt);
   if(this.fase==='lucha'&&!this.__torre2Changing){
+   const fainted=tickWeather(weather,dt,actors);
+   weatherHud.setText(weather.kind==='none'?'':WEATHER_NAMES[weather.kind]+' '+Math.ceil(weather.remaining)+'s');
+   for(const actor of fainted)if(!this.__torre2Changing)this.alKO(actor);
    const event=trainerItemStep(trainerItems,actors[1],party.enemyIndex,this.t);
    if(event?.kind==='started')announce('RIVAL USA '+TRAINER_ITEM_RULES[event.item].name+'!');
    if(event?.kind==='healed')announce('+'+Math.round(event.hp)+' HP');

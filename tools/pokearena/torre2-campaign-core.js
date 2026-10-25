@@ -1,3 +1,5 @@
+import {rematchState,rechargeRematches,reserveRematch,consumeRematchResult,validRematchResult} from './rematch-policy.js';
+export {validRematchResult};
 /* Pokémon Torre 2 — campanha solo Kanto, sem conta, servidor ou multiplayer.
  * Reutiliza o combate original Phaser capturado com autorização de pokearena2d.com.
  * Dados em localStorage. Evolução EXCLUSIVAMENTE por nível, APÓS a batalha.
@@ -303,7 +305,7 @@ export function resolveBattle(s,won,random=Math.random){
  const shared=awardSharedTeamExperience(s,reward,{kind:'trainer'});
  const growth=shared.gains.find(g=>g.index===s.active);
  member.hp=100;
- s.wins++;
+ s.wins++;rechargeRematches(s);
  s.money=(s.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+s.stage*60);
  s.pendingCapture=null; // Trainer-owned Pokémon cannot be captured.
  if(opponent.leader){
@@ -413,7 +415,7 @@ export function resolveWildBattle(s,won){
  const shared=awardSharedTeamExperience(s,
   xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),'wild'),{kind:'wild'});
  const growth=shared.gains.find(g=>g.index===s.active);
- s.wins++;
+ s.wins++;rechargeRematches(s);
  s.pendingCapture=null;
  s.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
  saveCampaign(s);return {won:true,message:s.lastMessage,growth,
@@ -455,4 +457,25 @@ export function teachTM(s,itemId,memberIndex=s.active){
  s.inventory.tms.splice(s.inventory.tms.indexOf(itemId),1);
  s.lastMessage=target.id+' aprendeu '+item.move+'. Configure no sumário.';
  saveCampaign(s);return {ok:true,move:item.move};
+}
+
+export function rematchOpponent(s,index){
+ if(s.stage<1||s.stage>=8||!Number.isInteger(index)||index<0||index>=s.trainer||index>=TRAINERS_PER_GYM(s.stage))return null;
+ const foe=currentOpponent({...s,trainer:index});
+ if(!foe||!['trainer','rocket'].includes(foe.kind)||foe.leader)return null;
+ return {...foe,level:Math.min(currentLevelCap(s.stage),foe.level+Math.min(10,(s.badges?.length||0)*2))};
+}
+export function startRematch(s,index){
+ const opponent=rematchOpponent(s,index);
+ if(!opponent)return {ok:false,reason:'Este treinador ainda não tem revanche disponível.'};
+ const ticket=reserveRematch(s,index);
+ if(!ticket)return {ok:false,reason:'VS Seeker: '+rematchState(s).charge+'/3 atividades. Vença outras batalhas para recarregar.'};
+ saveCampaign(s);return {ok:true,opponent,ticket};
+}
+export function resolveRematch(s,ticket,won){
+ if(!consumeRematchResult(s,ticket))return {ok:false,reason:'Resultado antigo de revanche ignorado.'};
+ let money=0,xp=0,shared=null;
+ if(won){money=Math.floor((180+s.stage*60)/2);xp=Math.max(1,Math.floor(xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),'trainer')*.6));shared=awardSharedTeamExperience(s,xp,{kind:'trainer'});s.money=(s.money||0)+money;s.rematches.wins=(s.rematches.wins||0)+1;}
+ s.lastMessage=won?'Revanche vencida! +'+xp+' EXP para a equipe · +$'+money+'.':'Revanche encerrada. Cure a equipe para tentar novamente.';
+ saveCampaign(s);return {ok:true,won,money,xp,shared,message:s.lastMessage};
 }

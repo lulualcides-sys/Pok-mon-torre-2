@@ -632,6 +632,9 @@ const server=http.createServer(async(req,res)=>{
     o.getData?.('torre2-path-action')==='TREINAMENTO');
    if(!control)throw Error('No TREINAMENTO sidebar button');
    control.emit('pointerdown');
+   const legacy=c.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-500)<1&&Math.abs(o.y-310)<1);
+   if(!legacy)throw Error('Laboratory must preserve TREINO DE GOLPES');
+   legacy.emit('pointerdown');
    return true;
   });
   try{

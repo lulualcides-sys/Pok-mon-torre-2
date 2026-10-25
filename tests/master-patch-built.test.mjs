@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-const root='../_site/arena2d/';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root=pathToFileURL(path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d')+'/').href;
 const version=JSON.parse(fs.readFileSync(new URL(root+'version.json',import.meta.url))).modules;
 const load=name=>import(new URL(root+version+'/'+name,import.meta.url));
 const [{buscar,etapaDe},{KANTO_151},{resolveLoadout},{createCampaign,resolveBattle,attemptCapture,readCampaign,saveCampaign,SAVE_KEY}]=await Promise.all([

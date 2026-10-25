@@ -3,7 +3,7 @@ import {pathToFileURL} from 'node:url';
 import fs from 'node:fs';
 import path from 'node:path';
 import {spawnSync} from 'node:child_process';
-const stage=path.resolve('_site/arena2d');
+const stage=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const version=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8')).modules;
 assert.ok(version,'Captured Phaser original client not staged');
 // Browser startup must never be blocked by malformed JS in campaign,

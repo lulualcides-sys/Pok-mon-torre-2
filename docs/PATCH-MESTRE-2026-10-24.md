@@ -43,3 +43,28 @@ A primeira validação remota passou no run 40098332518, commit ae8b847ffc61945c
 Validação local: 112 testes unitários e npm run check passaram. Testes do cliente construído cobrem as 151 formas, campanha por chamadas diretas e learnsets FRLG. No Chromium/WebGL: imunidade Elétrico/Terra, poção única de Brock e bloqueio de ataques passaram; aplicação nativa de veneno, exclusividade, serialização, sono e descongelamento também passaram. Os testes de status usam chamadas controladas; ainda falta verificar todas as combinações em partidas normais.
 
 O antigo npm run test:browser apontava ao laboratório Pixi da raiz e falhou por indisponibilidade da dependência CDN, antes de abrir o jogo. O comando agora valida o cliente Phaser construído em _site/arena2d, incluindo evoluções/FIGHT, tipos/status/itens e captura/trocas/mobile. O teste antigo permanece em test:browser:legacy. Requer construir _site antes e informar CHROME_BIN.
+
+## Continuação: clima e laboratório
+
+O run 40123076942 passou no commit e540cfe. Esse commit foi integrado à principal e publicado pelo run 40125113130. A continuação incorporou também 52b63a9, correção independente dos controles móveis da Arena, sem sobrescrevê-la.
+
+Clima agora pertence à batalha, com cinco janelas de quatro segundos, substituição e expiração. Sol/chuva aplicam 1,5× e 0,5× ao dano de Fogo/Água; Solar Beam é reduzido em chuva/areia/granizo. Areia/granizo causam 1/16 do HP máximo por janela, respeitando os tipos imunes e sem bônus moderno de defesa especial. Rain Dance ativa esse estado ao ser usado. Sol impede novo congelamento.
+
+O laboratório abre pelo botão TREINAMENTO, permite escolher qualquer uma das 151 espécies nos dois lados, nível, clima, aplicar status, curar, trocar e enfrentar IA com itens limitados. Mewtwo nível 50 permanece padrão e reserva. O treino anterior de golpes permanece acessível. Resultados de laboratório/treino são ignorados pela campanha antes de qualquer mutação; teste real confirmou save idêntico após uma vitória de laboratório.
+
+116 testes unitários passaram; navegador confirmou 151 configurações válidas, dano climático/imunidade, multiplicadores reais de Água, prevenção de congelamento pelo sol e expiração durante simulação. O teste usa configuração direta para acelerar, não uma campanha completa.
+
+Pendências de clima: os três movimentos climáticos ainda ausentes precisam de integração ao catálogo com efeitos aprovados; visuais globais de sol/areia/granizo e sincronização do visual Rain Dance com o estado global continuam pendentes. As funções de precisão de Thunder e recuperação climática estão testadas isoladamente, mas ainda não estão ligadas a todos os renderizadores/golpes. O laboratório ainda não oferece Shiny e captura isolada. Não declarar estes itens completos.
+
+
+## Continuação em 25/10: revanches e prévias da Arena
+
+Revanches opcionais de treinadores comuns/Rocket derrotados nas etapas 1–7 usam três cargas obtidas em vitórias reais fora de revanches. A reserva consome a carga antes de entrar; o resultado exige o ticket salvo e é aceito uma única vez. Níveis sobem moderadamente com insígnias e respeitam o teto regional. Vitória concede metade do dinheiro normal e 60% do XP compartilhado. Não altera o contador principal nem concede novamente insígnia ou TM. Por enquanto a seleção contempla apenas treinadores da etapa atual, sem ginásios ou antigos mapas.
+
+Navegador: revanche selecionada pelo mapa, nível 15 dentro do teto 21, dinheiro 1400 → 1520, +211 XP, carga zerada; repetição do resultado não concede prêmio. O teste acelera o desmaio adversário por depuração; não representa vitória jogada normalmente.
+
+A tela de preparação da Arena carregava sprites somente quando a aparência diferia da forma base. As espécies adicionais de Kanto, ainda não carregadas, apareciam como quadros verdes. Agora a prévia aguarda o carregamento nativo da própria espécie e só cria o sprite quando a animação existe. Teste Chromium confirmou seis prévias animadas e clique real em FIGHT iniciando seis lutadores com sprites válidos.
+
+Cliente-base capturado nesta continuação: src-bf2b6eb2f1. Versão local construída: src-944d16417a. Os testes usam uma saída isolada (_validation), evitando reconstrução dos arquivos durante a execução. Testes do cliente construído agora aceitam PREVIEW_ROOT, com _site como padrão de CI.
+
+121 testes unitários, checagem de sintaxe e política de reaproveitamento passaram. Regressões do cliente construído passaram para atributos das 151 formas, learnsets, progressão por chamadas diretas, revanches e preservação dos movimentos do lote finale13. Laboratório e revanche passaram também no navegador. A suíte completa e a publicação desta continuação devem ser registradas após sua execução, sem presumir sucesso.

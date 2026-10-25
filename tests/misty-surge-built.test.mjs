@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {LEVEL_EVOLUTIONS,createPokemonProgression} from '../src/progression.js';
-const base=path.resolve('_site/arena2d');
+const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const ver=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8')).modules;
 const file=p=>path.join(base,ver,p);
 const mod=p=>import(pathToFileURL(file(p)));

@@ -1,3 +1,4 @@
+import {rematchOpponent} from './campaign-core.js';
 /* Pokémon Torre 2 — Kanto Battle Path hub, replaces the cluttered city map.
  * Phaser/WebGL native scene objects only. No pasted mockup, HTML overlay,
  * CSS-made combat or changes to the approved Poké Arena 2D move runtime.
@@ -245,6 +246,7 @@ export function renderBattlePath(scene,state,handlers){
    g.lineStyle(1,done?0x76e0a6:0xb6ced9,.98);
    g.strokeCircle(p.x-10+d*10,p.y+23,2.1);
   }
+  if(done&&!capture&&rematchOpponent(state,i))txt(scene,p.x,p.y+22,(state.rematches?.charge||0)>=3?'REVANCHE':'VS '+(state.rematches?.charge||0)+'/3',6,'#f7d986',25);
   if(done){
    g.fillStyle(0x28c868);g.fillCircle(p.x+width/2-8,p.y-17,7);
    g.lineStyle(2,0xffffff);g.lineBetween(p.x+width/2-11,p.y-17,p.x+width/2-9,p.y-14);
@@ -267,6 +269,7 @@ export function renderBattlePath(scene,state,handlers){
   zone.on('pointerdown',()=>{
    if(capture&&available)return handlers.capture();
    if(active)return boss?handlers.gym():handlers.battle();
+   if(done&&!capture&&rematchOpponent(state,i))return handlers.rematch?.(i);
    if(!done)handlers.locked();
   });
   hitZones.push(zone);
