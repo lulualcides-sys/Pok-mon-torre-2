@@ -18,7 +18,11 @@ const server=http.createServer(async(req,res)=>{
  const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
  page.on('pageerror',error=>errors.push(String(error)));
  await page.goto('http://127.0.0.1:4291/arena2d/');
- await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
+ try{await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});}
+ catch(error){
+  const diag=await page.evaluate(()=>({title:document.title,body:document.body?.innerText?.slice(0,1000),start:window.__pt2Started,game:!!window.__pt2Game,scenes:window.__pt2Game?.scene.scenes.map(s=>({key:s.scene.key,active:s.scene.isActive()}))})).catch(e=>({error:String(e)}));
+  console.error('STARTUP_DIAGNOSTICS',JSON.stringify({errors,diag}));throw error;
+ }
  // Inspect generated code, including not-yet-loaded evolved forms.
  const kits=await page.evaluate(async()=>{
   const url=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
