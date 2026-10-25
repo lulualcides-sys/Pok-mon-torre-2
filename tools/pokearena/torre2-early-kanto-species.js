@@ -246,6 +246,15 @@ export function nativeAttacks(original){
   const key=h.nombre.trim().toLowerCase();
   if(!lookup.has(key))lookup.set(key,h);
  }
+ // A new public-client revision may drop a previously-approved native
+ // Sludge Bomb loadout while the original bombaLodo renderer remains.
+ // Restore ONLY its verified old move parameters, not new VFX or sprite art.
+ // Original source snapshot: pokearena2d-cliente-phaser/src-0d19a02372/datos.js
+ if(!lookup.has('sludge bomb'))lookup.set('sludge bomb',{
+  nombre:'Sludge Bomb',forma:'bombaLodo',tipo:'POISON',dano:14,
+  alcance:190,radio:28,vuelo:.55,alto:46,charco:{radio:28,dur:3},
+  veneno:{dps:3,dur:3},coste:35,cd:5,anim:'Shoot',lanzar:.18
+ });
  return lookup;
 }
 const CUSTOM=Object.freeze({
