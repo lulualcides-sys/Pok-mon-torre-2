@@ -477,7 +477,7 @@ for(const [filename,changes] of patches){
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
    if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){
-    const dataImport=body.match(/import\\{[^}]*\\}from["']\\.\\/datos\\.js["'];/);
+    const dataImport=body.match(/import\{[^}]*\}from["']\.\/datos\.js["'];/);
     const helper='import{campaignFighterLevel as torre2FighterLevel,campaignDamageMultiplier as torre2DamageMultiplier,campaignScaledHp as torre2ScaledHp,CAMPAIGN_PLAYER_DAMAGE_BOOST as torre2PlayerDamageBoost}from"./torre2/level-balance.js";';
     if(!dataImport)throw Error('Native fighter data import changed beyond safe scope');
     if(!body.includes(helper))body=body.replace(dataImport[0],dataImport[0]+helper);
