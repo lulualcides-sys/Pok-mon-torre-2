@@ -7,7 +7,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -16,8 +16,9 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm test && npm run check
       - run: node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs
-      - run: node tests/master-patch-built.test.mjs && node tests/solo-kanto-built.test.mjs
+      - run: node tests/master-patch-built.test.mjs && node tests/solo-kanto-built.test.mjs && node tests/rematches-built.test.mjs && node tests/campaign-awards-built.test.mjs
       - run: CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - run: CHROME_BIN="$(command -v google-chrome)" npm run test:campaign
       - run: CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
       - uses: actions/upload-artifact@v4
         if: always()

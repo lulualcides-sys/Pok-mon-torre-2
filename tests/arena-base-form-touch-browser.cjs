@@ -3,7 +3,7 @@
 // Exercises the actual mobile SKL/Q/ULT input and verifies roster base kits.
 const assert=require('node:assert/strict'),fsp=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright-core');
-const root=path.resolve('_site'),port=4296,mime={'.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.ogg':'audio/ogg','.mp3':'audio/mpeg'};
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site'),port=4296,mime={'.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.ogg':'audio/ogg','.mp3':'audio/mpeg'};
 const server=http.createServer(async(req,res)=>{
  const u=new URL(req.url||'/','http://127.0.0.1:'+port),target=path.resolve(root,'.'+(u.pathname.endsWith('/')?u.pathname+'index.html':u.pathname));
  if(!target.startsWith(root+path.sep)){res.writeHead(403);return res.end('forbidden');}

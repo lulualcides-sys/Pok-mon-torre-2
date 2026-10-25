@@ -3,7 +3,7 @@
 // Verifies ORIGINAL/native unchanged and all Kanto-added families harmonized.
 const assert=require('node:assert/strict'),fsp=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright-core');
-const root=path.resolve('_site');
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const mime={'.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.ogg':'audio/ogg','.mp3':'audio/mpeg'};
 const server=http.createServer(async(req,res)=>{
  const uri=new URL(req.url,'http://127.0.0.1:4297');

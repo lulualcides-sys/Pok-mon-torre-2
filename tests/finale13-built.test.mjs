@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-const root=path.resolve('_site/arena2d');
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const ver=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const base=path.join(root,ver);
 const load=p=>import(pathToFileURL(path.join(base,p)));
@@ -130,7 +130,7 @@ try{
  }
 }finally{Math.random=savedRandom}
 const fighter=fs.readFileSync(path.join(base,'luchador.js'),'utf8');
-for(const name of ['torre2LightScreen','torre2SandAccuracy','__torre2Rain'])
+for(const name of ['torre2LightScreen','torre2SandAccuracy','__torre2Weather','weatherDamageMultiplier'])
  assert.ok(fighter.includes(name),'Native combat missing status integration '+name);
 const fxText=fs.readFileSync(path.join(base,'torre2/finale13.js'),'utf8');
 assert.ok(fxText.includes('function simpleBarrier('),

@@ -1,7 +1,7 @@
 'use strict';
 const assert=require('node:assert/strict'), fs=require('node:fs'),fsp=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright-core');
-const root=path.resolve('_site');
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const MIME={'.html':'text/html','.js':'text/javascript','.json':'application/json','.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.ogg':'audio/ogg','.mp3':'audio/mpeg'};
 const server=http.createServer(async(req,res)=>{
  const url=new URL(req.url,'http://127.0.0.1:4287'),target=path.resolve(root,'.'+(url.pathname.endsWith('/')?url.pathname+'index.html':url.pathname));

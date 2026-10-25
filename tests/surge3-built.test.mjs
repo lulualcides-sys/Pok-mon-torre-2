@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-const root=path.resolve('_site/arena2d');
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const dir=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const moduleAt=name=>import(pathToFileURL(path.join(root,dir,name)).href);
 const {SURGE3_MOVES,SURGE_LEADER_LOADOUTS}=await moduleAt('torre2/surge3/catalog.js');

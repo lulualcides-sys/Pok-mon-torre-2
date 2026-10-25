@@ -1,0 +1,17 @@
+import assert from'node:assert/strict';import fs from'node:fs';
+import path from 'node:path';import {pathToFileURL} from 'node:url';
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
+const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
+const core=await import(pathToFileURL(path.join(root,version,'torre2/campaign-core.js')).href);
+const map=new Map();globalThis.localStorage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)};
+const s=core.createCampaign('charmander');s.stage=1;s.trainer=3;s.badges=['Boulder'];s.rematches={charge:3,sequence:0,wins:0,pending:null};
+assert.equal(core.rematchOpponent(s,3),null);assert.equal(core.rematchOpponent({...s,stage:0},0),null);
+const before=JSON.stringify({stage:s.stage,trainer:s.trainer,badges:s.badges,tms:s.inventory.tms,wins:s.wins});
+const initialMoney=s.money,r=core.startRematch(s,0);assert.ok(r.ok);assert.equal(s.rematches.charge,0);assert.equal(core.startRematch(s,0).ok,false);
+const loaded=core.readCampaign(),result=core.resolveRematch(loaded,r.ticket,true);assert.ok(result.ok);assert.ok(result.xp>0);assert.equal(result.money,120);assert.equal(loaded.money,initialMoney+120);
+assert.equal(JSON.stringify({stage:loaded.stage,trainer:loaded.trainer,badges:loaded.badges,tms:loaded.inventory.tms,wins:loaded.wins}),before);
+assert.equal(core.resolveRematch(loaded,r.ticket,true).ok,false);assert.equal(loaded.money,initialMoney+120);assert.equal(loaded.rematches.charge,0);
+for(let i=0;i<3;i++)core.resolveBattle(loaded,true,()=>0);assert.equal(loaded.rematches.charge,3);
+const next=core.startRematch(loaded,0);assert.ok(next.ok);assert.notEqual(next.ticket.token,r.ticket.token);
+assert.equal(core.resolveRematch(loaded,r.ticket,true).ok,false);assert.equal(core.resolveRematch(loaded,next.ticket,false).ok,true);
+console.log('PASS rematches: eligibility, charge, real XP/money, replay rejection, reload, no badge/TM/story duplication');

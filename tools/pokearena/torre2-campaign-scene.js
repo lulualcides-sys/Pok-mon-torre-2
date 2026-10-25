@@ -1,3 +1,6 @@
+import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
+import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
+import {WEATHER_NAMES} from './weather.js';
 /* Pokémon Torre 2 — offline campaign frontend inside original Phaser game.
  * No login, network API or online match dependency.
  */
@@ -119,10 +122,12 @@ create(){
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   let state=readCampaign();
-  if(this.result&&state){
+  if(this.result&&state&&!this.result.marker?.training&&!this.result.marker?.laboratory){
    // Return to the same gym map. Stage changes only after the leader.
    const marker=this.result.marker||{};
-   if(marker.stage===state.stage&&marker.trainer===state.trainer){
+   if(marker.kind==='rematch'){
+    if(validRematchResult(state,marker.ticket)){applyPartyBattleResult(state,marker.party);resolveRematch(state,marker.ticket,!!this.result.won);}
+   }else if(marker.stage===state.stage&&marker.trainer===state.trainer){
     applyPartyBattleResult(state,marker.party);
     const summary=marker.kind==='wild'&&state.pendingWild?.id===marker.id?
      resolveWildBattle(state,!!this.result.won):resolveBattle(state,!!this.result.won);
@@ -285,6 +290,7 @@ create(){
    this.__torre2PathDetails(text,this,foe);
   };
   const path=renderBattlePath(this,state,{
+   rematch:i=>this.rematchScreen(state,i),
    battle:()=>this.enterBattle(state),
    gym:()=>this.gymScreen(state),
    training:()=>this.enterTraining(state),
@@ -433,7 +439,44 @@ create(){
    fontSize:'12px',color:C.muted}).setOrigin(.5);
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
+ rematchScreen(state,index){
+  const foe=rematchOpponent(state,index);if(!foe)return;
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,60,'REVANCHE · '+foe.name.toUpperCase(),titleStyle).setOrigin(.5);
+  text(this,320,110,'Equipe até Nv.'+foe.level+' · VS Seeker '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
+  text(this,320,151,'Recarrega ao vencer 3 outras batalhas.',statusStyle).setOrigin(.5);
+  text(this,320,178,'Não concede insígnias, TMs ou progresso da história.',statusStyle).setOrigin(.5);
+  this.button(320,235,240,40,'REVANCHE',()=>{
+   const result=startRematch(state,index);
+   if(!result.ok){text(this,320,278,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5);return;}
+   const party=createPartyMatch({...state,trainer:index},currentOpponent({...state,trainer:index}),false);
+   for(const member of party.foes){member.level=Math.min(currentLevelCap(state.stage),member.level+Math.min(10,(state.badges?.length||0)*2));member.loadout=resolveLoadout({id:member.id,progression:{species:member.id,level:member.level}});}
+   const p=party.friend[party.playerIndex],e=party.foes[0];
+   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
+   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
+  },true);
+  this.button(320,320,230,32,'◀ MAPA',()=>this.scene.restart());
+ }
  enterTraining(state){
+  this.children.removeAll(true);this.backdrop();
+  const cfg=this.__labConfig??={player:'mewtwo',enemy:'onix',level:50,weather:'none'};
+  text(this,320,35,'LABORATÓRIO · 151 POKÉMON',titleStyle).setOrigin(.5);
+  text(this,320,65,'Testes isolados · sem XP, dinheiro ou alterações no save',statusStyle).setOrigin(.5);
+  const change=(key,delta)=>{const i=KANTO_151_IDS.indexOf(cfg[key]);cfg[key]=KANTO_151_IDS[(i+delta+151)%151];this.enterTraining(state)};
+  for(const [key,y,title]of [['player',115,'JOGADOR'],['enemy',170,'ADVERSÁRIO']]){
+   text(this,320,y-20,title+': '+cfg[key].toUpperCase(),{fontSize:'13px'}).setOrigin(.5);
+   this.button(165,y+6,70,28,'−10',()=>change(key,-10));this.button(245,y+6,70,28,'◀',()=>change(key,-1));
+   this.button(395,y+6,70,28,'▶',()=>change(key,1));this.button(475,y+6,70,28,'+10',()=>change(key,10));
+  }
+  this.button(165,220,80,30,'NV −5',()=>{cfg.level=Math.max(1,cfg.level-5);this.enterTraining(state)});
+  text(this,320,220,'NÍVEL '+cfg.level,{fontSize:'14px'}).setOrigin(.5);
+  this.button(475,220,80,30,'NV +5',()=>{cfg.level=Math.min(100,cfg.level+5);this.enterTraining(state)});
+  this.button(320,260,270,30,'CLIMA: '+WEATHER_NAMES[cfg.weather],()=>{const keys=Object.keys(WEATHER_NAMES);cfg.weather=keys[(keys.indexOf(cfg.weather)+1)%keys.length];this.enterTraining(state)});
+  this.button(140,310,155,34,'◀ MAPA',()=>this.scene.restart());
+  this.button(320,310,175,34,'TESTAR BATALHA',()=>{const match=prepareLaboratoryMatch(cfg);const touch='ontouchstart' in window||navigator.maxTouchPoints>0;match.mandos=[touch?'tactil':'kbm','cpu'];this.launchBattle(match,false)},true);
+  this.button(500,310,155,34,'TREINO DE GOLPES',()=>this.enterMoveTraining(state));
+ }
+ enterMoveTraining(state){
   const match=prepareTrainingMatch(state);
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
@@ -452,15 +495,13 @@ create(){
    leader:state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
-  match.p1=party.friend[party.playerIndex].id;
-  match.torre2Loadout=party.friend[party.playerIndex].loadout;
-  match.torre2OpponentLoadout=party.foes[0].loadout;
-  if(earlyKantoSlotPlan(match.p2)){
-   const level=wild?(state.pendingWild?.level??5):(currentOpponent(state)?.level??5);
-   match.torre2OpponentLoadout=resolveLoadout({
-    id:match.p2,progression:{species:match.p2,level}
-   });
-  }
+  // The encounter descriptor names the ace; the party opens with its first
+  // member. Sprite, level, stats and loadout must all use that same member.
+  const firstPlayer=party.friend[party.playerIndex],firstEnemy=party.foes[party.enemyIndex];
+  match.p1=firstPlayer.id;match.p2=firstEnemy.id;
+  match.torre2.playerLevel=firstPlayer.level;match.torre2.enemyLevel=firstEnemy.level;
+  match.torre2Loadout=firstPlayer.loadout;
+  match.torre2OpponentLoadout=firstEnemy.loadout;
   const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
   match.mandos=[touch?'tactil':'kbm','cpu'];
   this.launchBattle(match,wild);
@@ -487,7 +528,8 @@ create(){
      '   TETO NV.'+match.torre2.hardCap,{
      fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
     installPartyBattle(battle);
-    if(match.torre2.training)installTrainingDummy(battle);
+    if(match.torre2.laboratory)installLaboratoryControls(battle);
+    else if(match.torre2.training)installTrainingDummy(battle);
     else if(wild)installWildCapture(battle);
     // Phaser restarts the SAME battle scene to send out the next Pokémon.
     // Keep this ONE listener while battling so every replacement gets a HUD.

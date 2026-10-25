@@ -166,7 +166,11 @@ await Promise.all([
  ['tools/pokearena/torre2-gen3-types.js','gen3-types.js'],
  ['tools/pokearena/torre2-gen3-status.js','gen3-status.js'],
  ['tools/pokearena/torre2-trainer-items.js','trainer-items.js'],
+ ['tools/pokearena/torre2-trainer-strategy.js','trainer-strategy.js'],
  ['tools/pokearena/torre2-training.js','training.js'],
+ ['tools/pokearena/torre2-weather.js','weather.js'],
+ ['tools/pokearena/torre2-rematch-policy.js','rematch-policy.js'],
+ ['tools/pokearena/torre2-laboratory.js','laboratory.js'],
  ['tools/pokearena/torre2-training-input.js','training-input.js'],
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
@@ -412,7 +416,7 @@ patches.push(['luchador.js',[
 // Campaign-only Gen III matchups and STAB, preserving all approved renderers.
 patches.push(['luchador.js',[
  ['import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";',
-  'import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";import{gen3Effectiveness,gen3Stab,gen3BurnModifier,gen3Category,gen3Types}from"./torre2/gen3-types.js";'],
+  'import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";import{gen3Effectiveness,gen3Stab,gen3BurnModifier,gen3Category,gen3Types}from"./torre2/gen3-types.js";import{weatherDamageMultiplier}from"./torre2/weather.js";'],
  ['const mult=g.puro||REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);',
   'const mult=g.puro?1:e.datos?.torre2?gen3Effectiveness(g.tipo,this.tipos):REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);if(e.datos?.torre2&&!mult){this.avisar("immune",()=>vfx.textoFlotante(e,this.x,this.y-this.alto-14,"NÃO AFETOU!",{color:"#b0bfcd",dur:700,sube:8}),1);return"miss"}'],
  ['if(fuente?.est.quemado)d*=ESTADOS_TIPO.FIRE.dano;',
@@ -427,6 +431,8 @@ patches.push(['luchador.js',[
 // Persistent campaign status; native renderers still read the same est object.
 patches.push(['luchador.js',[["import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";","import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";import{applyGen3Status,tickGen3Status,gen3StatusInput}from\"./torre2/gen3-status.js\";"],["ponerEstado(nombre,dur,datos={}){","ponerEstado(nombre,dur,datos={}){if(this.escena.datos?.torre2&&applyGen3Status(this,nombre,datos))return;"],["update(dt,intento){if(this.remoto)","update(dt,intento){if(this.escena.datos?.torre2&&!this.remoto){tickGen3Status(this,dt);intento=gen3StatusInput(this,intento)}if(this.remoto)"],["const ritmo=this.est.paralizado?ESTADOS_TIPO.ELECTRIC.ataque:1;","const ritmo=this.est.paralizado&&!this.est.paralizado.torre2Status?ESTADOS_TIPO.ELECTRIC.ataque:1;"],["const q=this.est[clave];if(!q)continue;","const q=this.est[clave];if(!q||q.torre2Status)continue;"],["if(this.est.confuso){mx=-mx;my=-my}","if(this.est.confuso&&!this.est.confuso.torre2Status){mx=-mx;my=-my}"],["const zz=this.est.dormido;if(zz){","const zz=this.est.dormido;if(zz&&!zz.torre2Status){"]]]);
 patches.push(['luchador.js',[["this.hp=Math.max(this.inmortal?1:0,this.hp-d);","if(e.datos?.torre2&&d>0&&g.tipo===\"FIRE\"&&!g.puro&&this.est.congelado?.torre2Status)delete this.est.congelado;this.hp=Math.max(this.inmortal?1:0,this.hp-d);"],["this.ponerEstado(\"veneno\",v.dur,{dps:v.dps,fuente})","this.ponerEstado(v.toxic?\"toxic\":\"veneno\",v.dur,{dps:v.dps,fuente,toxic:v.toxic===true})"]]]);
+patches.push(['habilidades.js',[["import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from\"./config.js\";","import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from\"./config.js\";import{weatherFromMove}from\"./torre2/weather.js\";"],["etiquetarAccion(l,accionAntes,h,slot);l.energia-=coste;","etiquetarAccion(l,accionAntes,h,slot);weatherFromMove(l,h);l.energia-=coste;"]]]);
+patches.push(['escenas/preparar.js',[["if(dex!==p.dex&&!this.anims.exists(`${dex}-Idle-0`)){precargarLineas(this,[pl.id],[aspecto]);alTerminarCarga(this,()=>{t.mostrado=null;this.refrescar()});dex=p.dex}","if(!this.anims.exists(`${dex}-Idle-0`)){this.__torre2PreviewQueued??=new Set();if(!this.__torre2PreviewQueued.has(dex)){this.__torre2PreviewQueued.add(dex);precargarLineas(this,[pl.id],[aspecto]);alTerminarCarga(this,()=>{if(this.scene.isActive()&&this.anims.exists(`${dex}-Idle-0`)){t.mostrado=null;this.refrescar()}})}c.add(texto(this,52,55,\"LOADING...\",{tam:7}).setOrigin(.5));return}"]]]);
 // Flash Cannon lowers Special Defense on an actual successful hit.
 // The Arena 2D base has one generic defensive stat: apply the stage modifier
 // ONLY to explicitly tagged SPECIAL Torre 2 moves, never to physical natives.
@@ -442,7 +448,7 @@ patches.push(['luchador.js',[
  ['recibir(fuente,g){if(this.ko)return"nada";',
   'recibir(fuente,g){if(this.ko)return"nada";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente?.est?.torre2SandAccuracy&&Math.random()<(fuente.est.torre2SandAccuracy.chance??.28))return"miss";'],
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);',
-  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;if(e.__torre2Rain?.until>e.t){if(g.tipo==="WATER")d*=1.35;else if(g.tipo==="FIRE")d*=.65}}']
+  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;d*=weatherDamageMultiplier(e.__torre2Weather,g.tipo,g.nombre||fuente?.kit?.[g.slot]?.nombre);}']
 ]]);
 // Preload every member before first round: in-place swap never triggers LOADING.
 patches.push(['escenas/combate.js',[[
@@ -585,11 +591,11 @@ await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 for(const filename of [
- 'escenas/seleccion.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/campaign-core.js',
+ 'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'torre2/move-pool.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
- 'torre2/party-battle.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
+ 'torre2/party-battle.js','torre2/weather.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 for(const name of (await fs.readdir('tools/pokearena/batch24')).sort())

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
-const root=path.resolve('_site/arena2d');
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const ver=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const load=p=>import(pathToFileURL(path.join(root,ver,p)));
 const {ROSTER,buscar}=await load('datos.js');

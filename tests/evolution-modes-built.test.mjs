@@ -7,7 +7,7 @@ import path from 'node:path';
 import assert from 'node:assert/strict';
 
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
-const version=fs.readdirSync(root).find(x=>/^src-[a-f0-9]{10}$/.test(x));
+const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 assert.ok(version,'Captured Phaser source not available');
 const read=relative=>fs.readFileSync(path.join(root,version,relative),'utf8');
 const fighter=read('luchador.js'),touch=read('tactil.js'),hud=read('hud.js');

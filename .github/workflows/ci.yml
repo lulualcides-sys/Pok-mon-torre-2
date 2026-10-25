@@ -57,7 +57,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         continue-on-error: true
         run: |
-          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser:legacy
       - name: Preservar capturas e erros mesmo na falha
         if: always()
         uses: actions/upload-artifact@v4

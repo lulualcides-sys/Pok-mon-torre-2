@@ -1,3 +1,6 @@
+import {createTrainerStrategy,chooseTrainerSwitch} from './trainer-strategy.js';
+import {gen3Effectiveness} from './gen3-types.js';
+import {createWeather,setWeather,tickWeather,WEATHER_NAMES} from './weather.js';
 import {serializeGen3Status,restoreGen3Status,statusLabel} from './gen3-status.js';
 import {trainerInventory,createTrainerItems,trainerItemStep,TRAINER_ITEM_RULES} from './trainer-items.js';
 import {clearDepartingCombat} from './combat-boundary.js';
@@ -9,7 +12,7 @@ import {clearDepartingCombat} from './combat-boundary.js';
 import {STAGES,campaignStarter,rivalChampionTeam} from './campaign-core.js';
 import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
-import {buscar} from '../datos.js';
+import {buscar,etapaDe} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
 import {animateBallActor} from './ball-choreography.js';
 
@@ -58,7 +61,7 @@ export function createPartyMatch(state,opponent,wild=false){
  if(!(friend[playerIndex]?.hp>0))
   playerIndex=friend.findIndex(m=>m.hp>0);
  if(playerIndex<0)playerIndex=0;
- return {friend,foes,playerIndex,enemyIndex:0,changes:0,trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
+ return {friend,foes,playerIndex,enemyIndex:0,changes:0,strategic:!wild&&opponent.leader===true,trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
 }
 export function applyPartyBattleResult(state,party){
  if(!party||!Array.isArray(party.friend))return;
@@ -96,10 +99,15 @@ export function installPartyBattle(scene){
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
  const actors=scene.luchadores;
+ const weather=scene.__torre2Weather=createWeather();
+ setWeather(weather,payload.weather||'none');
+ const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2302).setScrollFactor(0);
+ scene.events.once('shutdown',()=>{weatherHud.destroy();scene.__torre2Weather=null;scene.__torre2Rain=null;});
  const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));
  scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));
  const trainerItems=createTrainerItems(party.trainerItems||{});
  scene.__torre2TrainerItems=trainerItems;
+ const strategy=scene.__torre2TrainerStrategy=createTrainerStrategy(party.strategic===true);
  const enemyControl=scene.controles?.[1],readControl=enemyControl?.leer;
  if(readControl)enemyControl.leer=function(dt){return trainerItems.pending?null:readControl.call(this,dt)};
  scene.events.once('shutdown',()=>{if(readControl)enemyControl.leer=readControl;scene.__torre2TrainerItems=null});
@@ -112,9 +120,18 @@ export function installPartyBattle(scene){
   }
   const result=nativeStep.call(this,dt);
   if(this.fase==='lucha'&&!this.__torre2Changing){
+   const fainted=tickWeather(weather,dt,actors);
+   weatherHud.setText(weather.kind==='none'?'':WEATHER_NAMES[weather.kind]+' '+Math.ceil(weather.remaining)+'s');
+   for(const actor of fainted)if(!this.__torre2Changing)this.alKO(actor);
    const event=trainerItemStep(trainerItems,actors[1],party.enemyIndex,this.t);
    if(event?.kind==='started')announce('RIVAL USA '+TRAINER_ITEM_RULES[event.item].name+'!');
    if(event?.kind==='healed')announce('+'+Math.round(event.hp)+' HP');
+   const next=chooseTrainerSwitch(strategy,{time:this.t,activeIndex:party.enemyIndex,
+    blocked:this.__torre2Changing||this.fase!=='lucha'||!!trainerItems.pending||!!actors[1].accion||!!actors[1].dash||actors.some(a=>a.hp<=0||a.ko),
+    opponentTypes:actors[0].tipos||[],members:party.foes.map((m,i)=>{
+     const {def,etapa}=buscar(m.id);return {...m,types:etapaDe(def,etapa).tipos||[],hp:i===party.enemyIndex?clamp(actors[1].hp/actors[1].hpMax*100):m.hp};
+    })},gen3Effectiveness);
+   if(next>=0){announce('RIVAL RECOLHE SEU POKÉMON!');recall(1,next);}
   }
   return result;
  };
@@ -354,6 +371,10 @@ export function installPartyBattle(scene){
    actor.hp=Math.max(1,Math.round(actor.hpMax*member.hp/100));
    actor.ko=false;
    restoreGen3Status(actor,member.status);
+   // Native HUD caches names, portraits, types and move captions. Refresh it
+   // after the same fighter object has become the incoming party member.
+   scene.hud?.alEvolucionar?.(actor);
+   const hudSide=scene.hud?.lados?.[side];if(hudSide)hudSide.estela=actor.hp;
    fx.clear();ball.clear();
    animateBallActor(scene,actor,{side,from,drawBall:drawCaptureBall,onComplete:()=>{
     if(peer&&peerHpRatio!==null&&peer.hpMax>0){
@@ -431,28 +452,9 @@ export function installPartyBattle(scene){
    scene.__torre2LastSpeciesRepair={side:actor.lado,from:current,to:idle};
   }
  };
- // Kanto-only opposing trainer AI: at later gyms it may preserve a weak
- // Pokémon by recalling it for a healthier reserve, as the player can.
- // Throttled to one inexpensive check every 75 frames; no added GPU layers.
- let tacticalFrames=0,tacticalSwaps=0;
- const considerTacticalSwitch=()=>{
-  if(++tacticalFrames%75!==0||scene.__torre2Changing||
-     scene.fase!=='lucha'||trainerItems.pending||(payload.stage??0)<1||
-     party.foes.length<2||tacticalSwaps>=2)return;
-  const active=actors[1];
-  if(!active?.hpMax||active.hp<=0||active.hp/active.hpMax>.23)return;
-  const backup=party.foes.findIndex((m,i)=>i!==party.enemyIndex&&m.hp>=60);
-  if(backup<0)return;
-  tacticalSwaps++;
-  scene.__torre2TacticalSwitches=tacticalSwaps;
-  announce('RIVAL RECOLHE POKÉMON FRACO!');
-  recall(1,backup,'switch');
- };
- scene.game.events.on('step',considerTacticalSwitch);
  scene.game.events.on('step',monitorKo);
  scene.game.events.on('poststep',syncRenderedSpecies);
  scene.events.once('shutdown',()=>{
-  scene.game.events.off('step',considerTacticalSwitch);
   scene.game.events.off('step',monitorKo);
   scene.game.events.off('poststep',syncRenderedSpecies);
   scene.game.events.off('step',refreshSidebar);
