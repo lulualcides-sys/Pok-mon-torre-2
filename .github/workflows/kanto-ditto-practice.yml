@@ -1,0 +1,34 @@
+name: Campanha — Ditto treino temporário e regressões
+on:
+  push:
+    branches: [fix/kanto-ditto-practice-window-20261026]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Unidade, sintaxe e regras
+        run: npm test && npm run check
+      - name: Construir cliente Phaser sem publicar
+        run: |
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 8
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Executar testes que bloqueiam a publicação
+        run: |
+          node tests/misty-surge-built.test.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/kanto-intro-loadout-built.test.mjs
+      - name: Verificar controles reais Android na campanha
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
