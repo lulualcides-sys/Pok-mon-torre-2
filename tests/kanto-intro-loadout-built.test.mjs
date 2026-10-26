@@ -73,6 +73,10 @@ for(const id of ['bulbasaur','charmander','squirtle']){
  assert.equal(campaign.team[0].id,id);
 }
 assert.ok(TEST_LIBRARY.length>20,'Use actual existing approved Poké Arena attacks');
+assert.ok(report.starters.charmander.initial.some(name=>name.startsWith('Scratch')),
+ 'Charmander must use weak FireRed Scratch at Lv5, not a premature powerful move');
+assert.ok(!report.starters.charmander.initial.some(name=>name.startsWith('Metal Claw')),
+ 'Metal Claw remains for its later FireRed levels');
 assert.equal(report.species,150);
 console.log('KANTO_LEVEL5_INTRO_AUDIT',JSON.stringify(report));
 console.log('PASS Lv5 weak ATK/SKL/Q, Lv8 ULT and official FRLG learnsets preserved for 150 Kanto species + Mewtwo test exception');
