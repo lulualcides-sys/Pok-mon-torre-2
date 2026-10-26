@@ -59,6 +59,7 @@ class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
  init(input){this.result=input?.finished?input:null}
  preload(){
+  if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
   const state=readCampaign();
   // Mobile performance: the old loader uploaded every Kanto map and all
   // 41 trainer sheets to the GPU even though only one city is visible.
@@ -317,7 +318,7 @@ create(){
    const x=110+(i%4)*140,y=107+Math.floor(i/4)*89,earned=state.badges.includes(gym.badge);
    cards.fillStyle(i===index?0x29485c:0x0a2135);cards.fillRect(x-61,y-37,122,76);
    cards.lineStyle(i===index?2:1,i===index?0xf5cf76:0x436480);cards.strokeRect(x-61,y-37,122,76);
-   drawBadgeIcon(cards,i,x,y-9,earned,3);
+   drawBadgeIcon(this,i,x,y-9,earned,2);
    text(this,x,y+14,gym.badge.toUpperCase(),{fontSize:'10px',color:earned?C.white:C.muted}).setOrigin(.5).setDepth(4);
    text(this,x,y+29,earned?'CONQUISTADA':'NÃO CONQUISTADA',{fontSize:'8px',color:earned?'#8be2b3':'#71899e'}).setOrigin(.5).setDepth(4);
    this.add.zone(x,y,122,76).setDepth(8).setInteractive({useHandCursor:true})

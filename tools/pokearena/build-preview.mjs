@@ -37,6 +37,8 @@ try{
 console.log('Brock custom illustration found:',hasCustomBrock);
 const {installFRLGNPCs}=await import('./install-frlg-npcs.mjs');
 const originalNPCs=await installFRLGNPCs(dest);
+const {installBadgeSprites}=await import('./install-badge-sprites.mjs');
+await installBadgeSprites(dest);
 
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');

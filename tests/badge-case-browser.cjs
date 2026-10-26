@@ -57,6 +57,8 @@ const server=http.createServer(async(req,res)=>{
  }
  await clickData('torre2-badge-case-open',true);
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2BadgeCase?.selected===0);
+ const sprites=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list.filter(o=>o.getData?.('torre2-badge-sprite')!==undefined).map(o=>({index:o.getData('torre2-badge-sprite'),key:o.texture.key,frame:Number(o.frame.name),w:o.frame.width,h:o.frame.height})));
+ assert.deepEqual(sprites,Array.from({length:8},(_,index)=>({index,key:'torre2-frlg-badges',frame:index,w:16,h:16})));
  for(let i=0;i<8;i++){
   await clickData('torre2-badge-index',i);
   const result=await page.evaluate(()=>{const scene=window.__pt2Game.scene.getScene('campanha');return {view:scene.__torre2BadgeCase,text:scene.children.list.filter(o=>typeof o.text==='string').map(o=>o.text).join(' | '),unchanged:before===localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')};});
