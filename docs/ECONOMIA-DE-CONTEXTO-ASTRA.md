@@ -26,14 +26,16 @@ O Script Mestre e todos os golpes aprovados têm prioridade sobre economia. Não
 ```bash
 npm install --prefix tools/dev/toolkit --no-audit --no-fund --no-package-lock
 node tools/dev/contexto-ia.mjs --list
-node tools/dev/contexto-ia.mjs clima
+node tools/dev/contexto-ia.mjs clima                 # índice: localizar funções (corpos omitidos)
+node tools/dev/contexto-ia.mjs clima --full          # código inteiro: analisar/corrigir implementação
+node tools/dev/benchmark-contexto.mjs clima captura # compara tokens dos dois relatórios
 node tools/dev/busca-codigo.mjs --version
 node tools/dev/busca-codigo.mjs captura 'export function $NAME($$ARGS) { $$BODY }'
 ```
 
-O contexto gerado fica em `reports/contexto/<area>.xml` (não versionado). O arquivo é uma visão resumida do código, **não serve para editar ou testar a lógica sozinho**; abrir fontes reais para a modificação. O CI opcional registra versões e gera um artefato para auditoria, sem publicar o jogo.
+O contexto compacto fica em `reports/contexto/<area>.xml`, e o modo completo em `reports/contexto/<area>.full.xml` (não versionados). **A compressão Tree-sitter descarta corpos das funções**; portanto o índice só serve para localizar símbolos. Para corrigir bugs, inspecionar o corpo completo no arquivo de origem ou gerar `--full` e executar testes. O comando `benchmark-contexto.mjs` registra a razão de tokens entre os dois arquivos, mas **não mede créditos**. O CI opcional registra versões e gera um artefato para auditoria, sem publicar o jogo.
 
-`repomix.config.json` mantém verificação de segredos, ignora saídas, binários e bibliotecas de referência, e impõe orçamento de 60.000 tokens ao relatório: este teto é um limite de segurança da ferramenta, **não corresponde aos créditos do ChatGPT**. O ganho de créditos só pode ser estimado após medições comparáveis.
+`repomix.config.json` (índice) e `repomix.full.config.json` (código integral) mantêm verificação de segredos, ignora saídas, binários e bibliotecas de referência, e impõe orçamento de 60.000 tokens ao relatório: este teto é um limite de segurança da ferramenta, **não corresponde aos créditos do ChatGPT**. O ganho de créditos só pode ser estimado após medições comparáveis.
 
 Fonte oficial: https://github.com/yamadashy/repomix ; https://github.com/ast-grep/ast-grep ; https://github.com/oraios/serena .
 
@@ -59,4 +61,4 @@ Após finalizar o patch, o pipeline deve executar `npm test`, `npm run check`, t
 Para cada tipo de patch, comparar 3–5 alterações de complexidade semelhante: créditos consumidos (se o plano expuser), tempo até testes verdes, quantidade de leituras, falhas reabertas e qualidade visual. Não comparar uma correção simples com um Script Mestre inteiro. Não atribuir uma economia numérica sem medição.
 
 ## Política de integração
-Criar PR em modo rascunho e aguardar término da frente ativa do Astra para integrar. Conferir conflitos contra HEAD recente. Não ativar auto-merge. O branch de otimização é independente do jogo publicado.
+Criar PR em modo rascunho enquanto a frente ativa do Astra não estiver validada. **Somente integrar depois de conferir CI/Pages do HEAD, regressões da branch e ausência de conflitos.** Não ativar auto-merge. A otimização não altera o runtime Phaser. Após o merge, verificar que o Pages continua publicado e validar a nova execução de CI.
