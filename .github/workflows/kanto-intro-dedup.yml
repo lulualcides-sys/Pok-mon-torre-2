@@ -1,0 +1,33 @@
+name: Kanto Lv5 intro — evolução sem golpes duplicados
+on:
+  push:
+    branches: [fix/kanto-intro-no-duplicate-evolution-20261026]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Testar regras isoladas e sintaxe
+        run: npm test && npm run check
+      - name: Montar cliente Phaser
+        run: |
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 8
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Validar 151 espécies, Lv5, Lv8 e movesets reais
+        run: |
+          node tests/kanto-intro-loadout-built.test.mjs
+          node tests/misty-surge-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+      - name: Testar botões reais da campanha no Chromium
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
