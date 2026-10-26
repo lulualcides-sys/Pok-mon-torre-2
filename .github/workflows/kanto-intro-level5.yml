@@ -32,7 +32,9 @@ jobs:
           node tests/evolution-modes-built.test.mjs
           node tests/solo-kanto-built.test.mjs
       - name: Rodar teste real de campanha e batalha
-        run: CHROME_BIN="$(command -v google-chrome)" node tests/master-patch-browser.cjs
+        run: |
+          CHROME_BIN="$(command -v google-chrome)" node tests/master-patch-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
       - name: Guardar imagens e evidências
         if: always()
         uses: actions/upload-artifact@v4
