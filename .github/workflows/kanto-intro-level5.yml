@@ -1,0 +1,42 @@
+name: Campanha — três golpes no Nv5 e ULT no Nv8
+on:
+  push:
+    branches: [fix/kanto-level5-three-moves-ult8-20261026]
+permissions:
+  contents: read
+jobs:
+  kanto-intro:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Testar regras, compatibilidade e segurança das animações
+        run: npm test && npm run check && npm run check:reuse
+      - name: Compilar cliente Phaser original isolado
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep 8
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Verificar os 151 Pokémon e os três iniciais
+        run: |
+          node tests/kanto-intro-loadout-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/evolution-modes-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+      - name: Rodar teste real de campanha e batalha
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/master-patch-browser.cjs
+      - name: Guardar imagens e evidências
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-intro-level-5-evidence
+          path: test-evidence/
+          if-no-files-found: ignore
