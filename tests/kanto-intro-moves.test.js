@@ -9,7 +9,14 @@ const moves=[
  ['Tail Whip',0],['Bubble',6],['Water Gun',8],
  ['Solar Beam',47],['Flamethrower',38],['Hydro Pump',45]
 ].map(([nombre,dano])=>({id:canon(nombre),nombre,forma:'approved-'+canon(nombre),tipo:'NORMAL',dano,cd:4,coste:8}));
-const kit=(id,level)=>resolveKantoIntro({id,progression:{level}}, {},{library:moves,canonical:canon});
+const levels={
+ bulbasaur:{tackle:1,growl:4,'leech-seed':7,'vine-whip':10,'solar-beam':46},
+ charmander:{scratch:1,growl:1,ember:7,'metal-claw':13,'flamethrower':31},
+ squirtle:{tackle:1,'tail-whip':4,bubble:7,'water-gun':13,'hydro-pump':47}
+};
+const kit=(id,level)=>resolveKantoIntro({id,progression:{level}}, {},{
+ library:moves,canonical:canon,levelUp:levels[id]||{}
+});
 const slots=['lmb','rmb','q'];
 for(const species of ['bulbasaur','charmander','squirtle']){
  test(species+' starts at Lv5 with three different species-appropriate weak moves',()=>{
@@ -37,7 +44,7 @@ test('none of the intro overlays edits an approved source attack',()=>{
  const original=JSON.stringify(moves);
  const member={id:'bulbasaur',progression:{level:5},moves:['tackle']};
  const before=JSON.stringify(member);
- const out=resolveKantoIntro(member,{}, {library:moves,canonical:canon});
+ const out=resolveKantoIntro(member,{}, {library:moves,canonical:canon,levelUp:levels.bulbasaur});
  assert.equal(JSON.stringify(member),before);
  assert.equal(JSON.stringify(moves),original);
  assert.notEqual(out.lmb,moves[0]);
