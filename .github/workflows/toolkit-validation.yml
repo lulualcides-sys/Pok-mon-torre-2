@@ -2,10 +2,11 @@ name: Torre 2 — Ferramentas opcionais de economia de contexto
 
 on:
   push:
-    branches: [chore/astra-context-tests-20261026]
+    branches: [main, chore/astra-context-tests-20261026]
     paths:
       - 'tools/dev/**'
       - 'repomix.config.json'
+      - 'repomix.full.config.json'
       - '.github/workflows/toolkit-validation.yml'
   workflow_dispatch:
 
@@ -29,16 +30,26 @@ jobs:
           tools/dev/toolkit/node_modules/.bin/repomix --version
           tools/dev/toolkit/node_modules/.bin/ast-grep --version
           node --check tools/dev/contexto-ia.mjs
+          node --check tools/dev/benchmark-contexto.mjs
           node --check tools/dev/busca-codigo.mjs
           node tools/dev/contexto-ia.mjs --list
           node tools/dev/busca-codigo.mjs --list
-      - name: Gerar contextos enxutos por area
+      - name: Medir índice compacto contra contexto integral por sistema
         run: |
           set -euo pipefail
-          node tools/dev/contexto-ia.mjs clima
-          node tools/dev/contexto-ia.mjs captura
+          node tools/dev/benchmark-contexto.mjs clima captura
+          test -s reports/ferramentas/benchmark-contexto.json
           test -s reports/contexto/clima.xml
+          test -s reports/contexto/clima.full.xml
           test -s reports/contexto/captura.xml
+          test -s reports/contexto/captura.full.xml
+      - name: Rodar regressão unitária completa do jogo antes de integrar
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+          node tools/dev/testes-focados.mjs campanha
       - name: Validar busca estrutural sem alterar arquivos
         run: |
           set -euo pipefail
