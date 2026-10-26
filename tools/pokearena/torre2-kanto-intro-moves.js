@@ -43,7 +43,12 @@ function trainingMove(source,tag,slot,level,duplicate=false){
 export function resolveKantoIntro(member,installed,{library,canonical,earlyLevels={},levelUp={},unlockLevel}={}){
  const level=member?.progression?.level??5,id=member?.id;
  if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
- if(level>=KANTO_INTRO.tutorialUntil)return installed;
+ const starterWindow=level<KANTO_INTRO.tutorialUntil;
+ const complete=['lmb','rmb','q','e'].every(slot=>installed[slot]?.forma&&!installed[slot]?.pendiente);
+ // Above level 12, respect every legitimate equipped attack verbatim.
+ // Retain only the weak training placeholders in still-empty slots until a
+ // real species move is learned, so level 13 never makes the ULT disappear.
+ if(!starterWindow&&complete)return installed;
  const result={...installed};
  // ULT is not usable below level 8, even if an old save used E or an
  // accidentally equipped high-level finisher at Lv5.
@@ -101,7 +106,9 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
    const copy={...fallback,nombre: i===0?'Struggle':'Struggle '+i,tipo:'NORMAL',dano:Math.min(5,Number(fallback.dano)||4)};
    selected.push(trainingMove(copy,'struggle',ATTACK_SLOTS[i],level,true));
   }
-  result[ATTACK_SLOTS[i]]=selected[i];
+  const slot=ATTACK_SLOTS[i];
+  if(starterWindow||!result[slot]?.forma||result[slot]?.pendiente)
+   result[slot]=selected[i];
  }
  if(level>=KANTO_INTRO.ultAt){
   const ultCandidate=candidates.find(c=>!selected.some(x=>idOf(x.torre2IntroSource)===c.key)&&c.move.dano>0)
@@ -109,7 +116,8 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
   const base=ultCandidate?.move||fallback;
   const finisher=trainingMove(base,idOf(base.nombre),'e',ultCandidate?.learned??level,true);
   finisher.nombre='ULT · '+String(base.nombre||'Struggle');
-  result.e=finisher;
+  if(starterWindow||!result.e?.forma||result.e?.pendiente)
+   result.e=finisher;
  }
  return result;
 }
