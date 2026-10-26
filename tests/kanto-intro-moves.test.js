@@ -51,7 +51,7 @@ test('none of the intro overlays edits an approved source attack',()=>{
  assert.equal(out.lmb.forma,moves[0].forma,'existing sprite/VFX reused unchanged');
 });
 test('late-game, laboratory Mewtwo and level 1 canonical resolution untouched',()=>{
- const marker={lmb:{nombre:'Original'},e:{nombre:'Native ultimate'}};
+ const marker={lmb:{nombre:'Original',forma:'approved'},rmb:{nombre:'Other',forma:'approved'},q:{nombre:'Extra',forma:'approved'},e:{nombre:'Native ultimate',forma:'approved'}};
  for(const member of [{id:'bulbasaur',progression:{level:13}},
   {id:'mewtwo',progression:{level:5}},{id:'bulbasaur',progression:{level:1}}]){
   const out=resolveKantoIntro(member,marker,{library:moves,canonical:canon});
