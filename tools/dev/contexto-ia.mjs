@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 /**
- * Seleciona um contexto pequeno e comprimido para diagnóstico com Repomix.
+ * Seleciona um contexto pequeno por domínio. Comprime apenas para navegação.
+ * Use --full para investigar ou modificar implementações reais.
  * Apenas leitura. Não empacota o repositório inteiro por acidente.
  */
 import {existsSync, mkdirSync} from 'node:fs';
@@ -59,8 +60,10 @@ const profiles=Object.freeze({
   ]
 });
 const args=process.argv.slice(2);
-if(args.length!==1 || args[0]==='--help' || args[0]==='--list'){
-  console.log('Uso: node tools/dev/contexto-ia.mjs <campanha|golpes|captura|combate|clima|arena|interface>');
+const full=args.length===2 && args[1]==='--full';
+if((args.length!==1 && !full) || args[0]==='--help' || args[0]==='--list'){
+  console.log('Uso: node tools/dev/contexto-ia.mjs <campanha|golpes|captura|combate|clima|arena|interface> [--full]');
+  console.log('Padrão: índice estrutural; --full: código real para diagnóstico.');
   for(const [key,files] of Object.entries(profiles))console.log('  '+key.padEnd(12)+' '+files.length+' arquivos selecionados');
   if(args.length!==1 || !['--help','--list'].includes(args[0]))process.exitCode=2;
 }else if(!profiles[args[0]]){
@@ -78,9 +81,9 @@ if(args.length!==1 || args[0]==='--help' || args[0]==='--list'){
   }else{
     const outDir=resolve(root,'reports/contexto');
     mkdirSync(outDir,{recursive:true});
-    const relativeOutput='reports/contexto/'+area+'.xml';
-    console.log('Contexto: '+area+' ('+profiles[area].length+' arquivos; segurança/limite ativos)');
-    const p=spawnSync(bin,['--config','repomix.config.json','--include',profiles[area].join(','),'--output',relativeOutput,'--token-count-tree','200'],{
+    const relativeOutput='reports/contexto/'+area+(full?'.full':'')+'.xml';
+    console.log('Contexto: '+area+' ('+profiles[area].length+' arquivos; modo '+(full?'completo':'índice')+'; segurança/limite ativos)');
+    const p=spawnSync(bin,['--config',full?'repomix.full.config.json':'repomix.config.json','--include',profiles[area].join(','),'--output',relativeOutput,'--token-count-tree','200'],{
       cwd:root,stdio:'inherit',shell:false
     });
     if(p.error)console.error(p.error.message);
