@@ -693,8 +693,7 @@ create(){
   tms.slice(this.bagTmPage*3,this.bagTmPage*3+3).forEach((id,i)=>{
    const item=MART_ITEMS.find(x=>x.id===id);
    if(!item)return;
-   const compatible=state.team[target].id==='mewtwo'||
-    !Array.isArray(item.compatible)||
+   const compatible=!Array.isArray(item.compatible)||
     item.compatible.includes(state.team[target].id);
    this.button(144+i*181,302,173,27,
     compatible?item.name:'INCOMP. '+item.name.slice(0,12),()=>{

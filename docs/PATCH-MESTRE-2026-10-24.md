@@ -115,3 +115,13 @@ O commit a5bb697 passou integralmente na execução 40216698665 (npm test, check
 A inspeção pública encontrou controles do laboratório fora da tela, também visíveis como ausentes na evidência local anterior. O teste instalado-flag não detectava esse erro. A câmera nativa camUI já centraliza a interface; setScrollFactor(0) aplicava deslocamento indevido. Os botões agora usam a transformação nativa e o indicador climático fica na camada UI. O teste passou a clicar nas posições visíveis de Status P1 e Clima, verificando veneno e granizo, além da mecânica e isolamento do save. A imagem laboratory-controls-visible.png foi inspecionada: cinco controles visíveis, PSN e GRANIZO 20s. Não foram alterados sprites nem efeitos aprovados.
 
 Esta correção não conclui os visuais climáticos, Shiny, demais sete TMs de ginásio ou a campanha jogada normalmente. A publicação deste ajuste menor deve ser confirmada separadamente da publicação a5bb697.
+
+## Recompensas de TM e compatibilidade (26/10)
+
+Sete ginásios agora concedem os golpes já instalados: Rock Tomb, Water Pulse, Shock Wave, Giga Drain, Calm Mind, Fire Blast e Earthquake. Toxic de Koga permanece pendente e não é apresentado como TM utilizável. Os cinco novos itens da loja ficam bloqueados até a etapa correspondente. Nenhum renderer ou efeito foi alterado.
+
+A lista de compatibilidade das TMs deriva da mesma tabela FRLG_MACHINES dos 151 Pokémon; foram removidas as listas parciais antigas e a exceção irrestrita de ensino por TM ao Mewtwo. O Mewtwo de teste continua com sua biblioteca completa própria. Magikarp não aprende Water Pulse; Squirtle aprende; Mewtwo não aprende Giga Drain por TM, e Mew aprende.
+
+gymTMClaims registra entregas independentemente do inventário consumível. Saves antigos com ginásios concluídos recebem recompensas faltantes uma vez; a TM de Brock já entregue pelos builds antigos não é recriada. TMs já na bolsa ou aprendidas são reconhecidas. A migração usa o salvamento com backup anterior, preservando equipe, dinheiro e progresso.
+
+Teste permanente do cliente construído percorre as 13 premiações, verifica sete TMs jogáveis, consumo, releitura idempotente, bloqueios de compra e compatibilidade. Novo teste de navegador ensina Water Pulse ao Squirtle por clique real na Mochila, recarrega a página e verifica que o prêmio não reaparece. A preparação desse teste usa um save com Misty já derrotada: não representa vitória normal contra Misty. Publicação e suíte remota deste lote ainda precisam ser verificadas.

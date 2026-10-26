@@ -1,3 +1,4 @@
+import {FRLG_MACHINES} from './frlg-learnsets.js';
 /* Route-like Kanto campaign map. FireRed-inspired locations and encounter
  * species, with FireRed/LeafGreen version differences shown as references.
  * The caller MUST filter by actually integrated battle species.
@@ -43,20 +44,25 @@ export function routeNode(stage,index,max){
  const type=index>0&&index%9===3?'rival':index>0&&index%7===5?'rocket':'trainer';
  return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
+// Gym rewards only refer to installed moves. Toxic awaits its own implementation.
+export const GYM_TM_REWARDS=Object.freeze(['tm-rock-tomb','tm-water-pulse',
+ 'tm-shock-wave','tm-giga-drain',null,'tm-calm-mind','tm-fire-blast','tm-earthquake']);
 export const MART_ITEMS=Object.freeze([
- {id:'tm-rock-tomb',name:'TM39 ROCK TOMB',price:1200,kind:'tm',move:'Rock Tomb',minStage:1,
-  compatible:['geodude','graveler','golem','onix','rhyhorn','rhydon','sandshrew','sandslash','machop','machoke','machamp','mankey','primeape','nidoran-m','nidorino','nidoking','nidoran-f','nidorina','nidoqueen','cubone','marowak','aerodactyl']},
+ {id:'tm-rock-tomb',name:'TM39 ROCK TOMB',price:1200,kind:'tm',move:'Rock Tomb',minStage:1},
  {id:'pokeball',name:'POKÉ BALL',price:200,kind:'ball'},
  {id:'greatball',name:'GREAT BALL',price:600,kind:'ball',minStage:2},
  {id:'ultraball',name:'ULTRA BALL',price:1200,kind:'ball',minStage:4},
  {id:'potion',name:'POÇÃO',price:300,kind:'heal',heal:25},
  {id:'superpotion',name:'SUPER POÇÃO',price:700,kind:'heal',heal:60,minStage:2},
- {id:'tm-thunderbolt',name:'TM24 THUNDERBOLT',price:1800,kind:'tm',move:'Thunderbolt',minStage:2,
-  compatible:['pikachu','raichu','magnemite','magneton','voltorb','electrode','electabuzz','jolteon','porygon','staryu','starmie','clefairy','clefable','chansey','dragonite','lapras','gengar']},
- {id:'tm-water-pulse',name:'TM03 WATER PULSE',price:1500,kind:'tm',move:'Water Pulse',minStage:1,
-  compatible:['squirtle','wartortle','blastoise','psyduck','golduck','slowpoke','slowbro','staryu','starmie','lapras','vaporeon','poliwag','poliwhirl','poliwrath','magikarp','gyarados','omanyte','omastar','tentacool','tentacruel','krabby','kingler','horsea','seadra','shellder','cloyster','seel','dewgong','jynx']},
- {id:'tm-flamethrower',name:'TM35 FLAMETHROWER',price:2200,kind:'tm',move:'Flamethrower',minStage:3,
-  compatible:['charmander','charmeleon','charizard','vulpix','ninetales','growlithe','arcanine','ponyta','rapidash','magmar','flareon','dragonite','gyarados','rhydon','rhyhorn']},
- {id:'tm-ice-beam',name:'TM13 ICE BEAM',price:2400,kind:'tm',move:'Ice Beam',minStage:4,
-  compatible:['squirtle','wartortle','blastoise','lapras','seel','dewgong','shellder','cloyster','psyduck','golduck','slowpoke','slowbro','staryu','starmie','vaporeon','jynx','articuno','gyarados','dragonite','poliwrath','tentacruel']},
-]);
+ {id:'tm-thunderbolt',name:'TM24 THUNDERBOLT',price:1800,kind:'tm',move:'Thunderbolt',minStage:2},
+ {id:'tm-water-pulse',name:'TM03 WATER PULSE',price:1500,kind:'tm',move:'Water Pulse',minStage:1},
+ {id:'tm-flamethrower',name:'TM35 FLAMETHROWER',price:2200,kind:'tm',move:'Flamethrower',minStage:3},
+ {id:'tm-ice-beam',name:'TM13 ICE BEAM',price:2400,kind:'tm',move:'Ice Beam',minStage:4},
+ {id:'tm-shock-wave',name:'TM34 SHOCK WAVE',price:1800,kind:'tm',move:'Shock Wave',minStage:3},
+ {id:'tm-giga-drain',name:'TM19 GIGA DRAIN',price:2200,kind:'tm',move:'Giga Drain',minStage:4},
+ {id:'tm-calm-mind',name:'TM04 CALM MIND',price:2600,kind:'tm',move:'Calm Mind',minStage:6},
+ {id:'tm-fire-blast',name:'TM38 FIRE BLAST',price:3000,kind:'tm',move:'Fire Blast',minStage:7},
+ {id:'tm-earthquake',name:'TM26 EARTHQUAKE',price:4000,kind:'tm',move:'Earthquake',minStage:8},
+].map(item=>item.kind==='tm'?Object.freeze({...item,
+ compatible:Object.freeze(Object.entries(FRLG_MACHINES).filter(([,moves])=>
+  moves.includes(item.id.slice(3))).map(([id])=>id))}):Object.freeze(item)));

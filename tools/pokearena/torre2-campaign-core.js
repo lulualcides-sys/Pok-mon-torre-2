@@ -6,7 +6,7 @@ export {validRematchResult};
  */
 import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle} from './progression.js';
 import {ROSTER} from '../datos.js';
-import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS} from './route-data.js';
+import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
 
@@ -108,7 +108,7 @@ export function createCampaign(starter){
   active:0,wins:0,losses:0,capturesInStage:0,pendingCapture:null,
   money:1400,inventory:{pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]},
   wildEncountersStage:0,pendingWild:null,
-  badges:[],leagueHonors:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
+  badges:[],leagueHonors:[],gymTMClaims:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
 }
 export function readCampaign(storage=localStorage){
  try{
@@ -158,6 +158,15 @@ export function readCampaign(storage=localStorage){
    if(!Number.isInteger(s.inventory[item])||s.inventory[item]<0){s.inventory[item]=n;migrated=true}
   }
   if(!Array.isArray(s.inventory.tms)){s.inventory.tms=[];migrated=true}
+  if(!Array.isArray(s.gymTMClaims)){
+   // Brock was already awarded by older builds, including consumed TMs.
+   s.gymTMClaims=s.stage>0?['tm-rock-tomb']:[];migrated=true;
+  }
+  // Add missing rewards to existing completed gyms once; never recreate a
+  // consumed reward or infer a victory from a malformed badge alone.
+  for(let i=0;i<Math.min(s.stage,GYMS.length);i++){
+   if(s.badges.includes(GYMS[i].badge)&&grantGymTM(s,i,{migration:true}).claimed)migrated=true;
+  }
   if(!Number.isInteger(s.wildEncountersStage)||s.wildEncountersStage<0){s.wildEncountersStage=0;migrated=true}
   if(s.pendingCapture){s.pendingCapture=null;migrated=true}
   if(!('pendingWild'in s)){s.pendingWild=null;migrated=true}
@@ -174,7 +183,7 @@ export function readCampaign(storage=localStorage){
   // Invalid stale wild markers from a previous stage must never be replayed.
   if(s.pendingWild&&s.pendingWild.stage!==s.stage){s.pendingWild=null;migrated=true}
   for(const member of [...s.team,...s.box])if(enforceCampaignCap(member,s.stage))migrated=true;
-  if(migrated)storage.setItem(SAVE_KEY,JSON.stringify(s));
+  if(migrated)saveCampaign(s,storage);
   return s;
  }catch{return null}
 }
@@ -296,6 +305,18 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
  }
  return {gains,evolutions,totalRecipients:gains.filter(x=>!x.tester).length};
 }
+export function grantGymTM(s,stage,{migration=false}={}){
+ const id=GYM_TM_REWARDS[stage];
+ if(!id)return {claimed:false};
+ s.gymTMClaims??=[];
+ if(s.gymTMClaims.includes(id))return {claimed:false};
+ const item=MART_ITEMS.find(x=>x.id===id);
+ if(!item)return {claimed:false};
+ const already=migration&&(s.inventory.tms.includes(id)||[...s.team,...(s.box||[])].some(m=>m.tmMoves?.includes(item.move)));
+ if(!already)s.inventory.tms.push(id);
+ s.gymTMClaims.push(id);
+ return {claimed:true,item,added:!already};
+}
 export function resolveBattle(s,won,random=Math.random){
  const opponent=currentOpponent(s);
  if(!opponent)throw new Error('No battle pending');
@@ -310,6 +331,7 @@ export function resolveBattle(s,won,random=Math.random){
  const member=s.team[s.active];
  // Full team EXP, including teammates left on the bench. The active fighter
  // still gets its post-victory recovery; bench HP and statuses are untouched.
+ s.lastRewardTM=null;
  const reward=xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),opponent.leader?'leader':'trainer');
  const shared=awardSharedTeamExperience(s,reward,{kind:'trainer'});
  const growth=shared.gains.find(g=>g.index===s.active);
@@ -320,14 +342,13 @@ export function resolveBattle(s,won,random=Math.random){
  if(opponent.leader){
   const awards=s.stage<GYMS.length?s.badges:(s.leagueHonors??=[]);
   if(!awards.includes(STAGES[s.stage].badge))awards.push(STAGES[s.stage].badge);
-  if(s.stage===0&&!s.inventory.tms.includes('tm-rock-tomb')){
-   s.inventory.tms.push('tm-rock-tomb');s.lastRewardTM='TM39 ROCK TOMB';
-  }
+  const tm=grantGymTM(s,s.stage);
+  s.lastRewardTM=tm.added?tm.item.name:null;
   s.stage++;s.trainer=0;s.capturesInStage=0;s.wildEncountersStage=0;s.pendingWild=null;
   if(s.stage>=STAGES.length)s.champion=true;
  }else s.trainer++;
  s.lastMessage='Vitória! +'+reward+' EXP para toda a equipe ('+
-   shared.totalRecipients+' Pokémon). '+(shared.evolutions.length?
+   shared.totalRecipients+' Pokémon). '+(s.lastRewardTM?'Recebeu '+s.lastRewardTM+'. ':'')+(shared.evolutions.length?
    shared.evolutions.length+' evolução(ões) após a batalha!':'');
  saveCampaign(s);
  return {won:true,message:s.lastMessage,reward,growth,sharedExp:shared.gains,
@@ -458,7 +479,7 @@ export function teachTM(s,itemId,memberIndex=s.active){
  const target=s.team[memberIndex];
  if(!item||!target||!s.inventory?.tms?.includes(itemId))
   return {ok:false,reason:'TM indisponível para esse Pokémon.'};
- if(target.id!=='mewtwo'&&Array.isArray(item.compatible)&&
+ if(Array.isArray(item.compatible)&&
    !item.compatible.includes(target.id))
   return {ok:false,reason:target.id+' não é compatível com '+item.name+'.'};
  target.tmMoves??=[];
