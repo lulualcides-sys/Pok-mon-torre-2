@@ -1,0 +1,10 @@
+{
+  "name": "pokemon-torre-2-ferramentas-agentes",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Ferramentas opcionais isoladas para economizar contexto, sem afetar o runtime Phaser",
+  "devDependencies": {
+    "repomix": "1.18.1",
+    "@ast-grep/cli": "0.45.3"
+  }
+}
