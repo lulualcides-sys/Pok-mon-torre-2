@@ -3,7 +3,6 @@
  * loadout adaptations and are never permanently learned, taught or saved.
  * Real FRLG unlocks/TM learnability and all original Arena 2D kits are intact.
  */
-import {FRLG_LEVEL_UP,frlgUnlockLevel} from './frlg-learnsets.js';
 
 export const KANTO_INTRO=Object.freeze({
   start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:13,
@@ -41,7 +40,7 @@ function trainingMove(source,tag,slot,level,duplicate=false){
  return move;
 }
 /** Battle-only overlay. Does not change member.moves, availableMoves, TM or Pokédex. */
-export function resolveKantoIntro(member,installed,{library,canonical,earlyLevels={}}={}){
+export function resolveKantoIntro(member,installed,{library,canonical,earlyLevels={},levelUp={},unlockLevel}={}){
  const level=member?.progression?.level??5,id=member?.id;
  if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
  if(level>=KANTO_INTRO.tutorialUntil)return installed;
@@ -59,7 +58,7 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  // Actual FireRed moves first, even when the renderer is from Poké Arena.
  // The very earliest not-yet-learned move can be briefly previewed at reduced
  // power ONLY in these tutorial battles. Learnset metadata stays authentic.
- const official=Object.entries(FRLG_LEVEL_UP[id]||{})
+ const official=Object.entries(levelUp)
   .filter(([key,at])=>at<=KANTO_INTRO.maxPreviewLearnLevel)
   .sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
  const candidates=[];
@@ -76,7 +75,7 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  // Already legitimately learned/equipped weaker moves remain candidates.
  for(const slot of ATTACK_SLOTS){
   const current=result[slot];
-  if(current&&lowPower(current))push(current.nombre,frlgUnlockLevel(id,current.nombre)??level,2);
+  if(current&&lowPower(current))push(current.nombre,(unlockLevel?.(id,current.nombre)??level),2);
  }
  candidates.sort((a,b)=>a.priority-b.priority||a.learned-b.learned||
   a.key.localeCompare(b.key));
