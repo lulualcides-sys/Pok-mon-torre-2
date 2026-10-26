@@ -5,7 +5,7 @@
  */
 
 export const KANTO_INTRO=Object.freeze({
-  start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:13,
+  start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:10,
   maxStarterDamage:9, maxIntroUltDamage:12
 });
 const ATTACK_SLOTS=['lmb','rmb','q'];
@@ -82,7 +82,7 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  const picked=[];
  for(const c of candidates){
   if(picked.length>=3)break;
-  if(c.learned>13)continue;
+  if(c.learned>KANTO_INTRO.maxPreviewLearnLevel)continue;
   picked.push(c);
  }
  // Struggle is universal in Gen III when out of PP. Here, reuse an approved
