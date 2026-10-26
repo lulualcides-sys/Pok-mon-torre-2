@@ -89,8 +89,9 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  // non-elemental contact VFX for a deliberately weak practice manoeuvre.
  // Never make a Lv5 Magikarp use Hydro Pump, or Ditto a random Pokémon's move.
  const tackle=catalog.get('tackle');
- const first=picked.find(x=>x.move.dano>0)?.move||picked[0]?.move||
-   (tackle?{...tackle,nombre:'Struggle',tipo:'NORMAL',dano:4}:null);
+ const first=picked.find(x=>x.move.dano>0)?.move||
+   (tackle?{...tackle,nombre:'Struggle',tipo:'NORMAL',dano:4}:null)||
+   picked[0]?.move;
  const fallback=first||[...catalog.values()].find(x=>lowPower(x)&&x.tipo==='NORMAL'&&x.dano>0);
  if(!fallback)return result; // fail closed instead of injecting an unrenderable ability
  const selected=[];
