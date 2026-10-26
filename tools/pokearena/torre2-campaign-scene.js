@@ -718,6 +718,7 @@ create(){
   const stats=pokemonStats(member),pool=availableMoves(member);
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
+  const battleKit=resolveLoadout(member),introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
   const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
   this.summaryFilter??='ALL';this.summarySearch??='';
   const slotCodes=['LMB','RMB','Q','E'];
@@ -791,8 +792,10 @@ create(){
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
   label(231,78,earlyPlan?'LMB ATK  ·  RMB HAB 2  ·  Q HAB 3  ·  E ULT  ·  ESP ESQUIVA':
    'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,earlyPlan?8:9);
-  chosen.forEach((id,i)=>{
-   const move=pool.find(m=>m.id===id);
+  slotCodes.forEach((_,i)=>{
+   const id=chosen[i],battleSlot=['lmb','rmb','q','e'][i];
+   const nativeMove=pool.find(m=>m.id===id);
+   const move=introStage?(battleKit[battleSlot]||null):nativeMove;
    const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
    const current=activeSlot===i;
    const bg=box(x,y,189,39,current?0x294765:0x172d43,current?0xf0cb6d:0x385772);
@@ -804,8 +807,10 @@ create(){
      current?'#ffe6a7':'#96b2ce',9);
    const upcoming=earlyPlan?.[i],need=upcoming?EARLY_KANTO_LEARNSETS[member.id]?.[
     upcoming.toLowerCase().replace(/[^a-z0-9]+/g,'-')]:null;
-   label(x+8,y+18,move?.nombre??(upcoming?
+   label(x+8,y+18,move?.nombre??(introStage&&i===3&&stats.level<8?
+    'ULT · DESBLOQUEIA NV. 8':upcoming?
     upcoming+' · LV '+(need??'EVO'):'—'),move?C.white:'#f5c578',move?12:10);
+   if(move?.torre2IntroPractice)label(x+8,y+31,'TREINO · PODER REDUZIDO','#b1cfde',7);
    label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
    label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
   });

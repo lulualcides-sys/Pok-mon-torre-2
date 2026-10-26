@@ -8,6 +8,7 @@ import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
+import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
 import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
@@ -471,6 +472,8 @@ export function selectedMoves(member){
 }
 export function equipMove(member,slot,moveId){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return false;
+ // Even manual editor equips cannot activate the ULT before Lv8.
+ if(slot===3&&member.id!=='mewtwo'&&(member.progression?.level??5)<KANTO_INTRO.ultAt)return false;
  const pool=availableMoves(member);
  if(!pool.some(m=>m.id===moveId))return false;
  const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
@@ -498,7 +501,9 @@ export function resolveLoadout(member){
   nombre:'Dodge',forma:'dash',tipo:'NORMAL',dano:0,
   dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
  };
- return out;
+ return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
+  earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
+  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel});
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);

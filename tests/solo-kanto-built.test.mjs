@@ -282,7 +282,9 @@ assert.ok(nidoState.dexCaught.includes('nidoran-m'));
 const young={id:'pidgey',progression:{species:'pidgey',level:5}};
 assert.deepEqual(availableMoves(young).map(x=>x.id).sort(),['gust','tackle']);
 assert.deepEqual(selectedMoves(young),['tackle','gust',null,null]);
-assert.deepEqual(Object.keys(resolveLoadout(young)),['lmb','rmb']);
+assert.deepEqual(Object.keys(resolveLoadout(young)),['lmb','rmb','q'],
+ 'At Lv5, campaign actions get a weak temporary third slot without changing real FRLG learnsets');
+assert.ok(!resolveLoadout(young).e,'ULT remains locked until Lv8');
 assert.ok(!availableMoves(young).some(x=>x.id==='dodge'));
 young.progression.level=13;
 assert.ok(availableMoves(young).some(x=>x.id==='gust'));
