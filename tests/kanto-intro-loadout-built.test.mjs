@@ -43,8 +43,10 @@ for(const {id} of KANTO_151){
  assert.ok(at8.e.cd>=8,id+' Lv8 ULT too spammable');
  for(const slot of slots)assert.ok(at8[slot]?.forma,id+' Lv8 lost '+slot);
  const at13=resolveLoadout(make(id,13));
- assert.ok(!Object.values(at13).some(x=>x?.torre2IntroPractice),
-   id+' training moves must leave after onboarding');
+ // At Lv13 real species skills must take priority. Temporary training
+ // remains ONLY for slots where the true FireRed move still is not learned.
+ for(const slot of slots)assert.ok(at13[slot]?.forma,id+' Lv13 lost '+slot);
+ assert.ok(at13.e?.ulti,id+' Lv13 must retain the Lv8 ULT until a real one is learned');
  report.species++;report.lv5+=3;report.lv8++;report.lv13++;
  if(['bulbasaur','charmander','squirtle'].includes(id))
   report.starters[id]={
