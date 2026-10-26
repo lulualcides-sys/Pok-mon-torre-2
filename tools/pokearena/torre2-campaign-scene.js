@@ -718,7 +718,7 @@ create(){
   const stats=pokemonStats(member),pool=availableMoves(member);
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
-  const battleKit=resolveLoadout(member),introStage=stats.level>=5&&stats.level<13&&member.id!=='mewtwo';
+  const battleKit=resolveLoadout(member),introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
   const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
   this.summaryFilter??='ALL';this.summarySearch??='';
   const slotCodes=['LMB','RMB','Q','E'];
