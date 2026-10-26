@@ -1,0 +1,6 @@
+# Apenas artefatos gerados pelas novas ferramentas isoladas (não muda arquivos existentes)
+tools/dev/toolkit/node_modules/
+tools/dev/toolkit/package-lock.json
+reports/contexto/
+reports/ferramentas/
+repomix-output.*

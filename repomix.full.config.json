@@ -1,0 +1,51 @@
+{
+  "output": {
+    "filePath": "reports/contexto/contexto-completo.xml",
+    "style": "xml",
+    "compress": false,
+    "removeComments": false,
+    "removeEmptyLines": true,
+    "showLineNumbers": false,
+    "topFilesLength": 10,
+    "tokenBudget": 60000,
+    "git": {
+      "sortByChanges": false,
+      "includeDiffs": false,
+      "includeLogs": false
+    }
+  },
+  "ignore": {
+    "useGitignore": true,
+    "useDefaultPatterns": true,
+    "customPatterns": [
+      "**/node_modules/**",
+      "**/_site/**",
+      "**/dist/**",
+      "**/coverage/**",
+      "reference-assets/**",
+      "reference-library/**",
+      "docs/evidence/**",
+      "docs/validation/**",
+      "test-evidence/**",
+      "reports/**",
+      "**/*.avif",
+      "**/*.b64",
+      "**/*.png",
+      "**/*.jpg",
+      "**/*.webp",
+      "**/*.mp4",
+      "**/*.gif",
+      "**/*.svg",
+      "**/package-lock.json"
+    ]
+  },
+  "security": {
+    "enableSecurityCheck": true
+  },
+  "input": {
+    "maxFileSize": 1500000
+  },
+  "tokenCount": {
+    "encoding": "o200k_base"
+  }
+}
