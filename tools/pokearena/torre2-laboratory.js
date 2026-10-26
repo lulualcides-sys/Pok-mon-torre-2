@@ -21,10 +21,12 @@ export function installLaboratoryControls(scene){
  scene.__torre2LabInstalled=true;
  const statuses=['none','veneno','toxic','quemado','dormido','paralizado','congelado','confuso'];
  const weather=Object.keys(WEATHER_NAMES);let wi=weather.indexOf(scene.datos.torre2.weather),si=[0,0];
+ // Native camUI already centers/scales the logical 640x360 UI. A zero
+ // scroll factor applies that offset twice and pushes controls offscreen.
  const objects=[];
  const button=(x,w,caption,run)=>{
-  const bg=scene.add.rectangle(x,77,w,20,0x10283c,.95).setStrokeStyle(1,0x7298af).setScrollFactor(0).setDepth(2800).setInteractive({useHandCursor:true});
-  const label=scene.add.text(x,77,caption,{fontFamily:'Pixelify Sans,monospace',fontSize:'8px',color:'#f0e5c8'}).setOrigin(.5).setScrollFactor(0).setDepth(2801);
+  const bg=scene.add.rectangle(x,77,w,20,0x10283c,.95).setStrokeStyle(1,0x7298af).setDepth(2800).setInteractive({useHandCursor:true});
+  const label=scene.add.text(x,77,caption,{fontFamily:'Pixelify Sans,monospace',fontSize:'8px',color:'#f0e5c8'}).setOrigin(.5).setDepth(2801);
   bg.on('pointerdown',()=>{if(scene.fase==='lucha'&&!scene.__torre2Changing)run(label)});objects.push(bg,label);
  };
  button(170,74,'CLIMA',()=>{wi=(wi+1)%weather.length;setWeather(scene.__torre2Weather,weather[wi]);});

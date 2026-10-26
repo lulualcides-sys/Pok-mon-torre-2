@@ -107,3 +107,11 @@ Incorporados 5510f9f, 2476fc2 e 2a7379c da principal: ficha/evolução, energia 
 A revisão final retirou a política antiga de troca por HP (acionada a cada 75 frames), que ainda coexistia com a nova política. Agora apenas a política limitada decide as trocas. A regressão coloca a batalha na etapa 2 e observa mais de 75 frames com HP baixo durante o intervalo, para detectar reintrodução do comportamento antigo.
 
 O run 40186990237 passou integralmente no runtime 48221e7, incluindo os 13 chefes e o smoke-test amplo. A versão combinada exige nova validação; 130 testes unitários já passaram. Não confundir o sucesso anterior com a publicação da integração posterior.
+
+## Publicação integrada e correção visual do laboratório
+
+O commit a5bb697 passou integralmente na execução 40216698665 (npm test, check, test:browser, percurso de depuração dos 13 chefes e source-client-smoke). Foi integrado sem sobrescrever commits paralelos e publicado pelo Pages 40244335267. O navegador público carregou src-85ed87c705, abriu FIGHT com seis lutadores e iniciou o laboratório Mewtwo 50 contra Onix.
+
+A inspeção pública encontrou controles do laboratório fora da tela, também visíveis como ausentes na evidência local anterior. O teste instalado-flag não detectava esse erro. A câmera nativa camUI já centraliza a interface; setScrollFactor(0) aplicava deslocamento indevido. Os botões agora usam a transformação nativa e o indicador climático fica na camada UI. O teste passou a clicar nas posições visíveis de Status P1 e Clima, verificando veneno e granizo, além da mecânica e isolamento do save. A imagem laboratory-controls-visible.png foi inspecionada: cinco controles visíveis, PSN e GRANIZO 20s. Não foram alterados sprites nem efeitos aprovados.
+
+Esta correção não conclui os visuais climáticos, Shiny, demais sete TMs de ginásio ou a campanha jogada normalmente. A publicação deste ajuste menor deve ser confirmada separadamente da publicação a5bb697.

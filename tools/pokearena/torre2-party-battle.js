@@ -101,7 +101,7 @@ export function installPartyBattle(scene){
  const actors=scene.luchadores;
  const weather=scene.__torre2Weather=createWeather();
  setWeather(weather,payload.weather||'none');
- const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2302).setScrollFactor(0);
+ const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2802);
  scene.events.once('shutdown',()=>{weatherHud.destroy();scene.__torre2Weather=null;scene.__torre2Rain=null;});
  const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));
  scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));

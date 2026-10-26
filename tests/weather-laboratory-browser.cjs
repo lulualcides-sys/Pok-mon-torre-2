@@ -52,6 +52,13 @@ const server=http.createServer(async(req,res)=>{
  await page.waitForFunction(()=>{const b=window.__pt2Game.scene.getScene('combate');return b.scene.isActive()&&b.__torre2LabInstalled},null,{timeout:30000});
  await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.controles.forEach(c=>c.leer=()=>null)});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:30000});
+ // Exercise visible native-camera controls, not just installed flags.
+ const ui=await page.evaluate(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}});
+ await page.mouse.click(ui.x+ui.w*252/640,ui.y+ui.h*77/360);
+ await page.waitForFunction(()=>!!window.__pt2Game.scene.getScene('combate').luchadores[0].est.veneno);
+ await page.mouse.click(ui.x+ui.w*170/640,ui.y+ui.h*77/360);
+ await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2Weather.kind==='hail');
+ await page.screenshot({path:'test-evidence/laboratory-controls-visible.png'});
  const result=await page.evaluate(async()=>{
   const b=window.__pt2Game.scene.getScene('combate'),[p,e]=b.luchadores;
   const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
