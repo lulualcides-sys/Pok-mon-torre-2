@@ -43,6 +43,9 @@ function trainingMove(source,tag,slot,level,duplicate=false){
 export function resolveKantoIntro(member,installed,{library,canonical,earlyLevels={},levelUp={},unlockLevel}={}){
  const level=member?.progression?.level??5,id=member?.id;
  if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
+ // Ditto learns only Transform in FireRed. The temporary weak tutorial
+ // manoeuvres solve Lv5 onboarding, never become invented endgame attacks.
+ if(id==='ditto'&&level>KANTO_INTRO.tutorialUntil)return installed;
  const starterWindow=level<KANTO_INTRO.tutorialUntil;
  const complete=['lmb','rmb','q','e'].every(slot=>installed[slot]?.forma&&!installed[slot]?.pendiente);
  // Above level 12, respect every legitimate equipped attack verbatim.
