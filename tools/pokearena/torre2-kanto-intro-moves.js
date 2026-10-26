@@ -109,16 +109,31 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
    picked[0]?.move;
  const fallback=first||[...catalog.values()].find(x=>lowPower(x)&&x.tipo==='NORMAL'&&x.dano>0);
  if(!fallback)return result; // fail closed instead of injecting an unrenderable ability
+ // Evolved Pokémon at/after Lv13 often already have one or two legitimate
+ // attacks in their slots. Reserve those names BEFORE filling blank slots:
+ // otherwise the practice overlay may duplicate a real equipped move.
+ const occupied=new Set();
+ if(!starterWindow)for(const slot of ATTACK_SLOTS){
+  const actual=result[slot];
+  if(actual?.forma&&!actual.pendiente)occupied.add(idOf(actual.nombre));
+ }
  const selected=[];
  for(let i=0;i<3;i++){
-  if(picked[i])selected.push(trainingMove(picked[i].move,picked[i].key,ATTACK_SLOTS[i],picked[i].learned));
-  else{
-   const copy={...fallback,nombre: i===0?'Struggle':'Struggle '+i,tipo:'NORMAL',dano:Math.min(5,Number(fallback.dano)||4)};
-   selected.push(trainingMove(copy,'struggle',ATTACK_SLOTS[i],level,true));
+  const slot=ATTACK_SLOTS[i],actual=result[slot];
+  if(!starterWindow&&actual?.forma&&!actual.pendiente){
+   selected.push(actual);
+   continue;
   }
-  const slot=ATTACK_SLOTS[i];
-  if(starterWindow||!result[slot]?.forma||result[slot]?.pendiente)
-   result[slot]=selected[i];
+  const candidate=picked.find(c=>!occupied.has(idOf(c.move.nombre)));
+  if(candidate){
+   selected.push(trainingMove(candidate.move,candidate.key,slot,candidate.learned));
+   occupied.add(idOf(candidate.move.nombre));
+  }else{
+   const copy={...fallback,nombre:'Struggle '+(i+1),tipo:'NORMAL',dano:Math.min(5,Number(fallback.dano)||4)};
+   selected.push(trainingMove(copy,'struggle',slot,level,true));
+   occupied.add(idOf(selected.at(-1).nombre));
+  }
+  result[slot]=selected.at(-1);
  }
  if(level>=KANTO_INTRO.ultAt){
   const ultCandidate=candidates.find(c=>!selected.some(x=>idOf(x.torre2IntroSource)===c.key)&&c.move.dano>0)

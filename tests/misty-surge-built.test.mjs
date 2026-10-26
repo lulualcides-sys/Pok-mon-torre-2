@@ -133,8 +133,16 @@ for(const species of ['ivysaur','venusaur','charmeleon','charizard',
  const load=resolveLoadout(member);
  assert.ok(load.lmb?.forma,species+' must have an unlocked basic ATK at evolution');
  for(const [i,slot] of ['lmb','rmb','q','e'].entries()){
-  if(load[slot])assert.ok(availableMoves(member).some(m=>m.id===selectedMoves(member)[i]),
-   species+' cannot equip a skill before learning it');
+  if(!load[slot])continue;
+  if(load[slot].torre2IntroPractice){
+   // Practice-only substitutions must never become learned or equipped
+   // moves in the permanent FRLG save. Their temporary weak combat VFX
+   // are deliberate and are not a learnset bypass.
+   assert.ok(load[slot].dano<= (slot==='e'?12:9),
+    species+' tutorial substitute must remain weak');
+   assert.equal(load[slot].pendiente,false);
+  }else assert.ok(availableMoves(member).some(m=>m.id===selectedMoves(member)[i]),
+   species+' cannot equip an unlearned permanent move');
  }
  assert.equal(load.esp.dano,0,species+' must use Kanto-only Dodge');
  if(load.e)assert.equal(load.e.ulti,true,species+' unlocked ultimate must remain charged');
