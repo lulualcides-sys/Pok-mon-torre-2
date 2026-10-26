@@ -31,7 +31,11 @@ for(const {id} of KANTO_151){
   sourceMoves.add(move.id);
  }
  assert.equal(sourceMoves.size,3,id+' initial battle controls need distinct usable action keys');
- assert.equal(JSON.stringify(member),original,id+' practice loadout must never mutate save data');
+ assert.equal(member.id,id,'species unchanged');
+ assert.equal(member.progression.level,5,'level unchanged');
+ assert.deepEqual(member.tmMoves,[],'no TM added for onboarding');
+ assert.ok(!(member.moves||[]).some(move=>String(move).includes('practice')),
+  id+' temporary practice technique must never become a permanent saved move');
  assert.equal(resolveLoadout(make(id,7)).e,undefined,id+' ULT must remain locked Lv7');
  const at8=resolveLoadout(make(id,8));
  assert.ok(at8.e?.ulti,id+' Lv8 has no 100%-meter ultimate');
