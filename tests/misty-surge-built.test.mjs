@@ -70,16 +70,28 @@ for(const id of families){
   const unlocked=availableMoves(member).some(move=>move.id===ultimate);
   if(unlocked&&slots[3]===ultimate)assert.equal(loadout.e?.ulti,true,
    species+' should activate its ULT once really unlocked');
-  if(!unlocked)assert.equal(loadout.e,undefined,
-   species+' must not borrow a locked/future ultimate');
+  if(!unlocked){
+   // The Lv8 tutorial ULT uses a weak approved renderer; it never borrows
+   // the future canonical ultimate of this Pokémon or its evolution.
+   if(level>=8){
+    assert.ok(loadout.e?.torre2IntroPractice&&loadout.e?.ulti,
+     species+' must receive only a safe tutorial ULT');
+    assert.ok(loadout.e.dano<=12,species+' ULT must remain weak');
+    assert.notEqual(canonicalMoveKey(loadout.e.torre2IntroSource),ultimate,
+     species+' cannot borrow a future/evolved finisher');
+   }else assert.equal(loadout.e,undefined,'ULT blocked until Lv8');
+  }
   if(evolved){
    const stale={...member,moves:['tackle','gust','bite','quick-attack'],
     movePlanSpecies:previous};
    assert.deepEqual(selectedMoves(stale),slots,
     species+' migration must remove pre-evolution moves');
   }
-  if(['caterpie','weedle'].includes(species))assert.equal(loadout.e,undefined,
-   'Larvae must not borrow the evolved ultimate');
+  if(['caterpie','weedle'].includes(species)){
+   assert.equal(loadout.e?.torre2IntroPractice,true,
+    'Larvae must not borrow the evolved ultimate; only a practice ULT');
+   assert.ok(loadout.e.dano<=12);
+  }
   const kit=formIndex>0?def.evoluciones[formIndex-1].kit:def.kit;
   assert.equal(kit.esp.dano,0,species+' should dodge without damage');
   assert.equal(kit.esp.forma,'dash');
