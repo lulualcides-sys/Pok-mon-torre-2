@@ -502,7 +502,8 @@ export function resolveLoadout(member){
   dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
  };
  return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
-  earlyLevels:EARLY_KANTO_LEARNSETS[member.id]});
+  earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
+  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel});
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);
