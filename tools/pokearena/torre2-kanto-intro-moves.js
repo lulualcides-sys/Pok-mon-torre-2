@@ -68,7 +68,17 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
   .sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
  const candidates=[];
  const push=(name,learned,priority=0)=>{
-  const key=canonical?canonical(name):idOf(name),move=catalog.get(key);
+  const key=canonical?canonical(name):idOf(name);
+  let move=catalog.get(key);
+  // FireRed Charmander knows Scratch at Lv1. If the captured client lacks
+  // its own Scratch renderer, reuse the already approved basic contact
+  // animation at deliberately low power; never substitute Metal Claw.
+  // This is only a campaign practice preview, not a new global move/VFX.
+  if(!move&&id==='charmander'&&key==='scratch'&&catalog.has('tackle')){
+   const base=catalog.get('tackle');
+   move={...base,id:'scratch',nombre:'Scratch',tipo:'NORMAL',
+    dano:Math.min(6,Number(base.dano)||5),torre2IntroFallbackFX:'tackle'};
+  }
   if(!move||!lowPower(move)||candidates.some(x=>x.key===key))return;
   candidates.push({key,move,learned,priority});
  };
