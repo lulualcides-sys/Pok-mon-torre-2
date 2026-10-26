@@ -5,6 +5,17 @@ const once=(src,a,b)=>{
  if(!src.includes(a))throw Error('Pokédex upstream source unexpectedly changed '+a.slice(0,75));
  return src.replace(a,b);
 };
+export function normalizePokedexNameColumn(s){
+ // New upstream builds measure translated role labels before placing names.
+ // Preserve their clipping and dynamic width, while retaining Torre 2 labels.
+ if(s.includes('const nx=TX+(esTactil()?52:38);')){
+  s=once(s,'const nx=TX+(esTactil()?52:38);','const nx=TX+72;');
+ }else{
+  s=once(s,'const nx=Math.max(TX+(esTactil()?52:38),TX+6+Math.max(...etiquetas.map(t=>t.width))+8);',
+   'const nx=Math.max(TX+72,TX+6+Math.max(...etiquetas.map(t=>t.width))+8);');
+ }
+ return s;
+}
 export function paginateKantoPokedexSource(original){
  let s=String(original);
  s=once(s,
@@ -88,8 +99,7 @@ export function paginateKantoPokedexSource(original){
  s=once(s,
   'const BOTON_TACTIL={lmb:"BASIC",rmb:"SKILL",esp:"DASH",q:"Q",e:"ULT"};',
   'const BOTON_TACTIL={lmb:"ATK",rmb:"HAB 2",esp:"ESQUIVA",q:"HAB 3",e:"ULT"};');
- s=once(s,'const nx=TX+(esTactil()?52:38);',
-  'const nx=TX+72;');
+ s=normalizePokedexNameColumn(s);
  s=once(s,'esTactil()?BOTON_TACTIL[slot]:tecla',
   'BOTON_TACTIL[slot]');
  const start=s.indexOf('casilla(p,x,y,i){'),end=s.indexOf('elegir(i){',start);
