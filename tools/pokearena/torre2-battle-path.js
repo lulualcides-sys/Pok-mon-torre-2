@@ -289,7 +289,8 @@ export function renderBattlePath(scene,state,handlers){
  frame(side,496,54,136,255,{fill:0x081d31,border:0x5a91b6,radius:4});
  frame(side,502,60,124,30,{fill:0x19476d,border:0x578db0,radius:3});
  txt(scene,561,74,'SUA EQUIPE  '+state.team.length+'/6',11,'#fff1c7',24);
- txt(scene,538,102,Math.min(8,state.badges.length)+'/8 INSÍGNIAS',8,'#c4e6e9',24);
+ button(scene,538,101,80,17,Math.min(8,state.badges.length)+'/8 INSÍGNIAS',()=>handlers.badges?.(),{depth:39,small:true})
+  .setData('torre2-badge-case-open',true);
  txt(scene,596,102,'$'+(state.money||0),9,'#ffda74',24);
  for(let i=0;i<6;i++){
   const m=state.team[i],y=119+i*22;

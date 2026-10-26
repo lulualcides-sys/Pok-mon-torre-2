@@ -512,3 +512,24 @@ export function progress(g,x,y,active,num=6){
   g.fillCircle(xx,y,3);
  }
 }
+
+// Original UI pixel glyphs, drawn directly with Phaser Graphics (no new assets).
+// Each badge keeps its own silhouette; locked badges use the same muted palette.
+const BADGE_PIXELS=[
+ ['...111...', '..12221..', '.1233321.', '123333321','123333321','.1233321.','..12221..','...111...'],
+ ['....1....','...121...','...121...','..12321..','.1233321.','123333321','123333321','.1222221.','..11111..'],
+ ['....1....','..11211..','.1233321.','112333211','123333321','112333211','.1233321.','..11211..','....1....'],
+ ['..11.11..','.1221221.','123333321','123222321','.1232321.','123222321','123333321','.1221221.','..11.11..'],
+ ['.111.111.','122212221','123323321','123333321','.1233321.','..12321..','...121...','....1....'],
+ ['..11111..','.1222221.','123333321','123333321','123333321','.1222221.','..11111..'],
+ ['....1....','...121...','.1.121.1.','121232121','123333321','.1233321.','..12221..','...111...'],
+ ['......11.','....11221','...123321','..123321.','.123321..','123321...','12211....','.11......']
+];
+const BADGE_COLORS=[0xb7a78f,0x69c9ec,0xf5cf51,0x72c888,0xd981b2,0xf6c66c,0xf28a54,0x8bdd8b];
+export function drawBadgeIcon(g,index,x,y,earned,scale=3){
+ const rows=BADGE_PIXELS[index]||BADGE_PIXELS[0];
+ const colors=earned?[0,0x071322,BADGE_COLORS[index],0xffedbc]:[0,0x111e2c,0x3a4c5b,0x536675];
+ rows.forEach((row,yy)=>[...row].forEach((c,xx)=>{
+  if(c!=='.')px(g,x+(xx-4.5)*scale,y+(yy-rows.length/2)*scale,scale,scale,colors[Number(c)]);
+ }));
+}

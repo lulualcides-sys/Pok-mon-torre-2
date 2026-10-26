@@ -125,3 +125,13 @@ A lista de compatibilidade das TMs deriva da mesma tabela FRLG_MACHINES dos 151 
 gymTMClaims registra entregas independentemente do inventário consumível. Saves antigos com ginásios concluídos recebem recompensas faltantes uma vez; a TM de Brock já entregue pelos builds antigos não é recriada. TMs já na bolsa ou aprendidas são reconhecidas. A migração usa o salvamento com backup anterior, preservando equipe, dinheiro e progresso.
 
 Teste permanente do cliente construído percorre as 13 premiações, verifica sete TMs jogáveis, consumo, releitura idempotente, bloqueios de compra e compatibilidade. Novo teste de navegador ensina Water Pulse ao Squirtle por clique real na Mochila, recarrega a página e verifica que o prêmio não reaparece. A preparação desse teste usa um save com Misty já derrotada: não representa vitória normal contra Misty. Publicação e suíte remota deste lote ainda precisam ser verificadas.
+
+## Estojo de insígnias (26/10)
+
+O lote ebffed4 foi publicado pelo Pages 40294361119 e passou integralmente na validação 40294281601, incluindo test:browser, os 13 chefes por depuração e source-client-smoke. Na página pública, os módulos route-data/campaign-core de src-f71b3e1298 foram comparados byte a byte com o build testado. Mapa e loja abriram no navegador público.
+
+Continuação baseada em 34fb838: preservadas as quatro correções paralelas de golpes iniciais, ULT nível 8 e janela de treino do Ditto. Cópia de trabalho isolada e backup pre-badge-case-20261026-34fb838.
+
+O contador de insígnias do mapa abre agora um estojo Phaser com oito glifos originais de interface em pixel art, duas linhas de quatro, cores para conquistadas e paleta apagada para restantes. Cada seleção mostra líder, cidade/ginásio e TM; o estado de recebimento consulta gymTMClaims, não a presença do consumível na bolsa. Toxic aparece explicitamente indisponível nesta versão. Nenhum golpe, VFX, sprite aprovado ou regra de recompensa foi alterado.
+
+A regressão badge-case-browser usa fixture isolada, clica no botão real do mapa e nas oito insígnias, confere detalhes, retorno, layout móvel 854×480 e igualdade do save antes/depois da consulta. As imagens desktop/móvel foram inspecionadas. 139 testes unitários, check e regressões construídas de prêmios e golpes iniciais passaram. Esses testes não representam campanha normal até o Campeão. Publicação deste novo estojo deve ser confirmada separadamente.

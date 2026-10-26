@@ -7,7 +7,7 @@ import {WEATHER_NAMES} from './weather.js';
 import {ANCHO,ALTO,texto as textoMenu,estrechar} from '../config.js';
 import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
- ball,progress} from './campaign-art.js';
+ ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
@@ -16,7 +16,7 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,teachTM} from './campaign-core.js';
-import {MART_ITEMS} from './route-data.js';
+import {MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
 import {prepareTrainingMatch,installTrainingDummy} from './training.js';
@@ -297,7 +297,7 @@ create(){
    capture:()=>this.grassScreen(state),
    pokemon:i=>state.team[i]&&this.showSummary(state,i),
    bag:()=>this.bagScreen(state),center:()=>this.centerScreen(state),
-   mart:()=>this.martScreen(state),
+   mart:()=>this.martScreen(state),badges:()=>this.badgeCaseScreen(state),
    menu:()=>this.scene.start('titulo',{menu:'principal'}),
    page:movePage,details,reset:()=>this.confirmResetJourney(),
    locked:()=>this.__torre2PathDetails(text,this,null)
@@ -306,6 +306,33 @@ create(){
   // map, invisible trainer zones or city navigation are created.
   this.__torre2PathPage=path.offset;
   return path;
+ }
+ badgeCaseScreen(state,selected=0){
+  this.children.removeAll(true);this.backdrop();
+  const index=Math.max(0,Math.min(7,selected));
+  text(this,320,28,'ESTOJO DE INSÍGNIAS',titleStyle).setOrigin(.5);
+  text(this,320,52,'KANTO  ·  '+GYMS.filter(g=>state.badges.includes(g.badge)).length+' / 8',statusStyle).setOrigin(.5);
+  const cards=this.add.graphics().setDepth(2);
+  GYMS.forEach((gym,i)=>{
+   const x=110+(i%4)*140,y=107+Math.floor(i/4)*89,earned=state.badges.includes(gym.badge);
+   cards.fillStyle(i===index?0x29485c:0x0a2135);cards.fillRect(x-61,y-37,122,76);
+   cards.lineStyle(i===index?2:1,i===index?0xf5cf76:0x436480);cards.strokeRect(x-61,y-37,122,76);
+   drawBadgeIcon(cards,i,x,y-9,earned,3);
+   text(this,x,y+14,gym.badge.toUpperCase(),{fontSize:'10px',color:earned?C.white:C.muted}).setOrigin(.5).setDepth(4);
+   text(this,x,y+29,earned?'CONQUISTADA':'NÃO CONQUISTADA',{fontSize:'8px',color:earned?'#8be2b3':'#71899e'}).setOrigin(.5).setDepth(4);
+   this.add.zone(x,y,122,76).setDepth(8).setInteractive({useHandCursor:true})
+    .setData('torre2-badge-index',i).on('pointerdown',()=>this.badgeCaseScreen(state,i));
+  });
+  const gym=GYMS[index],earned=state.badges.includes(gym.badge),reward=GYM_TM_REWARDS[index];
+  const item=MART_ITEMS.find(i=>i.id===reward),claimed=earned&&!!reward&&state.gymTMClaims?.includes(reward);
+  text(this,320,253,gym.leader+'  ·  GINÁSIO DE '+gym.city.toUpperCase(),{fontSize:'14px',color:C.gold}).setOrigin(.5);
+  const rewardText=item?item.name+'  ·  '+(claimed?'RECEBIDA':earned?'A RECEBER':'RECOMPENSA DO GINÁSIO'):
+   'TM06 TOXIC  ·  INDISPONÍVEL NESTA VERSÃO';
+  text(this,320,278,rewardText,{fontSize:'11px',color:C.white}).setOrigin(.5);
+  text(this,320,297,'Selecione uma insígnia para consultar o ginásio e a recompensa.',{fontSize:'9px',color:C.muted}).setOrigin(.5);
+  this.button(320,332,230,29,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
+   .setData('torre2-badge-case-back',true);
+  this.__torre2BadgeCase={selected:index,earned,claimed,reward:reward||null};
  }
  // Reset is intentionally a two-step action; a single stray tap may
  // never erase the campaign, team, PC, badges or saved inventory.
