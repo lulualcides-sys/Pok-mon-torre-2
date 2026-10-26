@@ -1,0 +1,57 @@
+name: Torre 2 — Ferramentas opcionais de economia de contexto
+
+on:
+  push:
+    branches: [chore/astra-context-tests-20261026]
+    paths:
+      - 'tools/dev/**'
+      - 'repomix.config.json'
+      - '.github/workflows/toolkit-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar Repomix e ast-grep SOMENTE no pacote auxiliar
+        run: npm install --prefix tools/dev/toolkit --no-audit --no-fund --no-package-lock
+      - name: Conferir versoes e sintaxe
+        run: |
+          set -euo pipefail
+          tools/dev/toolkit/node_modules/.bin/repomix --version
+          tools/dev/toolkit/node_modules/.bin/ast-grep --version
+          node --check tools/dev/contexto-ia.mjs
+          node --check tools/dev/busca-codigo.mjs
+          node tools/dev/contexto-ia.mjs --list
+          node tools/dev/busca-codigo.mjs --list
+      - name: Gerar contextos enxutos por area
+        run: |
+          set -euo pipefail
+          node tools/dev/contexto-ia.mjs clima
+          node tools/dev/contexto-ia.mjs captura
+          test -s reports/contexto/clima.xml
+          test -s reports/contexto/captura.xml
+      - name: Validar busca estrutural sem alterar arquivos
+        run: |
+          set -euo pipefail
+          mkdir -p reports/ferramentas
+          node tools/dev/busca-codigo.mjs captura 'export function $NAME($$$ARGS) { $$$BODY }' > reports/ferramentas/ast-grep-captura.txt
+          test -s reports/ferramentas/ast-grep-captura.txt
+      - name: Guardar relatorios de auditoria
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: torre2-contexto-seletivo-e-busca-estrutural
+          path: |
+            reports/contexto/
+            reports/ferramentas/
+          if-no-files-found: warn
+          retention-days: 7
