@@ -14,12 +14,30 @@ O Script Mestre e todos os golpes aprovados têm prioridade sobre economia. Não
 6. Reaproveitar relatórios de CI idênticos ao mesmo commit; nunca atribuir um teste de commit antigo à versão nova.
 7. Usar raciocínio/ambiente mais econômico quando a tarefa for mecânica, avançando para esforço elevado somente para regressões difíceis ou alterações grandes.
 
-## Ferramentas opcionais (NÃO instaladas por este patch)
-- **Serena MCP:** navegação por símbolos em ambiente com MCP e serviço de linguagem ativo; verificar compatibilidade, custo da inicialização e permissões antes de conectar.
-- **Repomix:** inventário de tokens e empacotamento seletivo, com exclusões; **não** enviar o repositório inteiro a cada turno.
-- **ast-grep / ripgrep:** buscas locais rápidas. Uma boa busca simples já pode dispensar instalação adicional.
+## Ferramentas integradas, instaláveis sob demanda
 
-Estas ferramentas são **opcionais** e só geram economia se o agente conseguir acessá-las de verdade. Adicionar links de GitHub não instala ferramentas no ChatGPT.
+- **Repomix 1.18.1 e ast-grep 0.45.3** estão declarados **isoladamente** em `tools/dev/toolkit/package.json`. A instalação acontece quando se roda `npm install --prefix tools/dev/toolkit --no-audit --no-fund --no-package-lock`, ou na execução do GitHub Actions `toolkit-validation.yml`.
+- Não foram inseridos em `package.json` da raiz nem no jogo publicado. `node_modules` permanece ignorado; o checkout não guarda executáveis.
+- **Serena MCP não foi habilitado**, porque depende de um cliente MCP com acesso ao diretório de trabalho. Adicionar seus arquivos ao GitHub ou executá-lo num runner isolado NÃO o conectaria ao Astra deste chat. Instalação futura somente se a interface/cliente suportar MCP e o usuário habilitar a conexão.
+- Recomendação: usar **Repomix apenas por área**, que faz compressão estrutural e tem verificação de segredos e limite de tokens; usar **ast-grep para pesquisa estrutural de símbolos sem edição automática**.
+
+### Instalar, verificar e usar
+
+```bash
+npm install --prefix tools/dev/toolkit --no-audit --no-fund --no-package-lock
+node tools/dev/contexto-ia.mjs --list
+node tools/dev/contexto-ia.mjs clima
+node tools/dev/busca-codigo.mjs --version
+node tools/dev/busca-codigo.mjs captura 'export function $NAME($$ARGS) { $$BODY }'
+```
+
+O contexto gerado fica em `reports/contexto/<area>.xml` (não versionado). O arquivo é uma visão resumida do código, **não serve para editar ou testar a lógica sozinho**; abrir fontes reais para a modificação. O CI opcional registra versões e gera um artefato para auditoria, sem publicar o jogo.
+
+`repomix.config.json` mantém verificação de segredos, ignora saídas, binários e bibliotecas de referência, e impõe orçamento de 60.000 tokens ao relatório: este teto é um limite de segurança da ferramenta, **não corresponde aos créditos do ChatGPT**. O ganho de créditos só pode ser estimado após medições comparáveis.
+
+Fonte oficial: https://github.com/yamadashy/repomix ; https://github.com/ast-grep/ast-grep ; https://github.com/oraios/serena .
+
+Estas ferramentas só geram economia quando o ambiente de desenvolvimento de fato as executar, e não por existirem no repositório.
 
 ## Testes focados e teste final
 O utilitário `tools/dev/testes-focados.mjs` permite executar suites unitárias existentes por domínio. Ele **não** muda `package.json`, workflows, shaders, golpes, arte, campanha nem GitHub Pages.
