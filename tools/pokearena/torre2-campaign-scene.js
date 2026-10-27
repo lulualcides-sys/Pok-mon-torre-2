@@ -130,22 +130,27 @@ create(){
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   let state=readCampaign();
   let battleReport=null;
-  if(this.result&&state&&!this.result.marker?.training&&!this.result.marker?.laboratory){
+  // Finished battles are single-use events. A loss preserves the same
+  // stage/trainer, so replaying the old result on Phaser scene.restart()
+  // otherwise reapplies a defeat AFTER the player heals at the Center.
+  const completed=this.result;
+  this.result=null;
+  if(completed&&state&&!completed.marker?.training&&!completed.marker?.laboratory){
    // Existing resolver owns rewards and saving; report only reads snapshots.
-   const marker=this.result.marker||{};
+   const marker=completed.marker||{};
    const before=JSON.parse(JSON.stringify(state));
    let outcome=null,kind='trainer';
    if(marker.kind==='rematch'){
     if(validRematchResult(state,marker.ticket)){
      applyPartyBattleResult(state,marker.party);
-     outcome=resolveRematch(state,marker.ticket,!!this.result.won);
+     outcome=resolveRematch(state,marker.ticket,!!completed.won);
      kind='rematch';
     }
    }else if(marker.stage===state.stage&&marker.trainer===state.trainer){
     applyPartyBattleResult(state,marker.party);
     const wild=marker.kind==='wild'&&state.pendingWild?.id===marker.id;
-    outcome=wild?resolveWildBattle(state,!!this.result.won):
-     resolveBattle(state,!!this.result.won);
+    outcome=wild?resolveWildBattle(state,!!completed.won):
+     resolveBattle(state,!!completed.won);
     kind=wild?'wild':'trainer';
     state.lastMessage=outcome.message;
     saveCampaign(state);
