@@ -6,7 +6,7 @@ import {frlgUnlockLevel,frlgMachineCompatible} from './torre2-frlg-learnsets.js'
 const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ATTACK_SLOTS=['lmb','rmb','q','e'];
 const MIN_CD=Object.freeze({'blizzard':10,'ventisca':10,'hydro-pump':9.5,'hidrobomba':9.5,'seismic-toss':8,'movimiento-sismico':8});
-const RESERVED_HYPER_BEAM=new Set(['dragonite','gyarados','snorlax','tauros','aerodactyl','porygon','mewtwo']);
+const RESERVED_HYPER_BEAM=new Set(['dragonite','gyarados','snorlax','tauros','aerodactyl','mewtwo']);
 // Previously approved, characteristic moves. Never fabricate visual effects.
 const SIGNATURES=Object.freeze({
  'meowth':'Pay Day','persian':'Pay Day','rattata':'Hyper Fang','raticate':'Hyper Fang',
@@ -35,12 +35,19 @@ const SPECIAL_APPROVED=Object.freeze({
  'koffing':['smog'], 'mew':['metronome'], 'clefairy':['metronome'],
  'clefable':['metronome']
 });
-const eligible=(id,m)=>{
+const eligible=(id,m,types=[])=>{
  const key=idOf(m?.nombre);
  if(!key||!m?.forma||['dash','evolucionar','megaevolucionar','renacer'].includes(m.forma))return false;
- if(key==='hyper-beam'&&!RESERVED_HYPER_BEAM.has(id))return false;
- return frlgUnlockLevel(id,key)!==null||frlgMachineCompatible(id,key)||
+ // A legally compatible TM is NOT an automatically appropriate signature move.
+ // Do not give Blizzard to Raticate, Solar Beam to Clefairy, etc. Off-type
+ // moves are eligible only when they are natural learned moves or signatures.
+ if(key==='hyper-beam')
+  return RESERVED_HYPER_BEAM.has(id)&&frlgMachineCompatible(id,key);
+ const natural=frlgUnlockLevel(id,key)!==null;
+ const characteristic=idOf(SIGNATURES[id])===key||
   (SPECIAL_APPROVED[id]||[]).includes(key);
+ const ownTypeTM=types.includes(m.tipo)&&frlgMachineCompatible(id,key);
+ return natural||characteristic||ownTypeTM;
 };
 const power=m=>Number.isFinite(m?.dano)?m.dano:0;
 export function enforceArenaMoveCooldowns(kit){
@@ -59,7 +66,7 @@ export function enforceArenaMoveCooldowns(kit){
 export function selectArenaSpeciesKit(kit,species,types,library){
  const id=idOf(species),signature=idOf(SIGNATURES[id]);
  if(!kit||!id)return kit;
- const valid=new Map(),prefer=(m)=>m?.forma&&eligible(id,m);
+ const valid=new Map(),prefer=(m)=>m?.forma&&eligible(id,m,types);
  // Preserve exact renderer/metadata from existing stage; then native library.
  for(const m of ATTACK_SLOTS.map(s=>kit[s]).concat([...library.values()])){
   if(!prefer(m))continue;
