@@ -62,6 +62,13 @@
 - [Workflow 40577322862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40577322862): sintaxe, `npm test`, check/reuse, build real Phaser e teste específico passaram; suite geral de navegador ainda **em execução na última consulta**. Até aprovação integral e merge, **não marcar como publicado**.
 - **T01 permanece ABERTA**: [PR #30](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30) documenta derrota genuína do único Bulbasaur no Rival #13 após 12 vitórias; não representa bug automaticamente. Próximo foco é captura/treinamento reais, recuperação no Centro, revanche legítima contra Rival e Brock. Não inventar vitória e não modificar a PR #30 de outro agente inadvertidamente.
 
+## Atualização T01 — validação da PR #36 e equipe natural para Rival (27/10/2026)
+
+- [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/36) foi **integrada** em `774b8b690407f390ce0f3698a34aabb8149a102b`. O [CI específico #40577322862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40577322862), a suíte de navegador, a [validação integrada #40578446714](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40578446714) e o [workflow Pages #40578491197](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40578491197) concluíram com sucesso. **Acessibilidade visual do site público não foi checada diretamente nesta execução**, somente o resultado remoto do Pages.
+- [PR #38](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/38) (draft) acrescenta **teste, não modificação de jogo**: 12 vitórias de treinadores sem forçar K.O.; 12 Pokébolas compradas por botão real, duas capturas com RNG natural, cura real pelo Centro, depois Rival #13 e Brock. Não repetir trabalho do [PR #30](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30) nem presumir vitória. O [run #40579140270](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40579140270) estava em execução durante este registro; **resultado a confirmar**.
+- **Próximo `Continue`:** conferir o resultado e evidências da PR #38; se falhar, identificar a causa real (captura RNG, interface, HP, composição de equipe, IA) antes de alterar código. T01 só fecha após Brock vencido normalmente, sem fixtures, e verificação pós-merge/Publicação.
+
+
 ## Evidências do estado de referência (27/10/2026)
 
 - `main` analisada: `c705d0b84f0d85cf3a4e59d8fa0fc4b75aec964c` — remoção do bloqueio de cinco encontros selvagens; [PR #32](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/32).
