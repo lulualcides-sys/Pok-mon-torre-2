@@ -1,0 +1,45 @@
+name: Kanto T01 — Team capture and real Rival Brock
+
+on:
+  push:
+    branches: [test/master-t01-rival-natural-team-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  actual-kanto:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies and verify original moves
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture the original game and build
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Validate real team preparation and unforced Rival Brock fights
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/section20-natural-team-brock-browser.cjs
+      - name: Persist real outcomes and screenshots even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-t01-natural-team-rival-brock
+          path: |
+            test-evidence/natural-through-brock.json
+            test-evidence/natural-route1-*
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14
