@@ -258,13 +258,29 @@ export function currentOpponent(s){
   level:trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader),
   arena:gym.arena,city:gym.city};
 }
+// Route selection must never create a full-HP battle actor from a fainted save.
+// Resume with an already-conscious reserve, or let the player use the Center.
+export function ensureConsciousActive(s){
+ if(s?.team?.[s.active]?.hp>0)return true;
+ const reserve=s?.team?.findIndex(m=>m?.hp>0)??-1;
+ if(reserve<0)return false;
+ s.active=reserve;
+ saveCampaign(s);
+ return true;
+}
 export function startBattle(s){
- if(!s.team[s.active])throw new Error('Active Pokémon not selected');
+ if(!ensureConsciousActive(s))
+  throw new Error('Equipe desmaiada: visite o Centro Pokémon antes de batalhar.');
  const opponent=currentOpponent(s);
  if(!opponent)throw new Error('Kanto campaign completed');
  // Scale the ORIGINAL Poké Arena tactical bot as Kanto progresses:
  // its native difficulty adjusts reactions, evasions and attack judgment.
- recordSeen(s,opponent.id);saveCampaign(s);
+ // The opponent descriptor names the ACE, but real gym/League battles
+ // always send their first roster member initially. Never mark an unseen
+ // ace in the Pokédex before the player has actually faced that species.
+ const firstSeen=opponent.leader?
+  STAGES[s.stage]?.leaderTeam?.[0]||opponent.id:opponent.id;
+ recordSeen(s,firstSeen);saveCampaign(s);
  const tier=opponent.leader?
   (s.stage>=8?'maestro':s.stage>=4?'dificil':'normal'):
   (s.stage>=8?'maestro':s.stage>=3?'normal':'facil');
@@ -428,7 +444,9 @@ export function startWildEncounter(s,random=Math.random){
 }
 export function startWildBattle(s){
  const wild=s.pendingWild;
- if(!wild||wild.stage!==s.stage||!s.team[s.active])throw new Error('Wild encounter no longer active');
+ if(!wild||wild.stage!==s.stage)throw new Error('Wild encounter no longer active');
+ if(!ensureConsciousActive(s))
+  throw new Error('Equipe desmaiada: visite o Centro Pokémon antes de batalhar.');
  return {p1:s.team[s.active].id,p2:wild.id,modo:'cpu',nivel:'facil',
   arena:STAGES[s.stage].arena,mandos:['kbm','cpu'],
   torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id,
