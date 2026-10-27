@@ -12,7 +12,7 @@ const ARENA_CD=Object.freeze({
  'hydro-pump':3.5,'hidrobomba':3.5,
  'seismic-toss':3,'sismic-toss':3,'movimiento-sismico':3,
  'egg-bomb':3,'eggbomb':3,'bomba-de-ovo':3,'bomba-ovo':3,
- 'bomba-de-ovos':3,'bomba-huevo':3,'bomba-de-huevo':3
+ 'bomba-de-ovos':3,'bomba-de-huevos':3,'bomba-huevo':3,'bomba-de-huevo':3
 });
 const RESERVED_HYPER_BEAM=new Set(['dragonite','gyarados','snorlax','tauros','aerodactyl','mewtwo']);
 // Previously approved, characteristic moves. Never fabricate visual effects.
