@@ -26,6 +26,13 @@ const snapshot=()=>{
  s.badges=['Rocha'];
  s.inventory.pokeball=17;
  s.inventory.potion=2;
+ // A completed Brock gym legitimately earned this one-time TM. Start all
+ // backup tests from a CURRENT valid save, not a legacy payload that is
+ // supposed to migrate on read.
+ s.gymTMClaims=['tm-rock-tomb'];
+ s.inventory.tms=['tm-rock-tomb'];
+ for(const key of ['antidote','paralyzeheal','awakening','burnheal','iceheal','fullheal'])
+  s.inventory[key]=0;
  s.box.push(s.team.pop()); // Keep Mewtwo permanently in PC.
  return s;
 };
