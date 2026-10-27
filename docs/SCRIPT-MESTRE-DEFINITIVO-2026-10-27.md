@@ -1390,3 +1390,14 @@ OBJETIVO FINAL: TRANSFORMAR O POKÉMON TORRE 2 EM UM JOGO COMPLETO, BONITO, ESTR
 Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/36) uma correção independente e limitada da grama alta: a etapa Victory Road (stage 8, treinadores 0–16) mantém encontros selvagens; após liberar Lorelei (trainer >= 17) e nas câmaras seguintes, iniciar novos encontros fica bloqueado. Há teste permanente para estado, dinheiro, Pokébolas e progresso. A [execução CI 40577322862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40577322862) passou por sintaxe, regras, unitários, build Phaser e testes focados; a regressão geral de navegador **ainda estava em execução na última checagem**. Até confirmação, **não afirmar merge ou publicação**.
 
 **Próximo `Continue`:** revalidar CI/PR #36 e integrar somente se a suíte completa passou; conferir GitHub Pages. Em seguida focar no obstáculo real da T01 (capturar e treinar equipe, disputar Rival #13 e vencer Brock no Phaser sem trapaças), sem interferir no trabalho concorrente da PR #30.
+
+
+### F. Continuação T01 — integração corrigida e teste natural de equipe
+
+## Atualização T01 — validação da PR #36 e equipe natural para Rival (27/10/2026)
+
+- [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/36) foi **integrada** em `774b8b690407f390ce0f3698a34aabb8149a102b`. O [CI específico #40577322862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40577322862), a suíte de navegador, a [validação integrada #40578446714](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40578446714) e o [workflow Pages #40578491197](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40578491197) concluíram com sucesso. **Acessibilidade visual do site público não foi checada diretamente nesta execução**, somente o resultado remoto do Pages.
+- [PR #38](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/38) (draft) acrescenta **teste, não modificação de jogo**: 12 vitórias de treinadores sem forçar K.O.; 12 Pokébolas compradas por botão real, duas capturas com RNG natural, cura real pelo Centro, depois Rival #13 e Brock. Não repetir trabalho do [PR #30](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30) nem presumir vitória. O [run #40579140270](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40579140270) estava em execução durante este registro; **resultado a confirmar**.
+- **Próximo `Continue`:** conferir o resultado e evidências da PR #38; se falhar, identificar a causa real (captura RNG, interface, HP, composição de equipe, IA) antes de alterar código. T01 só fecha após Brock vencido normalmente, sem fixtures, e verificação pós-merge/Publicação.
+
+
