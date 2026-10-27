@@ -584,10 +584,11 @@ for(const [filename,changes] of patches){
      continue;
     }
    }
-   if(filename==='escenas/titulo.js'&&from.startsWith('const halo=this.add.graphics()')){
-    const join=body.indexOf('JOIN!');
-    if(join<0){console.warn('Legacy join-arrow no longer exists upstream');continue;}
-    console.error('Upstream social join UI:',body.slice(Math.max(0,join-850),join+400));
+   // Public menu now stores the optional JOIN label on this.chapaJoin.
+   // Drop the same legacy visual decoration; leave fullscreen and inputs intact.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const halo=this.add.graphics()')&&to===''){
+    const updated=from.replace('const c=this.chapa(', 'const c=this.chapaJoin=this.chapa(');
+    if(updated!==from&&body.includes(updated)){body=body.replace(updated,'');continue;}
    }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
