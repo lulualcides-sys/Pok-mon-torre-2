@@ -1,0 +1,57 @@
+name: Kanto T01 — Victory Road grass boundary
+
+on:
+  push:
+    branches: [fix/master-t01-league-grass-20261027]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  kanto-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install node dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax + original moves protection + unit suite
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tests/section20-repeatable-grass-built.test.mjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Build actual original Phaser client
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Stage boundary and capture regressions
+        run: |
+          set -euo pipefail
+          node --test tests/section20-repeatable-grass-built.test.mjs
+          node --test tests/capture-pre-misty.test.js
+          node --test tests/section20-campaign-integrity-built.test.mjs
+      - name: Real native Phaser browser regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/section20-repeatable-grass-browser.cjs
+          npm run test:browser
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-t01-grass-boundary
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14
