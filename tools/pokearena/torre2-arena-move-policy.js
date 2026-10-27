@@ -5,11 +5,15 @@
 import {frlgUnlockLevel,frlgMachineCompatible} from './torre2-frlg-learnsets.js';
 const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ATTACK_SLOTS=['lmb','rmb','q','e'];
-// Original Poké Arena 2D-like pace: each powerful move has a readable 4–6s recharge.
-// These values apply only outside the campaign and never change approved VFX.
-const ARENA_CD=Object.freeze({'blizzard':6,'blizard':6,'ventisca':6,
- 'hydro-pump':5.5,'hidrobomba':5.5,
- 'seismic-toss':5,'sismic-toss':5,'movimiento-sismico':5});
+// User-requested fast Arena 2D pace (2–4 seconds) for these four moves.
+// NEVER mutate original native VFX/metadata; never apply during campaign.
+const ARENA_CD=Object.freeze({
+ 'blizzard':4,'blizard':4,'ventisca':4,
+ 'hydro-pump':3.5,'hidrobomba':3.5,
+ 'seismic-toss':3,'sismic-toss':3,'movimiento-sismico':3,
+ 'egg-bomb':3,'eggbomb':3,'bomba-de-ovo':3,'bomba-ovo':3,
+ 'bomba-de-ovos':3,'bomba-huevo':3,'bomba-de-huevo':3
+});
 const RESERVED_HYPER_BEAM=new Set(['dragonite','gyarados','snorlax','tauros','aerodactyl','mewtwo']);
 // Previously approved, characteristic moves. Never fabricate visual effects.
 const SIGNATURES=Object.freeze({
