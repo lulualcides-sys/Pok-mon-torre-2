@@ -33,10 +33,10 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t02-desktop-run-browser.cjs
           node tests/arena-preview-browser.cjs
           node tests/battle-bag-browser.cjs
           node tests/t02-mobile-menu-browser.cjs
-          node tests/t02-desktop-run-browser.cjs
       - name: Global native Phaser regressions
         run: |
           set -euo pipefail
