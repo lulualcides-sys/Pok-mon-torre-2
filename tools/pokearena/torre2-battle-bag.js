@@ -57,16 +57,16 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  const label=(x,y,txt,size=10,color='#ebf5fa')=>
   track(scene.add.text(x,y,String(txt),{fontFamily:'Pixelify Sans,monospace',
    fontSize:size+'px',color,stroke:'#040e1e',strokeThickness:2})
-   .setOrigin(.5).setDepth(depth+3));
+   .setOrigin(.5).setDepth(depth+3).setScrollFactor(0));
  const button=(x,y,w,h,caption,cb,enabled=true)=>{
-  const g=track(scene.add.graphics().setDepth(depth+2));
+  const g=track(scene.add.graphics().setDepth(depth+2).setScrollFactor(0));
   g.fillStyle(enabled?0x21485a:0x142c3b,1);
   g.fillRoundedRect(x-w/2,y-h/2,w,h,4);
   g.lineStyle(1,enabled?0xc59f55:0x405969);
   g.strokeRoundedRect(x-w/2,y-h/2,w,h,4);
   label(x,y,caption,9,enabled?'#ffe5ac':'#8698a9');
   if(enabled){
-   const zone=track(scene.add.zone(x,y,w,h).setDepth(depth+5)
+   const zone=track(scene.add.zone(x,y,w,h).setDepth(depth+5).setScrollFactor(0)
     .setInteractive({useHandCursor:true}));
    zone.on('pointerdown',(_p,_x,_y,event)=>{event?.stopPropagation?.();cb()});
    return zone;
@@ -89,8 +89,8 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  function draw(message=''){
   if(!opened)return;
   clear();
-  track(scene.add.zone(320,180,640,360).setDepth(depth).setInteractive());
-  const bg=track(scene.add.graphics().setDepth(depth+1));
+  track(scene.add.zone(320,180,640,360).setDepth(depth).setScrollFactor(0).setInteractive());
+  const bg=track(scene.add.graphics().setDepth(depth+1).setScrollFactor(0));
   bg.fillStyle(0x061325,.95).fillRect(0,0,640,360);
   bg.fillStyle(0x142e43).fillRoundedRect(56,36,528,289,8);
   bg.lineStyle(2,0xd9b660).strokeRoundedRect(56,36,528,289,8);
@@ -150,14 +150,14 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   close();
  }
  // A single non-invasive button; never touches approved Arena moves.
- const handle=scene.add.graphics().setDepth(3600);
+ const handle=scene.add.graphics().setDepth(3600).setScrollFactor(0);
  handle.fillStyle(0x153449,.91).fillRoundedRect(509,80,113,24,4);
  handle.lineStyle(1,0xe0bb64).strokeRoundedRect(509,80,113,24,4);
  const title=scene.add.text(565,92,'BOLSA',{
   fontFamily:'Pixelify Sans,monospace',fontSize:'11px',
   color:'#ffe2a2',stroke:'#020b17',strokeThickness:2
- }).setDepth(3602).setOrigin(.5);
- const trigger=scene.add.zone(565,92,113,24).setDepth(3603)
+ }).setDepth(3602).setOrigin(.5).setScrollFactor(0);
+ const trigger=scene.add.zone(565,92,113,24).setDepth(3603).setScrollFactor(0)
   .setInteractive({useHandCursor:true}).setData('torre2-battle-bag-open',true);
  trigger.on('pointerdown',(_p,_x,_y,event)=>{event?.stopPropagation?.();if(opened)close();else open()});
  scene.events.once('shutdown',()=>{close();handle.destroy();title.destroy();trigger.destroy()});
