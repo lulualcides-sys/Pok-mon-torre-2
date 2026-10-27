@@ -59,7 +59,8 @@ const server=http.createServer(async(req,res)=>{
     const o=b.children.list.find(x=>x.getData?.(k)===v&&x.input?.enabled);
     if(!o)throw new Error('Missing battle Bag control '+k+'='+v);
     const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-    return {x:rect.left+rect.width*o.x/640,y:rect.top+rect.height*o.y/360};
+    return {x:rect.left+rect.width*(o.getData?.('torre2-bag-hud-x')??o.x)/640,
+     y:rect.top+rect.height*(o.getData?.('torre2-bag-hud-y')??o.y)/360};
    },[key,value]);
    await page.mouse.click(point.x,point.y);
   }
@@ -96,6 +97,12 @@ const server=http.createServer(async(req,res)=>{
    if(!b.luchadores[0].est.veneno)throw Error('Status not applied');
   });
   await clickData('torre2-battle-bag-open',true);
+  await page.waitForFunction(()=>
+   window.__pt2Game.scene.getScene('combate').__torre2BattleBagOpen===true,
+   null,{timeout:7000});
+  // Phaser registers newly drawn modal hitzones on the next rendered frame.
+  await page.evaluate(()=>new Promise(done=>
+   requestAnimationFrame(()=>requestAnimationFrame(done))));
   await clickData('torre2-battle-bag-item','antidote');
   const cured=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');

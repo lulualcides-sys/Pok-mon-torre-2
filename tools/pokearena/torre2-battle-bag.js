@@ -52,7 +52,30 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  if(!scene?.add||!party||!actor)return null;
  const depth=7400;
  let opened=false,target=party.playerIndex,lastUse=-Infinity,objects=[];
- const track=o=>{objects.push(o);return o};
+ // Native Phaser can pan AND zoom while the party fights. The Bag uses
+ // fixed 640x360 HUD coordinates, so both scroll and zoom must be canceled
+ // for graphics, labels and INPUT hitzones together. Scale compensation is
+ // inverse to the live camera zoom, not an extra CSS/canvas overlay.
+ const pinHud=o=>{
+  o.setScrollFactor(0);
+  const baseX=o.x,baseY=o.y,scaleX=o.scaleX,scaleY=o.scaleY;
+  // Keep the original 640×360 HUD coordinates available for accessible
+  // browser hit testing and for Phaser UI clients that read these zones.
+  o.setData('torre2-bag-hud-x',baseX);
+  o.setData('torre2-bag-hud-y',baseY);
+  const sync=()=>{
+   if(!o.active)return;
+   const cam=scene.cameras.main,z=Math.max(.01,cam.zoom||1);
+   const cx=cam.width/2,cy=cam.height/2;
+   const sx=cam.width/640,sy=cam.height/360;
+   o.setPosition(cx+(baseX*sx-cx)/z,cy+(baseY*sy-cy)/z);
+   o.setScale(scaleX*sx/z,scaleY*sy/z);
+  };
+  scene.events.on('update',sync);
+  o.once('destroy',()=>scene.events.off('update',sync));
+  sync();return o;
+ };
+ const track=o=>{objects.push(o);return pinHud(o)};
  const clear=()=>{for(const o of objects)o.destroy();objects=[];};
  const label=(x,y,txt,size=10,color='#ebf5fa')=>
   track(scene.add.text(x,y,String(txt),{fontFamily:'Pixelify Sans,monospace',
@@ -150,14 +173,15 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   close();
  }
  // A single non-invasive button; never touches approved Arena moves.
- const handle=scene.add.graphics().setDepth(3600);
+ const handle=pinHud(scene.add.graphics().setDepth(3600));
  handle.fillStyle(0x153449,.91).fillRoundedRect(509,80,113,24,4);
  handle.lineStyle(1,0xe0bb64).strokeRoundedRect(509,80,113,24,4);
  const title=scene.add.text(565,92,'BOLSA',{
   fontFamily:'Pixelify Sans,monospace',fontSize:'11px',
   color:'#ffe2a2',stroke:'#020b17',strokeThickness:2
  }).setDepth(3602).setOrigin(.5);
- const trigger=scene.add.zone(565,92,113,24).setDepth(3603)
+ pinHud(title);
+ const trigger=pinHud(scene.add.zone(565,92,113,24).setDepth(3603))
   .setInteractive({useHandCursor:true}).setData('torre2-battle-bag-open',true);
  trigger.on('pointerdown',(_p,_x,_y,event)=>{event?.stopPropagation?.();if(opened)close();else open()});
  scene.events.once('shutdown',()=>{close();handle.destroy();title.destroy();trigger.destroy()});

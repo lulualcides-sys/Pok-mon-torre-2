@@ -134,7 +134,8 @@ const launch={executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
      const b=window.__pt2Game.scene.getScene('combate');
      const z=b.children.list.find(o=>o.active&&o.input?.enabled&&o.getData?.('torre2-battle-bag-back')===true);
      if(!z)throw Error('BAG back button missing');
-     return {x:z.x,y:z.y};
+     return {x:z.getData?.('torre2-bag-hud-x')??z.x,
+      y:z.getData?.('torre2-bag-hud-y')??z.y};
     });
     await tapNative(page,back.x,back.y);
     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BattleBagOpen===false,null,{timeout:6000});
