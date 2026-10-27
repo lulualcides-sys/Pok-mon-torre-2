@@ -31,7 +31,7 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 
 | ID | Situação inicial | Escopo / seções do Mestre | Fechar quando |
 |---|---|---|---|
-| **T01** | **PRÓXIMO — PARCIAL** | Campanha normal até Brock: conferir PR #30, Rival após 12 vitórias, XP/HP, Centro, encontros sem limite e salvar (§18,20,31,34) | Conseguir chegar a Brock e vencê-lo no Phaser **sem vitórias forçadas**, com log/resultado da partida |
+| **T01** | **EM ANDAMENTO — PARCIAL** | Campanha normal até Brock: conferir PR #30, Rival após 12 vitórias, XP/HP, Centro, encontros sem limite e salvar (§18,20,31,34) | Conseguir chegar a Brock e vencê-lo no Phaser **sem vitórias forçadas**, com log/resultado da partida |
 | T02 | PARCIAL | FIGHT, POKÉMON, BAG, RUN e botões mobile nos modos Arena/campanha (§4) | Menus corretos e clicáveis no navegador desktop/mobile |
 | T03 | PARCIAL | Tela preta, sprite, atributo, evolução e HUD (§5,6) | Todas as linhas evolutivas verificadas sem tela preta, nomes/níveis/sprites consistentes |
 | T04 | PARCIAL | Dano residual de projéteis, hitboxes, troca, K.O. e transições (§15,29) | Sem dano destinado ao alvo anterior, incluindo multi-impacto e troca rápida |
@@ -75,5 +75,7 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 | Data | Item | Base / PR / commit | Testes e navegador | Pages SHA | Estado e próximo passo |
 |---|---|---|---|---|---|
 | 27/10/2026 | Inicialização da fila (documentação) | `a5961ceef` | Nenhum teste de jogabilidade nesta ação documental | Não verificado para esta documentação | T01 primeiro; PR #30 aberta na inspeção; 31 pacotes são planejamento, não patches já implementados |
+
+| 27/10/2026 | T01 / auditoria do limite Victory Road–Lorelei | `main` `2437020`; correção [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/36), commit `564cf31` | Sintaxe, npm test, check/reuse, build Phaser e regressão específica aprovados em [run 40577322862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40577322862); suíte geral de navegador ainda em execução na última consulta | NÃO VERIFICADO — PR ainda não integrada | Corrigir apenas grama na câmara Lorelei sem bloquear a Victory Road; T01 continua aberta: equipe natural, Rival #13 e Brock (PR #30) |
 
 **Ao terminar um pacote:** alterar o estado específico desta tabela, acrescentar linha ao registro e manter links para CI e para a versão pública. No próximo `continue`, escolher o primeiro não validado e não bloqueado; consultar o estado real mais recente antes de agir.
