@@ -32,6 +32,7 @@ import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
+import {hallOfFameModel} from './hall-of-fame.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -286,6 +287,49 @@ create(){
   const line=this.add.rectangle(x+2,y+2,4,h-4,accent,.9).setOrigin(0,0);
   return bg;
  }
+ hallOfFameScreen(state){
+  // Deliberately no save mutation: awards were granted by resolveBattle.
+  const hall=hallOfFameModel(state);
+  if(!hall)return this.renderCampaign(state);
+  this.children.removeAll(true);
+  this.cameras.main.setBackgroundColor(0x060f21);
+  const g=this.add.graphics().setDepth(1);
+  g.fillStyle(0x061426).fillRect(0,0,640,360);
+  g.fillStyle(0x112d40).fillRoundedRect(18,18,604,320,10);
+  g.lineStyle(3,0xe4bd64,1).strokeRoundedRect(18,18,604,320,10);
+  g.fillStyle(0x26475c,.95).fillRoundedRect(32,29,576,45,6);
+  g.lineStyle(1,0xffe9a3).strokeRoundedRect(32,29,576,45,6);
+  const center=(x,y,label,size=12,color=C.white)=>{
+   const t=text(this,x,y,label,{fontSize:size+'px',fontStyle:'bold',
+    color,stroke:'#081521',strokeThickness:3});
+   t.setOrigin(.5).setDepth(7);return t;
+  };
+  center(320,45,'★ SALÃO DA FAMA ★',21,'#ffdf94');
+  center(320,65,'CAMPEÃO DA REGIÃO DE KANTO',10,'#dcf4fb');
+  const badges=hall.badgeCount+'/8 INSÍGNIAS';
+  const honors=hall.honorCount+'/5 LIGA';
+  center(320,89,badges+'  ·  '+honors+'  ·  '+hall.wins+' VITÓRIAS',
+   10,hall.complete?'#b2ffcb':'#ffdfa0');
+  // Canonical captured PMD portraits already loaded by Campanha.preload.
+  // Entire champion party, capped at six, remains shown at their actual level.
+  hall.team.forEach((member,i)=>{
+   const col=i%3,row=Math.floor(i/3);
+   const x=123+col*197,y=138+row*78;
+   g.fillStyle(0x1a3449).fillRoundedRect(x-89,y-27,178,68,5);
+   g.lineStyle(1,0x719dbe).strokeRoundedRect(x-89,y-27,178,68,5);
+   g.fillStyle(0x1d5b49,.86).fillRoundedRect(x-80,y-19,58,51,4);
+   this.drawPortrait(member,x-51,y+6,44,5);
+   const name=member.id.replace(/-/g,' ').toUpperCase().slice(0,16);
+   center(x+24,y-10,name,10,'#f6eed1');
+   center(x+24,y+13,'NÍVEL '+member.level,10,'#c1e6f3');
+  });
+  if(!hall.team.length)center(320,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
+  center(320,301,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
+   9,'#adcbe0');
+  this.button(320,327,232,27,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
+   .setData('torre2-hall-back',true);
+  this.__torre2HallOfFame={...hall};
+ }
  renderCampaign(state){
   // The image-approved UI is a sequential battle road, not an overworld.
   // Keep all trainer/leader counters and the existing localStorage save IDs.
@@ -316,6 +360,7 @@ create(){
    pokemon:i=>state.team[i]&&this.showSummary(state,i),
    bag:()=>this.bagScreen(state),center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),badges:()=>this.badgeCaseScreen(state),
+   hall:()=>this.hallOfFameScreen(state),
    menu:()=>this.scene.start('titulo',{menu:'principal'}),
    page:movePage,details,reset:()=>this.confirmResetJourney(),
    locked:()=>this.__torre2PathDetails(text,this,null)
