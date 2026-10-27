@@ -49,6 +49,10 @@ const server=http.createServer(async(req,res)=>{
     return initial;
    });
    async function hit(key){
+    // Phaser refreshes its interactive hitlist only after the next game frame.
+    // A click directly after centerScreen() races with that refresh.
+    await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>
+     requestAnimationFrame(r))));
     const point=await page.evaluate((key)=>{
      const c=window.__pt2Game.scene.getScene('campanha');
      const z=c.children.list.find(o=>o.input?.enabled&&o.getData?.(key)===true);
@@ -58,6 +62,8 @@ const server=http.createServer(async(req,res)=>{
     },key);
     if(label==='mobile')await page.touchscreen.tap(point.x,point.y);
     else await page.mouse.click(point.x,point.y);
+    await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>
+     requestAnimationFrame(r))));
    }
    await hit('torre2-center-heal');
    const busy=await page.evaluate(()=>{
