@@ -92,7 +92,7 @@ export function installAutoBattle(scene,makeNativeAI){
 export function bindAutoBattleToScene(Scene,IA){
  if(typeof Scene?.prototype?.create!=='function'||typeof IA!=='function')
   throw Error('Original Phaser scene and Poké Arena IA required');
- if(Scene.prototype.__torre2AutoPatched)return;
+ if(Object.hasOwn(Scene.prototype,'__torre2AutoPatched'))return;
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
