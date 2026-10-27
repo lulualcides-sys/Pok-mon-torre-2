@@ -8,10 +8,16 @@ test('native Poké Arena 2D Pokémon move exactly at their original speed',()=>{
   assert.equal(speed(raw,{added:false}),raw);
 });
 
-test('Kanto campaign always preserves canonical raw speed at every evolution',()=>{
+test('Kanto campaign and Arena always share identical new-roster walking speed',()=>{
  for(const raw of [70,80,104,121,142,169])
-  for(const kanto151 of [false,true])
-   assert.equal(speed(raw,{added:true,kanto151,campaign:true}),raw);
+  for(const kanto151 of [false,true]){
+   const arena=speed(raw,{added:true,kanto151});
+   const kanto=speed(raw,{added:true,kanto151,campaign:true});
+   assert.equal(kanto,arena);
+   assert.ok(kanto>=ref.min&&kanto<=ref.max);
+  }
+ for(const raw of [70,100,129,172])assert.equal(
+  speed(raw,{added:false,campaign:true}),raw,'original species remain native');
 });
 
 test('both added Kanto batches align their central walking pace with the original',()=>{
