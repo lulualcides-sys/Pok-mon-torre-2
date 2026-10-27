@@ -92,7 +92,8 @@ const launch={executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
      const s=core.createCampaign('bulbasaur');
      // Explicit test-only save with ordinary level-five Squirtle instead of
      // the built-in level-fifty lab Mewtwo. Never stored in another browser.
-     s.team[1]=core.createCampaign('squirtle').team[0];
+     core.storePokemon(s,1); // Keep the permanent lab Mewtwo safely in PC.
+     s.team.push(core.createCampaign('squirtle').team[0]);
      core.saveCampaign(s);
      window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
     });
