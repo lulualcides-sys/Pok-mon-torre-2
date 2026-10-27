@@ -211,6 +211,7 @@ await Promise.all([
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
+ ['tools/pokearena/torre2-auto-battle.js','auto-battle.js'],
  ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
@@ -625,6 +626,19 @@ await fs.appendFile(fighterPath,
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
  'installArenaMovePolicy(Luchador,__torre2ArenaRoster);\n');
 
+// Optional OFF-by-default solo AUTO toggle: use the original CPU brain
+// only for the real player's existing controller, never touching save data,
+// attack timings, approved VFX, online matches or PvP.
+for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batalla.js','Batalla']]){
+ const entry=path.join(dest,clientSource,filename),text=await fs.readFile(entry,'utf8');
+ if(!text.includes('class '+klass+' extends ')||!text.includes('create(){')||
+    !text.includes('import{IA')||!text.includes('this.controles'))
+  throw Error('Auto battle requires recognized native scene '+filename);
+ await fs.appendFile(entry,
+  '\\nimport{bindAutoBattleToScene}from"../torre2/auto-battle.js";'+
+  'bindAutoBattleToScene('+klass+',IA);\\n');
+}
+
 // Expand Pokedex without overlapping its original animated Pokémon
 // pedestal: six rows of six cards with tiny previous/next Phaser controls.
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
@@ -643,6 +657,7 @@ for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
+ 'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
  'torre2/move-pool.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
  'torre2/party-battle.js','torre2/weather.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
