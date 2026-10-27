@@ -92,6 +92,22 @@ test('AUTO keyboard B toggles, and button moves with wide-screen camera',()=>{
  s.handlers.get('shutdown')();
  assert.equal(s.keyboard.size,0);
 });
+test('AUTO also installs in the Batalla subclass when base Combate is patched',()=>{
+ class Solo{constructor(){Object.assign(this,scene())}create(){this.baseCreated=true}}
+ class ArenaTeam extends Solo{create(){this.arenaCreated=true}}
+ const Brain=class{constructor(actor){this.actor=actor}leer(){return{mx:.5,my:0,ax:200,ay:120}}};
+ bindAutoBattleToScene(Solo,Brain);
+ bindAutoBattleToScene(ArenaTeam,Brain);
+ const first=new Solo();first.create();
+ assert.equal(first.baseCreated,true);assert.ok(first.__torre2AutoMode);
+ const arena=new ArenaTeam();arena.create();
+ assert.equal(arena.arenaCreated,true);assert.ok(arena.__torre2AutoMode,
+  'Batalla has its own create method; inherited marker must not prevent install');
+ arena.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(arena.controles[0].leer(.1).mx,.5);
+ arena.handlers.get('shutdown')();
+ first.handlers.get('shutdown')();
+});
 test('Scene prototype wrapping preserves original create and delegates AI',()=>{
  class FakeScene{constructor(){Object.assign(this,scene())}create(){this.wasCreated=true}}
  const before=FakeScene.prototype.create;
