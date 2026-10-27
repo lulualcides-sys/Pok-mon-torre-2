@@ -45,6 +45,7 @@ export function installAutoBattle(scene,makeNativeAI){
   bg.setStrokeStyle(1,state.enabled?0x5af4a0:0x9eacbe,.95);
   text.setText(state.enabled?'AUTO ✓':'AUTO').setColor(state.enabled?'#baffd2':'#dce5ef');
  }
+ refresh(); // Display OFF immediately, before the first pointer/keyboard event.
  hot.on('pointerdown',(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
   if(state.cleaned||scene.fase==='fin'||scene.sim)return;
