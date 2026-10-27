@@ -1010,12 +1010,13 @@ create(){
   for(let i=0;i<22;i++){
    const index=page*22+i;if(index>=KANTO_DEX.length)break;
    const raw=KANTO_DEX[index];
-   const slug=raw==='Nidoran♀'?'nidoran-f':raw==='Nidoran♂'?'nidoran-m':raw.toLowerCase();
+   const slug=raw==='Nidoran♀'?'nidoran-f':raw==='Nidoran♂'?'nidoran-m':raw==='MrMime'?'mr-mime':raw.toLowerCase();
    const ready=supported.has(slug),caught=(state.dexCaught||[]).includes(slug);
    const seen=caught||(state.dexSeen||[]).includes(slug);
    const x=35+(i>=11?295:0),y=75+(i%11)*21;
    const shiny=(state.dexShinyCaught||[]).includes(slug);
-   const marker=shiny?' ✦ SHINY':caught?' ★':seen?' ◦':ready?' ✓':'';
+   const seenShiny=(state.dexShinySeen||[]).includes(slug);
+   const marker=shiny?' ✦ SHINY':seenShiny?' ✧ SHINY VISTO':caught?' ★':seen?' ◦':ready?' ✓':'';
    text(this,x,y,String(index+1).padStart(3,'0')+'. '+raw+marker,{
     fontSize:'11px',color:shiny?'#ffe58b':caught?C.gold:seen?C.blue:C.muted});
   }
