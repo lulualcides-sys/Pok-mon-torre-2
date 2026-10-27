@@ -175,7 +175,13 @@ const save=()=>fs.writeFileSync('test-evidence/t02-desktop-run.json',JSON.string
     await page.waitForTimeout(450);
     const runAfter=await page.evaluate(()=>{
      const b=window.__pt2Game.scene.getScene('combate'),s=window.t02.readCampaign();
-     return {phase:b.fase,active:b.scene.isActive(),
+     const p=b.input.activePointer,hitObjects=b.input.hitTestPointer?.(p)||[];
+     const describe=o=>({type:o.type,depth:o.depth,x:o.x,y:o.y,
+      width:o.width,height:o.height,visible:o.visible,
+      tags:o.data?.list||null});
+     return {phase:b.fase,active:b.scene.isActive(),runClicks:b.__torre2RunPointerSeen||0,
+      canvasPointer:p?{x:p.x,y:p.y,worldX:p.worldX,worldY:p.worldY}:null,
+      hits:hitObjects.slice(0,12).map(describe),
       campaign:window.__pt2Game.scene.isActive('campanha'),
       pending:s?.pendingWild,activeHp:s?.team?.[s?.active]?.hp,lastMessage:s?.lastMessage};
     });
