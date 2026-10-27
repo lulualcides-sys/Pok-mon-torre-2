@@ -14,6 +14,7 @@ import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar,etapaDe} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
+import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
@@ -115,7 +116,7 @@ export function installPartyBattle(scene){
  // status damage and regeneration. Suspend simulation, not the Phaser clock.
  const nativeStep=scene.paso;
  scene.paso=function(dt){
-  if(this.__torre2Changing||this.__torre2BallTransitions||this.__torre2CaptureBusy||['torre2-sendout','capturando','torre2-aim'].includes(this.fase)){
+  if(this.__torre2BattleBagOpen||this.__torre2Changing||this.__torre2BallTransitions||this.__torre2CaptureBusy||['torre2-sendout','capturando','torre2-aim'].includes(this.fase)){
    this.hud?.update();return;
   }
   const result=nativeStep.call(this,dt);
@@ -256,6 +257,10 @@ export function installPartyBattle(scene){
   const txt=label(scene,320,141,textValue,13,'#ffe0a9',2600);
   scene.time.delayedCall(900,()=>txt.active&&txt.destroy());
  };
+ // Battle consumables use live actor HP/status and save-stock authority.
+ // No install in VS CPU, Training, laboratory or other original game modes.
+ scene.__torre2BattleBag=installBattleBag(scene,party,actors[0],redrawPartyHud,announce);
+ scene.events.once('shutdown',()=>{scene.__torre2BattleBag=null;});
  function syncHp(){
   for(const [side,entries,idx]of [[0,party.friend,party.playerIndex],
                                    [1,party.foes,party.enemyIndex]]){
