@@ -1176,6 +1176,35 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(offlineResult.trainer,1);
   assert.ok(offlineResult.team[0].progression.experience>125);
   assert.deepEqual(outRequests,[],'no external account or multiplayer endpoints in campaign');
+  // True win in the Phaser match must open a read-only result overlay.
+  const reportVisible=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const panel=c.children.list.find(o=>o.getData?.('torre2-report-continue')===true);
+   const header=c.children.list.find(o=>o.text==='VITÓRIA!');
+   return {panel:!!panel,header:!!header,covered:
+    !!c.children.list.find(o=>o.getData?.('torre2-report-blocker')===true)};
+  });
+  assert.deepEqual(reportVisible,{panel:true,header:true,covered:true},
+   'A real victory must display report and block underlying route clicks');
+  await offline.screenshot({path:'test-evidence/master-battle-report-desktop.png',fullPage:true});
+  await offline.setViewportSize({width:854,height:480});
+  await offline.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+  await offline.screenshot({path:'test-evidence/master-battle-report-mobile.png',fullPage:true});
+  const reportButton=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const btn=c.children.list.find(o=>o.getData?.('torre2-report-continue')===true);
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:rect.left+btn.x*rect.width/640,y:rect.top+btn.y*rect.height/360};
+  });
+  await offline.mouse.click(reportButton.x,reportButton.y);
+  const afterDismiss=await offline.evaluate(()=>({
+   report:window.__pt2Game.scene.getScene('campanha').children.list.some(
+    o=>o.getData?.('torre2-report-continue')===true),
+   saved:JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'))
+  }));
+  assert.equal(afterDismiss.report,false,'CONTINUAR must close report on click');
+  assert.deepEqual(afterDismiss.saved,offlineResult,
+   'Closing report must not grant EXP, coins, badge, TM or mutate save again');
   await offline.screenshot({path:'test-evidence/pokemon-torre-2-after-first-victory.png',fullPage:true});
   await offline.close();
   // Campaign entry stays at the approved title/menu; no forced test loadout.

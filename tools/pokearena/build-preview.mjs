@@ -178,6 +178,7 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
+ ['tools/pokearena/torre2-battle-report.js','battle-report.js'],
  ['tools/pokearena/torre2-campaign-map-unified.js','campaign-map-unified.js'],
  ['tools/pokearena/torre2-campaign-art.js','campaign-art.js'],
  ['tools/pokearena/torre2-cc0-overworld.js','cc0-overworld.js'],

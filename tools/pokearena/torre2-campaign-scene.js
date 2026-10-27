@@ -31,6 +31,7 @@ import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
+import {makeBattleReport,showBattleReport} from './battle-report.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -124,21 +125,36 @@ create(){
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   let state=readCampaign();
+  let battleReport=null;
   if(this.result&&state&&!this.result.marker?.training&&!this.result.marker?.laboratory){
-   // Return to the same gym map. Stage changes only after the leader.
+   // Existing resolver owns rewards and saving; report only reads snapshots.
    const marker=this.result.marker||{};
+   const before=JSON.parse(JSON.stringify(state));
+   let outcome=null,kind='trainer';
    if(marker.kind==='rematch'){
-    if(validRematchResult(state,marker.ticket)){applyPartyBattleResult(state,marker.party);resolveRematch(state,marker.ticket,!!this.result.won);}
+    if(validRematchResult(state,marker.ticket)){
+     applyPartyBattleResult(state,marker.party);
+     outcome=resolveRematch(state,marker.ticket,!!this.result.won);
+     kind='rematch';
+    }
    }else if(marker.stage===state.stage&&marker.trainer===state.trainer){
     applyPartyBattleResult(state,marker.party);
-    const summary=marker.kind==='wild'&&state.pendingWild?.id===marker.id?
-     resolveWildBattle(state,!!this.result.won):resolveBattle(state,!!this.result.won);
-    state.lastMessage=summary.message;
+    const wild=marker.kind==='wild'&&state.pendingWild?.id===marker.id;
+    outcome=wild?resolveWildBattle(state,!!this.result.won):
+     resolveBattle(state,!!this.result.won);
+    kind=wild?'wild':'trainer';
+    state.lastMessage=outcome.message;
     saveCampaign(state);
    }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
+   if(outcome&&outcome.ok!==false)
+    battleReport=makeBattleReport(before,state,outcome,{
+     kind,listMoves:availableMoves,
+     tmNames:Object.fromEntries(MART_ITEMS.map(item=>[item.id,item.name]))
+    });
   }
   if(!state)return this.starterSelection();
   this.renderCampaign(state);
+  if(battleReport)showBattleReport(this,battleReport);
  }
  // Exact original Poké Arena 2D menu frame, font and hover/highlight,
  // reused here rather than reinterpreted with generic rectangles and CSS.
