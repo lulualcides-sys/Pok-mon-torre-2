@@ -8,6 +8,7 @@ const load=p=>import(pathToFileURL(path.join(root,version,p)));
 const {MART_ITEMS,GYM_TM_REWARDS}=await load('torre2/route-data.js');
 const core=await load('torre2/campaign-core.js');
 const pool=await load('torre2/move-pool.js');
+const {createPartyMatch}=await load('torre2/party-battle.js');
 const {TORRE2_TOXIC_FORMS}=await load('torre2/toxic-fx.js');
 const {TORRE2_FORMS}=await load('torre2/signature-fx.js');
 const store=new Map();
@@ -27,6 +28,16 @@ const tm=MART_ITEMS.find(i=>i.id==='tm-toxic');
 assert.equal(tm.move,'Toxic');
 assert.ok(tm.compatible.includes('bulbasaur'),'Canonical FRLG Bulbasaur compatibility');
 assert.ok(!tm.compatible.includes('magikarp'),'No universal TM teaching');
+const koga=core.createCampaign('bulbasaur');koga.stage=4;
+koga.trainer=core.TRAINERS_PER_GYM(4);
+const kogaOpponent=core.currentOpponent(koga);
+assert.ok(kogaOpponent?.leader,'Stage 4 must be the actual Koga gym leader');
+const kogaParty=createPartyMatch(koga,kogaOpponent,false);
+assert.deepEqual(kogaParty.foes.map(x=>x.id),['koffing','muk','koffing','weezing']);
+for(const foe of kogaParty.foes.filter(x=>['muk','weezing'].includes(x.id))){
+ assert.equal(foe.loadout.q.nombre,'Toxic','Koga '+foe.id+' should use Toxic in real fight');
+ assert.equal(foe.loadout.q.forma,'torre2_toxic');
+}
 const state=core.createCampaign('bulbasaur');
 state.stage=4;state.trainer=core.TRAINERS_PER_GYM(4);
 const reward=core.resolveBattle(state,true);
