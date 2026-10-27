@@ -2,7 +2,7 @@ name: Arena — espécies, cooldowns e evolução Eevee (isolado)
 
 on:
   push:
-    branches: [fix/arena-moves-eevee-cooldown-20261026, fix/arena-cooldowns-4-6s-20261026, fix/arena-cooldowns-2-4s-egg-bomb-20261026, fix/arena-thunder-cooldown-3s-20261026, fix/arena-fireblast-charge-shield-size-20261026, fix/arena-solar-beam-3s-20261027]
+    branches: [fix/arena-moves-eevee-cooldown-20261026, fix/arena-cooldowns-4-6s-20261026, fix/arena-cooldowns-2-4s-egg-bomb-20261026, fix/arena-thunder-cooldown-3s-20261026, fix/arena-fireblast-charge-shield-size-20261026, fix/arena-solar-beam-3s-20261027, feat/battle-auto-toggle-20261027]
   workflow_dispatch:
 
 permissions:
@@ -25,6 +25,7 @@ jobs:
           node --check tools/pokearena/torre2-arena-move-policy.js
           node --check tools/pokearena/build-preview.mjs
           node --test tests/arena-species-kit-policy.test.js
+          node --test tests/arena-auto-battle.test.js
           npm run check
           npm test
       - name: Capturar fonte aprovada e construir versao isolada
@@ -36,12 +37,14 @@ jobs:
             sleep 4
           done
           node tools/pokearena/build-preview.mjs
+
           test -s _site/arena2d/version.json
       - name: Testar evolução e golpes fora da campanha em Chromium
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/finale13-built.test.mjs
+          node tests/arena-auto-battle-browser.cjs
           node tests/arena-species-kit-browser.cjs
           node tests/evolution-modes-built.test.mjs
           node tests/arena-evolved-selection-browser.cjs
