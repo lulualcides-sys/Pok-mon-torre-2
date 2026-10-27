@@ -59,7 +59,10 @@ const server=http.createServer(async(req,res)=>{
     const o=b.children.list.find(x=>x.getData?.(k)===v&&x.input?.enabled);
     if(!o)throw new Error('Missing battle Bag control '+k+'='+v);
     const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-    return {x:rect.left+rect.width*o.x/640,y:rect.top+rect.height*o.y/360};
+    // Phaser's 1280×720 WebGL pointer uses rendered pixel positions in
+    // this camera test. The 640×360 helper incorrectly multiplies UI
+    // coordinates a second time under zoom.
+    return {x:rect.left+o.x,y:rect.top+o.y};
    },[key,value]);
    await page.mouse.click(point.x,point.y);
   }
