@@ -590,9 +590,12 @@ for(const [filename,changes] of patches){
     const updated=from.replace('const c=this.chapa(', 'const c=this.chapaJoin=this.chapa(');
     if(updated!==from&&body.includes(updated)){body=body.replace(updated,'');continue;}
    }
-   if(filename==='luchador.js'&&from.includes('this.est.congelado')){
-    const pos=body.indexOf('congelaReduce');
-    console.error('Upstream freeze handling:',pos>=0?body.slice(Math.max(0,pos-220),pos+210):'missing congelaReduce');
+   // Upstream removed its old freeze damage-reduction rule entirely.
+   // With no old rule left, the campaign freeze exemption is unnecessary.
+   if(filename==='luchador.js'&&from.startsWith('if(this.est.congelado&&fuente!==this)')&&
+      to.startsWith('if(!e.datos?.torre2&&')&&!body.includes('congelaReduce')){
+    console.warn('Upstream removed legacy freeze reduction; scoped patch not needed');
+    continue;
    }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
