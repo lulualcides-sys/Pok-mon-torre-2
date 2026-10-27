@@ -121,6 +121,8 @@ class Campanha extends Phaser.Scene{
   }
  }
 create(){
+  // Phaser reuses this Scene instance on restart; remove stale treatment locks.
+  this.__torre2CenterBusy=false;
   // Restore the native Poké Arena 2D camera/viewport; no injected map zoom.
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
@@ -720,14 +722,58 @@ create(){
   },true);
  }
  centerScreen(state){
+  this.__torre2CenterBusy=false;
   this.children.removeAll(true);this.backdrop();
   text(this,320,41,'CENTRO POKÉMON',{...titleStyle,fontSize:'24px'}).setOrigin(.5);
   text(this,320,96,'CURAR TODA A EQUIPE · SEM CUSTO',{
    fontSize:'16px',color:'#a4f6dc'}).setOrigin(.5);
-  this.button(320,154,275,46,'CURAR POKÉMON',()=>{
-   healTeam(state);this.scene.restart()},true);
-  this.button(320,219,275,40,'ABRIR PC',()=>this.pcScreen(state));
-  this.button(320,298,275,32,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  const beginHeal=()=>{
+   if(this.__torre2CenterBusy||!this.scene.isActive())return;
+   this.__torre2CenterBusy=true;
+   // Native Phaser-only treatment. An opaque input zone prevents multiple
+   // clicks, PC transfers or a map restart while the one save is pending.
+   this.add.zone(320,180,640,360).setDepth(601).setInteractive()
+    .setData('torre2-center-lock',true);
+   const overlay=this.add.graphics().setDepth(602);
+   overlay.fillStyle(0x061425,.97).fillRect(0,0,640,360);
+   overlay.fillStyle(0x152f42).fillRoundedRect(52,58,536,244,10);
+   overlay.lineStyle(2,0xd8bc74).strokeRoundedRect(52,58,536,244,10);
+   text(this,320,94,'RECUPERANDO SUA EQUIPE',{
+    fontSize:'21px',fontStyle:'bold',color:'#ffe6a3'
+   }).setOrigin(.5).setDepth(610);
+   const status=text(this,320,238,'RESTAURANDO HP E CONDIÇÕES DE STATUS',{
+    fontSize:'12px',color:'#bde9e7'
+   }).setOrigin(.5).setDepth(610);
+   for(const [i,member] of state.team.slice(0,6).entries()){
+    const x=320-(Math.min(6,state.team.length)-1)*43+i*86;
+    const icon=this.add.graphics().setDepth(610);
+    ball(icon,x,160,13);
+    icon.setAlpha(.27);
+    this.tweens.add({targets:icon,alpha:1,duration:260,delay:i*150,
+     yoyo:true,repeat:1,ease:'Sine.easeInOut'});
+    text(this,x,191,member.id.toUpperCase().slice(0,11),{
+     fontSize:'9px',color:'#f1f7e5'
+    }).setOrigin(.5).setDepth(610);
+   }
+   // HealTeam remains the SOLE economy/save authority: one invocation only.
+   this.time.delayedCall(1400,()=>{
+    if(!this.scene.isActive()||!this.__torre2CenterBusy)return;
+    healTeam(state);
+    status.setText('EQUIPE RECUPERADA · HP, STATUS E DESMAIOS CURADOS')
+     .setColor('#a9f6d3');
+    this.add.zone(320,270,250,25).setDepth(615)
+     .setData('torre2-center-heal-done',true);
+    this.time.delayedCall(450,()=>{
+     if(this.scene.isActive()&&this.__torre2CenterBusy)this.scene.restart();
+    });
+   });
+  };
+  this.button(320,154,275,46,'CURAR POKÉMON',beginHeal,true)
+   .setData('torre2-center-heal',true);
+  this.button(320,219,275,40,'ABRIR PC',()=>this.pcScreen(state))
+   .setData('torre2-center-pc',true);
+  this.button(320,298,275,32,'◀ VOLTAR AO MAPA',()=>this.scene.restart())
+   .setData('torre2-center-back',true);
  }
  martScreen(state,page=0){
   this.children.removeAll(true);this.backdrop();

@@ -1,0 +1,61 @@
+name: Master patch — Centro Pokemon e revive correto
+on:
+  push:
+    branches: [feat/master-center-revive-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check files and complete unit suites
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture original Phaser client and compile current source
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Center/Potion unit save contract and full Kanto build
+        run: |
+          set -euo pipefail
+          node --test tests/center-revive-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+          node tests/campaign-awards-built.test.mjs
+      - name: Native Pokemon Center healing desktop/mobile and existing medicine
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/center-revive-browser.cjs
+          node tests/status-medicine-browser.cjs
+      - name: Full original Phaser UI regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          npm run test:browser
+      - name: Archive real screenshots and client fingerprint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-center-healing-evidence
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+            site-capture/CAPTURE-REPORT.json
+          if-no-files-found: warn
+          retention-days: 14
