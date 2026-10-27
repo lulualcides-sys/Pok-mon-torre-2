@@ -115,8 +115,24 @@ const save=()=>fs.writeFileSync('test-evidence/t02-desktop-run.json',JSON.string
      const c=window.__pt2Game.scene.getScene('campanha');
      c.grassScreen(window.t02.readCampaign());
     });
+    // Phaser creates/depth-sorts its modal hitzones on the next render.
+    // Give the genuine pointer listener two animation frames to activate.
+    await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>
+     requestAnimationFrame(done))));
     await click(page,465,292);
-    await battleReady(page);
+    try{await battleReady(page);}
+    catch(error){
+     report.wild.diagnostic=await page.evaluate(()=>{
+      const g=window.__pt2Game,c=g.scene.getScene('campanha'),
+       b=g.scene.getScene('combate'),s=window.t02.readCampaign();
+      return {scenes:g.scene.scenes.filter(x=>x.scene.isActive()).map(x=>x.scene.key),
+       phase:b.fase,party:!!b.__torre2PartyInstalled,
+       wildOverlay:!!b.__torre2WildCapture,campaignOverlay:!!c.__torre2GrassOverlay,
+       pending:s?.pendingWild,history:s?.wildEncountersStage,lastMessage:s?.lastMessage};
+     });
+     throw new Error('Wild Phaser battle did not open: '+JSON.stringify(report.wild.diagnostic)+
+      ' / '+String(error));
+    }
     await page.waitForFunction(()=>{
      const b=window.__pt2Game.scene.getScene('combate');
      return b.__torre2WildCapture&&b.children.list.some(
