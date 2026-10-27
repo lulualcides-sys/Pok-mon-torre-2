@@ -431,7 +431,13 @@ export function wildAvailability(stage){
 }
 export function startWildEncounter(s,random=Math.random){
  if(s.pendingCapture)return {ok:false,reason:'Resolva a captura pendente primeiro.'};
- if(s.stage>GYMS.length)return {ok:false,reason:'Sem grama alta nas câmaras da Elite Four.'};
+ // Stage 8 has genuine Victory Road trainers before Lorelei. Keep those
+ // encounters, but do not allow fresh wild battles after the final route
+ // trainer has been defeated and the Elite Four chamber is unlocked.
+ // Stages 9-12 are exclusively Elite Four / Champion chambers.
+ if(s.stage>GYMS.length||
+    (s.stage===GYMS.length&&s.trainer>=TRAINERS_PER_GYM(s.stage)))
+  return {ok:false,reason:'Sem grama alta nas câmaras da Elite Four.'};
  // Tall grass is repeatable in FireRed. A per-region five-encounter hard
  // stop stranded teams after ordinary failed catches, especially pre-Brock.
  // The existing stage level cap, Pokeball inventory and catch RNG still apply.
