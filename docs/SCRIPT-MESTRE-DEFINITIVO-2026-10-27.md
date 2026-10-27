@@ -1447,3 +1447,15 @@ Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/
 - Junto ao teste de Magikarp → Gyarados da PR #44, há **quatro linhas evolutivas pontualmente verificadas**. No novo teste, a prontidão para EVO foi preparada com experiência apenas no **fixture do navegador**, não em nível natural da campanha. Logo, T03 e a seção §34 continuam abertas. Um teste do site público pós-merge ainda precisa ser feito.
 - **T02:** a PR #43 para RUN e menus desktop ainda está isolada. Os logs da execução [#40595946184](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595946184) confirmam clique RUN selvagem bem-sucedido e RUN ausente contra treinador, mas falha posterior no teste desktop do Antídoto na Bolsa (estoque não consumido e modal continuou aberto). Não integrar até revisar o último HEAD e validar a suíte completa.
 
+
+
+### I. T02 — RUN na PR limpa, suíte geral ainda pendente
+
+## T02 — RUN isolado e teste real de desktop (27/10/2026)
+
+- A [PR #43](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/43) **foi fechada sem merge** porque também continha experimentos de câmera/posição da Bolsa que não passaram regressões. Nenhuma dessas mudanças deve ser incorporada automaticamente.
+- A [PR #48](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/48) traz **apenas** RUN de selvagens, teste Chromium desktop e workflow; não modifica sprites, golpes, Bolsa nem modos Arena. RUN limpa `pendingWild`, conserva HP/status da equipe, inventário, XP, dinheiro, vitórias e derrotas; não existe em batalhas com treinadores. O botão foi movido para o espaço entre a Bolsa e o AUTO após auditoria de zona nativa de profundidade 9600.
+- No [CI #40596836115](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40596836115), checks, build e fase de navegador de RUN/BAG/POKÉMON desktop, FIGHT mobile **passaram**. Na última consulta o `npm run test:browser` **ainda executava**. Portanto, **não declarar PR #48 integrada, deploy concluído ou T02 fechada**.
+- Um teste anterior de antídoto em batalha apresentou clique perdido quando a câmera movia a projeção do menu. Esse problema continua **pendente de diagnóstico e correção separados**, sem aplicar os experimentos malsucedidos à main.
+- Próximo `Continue`: verificar a conclusão do CI #40596836115 e, se aprovado, integrar PR #48 com verificação de Pages. Depois solucionar antídoto e demais controles T02. **T03 já está sendo trabalhada em outra frente; não sobrescrevê-la.**
+
