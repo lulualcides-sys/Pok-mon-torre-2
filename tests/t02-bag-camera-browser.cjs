@@ -62,7 +62,8 @@ const server=http.createServer(async(req,res)=>{
     // Phaser's 1280×720 WebGL pointer uses rendered pixel positions in
     // this camera test. The 640×360 helper incorrectly multiplies UI
     // coordinates a second time under zoom.
-    return {x:rect.left+o.x,y:rect.top+o.y};
+    return {x:rect.left+rect.width*(o.getData?.('torre2-bag-hud-x')??o.x)/640,
+     y:rect.top+rect.height*(o.getData?.('torre2-bag-hud-y')??o.y)/360};
    },[key,value]);
    await page.mouse.click(point.x,point.y);
   }
