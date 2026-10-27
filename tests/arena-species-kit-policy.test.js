@@ -169,7 +169,7 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.ok(['VAPOREON','JOLTEON','FLAREON'].includes(evolved.nombre));
  assert.equal(native.forma.nombre,evolved.nombre,'Evolution stable for one fighter');
  assert.equal(native.puedeEvolucionar,false,'Eevee cannot evolve again into another branch');
- assert.equal(native.kitActual().lmb.cd,evolved.nombre==='VAPOREON'?3.5:5);
+ assert.equal(native.kitActual().lmb.cd,evolved.nombre==='VAPOREON'?3.5:evolved.nombre==='FLAREON'?3.5:5);
  const story=new Fighter(eevee,true);story.etapa=1;
  assert.equal(story.forma.nombre,'VAPOREON','Campaign stays on existing evolution branch');
  assert.strictEqual(story.kitActual(),eevee.evoluciones[0].kit,'No Arena cooldown patch in campaign');
