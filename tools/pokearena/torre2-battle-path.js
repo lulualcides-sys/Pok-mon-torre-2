@@ -174,7 +174,7 @@ export function renderBattlePath(scene,state,handlers){
   .setOrigin(0,.5);
  const requested=scene.__torre2PathPage;
  const offset=Math.max(0,Math.min(total,Math.floor((requested??progress)/13)*13));
- const length=Math.min(14,Math.max(0,total+1-offset));
+ const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
@@ -284,7 +284,18 @@ export function renderBattlePath(scene,state,handlers){
  }
  // Stable page navigation for Misty and later routes with >13 battles.
  if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
- if(offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ if(!finished&&offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ // After the final Champion KO, never redraw a fake 14th boss that can
+ // reopen the gym. This honors the earned victory with native Phaser pixels.
+ if(finished){
+  const victory=scene.add.graphics().setDepth(19);
+  victory.fillStyle(0x092235,.95).fillRoundedRect(64,139,401,137,8);
+  victory.lineStyle(3,0xe9c373).strokeRoundedRect(64,139,401,137,8);
+  victory.fillStyle(0x254437,.9).fillRoundedRect(85,156,357,40,4);
+  txt(scene,263,175,'★ CAMPEÃO DE KANTO ★',20,'#ffe3a1',25);
+  txt(scene,263,222,'8 GINÁSIOS  ·  ELITE FOUR  ·  CAMPEÃO',11,'#d5f4e2',25);
+  txt(scene,263,250,'ABRA O SALÃO DA FAMA PARA VER SUA EQUIPE',9,'#c1dce9',25);
+ }
  // Right-hand side: portraits with compact HP, no giant cards or map overlays.
  const side=scene.add.graphics().setDepth(12);
  frame(side,496,54,136,255,{fill:0x081d31,border:0x5a91b6,radius:4});
