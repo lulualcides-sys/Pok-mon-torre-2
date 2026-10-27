@@ -12,6 +12,7 @@ const ARENA_CD=Object.freeze({
  'thunder':3,
  'psybeam':3,'psy-beam':3,
  'fire-blast':3.5,'llamarada':3.5,
+ 'solar-beam':3,'solarbeam':3,'rayo-solar':3,
  'charge':3,'carga':3,
  'hydro-pump':3.5,'hidrobomba':3.5,
  'seismic-toss':3,'sismic-toss':3,'movimiento-sismico':3,
