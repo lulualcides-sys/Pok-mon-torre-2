@@ -1401,3 +1401,15 @@ Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/
 - **Próximo `Continue`:** conferir o resultado e evidências da PR #38; se falhar, identificar a causa real (captura RNG, interface, HP, composição de equipe, IA) antes de alterar código. T01 só fecha após Brock vencido normalmente, sem fixtures, e verificação pós-merge/Publicação.
 
 
+
+
+### G. T01 — Brock validado sem vitória forçada; próximo T02
+
+## Marco validado em 27/10/2026 — T01 / Brock
+
+- O [teste Chromium/Phaser #40579140270](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40579140270) **concluiu com sucesso**. Logs: 12 vitórias consecutivas com Bulbasaur nível 5→12, compras de 12 Pokébolas no Poké Mart por clique, **duas capturas normais (Geodude e Weedle, depois Kakuna/Beedrill por evolução)**, cura no Centro por botão, vitória no Rival #13, vitória no Brock #14. Sem injeção de K.O., HP, nível, dinheiro, probabilidades, prêmios ou vitórias.
+- Estado após Brock: `stage=1`, `trainer=0`, `wins=14`, `losses=0`, **insígnia Rocha** e **TM39 Rock Tomb**. O Bulbasaur atingiu nível 13; equipe de apoio evoluiu ao longo das vitórias. O Mewtwo permaneceu apenas no PC.
+- [PR #38](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/38) integrada em `76783d9d1b828c192b8c94c1ff4c7d34ccd857cd`, **somente teste e workflow**, sem mudança das regras do jogo. [CI em main #40591596826](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40591596826) aprovado. [Pages pós-merge #40591672705](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40591672705) ainda em execução na consulta; navegador público não auditado diretamente.
+- **T01 validada em teste real do Phaser, não significa campanha inteira concluída.** Se PR #30 permanecer aberta com o diagnóstico antigo de derrota usando apenas Bulbasaur, ela não invalida a vitória com equipe legítima. Não alterar os saves nem os sprites/golpes para acomodar artificialmente o teste antigo.
+- **Próxima tarefa na fila: T02** — FIGHT/POKÉMON/BAG/RUN, desktop/mobile, na Arena e campanha. A progressão real de Misty em diante segue T19/T20 e a conclusão até Campeão continua pendente (§34).
+
