@@ -67,6 +67,32 @@ test('Regional encounter counter remains informational even for long saves',()=>
  assert.equal(core.readCampaign().wildEncountersStage,135);
 });
 
+test('Victory Road remains available before Lorelei but not inside Elite chamber',()=>{
+ const s=core.createCampaign('bulbasaur');
+ s.stage=core.GYMS.length; // stage 8 = Victory Road ladder, then Lorelei
+ s.trainer=core.TRAINERS_PER_GYM(s.stage)-1;
+ assert.equal(s.trainer,16);
+ const before=core.startWildEncounter(s,()=>0);
+ assert.equal(before.ok,true,before.reason);
+ assert.equal(s.wildEncountersStage,1);
+ // A test-only checkpoint change after the recorded Victory Road encounter:
+ // no gym result, XP, rewards or capture is fabricated here.
+ s.pendingWild=null;
+ s.trainer=core.TRAINERS_PER_GYM(s.stage);
+ const snapshot={
+  stage:s.stage,trainer:s.trainer,money:s.money,balls:s.inventory.pokeball,
+  encounters:s.wildEncountersStage,wins:s.wins,losses:s.losses
+ };
+ const blocked=core.startWildEncounter(s,()=>0);
+ assert.equal(blocked.ok,false);
+ assert.match(blocked.reason,/Sem grama alta nas câmaras da Elite Four/);
+ assert.equal(s.pendingWild,null);
+ assert.deepEqual({
+  stage:s.stage,trainer:s.trainer,money:s.money,balls:s.inventory.pokeball,
+  encounters:s.wildEncountersStage,wins:s.wins,losses:s.losses
+ },snapshot,'Blocking Lorelei chamber must not alter campaign state');
+});
+
 test('Indigo League chambers remain protected from grass encounters',()=>{
  const s=core.createCampaign('bulbasaur');
  s.stage=9;
