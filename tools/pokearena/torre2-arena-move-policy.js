@@ -2,7 +2,7 @@
  * unlocks, source-client sprites, hitboxes or approved VFX.
  * Reuse the installed native/approved renderer belonging to each move.
  */
-import {frlgUnlockLevel,frlgMachineCompatible} from './frlg-learnsets.js';
+import {frlgUnlockLevel,frlgMachineCompatible} from './torre2-frlg-learnsets.js';
 const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ATTACK_SLOTS=['lmb','rmb','q','e'];
 const MIN_CD=Object.freeze({'blizzard':10,'ventisca':10,'hydro-pump':9.5,'hidrobomba':9.5,'seismic-toss':8,'movimiento-sismico':8});
