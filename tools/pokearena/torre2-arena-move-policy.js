@@ -1,0 +1,158 @@
+/* Arena, Training, VS CPU and League ONLY. Never touch campaign FRLG
+ * unlocks, source-client sprites, hitboxes or approved VFX.
+ * Reuse the installed native/approved renderer belonging to each move.
+ */
+import {frlgUnlockLevel,frlgMachineCompatible} from './frlg-learnsets.js';
+const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const ATTACK_SLOTS=['lmb','rmb','q','e'];
+const MIN_CD=Object.freeze({'blizzard':10,'ventisca':10,'hydro-pump':9.5,'hidrobomba':9.5,'seismic-toss':8,'movimiento-sismico':8});
+const RESERVED_HYPER_BEAM=new Set(['dragonite','gyarados','snorlax','tauros','aerodactyl','porygon','mewtwo']);
+// Previously approved, characteristic moves. Never fabricate visual effects.
+const SIGNATURES=Object.freeze({
+ 'meowth':'Pay Day','persian':'Pay Day','rattata':'Hyper Fang','raticate':'Hyper Fang',
+ 'cubone':'Bone Club','marowak':'Bonemerang','porygon':'Tri Attack','magneton':'Tri Attack',
+ 'kingler':'Crabhammer','krabby':'Crabhammer','vileplume':'Petal Dance',
+ 'gengar':'Shadow Ball','haunter':'Shadow Ball','gastly':'Shadow Ball',
+ 'clefairy':'Metronome','clefable':'Metronome','mew':'Metronome',
+ 'chansey':'Soft-Boiled','jynx':'Lovely Kiss','koffing':'Smog',
+ 'weezing':'Sludge Bomb','muk':'Sludge Bomb','grimer':'Acid',
+ 'beedrill':'Fury Attack','butterfree':'Confusion','fearow':'Drill Peck',
+ 'gyarados':'Hydro Pump','lapras':'Ice Beam','blastoise':'Hydro Pump',
+ 'charizard':'Flamethrower','venusaur':'Razor Leaf','dragonite':'Dragon Pulse',
+ 'pikachu':'Thunderbolt','raichu':'Thunderbolt','jolteon':'Thunderbolt',
+ 'flareon':'Fire Blast','vaporeon':'Hydro Pump','alakazam':'Psychic',
+ 'machamp':'Cross Chop','primeape':'Cross Chop','sandslash':'Dig',
+ 'nidoking':'Earthquake','nidoqueen':'Earthquake','golem':'Earthquake',
+ 'rapidash':'Fire Blast','arcanine':'Flamethrower','parasect':'X-Scissor',
+ 'starmie':'Psychic','electrode':'Sonic Boom','magikarp':'Splash'
+});
+const SPECIAL_APPROVED=Object.freeze({
+ 'marowak':['bonemerang','bone-club'],'cubone':['bone-club'],
+ 'porygon':['tri-attack'],'magneton':['tri-attack'],
+ 'kingler':['crabhammer'],'krabby':['crabhammer'],
+ 'vileplume':['petal-dance'],'parasect':['x-scissor'],
+ 'dragonite':['dragon-pulse'], 'jynx':['lovely-kiss'],
+ 'koffing':['smog'], 'mew':['metronome'], 'clefairy':['metronome'],
+ 'clefable':['metronome']
+});
+const eligible=(id,m)=>{
+ const key=idOf(m?.nombre);
+ if(!key||!m?.forma||['dash','evolucionar','megaevolucionar','renacer'].includes(m.forma))return false;
+ if(key==='hyper-beam'&&!RESERVED_HYPER_BEAM.has(id))return false;
+ return frlgUnlockLevel(id,key)!==null||frlgMachineCompatible(id,key)||
+  (SPECIAL_APPROVED[id]||[]).includes(key);
+};
+const power=m=>Number.isFinite(m?.dano)?m.dano:0;
+export function enforceArenaMoveCooldowns(kit){
+ if(!kit||typeof kit!=='object')return kit;
+ let output=kit;
+ for(const slot of ATTACK_SLOTS){
+  const h=kit[slot],minimum=MIN_CD[idOf(h?.nombre)];
+  if(!minimum)continue;
+  if(!Number.isFinite(h.cd)||h.cd<minimum){
+   if(output===kit)output={...kit};
+   output[slot]={...h,cd:minimum};
+  }
+ }
+ return output;
+}
+export function selectArenaSpeciesKit(kit,species,types,library){
+ const id=idOf(species),signature=idOf(SIGNATURES[id]);
+ if(!kit||!id)return kit;
+ const valid=new Map(),prefer=(m)=>m?.forma&&eligible(id,m);
+ // Preserve exact renderer/metadata from existing stage; then native library.
+ for(const m of ATTACK_SLOTS.map(s=>kit[s]).concat([...library.values()])){
+  if(!prefer(m))continue;
+  const k=idOf(m.nombre);
+  if(!valid.has(k)||(!valid.get(k).forma.startsWith('torre2_')&&m.forma.startsWith('torre2_')))
+   valid.set(k,m);
+ }
+ const pool=[...valid.values()];
+ if(!pool.length)return enforceArenaMoveCooldowns(kit);
+ const kind=new Set(types||[]);
+ const label=m=>idOf(m.nombre),same=(a,b)=>label(a)===label(b);
+ const selected=[],used=new Set();
+ const add=m=>{if(m&&!used.has(label(m))){selected.push(m);used.add(label(m));}};
+ const byPower=[...pool].sort((a,b)=>power(a)-power(b)||Number(kind.has(b.tipo))-Number(kind.has(a.tipo)));
+ // Keep a genuine weak ATK. Never make Hyper Beam the basic attack.
+ add(byPower.find(m=>power(m)>0&&power(m)<=12&&label(m)!=='hyper-beam')||
+     byPower.find(m=>power(m)>0&&label(m)!=='hyper-beam'));
+ const signatureMove=pool.find(m=>label(m)===signature);
+ const other=[...pool].filter(m=>!used.has(label(m))&&power(m)>0)
+  .sort((a,b)=>Number(kind.has(b.tipo))-Number(kind.has(a.tipo))||
+                 power(a)-power(b));
+ // HAB2: usable, species-compatible attack.
+ add(other[0]);
+ // HAB3: installed characteristic attack has priority; no generic Hyper Beam.
+ add(signatureMove);
+ for(const m of other)if(selected.length<3)add(m);
+ // ULT: strongest distinct species-legal attack, if available.
+ const finish=[...pool].filter(m=>power(m)>0&&!used.has(label(m)))
+  .sort((a,b)=>power(b)-power(a)||Number(kind.has(b.tipo))-Number(kind.has(a.tipo)));
+ add(finish[0]);
+ // If special attack was already in HAB3, do not clone it.
+ for(const m of pool)if(selected.length<4)add(m);
+ const output={...kit};
+ for(let i=0;i<4;i++){
+  const attack=selected[i];
+  if(!attack){delete output[ATTACK_SLOTS[i]];continue;}
+  const slot=ATTACK_SLOTS[i];
+  output[slot]={...attack,pendiente:false,...(i===3?{ulti:true}:{ulti:false})};
+  delete output[slot].torre2UnlockLevel;
+  delete output[slot].torre2UnlockEvolution;
+  delete output[slot].torre2RequiresTM;
+ }
+ return enforceArenaMoveCooldowns(output);
+}
+export function chooseEeveeBranch(count,random=Math.random){
+ if(!Number.isInteger(count)||count<1)throw new RangeError('Eevee needs available evolutions');
+ const roll=Number(random());
+ const safe=Number.isFinite(roll)?Math.max(0,Math.min(.999999999,roll)):0;
+ return Math.floor(safe*count)+1;
+}
+export function installArenaMovePolicy(Luchador,roster){
+ const proto=Luchador.prototype,originalKit=proto.kitActual;
+ if(typeof originalKit!=='function')throw Error('Arena fighter kitActual missing');
+ const library=new Map();
+ const register=kit=>{
+  for(const m of Object.values(kit||{})){
+   const k=idOf(m?.nombre);
+   if(k&&m?.forma&&!library.has(k))library.set(k,m);
+  }
+ };
+ for(const def of roster){
+  register(def.kit);
+  for(const evo of def.evoluciones||[]){register(evo.kit);register(evo.mega?.kit);}
+ }
+ // Branch once PER fighter, only after Eevee evolves. No page-level random
+ // mutation, no changing the original campaign or the global roster.
+ const formaDescriptor=Object.getOwnPropertyDescriptor(proto,'forma');
+ if(!formaDescriptor?.get)throw Error('Unknown Arena evolution getter');
+ Object.defineProperty(proto,'forma',{...formaDescriptor,get:function(){
+  const form=formaDescriptor.get.call(this);
+  if(this.escena?.datos?.torre2||this.def?.id!=='eevee'||!(this.etapa>0))
+   return form;
+  if(!this.__torre2EeveeEvolution){
+   const choices=(this.def.evoluciones||[]).filter(e=>['vaporeon','jolteon','flareon'].includes(idOf(e.nombre)));
+   if(choices.length!==3)return form;
+   const pick=chooseEeveeBranch(choices.length);
+   this.__torre2EeveeEvolution=choices[pick-1].nombre;
+   this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;
+  }
+  return this.def.evoluciones[this.etapa-1]||form;
+ }});
+ const evoDescriptor=Object.getOwnPropertyDescriptor(proto,'puedeEvolucionar');
+ if(evoDescriptor?.get)Object.defineProperty(proto,'puedeEvolucionar',{...evoDescriptor,get:function(){
+  if(!this.escena?.datos?.torre2&&this.def?.id==='eevee'&&this.etapa>0)return false;
+  return evoDescriptor.get.call(this);
+ }});
+ proto.kitActual=function(...args){
+  const original=originalKit.apply(this,args);
+  if(this.escena?.datos?.torre2)return original;
+  const form=this.forma;
+  const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
+  const kits=this.def?.torre2ArenaAdded===true?
+   selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library):original;
+  return enforceArenaMoveCooldowns(kits);
+ };
+}
