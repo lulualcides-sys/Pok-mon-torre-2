@@ -26,7 +26,7 @@ export function signatureEntries(pool){
  // Signature entries must be complete even if they declare approval last.
  for(const literal of section.matchAll(/\{id:'[^']+'[^{}]*\}/g)){
   const body=literal[0];
-  const read=(key)=>body.match(new RegExp('(?:^|[,\\s])'+key+":'([^']+)'"));
+  const read=(key)=>body.match(new RegExp('(?:^|[,{\\s])'+key+":'([^']+)'"));
   const id=read('id')?.[1],name=read('nombre')?.[1],form=read('forma')?.[1];
   const approved=body.match(/(?:^|[,\s])approved:(true|false)/)?.[1];
   if(!id||!name||!form||approved===undefined)
