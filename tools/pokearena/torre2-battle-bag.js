@@ -59,12 +59,17 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  const pinHud=o=>{
   o.setScrollFactor(0);
   const baseX=o.x,baseY=o.y,scaleX=o.scaleX,scaleY=o.scaleY;
+  // Keep the original 640×360 HUD coordinates available for accessible
+  // browser hit testing and for Phaser UI clients that read these zones.
+  o.setData('torre2-bag-hud-x',baseX);
+  o.setData('torre2-bag-hud-y',baseY);
   const sync=()=>{
    if(!o.active)return;
    const cam=scene.cameras.main,z=Math.max(.01,cam.zoom||1);
    const cx=cam.width/2,cy=cam.height/2;
-   o.setPosition(cx+(baseX-cx)/z,cy+(baseY-cy)/z);
-   o.setScale(scaleX/z,scaleY/z);
+   const sx=cam.width/640,sy=cam.height/360;
+   o.setPosition(cx+(baseX*sx-cx)/z,cy+(baseY*sy-cy)/z);
+   o.setScale(scaleX*sx/z,scaleY*sy/z);
   };
   scene.events.on('update',sync);
   o.once('destroy',()=>scene.events.off('update',sync));
