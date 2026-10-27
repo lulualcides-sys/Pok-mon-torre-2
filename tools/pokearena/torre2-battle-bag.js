@@ -56,7 +56,10 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  // The permanent BAG trigger remains at depth 3603 when the modal is shut.
  const depth=10100;
  let opened=false,target=party.playerIndex,lastUse=-Infinity,objects=[];
- const track=o=>{objects.push(o);return o};
+ // Combat camera tracking follows the fighters. Menus are screen-space:
+ // without scrollFactor 0 the item hitzones drift away from visible labels
+ // after camera pans/shakes, so a second item click can silently miss.
+ const track=o=>{o.setScrollFactor?.(0);objects.push(o);return o};
  const clear=()=>{for(const o of objects)o.destroy();objects=[];};
  const label=(x,y,txt,size=10,color='#ebf5fa')=>
   track(scene.add.text(x,y,String(txt),{fontFamily:'Pixelify Sans,monospace',
@@ -154,15 +157,15 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   close();
  }
  // A single non-invasive button; never touches approved Arena moves.
- const handle=scene.add.graphics().setDepth(3600);
+ const handle=scene.add.graphics().setDepth(3600).setScrollFactor(0);
  handle.fillStyle(0x153449,.91).fillRoundedRect(509,80,113,24,4);
  handle.lineStyle(1,0xe0bb64).strokeRoundedRect(509,80,113,24,4);
  const title=scene.add.text(565,92,'BOLSA',{
   fontFamily:'Pixelify Sans,monospace',fontSize:'11px',
   color:'#ffe2a2',stroke:'#020b17',strokeThickness:2
- }).setDepth(3602).setOrigin(.5);
+ }).setDepth(3602).setOrigin(.5).setScrollFactor(0);
  const trigger=scene.add.zone(565,92,113,24).setDepth(3603)
-  .setInteractive({useHandCursor:true}).setData('torre2-battle-bag-open',true);
+  .setInteractive({useHandCursor:true}).setScrollFactor(0).setData('torre2-battle-bag-open',true);
  trigger.on('pointerdown',(_p,_x,_y,event)=>{event?.stopPropagation?.();if(opened)close();else open()});
  scene.events.once('shutdown',()=>{close();handle.destroy();title.destroy();trigger.destroy()});
  return {open,close,use,draw,isOpen:()=>opened,trigger};
