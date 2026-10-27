@@ -86,6 +86,13 @@
 - **T01:** [Pages #40591672705](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40591672705) confirmou sucesso do commit de T01 `76783d9`. A campanha natural está validada até Brock, não até Campeão. Um teste em navegador separado contra o site público ainda não foi executado.
 
 
+## T03 — primeiro teste de tela preta após evolução (27/10/2026)
+
+- [PR #44](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/44) integrada em `9a0dc6112097da215c1efdcfb67119f3d4c1ec76`, somente teste de navegador e workflow. [CI #40595592409](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595592409) aprovado: evolução **Magikarp → Gyarados** acionada na batalha; cena `combate` permanece ativa, textura `pmd-0130-Idle` carregada, sprite visível, frame 72×128, canvas WebGL 1280×720 e ataques por toque após evolução.
+- Esta prova é **pontual**: não assegura que todas as 151 espécies e linhas evolutivas estejam livres de tela preta. A T03 continua parcial; não foram alterados golpes, sprites, VFX ou jogabilidade.
+- A [PR #43](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/43) trata de RUN e desktop da T02 de modo concorrente. [Run #40595345855](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595345855) falhou na suíte global da Bolsa (antídoto não consumido no teste), embora o teste isolado de RUN selvagem tenha passado. **Não integrar T02 sem revisão dos testes finais do HEAD**.
+- **Próximo `Continue`:** verificar novo HEAD/CI da PR #43; concluir T02 se estiver estável e prosseguir com a matriz T03 das evoluções, preservando os recursos já aprovados.
+
 ## Evidências do estado de referência (27/10/2026)
 
 - `main` analisada: `c705d0b84f0d85cf3a4e59d8fa0fc4b75aec964c` — remoção do bloqueio de cinco encontros selvagens; [PR #32](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/32).
