@@ -75,8 +75,22 @@ const server=http.createServer(async(req,res)=>{
    b.luchadores[0].hp=b.luchadores[0].hpMax*.32;
    b.luchadores[0].inmortal=true; // isolate UI from unrelated CPU KO
   });
+  await page.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.fase==='lucha'&&!b.__torre2Changing&&
+     !b.__torre2CaptureBusy&&!b.__torre2BallTransitions;
+  },null,{timeout:25000});
   await clickData('torre2-battle-bag-open',true);
-  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2BattleBagOpen),true);
+  const opened=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),z=b.__torre2BattleBag.trigger;
+   return {open:b.__torre2BattleBagOpen,phase:b.fase,changing:b.__torre2Changing,
+    capture:b.__torre2CaptureBusy,transition:b.__torre2BallTransitions,
+    scroll:[b.cameras.main.scrollX,b.cameras.main.scrollY],
+    trigger:[z.x,z.y,z.scrollFactorX,z.scrollFactorY],
+    ptr:[b.input.activePointer.x,b.input.activePointer.y]};
+  });
+  console.log('T02_CAMERA_OPEN_DIAG',JSON.stringify(opened));
+  assert.equal(opened.open,true,'Bag must open under camera movement');
   await page.screenshot({path:'test-evidence/t02-bag-camera-open.png',fullPage:true});
   const frozen=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
