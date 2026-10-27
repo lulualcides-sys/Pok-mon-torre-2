@@ -37,7 +37,7 @@
 | 17 | Revanches | Parcial | Política de cargas, recompensa moderada e bloqueio de prêmio único relatados | Validar níveis, rotas e economia em jogo normal |
 | 18 | Pokémon Center | Parcial | Cura/remoção de status e animação; correção de reaplicação de derrota `10da46d` | Fluxo sem fixtures após KO total e consistência dos saves antigos |
 | 19 | Balanceamento geral | Parcial | Ajustes pontuais de HP, XP, velocidade e economia | Métricas de duração e dificuldade do início até a Liga |
-| 20 | Campanha completa | Parcial | Oito batalhas naturais documentadas e correções [PR #31](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/31), [#32](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/32) integradas | [PR #30](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30) aberta; avançar jogando de forma normal até Brock e Campeão |
+| 20 | Campanha completa | Parcial (Brock validado naturalmente) | 14 vitórias consecutivas no Phaser, com 2 capturas RNG, Rival #13 e Brock; [PR #38](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/38), [CI #40579140270](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40579140270) | Prosseguir de Misty até o Campeão em percurso natural; #30 é diagnóstico anterior e não prova de falha atual |
 | 21 | Mapa e locais | Parcial | Mapa, rotas e loja já inspecionados em relatórios | Abrir **cada local** e comprovar todos os menus e transições |
 | 22 | Loja, TMs e economia | Parcial | Sete TMs compatíveis por espécie e lojas por etapa no patch mestre | Toxic de Koga (PR #16), remédios em batalha, todas as regras de consumo |
 | 23 | Redesign de menus | Parcial | Sumário, Pokédex, estojo, Bolsa e BAG de batalha `e77bd4f` | Cobrir PC, mochila, mobile, acessibilidade e funcionamento real |
@@ -51,7 +51,7 @@
 | 31 | Salvamento seguro | Parcial | Migrações e backups descritos; PR #31 corrige derrota duplicada | Verificar restauração, idempotência e integridade com saves legados |
 | 32 | FPS/desempenho | Pendente / não auditado | Meta declarada de 60 FPS e builds de navegador | Medir frame-time real, memória e estabilidade no Android/desktop |
 | 33 | Testes obrigatórios | Parcial | Fluxos de CI, testes de unidade/browser e verificação do `c705d0b` | Cobertura completa das 30 verificações e documentação de lacunas |
-| 34 | Campanha jogada até o Campeão | **Pendente** | Testes de 13 chefes via **depuração** e 8 batalhas iniciais naturais, não equivalentes | Jogar em fluxo normal até Campeão, conferir cada batalha e save |
+| 34 | Campanha jogada até o Campeão | **Parcial — apenas até Brock** | [#40579140270](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40579140270): 14 vitórias naturais até Brock, badge Rocha e TM39 | Jogar Misty, demais líderes, Elite Four e Campeão sem progresso ou HP forçados |
 | 35 | 10 fases de execução | Parcial | Frentes de correção e integração em andamento | Encerrar fases com critérios objetivos, sem pular regressões |
 | 36 | Preservação do projeto | Parcial (política ativa) | Proteções explícitas em `AGENTS.md` e política de golpes | Auditar alterações futuras contra aprovações e integridade dos saves |
 | 37 | GitHub/publicação | Parcial (pipeline ativo) | CI e Pages da base `c705d0b` concluíram com sucesso | Para **cada patch futuro**, verificar diff, run, SHA implantado e jogo público |
@@ -68,6 +68,14 @@
 - [PR #38](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/38) (draft) acrescenta **teste, não modificação de jogo**: 12 vitórias de treinadores sem forçar K.O.; 12 Pokébolas compradas por botão real, duas capturas com RNG natural, cura real pelo Centro, depois Rival #13 e Brock. Não repetir trabalho do [PR #30](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30) nem presumir vitória. O [run #40579140270](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40579140270) estava em execução durante este registro; **resultado a confirmar**.
 - **Próximo `Continue`:** conferir o resultado e evidências da PR #38; se falhar, identificar a causa real (captura RNG, interface, HP, composição de equipe, IA) antes de alterar código. T01 só fecha após Brock vencido normalmente, sem fixtures, e verificação pós-merge/Publicação.
 
+
+## Marco validado em 27/10/2026 — T01 / Brock
+
+- O [teste Chromium/Phaser #40579140270](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40579140270) **concluiu com sucesso**. Logs: 12 vitórias consecutivas com Bulbasaur nível 5→12, compras de 12 Pokébolas no Poké Mart por clique, **duas capturas normais (Geodude e Weedle, depois Kakuna/Beedrill por evolução)**, cura no Centro por botão, vitória no Rival #13, vitória no Brock #14. Sem injeção de K.O., HP, nível, dinheiro, probabilidades, prêmios ou vitórias.
+- Estado após Brock: `stage=1`, `trainer=0`, `wins=14`, `losses=0`, **insígnia Rocha** e **TM39 Rock Tomb**. O Bulbasaur atingiu nível 13; equipe de apoio evoluiu ao longo das vitórias. O Mewtwo permaneceu apenas no PC.
+- [PR #38](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/38) integrada em `76783d9d1b828c192b8c94c1ff4c7d34ccd857cd`, **somente teste e workflow**, sem mudança das regras do jogo. [CI em main #40591596826](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40591596826) aprovado. [Pages pós-merge #40591672705](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40591672705) ainda em execução na consulta; navegador público não auditado diretamente.
+- **T01 validada em teste real do Phaser, não significa campanha inteira concluída.** Se PR #30 permanecer aberta com o diagnóstico antigo de derrota usando apenas Bulbasaur, ela não invalida a vitória com equipe legítima. Não alterar os saves nem os sprites/golpes para acomodar artificialmente o teste antigo.
+- **Próxima tarefa na fila: T02** — FIGHT/POKÉMON/BAG/RUN, desktop/mobile, na Arena e campanha. A progressão real de Misty em diante segue T19/T20 e a conclusão até Campeão continua pendente (§34).
 
 ## Evidências do estado de referência (27/10/2026)
 
