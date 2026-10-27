@@ -61,7 +61,12 @@ export function consumeCampaignResetLink(storage=localStorage,url=window.locatio
 }
 class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
- init(input){this.result=input?.finished?input:null}
+ init(input){
+  // Phaser may reuse the prior start payload on scene.restart(). A finished
+  // defeat is an event, not persistent scene data: never process it twice
+  // when the user heals at the Center and returns to the same trainer.
+  this.result=input?.finished&&input!==this.__torre2ConsumedFinished?input:null;
+ }
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
   const state=readCampaign();
@@ -135,6 +140,7 @@ create(){
   // otherwise reapplies a defeat AFTER the player heals at the Center.
   const completed=this.result;
   this.result=null;
+  if(completed)this.__torre2ConsumedFinished=completed;
   if(completed&&state&&!completed.marker?.training&&!completed.marker?.laboratory){
    // Existing resolver owns rewards and saving; report only reads snapshots.
    const marker=completed.marker||{};
