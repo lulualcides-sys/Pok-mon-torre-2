@@ -35,6 +35,9 @@ jobs:
           node --check tools/pokearena/build-preview.mjs
           node --check tests/source-client-smoke.cjs
           node tools/pokearena/build-preview.mjs
+          # Refuse to replace the existing public clone with an incomplete
+          # copy. Keep the failing asset names visible in the Actions log.
+          node -e "const r=require('./site-capture/CAPTURE-REPORT.json'); const a=r.referencedAssets; if(!a){console.error('Dependency audit missing');process.exit(1)}; if(a.missing.length){console.error('Missing source-referenced game assets:',a.missing);process.exit(1)}"
           node tools/pokearena/audit-moves.mjs
           node tests/solo-kanto-built.test.mjs
           node tests/evolution-modes-built.test.mjs
