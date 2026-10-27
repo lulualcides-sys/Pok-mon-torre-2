@@ -1459,3 +1459,15 @@ Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/
 - Um teste anterior de antídoto em batalha apresentou clique perdido quando a câmera movia a projeção do menu. Esse problema continua **pendente de diagnóstico e correção separados**, sem aplicar os experimentos malsucedidos à main.
 - Próximo `Continue`: verificar a conclusão do CI #40596836115 e, se aprovado, integrar PR #48 com verificação de Pages. Depois solucionar antídoto e demais controles T02. **T03 já está sendo trabalhada em outra frente; não sobrescrevê-la.**
 
+
+
+### J. T02 — RUN integrado, testes completos aprovados
+
+## Marco T02 — RUN integrado sem alterações na Bolsa (27/10/2026)
+
+- A [PR #48](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/48) **foi integrada na main** como `0f726b9f804423174cf116baa169adf19d8fe59e`. O [workflow completo #40596836115](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40596836115) finalizou em **success**: validações sintáticas, testes unitários, proteção de golpes, build Phaser, cliques de RUN e troca no desktop, FIGHT/BAG no mobile e suíte oficial `npm run test:browser`.
+- RUN existe **apenas em encontros selvagens**, posicionado longe do hitzone HUD (578,66). Fugir cancela somente o encontro, grava HP/status por UID, não concede XP, itens, dinheiro, vitórias nem derrotas. Nenhuma regra de captura, sprite ou golpe aprovado foi modificada.
+- A [PR #43](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/43) experimental foi encerrada **sem merge**. Mudanças não aprovadas na Bolsa ficaram fora da PR #48.
+- **T02 permanece parcial:** teste antigo de Antídoto com câmera dinâmica ainda falhou na frente experimental, enquanto o novo teste normal de BAG abriu/fechou e manteve estoque. Essa falha **não foi corrigida nem declarada concluída**; requer investigação isolada da transformação de hitzones depois de movimentos da câmera.
+- O [CI pós-merge #40597754055](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40597754055) estava em execução na consulta. **Não declarar novo SHA publicado em Pages até workflow de deploy confirmado.** As tarefas T03–T05 já foram tratadas em outras frentes concorrentes: revisar HEAD e PRs antes do próximo patch.
+
