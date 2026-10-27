@@ -75,7 +75,9 @@ export function selectArenaSpeciesKit(kit,species,types,library){
  const add=m=>{if(m&&!used.has(label(m))){selected.push(m);used.add(label(m));}};
  const byPower=[...pool].sort((a,b)=>power(a)-power(b)||Number(kind.has(b.tipo))-Number(kind.has(a.tipo)));
  // Keep a genuine weak ATK. Never make Hyper Beam the basic attack.
- add(byPower.find(m=>power(m)>0&&power(m)<=12&&label(m)!=='hyper-beam')||
+ const basic=byPower.filter(m=>label(m)!==signature&&label(m)!=='hyper-beam');
+ add(basic.find(m=>power(m)>0&&power(m)<=12)||
+     basic.find(m=>power(m)>0)||
      byPower.find(m=>power(m)>0&&label(m)!=='hyper-beam'));
  const signatureMove=pool.find(m=>label(m)===signature);
  const other=[...pool].filter(m=>!used.has(label(m))&&power(m)>0)
