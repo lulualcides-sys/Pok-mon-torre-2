@@ -25,6 +25,7 @@ jobs:
           node --check tools/pokearena/torre2-arena-move-policy.js
           node --check tools/pokearena/build-preview.mjs
           node --test tests/arena-species-kit-policy.test.js
+          node --test tests/arena-auto-battle.test.js
           npm run check
           npm test
       - name: Capturar fonte aprovada e construir versao isolada
@@ -36,7 +37,7 @@ jobs:
             sleep 4
           done
           node tools/pokearena/build-preview.mjs
-          node tools/pokearena/audit-auto-controls.mjs
+
           test -s _site/arena2d/version.json
       - name: Testar evolução e golpes fora da campanha em Chromium
         run: |
