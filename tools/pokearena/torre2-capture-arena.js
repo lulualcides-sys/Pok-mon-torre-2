@@ -48,14 +48,12 @@ export function installWildCapture(scene){
  // original Arena battles never install this overlay. Unlike a KO, fleeing
  // has no win, loss, XP, badge or capture roll. Preserve live party HP/status
  // (including any reserve already switched in) instead of healing via reload.
- // The native battle HUD has interactive zones over the top-right corner.
- // The original capture hit depth (2715) is not high enough at x=590, y=60.
- // Keep RUN below the battle Bag modal (depth 7400) but above the native HUD.
- const runFrame=frame(scene,553,43,75,34).setDepth(7200);
- const runLabel=txt(scene,590,59,'RUN',13,'#ffe2a2').setOrigin(.5).setDepth(7202);
- const runZone=hit(scene,590,60,75,34,(_p,_x,_y,event)=>{
-  // Trace only the currently active encounter while validating native UI.
-  scene.__torre2RunPointerSeen=(scene.__torre2RunPointerSeen||0)+1;
+ // Native HUD has a top-right hitzone at (578,66), depth 9600. The
+ // capture and Bag controls must remain untouched. Put RUN in the free band
+ // BELOW Bag (ends y104) and ABOVE AUTO (starts y128). Phaser native only.
+ const runFrame=frame(scene,552,106,78,21).setDepth(7200);
+ const runLabel=txt(scene,591,116,'RUN',11,'#ffe2a2').setOrigin(.5).setDepth(7202);
+ const runZone=hit(scene,591,116,78,21,(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
   if(busy||scene.__torre2CaptureBusy||scene.__torre2Changing||
      scene.__torre2BallTransitions||scene.__torre2BattleBagOpen||
