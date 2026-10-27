@@ -73,7 +73,8 @@ const server=http.createServer(async(req,res)=>{
    if(round<names.length)assert.equal(opponent.id,names[round],
     'First four route species include the rival after Caterpie');
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
-   assert.equal(opponent.kind,round===3?'rival':opponent.kind);
+   const expectedKind=round===3?'rival':round===5?'rocket':'trainer';
+   assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
    await clickTag('torre2-central-cta');
    await page.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
@@ -123,7 +124,8 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(entry.after.trainer,round+1);
    assert.equal(entry.after.wins,round+1);
    assert.equal(entry.after.losses,0);
-   assert.equal(entry.after.money,before.money+(opponent.kind==='rival'?460:180));
+   const payout=opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180;
+   assert.equal(entry.after.money,before.money+payout,'Real trainer/Rocket/Rival payout');
    assert.deepEqual(entry.after.box,['mewtwo']);
    assert.equal(entry.after.team.length,1);
    // Game's normal reward routine restores active HP; no direct heal call.
