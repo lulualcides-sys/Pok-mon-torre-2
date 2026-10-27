@@ -61,7 +61,12 @@ export function consumeCampaignResetLink(storage=localStorage,url=window.locatio
 }
 class Campanha extends Phaser.Scene{
  constructor(){super('campanha')}
- init(input){this.result=input?.finished?input:null}
+ init(input){
+  // Phaser may reuse the prior start payload on scene.restart(). A finished
+  // defeat is an event, not persistent scene data: never process it twice
+  // when the user heals at the Center and returns to the same trainer.
+  this.result=input?.finished&&input!==this.__torre2ConsumedFinished?input:null;
+ }
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
   const state=readCampaign();
@@ -130,22 +135,28 @@ create(){
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   let state=readCampaign();
   let battleReport=null;
-  if(this.result&&state&&!this.result.marker?.training&&!this.result.marker?.laboratory){
+  // Finished battles are single-use events. A loss preserves the same
+  // stage/trainer, so replaying the old result on Phaser scene.restart()
+  // otherwise reapplies a defeat AFTER the player heals at the Center.
+  const completed=this.result;
+  this.result=null;
+  if(completed)this.__torre2ConsumedFinished=completed;
+  if(completed&&state&&!completed.marker?.training&&!completed.marker?.laboratory){
    // Existing resolver owns rewards and saving; report only reads snapshots.
-   const marker=this.result.marker||{};
+   const marker=completed.marker||{};
    const before=JSON.parse(JSON.stringify(state));
    let outcome=null,kind='trainer';
    if(marker.kind==='rematch'){
     if(validRematchResult(state,marker.ticket)){
      applyPartyBattleResult(state,marker.party);
-     outcome=resolveRematch(state,marker.ticket,!!this.result.won);
+     outcome=resolveRematch(state,marker.ticket,!!completed.won);
      kind='rematch';
     }
    }else if(marker.stage===state.stage&&marker.trainer===state.trainer){
     applyPartyBattleResult(state,marker.party);
     const wild=marker.kind==='wild'&&state.pendingWild?.id===marker.id;
-    outcome=wild?resolveWildBattle(state,!!this.result.won):
-     resolveBattle(state,!!this.result.won);
+    outcome=wild?resolveWildBattle(state,!!completed.won):
+     resolveBattle(state,!!completed.won);
     kind=wild?'wild':'trainer';
     state.lastMessage=outcome.message;
     saveCampaign(state);
@@ -774,7 +785,7 @@ create(){
     this.add.zone(320,270,250,25).setDepth(615)
      .setData('torre2-center-heal-done',true);
     this.time.delayedCall(450,()=>{
-     if(this.scene.isActive()&&this.__torre2CenterBusy)this.scene.restart();
+     if(this.scene.isActive()&&this.__torre2CenterBusy)this.scene.restart({});
     });
    });
   };
