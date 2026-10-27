@@ -89,7 +89,9 @@ test('AUTO keyboard B toggles, and button stays within virtual screen on wide ca
  s.handlers.get('postupdate')();
  assert.equal(a.button.x,579);
  assert.equal(a.zone.x,579);
+ assert.equal(a.zone.y,146,'AUTO below Bag in the upper-right region');
  assert.ok(a.zone.x<640,'AUTO cannot leave logical 640px scene');
+ assert.ok(a.zone.y-18>92+12,'AUTO does not intercept Bag target');
  s.keyboard.get('keydown-KeyB')({repeat:false,ctrlKey:false,altKey:false,metaKey:false});
  assert.equal(a.enabled,true);
  s.keyboard.get('keydown-KeyB')({repeat:true});
