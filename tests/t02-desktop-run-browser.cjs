@@ -43,7 +43,8 @@ const save=()=>fs.writeFileSync('test-evidence/t02-desktop-run.json',JSON.string
    const scene=window.__pt2Game.scene.getScene(sceneName);
    const zone=scene.children.list.find(o=>o.active&&o.input?.enabled&&o.getData?.(key)===value);
    if(!zone)throw Error('Missing native control: '+sceneName+' '+key+'='+value);
-   return {x:zone.x,y:zone.y};
+   return {x:zone.getData?.('torre2-bag-hud-x')??zone.x,
+     y:zone.getData?.('torre2-bag-hud-y')??zone.y};
   },[sceneName,key,value]);
   await click(page,target.x,target.y);
  };
