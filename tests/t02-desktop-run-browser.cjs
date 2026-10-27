@@ -134,6 +134,14 @@ const save=()=>fs.writeFileSync('test-evidence/t02-desktop-run.json',JSON.string
     assert.ok(before.encounter,'Encounter created by actual UI');
     assert.equal(before.searches,1);
     report.wild.before=before;
+    // A wild send-out animation can keep native transition locks active
+    // for a few frames after the HUD announces the phase as 'lucha'.
+    // A real player cannot use a menu until that animation finishes.
+    await page.waitForFunction(()=>{
+     const b=window.__pt2Game.scene.getScene('combate');
+     return b.fase==='lucha'&&!b.__torre2Changing&&
+      !b.__torre2BallTransitions&&!b.__torre2CaptureBusy;
+    },null,{timeout:20000});
     await page.screenshot({path:'test-evidence/t02-desktop-run-visible.png'});
     await clickData(page,'torre2-wild-run',true);
     await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
