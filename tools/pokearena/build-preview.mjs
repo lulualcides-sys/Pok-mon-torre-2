@@ -587,9 +587,9 @@ const fighterCode=await fs.readFile(fighterPath,'utf8');
 if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
  throw Error('Upstream Arena fighter incompatible with isolated move policy');
 await fs.appendFile(fighterPath,
- '\\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
+ '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
- 'installArenaMovePolicy(Luchador,__torre2ArenaRoster);\\n');
+ 'installArenaMovePolicy(Luchador,__torre2ArenaRoster);\n');
 
 // Expand Pokedex without overlapping its original animated Pokémon
 // pedestal: six rows of six cards with tiny previous/next Phaser controls.
