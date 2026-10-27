@@ -1,0 +1,57 @@
+name: Master patch — Bolsa em combate isolada
+on:
+  push:
+    branches: [feat/master-battle-bag-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax, native item contract and full unit regression
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-battle-bag.js
+          node --check tools/pokearena/torre2-party-battle.js
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture and build the exact approved Phaser client
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Verify built campaign and reward contracts
+        run: |
+          set -euo pipefail
+          node --test tests/battle-bag-built.test.mjs
+          node tests/campaign-awards-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+          node tests/master-patch-built.test.mjs
+      - name: Real browser battles, mobile Bag and original modes
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/battle-bag-browser.cjs
+          node tests/source-client-smoke.cjs
+          npm run test:browser
+      - name: Preserve real screenshots and capture reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-battle-bag-evidence
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+            site-capture/CAPTURE-REPORT.json
+          if-no-files-found: warn
+          retention-days: 14
