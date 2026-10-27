@@ -159,6 +159,8 @@ async function sync(page){await page.evaluate(()=>new Promise(r=>requestAnimatio
     const s=window.kanto.readCampaign();return {hp:s.team[0].hp,trainer:s.trainer,stage:s.stage,
      wins:s.wins,losses:s.losses,money:s.money,pc:s.box.map(x=>x.id)};
    });
+   output.recovery={before,outcome,healed};
+   fs.writeFileSync('test-evidence/section20-rival-healed-save.json',JSON.stringify(output.recovery,null,2));
    assert.equal(healed.hp,100);assert.equal(healed.trainer,12);
    assert.equal(healed.wins,0);assert.equal(healed.losses,1);
    assert.equal(healed.money,before.money);assert.deepEqual(healed.pc,['mewtwo']);
