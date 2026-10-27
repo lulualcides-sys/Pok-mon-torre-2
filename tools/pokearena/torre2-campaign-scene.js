@@ -291,6 +291,29 @@ create(){
   // Deliberately no save mutation: awards were granted by resolveBattle.
   const hall=hallOfFameModel(state);
   if(!hall)return this.renderCampaign(state);
+  this.__torre2HallOpen=true;
+  // A Championship win can evolve an inactive party member AFTER combat.
+  // Phaser preload ran on the BEFORE-battle team: load evolved PMD portrait
+  // sheets here instead of drawing a fake box or silently reusing old art.
+  const requested=this.__torre2HallRequested??=new Set();
+  const missing=hall.team.filter(m=>{
+   const key=portraitKey(m);
+   return !this.textures.exists(key)&&!requested.has(key);
+  });
+  if(missing.length&&!this.__torre2HallLoading){
+   this.__torre2HallLoading=true;
+   for(const m of missing){
+    const dex=portraitId(m),key='torre2-portrait-'+dex;
+    requested.add(key);
+    this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
+   }
+   this.load.once('complete',()=>{
+    this.__torre2HallLoading=false;
+    if(this.scene.isActive()&&this.__torre2HallOpen)
+     this.hallOfFameScreen(readCampaign()||state);
+   });
+   this.load.start();
+  }
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(0x060f21);
   const g=this.add.graphics().setDepth(1);
@@ -331,6 +354,7 @@ create(){
   this.__torre2HallOfFame={...hall};
  }
  renderCampaign(state){
+  this.__torre2HallOpen=false;
   // The image-approved UI is a sequential battle road, not an overworld.
   // Keep all trainer/leader counters and the existing localStorage save IDs.
   // Retain older scene helpers below for PC, Center, Mart and summary only.
