@@ -147,10 +147,15 @@ const server=http.createServer(async(req,res)=>{
     money:s.money,wins:s.wins};
   });
   assert.deepEqual(after,final,'Hall cannot duplicate rewards or touch campaign save');
-  // The initial test uses ?original=1 to bootstrap at title. Reload the
-  // real public campaign entry route instead, retaining the same origin save.
-  await page.goto('http://127.0.0.1:4301/arena2d/',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha'),null,{timeout:45000});
+  // Recreate the browser session at the ordinary standalone Arena entry;
+  // that entry intentionally loads Titulo in several original-client builds.
+  // Enter the Kanto mode from that title without changing the saved campaign.
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
+   null,{timeout:45000});
+  await page.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('campanha'));
+  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha'),
+   null,{timeout:45000});
   const restored=await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const z=c.children.list.find(o=>o.getData?.('torre2-central-cta')===true);
