@@ -22,8 +22,17 @@ export function signatureEntries(pool){
  const finish=pool.indexOf('function collect(def)',start);
  if(start<0||finish<start)throw Error('SIGNATURE_MOVES layout changed: update the parser BEFORE merging moves');
  const section=pool.slice(start,finish),entries=[];
- for(const m of section.matchAll(/\{id:'([^']+)',approved:(true|false),nombre:'([^']+)',forma:'([^']+)'/g))
-  entries.push({id:m[1],approved:m[2]==='true',name:m[3],form:m[4]});
+ // Do not bypass the four-source gate by changing the order of properties.
+ // Signature entries must be complete even if they declare approval last.
+ for(const literal of section.matchAll(/\{id:'[^']+'[^{}]*\}/g)){
+  const body=literal[0];
+  const read=(key)=>body.match(new RegExp('(?:^|[,\\s])'+key+":'([^']+)'"));
+  const id=read('id')?.[1],name=read('nombre')?.[1],form=read('forma')?.[1];
+  const approved=body.match(/(?:^|[,\s])approved:(true|false)/)?.[1];
+  if(!id||!name||!form||approved===undefined)
+   throw Error('Incomplete SIGNATURE_MOVES item: '+body.slice(0,110));
+  entries.push({id,approved:approved==='true',name,form});
+ }
  const spreads=[...section.matchAll(/\.\.\.([A-Za-z_$][\w$]*)/g)].map(m=>m[1]);
  for(const name of spreads){
   if(!['BATCH24_MOVES','SURGE3_MOVES','FINALE_13_MOVES','POISON_PUNCH_MOVES'].includes(name))
