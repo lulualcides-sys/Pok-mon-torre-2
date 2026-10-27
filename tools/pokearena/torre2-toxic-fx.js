@@ -3,7 +3,7 @@
  * for Smog/Poison Sting or any frozen Poké Arena 2D renderer.
  * No HTML/Canvas2D overlays. Phaser WebGL Graphics only.
  */
-import {applyGen3Status} from './gen3-status.js';
+import {applyGen3Status} from './torre2-gen3-status.js';
 const PI=Math.PI,clamp=x=>Math.max(0,Math.min(1,x));
 const COL={edge:0x130c24,dark:0x351246,middle:0x78258e,hot:0xbc5bd4,shine:0xe7b4f2};
 const pixel=(g,x,y,w,h,c,a=1)=>g.fillStyle(c,a).fillRect(
