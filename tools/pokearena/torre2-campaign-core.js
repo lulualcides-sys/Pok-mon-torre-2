@@ -300,6 +300,13 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
   const before=member.id;
   member.id=progress.species;
   if(before!==member.id){
+   // Shiny is individual, never rerolled on evolution; register the evolved
+   // shiny form separately in the Pokédex without affecting prior records.
+   if(member.shiny===true){
+    state.dexShinySeen??=[];state.dexShinyCaught??=[];
+    for(const key of ['dexShinySeen','dexShinyCaught'])
+     if(!state[key].includes(member.id))state[key].push(member.id);
+   }
    // A newly evolved form MUST recalculate LMB/RMB/Q/E from its own kit.
    // Preserve collected TMs, party position, HP, XP and nickname; only the
    // stale four-slot selection from the pre-evolution form is invalidated.
