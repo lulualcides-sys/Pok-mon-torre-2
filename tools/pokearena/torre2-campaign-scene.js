@@ -16,7 +16,8 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
- startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM} from './campaign-core.js';
+ startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
+ ensureConsciousActive} from './campaign-core.js';
 import {MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
@@ -599,6 +600,15 @@ create(){
   this.launchBattle(match,false);
  }
  enterBattle(state,wild=false){
+  // A KO party cannot be resurrected by Phaser's native reiniciar().
+  // Offer the real healing Center without consuming a trainer attempt,
+  // progressing a route, resetting the save, or launching combat.
+  if(!ensureConsciousActive(state)){
+   state.lastMessage='Sua equipe desmaiou. Recupere-a no Centro Pokémon.';
+   saveCampaign(state);
+   this.centerScreen(state);
+   return;
+  }
   // Captures offered after victories are optional. The old guard silently
   // restarted the map forever from Trainer 2 onward.
   if(!wild&&state.pendingCapture){
