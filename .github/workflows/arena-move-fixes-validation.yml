@@ -42,6 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/finale13-built.test.mjs
           node tests/arena-species-kit-browser.cjs
           node tests/evolution-modes-built.test.mjs
           node tests/arena-evolved-selection-browser.cjs
