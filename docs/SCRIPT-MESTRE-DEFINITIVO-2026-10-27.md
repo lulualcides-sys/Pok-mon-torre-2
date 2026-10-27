@@ -1413,3 +1413,15 @@ Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/
 - **T01 validada em teste real do Phaser, não significa campanha inteira concluída.** Se PR #30 permanecer aberta com o diagnóstico antigo de derrota usando apenas Bulbasaur, ela não invalida a vitória com equipe legítima. Não alterar os saves nem os sprites/golpes para acomodar artificialmente o teste antigo.
 - **Próxima tarefa na fila: T02** — FIGHT/POKÉMON/BAG/RUN, desktop/mobile, na Arena e campanha. A progressão real de Misty em diante segue T19/T20 e a conclusão até Campeão continua pendente (§34).
 
+
+
+### H. T02 — controles móveis validados, pendências mantidas
+
+## T02 — validação de toque mobile e próximo fechamento (27/10/2026)
+
+- A [PR #41](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/41) introduziu apenas o teste [t02-mobile-menu-browser.cjs](../tests/t02-mobile-menu-browser.cjs) e seu workflow, integrada em `f797b82b1f1189c18e3931acf882a38a84113962`. **Nenhum golpe, sprite, interface ou save de usuário mudou.**
+- O [run Chromium/Phaser #40592499809](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40592499809) **passou**: touchscreen 854×480 aciona o FIGHT do modo Arena com 6 sprites; BAG da campanha abre/fecha; Pokémon troca de Bulbasaur para Squirtle por hotspot real; sem consumo de item, vitória ou progresso fictícios. Squirtle é um fixture isolado somente no navegador de testes e Mewtwo permaneceu no PC.
+- A primeira execução [#40592307860](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40592307860) falhou porque o fixture tentou apagar Mewtwo; migração do jogo o restaurou conforme planejado. O fixture foi corrigido, não o jogo; então o run seguinte passou.
+- **T02 continua parcial.** Não foi demonstrada cobertura integral dos menus de desktop, dos golpes e de RUN quando permitido. Próximo `Continue`: examinar o fluxo de controles restante sem duplicar o que os testes existentes já cobrem.
+- **T01:** [Pages #40591672705](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40591672705) confirmou sucesso do commit de T01 `76783d9`. A campanha natural está validada até Brock, não até Campeão. Um teste em navegador separado contra o site público ainda não foi executado.
+
