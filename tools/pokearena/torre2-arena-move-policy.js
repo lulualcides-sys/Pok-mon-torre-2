@@ -139,7 +139,7 @@ export function installArenaMovePolicy(Luchador,roster){
    this.__torre2EeveeEvolution=choices[pick-1].nombre;
    this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;
   }
-  return this.def.evoluciones[this.etapa-1]||form;
+  return formaDescriptor.get.call(this); // retain complete merged stage stats
  }});
  const evoDescriptor=Object.getOwnPropertyDescriptor(proto,'puedeEvolucionar');
  if(evoDescriptor?.get)Object.defineProperty(proto,'puedeEvolucionar',{...evoDescriptor,get:function(){
