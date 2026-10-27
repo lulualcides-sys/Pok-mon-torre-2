@@ -18,3 +18,10 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 3. Rodar testes unitários focados para o diagnóstico com `node tools/dev/testes-focados.mjs --list`; após o patch, **CI, build, testes de navegador e testes completos aplicáveis continuam obrigatórios antes de publicar**.
 4. Não declarar sucesso da publicação sem verificar o commit instalado no GitHub Pages. Não confundir depuração com uma campanha normalmente jogada.
 5. Relatar arquivos, testes efetivamente executados, commit, riscos e status de publicação. Se não houve execução, escrever «não verificado».
+
+## Script Mestre atual — referência permanente de continuidade
+
+- Ler o **[Script Mestre Definitivo de 27/10/2026](docs/SCRIPT-MESTRE-DEFINITIVO-2026-10-27.md)** integralmente como especificação da campanha e dos sistemas autorizados, sem reescrevê-lo ou presumir que está concluído.
+- Antes de qualquer patch ou resposta sobre o que falta, consultar **[Controle de execução das 37 seções](docs/CONTROLE-EXECUCAO-SCRIPT-MESTRE.md)**; atualizar apenas com evidência de código, testes, CI, commit e publicação verificável.
+- Se o roadmap histórico estiver em conflito com escopo posterior explícito do Script Mestre, preservar os golpes/VFX/controles já aprovados; não usar a divergência para apagar progresso ou alterar o cliente nativo indiscriminadamente.
+- **Testes em fixture, percurso por depuração e testes de chefes não são prova de campanha jogada normalmente.** Marcar seções como concluídas apenas depois de cumprir seus critérios no jogo real.
