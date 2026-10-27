@@ -121,6 +121,8 @@ class Campanha extends Phaser.Scene{
   }
  }
 create(){
+  // Phaser reuses this Scene instance on restart; remove stale treatment locks.
+  this.__torre2CenterBusy=false;
   // Restore the native Poké Arena 2D camera/viewport; no injected map zoom.
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
