@@ -74,7 +74,12 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(busy.busy,true);assert.equal(busy.locked,true);
    assert.deepEqual(busy.hp,entry.hp,'center does not write save before healing animation');
    await page.screenshot({path:'test-evidence/center-heal-'+label+'-start.png',fullPage:true});
-   await page.waitForFunction(()=>!!window.__pt2Game.scene.getScene('campanha').children.list.find(o=>o.getData?.('torre2-center-heal-done')===true),null,{timeout:10000});
+   // The confirmation zone exists only for 450ms. Screenshots/Chrome capture
+   // may miss that narrow window. Inspect the durable save, not a transient UI.
+   await page.waitForFunction(()=>{
+    const s=window.core.readCampaign();
+    return s?.team?.every(m=>m.hp===100&&m.status===null&&!m.confusion);
+   },null,{timeout:12000});
    const healed=await page.evaluate(()=>{
     const s=core.readCampaign();
     return {hp:s.team.map(p=>p.hp),status:s.team.map(p=>p.status),
