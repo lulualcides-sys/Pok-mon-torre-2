@@ -5,7 +5,11 @@
 import {frlgUnlockLevel,frlgMachineCompatible} from './torre2-frlg-learnsets.js';
 const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ATTACK_SLOTS=['lmb','rmb','q','e'];
-const MIN_CD=Object.freeze({'blizzard':10,'ventisca':10,'hydro-pump':9.5,'hidrobomba':9.5,'seismic-toss':8,'movimiento-sismico':8});
+// Original Poké Arena 2D-like pace: each powerful move has a readable 4–6s recharge.
+// These values apply only outside the campaign and never change approved VFX.
+const ARENA_CD=Object.freeze({'blizzard':6,'blizard':6,'ventisca':6,
+ 'hydro-pump':5.5,'hidrobomba':5.5,
+ 'seismic-toss':5,'sismic-toss':5,'movimiento-sismico':5});
 const RESERVED_HYPER_BEAM=new Set(['dragonite','gyarados','snorlax','tauros','aerodactyl','mewtwo']);
 // Previously approved, characteristic moves. Never fabricate visual effects.
 const SIGNATURES=Object.freeze({
@@ -54,11 +58,12 @@ export function enforceArenaMoveCooldowns(kit){
  if(!kit||typeof kit!=='object')return kit;
  let output=kit;
  for(const slot of ATTACK_SLOTS){
-  const h=kit[slot],minimum=MIN_CD[idOf(h?.nombre)];
-  if(!minimum)continue;
-  if(!Number.isFinite(h.cd)||h.cd<minimum){
+  const h=kit[slot],target=ARENA_CD[idOf(h?.nombre)];
+  if(!target)continue;
+  // Normalize both missing/zero and previously overlong cooldowns.
+  if(h.cd!==target){
    if(output===kit)output={...kit};
-   output[slot]={...h,cd:minimum};
+   output[slot]={...h,cd:target};
   }
  }
  return output;

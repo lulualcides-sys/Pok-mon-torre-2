@@ -10,9 +10,20 @@ test('Hydro Pump, Seismic Toss and Blizzard always receive real cooldowns outsid
             q:move('Blizzard',19,0,'ICE'),
             e:move('Ice Beam',13,6.8,'ICE')};
  const tuned=enforceArenaMoveCooldowns(kit);
- assert.equal(tuned.lmb.cd,9.5);assert.equal(tuned.rmb.cd,8);
- assert.equal(tuned.q.cd,10);assert.equal(tuned.e.cd,6.8);
+ assert.equal(tuned.lmb.cd,5.5);assert.equal(tuned.rmb.cd,5);
+ assert.equal(tuned.q.cd,6);assert.equal(tuned.e.cd,6.8);
  assert.equal(kit.q.cd,0,'Do not mutate original source move metadata');
+ const oldHigh={lmb:move('Hydro Pump',20,9.5,'WATER'),
+  rmb:move('Seismic Toss',16,8,'FIGHTING'),
+  q:move('Blizzard',19,10,'ICE'),esp:move('Dodge',0,4.2)};
+ const normalized=enforceArenaMoveCooldowns(oldHigh);
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>normalized[slot].cd),[5.5,5,6]);
+ assert.equal(oldHigh.lmb.cd,9.5,'Source remains intact');
+ assert.strictEqual(normalized.esp,oldHigh.esp,'Dodge unchanged');
+ assert.strictEqual(enforceArenaMoveCooldowns(normalized),normalized,'Idempotent normalization');
+ const aliases={lmb:move('Hidrobomba',20,0),rmb:move('Movimiento Sismico',15,0),
+  q:move('Ventisca',20,0)};
+ assert.deepEqual(['lmb','rmb','q'].map(k=>enforceArenaMoveCooldowns(aliases)[k].cd),[5.5,5,6]);
 });
 test('Clefairy uses its installed characteristic Metronome, not generic Hyper Beam',()=>{
  const attacks=[
@@ -80,7 +91,7 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.ok(['VAPOREON','JOLTEON','FLAREON'].includes(evolved.nombre));
  assert.equal(native.forma.nombre,evolved.nombre,'Evolution stable for one fighter');
  assert.equal(native.puedeEvolucionar,false,'Eevee cannot evolve again into another branch');
- assert.equal(native.kitActual().lmb.cd,evolved.nombre==='VAPOREON'?9.5:5);
+ assert.equal(native.kitActual().lmb.cd,evolved.nombre==='VAPOREON'?5.5:5);
  const story=new Fighter(eevee,true);story.etapa=1;
  assert.equal(story.forma.nombre,'VAPOREON','Campaign stays on existing evolution branch');
  assert.strictEqual(story.kitActual(),eevee.evoluciones[0].kit,'No Arena cooldown patch in campaign');
