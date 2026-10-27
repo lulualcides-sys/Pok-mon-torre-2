@@ -68,12 +68,11 @@ export function installAutoBattle(scene,makeNativeAI){
   const visible=scene.fase!=='fin';
   bg.setVisible(visible);text.setVisible(visible);hot.setActive(visible);
   if(!visible)state.enabled=false;
-  const camera=scene.camUI??scene.cameras?.main;
-  // Follow the wide-screen right gutter just like the native touch buttons.
-  const width=Number(camera?.width)||640;
-  const zoom=Number(camera?.zoom)||1;
-  const shift=Math.max(0,(width/zoom-640));
-  const px=579+shift;
+  // UI objects use the 640×360 battle's LOGICAL coordinates.
+  // Previous camera-based viewport shift could place the button outside
+  // the scene (x=699 on 760px canvas), especially on wide/mobile screens.
+  // ScaleManager/Chrome scales this logical anchor automatically.
+  const px=579;
   bg.setX(px);text.setX(px);hot.setX(px);
  };
  scene.events?.on('postupdate',sync);
@@ -101,7 +100,30 @@ export function bindAutoBattleToScene(Scene,IA){
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
-  installAutoBattle(this,fighter=>new IA(fighter,'normal'));
+  const install=()=>installAutoBattle(this,fighter=>new IA(fighter,'normal'));
+  if(!install()&&autoBattleAllowed(this)&&!this.__torre2AutoRetry){
+   // Campaign/Phaser may create the player controller AFTER create().
+   // Try again on later native game frames without replacing controllers,
+   // bypassing move cooldowns or installing duplicate hit areas.
+   const scene=this;let tries=0,active=true;
+   const stop=()=>{
+    if(!active)return;
+    active=false;scene.game?.events?.off('step',retry);
+    if(scene.__torre2AutoRetry===stop)scene.__torre2AutoRetry=null;
+   };
+   const retry=()=>{
+    if(!active)return;
+    if(++tries>120||!autoBattleAllowed(scene)||
+       (scene.scene?.isActive&& !scene.scene.isActive()))return stop();
+    if(install())stop();
+   };
+   if(scene.game?.events?.on){
+    scene.__torre2AutoRetry=stop;
+    scene.game.events.on('step',retry);
+    scene.events?.once('shutdown',stop);
+    scene.events?.once('destroy',stop);
+   }
+  }
   return result;
  };
  Object.defineProperty(Scene.prototype,'__torre2AutoPatched',{value:true,configurable:false});
