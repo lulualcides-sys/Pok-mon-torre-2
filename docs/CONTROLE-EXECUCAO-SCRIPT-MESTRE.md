@@ -32,7 +32,7 @@
 | 12 | IA de troca estratégica | Parcial | Política de troca limitada para líderes e chefes no patch mestre | Partidas reais, transições, múltiplas reservas e compatibilidade mobile |
 | 13 | Poções de treinadores | Parcial | Inventário por etapa, limiar de HP, atraso e intervalo relatados | Sprites/partículas e teste natural por cada líder/Elite Four |
 | 14 | Clima | Parcial | Sol/chuva/areia/granizo com duração, multiplicadores e laboratório relatados | Efeitos de pixel art globais, movimentos ainda não ligados e precisão/recuperação |
-| 15 | Dano residual na troca | Parcial | Limpeza de projéteis/timers e testes de troca relatados | Regressão nos golpes multi-hit, derrotas e trocas rápidas após novos VFX |
+| 15 | Dano residual na troca | Parcial — segurança de limpeza integrada | [PR #57](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/57) e [CI #40601951402](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40601951402) testaram cleanup idempotente de efeitos nulos/repetidos, filas multi-hit e trocas no Phaser | Testar golpes reais multi-hit, troca rápida/KO e Pages pós-merge |
 | 16 | Shiny 1% | Em PR | [PR #17](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/17) ainda aberto | Sprite canônico, persistência nas evoluções, batalha real e integração |
 | 17 | Revanches | Parcial | Política de cargas, recompensa moderada e bloqueio de prêmio único relatados | Validar níveis, rotas e economia em jogo normal |
 | 18 | Pokémon Center | Parcial | Cura/remoção de status e animação; correção de reaplicação de derrota `10da46d` | Fluxo sem fixtures após KO total e consistência dos saves antigos |
@@ -137,6 +137,13 @@
 - Em conjunto com o teste Magikarp→Gyarados da [PR #44](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/44), há 7 transições de evolução verificadas no navegador (6 dos três iniciais + 1 Gyarados). Estes testes preparam a experiência no fixture da Arena e **não comprovam evolução natural por nível na campanha**; T03 continua parcial até testar demais espécies e saves.
 - T02: [Pages #40602087786](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40602087786) concluiu com **sucesso** para commit 81e29698a07f6fd41d088522afb3bfc2a40b5232, após integrar a correção pan/zoom da Bolsa. A publicação posterior que inclui apenas testes T03 ainda precisa de confirmação.
 - T04: [PR #57](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/57) draft, sem merge na verificação; os testes unitários e de troca/KO no Chromium passaram e a suíte total ainda estava em execução. Não declarar concluída.
+
+## T04 — proteção adicional de projéteis na troca e KO (27/10/2026)
+
+- [PR #57](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/57) foi integrada em SHA 9083fecc003a76c148ababfda7f70aff619558f1. O [CI completo #40601951402](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40601951402) passou: testes de unidade, build nativo, troca de Pokémon no Chromium e suite de navegador oficial.
+- Correção restrita a [torre2-combat-boundary.js](../tools/pokearena/torre2-combat-boundary.js): ao recolher Pokémon, slots nulos em efeitos não interrompem a limpeza e referências duplicadas são destruídas só uma vez. Filas de impactos pendentes são descartadas sem curar/danificar o elenco. Os testes injetam colisões múltiplas em fixture; não são prova de cada golpe real existente.
+- A seção §15 e a T04 seguem PARCIAIS até percursos Phaser com golpes multi-hit reais, trocas de inimigos, K.O. rápido e eventual dano residual. [CI main #40603066070](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40603066070) e Pages da atualização estavam em execução na consulta; só declarar publicação após sucesso.
+- Próximo: concluir regressões naturais T03/T04 e continuar T05–T31, sem alterar golpes, efeitos ou sprites aprovados.
 
 ## Evidências do estado de referência (27/10/2026)
 
