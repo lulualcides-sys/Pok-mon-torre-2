@@ -110,21 +110,36 @@ export function createCampaign(starter){
   wildEncountersStage:0,pendingWild:null,
   badges:[],leagueHonors:[],gymTMClaims:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
 }
+// Reject a syntactically valid but structurally broken save BEFORE using it
+// or rotating it into the recoverable backup. Old additive v1 fields remain
+// optional: readCampaign performs the existing non-destructive migration.
+export function isCampaignSaveShape(s){
+ return s!==null&&typeof s==='object'&&!Array.isArray(s)&&
+  s.version===1&&Array.isArray(s.team)&&s.team.length>0&&
+  s.team.every(m=>m!==null&&typeof m==='object'&&
+   typeof m.id==='string'&&m.id.length>0)&&
+  Number.isInteger(s.stage)&&s.stage>=0&&s.stage<=STAGES.length&&
+  Number.isInteger(s.trainer)&&s.trainer>=0;
+}
+function decodeCampaignSave(serialized){
+ if(!serialized)return null;
+ try{
+  const parsed=JSON.parse(serialized);
+  return isCampaignSaveShape(parsed)?parsed:null;
+ }catch{return null}
+}
 export function readCampaign(storage=localStorage){
  try{
   const raw=storage.getItem(SAVE_KEY);
-  if(!raw)return null;
-  // Resume from the previous valid save if the latest payload was truncated.
-  let s;
-  try{s=JSON.parse(raw)}catch{
+  let s=decodeCampaignSave(raw);
+  if(!s){
+   // A valid JSON blob with invalid structure is just as dangerous as
+   // truncated JSON. Recover last VALID backup, not a new game/save reset.
    const backup=storage.getItem(SAVE_BACKUP_KEY);
-   if(!backup)return null;
-   s=JSON.parse(backup);
+   s=decodeCampaignSave(backup);
+   if(!s)return null; // preserve both bytes for recovery outside this app
    storage.setItem(SAVE_KEY,backup);
   }
-  if(s?.version!==1||!Array.isArray(s.team)||s.team.length===0||
-    !Number.isInteger(s.stage)||s.stage<0||s.stage>STAGES.length||
-    !Number.isInteger(s.trainer)||s.trainer<0)return null;
   // Additive v1 migration. Do not reset saves or lose stored Pokémon.
   let migrated=false;
   // Old saves stored Elite victories alongside gym badges. Preserve them in
@@ -193,8 +208,9 @@ export function readCampaign(storage=localStorage){
 export function saveCampaign(state,storage=localStorage){
  const serialized=JSON.stringify(state);
  const previous=storage.getItem(SAVE_KEY);
- if(previous&&previous!==serialized){
-  try{JSON.parse(previous);storage.setItem(SAVE_BACKUP_KEY,previous)}catch{}
+ if(previous&&previous!==serialized&&decodeCampaignSave(previous)){
+  // Do not destroy a good backup with a malformed or non-campaign primary.
+  storage.setItem(SAVE_BACKUP_KEY,previous);
  }
  storage.setItem(SAVE_KEY,serialized);
  return state;
