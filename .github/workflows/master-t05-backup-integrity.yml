@@ -39,8 +39,8 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
-          node tests/section20-wild-recovery-browser.cjs
-          node tests/battle-bag-browser.cjs
+          node tests/t05-browser-reload.cjs
+          node tests/arena-preview-browser.cjs
       - name: Retain native browser screenshots
         if: always()
         uses: actions/upload-artifact@v4
