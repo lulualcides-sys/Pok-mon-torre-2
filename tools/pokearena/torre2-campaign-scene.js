@@ -785,7 +785,7 @@ create(){
     this.add.zone(320,270,250,25).setDepth(615)
      .setData('torre2-center-heal-done',true);
     this.time.delayedCall(450,()=>{
-     if(this.scene.isActive()&&this.__torre2CenterBusy)this.scene.restart();
+     if(this.scene.isActive()&&this.__torre2CenterBusy)this.scene.restart({});
     });
    });
   };
