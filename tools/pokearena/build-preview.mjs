@@ -584,6 +584,11 @@ for(const [filename,changes] of patches){
      continue;
     }
    }
+   if(filename==='escenas/titulo.js'&&from.startsWith('const halo=this.add.graphics()')){
+    const join=body.indexOf('JOIN!');
+    if(join<0){console.warn('Legacy join-arrow no longer exists upstream');continue;}
+    console.error('Upstream social join UI:',body.slice(Math.max(0,join-850),join+400));
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
