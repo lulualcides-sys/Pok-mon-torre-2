@@ -62,7 +62,7 @@ const server=http.createServer(async(req,res)=>{
      for(const slot of ['lmb','rmb','q','e']){
       const attack=kit[slot];if(!attack?.nombre)continue;
       const key=attack.nombre.toLowerCase();
-      if(!['blizzard','seismic toss','hydro pump','egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos'].includes(key))continue;
+      if(!['blizzard','seismic toss','hydro pump','egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos','thunder'].includes(key))continue;
       (cooldown[key]??=[]).push({species:def.id,stage,cd:attack.cd});
      }
     }
@@ -106,6 +106,10 @@ const server=http.createServer(async(req,res)=>{
   const eggNames=['egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos'];
   for(const name of eggNames)for(const h of results.cooldown[name]||[])
    assert.equal(h.cd,3,'Egg Bomb must have 3s Arena cooldown for '+JSON.stringify(h));
+  assert.ok((results.cooldown.thunder||[]).length>0,
+   'Thunder must exist in at least one Pokémon Arena kit');
+  for(const attack of results.cooldown.thunder)
+   assert.equal(attack.cd,3,'Thunder exact 3s cooldown for '+JSON.stringify(attack));
   assert.deepEqual(errors,[],'No JS errors in public-game equivalent');
   console.log('PASS real generated Phaser Arena move policy / Eevee / cooldown');
  }finally{await browser.close();server.close();}
