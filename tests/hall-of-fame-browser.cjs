@@ -137,7 +137,9 @@ const server=http.createServer(async(req,res)=>{
     money:s.money,wins:s.wins};
   });
   assert.deepEqual(after,final,'Hall cannot duplicate rewards or touch campaign save');
-  await page.reload({waitUntil:'domcontentloaded'});
+  // The initial test uses ?original=1 to bootstrap at title. Reload the
+  // real public campaign entry route instead, retaining the same origin save.
+  await page.goto('http://127.0.0.1:4301/arena2d/',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha'),null,{timeout:45000});
   const restored=await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
