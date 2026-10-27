@@ -469,9 +469,17 @@ export function purchaseItem(s,itemId){
 }
 export function usePotion(s,itemId='potion',memberIndex=s.active){
  const item=MART_ITEMS.find(x=>x.id===itemId&&x.kind==='heal');
- if(!item||!(s.inventory?.[itemId]>0))return {ok:false,reason:'Sem poções desse tipo.'};
+ if(!item||!Number.isInteger(s.inventory?.[itemId])||s.inventory[itemId]<=0)
+  return {ok:false,reason:'Sem poções desse tipo.'};
+ if(!Number.isInteger(memberIndex)||memberIndex<0||memberIndex>=s.team.length)
+  return {ok:false,reason:'Escolha um Pokémon válido da sua equipe.'};
  const member=s.team[memberIndex];
- if(!member||member.hp>=100)return {ok:false,reason:'Pokémon já está saudável.'};
+ if(!member||!Number.isFinite(member.hp))
+  return {ok:false,reason:'HP inválido: nenhuma poção foi consumida.'};
+ // Gen III Potion cannot revive a fainted Pokémon; only the Center can
+ // restore all Pokémon and clear major/volatile conditions for free.
+ if(member.hp<=0)return {ok:false,reason:'Pokémon desmaiado: use o Centro Pokémon.'};
+ if(member.hp>=100)return {ok:false,reason:'Pokémon já está saudável.'};
  s.inventory[itemId]--;
  member.hp=Math.min(100,member.hp+item.heal);
  s.lastMessage=member.id+' recuperou HP.';
