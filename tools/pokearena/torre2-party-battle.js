@@ -9,7 +9,7 @@ import {clearDepartingCombat} from './combat-boundary.js';
  * knockouts transition to the next Pokémon without advancing trainer progress.
  * The fight ends only when one entire party is defeated.
  */
-import {STAGES,campaignStarter,rivalChampionTeam} from './campaign-core.js';
+import {STAGES,campaignStarter,rivalChampionTeam,readCampaign,recordSeen,saveCampaign} from './campaign-core.js';
 import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar,etapaDe} from '../datos.js';
@@ -382,6 +382,14 @@ export function installPartyBattle(scene){
    const hudSide=scene.hud?.lados?.[side];if(hudSide)hudSide.estela=actor.hp;
    fx.clear();ball.clear();
    animateBallActor(scene,actor,{side,from,drawBall:drawCaptureBall,onComplete:()=>{
+    // Record new opponent only when its real PMD actor enters the arena.
+    // Switching the leader's second/third species must update Seen even if
+    // the player later loses; viewing the unopened roster does not.
+    if(side===1&&payload.kind==='trainer'){
+     const saved=readCampaign();
+     if(saved&&saved.stage===payload.stage&&saved.trainer===payload.trainer&&
+        recordSeen(saved,member.id))saveCampaign(saved);
+    }
     if(peer&&peerHpRatio!==null&&peer.hpMax>0){
      peer.hp=Math.max(0,Math.min(peer.hpMax,peerHpRatio*peer.hpMax));
     }
