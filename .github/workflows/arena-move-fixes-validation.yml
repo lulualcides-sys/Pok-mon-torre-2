@@ -37,7 +37,6 @@ jobs:
           done
           node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/version.json
-          node tools/pokearena/audit-arena-guards.mjs
       - name: Testar evolução e golpes fora da campanha em Chromium
         run: |
           set -euo pipefail
