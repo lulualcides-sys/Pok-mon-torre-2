@@ -190,6 +190,8 @@ await Promise.all([
  ['tools/pokearena/torre2-kanto-intro-moves.js','kanto-intro-moves.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
  ['tools/pokearena/torre2-toxic-fx.js','toxic-fx.js'],
+ // Keep the same import filename in unit-tested source and deployed Toxic module.
+ ['tools/pokearena/torre2-gen3-status.js','torre2-gen3-status.js'],
  ['tools/pokearena/torre2-finale13.js','finale13.js'],
  ['tools/pokearena/torre2-finale13-catalog.js','torre2-finale13-catalog.js'],
  ['tools/pokearena/torre2-next-batch-fx.js','next-batch-fx.js'],
