@@ -62,7 +62,7 @@ const server=http.createServer(async(req,res)=>{
      for(const slot of ['lmb','rmb','q','e']){
       const attack=kit[slot];if(!attack?.nombre)continue;
       const key=attack.nombre.toLowerCase();
-      if(!['blizzard','seismic toss','hydro pump'].includes(key))continue;
+      if(!['blizzard','seismic toss','hydro pump','egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos'].includes(key))continue;
       (cooldown[key]??=[]).push({species:def.id,stage,cd:attack.cd});
      }
     }
@@ -98,11 +98,14 @@ const server=http.createServer(async(req,res)=>{
   for(const row of results.history)assert.ok(row.skills.some(s=>s.type===eeveeTypes[row.first]),
    'Eevee '+row.first+' needs a signature attack matching its evolution');
   assert.equal(results.campaign,'VAPOREON','Campaign explicitly unchanged');
-  for(const [name,expected] of [['blizzard',6],['seismic toss',5],['hydro pump',5.5]]){
+  for(const [name,expected] of [['blizzard',4],['seismic toss',3],['hydro pump',3.5]]){
    assert.ok((results.cooldown[name]||[]).length>0,name+' must be present in built Phaser client');
    for(const h of results.cooldown[name]||[])assert.equal(h.cd,expected,
-    name+' must follow 4–6s Arena pacing for '+JSON.stringify(h));
+    name+' must follow 2–4s Arena pacing for '+JSON.stringify(h));
   }
+  const eggNames=['egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos'];
+  for(const name of eggNames)for(const h of results.cooldown[name]||[])
+   assert.equal(h.cd,3,'Egg Bomb must have 3s Arena cooldown for '+JSON.stringify(h));
   assert.deepEqual(errors,[],'No JS errors in public-game equivalent');
   console.log('PASS real generated Phaser Arena move policy / Eevee / cooldown');
  }finally{await browser.close();server.close();}
