@@ -51,8 +51,8 @@ export function installWildCapture(scene){
  // Native HUD has a top-right hitzone at (578,66), depth 9600. The
  // capture and Bag controls must remain untouched. Put RUN in the free band
  // BELOW Bag (ends y104) and ABOVE AUTO (starts y128). Phaser native only.
- const runFrame=frame(scene,552,106,78,21).setDepth(7200);
- const runLabel=txt(scene,591,116,'RUN',11,'#ffe2a2').setOrigin(.5).setDepth(7202);
+ const runFrame=frame(scene,552,106,78,21).setDepth(7200).setScrollFactor(0);
+ const runLabel=txt(scene,591,116,'RUN',11,'#ffe2a2').setOrigin(.5).setDepth(7202).setScrollFactor(0);
  const runZone=hit(scene,591,116,78,21,(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
   if(busy||scene.__torre2CaptureBusy||scene.__torre2Changing||
@@ -80,7 +80,7 @@ export function installWildCapture(scene){
   saveCampaign(save);
   scene.fase='torre2-escape';
   scene.scene.start('campanha');
- }).setDepth(7206).setData('torre2-wild-run',true);
+ }).setDepth(7206).setScrollFactor(0).setData('torre2-wild-run',true);
  let menu=[],busy=false,activeVisuals=[];
  const portraitCenter=()=>{
   const sprite=enemyPortrait(enemy);
