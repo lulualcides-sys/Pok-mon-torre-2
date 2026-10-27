@@ -157,6 +157,9 @@ export function readCampaign(storage=localStorage){
   for(const [item,n] of Object.entries({pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0})){
    if(!Number.isInteger(s.inventory[item])||s.inventory[item]<0){s.inventory[item]=n;migrated=true}
   }
+  for(const item of MART_ITEMS.filter(i=>i.kind==='status')){
+   if(!Number.isInteger(s.inventory[item.id])||s.inventory[item.id]<0){s.inventory[item.id]=0;migrated=true;}
+  }
   if(!Array.isArray(s.inventory.tms)){s.inventory.tms=[];migrated=true}
   if(!Array.isArray(s.gymTMClaims)){
    // Brock was already awarded by older builds, including consumed TMs.
@@ -473,6 +476,22 @@ export function usePotion(s,itemId='potion',memberIndex=s.active){
  member.hp=Math.min(100,member.hp+item.heal);
  s.lastMessage=member.id+' recuperou HP.';
  saveCampaign(s);return {ok:true,hp:member.hp};
+}
+// Map bag medicine: no HP change, revival or effect on another party member.
+export function useStatusCure(s,itemId,memberIndex=s.active){
+ const item=MART_ITEMS.find(i=>i.id===itemId&&i.kind==='status');
+ if(!item||!Number.isInteger(s.inventory?.[itemId])||s.inventory[itemId]<=0)
+  return {ok:false,reason:'Sem remédios desse tipo.'};
+ const member=s.team[memberIndex];
+ if(!member||!(member.hp>0))return {ok:false,reason:'Escolha um Pokémon que não esteja desmaiado.'};
+ const cureMain=item.cures.includes(member.status?.kind);
+ const cureConfusion=item.cureConfusion&&!!member.confusion;
+ if(!cureMain&&!cureConfusion)return {ok:false,reason:'Esse remédio não terá efeito.'};
+ s.inventory[itemId]--;
+ if(cureMain)member.status=null;
+ if(cureConfusion)member.confusion=null;
+ s.lastMessage=item.name+' curou '+member.id.toUpperCase()+'.';
+ saveCampaign(s);return {ok:true};
 }
 export function teachTM(s,itemId,memberIndex=s.active){
  const item=MART_ITEMS.find(x=>x.id===itemId&&x.kind==='tm');

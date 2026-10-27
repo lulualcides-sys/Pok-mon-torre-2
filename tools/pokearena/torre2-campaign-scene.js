@@ -1,3 +1,4 @@
+import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
 import {WEATHER_NAMES} from './weather.js';
@@ -15,7 +16,7 @@ import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
- startWildBattle,resolveWildBattle,purchaseItem,usePotion,teachTM} from './campaign-core.js';
+ startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM} from './campaign-core.js';
 import {MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
@@ -659,11 +660,11 @@ create(){
     fontSize:'10px',color:C.muted});
    this.button(x+100,y+6,70,30,'COMPRAR',()=>{
     purchaseItem(state,item.id);this.martScreen(state,pageNum);
-   },state.money>=item.price);
+   },state.money>=item.price).setData('torre2-mart-buy',item.id);
   });
   this.button(140,315,177,33,'◀ MAPA',()=>this.scene.restart());
   this.button(346,315,205,33,'ITENS '+(pageNum+1)+'/'+count,()=>this.martScreen(state,(pageNum+1)%count),true);
-  this.button(543,315,176,33,'BOLSA / TM',()=>this.bagScreen(state));
+  this.button(543,315,176,33,'BOLSA / TM',()=>this.bagScreen(state)).setData('torre2-mart-bag',true);
   text(this,320,281,state.lastMessage||'Compre Pokébolas, poções e TM',{
    fontSize:'10px',color:C.gold,wordWrap:{width:560}}).setOrigin(.5);
  }
@@ -679,7 +680,7 @@ create(){
    ' · UB '+(inv.ultraball||0)+' · POÇÃO '+(inv.potion||0)+
    ' · SUPER '+(inv.superpotion||0),{
    fontSize:'11px',color:C.gold}).setOrigin(.5);
-  text(this,320,92,'ESCOLHA QUEM RECEBE TM OU POÇÃO:',{
+  text(this,320,92,'ESCOLHA QUEM RECEBE O ITEM:',{
    fontSize:'11px',color:C.blue}).setOrigin(.5);
   state.team.slice(0,6).forEach((member,i)=>{
    const x=161+(i%3)*160,y=127+Math.floor(i/3)*40;
@@ -694,8 +695,9 @@ create(){
    text(this,x-34,y-12,(chosen?'◆ ':'')+member.id.toUpperCase().slice(0,12),{
     fontSize:'10px',color:chosen?'#ffe4a1':'#e4f2ff'});
    text(this,x-33,y+3,'NV.'+(member.progression?.level??'?')+
-    ' · HP '+Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)))+'%',{fontSize:'9px',color:C.muted});
+    ' · HP '+Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)))+'% '+statusLabel({est:{[member.status?.kind]:true}}),{fontSize:'9px',color:C.muted});
   });
+  this.button(320,198,210,24,'REMÉDIOS DE STATUS',()=>this.statusMedicineScreen(state,target)).setData('torre2-status-medicine-open',true);
   this.button(157,231,170,37,'POÇÃO +25 HP',()=>{
    const result=usePotion(state,'potion',target);
    if(!result.ok)state.lastMessage=result.reason;
@@ -734,6 +736,25 @@ create(){
   if(state.lastMessage)text(this,320,324,state.lastMessage.slice(0,90),{
    fontSize:'9px',color:C.gold}).setOrigin(.5);
   this.button(320,343,220,23,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+ }
+ statusMedicineScreen(state,target){
+  this.children.removeAll(true);this.backdrop();
+  const member=state.team[target];
+  text(this,320,25,'REMÉDIOS DE STATUS',{...titleStyle,fontSize:'20px'}).setOrigin(.5);
+  const status=statusLabel({est:{[member.status?.kind]:true}})||(member.confusion?'CONFUSÃO':'SEM STATUS');
+  text(this,320,59,member.id.toUpperCase()+' · '+(member.hp<=0?'DESMAIADO':status),{fontSize:'12px',color:C.gold}).setOrigin(.5);
+  MART_ITEMS.filter(i=>i.kind==='status').forEach((item,i)=>{
+   const x=167+(i%2)*306,y=105+Math.floor(i/2)*65;
+   this.button(x,y,275,38,item.name+' ×'+(state.inventory[item.id]||0),()=>{
+    const result=useStatusCure(state,item.id,target);
+    if(!result.ok)state.lastMessage=result.reason;
+    this.statusMedicineScreen(state,target);
+   }).setData('torre2-status-medicine',item.id);
+   text(this,x,y+25,item.cureConfusion?'Cura todos os status e confusão':'Cura '+statusLabel({est:{[item.cures[0]]:true}}),{fontSize:'10px',color:C.muted}).setOrigin(.5);
+  });
+  text(this,320,285,state.lastMessage||'Selecione o remédio para este Pokémon.',{fontSize:'10px',color:C.gold,wordWrap:{width:570}}).setOrigin(.5);
+  this.button(175,330,260,32,'◀ VOLTAR À BOLSA',()=>this.bagScreen(state)).setData('torre2-status-medicine-back',true);
+  this.button(465,330,260,32,'POKÉ MART',()=>this.martScreen(state));
  }
  showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large

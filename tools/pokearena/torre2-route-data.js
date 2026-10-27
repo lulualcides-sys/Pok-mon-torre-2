@@ -48,6 +48,12 @@ export function routeNode(stage,index,max){
 export const GYM_TM_REWARDS=Object.freeze(['tm-rock-tomb','tm-water-pulse',
  'tm-shock-wave','tm-giga-drain',null,'tm-calm-mind','tm-fire-blast','tm-earthquake']);
 export const MART_ITEMS=Object.freeze([
+ {id:'antidote',name:'ANTÍDOTO',price:100,kind:'status',cures:['veneno']},
+ {id:'paralyzeheal',name:'ANTI-PARALISIA',price:200,kind:'status',cures:['paralizado']},
+ {id:'awakening',name:'DESPERTAR',price:250,kind:'status',cures:['dormido']},
+ {id:'burnheal',name:'ANTI-QUEIMADURA',price:250,kind:'status',cures:['quemado']},
+ {id:'iceheal',name:'ANTICONGELANTE',price:250,kind:'status',cures:['congelado'],minStage:2},
+ {id:'fullheal',name:'CURA TOTAL',price:600,kind:'status',cures:['veneno','paralizado','dormido','quemado','congelado'],cureConfusion:true,minStage:4},
  {id:'tm-rock-tomb',name:'TM39 ROCK TOMB',price:1200,kind:'tm',move:'Rock Tomb',minStage:1},
  {id:'pokeball',name:'POKÉ BALL',price:200,kind:'ball'},
  {id:'greatball',name:'GREAT BALL',price:600,kind:'ball',minStage:2},
