@@ -573,6 +573,8 @@ for(const [filename,changes] of patches){
     else console.warn('Native Arena AI has changed its optional '+capability+' branch');
     continue;
    }
+   if(filename==='escenas/titulo.js'&&from.includes('const DISPOSICION'))
+    console.error('Upstream menu version:',body.match(/const DISPOSICION=.{0,720}/)?.[0]||'DISPOSICION MISSING');
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
