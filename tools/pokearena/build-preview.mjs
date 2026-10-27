@@ -580,6 +580,16 @@ for(const [filename,changes] of patches){
  await fs.writeFile(filenameFull,body);
 }
 
+// In source checkout the FRLG module has its namespaced file name; the
+// captured Phaser client intentionally installs it with a short basename.
+const arenaPolicyPath=path.join(dest,clientSource,'torre2/arena-move-policy.js');
+const arenaPolicySource=await fs.readFile(arenaPolicyPath,'utf8');
+const sourceImport="from './torre2-frlg-learnsets.js'";
+if(!arenaPolicySource.includes(sourceImport))
+ throw Error('Arena move source metadata import changed');
+await fs.writeFile(arenaPolicyPath,arenaPolicySource.replace(sourceImport,
+ "from './frlg-learnsets.js'"));
+
 // Independent, reversible Arena-only rules: never modify the original
 // source-client files or the Kanto campaign's per-level battle loadouts.
 const fighterPath=path.join(dest,clientSource,'luchador.js');
