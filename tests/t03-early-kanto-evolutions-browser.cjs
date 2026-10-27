@@ -81,12 +81,13 @@ const families=[
     return {scene:b.scene.key,phase:b.fase,name:m.forma.nombre,
      stage:m.etapa,dex:m.dex,sprite:m.spr.texture.key,visible:m.spr.visible,
      active:m.spr.active,frame:[m.spr.frame.width,m.spr.frame.height],
-     textureAvailable:b.textures.exists(m.spr.texture.key),slots};
+     textureAvailable:b.textures.exists(m.spr.texture.key),slots,rawStageE:m.forma.kit?.e||null,rawRootE:m.def?.kit?.e||null};
    });
    assert.equal(after.scene,'combate');
    assert.equal(after.stage,1);
    assert.equal(after.name.toLowerCase(),expected);
    assert.ok(after.textureAvailable&&after.visible&&after.active);
+   console.log('T03 EARLY STAGE SNAPSHOT',JSON.stringify({starter,after}));
    for(const [slot,value] of Object.entries(after.slots)){
     assert.ok(value.name,expected+' must retain '+slot+' name');
     assert.equal(value.pending,false,expected+' '+slot+' must not be placeholder');
