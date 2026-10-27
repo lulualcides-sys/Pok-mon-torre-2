@@ -22,8 +22,8 @@
 | 2 | Captura sem mira e animação | Parcial | Lançamento automático, menu e consumo/captura descritos no patch mestre | Inspecionar todas as etapas visuais e captura em fluxo natural/celular |
 | 3 | Fórmula original FRLG | Histórico validado | Taxas das 151 espécies, arredondamentos e quatro verificações registrados com testes no patch mestre | Regressão da integração mais recente, inclusive RNG natural e saves |
 | 4 | FIGHT da Arena | Parcial (Arena mobile validada) | [#40592499809](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40592499809) e [PR #41](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/41): toque FIGHT inicia arena nativa com seis PMDs; BAG abre/fecha sem consumir; troca para Squirtle funciona sem mexer no save | Concluir testes de botões no desktop, outros modos e RUN quando permitido; não confundir a UI em tempo real com menu turn-based |
-| 5 | Tela preta após evoluir | Parcial | Corrigido atributo inválido/NaN (Raticate), nove formas verificadas | Cobertura integral das evoluções e trocas, no Phaser público |
-| 6 | Identidade dos sprites | Parcial | HUD e primeiro integrante dos chefes corrigidos no histórico | Conferir espécies/formas/trocas de todas as equipes até Campeão |
+| 5 | Tela preta após evoluir | Parcial — mais 3 famílias testadas | Além do histórico e de Gyarados, [PR #46](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/46) + [CI #40596220909](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40596220909) testaram Ivysaur, Charmeleon e Wartortle com textura e frames reais | Cobertura restante, campanha natural, transições e Pages público |
+| 6 | Identidade dos sprites | Parcial | PMD #0002 Ivysaur, #0005 Charmeleon, #0008 Wartortle e #0130 Gyarados identificados em Arena após EVO, comprovados [CI #40596220909](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40596220909) e [#40595592409](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595592409) | Conferir HUD, atributos, todas as espécies/formas/trocas e jogo público |
 | 7 | Learnsets dos 151 | Parcial | Fonte de learnsets FRLG e resolução da Pokédex já relatadas | Auditar 151 espécies nos modos, evolução, golpes exclusivos e compatibilidade de TMs |
 | 8 | 4 golpes e ULT nível 8 | Parcial | Bloqueio da campanha nível 5 / ULT nível 8 já integra `AGENTS.md`; regressões citadas | Validar novos iniciais, todos os modos, evolução, save e nenhuma ULT forte antecipada |
 | 9 | Tipos/STAB/crítico | Parcial | Tabela de 17 tipos e testes de combinações, STAB e burn | Fórmula final de dano e classes físico/especial com testes de jogabilidade |
@@ -92,6 +92,14 @@
 - Esta prova é **pontual**: não assegura que todas as 151 espécies e linhas evolutivas estejam livres de tela preta. A T03 continua parcial; não foram alterados golpes, sprites, VFX ou jogabilidade.
 - A [PR #43](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/43) trata de RUN e desktop da T02 de modo concorrente. [Run #40595345855](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595345855) falhou na suíte global da Bolsa (antídoto não consumido no teste), embora o teste isolado de RUN selvagem tenha passado. **Não integrar T02 sem revisão dos testes finais do HEAD**.
 - **Próximo `Continue`:** verificar novo HEAD/CI da PR #43; concluir T02 se estiver estável e prosseguir com a matriz T03 das evoluções, preservando os recursos já aprovados.
+
+## T03 — quatro evoluções verificadas na Arena (27/10/2026)
+
+- A [PR #46](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/46) foi integrada no commit `db8baf0cc1e917fff14dca4600581f4beb88ff17`. Introduziu **somente** o teste `tests/t03-starter-evolutions-browser.cjs` e um workflow, sem alterar o motor, golpes, sprites, saves ou VFX.
+- O [CI #40596220909](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40596220909) teve sucesso no **Phaser da Arena**: ao acionar o EVO nativo, Bulbasaur virou Ivysaur (PMD `pmd-0002-Idle`), Charmander virou Charmeleon (`pmd-0005-Idle`) e Squirtle virou Wartortle (`pmd-0008-Idle`). Em cada evolução, a cena continuou ativa, a textura estava carregada, o frame era não vazio e os quatro golpes tinham nomes sem `pendiente`.
+- Junto ao teste de Magikarp → Gyarados da PR #44, há **quatro linhas evolutivas pontualmente verificadas**. No novo teste, a prontidão para EVO foi preparada com experiência apenas no **fixture do navegador**, não em nível natural da campanha. Logo, T03 e a seção §34 continuam abertas. Um teste do site público pós-merge ainda precisa ser feito.
+- **T02:** a PR #43 para RUN e menus desktop ainda está isolada. Os logs da execução [#40595946184](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595946184) confirmam clique RUN selvagem bem-sucedido e RUN ausente contra treinador, mas falha posterior no teste desktop do Antídoto na Bolsa (estoque não consumido e modal continuou aberto). Não integrar até revisar o último HEAD e validar a suíte completa.
+
 
 ## Evidências do estado de referência (27/10/2026)
 
