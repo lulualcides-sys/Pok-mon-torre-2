@@ -25,7 +25,9 @@ function scene(options={}){
  const target={tipo:'ia',l:player.rival,leer(){return{mx:0,my:0}}};
  return {datos:{modo:'cpu',...options},sim:false,red:null,enLinea:false,fase:'lucha',
   pausado:false,controles:[human,target],luchadores:[player,player.rival],
-  add:{rectangle:()=>makeObject(),text:()=>makeObject(),zone:()=>makeObject()},
+  add:{rectangle:(x,y)=>Object.assign(makeObject(),{x,y}),
+   text:(x,y)=>Object.assign(makeObject(),{x,y}),
+   zone:(x,y)=>Object.assign(makeObject(),{x,y})},
   input:{keyboard:{on:(k,fn)=>keyboard.set(k,fn),off:(k,fn)=>{if(keyboard.get(k)===fn)keyboard.delete(k)}}},
   cameras:{main:{width:640,zoom:1}},
   events:{on:(k,fn)=>handlers.set(k,fn),off:(k,fn)=>{if(handlers.get(k)===fn)handlers.delete(k)},
