@@ -81,6 +81,28 @@ test('Psybeam cooldown is 3s, while Psychic, Psywave and Confusion keep their or
  const alternate={q:move('Psy Beam',16,0,'PSYCHIC')};
  assert.equal(enforceArenaMoveCooldowns(alternate).q.cd,3,'Psy Beam alternate spelling');
 });
+test('Only Fire Blast and Charge gain 2–4s cooldowns; unrelated moves and source metadata are preserved',()=>{
+ const raw={lmb:move('Fire Blast',23,12,'FIRE'),rmb:move('Charge',0,9,'ELECTRIC'),
+  q:move('Flamethrower',16,5.6,'FIRE'),e:move('Fire Punch',12,4.8,'FIRE')};
+ const next=enforceArenaMoveCooldowns(raw);
+ assert.equal(next.lmb.cd,3.5);
+ assert.equal(next.rmb.cd,3);
+ assert.equal(next.q.cd,5.6);
+ assert.equal(next.e.cd,4.8);
+ assert.equal(raw.lmb.cd,12);
+ assert.equal(raw.rmb.cd,9);
+ assert.strictEqual(next.q,raw.q);
+ assert.strictEqual(next.e,raw.e);
+ assert.equal(next.lmb.forma,raw.lmb.forma);
+ assert.equal(next.rmb.forma,raw.rmb.forma);
+ assert.equal(next.lmb.dano,raw.lmb.dano);
+ assert.strictEqual(enforceArenaMoveCooldowns(next),next);
+ const oldZero={e:move('Fire Blast',22,0),q:move('Charge',0,0)};
+ assert.equal(enforceArenaMoveCooldowns(oldZero).e.cd,3.5);
+ assert.equal(enforceArenaMoveCooldowns(oldZero).q.cd,3);
+ const other={lmb:move('Flame Charge',15,8,'FIRE'),q:move('Thunderbolt',13,6,'ELECTRIC')};
+ assert.strictEqual(enforceArenaMoveCooldowns(other),other);
+});
 test('Clefairy uses its installed characteristic Metronome, not generic Hyper Beam',()=>{
  const attacks=[
   move('Pound',6),move('Double Slap',10),move('Psychic',17,8,'PSYCHIC'),
