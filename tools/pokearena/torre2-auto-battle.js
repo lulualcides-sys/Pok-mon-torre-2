@@ -83,6 +83,8 @@ export function installAutoBattle(scene,makeNativeAI){
   if(original.leer===safeRead)original.leer=state.read;
   keyboard?.off('keydown-KeyB',hotkey);
   scene.events?.off('postupdate',sync);
+  scene.events?.off('shutdown',destroy);
+  scene.events?.off('destroy',destroy);
   hot.removeAllListeners?.();
   hot.destroy();text.destroy();bg.destroy();
   if(scene.__torre2AutoMode===state)scene.__torre2AutoMode=null;
