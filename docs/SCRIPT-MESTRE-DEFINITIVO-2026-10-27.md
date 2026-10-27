@@ -1381,3 +1381,12 @@ OBJETIVO FINAL: TRANSFORMAR O POKÉMON TORRE 2 EM UM JOGO COMPLETO, BONITO, ESTR
 - Sempre que o usuário disser apenas **«Continue»**: ler este anexo + a fila + `AGENTS.md`; checar commits, PRs e código efetivamente publicado; escolher a primeira pendência sem colisão; auditar antes de codificar; corrigir, testar, integrar e publicar com evidência; atualizar este anexo, a fila e a matriz de 37 seções.
 - Não tocar em golpes/sprites/VFX já aprovados, saves ou funcionalidades concluídas sem necessidade comprovada e autorização aplicável. Não reiniciar pela primeira seção por padrão; não criar componentes duplicados. Documentar bloqueios e prosseguir por escopo independente quando seguro.
 - O **grande patch final de pixel art e design** acontece depois de estabilidade e validação dos sistemas, conforme T30; a aceitação completa é T31.
+
+
+### E. Diário de continuidade — execução T01 de 27/10/2026
+
+**Status: T01 parcial; próxima tarefa inalterada.** Foram conferidos `main`, `AGENTS.md`, PR #30 e o código da campanha. O diagnóstico anterior confirma 12 vitórias sem forçar K.O., derrota real contra o Rival #13 com apenas Bulbasaur e Brock **ainda não vencido**. Não será marcada vitória sem capturar/treinar normalmente e repetir o percurso.
+
+Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/36) uma correção independente e limitada da grama alta: a etapa Victory Road (stage 8, treinadores 0–16) mantém encontros selvagens; após liberar Lorelei (trainer >= 17) e nas câmaras seguintes, iniciar novos encontros fica bloqueado. Há teste permanente para estado, dinheiro, Pokébolas e progresso. A [execução CI 40577322862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40577322862) passou por sintaxe, regras, unitários, build Phaser e testes focados; a regressão geral de navegador **ainda estava em execução na última checagem**. Até confirmação, **não afirmar merge ou publicação**.
+
+**Próximo `Continue`:** revalidar CI/PR #36 e integrar somente se a suíte completa passou; conferir GitHub Pages. Em seguida focar no obstáculo real da T01 (capturar e treinar equipe, disputar Rival #13 e vencer Brock no Phaser sem trapaças), sem interferir no trabalho concorrente da PR #30.
