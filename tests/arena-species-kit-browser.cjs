@@ -44,7 +44,9 @@ const server=http.createServer(async(req,res)=>{
      Math.random=()=>seed;
      const f=fighter('eevee');f.etapa=1;
      const first=f.forma.nombre,second=f.forma.nombre;
-     history.push({seed,first,second,stage:f.etapa,mayEvolve:f.puedeEvolucionar,kit:f.kitActual().lmb?.nombre||null});
+     const skills=f.kitActual();
+     history.push({seed,first,second,stage:f.etapa,mayEvolve:f.puedeEvolucionar,
+      skills:['lmb','rmb','q','e'].map(s=>({name:skills[s]?.nombre||null,type:skills[s]?.tipo||null}))});
     }
    }finally{Math.random=origRandom;}
    const campaign=fighter('eevee',true);campaign.etapa=1;
@@ -74,12 +76,27 @@ const server=http.createServer(async(req,res)=>{
    if(!row.added)continue; // never rewrite original P2 fighters
    assert.ok(!row.slots.some(x=>x.name==='Hyper Beam'),'Do not give generic Hyper Beam to '+name);
   }
+  const offTheme={
+    clefairy:['Water Pulse','Solar Beam'],
+    persian:['Water Pulse','Shadow Ball'],
+    raticate:['Blizzard'],
+    marowak:['Blizzard'],
+    kingler:['Blizzard']
+  };
+  for(const [species,banned] of Object.entries(offTheme)){
+   const row=results.variants[species];
+   if(row?.added)for(const name of banned)
+    assert.ok(!row.slots.some(x=>x.name===name),species+' should not auto-equip unrelated TM '+name);
+  }
   const persian=results.variants.persian;
   if(persian.added)assert.ok(persian.slots.some(x=>x.name==='Pay Day'),'Persian approved signature');
   const marowak=results.variants.marowak;
   if(marowak.added)assert.ok(marowak.slots.some(x=>x.name==='Bonemerang'),'Marowak approved signature');
   assert.deepEqual(results.history.map(x=>x.first),['VAPOREON','JOLTEON','FLAREON'],'Eevee branches should be three distinct outcomes');
   assert.ok(results.history.every(x=>x.first===x.second&&!x.mayEvolve),'Branch stable until end of battle');
+  const eeveeTypes={VAPOREON:'WATER',JOLTEON:'ELECTRIC',FLAREON:'FIRE'};
+  for(const row of results.history)assert.ok(row.skills.some(s=>s.type===eeveeTypes[row.first]),
+   'Eevee '+row.first+' needs a signature attack matching its evolution');
   assert.equal(results.campaign,'VAPOREON','Campaign explicitly unchanged');
   for(const [name,min] of [['blizzard',10],['seismic toss',8],['hydro pump',9.5]])
    for(const h of results.cooldown[name]||[])assert.ok(h.cd>=min, name+' cooldown '+JSON.stringify(h));
