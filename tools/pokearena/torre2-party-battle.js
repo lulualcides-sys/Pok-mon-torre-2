@@ -14,6 +14,7 @@ import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar,etapaDe} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
+import {installShinyEntrance} from './shiny-fx.js';
 import {animateBallActor} from './ball-choreography.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
@@ -24,7 +25,7 @@ const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
 };
 export function createPartyMatch(state,opponent,wild=false){
  const friend=state.team.slice(0,6).map(m=>({
-  id:m.id,uid:m.uid,level:m.progression?.level||5,
+  id:m.id,uid:m.uid,shiny:m.shiny===true,level:m.progression?.level||5,
   hp:clamp(m.hp??100),status:m.status??null,loadout:resolveLoadout(m)
  }));
  const gym=STAGES[state.stage];
@@ -55,7 +56,7 @@ export function createPartyMatch(state,opponent,wild=false){
      ...(index===3?{ulti:true}:{})};
    });
   }
-  return {id,level,hp:100,loadout};
+  return {id,level,hp:100,shiny:wild&&state.pendingWild?.shiny===true,loadout};
  });
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))
@@ -99,6 +100,11 @@ export function installPartyBattle(scene){
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
  const actors=scene.luchadores;
+ // One lightweight 1.5 s Phaser pixel-star entrance, no tint applied to approved sprites.
+ for(const side of [0,1]){
+  const m=side===0?party.friend[party.playerIndex]:party.foes[party.enemyIndex];
+  if(m?.shiny)installShinyEntrance(scene,actors[side],side);
+ }
  const weather=scene.__torre2Weather=createWeather();
  setWeather(weather,payload.weather||'none');
  const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2802);
