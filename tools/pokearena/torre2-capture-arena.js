@@ -6,7 +6,7 @@ import {serializeGen3Status} from './gen3-status.js';
  */
 import {captureChance,fighterCaptureStatus} from './capture-mechanics.js';
 import {drawBallSprite} from './ball-sprites.js';
-import {readCampaign,attemptCapture} from './campaign-core.js';
+import {readCampaign,saveCampaign,attemptCapture} from './campaign-core.js';
 import {ballArc,drawRedBeam,drawReleaseBurst,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
 const FONT='Pixelify Sans,monospace';
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
@@ -44,6 +44,40 @@ export function installWildCapture(scene){
  txt(scene,422,47,'CAPTURAR',11,'#fff0b9');
  const hpLine=txt(scene,401,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
  hit(scene,470,61,160,42,showChoices);
+ // FireRed-style RUN is valid only for a wild encounter. The trainer and
+ // original Arena battles never install this overlay. Unlike a KO, fleeing
+ // has no win, loss, XP, badge or capture roll. Preserve live party HP/status
+ // (including any reserve already switched in) instead of healing via reload.
+ const runFrame=frame(scene,553,43,75,34);
+ const runLabel=txt(scene,590,59,'RUN',13,'#ffe2a2').setOrigin(.5);
+ const runZone=hit(scene,590,60,75,34,(_p,_x,_y,event)=>{
+  event?.stopPropagation?.();
+  if(busy||scene.__torre2CaptureBusy||scene.__torre2Changing||
+     scene.__torre2BallTransitions||scene.__torre2BattleBagOpen||
+     scene.fase!=='lucha'||!scene.scene.isActive())return;
+  const save=readCampaign(),payload=scene.datos?.torre2,party=payload?.party;
+  if(payload?.kind!=='wild'||!save?.pendingWild||!party||
+     save.stage!==payload.stage||save.trainer!==payload.trainer||
+     save.pendingWild.id!==payload.id)return;
+  const live=scene.luchadores?.[0];
+  if(!live?.hpMax||live.hp<=0)return;
+  const current=party.friend[party.playerIndex];
+  if(!current||current.uid!==save.team[party.playerIndex]?.uid)return;
+  // Reuse each saved member's immutable UID: switching must never swap HP
+  // between species or change the player's selected active Pokémon.
+  for(const member of save.team){
+   const from=party.friend.find(m=>m.uid===member.uid);
+   if(from){member.hp=Math.max(0,Math.min(100,from.hp));member.status=from.status??null;}
+  }
+  save.team[party.playerIndex].hp=Math.max(0,Math.min(100,live.hp/live.hpMax*100));
+  save.team[party.playerIndex].status=serializeGen3Status(live);
+  save.active=party.playerIndex;
+  save.lastMessage='Você fugiu do encontro selvagem com '+save.pendingWild.id+'.';
+  save.pendingWild=null;
+  saveCampaign(save);
+  scene.fase='torre2-escape';
+  scene.scene.start('campanha');
+ }).setData('torre2-wild-run',true);
  let menu=[],busy=false,activeVisuals=[];
  const portraitCenter=()=>{
   const sprite=enemyPortrait(enemy);
