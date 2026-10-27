@@ -48,8 +48,11 @@ export function installWildCapture(scene){
  // original Arena battles never install this overlay. Unlike a KO, fleeing
  // has no win, loss, XP, badge or capture roll. Preserve live party HP/status
  // (including any reserve already switched in) instead of healing via reload.
- const runFrame=frame(scene,553,43,75,34);
- const runLabel=txt(scene,590,59,'RUN',13,'#ffe2a2').setOrigin(.5);
+ // The native battle HUD has interactive zones over the top-right corner.
+ // The original capture hit depth (2715) is not high enough at x=590, y=60.
+ // Keep RUN below the battle Bag modal (depth 7400) but above the native HUD.
+ const runFrame=frame(scene,553,43,75,34).setDepth(7200);
+ const runLabel=txt(scene,590,59,'RUN',13,'#ffe2a2').setOrigin(.5).setDepth(7202);
  const runZone=hit(scene,590,60,75,34,(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
   if(busy||scene.__torre2CaptureBusy||scene.__torre2Changing||
@@ -77,7 +80,7 @@ export function installWildCapture(scene){
   saveCampaign(save);
   scene.fase='torre2-escape';
   scene.scene.start('campanha');
- }).setData('torre2-wild-run',true);
+ }).setDepth(7206).setData('torre2-wild-run',true);
  let menu=[],busy=false,activeVisuals=[];
  const portraitCenter=()=>{
   const sprite=enemyPortrait(enemy);
