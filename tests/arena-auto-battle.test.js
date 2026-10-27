@@ -41,6 +41,12 @@ test('AUTO only appears in solo battles, not PvP, online or replay',()=>{
  s.sim=false;s.red={};assert.equal(autoBattleAllowed(s),false);
  assert.equal(autoBattleAllowed(scene({torre2:{kind:'campaign'},modo:'cpu'})),true);
 });
+test('AUTO never appears when two humans share the local match',()=>{
+ const s=scene({modo:'arena'});
+ s.controles[1]={tipo:'kbm',l:s.luchadores[1],leer:()=>({mx:0,my:0})};
+ assert.equal(installAutoBattle(s,()=>({leer:()=>({})})),null);
+ assert.equal(s.__torre2AutoMode,undefined);
+});
 test('Native human controller is selected, never an enemy controller',()=>{
  const s=scene();assert.strictEqual(manualFighterControl(s),s.controles[0]);
  s.controles=[s.controles[1]];assert.strictEqual(manualFighterControl(s),null);
