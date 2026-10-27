@@ -573,6 +573,30 @@ for(const [filename,changes] of patches){
     else console.warn('Native Arena AI has changed its optional '+capability+' branch');
     continue;
    }
+   // Public source increased two menu row heights by one pixel in Oct 2026.
+   // Accept ONLY this verified, exact native anchor; keep the previous
+   // original responsive positioning and all customized game UI unchanged.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const DISPOSICION=')){
+    const updated=from.replace('paso:27,alto:25','paso:28,alto:26')
+     .replace('paso:25,alto:23','paso:26,alto:24');
+    if(updated!==from&&body.includes(updated)){
+     body=body.replace(updated,to);
+     continue;
+    }
+   }
+   // Public menu now stores the optional JOIN label on this.chapaJoin.
+   // Drop the same legacy visual decoration; leave fullscreen and inputs intact.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const halo=this.add.graphics()')&&to===''){
+    const updated=from.replace('const c=this.chapa(', 'const c=this.chapaJoin=this.chapa(');
+    if(updated!==from&&body.includes(updated)){body=body.replace(updated,'');continue;}
+   }
+   // Upstream removed its old freeze damage-reduction rule entirely.
+   // With no old rule left, the campaign freeze exemption is unnecessary.
+   if(filename==='luchador.js'&&from.startsWith('if(this.est.congelado&&fuente!==this)')&&
+      to.startsWith('if(!e.datos?.torre2&&')&&!body.includes('congelaReduce')){
+    console.warn('Upstream removed legacy freeze reduction; scoped patch not needed');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);

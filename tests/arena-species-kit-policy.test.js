@@ -103,6 +103,24 @@ test('Only Fire Blast and Charge gain 2–4s cooldowns; unrelated moves and sour
  const other={lmb:move('Flame Charge',15,8,'FIRE'),q:move('Thunderbolt',13,6,'ELECTRIC')};
  assert.strictEqual(enforceArenaMoveCooldowns(other),other);
 });
+test('Solar Beam cooldown is 3s outside campaign, without altering other grass moves',()=>{
+ const original={lmb:move('Solar Beam',22,11,'GRASS'),
+  rmb:move('Razor Leaf',12,4.5,'GRASS'),
+  q:move('Petal Dance',19,10,'GRASS'),
+  e:move('Sunny Day',0,7,'FIRE')};
+ const out=enforceArenaMoveCooldowns(original);
+ assert.equal(out.lmb.cd,3,'Solar Beam 3s');
+ assert.equal(original.lmb.cd,11,'No mutation of original move data');
+ assert.equal(out.lmb.forma,original.lmb.forma,'Retain original approved VFX');
+ assert.equal(out.lmb.dano,original.lmb.dano,'Retain damage');
+ for(const slot of ['rmb','q','e'])assert.strictEqual(out[slot],original[slot],'Do not affect '+slot);
+ assert.strictEqual(enforceArenaMoveCooldowns(out),out,'Idempotent');
+ for(const name of ['Solarbeam','Rayo Solar']){
+  const raw={q:move(name,18,0,'GRASS')};
+  assert.equal(enforceArenaMoveCooldowns(raw).q.cd,3,name+' alias');
+  assert.equal(raw.q.cd,0,'Do not change original metadata');
+ }
+});
 test('Clefairy uses its installed characteristic Metronome, not generic Hyper Beam',()=>{
  const attacks=[
   move('Pound',6),move('Double Slap',10),move('Psychic',17,8,'PSYCHIC'),
