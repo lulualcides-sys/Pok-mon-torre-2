@@ -1,0 +1,67 @@
+name: Master patch — Campeonato e Salao da Fama
+on:
+  push:
+    branches: [feat/master-hall-of-fame-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax, reuse gate and unit regressions
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-hall-of-fame.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/torre2-battle-path.js
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture original Phaser and build versioned client
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Hall of Fame contracts and offline Kanto
+        run: |
+          set -euo pipefail
+          node --test tests/hall-of-fame-built.test.mjs
+          node tests/campaign-awards-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+          node tests/master-patch-built.test.mjs
+      - name: Native Champion battle, Hall UI and mobile read-only save
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/hall-of-fame-browser.cjs
+      - name: All leaders and Elite/champion via debug-assisted native engine
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/campaign-tour-browser.cjs
+      - name: Existing Phaser smoke and browser test suite
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          npm run test:browser
+      - name: Archive build evidence and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-hall-of-fame-journey
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+            site-capture/CAPTURE-REPORT.json
+          if-no-files-found: warn
+          retention-days: 14

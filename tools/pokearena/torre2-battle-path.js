@@ -150,10 +150,10 @@ export function renderBattlePath(scene,state,handlers){
  ball(sc,22,25,13);
  txt(scene,115,14,'POKÉMON TORRE 2',15,'#f7cc5f',22).setOrigin(0,.5);
  txt(scene,116,31,'KANTO · '+city.toUpperCase(),9,'#e8f3fd',22).setOrigin(0,.5);
- txt(scene,322,13,'GINÁSIO DE '+city.toUpperCase(),9,'#e9e4cb');
+ txt(scene,322,13,finished?'LIGA DE KANTO':'GINÁSIO DE '+city.toUpperCase(),9,'#e9e4cb');
  txt(scene,324,32,leader.toUpperCase(),14,'#ffd37b');
  txt(scene,431,12,'PROGRESSO',8,'#a9d9e9');
- txt(scene,433,30,progress+' / '+total,14,'#ffffff');
+ txt(scene,433,30,finished?'8 / 8':progress+' / '+total,14,'#ffffff');
  const progressG=scene.add.graphics().setDepth(10);
  progressG.fillStyle(0x173d49);progressG.fillRoundedRect(400,42,66,4,2);
  progressG.fillStyle(0x40d48c);progressG.fillRoundedRect(400,42,
@@ -164,16 +164,17 @@ export function renderBattlePath(scene,state,handlers){
    scene.scale.stopFullscreen():scene.scale.startFullscreen({navigationUI:'hide'}));
  button(scene,599,23,65,29,'MENU',handlers.menu,{depth:41});
  renderBackdrop(scene,stage);
- const mapTitle=txt(scene,25,69,'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
+ const mapTitle=txt(scene,25,69,finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
  mapTitle.setOrigin(0,.5);
  const areaLegend=stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':
   stage===2?'ROTAS 24/25  >  5/6  >  S.S. ANNE  >  VERMILION':
+  finished?'O SALÃO DA FAMA AGUARDA A SUA EQUIPE':
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
  const requested=scene.__torre2PathPage;
  const offset=Math.max(0,Math.min(total,Math.floor((requested??progress)/13)*13));
- const length=Math.min(14,Math.max(0,total+1-offset));
+ const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
@@ -283,7 +284,18 @@ export function renderBattlePath(scene,state,handlers){
  }
  // Stable page navigation for Misty and later routes with >13 battles.
  if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
- if(offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ if(!finished&&offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ // After the final Champion KO, never redraw a fake 14th boss that can
+ // reopen the gym. This honors the earned victory with native Phaser pixels.
+ if(finished){
+  const victory=scene.add.graphics().setDepth(19);
+  victory.fillStyle(0x092235,.95).fillRoundedRect(64,139,401,137,8);
+  victory.lineStyle(3,0xe9c373).strokeRoundedRect(64,139,401,137,8);
+  victory.fillStyle(0x254437,.9).fillRoundedRect(85,156,357,40,4);
+  txt(scene,263,175,'★ CAMPEÃO DE KANTO ★',20,'#ffe3a1',25);
+  txt(scene,263,222,'8 GINÁSIOS  ·  ELITE FOUR  ·  CAMPEÃO',11,'#d5f4e2',25);
+  txt(scene,263,250,'ABRA O SALÃO DA FAMA PARA VER SUA EQUIPE',9,'#c1dce9',25);
+ }
  // Right-hand side: portraits with compact HP, no giant cards or map overlays.
  const side=scene.add.graphics().setDepth(12);
  frame(side,496,54,136,255,{fill:0x081d31,border:0x5a91b6,radius:4});
@@ -323,13 +335,13 @@ export function renderBattlePath(scene,state,handlers){
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
  txt(scene,24,342,finished?'CAMPEÃO DE KANTO':current?.name||leader,
   12,'#fff2d2',30).setOrigin(0,.5);
- const label=finished?'CAMPEÃO DE KANTO':progress>=total?
+ const label=finished?'★ SALÃO DA FAMA':progress>=total?
   'ENFRENTAR '+leader.toUpperCase():'ENTRAR NA BATALHA';
  const cta=button(scene,359,335,217,32,label,()=>{
-  if(finished)return;
+  if(finished)return handlers.hall?.();
   if(progress>=total)return handlers.gym();
   handlers.battle();
- },{gold:true,enabled:!finished,depth:70});
+ },{gold:true,enabled:true,depth:70});
  cta.setData('torre2-central-cta',true);
  button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
   .setData('torre2-reset-journey',true);
