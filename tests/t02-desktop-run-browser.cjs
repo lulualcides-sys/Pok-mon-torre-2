@@ -159,9 +159,31 @@ const save=()=>fs.writeFileSync('test-evidence/t02-desktop-run.json',JSON.string
       !b.__torre2BallTransitions&&!b.__torre2CaptureBusy;
     },null,{timeout:20000});
     await page.screenshot({path:'test-evidence/t02-desktop-run-visible.png'});
+    const runBefore=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate'),p=b.datos?.torre2,
+      saved=window.t02.readCampaign(),z=b.children.list.find(x=>x.getData?.('torre2-wild-run')===true);
+     return {phase:b.fase,kind:p?.kind,stage:p?.stage,trainer:p?.trainer,id:p?.id,
+      pendingWild:saved?.pendingWild,playerIndex:p?.party?.playerIndex,
+      fromUid:p?.party?.friend?.[p?.party?.playerIndex]?.uid,
+      saveUid:saved?.team?.[p?.party?.playerIndex]?.uid,
+      activeHp:b.luchadores?.[0]?.hp,
+      locks:{capture:b.__torre2CaptureBusy,changing:b.__torre2Changing,
+       transition:b.__torre2BallTransitions,bag:b.__torre2BattleBagOpen},
+      zone:{x:z?.x,y:z?.y,enabled:z?.input?.enabled,depth:z?.depth}};
+    });
     await clickData(page,'torre2-wild-run',true);
+    await page.waitForTimeout(450);
+    const runAfter=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate'),s=window.t02.readCampaign();
+     return {phase:b.fase,active:b.scene.isActive(),
+      campaign:window.__pt2Game.scene.isActive('campanha'),
+      pending:s?.pendingWild,activeHp:s?.team?.[s?.active]?.hp,lastMessage:s?.lastMessage};
+    });
+    console.log('T02 RUN CLICK DIAGNOSTIC',JSON.stringify({runBefore,runAfter}));
+    if(runAfter.pending!==null)
+     throw Error('RUN ignored: '+JSON.stringify({runBefore,runAfter}));
     await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
-     window.t02.readCampaign()?.pendingWild===null,null,{timeout:20000});
+     window.t02.readCampaign()?.pendingWild===null,null,{timeout:8000});
     const after=await page.evaluate(()=>{
      const s=window.t02.readCampaign();
      return {hp:s.team[0].hp,active:s.active,team:s.team.map(m=>m.id),
