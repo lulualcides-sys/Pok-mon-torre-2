@@ -81,8 +81,34 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(beforeCamera.x,88,'Camera was deliberately panned during test');
   assert.equal(beforeCamera.triggerX,0,'BAG trigger must not pan with world');
   assert.equal(beforeCamera.triggerY,0,'BAG trigger must not pan with world');
+  // Wait for the native recall/send-out locks; a premature click tests a
+  // transition lock, not the camera panning bug.
+  await page.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.fase==='lucha'&&!b.__torre2Changing&&
+    !b.__torre2BallTransitions&&!b.__torre2CaptureBusy;
+  },null,{timeout:25000});
+  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
   await clickData('torre2-battle-bag-open',true);
-  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2BattleBagOpen),true);
+  try{
+   await page.waitForFunction(()=>
+    window.__pt2Game.scene.getScene('combate').__torre2BattleBagOpen===true,
+    null,{timeout:5000});
+  }catch(err){
+   const diag=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),c=b.cameras.main,
+     z=b.__torre2BattleBag?.trigger,p=b.input.activePointer;
+    return {phase:b.fase,time:b.t,changing:b.__torre2Changing,
+     capture:b.__torre2CaptureBusy,transition:b.__torre2BallTransitions,
+     camera:{scrollX:c.scrollX,scrollY:c.scrollY,zoom:c.zoom},
+     trigger:z?{x:z.x,y:z.y,active:z.active,visible:z.visible,
+      depth:z.depth,scrollFactorX:z.scrollFactorX,
+      scrollFactorY:z.scrollFactorY,enabled:z.input?.enabled}:null,
+     pointer:p?{x:p.x,y:p.y,worldX:p.worldX,worldY:p.worldY}:null,
+     hits:b.input.hitTestPointer?.(p)?.slice(0,8).map(o=>
+      ({type:o.type,depth:o.depth,x:o.x,y:o.y,tag:o.data?.list}))};
+   });console.error('T02 CAMERA BAG DIAGNOSTIC',JSON.stringify(diag));throw err;
+  }
   const modalFactors=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.children.list.filter(o=>o.active&&o.getData?.('torre2-battle-bag-item'))
