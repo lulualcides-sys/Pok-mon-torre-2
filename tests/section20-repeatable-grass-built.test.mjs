@@ -7,6 +7,7 @@ import {pathToFileURL} from 'node:url';
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const core=await import(pathToFileURL(path.join(root,version,'torre2/campaign-core.js')).href);
+const levels=await import(pathToFileURL(path.join(root,version,'torre2/kanto-levels.js')).href);
 const memory=new Map();
 globalThis.localStorage={
  getItem:key=>memory.get(key)??null,
@@ -23,7 +24,7 @@ test('FireRed grass is available after five searches, never soft-locks pre-Brock
  assert.equal(found.ok,true,found.reason);
  assert.equal(s.wildEncountersStage,6);
  assert.ok(core.wildAvailability(s.stage).available.includes(found.encounter.id));
- assert.equal(found.encounter.level,core.wildLevelFor(s.stage,s.trainer,core.TRAINERS_PER_GYM(s.stage)));
+ assert.equal(found.encounter.level,levels.wildLevelFor(s.stage,s.trainer,core.TRAINERS_PER_GYM(s.stage)));
  assert.equal(s.money,before.money);
  assert.equal(s.trainer,before.trainer);
  assert.equal(s.stage,before.stage);
