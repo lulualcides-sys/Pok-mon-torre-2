@@ -36,12 +36,12 @@ export function installAutoBattle(scene,makeNativeAI){
  };
  original.leer=safeRead;
  scene.__torre2AutoMode=state;
- const bg=scene.add.rectangle(579,115,56,22,0x161f2d,.92)
+ const bg=scene.add.rectangle(579,146,56,22,0x161f2d,.92)
   .setStrokeStyle(1,0x9eacbe,.95).setDepth(9850);
- const text=scene.add.text(579,115,'AUTO',{fontFamily:'monospace',fontSize:'10px',
+ const text=scene.add.text(579,146,'AUTO',{fontFamily:'monospace',fontSize:'10px',
   fontStyle:'bold',color:'#dce5ef',stroke:'#111827',strokeThickness:2})
   .setOrigin(.5).setDepth(9852);
- const hot=scene.add.zone(579,115,66,36).setDepth(9853).setInteractive({useHandCursor:true});
+ const hot=scene.add.zone(579,146,66,36).setDepth(9853).setInteractive({useHandCursor:true});
  state.button=bg;state.label=text;state.zone=hot;
  function refresh(){
   bg.setFillStyle(state.enabled?0x164b35:0x161f2d,.94);
@@ -72,6 +72,8 @@ export function installAutoBattle(scene,makeNativeAI){
   // Previous camera-based viewport shift could place the button outside
   // the scene (x=699 on 760px canvas), especially on wide/mobile screens.
   // ScaleManager/Chrome scales this logical anchor automatically.
+  // Y=146 keeps the touch target clear of the battle Bag's upper-right
+  // x=565/y=92 activation zone; the controls must never steal each tap.
   const px=579;
   bg.setX(px);text.setX(px);hot.setX(px);
  };
