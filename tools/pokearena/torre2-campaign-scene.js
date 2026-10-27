@@ -802,7 +802,7 @@ create(){
   button(521,13,98,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
-  label(24,61,stats.name.toUpperCase(),C.gold,15);
+  label(24,61,stats.name.toUpperCase()+(member.shiny?' ✦':''),C.gold,15);
   const typesCaption=stats.types.join('  /  ');
   label(25,82,'NV. '+stats.level+'    '+typesCaption,hex(stats.types[0]),11);
   const {def,etapa}=buscar(member.id);
@@ -822,6 +822,7 @@ create(){
   label(119,114,'TIPO',C.muted,10);
   label(119,131,stats.types[0],hex(stats.types[0]),12);
   label(119,151,'NV. '+stats.level,C.white,11);
+  if(member.shiny)label(118,169,'✦ SHINY','#ffe58b',10);
   const statRows=[['HP',stats.hp,180,0x64cb9c],['ATK',stats.attack,160,0xf6a268],
                   ['DEF',stats.defense,165,0x7ab3f5],['SPD',stats.speed,200,0x9cd4d7]];
   statRows.forEach(([name,value,max,color],i)=>{
@@ -969,14 +970,14 @@ create(){
   state.team.forEach((m,i)=>{
    const y=79+i*34,selected=this.pcSelected===i,isActive=i===state.active;
    this.button(164,y,281,29,(isActive?'◆ ':'')+m.id.toUpperCase()+
-    ' NV.'+(m.progression?.level??'?')+(selected?' [SELECIONADO]':''),()=>{
+    ' NV.'+(m.progression?.level??'?')+(m.shiny?' ✦ SHINY':'')+(selected?' [SELECIONADO]':''),()=>{
      this.pcSelected=i===this.pcSelected?null:i;this.pcScreen(state,safePage);
     },selected);
   });
   const boxPage=state.box.slice(safePage*6,(safePage+1)*6);
   boxPage.forEach((m,i)=>{
    const actual=safePage*6+i,y=79+i*34;
-   this.button(466,y,277,29,m.id.toUpperCase()+' · NV.'+(m.progression?.level??'?'),()=>{
+   this.button(466,y,277,29,m.id.toUpperCase()+' · NV.'+(m.progression?.level??'?')+(m.shiny?' ✦':''),()=>{
     let changed=false;
     if(state.team.length<6)changed=withdrawPokemon(state,actual);
     else if(Number.isInteger(this.pcSelected))changed=swapPokemon(state,this.pcSelected,actual);
@@ -1009,13 +1010,15 @@ create(){
   for(let i=0;i<22;i++){
    const index=page*22+i;if(index>=KANTO_DEX.length)break;
    const raw=KANTO_DEX[index];
-   const slug=raw==='Nidoran♀'?'nidoran-f':raw==='Nidoran♂'?'nidoran-m':raw.toLowerCase();
+   const slug=raw==='Nidoran♀'?'nidoran-f':raw==='Nidoran♂'?'nidoran-m':raw==='MrMime'?'mr-mime':raw.toLowerCase();
    const ready=supported.has(slug),caught=(state.dexCaught||[]).includes(slug);
    const seen=caught||(state.dexSeen||[]).includes(slug);
    const x=35+(i>=11?295:0),y=75+(i%11)*21;
-   const marker=caught?' ★':seen?' ◦':ready?' ✓':'';
+   const shiny=(state.dexShinyCaught||[]).includes(slug);
+   const seenShiny=(state.dexShinySeen||[]).includes(slug);
+   const marker=shiny?' ✦ SHINY':seenShiny?' ✧ SHINY VISTO':caught?' ★':seen?' ◦':ready?' ✓':'';
    text(this,x,y,String(index+1).padStart(3,'0')+'. '+raw+marker,{
-    fontSize:'11px',color:caught?C.gold:seen?C.blue:C.muted});
+    fontSize:'11px',color:shiny?'#ffe58b':caught?C.gold:seen?C.blue:C.muted});
   }
   this.button(91,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
   this.button(360,329,160,31,'PÁGINA '+(page+1)+'/7',()=>{

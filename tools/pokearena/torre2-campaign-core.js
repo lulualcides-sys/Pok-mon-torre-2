@@ -104,7 +104,7 @@ function newMember(species,level=5){
 }
 export function createCampaign(starter){
  if(!STARTERS.includes(starter))throw new Error('Choose an original Kanto starter');
- return {version:1,starter,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],dexSeen:[starter],dexCaught:[starter],
+ return {version:1,starter,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],dexSeen:[starter],dexCaught:[starter],dexShinySeen:[],dexShinyCaught:[],
   active:0,wins:0,losses:0,capturesInStage:0,pendingCapture:null,
   money:1400,inventory:{pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]},
   wildEncountersStage:0,pendingWild:null,
@@ -150,6 +150,12 @@ export function readCampaign(storage=localStorage){
    migrated=true;
   }
   if(!Array.isArray(s.dexSeen)){s.dexSeen=[...s.dexCaught];migrated=true}
+  // Shiny IDs never get rerolled on load; caught individuals remain shiny.
+  const shinyCaught=[...new Set([...s.team,...s.box].filter(p=>p.shiny===true).map(p=>p.id))];
+  if(!Array.isArray(s.dexShinyCaught)){s.dexShinyCaught=shinyCaught;migrated=true;}
+  else for(const id of shinyCaught)if(!s.dexShinyCaught.includes(id)){s.dexShinyCaught.push(id);migrated=true;}
+  if(!Array.isArray(s.dexShinySeen)){s.dexShinySeen=[...s.dexShinyCaught];migrated=true;}
+  else for(const id of s.dexShinyCaught)if(!s.dexShinySeen.includes(id)){s.dexShinySeen.push(id);migrated=true;}
   if(!Number.isFinite(s.money)||s.money<0){s.money=1400;migrated=true}
   if(!s.inventory||typeof s.inventory!=='object'){
    s.inventory={pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]};migrated=true;
@@ -294,6 +300,13 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
   const before=member.id;
   member.id=progress.species;
   if(before!==member.id){
+   // Shiny is individual, never rerolled on evolution; register the evolved
+   // shiny form separately in the Pokédex without affecting prior records.
+   if(member.shiny===true){
+    state.dexShinySeen??=[];state.dexShinyCaught??=[];
+    for(const key of ['dexShinySeen','dexShinyCaught'])
+     if(!state[key].includes(member.id))state[key].push(member.id);
+   }
    // A newly evolved form MUST recalculate LMB/RMB/Q/E from its own kit.
    // Preserve collected TMs, party position, HP, XP and nickname; only the
    // stale four-slot selection from the pre-evolution form is invalidated.
@@ -389,6 +402,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  member.hp=target.hpPercent;
  member.status=options.persistentStatus?JSON.parse(JSON.stringify(options.persistentStatus)):null;
  recordCaught(s,candidate.id);
+ if(member.shiny){s.dexShinyCaught??=[];if(!s.dexShinyCaught.includes(member.id))s.dexShinyCaught.push(member.id);}
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC')+
   ' · '+Math.round(outcome.chance*100)+'% de chance.';
@@ -420,9 +434,13 @@ export function startWildEncounter(s,random=Math.random){
  const area=wildAvailability(s.stage);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
  const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
- const wild={id,stage:s.stage,trainer:s.trainer,
+ // Independent 1% roll, exactly once when encounter is CREATED. Captures,
+ // retries, switches and save restores must not reroll the same individual.
+ const shinyRoll=Math.max(0,Math.min(.999999,Number(random())||0));
+ const wild={id,stage:s.stage,trainer:s.trainer,shiny:shinyRoll<.01,
   level:wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100};
  s.pendingWild=wild;s.wildEncountersStage++;
+ if(wild.shiny){s.dexShinySeen??=[];if(!s.dexShinySeen.includes(id))s.dexShinySeen.push(id);}
  recordSeen(s,id);saveCampaign(s);
  return {ok:true,encounter:wild};
 }
@@ -431,7 +449,7 @@ export function startWildBattle(s){
  if(!wild||wild.stage!==s.stage||!s.team[s.active])throw new Error('Wild encounter no longer active');
  return {p1:s.team[s.active].id,p2:wild.id,modo:'cpu',nivel:'facil',
   arena:STAGES[s.stage].arena,mandos:['kbm','cpu'],
-  torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id,
+  torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id,shiny:wild.shiny===true,
    playerLevel:s.team[s.active].progression?.level??5,
    enemyLevel:wild.level,hardCap:currentLevelCap(s.stage)}};
 }

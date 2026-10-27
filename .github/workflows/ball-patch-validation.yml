@@ -1,7 +1,7 @@
 name: Ball patch — Phaser visual validation
 on:
   push:
-    branches: [fix/ball-choreography-20261023, fix/master-patch-2026-10-24]
+    branches: [fix/ball-choreography-20261023, fix/master-patch-2026-10-24, feat/master-shiny-1pct-20261027]
 permissions:
   contents: read
 jobs:
@@ -16,7 +16,8 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm test && npm run check
       - run: node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs
-      - run: node tests/master-patch-built.test.mjs && node tests/solo-kanto-built.test.mjs && node tests/rematches-built.test.mjs && node tests/campaign-awards-built.test.mjs && node tests/status-items-built.test.mjs
+      - run: node tests/master-patch-built.test.mjs && node tests/solo-kanto-built.test.mjs && node tests/rematches-built.test.mjs && node tests/campaign-awards-built.test.mjs && node tests/status-items-built.test.mjs && node tests/shiny-campaign-built.test.mjs
+      - run: CHROME_BIN="$(command -v google-chrome)" node tests/shiny-browser.cjs
       - run: CHROME_BIN="$(command -v google-chrome)" npm run test:browser
       - run: CHROME_BIN="$(command -v google-chrome)" npm run test:campaign
       - run: CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
