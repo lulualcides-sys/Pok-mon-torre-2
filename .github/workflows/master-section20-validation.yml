@@ -34,6 +34,7 @@ jobs:
         run: |
           set -euo pipefail
           node --test tests/section20-campaign-integrity-built.test.mjs
+          node tests/section20-all-trainers-built.test.mjs
           node tests/solo-kanto-built.test.mjs
           node tests/campaign-awards-built.test.mjs
       - name: Section 20 real Phaser KO gating and boss opponent identity
