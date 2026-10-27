@@ -6,6 +6,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -193,6 +194,58 @@ async function main() {
   }
  }
  await Promise.all(Array.from({length:12},collectManifest));
+ // Older REA inventories cover observed network requests, not every resource
+ // referenced by newly deployed client code. Catch quoted UI assets and
+ // computed VFX spritesheets before publishing a broken preview.
+ const captured=new Set(details.retrieved.map(item=>item.path));
+ const failedBefore=new Set(details.unavailable.map(item=>item.path));
+ const referenced=new Map();
+ for(const item of details.retrieved){
+  if(!/\.(?:js|css|html)$/i.test(item.path))continue;
+  if(/(?:^|\/)phaser(?:\.min)?\.js$/i.test(item.path))continue;
+  const source=await fs.readFile(path.join(DIR,item.path),'utf8');
+  for(const candidate of discoverClientAssetPaths(source)){
+   const p=sanitize(candidate);
+   if(p&&!captured.has(p)&&!failedBefore.has(p)&&!referenced.has(p))
+    referenced.set(p,item.path);
+  }
+ }
+ const additional=[...referenced];
+ let extraIndex=0;
+ async function collectReferencedAssets(){
+  while(extraIndex<additional.length){
+   const [p,source]=additional[extraIndex++];
+   details.requestCount++;
+   if(details.totalBytes>MAX_TOTAL){
+    details.skipped.push({path:p,reason:'total cap',source:'JS referenced asset'});
+    continue;
+   }
+   try{
+    const {data,contentType}=await get(ORIGIN+'/'+p);
+    if(details.totalBytes+data.length>MAX_TOTAL){
+     details.skipped.push({path:p,reason:'total cap',source:'JS referenced asset'});
+     continue;
+    }
+    const dest=path.resolve(DIR,p);
+    if(!dest.startsWith(DIR+path.sep))throw Error('Unsafe output path');
+    await fs.mkdir(path.dirname(dest),{recursive:true});
+    await fs.writeFile(dest,data);
+    details.totalBytes+=data.length;
+    details.retrieved.push({path:p,bytes:data.length,sha256:sha256(data),
+     contentType,source:'JS referenced asset',referencedBy:source});
+    captured.add(p);
+   }catch(error){
+    details.unavailable.push({path:p,source:'JS referenced asset',
+     referencedBy:source,error:String(error?.message||error).slice(0,180)});
+   }
+  }
+ }
+ await Promise.all(Array.from({length:8},collectReferencedAssets));
+ details.referencedAssets={
+  attempted:additional.length,
+  missing:additional.map(([p])=>p).filter(p=>!captured.has(p))
+ };
+ details.planned+=additional.length;
  details.manifestAssets.missing=[...allManifest].filter(p=>!imported.has(p));
  details.planned+=missingManifest.length;
  details.planned+=details.retrieved.filter(x=>x.source==='relative module import').length;
