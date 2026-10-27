@@ -33,7 +33,7 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 |---|---|---|---|
 | **T01** | **VALIDADA — 14 vitórias naturais até Brock; Pages sucesso #40591672705** | Campanha normal até Brock: conferir PR #30, Rival após 12 vitórias, XP/HP, Centro, encontros sem limite e salvar (§18,20,31,34) | Conseguir chegar a Brock e vencê-lo no Phaser **sem vitórias forçadas**, com log/resultado da partida |
 | **T02** | **VALIDADA EM CI — câmera/BAG e RUN desktop/mobile; Pages pendente** | FIGHT, POKÉMON, BAG, RUN e botões mobile nos modos Arena/campanha (§4) | Menus corretos e clicáveis no navegador desktop/mobile |
-| T03 | **PARCIAL — 7 transições de evolução verificadas (6 iniciais + Gyarados)** | Tela preta, sprite, atributo, evolução e HUD (§5,6) | Todas as linhas evolutivas verificadas sem tela preta, nomes/níveis/sprites consistentes |
+| T03 | **PARCIAL — 13 transições de evolução verificadas em Arena (6 iniciais + Gyarados + 6 Kanto)** | Tela preta, sprite, atributo, evolução e HUD (§5,6) | Todas as linhas evolutivas verificadas sem tela preta, nomes/níveis/sprites consistentes |
 | T04 | **PARCIAL — limpeza segura de projéteis e KO integrada; multi-hit pendente** | Dano residual de projéteis, hitboxes, troca, K.O. e transições (§15,29) | Sem dano destinado ao alvo anterior, incluindo multi-impacto e troca rápida |
 | T05 | **PARCIAL — backup estrutural e reload aprovados** | Save idempotente, backup, migração e restauração (§31) | Recarregar após batalha/captura/compra/evolução sem perda nem duplicação |
 | T06 | PARCIAL | Captura e fórmula Gen III, inventário, probabilidade, raios e balanços (§2,3) | Captura/fuga naturais sem mira, consumo correto e animação completa mobile/desktop |
@@ -101,3 +101,11 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 | 27/10/2026 | T04 / efeitos duplicados na troca e KO | [PR #57](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/57) merge 9083fec | [CI #40601951402](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40601951402) completo aprovado: unitário, switch Chromium e browser oficial | CI main / Pages de T04 ainda em validação no registro | T04 parcial; faltam golpes multi-hit reais em batalha e outras situações de KO |
 
 **Ao terminar um pacote:** alterar o estado específico desta tabela, acrescentar linha ao registro e manter links para CI e para a versão pública. No próximo `continue`, escolher o primeiro não validado e não bloqueado; consultar o estado real mais recente antes de agir.
+
+
+## T03 — seis evoluções adicionais de espécies selvagens (27/10/2026)
+
+- [PR #62](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/62), branch isolada sem alterações no runtime: novo teste Chromium/WebGL de Pidgey→Pidgeotto→Pidgeot, Caterpie→Metapod→Butterfree e Weedle→Kakuna→Beedrill.
+- [Actions #40604186040, tentativa 2](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40604186040): **sucesso**; `npm test`, sintaxe, `check`, `check:reuse`, build Phaser e **seis transições nativas** passaram; sprites PMD, textura carregada, renderização WebGL, identidade e golpes verificáveis. A primeira tentativa da mesma execução falhou no download transitório de assets e foi repetida com êxito.
+- Metapod e Kakuna mantêm apenas três golpes disponíveis e ULT bloqueada; Butterfree e Beedrill exibem os quatro golpes após evoluir. Não enfraquecer nem destravar precocemente a progressão prevista.
+- **T03 continua PARCIAL**: estes são testes de EVO no modo Arena com EXP preparada em fixture, **não** provas de evolução natural após combate da campanha; faltam outras linhagens, saves de evolução e a confirmação de Pages pós-merge. No total, 13 transições verificadas somando os testes anteriores.
