@@ -1,0 +1,57 @@
+name: Master patch — AUTO e velocidade Arena/Kanto
+on:
+  push:
+    branches: [feat/master-auto-campaign-tempo-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax, AUTO and speed unit tests and original regression
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-auto-battle.js
+          node --check tools/pokearena/torre2-arena-tempo.js
+          node --test tests/arena-auto-battle.test.js tests/arena-native-speed.test.js
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture and compile Phaser original client
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Campaign contracts and browser AUTO/speed tests
+        run: |
+          set -euo pipefail
+          node tests/solo-kanto-built.test.mjs
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/campaign-auto-tempo-browser.cjs
+          node tests/arena-auto-battle-browser.cjs
+          node tests/arena-native-speed-browser.cjs
+      - name: Native original Phaser full browser regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: master-auto-tempo-evidence
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+            site-capture/CAPTURE-REPORT.json
+          if-no-files-found: warn
+          retention-days: 14
