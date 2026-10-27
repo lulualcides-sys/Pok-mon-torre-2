@@ -50,7 +50,11 @@ export function applyBattleBagItem(state,party,itemId,target,live=null){
 
 export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  if(!scene?.add||!party||!actor)return null;
- const depth=7400;
+ // The native HUD can install controls at depth 9600 (observed by hit
+ // tests). An opened modal MUST own pointer focus, including status items
+ // in its lower rows; otherwise clicks can hit the battle underneath.
+ // The permanent BAG trigger remains at depth 3603 when the modal is shut.
+ const depth=10100;
  let opened=false,target=party.playerIndex,lastUse=-Infinity,objects=[];
  const track=o=>{objects.push(o);return o};
  const clear=()=>{for(const o of objects)o.destroy();objects=[];};
