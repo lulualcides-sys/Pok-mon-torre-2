@@ -96,9 +96,31 @@ export function showBattleReport(scene,report){
   ...report.leagueHonors.map(e=>'LIGA: '+String(e).toUpperCase()),
   ...report.tms.map(e=>'TM: '+String(e).toUpperCase())
  ];
- const teaser=extras.slice(0,2).join('  ·  ')||
-   (report.message||'RESULTADO SALVO, SEM ALTERAÇÃO DE PROGRESSO');
- label(320,280,teaser.length>94?teaser.slice(0,91)+'…':teaser,9,'#e4edfa',true);
+ // Every reward must remain inspectable, even after six evolutions or
+ // several newly learned moves. Two readable lines per page (not a clipped
+ // concatenation that silently hides later TMs and league honors).
+ const pages=Math.max(1,Math.ceil(extras.length/2));
+ let detailPage=0;
+ const line1=label(305,274,'',9,'#e4edfa',true);
+ const line2=label(305,286,'',9,'#e4edfa',true);
+ const compact=value=>value.length>71?value.slice(0,68)+'…':value;
+ const renderDetails=()=>{
+  const block=extras.slice(detailPage*2,detailPage*2+2);
+  line1.setText(compact(block[0]||report.message||'RESULTADO SALVO'));
+  line2.setText(compact(block[1]||''));
+ };
+ renderDetails();
+ if(pages>1){
+  label(571,280,'▶',13,'#f9de95',true);
+  const next=track(scene.add.zone(570,280,29,32)
+   .setDepth(depth+5).setInteractive({useHandCursor:true}));
+  next.setData?.('torre2-report-more',true);
+  next.on('pointerdown',(_p,_x,_y,event)=>{
+   event?.stopPropagation?.();
+   detailPage=(detailPage+1)%pages;
+   renderDetails();
+  });
+ }
  const caption=label(320,321,'CONTINUAR  ▶',13,'#201d16',true);
  const buttonBg=track(scene.add.graphics().setDepth(depth+3));
  buttonBg.fillStyle(0xf4c85e).fillRoundedRect(220,302,200,34,4);
