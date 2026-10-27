@@ -175,6 +175,7 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(before.box,['mewtwo']);
   const names=['pidgey','rattata','caterpie','charmander'];
  const total=14;
+ const validateNaturalIvysaur=process.env.T03_NATURAL_EVOLUTION==='1';
   for(let round=0;round<total;round++){
    if(round===12){await prepareNaturalTeam();before=await game();}
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
@@ -275,6 +276,170 @@ const server=http.createServer(async(req,res)=>{
       o=>o.active&&o.getData?.('torre2-report-continue')===true),null,{timeout:12000});
    }
    before=entry.after;
+  }
+  // Optional T03 extension: win ACTUAL native battles after Brock, with
+  // absolutely no XP/level/result/HP fixture and no EVO during battle.
+  if(validateNaturalIvysaur){
+   assert.equal((await game()).stage,1,'Brock must be beaten normally first');
+   await clickTag('torre2-report-continue');
+   await page.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&!!c.__torre2BattlePath&&
+     !c.children.list.some(o=>o.active&&o.getData?.('torre2-report-continue')===true);
+   },null,{timeout:15000});
+   const starter=await page.evaluate(()=>{
+    const s=window.kanto.readCampaign();
+    const m=s.team.find(x=>x.progression?.species==='bulbasaur');
+    return m?{uid:m.uid,id:m.id,level:m.progression.level,
+      experience:m.progression.experience}:null;
+   });
+   assert.ok(starter,'The naturally trained Bulbasaur must still be present');
+   assert.equal(starter.id,'bulbasaur','Brock stage must not evolve Bulbasaur prematurely');
+   assert.ok(starter.level<16,'Level 16 must be earned in stage 1, not injected');
+   report.t03={mode:'real stage 1 battles after real Brock; XP naturally earned',starter,events:[]};
+   let evolution=null;
+   for(let step=0;step<15&&!evolution;step++){
+    const previous=await game();
+    assert.equal(previous.stage,1,'Misty route must remain stage 1');
+    const current=await page.evaluate(uid=>{
+     const s=window.kanto.readCampaign();return s.team.find(m=>m.uid===uid);
+    },starter.uid);
+    assert.ok(current,'Starter UID must never disappear');
+    assert.equal(current.id,'bulbasaur','Species must change only after battle');
+    const opponent=await page.evaluate(()=>
+      window.kanto.currentOpponent(window.kanto.readCampaign()));
+    assert.ok(opponent&&!opponent.leader,'Only legitimate stage 1 route fights can grant XP');
+    await clickTag('torre2-central-cta');
+    await page.waitForFunction(()=>{
+     const scene=window.__pt2Game.scene.getScene('combate');
+     return scene.scene.isActive()&&scene.fase==='lucha'&&
+       scene.__torre2PartyInstalled&&scene.__torre2AutoMode?.zone?.active;
+    },null,{timeout:60000});
+    const opening=await page.evaluate(()=>{
+     const scene=window.__pt2Game.scene.getScene('combate');
+     const me=scene.luchadores?.[0];
+     return {species:scene.datos.p1,level:scene.datos.torre2.playerLevel,
+       fighter:me?.forma?.nombre||'',sprite:me?.spr?.texture?.key||''};
+    });
+    assert.equal(opening.species,previous.team[previous.active].id);
+    // Poll ONLY the campaign's saved species during active combat; the
+    // Phaser actor can change from a normal in-battle party switch.
+    await page.evaluate(uid=>{
+     window.__t03SpeciesDuringCombat=[];
+     window.__t03SpeciesPoll=setInterval(()=>{
+      const scene=window.__pt2Game.scene.getScene('combate');
+      if(!scene?.scene.isActive()||scene.fase!=='lucha')return;
+      const member=window.kanto.readCampaign()?.team?.find(m=>m.uid===uid);
+      if(member&&window.__t03SpeciesDuringCombat.length<5000)
+       window.__t03SpeciesDuringCombat.push(member.id);
+     },90);
+    },starter.uid);
+    const autoButton=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate'),zone=b.__torre2AutoMode.zone;
+     const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+     return {x:rect.x+zone.x*rect.width/640,y:rect.y+zone.y*rect.height/360};
+    });
+    await page.mouse.click(autoButton.x,autoButton.y);
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled,
+     null,{timeout:7000});
+    try{
+     await page.waitForFunction(({wins,losses})=>{
+      const s=window.kanto.readCampaign();
+      return window.__pt2Game.scene.isActive('campanha')&&
+       (s?.wins>wins||s?.losses>losses);
+     },{wins:previous.wins,losses:previous.losses},{timeout:240000,polling:250});
+    }finally{
+     const inFight=await page.evaluate(()=>{
+      clearInterval(window.__t03SpeciesPoll);
+      const items=window.__t03SpeciesDuringCombat||[];
+      delete window.__t03SpeciesPoll;
+      return items;
+     });
+     assert.ok(inFight.length,'Must observe saved species while native battle is active');
+     assert.ok(inFight.every(id=>id==='bulbasaur'),
+      'The campaign must NOT change the starter species during the fight');
+    }
+    const after=await page.evaluate(uid=>{
+     const s=window.kanto.readCampaign();
+     const member=s.team.find(m=>m.uid===uid);
+     return {wins:s.wins,losses:s.losses,stage:s.stage,trainer:s.trainer,
+       member:member?{uid:member.uid,id:member.id,level:member.progression.level,
+        experience:member.progression.experience,progressSpecies:member.progression.species,
+        moves:member.moves,movePlanSpecies:member.movePlanSpecies}:null};
+    },starter.uid);
+    assert.equal(after.wins,previous.wins+1,'No trainer win may be faked');
+    assert.equal(after.losses,previous.losses,'Unexpected real defeat: no result override allowed');
+    assert.equal(after.trainer,previous.trainer+1);
+    assert.equal(after.member.uid,starter.uid,'Evolution must preserve the member UID');
+    assert.ok(after.member.level>=current.progression.level,'No XP rollback');
+    if(after.member.id!=='bulbasaur'){
+     assert.equal(after.member.id,'ivysaur','Level 16 must evolve into Ivysaur');
+     assert.equal(after.member.progressSpecies,'ivysaur','Progression must match species');
+     assert.ok(after.member.level>=16,'No premature evolution before Lv16');
+     assert.deepEqual(after.member.moves,[],
+      'Species-specific kit must be resolved anew after evolution');
+     evolution={step:step+1,previous:current.progression.level,after};
+    }
+    report.t03.events.push({step:step+1,opponent:opponent.id,opening,
+     fromLevel:current.progression.level,toLevel:after.member.level,
+     beforeSpecies:current.id,afterSpecies:after.member.id,wins:after.wins});
+    saveReport();
+    console.log('T03 NATURAL STAGE1',JSON.stringify(report.t03.events.at(-1)));
+    await clickTag('torre2-report-continue');
+    await page.waitForFunction(()=>
+     !window.__pt2Game.scene.getScene('campanha').children.list.some(
+      o=>o.active&&o.getData?.('torre2-report-continue')===true),
+     null,{timeout:15000});
+   }
+   assert.ok(evolution,'Bulbasaur never evolved naturally by stage 1 route wins');
+   report.t03.evolution=evolution;
+   const rawBeforeReload=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+   const afterReload=await page.evaluate(async uid=>{
+    const main=[...document.scripts].find(o=>o.src?.includes('/main.js')).src;
+    const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
+    const s=core.readCampaign();
+    return {uid:s.team.find(m=>m.uid===uid)?.uid,
+      member:s.team.find(m=>m.uid===uid),
+      bytes:localStorage.getItem(core.SAVE_KEY),wins:s.wins,stage:s.stage};
+   },starter.uid);
+   assert.equal(afterReload.bytes,rawBeforeReload,'Reload must not rewrite a valid campaign save');
+   assert.equal(afterReload.member?.id,'ivysaur','Evolved species must persist after page reload');
+   assert.equal(afterReload.uid,starter.uid,'Reload must retain the original member identity');
+   assert.equal(afterReload.member?.progression?.level,evolution.after.member.level);
+   assert.equal(afterReload.stage,1);
+   await page.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('campanha'));
+   await page.waitForFunction(()=>
+    window.__pt2Game.scene.isActive('campanha')&&
+    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
+   // Start the NEXT normal battle, checking the evolved form really loads in
+   // the battle renderer instead of yielding a black screen / missing kit.
+   await clickTag('torre2-central-cta');
+   await page.waitForFunction(()=>
+    window.__pt2Game.scene.isActive('combate')&&
+    window.__pt2Game.scene.getScene('combate').fase==='lucha'&&
+    window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,
+    null,{timeout:60000});
+   const live=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),me=b.luchadores[0];
+    return {p1:b.datos.p1,form:me.forma.nombre,sprite:me.spr?.texture?.key,
+      frame:[me.spr?.frame?.width,me.spr?.frame?.height],
+      visible:me.spr?.visible,textureExists:b.textures.exists(me.spr.texture.key),
+      slots:Object.fromEntries(['lmb','rmb','q','e'].map(k=>[k,me.kit[k]?.nombre||'']))};
+   });
+   assert.equal(live.p1,'ivysaur');
+   assert.equal(live.form.toLowerCase(),'ivysaur');
+   assert.ok(live.sprite?.startsWith('pmd-0002-'),'Ivysaur must show its own PMD sprite');
+   assert.ok(live.textureExists&&live.visible&&live.frame.every(n=>n>0),
+    'Live WebGL renderer must retain a visible nonempty sprite');
+   assert.ok(Object.values(live.slots).filter(Boolean).length>=3,
+    'Evolution must not erase active attack slots');
+   await page.screenshot({path:out+'/t03-natural-ivysaur-after-reload-webgl.png'});
+   report.t03.reload={uid:afterReload.uid,level:afterReload.member.progression.level,
+    id:afterReload.member.id,saveUnchanged:true,live};
+   saveReport();
+   console.log('T03 PASS NATURAL LV16 IVYSAUR, POSTBATTLE EVOLUTION + RELOAD + LIVE WEBGL',JSON.stringify(report.t03.reload));
   }
   await page.screenshot({path:out+'/natural-route1-through-brock-completed.png'});
   assert.deepEqual(errors,[],'No client JS exceptions through four consecutive native battles');
