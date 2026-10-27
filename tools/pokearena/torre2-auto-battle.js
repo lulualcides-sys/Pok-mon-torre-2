@@ -18,6 +18,9 @@ export function manualFighterControl(scene){
 export function installAutoBattle(scene,makeNativeAI){
  if(!autoBattleAllowed(scene)||scene.__torre2AutoMode||
     typeof makeNativeAI!=='function')return null;
+ // AUTO is strictly single-player. Never commandeer a local multiplayer
+ // participant or let one human's toggle affect another human's fighter.
+ if((scene.controles||[]).filter(isHuman).length!==1)return null;
  const original=manualFighterControl(scene);
  if(!original)return null;
  const state={enabled:false,control:original,read:original.leer,ai:makeNativeAI(original.l),
