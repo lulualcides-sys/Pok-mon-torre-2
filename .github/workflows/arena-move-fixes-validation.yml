@@ -2,7 +2,7 @@ name: Arena — espécies, cooldowns e evolução Eevee (isolado)
 
 on:
   push:
-    branches: [fix/arena-moves-eevee-cooldown-20261026, fix/arena-cooldowns-4-6s-20261026, fix/arena-cooldowns-2-4s-egg-bomb-20261026, fix/arena-thunder-cooldown-3s-20261026]
+    branches: [fix/arena-moves-eevee-cooldown-20261026, fix/arena-cooldowns-4-6s-20261026, fix/arena-cooldowns-2-4s-egg-bomb-20261026, fix/arena-thunder-cooldown-3s-20261026, fix/arena-fireblast-charge-shield-size-20261026]
   workflow_dispatch:
 
 permissions:
@@ -41,6 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/finale13-built.test.mjs
           node tests/arena-species-kit-browser.cjs
           node tests/evolution-modes-built.test.mjs
           node tests/arena-evolved-selection-browser.cjs

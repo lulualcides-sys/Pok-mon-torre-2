@@ -114,10 +114,11 @@ function star(g,x,y,palette,step,fade=1){
 function simpleBarrier(g,l,o,kind,age,fade){
  const protect=kind==='protect',pal=protect?C.protectGreen:C.screenPurple;
  const frame=Math.floor(age*16)%12;
- // 2026-10-23 user approved: both existing one-piece pixel barriers
- // must be scaled uniformly to 70% of their previous WIDTH, HEIGHT,
- // rim, highlight and placement. Never alter protection mechanics.
- const shieldScale=.70;
+ // Retain the approved 70% campaign art. In original Arena modes,
+ // the user requested Protect / Light Screen visual barriers HALF as large
+ // as currently rendered: 35% of the unscaled art (0.70 * 0.50).
+ // This changes the pixels only, never the status, duration or hitboxes.
+ const shieldScale=l.escena?.datos?.torre2?.70:.35;
  const q=n=>Math.max(1,Math.round(n*shieldScale));
  const w=q(protect?56:66),h=q(protect?62:72);
  const x=Math.round(l.x+o.c*q(protect?28:33))-Math.floor(w/2);

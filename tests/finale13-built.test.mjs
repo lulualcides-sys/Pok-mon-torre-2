@@ -129,6 +129,34 @@ try{
    assert.ok(Math.abs(actor.x)<.2,'Melee Pokémon did not retreat '+h.nombre);
  }
 }finally{Math.random=savedRandom}
+// Requested Arena-only 50% resize: compare REAL Phaser graphics pixel bounds.
+// The campaign keeps its previously approved barrier scale and protection.
+function barrierBounds(id,campaign){
+ usedColors=new Set();renderBounds=null;
+ const scene={efectos:[],t:1,datos:campaign?{torre2:true}:{modo:'cpu'},
+  add:{graphics:graphic}};
+ const actor={x:0,y:120,ax:120,ay:120,alto:36,t:1,escena:scene,est:{},ko:false,
+  nivel:50,limitar(){},rival:{x:98,y:120,alto:36,hp:100,est:{},ko:false},
+  animar(){},ponerEstado(k,t,data){this.est[k]={duration:t,...data}}};
+ const move=FINALE_13_MOVES.find(m=>m.id===id);
+ assert.ok(move,'Missing approved barrier '+id);
+ const effect=TORRE2_FINALE_13_FORMS[move.forma](actor,move,{slot:'q'});
+ assert.ok(effect?.update);
+ effect.update(.016);
+ assert.ok(renderBounds,'Barrier did not draw '+id);
+ return {width:renderBounds.maxX-renderBounds.minX,
+  height:renderBounds.maxY-renderBounds.minY,
+  protection:id==='protect'?actor.est.bloqueo:actor.est.torre2LightScreen};
+}
+for(const id of ['protect','light-screen']){
+ const story=barrierBounds(id,true),arena=barrierBounds(id,false);
+ assert.ok(arena.width<=story.width*.56&&arena.width>=story.width*.40,
+  id+' Arena width should be half the currently approved shield: '+JSON.stringify({story,arena}));
+ assert.ok(arena.height<=story.height*.56&&arena.height>=story.height*.40,
+  id+' Arena height should be half the currently approved shield: '+JSON.stringify({story,arena}));
+ assert.deepEqual(arena.protection,story.protection,
+  id+' protection status and duration must not change with visual scaling');
+}
 const fighter=fs.readFileSync(path.join(base,'luchador.js'),'utf8');
 for(const name of ['torre2LightScreen','torre2SandAccuracy','__torre2Weather','weatherDamageMultiplier'])
  assert.ok(fighter.includes(name),'Native combat missing status integration '+name);
