@@ -573,8 +573,17 @@ for(const [filename,changes] of patches){
     else console.warn('Native Arena AI has changed its optional '+capability+' branch');
     continue;
    }
-   if(filename==='escenas/titulo.js'&&from.includes('const DISPOSICION'))
-    console.error('Upstream menu version:',body.match(/const DISPOSICION=.{0,720}/)?.[0]||'DISPOSICION MISSING');
+   // Public source increased two menu row heights by one pixel in Oct 2026.
+   // Accept ONLY this verified, exact native anchor; keep the previous
+   // original responsive positioning and all customized game UI unchanged.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const DISPOSICION=')){
+    const updated=from.replace('paso:27,alto:25','paso:28,alto:26')
+     .replace('paso:25,alto:23','paso:26,alto:24');
+    if(updated!==from&&body.includes(updated)){
+     body=body.replace(updated,to);
+     continue;
+    }
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
