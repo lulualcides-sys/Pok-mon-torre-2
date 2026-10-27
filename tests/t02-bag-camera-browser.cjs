@@ -146,6 +146,10 @@ const server=http.createServer(async(req,res)=>{
    if(!b.luchadores[0].est.veneno)throw Error('Status not applied');
   });
   await clickData('torre2-battle-bag-open',true);
+  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2BattleBagOpen===true,null,{timeout:7000});
+  // Phaser rebuilds its interactive display list at the next scene frame.
+  // The second item button cannot be clicked before the modal exists there.
+  await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
   await clickData('torre2-battle-bag-item','antidote');
   const cured=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
@@ -153,6 +157,23 @@ const server=http.createServer(async(req,res)=>{
    return {live:!!b.luchadores[0].est.veneno,stock:s.inventory.antidote,
     status:s.team[0].status,open:b.__torre2BattleBagOpen};
   });
+  if(cured.stock!==0){
+   const diag=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),pointer=b.input.activePointer,
+     zone=b.children.list.find(x=>x.active&&x.getData?.('torre2-battle-bag-item')==='antidote'),
+     messages=b.children.list.filter(o=>o.active&&typeof o.text==='string')
+      .map(o=>o.text).filter(t=>/ANT|AÇÕES|EFEITO|POKÉMON|BOLSA/i.test(t));
+    return {camera:{x:b.cameras.main.scrollX,y:b.cameras.main.scrollY,z:b.cameras.main.zoom,
+      width:b.cameras.main.width,height:b.cameras.main.height},
+      item:zone?{x:zone.x,y:zone.y,w:zone.width,h:zone.height,
+       baseX:zone.getData('torre2-bag-hud-x'),baseY:zone.getData('torre2-bag-hud-y'),
+       factor:zone.scrollFactorX,depth:zone.depth,enabled:zone.input?.enabled}:null,
+      pointer:{x:pointer.x,y:pointer.y,worldX:pointer.worldX,worldY:pointer.worldY},
+      hits:b.input.hitTestPointer?.(pointer)?.slice(0,7).map(o=>({x:o.x,y:o.y,tag:o.data?.list})),
+      messages,status:b.luchadores[0].est.veneno};
+   });
+   console.error('T02 ANTIDOTE CAMERA DIAGNOSTIC',JSON.stringify(diag));
+  }
   assert.deepEqual(cured,{live:false,stock:0,status:null,open:false});
   await page.screenshot({path:'test-evidence/t02-bag-camera-healed.png',fullPage:true});
   // No rollback or duplicate item after returning through normal campaign resolver.
