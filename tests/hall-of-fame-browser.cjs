@@ -94,7 +94,10 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(final.stage,13);assert.equal(final.champion,true);
   assert.equal(final.badges.length,8);assert.equal(final.honors.length,5);
-  assert.equal(final.team[0].id,'bulbasaur');
+  // The full shared EXP after Champion can LEGITIMATELY evolve Bulbasaur.
+  // The Hall must show the evolved species actually saved, never the starter.
+  assert.ok(['bulbasaur','ivysaur','venusaur'].includes(final.team[0].id),
+   'Champion EXP may evolve the starter after combat');
   assert.equal(final.money,2600);assert.equal(final.wins,1);
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
