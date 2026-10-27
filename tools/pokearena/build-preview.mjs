@@ -210,6 +210,7 @@ await Promise.all([
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
+ ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
  ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
@@ -579,6 +580,27 @@ for(const [filename,changes] of patches){
  await fs.writeFile(filenameFull,body);
 }
 
+// In source checkout the FRLG module has its namespaced file name; the
+// captured Phaser client intentionally installs it with a short basename.
+const arenaPolicyPath=path.join(dest,clientSource,'torre2/arena-move-policy.js');
+const arenaPolicySource=await fs.readFile(arenaPolicyPath,'utf8');
+const sourceImport="from './torre2-frlg-learnsets.js'";
+if(!arenaPolicySource.includes(sourceImport))
+ throw Error('Arena move source metadata import changed');
+await fs.writeFile(arenaPolicyPath,arenaPolicySource.replace(sourceImport,
+ "from './frlg-learnsets.js'"));
+
+// Independent, reversible Arena-only rules: never modify the original
+// source-client files or the Kanto campaign's per-level battle loadouts.
+const fighterPath=path.join(dest,clientSource,'luchador.js');
+const fighterCode=await fs.readFile(fighterPath,'utf8');
+if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
+ throw Error('Upstream Arena fighter incompatible with isolated move policy');
+await fs.appendFile(fighterPath,
+ '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
+ 'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
+ 'installArenaMovePolicy(Luchador,__torre2ArenaRoster);\n');
+
 // Expand Pokedex without overlapping its original animated Pokémon
 // pedestal: six rows of six cards with tiny previous/next Phaser controls.
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
@@ -597,6 +619,7 @@ for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
+ 'torre2/arena-move-policy.js',
  'torre2/move-pool.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
  'torre2/party-battle.js','torre2/weather.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
