@@ -115,7 +115,13 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(cta.visible,true,'Champion victory must unlock native Hall CTA');
   await clickTagged('torre2-central-cta');
-  await page.waitForFunction(()=>!!window.__pt2Game.scene.getScene('campanha').__torre2HallOfFame);
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   if(!c.__torre2HallOfFame)return false;
+   const members=c.__torre2HallOfFame.team;
+   return c.children.list.filter(o=>o.type==='Image'&&
+    o.texture?.key?.startsWith('torre2-portrait-')).length>=members.length;
+  },null,{timeout:20000});
   const hall=await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return {text:c.children.list.filter(o=>typeof o.text==='string').map(o=>o.text),
@@ -125,7 +131,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(hall.data.complete,true);
   assert.equal(hall.data.badgeCount,8);assert.equal(hall.data.honorCount,5);
   assert.ok(hall.text.some(t=>t.includes('SALÃO DA FAMA')));
-  assert.ok(hall.images.length>=2,'Must draw real team portraits, not generic boxes');
+  assert.equal(hall.images.length,hall.data.team.length,
+   'All real champion portraits must load, including evolutions earned after battle');
   assert.deepEqual(hall.data.team.map(m=>m.id),final.team.map(m=>m.id));
   await page.screenshot({path:'test-evidence/hall-of-fame-desktop.png',fullPage:true});
   await page.setViewportSize({width:854,height:480});
