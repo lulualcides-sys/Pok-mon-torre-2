@@ -728,7 +728,7 @@ create(){
    msg(x,y,id.toUpperCase()+(ok?' ✓':' · FUTURO'),{
     fontSize:'9px',color:ok?'#d7ffda':'#8ca9bb'});
   });
-  msg(320,248,'Encontros nesta área: '+(state.wildEncountersStage||0)+'/5',
+  msg(320,248,'ENCONTROS REALIZADOS: '+(state.wildEncountersStage||0)+' · SEM LIMITE',
    {fontSize:'11px',color:C.gold});
   modalButton(174,292,224,31,'◀ VOLTAR AO MAPA',close);
   modalButton(465,292,224,31,'PROCURAR POKÉMON',()=>{

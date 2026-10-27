@@ -432,7 +432,11 @@ export function wildAvailability(stage){
 export function startWildEncounter(s,random=Math.random){
  if(s.pendingCapture)return {ok:false,reason:'Resolva a captura pendente primeiro.'};
  if(s.stage>GYMS.length)return {ok:false,reason:'Sem grama alta nas câmaras da Elite Four.'};
- if(s.wildEncountersStage>=5)return {ok:false,reason:'Você explorou os cinco encontros desta região.'};
+ // Tall grass is repeatable in FireRed. A per-region five-encounter hard
+ // stop stranded teams after ordinary failed catches, especially pre-Brock.
+ // The existing stage level cap, Pokeball inventory and catch RNG still apply.
+ // Keep wildEncountersStage as a historical statistic; never grant free items.
+
  const area=wildAvailability(s.stage);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
  const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
