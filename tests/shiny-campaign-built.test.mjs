@@ -1,0 +1,67 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
+const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
+const imp=x=>import(pathToFileURL(path.join(root,version,'torre2',x)));
+const core=await imp('campaign-core.js');
+const {createPartyMatch}=await imp('party-battle.js');
+const {installShinyEntrance,SHINY_DURATION_MS}=await imp('shiny-fx.js');
+const db=new Map();globalThis.localStorage={
+ getItem:x=>db.get(x)||null,setItem:(x,v)=>db.set(x,v),removeItem:x=>db.delete(x)};
+const fresh=()=>core.createCampaign('bulbasaur');
+const make=(roll)=>{const seq=[.51,roll];return ()=>seq.shift()??.5};
+const normal=fresh();let encounter=core.startWildEncounter(normal,make(.01));
+assert.equal(encounter.ok,true);assert.equal(encounter.encounter.shiny,false,
+ '1% threshold is strictly less than .01');
+const shiny=fresh();encounter=core.startWildEncounter(shiny,make(.009999));
+assert.equal(encounter.ok,true);assert.equal(encounter.encounter.shiny,true);
+assert.equal(shiny.dexShinySeen.includes(encounter.encounter.id),true);
+const savedWild=core.readCampaign();
+assert.deepEqual(savedWild.pendingWild,shiny.pendingWild,'Wild shiny rolls must survive reload');
+const fight=core.startWildBattle(savedWild);
+assert.equal(fight.torre2.shiny,true);
+const party=createPartyMatch(savedWild,{id:encounter.encounter.id,leader:false},true);
+assert.equal(party.foes[0].shiny,true,'Live battle metadata must show shiny');
+assert.equal(party.friend[0].shiny,false);
+const win=core.attemptCapture(savedWild,()=>0,'pokeball',{duringBattle:true,hpPercent:1});
+assert.equal(win.ok,true,'1% shiny must remain catchable with FRLG rate');
+assert.equal(win.pokemon.shiny,true);
+assert.equal(win.pokemon.uid!==undefined,true);
+assert.ok(savedWild.dexShinyCaught.includes(win.pokemon.id),'Separate shiny Pokédex record');
+const caught=core.readCampaign();
+const index=caught.team.findIndex(p=>p.shiny);
+assert.ok(index>=0,'Saved team must retain shiny');
+assert.equal(caught.team[index].uid,win.pokemon.uid);
+assert.ok(core.storePokemon(caught,index));
+const box=core.readCampaign();
+const selected=box.box.find(p=>p.shiny===true);
+assert.equal(selected.uid,win.pokemon.uid,'PC must retain same shiny individual');
+assert.ok(core.withdrawPokemon(box,box.box.findIndex(p=>p.uid===selected.uid)));
+const restored=core.readCampaign();
+assert.equal(restored.team.find(p=>p.uid===selected.uid)?.shiny,true);
+assert.deepEqual(core.readCampaign(),restored,'Save migration must be idempotent');
+const legacy=fresh();delete legacy.dexShinySeen;delete legacy.dexShinyCaught;
+core.saveCampaign(legacy);
+const fixed=core.readCampaign();
+assert.deepEqual(fixed.dexShinySeen,[]);
+assert.deepEqual(fixed.dexShinyCaught,[]);
+assert.deepEqual(core.readCampaign(),fixed);
+let killed=0,drawn=0;const events=new Map();
+const on=(k,fn)=>{events.set(k,fn)};
+const scene={events:{on,once:on,off:(k,fn)=>{if(events.get(k)===fn)events.delete(k)}},
+ add:{graphics:()=>({setDepth(){return this},clear(){return this},
+  fillStyle(){return this},fillRect(){drawn++;return this},
+  destroy(){killed++}})}};
+const actor={x:105,y:145,alto:40,ko:false};
+const star=installShinyEntrance(scene,actor,1);
+assert.ok(star);assert.equal(SHINY_DURATION_MS,1500);
+assert.ok(drawn>0);
+events.get('update')(0,700);
+assert.equal(star.disposed,false);
+events.get('update')(0,800);
+assert.equal(star.disposed,true);
+assert.equal(killed,1,'No WebGL Graphics leak after 1.5 seconds');
+assert.equal(events.has('update'),false);
+console.log('PASS 1% shiny roll once per encounter; scene/party, capture, save, PC, Dex and 1.5s Phaser stars');
