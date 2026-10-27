@@ -49,6 +49,7 @@ test('missing/stale battle results never show an invented outcome',()=>{
 const obj=()=>{const o={handlers:{},destroyed:false,data:{}};
  for(const name of ['setDepth','setInteractive','setOrigin','fillStyle','fillRect',
  'fillRoundedRect','lineStyle','strokeRoundedRect'])o[name]=()=>o;
+ o.setText=value=>{o.text=value;return o};
  o.setData=(k,v)=>{o.data[k]=v;return o};
  o.on=(k,fn)=>{o.handlers[k]=fn;return o};
  o.destroy=()=>{o.destroyed=true};
