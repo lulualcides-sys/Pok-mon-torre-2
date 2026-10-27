@@ -1299,3 +1299,85 @@ Preserve as atualizações aprovadas e não sobrescreva commits recentes de outr
 Faça backup, implemente, teste, corrija, faça commit e confirme a publicação.
 
 OBJETIVO FINAL: TRANSFORMAR O POKÉMON TORRE 2 EM UM JOGO COMPLETO, BONITO, ESTRATÉGICO, EQUILIBRADO E JOGÁVEL DO COMEÇO AO FIM.
+
+---
+
+## ANEXO DE PROGRESSO — CONTROLE VIVO (27/10/2026)
+
+> **Leia este anexo antes de executar qualquer nova etapa.** As **1.301 linhas originais do Script Mestre, acima, permanecem intactas**; o anexo não altera nenhuma regra de jogo. O estado abaixo registra o que a documentação, os commits e as PRs indicavam na base `0c17224a5fbf55c90c6de9e0b03a44887aa6c1df`. Não é um relatório de testes novos: **nenhum teste de jogabilidade foi executado para elaborar esta atualização documental**. O texto original define **37 seções**; a fila T01–T31 divide o trabalho em **31 pacotes operacionais**, não em 31 patches já finalizados.
+
+**Documentos complementares e obrigatórios:** [fila operacional T01–T31](./FILA-CONTINUE-SCRIPT-MESTRE.md) (ordem de execução e critérios de fechamento), [controle das 37 seções](./CONTROLE-EXECUCAO-SCRIPT-MESTRE.md) (evidências de cada seção), [relatório histórico](./PATCH-MESTRE-2026-10-24.md) e [regras dos agentes](../AGENTS.md). Se outro agente mudar o projeto, **reavaliar o HEAD e as PRs** antes de decidir a próxima tarefa. Nunca transferir cegamente estados antigos.
+
+### A. Implementações e correções já registradas — não refazer sem erro comprovado
+
+- **Captura (§2–3):** lançamentos sem mira com acerto automático no alvo, fórmula FRLG de captura com taxas das 151 espécies e quatro verificações, Pokébolas consumidas conforme o resultado, integração com equipe/PC. **Parcial** até comprovar toda a animação e casos de navegador.
+- **Estabilidade de batalha (§4–6,15,29):** correção anterior de FIGHT/paginação, atributo inválido que produzia câmera preta na evolução, atualização de identidade do lutador e limpeza de danos anteriores na troca. Ainda requer regressões amplas em Arena e campanha.
+- **Combate (§7–12):** tabela de tipos Gen III, STAB, status e cooldowns básicos, adaptador de learnsets, três golpes iniciais no nível 5 e ULT no nível 8, política de troca estratégica e poções limitadas para treinadores. **Pendente fechar** fórmula integral de dano e todos os Pokémon/modos.
+- **Status, clima e laboratório (§10,14,30):** efeitos mecânicos básicos de veneno, burn, sleep, paralysis, freeze, confusion e quatro climas; laboratório para 151 espécies e Mewtwo nível 50 com isolamento do save relatado. Ainda faltam VFX, ligações de golpes/itens, Shiny e captura isolada completos.
+- **Campanha e sistemas (§17–26,31):** estrutura de Kanto, revanches opcionais, loja/PC/Pokédex, Center, sete TMs, estojo de oito insígnias com sprites, BAG de batalha, painel pós-luta e Salão da Fama. São sistemas com implementações registradas, **não a prova de conclusão de toda a campanha**.
+- **Commits de 27/10:** `35bbd8f` (AUTO e velocidade da Arena), `e77bd4f` (Bolsa em batalha), `c8223fc` (painel de resultado), `6f85d1d` (Salão da Fama), `2a44839` (cura), `10da46d` (derrota antiga não reaplicada no Center), `c705d0b` (remoção da trava de cinco buscas na grama). O commit `e992105` documenta **oito batalhas iniciais naturais**, não a campanha inteira.
+
+**Regra de precisão:** “já implementado” não significa “100% concluído”; se o resultado documentado foi obtido por depuração, fixture ou teste controlado, não chamar de campanha jogada normalmente. Não declarar a publicação de alterações novas sem verificar CI, Pages e o jogo real.
+
+### B. Estado seção a seção (fotografia da auditoria)
+
+**Legenda:** “Histórico validado” = teste/documentação anterior, não reexecutado neste anexo; “Parcial” = há trabalho e lacunas; “Em PR” = não integrado; “Pendente / não auditado” = sem evidência bastante para fechar. 
+
+| § | Área | Estado registrado | Próximo fechamento / verificação |
+|---|---|---|---|
+| 1 | Missão e preparação | Parcial | Revisar conflitos e HEAD a cada lote; evidenciar a versão realmente publicada |
+| 2 | Captura sem mira e animação | Parcial | Inspecionar todas as etapas visuais e captura em fluxo natural/celular |
+| 3 | Fórmula original FRLG | Histórico validado | Regressão da integração mais recente, inclusive RNG natural e saves |
+| 4 | FIGHT da Arena | Parcial | Reproduzir no modo **Arena** e campanha, desktop/mobile, após alterações atuais |
+| 5 | Tela preta após evoluir | Parcial | Cobertura integral das evoluções e trocas, no Phaser público |
+| 6 | Identidade dos sprites | Parcial | Conferir espécies/formas/trocas de todas as equipes até Campeão |
+| 7 | Learnsets dos 151 | Parcial | Auditar 151 espécies nos modos, evolução, golpes exclusivos e compatibilidade de TMs |
+| 8 | 4 golpes e ULT nível 8 | Parcial | Validar novos iniciais, todos os modos, evolução, save e nenhuma ULT forte antecipada |
+| 9 | Tipos/STAB/crítico | Parcial | Fórmula final de dano e classes físico/especial com testes de jogabilidade |
+| 10 | Status e Toxic | Parcial + PR | Auditar VFX, timeouts, cura em batalha, Toxic e todas as transições |
+| 11 | Cooldowns e IA de ataque | Parcial | Auditoria por espécie/golpe dos cooldowns de ambos os lados |
+| 12 | IA de troca estratégica | Parcial | Partidas reais, transições, múltiplas reservas e compatibilidade mobile |
+| 13 | Poções de treinadores | Parcial | Sprites/partículas e teste natural por cada líder/Elite Four |
+| 14 | Clima | Parcial | Efeitos de pixel art globais, movimentos ainda não ligados e precisão/recuperação |
+| 15 | Dano residual na troca | Parcial | Regressão nos golpes multi-hit, derrotas e trocas rápidas após novos VFX |
+| 16 | Shiny 1% | Em PR | Sprite canônico, persistência nas evoluções, batalha real e integração |
+| 17 | Revanches | Parcial | Validar níveis, rotas e economia em jogo normal |
+| 18 | Pokémon Center | Parcial | Fluxo sem fixtures após KO total e consistência dos saves antigos |
+| 19 | Balanceamento geral | Parcial | Métricas de duração e dificuldade do início até a Liga |
+| 20 | Campanha completa | Parcial | [PR #30](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30) aberta; avançar jogando de forma normal até Brock e Campeão |
+| 21 | Mapa e locais | Parcial | Abrir **cada local** e comprovar todos os menus e transições |
+| 22 | Loja, TMs e economia | Parcial | Toxic de Koga (PR #16), remédios em batalha, todas as regras de consumo |
+| 23 | Redesign de menus | Parcial | Cobrir PC, mochila, mobile, acessibilidade e funcionamento real |
+| 24 | Apresentação dos líderes | Parcial / não auditado | Validar apresentações visuais, falas, ás, insígnia e salvamento de cada líder |
+| 25 | Estojo das insígnias | Histórico validado / integração a rever | Confirmar publicação/frames e transição após vitórias sem fixtures |
+| 26 | Relatório de batalha | Parcial | Regressão de todas as recompensas, XP, insígnias e recarga sem duplicação |
+| 27 | K.O. em pixel art | Pendente / não auditado | Auditar implementação atual, efeitos, derrota de membro vs fim da luta |
+| 28 | Sons e música | Pendente / não auditado | Licenciamento, áudio do jogo, controles, persistência e testes |
+| 29 | Lançamento/recolhimento | Parcial / não auditado | Verificar sincronismo de sprites, raios, transições e bloqueio de ataques |
+| 30 | Laboratório 151 | Parcial | Shiny, captura isolada e cobertura de todas as transições e VFX |
+| 31 | Salvamento seguro | Parcial | Verificar restauração, idempotência e integridade com saves legados |
+| 32 | FPS/desempenho | Pendente / não auditado | Medir frame-time real, memória e estabilidade no Android/desktop |
+| 33 | Testes obrigatórios | Parcial | Cobertura completa das 30 verificações e documentação de lacunas |
+| 34 | Campanha jogada até o Campeão | **Pendente** | Jogar em fluxo normal até Campeão, conferir cada batalha e save |
+| 35 | 10 fases de execução | Parcial | Encerrar fases com critérios objetivos, sem pular regressões |
+| 36 | Preservação do projeto | Parcial (política ativa) | Auditar alterações futuras contra aprovações e integridade dos saves |
+| 37 | GitHub/publicação | Parcial (pipeline ativo) | Para **cada patch futuro**, verificar diff, run, SHA implantado e jogo público |
+
+### C. Ordem de trabalho vinculada ao comando «Continue»
+
+1. **T01 — próximo obrigatório:** campanha natural até Brock, verificando o Rival, o Centro, HP/XP, capturas e saves. O PR #30 de diagnóstico estava aberto nesta revisão; **não duplicar a mesma alteração**.
+2. **T02–T06:** estabilizar FIGHT/BAG/controles, evoluções, sprites, projéteis antigos, saves e animação de captura; revalidar o que já foi corrigido antes de escrever novas versões.
+3. **T07–T12:** golpes específicos e learnsets dos 151, slots Lv5/ULT Lv8, cooldowns, AUTO, fórmula de dano, tipos, críticos, IA de ataque e troca.
+4. **T13–T17:** Toxic e demais status, remédios em batalha, quatro climas e VFX, Shiny 1% com sprites e persistência. Revisar PRs #16 e #17 antes de integrar.
+5. **T18–T20:** conferir identidades/evoluções e avançar naturalmente por todas as rotas, oito ginásios, Elite Four e Campeão; não confundir testes com fixtures com vitórias jogadas.
+6. **T21–T26:** balanceamento, revanches/economia, loja/TMs, mapa clicável, Pokédex, sumário, PC, apresentações dos líderes e insígnias.
+7. **T27–T29:** relatórios, K.O., lançamento/recolhimento, áudio licenciado e laboratório isolado dos 151.
+8. **T30:** grande otimização e redesign visual em pixel art, **somente após estabilizar** os sistemas; não alterar sprites/golpes aprovados.
+9. **T31:** 30 verificações obrigatórias, testes reais desktop/mobile, percurso até o Campeão, CI, merge, publicação e comprovação do SHA instalado.
+
+### D. Trabalho simultâneo e regra de continuidade
+
+- No momento desta revisão: [PR #30 — progressão natural até Brock](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30), [PR #16 — Toxic de Koga](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/16) e [PR #17 — Shiny 1%](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/17) **abertas**. Conferir seus estados atuais a cada retomada. O próximo foco é **T01 / campanha natural até Brock**, ou a primeira frente independente se T01 ainda estiver sendo alterada por outro agente.
+- Sempre que o usuário disser apenas **«Continue»**: ler este anexo + a fila + `AGENTS.md`; checar commits, PRs e código efetivamente publicado; escolher a primeira pendência sem colisão; auditar antes de codificar; corrigir, testar, integrar e publicar com evidência; atualizar este anexo, a fila e a matriz de 37 seções.
+- Não tocar em golpes/sprites/VFX já aprovados, saves ou funcionalidades concluídas sem necessidade comprovada e autorização aplicável. Não reiniciar pela primeira seção por padrão; não criar componentes duplicados. Documentar bloqueios e prosseguir por escopo independente quando seguro.
+- O **grande patch final de pixel art e design** acontece depois de estabilidade e validação dos sistemas, conforme T30; a aceitação completa é T31.
