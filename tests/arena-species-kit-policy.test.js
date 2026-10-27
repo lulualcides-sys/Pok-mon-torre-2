@@ -37,6 +37,30 @@ test('Blizzard Hydro Pump Seismic Toss and Egg Bomb use the requested 2–4s Are
  assert.equal(enforceArenaMoveCooldowns(missing).rmb.cd,3,'Missing Egg Bomb cooldown must be set');
 
 });
+test('Thunder cooldown is 3s in Arena without changing other electrical moves or source metadata',()=>{
+ const native={lmb:move('Thunder',25,15,'ELECTRIC'),
+  rmb:move('Thunderbolt',17,6.25,'ELECTRIC'),
+  q:move('Thunder Wave',0,9,'ELECTRIC'),
+  e:move('Discharge',16,7.5,'ELECTRIC'),
+  esp:move('Dash',0,1)};
+ const output=enforceArenaMoveCooldowns(native);
+ assert.equal(output.lmb.cd,3,'Thunder is exactly 3s');
+ assert.equal(output.rmb.cd,6.25,'Thunderbolt stays untouched');
+ assert.equal(output.q.cd,9,'Thunder Wave stays untouched');
+ assert.equal(output.e.cd,7.5,'Discharge stays untouched');
+ assert.strictEqual(output.rmb,native.rmb);
+ assert.strictEqual(output.q,native.q);
+ assert.strictEqual(output.e,native.e);
+ assert.strictEqual(output.esp,native.esp);
+ assert.equal(native.lmb.cd,15,'Original source client remains unchanged');
+ assert.equal(output.lmb.forma,native.lmb.forma,'Approved VFX renderer untouched');
+ assert.equal(output.lmb.dano,native.lmb.dano,'Attack damage untouched');
+ assert.strictEqual(enforceArenaMoveCooldowns(output),output,'Cooldown is stable');
+ const empty={lmb:move('Thunder',20,0,'ELECTRIC')};
+ assert.equal(enforceArenaMoveCooldowns(empty).lmb.cd,3,'Zero cooldown fixed');
+ const unavailable={q:move('Thunder Shock',10,5,'ELECTRIC')};
+ assert.strictEqual(enforceArenaMoveCooldowns(unavailable),unavailable,'Different move remains unchanged');
+});
 test('Clefairy uses its installed characteristic Metronome, not generic Hyper Beam',()=>{
  const attacks=[
   move('Pound',6),move('Double Slap',10),move('Psychic',17,8,'PSYCHIC'),
