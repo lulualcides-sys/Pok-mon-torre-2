@@ -80,11 +80,18 @@ const server=http.createServer(async(req,res)=>{
    return {enabled:a.enabled,text:a.label.text};
   });
   assert.equal(off.enabled,false);assert.equal(off.text,'AUTO');
-  const cleanup=await page.evaluate(()=>{
+  await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('combate'),a=s.__torre2AutoMode;
-   const ctrl=a.control,orig=a.read;
+   window.__torre2AutoCleanupCheck={state:a,control:a.control,original:a.read};
    s.scene.start('titulo');
-   return {cleaned:a.cleaned,restored:ctrl.leer===orig,sceneMode:s.datos.modo};
+  });
+  // Phaser's ScenePlugin.start schedules shutdown at the scene transition,
+  // not synchronously in the click/JS handler.
+  await page.waitForFunction(()=>window.__torre2AutoCleanupCheck?.state?.cleaned===true,
+   null,{timeout:10000});
+  const cleanup=await page.evaluate(()=>{
+   const x=window.__torre2AutoCleanupCheck;
+   return {cleaned:x.state.cleaned,restored:x.control.leer===x.original};
   });
   assert.equal(cleanup.cleaned,true,'Manual reader must be restored when battle ends');
   assert.equal(cleanup.restored,true);
