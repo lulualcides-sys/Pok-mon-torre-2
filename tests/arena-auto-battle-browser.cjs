@@ -47,11 +47,11 @@ const server=http.createServer(async(req,res)=>{
   // Real Phaser input event (same as touching the small AUTO button).
   const point=await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('combate');
-   const zone=s.__torre2AutoMode.zone,c=s.cameras.main;
-   const pixel=c.getWorldPoint(0,0),pixel2=c.getWorldPoint(1,1);
+   const zone=s.__torre2AutoMode.zone;
    const canvas=document.querySelector('canvas').getBoundingClientRect();
-   const x=(zone.x-pixel.x)/(pixel2.x-pixel.x),y=(zone.y-pixel.y)/(pixel2.y-pixel.y);
-   return {x:canvas.x+(x/640)*canvas.width,y:canvas.y+(y/360)*canvas.height};
+   // The native stage is 640×360, CSS scales its entire canvas for mobile.
+   return {x:canvas.x+zone.x*canvas.width/640,
+    y:canvas.y+zone.y*canvas.height/360};
   });
   await page.mouse.click(point.x,point.y);
   const afterClick=await page.evaluate(()=>{
