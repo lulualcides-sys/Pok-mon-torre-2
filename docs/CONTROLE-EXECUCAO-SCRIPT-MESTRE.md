@@ -56,6 +56,12 @@
 | 36 | Preservação do projeto | Parcial (política ativa) | Proteções explícitas em `AGENTS.md` e política de golpes | Auditar alterações futuras contra aprovações e integridade dos saves |
 | 37 | GitHub/publicação | Parcial (pipeline ativo) | CI e Pages da base `c705d0b` concluíram com sucesso | Para **cada patch futuro**, verificar diff, run, SHA implantado e jogo público |
 
+## Continuação da T01 — correção isolada da fronteira Victory Road/Lorelei (27/10/2026)
+
+- [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/36): elimina encontro selvagem permitido **depois** da escada de 17 treinadores de Victory Road, quando a câmara Lorelei é liberada. Preserva os encontros selvagens anteriores e bloqueia os demais chefes da Liga. Código e teste de regressão escritos em branch isolada, sem alterar golpes, sprites, dificuldade, inventários ou salvamentos.
+- [Workflow 40577322862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40577322862): sintaxe, `npm test`, check/reuse, build real Phaser e teste específico passaram; suite geral de navegador ainda **em execução na última consulta**. Até aprovação integral e merge, **não marcar como publicado**.
+- **T01 permanece ABERTA**: [PR #30](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/30) documenta derrota genuína do único Bulbasaur no Rival #13 após 12 vitórias; não representa bug automaticamente. Próximo foco é captura/treinamento reais, recuperação no Centro, revanche legítima contra Rival e Brock. Não inventar vitória e não modificar a PR #30 de outro agente inadvertidamente.
+
 ## Evidências do estado de referência (27/10/2026)
 
 - `main` analisada: `c705d0b84f0d85cf3a4e59d8fa0fc4b75aec964c` — remoção do bloqueio de cinco encontros selvagens; [PR #32](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/32).
