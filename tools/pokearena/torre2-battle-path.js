@@ -150,10 +150,10 @@ export function renderBattlePath(scene,state,handlers){
  ball(sc,22,25,13);
  txt(scene,115,14,'POKÉMON TORRE 2',15,'#f7cc5f',22).setOrigin(0,.5);
  txt(scene,116,31,'KANTO · '+city.toUpperCase(),9,'#e8f3fd',22).setOrigin(0,.5);
- txt(scene,322,13,'GINÁSIO DE '+city.toUpperCase(),9,'#e9e4cb');
+ txt(scene,322,13,finished?'LIGA DE KANTO':'GINÁSIO DE '+city.toUpperCase(),9,'#e9e4cb');
  txt(scene,324,32,leader.toUpperCase(),14,'#ffd37b');
  txt(scene,431,12,'PROGRESSO',8,'#a9d9e9');
- txt(scene,433,30,progress+' / '+total,14,'#ffffff');
+ txt(scene,433,30,finished?'8 / 8':progress+' / '+total,14,'#ffffff');
  const progressG=scene.add.graphics().setDepth(10);
  progressG.fillStyle(0x173d49);progressG.fillRoundedRect(400,42,66,4,2);
  progressG.fillStyle(0x40d48c);progressG.fillRoundedRect(400,42,
@@ -164,10 +164,11 @@ export function renderBattlePath(scene,state,handlers){
    scene.scale.stopFullscreen():scene.scale.startFullscreen({navigationUI:'hide'}));
  button(scene,599,23,65,29,'MENU',handlers.menu,{depth:41});
  renderBackdrop(scene,stage);
- const mapTitle=txt(scene,25,69,'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
+ const mapTitle=txt(scene,25,69,finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
  mapTitle.setOrigin(0,.5);
  const areaLegend=stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':
   stage===2?'ROTAS 24/25  >  5/6  >  S.S. ANNE  >  VERMILION':
+  finished?'O SALÃO DA FAMA AGUARDA A SUA EQUIPE':
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
@@ -323,13 +324,13 @@ export function renderBattlePath(scene,state,handlers){
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
  txt(scene,24,342,finished?'CAMPEÃO DE KANTO':current?.name||leader,
   12,'#fff2d2',30).setOrigin(0,.5);
- const label=finished?'CAMPEÃO DE KANTO':progress>=total?
+ const label=finished?'★ SALÃO DA FAMA':progress>=total?
   'ENFRENTAR '+leader.toUpperCase():'ENTRAR NA BATALHA';
  const cta=button(scene,359,335,217,32,label,()=>{
-  if(finished)return;
+  if(finished)return handlers.hall?.();
   if(progress>=total)return handlers.gym();
   handlers.battle();
- },{gold:true,enabled:!finished,depth:70});
+ },{gold:true,enabled:true,depth:70});
  cta.setData('torre2-central-cta',true);
  button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
   .setData('torre2-reset-journey',true);
