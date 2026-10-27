@@ -4,9 +4,11 @@
  * The native Poké Arena 2D base roster has an average walking speed around 129,
  * whereas the first custom Kanto batch averages ~121 and the PokéAPI/FRLG
  * Kanto mapping (58 + Gen III Speed * .66) has median ~104. Scale and center
- * ONLY the new roster, preserving the slow-vs-fast species ordering.
+ * ONLY the new roster in BOTH Arena and Kanto campaign, preserving the
+ * slow-vs-fast species ordering. The same Pokémon must walk at the SAME
+ * native calibrated speed regardless of game mode.
  *
- * Does not change campaign stats, animation FPS, attack/dash speed, cooldown,
+ * Does not change base species stats, animation FPS, attack/dash speed, cooldown,
  * damage, energy or any approved move. Reuse the native game's movement
  * integration / movement-status effects unchanged.
  */
@@ -22,9 +24,9 @@ export const ARENA_SPEED_REFERENCE = Object.freeze({
 export function synchronizedArenaSpeed(raw, {
   added = false,
   kanto151 = false,
-  campaign = false,
+  campaign = false, // legacy call-site argument; no longer excludes the campaign
 } = {}) {
-  if (!added || campaign || !Number.isFinite(raw) || raw <= 0) return raw;
+  if (!added || !Number.isFinite(raw) || raw <= 0) return raw;
   const benchmark = kanto151
     ? ARENA_SPEED_REFERENCE.extendedKanto
     : ARENA_SPEED_REFERENCE.earlyKanto;

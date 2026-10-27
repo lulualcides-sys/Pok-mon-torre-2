@@ -46,7 +46,7 @@ const server=http.createServer(async(req,res)=>{
  for(const row of result){
   const group=!row.added?'native':row.extended?'extended':'early';
   if(row.stage===0){raw[group].push(row.raw);synced[group].push(row.native);}
-  assert.equal(row.campaign,row.raw,row.id+' campaign unchanged');
+  assert.equal(row.campaign,row.native,row.id+' Arena and campaign must walk at same speed');
   assert.equal(row.native,row.formula,row.id+' uses the exact tempo helper');
   if(!row.added)assert.equal(row.native,row.raw,row.id+' original movement untouched');
  }
@@ -64,6 +64,6 @@ const server=http.createServer(async(req,res)=>{
  assert.ok(summary.early.new>summary.early.old,'early added Kanto movement improved');
  assert.ok(summary.extended.new>summary.extended.old,'extended Kanto movement improved');
  assert.deepEqual(errors,[],'no runtime errors');
- console.log('PASS native Arena walking pace synchronized, original sprites and Kanto campaign protected');
+ console.log('PASS native Arena and Kanto walk at identical calibrated pace; original species unchanged');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

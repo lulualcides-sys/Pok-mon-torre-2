@@ -25,7 +25,9 @@ function scene(options={}){
  const target={tipo:'ia',l:player.rival,leer(){return{mx:0,my:0}}};
  return {datos:{modo:'cpu',...options},sim:false,red:null,enLinea:false,fase:'lucha',
   pausado:false,controles:[human,target],luchadores:[player,player.rival],
-  add:{rectangle:()=>makeObject(),text:()=>makeObject(),zone:()=>makeObject()},
+  add:{rectangle:(x,y)=>Object.assign(makeObject(),{x,y}),
+   text:(x,y)=>Object.assign(makeObject(),{x,y}),
+   zone:(x,y)=>Object.assign(makeObject(),{x,y})},
   input:{keyboard:{on:(k,fn)=>keyboard.set(k,fn),off:(k,fn)=>{if(keyboard.get(k)===fn)keyboard.delete(k)}}},
   cameras:{main:{width:640,zoom:1}},
   events:{on:(k,fn)=>handlers.set(k,fn),off:(k,fn)=>{if(handlers.get(k)===fn)handlers.delete(k)},
@@ -83,12 +85,15 @@ test('AUTO OFF by default every new battle, no multiple button installs',()=>{
  const next=scene(),b=installAutoBattle(next,()=>({leer:()=>({})}));
  assert.equal(b.enabled,false);
 });
-test('AUTO keyboard B toggles, and button moves with wide-screen camera',()=>{
+test('AUTO keyboard B toggles, and button stays within virtual screen on wide cameras',()=>{
  const s=scene(),a=installAutoBattle(s,()=>({leer:()=>({mx:0,my:0})}));
  s.cameras.main.width=760;
  s.handlers.get('postupdate')();
- assert.equal(a.button.x,699);
- assert.equal(a.zone.x,699);
+ assert.equal(a.button.x,579);
+ assert.equal(a.zone.x,579);
+ assert.equal(a.zone.y,146,'AUTO below Bag in the upper-right region');
+ assert.ok(a.zone.x<640,'AUTO cannot leave logical 640px scene');
+ assert.ok(a.zone.y-18>92+12,'AUTO does not intercept Bag target');
  s.keyboard.get('keydown-KeyB')({repeat:false,ctrlKey:false,altKey:false,metaKey:false});
  assert.equal(a.enabled,true);
  s.keyboard.get('keydown-KeyB')({repeat:true});
@@ -123,5 +128,34 @@ test('Scene prototype wrapping preserves original create and delegates AI',()=>{
  assert.equal(s.wasCreated,true);assert.ok(s.__torre2AutoMode);
  s.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
  assert.equal(s.controles[0].leer(.1).mx,.5);
+ s.handlers.get('shutdown')();
+});
+
+test('AUTO attaches when campaign native controller arrives after create',()=>{
+ const frames=new Map;
+ class DelayedScene{
+  constructor(){
+   Object.assign(this,scene({torre2:{kind:'trainer'}}));
+   this.controles=[];
+   this.game={events:{
+    on:(k,fn)=>frames.set(k,fn),
+    off:(k,fn)=>{if(frames.get(k)===fn)frames.delete(k)}
+   }};
+   this.scene={isActive:()=>true};
+  }
+  create(){this.wasCreated=true}
+ }
+ const Brain=class{constructor(actor){this.actor=actor}leer(){return{mx:1,my:0}}};
+ bindAutoBattleToScene(DelayedScene,Brain);
+ const s=new DelayedScene();s.create();
+ assert.equal(s.wasCreated,true);
+ assert.equal(s.__torre2AutoMode,undefined);
+ assert.equal(typeof frames.get('step'),'function');
+ const human=scene().controles;
+ s.controles=human;
+ frames.get('step')();
+ assert.ok(s.__torre2AutoMode,'AUTO installs when controller is ready');
+ assert.equal(s.__torre2AutoMode.zone.x,579);
+ assert.equal(frames.size,0,'no deferred listener left');
  s.handlers.get('shutdown')();
 });
