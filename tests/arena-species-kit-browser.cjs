@@ -62,7 +62,7 @@ const server=http.createServer(async(req,res)=>{
      for(const slot of ['lmb','rmb','q','e']){
       const attack=kit[slot];if(!attack?.nombre)continue;
       const key=attack.nombre.toLowerCase();
-      if(!['blizzard','seismic toss','hydro pump','egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos','thunder','psybeam','psy beam','fire blast','charge'].includes(key))continue;
+      if(!['blizzard','seismic toss','hydro pump','egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos','thunder','psybeam','psy beam','fire blast','charge','solar beam','solarbeam','rayo solar'].includes(key))continue;
       (cooldown[key]??=[]).push({species:def.id,stage,cd:attack.cd});
      }
     }
@@ -120,6 +120,10 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(attack.cd,3.5,'Fire Blast 3.5s for '+JSON.stringify(attack));
   for(const attack of results.cooldown.charge||[])
    assert.equal(attack.cd,3,'Charge 3s for '+JSON.stringify(attack));
+  const solar=(results.cooldown['solar beam']||[])
+   .concat(results.cooldown.solarbeam||[],results.cooldown['rayo solar']||[]);
+  assert.ok(solar.length>0,'Solar Beam must exist in at least one actual Arena fighter kit');
+  for(const h of solar)assert.equal(h.cd,3,'Solar Beam should be 3s '+JSON.stringify(h));
   assert.deepEqual(errors,[],'No JS errors in public-game equivalent');
   console.log('PASS real generated Phaser Arena move policy / Eevee / cooldown');
  }finally{await browser.close();server.close();}
