@@ -54,6 +54,8 @@ export function installWildCapture(scene){
  const runFrame=frame(scene,553,43,75,34).setDepth(7200);
  const runLabel=txt(scene,590,59,'RUN',13,'#ffe2a2').setOrigin(.5).setDepth(7202);
  const runZone=hit(scene,590,60,75,34,(_p,_x,_y,event)=>{
+  // Trace only the currently active encounter while validating native UI.
+  scene.__torre2RunPointerSeen=(scene.__torre2RunPointerSeen||0)+1;
   event?.stopPropagation?.();
   if(busy||scene.__torre2CaptureBusy||scene.__torre2Changing||
      scene.__torre2BallTransitions||scene.__torre2BattleBagOpen||
