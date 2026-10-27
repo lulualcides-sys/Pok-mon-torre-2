@@ -635,8 +635,8 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
     !text.includes('import{IA')||!text.includes('this.controles'))
   throw Error('Auto battle requires recognized native scene '+filename);
  await fs.appendFile(entry,
-  '\\nimport{bindAutoBattleToScene}from"../torre2/auto-battle.js";'+
-  'bindAutoBattleToScene('+klass+',IA);\\n');
+  '\nimport{bindAutoBattleToScene}from"../torre2/auto-battle.js";'+
+  'bindAutoBattleToScene('+klass+',IA);\n');
 }
 
 // Expand Pokedex without overlapping its original animated Pokémon
