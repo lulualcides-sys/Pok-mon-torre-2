@@ -98,8 +98,11 @@ const server=http.createServer(async(req,res)=>{
   for(const row of results.history)assert.ok(row.skills.some(s=>s.type===eeveeTypes[row.first]),
    'Eevee '+row.first+' needs a signature attack matching its evolution');
   assert.equal(results.campaign,'VAPOREON','Campaign explicitly unchanged');
-  for(const [name,min] of [['blizzard',10],['seismic toss',8],['hydro pump',9.5]])
-   for(const h of results.cooldown[name]||[])assert.ok(h.cd>=min, name+' cooldown '+JSON.stringify(h));
+  for(const [name,expected] of [['blizzard',6],['seismic toss',5],['hydro pump',5.5]]){
+   assert.ok((results.cooldown[name]||[]).length>0,name+' must be present in built Phaser client');
+   for(const h of results.cooldown[name]||[])assert.equal(h.cd,expected,
+    name+' must follow 4–6s Arena pacing for '+JSON.stringify(h));
+  }
   assert.deepEqual(errors,[],'No JS errors in public-game equivalent');
   console.log('PASS real generated Phaser Arena move policy / Eevee / cooldown');
  }finally{await browser.close();server.close();}
