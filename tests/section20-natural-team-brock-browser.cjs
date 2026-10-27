@@ -226,11 +226,11 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat.png'});
    const started=Date.now();
    try{
-    await page.waitForFunction(round=>{
+    await page.waitForFunction(({round,previousLosses})=>{
      const s=window.kanto.readCampaign();
      return window.__pt2Game.scene.isActive('campanha')&&
-      !!s&&(s.wins===round+1||s.losses>0);
-    },round,{timeout:240000,polling:250});
+      !!s&&(s.wins===round+1||s.losses>previousLosses);
+    },{round,previousLosses:before.losses},{timeout:240000,polling:250});
    }catch(error){
     entry.failedReason=String(error);
     entry.game=await game();
