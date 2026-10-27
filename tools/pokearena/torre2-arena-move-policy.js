@@ -5,10 +5,11 @@
 import {frlgUnlockLevel,frlgMachineCompatible} from './torre2-frlg-learnsets.js';
 const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ATTACK_SLOTS=['lmb','rmb','q','e'];
-// User-requested fast Arena 2D pace (2–4 seconds) for these four moves.
+// User-requested fast Arena 2D pace (2–4 seconds) for only these moves.
 // NEVER mutate original native VFX/metadata; never apply during campaign.
 const ARENA_CD=Object.freeze({
  'blizzard':4,'blizard':4,'ventisca':4,
+ 'thunder':3,
  'hydro-pump':3.5,'hidrobomba':3.5,
  'seismic-toss':3,'sismic-toss':3,'movimiento-sismico':3,
  'egg-bomb':3,'eggbomb':3,'bomba-de-ovo':3,'bomba-ovo':3,
