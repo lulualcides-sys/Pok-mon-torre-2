@@ -81,14 +81,22 @@ const families=[
     return {scene:b.scene.key,phase:b.fase,name:m.forma.nombre,
      stage:m.etapa,dex:m.dex,sprite:m.spr.texture.key,visible:m.spr.visible,
      active:m.spr.active,frame:[m.spr.frame.width,m.spr.frame.height],
-     textureAvailable:b.textures.exists(m.spr.texture.key),slots,rawStageE:m.forma.kit?.e||null,rawRootE:m.def?.kit?.e||null};
+     textureAvailable:b.textures.exists(m.spr.texture.key),slots};
    });
    assert.equal(after.scene,'combate');
    assert.equal(after.stage,1);
    assert.equal(after.name.toLowerCase(),expected);
    assert.ok(after.textureAvailable&&after.visible&&after.active);
    console.log('T03 EARLY STAGE SNAPSHOT',JSON.stringify({starter,after}));
+   // Metapod and Kakuna must NOT inherit the Butterfree/Beedrill finisher.
+   // Their fourth skill is species-locked until the final form. Preserve
+   // native gating rather than unlocking a strong move one stage early.
+   const middleLocked=starter==='caterpie'||starter==='weedle';
    for(const [slot,value] of Object.entries(after.slots)){
+    if(middleLocked&&slot==='e'){
+     assert.equal(value.name,'',expected+' must not unlock final-form ULT');
+     continue;
+    }
     assert.ok(value.name,expected+' must retain '+slot+' name');
     assert.equal(value.pending,false,expected+' '+slot+' must not be placeholder');
    }
@@ -147,6 +155,6 @@ const families=[
   assert.deepEqual(errors,[],'No JS errors during real early Kanto evolutions');
   assert.equal(report.families.length,3);
   fs.writeFileSync('test-evidence/t03-early-evolutions.json',JSON.stringify(report,null,2));
-  console.log('T03 PASS SIX EARLY KANTO EVOLUTION TRANSITIONS, sprites and four move slots');
+  console.log('T03 PASS SIX EARLY KANTO EVOLUTION TRANSITIONS; final forms have four skills, cocoons retain their ULT locks');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
