@@ -1436,3 +1436,14 @@ Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/
 - A [PR #43](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/43) trata de RUN e desktop da T02 de modo concorrente. [Run #40595345855](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595345855) falhou na suíte global da Bolsa (antídoto não consumido no teste), embora o teste isolado de RUN selvagem tenha passado. **Não integrar T02 sem revisão dos testes finais do HEAD**.
 - **Próximo `Continue`:** verificar novo HEAD/CI da PR #43; concluir T02 se estiver estável e prosseguir com a matriz T03 das evoluções, preservando os recursos já aprovados.
 
+
+
+### J. T03 — três iniciais de Kanto também validados
+
+## T03 — quatro evoluções verificadas na Arena (27/10/2026)
+
+- A [PR #46](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/46) foi integrada no commit `db8baf0cc1e917fff14dca4600581f4beb88ff17`. Introduziu **somente** o teste `tests/t03-starter-evolutions-browser.cjs` e um workflow, sem alterar o motor, golpes, sprites, saves ou VFX.
+- O [CI #40596220909](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40596220909) teve sucesso no **Phaser da Arena**: ao acionar o EVO nativo, Bulbasaur virou Ivysaur (PMD `pmd-0002-Idle`), Charmander virou Charmeleon (`pmd-0005-Idle`) e Squirtle virou Wartortle (`pmd-0008-Idle`). Em cada evolução, a cena continuou ativa, a textura estava carregada, o frame era não vazio e os quatro golpes tinham nomes sem `pendiente`.
+- Junto ao teste de Magikarp → Gyarados da PR #44, há **quatro linhas evolutivas pontualmente verificadas**. No novo teste, a prontidão para EVO foi preparada com experiência apenas no **fixture do navegador**, não em nível natural da campanha. Logo, T03 e a seção §34 continuam abertas. Um teste do site público pós-merge ainda precisa ser feito.
+- **T02:** a PR #43 para RUN e menus desktop ainda está isolada. Os logs da execução [#40595946184](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40595946184) confirmam clique RUN selvagem bem-sucedido e RUN ausente contra treinador, mas falha posterior no teste desktop do Antídoto na Bolsa (estoque não consumido e modal continuou aberto). Não integrar até revisar o último HEAD e validar a suíte completa.
+
