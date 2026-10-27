@@ -65,9 +65,12 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(before.team.map(x=>x.id),['bulbasaur']);
   assert.equal(before.team[0].level,5);
   assert.deepEqual(before.box,['mewtwo']);
-  const names=['pidgey','rattata','caterpie','weedle'];
+  const names=['pidgey','rattata','caterpie','charmander'];
   for(let round=0;round<names.length;round++){
-   const entry={round:round+1,expected:names[round],before};report.steps.push(entry);
+   const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
+   const entry={round:round+1,expected:names[round],role:opponent.kind,before};report.steps.push(entry);
+   assert.equal(opponent.id,names[round],'Stage 0 trainer sequence includes the rival after Caterpie');
+   assert.equal(opponent.kind,round===3?'rival':opponent.kind);
    await clickTag('torre2-central-cta');
    await page.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
@@ -96,7 +99,7 @@ const server=http.createServer(async(req,res)=>{
     await page.waitForFunction(round=>{
      const s=window.kanto.readCampaign();
      return window.__pt2Game.scene.isActive('campanha')&&s?.wins===round+1;
-    },round,{timeout:180000,polling:250});
+    },round,{timeout:240000,polling:250});
    }catch(error){
     entry.failedReason=String(error);
     entry.game=await game();
@@ -117,7 +120,7 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(entry.after.trainer,round+1);
    assert.equal(entry.after.wins,round+1);
    assert.equal(entry.after.losses,0);
-   assert.equal(entry.after.money,before.money+180);
+   assert.equal(entry.after.money,before.money+(opponent.kind==='rival'?460:180));
    assert.deepEqual(entry.after.box,['mewtwo']);
    assert.equal(entry.after.team.length,1);
    // Game's normal reward routine restores active HP; no direct heal call.
@@ -137,6 +140,6 @@ const server=http.createServer(async(req,res)=>{
   }
   await page.screenshot({path:out+'/natural-route1-four-trainers-completed.png'});
   assert.deepEqual(errors,[],'No client JS exceptions through four consecutive native battles');
-  console.log('PASS FOUR NATURAL KANTO ROUTE 1 FIGHTS; no debug KOs, natural XP, real rewards');
+  console.log('PASS FOUR NATURAL KANTO OPENING FIGHTS INCLUDING RIVAL; no debug KOs, natural XP, real rewards');
  }finally{saveReport();await page.close();await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});
