@@ -1482,3 +1482,12 @@ Foi implementada na [PR #36](https://github.com/lulualcides-sys/Pok-mon-torre-2/
 - **T02 Bag/câmera:** [PR #53](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/53) em draft, mudança de scrollFactor dos objetos visuais e hitzones para evitar hitboxes deslocadas sob pan/zoom; [CI #40599441925](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40599441925) ainda **não havia concluído** na verificação deste registro. **Não integrar** a PR com teste falho ou sem evidência. Há outra branch experimental de mesmo tema, `fix/master-t02-bag-hud-camera-20261027`, que não foi mesclada; comparar antes de avançar e evitar sobreposição.
 - **Próximo trabalho seguro:** concluir diagnóstico câmera/antídoto da T02 somente após CI sólido. Em paralelo, avançar T03/T04 em branches sem conflito. Sem alterações em golpes, VFX ou sprites aprovados.
 
+
+
+### L. Continuidade T02 validada em CI; T04 em regressão
+
+## Continuidade de T02 e T04 — 27/10/2026
+
+- T02: [PR #53](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/53) integrada em SHA 81e29698a07f6fd41d088522afb3bfc2a40b5232. [CI #40600983129](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40600983129) e [CI main #40602048321](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40602048321) passaram. Bolsa acompanhando zoom/pan, poção e antídoto consumidos por clicks reais, troca e RUN desktop/mobile já testados. [Pages #40602087786](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40602087786) aguardando resultado na consulta. Não afirmar publicação até sucesso.
+- T04: [PR #57](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/57) draft previne erro quando lista de projéteis contém valores nulos ou referências repetidas na troca e KO. [CI #40601951402](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40601951402): testes unitários e switching em Chromium passaram; suíte integral em execução quando consultada. Não integrar até CI completo.
+- A validação T02 cobre menus FIGHT/BAG/POKÉMON/RUN nos cenários desktop e mobile testados; não equivale a toda combinação de modos nem ao teste em dispositivo físico. T04 permanece parcial para os golpes multi-hit e todas as transições.
