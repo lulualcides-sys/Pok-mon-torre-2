@@ -59,7 +59,8 @@ const server=http.createServer(async(req,res)=>{
     const o=b.children.list.find(x=>x.getData?.(k)===v&&x.input?.enabled);
     if(!o)throw new Error('Missing battle Bag control '+k+'='+v);
     const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-    return {x:rect.left+rect.width*o.x/640,y:rect.top+rect.height*o.y/360};
+    return {x:rect.left+rect.width*(o.getData?.('torre2-bag-hud-x')??o.x)/640,
+     y:rect.top+rect.height*(o.getData?.('torre2-bag-hud-y')??o.y)/360};
    },[key,value]);
    await page.mouse.click(point.x,point.y);
   }
