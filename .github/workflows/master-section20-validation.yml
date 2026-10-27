@@ -1,0 +1,60 @@
+name: Master §20 — integridade real da campanha Kanto
+on:
+  push:
+    branches: [feat/master-section20-campaign-integrity-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  section20:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Dependencies
+        run: npm install --no-audit --no-fund
+      - name: Unit suites, REUSE and syntax
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/torre2-party-battle.js
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture and compile original Phaser client
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+      - name: Section 20 tests and entire Kanto progression contract
+        run: |
+          set -euo pipefail
+          node --test tests/section20-campaign-integrity-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+          node tests/campaign-awards-built.test.mjs
+      - name: Section 20 real Phaser KO gating and boss opponent identity
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/section20-campaign-integrity-browser.cjs
+          node tests/campaign-tour-browser.cjs
+      - name: Original Phaser smoke desktop/mobile and browser regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: section20-real-campaign-evidence
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+            site-capture/CAPTURE-REPORT.json
+          if-no-files-found: warn
+          retention-days: 14
