@@ -101,13 +101,14 @@ const server=http.createServer(async(req,res)=>{
    const sunHit=hit('sun','Thunder',.01);
    const rain=hit('rain','Thunder',.99);
    const other=hit('sun','Thunderbolt',.99);
-   return {renderer:b.game.renderer.type,species:[p.def.id,e.def.id],
+   return {renderer:b.game.renderer.type,species:[p.def.id,e.def.id],playerForm:p.forma?.nombre,playerStage:p.etapa,
     pairs,sunMiss,sunHit,rain,other,
     weatherHelper:weather.weatherAccuracy(b.__torre2Weather,'Thunder',70),
     activeKit:Object.entries(p.kit).filter(([key])=>['lmb','rmb','q','e'].includes(key))
       .map(([slot,m])=>({slot,name:m.nombre,renderer:m.forma}))};
   });
-  assert.deepEqual(observations.species,['pikachu','geodude']);
+  assert.deepEqual(observations.species,['pichu','geodude'],'Native Pikachu derives from Pichu base');
+  assert.equal(String(observations.playerForm).toLowerCase(),'pikachu','Battle form must be Pikachu');
   assert.equal(observations.sunMiss.result,'miss','Sunny weather must reject Thunder high RNG');
   assert.equal(observations.sunMiss.after,observations.sunMiss.before);
   assert.ok(observations.sunHit.after<observations.sunHit.before,
