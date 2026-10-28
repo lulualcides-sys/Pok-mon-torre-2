@@ -10,6 +10,7 @@ import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKant
 import {kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
 import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel} from './gen7-letsgo-learnsets.js';
+import {GEN5_KANTO_LEVEL_UP,gen5KantoUnlockLevel} from './gen5-existing-levels.js';
 import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
@@ -181,7 +182,11 @@ export const CHARACTERISTIC_KANTO_ROLES=Object.freeze({
  machop:[[2,'cross-chop']],machoke:[[2,'cross-chop']],
  machamp:[[2,'cross-chop']],primeape:[[2,'cross-chop']],
  growlithe:[[2,'flame-wheel']],arcanine:[[2,'flame-wheel']],
- grimer:[[2,'poison-punch']],muk:[[2,'poison-punch']]
+ grimer:[[2,'poison-punch']],muk:[[2,'poison-punch']],
+ // Signature moves from Gen V are preferred ONLY if the original base
+ // already provides an approved renderer; no fake fire projectile is added.
+ ponyta:[[1,'flame-charge'],[2,'flare-blitz']],
+ rapidash:[[1,'flame-charge'],[2,'flare-blitz']]
 });
 // X-Scissor postdates FireRed: explicit Torre 2 custom campaign learn levels,
 // never falsely described as official FRLG. TM-only moves stay TM-locked.
@@ -239,6 +244,10 @@ export function availableMoves(member){
  // an already approved/native Phaser renderer is present in this build.
  for(const gen7Name of Object.keys(GEN7_LETSGO_LEVEL_UP[member.id]||{})){
   const installed=GEN7_INSTALLED.get(gen7Name);
+  if(installed)names.add(canonicalMoveKey(installed.nombre));
+ }
+ for(const gen5Name of Object.keys(GEN5_KANTO_LEVEL_UP[member.id]||{})){
+  const installed=GEN7_INSTALLED.get(gen7MoveKey(gen5Name));
   if(installed)names.add(canonicalMoveKey(installed.nombre));
  }
  if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
@@ -382,8 +391,10 @@ export function availableMoves(member){
   // tutor, pending VFX or evolution-only attack before its evolved form.
   if(official===null&&!frlgMachineCompatible(member.id,key)&&
      !evoLocked.has(key)&&!isPendingApprovalMove(m)){
+   const gen5=gen5KantoUnlockLevel(member.id,key);
    const gen7=gen7LetsGoUnlockLevel(member.id,key);
-   if(gen7!==null&&level>=campaignLevel(Math.max(13,activeStage,gen7)))
+   const recent=gen5??gen7;
+   if(recent!==null&&level>=campaignLevel(Math.max(13,activeStage,recent)))
     return true;
   }
   if(!early){
@@ -472,8 +483,9 @@ export function moveUnlockLevel(member,moveName){
  // review-pending animation receives a later-generation unlock.
  if(!frlgMachineCompatible(species,key)){
   const installed=GEN7_INSTALLED.get(gen7MoveKey(key));
-  const gen7=installed?gen7LetsGoUnlockLevel(species,key):null;
-  if(gen7!==null)return campaignLevel(Math.max(13,frlgEvolutionLevel(species),gen7));
+  const recent=installed?(gen5KantoUnlockLevel(species,key)??
+   gen7LetsGoUnlockLevel(species,key)):null;
+  if(recent!==null)return campaignLevel(Math.max(13,frlgEvolutionLevel(species),recent));
  }
  const bonus=CHARACTERISTIC_BONUS_LEVELS[species]?.[key];
  if(Number.isInteger(bonus))return campaignLevel(bonus);
