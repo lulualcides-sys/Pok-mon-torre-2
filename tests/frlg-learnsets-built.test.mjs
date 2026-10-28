@@ -108,8 +108,14 @@ for(const entry of KANTO_151){
  const levels=campaignLearnset(entry.id);
  const ids=levels.map(x=>x.id);
  assert.equal(new Set(ids).size,ids.length,'One renderer per installed move '+entry.id);
- assert.ok(ids.every(id=>TEST_LIBRARY.some(x=>x.id===id)),
-  'The Pokédex cannot invent an unavailable VFX: '+entry.id);
+ // A separate campaign TRAINING option reuses an installed renderer but has
+ // its own ID, so it must be verified through the actual unlocked move pool,
+ // not treated as a newly introduced VFX catalog entry.
+ assert.ok(levels.every(move=>move.practice?
+  availableMoves(member(entry.id,move.level)).some(x=>x.id===move.id&&
+   x.torre2IntroPractice&&x.forma&&x.torre2IntroSlot===move.slot):
+  TEST_LIBRARY.some(x=>x.id===move.id)),
+  'Pokédex must use an installed VFX or legitimate practice adapter: '+entry.id);
  const atMax=availableMoves(member(entry.id,100)).map(x=>x.id).sort();
  const learned=levels.filter(x=>x.method==='LEVEL').map(x=>x.id).sort();
  assert.deepEqual(learned,atMax,'Pokédex must exactly match combat unlocks '+entry.id);
