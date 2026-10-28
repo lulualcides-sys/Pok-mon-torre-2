@@ -940,7 +940,7 @@ create(){
     console.warn('Torre 2: Potion not saved',error);
     this.bagScreen(state,'ITEM NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
    }
-  },true);
+  },true).setData('torre2-bag-use','potion');
   this.button(340,231,170,37,'SUPER +60 HP',()=>{
    try{
     const result=usePotion(state,'superpotion',target);
@@ -950,7 +950,7 @@ create(){
     console.warn('Torre 2: Super Potion not saved',error);
     this.bagScreen(state,'ITEM NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
    }
-  },true);
+  },true).setData('torre2-bag-use','superpotion');
   this.button(517,231,166,37,'SUMÁRIO',()=>this.showSummary(state,target));
   const tms=inv.tms||[];
   const pages=Math.max(1,Math.ceil(tms.length/3));
@@ -978,7 +978,7 @@ create(){
      console.warn('Torre 2: TM teaching not saved',error);
      this.bagScreen(state,'TM NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
     }
-   },compatible);
+   },compatible).setData('torre2-bag-teach-tm',id);
    drawShopItem(this.add.graphics().setDepth(6),76+i*181,303,item,.65);
   });
   if(errorText||state.lastMessage){
