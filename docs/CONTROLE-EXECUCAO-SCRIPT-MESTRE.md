@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §5/§6/§18/§31/§33/§36/§37 — T03/T05: PC após evolução por XP genuíno (28/10/2026)
+
+- [PR #213](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/213) adiciona prova de persistência em Chromium/Phaser: Caterpie capturado em encontro selecionado por RNG de espécie, duas evoluções por XP de partidas reais até Butterfree, depósito no PC pelo núcleo, reload sem reescrita, retirada, segundo reload e renderização PMD da espécie evoluída em batalha. **Não houve injeção de XP, dano, K.O. ou vitória**; PC via API, não interface tocada.
+- [CI da revisão inicial #40748264268](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40748264268) **sucesso** com unitários, `check`, `check:reuse`, build e regressão oficial Chromium. Branch será revalidada após incorporação do HEAD `133bd557` da main; CI/merge/Pages dessa revisão **ainda pendentes neste registro**.
+- **T03/T05 e §§5/6/18/31/33/36/37 permanecem PARCIAIS**: faltam PC por toque em percurso natural, campanha completa, dispositivo Android físico e homologação integral. Nenhuma alteração em golpes, VFX, sprites, cooldowns ou saves aprovados.
+
+
 
 ## Continuação 28/10/2026 — reset T05 integrado, T20 Liga em reteste, T03 PC em prova
 

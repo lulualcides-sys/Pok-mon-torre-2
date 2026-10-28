@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 28/10/2026 — T03/T05: Butterfree por XP real, depósito no PC e dois reloads (PR #213)
+
+- **Prova em branch isolada:** [PR #213](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/213) estende o teste Phaser/WebGL já existente: compra de Pokébolas, captura de Caterpie, evoluções Caterpie→Metapod→Butterfree por XP de vitórias genuínas, depósito no PC, reload idempotente, retirada, segundo reload e sprite PMD correto na próxima batalha. O PC é exercitado pela API persistente da campanha, **não por toque nos botões do PC**.
+- **CI inicial:** [#40748264268](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40748264268) **SUCESSO**: sintaxe, `npm test`, `check`, `check:reuse`, build Phaser/WebGL, percurso de XP/captura/PC em Chromium e regressão oficial de navegador. Após incorporar o HEAD `133bd557` (T05 + documentação concorrente), **nova CI obrigatória**, ainda não confirmada neste registro. **Não afirmar merge nem Pages** antes de novo gate e HTTP.
+- **Limites:** seleção de espécie selvagem usa RNG dirigido apenas para encontro; sorte da captura, dano, K.O., XP, vitórias e evolução são do motor real. Não é Pallet→Campeão integral nem Android físico. Runtime, VFX, sprites, cooldowns e saves de usuários não alterados. **T03 e T05 PARCIAIS**.
+
+
 
 ## Continuação 28/10/2026 — reset T05 integrado, T20 Liga em reteste, T03 PC em prova
 
