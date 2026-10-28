@@ -99,7 +99,7 @@ test('Campaign AUTO refreshes original AI once per Pokémon species after native
  assert.equal(second.mx,2);
  assert.equal(second.from,'pikachu');
  assert.equal(second.mega,false);
- assert.equal(state.autoSpecies,'pikachu');
+ assert.equal(state.autoSpecies,'pikachu:0');
  assert.equal(constructions,2,'Exactly one new native IA for Pikachu');
  control.leer(.016);control.leer(.016);
  assert.equal(constructions,2,'Do not recreate IA on every frame');
@@ -116,6 +116,26 @@ test('Campaign AUTO refreshes original AI once per Pokémon species after native
  s.handlers.get('shutdown')();
 });
 
+test('Campaign AUTO also refreshes when evolution stage changes within one base family',()=>{
+ const s=scene({torre2:{kind:'trainer'}}),control=s.controles[0];
+ control.l.def={id:'squirtle'};control.l.etapa=0;
+ let created=0;
+ const state=installAutoBattle(s,actor=>{
+  const stage=actor.etapa;created++;
+  return {leer:()=>({mx:stage,my:0,lmb:true})};
+ });
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(control.leer(.016).mx,0);
+ assert.equal(state.autoSpecies,'squirtle:0');
+ control.l.etapa=1; // Wartortle: ROSTER def.id remains Squirtle.
+ assert.equal(control.leer(.016).mx,1);
+ assert.equal(created,2,'Wartortle must get a NEW native AI');
+ assert.equal(state.autoSpecies,'squirtle:1');
+ control.leer(.016);
+ assert.equal(created,2,'No new IA each frame');
+ s.handlers.get('shutdown')();
+});
+
 test('Original Arena AUTO does not recreate its controller when species changes',()=>{
  const s=scene({modo:'arena'}),control=s.controles[0];
  control.l.def={id:'ivysaur'};
@@ -126,7 +146,7 @@ test('Original Arena AUTO does not recreate its controller when species changes'
  control.leer(.016);
  control.l.def={id:'pikachu'};
  control.leer(.016);
- assert.equal(state.autoSpecies,'ivysaur','Keep existing Arena IA untouched');
+ assert.equal(state.autoSpecies,'ivysaur:0','Keep existing Arena IA untouched');
  s.handlers.get('shutdown')();
 });
 
