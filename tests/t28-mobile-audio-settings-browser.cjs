@@ -69,7 +69,7 @@ const server=http.createServer(async(req,res)=>{
   const initial=await ui();
   assert.equal(initial.panels,0);
   assert.equal(initial.buttons,1);
-  assert.equal(initial.volume,.7,'Default master volume must apply to native Phaser');
+  assert.ok(Math.abs(initial.volume-.7)<1e-5,'Default master volume must apply to native Phaser');
   await touch(203,335);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
    .__torre2AudioSettings?.active,null,{timeout:10000});
@@ -82,7 +82,7 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(changed.prefs.master,.6);
   assert.equal(changed.prefs.effects,.7);
   assert.equal(changed.prefs.music,.4);
-  assert.equal(changed.volume,.6);
+  assert.ok(Math.abs(changed.volume-.6)<1e-5,'Phaser volume should be 60%');
   await touch(200,282); // mute
   const muted=await ui();
   assert.equal(muted.prefs.muted,true);
@@ -104,7 +104,7 @@ const server=http.createServer(async(req,res)=>{
    .__torre2AudioSettings?.button?.input?.enabled,null,{timeout:60000});
   const reload=await ui();
   assert.deepEqual(reload.prefs,expected,'Sound preferences lost after actual page reload');
-  assert.equal(reload.volume,.6);
+  assert.ok(Math.abs(reload.volume-.6)<1e-5,'Phaser volume should persist after reload');
   assert.equal(reload.mute,false);
   assert.equal(reload.buttons,1,'Audio menu duplicated on reload');
   // Re-enter Kanto map and verify sound controls don't leak scene objects.
