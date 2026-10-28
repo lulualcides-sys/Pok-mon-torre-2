@@ -98,9 +98,12 @@ const server=http.createServer(async(req,res)=>{
   for(let round=0;round<5;round++){
    checkpoint='route menu for Cerulean fight '+(round+1);
    const foe=await page.evaluate(()=>window.t19Core.currentOpponent(window.t19Core.readCampaign()));
-   assert.equal(foe.id,['zubat','geodude','paras','clefairy','sandshrew'][round],
-    'Cerulean early route opponent mismatch');
-   assert.equal(foe.kind,'trainer');
+   // Route slot 3 is the real Rival battle, not the fourth generic trainer.
+   // Squirtle starter faces Bulbasaur per the campaign's native rival table.
+   assert.equal(foe.id,['zubat','geodude','paras','bulbasaur','sandshrew'][round],
+    'Cerulean real route opponent mismatch');
+   assert.equal(foe.kind,round===3?'rival':'trainer',
+    'Cerulean route role mismatch');
    const record={fight:round+1,foe:foe.id,level:foe.level,before};
    report.fights.push(record);
    checkpoint='starting native fight '+(round+1);
