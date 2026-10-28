@@ -133,6 +133,25 @@ assert.equal(frlgUnlockLevel('ponyta','fire-blast'),53);
 assert.equal(moveUnlockLevel(ponyta,'fire-blast'),50);
 assert.ok(availableMoves(ponyta).some(m=>m.id==='fire-blast'),
  'Campaign final Fire Blast unlock must happen by Lv50');
+// The failing Pages hard gate: after Metapod evolves into Butterfree at
+// Lv10, all four inherited Caterpie/Metapod moves must be normalized to
+// the new species, while a choice made AFTER that evolution is respected.
+const evolved=make('butterfree',10);
+const evolvedDefaults=selectedMoves(evolved);
+const stale={...make('butterfree',10),
+ moves:['tackle','gust','bite','quick-attack'],movePlanSpecies:'metapod'};
+assert.deepEqual(selectedMoves(stale),evolvedDefaults,
+ 'Butterfree must not retain Caterpie/Metapod equipped IDs after evolving');
+const newlySelected={...make('butterfree',10),movePlanSpecies:'butterfree',
+ moves:[...evolvedDefaults]};
+assert.deepEqual(selectedMoves(newlySelected),evolvedDefaults,
+ 'Correct-species equipped choices must survive read/reload');
+const legitimate=availableMoves(newlySelected).find(m=>m.torre2IntroSlot==='rmb');
+assert.ok(legitimate,'Butterfree must have a real usable Lv10 HAB2');
+assert.equal(equipMove(newlySelected,1,legitimate.id),true,
+ 'Player can equip its own Butterfree practice move after evolution');
+assert.equal(resolveLoadout(newlySelected).rmb?.id,legitimate.id,
+ 'Re-entering battle must honor a same-species equipped practice move');
 const charmander=make('charmander',5);
 assert.ok(!availableMoves(charmander).some(m=>m.id==='flamethrower'));
 assert.ok(!resolveLoadout(charmander).rmb?.nombre.startsWith('Metal Claw'),
