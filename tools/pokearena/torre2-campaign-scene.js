@@ -533,7 +533,8 @@ create(){
     .setInteractive({useHandCursor:true})
     .setData('torre2-reset-confirm',confirm);
    zone.on('pointerdown',()=>{
-    if(!confirm){close();return;}
+    if(!confirm)close(); // Cancel closes only the dialog; save stays intact.
+    if(!confirm)return;
     try{resetCampaign();}
     catch(error){
      // Never leave a broken confirmation flow or hide a denied deletion.
