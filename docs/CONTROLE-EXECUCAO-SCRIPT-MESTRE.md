@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §15/§29/§33/§36/§37 — T04: dois K.O.s reais e sequência de recalls (28/10/2026)
+
+- **PR #160 integrada**: https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/160, commit `94e17288d0346d05f3dcc4c5621281d674724090`. Dois K.O.s por golpes originais da CPU e entrada automática de Charmander/Squirtle, sem chamar K.O., injetar dano ou alterar runtime/sprites/golpes.
+- **CI/Pages verificados**: [#40697694254](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40697694254), [main #40698068212](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698068212), [Pages #40698117653](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698117653) — todos **sucesso**.
+- **Limites exatos**: HP, terceiro Pokémon e índice de treinador são fixtures; o teste também contém distância controlada e teto de regeneração para permitir contato nativo. Não comprova campanha natural nem todas as colisões; **T04 PARCIAL**. Não refazer a cobertura validada: avançar para fluxo natural, múltiplos efeitos e regressão de save após derrotas.
+
+
 ## §15/§29/§33/§36/§37 — T04: K.O. nativo e próxima criatura (28/10/2026)
 
 - **Integração:** PR [#157](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/157), commit `da2d07a6e97dfc9cff2847d8445675c47e2d4c4d`. Novo teste observou o motor Phaser/WebGL derrubar o Pokémon do usuário por ataque real da CPU e recolher o lutador, trocando para Charmander com sprite de espécie correto, sem manter efeitos ou hit timers antigos. Não forçou K.O./dano/vitória/derrota nem chamou método artificial de resultado.
