@@ -267,8 +267,11 @@ export function saveCampaign(state,storage=localStorage){
  storage.setItem(SAVE_KEY,serialized);
  return state;
 }
+// Reset must remove the backup FIRST. If backup removal is denied, keep the
+// primary untouched; otherwise a later read could resurrect an old checkpoint
+// after the primary had already been deleted. Never silently swallow errors.
 export function resetCampaign(storage=localStorage){
- storage.removeItem(SAVE_KEY);storage.removeItem(SAVE_BACKUP_KEY);
+ storage.removeItem(SAVE_BACKUP_KEY);storage.removeItem(SAVE_KEY);
 }
 // Pokédex data describes encounters/captures, not which sprites are playable.
 export function recordSeen(s,id){
