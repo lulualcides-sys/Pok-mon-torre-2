@@ -29,9 +29,9 @@ const server=http.createServer(async(req,res)=>{
   });
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:20000});
   const checks=[];
-  for(const {level,stage,move,slot} of [
-   {level:21,stage:3,move:'Flame Charge',slot:'rmb'},
-   {level:49,stage:7,move:'Flare Blitz',slot:'q'}
+  for(const {level,stage,move} of [
+   {level:21,stage:3,move:'Flame Charge'},
+   {level:49,stage:7,move:'Flare Blitz'}
   ]){
    await page.evaluate(({level,stage})=>{
     const state=window.__core.createCampaign('charmander');
@@ -48,16 +48,17 @@ const server=http.createServer(async(req,res)=>{
     const g=window.__pt2Game,s=g.scene.getScene('combate');
     return g.scene.isActive('combate')&&s.__torre2PartyInstalled&&s.fase==='lucha'&&s.panelTactil;
    },null,{timeout:30000});
-   const before=await page.evaluate(slot=>{
+   const before=await page.evaluate(name=>{
     const s=window.__pt2Game.scene.getScene('combate'),a=s.luchadores[0];
+    const slot=['lmb','rmb','q','e'].find(k=>a.kit[k]?.nombre===name);
     const entry=a.kit[slot];
     a.inmortal=true;s.luchadores[1].inmortal=true;
     s.controles[1].leer=()=>({mx:0,my:0,ax:a.x,ay:a.y});
     a.energia=100;a.ulti=100;a.cd[slot]=0;a.accion=null;a.animAccion=null;a.dash=null;
     a.est={};a.dolorHasta=-1;a.ko=false;
     return {name:entry?.nombre,forma:entry?.forma,locked:entry?.pendiente===true,
-     uses:a.stats.usosSlot?.[slot]||0,level:s.datos.torre2.playerLevel};
-   },slot);
+     slot,uses:a.stats.usosSlot?.[slot]||0,level:s.datos.torre2.playerLevel};
+   },move);
    assert.equal(before.name,move,'Campaign not equipping native move at '+level);
    assert.ok(before.forma,'Missing native VFX for '+move);
    assert.equal(before.locked,false);
@@ -69,13 +70,13 @@ const server=http.createServer(async(req,res)=>{
     const at=p.pos(b),zero=p.punto({x:0,y:0}),one=p.punto({x:1,y:1});
     p.abajo({id:71,x:(at.x-zero.x)/(one.x-zero.x),y:(at.y-zero.y)/(one.y-zero.y)});
     p.leer(x=>({ax:x.x,ay:x.y}));
-   },slot);
+   },before.slot);
    await page.waitForTimeout(430);
    const after=await page.evaluate(slot=>{
     const s=window.__pt2Game.scene.getScene('combate');
     s.panelTactil.arriba({id:71});
     return s.luchadores[0].stats.usosSlot?.[slot]||0;
-   },slot);
+   },before.slot);
    assert.ok(after>before.uses,move+' did not fire via real touch input');
    checks.push({species:'ponyta',level,move,renderer:before.forma,touchCast:true});
    await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
