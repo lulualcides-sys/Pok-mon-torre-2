@@ -218,7 +218,8 @@ await Promise.all([
  ['tools/pokearena/torre2-auto-battle.js','auto-battle.js'],
  ['tools/pokearena/torre2-audio-settings.js','audio-settings.js'],
  ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js'],
- ['tools/pokearena/torre2-gen7-letsgo-learnsets.js','gen7-letsgo-learnsets.js']
+ ['tools/pokearena/torre2-gen7-letsgo-learnsets.js','gen7-letsgo-learnsets.js'],
+ ['tools/pokearena/torre2-gen5-existing-levels.js','gen5-existing-levels.js']
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
