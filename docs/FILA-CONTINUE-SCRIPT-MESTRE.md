@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T04 — dois K.O.s da CPU + terceira entrada, regressão publicada (28/10/2026)
+
+- **PR #160 integrada**: https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/160, commit `94e17288d0346d05f3dcc4c5621281d674724090`. Dois K.O.s por golpes nativos da CPU, recalls automáticos em sequência, Bulbasaur → Charmander → Squirtle, sprites corretos e sem impactos/filas residuais; somente teste/pipeline.
+- **Evidência**: [CI de branch #40697694254](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40697694254), [regressão geral main #40698068212](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698068212) e [Pages #40698117653](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698117653): **sucesso**.
+- **Precisão da prova**: usa Pokémon com HP inicial baixo, treinador Rattata no índice 1, limite de regeneração passiva e proximidade em fixture de navegador. Não injeta hits, K.O. ou resultados, mas **não é percurso inteiramente natural**; T04 permanece **PARCIAL**. Próximo: reproduzir e provar a transição sem fixtures de posição/regeneração, além de multi-hits e saves longos.
+
+
 ## T04 — K.O. real da CPU e recolhimento com próximo Pokémon (28/10/2026, validado e publicado)
 
 - **PR #157 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/157, commit `da2d07a6e97dfc9cff2847d8445675c47e2d4c4d`. Foram adicionados apenas `tests/t04-natural-faint-party-browser.cjs` e `.github/workflows/master-t04-natural-faint.yml`; **nenhum sistema de batalha, sprite ou save do usuário foi modificado**.
