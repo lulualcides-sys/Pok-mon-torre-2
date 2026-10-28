@@ -5,6 +5,21 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright-core');
+// A hung native Chromium/WebGL test must produce diagnostics instead of
+// occupying Actions until its 40-minute job limit. No result manipulation.
+const startedAt=Date.now();
+let checkpoint='init', lastBattle=null;
+const heartbeat=setInterval(()=>console.log('T19 HEARTBEAT',JSON.stringify({
+ checkpoint,elapsedMs:Date.now()-startedAt,lastBattle
+})),20000);heartbeat.unref();
+const watchdog=setTimeout(()=>{
+ const data={checkpoint,elapsedMs:Date.now()-startedAt,lastBattle,
+  explanation:'Native battle/Chromium did not complete within 11 minutes; no victory asserted'};
+ try{fs.mkdirSync('test-evidence',{recursive:true});
+  fs.writeFileSync('test-evidence/t19-runner-watchdog.json',JSON.stringify(data,null,2));}catch{}
+ console.error('T19 WATCHDOG FAILED',JSON.stringify(data));
+ process.exit(124); // never pass an incomplete combat test
+},11*60*1000);watchdog.unref();
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const mime={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg',
@@ -30,6 +45,7 @@ const server=http.createServer(async(req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+  checkpoint='page navigation';
   await page.goto('http://127.0.0.1:4481/arena2d/?original=1',
    {waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
@@ -79,12 +95,14 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(before.team[0].level,20);
   assert.equal(before.box.length,1);
   for(let round=0;round<2;round++){
+   checkpoint='route menu for Cerulean fight '+(round+1);
    const foe=await page.evaluate(()=>window.t19Core.currentOpponent(window.t19Core.readCampaign()));
    assert.equal(foe.id,['zubat','geodude'][round],
     'Cerulean early route opponent mismatch');
    assert.equal(foe.kind,'trainer');
    const record={fight:round+1,foe:foe.id,level:foe.level,before};
    report.fights.push(record);
+   checkpoint='starting native fight '+(round+1);
    await clickData('torre2-central-cta',true);
    await page.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
@@ -104,12 +122,15 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(start.p1,'wartortle');assert.equal(start.p2,foe.id);
    assert.equal(start.playerLevel,before.team[0].level);
    assert.equal(start.enabled,false,'AUTO must reset between fights');
+   checkpoint='enabling AUTO '+(round+1);
    await page.mouse.click(start.button.x,start.button.y);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled,
     null,{timeout:8000});
    record.open=start;delete record.open.button;
    await page.screenshot({path:'test-evidence/t19-cerulean-fight-'+(round+1)+'-started.png'});
    try{
+    checkpoint='live native combat '+(round+1);
+    console.log('T19 NATIVE FIGHT START',JSON.stringify({round:round+1,foe:foe.id,player:'wartortle',level:start.playerLevel,enemyLevel:start.enemyLevel}));
     await page.waitForFunction(expected=>{
      const s=window.t19Core.readCampaign();
      return window.__pt2Game.scene.isActive('campanha')&&s?.wins===expected;
@@ -128,7 +149,8 @@ const server=http.createServer(async(req,res)=>{
     throw Error('T19 NATURAL FIGHT FAILED '+JSON.stringify(record));
    }
    const after=await game();
-   record.after=after;
+   checkpoint='battle result '+(round+1);
+   record.after=after;lastBattle={round:round+1,enemy:foe.id,wins:after.wins,losses:after.losses};
    assert.equal(after.stage,1,'Premature gym progression');
    assert.equal(after.trainer,before.trainer+1);
    assert.equal(after.wins,before.wins+1);
@@ -162,5 +184,6 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(report.fights.length,2);
   assert.deepEqual(errors,[],'Native Phaser errors in consecutive Cerulean fights');
   console.log('T19 TWO NATIVE CERULEAN FIGHTS PASS: real AUTO combat, XP, money and saves');
+  checkpoint='both real fights proved';
  }finally{await page.close();await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
