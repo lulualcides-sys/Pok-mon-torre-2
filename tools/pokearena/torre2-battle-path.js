@@ -1,4 +1,5 @@
 import {rematchOpponent} from './campaign-core.js';
+import {installCampaignAudioSettings,playOriginalMenuCue} from './audio-settings.js';
 /* Pokémon Torre 2 — Kanto Battle Path hub, replaces the cluttered city map.
  * Phaser/WebGL native scene objects only. No pasted mockup, HTML overlay,
  * CSS-made combat or changes to the approved Poké Arena 2D move runtime.
@@ -49,7 +50,7 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
   .setInteractive({useHandCursor:true}).setData('torre2-path-action',title);
  zone.on('pointerover',()=>{hover=true;paint()});
  zone.on('pointerout',()=>{hover=false;paint()});
- zone.on('pointerdown',()=>{if(enabled)action()});
+ zone.on('pointerdown',()=>{if(enabled){playOriginalMenuCue(scene);action()}});
  paint();return zone;
 }
 function connector(g,ax,ay,bx,by,lit){
@@ -345,6 +346,8 @@ export function renderBattlePath(scene,state,handlers){
  cta.setData('torre2-central-cta',true);
  button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
   .setData('torre2-reset-journey',true);
+ // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
+ installCampaignAudioSettings(scene);
  scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
    stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
