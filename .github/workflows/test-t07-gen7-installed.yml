@@ -1,0 +1,53 @@
+name: T07/T08 — Kanto Gen7 installed-only learnsets
+on:
+  push:
+    branches: [feat/t07-gen7-existing-learnsets-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gen7:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sintaxe, proveniencia, 151 especies e unidade
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          for source in tools/pokearena/torre2-*.js; do node --check "$source"; done
+          node --test tests/gen7-letsgo-learnsets.test.js
+          npm test
+      - name: Captura autorizada e build Phaser/WebGL
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+               && node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" = 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+          node tools/pokearena/audit-moves.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/gen7-installed-built.test.mjs
+      - name: Regressao de navegador Chromium real
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Salvar evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t07-kanto-gen7-installed-evidencias
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14
