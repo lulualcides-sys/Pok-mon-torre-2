@@ -684,6 +684,18 @@ export function purchaseItem(s,itemId){
  Object.assign(s,changes);
  return {ok:true,item};
 }
+// Commit the item, target Pokémon and message as ONE campaign checkpoint.
+ // A denied primary/backup write must not consume medicine, teach a TM or
+ // change live HP/status. Preserve the existing party/inventory references.
+function commitBagUse(s,memberIndex,memberPatch,inventoryPatch,message){
+ const member=s.team[memberIndex];
+ const nextTeam=s.team.map((entry,i)=>i===memberIndex?{...member,...memberPatch}:entry);
+ const nextInventory={...s.inventory,...inventoryPatch};
+ saveCampaign({...s,team:nextTeam,inventory:nextInventory,lastMessage:message});
+ Object.assign(member,memberPatch);
+ Object.assign(s.inventory,inventoryPatch);
+ s.lastMessage=message;
+}
 export function usePotion(s,itemId='potion',memberIndex=s.active){
  const item=MART_ITEMS.find(x=>x.id===itemId&&x.kind==='heal');
  if(!item||!Number.isInteger(s.inventory?.[itemId])||s.inventory[itemId]<=0)
@@ -697,10 +709,10 @@ export function usePotion(s,itemId='potion',memberIndex=s.active){
  // restore all Pokémon and clear major/volatile conditions for free.
  if(member.hp<=0)return {ok:false,reason:'Pokémon desmaiado: use o Centro Pokémon.'};
  if(member.hp>=100)return {ok:false,reason:'Pokémon já está saudável.'};
- s.inventory[itemId]--;
- member.hp=Math.min(100,member.hp+item.heal);
- s.lastMessage=member.id+' recuperou HP.';
- saveCampaign(s);return {ok:true,hp:member.hp};
+ const hp=Math.min(100,member.hp+item.heal);
+ commitBagUse(s,memberIndex,{hp},{[itemId]:s.inventory[itemId]-1},
+  member.id+' recuperou HP.');
+ return {ok:true,hp};
 }
 // Map bag medicine: no HP change, revival or effect on another party member.
 export function useStatusCure(s,itemId,memberIndex=s.active){
@@ -712,11 +724,12 @@ export function useStatusCure(s,itemId,memberIndex=s.active){
  const cureMain=item.cures.includes(member.status?.kind);
  const cureConfusion=item.cureConfusion&&!!member.confusion;
  if(!cureMain&&!cureConfusion)return {ok:false,reason:'Esse remédio não terá efeito.'};
- s.inventory[itemId]--;
- if(cureMain)member.status=null;
- if(cureConfusion)member.confusion=null;
- s.lastMessage=item.name+' curou '+member.id.toUpperCase()+'.';
- saveCampaign(s);return {ok:true};
+ const patch={};
+ if(cureMain)patch.status=null;
+ if(cureConfusion)patch.confusion=null;
+ commitBagUse(s,memberIndex,patch,{[itemId]:s.inventory[itemId]-1},
+  item.name+' curou '+member.id.toUpperCase()+'.');
+ return {ok:true};
 }
 export function teachTM(s,itemId,memberIndex=s.active){
  const item=MART_ITEMS.find(x=>x.id===itemId&&x.kind==='tm');
@@ -726,12 +739,12 @@ export function teachTM(s,itemId,memberIndex=s.active){
  if(Array.isArray(item.compatible)&&
    !item.compatible.includes(target.id))
   return {ok:false,reason:target.id+' não é compatível com '+item.name+'.'};
- target.tmMoves??=[];
- if(target.tmMoves.includes(item.move))return {ok:false,reason:'Golpe já aprendido.'};
- target.tmMoves.push(item.move);
- s.inventory.tms.splice(s.inventory.tms.indexOf(itemId),1);
- s.lastMessage=target.id+' aprendeu '+item.move+'. Configure no sumário.';
- saveCampaign(s);return {ok:true,move:item.move};
+ if(target.tmMoves?.includes(item.move))return {ok:false,reason:'Golpe já aprendido.'};
+ const tms=[...s.inventory.tms];
+ tms.splice(tms.indexOf(itemId),1);
+ commitBagUse(s,memberIndex,{tmMoves:[...(target.tmMoves||[]),item.move]},
+  {tms},target.id+' aprendeu '+item.move+'. Configure no sumário.');
+ return {ok:true,move:item.move};
 }
 
 export function rematchOpponent(s,index){

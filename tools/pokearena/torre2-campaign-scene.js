@@ -901,7 +901,7 @@ create(){
    wordWrap:{width:560}}).setOrigin(.5);
   if(errorText)notice.setData('torre2-mart-save-error',true);
  }
- bagScreen(state){
+ bagScreen(state,errorText=''){
   this.children.removeAll(true);this.backdrop();
   text(this,320,27,'BOLSA · POKÉDÓLARES '+state.money,{
    ...titleStyle,fontSize:'20px'}).setOrigin(.5);
@@ -932,15 +932,25 @@ create(){
   });
   this.button(320,198,210,24,'REMÉDIOS DE STATUS',()=>this.statusMedicineScreen(state,target)).setData('torre2-status-medicine-open',true);
   this.button(157,231,170,37,'POÇÃO +25 HP',()=>{
-   const result=usePotion(state,'potion',target);
-   if(!result.ok)state.lastMessage=result.reason;
-   this.bagScreen(state);
-  },true);
+   try{
+    const result=usePotion(state,'potion',target);
+    if(!result.ok)state.lastMessage=result.reason;
+    this.bagScreen(state);
+   }catch(error){
+    console.warn('Torre 2: Potion not saved',error);
+    this.bagScreen(state,'ITEM NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
+   }
+  },true).setData('torre2-bag-use','potion');
   this.button(340,231,170,37,'SUPER +60 HP',()=>{
-   const result=usePotion(state,'superpotion',target);
-   if(!result.ok)state.lastMessage=result.reason;
-   this.bagScreen(state);
-  },true);
+   try{
+    const result=usePotion(state,'superpotion',target);
+    if(!result.ok)state.lastMessage=result.reason;
+    this.bagScreen(state);
+   }catch(error){
+    console.warn('Torre 2: Super Potion not saved',error);
+    this.bagScreen(state,'ITEM NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
+   }
+  },true).setData('torre2-bag-use','superpotion');
   this.button(517,231,166,37,'SUMÁRIO',()=>this.showSummary(state,target));
   const tms=inv.tms||[];
   const pages=Math.max(1,Math.ceil(tms.length/3));
@@ -960,17 +970,26 @@ create(){
     item.compatible.includes(state.team[target].id);
    this.button(144+i*181,302,173,27,
     compatible?item.name:'INCOMP. '+item.name.slice(0,12),()=>{
-    const result=teachTM(state,id,target);
-    if(!result.ok)state.lastMessage=result.reason;
-    this.bagScreen(state);
-   },compatible);
+    try{
+     const result=teachTM(state,id,target);
+     if(!result.ok)state.lastMessage=result.reason;
+     this.bagScreen(state);
+    }catch(error){
+     console.warn('Torre 2: TM teaching not saved',error);
+     this.bagScreen(state,'TM NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
+    }
+   },compatible).setData('torre2-bag-teach-tm',id);
    drawShopItem(this.add.graphics().setDepth(6),76+i*181,303,item,.65);
   });
-  if(state.lastMessage)text(this,320,324,state.lastMessage.slice(0,90),{
-   fontSize:'9px',color:C.gold}).setOrigin(.5);
+  if(errorText||state.lastMessage){
+   const notice=text(this,320,324,(errorText||state.lastMessage).slice(0,100),{
+    fontSize:'9px',color:errorText?'#ff9d9d':C.gold,
+    wordWrap:{width:585}}).setOrigin(.5);
+   if(errorText)notice.setData('torre2-bag-save-error',true);
+  }
   this.button(320,343,220,23,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
- statusMedicineScreen(state,target){
+ statusMedicineScreen(state,target,errorText=''){
   this.children.removeAll(true);this.backdrop();
   const member=state.team[target];
   text(this,320,25,'REMÉDIOS DE STATUS',{...titleStyle,fontSize:'20px'}).setOrigin(.5);
@@ -979,13 +998,22 @@ create(){
   MART_ITEMS.filter(i=>i.kind==='status').forEach((item,i)=>{
    const x=167+(i%2)*306,y=105+Math.floor(i/2)*65;
    this.button(x,y,275,38,item.name+' ×'+(state.inventory[item.id]||0),()=>{
-    const result=useStatusCure(state,item.id,target);
-    if(!result.ok)state.lastMessage=result.reason;
-    this.statusMedicineScreen(state,target);
+    try{
+     const result=useStatusCure(state,item.id,target);
+     if(!result.ok)state.lastMessage=result.reason;
+     this.statusMedicineScreen(state,target);
+    }catch(error){
+     console.warn('Torre 2: Status medicine not saved',error);
+     this.statusMedicineScreen(state,target,
+      'REMÉDIO NÃO SALVO · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
+    }
    }).setData('torre2-status-medicine',item.id);
    text(this,x,y+25,item.cureConfusion?'Cura todos os status e confusão':'Cura '+statusLabel({est:{[item.cures[0]]:true}}),{fontSize:'10px',color:C.muted}).setOrigin(.5);
   });
-  text(this,320,285,state.lastMessage||'Selecione o remédio para este Pokémon.',{fontSize:'10px',color:C.gold,wordWrap:{width:570}}).setOrigin(.5);
+  const notice=text(this,320,285,errorText||state.lastMessage||
+   'Selecione o remédio para este Pokémon.',{
+   fontSize:'10px',color:errorText?'#ff9d9d':C.gold,wordWrap:{width:570}}).setOrigin(.5);
+  if(errorText)notice.setData('torre2-status-save-error',true);
   this.button(175,330,260,32,'◀ VOLTAR À BOLSA',()=>this.bagScreen(state)).setData('torre2-status-medicine-back',true);
   this.button(465,330,260,32,'POKÉ MART',()=>this.martScreen(state));
  }
