@@ -499,6 +499,21 @@ export function defaultLoadout(member){
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
+ const level=member.progression?.level??5;
+ // Old saved slots can contain an originally equipped high-power move whose
+ // real unlock gate was unavailable at Lv5. Render the SAME safe 3 moves
+ // shown in the campaign menu without erasing the player's saved loadout.
+ // From Lv9, preserve any legitimately earned HAB moves manually equipped.
+ if(member.id!=='mewtwo'&&level>=5&&level<KANTO_INTRO.tutorialUntil){
+  const defaults=defaultLoadout(member);
+  return defaults.map((fallback,i)=>{
+   const id=member.moves?.[i],move=available.find(m=>m.id===id);
+   if(!move)return fallback;
+   if(move.torre2IntroSlot===SLOTS[i])return id;
+   if(i<3&&level>KANTO_INTRO.ultAt&&!move.torre2IntroPractice)return id;
+   return fallback;
+  });
+ }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  if(plan){
   const defaults=defaultLoadout(member);
@@ -539,6 +554,12 @@ export function equipMove(member,slot,moveId){
  const pool=availableMoves(member);
  const picked=pool.find(m=>m.id===moveId);
  if(!picked)return false;
+ const level=member.progression?.level??5;
+ // Early editor and combat must agree: full-power unlocked attacks become
+ // selectable after Lv8, while the early ULT stays power capped through 12.
+ if(member.id!=='mewtwo'&&level<=8&&!picked.torre2IntroPractice)return false;
+ if(member.id!=='mewtwo'&&level<KANTO_INTRO.tutorialUntil&&
+    slot===3&&!picked.torre2IntroPractice)return false;
  if(picked.torre2IntroSlot&&picked.torre2IntroSlot!==SLOTS[slot])return false;
  const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
