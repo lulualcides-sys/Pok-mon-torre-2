@@ -72,6 +72,7 @@ export function playOriginalMenuCue(scene,storage=globalThis.localStorage){
 const UI_FONT='Pixelify Sans,monospace';
 export function installCampaignAudioSettings(scene,storage=globalThis.localStorage){
  if(!scene?.add?.zone||!scene?.add?.graphics||!scene?.add?.text)return null;
+ scene.__torre2AudioSettings?.dispose?.();
  let prefs=applyAudioSettingsToGame(scene,readAudioSettings(storage));
  const g=scene.add.graphics().setDepth(76);
  const label=scene.add.text(203,335,'ÁUDIO',{fontFamily:UI_FONT,fontSize:'11px',
@@ -163,9 +164,12 @@ export function installCampaignAudioSettings(scene,storage=globalThis.localStora
  drawTab();
  const dispose=()=>{close();if(zone.active)zone.destroy();if(g.active)g.destroy();
   if(label.active)label.destroy();scene.events?.off('shutdown',dispose);
-  scene.events?.off('destroy',dispose)};
+  scene.events?.off('destroy',dispose);
+  if(scene.__torre2AudioSettings?.button===zone)scene.__torre2AudioSettings=null;};
  scene.events?.once('shutdown',dispose);
  scene.events?.once('destroy',dispose);
- return {open,close,get settings(){return {...prefs}},get active(){return !!overlay},
+ const controller={open,close,get settings(){return {...prefs}},get active(){return !!overlay},
   button:zone,dispose};
+ scene.__torre2AudioSettings=controller;
+ return controller;
 }
