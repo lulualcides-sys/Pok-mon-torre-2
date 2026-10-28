@@ -1,0 +1,55 @@
+name: Master T16 — four original pixel-weather VFX
+on:
+  push:
+    branches: [feat/master-t16-weather-pixel-overlay-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  webgl-pixel-weather:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source syntax, budget and move integrity
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-weather-pixels.js
+          node --check tests/t16-native-weather-pixels-browser.cjs
+          node --test tests/t16-weather-pixels.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build authorized Phaser client with visual overlay
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+               && node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/index.html \
+               && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+      - name: Real mobile Chromium WebGL for sun, rain, sand and hail
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t16-native-weather-pixels-browser.cjs
+      - name: Official full Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t16-four-pixel-weather-layers
+          path: test-evidence/
+          if-no-files-found: warn
