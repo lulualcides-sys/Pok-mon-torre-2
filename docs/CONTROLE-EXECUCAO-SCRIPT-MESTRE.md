@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §20/§24/§31/§33/§34/§36/§37 — T19: três batalhas reais de Cerulean (28/10/2026)
+
+- [PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171): teste contínuo Zubat→Geodude→Paras (treinadores 0, 1 e 2), clique no AUTO nativo, CPU, dano, XP, ganhos e recompensas do motor Phaser. Execução focada no Chromium/WebGL [#40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) **sucesso no passo de três combates**; regressão oficial, merge e publicação ainda pendentes nessa nota.
+- **Não é caminhada natural desde Pallet:** estágio Cerulean, Rocha, 14 vitórias e Wartortle Lv20 são fixture preparados antes das três partidas. Não houve injeção de dano, K.O., vitória ou XP durante os combates. T19 **PARCIAL**, os checkpoints restantes até Misty/Giovanni e a campanha ao Campeão continuam pendentes.
+
+
 ## §2/§3/§31/§33/§36/§37 — T06: sorte real, fuga e captura em Phaser (28/10/2026)
 
 - [PR #167](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/167) / `378fc614`: 151 taxas FRLG e 12 mil sorteios com distribuição real; [CI #40702165961](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702165961) e [main #40702241224](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702241224) **sucesso**.
