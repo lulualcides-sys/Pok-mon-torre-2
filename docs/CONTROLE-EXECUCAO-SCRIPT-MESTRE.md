@@ -196,3 +196,10 @@
 
 - [Pages #40607987285](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40607987285) **concluído com sucesso**, head `7eb2112f8c84d84af46cb4489a4758881606db61`, contendo a PR #64; [CI main #40607960008](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40607960008) **sucesso**. PR #66 foi apenas documental e não modifica o build.
 - **Não houve conferência visual direta** no site externo nesta execução porque as tentativas de acesso a `/arena2d/` e `/arena2d/version.json` falharam pela ferramenta disponível. Não declarar T03 validada em todas as modalidades; manter **PARCIAL**.
+
+
+## §5/§6 — Kanto Slowbro e 69 evoluções lineares no build (28/10/2026 UTC)
+
+- [PR #68](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/68), merge `4b02d51614945cbf0d5b9d0207af90e6dbcf7877`: correção mínima em `torre2-campaign-core.js` para selecionar **Slowbro** após alcançar nível 37 com Slowpoke na campanha; antes, opção Slowking da tabela genérica impedia uma escolha e evolução automática em Kanto. Não alterar sprites/VFX/golpes/IA ou famílias externas.
+- [CI #40609591781](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40609591781) **aprovado**: 69 transições lineares distintas de Kanto em estado preparado com **nenhuma evolução após derrota**, espécie/nível corretos após o resolvedor de vitória, UID/nickname/TM, persistência e bloqueio de evolução repetida; 169 testes unitários existentes, política de fontes, build e 14 testes Chromium oficiais também aprovados. [Falha anterior #40609421151](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40609421151) diagnosticou a regressão Slowpoke Lv37.
+- As 69 provas foram feitas usando o **resolvedor em fixtures** do build Phaser; não são 69 combates e evoluções exibidos visualmente nem partidas naturais até o nível. **Eevee e seus três ramos** ficaram fora da matriz linear; evolução visual integral e percurso natural seguem sem evidência. §5/§6 e T03 permanecem **PARCIAIS** até testes por modalidade e saves reais. CI main/Pages do merge: verificar execução atual; não presumir sucesso de publicação.
