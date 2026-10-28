@@ -69,10 +69,28 @@ const persist=()=>fs.writeFileSync('test-evidence/t05-native-ko-reload.json',JSO
   assert.ok(fight.initialHp>0);
   report.events.push({seeded,fight});persist();
   // No attack input, forced KO, or direct result API call.
-  await page.waitForFunction(losses=>{
-   const s=window.__t05core.readCampaign();
-   return window.__pt2Game.scene.isActive('campanha')&&s.losses>losses;
-  },seeded.losses,{timeout:180000,polling:300});
+  try{
+   await page.waitForFunction(losses=>{
+    const s=window.__t05core.readCampaign();
+    return window.__pt2Game.scene.isActive('campanha')&&s.losses>losses;
+   },seeded.losses,{timeout:60000,polling:300});
+  }catch(e){
+   const diagnostic=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const s=window.__t05core.readCampaign();
+    return {fightActive:b.scene.isActive(),phase:b.fase,gameActive:c.scene.isActive(),
+     actor:b.luchadores?.map(x=>x&&({hp:x.hp,hpMax:x.hpMax,ko:x.ko,x:x.x,y:x.y,
+      vx:x.vx,vy:x.vy,side:x.lado,status:x.est})),
+     cpuEnabled:b.__torre2TrainerStrategy?.enabled,
+     playerIndex:b.datos?.torre2?.party?.playerIndex,
+     losses:s?.losses,wins:s?.wins,team:s?.team?.map(x=>({hp:x.hp,status:x.status}))};
+   });
+   report.events.push({diagnostic,error:String(e)});persist();
+   console.error('T05 NATIVE KO TIMEOUT DIAGNOSTIC',JSON.stringify(diagnostic));
+   await page.screenshot({path:'test-evidence/t05-native-ko-timeout.png'});
+   throw e;
+  }
   const lost=await page.evaluate(()=>{
    const core=window.__t05core,s=core.readCampaign();
    return {raw:localStorage.getItem(core.SAVE_KEY),uid:s.team[0].uid,
