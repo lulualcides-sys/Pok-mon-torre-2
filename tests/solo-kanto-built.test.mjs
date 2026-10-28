@@ -280,21 +280,36 @@ assert.equal(recordSeen(nidoState,'nidoran-f'),true);
 assert.equal(recordCaught(nidoState,'nidoran-m'),true);
 assert.ok(nidoState.dexCaught.includes('nidoran-m'));
 const young={id:'pidgey',progression:{species:'pidgey',level:5}};
-assert.deepEqual(availableMoves(young).map(x=>x.id).sort(),['gust','tackle']);
-assert.deepEqual(selectedMoves(young),['tackle','gust',null,null]);
-assert.deepEqual(Object.keys(resolveLoadout(young)),['lmb','rmb','q'],
- 'At Lv5, campaign actions get a weak temporary third slot without changing real FRLG learnsets');
-assert.ok(!resolveLoadout(young).e,'ULT remains locked until Lv8');
-assert.ok(!availableMoves(young).some(x=>x.id==='dodge'));
+// The legacy smoke used to expect only two buttons until level 13.
+ // The campaign contract is now 3 WEAK, DISTINCT moves at Lv5, a gated
+ // ULT at Lv8, and genuine stronger options only at their earned levels.
+const five=availableMoves(young);
+const training=five.filter(m=>m.torre2IntroPractice&&m.torre2IntroUnlockLevel===5);
+assert.equal(training.length,3,'Pidgey needs three usable Lv5 actions');
+assert.equal(new Set(training.map(m=>m.id)).size,3,'Lv5 buttons must be distinct');
+assert.ok(training.every(m=>m.dano<=9),'Lv5 damage cap');
+const startKit=resolveLoadout(young);
+assert.ok(['lmb','rmb','q'].every(slot=>startKit[slot]?.torre2IntroPractice));
+assert.equal(startKit.e,undefined,'ULT remains locked at Lv5');
+assert.ok(!five.some(m=>m.id==='dodge'));
+young.progression.level=7;
+assert.equal(resolveLoadout(young).e,undefined,'ULT remains locked at Lv7');
+young.progression.level=8;
+const ult8=resolveLoadout(young).e;
+assert.ok(ult8?.ulti&&ult8.torre2IntroPractice&&ult8.dano<=12,
+ 'Lv8 must offer a capped, energy-gated native ultimate');
+assert.ok(availableMoves(young).some(m=>m.id===ult8.id),
+ 'Lv8 ULT must be selectable in the editor');
 young.progression.level=13;
 assert.ok(availableMoves(young).some(x=>x.id==='gust'));
 assert.ok(availableMoves(young).some(x=>x.id==='quick-attack'));
 assert.ok(!availableMoves(young).some(x=>x.id==='wing-attack'));
-assert.deepEqual(selectedMoves(young),['tackle','gust','quick-attack',null],
- 'Level 13 Q must unlock in place, not move to ULT');
+assert.ok(['lmb','rmb','q'].every(slot=>resolveLoadout(young)[slot]?.forma),
+ 'Lv13 must retain three working actions');
 young.progression.level=19;
-assert.deepEqual(selectedMoves(young),['tackle','gust','quick-attack','wing-attack']);
-assert.equal(resolveLoadout(young).e.nombre,'Wing Attack');
+assert.ok(availableMoves(young).some(x=>x.id==='wing-attack'),
+ 'Real Wing Attack must unlock at its earned campaign level');
+assert.ok(resolveLoadout(young).e?.ulti,'Lv19 still has a usable ULT');
 assert.equal(equipMove(young,0,'wing-attack'),false,'Basic must remain weak');
 assert.equal(equipMove(young,3,'tackle'),false,'Ultimate stays at E');
 const bug={id:'caterpie',progression:{species:'caterpie',level:10}};
