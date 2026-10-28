@@ -19,7 +19,7 @@ const server=http.createServer(async(req,res)=>{
  catch{res.writeHead(404);res.end('missing')}
 });
 const report={scope:'T20 one normal Lance Elite Four battle in original Phaser',
- fixture:'Lance stage11 after three PREPARED League victories; six legal Lv60 including electric/water/ice counters, not sequential League play',
+ fixture:'Lance stage11 after three PREPARED League victories; six legal Lv60 with Articuno's native Ice STAB against Dragonite, not sequential League play',
  naturalCombat:true,forcedKO:false,forcedWin:false,status:'not-started'};
 const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
  fs.writeFileSync('test-evidence/t20-natural-lance.json',JSON.stringify(report,null,2))};
@@ -47,7 +47,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    st.badges=core.GYMS.map(g=>g.badge);
    st.leagueHonors=['Elite 1','Elite 2','Elite 3'];
    st.team=[];
-   for(const [i,id] of ['jolteon','lapras','starmie','cloyster','jynx','dragonite'].entries())
+   for(const [i,id] of ['jolteon','lapras','starmie','cloyster','jynx','articuno'].entries())
     st.team.push({id,uid:'t20-lance-'+i+'-'+id,hp:100,
      progression:createPokemonProgression(id,60),
      status:null,tmMoves:[],moves:[]});
