@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel}
  from '../tools/pokearena/torre2-gen7-letsgo-learnsets.js';
+import {gen5KantoUnlockLevel} from '../tools/pokearena/torre2-gen5-existing-levels.js';
 
 test('Gen7 Lets Go: 151 Kanto species have legitimate level-up entries',()=>{
  assert.equal(Object.keys(GEN7_LETSGO_LEVEL_UP).length,151);
@@ -26,4 +27,14 @@ test('Gen7 level-up is species-specific, no TMs or invented universal attacks',(
  assert.equal(gen7LetsGoUnlockLevel('ponyta','protect'),null);
  assert.equal(gen7LetsGoUnlockLevel('charmander','double-kick'),null);
  assert.equal(gen7LetsGoUnlockLevel('not-a-pokemon','tackle'),null);
+});
+
+test('Gen V Black/White confirmed: Ponyta/Rapidash Flame Charge 21 and Flare Blitz 49',()=>{
+ for(const species of ['ponyta','rapidash']){
+  assert.equal(gen5KantoUnlockLevel(species,'flame-charge'),21);
+  assert.equal(gen5KantoUnlockLevel(species,'flare-blitz'),49);
+  assert.equal(gen5KantoUnlockLevel(species,'Flare Blitz'),49);
+ }
+ assert.equal(gen5KantoUnlockLevel('charmander','flame-charge'),null);
+ assert.equal(gen5KantoUnlockLevel('ponyta','fire-spin'),null);
 });
