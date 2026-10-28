@@ -27,8 +27,8 @@ function makeStorage(){
 function setup(kind){
  const db=makeStorage();
  globalThis.localStorage=db;
- const state=core.createCampaign('bulbasaur');
- core.saveCampaign(state);
+ core.saveCampaign(core.createCampaign('bulbasaur'));
+ const state=core.readCampaign(db); // Apply additive legacy defaults before assertions.
  if(kind!=='store')assert.equal(core.storePokemon(state,1),true);
  const action=kind==='store'?()=>core.storePokemon(state,1):
   kind==='withdraw'?()=>core.withdrawPokemon(state,0):
