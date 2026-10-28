@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §2/§3/§33/§36/§37 — T06: Pokébolas no desktop (28/10/2026)
+
+- **PR #161 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/161, commit `b461a893d882232417265af9349289c7ad11637d`. Exercitou duas capturas pelo controle nativo de mouse em Phaser/WebGL, com uma fuga e um GOTCHA de Kakuna, inventário 5→4→3, equipe e PC por UID, sem vitória indevida e com save idêntico após reload.
+- **Execução:** [#40698593020](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698593020) CI da branch **sucesso**, [#40698912438](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698912438) CI da main **sucesso**. [Pages #40698971971](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698971971) requer confirmação independente após conclusão do job.
+- **Escopo exato:** somente testes e workflow; RNG e imortalidade estabilizados por fixture, mas ponteiros e animações reais. T06 continua **PARCIAL**, sem afirmar campanha natural completa ou validação final de toda animação.
+
+
 ## §15/§29/§33/§36/§37 — T04: dois K.O.s reais e sequência de recalls (28/10/2026)
 
 - **PR #160 integrada**: https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/160, commit `94e17288d0346d05f3dcc4c5621281d674724090`. Dois K.O.s por golpes originais da CPU e entrada automática de Charmander/Squirtle, sem chamar K.O., injetar dano ou alterar runtime/sprites/golpes.
