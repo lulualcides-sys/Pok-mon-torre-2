@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T06 — captura desktop com mouse real, fuga, GOTCHA e save (28/10/2026)
+
+- **PR #161 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/161, commit `b461a893d882232417265af9349289c7ad11637d`. Novo teste `tests/t06-desktop-capture-browser.cjs` e workflow; sem mudança do runtime, sprites ou golpes.
+- **Provas:** [CI branch #40698593020](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698593020) **sucesso**, [CI main #40698912438](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698912438) **sucesso**; [Pages #40698971971](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698971971) deve ser conferido antes de declarar publicado.
+- **Evidência Chromium/WebGL 1280×720:** clique real de mouse (pressionamento 95ms), primeira Pokébola falha (estoque 5→4), segunda captura Kakuna (4→3), Bulbasaur permanece no time, Mewtwo no PC, nenhuma vitória de treinador fabricada, save intacto após recarregar a página.
+- **Limitação:** RNG de falha/sucesso e invulnerabilidade são fixtures de teste, não jogabilidade com aleatoriedade natural. A T06 permanece **PARCIAL** até validar trajetórias RNG naturais e animação/performance mobile e desktop em percurso normal.
+
+
 ## T04 — dois K.O.s da CPU + terceira entrada, regressão publicada (28/10/2026)
 
 - **PR #160 integrada**: https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/160, commit `94e17288d0346d05f3dcc4c5621281d674724090`. Dois K.O.s por golpes nativos da CPU, recalls automáticos em sequência, Bulbasaur → Charmander → Squirtle, sprites corretos e sem impactos/filas residuais; somente teste/pipeline.
