@@ -19,6 +19,15 @@ export function prepareLaboratoryMatch(options={}){
 export function installLaboratoryControls(scene){
  if(!scene.datos?.torre2?.laboratory||scene.__torre2LabInstalled)return;
  scene.__torre2LabInstalled=true;
+ // The upstream Combate.anotarEntreno(d) writes into registroDano. The
+ // campaign's lab uses CPU mode, so native training setup may not initialize
+ // this ledger; the first genuine hit would then crash on undefined.push.
+ // Reset it for each new isolated lab session, never for normal combat.
+ scene.registroDano=[];
+ scene.comboActual=0;
+ scene.mejorCombo=0;
+ scene.ultimoGolpeEntreno=-Infinity;
+ scene.ultimoDano=0;
  const statuses=['none','veneno','toxic','quemado','dormido','paralizado','congelado','confuso'];
  const weather=Object.keys(WEATHER_NAMES);let wi=weather.indexOf(scene.datos.torre2.weather),si=[0,0];
  // Native camUI already centers/scales the logical 640x360 UI. A zero
