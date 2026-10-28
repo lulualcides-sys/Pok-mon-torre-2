@@ -58,9 +58,15 @@ const count=s.dexCaught.length;
 core.recordCaught(s,'beedrill');
 assert.equal(s.dexCaught.length,count,'Repeated entry must be idempotent');
 core.saveCampaign(s);
+// The original campaign's schema migration adds missing medicine keys to
+// fresh fixture inventories on its FIRST read. Once normalized, the save
+// must remain byte-identical across subsequent reads without losing Dex.
+const normalized=core.readCampaign();
+assert.deepEqual(normalized.dexCaught,s.dexCaught);
 const raw=storage.get(core.SAVE_KEY);
 const saved=core.readCampaign();
-assert.equal(storage.get(core.SAVE_KEY),raw,'Reload must not rewrite a clean save');
+assert.equal(storage.get(core.SAVE_KEY),raw,
+ 'A second read must not rewrite a migrated, already-valid save');
 assert.deepEqual(saved.dexCaught,s.dexCaught);
 assert.deepEqual(saved.dexSeen,s.dexSeen);
 assert.equal(saved.team[1].id,'beedrill');
