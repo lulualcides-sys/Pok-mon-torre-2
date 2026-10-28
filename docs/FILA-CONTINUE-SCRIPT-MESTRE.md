@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T19 — Cerulean: terceiro treinador vencido em combate nativo (28/10/2026)
+
+- **PR de teste [#171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171)** — T19 estendido de duas para **três** lutas consecutivas do Phaser contra **Zubat, Geodude e Paras**. O passo dedicado do Chromium/WebGL **passou** em [workflow #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574), ainda aguardando o passo de regressão oficial na consulta inicial. Não marcar a PR como integrada sem CI completa/merge/Pages.
+- **Prova limitada e legítima:** checkpoint após Brock, insígnia Rocha e Wartortle Lv20 são fixture. Os confrontos usam botão AUTO e CPU reais, nenhum HP/dano/K.O./vitória/XP artificial. Cada vitória exige checkpoint +1, dinheiro +240, nenhuma insígnia/TM antecipada e integridade de UIDs/PC. Após a terceira luta, a campanha ainda não chegou a Misty; T19 e §34 continuam **PARCIAIS**.
+- **Próximo:** estender sem salto de progresso para Clefairy, Sandshrew e restante da rota; validar recarga de save no meio da sequência e eventual insígnia Cascata por luta nativa. Nunca declarar 8 insígnias ou Campeão concluídos por teste preparado.
+
+
 ## T06 — RNG nativo: duas fugas reais + captura genuína (28/10/2026)
 
 - **Probabilidade das 151 espécies:** [PR #167](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/167) integrada, commit `378fc61432b51d872171ba9faae47b7a05ed3651`; [CI #40702165961](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702165961) **sucesso** (HP, bolas, status, quatro sorteios e 12.000 lançamentos `Math.random` reais). [CI main #40702241224](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702241224) **sucesso**.
