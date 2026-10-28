@@ -71,6 +71,7 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
     wins:s.wins,stage:s.stage,trainer:s.trainer,party:s.team.map(x=>x.uid)};
   });
   assert.ok(before.id);
+  await page.evaluate(id=>{window.__t06CaughtId=id;},before.id);
   assert.ok(before.stock>=2);
   await tap(470,61);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
@@ -93,10 +94,27 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
   await tap(470,61);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
   await tap(316,186);
-  await page.waitForFunction(()=>{
-   const b=window.__pt2Game.scene.getScene('combate');
-   return b.__torre2CaptureDebug?.state==='CAUGHT';
-  },null,{timeout:24000});
+  // Desktop capture may return to the campaign before the next browser
+  // polling tick; accept completed persistence as well as the short GOTCHA.
+  try{
+   await page.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),s=t06.readCampaign();
+    return b.__torre2CaptureDebug?.state==='CAUGHT'||
+     (window.__pt2Game.scene.isActive('campanha')&&!s.pendingWild&&
+      s.team.some(p=>p.id===window.__t06CaughtId));
+   },null,{timeout:24000,polling:30});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),s=t06.readCampaign();
+    return {phase:b.fase,active:b.scene.isActive(),debug:b.__torre2CaptureDebug,
+     randomPresent:typeof b.__torre2CaptureRandom,stock:s?.inventory?.pokeball,
+     pending:s?.pendingWild,party:s?.team.map(m=>m.id),
+     campaignActive:window.__pt2Game.scene.isActive('campanha')};
+   });
+   fs.writeFileSync('test-evidence/t06-desktop-timeout.json',JSON.stringify(diagnostic,null,2));
+   await page.screenshot({path:'test-evidence/t06-desktop-timeout.png'});
+   throw error;
+  }
   await page.screenshot({path:'test-evidence/t06-desktop-gotcha.png'});
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:15000});
   const after=await page.evaluate(()=>{
