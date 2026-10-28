@@ -3,7 +3,7 @@
 const REQUIRED=Object.freeze([
   'main.js','config.js','datos.js','sprites.js',
   'escenas/carga.js','escenas/titulo.js','escenas/seleccion.js',
-  'escenas/combate.js','escenas/pokedex.js'
+  'escenas/combate.js','escenas/pokedex.js','escenas/jefe.js'
 ]);
 export function requiredCaptureFiles(version){
   if(!/^src-[0-9a-f]{10}$/.test(version||''))
