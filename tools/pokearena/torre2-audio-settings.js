@@ -137,7 +137,11 @@ export function installCampaignAudioSettings(scene,storage=globalThis.localStora
  }
  function open(){
   if(overlay)return;
+  // Chrome/iOS require a real gesture before WebAudio unlock. After that
+  // gesture, reconcile the saved gain because native Phaser may restore its
+  // default 100% volume during page/scene bootstrap.
   playOriginalMenuCue(scene,storage);
+  prefs=applyAudioSettingsToGame(scene,readAudioSettings(storage));
   const objects=[];
   const register=o=>(objects.push(o),o);
   const shade=register(scene.add.graphics().setDepth(850));
