@@ -43,7 +43,7 @@ const server=http.createServer(async(req,res)=>{
   });
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
-   return b.scene.isActive()&&b.__torre2Weather&&b.fase==='lucha'&&
+   return b.scene.isActive()&&b.__torre2Weather&&b.__torre2LabInstalled&&b.fase==='lucha'&&
     b.luchadores?.length===2&&!b.__torre2Changing&&!b.__torre2BallTransitions;
   },null,{timeout:70000});
   const observations=await page.evaluate(async()=>{
