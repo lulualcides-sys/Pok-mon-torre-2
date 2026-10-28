@@ -510,6 +510,9 @@ export function selectedMoves(member){
   const seen=new Set(member.torre2CharacteristicSeen||[]);
   let upgraded=false;
   for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
+   // The first three buttons are explicitly safe Lv5 training moves.
+   // Real characteristic skills take over only in normal progression.
+   if((member.progression?.level??5)<KANTO_INTRO.tutorialUntil)continue;
    if(!valid.has(id))continue; // not learned yet or no taught TM
    if(chosen.includes(id)){seen.add(id);continue}
    if(fresh||!seen.has(id)){
