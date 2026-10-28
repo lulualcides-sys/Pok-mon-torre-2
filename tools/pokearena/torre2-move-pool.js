@@ -14,6 +14,11 @@ import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMach
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
+// Campaign balance: real FRLG moves keep their original metadata, but
+// all level-up attacks above 50 become obtainable BY level 50 in the Torre
+// campaign. TMs remain teach-only, evolution boundaries stay intact.
+export const KANTO_CAMPAIGN_MOVE_CAP=50;
+const campaignLevel=at=>Math.min(KANTO_CAMPAIGN_MOVE_CAP,at);
 /* One Pokémon move, one catalog entry — whether the original captured client
  * or the original game calls it by Portuguese, English or an alias.
  * Never make a second VFX of an existing Poké Arena 2D move. The native
@@ -177,6 +182,37 @@ const CHARACTERISTIC_BONUS_LEVELS=Object.freeze({
  scyther:{'x-scissor':28},beedrill:{'x-scissor':30},
  parasect:{'x-scissor':30},pinsir:{'x-scissor':28}
 });
+// Shared by the battle, move editor and Pokédex: these use ONLY native or
+// previously approved Phaser VFX. Training abilities have their own IDs so
+// an Ember *practice* never counts as FireRed's authentic Lv14 Ember.
+// Weak starter options stay selectable as a low-power fallback after Lv13.
+// No new Pokémon/effects, TMs, or save format are introduced.
+function campaignIntroOptions(member){
+ if(!member?.id||member.id==='mewtwo')return [];
+ const id=member.id;
+ const m={id,progression:{species:id,level:8}};
+ const preview=resolveKantoIntro(m,{},{
+  library:TEST_LIBRARY,canonical:canonicalMoveKey,
+  earlyLevels:EARLY_KANTO_LEARNSETS[id]||{},
+  levelUp:FRLG_LEVEL_UP[id]||{},unlockLevel:frlgUnlockLevel
+ });
+ return SLOTS.flatMap((slot,index)=>{
+  const base=preview[slot];
+  if(!base?.forma)return [];
+  const source=canonicalMoveKey(base.torre2IntroSource||base.nombre);
+  const name=String(base.nombre).replace(/ · Treino$/,'');
+  return [{
+   ...base,
+   id:'torre2-intro-'+slot+'-'+source,
+   nombre:index===3?name:name+' · Treino',
+   torre2IntroPractice:true,
+   torre2IntroSlot:slot,
+   torre2IntroUnlockLevel:index===3?8:5,
+   pendiente:false,
+   ...(index===3?{ulti:true}:{ulti:false})
+  }];
+ });
+}
 export function availableMoves(member){
  if(member.id==='mewtwo')return TEST_LIBRARY;
  const {def}=buscar(member.id);
@@ -322,35 +358,35 @@ export function availableMoves(member){
   // per-species levels. Respect those authorial thresholds over the newly
   // imported Gen3 table (which lacks our user-approved bonus moves).
   if(early&&early[key]!==undefined)
-   return level>=early[key]&&!evoLocked.has(key);
+   return level>=campaignLevel(early[key])&&!evoLocked.has(key);
   if(early&&newMoveRequiredLevel[key]!==undefined&&level<newMoveRequiredLevel[key])
    return false;
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
   if(taughtCompatible(key))return true;
   if(!early){
-   if(official!==null&&level>=official)return true;
+   if(official!==null&&level>=campaignLevel(official))return true;
    if(kantoFinish[key]?.includes(member.id)&&level>=(ordinaryBonus[key]??25))
     return true;
    // Only existing fixed Arena/Kanto roles may allow custom effects not
    // present in FRLG. They stay level-gated; never borrow another species'.
    if(official===null&&!frlgMachineCompatible(member.id,key)){
     const tier=legacySlotLevel(key);
-    if(tier!==null&&level>=tier)return true;
+    if(tier!==null&&level>=campaignLevel(tier))return true;
    }
    return false;
   }
   // The curated first two gym/early-route learnsets were already approved.
   // Keep their known special evolution locks and custom slot thresholds.
   if(official!==null&&!evoLocked.has(key)&&
-     level>=Math.max(official,newMoveRequiredLevel[key]??1))return true;
+     level>=Math.max(campaignLevel(official),newMoveRequiredLevel[key]??1))return true;
   // Allow skills of the ACTUAL evolved form immediately after evolution,
   // even at Lv 7 (Metapod), 10 (Butterfree), 18 (Pidgeotto) etc.
   // Other moves remain level-gated, and previous forms cannot borrow the
   // abilities of an evolution they have not reached.
   if(evoLocked.has(key))return false;
   return evolutionSkills.has(key)||
-   (early[m.id]!==undefined&&level>=early[m.id]);
+   (early[m.id]!==undefined&&level>=campaignLevel(early[m.id]));
  });
  // A native Raichu entry can resolve through the Pichu line instead of
  // our additive Kanto line. Pull genuinely unlocked Surge moves from the
@@ -360,6 +396,10 @@ export function availableMoves(member){
   const move=TEST_LIBRARY.find(candidate=>candidate.id===id);
   if(move)filtered.push(move);
  }
+ // Training controls are genuine, selectable campaign moves with weak caps;
+ // the underlying official ability still unlocks at its correct later level.
+ for(const move of campaignIntroOptions(member))
+  if(level>=move.torre2IntroUnlockLevel)filtered.push(move);
  return filtered;
 }
 // New Kanto species keep the exact Arena 2D four attack slots even when
@@ -382,7 +422,9 @@ export function campaignLearnset(species){
   member.progression.level=level;
   for(const move of availableMoves(member))
    if(!list.has(move.id))list.set(move.id,Object.freeze({
-    id:move.id,name:move.nombre,type:move.tipo,level,method:'LEVEL'}));
+    id:move.id,name:move.nombre,type:move.tipo,level,method:'LEVEL',
+    practice:move.torre2IntroPractice===true,
+    slot:move.torre2IntroSlot||null}));
  }
  for(const move of TEST_LIBRARY)
   if(!list.has(move.id)&&frlgMachineCompatible(id,move.id))
@@ -398,21 +440,29 @@ export function moveUnlockLevel(member,moveName){
  const key=canonicalMoveKey(moveName),species=member?.id;
  if(!species)return null;
  if(species==='mewtwo')return 1; // unrestricted Lv50 test Pokémon
+ if(key.startsWith('torre2-intro-'))
+  return key.startsWith('torre2-intro-e-')?8:5;
  const local=EARLY_KANTO_LEARNSETS[species];
- if(local?.[key]!==undefined)return local[key];
+ if(local?.[key]!==undefined)return campaignLevel(local[key]);
  const official=frlgUnlockLevel(species,key);
- if(official!==null)return official;
+ if(official!==null)return campaignLevel(official);
  const bonus=CHARACTERISTIC_BONUS_LEVELS[species]?.[key];
- if(Number.isInteger(bonus))return bonus;
+ if(Number.isInteger(bonus))return campaignLevel(bonus);
  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||kanto151SlotPlan(species);
  const index=(plan||[]).findIndex(n=>canonicalMoveKey(n)===key);
  if(index<0)return null;
  const stage=frlgEvolutionLevel(species);
- return [stage,Math.max(10,stage),Math.max(20,stage),Math.max(32,stage)][index];
+ return campaignLevel([stage,Math.max(10,stage),Math.max(20,stage),Math.max(32,stage)][index]);
 }
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
+ const level=member.progression?.level??5;
+ if(level>=5&&level<KANTO_INTRO.tutorialUntil){
+  // The three keys and Lv8 ULT are real editor options. They cannot be
+  // accidentally replaced by the full-power attack used by their renderer.
+  return SLOTS.map(slot=>available.find(m=>m.torre2IntroSlot===slot)?.id||null);
+ }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  if(plan){
   const reserved=plan.map(name=>{
@@ -428,7 +478,8 @@ export function defaultLoadout(member){
   // defenseless on the day they evolve. Use a genuinely learned weak move
   // in an otherwise empty ATK/HAB slot. ULT remains locked until learned.
   const used=new Set(reserved.filter(Boolean));
-  const pool=available.filter(m=>m?.id&&Number.isFinite(m.dano)&&m.dano>0)
+  const pool=available.filter(m=>m?.id&&m.torre2IntroSlot!=='e'&&
+    Number.isFinite(m.dano)&&m.dano>0)
    .sort((a,b)=>Number(a.dano)-Number(b.dano));
   for(const i of [0,1,2]){
    if(reserved[i])continue;
@@ -436,6 +487,10 @@ export function defaultLoadout(member){
     (i===0?pool.find(m=>!used.has(m.id)):null);
    if(next){reserved[i]=next.id;used.add(next.id)}
   }
+  // A weak meter-gated finisher remains available even for a species that
+  // learns no ordinary ULT in its official late FireRed level-up table.
+  if(!reserved[3]&&level>=8)reserved[3]=
+   available.find(m=>m.torre2IntroSlot==='e')?.id||null;
   return reserved;
  }
  const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
@@ -444,6 +499,21 @@ export function defaultLoadout(member){
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
+ const level=member.progression?.level??5;
+ // Old saved slots can contain an originally equipped high-power move whose
+ // real unlock gate was unavailable at Lv5. Render the SAME safe 3 moves
+ // shown in the campaign menu without erasing the player's saved loadout.
+ // From Lv9, preserve any legitimately earned HAB moves manually equipped.
+ if(member.id!=='mewtwo'&&level>=5&&level<KANTO_INTRO.tutorialUntil){
+  const defaults=defaultLoadout(member);
+  return defaults.map((fallback,i)=>{
+   const id=member.moves?.[i],move=available.find(m=>m.id===id);
+   if(!move)return fallback;
+   if(move.torre2IntroSlot===SLOTS[i])return id;
+   if(i<3&&level>KANTO_INTRO.ultAt&&!move.torre2IntroPractice)return id;
+   return fallback;
+  });
+ }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  if(plan){
   const defaults=defaultLoadout(member);
@@ -455,6 +525,9 @@ export function selectedMoves(member){
   const seen=new Set(member.torre2CharacteristicSeen||[]);
   let upgraded=false;
   for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
+   // The first three buttons are explicitly safe Lv5 training moves.
+   // Real characteristic skills take over only in normal progression.
+   if((member.progression?.level??5)<KANTO_INTRO.tutorialUntil)continue;
    if(!valid.has(id))continue; // not learned yet or no taught TM
    if(chosen.includes(id)){seen.add(id);continue}
    if(fresh||!seen.has(id)){
@@ -479,11 +552,21 @@ export function equipMove(member,slot,moveId){
  // Even manual editor equips cannot activate the ULT before Lv8.
  if(slot===3&&member.id!=='mewtwo'&&(member.progression?.level??5)<KANTO_INTRO.ultAt)return false;
  const pool=availableMoves(member);
- if(!pool.some(m=>m.id===moveId))return false;
+ const picked=pool.find(m=>m.id===moveId);
+ if(!picked)return false;
+ const level=member.progression?.level??5;
+ // Early editor and combat must agree: full-power unlocked attacks become
+ // selectable after Lv8, while the early ULT stays power capped through 12.
+ if(member.id!=='mewtwo'&&level<=8&&!picked.torre2IntroPractice)return false;
+ if(member.id!=='mewtwo'&&level<KANTO_INTRO.tutorialUntil&&
+    slot===3&&!picked.torre2IntroPractice)return false;
+ if(picked.torre2IntroSlot&&picked.torre2IntroSlot!==SLOTS[slot])return false;
  const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
- if(early&&slot===0&&moveId!==canonicalMoveKey(early[0]))return false;
- if(early&&slot===3&&moveId!==canonicalMoveKey(early[3]))return false;
+ if(early&&slot===0&&moveId!==canonicalMoveKey(early[0])&&
+    picked.torre2IntroSlot!=='lmb')return false;
+ if(early&&slot===3&&moveId!==canonicalMoveKey(early[3])&&
+    picked.torre2IntroSlot!=='e')return false;
  const chosen=selectedMoves(member);
  if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;
  if(early){chosen[slot]=moveId;member.moves=chosen;member.movePlanSpecies=member.id;return true;}
