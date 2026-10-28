@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T19/T21 — combate Paras sem fim: regeneração passiva arcade (28/10/2026)
+
+- **Falha reproduzida:** [PR #174](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/174), [CI #40705765471](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705765471) **falha real**, 1ª vitória Zubat, 2ª Geodude, 3ª Paras em AUTO não termina após 240s; lutadores ainda em ~99/109 e ~58/68 HP. Não houve forçamento de vitória/derrota. **Não integrar PR #174 no estado vermelho**.
+- **Causa de engenharia verificada no cliente capturado:** a engine Poké Arena cura HP automaticamente fora de dano, sob `REGLAS.curaTras`/`curaFuera`. Esse mecanismo não integra a regra de batalha FireRed e pode anular dano da campanha.
+- **Correção em validação:** [PR #175](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/175) aplica `!this.escena.datos?.torre2` APENAS no ramo de cura passiva do `luchador.js` gerado por `build-preview.mjs`. A Arena original, golpes aprovados, drenagem, itens, status, VFX e saves permanecem intocados. [CI #40708079649](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40708079649): build compilado e vitória focada real contra Paras passaram, regressão geral pendente na anotação inicial.
+- **Próximo:** esperar CI total da correção, integrar e publicar se verde; só então repetir os cinco confrontos com reload sobre o código corrigido. T19 e T21 continuam **PARCIAIS** até comprovação integral.
+
+
 ## T19 — Cerulean: terceiro treinador vencido em combate nativo (28/10/2026)
 
 - **[PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171) integrada**, commit `85fb7645659479a6dda11521a0d53ee9b6fa1855`. Zubat → Geodude → Paras derrotados nas 3 lutas consecutivas de Phaser/WebGL por AUTO nativo, checkpoint 0→3, dinheiro R$1.400→R$2.120, sem injetar dano, K.O. ou vitória. [CI de branch #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) **sucesso**, incluindo regressão oficial, e [main #40705538155](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705538155) **sucesso**. [Pages #40705591501](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705591501) **sucesso**, incluindo verificação no site público.
