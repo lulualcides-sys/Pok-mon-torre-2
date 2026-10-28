@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§7/8/33/36/37 · T07/T08: golpes existentes mapeados em 151 espécies
+
+- **Implementação real:** PR [#222](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/222) integrada em `c86602f602b957ea49571a62cf8954dfef1bdb78`. `torre2-move-pool.js` cruza biblioteca consolidada de **227 efeitos** com legalidade por espécie/nível: FRLG como referência prioritária; 1.608 entradas de nível Gen VII Let's Go para 151 Kanto; complementos de Gen V para **Flame Charge Lv21** e **Flare Blitz Lv49** Ponyta/Rapidash. Apenas animações originais do cliente e VFX Torre 2 já aprovados são reutilizados; nenhum novo movimento/arte/cooldown/salvamento criado. Corrigido o equipar automático de Flare Blitz em vez de Bounce no Ponyta após o desbloqueio.
+- **Evidência:** branch [CI #40765645042](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40765645042) **VERDE**, `npm test` 200/200, sintaxe/reuso/build, 151 espécies e todos os golpes instalados auditados, Chromium completo e botões reais de **Ponyta Lv21 Flame Charge** e **Lv49 Flare Blitz** disparados. [CI main #40767421166](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40767421166) **VERDE**. Testes com níveis e equipes preparados; **não** homologação natural Pallet→Campeão.
+- **Status:** §§7/8/33/36/37 e T07/T08 **PARCIAIS**. Pages **AINDA NÃO CONFIRMADO POR HTTP** neste registro. Próximos gates: renderização de múltiplas espécies/capturas com XP natural e persistência de equipagem após save/reload; não duplicar frentes de Toxic #16 ou Shiny #17 nem alterar efeitos aprovados.
+
+
 ## §§7/8/33/36/37 — T08: gates de publicação corrigidos e HTTP verificado (28/10/2026)
 
 - **Escopo:** após `d43aa0c8` e `23aaf684`, a campanha possui 3 golpes fracos distintos no Lv5, ULT de dano limitado e energia a partir do Lv8 e opções progressivas até o Lv50. O teste dos 151 Kanto distingue controles de TREINO limitados de Ditto dos movimentos canônicos FRLG; escolhas da mesma espécie são preservadas e heranças inválidas entre espécies evoluídas são descartadas. Não representa validação natural de 151 partidas.
