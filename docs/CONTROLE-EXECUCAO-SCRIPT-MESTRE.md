@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §2/§3/§31/§33/§36/§37 — T06: sorte real, fuga e captura em Phaser (28/10/2026)
+
+- [PR #167](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/167) / `378fc614`: 151 taxas FRLG e 12 mil sorteios com distribuição real; [CI #40702165961](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702165961) e [main #40702241224](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702241224) **sucesso**.
+- [PR #169](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/169) / `e726cd9`: duas fugas naturais de Mankey no Chromium/WebGL com HP/CPU normais e RNG não forçado, consumo correto e reload; [CI #40702674160](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702674160), [main #40702874252](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702874252), [Pages #40702928848](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702928848) **sucesso**.
+- [PR #170](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/170) / `71b0b53`: cinco fugas + GOTCHA da 6ª Pokébola contra Kakuna com RNG real, sem invulnerabilidade artificial; UID/save íntegros após reload; [CI #40703210235](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703210235) e [main #40703691005](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703691005) **sucesso**; [Pages #40703750160](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703750160) **em verificação**. **Fixture:** 40 bolas no estoque de teste, não prova de economia natural.
+- **T06 PARCIAL:** capturas nativas e chances comprovadas com limites citados; falta caminho integral normal, estoque comprado natural, auditoria Android e multi-status. **Runtime, golpes, sprites e saves existentes não foram alterados** (somente testes/pipelines).
+
+
 ## §31/§33/§36/§37 — T05: checkpoint economicamente inválido (28/10/2026)
 
 - **Correção real no runtime:** [PR #165](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/165), commit `c3e8a62eb60d136b264002083a29a9ea9e999cfd`. A leitura não substitui mais um primário com UIDs repetidos e economia íntegra por backup de dinheiro/itens corrompidos; repara os UIDs do primário e mantém ambos os conjuntos de dados armazenados. Três variantes de backup inválido (dinheiro negativo, Pokébolas negativas, TMs inválidas) cobertas por teste permanente do cliente Phaser compilado.
