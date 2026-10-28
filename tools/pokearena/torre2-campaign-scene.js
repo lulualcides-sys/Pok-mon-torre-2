@@ -866,7 +866,7 @@ create(){
   this.button(320,298,275,32,'◀ VOLTAR AO MAPA',()=>this.scene.restart())
    .setData('torre2-center-back',true);
  }
- martScreen(state,page=0){
+ martScreen(state,page=0,errorText=''){
   this.children.removeAll(true);this.backdrop();
   text(this,320,23,'POKÉ MART · $'+state.money,{
    ...titleStyle,fontSize:'19px'}).setOrigin(.5);
@@ -881,14 +881,25 @@ create(){
    text(this,x-98,y+9,'$'+item.price+(item.kind==='tm'?' · TM':' · '+item.kind.toUpperCase()),{
     fontSize:'10px',color:C.muted});
    this.button(x+100,y+6,70,30,'COMPRAR',()=>{
-    purchaseItem(state,item.id);this.martScreen(state,pageNum);
+    try{
+     purchaseItem(state,item.id);
+     this.martScreen(state,pageNum);
+    }catch(error){
+     // A storage-denied purchase is NOT completed. Keep the previous
+     // wallet and items, show an actionable message and allow retry.
+     console.warn('Torre 2: Mart purchase not saved',error);
+     this.martScreen(state,pageNum,
+      'COMPRA NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
+    }
    },state.money>=item.price).setData('torre2-mart-buy',item.id);
   });
   this.button(140,315,177,33,'◀ MAPA',()=>this.scene.restart());
   this.button(346,315,205,33,'ITENS '+(pageNum+1)+'/'+count,()=>this.martScreen(state,(pageNum+1)%count),true);
   this.button(543,315,176,33,'BOLSA / TM',()=>this.bagScreen(state)).setData('torre2-mart-bag',true);
-  text(this,320,281,state.lastMessage||'Compre Pokébolas, poções e TM',{
-   fontSize:'10px',color:C.gold,wordWrap:{width:560}}).setOrigin(.5);
+  const notice=text(this,320,281,errorText||state.lastMessage||'Compre Pokébolas, poções e TM',{
+   fontSize:'10px',color:errorText?'#ff9d9d':C.gold,
+   wordWrap:{width:560}}).setOrigin(.5);
+  if(errorText)notice.setData('torre2-mart-save-error',true);
  }
  bagScreen(state){
   this.children.removeAll(true);this.backdrop();
