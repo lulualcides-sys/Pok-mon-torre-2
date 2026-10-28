@@ -7,7 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
-import {recoverCriticalCapture} from './capture-client-critical.mjs';
+import {recoverCriticalCapture,unresolvedImportedModules} from './capture-client-critical.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -168,7 +168,16 @@ async function main() {
    const found=sanitize(new URL(reference,ORIGIN+'/'+current.path).href);
    if(!found||imported.has(found))continue;
    try{
-    const {data,contentType}=await get(ORIGIN+'/'+found);
+    // Imported JS is required for boot; transient 503 must not silently
+    // leave a broken module graph after capture.
+    let response,lastError;
+    for(let attempt=1;attempt<=(found.endsWith('.js')?3:1);attempt++){
+     try{response=await get(ORIGIN+'/'+found);break}
+     catch(error){lastError=error;if(attempt<3&&found.endsWith('.js'))
+      await new Promise(resolve=>setTimeout(resolve,attempt*1000))}
+    }
+    if(!response)throw lastError;
+    const {data,contentType}=response;
     const dest=path.resolve(DIR,found);
     if(!dest.startsWith(DIR+path.sep))throw Error('Invalid import path');
     await fs.mkdir(path.dirname(dest),{recursive:true});
@@ -180,6 +189,11 @@ async function main() {
   }catch(error){details.unavailable.push({path:found,source:'relative module import',error:String(error?.message||error)})}
   }
  }
+
+ const unresolved=unresolvedImportedModules(details.unavailable,imported);
+ if(unresolved.length)throw Error(
+  'Incomplete Phaser ES module graph after retries: '+unresolved.slice(0,12).join(', ')
+ );
 
  // Recover the FULL spritesheet catalog, not just the files triggered in one
  // training session. Every declared animation and portrait in the first-party
