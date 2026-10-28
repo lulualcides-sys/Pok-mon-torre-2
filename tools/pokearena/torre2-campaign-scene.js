@@ -684,7 +684,17 @@ create(){
   // A KO party cannot be resurrected by Phaser's native reiniciar().
   // Offer the real healing Center without consuming a trainer attempt,
   // progressing a route, resetting the save, or launching combat.
-  if(!ensureConsciousActive(state)){
+  // Auto-select a conscious reserve only after the checkpoint is durable.
+  let conscious=false;
+  try{conscious=ensureConsciousActive(state);}
+  catch(error){
+   console.warn('Torre 2: automatic party selection not saved',error);
+   text(this,320,334,'TROCA NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE',{
+    fontSize:'11px',color:'#ff9d9d'
+   }).setOrigin(.5).setDepth(1000).setData('torre2-auto-active-save-error',true);
+   return;
+  }
+  if(!conscious){
    state.lastMessage='Sua equipe desmaiou. Recupere-a no Centro Pokémon.';
    saveCampaign(state);
    this.centerScreen(state);
@@ -1107,8 +1117,16 @@ create(){
   label(25,289,member.id==='mewtwo'?'TESTE · GOLPES LIBERADOS':'ESCOLHA SEU POKÉMON',
     member.id==='mewtwo'?'#ffcd7b':C.blue,10);
   button(24,311,174,29,index===state.active?'◆ EM BATALHA':'USAR NA BATALHA',()=>{
-   selectTeamMember(state,index);this.summaryFilter='ALL';this.summarySearch='';this.scene.restart();
-  },index===state.active);
+   try{
+    if(!selectTeamMember(state,index))return;
+   }catch(error){
+    console.warn('Torre 2: party selection not saved',error);
+    this.summaryWarning='TROCA NÃO SALVA · ARMAZENAMENTO BLOQUEADO';
+    this.showSummary(state,index,slot,page);
+    return;
+   }
+   this.summaryFilter='ALL';this.summarySearch='';this.scene.restart();
+  },index===state.active).setData('torre2-active-select',true);
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
@@ -1192,7 +1210,12 @@ create(){
    this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
    this.showSummary(state,index,activeSlot,0);
   });
-  if(this.summaryWarning)label(242,211,this.summaryWarning,'#f6bc86',9);
+  if(this.summaryWarning){
+   const warning=label(242,211,this.summaryWarning,
+    this.summaryWarning.startsWith('TROCA NÃO SALVA')?'#ff9d9d':'#f6bc86',9);
+   if(this.summaryWarning.startsWith('TROCA NÃO SALVA'))
+    warning.setData('torre2-active-save-error',true);
+  }
   this.summaryWarning=null;
  }
  showMoveTypePicker(state,index,slot){
