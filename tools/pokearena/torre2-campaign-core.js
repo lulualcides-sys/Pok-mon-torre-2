@@ -574,25 +574,37 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
   hp:options.hp,hpMax:options.hpMax,
   status:inWild?options.status:'none'};
  const outcome=rollCapture(target,ball,typeof random==='function'?random:Math.random);
- s.inventory[ball]--;
- if(!inWild){s.pendingCapture=null;
-  if(!candidate.leader)s.capturesInStage++;
- }
+ // Prepare the entire throw as one checkpoint. A denied localStorage write
+ // must not consume the ball, award a Pokémon, clear the wild encounter or
+ // change the Pokédex in the live session. The same encounter can be retried.
+ const next={...s,inventory:{...s.inventory,[ball]:s.inventory[ball]-1}};
+ let member=null;
  if(!outcome.caught){
-  s.lastMessage=candidate.id+' escapou! '+outcome.shakes+' balanços.';
-  saveCampaign(s);
-  return {ok:false,reason:s.lastMessage,...outcome};
+  next.lastMessage=candidate.id+' escapou! '+outcome.shakes+' balanços.';
+ }else{
+  member=newMember(candidate.id,Math.min(currentLevelCap(s.stage),candidate.level));
+  member.shiny=candidate.shiny===true;
+  member.hp=target.hpPercent;
+  member.status=options.persistentStatus?JSON.parse(JSON.stringify(options.persistentStatus)):null;
+  next.pendingWild=null;
+  next.team=[...s.team];next.box=[...s.box];
+  next.dexSeen=[...(s.dexSeen||[])];next.dexCaught=[...(s.dexCaught||[])];
+  recordCaught(next,candidate.id);
+  const destination=next.team.length<6?'Equipe':'PC';
+  if(destination==='Equipe')next.team.push(member);else next.box.push(member);
+  next.lastMessage=candidate.id+' capturado! '+destination+
+   ' · '+Math.round(outcome.chance*100)+'% de chance.';
  }
- if(inWild)s.pendingWild=null;
- const member=newMember(candidate.id,Math.min(currentLevelCap(s.stage),candidate.level));
- member.shiny=candidate.shiny===true;
- member.hp=target.hpPercent;
- member.status=options.persistentStatus?JSON.parse(JSON.stringify(options.persistentStatus)):null;
+ saveCampaign(next);
+ // Commit only after both snapshot validation and the primary write succeed.
+ // Preserve existing inventory, team and PC array identities for live UI refs.
+ s.inventory[ball]--;
+ s.lastMessage=next.lastMessage;
+ if(!outcome.caught)return {ok:false,reason:s.lastMessage,...outcome};
+ s.pendingWild=null;
  recordCaught(s,candidate.id);
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
- s.lastMessage=candidate.id+' capturado! '+(s.team.includes(member)?'Equipe':'PC')+
-  ' · '+Math.round(outcome.chance*100)+'% de chance.';
- saveCampaign(s);return {ok:true,pokemon:member,...outcome};
+ return {ok:true,pokemon:member,...outcome};
 }
 export function selectTeamMember(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length)return false;

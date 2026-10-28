@@ -227,8 +227,22 @@ export function installWildCapture(scene){
     drawBall(pt.x,pt.y,t*7);
    },onComplete:()=>{
     scene.__torre2CaptureDebug.hits=true;
-    result=attemptCapture(save,scene.__torre2CaptureRandom||Math.random,kind,
-      {duringBattle:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,status:fighterCaptureStatus(enemy),persistentStatus:serializeGen3Status(enemy)});
+    try{
+     result=attemptCapture(save,scene.__torre2CaptureRandom||Math.random,kind,
+       {duringBattle:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,status:fighterCaptureStatus(enemy),persistentStatus:serializeGen3Status(enemy)});
+    }catch(error){
+     // A blocked primary/backup write is not a completed throw. Restore the
+     // native enemy and controls; keep the Pokéball for a genuine retry.
+     console.warn('Torre 2: wild capture not saved',error);
+     restore();gfx.destroy();
+     caption.setText('CAPTURA NÃO SALVA · TENTE NOVAMENTE').setColor('#ff9d9d');
+     caption.setData('torre2-capture-save-error',true);
+     scene.__torre2CaptureDebug.state='SAVE_ERROR';
+     busy=false;scene.__torre2CaptureBusy=false;scene.fase=oldPhase;
+     refresh();
+     scene.time.delayedCall(2400,()=>{if(caption.active)caption.destroy()});
+     return;
+    }
     scene.__torre2CaptureDebug.state='ABSORB';
     caption.setText('O RAIO VERMELHO ENVOLVEU O POKÉMON!');
     const beam={t:0},focus={x:enemyX,y:enemyY};
