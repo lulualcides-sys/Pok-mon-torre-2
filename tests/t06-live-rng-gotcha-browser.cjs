@@ -133,7 +133,7 @@ const saveReport=()=>fs.writeFileSync('test-evidence/t06-live-rng-gotcha.json',J
   assert.equal(result.team[1].id,original.species);
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),
     null,{timeout:15000});
-  await page.screenshot({path:'test-evidence/t06-live-rng-gotcha.png'});
+  await page.screenshot({path:'test-evidence/t06-live-rng-caught-campaign.png'});
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
   const saved=await page.evaluate(()=>{
