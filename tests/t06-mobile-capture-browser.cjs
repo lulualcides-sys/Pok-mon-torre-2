@@ -109,7 +109,7 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
   assert.equal(after.wins,before.wins,'Capture must not force trainer victory');
   assert.equal(after.stage,before.stage);
   assert.equal(after.trainer,before.trainer);
-  assert.ok(after.party.some(x=>x.id===before.id)||after.box.length>0,'Captured Pokemon must persist');
+  assert.ok(after.party.some(x=>x.id===before.id),'Captured wild Pokemon must join the non-full party');
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
   const persisted=await page.evaluate(()=>{
