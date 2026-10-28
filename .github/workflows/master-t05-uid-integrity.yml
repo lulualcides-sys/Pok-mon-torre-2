@@ -36,6 +36,7 @@ jobs:
       - name: Backup and checkpoint integration regression
         run: |
           set -euo pipefail
+          node --test tests/t05-duplicate-uid-built.test.mjs
           node --test tests/t05-campaign-backup-built.test.mjs
           node --test tests/t05-event-checkpoints-built.test.mjs
       - name: Real Chromium Phaser reload and full browser regression
