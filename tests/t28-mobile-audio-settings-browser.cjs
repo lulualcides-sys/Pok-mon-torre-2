@@ -53,6 +53,8 @@ const server=http.createServer(async(req,res)=>{
     gameBus:{mute:c.game?.sound?.mute,volume:c.game?.sound?.volume,
      setMute:typeof c.game?.sound?.setMute==='function'},
     setterAvailable:typeof c.sound?.setVolume==='function',
+    installedSettings:c.__torre2AudioSettings?.settings,
+    postUpdateListeners:c.events.listenerCount?.('postupdate'),
     label:c.__torre2AudioSettings?.button?.active,
     buttons:c.children.list.filter(x=>x.active&&x.input?.enabled&&
      x.getData?.('torre2-audio-open')===true).length};
