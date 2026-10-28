@@ -9,6 +9,7 @@ import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
+import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel} from './gen7-letsgo-learnsets.js';
 import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
@@ -133,6 +134,12 @@ for(const h of rawLibrary){
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+// Gen VII tables can select ONLY installed native/approved renderer entries.
+// This index is deduplicated; it cannot introduce new VFX or move metadata.
+const gen7MoveKey=name=>canonicalMoveKey(name).replace(/[^a-z0-9]/g,'');
+const GEN7_INSTALLED=new Map(TEST_LIBRARY.filter(m=>m.forma&&
+ (m.source!=='new-phaser-fx'||m.approved===true))
+ .map(m=>[gen7MoveKey(m.nombre),m]));
 // NEW is a review queue, not a type or a replacement for existing attacks.
 // Original Poké Arena 2D attacks are implicitly approved and NEVER enter NEW.
 export const isPendingApprovalMove=move=>Boolean(
@@ -228,6 +235,12 @@ export function availableMoves(member){
  // FireRed/LeafGreen level-up data for EVERY Kanto species (151).
  // Only real installed renderers can enter the list; TMs require teaching.
  for(const name of frlgKnownMoves(member.id))names.add(canonicalMoveKey(name));
+ // Gen VII Let's Go adds legitimate species level-up options ONLY when
+ // an already approved/native Phaser renderer is present in this build.
+ for(const gen7Name of Object.keys(GEN7_LETSGO_LEVEL_UP[member.id]||{})){
+  const installed=GEN7_INSTALLED.get(gen7Name);
+  if(installed)names.add(canonicalMoveKey(installed.nombre));
+ }
  if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
  if(['voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('sonic-boom');
  if(['voltorb','electrode'].includes(member.id))names.add('screech');
@@ -364,6 +377,15 @@ export function availableMoves(member){
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
   if(taughtCompatible(key))return true;
+  // FRLG retains priority for level-up/TM; later generations only fill
+  // legal moves absent from Gen III. No auto-learned Gen VII TM, event,
+  // tutor, pending VFX or evolution-only attack before its evolved form.
+  if(official===null&&!frlgMachineCompatible(member.id,key)&&
+     !evoLocked.has(key)&&!isPendingApprovalMove(m)){
+   const gen7=gen7LetsGoUnlockLevel(member.id,key);
+   if(gen7!==null&&level>=campaignLevel(Math.max(13,activeStage,gen7)))
+    return true;
+  }
   if(!early){
    if(official!==null&&level>=campaignLevel(official))return true;
    if(kantoFinish[key]?.includes(member.id)&&level>=(ordinaryBonus[key]??25))
@@ -446,6 +468,13 @@ export function moveUnlockLevel(member,moveName){
  if(local?.[key]!==undefined)return campaignLevel(local[key]);
  const official=frlgUnlockLevel(species,key);
  if(official!==null)return campaignLevel(official);
+ // Match the Pokédex gate to actual available moves: no invisible or
+ // review-pending animation receives a later-generation unlock.
+ if(!frlgMachineCompatible(species,key)){
+  const installed=GEN7_INSTALLED.get(gen7MoveKey(key));
+  const gen7=installed?gen7LetsGoUnlockLevel(species,key):null;
+  if(gen7!==null)return campaignLevel(Math.max(13,frlgEvolutionLevel(species),gen7));
+ }
  const bonus=CHARACTERISTIC_BONUS_LEVELS[species]?.[key];
  if(Number.isInteger(bonus))return campaignLevel(bonus);
  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||kanto151SlotPlan(species);
