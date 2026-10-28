@@ -2,7 +2,7 @@
 
 ## §20/§24/§31/§33/§34/§36/§37 — T19: três batalhas reais de Cerulean (28/10/2026)
 
-- **[PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171) integrada**, commit `85fb7645659479a6dda11521a0d53ee9b6fa1855`. Vitória genuína nos três treinadores Zubat, Geodude e Paras em sequência, AUTO/CPU/HP/dano do motor Phaser, dinheiro R$1.400→R$2.120 e progresso de treinadores 0→3. [CI de branch #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) e [main #40705538155](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705538155) **sucesso**, incluindo navegador/WebGL; [Pages #40705591501](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705591501) pendente de verificação.
+- **[PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171) integrada**, commit `85fb7645659479a6dda11521a0d53ee9b6fa1855`. Vitória genuína nos três treinadores Zubat, Geodude e Paras em sequência, AUTO/CPU/HP/dano do motor Phaser, dinheiro R$1.400→R$2.120 e progresso de treinadores 0→3. [CI de branch #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) e [main #40705538155](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705538155) **sucesso**, incluindo navegador/WebGL; [Pages #40705591501](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705591501) **sucesso**, incluindo verificação no site público.
 - **Não é caminhada natural desde Pallet:** estágio Cerulean, Rocha, 14 vitórias e Wartortle Lv20 são fixture preparados antes das três partidas. Não houve injeção de dano, K.O., vitória ou XP durante os combates. T19 **PARCIAL**, os checkpoints restantes até Misty/Giovanni e a campanha ao Campeão continuam pendentes.
 
 
