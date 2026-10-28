@@ -78,7 +78,7 @@ const server=http.createServer(async(req,res)=>{
      Math.random=()=>roll;
      try{result=e.recibir(p,{dano:10,tipo:'ELECTRIC',nombre:name,slot:'q'});}
      catch(error){throw new Error('Native recipient diagnostic: '+JSON.stringify({
-      kind,name,roll,error:String(error),nativeTraining:String(b.anotarEntreno).slice(0,1900),
+      kind,name,roll,error:String(error),stack:String(error?.stack||error),nativeTraining:String(b.anotarEntreno).slice(0,1900),
       nativePlayerStats:p.stats,nativeEnemyStats:e.stats,
       gameMode:b.datos?.modo,labReady:b.__torre2LabInstalled,
       sceneProperties:Object.keys(b).filter(key=>/entren|estad|registro|hist|dato/i.test(key))
