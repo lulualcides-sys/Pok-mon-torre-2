@@ -119,7 +119,10 @@ export function bindAutoBattleToScene(Scene,IA){
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
-  const install=()=>installAutoBattle(this,fighter=>new IA(fighter,'normal'));
+  // Only opt-in campaign AUTO uses the native stronger tactical tier.
+  // No attack/damage, move, cooldown, speed, HP or VFX is modified.
+  const tactic=this.datos?.torre2?'dificil':'normal';
+  const install=()=>installAutoBattle(this,fighter=>new IA(fighter,tactic));
   if(!install()&&autoBattleAllowed(this)&&!this.__torre2AutoRetry){
    // Campaign/Phaser may create the player controller AFTER create().
    // Try again on later native game frames without replacing controllers,
