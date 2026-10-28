@@ -153,6 +153,48 @@ const server=http.createServer(async(req,res)=>{
    'storage failures must not overwrite primary, backup or actual browser save');
   assert.ok(readOnly.sceneActive,'Phaser scene must remain active');
   console.log('T05 READ-ONLY STORAGE PASS',JSON.stringify(readOnly));
+  // Browser/Phaser proof for independently denied storage reads. The actual
+  // browser localStorage is untouched: adapters simulate SecurityError.
+  const partialRead=await page.evaluate(async()=>{
+   const src=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const core=await import(new URL('./torre2/campaign-core.js',src).href);
+   const good=localStorage.getItem(core.SAVE_KEY);
+   const data=new Map([[core.SAVE_KEY,good],[core.SAVE_BACKUP_KEY,good]]);
+   let writes=0;
+   const noBackup={
+    getItem:key=>{
+     if(key===core.SAVE_BACKUP_KEY)throw new DOMException('Denied backup','SecurityError');
+     return data.get(key)??null;
+    },
+    setItem(){writes++;throw Error('Unexpected write')}
+   };
+   const primary=core.readCampaign(noBackup);
+   const corrupt=JSON.stringify({...JSON.parse(good),team:[]});
+   data.set(core.SAVE_KEY,corrupt);
+   const noPrimary={
+    getItem:key=>{
+     if(key===core.SAVE_KEY)throw new DOMException('Denied primary','SecurityError');
+     return data.get(key)??null;
+    },
+    setItem(){writes++;throw new DOMException('Quota exceeded','QuotaExceededError')}
+   };
+   const backup=core.readCampaign(noPrimary);
+   return {primaryOk:JSON.stringify(primary)===good,
+    backupOk:JSON.stringify(backup)===good,
+    primaryStatus:primary?.team[0]?.status??null,
+    backupStatus:backup?.team[0]?.status??null,
+    writes,backupUnchanged:data.get(core.SAVE_BACKUP_KEY)===good,
+    corruptPrimaryUnchanged:data.get(core.SAVE_KEY)===corrupt,
+    liveSaveUnchanged:localStorage.getItem(core.SAVE_KEY)===good,
+    sceneActive:window.__pt2Game.scene.isActive('titulo')};
+  });
+  assert.ok(partialRead.primaryOk&&partialRead.backupOk,
+   'one denied storage key must not blank a recoverable campaign');
+  assert.equal(partialRead.writes,1,'only the backup recovery attempts a write');
+  assert.ok(partialRead.backupUnchanged&&partialRead.corruptPrimaryUnchanged&&
+   partialRead.liveSaveUnchanged&&partialRead.sceneActive,
+   'partial read errors must preserve both stored checkpoints and Phaser scene');
+  console.log('T05 PARTIAL STORAGE READ PASS',JSON.stringify(partialRead));
   await page.screenshot({path:'test-evidence/t05-browser-uid-recovery.png'});
   assert.deepEqual(errors,[]);
   console.log('T05 PASS REAL RELOAD: structural and duplicate-UID corruption recovered from clean backup; PC/cash/items/HP/badges intact');

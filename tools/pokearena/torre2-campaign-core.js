@@ -141,8 +141,12 @@ function parseUsableCampaign(raw){
 }
 export function readCampaign(storage=localStorage){
  try{
-  const raw=storage.getItem(SAVE_KEY);
-  const backup=storage.getItem(SAVE_BACKUP_KEY);
+  // Browsers and storage adapters can deny access to one key while the
+  // other remains readable. A failed backup read must not hide a valid
+  // primary save (nor should a failed primary read hide a valid backup).
+  let raw=null,backup=null;
+  try{raw=storage.getItem(SAVE_KEY)}catch{/* primary key inaccessible */}
+  try{backup=storage.getItem(SAVE_BACKUP_KEY)}catch{/* backup key inaccessible */}
   const primary=parseUsableCampaign(raw);
   const fallback=parseUsableCampaign(backup);
   // Prefer the last known-good checkpoint when the primary duplicates a
