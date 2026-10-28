@@ -46,6 +46,10 @@ const server=http.createServer(async(req,res)=>{
     volume:c.sound?.volume??c.game?.sound?.volume,
     mute:c.sound?.mute??c.game?.sound?.mute,
     busesSame:c.sound===c.game.sound,
+    sceneBus:{mute:c.sound?.mute,volume:c.sound?.volume,
+     setMute:typeof c.sound?.setMute==='function'},
+    gameBus:{mute:c.game?.sound?.mute,volume:c.game?.sound?.volume,
+     setMute:typeof c.game?.sound?.setMute==='function'},
     setterAvailable:typeof c.sound?.setVolume==='function',
     label:c.__torre2AudioSettings?.button?.active,
     buttons:c.children.list.filter(x=>x.active&&x.input?.enabled&&
@@ -85,6 +89,7 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(Math.abs(changed.volume-.6)<1e-5,'Phaser volume should be 60%');
   await touch(200,282); // mute
   const muted=await ui();
+  console.log('T28 PHASER MUTE DIAG',JSON.stringify(muted));
   assert.equal(muted.prefs.muted,true);
   assert.equal(muted.mute,true);
   await touch(448,282); // close
