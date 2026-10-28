@@ -68,7 +68,7 @@ const server=http.createServer(async(req,res)=>{
    st.team[0].hp=100;st.team[0].moves=[];st.team[0].tmMoves=[];
    // Independent fixture: two genuine party members against two Rocket foes.
    // Pikachu could be caught in Viridian and trained to Lv20 by this stage.
-   for(const [i,id] of ['pikachu','oddish','geodude','mankey','pidgeotto'].entries())
+   for(const [i,id] of ['pikachu','oddish','geodude','mankey','butterfree'].entries())
     st.team.push({id,uid:'t19-cerulean-last-'+i+'-'+id,
      hp:100,progression:createPokemonProgression(id,21),
      status:null,tmMoves:[],moves:[]});
@@ -127,8 +127,10 @@ const server=http.createServer(async(req,res)=>{
   };
   // Open the actual campaign SUMÁRIO, click USAR NA BATALHA, and let
   // selectTeamMember write the save. Never directly change active in the test.
-  // Favor type-effective moves: Pikachu/Zubat, Wartortle/Geodude,
-  // Pidgeotto/Bulbasaur, Mankey/Clefairy, Wartortle/Sandshrew.
+  // Matchups within Misty's real Lv21 cap: Pikachu/Zubat,
+  // Wartortle/Geodude, Butterfree/Bulbasaur (Grass resistance and
+  // Psychic versus Poison), Mankey/Clefairy, Wartortle/Sandshrew.
+  // No combat, HP, XP, level-cap or victory overrides.
   const selectCombatPokemon=async index=>{
    const prior=await game();
    if(prior.active===index)return prior;
@@ -163,7 +165,7 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(before.trainer,startTrainer);
   assert.equal(before.wins,14+startTrainer);
   assert.deepEqual(before.team.map(m=>m.id),
-   ['wartortle','pikachu','oddish','geodude','mankey','pidgeotto']);
+   ['wartortle','pikachu','oddish','geodude','mankey','butterfree']);
   assert.equal(before.team[0].level,21);
   assert.equal(before.box.length,1);
   for(let round=0;round<5;round++){
