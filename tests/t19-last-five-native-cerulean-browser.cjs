@@ -67,9 +67,9 @@ const server=http.createServer(async(req,res)=>{
    st.team[0].id='wartortle';
    st.team[0].progression=createPokemonProgression('wartortle',21);
    st.team[0].hp=100;st.team[0].moves=[];st.team[0].tmMoves=[];
-   // Independent fixture: two genuine party members against two Rocket foes.
+   // Prepared legal Kanto roster for the five native Cerulean battles.
    // Pikachu could be caught in Viridian and trained to Lv20 by this stage.
-   for(const [i,id] of ['pikachu','oddish','geodude','mankey','butterfree'].entries())
+   for(const [i,id] of ['pikachu','oddish','psyduck','machop','butterfree'].entries())
     st.team.push({id,uid:'t19-cerulean-last-'+i+'-'+id,
      hp:100,progression:createPokemonProgression(id,21),
      status:null,tmMoves:[],moves:[]});
@@ -130,7 +130,10 @@ const server=http.createServer(async(req,res)=>{
   // selectTeamMember write the save. Never directly change active in the test.
   // Matchups within Misty's real Lv21 cap: Pikachu/Zubat,
   // Wartortle/Geodude, Butterfree/Bulbasaur (Grass resistance and
-  // Psychic versus Poison), Mankey/Clefairy, Wartortle/Sandshrew.
+  // Psychic versus Poison), sturdier Machop/Clefairy (Gen III Normal),
+  // and Wartortle/Psyduck against Ground foes.
+  // Both Machop (Mt Moon) and Psyduck (Cerulean area) can be obtained
+  // before Misty; the Lv21 team remains a DECLARED fixture.
   // No combat, HP, XP, level-cap or victory overrides.
   const selectCombatPokemon=async index=>{
    const prior=await game();
@@ -166,7 +169,7 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(before.trainer,startTrainer);
   assert.equal(before.wins,14+startTrainer);
   assert.deepEqual(before.team.map(m=>m.id),
-   ['wartortle','pikachu','oddish','geodude','mankey','butterfree']);
+   ['wartortle','pikachu','oddish','psyduck','machop','butterfree']);
   assert.equal(before.team[0].level,21);
   assert.equal(before.box.length,1);
   for(let round=0;round<5;round++){
@@ -219,8 +222,8 @@ const server=http.createServer(async(req,res)=>{
     // six minutes, still fail closed on timeout/defeat. No state writes,
     // fake damage, forced KO, stage manipulation or battle-result injection.
     const counterSlots={
-     zubat:[1,5,0],geodude:[0,2,4],paras:[5,4,1],
-     bulbasaur:[5,4,1],clefairy:[4,0,5],sandshrew:[0,2,5],
+     zubat:[1,5,0],geodude:[0,3,2],paras:[5,4,1],
+     bulbasaur:[5,4,1],clefairy:[4,0,3,2],sandshrew:[0,3,2,5],
      ekans:[5,3,0],poliwag:[1,2,0],psyduck:[1,2,0],
      staryu:[1,2,0],magikarp:[1,2,0]
     };
