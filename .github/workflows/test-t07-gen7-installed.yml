@@ -37,6 +37,7 @@ jobs:
           node tests/kanto-151-built.test.mjs
           node tests/frlg-learnsets-built.test.mjs
           node tests/gen7-installed-built.test.mjs
+          node tests/t07-151-movesets-built.test.mjs
       - name: Regressao de navegador Chromium real
         run: |
           set -euo pipefail
