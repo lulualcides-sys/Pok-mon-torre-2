@@ -67,10 +67,25 @@ export function createPartyMatch(state,opponent,wild=false){
 }
 export function applyPartyBattleResult(state,party){
  if(!party||!Array.isArray(party.friend))return;
- const byUid=new Map(party.friend.map(m=>[m.uid,m]));
- for(const m of state.team){
-  const from=byUid.get(m.uid);
-  if(from){m.hp=clamp(from.hp);m.status=from.status??null;}
+ // Legacy v1 saves may lack UIDs. Mapping undefined to a single combatant
+ // would copy the LAST member's HP/status into every UID-less teammate.
+ // Preserve roster order for ambiguous identities; unique UIDs take priority.
+ const counts=new Map();
+ for(const member of party.friend){
+  if(typeof member?.uid==='string'&&member.uid)
+   counts.set(member.uid,(counts.get(member.uid)||0)+1);
+ }
+ const byUid=new Map(party.friend.filter(m=>
+  typeof m?.uid==='string'&&m.uid&&counts.get(m.uid)===1
+ ).map(m=>[m.uid,m]));
+ for(let index=0;index<state.team.length;index++){
+  const member=state.team[index];
+  const uid=member?.uid;
+  const unique=typeof uid==='string'&&uid&&counts.get(uid)===1;
+  const positional=party.friend[index];
+  const from=unique?byUid.get(uid):
+   positional?.id===member?.id&&positional?.uid===uid?positional:null;
+  if(from){member.hp=clamp(from.hp);member.status=from.status??null;}
  }
  if(Number.isInteger(party.playerIndex)&&party.playerIndex>=0&&
     party.playerIndex<state.team.length)
