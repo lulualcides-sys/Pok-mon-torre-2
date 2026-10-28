@@ -43,7 +43,7 @@ const server=http.createServer(async(req,res)=>{
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
    '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const report={scope:'T19 five normal Cerulean checkpoint fights with native AUTO',
-  startTrainer,checkpointFixture:'stage1 trainer10 with ten previous Cerulean wins, Rocha badge, 4 Kanto Lv20 members and initial money prepared; only trainer fights 11–15 are real in this test',
+  startTrainer,checkpointFixture:'stage1 trainer10 with ten previous Cerulean wins, Rocha badge, 6 Kanto Lv21 members and initial money prepared; only trainer fights 11–15 are real in this test',
   fights:[],naturalFromCheckpoint:true,wholeCampaignNatural:false};
  let page=null;
  try{
@@ -64,13 +64,13 @@ const server=http.createServer(async(req,res)=>{
    st.stage=1;st.trainer=startTrainer;st.wins=14+startTrainer;
    st.money=4140;st.badges=['Rocha'];
    st.team[0].id='wartortle';
-   st.team[0].progression=createPokemonProgression('wartortle',20);
+   st.team[0].progression=createPokemonProgression('wartortle',21);
    st.team[0].hp=100;st.team[0].moves=[];st.team[0].tmMoves=[];
    // Independent fixture: two genuine party members against two Rocket foes.
    // Pikachu could be caught in Viridian and trained to Lv20 by this stage.
-   for(const [i,id] of ['pikachu','oddish','geodude'].entries())
+   for(const [i,id] of ['pikachu','oddish','geodude','mankey','pidgeotto'].entries())
     st.team.push({id,uid:'t19-cerulean-last-'+i+'-'+id,
-     hp:100,progression:createPokemonProgression(id,20),
+     hp:100,progression:createPokemonProgression(id,21),
      status:null,tmMoves:[],moves:[]});
    core.saveCampaign(st);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
@@ -130,8 +130,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(before.trainer,startTrainer);
   assert.equal(before.wins,14+startTrainer);
   assert.deepEqual(before.team.map(m=>m.id),
-   ['wartortle','pikachu','oddish','geodude']);
-  assert.equal(before.team[0].level,20);
+   ['wartortle','pikachu','oddish','geodude','mankey','pidgeotto']);
+  assert.equal(before.team[0].level,21);
   assert.equal(before.box.length,1);
   for(let round=0;round<5;round++){
    checkpoint='route menu for Cerulean fight '+(round+1);
@@ -195,6 +195,10 @@ const server=http.createServer(async(req,res)=>{
    const after=await game();
    checkpoint='battle result '+(round+1);
    record.after=after;lastBattle={round:round+1,enemy:foe.id,wins:after.wins,losses:after.losses};
+   if(after.losses>before.losses){
+    fs.writeFileSync('test-evidence/t19-five-cerulean-fights.json',JSON.stringify(report,null,2));
+    throw Error('T19 genuine native defeat; no fake victory: '+JSON.stringify({round:round+1,foe:foe.id,after}));
+   }
    assert.equal(after.stage,1,'Premature gym progression');
    assert.equal(after.trainer,before.trainer+1);
    assert.equal(after.wins,before.wins+1);
