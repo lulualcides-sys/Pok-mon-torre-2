@@ -25,7 +25,7 @@ const server=http.createServer(async(req,res)=>{
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
    '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const evidence={scope:'T04 native Double Kick and three consecutive pointer recalls on Phaser WebGL',
-  fixture:'Nidoran Lv18, selected move, positions, immobilized opposing AI; NOT natural campaign',events:[]};
+  fixture:'Nidoran Lv18, selected move, target proximity tracking, immobilized opposing AI; NOT natural campaign',events:[]};
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
@@ -84,8 +84,17 @@ const server=http.createServer(async(req,res)=>{
    foe.hp=foe.hpMax;foe.est={};foe.dolorHasta=-1;
    foe.accion=null;foe.dash=null;
    const dir=foe.x>=me.x?1:-1;
-   foe.x=me.x+dir*82;foe.y=me.y;
+   foe.x=me.x+dir*60;foe.y=me.y;
    foe.spr?.setPosition(foe.x,foe.y);
+   // Isolated POSITION fixture only: the native AUTO AI may retreat far
+   // from a stationary foe. Keep the passive target in range until the first
+   // genuine Double Kick hit, without changing damage, hit callbacks or RNG.
+   const followTarget=()=>{
+    if(b.__t04FirstHit){b.events.off('update',followTarget);return;}
+    foe.x=me.x+dir*60;foe.y=me.y;
+    foe.spr?.setPosition(foe.x,foe.y);
+   };
+   b.events.on('update',followTarget);
    me.ax=foe.x;me.ay=foe.y;
    b.pausado=false;b.pausaGolpe=0;b.fase='lucha';
    b.__t04Contacts=[];b.__t04FirstHit=null;
