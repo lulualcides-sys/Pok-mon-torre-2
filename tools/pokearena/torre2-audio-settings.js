@@ -37,11 +37,11 @@ export function saveAudioSettings(settings,storage=globalThis.localStorage){
 // the future licensed soundtrack and never enables an unlicensed track.
 export function applyAudioSettingsToGame(scene,settings){
  const prefs=normalizeAudioSettings(settings);
- // Original client can expose the Phaser BaseSoundManager on scene.sound
- // instead of (or alongside) game.sound. Some builds have getter-only
- // mute/volume properties: call the public Phaser setters first.
- const bus=scene?.sound||scene?.game?.sound;
- if(bus){
+ // The imported Poké Arena version exposes the engine sound bus both
+ // on the Scene and on Game, but they need not be the same manager. Update
+ // each distinct bus: a scene-local volume must not bypass the global mute.
+ const buses=new Set([scene?.sound,scene?.game?.sound].filter(Boolean));
+ for(const bus of buses){
   try{
    if(typeof bus.setMute==='function')bus.setMute(prefs.muted);
    else bus.mute=prefs.muted;
