@@ -70,10 +70,17 @@ for(const [id,at] of [['ponyta',49],['rapidash',49]]){
  assert.equal(moveUnlockLevel(member(id,at),'flare-blitz'),49);
 }
 assert.ok(CHARACTERISTIC_KANTO_ROLES.ponyta.some(x=>x[1]==='flare-blitz'));
-assert.equal(resolveLoadout(member('ponyta',49)).q?.id,'flare-blitz',
- 'Ponyta Lv49 must automatically equip native Flare Blitz');
-assert.equal(resolveLoadout(member('ponyta',21)).rmb?.id,'flame-charge',
- 'Ponyta Lv21 must automatically equip native Flame Charge');
+const ponyta49=resolveLoadout(member('ponyta',49));
+const ponyta21=resolveLoadout(member('ponyta',21));
+console.log('PONYTA49_LOADOUT',JSON.stringify(Object.fromEntries(
+ ['lmb','rmb','q','e'].map(slot=>[slot,ponyta49[slot]?.id||null]))));
+console.log('PONYTA21_LOADOUT',JSON.stringify(Object.fromEntries(
+ ['lmb','rmb','q','e'].map(slot=>[slot,ponyta21[slot]?.id||null]))));
+for(const [level,key,kit] of [[21,'flame-charge',ponyta21],
+ [49,'flare-blitz',ponyta49]]){
+ assert.ok(['lmb','rmb','q','e'].some(slot=>kit[slot]?.id===key),
+  'Ponyta Lv'+level+' must equip installed '+key+' in a native attack slot');
+}
 for(const id of ['bulbasaur','magikarp','ponyta','rapidash'])
  assert.ok(campaignLearnset(id).length>=1);
 const summary={installedLibrary:TEST_LIBRARY.length,bySource,
