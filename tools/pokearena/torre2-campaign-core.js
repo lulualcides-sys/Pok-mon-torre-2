@@ -120,6 +120,18 @@ function usableCampaignSnapshot(s){
   Number.isInteger(s.stage)&&s.stage>=0&&s.stage<=STAGES.length&&
   Number.isInteger(s.trainer)&&s.trainer>=0;
 }
+// Duplicate non-empty identities across the team and PC are structural save
+// corruption. Older saves without UIDs remain readable and are not discarded.
+function hasRepeatedMemberUid(s){
+ const seen=new Set();
+ for(const member of [...s.team,...(Array.isArray(s.box)?s.box:[])]){
+  const uid=member?.uid;
+  if(typeof uid!=='string'||!uid)continue;
+  if(seen.has(uid))return true;
+  seen.add(uid);
+ }
+ return false;
+}
 function parseUsableCampaign(raw){
  if(!raw)return null;
  try{
@@ -132,11 +144,15 @@ export function readCampaign(storage=localStorage){
   const raw=storage.getItem(SAVE_KEY);
   const backup=storage.getItem(SAVE_BACKUP_KEY);
   const primary=parseUsableCampaign(raw);
-  const s=primary||parseUsableCampaign(backup);
+  const fallback=parseUsableCampaign(backup);
+  // Prefer the last known-good checkpoint when the primary duplicates a
+  // Pokémon identity. With no clean backup, keep the primary rather than
+  // silently deleting the player's only surviving progress.
+  const recoverUid=!!(primary&&fallback&&hasRepeatedMemberUid(primary)&&!hasRepeatedMemberUid(fallback));
+  const s=recoverUid?fallback:(primary||fallback);
   if(!s)return null;
-  // Recover from truncation AND JSON-valid structural corruption. Never
-  // discard a valid backup because the primary happened to parse as JSON.
-  if(!primary&&backup)storage.setItem(SAVE_KEY,backup);
+  // Recover from truncation, JSON-valid corruption and duplicated identities.
+  if((!primary||recoverUid)&&backup)storage.setItem(SAVE_KEY,backup);
   // Additive v1 migration. Do not reset saves or lose stored Pokémon.
   let migrated=false;
   // Old saves stored Elite victories alongside gym badges. Preserve them in
@@ -205,8 +221,11 @@ export function readCampaign(storage=localStorage){
 export function saveCampaign(state,storage=localStorage){
  const serialized=JSON.stringify(state);
  const previous=storage.getItem(SAVE_KEY);
- if(previous&&previous!==serialized&&parseUsableCampaign(previous)){
-  storage.setItem(SAVE_BACKUP_KEY,previous);
+ if(previous&&previous!==serialized){
+  const candidate=parseUsableCampaign(previous);
+  // Never rotate a duplicate-UID primary over a clean backup.
+  if(candidate&&!hasRepeatedMemberUid(candidate))
+   storage.setItem(SAVE_BACKUP_KEY,previous);
  }
  storage.setItem(SAVE_KEY,serialized);
  return state;
