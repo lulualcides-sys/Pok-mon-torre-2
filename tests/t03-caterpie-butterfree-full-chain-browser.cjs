@@ -266,7 +266,8 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
    assert.equal(after.losses,before.losses,'No staged KO or false victory');
    assert.equal(after.stage,0);
    assert.equal(after.trainer,round+1);
-   assert.equal(after.money,before.money+180);
+   assert.ok(after.money>before.money,'Actual trainer victory must grant positive money');
+   if(round<2)assert.equal(after.money,before.money+180);
    assert.equal(after.team.length,2);
    assert.equal(after.box.join(','),'mewtwo');
    assert.ok(current.experience>before.team.find(m=>m.uid===caterpie.uid).experience,
@@ -274,7 +275,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
    if(round===0){
     assert.equal(current.id,'caterpie','First real trainer must not evolve prematurely');
     assert.ok(current.level<7,'Level 7 must not be granted early');
-   }else{
+   }else if(round===1){
     assert.equal(current.id,'metapod','Second real victory must evolve Caterpie');
     assert.equal(current.species,'metapod');
     assert.ok(current.level>=7);
@@ -336,7 +337,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
    const s=window.kanto.readCampaign();
    const index=s.team.findIndex(x=>x.uid===uid);
    if(index<0||!window.kanto.selectTeamMember(s,index))
-    throw Error('Cannot select naturally evolved Metapod');
+    throw Error('Cannot select naturally evolved Butterfree');
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   },caterpie.uid);
   await mapReady();
@@ -361,7 +362,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
   assert.ok(live.visible&&live.active&&live.loaded&&live.frame.every(n=>n>0));
   assert.ok(Object.values(live.moves).filter(m=>m.name&&!m.pending).length>=3);
   assert.deepEqual(errors,[]);
-  await page.screenshot({path:evidence+'/t03-caterpie-chain-metapod-next-battle.png'});
+  await page.screenshot({path:evidence+'/t03-caterpie-chain-butterfree-next-battle.png'});
   report.save={uid:caterpie.uid,restore:restored.member.id,level:restored.member.progression.level,
    sameBytes:raw===restored.save,wins:restored.wins,trainer:restored.trainer};
   report.nextBattle=live;
