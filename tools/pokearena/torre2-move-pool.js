@@ -506,6 +506,10 @@ export function selectedMoves(member){
  // From Lv9, preserve any legitimately earned HAB moves manually equipped.
  if(member.id!=='mewtwo'&&level>=5&&level<KANTO_INTRO.tutorialUntil){
   const defaults=defaultLoadout(member);
+  // After an actual evolution, old saved move IDs belong to the PREVIOUS
+  // species. Do not let them override the new stage's three weak attacks.
+  // Respect manual selections ONLY if made for this very evolution form.
+  if(member.movePlanSpecies!==member.id)return defaults;
   return defaults.map((fallback,i)=>{
    const id=member.moves?.[i],move=available.find(m=>m.id===id);
    if(!move)return fallback;
