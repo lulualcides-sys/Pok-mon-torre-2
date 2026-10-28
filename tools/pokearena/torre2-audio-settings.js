@@ -149,7 +149,7 @@ export function installCampaignAudioSettings(scene,storage=globalThis.localStora
     set(part,prefs[part]+.1);playOriginalMenuCue(scene,storage);
    },'torre2-audio-'+part+'-plus');
   }
-  const muteLabel=text(200,282,'',13,'#fff1c6');
+  const muteLabel=text(200,282,'',13,'#fff1c6').setDepth(860);
   button(200,282,189,33,'',()=>{
    set('muted',!prefs.muted);playOriginalMenuCue(scene,storage);
   },'torre2-audio-toggle-mute');
