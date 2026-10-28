@@ -29,6 +29,15 @@ assert.equal(frlgUnlockLevel('magikarp','flail'),30);
 assert.ok(frlgMachineCompatible('bulbasaur','protect'));
 assert.ok(!frlgMachineCompatible('magikarp','protect'));
 const member=(id,level,tmMoves=[])=>({id,progression:{species:id,level},tmMoves});
+// T07: incompatible TM records in a legacy/imported save cannot grant
+// illegal attacks, while genuinely compatible and taught TMs remain valid.
+assert.equal(frlgMachineCompatible('bulbasaur','thunderbolt'),false);
+assert.ok(!availableMoves(member('bulbasaur',5,['thunderbolt'])).some(x=>x.id==='thunderbolt'),
+ 'Bulbasaur cannot use saved Thunderbolt from an incompatible TM record');
+assert.ok(!availableMoves(member('magikarp',5,['protect'])).some(x=>x.id==='protect'),
+ 'Magikarp cannot equip an incompatible saved Protect');
+assert.ok(availableMoves(member('bulbasaur',5,['protect'])).some(x=>x.id==='protect'),
+ 'Bulbasaur retains explicitly taught compatible Protect');
 assert.ok(!availableMoves(member('charmander',5)).some(x=>x.id==='flamethrower'),
  'Early Charmander cannot use its late FireRed flamethrower');
 assert.ok(!availableMoves(member('bulbasaur',5)).some(x=>x.id==='solar-beam'),
