@@ -86,6 +86,19 @@ const server=http.createServer(async(req,res)=>{
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
+ // Status is inflicted via the real Gen III engine, not inserted into save.
+ // Both breakout and catch must retain it for the active Pokemon.
+ await page.evaluate(async()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+  const {applyGen3Status}=await import(new URL('./torre2/gen3-status.js',src));
+  const a=b.luchadores[0];
+  if(!applyGen3Status(a,'veneno')||!a.est?.veneno?.torre2Status)
+   throw Error('Native status setup failed');
+  const party=b.datos.torre2.party;
+  if(party.friend[party.playerIndex].status||core.readCampaign().team[core.readCampaign().active].status)
+   throw Error('Status fixture must begin unsaved');
+ });
  const throwBall=async(mode)=>{
   await page.evaluate(mode=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>mode==='caught'?0:.999999;
@@ -102,6 +115,9 @@ const server=http.createServer(async(req,res)=>{
  await page.screenshot({path:'test-evidence/ball-capture-absorb.png'});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='RESUME',null,{timeout:15000});
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
+ assert.equal(await page.evaluate(()=>{
+  const save=core.readCampaign();return save.team[save.active].status?.kind;
+ }), 'veneno','Failed capture must preserve live status');
  // Re-enter for a successful capture into a full party.
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
@@ -115,6 +131,8 @@ const server=http.createServer(async(req,res)=>{
  await page.reload();
  await page.waitForFunction(()=>window.__pt2Game);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')).box.length),1);
+ assert.equal(await page.evaluate(()=>core.readCampaign().team[core.readCampaign().active].status?.kind),
+  'veneno','Successful capture and reload must preserve active fighter status');
  await page.setViewportSize({width:390,height:844});
  await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'));
  await page.evaluate(async()=>{
