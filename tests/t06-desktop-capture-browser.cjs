@@ -40,7 +40,10 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
    },[x,y]);
    assert.ok(point.x>=0&&point.x<=1280&&point.y>=0&&point.y<=720,
     'Mouse control must remain visible in desktop viewport');
-   await page.mouse.click(point.x,point.y);
+   await page.mouse.move(point.x,point.y);
+   await page.mouse.down();
+   await page.waitForTimeout(95);
+   await page.mouse.up();
   };
   await page.goto('http://127.0.0.1:4390/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
