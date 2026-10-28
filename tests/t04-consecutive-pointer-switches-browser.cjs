@@ -84,26 +84,27 @@ const server=http.createServer(async(req,res)=>{
    foe.hp=foe.hpMax;foe.est={};foe.dolorHasta=-1;
    foe.accion=null;foe.dash=null;
    const dir=foe.x>=me.x?1:-1;
-   foe.x=me.x+dir*60;foe.y=me.y;
+   foe.x=me.x+dir*82;foe.y=me.y;
    foe.spr?.setPosition(foe.x,foe.y);
-   // Isolated POSITION fixture only: the native AUTO AI may retreat far
-   // from a stationary foe. Keep the passive target in range until the first
-   // genuine Double Kick hit, without changing damage, hit callbacks or RNG.
+   // Isolated POSITION fixture: follow a retreating AUTO fighter ONLY
+   // between casts. During a native lunge, the passive target must stay put:
+   // otherwise it would move away with the attacker and make melee miss.
    const followTarget=()=>{
     if(b.__t04FirstHit){b.events.off('update',followTarget);return;}
-    foe.x=me.x+dir*60;foe.y=me.y;
+    if(me.accion)return;
+    foe.x=me.x+dir*82;foe.y=me.y;
     foe.spr?.setPosition(foe.x,foe.y);
-    // Aim is also a POSITION fixture: native melee uses the angle captured
-    // when the approved move starts. Never touch the move or its hit result.
     me.ax=foe.x;me.ay=foe.y;
    };
    b.events.on('update',followTarget);
    me.ax=foe.x;me.ay=foe.y;
    b.pausado=false;b.pausaGolpe=0;b.fase='lucha';
-   b.__t04Contacts=[];b.__t04FirstHit=null;
+   b.__t04Contacts=[];b.__t04Attempts=[];b.__t04FirstHit=null;
    const original=foe.recibir;
    foe.recibir=function(...args){
     const before=this.hp,result=original.apply(this,args);
+    if(args[1]?.slot===slot)b.__t04Attempts.push({before,after:this.hp,
+     result,player:[me.x,me.y],target:[foe.x,foe.y],aim:[me.ax,me.ay]});
     if(args[1]?.slot===slot&&result==='golpe'&&this.hp<before){
      const event={before,after:this.hp,damage:before-this.hp,slot:args[1].slot};
      b.__t04Contacts.push(event);
@@ -141,7 +142,7 @@ const server=http.createServer(async(req,res)=>{
     const b=window.__pt2Game.scene.getScene('combate');
     const me=b?.luchadores?.[0],foe=b?.luchadores?.[1];
     return {phase:b?.fase,auto:b?.__torre2AutoMode?.enabled,
-     contacts:b?.__t04Contacts,slot:window.__t04Slot,
+     contacts:b?.__t04Contacts,attempts:b?.__t04Attempts,slot:window.__t04Slot,
      player:{hp:me?.hp,energy:me?.energia,cd:me?.cd,action:me?.accion,
       position:[me?.x,me?.y]},
      foe:{hp:foe?.hp,position:[foe?.x,foe?.y]},
