@@ -42,10 +42,12 @@ const server=http.createServer(async(req,res)=>{
      nickname:'Eevee Escolha',tmMoves:['Protect'],moves:['Tackle'],movePlanSpecies:'eevee'};
     s.team.push(eevee);s.active=0;
     core.saveCampaign(s);
-    const result=core.resolveBattle(s,true);
-    if(!result.won||s.team[1].id!=='eevee')throw Error('Bad post-battle pending fixture');
+    // The fixture must be migrated like an ordinary first campaign load.
+    const normalized=core.readCampaign();
+    const result=core.resolveBattle(normalized,true);
+    if(!result.won||normalized.team[1].id!=='eevee')throw Error('Bad post-battle pending fixture');
     window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
-    return {wins:s.wins,level:s.team[1].progression.level,uid:eevee.uid};
+    return {wins:normalized.wins,level:normalized.team[1].progression.level,uid:eevee.uid};
    });
    await page.waitForFunction(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
