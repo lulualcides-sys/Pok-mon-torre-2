@@ -204,6 +204,20 @@ test('Scene prototype wrapping preserves original create and delegates AI',()=>{
  s.handlers.get('shutdown')();
 });
 
+test('Only Kanto campaign AUTO gets original native difficult tactical level',()=>{
+ const tiers=[];
+ const NativeBrain=class{constructor(_actor,tier){tiers.push(tier)}leer(){return{mx:1,my:0}}};
+ class Kanto{constructor(){Object.assign(this,scene({torre2:{kind:'trainer',stage:1}}))}create(){}}
+ class OriginalArena{constructor(){Object.assign(this,scene({modo:'arena'}))}create(){}}
+ bindAutoBattleToScene(Kanto,NativeBrain);
+ bindAutoBattleToScene(OriginalArena,NativeBrain);
+ const k=new Kanto(),a=new OriginalArena();
+ k.create();a.create();
+ assert.deepEqual(tiers,['dificil','normal'],
+  'Native original tactics without changing damage or original Arena tier');
+ k.handlers.get('shutdown')();a.handlers.get('shutdown')();
+});
+
 test('AUTO attaches when campaign native controller arrives after create',()=>{
  const frames=new Map;
  class DelayedScene{
