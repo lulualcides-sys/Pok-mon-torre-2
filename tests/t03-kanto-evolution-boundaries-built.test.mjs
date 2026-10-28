@@ -37,7 +37,6 @@ const capture=(from,to,threshold,delta)=>{
   moves:['Tackle'],movePlanSpecies:from,nickname:'Preserve UID',
   tmMoves:['Protect'],status:null};
  s.team=[member];
- s.box=[{...s.team[1]}].filter(Boolean);
  // Keep the permanent test Mewtwo unique, without placing it in combat.
  s.box=[{id:'mewtwo',uid:'t03-mewtwo',hp:100,
   progression:createPokemonProgression('mewtwo',50)}];
