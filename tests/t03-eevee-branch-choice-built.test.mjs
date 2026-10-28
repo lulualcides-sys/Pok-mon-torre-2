@@ -31,7 +31,8 @@ function seeded(){
   nickname:'Meu Eevee',tmMoves:['Protect'],moves:['Tackle'],movePlanSpecies:'eevee'};
  s.team=[original,eevee];s.active=0;
  core.saveCampaign(s);
- return {s,uid,xp};
+ // Normalize legacy inventory defaults before testing byte-for-byte save stability.
+ return {s:core.readCampaign(),uid,xp};
 }
 test('Eevee choice is forbidden before Lv30 and cannot mutate a save on invalid input',()=>{
  const {s,uid}=seeded();
