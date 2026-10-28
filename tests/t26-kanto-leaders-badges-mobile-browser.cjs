@@ -80,6 +80,12 @@ const server=http.createServer(async(req,res)=>{
    // Stage 8 is Victory Road with 17 trainers; stages 9-12 are league
    // leader-only. For each stage, enter the real leader challenge by touch.
    const before=await render(stage,true);
+   await page.waitForFunction(stage=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.__torre2BattlePath?.stage===stage&&
+     c.children.list.some(o=>o.active&&o.input?.enabled&&
+      o.getData?.('torre2-central-cta')===true);
+   },stage,{timeout:15000});
    const ui=await summary();
    assert.equal(ui.stage,stage);
    assert.equal(ui.progress,ui.total);
@@ -100,8 +106,16 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(await page.evaluate(()=>window.__pt2Game.scene.isActive('combate')),
     false,'Challenge should not launch battle until explicit confirmation');
    await tap(320,306);
-   await page.waitForFunction(()=>!!window.__pt2Game.scene.getScene('campanha')
-    .__torre2BattlePath,null,{timeout:15000});
+   await page.waitForFunction(stage=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.__torre2BattlePath?.stage===stage&&
+     !!c.children.list.find(o=>o.active&&o.input?.enabled&&
+      o.getData?.('torre2-central-cta')===true);
+   },stage,{timeout:15000});
+   // scene.restart is deferred to the next Phaser frame; let its pending
+   // callback finish before preparing the NEXT stage's visual fixture.
+   await page.evaluate(()=>new Promise(done=>
+    requestAnimationFrame(()=>requestAnimationFrame(done))));
    const after=await snapshot();
    assert.equal(after,before,'Back button changed save '+stage);
    report.bosses.push({stage,leader:ui.leader,challenge:true,readonly:true});
