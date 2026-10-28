@@ -53,3 +53,17 @@ test('empty module never counts as successful recovery',async()=>{
   }),/Empty critical module/);
   assert.ok(!captured.has(paths[0]));
 });
+
+test('transitive ES import missing after retries blocks an incomplete Phaser boot',async()=>{
+  const {unresolvedImportedModules}=await import('../tools/pokearena/capture-client-critical.mjs');
+  const missing=[
+    {path:version+'/escenas/jefe.js',source:'relative module import'},
+    {path:version+'/escenas/jefe.js',source:'relative module import'},
+    {path:'assets/pmd/0001/Idle.png',source:'PMD manifest dependency'},
+    {path:version+'/escenas/combate.js',source:'relative module import'}
+  ];
+  assert.deepEqual(unresolvedImportedModules(missing,new Set([version+'/escenas/combate.js'])),
+    [version+'/escenas/jefe.js']);
+  assert.deepEqual(unresolvedImportedModules(missing,new Set([
+    version+'/escenas/combate.js',version+'/escenas/jefe.js'])),[]);
+});
