@@ -27,10 +27,13 @@ for(const p of KANTO_151){
   // acquire noncanonical 4th attacks. Only real FRLG moves are equipped.
   const equipped=['lmb','rmb','q','e'].filter(slot=>kit[slot]?.forma);
   if(p.id==='ditto'){
-   // Transform is the ONLY FRLG learnset attack. The installed native
-   // client has no independently usable Transform renderer for campaign:
-   // never fabricate another Pokémon's damage move just to fill its slots.
-   assert.equal(equipped.length,0,'Ditto cannot borrow unrelated attacks');
+   // Transform remains Ditto's ONLY canonical FireRed level-up move.
+   // The campaign now supplies four weak, uniquely identified training
+   // controls to meet the user's 3-at-Lv5 / ULT-at-Lv8 requirement.
+   // Never let Ditto borrow another species' full-power native attacks.
+   assert.equal(equipped.length,4,'Ditto must have four usable practice controls');
+   assert.ok(equipped.every(slot=>kit[slot].torre2IntroPractice===true&&
+    kit[slot].dano<=12),'Ditto cannot borrow unrelated full-power attacks');
   }else assert.ok(equipped.length>=1,'No real move at all: '+p.id);
   assert.equal(kit.esp?.forma,'dash');
   const e=etapa?def.evoluciones[etapa-1]:def;
