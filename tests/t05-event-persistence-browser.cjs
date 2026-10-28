@@ -88,6 +88,37 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(after.wins,initial.wins+1);
   assert.equal(after.trainer,initial.trainer+1);
   assert.equal(new Set([...after.team,...after.box]).size,after.team.length+after.box.length);
+  // Simulated backup-key SecurityError, on real Chromium localStorage. A failed
+  // reset must not delete the only primary copy or resurrect an old checkpoint.
+  const deniedReset=await evalCore(`
+   const before=localStorage.getItem(core.SAVE_KEY);
+   localStorage.setItem(core.SAVE_BACKUP_KEY,before);
+   let error='';
+   try{
+    core.resetCampaign({
+     removeItem(key){
+      if(key===core.SAVE_BACKUP_KEY)throw Error('SecurityError: backup deletion denied');
+      localStorage.removeItem(key);
+     }
+    });
+   }catch(e){error=String(e.message);}
+   return {error,before,primary:localStorage.getItem(core.SAVE_KEY),
+    backup:localStorage.getItem(core.SAVE_BACKUP_KEY)};
+  `);
+  assert.match(deniedReset.error,/backup deletion denied/);
+  assert.equal(deniedReset.primary,deniedReset.before,
+   'denied backup deletion must preserve the live primary');
+  assert.equal(deniedReset.backup,deniedReset.before);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await waitTitle();
+  const afterDeniedReset=await evalCore(`
+   const s=core.readCampaign();
+   return {bytes:localStorage.getItem(core.SAVE_KEY),money:s.money,
+    wins:s.wins,trainer:s.trainer,team:s.team.map(x=>x.uid),
+    box:s.box.map(x=>x.uid)};
+  `);
+  assert.deepEqual(afterDeniedReset,after,
+   'Chromium reload after denied reset must retain the latest campaign');
   await page.screenshot({path:'test-evidence/t05-events-after-reload.png'});
   assert.deepEqual(errors,[]);
   console.log('T05 PASS Chromium/Phaser: purchase, wild capture, trainer victory and reload preserve unique party/PC members');
