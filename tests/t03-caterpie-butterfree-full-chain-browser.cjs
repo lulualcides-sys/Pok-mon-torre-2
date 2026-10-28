@@ -331,6 +331,91 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
   assert.equal(restored.teamSize,2);
   assert.deepEqual(restored.box,['mewtwo']);
 
+  // T03/T05 integration: this Butterfree was CAUGHT and EVOLVED with real
+  // battle EXP above, not fabricated as a PC fixture. Exercise the actual
+  // campaign persistence API through deposit, reload, withdrawal and reload.
+  // This is NOT a test of native PC UI pointer controls.
+  const pcBefore={...restored.member};
+  const deposit=await page.evaluate(uid=>{
+   const core=window.kanto,s=core.readCampaign();
+   const index=s.team.findIndex(m=>m.uid===uid);
+   if(index<0||!core.storePokemon(s,index))
+    throw Error('Naturally evolved Butterfree could not be deposited');
+   return {team:s.team.map(m=>m.uid),box:s.box.map(m=>m.uid),
+    member:s.box.find(m=>m.uid===uid),wins:s.wins,trainer:s.trainer,
+    money:s.money,bytes:localStorage.getItem(core.SAVE_KEY)};
+  },caterpie.uid);
+  assert.equal(deposit.team.length,1);
+  assert.equal(deposit.box.length,2);
+  assert.equal(deposit.box.filter(uid=>uid===caterpie.uid).length,1);
+  assert.equal(deposit.member?.id,'butterfree');
+  assert.deepEqual(deposit.member,pcBefore,
+   'PC deposit must preserve evolved species, XP, HP, status and identity');
+  assert.equal(deposit.wins,restored.wins);
+  assert.equal(deposit.trainer,restored.trainer);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
+   null,{timeout:60000});
+  const storedReload=await page.evaluate(async uid=>{
+   const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
+   const s=core.readCampaign();
+   return {bytes:localStorage.getItem(core.SAVE_KEY),team:s.team.map(m=>m.uid),
+    box:s.box.map(m=>m.uid),member:s.box.find(m=>m.uid===uid)};
+  },caterpie.uid);
+  assert.equal(storedReload.bytes,deposit.bytes,
+   'Deposit save must not be rewritten on reload');
+  assert.deepEqual(storedReload.member,pcBefore,
+   'Butterfree changed while stored in PC after reload');
+  assert.equal(storedReload.team.length,1);
+  assert.equal(storedReload.box.filter(uid=>uid===caterpie.uid).length,1);
+  const withdrawal=await page.evaluate(uid=>{
+   const core=window.kanto,s=core.readCampaign();
+   const index=s.box.findIndex(m=>m.uid===uid);
+   if(index<0||!core.withdrawPokemon(s,index))
+    throw Error('Naturally evolved Butterfree could not be withdrawn');
+   return {team:s.team.map(m=>m.uid),box:s.box.map(m=>m.uid),
+    member:s.team.find(m=>m.uid===uid),wins:s.wins,trainer:s.trainer,
+    money:s.money,bytes:localStorage.getItem(core.SAVE_KEY)};
+  },caterpie.uid);
+  assert.equal(withdrawal.team.length,2);
+  assert.deepEqual(withdrawal.box,['mewtwo'].map(()=>storedReload.box[0]));
+  assert.equal(withdrawal.team.filter(uid=>uid===caterpie.uid).length,1);
+  assert.deepEqual(withdrawal.member,pcBefore,
+   'PC withdrawal must not reset evolved XP, HP, status or UID');
+  assert.equal(withdrawal.wins,deposit.wins);
+  assert.equal(withdrawal.trainer,deposit.trainer);
+  assert.equal(withdrawal.money,deposit.money);
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
+   null,{timeout:60000});
+  const returned=await page.evaluate(async uid=>{
+   const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
+   const s=core.readCampaign();
+   return {bytes:localStorage.getItem(core.SAVE_KEY),
+    member:s.team.find(m=>m.uid===uid),team:s.team.map(m=>m.uid),
+    box:s.box.map(m=>m.uid),wins:s.wins,trainer:s.trainer,money:s.money};
+  },caterpie.uid);
+  assert.equal(returned.bytes,withdrawal.bytes,
+   'Withdrawal save must not be rewritten on reload');
+  assert.deepEqual(returned.member,pcBefore);
+  assert.equal(returned.team.length,2);
+  assert.equal(returned.team.filter(uid=>uid===caterpie.uid).length,1);
+  assert.equal(returned.box.length,1);
+  assert.equal(returned.wins,restored.wins);
+  assert.equal(returned.trainer,restored.trainer);
+  assert.equal(returned.money,deposit.money);
+  report.pcRoundTrip={uid:caterpie.uid,species:'butterfree',
+   earnedExperience:pcBefore.progression.experience,
+   level:pcBefore.progression.level,
+   deposited:true,withdrawn:true,saveUnchangedOnBothReloads:true,
+   teamCount:returned.team.length,boxCount:returned.box.length,
+   wins:returned.wins,money:returned.money};
+  persist();
+  console.log('PASS T03 NATURALLY EVOLVED BUTTERFREE PC DEPOSIT/RELOAD/WITHDRAW/RELOAD',
+   JSON.stringify(report.pcRoundTrip));
+
   // Enter next real route fight as the newly evolved Butterfree, to prove
   // that Phaser renders the actual evolved PMD sprite and live move slots.
   await page.evaluate(uid=>{
