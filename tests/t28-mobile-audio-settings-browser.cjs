@@ -43,7 +43,10 @@ const server=http.createServer(async(req,res)=>{
    const prefs=JSON.parse(localStorage.getItem('torre2-audio-prefs-v1')||'null');
    const panels=c.children.list.filter(x=>x.active&&x.getData?.('torre2-audio-title')===true);
    return {prefs,panels:panels.length,active:c.__torre2AudioSettings?.active,
-    volume:c.game.sound.volume,mute:c.game.sound.mute,
+    volume:c.sound?.volume??c.game?.sound?.volume,
+    mute:c.sound?.mute??c.game?.sound?.mute,
+    busesSame:c.sound===c.game.sound,
+    setterAvailable:typeof c.sound?.setVolume==='function',
     label:c.__torre2AudioSettings?.button?.active,
     buttons:c.children.list.filter(x=>x.active&&x.input?.enabled&&
      x.getData?.('torre2-audio-open')===true).length};
