@@ -19,7 +19,7 @@ const server=http.createServer(async(req,res)=>{
  catch{res.writeHead(404);res.end('missing')}
 });
 const report={scope:'T20 one normal Lorelei Elite Four battle in original Phaser',
- fixture:'Indigo-stage champion-unlocked checkpoint, team of six level-56 Kanto Pokemon; not Pallet-to-League journey',
+ fixture:'Victory Road complete checkpoint (stage8 trainer17), six Kanto Lv54; not Pallet-to-League journey',
  naturalCombat:true,forcedKO:false,forcedWin:false,status:'not-started'};
 const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
  fs.writeFileSync('test-evidence/t20-natural-lorelei.json',JSON.stringify(report,null,2))};
@@ -43,13 +43,13 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    const st=core.createCampaign('bulbasaur');
    core.saveCampaign(st);
    if(!core.storePokemon(st,1))throw Error('Could not deposit QA Mewtwo before League test');
-   st.stage=9;st.trainer=0;st.wins=172;st.losses=0;
+   st.stage=8;st.trainer=core.TRAINERS_PER_GYM(8);st.wins=172;st.losses=0;
    st.badges=core.GYMS.map(g=>g.badge);
    st.leagueHonors=[];
    st.team=[];
    for(const [i,id] of ['jolteon','zapdos','raichu','machamp','alakazam','blastoise'].entries())
     st.team.push({id,uid:'t20-lorelei-'+i+'-'+id,hp:100,
-     progression:createPokemonProgression(id,56),
+     progression:createPokemonProgression(id,54),
      status:null,tmMoves:[],moves:[]});
    st.active=0;st.money=24000;
    core.saveCampaign(st);
@@ -57,7 +57,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   });
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__torre2BattlePath?.stage===9;
+   return c.scene.isActive()&&c.__torre2BattlePath?.stage===8;
   },null,{timeout:60000});
   const before=await page.evaluate(()=>{
    const s=t20Core.readCampaign(),foe=t20Core.currentOpponent(s);
@@ -71,12 +71,12 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   report.before=before;save();
   assert.equal(before.foe.name,'Lorelei');
   assert.equal(before.foe.leader,true);
-  assert.equal(before.stage,9);
-  assert.equal(before.cap,56);
+  assert.equal(before.stage,8);
+  assert.equal(before.cap,54);
   assert.equal(before.team.length,6);
   assert.equal(before.box.length,1);
   assert.deepEqual(before.box.map(x=>x.id),['mewtwo']);
-  assert.ok(before.team.every(x=>x.level===56));
+  assert.ok(before.team.every(x=>x.level===54));
   const tap=async(x,y)=>{
    const pt=await page.evaluate(([x,y])=>{
     const c=document.querySelector('#juego canvas')||document.querySelector('canvas');
@@ -156,7 +156,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   save();
   assert.equal(after.losses,before.losses,'Lorelei genuine battle was lost');
   assert.equal(after.wins,before.wins+1,'Lorelei must be defeated by native combat');
-  assert.equal(after.stage,10,'Lorelei win must move into Bruno stage');
+  assert.equal(after.stage,9,'Lorelei win must move into Bruno stage');
   assert.equal(after.trainer,0);
   assert.equal(after.money,before.money+1200);
   assert.deepEqual(after.honors,['Elite 1'],'Only Lorelei honor should be awarded');
