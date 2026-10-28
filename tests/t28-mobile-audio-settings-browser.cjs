@@ -94,7 +94,7 @@ const server=http.createServer(async(req,res)=>{
   const muted=await ui();
   console.log('T28 PHASER MUTE DIAG',JSON.stringify(muted));
   assert.equal(muted.prefs.muted,true);
-  assert.equal(muted.mute,true);
+  assert.ok(Math.abs(muted.volume)<1e-5,'Mute must enforce true silence via zero native gain');
   await touch(448,282); // close
   assert.equal((await ui()).panels,0);
   await touch(203,335);
