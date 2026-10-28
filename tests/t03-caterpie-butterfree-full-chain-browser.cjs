@@ -358,7 +358,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
   });
   assert.equal(live.species,'butterfree');
   assert.equal(live.form.toLowerCase(),'butterfree');
-  assert.ok(live.sprite.startsWith('pmd-0011-'));
+  assert.ok(live.sprite.startsWith('pmd-0012-'));
   assert.ok(live.visible&&live.active&&live.loaded&&live.frame.every(n=>n>0));
   assert.ok(Object.values(live.moves).filter(m=>m.name&&!m.pending).length>=3);
   assert.deepEqual(errors,[]);
