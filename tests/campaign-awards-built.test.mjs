@@ -15,7 +15,7 @@ console.log('PASS eight gym badges, five separate League honors, compatible idem
 
 const route=await import(pathToFileURL(path.join(root,version,'torre2/route-data.js')));
 const pool=await import(pathToFileURL(path.join(root,version,'torre2/move-pool.js')));
-const expected=['tm-rock-tomb','tm-water-pulse','tm-shock-wave','tm-giga-drain','tm-calm-mind','tm-fire-blast','tm-earthquake'];
+const expected=['tm-rock-tomb','tm-water-pulse','tm-shock-wave','tm-giga-drain','tm-toxic','tm-calm-mind','tm-fire-blast','tm-earthquake'];
 assert.deepEqual(s.inventory.tms,expected);
 assert.deepEqual(s.gymTMClaims,expected);
 for(const id of expected){
@@ -48,7 +48,7 @@ assert.equal(compatible('tm-giga-drain','mew'),true);
 const no=core.createCampaign('bulbasaur');no.inventory.tms=['tm-shock-wave'];const before=JSON.stringify(no);
 assert.equal(core.teachTM(no,'tm-shock-wave',0).ok,false);assert.equal(JSON.stringify(no),before);
 assert.equal(core.purchaseItem(no,'tm-earthquake').ok,false);
-console.log('PASS seven playable gym TMs, one-time legacy repair, consumed rewards, canonical FRLG compatibility and shop gates; Toxic remains pending');
+console.log('PASS eight playable gym TMs, one-time legacy repair, consumed rewards, canonical FRLG compatibility and shop gates; Toxic registered as review-pending move');
 
 const bought=core.createCampaign('squirtle');bought.inventory.tms=['tm-water-pulse'];
 assert.equal(core.grantGymTM(bought,1).added,true,'a prior purchase must not cancel the gym prize');

@@ -44,9 +44,9 @@ export function routeNode(stage,index,max){
  const type=index>0&&index%9===3?'rival':index>0&&index%7===5?'rocket':'trainer';
  return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
-// Gym rewards only refer to installed moves. Toxic awaits its own implementation.
+// Gym rewards are real playable TMs; Toxic TM06 is unlocked after Koga.
 export const GYM_TM_REWARDS=Object.freeze(['tm-rock-tomb','tm-water-pulse',
- 'tm-shock-wave','tm-giga-drain',null,'tm-calm-mind','tm-fire-blast','tm-earthquake']);
+ 'tm-shock-wave','tm-giga-drain','tm-toxic','tm-calm-mind','tm-fire-blast','tm-earthquake']);
 export const MART_ITEMS=Object.freeze([
  {id:'antidote',name:'ANTÍDOTO',price:100,kind:'status',cures:['veneno']},
  {id:'paralyzeheal',name:'ANTI-PARALISIA',price:200,kind:'status',cures:['paralizado']},
@@ -55,6 +55,7 @@ export const MART_ITEMS=Object.freeze([
  {id:'iceheal',name:'ANTICONGELANTE',price:250,kind:'status',cures:['congelado'],minStage:2},
  {id:'fullheal',name:'CURA TOTAL',price:600,kind:'status',cures:['veneno','paralizado','dormido','quemado','congelado'],cureConfusion:true,minStage:4},
  {id:'tm-rock-tomb',name:'TM39 ROCK TOMB',price:1200,kind:'tm',move:'Rock Tomb',minStage:1},
+ {id:'tm-toxic',name:'TM06 TOXIC',price:2200,kind:'tm',move:'Toxic',minStage:5},
  {id:'pokeball',name:'POKÉ BALL',price:200,kind:'ball'},
  {id:'greatball',name:'GREAT BALL',price:600,kind:'ball',minStage:2},
  {id:'ultraball',name:'ULTRA BALL',price:1200,kind:'ball',minStage:4},

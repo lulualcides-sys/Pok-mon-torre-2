@@ -56,6 +56,13 @@ export function createPartyMatch(state,opponent,wild=false){
      ...(index===3?{ulti:true}:{})};
    });
   }
+  // Koga's two ace Pokémon use the new TM06 status move in a native Q slot.
+  // Campaign only; never alter original Arena kits or the other 11 bosses.
+  if(leaderTeam&&state.stage===4&&['muk','weezing'].includes(id)){
+   const move=TEST_LIBRARY.find(m=>m.id==='toxic');
+   if(!move||typeof move.forma!=='string')throw Error('Koga needs real Toxic Phaser VFX');
+   loadout.q={...move,pendiente:false};
+  }
   return {id,level,hp:100,loadout};
  });
  let playerIndex=Number.isInteger(state.active)?state.active:0;

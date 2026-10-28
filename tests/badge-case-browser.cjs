@@ -62,10 +62,11 @@ const server=http.createServer(async(req,res)=>{
  for(let i=0;i<8;i++){
   await clickData('torre2-badge-index',i);
   const result=await page.evaluate(()=>{const scene=window.__pt2Game.scene.getScene('campanha');return {view:scene.__torre2BadgeCase,text:scene.children.list.filter(o=>typeof o.text==='string').map(o=>o.text).join(' | '),unchanged:before===localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')};});
-  assert.equal(result.view.selected,i);assert.equal(result.view.earned,true,JSON.stringify({i,result}));assert.equal(result.view.claimed,i!==4);assert.equal(result.unchanged,true);
+  assert.equal(result.view.selected,i);assert.equal(result.view.earned,true,JSON.stringify({i,result}));assert.equal(result.view.claimed,true,'All eight earned gym TMs now include Koga Toxic');assert.equal(result.unchanged,true);
   assert.ok(result.text.includes(['Brock','Misty','Lt. Surge','Erika','Koga','Sabrina','Blaine','Giovanni'][i]));
   assert.ok(result.text.includes(['ROCK TOMB','WATER PULSE','SHOCK WAVE','GIGA DRAIN','TOXIC','CALM MIND','FIRE BLAST','EARTHQUAKE'][i]));
-  if(i===4)assert.ok(result.text.includes('INDISPONÍVEL NESTA VERSÃO'));
+  if(i===4)assert.ok(result.text.includes('TOXIC'));
+
  }
  await page.screenshot({path:'test-evidence/badge-case-desktop.png'});
  await clickData('torre2-badge-case-back',true);

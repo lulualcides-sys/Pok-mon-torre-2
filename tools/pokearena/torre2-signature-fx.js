@@ -15,6 +15,7 @@ import {TORRE2_ADAPTED_FORMS} from './adapted-moves-fx.js';
 import {TORRE2_EARLY_ROUTE_FORMS} from './early-route-fx.js';
 import {TORRE2_PREBROCK_DAMAGE_FORMS} from './prebrock-damage-fx.js';
 import {TORRE2_STEEL_FORMS} from './steel-fx.js';
+import {TORRE2_TOXIC_FORMS} from './toxic-fx.js';
 
 const pi=Math.PI, clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
 const ease=t=>1-(1-clamp(t))**3;
@@ -308,5 +309,6 @@ export const TORRE2_FORMS={
  ...TORRE2_ADAPTED_FORMS,
  ...TORRE2_EARLY_ROUTE_FORMS,
  ...TORRE2_PREBROCK_DAMAGE_FORMS,
- ...TORRE2_STEEL_FORMS
+ ...TORRE2_STEEL_FORMS,
+ ...TORRE2_TOXIC_FORMS
 };

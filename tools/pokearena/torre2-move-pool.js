@@ -37,6 +37,11 @@ export const SIGNATURE_MOVES=Object.freeze([
  ...SURGE3_MOVES,
  ...FINALE_13_MOVES,
  ...POISON_PUNCH_MOVES,
+ // Koga TM06; intentionally NEW/unapproved until visual review.
+ {id:'toxic',nombre:'Toxic',forma:'torre2_toxic',tipo:'POISON',poder:0,dano:0,
+  alcance:225,coste:28,cd:9.2,anim:'Charge',lanzar:.16,
+  precisao:85,pp:10,categoria:'STATUS',approved:false,
+  description:'TM06: targeted violet toxic cloud, 85% hit, escalating Gen III poison; review pending'},
  {id:'bonemerang',approved:true,nombre:'Bonemerang',forma:'torre2_bonemerang',tipo:'GROUND',dano:10.5,alcance:245,coste:24,cd:5.7,anim:'Shoot',lanzar:.16,description:'Bone boomerang / two synchronized hits'},
  {id:'bone-club',approved:true,nombre:'Bone Club',forma:'torre2_boneclub',tipo:'GROUND',dano:12,alcance:64,coste:20,cd:4.7,anim:'Swing',lanzar:.13,description:'Physical contact, pixel bone club'},
  {id:'tri-attack',approved:true,nombre:'Tri Attack',forma:'torre2_triattack',tipo:'NORMAL',dano:13,alcance:240,coste:30,cd:6.2,anim:'Charge',lanzar:.2,description:'Fire / ice / electric three-point projectile'},

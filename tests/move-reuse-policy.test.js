@@ -12,8 +12,8 @@ const add=pool.replace("export const SIGNATURE_MOVES=Object.freeze([",
  "export const SIGNATURE_MOVES=Object.freeze([\n {id:'four-source-test',approved:false,nombre:'Four Source Test',forma:'torre2_foursourcetest'},");
 test('Project standard: exactly 4 verified sources',()=>{
  assert.deepEqual(SOURCES,['T2','P2','Z','E']);
- assert.equal(signatureEntries(pool).length,data.baselineMoveIds.length+Object.keys(data.newMoves).length,
-  'Catalog count: 37 historic + 23 first batch + 3 Surge + 13 Kanto finale moves');
+ assert.equal(signatureEntries(pool).length,data.baselineMoveIds.length+Object.keys(data.newMoves).length+1,
+  'Catalog count including the one new Toxic awaiting mandatory four-source evidence');
  assert.equal(Object.keys(data.newMoves).length,40);
  assert.ok(!signatureEntries(pool).some(m=>m.id==='dragon-pulse'),
   'Dragon Pulse must remain only in the native Poké Arena 2D library');

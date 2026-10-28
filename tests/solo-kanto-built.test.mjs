@@ -438,9 +438,9 @@ assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb')
 // NEW is an approval queue. Native moves and approved custom art never enter it.
 const pending=filterMoveLibrary(allMoves,'NEW');
 const pendingIds=pending.map(m=>m.id);
-const expectedFinale13=[];
+const expectedFinale13=['toxic']; // New Koga VFX awaits visual approval.
 assert.deepEqual([...pendingIds].sort(),expectedFinale13.sort(),
- 'User approved everything from NEW; zero pending effects in the catalog');
+ 'Only Koga Toxic awaits visual approval; approved effects remain frozen');
 for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
