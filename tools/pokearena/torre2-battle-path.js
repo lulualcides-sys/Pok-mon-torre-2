@@ -172,8 +172,22 @@ export function renderBattlePath(scene,state,handlers){
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
+ // When a NORMAL battle advances the checkpoint beyond the current
+ // route page, reveal the new checkpoint automatically. Manual browsing of
+ // earlier pages stays intact until a new trainer is actually beaten.
+ // Page 0 already contains indexes 0..13, so don't jump early at index 13.
+ const previousProgress=scene.__torre2RenderedPathProgress;
+ const previousStage=scene.__torre2RenderedPathStage;
  const requested=scene.__torre2PathPage;
- const offset=Math.max(0,Math.min(total,Math.floor((requested??progress)/13)*13));
+ const progressed=previousStage===stage&&
+  Number.isInteger(previousProgress)&&previousProgress!==progress;
+ const oldPage=Math.max(0,Math.floor((requested??0)/13)*13);
+ const outOfView=progress<oldPage||progress>oldPage+13;
+ const pageForProgress=Math.max(0,Math.floor(Math.max(0,progress-1)/13)*13);
+ const page=progressed&&outOfView?pageForProgress:(requested??progress);
+ const offset=Math.max(0,Math.min(total,Math.floor(page/13)*13));
+ scene.__torre2RenderedPathProgress=progress;
+ scene.__torre2RenderedPathStage=stage;
  const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
  const spots=[];
  for(let i=0;i<length;i++){
