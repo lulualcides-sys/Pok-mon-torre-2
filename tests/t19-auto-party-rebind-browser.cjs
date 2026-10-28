@@ -100,7 +100,7 @@ function save(){fs.mkdirSync('test-evidence',{recursive:true});
     party:b.datos.torre2.party.friend.map(m=>({id:m.id,hp:m.hp})),
     enabled:a.enabled,brainReplaced:a.ai!==window.__t19FirstAi,
     sameActor:window.__t19FirstActor===b.luchadores[0],
-    species:a.autoSpecies,liveSpecies:b.luchadores[0].def?.id,
+    species:a.autoSpecies,liveSpecies:String(b.luchadores[0].def?.id||b.luchadores[0].dex||'')+':'+String(b.luchadores[0].etapa??0),
     wins:st.wins,trainer:st.trainer,losses:st.losses,
     cooldowns:{...b.luchadores[0].cd}};
   });
