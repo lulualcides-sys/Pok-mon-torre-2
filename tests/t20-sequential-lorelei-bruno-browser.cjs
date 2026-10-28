@@ -152,10 +152,12 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
     const selected=await page.evaluate(()=>{
      const b=window.__pt2Game.scene.getScene('combate');
      return {index:b.datos.torre2.party.playerIndex,
-      actor:b.luchadores[0]?.def?.id};
+      baseSpecies:b.luchadores[0]?.def?.id,
+      evolvedForm:String(b.luchadores[0]?.forma?.nombre||'').toLowerCase()};
     });
     assert.equal(selected.index,counterIndex);
-    assert.equal(selected.actor,before.team[counterIndex].id);
+    assert.equal(selected.evolvedForm,before.team[counterIndex].id,
+     'Native actor base species is not the displayed evolution form');
     report.brunoCounter=selected;persist();
    }
    const auto=await page.evaluate(()=>{
