@@ -19,7 +19,7 @@ const server=http.createServer(async(req,res)=>{
  catch{res.writeHead(404);res.end('missing')}
 });
 const report={scope:'T20 one normal Agatha Elite Four battle in original Phaser',
- fixture:'Agatha stage10 after two PREPARED League victories, six Lv58; not sequential Kanto League play',
+ fixture:'Agatha stage10 after two PREPARED League victories; legal six Lv58 including Psychic counters Hypno/Slowbro, not sequential League play',
  naturalCombat:true,forcedKO:false,forcedWin:false,status:'not-started'};
 const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
  fs.writeFileSync('test-evidence/t20-natural-agatha.json',JSON.stringify(report,null,2))};
@@ -47,7 +47,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    st.badges=core.GYMS.map(g=>g.badge);
    st.leagueHonors=['Elite 1','Elite 2'];
    st.team=[];
-   for(const [i,id] of ['starmie','alakazam','snorlax','jolteon','dragonite','gengar'].entries())
+   for(const [i,id] of ['starmie','alakazam','hypno','slowbro','dragonite','gengar'].entries())
     st.team.push({id,uid:'t20-agatha-'+i+'-'+id,hp:100,
      progression:createPokemonProgression(id,58),
      status:null,tmMoves:[],moves:[]});
