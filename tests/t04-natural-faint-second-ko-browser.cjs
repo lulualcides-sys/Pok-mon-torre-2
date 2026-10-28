@@ -17,7 +17,7 @@ const server=http.createServer(async(req,res)=>{
  }catch{res.writeHead(404);res.end('missing')}
 });
 fs.mkdirSync('test-evidence',{recursive:true});
-const report={method:'T04 two native CPU faint/recall events. Opening HP, 3-member party and trainer index are fixtures; no injected hit, KO or result',events:[]};
+const report={method:'T04 two native CPU faint/recall events. Opening HP, party, trainer index, melee proximity and regen ceiling are explicit fixtures; native CPU must land hits to KO',events:[]};
 const persist=()=>fs.writeFileSync('test-evidence/t04-natural-faint-second-ko.json',JSON.stringify(report,null,2));
 (async()=>{
  await new Promise(ok=>server.listen(4473,'127.0.0.1',ok));
@@ -98,10 +98,33 @@ const persist=()=>fs.writeFileSync('test-evidence/t04-natural-faint-second-ko.js
     }
     return result;
    };
+   // Restrict test-only passive HP regeneration and keep the player in
+   // native CPU melee range. These are explicit combat fixtures, NOT natural
+   // route conditions; only native CPU attack handlers can actually KO.
+   b.__t04FixtureFrames=0;
+   const keepInRange=()=>{
+    if(!b.scene.isActive()||b.__torre2Changing||b.fase!=='lucha')return;
+    const me=b.luchadores[0],enemy=b.luchadores[1];
+    if(!me||!enemy||me.ko||enemy.ko)return;
+    if(me.hp>0)me.hp=Math.min(me.hp,Math.max(1,me.hpMax*.025));
+    if(!me.accion&&!me.dash&&!enemy.accion&&
+       Math.hypot(me.x-enemy.x,me.y-enemy.y)>90){
+     const sign=me.x>=enemy.x?1:-1;
+     me.x=enemy.x+sign*56;
+     me.y=enemy.y;
+     me.spr?.setPosition(me.x,me.y);
+    }
+    b.__t04FixtureFrames++;
+   };
+   b.game.events.on('step',keepInRange);
+   b.events.once('shutdown',()=>b.game.events.off('step',keepInRange));
    return {first:b.datos.p1,next:b.datos.torre2.party.friend[1]?.id,
-    partySize:b.datos.torre2.party.friend.length};
+    partySize:b.datos.torre2.party.friend.length,
+    fixture:'melee proximity and HP regeneration ceiling; real CPU moves only'};
   });
-  assert.deepEqual(tracked,{first:'bulbasaur',next:'charmander',partySize:3});
+  assert.equal(tracked.first,'bulbasaur');
+  assert.equal(tracked.next,'charmander');
+  assert.equal(tracked.partySize,3);
   // Do not press an attack, change the opponent AI, set actor HP to zero,
   // or call alKO/resultado. The native Rattata CPU must knock out Bulbasaur.
   try{
