@@ -50,7 +50,15 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
    const rect=document.querySelector('#juego canvas').getBoundingClientRect();
    return {x:rect.left+x*rect.width/640,y:rect.top+y*rect.height/360};
   },[x,y]);
-  const tap=async(x,y)=>{const p=await coord(x,y);await page.mouse.click(p.x,p.y)};
+  const tap=async(x,y)=>{
+   // Same native touch/pointer as Mart. Wait for Phantom Phaser zones to be
+   // created before pressing; hold down through several original game ticks.
+   await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+   const p=await coord(x,y);
+   await page.mouse.move(p.x,p.y);
+   await page.mouse.down();await page.waitForTimeout(85);
+   await page.mouse.up();await page.waitForTimeout(110);
+  };
   const clickMarked=async(key,value)=>page.evaluate(([key,value])=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const o=c.children.list.find(x=>x.active&&x.input?.enabled&&x.getData?.(key)===value);
@@ -143,8 +151,23 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',
     null,{timeout:15000});
    await tap(316,186);
-   await page.waitForFunction(balls=>window.kanto.readCampaign().inventory.pokeball===balls-1,
-    old.balls,{timeout:20000});
+   try{
+    await page.waitForFunction(balls=>window.kanto.readCampaign().inventory.pokeball===balls-1,
+     old.balls,{timeout:20000});
+   }catch(error){
+    const diag=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate');
+     return {phase:b.fase,active:b.scene.isActive(),
+      busy:b.__torre2CaptureBusy,
+      capture:b.__torre2CaptureDebug||null,
+      zones:b.children.list.filter(o=>o.type==='Zone'&&o.active&&o.input?.enabled)
+       .slice(-9).map(o=>({x:o.x,y:o.y,width:o.width,height:o.height,depth:o.depth})),
+      state:window.kanto.readCampaign()?.inventory?.pokeball};
+    });
+    console.error('T03 CAPTURE CLICK DIAGNOSTICS',JSON.stringify(diag));
+    await page.screenshot({path:evidence+'/t03-caterpie-capture-pointer-failure.png'});
+    throw error;
+   }
    await page.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
     return window.__pt2Game.scene.isActive('campanha')||
