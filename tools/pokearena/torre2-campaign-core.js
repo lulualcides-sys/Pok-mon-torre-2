@@ -496,17 +496,31 @@ export function chooseEeveeEvolution(state,uid,choice){
  if(!member||member.id!=='eevee'||member.progression?.species!=='eevee'||
    !levelEvolutionChoices(member.progression).includes(choice))
   return {ok:false,reason:'Eevee ainda não está pronto para evoluir.'};
- const result=resolveEvolutionAfterBattle(member.progression,'finished',choice);
+ // Stage the entire evolution, Pokédex registration and message before
+ // touching the live party/PC. A denied primary or backup write must leave
+ // Eevee pending at Lv30 so the trainer can retry the same choice.
+ const nextProgress=JSON.parse(JSON.stringify(member.progression));
+ const result=resolveEvolutionAfterBattle(nextProgress,'finished',choice);
  if(!result.ok||result.evolutions.length!==1||result.evolutions[0].to!==choice)
   return {ok:false,reason:'Evolução não concluída.'};
- member.id=member.progression.species;
- // Keep equipped TM knowledge, UID, HP, nickname, EXP and party/PC slot;
- // the obsolete pre-evolution 4-role kit must be rebuilt for the new form.
+ const evolved={...member,id:nextProgress.species,progression:nextProgress,moves:[]};
+ delete evolved.movePlanSpecies;
+ const next={...state,
+  team:state.team.map(p=>p.uid===uid?evolved:p),
+  box:(state.box||[]).map(p=>p.uid===uid?evolved:p),
+  dexSeen:[...(state.dexSeen||[])],dexCaught:[...(state.dexCaught||[])],
+  lastMessage:'Eevee evoluiu para '+choice.toUpperCase()+' após atingir o nível 30!'};
+ recordCaught(next,choice);
+ saveCampaign(next);
+ // Preserve the original Pokémon/progression references used by UI callers.
+ // Only a committed save can remove the pending choice or the old move kit.
+ Object.assign(member.progression,nextProgress);
+ member.id=evolved.id;
  member.moves=[];
  delete member.movePlanSpecies;
- recordCaught(state,choice);
- state.lastMessage='Eevee evoluiu para '+choice.toUpperCase()+' após atingir o nível 30!';
- saveCampaign(state);
+ state.dexSeen=next.dexSeen;
+ state.dexCaught=next.dexCaught;
+ state.lastMessage=next.lastMessage;
  return {ok:true,uid,from:'eevee',to:choice,level:member.progression.level};
 }
 export function grantGymTM(s,stage,{migration=false}={}){
