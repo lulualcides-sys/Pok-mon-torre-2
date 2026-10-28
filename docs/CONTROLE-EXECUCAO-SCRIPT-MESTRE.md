@@ -256,3 +256,8 @@
 - [PR #80](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/80), merge `116327dd839d8b2562008a0e3998a0f12dfc255e`, contém somente testes de unidade/Chromium e workflow, sem modificação de runtime, golpes, VFX, sprites, controles ou saves.
 - [CI #40617762790](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40617762790) **sucesso**: unidade (duas transições, HP/status estáveis, destruição única), `npm test`, checks, build Phaser, teste Chromium/WebGL de clique real na troca e recolhimento de K.O. preparado, e 14 testes oficiais de navegador. Filas `tareas` e `efectos` zeradas; adversário sem dano residual, sem vitórias/inventário alterados.
 - **T04 e §15/§29 continuam PARCIAIS**: impactos e K.O. foram fixtures; faltam golpes multi-hit nativos com dano real, alternância rápida e transições completas. CI pós-merge e GitHub Pages precisam de confirmação separada. Não declarar correção de bug no motor: este lote acrescentou regressões, não alterou comportamento do jogo.
+
+
+### §15/§29 — publicação do lote T04 confirmada (28/10/2026 UTC)
+
+- [CI main #40618604937](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40618604937) **sucesso**; [GitHub Pages #40618632258](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40618632258) **sucesso** no merge `116327dd839d8b2562008a0e3998a0f12dfc255e`, com HTTP público confirmando o build `src-adfd65d707`. O commit documental seguinte não altera o jogo; inspeção visual externa independente não feita. T04/§15/§29 **PARCIAIS**.
