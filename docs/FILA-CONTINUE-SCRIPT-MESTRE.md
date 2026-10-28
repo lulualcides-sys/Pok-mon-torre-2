@@ -1,5 +1,9 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+
+> **Atualização T05 — 28/10/2026:** [PR #115](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/115), squash `35c9fc6aa676f468d4693722613957328c69d707`, **integrada**. `saveCampaign()` agora recusa estado com equipe vazia, estágio/treinador inválido, membro do PC inválido ou UID repetido **antes de escrever** no save principal ou backup. Testes com seis corrupções preparadas, saves legados sem UID e rotação íntegra foram aprovados no [CI da branch #40663052667](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40663052667) (unitários, check/reuse, build Phaser/WebGL, regressões T05 e 14 testes oficiais Chromium); [CI pós-merge #40663917663](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40663917663) aprovado. **Pages ainda não confirmado:** os runs #40663957943 e #40664437681 foram cancelados por deploy concorrente; aguarda verificação HTTP da versão que inclua o commit. **T05 permanece PARCIAL:** fixtures de corrupção não são campanha natural longa; faltam status/K.O./captura/evolução combinados e dispositivo físico. Nenhum golpe, VFX, sprite, cooldown ou controle foi alterado.
+
+
 **Controle operacional para o comando `continue`**  
 Atualização de referência: 27/10/2026, base `a5961ceef11b28a35b76600ab6e545abe0e92e1f`. A fila é **reavaliada** a cada execução porque outros agentes podem alterar a `main`.
 
