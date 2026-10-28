@@ -69,8 +69,10 @@ const server=http.createServer(async(req,res)=>{
      renderer:b.game.renderer.type};
    });
    assert.equal(data.kind,kind);
-   assert.ok(data.commands>0&&data.commands<=300,
-    'T16 graphics should remain bounded, '+JSON.stringify(data));
+   // Phaser Graphics expands each fillStyle+fillRect pair to eight native
+   // commandBuffer entries, not two. 48 particles therefore cost <=384 ops.
+   assert.ok(data.commands>0&&data.commands<=48*8,
+    'T16 graphics command budget must stay bounded, '+JSON.stringify(data));
    assert.ok(data.draws>0&&!data.disposed);
    observed.push(data);
    await page.screenshot({path:'test-evidence/t16-weather-'+kind+'.png'});
