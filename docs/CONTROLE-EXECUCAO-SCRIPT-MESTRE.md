@@ -355,3 +355,11 @@
 - **T08 — [PR #114](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/114) integrada** em `a2fb6ff1cbf58f8d3dc28ee5a176f108edb88f1a`: teste do cliente Phaser construído confere os **150 Pokémon de Kanto exceto Mewtwo de QA**, em níveis 5/7/8, com 3 ataques temporários fracos, ULT somente no Lv8 e nenhuma alteração permanente no catálogo/learnset. [CI #40662987831](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40662987831) **SUCESSO**; [CI main #40664396012](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40664396012) **SUCESSO**. **T08 PARCIAL**: é auditoria do kit construído, não comprova 150 batalhas/evoluções naturais.
 - **T09 — [PR #118](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/118)** em validação separada: teste de paridade dos cooldowns instalados em jogador/CPU, sem mudar o catálogo. Não confundir paridade de metadados com cadência real de ataques nem presumir CI/merge/Pages antes de concluir.
 - Todas as mudanças aqui são **registro de provas**, não alterações de gameplay. Não considerar T03–T09 integralmente encerradas, nem §34 ou T31 validados globalmente.
+ 
+## Continuação T05 — integridade de dinheiro e inventário (28/10/2026 UTC)
+
+- **§31 — parcial**: [PR #122](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/122) integrada em `62deaa58b35e3b400093cd8db2e945d00bf76067`. Economia inválida não substitui checkpoint íntegro; com backup limpo, recupera dinheiro e inventário em vez de redefinir valores. Sem backup, a migração legada permanece. Testes usam corrupção controlada, não percurso natural completo.
+- **§33 — parcial**: [CI de branch #40667099974](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40667099974) e [CI main #40668002692](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40668002692) aprovados; testes unitários, build Phaser/WebGL, regressões T05 e Chromium oficiais.
+- **§36 — preservação**: diff limitado a validação econômica no módulo de campanha, testes e workflow; não altera golpes, VFX, sprites, cooldowns, controles, XP ou Arena original. Saves antigos continuam migráveis, inclusive sem backup.
+- **§37 — parcial**: [Pages #40668043118](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40668043118) ainda sem confirmação de versão pública nesta anotação. Não inferir deploy ou §34 concluídos.
+
