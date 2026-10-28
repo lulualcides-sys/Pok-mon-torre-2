@@ -1,0 +1,59 @@
+name: Master T05 — independent storage read recovery
+on:
+  push:
+    branches: [fix/t05-independent-storage-reads-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  save-read-recovery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Full source and unit regression
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tests/t05-browser-reload.cjs
+          npm test
+      - name: Build original versioned Phaser WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Campaign save integration tests
+        run: |
+          set -euo pipefail
+          node --test tests/t05-partial-storage-reads-built.test.mjs
+          node --test tests/t05-duplicate-uid-built.test.mjs
+          node --test tests/t05-campaign-backup-built.test.mjs
+          node --test tests/t05-event-checkpoints-built.test.mjs
+      - name: Chromium Phaser reload and official browser suite
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t05-browser-reload.cjs
+          node tests/t05-event-persistence-browser.cjs
+          npm run test:browser
+      - name: Archive browser and build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t05-partial-storage-read-evidence
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14
