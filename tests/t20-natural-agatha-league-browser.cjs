@@ -83,7 +83,12 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
     const rect=c.getBoundingClientRect();
     return {x:rect.left+x*rect.width/640,y:rect.top+y*rect.height/360};
    },[x,y]);
-   await page.mouse.click(pt.x,pt.y);
+   // Phaser pointerdown is processed on a rendered frame, not reliably
+   // by an immediate down/up pair during a freshly replaced modal.
+   await page.mouse.move(pt.x,pt.y);
+   await page.mouse.down();
+   await page.waitForTimeout(110);
+   await page.mouse.up();
   };
   // Real map button -> real Leader challenge confirmation -> native battle.
   const cta=await page.evaluate(()=>{
