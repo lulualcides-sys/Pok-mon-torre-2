@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §15/§29/§31/§33/§36/§37 — T05: guarda de identidade entre batalha e save (28/10/2026)
+
+- **Runtime corrigido:** [PR #198](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/198) integrada no `1ab90cdae73abbbbb0d8ad0b1d1dd573534c54dc`. A aplicação de HP/status exige UID exclusivo na equipe e no snapshot da batalha e espécie igual; em legados sem UID mantém associação posicional segura. Sem alterar formato de save, golpes, sprites, VFX, cooldowns ou controles.
+- **Verificação:** [CI branch #40734080862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40734080862) **sucesso**: testes unitários completos, `check`, `check:reuse`, build Phaser/WebGL, 3 regressões novas no módulo compilado, outros testes de save e Chromium oficial. [CI main #40735493993](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40735493993) **sucesso**. [Pages #40735559883](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40735559883) ainda **em execução**, sem comprovação de SHA público nesta nota.
+- **Estado:** T05 e seções 15/29/31/33/36/37 **PARCIAIS**; testes usam identidades/HP preparados, não são campanha natural prolongada. Próximo: sequência real compra→captura→batalha→evolução→PC→reload e validação mobile.
+
+
+
 ## Auditoria integrada 28/10/2026 — T19, T20 e T03
 
 - **T19 AUTO e Misty** — PR [#187](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/187) integrada no commit `ddad9e95`: AUTO nativo `dificil` somente na campanha, Arena original `normal` preservada; vitória real contra Misty em checkpoint preparado, com Cascata e TM03. [CI branch #40727801127](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40727801127), [main #40730979261](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40730979261) e [Pages #40731053853](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40731053853) **sucesso**, com prova HTTP pública.
