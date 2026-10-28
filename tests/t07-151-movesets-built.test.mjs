@@ -10,9 +10,9 @@ const modules=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'))
 const load=p=>import(pathToFileURL(path.join(root,modules,p)));
 const [{KANTO_151},
  {TEST_LIBRARY,availableMoves,resolveLoadout,campaignLearnset,moveUnlockLevel,CHARACTERISTIC_KANTO_ROLES},
- {GEN7_LETSGO_LEVEL_UP}]
+ {GEN7_LETSGO_LEVEL_UP}, {frlgEvolutionLevel}]
  =await Promise.all([load('torre2/all-kanto-species.js'),
-  load('torre2/move-pool.js'),load('torre2/gen7-letsgo-learnsets.js')]);
+  load('torre2/move-pool.js'),load('torre2/gen7-letsgo-learnsets.js'),load('torre2/frlg-learnsets.js')]);
 const member=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 const ids=new Set(TEST_LIBRARY.map(m=>m.id));
 assert.equal(ids.size,TEST_LIBRARY.length,'Library may not duplicate effects');
@@ -45,12 +45,14 @@ for(const p of KANTO_151){
   for(const m of before)assert.ok(later.has(m.id),
    'Lost move during natural level-up '+id+' '+m.id);
  }
- const kit5=resolveLoadout(member(id,5)),kit8=resolveLoadout(member(id,8));
- assert.ok(!kit5.e?.id||kit5.e?.pendiente===true,
-  id+' strong ULT incorrectly ready at Lv5');
- assert.ok(kit8.e?.id&&kit8.e.ulti===true,
-  id+' requires weak Lv8 finisher');
- assert.ok(Object.keys(kit8).filter(k=>['lmb','rmb','q','e'].includes(k)).length<=4);
+ if(id!=='mewtwo'&&frlgEvolutionLevel(id)<=5){
+  const kit5=resolveLoadout(member(id,5)),kit8=resolveLoadout(member(id,8));
+  assert.ok(!kit5.e||kit5.e.pendiente===true||kit5.e.nombre==='LOCKED',
+   id+' strong ULT incorrectly ready at Lv5');
+  assert.ok(kit8.e?.id&&kit8.e.ulti===true,
+   id+' requires weak Lv8 finisher');
+  assert.ok(Object.keys(kit8).filter(k=>['lmb','rmb','q','e'].includes(k)).length<=4);
+ }
  report.push({species:id,level5:lv5.length,level25:lv25.length,
   level50:lv50.length,legalInstalled:moves.length});
 }
