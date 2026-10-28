@@ -1,0 +1,61 @@
+name: Master T05 — atomic BAG medicine and TM
+on:
+  push:
+    branches: [fix/t05-atomic-bag-use-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  atomic-bag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax, complete unit suite and move-reuse preservation
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/t05-bag-use-atomic-built.test.mjs
+          node --check tests/t05-bag-denied-ui-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Build original versioned Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+          test -s _site/arena2d/version.json
+      - name: Verify compiled BAG atomicity and save regressions
+        run: |
+          set -euo pipefail
+          node --test tests/t05-bag-use-atomic-built.test.mjs
+          node tests/status-items-built.test.mjs
+          node --test tests/t05-mart-purchase-atomic-built.test.mjs
+          node --test tests/t05-backup-rollback-on-denial-built.test.mjs
+          node --test tests/t23-kanto-mart-tm-integrity-built.test.mjs
+      - name: Native mobile Phaser BAG, Mart and complete browser suite
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t05-bag-denied-ui-browser.cjs
+          node tests/t05-mart-denied-ui-browser.cjs
+          npm run test:browser
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t05-atomic-bag
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14
