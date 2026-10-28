@@ -285,6 +285,10 @@ export function availableMoves(member){
   nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  const activeStage=frlgEvolutionLevel(member.id);
  const tms=new Set((member.tmMoves||[]).map(canonicalMoveKey));
+ // Saved TM entries are claims, not proof of eligibility. Old or imported
+ // saves may carry invalid tmMoves; preserve the save data but never equip
+ // a move the species cannot learn in FireRed/LeafGreen.
+ const taughtCompatible=key=>tms.has(key)&&frlgMachineCompatible(member.id,key);
  // NPC/native evolved-form special attacks from the original Poké Arena 2D
  // retain their existing VFX and can be earned via the actual evolution
  // level; never give a pre-evolution Pokémon its successor's attacks.
@@ -310,7 +314,7 @@ export function availableMoves(member){
    'sand-attack':9,'sleep-powder':10,'aerial-ace':25,
    'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':25
   };
-  if(key==='protect')return tms.has(key);
+  if(key==='protect')return taughtCompatible(key);
   // Strict FireRed unlock for all official level-up moves (inherits prior
   // evolution learnsets). An unlearned TM is NEVER auto-granted.
   const official=frlgUnlockLevel(member.id,key);
@@ -323,7 +327,7 @@ export function availableMoves(member){
    return false;
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
-  if(tms.has(key))return true;
+  if(taughtCompatible(key))return true;
   if(!early){
    if(official!==null&&level>=official)return true;
    if(kantoFinish[key]?.includes(member.id)&&level>=(ordinaryBonus[key]??25))
