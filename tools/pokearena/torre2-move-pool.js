@@ -576,6 +576,10 @@ export function equipMove(member,slot,moveId){
  if(early){chosen[slot]=moveId;member.moves=chosen;member.movePlanSpecies=member.id;return true;}
  while(chosen.length<4)chosen.push(pool[chosen.length]?.id);
  chosen[slot]=moveId;member.moves=chosen;
+ // Native Kanto starters without a curated role plan still need this
+ // marker: otherwise the Lv5-12 safe-loadout migration mistakes a same-
+ // species manual selection for a pre-evolution legacy moveset.
+ member.movePlanSpecies=member.id;
  return true;
 }
 export function resolveLoadout(member){
