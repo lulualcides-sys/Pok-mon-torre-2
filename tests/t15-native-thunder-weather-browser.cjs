@@ -36,7 +36,6 @@ const server=http.createServer(async(req,res)=>{
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
-  const original=await page.evaluate(()=>localStorage.getItem(window.t15Core.SAVE_KEY));
   await page.evaluate(()=>{
    window.__pt2Game.scene.getScene('campanha')
     .enterBattle(window.t15Core.readCampaign(),false);
@@ -46,6 +45,9 @@ const server=http.createServer(async(req,res)=>{
    return b.scene.isActive()&&b.__torre2Weather&&b.__torre2PartyInstalled&&b.fase==='lucha'&&
     b.luchadores?.length===2&&!b.__torre2Changing&&!b.__torre2BallTransitions;
   },null,{timeout:70000});
+  // Entering a genuine trainer battle correctly registers the visible foe in
+  // the Pokédex. Snapshot AFTER that legitimate recordSeen/save transition.
+  const original=await page.evaluate(()=>localStorage.getItem(window.t15Core.SAVE_KEY));
   const observations=await page.evaluate(async()=>{
    const b=window.__pt2Game.scene.getScene('combate'),[p,e]=b.luchadores;
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
