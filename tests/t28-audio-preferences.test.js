@@ -64,3 +64,29 @@ test('T28 audio governor restores sound after upstream frame resets, with one li
  bus.volume=1;events.emit('step');
  assert.equal(bus.volume,1,'Destroyed game must release audio governor');
 });
+
+// Opaque origins and privacy settings may throw before localStorage.getItem.
+// The audio menu must still boot, while never claiming a preference was saved.
+test('T28 blocked localStorage getter cannot crash default audio calls',async()=>{
+ const descriptor=Object.getOwnPropertyDescriptor(globalThis,'localStorage');
+ if(descriptor&&!descriptor.configurable)return; // Node host owns an immutable getter.
+ try{
+  Object.defineProperty(globalThis,'localStorage',{
+   configurable:true,get(){throw new DOMException('Storage denied','SecurityError')}
+  });
+  assert.deepEqual(readAudioSettings(),DEFAULT_AUDIO_SETTINGS);
+  assert.equal(saveAudioSettings({master:.2}),false);
+  assert.equal(playOriginalMenuCue(null),false);
+  const {installCampaignAudioSettings}=await import('../tools/pokearena/torre2-audio-settings.js');
+  assert.equal(installCampaignAudioSettings({}),null);
+ }finally{
+  if(descriptor)Object.defineProperty(globalThis,'localStorage',descriptor);
+  else delete globalThis.localStorage;
+ }
+});
+
+test('T28 unavailable storage must not falsely report successful persistence',()=>{
+ assert.equal(saveAudioSettings({master:.2},null),false);
+ assert.equal(saveAudioSettings({master:.2},{}),false);
+ assert.deepEqual(readAudioSettings(null),DEFAULT_AUDIO_SETTINGS);
+});

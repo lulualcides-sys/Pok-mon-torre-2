@@ -18,16 +18,22 @@ export function normalizeAudioSettings(value){
  if(typeof source.muted==='boolean')out.muted=source.muted;
  return out;
 }
-export function readAudioSettings(storage=globalThis.localStorage){
+// Accessing localStorage itself can throw SecurityError (sandboxed frames,
+// blocked cookies or opaque origins). Resolve the default inside a try/catch.
+function defaultAudioStorage(){
+ try{return globalThis.localStorage}catch{return null}
+}
+export function readAudioSettings(storage=defaultAudioStorage()){
  try{
   const raw=storage?.getItem?.(AUDIO_SETTINGS_KEY);
   return normalizeAudioSettings(raw?JSON.parse(raw):null);
  }catch{return {...DEFAULT_AUDIO_SETTINGS}}
 }
-export function saveAudioSettings(settings,storage=globalThis.localStorage){
+export function saveAudioSettings(settings,storage=defaultAudioStorage()){
  const safe=normalizeAudioSettings(settings);
  try{
-  storage?.setItem?.(AUDIO_SETTINGS_KEY,JSON.stringify(safe));
+  if(typeof storage?.setItem!=='function')return false;
+  storage.setItem(AUDIO_SETTINGS_KEY,JSON.stringify(safe));
   return true;
  }catch{return false}
 }
@@ -88,7 +94,7 @@ export function applyAudioSettingsToGame(scene,settings){
  return prefs;
 }
 let audioContext;
-export function playOriginalMenuCue(scene,storage=globalThis.localStorage){
+export function playOriginalMenuCue(scene,storage=defaultAudioStorage()){
  const prefs=readAudioSettings(storage);
  if(prefs.muted||prefs.master<=0||prefs.effects<=0)return false;
  const Context=globalThis.AudioContext||globalThis.webkitAudioContext;
@@ -114,7 +120,7 @@ export function playOriginalMenuCue(scene,storage=globalThis.localStorage){
  }catch{return false}
 }
 const UI_FONT='Pixelify Sans,monospace';
-export function installCampaignAudioSettings(scene,storage=globalThis.localStorage){
+export function installCampaignAudioSettings(scene,storage=defaultAudioStorage()){
  if(!scene?.add?.zone||!scene?.add?.graphics||!scene?.add?.text)return null;
  scene.__torre2AudioSettings?.dispose?.();
  let prefs=applyAudioSettingsToGame(scene,readAudioSettings(storage));
