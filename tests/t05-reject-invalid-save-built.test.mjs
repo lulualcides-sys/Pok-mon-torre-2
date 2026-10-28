@@ -21,8 +21,9 @@ function storage(){
 
 test('T05 refuses malformed or duplicate-UID snapshots without touching either checkpoint',()=>{
  const db=storage();
- const saved=core.createCampaign('bulbasaur');
- core.saveCampaign(saved,db);
+ const initial=core.createCampaign('bulbasaur');
+ core.saveCampaign(initial,db);
+ const saved=core.readCampaign(db); // Normalize additive legacy fields once.
  const primary=db.getItem(core.SAVE_KEY);
  db.setItem(core.SAVE_BACKUP_KEY,primary);
  const backup=db.getItem(core.SAVE_BACKUP_KEY);
