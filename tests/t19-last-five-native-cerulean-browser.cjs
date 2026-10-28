@@ -125,6 +125,39 @@ const server=http.createServer(async(req,res)=>{
    console.log('T19 REAL CENTER HEAL',JSON.stringify({trainer:healed.trainer,hp:healed.team.map(m=>m.hp)}));
    return healed;
   };
+  // Open the actual campaign SUMÁRIO, click USAR NA BATALHA, and let
+  // selectTeamMember write the save. Never directly change active in the test.
+  // Favor type-effective moves: Pikachu/Zubat, Wartortle/Geodude,
+  // Pidgeotto/Bulbasaur, Mankey/Clefairy, Wartortle/Sandshrew.
+  const selectCombatPokemon=async index=>{
+   const prior=await game();
+   if(prior.active===index)return prior;
+   await page.evaluate(index=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    c.showSummary(window.t19Core.readCampaign(),index);
+   },index);
+   await page.evaluate(()=>new Promise(ok=>requestAnimationFrame(()=>requestAnimationFrame(ok))));
+   const point=await page.evaluate(()=>{
+    const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+    return {x:rect.x+rect.width*111/640,y:rect.y+rect.height*325/360};
+   });
+   await page.mouse.move(point.x,point.y);
+   await page.mouse.down();
+   await page.waitForTimeout(110);
+   await page.mouse.up();
+   await page.waitForFunction(index=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&!!c.__torre2BattlePath&&
+     window.t19Core.readCampaign()?.active===index;
+   },index,{timeout:12000});
+   const after=await game();
+   assert.equal(after.trainer,prior.trainer,'Party switch cannot consume trainer');
+   assert.equal(after.wins,prior.wins,'Party switch cannot invent victory');
+   assert.equal(after.money,prior.money,'Party switch must be free');
+   assert.deepEqual(after.team.map(m=>m.uid),prior.team.map(m=>m.uid));
+   console.log('T19 NATIVE PARTY SELECT',JSON.stringify({trainer:after.trainer,pokemon:after.team[after.active].id}));
+   return after;
+  };
   let before=await game();
   assert.equal(before.stage,1);
   assert.equal(before.trainer,startTrainer);
@@ -142,6 +175,8 @@ const server=http.createServer(async(req,res)=>{
    const expectedRole=round===2?'rival':'trainer';
    assert.equal(foe.id,expectedIds[round],'Cerulean real route opponent mismatch');
    assert.equal(foe.kind,expectedRole,'Cerulean route role mismatch');
+   const matchingTeamSlot=[1,0,5,4,0][round];
+   before=await selectCombatPokemon(matchingTeamSlot);
    const record={fight:round+1,foe:foe.id,level:foe.level,before};
    report.fights.push(record);
    checkpoint='starting native fight '+(round+1);
