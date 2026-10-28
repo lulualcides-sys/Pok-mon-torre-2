@@ -36,11 +36,21 @@ export function saveAudioSettings(settings,storage=globalThis.localStorage){
 // Our own menu cues use master*effects. The music setting is retained for
 // the future licensed soundtrack and never enables an unlicensed track.
 export function applyAudioSettingsToGame(scene,settings){
- const prefs=normalizeAudioSettings(settings),bus=scene?.game?.sound;
- if(bus)try{
-  bus.mute=prefs.muted;
-  bus.volume=prefs.master;
- }catch{}
+ const prefs=normalizeAudioSettings(settings);
+ // Original client can expose the Phaser BaseSoundManager on scene.sound
+ // instead of (or alongside) game.sound. Some builds have getter-only
+ // mute/volume properties: call the public Phaser setters first.
+ const bus=scene?.sound||scene?.game?.sound;
+ if(bus){
+  try{
+   if(typeof bus.setMute==='function')bus.setMute(prefs.muted);
+   else bus.mute=prefs.muted;
+  }catch{}
+  try{
+   if(typeof bus.setVolume==='function')bus.setVolume(prefs.master);
+   else bus.volume=prefs.master;
+  }catch{}
+ }
  return prefs;
 }
 let audioContext;
