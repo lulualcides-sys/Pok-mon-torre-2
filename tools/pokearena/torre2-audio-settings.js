@@ -206,8 +206,21 @@ export function installCampaignAudioSettings(scene,storage=globalThis.localStora
  }
  zone.on('pointerdown',(_p,_x,_y,event)=>{event?.stopPropagation?.();open()});
  drawTab();
+ // The upstream client may reset the sound manager while rebuilding a
+ // campaign Scene after a page reload. Reconcile on the actual Scene's
+ // post-update (one cheap comparison/frame), not only the Game event bus.
+ // This event listener is removed on redraw/shutdown/destroy.
+ const reconcile=()=>{
+  const sound=scene?.sound||scene?.game?.sound;
+  const intended=prefs.muted?0:prefs.master;
+  if(!sound||Math.abs(Number(sound.volume)-intended)<.0001)return;
+  try{sound.setVolume?.(intended)}catch{}
+  try{sound.volume=intended}catch{}
+ };
+ scene.events?.on('postupdate',reconcile);
  const dispose=()=>{close();if(zone.active)zone.destroy();if(g.active)g.destroy();
   if(label.active)label.destroy();scene.events?.off('shutdown',dispose);
+  scene.events?.off('postupdate',reconcile);
   scene.events?.off('destroy',dispose);
   if(scene.__torre2AudioSettings?.button===zone)scene.__torre2AudioSettings=null;};
  scene.events?.once('shutdown',dispose);
