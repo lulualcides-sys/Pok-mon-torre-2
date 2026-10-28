@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §15/§29/§33/§36/§37 — T04: K.O. nativo e próxima criatura (28/10/2026)
+
+- **Integração:** PR [#157](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/157), commit `da2d07a6e97dfc9cff2847d8445675c47e2d4c4d`. Novo teste observou o motor Phaser/WebGL derrubar o Pokémon do usuário por ataque real da CPU e recolher o lutador, trocando para Charmander com sprite de espécie correto, sem manter efeitos ou hit timers antigos. Não forçou K.O./dano/vitória/derrota nem chamou método artificial de resultado.
+- **Ambiente e verificação:** Ubuntu 24.04, Node 24, Chromium + WebGL, build do cliente nativo; CI de branch [#40693841856](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40693841856) **sucesso** (regressão oficial incluída), CI `main` [#40694907762](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40694907762) **sucesso**, GitHub Pages [#40694946515](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40694946515) **sucesso** incluindo verificação do código entregue no endereço público.
+- **Escopo:** somente teste e pipeline; sem mudança de lógica do cliente. **Estado T04: PARCIAL**; o HP 2 e segundo Pokémon Lv5 foram preparados em fixture e isso não comprova K.O./trocas em campanha naturalmente concluída nem todos os projéteis e multi-hits. Continuar testes de K.O. e recuperação em combates longos.
+
+
 **Atualizado em:** 27/10/2026. **Base inspecionada:** `main` @ `c705d0b84f0d85cf3a4e59d8fa0fc4b75aec964c`.  
 **Especificação integral e imutável de referência:** [SCRIPT-MESTRE-DEFINITIVO-2026-10-27.md](./SCRIPT-MESTRE-DEFINITIVO-2026-10-27.md) (37 seções numeradas e 10 fases de execução — **não** 37 patches concluídos).  
 **Histórico técnico precedente:** [PATCH-MESTRE-2026-10-24.md](./PATCH-MESTRE-2026-10-24.md). **Regras dos agentes:** [AGENTS.md](../AGENTS.md).
