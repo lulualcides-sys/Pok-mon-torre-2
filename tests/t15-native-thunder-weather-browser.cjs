@@ -63,7 +63,13 @@ const server=http.createServer(async(req,res)=>{
     let result;
     try{
      Math.random=()=>roll;
-     result=e.recibir(p,{dano:10,tipo:'ELECTRIC',nombre:name,slot:'q'});
+     try{result=e.recibir(p,{dano:10,tipo:'ELECTRIC',nombre:name,slot:'q'});}
+     catch(error){throw new Error('Native recipient diagnostic: '+JSON.stringify({
+      kind,name,roll,error:String(error),nativeTraining:String(b.anotarEntreno).slice(0,1900),
+      nativePlayerStats:p.stats,nativeEnemyStats:e.stats,
+      gameMode:b.datos?.modo,labReady:b.__torre2LabInstalled,
+      sceneProperties:Object.keys(b).filter(key=>/entren|estad|registro|hist|dato/i.test(key))
+     }));}
     }finally{Math.random=nativeRandom}
     const measure={kind,name,roll,before,after:e.hp,result,weather:b.__torre2Weather.kind};
     pairs.push(measure);
