@@ -516,6 +516,7 @@ create(){
   addLabel(320,133,'REINICIAR JORNADA?',19,'#ffe09a');
   addLabel(320,164,'Apaga equipe, insígnias, capturas e progresso.',11);
   addLabel(320,184,'A ação não poderá ser desfeita.',10,'#ffad9f');
+  const resetError=addLabel(320,265,'',10,'#ffad9f').setVisible(false);
   const close=()=>{
    for(const obj of objects)if(obj?.active)obj.destroy();
    this.__torre2ResetDialog=null;
@@ -532,9 +533,18 @@ create(){
     .setInteractive({useHandCursor:true})
     .setData('torre2-reset-confirm',confirm);
    zone.on('pointerdown',()=>{
+    if(!confirm){close();return;}
+    try{resetCampaign();}
+    catch(error){
+     // Never leave a broken confirmation flow or hide a denied deletion.
+     // The primary journey still exists; after core rollback, its backup
+     // also survives unless the browser denies BOTH write and restore.
+     console.warn('Torre 2: reset denied by browser storage',error);
+     resetError.setText('NÃO FOI POSSÍVEL REINICIAR · SAVE PRESERVADO')
+      .setVisible(true);
+     return; // Keep the confirm/cancel controls alive for a safe retry.
+    }
     close();
-    if(!confirm)return;
-    resetCampaign();
     this.result=null;this.__torre2PathPage=0;this.__torre2PathStage=null;
     // The fresh starter picker must not replay old win results.
     this.scene.restart();
