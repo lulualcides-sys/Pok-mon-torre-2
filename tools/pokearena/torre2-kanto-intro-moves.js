@@ -5,7 +5,7 @@
  */
 
 export const KANTO_INTRO=Object.freeze({
-  start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:10,
+  start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:16,
   maxStarterDamage:9, maxIntroUltDamage:12
 });
 const ATTACK_SLOTS=['lmb','rmb','q'];
@@ -66,8 +66,12 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  // Actual FireRed moves first, even when the renderer is from Poké Arena.
  // The very earliest not-yet-learned move can be briefly previewed at reduced
  // power ONLY in these tutorial battles. Learnset metadata stays authentic.
+ // Lv5 starts must include meaningful species techniques: e.g. Ponyta
+ // can train with a WEAK Ember preview, while authentic Ember still learns
+ // at Lv14. Charmander never previews Metal Claw before its genuine Lv13.
+ const previewLimit=id==='charmander'?10:KANTO_INTRO.maxPreviewLearnLevel;
  const official=Object.entries(levelUp)
-  .filter(([key,at])=>at<=KANTO_INTRO.maxPreviewLearnLevel)
+  .filter(([key,at])=>at<=previewLimit)
   .sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
  const candidates=[];
  const push=(name,learned,priority=0)=>{
@@ -89,7 +93,7 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  // Curated early-route adaptations are already in Torre 2; use their
  // species-specific Lv1–13 moves if official renderer is missing.
  for(const [name,at] of Object.entries(earlyLevels||{}))
-  if(at<=KANTO_INTRO.maxPreviewLearnLevel)push(name,at,1);
+  if(at<=previewLimit)push(name,at,1);
  // Already legitimately learned/equipped weaker moves remain candidates.
  for(const slot of ATTACK_SLOTS){
   const current=result[slot];
@@ -98,9 +102,12 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  candidates.sort((a,b)=>a.priority-b.priority||a.learned-b.learned||
   a.key.localeCompare(b.key));
  const picked=[];
- for(const c of candidates){
+ // Prefer three USABLE actions (damage before support) but retain Growl,
+ // String Shot etc. where a species genuinely has fewer attacks.
+ for(const c of [...candidates.filter(c=>c.move.dano>0),
+                  ...candidates.filter(c=>!(c.move.dano>0))]){
   if(picked.length>=3)break;
-  if(c.learned>KANTO_INTRO.maxPreviewLearnLevel)continue;
+  if(c.learned>previewLimit||picked.some(p=>p.key===c.key))continue;
   picked.push(c);
  }
  // Struggle is universal in Gen III when out of PP. Here, reuse an approved
