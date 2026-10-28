@@ -17,12 +17,12 @@ const heartbeat=setInterval(()=>console.log('T19 HEARTBEAT',JSON.stringify({
 })),20000);heartbeat.unref();
 const watchdog=setTimeout(()=>{
  const data={checkpoint,elapsedMs:Date.now()-startedAt,lastBattle,
-  explanation:'Native battle/Chromium did not complete within 25 minutes; no victory asserted'};
+  explanation:'Native battle/Chromium did not complete within 35 minutes; no victory asserted'};
  try{fs.mkdirSync('test-evidence',{recursive:true});
   fs.writeFileSync('test-evidence/t19-runner-watchdog.json',JSON.stringify(data,null,2));}catch{}
  console.error('T19 WATCHDOG FAILED',JSON.stringify(data));
  process.exit(124); // never pass an incomplete combat test
-},25*60*1000);watchdog.unref();
+},35*60*1000);watchdog.unref();
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const mime={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg',
@@ -214,7 +214,9 @@ const server=http.createServer(async(req,res)=>{
     console.log('T19 NATIVE FIGHT START',JSON.stringify({round:round+1,foe:foe.id,player:start.p1,level:start.playerLevel,enemyLevel:start.enemyLevel}));
     // AUTO attacks via the native AI; the trainer uses the ACTUAL left
     // sidebar to select a type counter when the opponent changes species.
-    // The AUTO button never promised autonomous party swaps. No state writes,
+    // The AUTO button never promised autonomous party swaps. A short per-fight
+    // timeout wrongly abandoned a live final Sandshrew with 22% HP; allow
+    // six minutes, still fail closed on timeout/defeat. No state writes,
     // fake damage, forced KO, stage manipulation or battle-result injection.
     const counterSlots={
      zubat:[1,5,0],geodude:[0,2,4],paras:[5,4,1],
@@ -224,7 +226,7 @@ const server=http.createServer(async(req,res)=>{
     };
     record.sidebarSwitches=[];
     let lastSwap=0,finished=false;
-    const deadline=Date.now()+240000;
+    const deadline=Date.now()+360000;
     while(Date.now()<deadline){
      const live=await page.evaluate(({wins,losses})=>{
       const game=window.__pt2Game,b=game.scene.getScene('combate');
@@ -262,7 +264,7 @@ const server=http.createServer(async(req,res)=>{
      }
      await page.waitForTimeout(350);
     }
-    if(!finished)throw new Error('Native fight exceeded 240s with real sidebar counters');
+    if(!finished)throw new Error('Native fight exceeded 360s with real sidebar counters');
    }catch(err){
     record.failure=String(err);
     record.state=await game();
