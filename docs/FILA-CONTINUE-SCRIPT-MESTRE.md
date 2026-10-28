@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 28/10/2026 — T28: acesso ao armazenamento bloqueado (patch integrado, publicação HTTP confirmada)
+
+- **PR #216 integrada:** [PR #216](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/216), squash `4e612386b16c13a1e2d1fd8055844bfda734f2ac`. `torre2-audio-settings.js` agora trata `SecurityError` disparado ao acessar a propriedade `localStorage` antes de chamar `getItem`; leitura usa preferências padrão, gravação indisponível retorna `false` em vez de sucesso falso. Inclui os pontos de entrada de menu e sinais sonoros originais. Sem alterações em golpes, VFX, sprites, cooldowns, saves ou no cliente upstream.
+- **Gates da branch:** [CI T28 #40752554889](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40752554889) **sucesso**, incluindo teste novo do getter bloqueado e storage ausente, `npm test`, `check`, `check:reuse`, build Phaser/WebGL, menu móvel Chromium e regressões oficiais do navegador. [CI main #40753689454](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40753689454) **sucesso**; [Pages #40753752894](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40753752894) **sucesso**, com `pages_build_version=4e612386b16c13a1e2d1fd8055844bfda734f2ac` e confirmação HTTP pública de `src-7d739c2f5d` às 19:26:58 UTC em 28/10/2026.
+- **Escopo ainda pendente:** música licenciada para mapas/chefes, mixagem real separada de efeitos e música, sons de todos os eventos do §28, validação em Android/iOS físico e campanha natural. **T28 e §28 PARCIAIS**; teste automatizado em navegador não equivale a homologação integral do áudio.
+- **T05 Pages conferido:** [Pages #40749090677](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749090677) **sucesso** e confirmação HTTP pública do build `src-7edf27085b` para o commit `a3d94f873ff9dad87a18880f6286315ac5c8b740`. T05 segue PARCIAL, sem campanha prolongada.
+
+
 
 ## Continuação 28/10/2026 — reset T05 integrado, T20 Liga em reteste, T03 PC em prova
 
@@ -198,7 +206,7 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 | T25 | PARCIAL | Mochila, PC, Pokémon Center, Sumário, Pokédex e Treinamento (§18,23) | Funciona em mobile/desktop, sem duplicar criaturas, itens ou saves |
 | T26 | PARCIAL | Apresentação dos líderes, oito insígnias com sprites, recompensas únicas (§24,25) | 8 apresentações, 8 badges e suas TMs corretas em partidas reais |
 | T27 | PARCIAL | Relatório de batalha, K.O., lançamento/recolhimento (§26,27,29) | Transições, resultados, valores e animações sem regressões |
-| T28 | **NÃO AUDITADO** | Sons, música, volumes e mute persistente com licença (§28) | Áudio adequado e licenciado sem vazamentos, duplicações ou travamentos |
+| T28 | **PARCIAL — menu/volume/mute e armazenamento negado testados; trilha licenciada pendente** | Sons, música, volumes e mute persistente com licença (§28); [PR #216](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/216), [CI T28 #40752554889](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40752554889) | Áudio adequado e licenciado sem vazamentos, duplicações ou travamentos, testado em dispositivo físico |
 | T29 | PARCIAL | Laboratório isolado: 151, Mewtwo 50, captura, clima, Shiny, IA (§30) | Ferramentas completas; resultados nunca alteram o save principal |
 | T30 | **PENDENTE** | Grande otimização + patch final de design em pixel art (§21,23,32 + decisão posterior) | Melhorar layout/legibilidade/performance 60 FPS alvo sem modificar sprites e ataques aprovados |
 | T31 | **PARCIAL — recuperação de captura Phaser integrada e publicada; regressão final pendente** | Regressão integral, 30 verificações, campanha até Campeão, CI/Pages (§33–37) | Provas em navegador real, build, CI, SHA implantado, links e pendências finais |
