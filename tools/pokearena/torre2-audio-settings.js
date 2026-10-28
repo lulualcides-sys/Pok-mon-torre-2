@@ -35,10 +35,41 @@ export function saveAudioSettings(settings,storage=globalThis.localStorage){
 // master/mute, but don't pretend it supports independent music/SFX mixing.
 // Our own menu cues use master*effects. The music setting is retained for
 // the future licensed soundtrack and never enables an unlicensed track.
+const audioGates=new WeakMap();
+// Phaser/WebAudio reconfigures its master gain while unlocking after user
+// interaction. Keep only one low-cost listener per game to reconcile changes
+// made by the upstream client. The game owns this listener and releases it
+// when destroyed; it never touches VFX, attacks, input, party or save logic.
+function installAudioGate(game){
+ if(!game?.events?.on)return null;
+ let gate=audioGates.get(game);
+ if(gate)return gate;
+ gate={prefs:{...DEFAULT_AUDIO_SETTINGS},sync:null,disposed:false};
+ gate.sync=()=>{
+  if(gate.disposed||!game.sound)return;
+  const wanted=gate.prefs.muted?0:gate.prefs.master;
+  const current=Number(game.sound.volume);
+  if(Number.isFinite(current)&&Math.abs(current-wanted)<.0001)return;
+  try{
+   if(typeof game.sound.setVolume==='function')game.sound.setVolume(wanted);
+   else game.sound.volume=wanted;
+  }catch{}
+ };
+ game.events.on('step',gate.sync);
+ game.events.on('poststep',gate.sync);
+ game.events.once('destroy',()=>{
+  gate.disposed=true;
+  game.events.off('step',gate.sync);
+  game.events.off('poststep',gate.sync);
+  audioGates.delete(game);
+ });
+ audioGates.set(game,gate);
+ return gate;
+}
 export function applyAudioSettingsToGame(scene,settings){
  const prefs=normalizeAudioSettings(settings);
- // Some Phaser builds reset their GLOBAL_MUTE flag on WebAudio unlock. Zero
- // global gain in addition to mute makes silence reliable in those builds.
+ // In some native builds the engine resets volume during WebAudio unlock.
+ // A persistent zero-gain output is a more robust mute than the flag alone.
  const effectiveVolume=prefs.muted?0:prefs.master;
  // The imported Poké Arena version exposes the engine sound bus both
  // on the Scene and on Game, but they need not be the same manager. Update
@@ -52,6 +83,8 @@ export function applyAudioSettingsToGame(scene,settings){
   try{if(typeof bus.setVolume==='function')bus.setVolume(effectiveVolume)}catch{}
   try{bus.volume=effectiveVolume}catch{}
  }
+ const gate=installAudioGate(scene?.game);
+ if(gate){gate.prefs=prefs;gate.sync();}
  return prefs;
 }
 let audioContext;
