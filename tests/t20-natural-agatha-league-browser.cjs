@@ -156,7 +156,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   save();
   assert.equal(after.losses,before.losses,'Agatha genuine battle was lost');
   assert.equal(after.wins,before.wins+1,'Agatha must be defeated by native combat');
-  assert.equal(after.stage,11,'Agatha win must advance into Agatha stage');
+  assert.equal(after.stage,11,'Agatha win must advance into Lance stage');
   assert.equal(after.trainer,0);
   assert.equal(after.money,before.money+1200);
   assert.deepEqual(after.honors,['Elite 1','Elite 2','Elite 3'],'Only Agatha honor should be awarded');
