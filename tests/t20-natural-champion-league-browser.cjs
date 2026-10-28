@@ -175,6 +175,49 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    finally{busy=false;}
   },60000);
   probe.unref();
+  // Native AUTO chooses attacks but does not guarantee sensible party swaps.
+  // The QA trainer may tap the real Phaser sidebar (as a human would), only
+  // when an opponent rotates into a bad typing matchup. No HP, KO, hit, AI,
+  // EXP, stage, save, or victory is injected or modified.
+  const counters={
+   pidgeot:[0,2,1],alakazam:[1,4,5],rhydon:[1,2,3],
+   exeggutor:[2,4,1],gyarados:[0,1,2],charizard:[1,2,0]
+  };
+  report.nativeSidebarSwaps=[];
+  let coachBusy=false;
+  const coach=setInterval(async()=>{
+   if(coachBusy||page.isClosed())return;
+   coachBusy=true;
+   try{
+    const live=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate'),
+      p=b.datos?.torre2?.party;
+     return {active:b.scene.isActive(),phase:b.fase,changing:!!b.__torre2Changing,
+      auto:!!b.__torre2AutoMode?.enabled,playerIndex:p?.playerIndex,
+      enemy:p?.foes?.[p.enemyIndex]?.id,
+      friend:p?.friend?.map(m=>({id:m.id,hp:m.hp}))||[],
+      slots:b.__torre2SideParty?.slots?.map(z=>!!z?.input?.enabled)||[]};
+    });
+    if(!live.active||live.phase!=='lucha'||live.changing||!live.auto)return;
+    const target=(counters[live.enemy]||[]).find(i=>
+     live.friend[i]?.hp>0&&live.slots[i]);
+    if(!Number.isInteger(target)||target===live.playerIndex)return;
+    const pt=await page.evaluate(i=>{
+     const b=window.__pt2Game.scene.getScene('combate'),
+      zone=b.__torre2SideParty?.slots?.[i];
+     return zone?.input?.enabled?{x:zone.x,y:zone.y}:null;
+    },target);
+    if(!pt)return;
+    await tap(pt.x,pt.y); // Actual player pointer, not a direct game API switch.
+    const event={enemy:live.enemy,from:live.friend[live.playerIndex]?.id,
+     to:live.friend[target]?.id};
+    report.nativeSidebarSwaps.push(event);
+    console.log('T20 REAL SIDEBAR SWITCH',JSON.stringify(event));
+    save();
+   }catch(e){console.error('T20 native sidebar probe error',String(e));}
+   finally{coachBusy=false;}
+  },2200);
+  coach.unref();
   try{
    await page.waitForFunction(winCount=>{
     const s=window.t20Core.readCampaign();
@@ -194,7 +237,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    await page.screenshot({path:'test-evidence/t20-real-champion-timeout.png'});
    throw e;
   }finally{
-   clearInterval(probe);
+   clearInterval(probe);clearInterval(coach);
   }
   const after=await page.evaluate(()=>{
    const s=t20Core.readCampaign();
