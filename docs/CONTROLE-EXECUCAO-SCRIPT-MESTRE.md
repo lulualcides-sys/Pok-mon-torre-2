@@ -261,3 +261,10 @@
 ### §15/§29 — publicação do lote T04 confirmada (28/10/2026 UTC)
 
 - [CI main #40618604937](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40618604937) **sucesso**; [GitHub Pages #40618632258](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40618632258) **sucesso** no merge `116327dd839d8b2562008a0e3998a0f12dfc255e`, com HTTP público confirmando o build `src-adfd65d707`. O commit documental seguinte não altera o jogo; inspeção visual externa independente não feita. T04/§15/§29 **PARCIAIS**.
+
+
+## §5–§6 / T03 — dano nativo após evolução, sem hits simulados (28/10/2026 UTC)
+
+- [PR #82](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/82): novo teste no Chromium/Phaser para Dugtrio/Tri Attack, Persian/Pay Day e Primeape/Cross Chop. O clique nativo EVO aciona a evolução; o clique do golpe lança o ataque real; o adversário tem posição inicial preparada, invulnerabilidade desligada e HP máximo, mas o teste **não** chama `recibir` nem altera HP/resultado durante a ação. Um spy preserva o método nativo e exige `golpe` + redução de HP para comprovar colisão.
+- [CI inicial #40619047372](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40619047372): Dugtrio, **122→102,94 HP**; Persian, **122→119,56 HP**; a verificação Cross Chop foi inicialmente inconclusiva porque o alvo estava a 33px antes de um avanço nativo de 72px. Corrigido **somente no fixture** para 82px, sem alterar o golpe, VFX, hitbox, sprites ou cooldown.
+- [CI corrigido #40619268311](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40619268311): teste focado dos três impactos aprovado; suíte completa ainda aguardando encerramento na primeira anotação. Os impactos testam **alvo parado**, não perseguimento de alvo móvel, nem XP natural da campanha. Cobertura de Arena: 31 evoluções visuais (inalterada) + 3 golpes com colisão/HP real comprovados. T03/§5/§6 **PARCIAIS**; não presumir merge/Pages até verificar.
