@@ -44,6 +44,7 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t05-mart-denied-ui-browser.cjs
           node tests/t05-economy-checkpoint-browser.cjs
           node tests/t05-event-persistence-browser.cjs
           npm run test:browser
