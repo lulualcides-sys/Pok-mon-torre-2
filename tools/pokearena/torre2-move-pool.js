@@ -9,6 +9,8 @@ import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
+import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel} from './gen7-letsgo-learnsets.js';
+import {GEN5_KANTO_LEVEL_UP,gen5KantoUnlockLevel} from './gen5-existing-levels.js';
 import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
@@ -133,6 +135,12 @@ for(const h of rawLibrary){
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+// Gen VII tables can select ONLY installed native/approved renderer entries.
+// This index is deduplicated; it cannot introduce new VFX or move metadata.
+const gen7MoveKey=name=>canonicalMoveKey(name).replace(/[^a-z0-9]/g,'');
+const GEN7_INSTALLED=new Map(TEST_LIBRARY.filter(m=>m.forma&&
+ (m.source!=='new-phaser-fx'||m.approved===true))
+ .map(m=>[gen7MoveKey(m.nombre),m]));
 // NEW is a review queue, not a type or a replacement for existing attacks.
 // Original Poké Arena 2D attacks are implicitly approved and NEVER enter NEW.
 export const isPendingApprovalMove=move=>Boolean(
@@ -174,7 +182,11 @@ export const CHARACTERISTIC_KANTO_ROLES=Object.freeze({
  machop:[[2,'cross-chop']],machoke:[[2,'cross-chop']],
  machamp:[[2,'cross-chop']],primeape:[[2,'cross-chop']],
  growlithe:[[2,'flame-wheel']],arcanine:[[2,'flame-wheel']],
- grimer:[[2,'poison-punch']],muk:[[2,'poison-punch']]
+ grimer:[[2,'poison-punch']],muk:[[2,'poison-punch']],
+ // Signature moves from Gen V are preferred ONLY if the original base
+ // already provides an approved renderer; no fake fire projectile is added.
+ ponyta:[[1,'flame-charge'],[2,'flare-blitz']],
+ rapidash:[[1,'flame-charge'],[2,'flare-blitz']]
 });
 // X-Scissor postdates FireRed: explicit Torre 2 custom campaign learn levels,
 // never falsely described as official FRLG. TM-only moves stay TM-locked.
@@ -228,6 +240,16 @@ export function availableMoves(member){
  // FireRed/LeafGreen level-up data for EVERY Kanto species (151).
  // Only real installed renderers can enter the list; TMs require teaching.
  for(const name of frlgKnownMoves(member.id))names.add(canonicalMoveKey(name));
+ // Gen VII Let's Go adds legitimate species level-up options ONLY when
+ // an already approved/native Phaser renderer is present in this build.
+ for(const gen7Name of Object.keys(GEN7_LETSGO_LEVEL_UP[member.id]||{})){
+  const installed=GEN7_INSTALLED.get(gen7Name);
+  if(installed)names.add(canonicalMoveKey(installed.nombre));
+ }
+ for(const gen5Name of Object.keys(GEN5_KANTO_LEVEL_UP[member.id]||{})){
+  const installed=GEN7_INSTALLED.get(gen7MoveKey(gen5Name));
+  if(installed)names.add(canonicalMoveKey(installed.nombre));
+ }
  if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
  if(['voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('sonic-boom');
  if(['voltorb','electrode'].includes(member.id))names.add('screech');
@@ -364,6 +386,17 @@ export function availableMoves(member){
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
   if(taughtCompatible(key))return true;
+  // FRLG retains priority for level-up/TM; later generations only fill
+  // legal moves absent from Gen III. No auto-learned Gen VII TM, event,
+  // tutor, pending VFX or evolution-only attack before its evolved form.
+  if(official===null&&!frlgMachineCompatible(member.id,key)&&
+     !evoLocked.has(key)&&!isPendingApprovalMove(m)){
+   const gen5=gen5KantoUnlockLevel(member.id,key);
+   const gen7=gen7LetsGoUnlockLevel(member.id,key);
+   const recent=gen5??gen7;
+   if(recent!==null&&level>=campaignLevel(Math.max(13,activeStage,recent)))
+    return true;
+  }
   if(!early){
    if(official!==null&&level>=campaignLevel(official))return true;
    if(kantoFinish[key]?.includes(member.id)&&level>=(ordinaryBonus[key]??25))
@@ -446,6 +479,14 @@ export function moveUnlockLevel(member,moveName){
  if(local?.[key]!==undefined)return campaignLevel(local[key]);
  const official=frlgUnlockLevel(species,key);
  if(official!==null)return campaignLevel(official);
+ // Match the Pokédex gate to actual available moves: no invisible or
+ // review-pending animation receives a later-generation unlock.
+ if(!frlgMachineCompatible(species,key)){
+  const installed=GEN7_INSTALLED.get(gen7MoveKey(key));
+  const recent=installed?(gen5KantoUnlockLevel(species,key)??
+   gen7LetsGoUnlockLevel(species,key)):null;
+  if(recent!==null)return campaignLevel(Math.max(13,frlgEvolutionLevel(species),recent));
+ }
  const bonus=CHARACTERISTIC_BONUS_LEVELS[species]?.[key];
  if(Number.isInteger(bonus))return campaignLevel(bonus);
  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||kanto151SlotPlan(species);
@@ -463,7 +504,11 @@ export function defaultLoadout(member){
   // accidentally replaced by the full-power attack used by their renderer.
   return SLOTS.map(slot=>available.find(m=>m.torre2IntroSlot===slot)?.id||null);
  }
- const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
+  // The native client has no per-species role plan for this Gen V family.
+  // Keep the approved four-slot kit and permit its EXISTING signatures to
+  // be auto-equipped only after their legal level; never change other forms.
+  (['ponyta','rapidash'].includes(member.id)?[null,null,null,null]:null);
  if(plan){
   const reserved=plan.map(name=>{
    const id=canonicalMoveKey(name);
@@ -518,7 +563,11 @@ export function selectedMoves(member){
    return fallback;
   });
  }
- const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
+  // The native client has no per-species role plan for this Gen V family.
+  // Keep the approved four-slot kit and permit its EXISTING signatures to
+  // be auto-equipped only after their legal level; never change other forms.
+  (['ponyta','rapidash'].includes(member.id)?[null,null,null,null]:null);
  if(plan){
   const defaults=defaultLoadout(member);
   // Legacy saves and new level-ups get characteristic skills just once.
