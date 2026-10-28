@@ -3,7 +3,7 @@
 const REQUIRED=Object.freeze([
   'main.js','config.js','datos.js','sprites.js',
   'escenas/carga.js','escenas/titulo.js','escenas/seleccion.js',
-  'escenas/combate.js','escenas/pokedex.js'
+  'escenas/combate.js','escenas/pokedex.js','escenas/jefe.js'
 ]);
 export function requiredCaptureFiles(version){
   if(!/^src-[0-9a-f]{10}$/.test(version||''))
@@ -42,4 +42,15 @@ export async function recoverCriticalCapture({
     );
   }
   return recovered;
+}
+
+// A missing transitive ES module can break Phaser boot even when all nine
+// entry modules were captured. Do not treat optional images as boot blockers.
+export function unresolvedImportedModules(unavailable,captured){
+  const present=captured instanceof Set?captured:new Set(captured);
+  return [...new Set(unavailable
+    .filter(item=>item.source==='relative module import'&&
+      typeof item.path==='string'&&item.path.endsWith('.js')&&
+      !present.has(item.path))
+    .map(item=>item.path))];
 }
