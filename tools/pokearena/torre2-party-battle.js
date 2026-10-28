@@ -75,17 +75,26 @@ export function applyPartyBattleResult(state,party){
   if(typeof member?.uid==='string'&&member.uid)
    counts.set(member.uid,(counts.get(member.uid)||0)+1);
  }
+ const stateCounts=new Map();
+ for(const member of state.team){
+  if(typeof member?.uid==='string'&&member.uid)
+   stateCounts.set(member.uid,(stateCounts.get(member.uid)||0)+1);
+ }
  const byUid=new Map(party.friend.filter(m=>
   typeof m?.uid==='string'&&m.uid&&counts.get(m.uid)===1
  ).map(m=>[m.uid,m]));
  for(let index=0;index<state.team.length;index++){
   const member=state.team[index];
   const uid=member?.uid;
-  const unique=typeof uid==='string'&&uid&&counts.get(uid)===1;
+  // An ID is authoritative only when unique on BOTH sides. An in-memory
+  // duplicate can otherwise apply one fighter's damage to two teammates.
+  const unique=typeof uid==='string'&&uid&&counts.get(uid)===1&&stateCounts.get(uid)===1;
   const positional=party.friend[index];
   const from=unique?byUid.get(uid):
    positional?.id===member?.id&&positional?.uid===uid?positional:null;
-  if(from){member.hp=clamp(from.hp);member.status=from.status??null;}
+  // A stale UID must never copy HP/status across species after a roster
+  // replacement. Evolution happens after battle, so IDs must match here.
+  if(from?.id===member?.id){member.hp=clamp(from.hp);member.status=from.status??null;}
  }
  if(Number.isInteger(party.playerIndex)&&party.playerIndex>=0&&
     party.playerIndex<state.team.length)
