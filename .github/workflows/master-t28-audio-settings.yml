@@ -1,7 +1,7 @@
 name: Master T28 — original audio settings and mobile persistence
 on:
   push:
-    branches: [feat/master-t28-persisted-audio-controls-20261028]
+    branches: [feat/master-t28-persisted-audio-controls-20261028, fix/master-t28-denied-storage-access-20261028]
   workflow_dispatch:
 
 permissions:
