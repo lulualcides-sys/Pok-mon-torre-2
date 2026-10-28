@@ -409,8 +409,9 @@ export function ensureConsciousActive(s){
  if(s?.team?.[s.active]?.hp>0)return true;
  const reserve=s?.team?.findIndex(m=>m?.hp>0)??-1;
  if(reserve<0)return false;
+ // Persist first: failed storage must not select a different live battler.
+ saveCampaign({...s,active:reserve});
  s.active=reserve;
- saveCampaign(s);
  return true;
 }
 export function startBattle(s){
@@ -608,7 +609,10 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
 }
 export function selectTeamMember(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length)return false;
- s.active=index;saveCampaign(s);return true;
+ // Summary selection must not diverge from the recoverable checkpoint.
+ saveCampaign({...s,active:index});
+ s.active=index;
+ return true;
 }
 export function healTeam(s){
  // A denied save must never make the team appear cured in the live session.
