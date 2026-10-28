@@ -252,6 +252,12 @@ export function readCampaign(storage=localStorage){
  }catch{return null}
 }
 export function saveCampaign(state,storage=localStorage){
+ // Reject broken snapshots BEFORE touching either storage key. A valid
+ // checkpoint must never be replaced by an empty party, invalid stage or
+ // duplicate member identity (including collisions between party and PC).
+ // Legacy members without UIDs remain supported by the read migration.
+ if(!usableCampaignSnapshot(state)||hasRepeatedMemberUid(state))
+  throw new TypeError('Refusing to persist an invalid or duplicate-UID campaign');
  const serialized=JSON.stringify(state);
  const previous=storage.getItem(SAVE_KEY);
  if(previous&&previous!==serialized){
