@@ -1,5 +1,14 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T20 — Lorelei e Bruno em sequência nativa, sem fixture intermediária (28/10/2026)
+
+- **Implementação e merge:** [PR #193](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/193), commit `70546ca4fd9019d44b621fd58b2868b1121590ce`. Novo teste `tests/t20-sequential-lorelei-bruno-browser.cjs` e workflow isolado. Nenhum módulo do jogo, golpe, VFX, sprite, cooldown, controle ou formato de save foi alterado.
+- **Prova no Phaser/WebGL:** Lorelei derrotada pelo AUTO nativo em 177 s; Bruno derrotado em 56 s, sem forçar golpes, K.O., vitórias, XP ou HP. O segundo confronto foi iniciado pelo botão de líder original após **recarregar o navegador e conferir os bytes exatos do save** da vitória anterior; um membro sobrevivente foi selecionado pela barra lateral nativa. Estado comprovado: stage 8→9→10, vitórias 172→173→174, derrotas 0, honras `Elite 1` e `Elite 2`, dinheiro 24.000→26.400, UIDs/PC/insígnias preservados e próximo chefe Agatha.
+- **Limite obrigatório:** o checkpoint **inicial** após Victory Road, oito insígnias, 172 vitórias e seis Pokémon Lv54 foram preparados; o teste **não** comprova jornada Pallet→Liga ou a Liga inteira sequencial. K.O.s e HP restantes persistiram naturalmente, sem curas fabricadas.
+- **Gates:** [CI da branch #40730766380](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40730766380) **sucesso**: 192 unitários, sintaxe, check, check:reuse, build Phaser, dois combates nativos e 14 regressões oficiais Chromium. [CI pós-merge #40732855297](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40732855297) **sucesso**. [Pages #40733066203](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40733066203) **em execução** nesta anotação; versão HTTP pública ainda **não confirmada**.
+- **Estado:** T20 e §§20/24/31/33/34/36/37 permanecem **PARCIAIS**. Próxima prova independente: Agatha, Lance e Campeão em sequência sem inserir honras ou restaurar HP artificialmente; não conflitar com PR #189 (Hall da Fama).
+
+
 ## T20 — Chefes finais da Liga com batalhas nativas (28/10/2026)
 
 - **Lance:** [PR #181](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/181) integrada, commit `3f1e905d426ebe3d9a00b99a54194c88dc22fb9c`. Vitória pelo AUTO original contra os cinco membros Gyarados/Dragonair/Dragonair/Aerodactyl/Dragonite com equipe Lv60 e Articuno legal. [CI da branch #40719410351](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40719410351) e [CI main #40721160692](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40721160692) **sucesso**. Pages #40721216935 em processamento nesta nota. Equipe, nível e três honras anteriores foram preparados; somente a luta de Lance foi natural no teste.
