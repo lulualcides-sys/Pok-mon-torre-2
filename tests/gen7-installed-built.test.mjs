@@ -31,10 +31,27 @@ assert.ok(!availableMoves(member('rapidash',39)).some(x=>x.id==='double-kick'),
  'Evolved species cannot unlock its Gen7 attacks before evolution');
 assert.ok(availableMoves(member('rapidash',40)).some(x=>x.id==='double-kick'));
 assert.equal(moveUnlockLevel(member('rapidash',40),'double-kick'),40);
-assert.ok(!TEST_LIBRARY.some(x=>x.id==='flare-blitz'||x.id==='flame-charge'),
- 'No Flare Blitz / Flame Charge renderer was present when this mapping was written');
-assert.ok(!availableMoves(member('ponyta',70)).some(x=>['flare-blitz','flame-charge'].includes(x.id)),
- 'Gen7 metadata must not invent a Flare Blitz VFX');
+// Do not guess which moves the online client contains: inspect the REAL
+// captured catalogue. Each original attack is legal only at the audited
+// Gen V level, and an absent/pending renderer cannot be synthesized.
+const installedFire=TEST_LIBRARY.filter(x=>['flare-blitz','flame-charge'].includes(x.id));
+console.log('REAL_CLIENT_FIRE_MOVES',JSON.stringify(installedFire.map(x=>({
+ id:x.id,name:x.nombre,source:x.source,approved:x.approved===true,forma:x.forma
+}))));
+for(const [key,unlock] of [['flame-charge',21],['flare-blitz',49]]){
+ const found=installedFire.find(x=>x.id===key&&x.forma&&
+  (x.source!=='new-phaser-fx'||x.approved===true));
+ assert.ok(!availableMoves(member('ponyta',unlock-1)).some(x=>x.id===key),
+  key+' cannot be unlocked before its authentic Gen V level');
+ assert.equal(availableMoves(member('ponyta',unlock)).some(x=>x.id===key),
+  Boolean(found),key+' can only unlock when an approved native VFX exists');
+ if(found){
+  assert.equal(moveUnlockLevel(member('ponyta',unlock),key),unlock);
+  assert.ok(campaignLearnset('ponyta').some(x=>x.id===key&&x.level===unlock));
+  assert.ok(!availableMoves(member('rapidash',39)).some(x=>x.id===key));
+  assert.ok(availableMoves(member('rapidash',50)).some(x=>x.id===key));
+ }
+}
 assert.ok(!availableMoves(member('bulbasaur',70)).some(x=>x.id==='thunderbolt'),
  'A level-up table must not leak incompatible moves between species');
 assert.ok(!availableMoves(member('bulbasaur',70)).some(x=>x.id==='protect'),
