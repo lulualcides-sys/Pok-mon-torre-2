@@ -152,7 +152,11 @@ export function readCampaign(storage=localStorage){
   const s=recoverUid?fallback:(primary||fallback);
   if(!s)return null;
   // Recover from truncation, JSON-valid corruption and duplicated identities.
-  if((!primary||recoverUid)&&backup)storage.setItem(SAVE_KEY,backup);
+  if((!primary||recoverUid)&&backup){
+   // A full/read-only storage must not turn a valid backup into a blank game.
+   // Keep the original backup intact so the next read can recover again.
+   try{storage.setItem(SAVE_KEY,backup)}catch{/* read-only or quota-exceeded storage */}
+  }
   // Additive v1 migration. Do not reset saves or lose stored Pokémon.
   let migrated=false;
   // Old saves stored Elite victories alongside gym badges. Preserve them in
@@ -214,7 +218,11 @@ export function readCampaign(storage=localStorage){
   // Invalid stale wild markers from a previous stage must never be replayed.
   if(s.pendingWild&&s.pendingWild.stage!==s.stage){s.pendingWild=null;migrated=true}
   for(const member of [...s.team,...s.box])if(enforceCampaignCap(member,s.stage))migrated=true;
-  if(migrated)saveCampaign(s,storage);
+  if(migrated){
+   // Migrations are additive. If storage cannot be written, the recovered
+   // campaign remains playable in memory; no Pokémon/progress is discarded.
+   try{saveCampaign(s,storage)}catch{/* migration can be retried on next load */}
+  }
   return s;
  }catch{return null}
 }
