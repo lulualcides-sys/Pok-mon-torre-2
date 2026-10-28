@@ -1,5 +1,14 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## Atualização técnica auditável — T19/T20/T21/T08 · 28/10/2026
+
+- **§20/§31/§33/§34/§36/§37 — T19 (PARCIAL):** PR #174 integrada em `f48169ad788325fc468dc3275b514874ed594147`, CI branch #40711782090 e main #40714144455 aprovadas, Pages #40714206932 aprovado com verificação HTTP pública. Cinco partidas reais em sequência a partir de fixture pós-Brock; reload real após terceira partida, com dinheiro, UID, badge, equipe e PC persistentes. Recompensa 460 do Rival diferente de 240 do treinador comum. Próxima PR #180 para cinco confrontos independentes (treinadores 6–10); não confundir checkpoint preparado com caminhada desde Pallet.
+- **§19/§20 — T21 (PARCIAL):** PR #175 / `6b33f05d6aa238c6ddc822ff74c6a7b46b16b324` desativou somente regeneração passiva do cliente Arena em combates de campanha; CI #40708079649 e main #40709760632, Pages #40709832352: sucesso; ganhos em lutas longas e progressão total ainda não comprovados.
+- **§7/§8 — T08 (PARCIAL):** PR #176 / `7b099efef1a8191e95fcbca030a23bcaa73e12ee`, CI #40708562288 e main #40709674582: 150 espécies verificadas com ULT Lv7/Lv8/Lv9, dano limitado e 4 controles; nenhuma prova de obtenção natural de todos os níveis.
+- **§20/§24/§34 — T20 (PARCIAL):** PR #156 / `9f55435f05b941284e1563ead63347c1e394db88`, CI #40693213433, main #40710794148, Pages #40710876131 sucesso para listas nativas de Lorelei, Bruno, Agatha, Lance, Campeão. PR #154 continua draft porque a batalha da Agatha extrapolou 300s no segundo round mesmo em AUTO ([CI #40712189206](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40712189206), falha); novo observador sem manipular combate `8120f94c`, CI #40714641788 ainda pendente.
+- **§31/§33 — T05 (PARCIAL):** manter integralmente o patch de identidade em saves legados PR #178, `cb07ef250ad549a0358eed82b96806ec56b7ed0c`, CI main #40712031513, Pages #40712113397, preservando evidência preexistente.
+- Registros demonstram unidade, build, testes Chromium/WebGL e publicação automatizada. Não representam validação em dispositivo Android físico, nem campanha integral natural; nenhuma alteração nestas provas ao padrão de VFX aprovados.
+
 ## §15/§29/§31/§33/§36/§37 — T05: preservar HP/status de equipe legada (28/10/2026)
 
 - **Correção de runtime:** [PR #178](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/178), squash `cb07ef250ad549a0358eed82b96806ec56b7ed0c`. Saves v1 sem UID podiam aplicar HP/status do último membro a todos após uma batalha porque `Map(undefined)` sobrescrevia as demais entradas. Agora o resultado associa UIDs únicos; na ausência/ambiguidade de UID usa a posição e confirma a espécie, sem mudar golpes, arte, VFX, cooldowns ou saves gravados.
