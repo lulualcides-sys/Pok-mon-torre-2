@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T04 — K.O. real da CPU e recolhimento com próximo Pokémon (28/10/2026, validado e publicado)
+
+- **PR #157 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/157, commit `da2d07a6e97dfc9cff2847d8445675c47e2d4c4d`. Foram adicionados apenas `tests/t04-natural-faint-party-browser.cjs` e `.github/workflows/master-t04-natural-faint.yml`; **nenhum sistema de batalha, sprite ou save do usuário foi modificado**.
+- **CI da branch:** https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40693841856 — sintaxe, unitários, verificação de reutilização, captura e build do Phaser, K.O. real causado por CPU no Chromium/WebGL, substituição automática de Bulbasaur por Charmander, limpeza de efeitos/filas de hits e regressão oficial: **sucesso**.
+- **CI pós-merge:** https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40694907762 — **sucesso**. **Pages:** https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40694946515 — deploy e verificação do código servido publicamente **sucesso**.
+- **Limitação/pendente:** HP inicial 2 e segundo membro Lv5 são fixtures, não percurso natural completo até o Campeão. T04 continua **PARCIAL**. Prosseguir com múltiplos K.O.s e trocas prolongadas, hitboxes e impactos em partida sem fixtures; não refazer o teste já aprovado.
+
+
 **Controle operacional para o comando `continue`**  
 Atualização de referência: 27/10/2026, base `a5961ceef11b28a35b76600ab6e545abe0e92e1f`. A fila é **reavaliada** a cada execução porque outros agentes podem alterar a `main`.
 
