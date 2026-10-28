@@ -393,7 +393,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-weedle-chain-earned-evolution.
    sameBytes:raw===restored.save,wins:restored.wins,trainer:restored.trainer};
   report.nextBattle=live;
   persist();
-  console.log('PASS T03 CAPTURED CATERPIE -> METAPOD -> BUTTERFREE BY NATURAL TRAINER WINS + SAVE RELOAD + PMD WEBGL',
+  console.log('PASS T03 CAPTURED WEEDLE -> KAKUNA -> BEEDRILL BY NATURAL TRAINER WINS + SAVE RELOAD + PMD WEBGL',
    JSON.stringify({attempts:report.attempts.length,
     after:report.victories.at(-1).after,save:report.save,nextBattle:live}));
  }finally{persist();await browser.close();}
