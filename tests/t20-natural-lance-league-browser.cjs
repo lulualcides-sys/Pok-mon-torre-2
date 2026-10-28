@@ -19,7 +19,7 @@ const server=http.createServer(async(req,res)=>{
  catch{res.writeHead(404);res.end('missing')}
 });
 const report={scope:'T20 one normal Lance Elite Four battle in original Phaser',
- fixture:'Lance stage11 after three PREPARED League victories; six legal Lv60 with Articuno's native Ice STAB against Dragonite, not sequential League play',
+ fixture:'Lance stage11 after three PREPARED League victories; six legal Lv60 with Articuno Ice STAB against Dragonite, not sequential League play',
  naturalCombat:true,forcedKO:false,forcedWin:false,status:'not-started'};
 const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
  fs.writeFileSync('test-evidence/t20-natural-lance.json',JSON.stringify(report,null,2))};
