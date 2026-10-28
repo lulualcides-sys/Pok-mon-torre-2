@@ -19,6 +19,7 @@ jobs:
           set -euo pipefail
           npm install --no-audit --no-fund
           node --check tests/section20-natural-team-brock-browser.cjs
+          node --check tests/t03-focused-natural-ivysaur-browser.cjs
           npm run check
           npm run check:reuse
           npm test
@@ -32,11 +33,11 @@ jobs:
           done
           node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/version.json
-      - name: Vencer Brock e alcançar Ivysaur por vitórias naturais, sem alterar XP
+      - name: Validar evolução real com checkpoint pré-batalha isolado (sem alterar XP na luta)
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
-          T03_NATURAL_EVOLUTION=1 node tests/section20-natural-team-brock-browser.cjs
+          node tests/t03-focused-natural-ivysaur-browser.cjs
       - name: Testes oficiais de interface após regressão T03
         run: |
           set -euo pipefail
@@ -48,8 +49,7 @@ jobs:
         with:
           name: master-t03-natural-ivysaur-evidence
           path: |
-            test-evidence/natural-through-brock.json
-            test-evidence/t03-natural-*
+            test-evidence/t03-focused-*
             test-evidence/natural-route1-through-brock-completed.png
             _site/arena2d/version.json
           if-no-files-found: warn
