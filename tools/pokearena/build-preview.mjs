@@ -458,6 +458,14 @@ patches.push(['luchador.js',[
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);',
   'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;d*=weatherDamageMultiplier(e.__torre2Weather,g.tipo,g.nombre||fuente?.kit?.[g.slot]?.nombre);}']
 ]]);
+// Native Poké Arena anotarEntreno(d) writes registroDano.push() even after
+// direct damage in a Torre 2 trainer or laboratory fight. Unlike original
+// training mode, those scenes may not own an initialized native hit ledger.
+// Defend only our campaign/lab battle; do not alter original Arena 2D.
+patches.push(['escenas/combate.js',[[
+ 'anotarEntreno(d){this.registroDano.push({t:this.t,d});',
+ 'anotarEntreno(d){if(this.datos?.torre2&&!Array.isArray(this.registroDano)){this.registroDano=[];this.comboActual=0;this.mejorCombo=0;this.ultimoGolpeEntreno=-Infinity;this.ultimoDano=0;}this.registroDano.push({t:this.t,d});'
+]]]);
 // Preload every member before first round: in-place swap never triggers LOADING.
 patches.push(['escenas/combate.js',[[
  'const dexs=formasDe(d.jugadores?d.jugadores.map(j=>j.id):[d.p1,d.p2],d.jugadores?d.jugadores.map(j=>j.aspecto):d.aspectos);',
