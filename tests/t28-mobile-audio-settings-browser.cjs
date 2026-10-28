@@ -72,6 +72,10 @@ const server=http.createServer(async(req,res)=>{
    return c.scene.isActive()&&c.__torre2BattlePath&&
     c.__torre2AudioSettings?.button?.input?.enabled;
   },null,{timeout:65000});
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return Math.abs(c.game.sound.volume-.7)<.0001;
+  },null,{timeout:12000});
   const initial=await ui();
   console.log('T28 INITIAL PHASER BUS DIAG',JSON.stringify(initial));
   assert.equal(initial.panels,0);
@@ -91,6 +95,10 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(changed.prefs.music,.4);
   assert.ok(Math.abs(changed.volume-.6)<1e-5,'Phaser volume should be 60%');
   await touch(200,282); // mute
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return Math.abs(c.game.sound.volume)<.0001;
+  },null,{timeout:12000});
   const muted=await ui();
   console.log('T28 PHASER MUTE DIAG',JSON.stringify(muted));
   assert.equal(muted.prefs.muted,true);
@@ -110,6 +118,10 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('campanha'));
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
    .__torre2AudioSettings?.button?.input?.enabled,null,{timeout:60000});
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return Math.abs(c.game.sound.volume-.6)<.0001;
+  },null,{timeout:12000});
   const reload=await ui();
   assert.deepEqual(reload.prefs,expected,'Sound preferences lost after actual page reload');
   assert.ok(Math.abs(reload.volume-.6)<1e-5,'Phaser volume should persist after reload');
