@@ -159,7 +159,9 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(after.trainer,before.trainer+1);
    assert.equal(after.wins,before.wins+1);
    assert.equal(after.losses,before.losses);
-   assert.equal(after.money,before.money+240,'Cerulean trainer standard reward');
+   const expectedPayment=foe.kind==='rival'?460:240;
+   assert.equal(after.money,before.money+expectedPayment,
+    'Cerulean reward must match native trainer/Rival economy');
    assert.deepEqual(after.badges,before.badges,'No second gym badge before Misty');
    assert.deepEqual(after.honors,before.honors);
    assert.deepEqual(after.box,before.box);
