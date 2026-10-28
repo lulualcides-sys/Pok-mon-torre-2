@@ -311,28 +311,42 @@ export function recordCaught(s,id){
  if(!s.dexCaught.includes(id)){s.dexCaught.push(id);return true}
  return added;
 }
+// PC transfers must not change the live party until the new checkpoint is
+// persisted. A denied localStorage write (quota/private mode) otherwise leaves
+// the UI with a party/PC different from the last recoverable save.
+function persistPartyTransfer(s,changes){
+ const next={...s,...changes};
+ saveCampaign(next);
+ Object.assign(s,changes);
+ return true;
+}
 export function storePokemon(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length||s.team.length<=1)return false;
- const [member]=s.team.splice(index,1);
- s.box??=[];s.box.push(member);
- if(s.active===index)s.active=0;
- else if(index<s.active)s.active--;
- s.lastMessage=member.id+' enviado para o PC.';
- saveCampaign(s);return true;
+ const team=s.team.slice(),box=Array.isArray(s.box)?s.box.slice():[];
+ const [member]=team.splice(index,1);
+ box.push(member);
+ let active=s.active;
+ if(active===index)active=0;
+ else if(index<active)active--;
+ return persistPartyTransfer(s,{team,box,active,
+  lastMessage:member.id+' enviado para o PC.'});
 }
 export function withdrawPokemon(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.box.length||s.team.length>=6)return false;
- const [member]=s.box.splice(index,1);
- s.team.push(member);s.lastMessage=member.id+' entrou na equipe.';
- saveCampaign(s);return true;
+ const team=s.team.slice(),box=s.box.slice();
+ const [member]=box.splice(index,1);
+ team.push(member);
+ return persistPartyTransfer(s,{team,box,
+  lastMessage:member.id+' entrou na equipe.'});
 }
 export function swapPokemon(s,teamIndex,boxIndex){
  if(!Number.isInteger(teamIndex)||teamIndex<0||teamIndex>=s.team.length||
     !Number.isInteger(boxIndex)||boxIndex<0||boxIndex>=s.box.length)return false;
- const old=s.team[teamIndex];
- s.team[teamIndex]=s.box[boxIndex];s.box[boxIndex]=old;
- s.lastMessage=s.team[teamIndex].id+' trocado com '+old.id+'.';
- saveCampaign(s);return true;
+ const team=s.team.slice(),box=s.box.slice();
+ const old=team[teamIndex];
+ team[teamIndex]=box[boxIndex];box[boxIndex]=old;
+ return persistPartyTransfer(s,{team,box,
+  lastMessage:team[teamIndex].id+' trocado com '+old.id+'.'});
 }
 export function currentOpponent(s){
  if(s.champion||s.stage>=STAGES.length)return null;
