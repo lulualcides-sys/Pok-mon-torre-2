@@ -71,6 +71,7 @@ const server=http.createServer(async(req,res)=>{
     c.__torre2AudioSettings?.button?.input?.enabled;
   },null,{timeout:65000});
   const initial=await ui();
+  console.log('T28 INITIAL PHASER BUS DIAG',JSON.stringify(initial));
   assert.equal(initial.panels,0);
   assert.equal(initial.buttons,1);
   assert.ok(Math.abs(initial.volume-.7)<1e-5,'Default master volume must apply to native Phaser');
