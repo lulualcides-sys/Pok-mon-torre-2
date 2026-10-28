@@ -182,6 +182,40 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
      console.log('T20 SEQUENTIAL PROGRESS',leader,JSON.stringify(status));
     }catch(e){console.log('T20 monitor',String(e))}
    },45000);monitor.unref();
+   // AUTO chooses real native attacks. When Lance changes Pokémon, the
+   // player may tap existing party-sidebar controls for legal type counters.
+   // No direct combat methods, HP, damage, KO, reward or save edits.
+   const counters={gyarados:[5,4,0],dragonair:[4,3,2],
+    aerodactyl:[3,4,5],dragonite:[4,3,2]};
+   let coachBusy=false;record.sidebarSwaps=[];
+   const coach=setInterval(async()=>{
+    if(round!==1||coachBusy||page.isClosed())return;
+    coachBusy=true;
+    try{
+     const live=await page.evaluate(()=>{
+      const b=window.__pt2Game.scene.getScene('combate');
+      const p=b.datos?.torre2?.party;
+      return {active:b.scene.isActive(),phase:b.fase,changing:!!b.__torre2Changing,
+       auto:!!b.__torre2AutoMode?.enabled,index:p?.playerIndex,
+       foe:p?.foes?.[p.enemyIndex]?.id,friend:p?.friend?.map(m=>({id:m.id,hp:m.hp}))||[],
+       slots:b.__torre2SideParty?.slots?.map(z=>!!z?.input?.enabled)||[]};
+     });
+     if(!live.active||live.phase!=='lucha'||live.changing||!live.auto)return;
+     const target=(counters[live.foe]||[]).find(i=>
+      live.friend[i]?.hp>0&&live.slots[i]);
+     if(!Number.isInteger(target)||live.index===target)return;
+     const position=await page.evaluate(i=>{
+      const b=window.__pt2Game.scene.getScene('combate'),z=b.__torre2SideParty?.slots?.[i];
+      return z?.input?.enabled?{x:z.x,y:z.y}:null;
+     },target);
+     if(!position)return;
+     await tap(position.x,position.y);
+     const action={enemy:live.foe,from:live.friend[live.index]?.id,to:live.friend[target].id};
+     record.sidebarSwaps.push(action);persist();
+     console.log('T20 REAL SIDEBAR LANCE SWITCH',JSON.stringify(action));
+    }catch(e){console.error('T20 sidebar diagnostic',String(e))}
+    finally{coachBusy=false}
+   },2200);coach.unref();
    try{
     await page.waitForFunction(({wins,losses})=>{
      const s=window.t20Core.readCampaign();
@@ -189,7 +223,7 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
       (s.wins>wins||s.losses>losses);
     },{wins:before.wins,losses:before.losses},
     {timeout:780000,polling:350});
-   }finally{clearInterval(monitor)}
+   }finally{clearInterval(monitor);clearInterval(coach)}
    const after=await snapshot();
    record.after=after;record.elapsedSeconds=Math.round((Date.now()-record.started)/1000);
    record.status=after.wins===before.wins+1?'victory':'defeat';
@@ -224,6 +258,37 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
    assert.equal(restoredBytes,bytes,'Reload rewrote a valid checkpoint');
    record.reload={sameBytes:true,next:restored.next,stage:restored.stage};
    before=restored;persist();
+   if(round===0){
+    // Only the real Pokémon Center can recover HP between the earned wins.
+    // The test never injects HP, money, stage, level or save data here.
+    await page.evaluate(()=>{
+     const c=window.__pt2Game.scene.getScene('campanha');
+     c.centerScreen(window.t20Core.readCampaign());
+    });
+    const z=await page.evaluate(()=>{
+     const c=window.__pt2Game.scene.getScene('campanha');
+     const zone=c.children.list.find(o=>o.active&&o.input?.enabled&&
+      o.getData?.('torre2-center-heal')===true);
+     if(!zone)throw Error('Native Center CURAR button missing');
+     return {x:zone.x,y:zone.y};
+    });
+    await tap(z.x,z.y);
+    await page.waitForFunction(()=>{
+     const c=window.__pt2Game.scene.getScene('campanha');
+     const s=window.t20Core.readCampaign();
+     return c.scene.isActive()&&!!c.__torre2BattlePath&&!c.__torre2CenterBusy&&
+      s.team.every(m=>m.hp===100&&m.status===null);
+    },null,{timeout:30000});
+    const healed=await snapshot();
+    assert.equal(healed.stage,before.stage,'Healing did not advance League');
+    assert.equal(healed.wins,before.wins,'Healing did not create a victory');
+    assert.equal(healed.money,before.money,'Healing is free');
+    assert.deepEqual(healed.honors,before.honors);
+    assert.deepEqual(healed.team.map(x=>x.uid),originalUids);
+    assert.ok(healed.team.every(x=>x.hp===100));
+    before=healed;record.centerHealed=true;persist();
+    console.log('T20 REAL CENTER HEAL BEFORE LANCE');
+   }
    console.log('T20 SEQUENTIAL NATIVE WIN',JSON.stringify({
     leader,stage:after.stage,wins:after.wins,elapsedSeconds:record.elapsedSeconds,
     next:restored.next,saveIdentical:true}));
