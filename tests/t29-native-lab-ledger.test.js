@@ -16,3 +16,10 @@ test('only laboratory mode initializes original Phaser training damage history',
  assert.ok(source.indexOf('scene.registroDano=[]')>source.indexOf('if(!scene.datos?.torre2?.laboratory'),
   'Never initialize training ledger outside the isolated laboratory');
 });
+
+test('built client guards original native first-hit ledger only inside Torre 2',()=>{
+ const builder=readFileSync(new URL('../tools/pokearena/build-preview.mjs',import.meta.url),'utf8');
+ assert.match(builder,/anotarEntreno\(d\)\{this\.registroDano\.push/);
+ assert.match(builder,/if\(this\.datos\?\.torre2&&\!Array\.isArray\(this\.registroDano\)\)/);
+ assert.match(builder,/this\.registroDano=\[\];this\.comboActual=0;/);
+});
