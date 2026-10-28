@@ -1,4 +1,4 @@
-name: Master T03 — evolução natural Ivysaur após Brock
+name: Master T03 — evolução após vitória real com checkpoint isolado
 on:
   push:
     branches: [test/master-t03-natural-ivysaur-20261027]
@@ -50,7 +50,6 @@ jobs:
           name: master-t03-natural-ivysaur-evidence
           path: |
             test-evidence/t03-focused-*
-            test-evidence/natural-route1-through-brock-completed.png
-            _site/arena2d/version.json
+                        _site/arena2d/version.json
           if-no-files-found: warn
           retention-days: 14
