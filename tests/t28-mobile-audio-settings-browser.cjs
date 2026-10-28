@@ -118,6 +118,7 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('campanha'));
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
    .__torre2AudioSettings?.button?.input?.enabled,null,{timeout:60000});
+  console.log('T28 AUDIO RELOAD BEFORE SYNC',JSON.stringify(await ui()));
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return Math.abs(c.game.sound.volume-.6)<.0001;
