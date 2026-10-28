@@ -120,6 +120,18 @@ function usableCampaignSnapshot(s){
   Number.isInteger(s.stage)&&s.stage>=0&&s.stage<=STAGES.length&&
   Number.isInteger(s.trainer)&&s.trainer>=0;
 }
+// Economic corruption is distinct from legacy optional-field migration.
+// A broken primary must never replace a clean backup or silently reset
+// earned money/items when a clean checkpoint is still available.
+function economySnapshotSafe(s){
+ const inv=s?.inventory;
+ return Number.isFinite(s?.money)&&s.money>=0&&
+  inv&&typeof inv==='object'&&!Array.isArray(inv)&&Array.isArray(inv.tms)&&
+  ['pokeball','greatball','ultraball','potion','superpotion']
+   .every(key=>Number.isInteger(inv[key])&&inv[key]>=0)&&
+  MART_ITEMS.filter(item=>item.kind==='status').every(item=>
+   inv[item.id]===undefined||(Number.isInteger(inv[item.id])&&inv[item.id]>=0));
+}
 // Duplicate non-empty identities across the team and PC are structural save
 // corruption. Older saves without UIDs remain readable and are not discarded.
 function hasRepeatedMemberUid(s){
@@ -173,11 +185,13 @@ export function readCampaign(storage=localStorage){
   // Prefer a clean backup. Otherwise preserve every stored member and
   // repair only colliding identities, archiving original bytes before save.
   const recoverUid=!!(primary&&fallback&&hasRepeatedMemberUid(primary)&&!hasRepeatedMemberUid(fallback));
-  const s=recoverUid?fallback:(primary||fallback);
+  const recoverEconomy=!!(primary&&fallback&&!economySnapshotSafe(primary)&&economySnapshotSafe(fallback));
+  const recoverCheckpoint=recoverUid||recoverEconomy;
+  const s=recoverCheckpoint?fallback:(primary||fallback);
   if(!s)return null;
   const repairedUid=hasRepeatedMemberUid(s)&&repairRepeatedMemberUids(s);
   // Recover from truncation, JSON-valid corruption and duplicated identities.
-  if((!primary||recoverUid)&&backup){
+  if((!primary||recoverCheckpoint)&&backup){
    // A full/read-only storage must not turn a valid backup into a blank game.
    // Keep the original backup intact so the next read can recover again.
    try{storage.setItem(SAVE_KEY,backup)}catch{/* read-only or quota-exceeded storage */}
@@ -256,7 +270,7 @@ export function saveCampaign(state,storage=localStorage){
  // checkpoint must never be replaced by an empty party, invalid stage or
  // duplicate member identity (including collisions between party and PC).
  // Legacy members without UIDs remain supported by the read migration.
- if(!usableCampaignSnapshot(state)||hasRepeatedMemberUid(state))
+ if(!usableCampaignSnapshot(state)||hasRepeatedMemberUid(state)||!economySnapshotSafe(state))
   throw new TypeError('Refusing to persist an invalid or duplicate-UID campaign');
  const serialized=JSON.stringify(state);
  const previous=storage.getItem(SAVE_KEY);
@@ -266,7 +280,7 @@ export function saveCampaign(state,storage=localStorage){
   // duplicate-UID primary, archive its exact bytes before replacement.
   // A denied archive write must abort the primary write, not lose evidence.
   if(candidate){
-   if(!hasRepeatedMemberUid(candidate))storage.setItem(SAVE_BACKUP_KEY,previous);
+   if(!hasRepeatedMemberUid(candidate)&&economySnapshotSafe(candidate))storage.setItem(SAVE_BACKUP_KEY,previous);
    else if(!storage.getItem(SAVE_BACKUP_KEY))storage.setItem(SAVE_BACKUP_KEY,previous);
   }
  }
