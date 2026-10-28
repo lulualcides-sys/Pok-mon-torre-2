@@ -156,7 +156,10 @@ const server=http.createServer(async(req,res)=>{
    const bossPage=await inspection();
    assert.equal(bossPage.progress,total);
    assert.ok(bossPage.zones.some(z=>z.index===total&&z.kind==='leader'));
-   assert.equal(bossPage.offset,Math.floor(total/13)*13);
+   // Index 13 is already visible on page zero (14 visible spots).
+   const expectedBossPage=total<=13?0:Math.floor((total-1)/13)*13;
+   assert.equal(bossPage.offset,expectedBossPage,
+    'Completed trainer must auto-focus its visible map page');
    proof.bossPage=bossPage.offset;
    report.stages.push(proof);
   }
