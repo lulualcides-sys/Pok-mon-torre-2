@@ -444,6 +444,7 @@ create(){
    ['jolteon','ELÉTRICO',0xe2ba4d],
    ['flareon','FOGO',0xc96750]
   ];
+  let saveWarning;
   variants.forEach(([id,type,color],i)=>{
    const x=149+i*171,y=226,w=158,h=68;
    const g=this.add.graphics().setDepth(layer+3);
@@ -457,14 +458,22 @@ create(){
     .setData('torre2-eevee-choice',id)
     .on('pointerdown',(_p,_x,_y,event)=>{
      event?.stopPropagation?.();
-     const current=readCampaign();
-     const outcome=chooseEeveeEvolution(current,pending.uid,id);
-     // A stale/malformed save must never be evolved by a frozen UI object.
-     if(!outcome.ok)return this.scene.restart();
-     this.scene.restart();
+     try{
+      const current=readCampaign();
+      // A stale/malformed save must never be evolved by a frozen UI object.
+      if(!current)return this.scene.restart();
+      const outcome=chooseEeveeEvolution(current,pending.uid,id);
+      if(!outcome.ok)return this.scene.restart();
+      this.scene.restart();
+     }catch{
+      // Keep all three choices clickable so the player can retry the save.
+      saveWarning?.setText('NÃO FOI POSSÍVEL SALVAR · TENTE NOVAMENTE');
+     }
     });
   });
   title(320,284,'EVOLUÇÃO POR NÍVEL · APÓS A BATALHA',9,'#b6cedf');
+  saveWarning=title(320,309,'',10,'#ff9898')
+   .setData('torre2-eevee-save-error',true);
   return true;
  }
  badgeCaseScreen(state,selected=0){
