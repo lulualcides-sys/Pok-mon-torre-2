@@ -156,7 +156,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   save();
   assert.equal(after.losses,before.losses,'Bruno genuine battle was lost');
   assert.equal(after.wins,before.wins+1,'Bruno must be defeated by native combat');
-  assert.equal(after.stage,10,'Bruno win must move into Bruno stage');
+  assert.equal(after.stage,10,'Bruno win must advance into Agatha stage');
   assert.equal(after.trainer,0);
   assert.equal(after.money,before.money+1200);
   assert.deepEqual(after.honors,['Elite 1','Elite 2'],'Only Bruno honor should be awarded');
