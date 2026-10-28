@@ -1,7 +1,7 @@
 'use strict';
-// T15 live Phaser Thunder hit confirmation under sunlight / rain.
-// No edits to approved renderer or move. Lab match and RNG are test-only
-// fixtures; real Luchador.recibir, type damage and weather state are used.
+// T15 native campaign Phaser Thunder confirmation under sunlight / rain.
+// Geodude typing and RNG are test-only fixtures; original Luchador.recibir,
+// weather state, move renderer and campaign save remain unmodified.
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright-core');
@@ -29,21 +29,21 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    window.t15Core=await import(new URL('./torre2/campaign-core.js',src));
-   window.t15Core.saveCampaign(window.t15Core.createCampaign('bulbasaur'));
+   const st=window.t15Core.createCampaign('bulbasaur');
+   st.trainer=13; // Isolated Brock checkpoint used by other native damage tests.
+   st.team[0].id='pikachu';st.team[0].progression.species='pikachu';
+   window.t15Core.saveCampaign(st);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
   const original=await page.evaluate(()=>localStorage.getItem(window.t15Core.SAVE_KEY));
-  await page.evaluate(async()=>{
-   const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
-   const lab=await import(new URL('./torre2/laboratory.js',src));
-   const match=lab.prepareLaboratoryMatch({player:'pikachu',enemy:'squirtle',level:50});
-   match.torre2.weather='sun';
-   window.__pt2Game.scene.getScene('campanha').launchBattle(match,false);
+  await page.evaluate(()=>{
+   window.__pt2Game.scene.getScene('campanha')
+    .enterBattle(window.t15Core.readCampaign(),false);
   });
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
-   return b.scene.isActive()&&b.__torre2Weather&&b.__torre2LabInstalled&&b.fase==='lucha'&&
+   return b.scene.isActive()&&b.__torre2Weather&&b.__torre2PartyInstalled&&b.fase==='lucha'&&
     b.luchadores?.length===2&&!b.__torre2Changing&&!b.__torre2BallTransitions;
   },null,{timeout:70000});
   const observations=await page.evaluate(async()=>{
@@ -52,6 +52,11 @@ const server=http.createServer(async(req,res)=>{
    const weather=await import(new URL('./torre2/weather.js',src));
    b.controles.forEach(c=>{c.leer=()=>null});
    p.inmortal=true;e.inmortal=true;
+   // The actual Brock Geodude is GROUND and immune to ELECTRIC. Test the
+   // original recipient's Thunder weather gate with a WATER typing fixture.
+   // No source roster, Pokémon species, move renderer or save is modified.
+   if(e.def.id!=='geodude')throw Error('Expected Brock Geodude, got '+e.def.id);
+   Object.defineProperty(e,'tipos',{configurable:true,value:['WATER']});
    b.__torre2BattleBagOpen=true; // Freeze native time between deterministic probes.
    const pairs=[];
    const hit=(kind,name,roll)=>{
@@ -85,7 +90,7 @@ const server=http.createServer(async(req,res)=>{
     activeKit:Object.entries(p.kit).filter(([key])=>['lmb','rmb','q','e'].includes(key))
       .map(([slot,m])=>({slot,name:m.nombre,renderer:m.forma}))};
   });
-  assert.deepEqual(observations.species,['pikachu','squirtle']);
+  assert.deepEqual(observations.species,['pikachu','geodude']);
   assert.equal(observations.sunMiss.result,'miss','Sunny weather must reject Thunder high RNG');
   assert.equal(observations.sunMiss.after,observations.sunMiss.before);
   assert.ok(observations.sunHit.after<observations.sunHit.before,
@@ -95,7 +100,7 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(observations.other.after<observations.other.before,
    'Thunderbolt should not inherit special Thunder sunlight accuracy');
   assert.equal(await page.evaluate(()=>localStorage.getItem(window.t15Core.SAVE_KEY)),original,
-   'Laboratory weather tests must never change the main campaign save');
+   'Weather hit fixtures must not alter the campaign save');
   assert.deepEqual(errors,[],'No native Phaser error');
   await page.screenshot({path:'test-evidence/t15-live-sun-thunder.png'});
   fs.writeFileSync('test-evidence/t15-live-sun-thunder.json',JSON.stringify(observations,null,2));
