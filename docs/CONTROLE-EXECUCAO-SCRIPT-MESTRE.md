@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §31/§33/§36/§37 — T05: checkpoint economicamente inválido (28/10/2026)
+
+- **Correção real no runtime:** [PR #165](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/165), commit `c3e8a62eb60d136b264002083a29a9ea9e999cfd`. A leitura não substitui mais um primário com UIDs repetidos e economia íntegra por backup de dinheiro/itens corrompidos; repara os UIDs do primário e mantém ambos os conjuntos de dados armazenados. Três variantes de backup inválido (dinheiro negativo, Pokébolas negativas, TMs inválidas) cobertas por teste permanente do cliente Phaser compilado.
+- **Gates executados:** [CI branch #40700093133](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40700093133) verde: 186 unitários, testes compilados, `npm run check`, `npm run check:reuse`, build, dois testes de navegador T05 e 14 testes oficiais Chromium; [main #40701227903](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40701227903) verde. [Pages #40701273357](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40701273357) verde: deploy `c3e8a62e`, confirmação HTTP de `src-55b2d272dc` às 14:02 UTC.
+- **Limites:** falhas econômicas são fixtures, não corrupção natural em aparelho; regressões Chromium não equivalem a campanha completa. Sem alteração de arte, golpes, cooldowns, controles ou saves reais. **§31, §33, §36 e §37 seguem PARCIAIS** até todos os critérios do Mestre e publicação final.
+
 ## §2/§3/§18/§31/§33/§36/§37 — T06: equipe cheia → PC (28/10/2026)
 
 - **PR #164:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/164, commit `f12116b8dacde25b19eccf9c78835fcf93c5dd15`. O motor de captura real do Phaser/Chromium, com mouse, registrou fuga de primeira bola, segunda capturando Pikachu, equipe de seis membros sem mutações/UIDs duplicados, exatamente uma nova entrada no PC e save íntegro ao recarregar. Nenhum golpe/sprite/runtime alterado.

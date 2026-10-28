@@ -1,5 +1,11 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T05 — preservar economia ao recuperar UID duplicado (28/10/2026)
+
+- **Correção integrada:** [PR #165](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/165), commit `c3e8a62eb60d136b264002083a29a9ea9e999cfd`. Quando o save principal contém UID repetido, mas dinheiro e itens íntegros, o jogo **não** usa como restauração um backup com economia inválida; repara somente a identidade duplicada no principal, mantendo HP, membros, dinheiro e inventário. Os bytes do backup preexistente permanecem intocados. Alterados apenas `campaign-core.js`, teste e workflow; sem golpes/VFX/sprites/cooldowns/controles alterados.
+- **Provas:** [CI branch #40700093133](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40700093133) **sucesso** (186 testes unitários, testes do módulo Phaser compilado, check/reuse, build, Chromium e 14 regressões oficiais). [CI main #40701227903](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40701227903) **sucesso**. [Pages #40701273357](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40701273357) **sucesso**, commit implantado `c3e8a62e` e HTTP público confirmando `src-55b2d272dc` às 14:02 UTC.
+- **Limite:** corrupção de UID/economia foi reproduzida com storage controlado; os testes Chromium cobriram regressões existentes, não um dispositivo com save corrompido naturalmente. **T05 permanece PARCIAL** até continuidade longa sem fixtures e salvamentos após batalhas, compras, evolução e captura em percurso normal.
+
 ## T06 — captura com equipe de seis e encaminhamento ao PC (28/10/2026)
 
 - **PR #164 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/164, commit `f12116b8dacde25b19eccf9c78835fcf93c5dd15`. Teste Chromium/WebGL real desktop `tests/t06-full-party-pc-capture-browser.cjs`: seis integrantes no mesmo slot/UID, Mewtwo existente no PC, fuga de uma Pokébola e captura real de Pikachu com a segunda. Novo Pikachu armazenado **exatamente uma vez no PC** sem sétimo membro, estoque 5→4→3, nenhum progresso de treinador fabricado, conteúdo idêntico após reload.
