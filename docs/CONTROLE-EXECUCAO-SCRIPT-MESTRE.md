@@ -1,5 +1,14 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§22/23/31/33/36/37 · T05/T23: uso de itens e TM sem mutação antes do save
+
+- **§22/§23 — PARCIAIS:** [PR #227](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/227) integrada no `e0dce9a2faebee8f13b5af188ecd34d73342fd46`. Poção, Super Poção, remédios de status e ensino de TM só atualizam HP/status/`tmMoves`/inventário/mensagem **após** `saveCampaign` confirmar. A UI Phaser exibe erro vermelho e aceita repetir após recusa de gravação; não altera lógica de batalha, movesets, VFX, sprites, cooldowns nem formato de save.
+- **§31 — PARCIAL:** 9 testes novos compilados (8 recusas primário/backup e 1 entrada inválida), referências de Pokémon e inventário preservadas, checkpoint e backup byte a byte, reload e retry sem duplicação. O armazenamento negado é **simulado**, não falha reproduzida em dispositivo físico.
+- **§33 — PARCIAL:** [CI branch #40775791171](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40775791171) **SUCESSO**: 200 testes `npm test`, `check`, `check:reuse`, build Phaser, regressões Mart/PC/TM e **8 toques móveis nativos** com aviso/retry; `npm run test:browser` integral verde. Tentativa inicial [#40775383555](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40775383555) falhou em fixture sem campanha inicial, corrigida no teste. [CI main #40776716274](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40776716274) **SUCESSO**.
+- **§36 — PARCIAL:** preservação de golpes, VFX, sprites, cooldowns, controles e saves aprovada por diff/CI; PRs Toxic #16, Shiny #17, Liga #210 e evolução #213 intocadas.
+- **§37 — PARCIAL:** [Pages #40776758838](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40776758838) **SUCESSO**, `pages_build_version=e0dce9a2faebee8f13b5af188ecd34d73342fd46`, HTTP público confirmou `src-b5606aa3e1` às **22:05:55 UTC de 28/10/2026**. Ainda faltam captura/consumo de Pokébolas sob falha, jornada natural Pallet→Liga e Android físico; **nenhuma seção foi declarada VALIDADA integralmente**.
+
+
 ## 28/10/2026 — §§22/31/33/36/37 · T05/T23: compra no Mart sem perda sob falha de armazenamento
 
 - **§22 / T23 — PARCIAL:** [PR #225](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/225), squash `11c61b61d6167907fd07535ced651cb8f5e3a2d5`, alterou exclusivamente a persistência de compra do Mart e seu aviso Phaser. Pokébolas, poções, remédios e TMs são concedidos **após** gravação bem-sucedida; recusa de `localStorage` mantém dinheiro, inventário e backup inalterados e permite retry. Não altera uso de remédios ou ensino de TMs: esses caminhos seguem em auditoria independente.
