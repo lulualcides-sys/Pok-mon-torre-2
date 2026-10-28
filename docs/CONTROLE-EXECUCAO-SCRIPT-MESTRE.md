@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §19/§20/§33/§34/§36/§37 — T21: regeneração passiva provoca impasse na campanha (28/10/2026)
+
+- **Diagnóstico:** [PR #174](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/174), [CI #40705765471](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705765471) **falha** por timeout de 240s no Paras, enquanto Wartortle e Paras permaneciam com HP alto. Zubat e Geodude foram vencidos legitimamente nessa execução, mas cinco vitórias e reload **não foram provados**.
+- **Causa:** HP passivo da Arena original (`REGLAS.curaTras` e `REGLAS.curaFuera`) prevalece sobre dano intermitente no Kanto; FireRed não tem cura automática sem golpe/item.
+- **PR de correção [#175](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/175):** desativa somente esse refill em combate Torre 2, preservando o motor da Arena original e curas explícitas. CI de branch [#40708079649](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40708079649) com build e teste de vitória genuína contra Paras aprovados, aguardando regressão oficial/merge/Pages. Nenhum sprite, golpe ou VFX alterado.
+- **Estado:** T21 PARCIAL — regressões em outros níveis/líderes e balanceamento completo ainda são necessários; T19 resta teste de cinco vitórias contínuas após fix.
+
+
 ## §20/§24/§31/§33/§34/§36/§37 — T19: três batalhas reais de Cerulean (28/10/2026)
 
 - **[PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171) integrada**, commit `85fb7645659479a6dda11521a0d53ee9b6fa1855`. Vitória genuína nos três treinadores Zubat, Geodude e Paras em sequência, AUTO/CPU/HP/dano do motor Phaser, dinheiro R$1.400→R$2.120 e progresso de treinadores 0→3. [CI de branch #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) e [main #40705538155](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705538155) **sucesso**, incluindo navegador/WebGL; [Pages #40705591501](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705591501) **sucesso**, incluindo verificação no site público.
