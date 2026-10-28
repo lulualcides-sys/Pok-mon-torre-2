@@ -610,7 +610,15 @@ export function selectTeamMember(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length)return false;
  s.active=index;saveCampaign(s);return true;
 }
-export function healTeam(s){for(const member of s.team){member.hp=100;member.status=null;member.confusion=null;}s.lastMessage='Equipe restaurada.';saveCampaign(s)}
+export function healTeam(s){
+ // A denied save must never make the team appear cured in the live session.
+ // Persist the complete treatment first, preserving member references on success.
+ const nextTeam=s.team.map(member=>({...member,hp:100,status:null,confusion:null}));
+ const lastMessage='Equipe restaurada.';
+ saveCampaign({...s,team:nextTeam,lastMessage});
+ for(const member of s.team){member.hp=100;member.status=null;member.confusion=null;}
+ s.lastMessage=lastMessage;
+}
 
 const supportedKanto=new Set();
 for(const species of ROSTER){
