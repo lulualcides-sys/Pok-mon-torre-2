@@ -518,8 +518,27 @@ const server=http.createServer(async(req,res)=>{
   // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
   // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
-  const nativeDisplay=await offline.evaluate(()=>{
+  // Trigger the ORIGINAL client's resize listener and wait for Phaser to
+  // update its backing buffer; immediate reads can retain the prior 980×650.
+  await offline.evaluate(()=>window.dispatchEvent(new Event('resize')));
+  await offline.waitForFunction(async()=>{
+   const src=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
+   const canvas=document.querySelector('#juego canvas');
+   if(!src||!canvas)return false;
+   const cfg=await import(new URL('./config.js',src).href);
+   const dpr=Math.min(4,devicePixelRatio||1);
+   const fw=Math.round(innerWidth*dpr),fh=Math.round(innerHeight*dpr);
+   let z=Math.max(.5,Math.min(fw/cfg.ANCHO,fh/cfg.ALTO));
+   if(z>=2&&Math.floor(z)/z>=.9)z=Math.floor(z);
+   const expected=Math.min(fw,Math.floor(cfg.VISTA.w*z))/
+    Math.min(fh,Math.floor(cfg.VISTA.h*z));
+   return Number.isFinite(expected)&&Math.abs(canvas.width/canvas.height-expected)<.035;
+  },null,{timeout:15000});
+  const nativeDisplay=await offline.evaluate(async()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
+   const main=[...document.scripts].find(x=>x.src?.includes('/main.js'))?.src;
+   if(!main)throw Error('Native Phaser main.js script not found');
+   const config=await import(new URL('./config.js',main).href);
    const rect=document.querySelector('#juego canvas')?.getBoundingClientRect();
    const canvas=document.querySelector('#juego canvas');
    const holder=document.getElementById('juego');
@@ -530,6 +549,20 @@ const server=http.createServer(async(req,res)=>{
       document.body.classList.contains('torre2-landscape-map'),
     rectWidth:rect?.width,rectHeight:rect?.height,
     canvasRatio:canvas?.width/canvas?.height,
+    displayRatio:rect?.width/rect?.height,
+    viewportRatio:innerWidth/innerHeight,
+    logicalRatio:config.ANCHO/config.ALTO,
+    expectedRatio:(()=>{
+     const dpr=Math.min(4,devicePixelRatio||1);
+     const fw=Math.round(innerWidth*dpr),fh=Math.round(innerHeight*dpr);
+     let z=Math.max(.5,Math.min(fw/config.ANCHO,fh/config.ALTO));
+     if(z>=2&&Math.floor(z)/z>=.9)z=Math.floor(z);
+     return Math.min(fw,Math.floor(config.VISTA.w*z))/
+      Math.min(fh,Math.floor(config.VISTA.h*z));
+    })(),
+    nativeViewRatio:config.VISTA.w/config.VISTA.h,
+    logicalWidth:config.ANCHO,logicalHeight:config.ALTO,
+    nativeViewWidth:config.VISTA.w,nativeViewHeight:config.VISTA.h,
     holder:holder?.tagName,buttonX:action?.x};
   });
   assert.equal(nativeDisplay.zoomStyle,false,'Delete custom zoom stylesheet entirely');
@@ -537,10 +570,19 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(nativeDisplay.reparent,false,'Keep original Poké Arena 2D DOM hierarchy');
   assert.ok(nativeDisplay.rectWidth>200&&nativeDisplay.rectHeight>100,
    'Native game remains visible without forced zoom on landscape Android');
-  assert.ok(nativeDisplay.canvasRatio>1.5&&nativeDisplay.canvasRatio<2,
-   'Original 16:9 canvas retains correct logical aspect ratio');
-  assert.equal(nativeDisplay.buttonX,359,'Native game coordinates are unchanged');
+  // Original gameplay coordinates are 640×360, while the renderer's
+  // framebuffer follows Phaser's native medir() viewport-scale formula.
+  // Validate both independently, including no CSS stretching or custom zoom.
+  console.log('T31 NATIVE PHASER CANVAS GEOMETRY',JSON.stringify(nativeDisplay));
   await offline.screenshot({path:'test-evidence/torre2-native-arena-viewport.png',fullPage:true});
+  assert.ok(nativeDisplay.logicalRatio>1.77&&nativeDisplay.logicalRatio<1.79,
+   'Original Kanto logical battlefield must remain 16:9');
+  assert.ok(Number.isFinite(nativeDisplay.expectedRatio)&&
+   Math.abs(nativeDisplay.canvasRatio-nativeDisplay.expectedRatio)<.035,
+   'Phaser backing buffer must follow native viewport sizing, not a forced 16:9 crop');
+  assert.ok(Math.abs(nativeDisplay.displayRatio-nativeDisplay.canvasRatio)<.03,
+   'Native Phaser canvas must not be stretched by DOM/CSS');
+  assert.equal(nativeDisplay.buttonX,359,'Native game coordinates are unchanged');
   await offline.setViewportSize({width:980,height:650});
   // Fullscreen APIs are browser gesture-restricted; stub the Phaser manager
   // here and exercise the real button's pointerup handler.
