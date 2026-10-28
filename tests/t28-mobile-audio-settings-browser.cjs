@@ -74,18 +74,17 @@ const server=http.createServer(async(req,res)=>{
    return c.scene.isActive()&&c.__torre2BattlePath&&
     c.__torre2AudioSettings?.button?.input?.enabled;
   },null,{timeout:65000});
-  await page.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return Math.abs(c.game.sound.volume-.7)<.0001;
-  },null,{timeout:12000});
   const initial=await ui();
   console.log('T28 INITIAL PHASER BUS DIAG',JSON.stringify(initial));
   assert.equal(initial.panels,0);
   assert.equal(initial.buttons,1);
-  assert.ok(Math.abs(initial.volume-.7)<1e-5,'Default master volume must apply to native Phaser');
+  // The browser may not unlock audio before the first real user gesture.
   await touch(203,335);
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-   .__torre2AudioSettings?.active,null,{timeout:10000});
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.__torre2AudioSettings?.active&&
+    Math.abs(c.game.sound.volume-.7)<.0001;
+  },null,{timeout:12000});
   assert.equal((await ui()).panels,1);
   await page.screenshot({path:'test-evidence/t28-audio-menu-mobile.png'});
   await touch(390,132); // master 70 -> 60
