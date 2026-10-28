@@ -98,11 +98,30 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    .children.list.some(o=>typeof o.text==='string'&&
     o.text.includes('LÍDER DISPONÍVEL PARA BATALHA')),null,{timeout:15000});
   await tap(320,225);
-  await page.waitForFunction(()=>{
-   const b=window.__pt2Game.scene.getScene('combate');
-   return b.scene.isActive()&&b.fase==='lucha'&&
-    b.__torre2PartyInstalled&&b.__torre2AutoMode?.zone?.input?.enabled;
-  },null,{timeout:70000});
+  try{
+   await page.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.fase==='lucha'&&
+     b.__torre2PartyInstalled&&b.__torre2AutoMode?.zone?.input?.enabled;
+   },null,{timeout:70000});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>{
+    const g=window.__pt2Game;
+    const c=g?.scene?.getScene('campanha');
+    const b=g?.scene?.getScene('combate');
+    return {campaignActive:c?.scene?.isActive(),
+     campaignTexts:c?.children?.list?.filter(x=>x.active&&typeof x.text==='string')
+      .map(x=>({text:x.text,x:x.x,y:x.y})).slice(0,22),
+     combatActive:b?.scene?.isActive(),combatPhase:b?.fase,
+     partyInstalled:!!b?.__torre2PartyInstalled,
+     autoReady:!!b?.__torre2AutoMode?.zone?.input?.enabled};
+   }).catch(e=>({diagnosticError:String(e)}));
+   report.status='agatha-entry-not-ready';report.entryDiagnostic=diagnostic;
+   console.error('T20 AGATHA ENTRY DIAGNOSTIC',JSON.stringify(diagnostic));
+   save();
+   await page.screenshot({path:'test-evidence/t20-agatha-entry-failure.png'}).catch(()=>{});
+   throw error;
+  }
   const initial=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return {p1:b.datos.p1,p2:b.datos.p2,level:b.datos.torre2.playerLevel,
