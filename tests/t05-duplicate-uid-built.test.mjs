@@ -72,8 +72,14 @@ test('T05 keeps sole legacy or duplicate-UID save rather than silently resetting
  db.setItem(SAVE_KEY,JSON.stringify(damaged));
  const recovered=readCampaign(db);
  assert.ok(recovered,'no clean backup must not erase only surviving save');
- assert.equal(recovered.team[0].uid,recovered.box[0].uid,
-  'do not silently delete or clone a Pokemon without recovery evidence');
+ assert.notEqual(recovered.team[0].uid,recovered.box[0].uid,
+  'repair only the conflicting identity without removing either member');
+ assert.deepEqual(recovered.team.map(x=>x.id),['bulbasaur']);
+ assert.deepEqual(recovered.box.map(x=>x.id),['mewtwo']);
+ assert.equal(db.getItem(SAVE_BACKUP_KEY),JSON.stringify(damaged),
+  'archive the original damaged save byte-for-byte');
+ assert.equal(db.getItem(SAVE_KEY),JSON.stringify(recovered));
+ assert.deepEqual(readCampaign(db),recovered,'repair must be idempotent');
 });
 
 test('T05 reads clean backup even if primary restoration cannot write to storage',()=>{
