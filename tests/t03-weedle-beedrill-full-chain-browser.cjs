@@ -38,6 +38,11 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-weedle-chain-earned-evolution.
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+  const startupErrors=[];
+  page.on('requestfailed',req=>startupErrors.push({kind:'request',url:req.url(),failure:req.failure()?.errorText}));
+  page.on('response',res=>{if(res.status()>=400)startupErrors.push({kind:'http',status:res.status(),url:res.url()})});
+  page.on('console',msg=>{if(msg.type()==='error')startupErrors.push({kind:'console',text:msg.text().slice(0,260)})});
+  page.on('crash',()=>startupErrors.push({kind:'browser',text:'Chromium renderer crashed'}));
   const snapshot=()=>page.evaluate(()=>{
    const s=window.kanto.readCampaign();
    return {stage:s.stage,trainer:s.trainer,wins:s.wins,losses:s.losses,money:s.money,
@@ -85,7 +90,28 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-weedle-chain-earned-evolution.
   };
 
   await page.goto('http://127.0.0.1:4424/arena2d/?original=1',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  try{
+   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  }catch(e){
+   const boot=await page.evaluate(()=>{
+    const game=window.__pt2Game,canvas=document.querySelector('#juego canvas');
+    return {url:location.href,ready:document.readyState,
+      title:document.title,canvas:!!canvas,
+      game:!!game,scenes:game?.scene?.getScenes?.().map(x=>({
+       key:x.scene.key,active:x.scene.isActive()
+      })),scripts:[...document.scripts].map(x=>x.src).filter(Boolean).slice(-6)};
+   }).catch(err=>({diagnosticError:String(err)}));
+   report.bootFailure={boot,startupErrors,jsErrors:errors,error:String(e)};
+   console.error('T03 WEEDLE STARTUP DIAGNOSTIC',JSON.stringify(report.bootFailure));
+   persist();
+   await page.screenshot({path:evidence+'/t03-weedle-chain-startup-failure.png'}).catch(()=>{});
+   if(errors.length||startupErrors.some(x=>x.kind==='http'&&x.status>=400||
+      x.kind==='browser'))throw e;
+   // On a transient WebGL first-load timeout retry the genuine boot ONCE,
+   // without touching saved state, game internals or any battle result.
+   await page.reload({waitUntil:'domcontentloaded'});
+   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  }
   const setup=await page.evaluate(async()=>{
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
    const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
