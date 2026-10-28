@@ -14,13 +14,24 @@ export function weatherDamageMultiplier(state,type,move=''){
  const kind=state?.kind||'none';let factor=1;
  if(kind==='sun')factor=type==='FIRE'?1.5:type==='WATER'?.5:1;
  if(kind==='rain')factor=type==='WATER'?1.5:type==='FIRE'?.5:1;
- if(move==='Solar Beam'&&['rain','sand','hail'].includes(kind))factor*=.5;
+ if(isSolarBeam(move)&&['rain','sand','hail'].includes(kind))factor*=.5;
  return factor;
 }
 export function weatherRecoveryFraction(state){return state?.kind==='sun'?2/3:!state||state.kind==='none'?1/2:1/4;}
+const moveKey=name=>String(name||'').normalize('NFKD')
+ .replace(/[\u0300-\u036f]/g,'').trim().toLowerCase().replace(/[\s_-]+/g,' ');
+const isThunder=name=>['thunder','trueno'].includes(moveKey(name));
+const isSolarBeam=name=>['solar beam','solarbeam','rayo solar'].includes(moveKey(name));
 export function weatherAccuracy(state,move,base){
  // Blizzard gains guaranteed accuracy only in later generations, not FRLG.
- return move==='Thunder'?(state?.kind==='rain'?100:state?.kind==='sun'?50:base):base;
+ return isThunder(move)?(state?.kind==='rain'?100:state?.kind==='sun'?50:base):base;
+}
+// The original Arena collision still decides whether the attack reaches a
+// target. This Gen III weather roll affects only a landed Thunder in sunlight.
+// In rain there is NO additional RNG; physical aim and shields remain intact.
+export function weatherThunderMiss(state,move,random=Math.random){
+ if(state?.kind!=='sun'||!isThunder(move))return false;
+ return Number(random())>=0.5;
 }
 export function weatherResidualImmune(kind,types=[]){
  return kind==='sand'?types.some(t=>['ROCK','GROUND','STEEL'].includes(t)):kind==='hail'?types.includes('ICE'):true;
