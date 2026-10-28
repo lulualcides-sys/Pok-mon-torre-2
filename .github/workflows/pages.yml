@@ -47,22 +47,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          # Network timeouts from the public game host can be intermittent.
-          # Retry only source acquisition, never publish an incomplete client.
+          # A source fetch can return success despite individual assets being
+          # aborted by the remote host (notably lib/phaser.min.js). A previous
+          # Pages job failed only AFTER the capture/build loop, so the old
+          # retry policy never recovered those partial builds.
+          # Retry the full capture + build + critical-file verification as
+          # one atomic gate; never deploy a missing Phaser runtime.
           for attempt in 1 2 3 4; do
-            if node tools/pokearena/capture-client.mjs; then
-              echo "Fonte Phaser recuperada (tentativa $attempt)"
+            if node tools/pokearena/capture-client.mjs \
+                && node tools/pokearena/build-preview.mjs \
+                && test -s _site/arena2d/index.html \
+                && test -s _site/arena2d/lib/phaser.min.js; then
+              echo "Cliente Phaser completo validado (tentativa $attempt)"
               break
             fi
             if [ "$attempt" -eq 4 ]; then
-              echo "::error::Não foi possível recuperar o cliente após 4 tentativas"
+              echo "::error::Cliente Phaser incompleto após 4 tentativas de captura/build/verificação"
               exit 1
             fi
+            echo "::warning::Cliente Phaser incompleto; repetindo aquisição e build ($attempt/4)"
             sleep $((attempt * 8))
           done
-          node tools/pokearena/build-preview.mjs
-          test -s _site/arena2d/index.html
-          test -s _site/arena2d/lib/phaser.min.js
           # Keep the old Pixi test laboratory at /lab.html but launch the real
           # solo Kanto Phaser game at the stable public root once Pages is enabled.
           cp _site/index.html _site/lab.html
