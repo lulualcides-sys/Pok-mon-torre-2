@@ -1,5 +1,14 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §20/§24/§31/§33/§34/§36/§37 — T20: Lorelei→Bruno em duas batalhas consecutivas (28/10/2026)
+
+- **Código/PR:** [#193](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/193) integrada, squash `70546ca4fd9019d44b621fd58b2868b1121590ce`. Teste browser novo + workflow; nenhum runtime, golpe, sprite, VFX, cooldown, controle ou save pré-existente modificado.
+- **Prova real delimitada:** Phaser/WebGL, CTA e AUTO originais; Lorelei 177 s, reload integral com bytes de save idênticos, Bruno 56 s, segundo reload íntegro. Duas vitórias efetivas, stage8→9→10, wins172→174, losses0, dinheiro +2.400, honras Elite 1/2, UIDs e PC preservados. Um Pokémon foi trocado por clique real na barra lateral antes de Bruno; nenhuma vitória/KO/EXP/HP foi injetada entre as lutas.
+- **Fixture e lacunas:** apenas checkpoint inicial Victory Road concluída, 8 insígnias, equipe Lv54 e 172 vitórias foram preparados. NÃO é campanha Pallet→Campeão nem Liga completa em sequência. Agatha/Lance/Campeão e campanha natural permanecem pendentes.
+- **Validação:** [CI branch #40730766380](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40730766380) sucesso (192 unitários, check, check:reuse, build, 14 browser oficiais, duas lutas nativas); [main #40732855297](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40732855297) sucesso. [Pages #40733066203](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40733066203) ainda em execução, confirmação HTTP pendente.
+- **Estado:** §§20/24/31/33/34/36/37 **PARCIAIS**; manter a distinção entre prova em checkpoint e jogo completo.
+
+
 ## §20/§24/§31/§33/§34/§36/§37 — T20: Lance + Campeão em combates nativos (28/10/2026)
 
 - [PR #181](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/181), squash `3f1e905d426ebe3d9a00b99a54194c88dc22fb9c`, CI branch #40719410351 e main #40721160692 **sucesso**: cinco oponentes nativos de Lance vencidos pelo AUTO com elenco de seis Lv60 (Articuno final); stage11→12, quarta honra. Pages #40721216935 ainda em verificação nesta anotação.
