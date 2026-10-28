@@ -73,9 +73,16 @@ const server=http.createServer(async(req,res)=>{
     e.accion=null;e.dash=null;
     const before=e.hp;
     const nativeRandom=Math.random;
-    let result;
+    let result,weatherRolls=0;
     try{
-     Math.random=()=>roll;
+     // Only one deterministic sample belongs to Thunder's sunlight gate.
+     // A persistent global Math.random override also affects Phaser Text
+     // texture IDs, which can crash the native floating-damage VFX.
+     if(kind==='sun'&&name==='Thunder')Math.random=()=>{
+      weatherRolls++;
+      Math.random=nativeRandom;
+      return roll;
+     };
      try{result=e.recibir(p,{dano:10,tipo:'ELECTRIC',nombre:name,slot:'q'});}
      catch(error){throw new Error('Native recipient diagnostic: '+JSON.stringify({
       kind,name,roll,error:String(error),stack:String(error?.stack||error),nativeTraining:String(b.anotarEntreno).slice(0,1900),
@@ -84,7 +91,9 @@ const server=http.createServer(async(req,res)=>{
       sceneProperties:Object.keys(b).filter(key=>/entren|estad|registro|hist|dato/i.test(key))
      }));}
     }finally{Math.random=nativeRandom}
-    const measure={kind,name,roll,before,after:e.hp,result,weather:b.__torre2Weather.kind};
+    if(kind==='sun'&&name==='Thunder'&&weatherRolls!==1)
+     throw new Error('Expected exactly one sunlight accuracy roll: '+weatherRolls);
+    const measure={kind,name,roll,weatherRolls,before,after:e.hp,result,weather:b.__torre2Weather.kind};
     pairs.push(measure);
     return measure;
    };
