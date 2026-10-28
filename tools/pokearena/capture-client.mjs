@@ -7,6 +7,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
+import {recoverCriticalCapture} from './capture-client-critical.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -131,6 +132,29 @@ async function main() {
   }
  }
  await Promise.all(Array.from({length:8},worker));
+ // A transient 503 can omit seleccion.js (or another boot module) while
+ // the generic inventory still has >10 JS files. Previously capture exited
+ // successfully and build-preview failed later, defeating Pages' capture
+ // retry loop. Re-fetch mandatory versioned Phaser modules and fail capture
+ // explicitly if any remain unavailable.
+ const capturedCritical=new Set(details.retrieved.filter(item=>item.bytes>0).map(item=>item.path));
+ const criticalRecovered=await recoverCriticalCapture({
+  version:actual,captured:capturedCritical,maxAttempts:3,
+  fetchFile:async p=>{details.requestCount++;return get(ORIGIN+'/'+p)},
+  saveFile:async(p,{data,contentType})=>{
+   if(details.totalBytes+data.length>MAX_TOTAL)throw Error('Total capture cap exceeded');
+   const dest=path.resolve(DIR,p);
+   if(!dest.startsWith(DIR+path.sep))throw Error('Unsafe critical module path');
+   await fs.mkdir(path.dirname(dest),{recursive:true});
+   await fs.writeFile(dest,data);
+   details.totalBytes+=data.length;
+   details.retrieved.push({path:p,bytes:data.length,sha256:sha256(data),
+    contentType,source:'critical Phaser boot recovery'});
+   details.unavailable=details.unavailable.filter(item=>item.path!==p);
+  },
+  wait:ms=>new Promise(resolve=>setTimeout(resolve,ms))
+ });
+ details.criticalRecovery={files:criticalRecovered};
  // REA's old inventory predates updates to the site's module graph.
  // Resolve relative JS imports recursively, otherwise the site may fail at boot.
  const imported=new Set(details.retrieved.map(x=>x.path));
