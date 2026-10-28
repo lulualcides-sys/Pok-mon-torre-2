@@ -39,6 +39,11 @@ const SIGNATURES=Object.freeze({
  'rapidash':'Fire Blast','arcanine':'Flamethrower','parasect':'X-Scissor',
  'starmie':'Psychic','electrode':'Sonic Boom','magikarp':'Splash'
 });
+// Only an EMPTY fourth Arena role may receive one of these installed,
+// official Gen III TM-compatible moves. No VFX added and no campaign grant.
+const FOURTH_ROLE_GAPS=Object.freeze({
+ dragonair:'hyper-beam',clefable:'psychic'
+});
 const SPECIAL_APPROVED=Object.freeze({
  'marowak':['bonemerang','bone-club'],'cubone':['bone-club'],
  'porygon':['tri-attack'],'magneton':['tri-attack'],
@@ -124,6 +129,15 @@ export function selectArenaSpeciesKit(kit,species,types,library){
   delete output[slot].torre2UnlockLevel;
   delete output[slot].torre2UnlockEvolution;
   delete output[slot].torre2RequiresTM;
+ }
+ // Preserve approved LMB/RMB/Q; fill only the two verified empty Arena E
+ // roles using a distinct, genuinely installed native Gen III TM. Never
+ // make Clefable use Hyper Beam or affect the campaign's TM/level gates.
+ const fallback=FOURTH_ROLE_GAPS[id];
+ if(!output.e?.nombre&&fallback&&frlgMachineCompatible(id,fallback)){
+  const installed=[...library.values()].find(m=>idOf(m?.nombre)===fallback&&
+   m?.forma&&!ATTACK_SLOTS.some(s=>idOf(output[s]?.nombre)===fallback));
+  if(installed)output.e={...installed,pendiente:false,ulti:true};
  }
  return enforceArenaMoveCooldowns(output);
 }

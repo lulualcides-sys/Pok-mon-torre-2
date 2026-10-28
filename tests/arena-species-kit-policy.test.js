@@ -157,6 +157,40 @@ test('Legal signature attacks keep their approved renderer and unique slots',()=
  ['lmb','rmb','q','e'].map(s=>out[s]?.nombre).filter(Boolean).length);
  assert.ok(!Object.values(out).some(h=>h?.nombre==='Hyper Beam'));
 });
+test('Only Dragonair and Clefable get legal installed fourth Arena slots without changing approved attacks',()=>{
+ const twister=move('Twister',9,5,'DRAGON'),
+  outrage=move('Outrage',19,7,'DRAGON'),
+  thunderWave=move('Thunder Wave',0,6,'ELECTRIC'),
+  hyperBeam=move('Hyper Beam',31,9,'NORMAL');
+ const dragonRaw={lmb:twister,rmb:outrage,q:thunderWave};
+ const dragon=selectArenaSpeciesKit(dragonRaw,'dragonair',['DRAGON'],
+  set(twister,outrage,thunderWave,hyperBeam));
+ assert.equal(dragon.e?.nombre,'Hyper Beam','Dragonair may learn Hyper Beam in Gen III');
+ assert.equal(dragon.e?.forma,hyperBeam.forma,'reuse installed native renderer');
+ assert.equal(dragon.e?.dano,hyperBeam.dano,'do not change approved VFX damage');
+ assert.equal(dragon.e?.ulti,true);
+ assert.deepEqual(['lmb','rmb','q'].map(s=>dragon[s]?.nombre),
+  ['Twister','Outrage','Thunder Wave']);
+ assert.equal(dragonRaw.e,undefined,'base kit stays untouched');
+ const pound=move('Pound',6),metronome=move('Metronome',0,12),
+  light=move('Light Screen',0,8,'PSYCHIC'),
+  psychic=move('Psychic',19,7,'PSYCHIC');
+ const fairyRaw={lmb:pound,rmb:metronome,q:light};
+ const pool=set(pound,metronome,light,psychic,hyperBeam);
+ const fairy=selectArenaSpeciesKit(fairyRaw,'clefable',['NORMAL'],pool);
+ assert.equal(fairy.e?.nombre,'Psychic','legal Gen III TM, not generic Hyper Beam');
+ assert.equal(fairy.e?.forma,psychic.forma);
+ assert.equal(fairy.e?.dano,psychic.dano);
+ assert.equal(fairy.e?.ulti,true);
+ assert.deepEqual(['lmb','rmb','q'].map(s=>fairy[s]?.nombre),
+  ['Pound','Metronome','Light Screen']);
+ assert.ok(!['lmb','rmb','q','e'].some(s=>fairy[s]?.nombre==='Hyper Beam'));
+ assert.equal(fairyRaw.e,undefined);
+ const unevolved=selectArenaSpeciesKit(fairyRaw,'clefairy',['NORMAL'],pool);
+ assert.notEqual(unevolved.e?.nombre,'Psychic','do not automatically teach a TM to Clefairy');
+ assert.notEqual(unevolved.e?.nombre,'Hyper Beam');
+});
+
 test('Eevee branches to each of Vaporeon Jolteon Flareon using independently seeded draws',()=>{
  assert.equal(chooseEeveeBranch(3,()=>0),1);
  assert.equal(chooseEeveeBranch(3,()=>.40),2);
