@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T19 — Cerulean: terceiro treinador vencido em combate nativo (28/10/2026)
+
+- **[PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171) integrada**, commit `85fb7645659479a6dda11521a0d53ee9b6fa1855`. Zubat → Geodude → Paras derrotados nas 3 lutas consecutivas de Phaser/WebGL por AUTO nativo, checkpoint 0→3, dinheiro R$1.400→R$2.120, sem injetar dano, K.O. ou vitória. [CI de branch #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) **sucesso**, incluindo regressão oficial, e [main #40705538155](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705538155) **sucesso**. [Pages #40705591501](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705591501) **sucesso**, incluindo verificação no site público.
+- **Prova limitada e legítima:** checkpoint após Brock, insígnia Rocha e Wartortle Lv20 são fixture. Os confrontos usam botão AUTO e CPU reais, nenhum HP/dano/K.O./vitória/XP artificial. Cada vitória exige checkpoint +1, dinheiro +240, nenhuma insígnia/TM antecipada e integridade de UIDs/PC. Após a terceira luta, a campanha ainda não chegou a Misty; T19 e §34 continuam **PARCIAIS**.
+- **Em validação separada:** [PR #174](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/174) busca cinco vitórias até Sandshrew e recarga de save após a terceira. Não antecipar resultado; continuar rumo à insígnia Cascata por luta nativa. Nunca declarar 8 insígnias ou Campeão concluídos por teste preparado.
+
+
 ## T06 — RNG nativo: duas fugas reais + captura genuína (28/10/2026)
 
 - **Probabilidade das 151 espécies:** [PR #167](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/167) integrada, commit `378fc61432b51d872171ba9faae47b7a05ed3651`; [CI #40702165961](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702165961) **sucesso** (HP, bolas, status, quatro sorteios e 12.000 lançamentos `Math.random` reais). [CI main #40702241224](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40702241224) **sucesso**.
