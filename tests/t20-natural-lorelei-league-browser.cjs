@@ -38,6 +38,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.t20Core=await import(new URL('./torre2/campaign-core.js',src));
+   window.t20Levels=await import(new URL('./torre2/kanto-levels.js',src));
    const {createPokemonProgression}=await import(new URL('./torre2/progression.js',src));
    const st=core.createCampaign('bulbasaur');
    core.saveCampaign(st);
@@ -65,7 +66,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
     team:s.team.map(m=>({id:m.id,uid:m.uid,level:m.progression.level,hp:m.hp})),
     box:s.box.map(m=>({id:m.id,uid:m.uid})),
     foe:{id:foe.id,leader:foe.leader,name:foe.name,level:foe.level},
-    cap:t20Core.currentLevelCap(s.stage)};
+    cap:t20Levels.currentLevelCap(s.stage)};
   });
   report.before=before;save();
   assert.equal(before.foe.name,'Lorelei');
