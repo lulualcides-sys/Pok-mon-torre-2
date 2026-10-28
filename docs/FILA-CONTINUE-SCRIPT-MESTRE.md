@@ -1,5 +1,20 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 28/10/2026 — T05/T06: Pokébola e captura selvagem transacionais (PR #229)
+
+- **Código integrado:** [PR #229](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/229), squash `0b5a096c7ce2175745d87db08d4eda8e2132987c`. `attemptCapture` prepara inventário, resultado, equipe/PC, Pokédex e encontro selvagem num único checkpoint e **só altera o estado vivo após salvar**. A UI Phaser/WebGL restaura o inimigo, destrava controles e mostra aviso vermelho se o armazenamento negar a gravação no impacto da Pokébola.
+- **Gates verdes:** [CI dedicada #40782785482](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40782785482) **SUCESSO** com `npm test`, `check`, `check:reuse`, build original, testes compilados de fuga/captura, primário/backup negados, equipe cheia, shiny/status, retry e toque móvel nativo com duas recusas + captura, regressões T05/T06 e suíte oficial Chromium/WebGL. [CI main #40783896124](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40783896124) **SUCESSO**.
+- **Pages HTTP:** [#40783952251](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40783952251) **SUCESSO** no SHA `0b5a096c7ce2175745d87db08d4eda8e2132987c`; o job verificou por HTTP público `src-8afd075814` às **23:02:32 UTC**. Falhas de armazenamento, RNG e equipes são **fixtures**, não prova de captura natural integral ou Android físico.
+- **Estado:** T05/T06 e §§2/3/31/33/36/37 continuam **PARCIAIS**; faltam longa campanha, outros eventos de save, validação em dispositivos físicos e auditoria dos fluxos concorrentes. Não tocar em Toxic #16, Shiny #17, Liga #210 ou evolução #213.
+
+## 28/10/2026 — T05/§18: cura no Centro Pokémon sem progresso falso (PR #230)
+
+- **Código integrado:** [PR #230](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/230), squash `653e6823e2b78b0c3816815a41698d0b73aedf5b`. `healTeam` prepara a cura de HP, status, confusão e desmaios, persiste o checkpoint **antes** de alterar os objetos vivos. A interface móvel apresenta aviso de erro e reabre o botão de cura para nova tentativa; não substitui UIDs, golpes, VFX, sprites, cooldowns ou formato do save.
+- **Gates:** [CI da branch #40784035765](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40784035765) **SUCESSO** com testes de recusa primária/backup, retry, navegador móvel com toques reais, build e regressão completa. **CI principal e Pages aguardam confirmação**; não declarar a cura publicada até HTTP verde.
+- **Estado:** T05, §18, §31, §33, §36 e §37 **PARCIAIS**. A negação de storage e os HP/status iniciais são fixtures; faltam campanha natural e aparelho físico.
+
+
+
 ## 28/10/2026 — T05/T23: uso de remédios e ensino de TMs transacionais, publicados (PR #227)
 
 - **Código integrado:** [PR #227](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/227), squash `e0dce9a2faebee8f13b5af188ecd34d73342fd46`. `usePotion`, `useStatusCure` e `teachTM` agora salvam o Pokémon, a bolsa e a mensagem juntos **antes** de alterar o estado vivo; falha de gravação mantém HP, status, TM, dinheiro, objetos de equipe e inventário inalterados. BAG e tela de remédios exibem erro vermelho e permitem retry. Nenhuma alteração em VFX, sprites, golpes, cooldowns, formato de saves ou controles originais.

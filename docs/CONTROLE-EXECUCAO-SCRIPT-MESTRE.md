@@ -1,5 +1,16 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§2/3/18/31/33/36/37 · T05/T06: captura e cura seguras sob recusa de gravação
+
+- **§2/§3 — PARCIAIS:** [PR #229](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/229) integrada no `0b5a096c7ce2175745d87db08d4eda8e2132987c`. O arremesso selvagem agora persiste consumo de Pokébola, Pokémon capturado (equipe/PC), Pokédex, encontro pendente e mensagem antes de atualizar o estado vivo. Falha de armazenamento no impacto restaura inimigo/controles e oferece retry sem consumir item ou conceder captura falsa.
+- **§18 — PARCIAL:** [PR #230](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/230), squash `653e6823e2b78b0c3816815a41698d0b73aedf5b`. O Centro Pokémon só cura a equipe após gravação confirmada; recusa mostra erro e permite nova tentativa. Mantém referências e UIDs existentes.
+- **§31 — PARCIAL:** testes compilados de recusa das duas chaves, fuga, captura, equipe cheia, shiny/status e cura, verificando checkpoint e referências; browser mobile com toque nativo e aviso/retry. Todos os estados preparados e recusas são **fixtures**, não prova de Android físico ou campanha Pallet→Campeão.
+- **§33 — PARCIAL:** [CI #40782785482](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40782785482) **SUCESSO** para captura; [CI main #40783896124](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40783896124) **SUCESSO**; [CI #40784035765](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40784035765) **SUCESSO** para Centro, incluindo `npm test`, `check`, `check:reuse`, build, testes específicos e navegador completo. CI main do Centro aguarda resultado.
+- **§36 — PARCIAL:** diff preservou VFX, pixel art, sprites, golpes, cooldowns, controles e formato de saves. Toxic #16 e Shiny #17 seguem isolados; não mesclar alterações sem gates verdes.
+- **§37 — PARCIAL:** [Pages #40783952251](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40783952251) **SUCESSO**, `pages_build_version=0b5a096c7ce2175745d87db08d4eda8e2132987c`, HTTP público confirmou `src-8afd075814` às **23:02:32 UTC**. Pages do Centro ainda não verificado. **Nenhuma das 37 seções está declarada VALIDADA integralmente**.
+
+
+
 ## 28/10/2026 — §§22/23/31/33/36/37 · T05/T23: uso de itens e TM sem mutação antes do save
 
 - **§22/§23 — PARCIAIS:** [PR #227](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/227) integrada no `e0dce9a2faebee8f13b5af188ecd34d73342fd46`. Poção, Super Poção, remédios de status e ensino de TM só atualizam HP/status/`tmMoves`/inventário/mensagem **após** `saveCampaign` confirmar. A UI Phaser exibe erro vermelho e aceita repetir após recusa de gravação; não altera lógica de batalha, movesets, VFX, sprites, cooldowns nem formato de save.
