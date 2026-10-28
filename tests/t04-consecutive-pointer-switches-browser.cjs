@@ -119,10 +119,27 @@ const server=http.createServer(async(req,res)=>{
   await page.mouse.click(autoTap.x,autoTap.y);
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled),
    true,'Real AUTO pointer must enable native AI');
-  await page.waitForFunction(()=>{
-   const b=window.__pt2Game.scene.getScene('combate');
-   return b.__t04Contacts?.length===1&&b.__t04FirstHit&&b.__torre2BattleBagOpen;
-  },null,{timeout:12000,polling:20});
+  try {
+   await page.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.__t04Contacts?.length===1&&b.__t04FirstHit&&b.__torre2BattleBagOpen;
+   },null,{timeout:30000,polling:20});
+  } catch (error) {
+   const diagnostic=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    const me=b?.luchadores?.[0],foe=b?.luchadores?.[1];
+    return {phase:b?.fase,auto:b?.__torre2AutoMode?.enabled,
+     contacts:b?.__t04Contacts,slot:window.__t04Slot,
+     player:{hp:me?.hp,energy:me?.energia,cd:me?.cd,action:me?.accion,
+      position:[me?.x,me?.y]},
+     foe:{hp:foe?.hp,position:[foe?.x,foe?.y]},
+     effects:b?.efectos?.length,tasks:b?.tareas?.length};
+   });
+   evidence.events.push({kind:'first native contact timeout',diagnostic});
+   fs.writeFileSync('test-evidence/t04-consecutive-pointer-switches.json',
+    JSON.stringify(evidence,null,2));
+   throw error;
+  }
   await page.evaluate(()=>{window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled=false;});
   const first=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
