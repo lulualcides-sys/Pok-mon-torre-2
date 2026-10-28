@@ -66,6 +66,11 @@ const server=http.createServer(async(req,res)=>{
    st.team[0].id='wartortle';
    st.team[0].progression=createPokemonProgression('wartortle',20);
    st.team[0].hp=100;st.team[0].moves=[];st.team[0].tmMoves=[];
+   // Independent fixture: two genuine party members against two Rocket foes.
+   // Pikachu could be caught in Viridian and trained to Lv20 by this stage.
+   if(startTrainer===5)st.team.push({id:'pikachu',uid:'t19-cerulean-pikachu',
+    hp:100,progression:createPokemonProgression('pikachu',20),
+    status:null,tmMoves:[],moves:[]});
    core.saveCampaign(st);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   },startTrainer);
@@ -76,6 +81,7 @@ const server=http.createServer(async(req,res)=>{
   const game=()=>page.evaluate(()=>{
    const s=window.t19Core.readCampaign();
    return {stage:s.stage,trainer:s.trainer,wins:s.wins,losses:s.losses,
+    active:s.active,
     money:s.money,badges:[...s.badges],honors:[...s.leagueHonors],
     inventory:{...s.inventory},team:s.team.map(m=>({id:m.id,uid:m.uid,
      level:m.progression?.level,hp:m.hp})),
@@ -96,7 +102,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(before.stage,1);
   assert.equal(before.trainer,startTrainer);
   assert.equal(before.wins,14+startTrainer);
-  assert.deepEqual(before.team.map(m=>m.id),['wartortle']);
+  assert.deepEqual(before.team.map(m=>m.id),
+   startTrainer===0?['wartortle']:['wartortle','pikachu']);
   assert.equal(before.team[0].level,20);
   assert.equal(before.box.length,1);
   for(let round=0;round<5;round++){
@@ -130,8 +137,9 @@ const server=http.createServer(async(req,res)=>{
      enabled:b.__torre2AutoMode.enabled,
      button:{x:rect.x+rect.width*z.x/640,y:rect.y+rect.height*z.y/360}};
    });
-   assert.equal(start.p1,'wartortle');assert.equal(start.p2,foe.id);
-   assert.equal(start.playerLevel,before.team[0].level);
+   assert.equal(start.p1,before.team[before.active].id);
+   assert.equal(start.p2,foe.id);
+   assert.equal(start.playerLevel,before.team[before.active].level);
    assert.equal(start.enabled,false,'AUTO must reset between fights');
    checkpoint='enabling AUTO '+(round+1);
    await page.mouse.click(start.button.x,start.button.y);
@@ -141,11 +149,12 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/t19-cerulean-fight-'+(round+1)+'-started.png'});
    try{
     checkpoint='live native combat '+(round+1);
-    console.log('T19 NATIVE FIGHT START',JSON.stringify({round:round+1,foe:foe.id,player:'wartortle',level:start.playerLevel,enemyLevel:start.enemyLevel}));
-    await page.waitForFunction(expected=>{
+    console.log('T19 NATIVE FIGHT START',JSON.stringify({round:round+1,foe:foe.id,player:start.p1,level:start.playerLevel,enemyLevel:start.enemyLevel}));
+    await page.waitForFunction(({wins,losses})=>{
      const s=window.t19Core.readCampaign();
-     return window.__pt2Game.scene.isActive('campanha')&&s?.wins===expected;
-    },before.wins+1,{timeout:240000,polling:250});
+     return window.__pt2Game.scene.isActive('campanha')&&
+      (s?.wins===wins||s?.losses>losses);
+    },{wins:before.wins+1,losses:before.losses},{timeout:240000,polling:250});
    }catch(err){
     record.failure=String(err);
     record.state=await game();
@@ -172,9 +181,10 @@ const server=http.createServer(async(req,res)=>{
    assert.deepEqual(after.badges,before.badges,'No second gym badge before Misty');
    assert.deepEqual(after.honors,before.honors);
    assert.deepEqual(after.box,before.box);
-   assert.equal(after.team.length,1);
-   assert.equal(after.team[0].uid,before.team[0].uid);
-   assert.equal(after.team[0].hp,100,'Natural postfight heal');
+   assert.equal(after.team.length,before.team.length);
+   assert.deepEqual(after.team.map(m=>m.uid),before.team.map(m=>m.uid),
+    'No member duplication or deletion after native battle');
+   assert.equal(after.team[after.active].hp,100,'Natural postfight heal');
    assert.equal(after.inventory.tms.length,before.inventory.tms.length,
     'No gym reward before leader KO');
    await page.screenshot({path:'test-evidence/t19-cerulean-fight-'+(round+1)+'-victory.png'});
