@@ -20,7 +20,9 @@ function checkpoint(){
  s.team[0].hp=47;s.money=9876;s.inventory.pokeball=13;
  s.inventory.potion=2;s.inventory.tms=['tm-rock-tomb'];
  s.box.push(s.team.pop());s.stage=1;s.trainer=2;
- return s;
+ const isolated=storage();core.saveCampaign(s,isolated);
+ return core.readCampaign(isolated); // Normalize legacy additive fields first.
+
 }
 test('T05 rejects invalid economy writes before touching primary or backup',()=>{
  const db=storage(),s=checkpoint();
