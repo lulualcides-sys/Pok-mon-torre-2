@@ -27,12 +27,15 @@ test('T28 preference storage roundtrip, broken JSON and disabled storage are saf
  assert.equal(saveAudioSettings({master:0},blocked),false);
 });
 test('T28 original Phaser sound bus honors saved global volume and mute',()=>{
- const bus={mute:false,volume:1},scene={game:{sound:bus}};
+ const bus={mute:false,volume:1},sceneBus={mute:false,volume:1};
+ const scene={sound:sceneBus,game:{sound:bus}};
  const settings=applyAudioSettingsToGame(scene,{
   master:.3,effects:.9,music:.8,muted:true});
  assert.deepEqual(settings,{master:.3,effects:.9,music:.8,muted:true});
  assert.equal(bus.volume,.3);
  assert.equal(bus.mute,true);
+ assert.equal(sceneBus.volume,.3,'Scene sound manager must be synchronized');
+ assert.equal(sceneBus.mute,true,'Scene manager must also be muted');
  assert.deepEqual(applyAudioSettingsToGame(null,settings),settings);
 });
 test('T28 no browser audio, disabled SFX and muted cues do not throw',()=>{
