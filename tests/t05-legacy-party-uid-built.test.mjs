@@ -81,3 +81,40 @@ test('T05 ambiguous slot with different species never transfers another creature
  assert.equal(state.team[0].hp,77,'do not apply damage from mismatched species');
  assert.equal(state.team[1].hp,48);
 });
+
+test('T05 stale unique UID with different species cannot overwrite HP or status',()=>{
+ const {state}=legacyState();
+ state.team[0].uid='stable-starter';
+ state.team[1].uid='stable-reserve';
+ const party=partyBattle.createPartyMatch(state,core.currentOpponent(state));
+ party.friend[0].id='pikachu'; // stale combat snapshot, not the starter
+ party.friend[0].hp=0;party.friend[0].status={kind:'veneno'};
+ party.friend[1].hp=39;party.friend[1].status={kind:'paralizado'};
+ partyBattle.applyPartyBattleResult(state,party);
+ assert.equal(state.team[0].hp,77,'mismatched species must not receive KO');
+ assert.equal(state.team[0].status??null,null,'mismatched species must not receive poison');
+ assert.equal(state.team[1].hp,39);
+ assert.deepEqual(state.team[1].status,{kind:'paralizado'});
+});
+test('T05 in-memory duplicate state UID cannot alias a unique battle member',()=>{
+ const {state}=legacyState();
+ state.team[0].uid='collision';state.team[1].uid='collision';
+ const party=partyBattle.createPartyMatch(state,core.currentOpponent(state));
+ party.friend[1].uid='new-reserve-uid'; // changed during a pending recall
+ party.friend[0].hp=19;party.friend[0].status={kind:'quemado'};
+ party.friend[1].hp=4;party.friend[1].status={kind:'veneno'};
+ partyBattle.applyPartyBattleResult(state,party);
+ assert.deepEqual(state.team.map(m=>m.hp),[19,63],
+  'one unique battle UID must not overwrite both duplicated state UIDs');
+ assert.deepEqual(state.team[0].status,{kind:'quemado'});
+ assert.equal(state.team[1].status??null,null);
+});
+test('T05 reordered unique battle UIDs still map HP to their original species',()=>{
+ const {state}=legacyState();
+ state.team[0].uid='starter-uid';state.team[1].uid='reserve-uid';
+ const party=partyBattle.createPartyMatch(state,core.currentOpponent(state));
+ party.friend.reverse();
+ party.friend[0].hp=31;party.friend[1].hp=44;
+ partyBattle.applyPartyBattleResult(state,party);
+ assert.deepEqual(state.team.map(m=>m.hp),[44,31]);
+});
