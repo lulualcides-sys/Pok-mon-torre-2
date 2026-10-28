@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T05 — integridade de HP/status na identidade de equipe (28/10/2026)
+
+- **Correção real integrada:** [PR #198](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/198), commit `1ab90cdae73abbbbb0d8ad0b1d1dd573534c54dc`. `applyPartyBattleResult` exige UID único nos dois lados e espécie idêntica antes de aplicar HP/status; mantém fallback por posição e espécie para legados sem UID. Corrige risco de contaminação por UID único no resultado, mas duplicado no estado atual, ou UID reaproveitado com espécie divergente.
+- **Provas:** [CI branch #40734080862](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40734080862) **sucesso**: `npm test`, `check`, `check:reuse`, build Phaser/WebGL, três novos testes de identidade no módulo compilado, demais testes de saves e suíte oficial Chromium. [CI main #40735493993](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40735493993) **sucesso**. [Pages #40735559883](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40735559883) **sucesso**: `pages_build_version` = `1ab90cdae73abbbbb0d8ad0b1d1dd573534c54dc`, HTTP público conferiu `src-77467d72f3` em 28/10/2026 às 17:29:55 UTC. O job verificou a versão e arquivos do cliente; não foi inspeção humana de campanha longa.
+- **Limites:** os casos de identidade foram reproduzidos em fixtures de módulo compilado; nenhuma corrupção foi observada em campanha natural nem houve campanha Pallet→Campeão completa. Não foram alterados golpes, VFX, sprites, cooldowns, controles ou formato dos saves. **T05 PARCIAL**; ainda requer fluxo longo de compra, captura, evolução, combate e reload naturais.
+
+
+
 ## Auditoria integrada 28/10/2026 — T19, T20 e T03
 
 - **T19 AUTO e Misty** — PR [#187](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/187) integrada no commit `ddad9e95`: AUTO nativo `dificil` somente na campanha, Arena original `normal` preservada; vitória real contra Misty em checkpoint preparado, com Cascata e TM03. [CI branch #40727801127](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40727801127), [main #40730979261](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40730979261) e [Pages #40731053853](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40731053853) **sucesso**, com prova HTTP pública.
