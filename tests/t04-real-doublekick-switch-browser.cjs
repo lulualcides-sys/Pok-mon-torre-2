@@ -24,8 +24,8 @@ const server=http.createServer(async(req,res)=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
    '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
- const evidence={scope:'T04 native Double Kick / actual pointer recall on Phaser WebGL',
-  fixture:'Nidoran Lv18, selected move, positions, immobilized AI; NOT natural campaign',events:[]};
+ const evidence={scope:'T04 native Double Kick via AUTO / actual pointer recall on Phaser WebGL',
+  fixture:'Nidoran Lv18, selected move, positions, immobilized opposing AI; NOT natural campaign',events:[]};
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
@@ -66,7 +66,7 @@ const server=http.createServer(async(req,res)=>{
    return b.scene.isActive()&&b.fase==='lucha'&&b.__torre2PartyInstalled&&
     !b.__torre2Changing&&!b.__torre2BallTransitions&&
     b.__torre2SideParty?.slots?.[1]?.input?.enabled&&
-    b.panelTactil?.botones?.some(x=>x.slot===window.__t04Slot);
+    b.__torre2AutoMode?.zone?.active;
   },null,{timeout:70000});
   const ready=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
@@ -76,7 +76,8 @@ const server=http.createServer(async(req,res)=>{
     throw Error('Wrong native move: '+JSON.stringify(me.kit[slot]));
    b.controles[1].leer=()=>({mx:0,my:0,ax:me.x,ay:me.y});
    me.inmortal=true;foe.inmortal=false;foe.ko=false;
-   me.energia=100;me.ulti=100;me.cd[slot]=0;
+   me.energia=100;me.ulti=100;
+   for(const key of ['lmb','rmb','q','e'])me.cd[key]=key===slot?0:100;
    me.accion=null;me.animAccion=null;me.dash=null;
    me.est={};me.dolorHasta=-1;me.ultimoAtaque=-100;
    me.ultimoBasico=-100;me.sobrecargaHasta=0;
@@ -108,18 +109,21 @@ const server=http.createServer(async(req,res)=>{
     initialUses:me.stats.usosSlot?.[slot]||0};
   });
   assert.equal(ready.renderer,'torre2_doublekick');
-  await page.evaluate(slot=>{
-   const panel=window.__pt2Game.scene.getScene('combate').panelTactil;
-   const button=panel.botones.find(x=>x.slot===slot);
-   const at=panel.pos(button),zero=panel.punto({x:0,y:0}),one=panel.punto({x:1,y:1});
-   panel.abajo({id:97,x:(at.x-zero.x)/(one.x-zero.x),y:(at.y-zero.y)/(one.y-zero.y)});
-   panel.leer(x=>({ax:x.x,ay:x.y}));
-  },setup.slot);
+  // Click the actual AUTO toggle: original Poké Arena IA must issue the
+  // Double Kick through the real cooldown/energy/renderer pipeline.
+  const autoTap=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),z=b.__torre2AutoMode.zone;
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:rect.left+z.x*rect.width/640,y:rect.top+z.y*rect.height/360};
+  });
+  await page.mouse.click(autoTap.x,autoTap.y);
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled),
+   true,'Real AUTO pointer must enable native AI');
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.__t04Contacts?.length===1&&b.__t04FirstHit&&b.__torre2BattleBagOpen;
   },null,{timeout:12000,polling:20});
-  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').panelTactil.arriba({id:97}));
+  await page.evaluate(()=>{window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled=false;});
   const first=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return {contacts:[...b.__t04Contacts],effects:b.efectos.length,
@@ -128,7 +132,7 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(first.contacts.length,1);
   assert.ok(first.contacts[0].damage>0,'First kick must inflict native damage');
-  assert.ok(first.uses>ready.initialUses,'Native touch must cast the move');
+  assert.ok(first.uses>ready.initialUses,'Native AI must cast the move');
   assert.ok(first.effects>0,'Native second kick must still be pending');
   evidence.events.push({kind:'native first kick',ready,first});
   const tap=await page.evaluate(()=>{
