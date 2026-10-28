@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §§7/8/33/36/37 — T08: gates de publicação corrigidos e HTTP verificado (28/10/2026)
+
+- **Escopo:** após `d43aa0c8` e `23aaf684`, a campanha possui 3 golpes fracos distintos no Lv5, ULT de dano limitado e energia a partir do Lv8 e opções progressivas até o Lv50. O teste dos 151 Kanto distingue controles de TREINO limitados de Ditto dos movimentos canônicos FRLG; escolhas da mesma espécie são preservadas e heranças inválidas entre espécies evoluídas são descartadas. Não representa validação natural de 151 partidas.
+- **Correção sem tocar no jogo:** [PR #219](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/219), squash `49158db0d37b40875e88f5ce55ada6d6c4f0ae48`, atualizou exclusivamente os testes legados de Ditto/Pidgey que bloquearam [Pages #40756551072](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40756551072) e [REA #40756487767](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40756487767). Nenhum VFX, sprite, cooldown, controle, formato de save ou motor de combate foi modificado nesta correção.
+- **Provas:** [CI de branch #40757077533](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40757077533) **SUCESSO** com `npm test`, `check`, `check:reuse`, build Phaser/WebGL, smokes de REA/Pages, testes de níveis/ULT e regressões Chromium/toque. [CI main #40758255311](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40758255311) e [REA #40758255373](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40758255373) **SUCESSO**. [Pages #40758314082](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40758314082) **SUCESSO**, `pages_build_version=49158db0d37b40875e88f5ce55ada6d6c4f0ae48` e confirmação HTTP de `src-590984be70` às 19:57:36 UTC.
+- **Estado:** §§7/8/33/36/37 e T07/T08/T31 **PARCIAIS**; nenhuma prova de percurso integral Pallet→Campeão, de todos os Pokémon em partidas naturais, nem de validação em Android físico. A correção de testes não substitui homologação do gameplay. As frentes #16/#17/#210/#213 permanecem isoladas.
+
+
 ## 28/10/2026 — T28: acesso ao armazenamento bloqueado (patch integrado, publicação HTTP confirmada)
 
 - **PR #216 integrada:** [PR #216](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/216), squash `4e612386b16c13a1e2d1fd8055844bfda734f2ac`. `torre2-audio-settings.js` agora trata `SecurityError` disparado ao acessar a propriedade `localStorage` antes de chamar `getItem`; leitura usa preferências padrão, gravação indisponível retorna `false` em vez de sucesso falso. Inclui os pontos de entrada de menu e sinais sonoros originais. Sem alterações em golpes, VFX, sprites, cooldowns, saves ou no cliente upstream.
