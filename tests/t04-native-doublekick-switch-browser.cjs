@@ -1,5 +1,5 @@
 'use strict';
-// T04: a native touch-cast approved multi-hit attack, followed by a real
+// T04: a native keyboard-cast approved multi-hit attack, followed by a real
 // Phaser pointer switch before the second impact. Only the test fighter's
 // move slot, aim, positions and combat resources are prepared. This is NOT
 // a natural campaign battle, nor a change to the approved move catalog.
@@ -53,8 +53,7 @@ const report={scope:'T04 native multi-hit Double Kick cancelled by real party sw
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.scene.isActive()&&b.fase==='lucha'&&b.__torre2PartyInstalled&&
-    b.__torre2SideParty?.slots?.[1]?.input?.enabled&&
-    b.panelTactil?.botones?.some(x=>x.slot==='q');
+    b.__torre2SideParty?.slots?.[1]?.input?.enabled;
   },null,{timeout:70000});
   const before=await page.evaluate(async()=>{
    const b=window.__pt2Game.scene.getScene('combate');
@@ -88,19 +87,14 @@ const report={scope:'T04 native multi-hit Double Kick cancelled by real party sw
     save:window.t04Core.readCampaign()};
   });
   assert.equal(before.slot,'Double Kick');
-  // Actual native touch control; do not call the move renderer or recibir().
-  await page.evaluate(()=>{
-   const b=window.__pt2Game.scene.getScene('combate'),panel=b.panelTactil;
-   const button=panel.botones.find(x=>x.slot==='q');
-   const pos=panel.pos(button),z=panel.punto({x:0,y:0}),one=panel.punto({x:1,y:1});
-   panel.abajo({id:97,x:(pos.x-z.x)/(one.x-z.x),y:(pos.y-z.y)/(one.y-z.y)});
-   panel.leer(x=>({ax:x.x,ay:x.y}));
-  });
+  // Real keyboard input on the campaign battle (desktop mode).
+  // No renderer or recibir() invocation by the test.
+  await page.keyboard.down('q');
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.__t04Contacts?.some(x=>x.result==='golpe'&&x.after<x.before);
   },null,{timeout:9000,polling:20});
-  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').panelTactil.arriba({id:97}));
+  await page.keyboard.up('q');
   const first=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return {contacts:b.__t04Contacts.slice(),hp:b.luchadores[1].hp,
