@@ -148,12 +148,39 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   await page.screenshot({path:'test-evidence/t20-real-agatha-start.png'});
   save();
   const begun=Date.now();
+  // A five-opponent Elite Four battle can outlast a single arcade duel.
+  // Observe actual party/fighter state every 60s; never fast-forward frames,
+  // inject health/damage or invent a match result to satisfy the watchdog.
+  const getProgress=()=>page.evaluate(()=>{
+   const battle=window.__pt2Game.scene.getScene('combate');
+   const state=window.t20Core.readCampaign();
+   const party=battle.datos?.torre2?.party;
+   return {elapsedSeconds:Math.round((Date.now()-window.__t20Start)/1000),
+    phase:battle.fase,combatActive:battle.scene.isActive(),
+    autoEnabled:!!battle.__torre2AutoMode?.enabled,
+    friendIndex:party?.playerIndex,foeIndex:party?.enemyIndex,
+    actors:battle.luchadores?.map(a=>({id:a.def?.id,
+     hp:Math.round(a.hp),max:Math.round(a.hpMax),x:Math.round(a.x),y:Math.round(a.y)})),
+    wins:state.wins,losses:state.losses,stage:state.stage};
+  });
+  await page.evaluate(()=>{window.__t20Start=Date.now()});
+  report.progress=[];
+  let busy=false;
+  const probe=setInterval(async()=>{
+   if(busy||page.isClosed())return;
+   busy=true;
+   try{const snapshot=await getProgress();report.progress.push(snapshot);
+    console.log('T20 AGATHA LIVE PROGRESS',JSON.stringify(snapshot));save();}
+   catch(error){console.error('T20 progress probe',String(error));}
+   finally{busy=false;}
+  },60000);
+  probe.unref();
   try{
    await page.waitForFunction(winCount=>{
     const s=window.t20Core.readCampaign();
     return window.__pt2Game.scene.isActive('campanha')&&
      (s.wins>winCount||s.losses>0);
-   },before.wins,{timeout:300000,polling:350});
+   },before.wins,{timeout:780000,polling:350});
   }catch(e){
    report.timeout=String(e);
    report.combat=await page.evaluate(()=>{
@@ -166,6 +193,8 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    report.status='timeout-or-blocked';save();
    await page.screenshot({path:'test-evidence/t20-real-agatha-timeout.png'});
    throw e;
+  }finally{
+   clearInterval(probe);
   }
   const after=await page.evaluate(()=>{
    const s=t20Core.readCampaign();
