@@ -1,6 +1,6 @@
 'use strict';
 // T04: actual native Bind first contact, then REAL Phaser party pointer
-// switch before the second hit. Onix/level/position are isolated fixtures;
+// switch before the second hit. Ekans/level/position are isolated fixtures;
 // damage, timing, hit callbacks and the party transition are NOT forced.
 // No edits to approved move, VFX, sprites, cooldowns or user save.
 const assert=require('node:assert/strict');
@@ -25,7 +25,7 @@ const server=http.createServer(async(req,res)=>{
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
    '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const evidence={scope:'T04 native Bind via AUTO / actual pointer recall on Phaser WebGL',
-  fixture:'Onix Lv18, selected move, positions, immobilized opposing AI; NOT natural campaign',events:[]};
+  fixture:'Ekans Lv18, selected move, positions, immobilized opposing AI; NOT natural campaign',events:[]};
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
@@ -37,19 +37,19 @@ const server=http.createServer(async(req,res)=>{
    const moves=await import(new URL('./torre2/move-pool.js',src));
    const progression=await import(new URL('./torre2/progression.js',src));
    const state=core.createCampaign('bulbasaur');
-   // Stage 1 is a test-only checkpoint so Onix Lv18 is below its level cap.
+   // Stage 1 is a test-only checkpoint so Ekans Lv18 is below its level cap.
    // This does NOT claim a Brock victory or create a real campaign save.
    state.stage=1;state.badges=['Rocha'];state.gymTMClaims=['tm-rock-tomb'];
    core.storePokemon(state,1); // Keep original Mewtwo in PC.
-   const member={id:'onix',uid:'t04-onix',hp:100,
-    progression:progression.createPokemonProgression('onix',18)};
+   const member={id:'ekans',uid:'t04-ekans',hp:100,
+    progression:progression.createPokemonProgression('ekans',18)};
    const learned=moves.availableMoves(member).map(x=>x.id);
    if(!learned.includes('bind'))throw Error('Bind is not unlocked at level 18');
    member.moves=[...moves.defaultLoadout(member)];
    member.moves[2]='bind';member.movePlanSpecies=member.id;
    const resolved=moves.resolveLoadout(member);
    const slot=Object.entries(resolved).find(([,m])=>m.id==='bind')?.[0];
-   if(!slot)throw Error('Onix fixture cannot equip Bind');
+   if(!slot)throw Error('Ekans fixture cannot equip Bind');
    state.team.unshift(member);state.active=0;
    state.dexSeen.push(member.id);state.dexCaught.push(member.id);
    core.saveCampaign(state);
@@ -61,7 +61,7 @@ const server=http.createServer(async(req,res)=>{
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
    return {slot,learned,party:state.team.map(m=>m.id)};
   });
-  assert.deepEqual(setup.party,['onix','bulbasaur']);
+  assert.deepEqual(setup.party,['ekans','bulbasaur']);
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:60000});
   await page.evaluate(()=>{
@@ -78,7 +78,7 @@ const server=http.createServer(async(req,res)=>{
   const ready=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    const me=b.luchadores[0],foe=b.luchadores[1];
-   if(me.def.id!=='onix')throw Error('Unexpected active Pokémon: '+me.def.id);
+   if(me.def.id!=='ekans')throw Error('Unexpected active Pokémon: '+me.def.id);
    const slot=Object.keys(me.kit).find(key=>me.kit[key]?.forma==='torre2_bind');
    if(!slot)throw Error('Native Bind absent from live kit: '+JSON.stringify(me.kit));
    window.__t04Slot=slot;
