@@ -1,5 +1,10 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §15/§29/§33/§36/§37 — T04: limpeza resiliente se VFX obsoleto falhar (28/10/2026)
+
+- **Branch isolada `fix/t04-guard-vfx-destroy-20261028`:** protege a fronteira de troca/KO quando um único `destroy()` de VFX já descartado lança exceção. Continua destruindo os demais objetos e zerando ações/tarefas; não altera HP, status, golpes aprovados, VFX, sprites, cooldowns ou saves. Teste de regressão simula exceção, efeito repetido e fila de dano; não representa combate natural.
+- **Estado:** teste focado local 2/2; CI integral, build Phaser/WebGL, navegador, PR, merge e publicação HTTP **a confirmar**. §§15/29/33/36/37 e T04 permanecem **PARCIAIS**, sem homologação de toda a campanha.
+
 ## §§7/8/33/36/37 — T08: gates de publicação corrigidos e HTTP verificado (28/10/2026)
 
 - **Escopo:** após `d43aa0c8` e `23aaf684`, a campanha possui 3 golpes fracos distintos no Lv5, ULT de dano limitado e energia a partir do Lv8 e opções progressivas até o Lv50. O teste dos 151 Kanto distingue controles de TREINO limitados de Ditto dos movimentos canônicos FRLG; escolhas da mesma espécie são preservadas e heranças inválidas entre espécies evoluídas são descartadas. Não representa validação natural de 151 partidas.

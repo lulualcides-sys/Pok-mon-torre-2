@@ -1,5 +1,10 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 28/10/2026 — T04: exceção de VFX durante recolhimento (PR em preparação)
+
+- **Patch isolado `fix/t04-guard-vfx-destroy-20261028`:** `clearDepartingCombat` agora captura falha individual de `destroy()` de efeito obsoleto, registra aviso e continua a limpeza dos demais VFX/ações. Os impactos pendentes continuam descartados antes da limpeza. Novo teste injeta um destructor que lança exceção, referência duplicada e efeito íntegro; exige HP/status e identidades preservados. **Não cria nem altera golpes, renderizadores, sprites, cooldowns, dados ou saves.**
+- **Evidência:** teste focado executado localmente em módulo isolado (2/2); `npm test`, `check`, `check:reuse`, build Phaser/WebGL, navegador, CI, merge e Pages **pendentes** nesta anotação. O erro de destruição é uma **fixture de falha**, não um defeito reproduzido em partida normal. **T04 PARCIAL**, aguardando gates e validação natural.
+
 ## 28/10/2026 — T08: desbloqueio real de publicação dos golpes Kanto 151 (PR #219)
 
 - **Código de campanha já integrado:** commits `d43aa0c8` e `23aaf684` introduziram três controles fracos distintos no Lv5, ULT fraca com energia a partir do Lv8 e opções progressivas até o Lv50, preservando escolhas manuais da mesma espécie e evitando herança inválida após evolução. O contrato foi testado para 150 espécies comuns + Mewtwo; Ditto usa controles de TREINO limitados, sem fingir que são learnset FRLG. Não modificar VFX, sprites, cooldowns nem golpes aprovados.
