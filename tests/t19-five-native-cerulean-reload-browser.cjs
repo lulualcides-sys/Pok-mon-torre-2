@@ -98,6 +98,32 @@ const server=http.createServer(async(req,res)=>{
    },[key,value]);
    await page.mouse.click(pos.x,pos.y);
   };
+  // Center treatment is a real Phaser button + timed save, not a direct HP edit.
+  // Only the navigation to the Center screen is short-circuited via its own
+  // scene helper; the player still clicks CURAR and waits for the animation.
+  const recoverAtCenter=async(snapshot)=>{
+   await page.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    c.centerScreen(window.t19Core.readCampaign());
+   });
+   await page.evaluate(()=>new Promise(ok=>requestAnimationFrame(()=>requestAnimationFrame(ok))));
+   await clickData('torre2-center-heal',true);
+   await page.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const s=window.t19Core.readCampaign();
+    return c.scene.isActive()&&!!c.__torre2BattlePath&&!c.__torre2CenterBusy&&
+     s.team.every(m=>m.hp===100&&m.status===null);
+   },null,{timeout:15000});
+   const healed=await game();
+   assert.equal(healed.stage,snapshot.stage);
+   assert.equal(healed.trainer,snapshot.trainer);
+   assert.equal(healed.wins,snapshot.wins);
+   assert.equal(healed.money,snapshot.money,'Center is free');
+   assert.deepEqual(healed.team.map(m=>m.uid),snapshot.team.map(m=>m.uid));
+   assert.deepEqual(healed.team.map(m=>m.hp),snapshot.team.map(()=>100));
+   console.log('T19 REAL CENTER HEAL',JSON.stringify({trainer:healed.trainer,hp:healed.team.map(m=>m.hp)}));
+   return healed;
+  };
   let before=await game();
   assert.equal(before.stage,1);
   assert.equal(before.trainer,startTrainer);
@@ -202,7 +228,12 @@ const server=http.createServer(async(req,res)=>{
      .children.list.some(o=>o.active&&o.getData?.('torre2-report-continue')===true),
      null,{timeout:12000});
    }
-   before=after;
+   if(startTrainer===5&&round<4){
+    // Multi-Pokémon trainers require resting between fights.
+    // No HP, status, money or saved progress is injected by the test.
+    record.healed=await recoverAtCenter(after);
+   }
+   before=record.healed||after;
    if(round===2){
     // Prove persisted checkpoint from the REAL third victory: full reload,
     // not only readCampaign() from the current JS module in memory.
