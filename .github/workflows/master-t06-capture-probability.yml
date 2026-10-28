@@ -1,0 +1,20 @@
+name: Master T06 — capture probability audit
+on:
+  push:
+    branches: [test/master-t06-capture-probability-invariants-20261028]
+permissions:
+  contents: read
+jobs:
+  catch-probabilities:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: node --test tests/t06-capture-probability-invariants.test.js
+      - run: npm test
+      - run: npm run check
+      - run: npm run check:reuse

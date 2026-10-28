@@ -423,6 +423,16 @@ patches.push(['luchador.js',[
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(!g.puro){',
   'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro&&fuente&&fuente!==this&&Number.isInteger(fuente.lado)&&fuente.lado!==this.lado){d*=torre2DamageMultiplier(torre2FighterLevel(fuente),torre2FighterLevel(this));if(fuente.lado===0)d*=torre2PlayerDamageBoost;}if(!g.puro){']
 ]]);
+// FireRed/LeafGreen has NO automatic HP refill merely from avoiding damage.
+// Native Poké Arena 2D restores HP out of combat after REGLAS.curaTras;
+// that arcade mechanic can cancel out real hits and stall campaign trainers.
+// Disable ONLY this passive refill in Torre 2 battles. Explicit items,
+// status healing, absorb/drain moves, and the original Arena modes are intact.
+// Exact upstream string is checked; never patch a guessed native handler.
+patches.push(['luchador.js',[
+ ['if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!helado&&!this.est.enfermo){',
+  'if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!helado&&!this.est.enfermo&&!this.escena.datos?.torre2){']
+]]);
 // Campaign-only Gen III matchups and STAB, preserving all approved renderers.
 patches.push(['luchador.js',[
  ['import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";',
