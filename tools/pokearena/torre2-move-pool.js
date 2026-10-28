@@ -372,7 +372,7 @@ export function availableMoves(member){
    // present in FRLG. They stay level-gated; never borrow another species'.
    if(official===null&&!frlgMachineCompatible(member.id,key)){
     const tier=legacySlotLevel(key);
-    if(tier!==null&&level>=tier)return true;
+    if(tier!==null&&level>=campaignLevel(tier))return true;
    }
    return false;
   }
