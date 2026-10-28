@@ -1,5 +1,5 @@
 'use strict';
-// T19: five NORMAL Phaser/CPU fights in Cerulean, using real menu taps + AUTO.
+// T19: five native Phaser/CPU fights using real team sidebar taps + AUTO.
 // Only the initial post-Brock checkpoint/team level is a prepared fixture;
 // no fabricated hit, KO, XP, payment, result, or win. No game source edits.
 const assert=require('node:assert/strict');
@@ -44,7 +44,8 @@ const server=http.createServer(async(req,res)=>{
    '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const report={scope:'T19 five normal Cerulean checkpoint fights with native AUTO',
   startTrainer,checkpointFixture:'stage1 trainer10 with ten previous Cerulean wins, Rocha badge, 6 Kanto Lv21 members and initial money prepared; only trainer fights 11–15 are real in this test',
-  fights:[],naturalFromCheckpoint:true,wholeCampaignNatural:false};
+  fights:[],naturalFromCheckpoint:true,wholeCampaignNatural:false,
+  trainerSelectedCounters:true,autoPartySwitches:false};
  let page=null;
  try{
   page=await browser.newPage({viewport:{width:1280,height:720}});
@@ -211,11 +212,57 @@ const server=http.createServer(async(req,res)=>{
    try{
     checkpoint='live native combat '+(round+1);
     console.log('T19 NATIVE FIGHT START',JSON.stringify({round:round+1,foe:foe.id,player:start.p1,level:start.playerLevel,enemyLevel:start.enemyLevel}));
-    await page.waitForFunction(({wins,losses})=>{
-     const s=window.t19Core.readCampaign();
-     return window.__pt2Game.scene.isActive('campanha')&&
-      (s?.wins===wins||s?.losses>losses);
-    },{wins:before.wins+1,losses:before.losses},{timeout:240000,polling:250});
+    // AUTO attacks via the native AI; the trainer uses the ACTUAL left
+    // sidebar to select a type counter when the opponent changes species.
+    // The AUTO button never promised autonomous party swaps. No state writes,
+    // fake damage, forced KO, stage manipulation or battle-result injection.
+    const counterSlots={
+     zubat:[1,5,0],geodude:[0,2,4],paras:[5,4,1],
+     bulbasaur:[5,4,1],clefairy:[4,0,5],sandshrew:[0,2,5],
+     ekans:[5,3,0],poliwag:[1,2,0],psyduck:[1,2,0],
+     staryu:[1,2,0],magikarp:[1,2,0]
+    };
+    record.sidebarSwitches=[];
+    let lastSwap=0,finished=false;
+    const deadline=Date.now()+240000;
+    while(Date.now()<deadline){
+     const live=await page.evaluate(({wins,losses})=>{
+      const game=window.__pt2Game,b=game.scene.getScene('combate');
+      const s=window.t19Core.readCampaign(),p=b.datos?.torre2?.party;
+      return {finished:game.scene.isActive('campanha')&&
+       (s?.wins===wins||s?.losses>losses),battle:b.scene.isActive(),
+       phase:b.fase,changing:!!b.__torre2Changing,
+       auto:!!b.__torre2AutoMode?.enabled,
+       enemyIndex:p?.enemyIndex,playerIndex:p?.playerIndex,
+       foe:p?.foes?.[p.enemyIndex]?.id,
+       friend:p?.friend?.map(m=>({id:m.id,hp:m.hp}))||[],
+       slotEnabled:b.__torre2SideParty?.slots?.map(z=>!!z?.input?.enabled)||[]};
+     },{wins:before.wins+1,losses:before.losses});
+     if(live.finished){finished=true;break;}
+     if(live.battle&&live.phase==='lucha'&&!live.changing&&live.auto&&
+        Date.now()-lastSwap>2000){
+      const target=(counterSlots[live.foe]||[]).find(i=>
+       live.friend[i]?.hp>0&&live.slotEnabled[i]);
+      if(Number.isInteger(target)&&target!==live.playerIndex){
+       const pos=await page.evaluate(index=>{
+        const b=window.__pt2Game.scene.getScene('combate');
+        const zone=b.__torre2SideParty?.slots?.[index],r=
+         document.querySelector('#juego canvas').getBoundingClientRect();
+        return zone?.input?.enabled?
+         {x:r.x+zone.x*r.width/640,y:r.y+zone.y*r.height/360}:null;
+       },target);
+       if(pos){
+        lastSwap=Date.now();
+        await page.mouse.click(pos.x,pos.y);
+        record.sidebarSwitches.push({enemy:live.foe,enemyIndex:live.enemyIndex,
+         from:live.friend[live.playerIndex]?.id,to:live.friend[target].id});
+        console.log('T19 NATIVE SIDEBAR COUNTER',JSON.stringify(record.sidebarSwitches.at(-1)));
+       }
+      }
+     }
+     await page.waitForTimeout(350);
+    }
+    if(!finished)throw new Error('Native fight exceeded 240s with real sidebar counters');
    }catch(err){
     record.failure=String(err);
     record.state=await game();
