@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T06 — captura com equipe de seis e encaminhamento ao PC (28/10/2026)
+
+- **PR #164 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/164, commit `f12116b8dacde25b19eccf9c78835fcf93c5dd15`. Teste Chromium/WebGL real desktop `tests/t06-full-party-pc-capture-browser.cjs`: seis integrantes no mesmo slot/UID, Mewtwo existente no PC, fuga de uma Pokébola e captura real de Pikachu com a segunda. Novo Pikachu armazenado **exatamente uma vez no PC** sem sétimo membro, estoque 5→4→3, nenhum progresso de treinador fabricado, conteúdo idêntico após reload.
+- **CI da branch:** [#40699805087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40699805087) **sucesso**. Regressão main/Pages desse merge precisam ser conferidas antes de fechar a publicação. **Pages do patch T06 anterior (#161):** [#40698971971](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698971971) **sucesso**.
+- **Limitação:** seis membros, invulnerabilidade e RNG de captura são fixtures; nenhuma edição de runtime/sprites/efeitos. T06 segue **PARCIAL** até captura RNG não forçada em caminho natural e auditoria visual/mobile de todos os estados.
+
+
 ## T06 — captura desktop com mouse real, fuga, GOTCHA e save (28/10/2026)
 
 - **PR #161 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/161, commit `b461a893d882232417265af9349289c7ad11637d`. Novo teste `tests/t06-desktop-capture-browser.cjs` e workflow; sem mudança do runtime, sprites ou golpes.

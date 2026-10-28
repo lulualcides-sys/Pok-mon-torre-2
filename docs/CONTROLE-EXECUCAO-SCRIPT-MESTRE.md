@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §2/§3/§18/§31/§33/§36/§37 — T06: equipe cheia → PC (28/10/2026)
+
+- **PR #164:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/164, commit `f12116b8dacde25b19eccf9c78835fcf93c5dd15`. O motor de captura real do Phaser/Chromium, com mouse, registrou fuga de primeira bola, segunda capturando Pikachu, equipe de seis membros sem mutações/UIDs duplicados, exatamente uma nova entrada no PC e save íntegro ao recarregar. Nenhum golpe/sprite/runtime alterado.
+- **Validação:** branch [#40699805087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40699805087) **sucesso**. Main/Pages deste merge ainda exigem confirmação; [Pages #40698971971](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40698971971) é sucesso da versão anterior T06 #161.
+- **Limites:** fixtures: seis membros Lv5, RNG e atores imortais; não concluir campanha natural/percentuais globais. T06 **PARCIAL**.
+
+
 ## §2/§3/§33/§36/§37 — T06: Pokébolas no desktop (28/10/2026)
 
 - **PR #161 integrada:** https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/161, commit `b461a893d882232417265af9349289c7ad11637d`. Exercitou duas capturas pelo controle nativo de mouse em Phaser/WebGL, com uma fuga e um GOTCHA de Kakuna, inventário 5→4→3, equipe e PC por UID, sem vitória indevida e com save idêntico após reload.
