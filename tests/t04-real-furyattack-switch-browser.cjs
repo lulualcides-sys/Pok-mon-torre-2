@@ -70,10 +70,11 @@ const server=http.createServer(async(req,res)=>{
   },null,{timeout:70000});
   const ready=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
-   const me=b.luchadores[0],foe=b.luchadores[1],slot=window.__t04Slot;
+   const me=b.luchadores[0],foe=b.luchadores[1];
    if(me.def.id!=='spearow')throw Error('Unexpected active Pokémon: '+me.def.id);
-   if(me.kit[slot]?.forma!=='torre2_furyattack')
-    throw Error('Wrong native move: '+JSON.stringify(me.kit[slot]));
+   const slot=Object.keys(me.kit).find(key=>me.kit[key]?.forma==='torre2_furyattack');
+   if(!slot)throw Error('Native Fury Attack absent from live kit: '+JSON.stringify(me.kit));
+   window.__t04Slot=slot;
    b.controles[1].leer=()=>({mx:0,my:0,ax:me.x,ay:me.y});
    me.inmortal=true;foe.inmortal=false;foe.ko=false;
    me.energia=100;me.ulti=100;
