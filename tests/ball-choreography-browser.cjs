@@ -86,6 +86,19 @@ const server=http.createServer(async(req,res)=>{
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
+ // Status is inflicted via the real Gen III engine, not inserted into save.
+ // Both breakout and catch must retain status for the active Pokemon.
+ await page.evaluate(async()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+  const {applyGen3Status}=await import(new URL('./torre2/gen3-status.js',src));
+  const a=b.luchadores[0];
+  if(!applyGen3Status(a,'paralizado')||!a.est?.paralizado?.torre2Status)
+   throw Error('Native status setup failed');
+  const party=b.datos.torre2.party;
+  if(party.friend[party.playerIndex].status||core.readCampaign().team[core.readCampaign().active].status)
+   throw Error('Status fixture must begin unsaved');
+ });
  const throwBall=async(mode)=>{
   await page.evaluate(mode=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>mode==='caught'?0:.999999;
@@ -102,11 +115,31 @@ const server=http.createServer(async(req,res)=>{
  await page.screenshot({path:'test-evidence/ball-capture-absorb.png'});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='RESUME',null,{timeout:15000});
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
+ assert.equal(await page.evaluate(()=>{
+  const save=core.readCampaign();return save.team[save.active].status?.kind;
+ }), 'paralizado','Failed capture must preserve live paralysis');
  // Re-enter for a successful capture into a full party.
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
+ // Isolate the second outcome: reset the prior paralysis in the saved campaign,
+ // then apply a different native status only to the live fighter.
+ await page.evaluate(()=>{
+  const save=core.readCampaign();save.team[save.active].status=null;core.saveCampaign(save);
+ });
  await battle(true,true);
- await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>0;const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);z(470,61).emit('pointerdown');z(316,186).emit('pointerdown');});
+ await page.evaluate(async()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+  const {applyGen3Status}=await import(new URL('./torre2/gen3-status.js',src));
+  const a=b.luchadores[0];
+  if(!applyGen3Status(a,'quemado')||!a.est?.quemado?.torre2Status)
+   throw Error('Native burn status setup failed');
+  if(core.readCampaign().team[core.readCampaign().active].status)
+   throw Error('Saved member should not have burn before throwing');
+  b.__torre2CaptureRandom=()=>0;
+  const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
+  z(470,61).emit('pointerdown');z(316,186).emit('pointerdown');
+ });
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:15000});
  await page.screenshot({path:'test-evidence/ball-gotcha.png'});
  assert.equal(await page.evaluate(()=>core.readCampaign().box.length),1);
@@ -115,6 +148,10 @@ const server=http.createServer(async(req,res)=>{
  await page.reload();
  await page.waitForFunction(()=>window.__pt2Game);
  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')).box.length),1);
+ assert.equal(await page.evaluate(()=>{
+  const save=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
+  return save.team[save.active].status?.kind;
+ }), 'quemado','Successful capture and reload must preserve new live burn status');
  await page.setViewportSize({width:390,height:844});
  await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'));
  await page.evaluate(async()=>{
