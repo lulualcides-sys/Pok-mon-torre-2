@@ -135,9 +135,17 @@ export function installWildCapture(scene){
   const party=scene.datos?.torre2?.party;
   if(party){
    const active=scene.luchadores?.[0];
-   if(active?.hpMax&&party.friend[party.playerIndex])
-    party.friend[party.playerIndex].hp=Math.max(0,active.hp/active.hpMax*100);
-   for(const member of save.team){const live=party.friend.find(p=>p.uid===member.uid);if(live)member.hp=live.hp;}
+   const current=party.friend[party.playerIndex];
+   if(active?.hpMax&&current){
+    current.hp=Math.max(0,active.hp/active.hpMax*100);
+    // Capture exits without the normal switch/KO synchronization.
+    // Use live Gen III status for either outcome, not the old party snapshot.
+    current.status=serializeGen3Status(active);
+   }
+   for(const member of save.team){
+    const live=party.friend.find(p=>p.uid===member.uid);
+    if(live){member.hp=live.hp;member.status=live.status??null;}
+   }
    save.active=party.playerIndex;
   }
   const aimed=portraitCenter();
