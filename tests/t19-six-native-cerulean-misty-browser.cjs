@@ -90,11 +90,19 @@ const server=http.createServer(async(req,res)=>{
     box:s.box.map(m=>m.uid)};
   });
   const clickData=async(key,value)=>{
+   // The native summary and Center trigger a Phaser scene restart.
+   // A scene can report active before its interactive CTA is constructed;
+   // wait for the REAL enabled pointer target, never emit a fake event.
+   await page.waitForFunction(([key,value])=>{
+    const c=window.__pt2Game?.scene?.getScene('campanha');
+    return c?.scene?.isActive()&&c.children.list.some(o=>
+     o.active&&o.input?.enabled&&o.getData?.(key)===value);
+   },[key,value],{timeout:20000,polling:100});
    const pos=await page.evaluate(([key,value])=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     const z=c.children.list.find(o=>o.active&&o.input?.enabled&&
      o.getData?.(key)===value);
-    if(!z)throw Error('Missing native checkpoint UI '+key);
+    if(!z)throw Error('Native pointer target vanished: '+key);
     const rect=document.querySelector('#juego canvas').getBoundingClientRect();
     return {x:rect.x+rect.width*z.x/640,y:rect.y+rect.height*z.y/360};
    },[key,value]);
