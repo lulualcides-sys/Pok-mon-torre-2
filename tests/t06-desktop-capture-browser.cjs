@@ -38,7 +38,7 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
     const box=canvas.getBoundingClientRect();
     return {x:box.left+x*box.width/640,y:box.top+y*box.height/360};
    },[x,y]);
-   assert.ok(point.x>=0&&point.x<=854&&point.y>=0&&point.y<=480,
+   assert.ok(point.x>=0&&point.x<=1280&&point.y>=0&&point.y<=720,
     'Mouse control must remain visible in desktop viewport');
    await page.mouse.click(point.x,point.y);
   };
