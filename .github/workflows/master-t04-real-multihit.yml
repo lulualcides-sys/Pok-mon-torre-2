@@ -18,7 +18,6 @@ jobs:
         run: |
           set -euo pipefail
           npm install --no-audit --no-fund
-          node --check tests/t04-native-doublekick-switch-browser.cjs
           node --test tests/t04-two-transitions.test.js
           npm run check
           npm run check:reuse
@@ -34,11 +33,10 @@ jobs:
           node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/version.json
           node --test tests/t04-native-doublekick-boundary-built.test.mjs
-      - name: Chromium native multi-hit and switch
+      - name: Chromium native pointer switch and full browser suite
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
-          node tests/t04-native-doublekick-switch-browser.cjs
           node tests/t04-native-switch-pending-hits-browser.cjs
           npm run test:browser
       - name: Save evidence
