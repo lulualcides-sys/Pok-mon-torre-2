@@ -76,7 +76,7 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
    if(!core.storePokemon(s,1))throw Error('Could not deposit permanent QA Mewtwo');
    s.stage=8;s.trainer=core.TRAINERS_PER_GYM(8);s.wins=172;s.losses=0;
    s.badges=core.GYMS.map(g=>g.badge);s.leagueHonors=[];
-   s.team=['jolteon','starmie','lapras','alakazam','articuno','gengar']
+   s.team=['jolteon','starmie','lapras','alakazam','articuno','hypno']
     .map((id,i)=>({id,uid:'t20-sequential-'+i+'-'+id,hp:100,
      progression:createPokemonProgression(id,54),
      status:null,tmMoves:[],moves:[]}));
@@ -150,10 +150,15 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
     try{
      const status=await page.evaluate(()=>{
       const b=window.__pt2Game.scene.getScene('combate'),s=window.t20Core.readCampaign();
+      const party=b.datos?.torre2?.party;
       return {stage:s.stage,wins:s.wins,losses:s.losses,
        fight:b.scene.isActive(),phase:b.fase,
-       foeIndex:b.datos?.torre2?.party?.enemyIndex,
-       playerIndex:b.datos?.torre2?.party?.playerIndex};
+       foeIndex:party?.enemyIndex,
+       playerIndex:party?.playerIndex,
+       player:party?.friend?.map(m=>({id:m.id,hp:Math.round(m.hp)})),
+       foe:party?.foes?.map(m=>({id:m.id,hp:Math.round(m.hp)})),
+       liveActors:b.luchadores?.map(a=>({species:a?.def?.id,
+        hp:Math.round(a?.hp||0),max:Math.round(a?.hpMax||0)}))};
      });
      console.log('T20 SEQUENTIAL PROGRESS',leader,JSON.stringify(status));
     }catch(e){console.log('T20 monitor',String(e))}
@@ -163,12 +168,12 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
    // No direct combat methods, HP, damage, KO, reward or save edits.
    const counters={
     dewgong:[0,1,2],cloyster:[0,1,2],slowbro:[0,3,5],
-    jynx:[5,0,4],lapras:[0,5,1],
+    jynx:[0,4,5],lapras:[0,1,4],
     onix:[1,2,3],hitmonchan:[3,1,4],hitmonlee:[3,1,4],machamp:[3,1,4],
-    gengar:[3,5,4],golbat:[0,3,2],haunter:[3,5,4],arbok:[3,1,5],
+    gengar:[1,3,5,4,2,0],golbat:[0,1,4,3],haunter:[1,3,5,4,2,0],arbok:[1,3,5,4,2,0],
     gyarados:[0,1,2],dragonair:[2,4,3],aerodactyl:[1,2,0],
     dragonite:[2,4,3],
-    pidgeot:[0,2,1],alakazam:[5,3,4],rhydon:[1,2,3],
+    pidgeot:[0,4,1],alakazam:[5,3,4],rhydon:[1,2,3],
     exeggutor:[2,5,4],charizard:[1,2,0]
    };
    let coachBusy=false;record.sidebarSwaps=[];
