@@ -32,9 +32,9 @@ test('T28 original Phaser sound bus honors saved global volume and mute',()=>{
  const settings=applyAudioSettingsToGame(scene,{
   master:.3,effects:.9,music:.8,muted:true});
  assert.deepEqual(settings,{master:.3,effects:.9,music:.8,muted:true});
- assert.equal(bus.volume,.3);
+ assert.equal(bus.volume,0,'Mute must produce zero actual output');
  assert.equal(bus.mute,true);
- assert.equal(sceneBus.volume,.3,'Scene sound manager must be synchronized');
+ assert.equal(sceneBus.volume,0,'Muted scene output must also be zero');
  assert.equal(sceneBus.mute,true,'Scene manager must also be muted');
  assert.deepEqual(applyAudioSettingsToGame(null,settings),settings);
 });
