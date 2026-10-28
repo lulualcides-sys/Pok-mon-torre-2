@@ -34,7 +34,7 @@ jobs:
             sleep $((attempt * 6))
           done
           node tools/pokearena/build-preview.mjs
-      - name: Validate live poison and burn across ball capture and reload in Chromium/WebGL
+      - name: Validate live paralysis and burn across ball capture and reload in Chromium/WebGL
         run: |
           set -euo pipefail
           CHROME_BIN="$(command -v google-chrome)" node tests/ball-choreography-browser.cjs
