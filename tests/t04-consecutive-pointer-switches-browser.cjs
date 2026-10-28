@@ -93,6 +93,9 @@ const server=http.createServer(async(req,res)=>{
     if(b.__t04FirstHit){b.events.off('update',followTarget);return;}
     foe.x=me.x+dir*60;foe.y=me.y;
     foe.spr?.setPosition(foe.x,foe.y);
+    // Aim is also a POSITION fixture: native melee uses the angle captured
+    // when the approved move starts. Never touch the move or its hit result.
+    me.ax=foe.x;me.ay=foe.y;
    };
    b.events.on('update',followTarget);
    me.ax=foe.x;me.ay=foe.y;
