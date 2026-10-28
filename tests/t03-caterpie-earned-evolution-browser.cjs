@@ -57,7 +57,16 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
    if(!o)throw Error('Missing native campaign button '+key+'='+value);
    const rect=document.querySelector('#juego canvas').getBoundingClientRect();
    return {x:rect.left+o.x*rect.width/640,y:rect.top+o.y*rect.height/360};
-  },[key,value]).then(p=>page.mouse.click(p.x,p.y));
+  },[key,value]).then(async p=>{
+   // Phaser polls pointer input on animation frames. Avoid losing an
+   // instantaneous down/up on CI's software-rendered Chromium.
+   await page.evaluate(()=>new Promise(done=>requestAnimationFrame(()=>requestAnimationFrame(done))));
+   await page.mouse.move(p.x,p.y);
+   await page.mouse.down();
+   await page.waitForTimeout(90);
+   await page.mouse.up();
+   await page.waitForTimeout(100);
+  });
   const mapReady=()=>page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&!!c.__torre2BattlePath;
@@ -96,6 +105,10 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
   for(let i=0;i<7;i++){
    const old=await snapshot();
    await clickMarked('torre2-mart-buy','pokeball');
+   await page.waitForFunction(prev=>{
+    const now=window.kanto.readCampaign();
+    return now.inventory.pokeball===prev+1;
+   },old.balls,{timeout:4500});
    const next=await snapshot();
    assert.equal(next.balls,old.balls+1,'Mart must charge for each genuine Pokeball');
    assert.equal(next.money,old.money-200,'Pokeballs cannot be granted for free');
