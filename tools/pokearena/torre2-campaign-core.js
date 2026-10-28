@@ -184,7 +184,11 @@ export function readCampaign(storage=localStorage){
   const fallback=parseUsableCampaign(backup);
   // Prefer a clean backup. Otherwise preserve every stored member and
   // repair only colliding identities, archiving original bytes before save.
-  const recoverUid=!!(primary&&fallback&&hasRepeatedMemberUid(primary)&&!hasRepeatedMemberUid(fallback));
+  // A backup with broken money/inventory is not a safe replacement for a
+  // duplicate-UID primary with intact economy. Repair the UIDs in place
+  // instead of silently resetting earned funds or items from that backup.
+  const recoverUid=!!(primary&&fallback&&hasRepeatedMemberUid(primary)&&
+   !hasRepeatedMemberUid(fallback)&&economySnapshotSafe(fallback));
   const recoverEconomy=!!(primary&&fallback&&!economySnapshotSafe(primary)&&economySnapshotSafe(fallback));
   const recoverCheckpoint=recoverUid||recoverEconomy;
   const s=recoverCheckpoint?fallback:(primary||fallback);

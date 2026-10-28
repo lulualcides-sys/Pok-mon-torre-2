@@ -1,0 +1,57 @@
+name: Master T05 — preserve economy when UID backup is corrupt
+on:
+  push:
+    branches: [fix/master-t05-backup-economic-priority-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  t05-backup-economic-priority:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Full source and reuse gates
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tests/t05-duplicate-uid-repair-built.test.mjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Build original Phaser/WebGL game
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Exercise real compiled save module and regressions
+        run: |
+          set -euo pipefail
+          node --test tests/t05-duplicate-uid-repair-built.test.mjs
+          node --test tests/t05-duplicate-uid-built.test.mjs
+          node --test tests/t05-economy-checkpoint-built.test.mjs
+          node --test tests/t05-campaign-backup-built.test.mjs
+          node --test tests/t05-reject-invalid-save-built.test.mjs
+          node --test tests/t05-partial-storage-reads-built.test.mjs
+      - name: Chromium native Phaser and complete official browser suite
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t05-duplicate-uid-repair-browser.cjs
+          node tests/t05-economy-checkpoint-browser.cjs
+          npm run test:browser
+      - name: Preserve evidence on failures and successes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t05-backup-economic-priority
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14
