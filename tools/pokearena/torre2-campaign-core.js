@@ -673,11 +673,16 @@ export function purchaseItem(s,itemId){
  if(!Number.isFinite(s.money)||s.money<item.price)return {ok:false,reason:'Poké Dollars insuficientes.'};
  if(item.kind==='tm'&&s.inventory.tms.includes(itemId))
   return {ok:false,reason:'Essa TM já está na bolsa.'};
- s.money-=item.price;
- if(item.kind==='tm')s.inventory.tms.push(itemId);
- else s.inventory[itemId]=(s.inventory[itemId]||0)+1;
- s.lastMessage=item.name+' comprado por $'+item.price+'.';
- saveCampaign(s);return {ok:true,item};
+ // Persist the complete purchase before changing live money or inventory.
+ // Denied primary/backup writes must leave the previous checkpoint playable.
+ const inventory={...s.inventory,tms:[...s.inventory.tms]};
+ if(item.kind==='tm')inventory.tms.push(itemId);
+ else inventory[itemId]=(inventory[itemId]||0)+1;
+ const changes={money:s.money-item.price,inventory,
+  lastMessage:item.name+' comprado por $'+item.price+'.'};
+ saveCampaign({...s,...changes});
+ Object.assign(s,changes);
+ return {ok:true,item};
 }
 export function usePotion(s,itemId='potion',memberIndex=s.active){
  const item=MART_ITEMS.find(x=>x.id===itemId&&x.kind==='heal');
