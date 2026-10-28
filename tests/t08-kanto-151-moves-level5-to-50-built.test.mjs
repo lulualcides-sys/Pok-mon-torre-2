@@ -152,6 +152,12 @@ bulba.progression.level=8;
 const ult=availableMoves(bulba).find(m=>m.torre2IntroSlot==='e');
 assert.equal(equipMove(bulba,3,ult.id),true,'Lv8 ULT is equippable');
 assert.equal(resolveLoadout(bulba).e?.id,ult.id);
+bulba.progression.level=10;
+assert.ok(availableMoves(bulba).some(m=>m.id==='vine-whip'));
+assert.equal(equipMove(bulba,1,'vine-whip'),true,
+ 'After Lv8 a real stronger learned move must be selectable');
+assert.equal(resolveLoadout(bulba).rmb?.id,'vine-whip',
+ 'The native battle must respect the real level-10 move selected by the player');
 console.log('T08 KANTO FULL CAMPAIGN PROGRESSION PASS',JSON.stringify({
  species:reviewed,starterMoves:reviewed*3,ultimatesAt8:reviewed,
  optionCountAt50:optionsAt50,examples:samples
