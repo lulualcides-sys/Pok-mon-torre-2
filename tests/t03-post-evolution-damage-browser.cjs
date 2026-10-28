@@ -20,7 +20,7 @@ const server=http.createServer(async(req,res)=>{
 const families=[
  {from:'diglett',to:'dugtrio',dex:'0051',signature:'Tri Attack',range:85},
  {from:'meowth',to:'persian',dex:'0053',signature:'Pay Day',range:70},
- {from:'mankey',to:'primeape',dex:'0057',signature:'Cross Chop',range:33}
+ {from:'mankey',to:'primeape',dex:'0057',signature:'Cross Chop',range:82}
 ];
 (async()=>{
  fs.mkdirSync('test-evidence',{recursive:true});
