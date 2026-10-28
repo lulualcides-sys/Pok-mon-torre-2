@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T05 — correção de HP/status para saves legados sem UID (28/10/2026)
+
+- **[PR #178](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/178) integrada**, squash `cb07ef250ad549a0358eed82b96806ec56b7ed0c`. `applyPartyBattleResult` não associa mais todos os membros sem UID ao último Pokémon do mapa; usa identidade única quando presente e índice + espécie para legados ou UIDs ambíguos. Corrige contaminação de HP e status entre companheiros sem alterar golpes, sprites, VFX, cooldowns, controles ou o formato de saves.
+- **Provas:** [CI branch #40710564742](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40710564742) **sucesso**: `npm test`, `check`, `check:reuse`, build Phaser/WebGL, quatro testes do módulo compilado com UIDs ausentes/mistos/duplicados e espécie divergente, testes de integridade e suíte oficial Chromium. [CI main #40712031513](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40712031513) **sucesso**. [Pages #40712113397](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40712113397) **aguardando verificação final**.
+- **Limite:** as identidades, HP e status foram preparados em fixtures do módulo real; não houve campanha natural completa. T05 e §31 permanecem **PARCIAIS** até validação prolongada com salvamentos naturais, compras, capturas, evoluções e trocas.
+
+
 ## T19 — Cerulean: terceiro treinador vencido em combate nativo (28/10/2026)
 
 - **[PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171) integrada**, commit `85fb7645659479a6dda11521a0d53ee9b6fa1855`. Zubat → Geodude → Paras derrotados nas 3 lutas consecutivas de Phaser/WebGL por AUTO nativo, checkpoint 0→3, dinheiro R$1.400→R$2.120, sem injetar dano, K.O. ou vitória. [CI de branch #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) **sucesso**, incluindo regressão oficial, e [main #40705538155](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705538155) **sucesso**. [Pages #40705591501](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705591501) **sucesso**, incluindo verificação no site público.
