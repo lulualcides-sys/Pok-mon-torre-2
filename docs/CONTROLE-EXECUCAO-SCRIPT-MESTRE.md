@@ -1,5 +1,9 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+
+> **§31/§33/§36/§37 — atualização T05 de 28/10/2026:** [PR #115](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/115) integrada no squash `35c9fc6aa676f468d4693722613957328c69d707`. O gravador de campanha rejeita estados estruturalmente inválidos ou UIDs duplicados antes de tocar nas duas chaves do `localStorage`, sem alterar formato de saves válidos nem compatibilidade de membros legados sem UID. [CI da branch #40663052667](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40663052667) **verde**: `npm test`, `check`, `check:reuse`, build Phaser/WebGL, regressões específicas de salvamento e suíte oficial Chromium; [CI main #40663917663](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40663917663) **verde**. **§37 ainda PARCIAL:** publicação/HTTP do novo SHA não comprovados, pois Pages #40663957943 e #40664437681 foram cancelados por concorrência; nova execução de Pages deve ser auditada. **§31 PARCIAL:** não há prova de percurso longo sem fixtures nem falha física de armazenamento. **§36 preservado:** nenhuma mudança em golpes, VFX, sprites, cooldowns, controles ou Arena; §34 e 37 seções não estão concluídas.
+
+
 **Atualizado em:** 27/10/2026. **Base inspecionada:** `main` @ `c705d0b84f0d85cf3a4e59d8fa0fc4b75aec964c`.  
 **Especificação integral e imutável de referência:** [SCRIPT-MESTRE-DEFINITIVO-2026-10-27.md](./SCRIPT-MESTRE-DEFINITIVO-2026-10-27.md) (37 seções numeradas e 10 fases de execução — **não** 37 patches concluídos).  
 **Histórico técnico precedente:** [PATCH-MESTRE-2026-10-24.md](./PATCH-MESTRE-2026-10-24.md). **Regras dos agentes:** [AGENTS.md](../AGENTS.md).
