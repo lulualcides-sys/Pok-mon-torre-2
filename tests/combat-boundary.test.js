@@ -53,3 +53,29 @@ test('T04 an empty effect collection still clears native delayed hits and living
  assert.equal(actor.accion,null);
  assert.equal(actor.dash,null);
 });
+
+
+test('T04 a broken VFX destructor does not interrupt recall cleanup',()=>{
+ const calls={broken:0,healthy:0};
+ const broken={destroy(){calls.broken++;throw Error('Phaser texture already released')}};
+ const healthy={destroy(){calls.healthy++}};
+ const player={hp:27,status:{kind:'poison'},accion:{kind:'charge'},dash:{},vx:7,vy:2};
+ const enemy={hp:61,status:{kind:'burn'},accion:{kind:'hit'},vx:-4,vy:1};
+ const scene={efectos:[broken,null,broken,healthy],tareas:[{fn(){enemy.hp-=20}}],
+  foco:player,luchadores:[player,enemy]};
+ assert.doesNotThrow(()=>clearDepartingCombat(scene));
+ assert.deepEqual(calls,{broken:1,healthy:1},'Destroy each reference once, even after a throw');
+ assert.deepEqual(scene.efectos,[]);
+ assert.deepEqual(scene.tareas,[]);
+ assert.equal(scene.foco,null);
+ assert.deepEqual([player.hp,enemy.hp],[27,61]);
+ assert.deepEqual([player.status,enemy.status],[{kind:'poison'},{kind:'burn'}]);
+ for(const actor of [player,enemy]){
+  assert.equal(actor.accion,null);
+  assert.equal(actor.dash,null);
+  assert.equal(actor.vx,0);
+  assert.equal(actor.vy,0);
+ }
+ clearDepartingCombat(scene);
+ assert.deepEqual(calls,{broken:1,healthy:1},'Cleanup must be idempotent');
+});

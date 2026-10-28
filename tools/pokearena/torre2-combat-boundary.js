@@ -11,7 +11,13 @@ export function clearDepartingCombat(scene){
  for(const effect of effects){
   if(!effect||destroyed.has(effect))continue;
   destroyed.add(effect);
-  effect.destroy?.();
+  try{effect.destroy?.()}
+  catch(error){
+   // A stale Phaser object can throw during teardown. Queued hit callbacks
+   // are already discarded; finish cleaning all effects and actors so the
+   // native recall is not stuck behind an obsolete visual resource.
+   console.warn('Torre 2: erro ao descartar efeito antigo na troca',String(error));
+  }
  }
  for(const actor of scene.luchadores||[]){
   if(!actor)continue;

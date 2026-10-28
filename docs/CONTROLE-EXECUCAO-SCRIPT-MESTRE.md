@@ -1,5 +1,10 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §15/§29/§33/§36/§37 — T04: recuperação se destruição de VFX lançar exceção (28/10/2026)
+
+- **PR [#223](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/223)** protege a fronteira de recall/KO: falha isolada de `destroy()` não aborta limpeza de ações/efeitos nem reexecuta hits pendentes. [CI #40766978652](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40766978652) **SUCESSO**: unitários, `check`, `check:reuse`, build Phaser, testes T04 nativos e regressão Chromium. CI inicial #40766636926 falhou por fixture de posição fora da arena; corrigido só no teste, preservando o jogo.
+- **Integração:** branch sincronizada com HEAD da main/T07 Gen7; nova CI/merge/Pages HTTP **pendentes**. A exceção de VFX foi simulada; não equivale a falha real reproduzida, campanha Pallet→Campeão nem teste Android físico. §§15/29/33/36/37 e T04 permanecem **PARCIAIS**.
+
 ## 28/10/2026 — §§7/8/33/36/37 · T07/T08: golpes existentes mapeados em 151 espécies
 
 - **Implementação real:** PR [#222](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/222) integrada em `c86602f602b957ea49571a62cf8954dfef1bdb78`. `torre2-move-pool.js` cruza biblioteca consolidada de **227 efeitos** com legalidade por espécie/nível: FRLG como referência prioritária; 1.608 entradas de nível Gen VII Let's Go para 151 Kanto; complementos de Gen V para **Flame Charge Lv21** e **Flare Blitz Lv49** Ponyta/Rapidash. Apenas animações originais do cliente e VFX Torre 2 já aprovados são reutilizados; nenhum novo movimento/arte/cooldown/salvamento criado. Corrigido o equipar automático de Flare Blitz em vez de Bounce no Ponyta após o desbloqueio.

@@ -1,5 +1,10 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 28/10/2026 — T04: limpeza de VFX resiliente durante troca (PR #223)
+
+- **Código/teste:** [PR #223](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/223), branch `fix/t04-guard-vfx-destroy-20261028`: captura exceção individual de `destroy()` obsoleto durante troca/KO, prossegue limpeza de efeitos e ações sem executar hits pendentes. Teste com falha simulada, efeito repetido e HP/status preservados. Teste de navegador T04 antigo foi estabilizado **somente na fixture de posição**, sem alterar IA, dano, VFX, golpes, cooldowns ou save.
+- **Provas da revisão anterior:** [CI #40766978652](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40766978652) **SUCESSO**: `npm test`, `check`, `check:reuse`, build Phaser/WebGL, troca com Double Kick nativo, dois K.O.s reais por ataques da CPU e regressão Chromium completa. [CI inicial #40766636926](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40766636926) **falhou** no teste antigo por sair da arena; o ajuste foi restrito à fixture. **Nova CI obrigatória** após sincronizar com main/T07 Gen7; PR ainda draft, sem merge/Pages. **T04 PARCIAL**: falha do destructor é fixture, não reprodução natural.
+
 ## 28/10/2026 — T07/T08: 227 golpes existentes ligados à campanha Kanto (PR #222)
 
 - **Código integrado:** [PR #222](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/222), squash `c86602f602b957ea49571a62cf8954dfef1bdb78`. O catálogo compilado do Poké Arena/Torre 2 contém **227 golpes únicos**: 149 efeitos nativos `arena2d-original`, 77 entradas `new-phaser-fx` e 1 sobreposição visual previamente existente. Número corrigido após ampliação da captura enviada pelo usuário (227, não 287).
