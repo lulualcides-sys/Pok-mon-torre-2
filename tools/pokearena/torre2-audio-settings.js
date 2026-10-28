@@ -37,6 +37,9 @@ export function saveAudioSettings(settings,storage=globalThis.localStorage){
 // the future licensed soundtrack and never enables an unlicensed track.
 export function applyAudioSettingsToGame(scene,settings){
  const prefs=normalizeAudioSettings(settings);
+ // Some Phaser builds reset their GLOBAL_MUTE flag on WebAudio unlock. Zero
+ // global gain in addition to mute makes silence reliable in those builds.
+ const effectiveVolume=prefs.muted?0:prefs.master;
  // The imported Poké Arena version exposes the engine sound bus both
  // on the Scene and on Game, but they need not be the same manager. Update
  // each distinct bus: a scene-local volume must not bypass the global mute.
@@ -45,8 +48,8 @@ export function applyAudioSettingsToGame(scene,settings){
   // Apply volume before mute: the final operation is always the user's
   // explicit mute choice, including on clients that reset audio while
   // updating the master volume node.
-  try{if(typeof bus.setVolume==='function')bus.setVolume(prefs.master)}catch{}
-  try{bus.volume=prefs.master}catch{}
+  try{if(typeof bus.setVolume==='function')bus.setVolume(effectiveVolume)}catch{}
+  try{bus.volume=effectiveVolume}catch{}
   try{if(typeof bus.setMute==='function')bus.setMute(prefs.muted)}catch{}
   try{bus.mute=prefs.muted}catch{}
  }
