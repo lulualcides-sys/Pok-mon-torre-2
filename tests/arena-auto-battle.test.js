@@ -77,6 +77,59 @@ test('AUTO switches input to the original native AI and back without editing att
  assert.equal(state.button.destroyed,true);assert.equal(state.label.destroyed,true);
  assert.equal(state.zone.destroyed,true);assert.equal(s.__torre2AutoMode,null);
 });
+test('Campaign AUTO refreshes original AI once per Pokémon species after native party switch',()=>{
+ const s=scene({torre2:{kind:'trainer',stage:1}}),control=s.controles[0];
+ control.l.def={id:'ivysaur'};
+ let constructions=0;
+ const state=installAutoBattle(s,actor=>{
+  assert.strictEqual(actor,control.l);
+  const identity=actor.def.id,instance=++constructions;
+  return {leer:()=>({mx:instance,my:0,from:identity,lmb:true})};
+ });
+ assert.equal(constructions,1);
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(control.leer(.016).mx,1);
+ // Native reiniciar() mutates the same actor, not the control or scene.
+ control.l.def={id:'pikachu'};
+ s.fase='torre2-sendout';
+ assert.equal(control.leer(.016).mx,0,'Input paused during send-out');
+ assert.equal(constructions,1,'No AI rebuild until the next live combat frame');
+ s.fase='lucha';
+ const second=control.leer(.016);
+ assert.equal(second.mx,2);
+ assert.equal(second.from,'pikachu');
+ assert.equal(second.mega,false);
+ assert.equal(state.autoSpecies,'pikachu');
+ assert.equal(constructions,2,'Exactly one new native IA for Pikachu');
+ control.leer(.016);control.leer(.016);
+ assert.equal(constructions,2,'Do not recreate IA on every frame');
+ control.l.def={id:'geodude'};
+ assert.equal(control.leer(.016).from,'geodude');
+ assert.equal(constructions,3);
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ control.l.def={id:'oddish'};
+ assert.equal(control.leer(.016).mx,0,'AUTO OFF means original manual reader');
+ assert.equal(constructions,3,'Never build AI while AUTO OFF');
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(control.leer(.016).from,'oddish');
+ assert.equal(constructions,4);
+ s.handlers.get('shutdown')();
+});
+
+test('Original Arena AUTO does not recreate its controller when species changes',()=>{
+ const s=scene({modo:'arena'}),control=s.controles[0];
+ control.l.def={id:'ivysaur'};
+ let creations=0;
+ const state=installAutoBattle(s,()=>({leer:()=>({mx:++creations,my:0})}));
+ assert.equal(creations,0);
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ control.leer(.016);
+ control.l.def={id:'pikachu'};
+ control.leer(.016);
+ assert.equal(state.autoSpecies,'ivysaur','Keep existing Arena IA untouched');
+ s.handlers.get('shutdown')();
+});
+
 test('AUTO OFF by default every new battle, no multiple button installs',()=>{
  const s=scene(),a=installAutoBattle(s,()=>({leer:()=>({})}));
  assert.equal(installAutoBattle(s,()=>({leer:()=>({})})),null);
