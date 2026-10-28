@@ -105,16 +105,10 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(reload.mute,false);
   assert.equal(reload.buttons,1,'Audio menu duplicated on reload');
   // Re-enter Kanto map and verify sound controls don't leak scene objects.
-  await page.evaluate(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   c.renderCampaign(window.__pt2Game.scene.getScene('campanha')
-    .__torre2ReadForAudio?.()||window.__pt2Game.scene.getScene('campanha').__torre2State);
-  }).catch(async()=>{
-   await page.evaluate(async()=>{
-    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
-    const core=await import(new URL('./torre2/campaign-core.js',src));
-    window.__pt2Game.scene.getScene('campanha').renderCampaign(core.readCampaign());
-   });
+  await page.evaluate(async()=>{
+   const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
+   const core=await import(new URL('./torre2/campaign-core.js',src));
+   window.__pt2Game.scene.getScene('campanha').renderCampaign(core.readCampaign());
   });
   const redraw=await ui();
   assert.equal(redraw.buttons,1,'Recreating Kanto map must dispose old sound controls');
