@@ -52,6 +52,14 @@ const server=http.createServer(async(req,res)=>{
    const weather=await import(new URL('./torre2/weather.js',src));
    b.controles.forEach(c=>{c.leer=()=>null});
    p.inmortal=true;e.inmortal=true;
+   // Direct synthetic contact bypasses the normal move-cast bookkeeping.
+   // Prime native trainer damage metrics in this TEST ONLY; PR #129
+   // separately guards their initialization in the actual game.
+   b.registroDano??=[];
+   b.comboActual??=0;
+   b.mejorCombo??=0;
+   b.ultimoGolpeEntreno??=-Infinity;
+   b.ultimoDano??=0;
    // The actual Brock Geodude is GROUND and immune to ELECTRIC. Test the
    // original recipient's Thunder weather gate with a WATER typing fixture.
    // No source roster, Pokémon species, move renderer or save is modified.
