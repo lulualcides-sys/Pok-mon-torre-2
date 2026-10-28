@@ -32,7 +32,27 @@ const report={scope:'T04 native multi-hit Double Kick cancelled by real party sw
   const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
   page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4428/arena2d/?original=1',{waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  // Asset hydration in the captured upstream client is occasionally slow.
+  // Retry navigation once and preserve diagnostics; never fake readiness.
+  let titleReady=false;
+  for(let attempt=1;attempt<=2&&!titleReady;attempt++){
+   try{
+    await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
+     null,{timeout:50000});
+    titleReady=true;
+   }catch(error){
+    const diag=await page.evaluate(()=>({
+     ready:document.readyState,title:document.title,
+     scene:window.__pt2Game?.scene?.getScenes?.(true)?.map(s=>s.scene.key)||[],
+     scripts:[...document.scripts].filter(s=>s.src).map(s=>s.src).slice(-5),
+     canvas:!!document.querySelector('#juego canvas')
+    })).catch(e=>({error:String(e)}));
+    console.error('T04 title not ready',JSON.stringify({attempt,diag,errors}));
+    await page.screenshot({path:'test-evidence/t04-native-doublekick-load-'+attempt+'.png'}).catch(()=>{});
+    if(attempt===2)throw error;
+    await page.reload({waitUntil:'domcontentloaded'});
+   }
+  }
   await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.t04Core=await import(new URL('./torre2/campaign-core.js',src));
