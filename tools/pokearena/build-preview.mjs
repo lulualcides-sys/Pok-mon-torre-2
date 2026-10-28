@@ -424,7 +424,7 @@ patches.push(['luchador.js',[
 // Campaign-only Gen III matchups and STAB, preserving all approved renderers.
 patches.push(['luchador.js',[
  ['import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";',
-  'import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";import{gen3Effectiveness,gen3Stab,gen3BurnModifier,gen3Category,gen3Types}from"./torre2/gen3-types.js";import{weatherDamageMultiplier}from"./torre2/weather.js";'],
+  'import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";import{gen3Effectiveness,gen3Stab,gen3BurnModifier,gen3Category,gen3Types}from"./torre2/gen3-types.js";import{weatherDamageMultiplier,weatherThunderMiss}from"./torre2/weather.js";'],
  ['const mult=g.puro||REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);',
   'const mult=g.puro?1:e.datos?.torre2?gen3Effectiveness(g.tipo,this.tipos):REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);if(e.datos?.torre2&&!mult){this.avisar("immune",()=>vfx.textoFlotante(e,this.x,this.y-this.alto-14,"NÃO AFETOU!",{color:"#b0bfcd",dur:700,sube:8}),1);return"miss"}'],
  ['if(fuente?.est.quemado)d*=ESTADOS_TIPO.FIRE.dano;',
@@ -454,7 +454,7 @@ patches.push(['luchador.js',[[
 // Preserve all approved VFX and non-Kanto game modes.
 patches.push(['luchador.js',[
  ['recibir(fuente,g){if(this.ko)return"nada";',
-  'recibir(fuente,g){if(this.ko)return"nada";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente?.est?.torre2SandAccuracy&&Math.random()<(fuente.est.torre2SandAccuracy.chance??.28))return"miss";'],
+  'recibir(fuente,g){if(this.ko)return"nada";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente?.est?.torre2SandAccuracy&&Math.random()<(fuente.est.torre2SandAccuracy.chance??.28))return"miss";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente&&fuente!==this&&weatherThunderMiss(this.escena.__torre2Weather,g?.nombre||fuente.kit?.[g?.slot]?.nombre))return"miss";'],
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);',
   'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;d*=weatherDamageMultiplier(e.__torre2Weather,g.tipo,g.nombre||fuente?.kit?.[g.slot]?.nombre);}']
 ]]);
