@@ -17,7 +17,7 @@ const server=http.createServer(async(req,res)=>{
  }catch{res.writeHead(404);res.end('missing')}
 });
 fs.mkdirSync('test-evidence',{recursive:true});
-const report={method:'T04 native Phaser CPU faint and automatic party switch. Only opening HP and party are fixtures; no injected KO, hit, win or loss',events:[]};
+const report={method:'T04 two native CPU faint/recall events. Opening HP, 3-member party and trainer index are fixtures; no injected hit, KO or result',events:[]};
 const persist=()=>fs.writeFileSync('test-evidence/t04-natural-faint-second-ko.json',JSON.stringify(report,null,2));
 (async()=>{
  await new Promise(ok=>server.listen(4473,'127.0.0.1',ok));
@@ -36,6 +36,10 @@ const persist=()=>fs.writeFileSync('test-evidence/t04-natural-faint-second-ko.js
    const core=window.__t04core=await import(new URL('./torre2/campaign-core.js',main));
    const s=core.createCampaign('bulbasaur');
    core.storePokemon(s,1); // Mewtwo goes to PC, not the battle.
+   // Trainer 2 uses native Rattata (Tackle/Quick Attack) rather than the
+   // opener Pidgey that can spam only Sand Attack and never cause a KO.
+   // Index is a test fixture, NOT natural route progression.
+   s.trainer=1;
    s.team[0].hp=2; // CPU must land a real move; no poison/status damage.
    const progress=await import(new URL('./torre2/progression.js',main));
    s.team.push({id:'charmander',uid:'t04-natural-charmander',hp:100,
@@ -73,7 +77,7 @@ const persist=()=>fs.writeFileSync('test-evidence/t04-natural-faint-second-ko.js
    const b=window.__pt2Game.scene.getScene('combate');
    return {p1:b.datos.p1,p2:b.datos.p2,initialHp:b.luchadores[0].hp};
   });
-  assert.equal(fight.p1,'bulbasaur');assert.equal(fight.p2,'pidgey');
+  assert.equal(fight.p1,'bulbasaur');assert.equal(fight.p2,'rattata');
   assert.ok(fight.initialHp>0);
   report.events.push({seeded,fight});persist();
   // Observe the native KO callback; never replace it with a fake result.
@@ -99,7 +103,7 @@ const persist=()=>fs.writeFileSync('test-evidence/t04-natural-faint-second-ko.js
   });
   assert.deepEqual(tracked,{first:'bulbasaur',next:'charmander',partySize:3});
   // Do not press an attack, change the opponent AI, set actor HP to zero,
-  // or call alKO/resultado. The native Pidgey CPU must knock out Bulbasaur.
+  // or call alKO/resultado. The native Rattata CPU must knock out Bulbasaur.
   try{
    await page.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
