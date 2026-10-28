@@ -1,5 +1,5 @@
 'use strict';
-// T03: six independent, one-step Kanto evolutions rendered by the actual
+// T03: twelve additional Kanto evolution families rendered by the actual
 // Phaser/WebGL Arena. XP readiness is a test fixture, NOT natural campaign XP.
 // Never writes the campaign save or modifies approved VFX, moves or controls.
 const assert=require('node:assert/strict');
