@@ -43,8 +43,10 @@ const server=http.createServer(async(req,res)=>{
    const prefs=JSON.parse(localStorage.getItem('torre2-audio-prefs-v1')||'null');
    const panels=c.children.list.filter(x=>x.active&&x.getData?.('torre2-audio-title')===true);
    return {prefs,panels:panels.length,active:c.__torre2AudioSettings?.active,
-    volume:c.sound?.volume??c.game?.sound?.volume,
-    mute:c.sound?.mute??c.game?.sound?.mute,
+    // Game.sound is the upstream shared channel; the Scene.sound reference
+    // can be a different local facade and is diagnostic only.
+    volume:c.game?.sound?.volume??c.sound?.volume,
+    mute:c.game?.sound?.mute??c.sound?.mute,
     busesSame:c.sound===c.game.sound,
     sceneBus:{mute:c.sound?.mute,volume:c.sound?.volume,
      setMute:typeof c.sound?.setMute==='function'},
