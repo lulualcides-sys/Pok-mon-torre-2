@@ -76,7 +76,7 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
    if(!core.storePokemon(s,1))throw Error('Could not deposit permanent QA Mewtwo');
    s.stage=8;s.trainer=core.TRAINERS_PER_GYM(8);s.wins=172;s.losses=0;
    s.badges=core.GYMS.map(g=>g.badge);s.leagueHonors=[];
-   s.team=['jolteon','blastoise','alakazam','slowbro','zapdos','starmie']
+   s.team=['jolteon','zapdos','raichu','blastoise','alakazam','slowbro']
     .map((id,i)=>({id,uid:'t20-sequential-'+i+'-'+id,hp:100,
      progression:createPokemonProgression(id,54),
      status:null,tmMoves:[],moves:[]}));
@@ -131,27 +131,32 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
     assert.equal(opened.p1,'jolteon');
    }else{
     assert.deepEqual(opened.foes,['onix','hitmonchan','hitmonlee','onix','machamp']);
-    // The second fighter is selected by the ORIGINAL sidebar pointer, not
+    // A surviving fighter is selected by the ORIGINAL sidebar pointer, not
     // by editing the campaign save or forcing the player fighter.
-    assert.ok(before.team[1].hp>0,'Blastoise must survive the previous fight');
-    const slot=await page.evaluate(()=>{
+    // Keep counters on the bench during Lorelei, but never resurrect a KO.
+    // If the first counter fainted, choose another surviving legal member.
+    const counterIndex=[3,4,5].find(i=>before.team[i].hp>0);
+    assert.ok(Number.isInteger(counterIndex),
+     'No surviving Water/Psychic counter after Lorelei: '+JSON.stringify(before.team));
+    const slot=await page.evaluate(index=>{
      const b=window.__pt2Game.scene.getScene('combate');
-     const z=b.__torre2SideParty?.slots?.[1];
-     if(!z?.active||!z?.input?.enabled)throw Error('Blastoise native sidebar unavailable');
+     const z=b.__torre2SideParty?.slots?.[index];
+     if(!z?.active||!z?.input?.enabled)throw Error('Native sidebar counter unavailable '+index);
      return {x:z.x,y:z.y};
-    });
+    },counterIndex);
     await tap(slot.x,slot.y);
-    await page.waitForFunction(()=>{
+    await page.waitForFunction(index=>{
      const b=window.__pt2Game.scene.getScene('combate');
-     return b.datos.torre2.party.playerIndex===1&&!b.__torre2Changing;
-    },null,{timeout:30000});
+     return b.datos.torre2.party.playerIndex===index&&!b.__torre2Changing;
+    },counterIndex,{timeout:30000});
     const selected=await page.evaluate(()=>{
      const b=window.__pt2Game.scene.getScene('combate');
      return {index:b.datos.torre2.party.playerIndex,
       actor:b.luchadores[0]?.def?.id};
     });
-    assert.equal(selected.index,1);
-    assert.equal(selected.actor,'blastoise');
+    assert.equal(selected.index,counterIndex);
+    assert.equal(selected.actor,before.team[counterIndex].id);
+    report.brunoCounter=selected;persist();
    }
    const auto=await page.evaluate(()=>{
     const z=window.__pt2Game.scene.getScene('combate').__torre2AutoMode.zone;
