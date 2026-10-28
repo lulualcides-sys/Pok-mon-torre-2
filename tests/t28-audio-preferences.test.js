@@ -44,7 +44,8 @@ test('T28 no browser audio, disabled SFX and muted cues do not throw',()=>{
  const normal={getItem:()=>JSON.stringify({master:1,effects:1,music:1,muted:false})};
  assert.equal(playOriginalMenuCue(null,normal),false);
 });
-\ntest('T28 audio governor restores sound after upstream frame resets, with one listener',async()=>{
+
+test('T28 audio governor restores sound after upstream frame resets, with one listener',async()=>{
  const {EventEmitter}=await import('node:events');
  const events=new EventEmitter(),bus={volume:1,mute:false,setVolume(v){this.volume=v}};
  const scene={game:{sound:bus,events},sound:bus};
@@ -62,4 +63,4 @@ test('T28 no browser audio, disabled SFX and muted cues do not throw',()=>{
  assert.equal(events.listenerCount('poststep'),0);
  bus.volume=1;events.emit('step');
  assert.equal(bus.volume,1,'Destroyed game must release audio governor');
-});\n
+});
