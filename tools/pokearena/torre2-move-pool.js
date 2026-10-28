@@ -504,7 +504,11 @@ export function defaultLoadout(member){
   // accidentally replaced by the full-power attack used by their renderer.
   return SLOTS.map(slot=>available.find(m=>m.torre2IntroSlot===slot)?.id||null);
  }
- const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
+  // The native client has no per-species role plan for this Gen V family.
+  // Keep the approved four-slot kit and permit its EXISTING signatures to
+  // be auto-equipped only after their legal level; never change other forms.
+  (['ponyta','rapidash'].includes(member.id)?[null,null,null,null]:null);
  if(plan){
   const reserved=plan.map(name=>{
    const id=canonicalMoveKey(name);
@@ -559,7 +563,11 @@ export function selectedMoves(member){
    return fallback;
   });
  }
- const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
+  // The native client has no per-species role plan for this Gen V family.
+  // Keep the approved four-slot kit and permit its EXISTING signatures to
+  // be auto-equipped only after their legal level; never change other forms.
+  (['ponyta','rapidash'].includes(member.id)?[null,null,null,null]:null);
  if(plan){
   const defaults=defaultLoadout(member);
   // Legacy saves and new level-ups get characteristic skills just once.
