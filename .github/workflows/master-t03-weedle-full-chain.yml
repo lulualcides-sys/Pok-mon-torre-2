@@ -6,7 +6,7 @@ on:
 permissions:
   contents: read
 jobs:
-  t03-caterpie-earned-evolution:
+  t03-weedle-earned-evolution:
     runs-on: ubuntu-24.04
     timeout-minutes: 42
     steps:
