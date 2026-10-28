@@ -120,11 +120,17 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('campanha'));
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
    .__torre2AudioSettings?.button?.input?.enabled,null,{timeout:60000});
-  console.log('T28 AUDIO RELOAD BEFORE SYNC',JSON.stringify(await ui()));
+  console.log('T28 AUDIO RELOAD BEFORE GESTURE',JSON.stringify(await ui()));
+  // Autoplay can defer applying WebAudio gain until a real user touch.
+  // Verify both persisted preferences and the audio manager after that touch.
+  const saved=await ui();
+  assert.deepEqual(saved.prefs,expected,'Saved audio preferences must survive reload');
+  await touch(203,335);
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return Math.abs(c.game.sound.volume-.6)<.0001;
   },null,{timeout:12000});
+  await touch(448,282);
   const reload=await ui();
   assert.deepEqual(reload.prefs,expected,'Sound preferences lost after actual page reload');
   assert.ok(Math.abs(reload.volume-.6)<1e-5,'Phaser volume should persist after reload');
