@@ -23,7 +23,9 @@ export function installAutoBattle(scene,makeNativeAI){
  if((scene.controles||[]).filter(isHuman).length!==1)return null;
  const original=manualFighterControl(scene);
  if(!original)return null;
- const fighterSpecies=actor=>String(actor?.def?.id||actor?.dex||'');
+ // Original Arena stores an evolution FAMILY in def.id and the evolved form
+ // in etapa. Both must be part of the key (e.g. Squirtle -> Wartortle).
+ const fighterSpecies=actor=>String(actor?.def?.id||actor?.dex||'')+':'+String(actor?.etapa??0);
  const state={enabled:false,control:original,read:original.leer,ai:makeNativeAI(original.l),
   autoActor:original.l,autoSpecies:fighterSpecies(original.l),
   button:null, label:null, zone:null,cleaned:false};
