@@ -9,6 +9,7 @@ import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
+import {platinumInstalledUnlockLevel} from './torre2-platinum-existing-levels.js';
 import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
@@ -174,6 +175,7 @@ export const CHARACTERISTIC_KANTO_ROLES=Object.freeze({
  machop:[[2,'cross-chop']],machoke:[[2,'cross-chop']],
  machamp:[[2,'cross-chop']],primeape:[[2,'cross-chop']],
  growlithe:[[2,'flame-wheel']],arcanine:[[2,'flame-wheel']],
+ ponyta:[[2,'flame-wheel']],rapidash:[[2,'flame-wheel']],
  grimer:[[2,'poison-punch']],muk:[[2,'poison-punch']]
 });
 // X-Scissor postdates FireRed: explicit Torre 2 custom campaign learn levels,
@@ -364,6 +366,13 @@ export function availableMoves(member){
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
   if(taughtCompatible(key))return true;
+  // Optional Platinum levels apply ONLY to Ponyta/Rapidash and only when
+  // the move already exists in the combined native/approved catalog.
+  // Evolution and TM boundaries remain intact; no new attack is registered.
+  const platinum=platinumInstalledUnlockLevel(member.id,key,{
+   installed:true,evolutionLevel:activeStage
+  });
+  if(platinum!==null)return level>=campaignLevel(platinum);
   if(!early){
    if(official!==null&&level>=campaignLevel(official))return true;
    if(kantoFinish[key]?.includes(member.id)&&level>=(ordinaryBonus[key]??25))
@@ -442,6 +451,11 @@ export function moveUnlockLevel(member,moveName){
  if(species==='mewtwo')return 1; // unrestricted Lv50 test Pokémon
  if(key.startsWith('torre2-intro-'))
   return key.startsWith('torre2-intro-e-')?8:5;
+ const platinum=platinumInstalledUnlockLevel(species,key,{
+  installed:TEST_LIBRARY.some(m=>canonicalMoveKey(m.nombre)===key),
+  evolutionLevel:frlgEvolutionLevel(species)
+ });
+ if(platinum!==null)return campaignLevel(platinum);
  const local=EARLY_KANTO_LEARNSETS[species];
  if(local?.[key]!==undefined)return campaignLevel(local[key]);
  const official=frlgUnlockLevel(species,key);
