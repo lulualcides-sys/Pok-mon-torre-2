@@ -97,3 +97,40 @@ test('T05 clean backup always wins over a duplicated primary',()=>{
  assert.equal(db.getItem(core.SAVE_KEY),good);
  assert.equal(db.getItem(core.SAVE_BACKUP_KEY),good);
 });
+
+test('T05 does not replace a duplicate-UID primary with an economically broken backup',()=>{
+ for(const damage of [
+  s=>{s.money=-250;},
+  s=>{s.inventory.pokeball=-9;},
+  s=>{s.inventory.tms='corrupted';}
+ ]){
+  const {db,damaged}=fixture();
+  damaged.money=6347;
+  damaged.inventory.pokeball=19;
+  damaged.team[0].hp=29;
+  damaged.box[0].hp=83;
+  const primaryUid=damaged.team[0].uid;
+  damaged.box[0].uid=primaryUid; // The only defect in the primary is UID collision.
+  const primaryBytes=JSON.stringify(damaged);
+  const brokenBackup=structuredClone(damaged);
+  brokenBackup.box[0].uid='independent-valid-uid';
+  brokenBackup.money=222; // A different older checkpoint must not replace earned funds.
+  damage(brokenBackup);
+  const backupBytes=JSON.stringify(brokenBackup);
+  db.setItem(core.SAVE_KEY,primaryBytes);
+  db.setItem(core.SAVE_BACKUP_KEY,backupBytes);
+  const recovered=core.readCampaign(db);
+  assert.ok(recovered,'preserve playable primary when backup economy is corrupt');
+  assert.equal(recovered.money,6347,'do not reset earned money from a bad backup');
+  assert.equal(recovered.inventory.pokeball,19,'do not lose earned items');
+  assert.deepEqual(recovered.team.map(m=>m.id),damaged.team.map(m=>m.id));
+  assert.deepEqual(recovered.box.map(m=>m.id),damaged.box.map(m=>m.id));
+  assert.equal(recovered.team[0].hp,29);
+  assert.equal(recovered.box[0].hp,83);
+  assert.equal(recovered.team[0].uid,primaryUid,'preserve first identity');
+  assert.notEqual(recovered.box[0].uid,primaryUid,'repair only duplicate identity');
+  assert.equal(db.getItem(core.SAVE_BACKUP_KEY),backupBytes,'never overwrite pre-existing backup bytes');
+  assert.equal(db.getItem(core.SAVE_KEY),JSON.stringify(recovered),'persist repaired primary');
+  assert.deepEqual(core.readCampaign(db),recovered,'second load is idempotent');
+ }
+});
