@@ -1169,6 +1169,20 @@ create(){
  }
  pcScreen(state,page=0){
   // Native Phaser PC, storing and swapping caught Pokémon, fully persistent.
+  // A quota/private-mode failure must not escape the Phaser pointer handler
+  // as an uncaught exception: the atomic core operation has NOT mutated the
+  // party, so retain the selection and show a visible, retryable error.
+  const attemptTransfer=perform=>{
+   try{
+    const done=perform();
+    if(done)this.__torre2PcSaveError=null;
+    return {done,blocked:false};
+   }catch(error){
+    console.warn('Torre 2 PC: checkpoint could not be saved',error);
+    this.__torre2PcSaveError='SALVAMENTO BLOQUEADO · EQUIPE PRESERVADA · VERIFIQUE O NAVEGADOR';
+    return {done:false,blocked:true};
+   }
+  };
   this.children.removeAll(true);this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
   text(this,20,13,'CENTRO POKÉMON · PC',{...titleStyle,fontSize:'19px'});
@@ -1188,25 +1202,30 @@ create(){
   boxPage.forEach((m,i)=>{
    const actual=safePage*6+i,y=79+i*34;
    this.button(466,y,277,29,m.id.toUpperCase()+' · NV.'+(m.progression?.level??'?'),()=>{
-    let changed=false;
-    if(state.team.length<6)changed=withdrawPokemon(state,actual);
-    else if(Number.isInteger(this.pcSelected))changed=swapPokemon(state,this.pcSelected,actual);
-    if(changed)this.pcSelected=null;
-    else state.lastMessage='Selecione um Pokémon da equipe para trocar.';
+    const result=attemptTransfer(()=>{
+     if(state.team.length<6)return withdrawPokemon(state,actual);
+     if(Number.isInteger(this.pcSelected))return swapPokemon(state,this.pcSelected,actual);
+     return false;
+    });
+    if(result.done)this.pcSelected=null;
+    else if(!result.blocked)state.lastMessage='Selecione um Pokémon da equipe para trocar.';
     this.pcScreen(state,Math.min(safePage,Math.max(0,Math.ceil(state.box.length/6)-1)));
    });
   });
   if(!boxPage.length)text(this,342,94,'PC VAZIO · CAPTURE POKÉMON',statusStyle);
   this.button(121,310,195,29,'GUARDAR SELECIONADO',()=>{
-   if(!storePokemon(state,this.pcSelected))
+   const result=attemptTransfer(()=>storePokemon(state,this.pcSelected));
+   if(!result.done&&!result.blocked)
     state.lastMessage='Selecione um Pokémon; mantenha pelo menos um na equipe.';
-   this.pcSelected=null;this.pcScreen(state,safePage);
+   if(result.done)this.pcSelected=null;
+   this.pcScreen(state,safePage);
   });
   this.button(337,310,111,29,'◀ ANTERIOR',()=>this.pcScreen(state,(safePage-1+totalPages)%totalPages));
   this.button(451,310,104,29,(safePage+1)+' / '+totalPages,()=>this.pcScreen(state,0));
   this.button(568,310,119,29,'PRÓXIMA ▶',()=>this.pcScreen(state,(safePage+1)%totalPages));
-  text(this,20,345,'Equipe cheia? Selecione alguém à esquerda e clique no PC para trocar.',{
-   fontSize:'10px',color:C.muted});
+  text(this,20,345,this.__torre2PcSaveError||
+   'Equipe cheia? Selecione alguém à esquerda e clique no PC para trocar.',{
+   fontSize:'10px',color:this.__torre2PcSaveError?'#ff9aa8':C.muted});
  }
  dexScreen(state){
   this.children.removeAll(true);
