@@ -278,17 +278,37 @@ export function saveCampaign(state,storage=localStorage){
   throw new TypeError('Refusing to persist an invalid or duplicate-UID campaign');
  const serialized=JSON.stringify(state);
  const previous=storage.getItem(SAVE_KEY);
+ let rotatedBackup=false,originalBackup=null;
  if(previous&&previous!==serialized){
   const candidate=parseUsableCampaign(previous);
   // Rotate clean checkpoints normally. If this is the only surviving
   // duplicate-UID primary, archive its exact bytes before replacement.
   // A denied archive write must abort the primary write, not lose evidence.
   if(candidate){
-   if(!hasRepeatedMemberUid(candidate)&&economySnapshotSafe(candidate))storage.setItem(SAVE_BACKUP_KEY,previous);
-   else if(!storage.getItem(SAVE_BACKUP_KEY))storage.setItem(SAVE_BACKUP_KEY,previous);
+   originalBackup=storage.getItem(SAVE_BACKUP_KEY);
+   if((!hasRepeatedMemberUid(candidate)&&economySnapshotSafe(candidate))||
+      !originalBackup){
+    storage.setItem(SAVE_BACKUP_KEY,previous);
+    rotatedBackup=true;
+   }
   }
  }
- storage.setItem(SAVE_KEY,serialized);
+ try{
+  storage.setItem(SAVE_KEY,serialized);
+ }catch(error){
+  // localStorage updates one key atomically, but not BOTH keys as a
+  // transaction. If the primary write was denied AFTER backup rotation,
+  // restore the exact prior backup (or remove the newly created backup).
+  // Even when rollback is denied, never mask the original primary failure:
+  // the previously committed primary checkpoint stays recoverable.
+  if(rotatedBackup){
+   try{
+    if(originalBackup===null)storage.removeItem(SAVE_BACKUP_KEY);
+    else storage.setItem(SAVE_BACKUP_KEY,originalBackup);
+   }catch{/* Storage may also deny rollback; preserve primary and error */}
+  }
+  throw error;
+ }
  return state;
 }
 // Reset must remove the backup FIRST. If backup removal is denied, keep the
