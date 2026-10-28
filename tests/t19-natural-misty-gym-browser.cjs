@@ -19,7 +19,7 @@ const server=http.createServer(async(req,res)=>{
  catch{res.writeHead(404);res.end('missing')}
 });
 const report={scope:'T19 one normal Misty Gym battle in original Phaser',
- fixture:'Misty stage1 trainer15 after 15 PREPARED route victories, six legal Lv21 Kanto members; only Misty is fought in this test',
+ fixture:'Misty stage1 trainer15 after 15 PREPARED route victories, six legal Lv21 Kanto members led by Ivysaur with grass counters; only Misty is fought in this test',
  naturalCombat:true,forcedKO:false,forcedWin:false,status:'not-started'};
 const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
  fs.writeFileSync('test-evidence/t20-natural-misty.json',JSON.stringify(report,null,2))};
@@ -47,11 +47,11 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
    st.badges=['Rocha'];
    st.leagueHonors=[];
    st.team=[];
-   for(const [i,id] of ['wartortle','pikachu','oddish','geodude','mankey','pidgeotto'].entries())
+   for(const [i,id] of ['wartortle','ivysaur','gloom','pikachu','paras','pidgeotto'].entries())
     st.team.push({id,uid:'t20-misty-'+i+'-'+id,hp:100,
      progression:createPokemonProgression(id,21),
      status:null,tmMoves:[],moves:[]});
-   st.active=0;st.money=5600;
+   st.active=1;st.money=5600;
    core.saveCampaign(st);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
@@ -142,7 +142,7 @@ const save=()=>{fs.mkdirSync('test-evidence',{recursive:true});
   assert.deepEqual(initial.foes.map(x=>x.id),
    ['staryu','starmie']);
   assert.deepEqual(initial.foes.map(x=>x.level),[18,21]);
-  assert.equal(initial.p1,'wartortle');
+  assert.equal(initial.p1,'ivysaur');
   assert.equal(initial.p2,'staryu');
   assert.equal(initial.auto,false);
   await tap(initial.button.x,initial.button.y);
