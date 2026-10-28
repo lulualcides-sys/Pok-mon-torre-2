@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §15/§29/§31/§33/§36/§37 — T05: preservar HP/status de equipe legada (28/10/2026)
+
+- **Correção de runtime:** [PR #178](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/178), squash `cb07ef250ad549a0358eed82b96806ec56b7ed0c`. Saves v1 sem UID podiam aplicar HP/status do último membro a todos após uma batalha porque `Map(undefined)` sobrescrevia as demais entradas. Agora o resultado associa UIDs únicos; na ausência/ambiguidade de UID usa a posição e confirma a espécie, sem mudar golpes, arte, VFX, cooldowns ou saves gravados.
+- **Gates:** [CI branch #40710564742](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40710564742) **sucesso** com unitários, `check`, `check:reuse`, build Phaser/WebGL, quatro casos compilados, integridade de saves e 14 testes oficiais Chromium. [CI main #40712031513](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40712031513) **sucesso**. [Pages #40712113397](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40712113397) **sucesso**: o job implantou o commit `cb07ef250ad549a0358eed82b96806ec56b7ed0c` e conferiu por HTTP público `src-e69b399308` às 15:08 UTC em 28/10/2026; não é inspeção manual de campanha longa.
+- **Precisão:** fixtures para UIDs e HP, sem simular vitória natural nem alegar progresso até Campeão. §15, §29, §31, §33, §36, §37 e T05 seguem **PARCIAIS** pelos critérios integrais do Mestre.
+
+
 ## §20/§24/§31/§33/§34/§36/§37 — T19: três batalhas reais de Cerulean (28/10/2026)
 
 - **[PR #171](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/171) integrada**, commit `85fb7645659479a6dda11521a0d53ee9b6fa1855`. Vitória genuína nos três treinadores Zubat, Geodude e Paras em sequência, AUTO/CPU/HP/dano do motor Phaser, dinheiro R$1.400→R$2.120 e progresso de treinadores 0→3. [CI de branch #40703606574](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40703606574) e [main #40705538155](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705538155) **sucesso**, incluindo navegador/WebGL; [Pages #40705591501](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40705591501) **sucesso**, incluindo verificação no site público.
