@@ -37,6 +37,9 @@ const server=http.createServer(async(req,res)=>{
    const moves=await import(new URL('./torre2/move-pool.js',src));
    const progression=await import(new URL('./torre2/progression.js',src));
    const state=core.createCampaign('bulbasaur');
+   // Stage 1 is a test-only checkpoint so Spearow Lv18 is below its level cap.
+   // This does NOT claim a Brock victory or create a real campaign save.
+   state.stage=1;state.badges=['Rocha'];state.gymTMClaims=['tm-rock-tomb'];
    core.storePokemon(state,1); // Keep original Mewtwo in PC.
    const member={id:'spearow',uid:'t04-spearow',hp:100,
     progression:progression.createPokemonProgression('spearow',18)};
@@ -50,6 +53,10 @@ const server=http.createServer(async(req,res)=>{
    state.team.unshift(member);state.active=0;
    state.dexSeen.push(member.id);state.dexCaught.push(member.id);
    core.saveCampaign(state);
+   const saved=core.readCampaign().team[0];
+   const savedKit=moves.resolveLoadout(saved);
+   if(!Object.values(savedKit).some(m=>m?.forma==='torre2_furyattack'))
+    throw Error('Fury Attack lost across save/load: '+JSON.stringify({level:saved.progression.level,moves:saved.moves,kit:savedKit}));
    window.__t04Slot=slot;
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
    return {slot,learned,party:state.team.map(m=>m.id)};
