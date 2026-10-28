@@ -127,3 +127,45 @@ test('T05 valid legacy optional-field migration remains idempotent with backup p
  assert.equal(db.getItem(core.SAVE_BACKUP_KEY),original);
  assert.deepEqual(core.readCampaign(db),once);
 });
+
+test('T05 reset preserves the primary when deleting backup is denied',()=>{
+ const db=storage(),s=snapshot();
+ core.saveCampaign(s,db);
+ const stable=core.readCampaign(db);
+ const raw=db.getItem(core.SAVE_KEY);
+ db.setItem(core.SAVE_BACKUP_KEY,raw);
+ const denied={
+  getItem:key=>db.getItem(key),
+  setItem:(key,value)=>db.setItem(key,value),
+  removeItem(key){
+   if(key===core.SAVE_BACKUP_KEY)throw Error('SecurityError: backup deletion denied');
+   db.removeItem(key);
+  }
+ };
+ assert.throws(()=>core.resetCampaign(denied),/backup deletion denied/);
+ assert.equal(db.getItem(core.SAVE_KEY),raw,'failed reset must not erase primary');
+ assert.equal(db.getItem(core.SAVE_BACKUP_KEY),raw,'backup remains readable');
+ assert.deepEqual(core.readCampaign(db),stable,'failed reset retains the exact campaign');
+ core.resetCampaign(db);
+ assert.equal(core.readCampaign(db),null,'successful retry removes both copies');
+});
+
+test('T05 reset with primary deletion denied keeps the existing campaign',()=>{
+ const db=storage(),s=snapshot();
+ core.saveCampaign(s,db);
+ const stable=core.readCampaign(db);
+ const raw=db.getItem(core.SAVE_KEY);
+ db.setItem(core.SAVE_BACKUP_KEY,raw);
+ const denied={
+  getItem:key=>db.getItem(key),
+  setItem:(key,value)=>db.setItem(key,value),
+  removeItem(key){
+   if(key===core.SAVE_KEY)throw Error('SecurityError: primary deletion denied');
+   db.removeItem(key);
+  }
+ };
+ assert.throws(()=>core.resetCampaign(denied),/primary deletion denied/);
+ assert.equal(db.getItem(core.SAVE_KEY),raw,'primary remains after failed removal');
+ assert.equal(db.getItem(core.SAVE_BACKUP_KEY),null,'backup was removed first');
+ assert.deepEqual(core.readCampaign(db),stable,'primary remains playable');
+});
