@@ -60,7 +60,8 @@ const server=http.createServer(async(req,res)=>{
     best:b.mejorCombo};
    return {initial,output,renderer:b.game.renderer.type};
   });
-  assert.deepEqual([result.initial.player,result.initial.enemy],['charizard','onix']);
+  assert.deepEqual([result.initial.player,result.initial.enemy],['charmander','onix'],
+   'Native Charizard keeps its Charmander base definition and evolved stage');
   assert.equal(result.initial.ledger,true,'Native damage array must exist before first strike');
   assert.ok(result.output.afterHp<result.output.previousHp,
    'Original Phaser recipient must inflict native type damage');
