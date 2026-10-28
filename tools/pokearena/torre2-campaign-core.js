@@ -358,8 +358,13 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
   gains.push({index,uid:member.uid,id:member.id,before,reward:growth.experienceGained,
    fromLevel:growth.fromLevel,toLevel:growth.toLevel,
    levelsGained:growth.levelsGained,tester:!!growth.tester,kind});
-  for(const event of evolved.evolutions||[])
+  for(const event of evolved.evolutions||[]){
+   // A Pokémon obtained through evolution counts as caught in the Gen III
+   // Pokédex, including intermediate forms gained in one post-battle award.
+   // Use the existing idempotent recorder (also registers the form as seen).
+   recordCaught(state,event.to);
    evolutions.push({index,uid:member.uid,...event});
+  }
  }
  return {gains,evolutions,totalRecipients:gains.filter(x=>!x.tester).length};
 }
