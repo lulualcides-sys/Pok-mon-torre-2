@@ -43,7 +43,7 @@ const families=[
   preparedArenaExp:true,naturalCampaign:false,transitions:[]};
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}});
-  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
+  const errors=[],missingSlots=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4422/arena2d/?original=1',
    {waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
@@ -101,8 +101,8 @@ const families=[
    assert.ok(after.active&&after.visible&&after.textureLoaded,to+' sprite unavailable');
    assert.ok(after.canvas?.[0]>0&&after.canvas?.[1]>0,to+' canvas blank');
    for(const [slot,move] of Object.entries(after.slots)){
-    assert.ok(move.name,to+' '+slot+' missing after evolution');
-    assert.equal(move.pending,false,to+' '+slot+' placeholder');
+    if(!move.name||move.pending)missingSlots.push({from,to,slot,
+     reason:!move.name?'missing':'placeholder',slots:after.slots});
    }
    await page.screenshot({path:'test-evidence/t03-extra-'+to+'-webgl.png'});
    report.transitions.push({from,to,before,after});
@@ -113,8 +113,11 @@ const families=[
   }
   assert.deepEqual(errors,[],'No uncaught JS errors during native evolutions');
   assert.equal(report.transitions.length,12);
+  report.missingSlots=missingSlots;
   fs.writeFileSync('test-evidence/t03-twelve-extra-evolutions.json',
    JSON.stringify(report,null,2));
+  console.log('T03 ALL EVOLUTION SLOT GAPS',JSON.stringify(missingSlots));
+  assert.deepEqual(missingSlots,[],'Unresolved evolved battle slots require real approved installed moves');
   console.log('PASS T03: twelve further Kanto native Phaser/WebGL evolutions (prepared Arena XP; not campaign)');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());
