@@ -42,8 +42,9 @@ const server=http.createServer(async(req,res)=>{
  const report={scope:'T19 two normal Cerulean checkpoint fights with native AUTO',
   checkpointFixture:'post-Brock stage1 with Lv20 Wartortle; earlier wins/badge prepared, not earned in this test',
   fights:[],naturalFromCheckpoint:true,wholeCampaignNatural:false};
+ let page=null;
  try{
-  const page=await browser.newPage({viewport:{width:1280,height:720}});
+  page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   checkpoint='page navigation';
   await page.goto('http://127.0.0.1:4481/arena2d/?original=1',
@@ -185,5 +186,14 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(errors,[],'Native Phaser errors in consecutive Cerulean fights');
   console.log('T19 TWO NATIVE CERULEAN FIGHTS PASS: real AUTO combat, XP, money and saves');
   checkpoint='both real fights proved';
- }finally{await page.close();await browser.close();server.close()}
-})().catch(e=>{console.error(e);process.exitCode=1;server.close()});
+ }finally{
+  checkpoint='closing browser after real victories';
+  try{if(page&&!page.isClosed())await page.close();}
+  finally{
+   await browser.close();
+   await new Promise(done=>server.close(done));
+   clearInterval(heartbeat);
+   clearTimeout(watchdog);
+  }
+ }
+})().catch(e=>{console.error(e);process.exitCode=1;clearInterval(heartbeat);clearTimeout(watchdog);if(server.listening)server.close()});
