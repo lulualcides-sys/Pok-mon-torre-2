@@ -312,10 +312,26 @@ export function saveCampaign(state,storage=localStorage){
  return state;
 }
 // Reset must remove the backup FIRST. If backup removal is denied, keep the
-// primary untouched; otherwise a later read could resurrect an old checkpoint
-// after the primary had already been deleted. Never silently swallow errors.
+// primary untouched; otherwise a later read could resurrect an old checkpoint.
+// If the PRIMARY deletion is denied after the backup was cleared, restore
+// the exact previous backup bytes so a failed reset cannot silently lose a
+// recovery point. localStorage is not a multi-key transaction; if the browser
+// also forbids rollback, preserve the primary and propagate the original error.
 export function resetCampaign(storage=localStorage){
- storage.removeItem(SAVE_BACKUP_KEY);storage.removeItem(SAVE_KEY);
+ // Native localStorage has getItem; injected legacy/test storage adapters
+ // may only expose removeItem. Keep the previous reset contract for those
+ // adapters while recovering backup bytes whenever reading is supported.
+ const previousBackup=typeof storage.getItem==='function'?
+  storage.getItem(SAVE_BACKUP_KEY):null;
+ storage.removeItem(SAVE_BACKUP_KEY);
+ try{storage.removeItem(SAVE_KEY);}
+ catch(error){
+  if(previousBackup!==null){
+   try{storage.setItem(SAVE_BACKUP_KEY,previousBackup);}
+   catch{/* Primary remains; never mask the original reset failure */}
+  }
+  throw error;
+ }
 }
 // Pokédex data describes encounters/captures, not which sprites are playable.
 export function recordSeen(s,id){
