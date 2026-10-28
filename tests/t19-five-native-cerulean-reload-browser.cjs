@@ -5,6 +5,9 @@
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright-core');
+// Optional next-five checkpoint; default first-five behavior stays unchanged.
+const startTrainer=Number(process.env.T19_CERULEAN_START??0);
+assert.ok([0,5].includes(startTrainer),'Only audited trainer checkpoints 0 and 5');
 // A hung native Chromium/WebGL test must produce diagnostics instead of
 // occupying Actions until its 40-minute job limit. No result manipulation.
 const startedAt=Date.now();
@@ -40,7 +43,7 @@ const server=http.createServer(async(req,res)=>{
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
    '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const report={scope:'T19 five normal Cerulean checkpoint fights with native AUTO',
-  checkpointFixture:'post-Brock stage1 with Lv20 Wartortle; earlier wins/badge prepared, not earned in this test',
+  startTrainer,checkpointFixture:'post-Brock stage1 with Lv20 Wartortle; previous wins and badge (including the first five when start=5) prepared, not earned in this run',
   fights:[],naturalFromCheckpoint:true,wholeCampaignNatural:false};
  let page=null;
  try{
@@ -51,20 +54,21 @@ const server=http.createServer(async(req,res)=>{
    {waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
    null,{timeout:60000});
-  await page.evaluate(async()=>{
+  await page.evaluate(async startTrainer=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.t19Core=await import(new URL('./torre2/campaign-core.js',src));
    const {createPokemonProgression}=await import(new URL('./torre2/progression.js',src));
    const st=core.createCampaign('squirtle');
    core.saveCampaign(st);
    core.storePokemon(st,1);
-   st.stage=1;st.trainer=0;st.wins=14;st.badges=['Rocha'];
+   st.stage=1;st.trainer=startTrainer;st.wins=14+startTrainer;
+   st.money=startTrainer===5?2820:1400;st.badges=['Rocha'];
    st.team[0].id='wartortle';
    st.team[0].progression=createPokemonProgression('wartortle',20);
    st.team[0].hp=100;st.team[0].moves=[];st.team[0].tmMoves=[];
    core.saveCampaign(st);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
-  });
+  },startTrainer);
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&!!c.__torre2BattlePath;
@@ -90,8 +94,8 @@ const server=http.createServer(async(req,res)=>{
   };
   let before=await game();
   assert.equal(before.stage,1);
-  assert.equal(before.trainer,0);
-  assert.equal(before.wins,14);
+  assert.equal(before.trainer,startTrainer);
+  assert.equal(before.wins,14+startTrainer);
   assert.deepEqual(before.team.map(m=>m.id),['wartortle']);
   assert.equal(before.team[0].level,20);
   assert.equal(before.box.length,1);
@@ -100,10 +104,13 @@ const server=http.createServer(async(req,res)=>{
    const foe=await page.evaluate(()=>window.t19Core.currentOpponent(window.t19Core.readCampaign()));
    // Route slot 3 is the real Rival battle, not the fourth generic trainer.
    // Squirtle starter faces Bulbasaur per the campaign's native rival table.
-   assert.equal(foe.id,['zubat','geodude','paras','bulbasaur','sandshrew'][round],
-    'Cerulean real route opponent mismatch');
-   assert.equal(foe.kind,round===3?'rival':'trainer',
-    'Cerulean route role mismatch');
+   const expectedIds=startTrainer===0
+    ?['zubat','geodude','paras','bulbasaur','sandshrew']
+    :['ekans','poliwag','psyduck','staryu','magikarp'];
+   const expectedRole=startTrainer===0&&round===3?'rival'
+    :startTrainer===5&&round===0?'rocket':'trainer';
+   assert.equal(foe.id,expectedIds[round],'Cerulean real route opponent mismatch');
+   assert.equal(foe.kind,expectedRole,'Cerulean route role mismatch');
    const record={fight:round+1,foe:foe.id,level:foe.level,before};
    report.fights.push(record);
    checkpoint='starting native fight '+(round+1);
@@ -159,7 +166,7 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(after.trainer,before.trainer+1);
    assert.equal(after.wins,before.wins+1);
    assert.equal(after.losses,before.losses);
-   const expectedPayment=foe.kind==='rival'?460:240;
+   const expectedPayment=foe.kind==='rival'?460:foe.kind==='rocket'?360:240;
    assert.equal(after.money,before.money+expectedPayment,
     'Cerulean reward must match native trainer/Rival economy');
    assert.deepEqual(after.badges,before.badges,'No second gym badge before Misty');
@@ -172,7 +179,7 @@ const server=http.createServer(async(req,res)=>{
     'No gym reward before leader KO');
    await page.screenshot({path:'test-evidence/t19-cerulean-fight-'+(round+1)+'-victory.png'});
    console.log('T19 REAL CERULEAN VICTORY',JSON.stringify({
-    index:round+1,opponent:foe.id,from:before.trainer,to:after.trainer,
+    index:startTrainer+round+1,opponent:foe.id,from:before.trainer,to:after.trainer,
     level:after.team[0].level,money:after.money
    }));
    fs.writeFileSync('test-evidence/t19-five-cerulean-fights.json',JSON.stringify(report,null,2));
@@ -212,7 +219,7 @@ const server=http.createServer(async(req,res)=>{
   }
   assert.equal(report.fights.length,5);
   assert.deepEqual(errors,[],'Native Phaser errors in consecutive Cerulean fights');
-  console.log('T19 FIVE NATIVE CERULEAN FIGHTS PASS: real AUTO combat, XP, money and saves');
+  console.log('T19 FIVE NATIVE CERULEAN FIGHTS PASS: real AUTO combat, XP, money and saves',JSON.stringify({startTrainer,endTrainer:before.trainer}));
   checkpoint='five real fights proved';
  }finally{
   checkpoint='closing browser after real victories';
