@@ -45,13 +45,12 @@ export function applyAudioSettingsToGame(scene,settings){
  // each distinct bus: a scene-local volume must not bypass the global mute.
  const buses=new Set([scene?.sound,scene?.game?.sound].filter(Boolean));
  for(const bus of buses){
-  // Apply volume before mute: the final operation is always the user's
-  // explicit mute choice, including on clients that reset audio while
-  // updating the master volume node.
+  // Use the actual global output gain for mute. The original Poké Arena
+  // client can reset Phaser's mute flag while unlocking audio on touch;
+  // toggling that flag here also restores stale volume in some builds.
+  // Zero gain is unambiguous and persists across that unlock transition.
   try{if(typeof bus.setVolume==='function')bus.setVolume(effectiveVolume)}catch{}
   try{bus.volume=effectiveVolume}catch{}
-  try{if(typeof bus.setMute==='function')bus.setMute(prefs.muted)}catch{}
-  try{bus.mute=prefs.muted}catch{}
  }
  return prefs;
 }
