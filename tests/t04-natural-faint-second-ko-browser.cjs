@@ -120,13 +120,39 @@ const persist=()=>fs.writeFileSync('test-evidence/t04-natural-faint-second-ko.js
    await page.screenshot({path:'test-evidence/t04-natural-faint-timeout.png'});
    throw err;
   }
-  // Keep observing a second native CPU KO after the first recall.
-  await page.waitForFunction(()=>{
+  // Observe second KO without fabricating damage or changing enemy AI.
+  const firstSwitch=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
-   return b.scene.isActive()&&b.__t04KoCount>=2&&
-    b.datos.p1==='squirtle'&&b.datos.torre2.party.playerIndex===2&&
-    b.fase==='lucha'&&!b.__torre2Changing;
-  },null,{timeout:85000,polling:40});
+   return {count:b.__t04KoCount,playerIndex:b.datos.torre2.party.playerIndex,
+    hp:b.luchadores[0].hp,maxHp:b.luchadores[0].hpMax,
+    enemyHp:b.luchadores[1].hp,phase:b.fase};
+  });
+  report.events.push({firstSwitch});persist();
+  try{
+   await page.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.__t04KoCount>=2&&
+     b.datos.p1==='squirtle'&&b.datos.torre2.party.playerIndex===2&&
+     b.fase==='lucha'&&!b.__torre2Changing;
+   },null,{timeout:85000,polling:40});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    const save=window.__t04core.readCampaign();
+    return {active:b.scene.isActive(),phase:b.fase,
+     changing:b.__torre2Changing,ballTransitions:b.__torre2BallTransitions,
+     bagOpen:b.__torre2BattleBagOpen,koCount:b.__t04KoCount,
+     faint:b.__t04NaturalFaint,playerIndex:b.datos?.torre2?.party?.playerIndex,
+     party:b.datos?.torre2?.party?.friend?.map(m=>({id:m.id,hp:m.hp})),
+     actors:b.luchadores?.map(a=>({id:a.def?.id,hp:a.hp,
+      hpMax:a.hpMax,ko:a.ko,inmortal:a.inmortal,position:[a.x,a.y],
+      accion:a.accion,cd:a.cd,status:a.est})),
+     saved:{wins:save.wins,losses:save.losses,stage:save.stage,trainer:save.trainer}};
+   });
+   report.events.push({error:String(error),diagnostic});persist();
+   await page.screenshot({path:'test-evidence/t04-natural-second-ko-timeout.png'});
+   throw error;
+  }
   const after=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    const active=b.luchadores[0],save=window.__t04core.readCampaign();
