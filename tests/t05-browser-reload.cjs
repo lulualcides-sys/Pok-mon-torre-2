@@ -86,7 +86,36 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(second.money,4510);
   assert.equal(second.saved,before.valid);
   assert.equal(second.backup,before.valid);
+  // Another genuine page reload: a JSON-valid primary repeats the same
+  // creature identity in party and PC. Restore the clean backup byte-for-byte.
+  await page.evaluate(async()=>{
+   const src=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const core=await import(new URL('./torre2/campaign-core.js',src).href);
+   const good=localStorage.getItem(core.SAVE_KEY);
+   const corrupt=JSON.parse(good);
+   corrupt.box[0].uid=corrupt.team[0].uid;
+   localStorage.setItem(core.SAVE_BACKUP_KEY,good);
+   localStorage.setItem(core.SAVE_KEY,JSON.stringify(corrupt));
+  });
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  const identityRecovery=await page.evaluate(async()=>{
+   const src=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const core=await import(new URL('./torre2/campaign-core.js',src).href);
+   const state=core.readCampaign();
+   return {primary:localStorage.getItem(core.SAVE_KEY),
+    backup:localStorage.getItem(core.SAVE_BACKUP_KEY),
+    team:state.team.map(x=>({id:x.id,uid:x.uid})),
+    box:state.box.map(x=>({id:x.id,uid:x.uid})),money:state.money};
+  });
+  assert.equal(identityRecovery.primary,before.valid);
+  assert.equal(identityRecovery.backup,before.valid);
+  assert.notEqual(identityRecovery.team[0].uid,identityRecovery.box[0].uid);
+  assert.deepEqual(identityRecovery.team.map(x=>x.id),['charmander']);
+  assert.deepEqual(identityRecovery.box.map(x=>x.id),['mewtwo']);
+  assert.equal(identityRecovery.money,4510);
+  await page.screenshot({path:'test-evidence/t05-browser-uid-recovery.png'});
   assert.deepEqual(errors,[]);
-  console.log('T05 PASS REAL RELOAD: recovered valid backup from invalid structured save, kept PC/cash/items/HP/badges without duplication');
+  console.log('T05 PASS REAL RELOAD: structural and duplicate-UID corruption recovered from clean backup; PC/cash/items/HP/badges intact');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
