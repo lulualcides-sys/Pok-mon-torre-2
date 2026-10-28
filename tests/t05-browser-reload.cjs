@@ -114,6 +114,45 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(identityRecovery.team.map(x=>x.id),['charmander']);
   assert.deepEqual(identityRecovery.box.map(x=>x.id),['mewtwo']);
   assert.equal(identityRecovery.money,4510);
+  // Real Phaser/WebGL browser, with a deliberately failing storage adapter.
+  // This is a controlled quota/security fixture, not an actual full disk.
+  const readOnly=await page.evaluate(async()=>{
+   const src=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const core=await import(new URL('./torre2/campaign-core.js',src).href);
+   const good=localStorage.getItem(core.SAVE_KEY);
+   const broken=JSON.stringify({...JSON.parse(good),team:[]});
+   const data=new Map([[core.SAVE_KEY,broken],[core.SAVE_BACKUP_KEY,good]]);
+   let rejected=0;
+   const readonly={getItem:key=>data.get(key)??null,
+    setItem(){rejected++;throw new DOMException('Quota exceeded','QuotaExceededError')}};
+   const restored=core.readCampaign(readonly);
+   const migration=JSON.parse(good);
+   delete migration.leagueHonors;
+   const legacyData=new Map([[core.SAVE_KEY,JSON.stringify(migration)]]);
+   const legacyReadonly={getItem:key=>legacyData.get(key)??null,
+    setItem(){rejected++;throw new DOMException('Storage blocked','SecurityError')}};
+   const migrated=core.readCampaign(legacyReadonly);
+   const b=window.__pt2Game.scene.getScene('titulo');
+   return {restored:restored&&{stage:restored.stage,wins:restored.wins,
+     team:restored.team.map(x=>x.id),box:restored.box.map(x=>x.id)},
+    migrated:migrated&&{stage:migrated.stage,wins:migrated.wins,
+     leagueHonors:migrated.leagueHonors,team:migrated.team.map(x=>x.id)},
+    rejected,primaryUnchanged:data.get(core.SAVE_KEY)===broken,
+    backupUnchanged:data.get(core.SAVE_BACKUP_KEY)===good,
+    sceneActive:b.scene.isActive(),renderer:window.__pt2Game.config.type,
+    liveSaveUnchanged:localStorage.getItem(core.SAVE_KEY)===good};
+  });
+  assert.ok(readOnly.restored&&readOnly.migrated,'read-only storage must not blank campaign');
+  assert.equal(readOnly.restored.stage,1);
+  assert.equal(readOnly.restored.wins,17);
+  assert.deepEqual(readOnly.restored.team,['charmander']);
+  assert.deepEqual(readOnly.restored.box,['mewtwo']);
+  assert.deepEqual(readOnly.migrated.leagueHonors,[]);
+  assert.equal(readOnly.rejected,2,'both recovery and migration writes must be rejected');
+  assert.ok(readOnly.primaryUnchanged&&readOnly.backupUnchanged&&readOnly.liveSaveUnchanged,
+   'storage failures must not overwrite primary, backup or actual browser save');
+  assert.ok(readOnly.sceneActive,'Phaser scene must remain active');
+  console.log('T05 READ-ONLY STORAGE PASS',JSON.stringify(readOnly));
   await page.screenshot({path:'test-evidence/t05-browser-uid-recovery.png'});
   assert.deepEqual(errors,[]);
   console.log('T05 PASS REAL RELOAD: structural and duplicate-UID corruption recovered from clean backup; PC/cash/items/HP/badges intact');
