@@ -126,7 +126,7 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  for(const slot of ATTACK_SLOTS){
   const actual=result[slot];
   if(actual?.forma&&!actual.pendiente&&
-    (!starterWindow||actual.torre2IntroPractice)){
+    (!starterWindow||actual.torre2IntroPractice||level>KANTO_INTRO.ultAt)){
    occupied.add(idOf(actual.torre2IntroSource||actual.nombre));
   }
  }
@@ -136,7 +136,7 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
   // Player-equipped, power-capped practice is a real campaign option now:
   // don't replace it by an invisible, non-selectable tutorial projection.
   if(actual?.forma&&!actual.pendiente&&
-     (!starterWindow||actual.torre2IntroPractice)){
+     (!starterWindow||actual.torre2IntroPractice||level>KANTO_INTRO.ultAt)){
    selected.push(actual);
    continue;
   }
