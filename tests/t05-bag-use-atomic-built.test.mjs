@@ -30,9 +30,11 @@ function fixture(){
  s.inventory.potion=2;s.inventory.superpotion=2;s.inventory.antidote=2;
  s.inventory.tms=['tm-water-pulse'];
  core.saveCampaign(s,storage);
+ const normalized=core.readCampaign(storage);
+ core.saveCampaign(normalized,storage);
  // Ensure both valid keys exist, so denial of either write is meaningful.
  storage.setItem(core.SAVE_BACKUP_KEY,storage.getItem(core.SAVE_KEY));
- return {s,storage};
+ return {s:normalized,storage};
 }
 
 const actions=[
