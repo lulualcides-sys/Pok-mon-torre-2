@@ -132,6 +132,27 @@ function hasRepeatedMemberUid(s){
  }
  return false;
 }
+// Preserve every team/PC member in its original slot. When no clean
+// checkpoint exists, retain the first UID and give later collisions stable,
+// collision-free identities; never remove or create a Pokemon entry.
+function repairRepeatedMemberUids(s){
+ const members=[...s.team,...(Array.isArray(s.box)?s.box:[])];
+ const reserved=new Set(members.map(m=>m?.uid).filter(uid=>typeof uid==='string'&&uid));
+ const seen=new Set();
+ let repaired=false;
+ for(const member of members){
+  const uid=member?.uid;
+  if(typeof uid!=='string'||!uid)continue; // Legacy saves stay readable.
+  if(!seen.has(uid)){seen.add(uid);continue;}
+  let suffix=1,unique;
+  do{unique=uid+'-recovered-'+suffix++;}while(reserved.has(unique));
+  member.uid=unique;
+  reserved.add(unique);
+  seen.add(unique);
+  repaired=true;
+ }
+ return repaired;
+}
 function parseUsableCampaign(raw){
  if(!raw)return null;
  try{
@@ -149,12 +170,12 @@ export function readCampaign(storage=localStorage){
   try{backup=storage.getItem(SAVE_BACKUP_KEY)}catch{/* backup key inaccessible */}
   const primary=parseUsableCampaign(raw);
   const fallback=parseUsableCampaign(backup);
-  // Prefer the last known-good checkpoint when the primary duplicates a
-  // Pokémon identity. With no clean backup, keep the primary rather than
-  // silently deleting the player's only surviving progress.
+  // Prefer a clean backup. Otherwise preserve every stored member and
+  // repair only colliding identities, archiving original bytes before save.
   const recoverUid=!!(primary&&fallback&&hasRepeatedMemberUid(primary)&&!hasRepeatedMemberUid(fallback));
   const s=recoverUid?fallback:(primary||fallback);
   if(!s)return null;
+  const repairedUid=hasRepeatedMemberUid(s)&&repairRepeatedMemberUids(s);
   // Recover from truncation, JSON-valid corruption and duplicated identities.
   if((!primary||recoverUid)&&backup){
    // A full/read-only storage must not turn a valid backup into a blank game.
@@ -162,7 +183,7 @@ export function readCampaign(storage=localStorage){
    try{storage.setItem(SAVE_KEY,backup)}catch{/* read-only or quota-exceeded storage */}
   }
   // Additive v1 migration. Do not reset saves or lose stored Pokémon.
-  let migrated=false;
+  let migrated=!!repairedUid;
   // Old saves stored Elite victories alongside gym badges. Preserve them in
   // a separate field so the badge case contains only the eight Kanto awards.
   const legacyHonors=new Set(ELITE.map(stage=>stage.badge));
@@ -235,9 +256,13 @@ export function saveCampaign(state,storage=localStorage){
  const previous=storage.getItem(SAVE_KEY);
  if(previous&&previous!==serialized){
   const candidate=parseUsableCampaign(previous);
-  // Never rotate a duplicate-UID primary over a clean backup.
-  if(candidate&&!hasRepeatedMemberUid(candidate))
-   storage.setItem(SAVE_BACKUP_KEY,previous);
+  // Rotate clean checkpoints normally. If this is the only surviving
+  // duplicate-UID primary, archive its exact bytes before replacement.
+  // A denied archive write must abort the primary write, not lose evidence.
+  if(candidate){
+   if(!hasRepeatedMemberUid(candidate))storage.setItem(SAVE_BACKUP_KEY,previous);
+   else if(!storage.getItem(SAVE_BACKUP_KEY))storage.setItem(SAVE_BACKUP_KEY,previous);
+  }
  }
  storage.setItem(SAVE_KEY,serialized);
  return state;
