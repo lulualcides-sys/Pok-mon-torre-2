@@ -849,7 +849,19 @@ create(){
    // HealTeam remains the SOLE economy/save authority: one invocation only.
    this.time.delayedCall(1400,()=>{
     if(!this.scene.isActive()||!this.__torre2CenterBusy)return;
-    healTeam(state);
+    try{healTeam(state);}
+    catch(error){
+     // Storage can be unavailable after the healing animation starts.
+     // The saved and live party are still unchanged: show a visible error
+     // and unlock the native Center controls for a new attempt.
+     console.warn('Torre 2: Center healing not saved',error);
+     status.setText('CURA NÃO SALVA · ARMAZENAMENTO BLOQUEADO')
+      .setColor('#ff9d9d').setData('torre2-center-save-error',true);
+     this.time.delayedCall(1400,()=>{
+      if(this.scene.isActive())this.centerScreen(state);
+     });
+     return;
+    }
     status.setText('EQUIPE RECUPERADA · HP, STATUS E DESMAIOS CURADOS')
      .setColor('#a9f6d3');
     this.add.zone(320,270,250,25).setDepth(615)
