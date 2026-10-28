@@ -78,8 +78,10 @@ for(const {id} of KANTO_151){
    id+' auto-learned TM-only Protect');
   for(const move of options){
    assert.ok(move.forma,id+' has an unrendered option '+move.id);
-   assert.ok(move.torre2IntroPractice||Number.isFinite(move.dano),
-    id+' bad attack definition '+move.id);
+   // Native stat / dodge / status techniques can have no numeric damage.
+   // They are valid once a real approved Phaser form exists.
+   assert.ok(move.torre2IntroPractice||move.dano===undefined||
+    Number.isFinite(move.dano),id+' invalid damage metadata '+move.id);
   }
  }
  member.progression.level=50;
