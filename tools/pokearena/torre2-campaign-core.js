@@ -316,7 +316,7 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
   // complete the Kanto lineage during the campaign without stalling on a
   // choice dialog which this one-click map does not implement.
   const evolved=resolveEvolutionAfterBattle(progress,'victory',({species,choices})=>{
-   const kanto={gloom:'vileplume',poliwhirl:'poliwrath'};
+   const kanto={gloom:'vileplume',poliwhirl:'poliwrath',slowpoke:'slowbro'};
    return choices.includes(kanto[species])?kanto[species]:null;
   });
   const before=member.id;
