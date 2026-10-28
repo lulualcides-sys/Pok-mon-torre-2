@@ -87,13 +87,13 @@ const server=http.createServer(async(req,res)=>{
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
  // Status is inflicted via the real Gen III engine, not inserted into save.
- // Both breakout and catch must retain it for the active Pokemon.
+ // Both breakout and catch must retain status for the active Pokemon.
  await page.evaluate(async()=>{
   const b=window.__pt2Game.scene.getScene('combate');
   const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
   const {applyGen3Status}=await import(new URL('./torre2/gen3-status.js',src));
   const a=b.luchadores[0];
-  if(!applyGen3Status(a,'veneno')||!a.est?.veneno?.torre2Status)
+  if(!applyGen3Status(a,'paralizado')||!a.est?.paralizado?.torre2Status)
    throw Error('Native status setup failed');
   const party=b.datos.torre2.party;
   if(party.friend[party.playerIndex].status||core.readCampaign().team[core.readCampaign().active].status)
@@ -117,11 +117,11 @@ const server=http.createServer(async(req,res)=>{
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
  assert.equal(await page.evaluate(()=>{
   const save=core.readCampaign();return save.team[save.active].status?.kind;
- }), 'veneno','Failed capture must preserve live status');
+ }), 'paralizado','Failed capture must preserve live paralysis');
  // Re-enter for a successful capture into a full party.
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
- // Isolate the second outcome: reset the prior poison in the saved campaign,
+ // Isolate the second outcome: reset the prior paralysis in the saved campaign,
  // then apply a different native status only to the live fighter.
  await page.evaluate(()=>{
   const save=core.readCampaign();save.team[save.active].status=null;core.saveCampaign(save);
