@@ -23,12 +23,29 @@ export function installAutoBattle(scene,makeNativeAI){
  if((scene.controles||[]).filter(isHuman).length!==1)return null;
  const original=manualFighterControl(scene);
  if(!original)return null;
+ // Original Arena stores an evolution FAMILY in def.id and the evolved form
+ // in etapa. Both must be part of the key (e.g. Squirtle -> Wartortle).
+ const fighterSpecies=actor=>String(actor?.def?.id||actor?.dex||'')+':'+String(actor?.etapa??0);
  const state={enabled:false,control:original,read:original.leer,ai:makeNativeAI(original.l),
+  autoActor:original.l,autoSpecies:fighterSpecies(original.l),
   button:null, label:null, zone:null,cleaned:false};
  if(typeof state.ai?.leer!=='function')throw Error('Native Poké Arena IA missing');
  const safeRead=function(dt,...args){
   if(!state.enabled||state.cleaned||scene.pausado||scene.fase!=='lucha')
    return state.read.call(this,dt,...args);
+  // The Kanto party uses reiniciar() on the SAME Luchador after each KO/switch.
+  // Its native IA may retain decision state from the previous species even
+  // though the actor reference is unchanged. Recreate the original native IA
+  // only at a genuine new species/actor boundary, preserving normal inputs,
+  // cooldowns, damage, energy and every approved move/VFX.
+  if(scene.datos?.torre2){
+   const fighter=original.l,species=fighterSpecies(fighter);
+   if(fighter&&(fighter!==state.autoActor||species!==state.autoSpecies)){
+    const ai=makeNativeAI(fighter);
+    if(typeof ai?.leer!=='function')throw Error('Native Poké Arena IA missing after party switch');
+    state.ai=ai;state.autoActor=fighter;state.autoSpecies=species;
+   }
+  }
   // Official AI respects Pokémon move slots, readiness, HP and real energy.
   // Clone its mutable per-frame input to avoid modifying the native controller.
   const it=state.ai.leer(Math.max(.001,Number(dt)||1/60));
@@ -102,7 +119,10 @@ export function bindAutoBattleToScene(Scene,IA){
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
-  const install=()=>installAutoBattle(this,fighter=>new IA(fighter,'normal'));
+  // Only opt-in campaign AUTO uses the native stronger tactical tier.
+  // No attack/damage, move, cooldown, speed, HP or VFX is modified.
+  const tactic=this.datos?.torre2?'dificil':'normal';
+  const install=()=>installAutoBattle(this,fighter=>new IA(fighter,tactic));
   if(!install()&&autoBattleAllowed(this)&&!this.__torre2AutoRetry){
    // Campaign/Phaser may create the player controller AFTER create().
    // Try again on later native game frames without replacing controllers,
