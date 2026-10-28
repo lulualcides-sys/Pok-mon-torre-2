@@ -32,6 +32,8 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    window.__bagCore=await import(new URL('./torre2/campaign-core.js',src));
+   // Campaign scene requires an existing starter save before it can boot.
+   window.__bagCore.saveCampaign(window.__bagCore.createCampaign('squirtle'));
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
   await page.waitForFunction(()=>{
