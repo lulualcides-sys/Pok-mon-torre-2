@@ -1,6 +1,6 @@
 'use strict';
 // T20: all five native Indigo bosses from one prepared Victory Road checkpoint.
-// Only the initial Victory Road checkpoint and Lv54 team are fixtures. No
+// Only the initial Victory Road checkpoint and legal Lv54 team are fixtures. No
 // stage, honor, HP, EXP, damage, KO, victory or AI state is injected afterwards.
 // This is not a naturally played Pallet -> Indigo campaign.
 const assert=require('node:assert/strict');
@@ -76,7 +76,7 @@ function persist(){fs.mkdirSync('test-evidence',{recursive:true});
    if(!core.storePokemon(s,1))throw Error('Could not deposit permanent QA Mewtwo');
    s.stage=8;s.trainer=core.TRAINERS_PER_GYM(8);s.wins=172;s.losses=0;
    s.badges=core.GYMS.map(g=>g.badge);s.leagueHonors=[];
-   s.team=['jolteon','starmie','lapras','alakazam','dragonite','gengar']
+   s.team=['jolteon','starmie','lapras','alakazam','articuno','gengar']
     .map((id,i)=>({id,uid:'t20-sequential-'+i+'-'+id,hp:100,
      progression:createPokemonProgression(id,54),
      status:null,tmMoves:[],moves:[]}));
