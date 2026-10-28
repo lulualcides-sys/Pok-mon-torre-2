@@ -78,7 +78,7 @@ const report={scope:'T11 seven Gen III immunities in original Phaser damage reci
     Object.defineProperty(enemy,'tipos',{configurable:true,value:[defender]});
     enemy.hp=enemy.hpMax;enemy.ko=false;enemy.est={};
     const before=enemy.hp;
-    const result=enemy.recibir(player,{dano:10,tipo,slot:'q'});
+    const result=enemy.recibir(player,{dano:10,tipo:type,slot:'q'});
     checks.push({attack:type,defense:defender,
      expected:gen3Effectiveness(type,[defender]),before,after:enemy.hp,result});
    }
