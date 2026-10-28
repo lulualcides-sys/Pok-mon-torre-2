@@ -4,7 +4,7 @@ export {validRematchResult};
  * Reutiliza o combate original Phaser capturado com autorização de pokearena2d.com.
  * Dados em localStorage. Evolução EXCLUSIVAMENTE por nível, APÓS a batalha.
  */
-import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle} from './progression.js';
+import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle,levelEvolutionChoices} from './progression.js';
 import {ROSTER} from '../datos.js';
 import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
@@ -335,6 +335,40 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
    evolutions.push({index,uid:member.uid,...event});
  }
  return {gains,evolutions,totalRecipients:gains.filter(x=>!x.tester).length};
+}
+// Eevee's three Kanto options have the SAME level-only requirement.
+// After its XP is awarded, the choice remains pending in the normal save
+// until the trainer picks one; no random branch, extra item or battle flag.
+export const EEVEE_KANTO_CHOICES=Object.freeze(['vaporeon','jolteon','flareon']);
+export function pendingEeveeEvolution(state){
+ for(const member of [...(state?.team||[]),...(state?.box||[])]){
+  if(member?.id==='eevee'&&member.progression?.species==='eevee'&&
+     levelEvolutionChoices(member.progression).some(id=>EEVEE_KANTO_CHOICES.includes(id)))
+   return {uid:member.uid,level:member.progression.level,choices:EEVEE_KANTO_CHOICES.slice()};
+ }
+ return null;
+}
+export function chooseEeveeEvolution(state,uid,choice){
+ // Do not trust UI state or a manually edited save. Resolve only a named
+ // Eevee that has REALLY met Lv30; do not mutate on invalid requests.
+ if(typeof uid!=='string'||!EEVEE_KANTO_CHOICES.includes(choice))
+  return {ok:false,reason:'Evolução inválida.'};
+ const member=[...(state?.team||[]),...(state?.box||[])].find(m=>m.uid===uid);
+ if(!member||member.id!=='eevee'||member.progression?.species!=='eevee'||
+   !levelEvolutionChoices(member.progression).includes(choice))
+  return {ok:false,reason:'Eevee ainda não está pronto para evoluir.'};
+ const result=resolveEvolutionAfterBattle(member.progression,'finished',choice);
+ if(!result.ok||result.evolutions.length!==1||result.evolutions[0].to!==choice)
+  return {ok:false,reason:'Evolução não concluída.'};
+ member.id=member.progression.species;
+ // Keep equipped TM knowledge, UID, HP, nickname, EXP and party/PC slot;
+ // the obsolete pre-evolution 4-role kit must be rebuilt for the new form.
+ member.moves=[];
+ delete member.movePlanSpecies;
+ recordCaught(state,choice);
+ state.lastMessage='Eevee evoluiu para '+choice.toUpperCase()+' após atingir o nível 30!';
+ saveCampaign(state);
+ return {ok:true,uid,from:'eevee',to:choice,level:member.progression.level};
 }
 export function grantGymTM(s,stage,{migration=false}={}){
  const id=GYM_TM_REWARDS[stage];
