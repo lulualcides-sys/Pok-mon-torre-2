@@ -1,6 +1,6 @@
 /* Campaign-only onboarding: three functional weak moves at Lv5, ULT at Lv8.
- * Unlike a canonical FRLG level-up record, short practice previews are battle
- * loadout adaptations and are never permanently learned, taught or saved.
+ * Practice abilities are now selectable campaign editor options with unique
+ * IDs; they never masquerade as early full-power official FRLG moves.
  * Real FRLG unlocks/TM learnability and all original Arena 2D kits are intact.
  */
 
@@ -39,7 +39,7 @@ function trainingMove(source,tag,slot,level,duplicate=false){
  delete move.torre2UnlockEvolution;
  return move;
 }
-/** Battle-only overlay. Does not change member.moves, availableMoves, TM or Pokédex. */
+/** Campaign-only safety overlay. Respects player-equipped weak practice moves. */
 export function resolveKantoIntro(member,installed,{library,canonical,earlyLevels={},levelUp={},unlockLevel}={}){
  const level=member?.progression?.level??5,id=member?.id;
  if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
@@ -116,14 +116,20 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  // attacks in their slots. Reserve those names BEFORE filling blank slots:
  // otherwise the practice overlay may duplicate a real equipped move.
  const occupied=new Set();
- if(!starterWindow)for(const slot of ATTACK_SLOTS){
+ for(const slot of ATTACK_SLOTS){
   const actual=result[slot];
-  if(actual?.forma&&!actual.pendiente)occupied.add(idOf(actual.nombre));
+  if(actual?.forma&&!actual.pendiente&&
+    (!starterWindow||actual.torre2IntroPractice)){
+   occupied.add(idOf(actual.torre2IntroSource||actual.nombre));
+  }
  }
  const selected=[];
  for(let i=0;i<3;i++){
   const slot=ATTACK_SLOTS[i],actual=result[slot];
-  if(!starterWindow&&actual?.forma&&!actual.pendiente){
+  // Player-equipped, power-capped practice is a real campaign option now:
+  // don't replace it by an invisible, non-selectable tutorial projection.
+  if(actual?.forma&&!actual.pendiente&&
+     (!starterWindow||actual.torre2IntroPractice)){
    selected.push(actual);
    continue;
   }
@@ -144,7 +150,8 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
   const base=ultCandidate?.move||fallback;
   const finisher=trainingMove(base,idOf(base.nombre),'e',ultCandidate?.learned??level,true);
   finisher.nombre='ULT · '+String(base.nombre||'Struggle');
-  if(starterWindow||!result.e?.forma||result.e?.pendiente)
+  if(!result.e?.forma||result.e?.pendiente||
+     (starterWindow&&!result.e?.torre2IntroPractice))
    result.e=finisher;
  }
  return result;
