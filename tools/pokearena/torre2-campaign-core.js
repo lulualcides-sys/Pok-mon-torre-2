@@ -318,7 +318,11 @@ export function saveCampaign(state,storage=localStorage){
 // recovery point. localStorage is not a multi-key transaction; if the browser
 // also forbids rollback, preserve the primary and propagate the original error.
 export function resetCampaign(storage=localStorage){
- const previousBackup=storage.getItem(SAVE_BACKUP_KEY);
+ // Native localStorage has getItem; injected legacy/test storage adapters
+ // may only expose removeItem. Keep the previous reset contract for those
+ // adapters while recovering backup bytes whenever reading is supported.
+ const previousBackup=typeof storage.getItem==='function'?
+  storage.getItem(SAVE_BACKUP_KEY):null;
  storage.removeItem(SAVE_BACKUP_KEY);
  try{storage.removeItem(SAVE_KEY);}
  catch(error){
