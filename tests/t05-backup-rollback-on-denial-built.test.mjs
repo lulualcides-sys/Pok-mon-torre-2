@@ -37,8 +37,11 @@ function makeStorage(){
  return db;
 }
 function initial(db){
- const a=core.createCampaign('bulbasaur');
- core.saveCampaign(a,db);
+ core.saveCampaign(core.createCampaign('bulbasaur'),db);
+ // Normalize additive v1 defaults once, so a read does not mutate the
+ // checkpoint being tested. This is NOT a forged battle result.
+ const a=structuredClone(core.readCampaign(db));
+ db.removeItem(core.SAVE_BACKUP_KEY);
  const aBytes=db.getItem(core.SAVE_KEY);
  return {a,aBytes};
 }
@@ -102,10 +105,9 @@ test('T05 original primary error is retained if the browser also denies rollback
 for(const kind of ['store','withdraw','swap']){
  test('T05 denied '+kind+' keeps live party and both on-disk save keys identical',()=>{
   const db=makeStorage();globalThis.localStorage=db;
-  const {a}=initial(db);
+  initial(db);
   const st=core.readCampaign(db);
   if(kind!=='store')assert.equal(core.storePokemon(st,1),true);
-  const checkpoint=structuredClone(st);
   const b=structuredClone(st);b.money+=7;
   core.saveCampaign(b,db); // ensure distinct existing backup
   Object.assign(st,b);
