@@ -535,42 +535,50 @@ export function grantGymTM(s,stage,{migration=false}={}){
  s.gymTMClaims.push(id);
  return {claimed:true,item,added:!already};
 }
+// Stage combat rewards off the live save. A failed primary/backup write must
+// not grant XP, money, badges, TMs, a level/evolution or a rematch win in RAM.
+function commitBattleOutcome(state,produce){
+ const next=JSON.parse(JSON.stringify(state));
+ const outcome=produce(next);
+ if(outcome?.ok===false)return outcome;
+ saveCampaign(next);
+ Object.assign(state,next);
+ return outcome;
+}
 export function resolveBattle(s,won,random=Math.random){
  const opponent=currentOpponent(s);
  if(!opponent)throw new Error('No battle pending');
- if(!won){
-  s.losses++;s.team[s.active].hp=Math.min(s.team[s.active].hp??100,35);
-  s.pendingCapture=null; // Never retain a capture opportunity from a prior victory.
-  s.lastMessage='Derrota contra '+opponent.name+'. Cure a equipe e tente novamente.';
-  saveCampaign(s);
-  return {won:false,message:s.lastMessage,evolutions:[]};
- }
- recordSeen(s,opponent.id);
- const member=s.team[s.active];
- // Full team EXP, including teammates left on the bench. The active fighter
- // still gets its post-victory recovery; bench HP and statuses are untouched.
- s.lastRewardTM=null;
- const reward=xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),opponent.leader?'leader':'trainer');
- const shared=awardSharedTeamExperience(s,reward,{kind:'trainer'});
- const growth=shared.gains.find(g=>g.index===s.active);
- member.hp=100;
- s.wins++;rechargeRematches(s);
- s.money=(s.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+s.stage*60);
- s.pendingCapture=null; // Trainer-owned Pokémon cannot be captured.
- if(opponent.leader){
-  const awards=s.stage<GYMS.length?s.badges:(s.leagueHonors??=[]);
-  if(!awards.includes(STAGES[s.stage].badge))awards.push(STAGES[s.stage].badge);
-  const tm=grantGymTM(s,s.stage);
-  s.lastRewardTM=tm.added?tm.item.name:null;
-  s.stage++;s.trainer=0;s.capturesInStage=0;s.wildEncountersStage=0;s.pendingWild=null;
-  if(s.stage>=STAGES.length)s.champion=true;
- }else s.trainer++;
- s.lastMessage='Vitória! +'+reward+' EXP para toda a equipe ('+
-   shared.totalRecipients+' Pokémon). '+(s.lastRewardTM?'Recebeu '+s.lastRewardTM+'. ':'')+(shared.evolutions.length?
+ return commitBattleOutcome(s,next=>{
+  if(!won){
+   next.losses++;next.team[next.active].hp=Math.min(next.team[next.active].hp??100,35);
+   next.pendingCapture=null;
+   next.lastMessage='Derrota contra '+opponent.name+'. Cure a equipe e tente novamente.';
+   return {won:false,message:next.lastMessage,evolutions:[]};
+  }
+  recordSeen(next,opponent.id);
+  const member=next.team[next.active];
+  next.lastRewardTM=null;
+  const reward=xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),opponent.leader?'leader':'trainer');
+  const shared=awardSharedTeamExperience(next,reward,{kind:'trainer'});
+  const growth=shared.gains.find(g=>g.index===next.active);
+  member.hp=100;
+  next.wins++;rechargeRematches(next);
+  next.money=(next.money??1400)+(opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180+next.stage*60);
+  next.pendingCapture=null;
+  if(opponent.leader){
+   const awards=next.stage<GYMS.length?next.badges:(next.leagueHonors??=[]);
+   if(!awards.includes(STAGES[next.stage].badge))awards.push(STAGES[next.stage].badge);
+   const tm=grantGymTM(next,next.stage);
+   next.lastRewardTM=tm.added?tm.item.name:null;
+   next.stage++;next.trainer=0;next.capturesInStage=0;next.wildEncountersStage=0;next.pendingWild=null;
+   if(next.stage>=STAGES.length)next.champion=true;
+  }else next.trainer++;
+  next.lastMessage='Vitória! +'+reward+' EXP para toda a equipe ('+
+   shared.totalRecipients+' Pokémon). '+(next.lastRewardTM?'Recebeu '+next.lastRewardTM+'. ':'')+(shared.evolutions.length?
    shared.evolutions.length+' evolução(ões) após a batalha!':'');
- saveCampaign(s);
- return {won:true,message:s.lastMessage,reward,growth,sharedExp:shared.gains,
-  evolutions:shared.evolutions,opponent};
+  return {won:true,message:next.lastMessage,reward,growth,sharedExp:shared.gains,
+   evolutions:shared.evolutions,opponent};
+ });
 }
 // Wild captures are requested from the live battle while the foe still has HP.
 // Previously finished trainer fights keep their existing reward-capture flow.
@@ -686,24 +694,26 @@ export function startWildBattle(s){
    enemyLevel:wild.level,hardCap:currentLevelCap(s.stage)}};
 }
 export function resolveWildBattle(s,won){
- const wild=s.pendingWild;
- if(!wild)return {won:false,message:'Encontro selvagem expirado.'};
- s.pendingWild=null;
- if(!won){
-  s.losses++;
-  s.team[s.active].hp=Math.min(s.team[s.active].hp??100,50);
-  s.pendingCapture=null;
-  s.lastMessage='O '+wild.id+' selvagem escapou após a batalha.';
-  saveCampaign(s);return {won:false,message:s.lastMessage};
- }
- const shared=awardSharedTeamExperience(s,
-  xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),'wild'),{kind:'wild'});
- const growth=shared.gains.find(g=>g.index===s.active);
- s.wins++;rechargeRematches(s);
- s.pendingCapture=null;
- s.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
- saveCampaign(s);return {won:true,message:s.lastMessage,growth,
-  sharedExp:shared.gains,evolutions:shared.evolutions};
+ if(!s.pendingWild)return {won:false,message:'Encontro selvagem expirado.'};
+ return commitBattleOutcome(s,next=>{
+  const wild=next.pendingWild;
+  next.pendingWild=null;
+  if(!won){
+   next.losses++;
+   next.team[next.active].hp=Math.min(next.team[next.active].hp??100,50);
+   next.pendingCapture=null;
+   next.lastMessage='O '+wild.id+' selvagem escapou após a batalha.';
+   return {won:false,message:next.lastMessage};
+  }
+  const shared=awardSharedTeamExperience(next,
+   xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),'wild'),{kind:'wild'});
+  const growth=shared.gains.find(g=>g.index===next.active);
+  next.wins++;rechargeRematches(next);
+  next.pendingCapture=null;
+  next.lastMessage=wild.id+' selvagem foi derrotado. Para capturar, lance uma Pokébola antes do nocaute.';
+  return {won:true,message:next.lastMessage,growth,
+   sharedExp:shared.gains,evolutions:shared.evolutions};
+ });
 }
 export function purchaseItem(s,itemId){
  const item=MART_ITEMS.find(i=>i.id===itemId&&s.stage>=(i.minStage??0));
@@ -794,14 +804,27 @@ export function rematchOpponent(s,index){
 export function startRematch(s,index){
  const opponent=rematchOpponent(s,index);
  if(!opponent)return {ok:false,reason:'Este treinador ainda não tem revanche disponível.'};
- const ticket=reserveRematch(s,index);
- if(!ticket)return {ok:false,reason:'VS Seeker: '+rematchState(s).charge+'/3 atividades. Vença outras batalhas para recarregar.'};
- saveCampaign(s);return {ok:true,opponent,ticket};
+ // Reserve the VS Seeker ticket only after the pending fight is durable.
+ const next=JSON.parse(JSON.stringify(s));
+ const ticket=reserveRematch(next,index);
+ if(!ticket)return {ok:false,reason:'VS Seeker: '+rematchState(next).charge+'/3 atividades. Vença outras batalhas para recarregar.'};
+ saveCampaign(next);
+ Object.assign(s,next);
+ return {ok:true,opponent,ticket};
 }
 export function resolveRematch(s,ticket,won){
- if(!consumeRematchResult(s,ticket))return {ok:false,reason:'Resultado antigo de revanche ignorado.'};
- let money=0,xp=0,shared=null;
- if(won){money=Math.floor((180+s.stage*60)/2);xp=Math.max(1,Math.floor(xpRewardFor(s.stage,TRAINERS_PER_GYM(s.stage),'trainer')*.6));shared=awardSharedTeamExperience(s,xp,{kind:'trainer'});s.money=(s.money||0)+money;s.rematches.wins=(s.rematches.wins||0)+1;}
- s.lastMessage=won?'Revanche vencida! +'+xp+' EXP para a equipe · +$'+money+'.':'Revanche encerrada. Cure a equipe para tentar novamente.';
- saveCampaign(s);return {ok:true,won,money,xp,shared,message:s.lastMessage};
+ if(!validRematchResult(s,ticket))return {ok:false,reason:'Resultado antigo de revanche ignorado.'};
+ return commitBattleOutcome(s,next=>{
+  if(!consumeRematchResult(next,ticket))return {ok:false,reason:'Resultado antigo de revanche ignorado.'};
+  let money=0,xp=0,shared=null;
+  if(won){
+   money=Math.floor((180+next.stage*60)/2);
+   xp=Math.max(1,Math.floor(xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),'trainer')*.6));
+   shared=awardSharedTeamExperience(next,xp,{kind:'trainer'});
+   next.money=(next.money||0)+money;
+   next.rematches.wins=(next.rematches.wins||0)+1;
+  }
+  next.lastMessage=won?'Revanche vencida! +'+xp+' EXP para a equipe · +$'+money+'.':'Revanche encerrada. Cure a equipe para tentar novamente.';
+  return {ok:true,won,money,xp,shared,message:next.lastMessage};
+ });
 }
