@@ -41,15 +41,26 @@ for(const species of KANTO_FIRE_BLAST_SPECIES){
  assert.equal(moveUnlockLevel(at50,'fire-blast'),50);
  assert.equal(campaignLearnset(species).find(m=>m.id==='fire-blast')?.level,50);
  const oldKit=selectedMoves(at50);
- assert.ok(equipMove(at50,2,'fire-blast'),
-  species+' must allow manual selection in HAB 3 once Lv50');
- assert.equal(resolveLoadout(at50).q?.id,'fire-blast',
-  species+' must actually equip original Fire Blast in battle');
- assert.equal(at50.movePlanSpecies,species,'Save must track current species');
- assert.equal(at50.moves?.[2],'fire-blast','Manual loadout must persist');
- const again={...at50,moves:[...at50.moves]};
- assert.equal(resolveLoadout(again).q?.id,'fire-blast',
-  species+' manual selection must survive reload of saved move IDs');
+ const initial=selectedMoves(at50);
+ // Some native Poké Arena kits already equip Fire Blast as their ULT.
+ // Do not force a duplicate into HAB3; preserve the owner's chosen slots.
+ if(!initial.includes('fire-blast')){
+  assert.ok(equipMove(at50,2,'fire-blast'),
+   species+' must allow manual selection in HAB 3 once Lv50');
+  assert.equal(at50.movePlanSpecies,species,'Save must track current species');
+  assert.equal(at50.moves?.[2],'fire-blast','Manual loadout must persist');
+ }else{
+  console.log('FIRE_BLAST_ALREADY_EQUIPPED',species,
+   JSON.stringify({slot:initial.indexOf('fire-blast'),loadout:initial}));
+ }
+ const blastSlot=selectedMoves(at50).indexOf('fire-blast');
+ assert.ok(blastSlot>=0,species+' cannot equip its legal Fire Blast');
+ const slot=['lmb','rmb','q','e'][blastSlot];
+ assert.equal(resolveLoadout(at50)[slot]?.id,'fire-blast',
+  species+' must equip the original native Fire Blast in battle');
+ const again={...at50,moves:at50.moves?.length?[...at50.moves]:undefined};
+ assert.equal(resolveLoadout(again)[slot]?.id,'fire-blast',
+  species+' existing/manual selection must survive reload');
  console.log('FIRE_BLAST_KANTO',species,
   JSON.stringify({firstLevel:50,forma:move.forma,cd:move.cd,
    manualEquipped:true,previousSlots:oldKit}));
