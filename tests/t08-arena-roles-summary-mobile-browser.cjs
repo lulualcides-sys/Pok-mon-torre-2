@@ -81,6 +81,35 @@ const server=http.createServer(async(req,res)=>{
    }
    return null;
   };
+  // A normal approved preview tapped in ATK must navigate to its actual
+  // HAB2 role without silently modifying the saved loadout.
+  const ordinary=base.available.find(x=>x.startsWith('torre2-intro-rmb-'));
+  assert.ok(ordinary,'Ivysaur genuine HAB2 preview unavailable');
+  const wrongHAB=await findPage(ordinary,0);
+  assert.ok(wrongHAB?.reason?.includes('PREVIA DE OUTRO SLOT'),
+   'A wrong-slot normal move was not rejected: '+JSON.stringify(wrongHAB));
+  const beforeRedirect=await page.evaluate(()=>JSON.stringify({
+   ram:__roleState.team[1].moves||null,
+   disk:__roleCore.readCampaign().team[1].moves||null
+  }));
+  await page.touchscreen.tap(wrongHAB.x,wrongHAB.y);
+  const navigated=await page.evaluate(()=>{
+   const c=__pt2Game.scene.getScene('campanha');
+   return c.children.list.filter(o=>o.active&&o.type==='Text')
+    .map(o=>o.text).find(x=>x.includes('SLOT CORRETO:'))||'';
+  });
+  assert.ok(navigated.includes('HAB 2'),
+   'Normal move did not redirect to its correct HAB2: '+navigated);
+  const properHAB=await findPage(ordinary,1);
+  assert.ok(properHAB&&!properHAB.reason,
+   'Redirected normal move remains disabled in the genuine HAB2 slot');
+  const afterRedirect=await page.evaluate(()=>JSON.stringify({
+   ram:__roleState.team[1].moves||null,
+   disk:__roleCore.readCampaign().team[1].moves||null
+  }));
+  assert.equal(afterRedirect,beforeRedirect,
+   'Wrong-slot navigation must not auto-equip or rewrite a save');
+
   const strong=base.available.find(x=>x.startsWith('torre2-intro-e-'));
   assert.ok(strong,'Ivysaur ULT preview unavailable in move library');
   const incompatible=await findPage(strong,1);
