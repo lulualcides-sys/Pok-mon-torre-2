@@ -14,8 +14,6 @@ export function normalizePokedexNameColumn(s){
   s=once(s,'const nx=Math.max(TX+(esTactil()?52:38),TX+6+Math.max(...etiquetas.map(t=>t.width))+8);',
    'const nx=Math.max(TX+72,TX+6+Math.max(...etiquetas.map(t=>t.width))+8);');
  }
- s=once(s,'export{Pokedex,cifras,etapasDe};',
-  'export{Pokedex,cifras,etapasDe,kantoDexStages};');
  return s;
 }
 /** Pick the actual move from this Poké Arena evolution stage first.
@@ -178,5 +176,7 @@ export function paginateKantoPokedexSource(original){
  s=s.replaceAll('etapasDe(', 'kantoDexStages(')
   .replace('function kantoDexStages(', 'function etapasDe(')
   .replace('const stages=kantoDexStages(def);','const stages=etapasDe(def);');
+ s=once(s,'export{Pokedex,cifras,etapasDe};',
+  'export{Pokedex,cifras,etapasDe,kantoDexStages};');
  return s;
 }
