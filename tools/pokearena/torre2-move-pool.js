@@ -639,8 +639,16 @@ export function campaignMoveSlotReason(member,slot,move){
  if(isPendingApprovalMove(move))return 'EFEITO EM REVISÃO';
  const level=member?.progression?.level??5;
  if(slot===3&&level<KANTO_INTRO.ultAt)return 'ULT NO NV. 8';
- if(move.torre2IntroSlot&&move.torre2IntroSlot!==SLOTS[slot])
-  return move.torre2IntroSlot==='e'?'SÓ ULT (E)':'PREVIA DE OUTRO SLOT';
+ if(move.torre2IntroSlot&&move.torre2IntroSlot!==SLOTS[slot]){
+  // Few-move species (Magikarp/Ditto) may share the existing neutral
+  // Struggle practice across HAB slots at Lv13+. This NEVER carries the
+  // E-only ULT or a strong/elemental move into a normal skill button.
+  const neutralFallback=slot>0&&slot<3&&level>=KANTO_INTRO.tutorialUntil&&
+   move.torre2IntroPractice&&move.torre2IntroSlot!=='e'&&
+   canonicalMoveKey(move.torre2IntroSource||move.nombre).startsWith('struggle');
+  if(!neutralFallback)
+   return move.torre2IntroSlot==='e'?'SÓ ULT (E)':'PREVIA DE OUTRO SLOT';
+ }
  if(level<=8&&!move.torre2IntroPractice)return 'GOLPE NATIVO BLOQUEADO';
  if(slot===3&&level<KANTO_INTRO.tutorialUntil&&!move.torre2IntroPractice)
   return 'ULT FORTE APÓS NV. 12';
