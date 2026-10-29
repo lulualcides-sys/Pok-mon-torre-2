@@ -673,6 +673,26 @@ export function campaignMoveSlotReason(member,slot,move){
   return 'GOLPE FORTE: SÓ ULT';
  return null;
 }
+/** Suggest a legal editor slot; never equip or mutate a saved Pokémon.
+ * A compatible learned move can be rejected only because the player
+ * tapped an incompatible button. Open the right role instead of leaving
+ * the user at an apparently broken library entry.
+ */
+export function suggestedCampaignMoveSlot(member,activeSlot,move){
+ if(!Number.isInteger(activeSlot)||activeSlot<0||activeSlot>3||!move)
+  return null;
+ if(!campaignMoveSlotReason(member,activeSlot,move))return activeSlot;
+ const legal=[0,1,2,3].filter(i=>!campaignMoveSlotReason(member,i,move));
+ if(!legal.length)return null;
+ // Preserve the approved charged ULT boundary even if a native attack
+ // renderer or a saved legacy kit suggests another position.
+ if(isCampaignUltimateOnlyMove(move))return legal.includes(3)?3:null;
+ const preferred=['lmb','rmb','q','e'].indexOf(move.torre2IntroSlot);
+ if(legal.includes(preferred))return preferred;
+ // Ordinary attacks and defensive moves should remain in HAB2/HAB3
+ // whenever possible, rather than unnecessarily consuming the ULT slot.
+ return legal.find(i=>i===1||i===2)??legal.find(i=>i===0)??legal[0];
+}
 function uniqueCampaignSlots(ids,available,member){
  const result=[...ids].slice(0,4),byId=new Map(available.map(m=>[m.id,m]));
  const keyOf=id=>{

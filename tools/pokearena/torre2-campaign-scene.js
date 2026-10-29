@@ -10,7 +10,7 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason} from './move-pool.js';
+import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
@@ -1303,11 +1303,25 @@ create(){
    bg.on('pointerdown',(_pointer,_x,_y,event)=>{
     event?.stopPropagation?.();
     if(reason){
-     this.summaryWarning=reason.includes('ULT')&&activeSlot!==3?
-      'GOLPE FORTE: SELECIONE E (ULT)':'BLOQUEADO: '+reason;
-     // Switch selection to E, but never overwrite its equipped move without
-     // an explicit second tap; the E library is immediately sorted for ULT.
-     this.showSummary(state,index,reason.includes('ULT')&&activeSlot!==3?3:activeSlot,0);
+     const suggestion=suggestedCampaignMoveSlot(member,activeSlot,move);
+     if(suggestion!==null&&suggestion!==activeSlot){
+      // A wrong-slot tap is navigation, NEVER an implicit equip. The
+      // player must explicitly choose the technique again in the new slot.
+      this.summaryWarning=reason.includes('ULT')?
+       'GOLPE FORTE: SELECIONE E (ULT)':
+       'SLOT CORRETO: '+slotNames[suggestion]+' · TOQUE NO GOLPE NOVAMENTE';
+      // Keep the requested move visible after switching the active slot.
+      // The compatible rows are sorted ahead of blocked rows, so page zero
+      // is not always the page containing the move the player tapped.
+      const reordered=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch))
+       .sort((a,b)=>Number(!!campaignMoveSlotReason(member,suggestion,a))-
+        Number(!!campaignMoveSlotReason(member,suggestion,b)));
+      const row=reordered.findIndex(option=>option.id===move.id);
+      this.showSummary(state,index,suggestion,row<0?0:Math.floor(row/6));
+     }else{
+      this.summaryWarning='BLOQUEADO: '+reason;
+      this.showSummary(state,index,activeSlot,0);
+     }
      return;
     }
     let equippedNow=false;
