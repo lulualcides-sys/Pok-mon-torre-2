@@ -635,6 +635,23 @@ for(const [filename,changes] of patches){
     body=addTorre2FormsToNativeCatalog(body);
     continue;
    }
+   // October upstream adjusted the fighter's underlying Defense formula.
+   // Wrap its ORIGINAL result in the same campaign-only Screech multiplier;
+   // never replace its base, Mega, boss or Arena-mode calculations.
+   if(filename==='luchador.js'&&
+      from.startsWith('get defensa(){return(')&&
+      to.includes('torre2Screech')){
+    const begin='get defensa(){return';
+    const at=body.indexOf(begin),context=at<0?'':body.slice(at,at+420);
+    if(at<0||body.indexOf(begin,at+1)>=0||
+       !context.includes('this.forma.def')||
+       !context.includes('this.jefe?.def')||
+       context.includes('torre2Screech'))
+     throw Error('Unknown native Defense getter; refusing nonlocal Screech modification: '+context);
+    const factor='(this.escena?.datos?.torre2?2/(2+(this.est?.torre2Screech?.stages||0)):1)*';
+    body=body.replace(begin,begin+factor);
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
