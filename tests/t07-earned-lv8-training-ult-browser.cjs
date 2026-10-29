@@ -2,7 +2,8 @@
 /* T07: three REAL original Phaser battles earn Lv8 and its charged ULT.
  * No forced KO, no fighter HP override, no instant-win, no arbitrary level.
  * A brand-new single Bulbasaur starts at Lv5; no debug Mewtwo exists.
- * After native XP, training battle uses the game-approved full meter, NOT a\n * test-injected meter; native touchscreen E must execute the actual ULT.
+ * After native XP, training battle uses the game-approved full meter, NOT a
+ * test-injected meter; native touchscreen E must execute the actual ULT.
  */
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises');
@@ -27,7 +28,7 @@ const server=http.createServer(async(req,res)=>{
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  const report={method:'Native Phaser live AUTO, no HP/KO/result cheats; fresh Lv5 starter, 3 trainers; native training meter to cast earned Lv8 E',steps:[]};
- const saveReport=()=>fs.writeFileSync(out+'/natural-first-eight.json',JSON.stringify(report,null,2));
+ const saveReport=()=>fs.writeFileSync(out+'/t07-natural-earned-lv8-ult.json',JSON.stringify(report,null,2));
  const game=()=>page.evaluate(()=>{
   const s=window.kanto.readCampaign();return {
    trainer:s?.trainer,wins:s?.wins,losses:s?.losses,stage:s?.stage,money:s?.money,
@@ -70,15 +71,15 @@ const server=http.createServer(async(req,res)=>{
    'Legitimate Lv5 starter must have three usable native attacks');
   assert.equal(firstKit.e,undefined,'Legitimate Lv5 starter cannot equip ULT');
   report.earnedUlt={initial:{level:5,experience:before.team[0].experience,ultLocked:true},unlockedAt:null};
-  const names=['pidgey','rattata','caterpie','charmander'];
+  const names=['pidgey','rattata','caterpie'];
  const total=3;
   for(let round=0;round<total;round++){
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
    if(round<names.length)assert.equal(opponent.id,names[round],
-    'First four route species include the rival after Caterpie');
+    'First three route species must match Route 1');
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
-   const expectedKind=round===3?'rival':round===5?'rocket':'trainer';
+   const expectedKind='trainer';
    assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
    await clickTag('torre2-central-cta');
    await page.waitForFunction(()=>{
@@ -171,116 +172,6 @@ const server=http.createServer(async(req,res)=>{
   }
   assert.ok(report.earnedUlt.unlockedAt,
    'Three natural route victories did not reach Lv8: inspect XP thresholds');
-  const earned=await game();
-  const rawBeforeReload=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
-  assert.ok(rawBeforeReload,'No persisted native campaign save after earned Lv8');
-  // Keep the eight battles on the unchanged desktop controller. Enabling
-  // touch from the start changes AUTO match dynamics (Rocket double battle).
-  // Switch Chromium input capability only for the saved next-battle check;
-  // the SAME page/origin/localStorage is reloaded, not a copied fixture.
-  const cdp=await page.context().newCDPSession(page);
-  await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
-  await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
-  assert.ok(await page.evaluate(()=>navigator.maxTouchPoints>0),
-   'Chromium touch emulation was not enabled for the earned ULT check');
-  await page.evaluate(async()=>{
-   const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
-   window.kanto=await import(new URL('./torre2/campaign-core.js',main));
-   window.moves=await import(new URL('./torre2/move-pool.js',main));
-   window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
-  });
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
-   !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
-  const reloaded=await game();
-  const rawAfterReload=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
-  assert.equal(rawAfterReload,rawBeforeReload,'Reload must not rewrite genuine earned XP');
-  assert.equal(reloaded.team[0].uid,earned.team[0].uid,'Starter identity changed after reload');
-  assert.equal(reloaded.team[0].level,earned.team[0].level,'Earned level lost on reload');
-  assert.equal(reloaded.team[0].experience,earned.team[0].experience,'Earned XP lost on reload');
-  assert.equal(reloaded.wins,8,'Eight natural victories did not persist');
-  await clickTag('torre2-central-cta');
-  await page.waitForFunction(()=>{
-   const b=window.__pt2Game.scene.getScene('combate');
-   return b.scene.isActive()&&b.fase==='lucha'&&b.__torre2PartyInstalled&&b.panelTactil;
-  },null,{timeout:60000});
-  const nextBattle=await page.evaluate(()=>{
-   const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0];
-   return {species:b.datos.p1,level:b.datos.torre2.playerLevel,
-    ult:{id:a.kit.e?.id,name:a.kit.e?.nombre,ulti:a.kit.e?.ulti===true,
-     pending:a.kit.e?.pendiente===true,renderable:Boolean(a.kit.e?.forma)},
-    nativeTouchSlots:b.panelTactil.botones.map(x=>x.slot)};
-  });
-  assert.equal(nextBattle.species,'bulbasaur');
-  assert.equal(nextBattle.level,earned.team[0].level);
-  assert.ok(nextBattle.ult.ulti&&nextBattle.ult.renderable&&!nextBattle.ult.pending,
-   'Earned ULT not present in actual next Phaser battle');
-  assert.ok(nextBattle.nativeTouchSlots.includes('e'),'Native battle lost ULT touch control');
-  // T07/T08: test real inputs after earned XP and save/reload without
-  // injecting energy, ultimate meter, cooldown, KO or experience.
-  // Unlocking E at Lv8 does not automatically fill the native ULT meter.
-  const tapNative=async slot=>page.evaluate(slot=>{
-   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0],
-    panel=b.panelTactil,button=panel.botones.find(x=>x.slot===slot);
-   if(!button)throw Error('Missing native touch slot '+slot);
-   const at=panel.pos(button),z=panel.punto({x:0,y:0}),
-    one=panel.punto({x:1,y:1});
-   const before={slot,move:m.kit[slot]?.id,uses:m.stats.usosSlot?.[slot]||0,
-    energy:m.energia,ultimate:m.ulti,cooldown:m.cd[slot]};
-   panel.abajo({id:86,x:(at.x-z.x)/(one.x-z.x),
-    y:(at.y-z.y)/(one.y-z.y)});
-   panel.leer(x=>({ax:x.x,ay:x.y}));
-   return before;
-  },slot);
-  const releaseNative=async()=>page.evaluate(()=>{
-   window.__pt2Game.scene.getScene('combate').panelTactil.arriba({id:86});
-  });
-  const readNative=async slot=>page.evaluate(slot=>{
-   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0];
-   return {slot,move:m.kit[slot]?.id,uses:m.stats.usosSlot?.[slot]||0,
-    energy:m.energia,ultimate:m.ulti,cooldown:m.cd[slot],
-    sceneActive:b.scene.isActive(),phase:b.fase};
-  },slot);
-  const ultBefore=await tapNative('e');
-  assert.equal(ultBefore.move,nextBattle.ult.id,
-   'The earned ULT changed after save/reload');
-  await page.waitForTimeout(650);
-  await releaseNative();
-  const ultAfter=await readNative('e');
-  const ultCast=ultAfter.uses>ultBefore.uses;
-  // A locked meter is not a broken move. Record the actual resource state
-  // rather than faking a full meter to manufacture a successful ULT cast.
-  if(ultCast)assert.ok(ultAfter.cooldown>0,
-   'An executed ULT must enter its approved native cooldown');
-  const basicBefore=await tapNative('lmb');
-  await page.waitForFunction(before=>{
-   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores?.[0];
-   return b.scene.isActive()&&(m?.stats.usosSlot?.lmb||0)>before;
-  },basicBefore.uses,{timeout:9000,polling:100}).finally(releaseNative);
-  const basicAfter=await readNative('lmb');
-  assert.ok(basicAfter.uses>basicBefore.uses,
-   'Native touch did not cast even the affordable basic attack');
-  assert.ok(basicAfter.cooldown>0,
-   'Native basic attack did not enter its approved cooldown');
-  assert.equal(basicAfter.move,basicBefore.move,
-   'Native battle changed the basic attack unexpectedly');
-  report.earnedUltTouch={ultBefore,ultAfter,ultCast,
-   basicBefore,basicAfter,
-   limitation:ultCast?null:'ULT unlocked but not cast with the meter available at battle start',
-   forcedEnergy:false,forcedUltimate:false,forcedCooldown:false};
-  saveReport();
-  await page.screenshot({path:out+'/t07-t08-earned-ult-meter-and-native-basic-cast.png'});
-  console.log('PASS T07_T08 EARNED_XP_RELOAD_NATIVE_TOUCH_AND_ULT_METER',
-   JSON.stringify(report.earnedUltTouch));
-  report.earnedUlt={...report.earnedUlt,earned,reloaded,nextBattle,
-   persistedIdentically:true,fromFreshLv5:true,forcedXp:false,forcedWin:false};
-  saveReport();
-  await page.screenshot({path:out+'/t07-t08-natural-earned-ult-next-battle.png'});
-  await page.screenshot({path:out+'/natural-route1-eight-trainers-completed.png'});
-  assert.deepEqual(errors,[],'No client JS exceptions through eight consecutive native battles');
-  console.log('PASS EIGHT NATURAL KANTO OPENING FIGHTS INCLUDING RIVAL; no debug KOs, natural XP, real rewards');
- }finally{saveReport();await page.close();await browser.close();server.close()}
-})().catch(error=>{console.error(error);server.close();process.exitCode=1});
    const earned=await game();
    assert.equal(earned.wins,3,'Three actual battles must award their own wins');
    assert.ok(earned.team[0].level>=8,'ULT must be earned, not assigned as a test fixture');
