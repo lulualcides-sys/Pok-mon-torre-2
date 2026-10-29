@@ -1,0 +1,35 @@
+name: Pokédex — checar site público real (não apenas build)
+on:
+  push:
+    branches: [fix/verify-public-pokedex-and-cache-20261029]
+  workflow_run:
+    workflows: ["Pokémon Torre 2 — Publicação GitHub Pages"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-pokedex:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar Chromium regression dependencies
+        run: npm install --no-audit --no-fund
+      - name: Carregar Pokédex no GitHub Pages público e conferir sete personagens
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/pokedex-public-live-browser.cjs
+      - name: Guardar evidências do site público
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokedex-public-live-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14
