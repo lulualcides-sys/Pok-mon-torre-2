@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§7/8/33/36/37 · T07/T08: desbloqueios Gen IV/V/VII e índice consultável
+
+- **§7/§8 PARCIAIS:** [PR #247](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/247), `999ce50a6733e3952d1db194a4854722c5e872fb`, sincronizou a regra de menor nível legal entre gerações; preservou prioridade FRLG, evolução, potência e exceção explícita Ponyta/Rapidash Flare Blitz Lv49. [PR #248](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/248), `97206a642c7457ac743672604b45c3306914a52f`, sincronizou o método exportado `moveUnlockLevel` com `campaignLearnset`/combate para 150 espécies normais, sem modificar a tela da Pokédex nem o Mewtwo de teste. Fire Blast Lv50 e TM exclusivamente ensináveis mantidas.
+- **§33 PARCIAL:** [CI T07 #40807234969](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40807234969) e [CI T08 #40808414999](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40808414999) **SUCESSO**: `npm test`, `check`, `check:reuse`, build, 151×227, navegador Chromium regressivo; 34.050 comparações efetivas sem discrepâncias, 1.337 TM-only. [CI main T07 #40808686246](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40808686246) e [CI main T08 #40809393268](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40809393268) **SUCESSO**.
+- **§36 PARCIAL:** sem alterar VFX/sprites aprovados, golpes, cooldowns, poder, controles, saves ou o original Poké Arena 2D. Continua pendente XP/evolução natural, save/reload efetivo, campanha completa e Android físico.
+- **§37 PARCIAL:** [Pages T07 #40808716148](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40808716148) confirmou via HTTP público `src-53ae40da1e` do SHA `999ce50a6733e3952d1db194a4854722c5e872fb`. [Pages T08 #40809424414](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40809424414) em execução: confirmar SHA servido por HTTP antes de marcar publicado.
+
 ## 28/10/2026 — §§20/31/33/36/37 · T05: checkpoints atômicos de início de batalha (PR #244)
 
 - **§20/§31 PARCIAIS:** [PR #244](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/244), squash `ea40242ea72833d0c067bc4aa696845c069d4bde`: busca selvagem, contador, Pokédex vista e primeiro treinador não alteram estado vivo antes do save; recusa de gravação mantém checkpoint, permite novo toque e não cria encontro fantasma. Dispensa de captura opcional também protegida.
