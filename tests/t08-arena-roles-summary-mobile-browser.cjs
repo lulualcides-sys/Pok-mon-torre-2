@@ -108,7 +108,7 @@ const server=http.createServer(async(req,res)=>{
    const c=__pt2Game.scene.getScene('campanha');
    const bg=c.children.list.find(o=>o.active&&o.input?.enabled&&
     o.getData?.('torre2-summary-back')===true);
-   assert.ok(bg,'No Equipe navigation control');
+   if(!bg)throw Error('No Equipe navigation control');
    const rect=__roleCanvas.getBoundingClientRect();
    return {x:rect.left+bg.x*rect.width/640,y:rect.top+bg.y*rect.height/360};
   });
