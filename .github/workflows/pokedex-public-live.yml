@@ -1,7 +1,7 @@
 name: Pokédex — checar site público real (não apenas build)
 on:
   push:
-    branches: [fix/verify-public-pokedex-and-cache-20261029]
+    branches: [fix/verify-public-pokedex-and-cache-20261029, test/t07-t08-public-150-kanto-dex-20261029]
   workflow_run:
     workflows: ["Pokémon Torre 2 — Publicação GitHub Pages"]
     types: [completed]
@@ -21,9 +21,12 @@ jobs:
           node-version: '24'
       - name: Instalar Chromium regression dependencies
         run: npm install --no-audit --no-fund
-      - name: Carregar Pokédex no GitHub Pages público e conferir sete personagens
+      - name: Conferir sete casos e 150 espécies Kanto no Pages público
         env:
           CHROME_BIN: /usr/bin/google-chrome
+          # Only the post-Pages workflow can demand the NEW public build.
+          # Branch CI checks all 150 against its freshly compiled Phaser client.
+          POKEDEX_FULL_PUBLIC_AUDIT: ${{ github.event_name == 'workflow_run' && '1' || '0' }}
         run: node tests/pokedex-public-live-browser.cjs
       - name: Validar sintaxe do carregador e testes unitários
         if: github.event_name == 'push'
