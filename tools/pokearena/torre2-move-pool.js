@@ -414,7 +414,13 @@ export function availableMoves(member){
    'sand-attack':9,'sleep-powder':10,'aerial-ace':25,
    'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':25
   };
-  if(key==='protect')return taughtCompatible(key);
+  // Protect is both TM17 and a native FRLG level-up move for nine
+  // Kanto species. Never suppress legal natural learning because of TM17.
+  if(key==='protect'){
+   const natural=frlgUnlockLevel(member.id,key);
+   return (natural!==null&&level>=campaignLevel(natural)&&
+    !evoLocked.has(key))||taughtCompatible(key);
+  }
   // Fire Blast is neither a Lv5 starter move nor a free compatible TM:
   // the existing native Fire Blast must wait until our campaign Lv50.
   // For Ponyta/Rapidash/Magmar this also respects the official late learn

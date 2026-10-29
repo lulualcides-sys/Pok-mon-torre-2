@@ -74,8 +74,13 @@ for(const {id} of KANTO_151){
   assert.ok(ids.size>=learnedAt8.size,id+' forgot known attacks at Lv'+level);
   assert.ok(!options.some(m=>m.id==='protect'&&!frlgMachineCompatible(id,'protect')),
    id+' gained incompatible Protect');
-  assert.ok(!options.some(m=>m.id==='protect'),
-   id+' auto-learned TM-only Protect');
+  // Protect is TM17 for most species, but nine Kanto species genuinely
+  // learn it by FRLG level-up. The editor must respect BOTH legal routes.
+  const protectLevel=frlgUnlockLevel(id,'protect');
+  const naturallyLearned=protectLevel!==null&&
+   level>=Math.min(KANTO_CAMPAIGN_MOVE_CAP,protectLevel);
+  assert.equal(options.some(m=>m.id==='protect'),naturallyLearned,
+   id+' Protect level-up / TM17 eligibility mismatch at Lv'+level);
   for(const move of options){
    assert.ok(move.forma,id+' has an unrendered option '+move.id);
    // Native stat / dodge / status techniques can have no numeric damage.
