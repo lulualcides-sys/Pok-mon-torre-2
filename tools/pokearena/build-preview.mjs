@@ -648,6 +648,22 @@ for(const [filename,changes] of patches){
     body=body.replace(before,steel+before);
     continue;
    }
+   // Native status callbacks changed in a newer upstream client. The
+   // campaign's Gen III status interceptor is already attached above to
+   // ponerEstado itself; do not rewrite an unrelated native poison handler.
+   if(filename==='luchador.js'&&
+      from.startsWith('this.ponerEstado("veneno",v.dur,')&&
+      to.includes('v.toxic?"toxic":"veneno"')){
+    const pattern=/this\.ponerEstado\(\s*"veneno"\s*,\s*v\.dur\s*,\s*\{[^}]{0,140}\}\s*\)/;
+    const match=body.match(pattern);
+    if(match){
+     body=body.replace(match[0],to);
+    }else if(body.includes('applyGen3Status(this,nombre,datos)')&&
+             body.includes('ponerEstado(')){
+     console.warn('Native poison invocation changed; Kanto Gen3 status interceptor retained');
+    }else throw Error('Cannot identify native status interceptor after upstream poison change');
+    continue;
+   }
    // October upstream adjusted the fighter's underlying Defense formula.
    // Wrap its ORIGINAL result in the same campaign-only Screech multiplier;
    // never replace its base, Mega, boss or Arena-mode calculations.
