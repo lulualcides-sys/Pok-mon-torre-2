@@ -225,11 +225,23 @@ create(){
  starterSelection(){
   text(this,ANCHO/2,73,'ESCOLHA SEU PRIMEIRO POKÉMON',{color:C.gold,fontSize:'19px'}).setOrigin(.5);
   text(this,ANCHO/2,111,'Campanha Kanto: 13 treinadores antes do primeiro ginásio.',statusStyle).setOrigin(.5);
+  // A blocked first write must not crash Phaser or leave a phantom journey.
+  // Keep the three native choices available for retry when storage returns.
+  const saveError=text(this,ANCHO/2,326,'NÃO FOI POSSÍVEL SALVAR · TENTE NOVAMENTE',{
+   fontSize:'11px',color:'#ff9d9d'
+  }).setOrigin(.5).setVisible(false).setData('torre2-starter-save-error',true);
   STARTERS.forEach((id,i)=>{
    const x=135+i*185;
    this.button(x,180,166,58,id.toUpperCase(),()=>{
-    saveCampaign(createCampaign(id));this.scene.restart();
-   },true);
+    try{
+     saveCampaign(createCampaign(id));
+    }catch(error){
+     console.warn('Torre 2: starter selection could not be saved',error);
+     saveError.setVisible(true);
+     return;
+    }
+    this.scene.restart();
+   },true).setData('torre2-starter-select',id);
   });
   text(this,ANCHO/2,270,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',statusStyle).setOrigin(.5);
   text(this,ANCHO/2,294,'Mewtwo nível 50 será adicionado à equipe para testes.',statusStyle).setOrigin(.5);
