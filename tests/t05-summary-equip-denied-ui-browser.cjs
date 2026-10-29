@@ -47,9 +47,11 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:65000});
   const prepare=async()=>page.evaluate(()=>{
    const core=window.__summaryCore,pool=window.__summaryPool;
-   const s=core.createCampaign('squirtle');
-   s.team[1].moves=pool.selectedMoves(s.team[1]);
-   s.team[1].movePlanSpecies=s.team[1].id;
+   const initial=core.createCampaign('squirtle');
+   initial.team[1].moves=pool.selectedMoves(initial.team[1]);
+   initial.team[1].movePlanSpecies=initial.team[1].id;
+   core.saveCampaign(initial);
+   const s=core.readCampaign();
    core.saveCampaign(s);
    const c=window.__pt2Game.scene.getScene('campanha');
    c.summaryFilter='ALL';c.summarySearch='';c.__summaryState=s;
