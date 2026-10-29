@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/31/33/36/37 · T05: sumário de golpes com gravação atômica
+
+- **§7/§8/§31 PARCIAIS:** [PR #255](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/255), commit `a6489d88e83447696e8f44ae4ea0b95077098419`: o editor de golpes do sumário não modifica mais o Pokémon vivo antes de salvar; a seleção é validada na cópia, persiste antes do commit em RAM, mostra erro recuperável quando `localStorage` recusa e preserva os quatro slots anteriores. Nenhum desbloqueio, TM ou efeito foi refeito.
+- **§33 PARCIAL:** [CI branch #40814769576](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40814769576), [CI main #40815489492](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40815489492) e [REA #40815489473](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40815489473) **SUCESSO**. Incluídos testes compilados com falha de gravação primária/backup, retry, reload, identidade da equipe e toque no sumário Phaser/WebGL pelo Chromium móvel; `npm test`, `check`, `check:reuse`, build e regressões completas passaram.
+- **§36 PARCIAL:** preservados golpes/VFX/pixel art/sprites/cooldowns, controles aprovados, save v1 e frentes T03/T04/Toxic/Shiny. Falha de armazenamento é **fixture**, não Android físico nem jornada natural.
+- **§37 PARCIAL:** [Pages #40815517623](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40815517623) **SUCESSO**, `pages_build_version=a6489d88e83447696e8f44ae4ea0b95077098419`; HTTP público confirmou `src-fde1b99a53` às **04:07:13 UTC de 29/10/2026**. Nenhuma seção adicional foi declarada integralmente VALIDADA.
+
+
 ## 28/10/2026 — §§7/8/33/36/37 · T07/T08: desbloqueios Gen IV/V/VII e índice consultável
 
 - **§7/§8 PARCIAIS:** [PR #247](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/247), `999ce50a6733e3952d1db194a4854722c5e872fb`, sincronizou a regra de menor nível legal entre gerações; preservou prioridade FRLG, evolução, potência e exceção explícita Ponyta/Rapidash Flare Blitz Lv49. [PR #248](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/248), `97206a642c7457ac743672604b45c3306914a52f`, sincronizou o método exportado `moveUnlockLevel` com `campaignLearnset`/combate para 150 espécies normais, sem modificar a tela da Pokédex nem o Mewtwo de teste. Fire Blast Lv50 e TM exclusivamente ensináveis mantidas.
