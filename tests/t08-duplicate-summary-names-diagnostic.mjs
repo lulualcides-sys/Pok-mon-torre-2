@@ -2,8 +2,9 @@ import fs from 'node:fs';import path from 'node:path';import {pathToFileURL} fro
 const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const modules=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8')).modules;
 const load=name=>import(pathToFileURL(path.join(base,modules,name)).href);
-const [{ROSTER,buscar},{LEVEL_EVOLUTIONS},{selectedMoves,resolveLoadout}]=await Promise.all([
- load('datos.js'),load('torre2/progression.js'),load('torre2/move-pool.js')
+const {LEVEL_EVOLUTIONS}=await import('../src/progression.js');
+const [{ROSTER,buscar},{selectedMoves,resolveLoadout}]=await Promise.all([
+ load('datos.js'),load('torre2/move-pool.js')
 ]);
 let collisions=[],tested=0;
 for(const def of ROSTER){
