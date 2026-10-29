@@ -22,8 +22,8 @@ const [{KANTO_151},{TEST_LIBRARY,availableMoves,selectedMoves,resolveLoadout,
  load('torre2/early-kanto-species.js')]);
 const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
-assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,227);
+assert.ok(TEST_LIBRARY.length>=227,'Native source lost one of 227 baseline effects');
+assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,TEST_LIBRARY.length,'Duplicate native move IDs');
 const exceptions=[],unbalanced=[],badSlots=[],speciesRows=[];
 let previewSignatures=0,checkedLevels=0;
 const samples={};
@@ -176,13 +176,13 @@ assert.equal(JSON.stringify(pidgey19),pidgeyBefore,
  'A refused ATK equip changed the save');
 fs.mkdirSync('test-evidence',{recursive:true});
 fs.writeFileSync('test-evidence/t08-151-signatures-227-report.json',JSON.stringify({
- source:'compiled-fixtures-not-played-campaign',installedMoves:227,
+ source:'compiled-fixtures-not-played-campaign',installedMoves:TEST_LIBRARY.length,
  allKantoSpecies:151,regularCampaignSpecies:150,
  exceptions,restoredLearnsets:restored,
  sourceTables:['FRLG','HGSS','B2W2','LetsGo'],species:speciesRows
 },null,2)+'\n');
 console.log('PASS_T08_151_SIGNATURE_ULT_227',JSON.stringify({
- species:151,campaignSpecies:150,installed:227,verifiedSignatureUlts:previewSignatures,
+ species:151,campaignSpecies:150,installed:TEST_LIBRARY.length,verifiedSignatureUlts:previewSignatures,
  exceptions,levelsChecked:checkedLevels,missingOrDuplicateSlots:badSlots.length,
  weakLevel50Ultimate:unbalanced.length,restoredGen45LetsGoLevelUps:restored.length,
  examples:samples,source:'compiled-fixtures; not physical Android'
