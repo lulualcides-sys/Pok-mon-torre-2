@@ -700,6 +700,23 @@ for(const [filename,changes] of patches){
     body=body.slice(0,start)+body.slice(start).replace(native,updated);
     continue;
    }
+   // The original team-selection renderer changed its metadata field
+   // names. Retain its updated built-in role/kit fallbacks; only fix the
+   // previous exact unguarded expression if it still exists.
+   if(filename==='escenas/seleccion.js'&&from==='const R=ROLES[r];'){
+    if(body.includes('const R=ROLES[r]'))body=body.replace(
+     'const R=ROLES[r]','const R=ROLES[r]??ROLES.MIXTO');
+    else console.warn('Native team selection changed role lookup; preserving original');
+    continue;
+   }
+   if(filename==='escenas/seleccion.js'&&
+      from.startsWith('const h=p.kit[slot];const ky=')){
+    if(body.includes('const h=p.kit[slot]'))
+     body=body.replace('const h=p.kit[slot]',
+      'const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0}');
+    else console.warn('Native team selection changed kit lookup; preserving original');
+    continue;
+   }
    // October upstream adjusted the fighter's underlying Defense formula.
    // Wrap its ORIGINAL result in the same campaign-only Screech multiplier;
    // never replace its base, Mega, boss or Arena-mode calculations.
