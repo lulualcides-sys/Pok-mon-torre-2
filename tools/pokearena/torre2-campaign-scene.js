@@ -1310,7 +1310,14 @@ create(){
       this.summaryWarning=reason.includes('ULT')?
        'GOLPE FORTE: SELECIONE E (ULT)':
        'SLOT CORRETO: '+slotNames[suggestion]+' · TOQUE NO GOLPE NOVAMENTE';
-      this.showSummary(state,index,suggestion,0);
+      // Keep the requested move visible after switching the active slot.
+      // The compatible rows are sorted ahead of blocked rows, so page zero
+      // is not always the page containing the move the player tapped.
+      const reordered=filterMoveLibrary(pool,this.summaryFilter,this.summarySearch)
+       .sort((a,b)=>Number(!!campaignMoveSlotReason(member,suggestion,a))-
+        Number(!!campaignMoveSlotReason(member,suggestion,b)));
+      const row=reordered.findIndex(option=>option.id===move.id);
+      this.showSummary(state,index,suggestion,row<0?0:Math.floor(row/6));
      }else{
       this.summaryWarning='BLOQUEADO: '+reason;
       this.showSummary(state,index,activeSlot,0);
