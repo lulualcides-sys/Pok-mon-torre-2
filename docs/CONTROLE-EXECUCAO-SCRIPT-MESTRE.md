@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/33/36/37 · T07/T08: fontes verificadas nos três slots iniciais
+
+- **§7/§8 PARCIAIS:** [PR #286](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/286), squash `1652fbeca96359d28a977de6936f996b418ae04f`. Slots Lv5 anteriormente preenchidos por Struggle podem usar somente ataques fracos de espécie comprovados em HGSS/B2W2/Let's Go e já renderizados, sem substituir as escolhas FRLG/curadas existentes. Ponyta usa Quick Attack + Ember fraco + Tackle real da geração IV/VII; Vulpix tem cobertura unitária de alias Gen VII. Scratch adiado, Surf reprovado e Ditto/Transform sem VFX continuam excluídos.
+- **§33 PARCIAL:** [CI branch #40876873091](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40876873091) **SUCESSO** com unitários, `check`, `check:reuse`, build, matriz 151×227, Lv5–50, FRLG/TMs, Chromium real móvel e suíte completa; [main #40878011958](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40878011958) **SUCESSO**. Teste de toque usou fixture Ponyta, não jornada/XP naturalmente conquistados.
+- **§36 PARCIAL:** sem criar/modificar VFX, sprites, cooldowns, controles, TM ou formato de saves; frentes Toxic #16 e Shiny #17 intactas. Faltam 136 renderizadores FRLG e verificação das quatro fontes/licenças antes de qualquer VFX novo.
+- **§37 PARCIAL:** duas tentativas Pages para `1652fbec` canceladas por concorrência; [Pages #40879179659](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40879179659) ainda em andamento para SHA descendente `fa8bd008c437d58adb0c9c144e964e5cbe5ac3ea`. **Não há verificação HTTP final nesta entrada.** Não marcar nenhuma seção VALIDADA sem prova.
+
 
 ## 29/10/2026 — §§7/8/33/36/37 · T07/T08: lacunas FRLG e Struggle visualmente coerente
 
