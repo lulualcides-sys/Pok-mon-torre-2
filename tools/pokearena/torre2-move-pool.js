@@ -645,7 +645,6 @@ export function campaignMoveSlotReason(member,slot,move){
  if(slot===3&&level<KANTO_INTRO.tutorialUntil&&!move.torre2IntroPractice)
   return 'ULT FORTE APÓS NV. 12';
  if(slot===0){
-  if(!(Number(move.dano)>0))return 'ATK PRECISA CAUSAR DANO';
   if(isCampaignUltimateOnlyMove(move)||Number(move.dano)>9)
    return 'GOLPE FORTE: SÓ ULT';
  }
