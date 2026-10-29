@@ -1132,7 +1132,9 @@ create(){
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
   const slotReason=move=>campaignMoveSlotReason(member,activeSlot,move);
-  const battleKit=resolveLoadout(member),introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
+  const battleKit=resolveLoadout(member);
+  // Highlight exactly the moves the battle controller will execute.
+  const equippedIds=['lmb','rmb','q','e'].map(key=>battleKit[key]?.id||null);
   const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
   this.summaryFilter??='ALL';this.summarySearch??='';
   const slotCodes=['LMB','RMB','Q','E'];
@@ -1220,9 +1222,8 @@ create(){
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
   label(231,78,'1. TOQUE NO SLOT   2. ESCOLHA O GOLPE NA LISTA',C.muted,9);
   slotCodes.forEach((_,i)=>{
-   const id=chosen[i],battleSlot=['lmb','rmb','q','e'][i];
-   const nativeMove=pool.find(m=>m.id===id);
-   const move=introStage?(battleKit[battleSlot]||null):nativeMove;
+   const battleSlot=['lmb','rmb','q','e'][i];
+   const move=battleKit[battleSlot]||null;
    const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
    const current=activeSlot===i;
    const bg=box(x,y,189,39,current?0x294765:0x172d43,current?0xf0cb6d:0x385772);
@@ -1259,6 +1260,7 @@ create(){
      canonicalMoveKey(move.torre2IntroSource||move.nombre);
     const old=byName.get(key);
     const score=m=>
+     (equippedIds[activeSlot]===m.id?120:0)+
      (m.torre2IntroPractice?(stats.level<=8?30:1):(stats.level>8?30:0))+
      (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0)+
      (slotReason(m)===null?50:0);
@@ -1269,7 +1271,8 @@ create(){
   // Learned moves all remain visible; compatible choices appear first.
   // No hidden ULT in HAB slots or silent equip failure on mobile.
   const displayed=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch))
-   .sort((a,b)=>Number(!!slotReason(a))-Number(!!slotReason(b)));
+   .sort((a,b)=>Number(!!slotReason(a))-Number(!!slotReason(b))||
+    Number(equippedIds[activeSlot]!==a.id)-Number(equippedIds[activeSlot]!==b.id));
   const compatibleCount=displayed.filter(m=>!slotReason(m)).length;
   label(230,195,'BIBLIOTECA · '+displayed.length+' GOLPES',C.gold,12);
   button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
@@ -1292,8 +1295,8 @@ create(){
   const rowsY=223;
   filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
    const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
-   const equipped=chosen.includes(move.id);
-   const current=chosen[activeSlot]===move.id;
+   const equipped=equippedIds.includes(move.id);
+   const current=equippedIds[activeSlot]===move.id;
    const pending=isPendingApprovalMove(move),reason=slotReason(move);
    const bg=box(x,y,188,27,current?0x275749:reason?0x162737:equipped?0x1e434c:0x1a344d,
     current?0x73d8b0:reason?0x53667b:equipped?0x658e96:0x3c6283);
@@ -1330,6 +1333,11 @@ create(){
      console.warn('Torre 2: summary move equip not saved',error);
      this.summaryWarning='TROCA NÃO SALVA · TENTE NOVAMENTE';
      this.showSummary(state,index,activeSlot,safePage);
+     return;
+    }
+    if(equippedNow){
+     this.summaryWarning=null;
+     this.showSummary(state,index,activeSlot,0);
      return;
     }
     if(!equippedNow)
