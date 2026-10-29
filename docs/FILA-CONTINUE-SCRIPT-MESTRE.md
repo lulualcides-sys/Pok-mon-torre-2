@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 28/10/2026 — T03/T05: evolução Eevee transacional no PC/equipe (PR #234)
+
+- **Implementado e integrado:** [PR #234](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/234), squash `811137633cc7c1fc8721d84c52283d3ca1b8d097`. A escolha de Vaporeon/Jolteon/Flareon no Lv30 prepara evolução, Pokédex, slots e mensagem em snapshot separado; `saveCampaign` grava antes de alterar Eevee em memória. Recusa da gravação primária ou do backup mantém a evolução pendente, a equipe/PC e os objetos originais; UI Phaser mostra erro e permite novo toque. Nenhum golpe/VFX/sprite/cooldown, save key ou formato alterado.
+- **Provas:** [CI branch #40790262909](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40790262909) **SUCESSO**: `npm test`, `check`, `check:reuse`, build Phaser/WebGL, quatro casos novos (PC/equipe × negação primário/backup), regressão das três evoluções, toques móveis reais em Chromium com duas recusas + retry e `npm run test:browser` completo. [CI main #40791204928](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40791204928) **SUCESSO**.
+- **Publicação HTTP confirmada:** [Pages #40791239485](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40791239485) **SUCESSO** para `pages_build_version=811137633cc7c1fc8721d84c52283d3ca1b8d097`; o job conferiu via **HTTP público** a versão `src-4c1089e50f` às **00:05:05 UTC de 29/10/2026**.
+- **Limites:** nível 30, equipe/PC e negação de storage são fixtures, não progressão natural nem Android físico. T03/T05 e §§5/7/8/31/33/36/37 **PARCIAIS**. Próximo item independente: transação de recompensas de batalha/revanche e validação natural Pallet→Campeão; preservar PRs #16/#17/#210/#213.
+
+
 ## 28/10/2026 — T05/T23: uso de remédios e ensino de TMs transacionais, publicados (PR #227)
 
 - **Código integrado:** [PR #227](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/227), squash `e0dce9a2faebee8f13b5af188ecd34d73342fd46`. `usePotion`, `useStatusCure` e `teachTM` agora salvam o Pokémon, a bolsa e a mensagem juntos **antes** de alterar o estado vivo; falha de gravação mantém HP, status, TM, dinheiro, objetos de equipe e inventário inalterados. BAG e tela de remédios exibem erro vermelho e permitem retry. Nenhuma alteração em VFX, sprites, golpes, cooldowns, formato de saves ou controles originais.
