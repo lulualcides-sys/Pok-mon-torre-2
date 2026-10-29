@@ -716,11 +716,18 @@ export function equipMove(member,slot,moveId){
     slot===3&&!picked.torre2IntroPractice)return false;
  if(picked.torre2IntroSlot&&picked.torre2IntroSlot!==SLOTS[slot])return false;
  const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
- // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
- if(early&&slot===0&&moveId!==canonicalMoveKey(early[0])&&
-    picked.torre2IntroSlot!=='lmb')return false;
- if(early&&slot===3&&moveId!==canonicalMoveKey(early[3])&&
-    picked.torre2IntroSlot!=='e')return false;
+ // The default four-role plan is a recommendation, NOT a permanent
+ // prohibition on selecting another legitimately learned species move.
+ // Keep Lv5-8 training-only, Lv8-12 weak ULT and the basic ATK power cap.
+ // A learned attack can replace ATK from Lv9; a genuine ULT from Lv13.
+ // Original VFX, damage, CD and learn levels remain unchanged.
+ if(early&&slot===0&&picked.torre2IntroSlot!=='lmb'){
+  const basic=Number(picked.dano);
+  if(level<=KANTO_INTRO.ultAt||!Number.isFinite(basic)||
+     basic<=0||basic>12||picked.ulti===true)return false;
+ }
+ if(early&&slot===3&&picked.torre2IntroSlot!=='e'&&
+    level<KANTO_INTRO.tutorialUntil)return false;
  const chosen=selectedMoves(member);
  if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;
  if(early){chosen[slot]=moveId;member.moves=chosen;member.movePlanSpecies=member.id;return true;}
