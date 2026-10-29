@@ -726,7 +726,7 @@ for(const [filename,changes] of patches){
     const key='const img=this.add.image(x+2,y+3,\`retrato-${p.dex}\`)';
     const at=body.indexOf(key),end=at<0?-1:body.indexOf(';',at+key.length);
     if(at<0||end<0||end-at>240)
-     throw Error('Native selection portrait initializer changed; refusing to guess placement: '+body.slice(Math.max(0,body.indexOf('retrato-')-130),body.indexOf('retrato-')+230));
+     throw Error('Native selection portrait initializer changed; refusing to guess placement: '+body.slice(Math.max(0,body.indexOf('const bloqueado=')-330),body.indexOf('const bloqueado=')+200));
     if(!body.slice(end+1,end+155).includes('ponerRetrato(this,img,p.dex)'))
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
