@@ -115,9 +115,19 @@ for(const [id,move,at] of restored){
   id+' Pokedex/real unlock diverged for '+move);
 }
 for(const [id,move] of [['psyduck','surf'],['tentacruel','surf'],
+ ['squirtle','surf'],['blastoise','surf'],['lapras','surf'],
+ ['vaporeon','surf'],['dragonite','surf'],
  ['sandshrew','protect'],['sandslash','protect']])
  assert.ok(!availableMoves(make(id,50)).some(m=>m.id===move),
   'Rejected Surf or TM-only FRLG Protect auto-granted for '+id);
+// Even a legal HM/TM claim cannot enable a rejected renderer. This does not
+// erase the claim from existing saves or modify the 227 installed effects.
+const surfSave={...make('squirtle',50),tmMoves:['surf']};
+const surfSaveBefore=JSON.stringify(surfSave);
+assert.ok(!availableMoves(surfSave).some(m=>m.id==='surf'));
+assert.equal(JSON.stringify(surfSave),surfSaveBefore);
+assert.ok(!resolveLoadout(make('charmander',5)).lmb?.torre2IntroFallbackFX,
+ 'Deferred Scratch must not impersonate a Tackle renderer');
 const saved={...make('squirtle',50),
  moves:['water-gun','bite','bubble-beam','hydro-pump'],movePlanSpecies:'squirtle'};
 const before=JSON.stringify(saved);
