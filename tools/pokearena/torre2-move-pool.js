@@ -774,12 +774,18 @@ function uniqueCampaignSlots(ids,available,member){
   const id=result[slot];if(!id)continue;
   const m=byId.get(id),name=keyOf(id);
   const introUlt=slot===3&&m?.torre2IntroPractice;
+  // The capped Lv8 ULT preview is a separate action for onboarding, but
+  // at Lv13+ its underlying move name must not be duplicated in a normal
+  // HAB slot (Cubone/Marowak Bonemerang was both Q and ULT).
+  // Prefer keeping the exclusive charged ULT and finding another already
+  // unlocked, species-legal skill for the normal slot; never grant a TM.
+  const reserveUltimateName=introUlt&&(member.progression?.level??5)>=13;
   if(!m||campaignMoveSlotReason(member,slot,m)||usedIds.has(id)||
      (!introUlt&&usedNames.has(name))){
    result[slot]=null;missing.push({slot,original:id});
   }else{
    usedIds.add(id);
-   if(!introUlt)usedNames.add(name);
+   if(!introUlt||reserveUltimateName)usedNames.add(name);
   }
  }
  const candidates=available.filter(m=>m?.id&&m.forma&&
