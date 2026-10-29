@@ -18,15 +18,14 @@ export const ARENA_NATIVE_EVASION_PRESETS=Object.freeze({
  'Agility':'magnemite magneton voltorb electrode scyther electabuzz jolteon dratini dragonair dragonite aerodactyl tauros pinsir porygon mew',
  'Quick Attack':'rattata raticate nidoran-f nidorina nidoran-m nidorino meowth persian mankey primeape eevee jolteon doduo dodrio tauros kangaskhan electabuzz',
  'Volt Tackle':'jolteon electabuzz magneton magnemite',
- 'Vine Whip':'oddish gloom vileplume bellsprout weepinbell victreebel tangela',
- 'Splash':'pol iw ag'.replaceAll(' ','') // reserved native Splash when specifically preferred
+ 'Vine Whip':'oddish gloom vileplume bellsprout weepinbell victreebel tangela'
 });
-const idOf=s=>String(s||'').normalize('NFKD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 export const ARENA_NATIVE_DODGE_FORMS=Object.freeze(['dash','vuelo']);
 export function dodgeOptionsForSpecies(species){
  const id=idOf(species),result=[];
  for(const [name,group] of Object.entries(ARENA_NATIVE_EVASION_PRESETS))
-  if(group.split(/\\s+/).includes(id))result.push(name);
+  if(group.split(/\s+/).includes(id))result.push(name);
  // Keep a real physical fallback; never build a fake sprite or edit a
  // source-client move just to make a novelty animation.
  result.push('Quick Attack','Agility','Acrobatics','Tackle','Teleport');
