@@ -39,6 +39,9 @@ const expected={
   assert.equal(verResponse.status(),200,'Public version.json not found');
   const version=await verResponse.json();
   assert.match(version.modules||'',/^src-[a-f0-9]{10}$/);
+  if(process.env.EXPECTED_POKEDEX_BUILD)
+   assert.equal(version.modules,process.env.EXPECTED_POKEDEX_BUILD,
+    'Public Pages is serving an older build than the deployment just uploaded');
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('pokedex'),
    null,{timeout:90000});
   const result=await page.evaluate(async(expect)=>{
