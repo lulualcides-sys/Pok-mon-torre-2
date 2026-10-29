@@ -43,7 +43,13 @@ for(const {id} of KANTO_151){
 }
 const squirtle=make('squirtle',50);
 const squirtleSelected=selectedMoves(squirtle);
-assert.ok(squirtleSelected.includes('bubble-beam'));
+// Bubble Beam is a stronger native Water attack, now reserved for the
+// full-meter E slot when chosen manually; it must never be auto-injected
+// into HAB2/3 just to fill a duplicated original role.
+const bubbleBeam=availableMoves(squirtle).find(m=>m.id==='bubble-beam');
+assert.ok(bubbleBeam,'Legally learned Bubble Beam disappeared from editor');
+assert.ok(!squirtleSelected.slice(0,3).includes('bubble-beam'),
+ 'Native stronger Bubble Beam must not bypass the charged ULT gate');
 assert.ok(squirtleSelected.includes('hydro-pump'));
 assert.ok(!squirtleSelected.some((x,i)=>squirtleSelected.indexOf(x)!==i));
 assert.ok(squirtleSelected.includes('bite'),
