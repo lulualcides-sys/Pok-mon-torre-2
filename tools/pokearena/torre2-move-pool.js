@@ -229,11 +229,13 @@ function campaignIntroOptions(member){
   const base=preview[slot];
   if(!base?.forma)return [];
   const source=canonicalMoveKey(base.torre2IntroSource||base.nombre);
-  const name=String(base.nombre).replace(/ · Treino$/,'');
+  // Genuine installed move names stay visible. Early power caps are internal
+  // campaign balance metadata, not additional named attacks in the menu.
+  const name=String(base.nombre).replace(/ · Treino$/,'').replace(/^ULT · /,'');
   return [{
    ...base,
    id:'torre2-intro-'+slot+'-'+source,
-   nombre:index===3?name:name+' · Treino',
+   nombre:name,
    torre2IntroPractice:true,
    torre2IntroSlot:slot,
    torre2IntroUnlockLevel:index===3?8:5,
@@ -717,9 +719,15 @@ export function equipMove(member,slot,moveId){
  if(picked.torre2IntroSlot&&picked.torre2IntroSlot!==SLOTS[slot])return false;
  const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
- if(early&&slot===0&&moveId!==canonicalMoveKey(early[0])&&
+ // A learned native move can replace the fixed ATK from Lv9 onward.
+ // The first eight levels retain the approved weak onboarding controls.
+ if(early&&level<=KANTO_INTRO.ultAt&&slot===0&&
+    moveId!==canonicalMoveKey(early[0])&&
     picked.torre2IntroSlot!=='lmb')return false;
- if(early&&slot===3&&moveId!==canonicalMoveKey(early[3])&&
+ // The early ULT is power-capped until Lv12. After that the player may
+ // freely choose any legally unlocked technique for the energy-gated E slot.
+ if(early&&level<KANTO_INTRO.tutorialUntil&&slot===3&&
+    moveId!==canonicalMoveKey(early[3])&&
     picked.torre2IntroSlot!=='e')return false;
  const chosen=selectedMoves(member);
  if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;

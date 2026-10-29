@@ -10,7 +10,7 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
+import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
@@ -1113,6 +1113,13 @@ create(){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  // Exclusive mobile screen: prevent touches on Back and attack rows from
+  // passing to other scene hotspots (notably original fullscreen behind it).
+  this.scene.bringToTop();
+  this.input.setTopOnly(true);
+  this.add.zone(320,180,640,360).setDepth(2).setInteractive()
+   .setData('torre2-summary-input-shield',true)
+   .on('pointerdown',(_pointer,_x,_y,event)=>event?.stopPropagation?.());
   const member=state.team[index];
   if(!member)return this.scene.restart();
   const stats=pokemonStats(member),pool=availableMoves(member);
@@ -1136,13 +1143,15 @@ create(){
    return rect;
   };
   const label=(x,y,caption,color='#dceaff',size=11)=>text(this,x,y,caption,{
-   fontSize:size+'px',color});
+   fontSize:size+'px',color}).setDepth(16);
   const button=(x,y,w,h,caption,click,selected=false)=>{
    const bg=box(x,y,w,h,selected?0x28465f:0x1b314a,selected?0xe7c56a:0x52718f);
-   bg.setInteractive({useHandCursor:true});
+   bg.setDepth(12).setInteractive({useHandCursor:true});
    bg.on('pointerover',()=>bg.setFillStyle(selected?0x385b79:0x2d506f));
    bg.on('pointerout',()=>bg.setFillStyle(selected?0x28465f:0x1b314a));
-   bg.on('pointerdown',click);
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();click();
+   });
    const name=label(x+w/2,y+h/2,caption,selected?'#ffe09a':'#e1eeff',11);
    name.setOrigin(.5);
    return bg;
@@ -1150,7 +1159,8 @@ create(){
   // Distinct header and unified back navigation.
   box(10,8,620,36,0x10243d,0x456b91);
   label(23,15,'POKÉMON / SUMÁRIO',C.gold,16);
-  button(521,13,98,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
+  // Avoid the legacy fullscreen hitbox around x=624.
+  button(494,13,108,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);
@@ -1162,7 +1172,7 @@ create(){
   box(25,103,82,81,0x091726,0x365b78);
   const portrait=()=>{
    if(!this.scene.isActive()||!this.textures.exists(key))return;
-   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(2);
+   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(3);
   };
   if(this.textures.exists(key))portrait();
   else{
@@ -1198,8 +1208,7 @@ create(){
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
-  label(231,78,earlyPlan?'LMB ATK  ·  RMB HAB 2  ·  Q HAB 3  ·  E ULT  ·  ESP ESQUIVA':
-   'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,earlyPlan?8:9);
+  label(231,78,'1. TOQUE NO SLOT   2. ESCOLHA O GOLPE NA LISTA',C.muted,9);
   slotCodes.forEach((_,i)=>{
    const id=chosen[i],battleSlot=['lmb','rmb','q','e'][i];
    const nativeMove=pool.find(m=>m.id===id);
@@ -1207,8 +1216,10 @@ create(){
    const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
    const current=activeSlot===i;
    const bg=box(x,y,189,39,current?0x294765:0x172d43,current?0xf0cb6d:0x385772);
-   bg.setInteractive({useHandCursor:true});
-   bg.on('pointerdown',()=>this.showSummary(state,index,i,0));
+   bg.setDepth(12).setInteractive({useHandCursor:true});
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();this.showSummary(state,index,i,0);
+   });
    bg.on('pointerover',()=>bg.setFillStyle(0x335977));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x294765:0x172d43));
    label(x+8,y+4,slotCodes[i]+' · '+slotNames[i],
@@ -1218,7 +1229,7 @@ create(){
    label(x+8,y+18,move?.nombre??(introStage&&i===3&&stats.level<8?
     'ULT · DESBLOQUEIA NV. 8':upcoming?
     upcoming+' · LV '+(need??'EVO'):'—'),move?C.white:'#f5c578',move?12:10);
-   if(move?.torre2IntroPractice)label(x+8,y+31,'TREINO · PODER REDUZIDO','#b1cfde',7);
+   if(move?.torre2IntroPractice)label(x+8,y+31,'INICIAL · POTÊNCIA EQUILIBRADA','#b1cfde',7);
    label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
    label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
   });
@@ -1229,7 +1240,23 @@ create(){
   }
   // Separated library with filters and paging: can navigate Mewtwo moves.
   this.add.rectangle(424,189,384,1,0x446580);
-  label(230,195,'BIBLIOTECA · '+pool.length+' GOLPES',C.gold,12);
+  // Power-capped Lv5 adapters use existing VFX but are NOT different
+  // species moves. List just one named option per native technique.
+  const dedupeByMove=moves=>{
+   const byName=new Map();
+   for(const move of moves){
+    const key=(move.torre2IntroSlot==='e'?'ULT:':'MOVE:')+
+     canonicalMoveKey(move.torre2IntroSource||move.nombre);
+    const old=byName.get(key);
+    const score=m=>
+     (m.torre2IntroPractice?(stats.level<=8?30:1):(stats.level>8?30:0))+
+     (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0);
+    if(!old||score(move)>score(old))byName.set(key,move);
+   }
+   return [...byName.values()];
+  };
+  const displayed=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch));
+  label(230,195,'BIBLIOTECA · '+displayed.length+' GOLPES',C.gold,12);
   button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
   button(541,187,75,25,'BUSCAR',()=>{
    const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
@@ -1238,7 +1265,7 @@ create(){
    this.showSummary(state,index,activeSlot,0);
   });
   // Virtual NEW tab shows only not-yet-approved Torre 2 moves.
-  const filtered=filterMoveLibrary(pool,this.summaryFilter,this.summarySearch);
+  const filtered=displayed;
   const pageSize=6,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const safePage=Math.min(pages-1,Math.max(0,page));
   if(this.summaryFilter!=='ALL'||this.summarySearch)
@@ -1253,8 +1280,10 @@ create(){
    const pending=isPendingApprovalMove(move);
    const bg=box(x,y,188,27,current?0x275749:equipped?0x1e434c:0x1a344d,
     current?0x73d8b0:equipped?0x658e96:0x3c6283);
-   bg.setInteractive({useHandCursor:true}).setData('torre2-equip-move',move.id);
-   bg.on('pointerdown',()=>{
+   bg.setDepth(12).setInteractive({useHandCursor:true})
+    .setData('torre2-equip-move',move.id);
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();
     let equippedNow=false;
     try{equippedNow=equipCampaignMove(state,index,activeSlot,move.id);}
     catch(error){
@@ -1264,12 +1293,17 @@ create(){
      return;
     }
     if(!equippedNow)
-     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':'GOLPE NÃO DISPONÍVEL.';
+     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':
+      activeSlot===3&&stats.level<13?
+       'ULT EQUILIBRADA ATÉ NV.12 · SELECIONE ATK/HAB 2/HAB 3':
+       'GOLPE NÃO DISPONÍVEL PARA ESSE SLOT.';
     this.showSummary(state,index,activeSlot,safePage);
    });
    bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
-   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+move.nombre+(move.approved?' ✓':''),
+   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+
+    (move.torre2IntroSlot==='e'?'ULT · ':'')+move.nombre+
+    (move.approved?' ✓':''),
     current?'#bcffe3':'#ebf5ff',10);
    label(x+6,y+16,move.tipo,C.muted,8);
    if(pending)label(x+77,y+16,'NEW','#ffdc89',8);
