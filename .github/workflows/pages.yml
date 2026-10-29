@@ -95,6 +95,7 @@ jobs:
           node tests/t07-frlg-natural-catalog-built.test.mjs
           node tests/t08-kanto-no-duplicate-native-built.test.mjs
           node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
           echo "Inventário checado: 23 famílias Kanto com evoluções, 5 comandos e ginásios reais."
@@ -104,6 +105,7 @@ jobs:
           npm install --no-audit --no-fund
           CHROME_BIN="$(command -v google-chrome)" node tests/batch24-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
       - name: Arquivar evidência visual do motor Phaser
         if: always()
         uses: actions/upload-artifact@v4
