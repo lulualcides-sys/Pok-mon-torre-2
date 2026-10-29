@@ -874,6 +874,20 @@ export function equipMove(member,slot,moveId){
  member.movePlanSpecies=member.id;
  return true;
 }
+// Only the campaign battle copy of Leech Seed is adjusted, never the
+// original Poké Arena 2D attack, approved effect or Arena/VS modes.
+// Native runtime ticks each second: before 3 × 6 × 1.5 = up to 27 HP;
+// after 2 × 5 × 1 = up to 10 HP. Healing cannot exceed drained HP.
+export const KANTO_CAMPAIGN_LEECH_SEED=Object.freeze({dps:2,dur:5,cura:1});
+export function balanceCampaignLeechSeed(move){
+ if(!move?.drenaje||canonicalMoveKey(move.torre2IntroSource||move.nombre)!=='leech-seed')
+  return move;
+ const drain=move.drenaje;
+ return {...move,drenaje:{...drain,
+  dps:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dps,Number(drain.dps)||0)),
+  dur:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dur,Number(drain.dur)||0)),
+  cura:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.cura,Number(drain.cura)||0))}};
+}
 export function resolveLoadout(member){
  const pool=availableMoves(member),dict=new Map(pool.map(h=>[h.id,h]));
  const out={};
@@ -902,7 +916,7 @@ export function resolveLoadout(member){
  const plannedE=canonicalMoveKey(plan?.[3]);
  const blockedSignature=(member.progression?.level??5)>=KANTO_INTRO.tutorialUntil&&
   plannedE&&!dict.has(plannedE)?plannedE:null;
- return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
+ const battle=resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
   levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel,
   verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
@@ -910,6 +924,11 @@ export function resolveLoadout(member){
    EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
   verifiedParents:KANTO_LEVEL_EVOLUTIONS,
   speciesTypes:KANTO_TYPES.get(member.id)||[],blockedSignature});
+ // The early overlay can inject Leech Seed after selectedMoves. Balance
+ // FINAL campaign battle slots including practice, evolution and saved kits.
+ for(const slot of SLOTS)if(battle[slot])
+  battle[slot]=balanceCampaignLeechSeed(battle[slot]);
+ return battle;
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);
