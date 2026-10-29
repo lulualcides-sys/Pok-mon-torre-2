@@ -144,3 +144,47 @@ test('Gen VII compact keys are accepted only for own verified installed early mo
   ['ember','quick-attack','tackle']);
  assert.ok(!slots.some(k=>out[k].torre2IntroSource==='water-gun'));
 });
+
+
+test('explicit evolution/level block takes priority over preferred Lv8 ULT',()=>{
+ const library=[
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'ember',nombre:'Ember',forma:'approved-fire',tipo:'FIRE',dano:8,cd:4,coste:8},
+  {id:'solar-beam',nombre:'Solar Beam',forma:'approved-solar',tipo:'GRASS',
+   dano:10,cd:8,coste:24,source:'new-phaser-fx',approved:true}
+ ];
+ const original=JSON.stringify(library);
+ const input={id:'ivysaur',progression:{level:8}};
+ const config={library,canonical:canon,speciesTypes:['GRASS'],
+  levelUp:{tackle:1,ember:7,'solar-beam':46},
+  preferredSignature:'solar-beam'};
+ const allowed=resolveKantoIntro(input,{},config);
+ assert.equal(allowed.e.torre2IntroSource,'solar-beam',
+  'approved preferred preview remains available without a block');
+ const blocked=resolveKantoIntro(input,{},{
+  ...config,blockedSignature:'solar-beam'
+ });
+ assert.equal(blocked.e.torre2IntroSource,'ember',
+  'blocked Solar Beam must not be restored by preferredSignature');
+ assert.ok(blocked.e.ulti&&blocked.e.dano<=KANTO_INTRO.maxIntroUltDamage);
+ assert.equal(JSON.stringify(library),original,'approved VFX metadata changed');
+ assert.deepEqual(input,{id:'ivysaur',progression:{level:8}});
+});
+
+test('preferred Lv8 ULT cannot bypass pending VFX approval',()=>{
+ const library=[
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'ember',nombre:'Ember',forma:'approved-fire',tipo:'FIRE',dano:8,cd:4,coste:8},
+  {id:'solar-beam',nombre:'Solar Beam',forma:'pending-solar',tipo:'GRASS',
+   dano:10,cd:8,coste:24,source:'new-phaser-fx',approved:false}
+ ];
+ const original=JSON.stringify(library);
+ const out=resolveKantoIntro({id:'ivysaur',progression:{level:8}}, {},{
+  library,canonical:canon,speciesTypes:['GRASS'],
+  levelUp:{tackle:1,ember:7,'solar-beam':46},
+  preferredSignature:'solar-beam'
+ });
+ assert.equal(out.e.torre2IntroSource,'ember',
+  'pending renderer cannot be promoted to a thematic ULT');
+ assert.equal(JSON.stringify(library),original);
+});
