@@ -1248,8 +1248,9 @@ create(){
     const key=(move.torre2IntroSlot==='e'?'ULT:':'MOVE:')+
      canonicalMoveKey(move.torre2IntroSource||move.nombre);
     const old=byName.get(key);
-    const score=m=>(m.torre2IntroPractice?(stats.level<=8?30:1):stats.level>8?30:0)+
-     (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0));
+    const score=m=>
+     (m.torre2IntroPractice?(stats.level<=8?30:1):(stats.level>8?30:0))+
+     (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0);
     if(!old||score(move)>score(old))byName.set(key,move);
    }
    return [...byName.values()];
