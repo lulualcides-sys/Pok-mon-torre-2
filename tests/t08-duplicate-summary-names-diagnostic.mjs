@@ -27,3 +27,4 @@ for(const def of ROSTER){
  }
 }
 console.log('T08_DUPLICATE_NAME_DIAGNOSTIC',JSON.stringify({tested,duplicates:collisions.length,collisions:collisions.slice(0,60)}));
+if(collisions.length)throw Error('Duplicated visible native battle controls: '+JSON.stringify(collisions.slice(0,20)));
