@@ -820,7 +820,10 @@ export function equipMove(member,slot,moveId){
  // ATK remains a low-power basic throughout the campaign. Previously this
  // was only enforced indirectly when Wing Attack occupied another slot;
  // selecting a different ULT made the stronger attack equipable in ATK.
- if(early&&slot===0&&!picked.torre2IntroPractice&&Number(picked.dano)>9)
+ if(early&&slot===0&&!picked.torre2IntroPractice&&
+    (Number(picked.dano)>9||
+     (canonicalMoveKey(early[3])!==canonicalMoveKey(early[0])&&
+      picked.id===canonicalMoveKey(early[3]))))
   return false;
  if(early&&level<=KANTO_INTRO.ultAt&&slot===0&&
     moveId!==canonicalMoveKey(early[0])&&
