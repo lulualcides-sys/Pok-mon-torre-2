@@ -624,7 +624,36 @@ export function moveUnlockLevel(member,moveName){
 // Some native P2 plans equip the exact same move in two different HAB slots.
 // Keep the original ULT and characteristic slots, filling only duplicates
 // with species-legal moves from the installed catalogue. Never add a VFX.
-function uniqueCampaignSlots(ids,available){
+// Campaign-only native Poké Arena roles: LMB weak basic, RMB/Q normal
+// skills, E the full-meter finisher. Never change original Arena/VS kits.
+export function isCampaignUltimateOnlyMove(move){
+ if(!move)return false;
+ if(move.torre2IntroSlot==='e')return true;
+ if(move.torre2IntroPractice)return false;
+ return move.ulti===true||Number(move.dano)>=13||Number(move.poder)>=80;
+}
+export function campaignMoveSlotReason(member,slot,move){
+ if(!Number.isInteger(slot)||slot<0||slot>=4)return 'SLOT INVÁLIDO';
+ if(!move?.forma)return 'SEM EFEITO';
+ if(member?.id==='mewtwo')return null; // debug-only unrestricted lab
+ if(isPendingApprovalMove(move))return 'EFEITO EM REVISÃO';
+ const level=member?.progression?.level??5;
+ if(slot===3&&level<KANTO_INTRO.ultAt)return 'ULT NO NV. 8';
+ if(move.torre2IntroSlot&&move.torre2IntroSlot!==SLOTS[slot])
+  return move.torre2IntroSlot==='e'?'SÓ ULT (E)':'PREVIA DE OUTRO SLOT';
+ if(level<=8&&!move.torre2IntroPractice)return 'GOLPE NATIVO BLOQUEADO';
+ if(slot===3&&level<KANTO_INTRO.tutorialUntil&&!move.torre2IntroPractice)
+  return 'ULT FORTE APÓS NV. 12';
+ if(slot===0){
+  if(!(Number(move.dano)>0))return 'ATK PRECISA CAUSAR DANO';
+  if(isCampaignUltimateOnlyMove(move)||Number(move.dano)>9)
+   return 'GOLPE FORTE: SÓ ULT';
+ }
+ if((slot===1||slot===2)&&isCampaignUltimateOnlyMove(move))
+  return 'GOLPE FORTE: SÓ ULT';
+ return null;
+}
+function uniqueCampaignSlots(ids,available,member){
  const result=[...ids].slice(0,4),byId=new Map(available.map(m=>[m.id,m]));
  const keyOf=id=>{
   const m=byId.get(id);
@@ -637,7 +666,8 @@ function uniqueCampaignSlots(ids,available){
   const id=result[slot];if(!id)continue;
   const m=byId.get(id),name=keyOf(id);
   const introUlt=slot===3&&m?.torre2IntroPractice;
-  if(usedIds.has(id)||(!introUlt&&usedNames.has(name))){
+  if(!m||campaignMoveSlotReason(member,slot,m)||usedIds.has(id)||
+     (!introUlt&&usedNames.has(name))){
    result[slot]=null;missing.push({slot,original:id});
   }else{
    usedIds.add(id);
@@ -649,14 +679,16 @@ function uniqueCampaignSlots(ids,available){
   .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
    Number(Boolean(b.torre2IntroPractice))||Number(b.dano||0)-Number(a.dano||0));
  for(const {slot,original} of missing.sort((a,b)=>a.slot-b.slot)){
-  const free=m=>!usedIds.has(m.id)&&!usedNames.has(keyOf(m.id));
-  const candidate=candidates.find(m=>free(m)&&(slot!==0||Number(m.dano)<=12)&&Number(m.dano)>0)||
-   candidates.find(m=>free(m)&&Number(m.dano)>0)||candidates.find(free);
-  // Pokémon such as Magikarp have few authentic level-up moves; keep the
-  // original action only if no distinct rendered fallback exists at all.
-  const id=candidate?.id||original;
+  const free=m=>!usedIds.has(m.id)&&
+   (slot===3&&m.torre2IntroPractice||!usedNames.has(keyOf(m.id)))&&
+   !campaignMoveSlotReason(member,slot,m);
+  const candidate=candidates.find(m=>free(m)&&Number(m.dano)>0)||
+   candidates.find(free);
+  // A forbidden original cannot reappear as a fallback.
+  const id=candidate?.id||null;
   result[slot]=id;
-  usedIds.add(id);usedNames.add(keyOf(id));
+  if(id){usedIds.add(id);if(!(slot===3&&candidate?.torre2IntroPractice))
+   usedNames.add(keyOf(id));}
  }
  return result;
 }
@@ -735,11 +767,11 @@ export function defaultLoadout(member){
   // learns no ordinary ULT in its official late FireRed level-up table.
   if(!reserved[3]&&level>=8)reserved[3]=
    available.find(m=>m.torre2IntroSlot==='e')?.id||null;
-  return uniqueCampaignSlots(meaningfulDefaultUltimate(member,reserved,available),available);
+  return uniqueCampaignSlots(meaningfulDefaultUltimate(member,reserved,available),available,member);
  }
  const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
  const ids=slots.map(slot=>canonicalMoveKey(def.kit[slot]?.nombre));
- return uniqueCampaignSlots(meaningfulDefaultUltimate(member,ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4),available),available);
+ return uniqueCampaignSlots(meaningfulDefaultUltimate(member,ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4),available),available,member);
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
@@ -754,13 +786,14 @@ export function selectedMoves(member){
   // species. Do not let them override the new stage's three weak attacks.
   // Respect manual selections ONLY if made for this very evolution form.
   if(member.movePlanSpecies!==member.id)return defaults;
-  return defaults.map((fallback,i)=>{
+  return uniqueCampaignSlots(defaults.map((fallback,i)=>{
    const id=member.moves?.[i],move=available.find(m=>m.id===id);
    if(!move)return fallback;
-   if(move.torre2IntroSlot===SLOTS[i])return id;
-   if(i<3&&level>KANTO_INTRO.ultAt&&!move.torre2IntroPractice)return id;
+   if(!campaignMoveSlotReason(member,i,move)&&move.torre2IntroSlot===SLOTS[i])return id;
+   if(i<3&&level>KANTO_INTRO.ultAt&&!move.torre2IntroPractice&&
+      !campaignMoveSlotReason(member,i,move))return id;
    return fallback;
-  });
+  }),available,member);
  }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
   // The native client has no per-species role plan for this Gen V family.
@@ -793,11 +826,11 @@ export function selectedMoves(member){
    member.moves=[...chosen];
    member.movePlanSpecies=member.id;
   }
-  return uniqueCampaignSlots(chosen,available);
+  return uniqueCampaignSlots(chosen,available,member);
  }
  const chosen=member.moves?.length===4&&member.moves.every(id=>valid.has(id))?
   member.moves:defaultLoadout(member);
- return uniqueCampaignSlots(chosen.filter(id=>valid.has(id)).slice(0,4),available).filter(Boolean);
+ return uniqueCampaignSlots(chosen.filter(id=>valid.has(id)).slice(0,4),available,member).filter(Boolean);
 }
 export function equipMove(member,slot,moveId){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return false;
@@ -812,7 +845,7 @@ export function equipMove(member,slot,moveId){
  if(member.id!=='mewtwo'&&level<=8&&!picked.torre2IntroPractice)return false;
  if(member.id!=='mewtwo'&&level<KANTO_INTRO.tutorialUntil&&
     slot===3&&!picked.torre2IntroPractice)return false;
- if(picked.torre2IntroSlot&&picked.torre2IntroSlot!==SLOTS[slot])return false;
+ if(campaignMoveSlotReason(member,slot,picked))return false;
  const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
  // A learned native move can replace the fixed ATK from Lv9 onward.
@@ -858,7 +891,7 @@ export function equipMove(member,slot,moveId){
     m.torre2IntroSlot!=='e'&&
     (!m.torre2IntroSlot||m.torre2IntroSlot===SLOTS[index])&&
     Number(m.dano)>0&&(index!==0||Number(m.dano)<=12)&&
-    !taken.has(technique(m)))
+    !taken.has(technique(m))&&!campaignMoveSlotReason(member,index,m))
     .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
      Number(Boolean(b.torre2IntroPractice))||Number(a.dano)-Number(b.dano))[0];
    if(!alternative)return false;
@@ -894,7 +927,7 @@ export function resolveLoadout(member){
  selectedMoves(member).forEach((id,i)=>{
   const attack=dict.get(id);
   if(attack)out[SLOTS[i]]={...attack,pendiente:false,
-   ...(i===3?{ulti:true}:{})};
+   ulti:i===3};
  });
  // The early meter-gated finisher may reuse an approved weak attack's
  // renderer, but it is a distinct battle action. Keep the real move name
