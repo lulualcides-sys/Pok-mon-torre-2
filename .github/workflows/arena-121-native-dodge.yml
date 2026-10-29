@@ -49,6 +49,7 @@ jobs:
           set -euo pipefail
           node tests/arena-species-kit-browser.cjs
           node tests/arena-base-form-touch-browser.cjs
+          node tests/arena-121-native-esp-touch-browser.cjs
       - name: Guardar relatório da auditoria e provas de combate
         if: always()
         uses: actions/upload-artifact@v4
