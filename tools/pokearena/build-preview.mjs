@@ -673,6 +673,23 @@ for(const [filename,changes] of patches){
     console.warn('Legacy ONLINE-account redirect moved upstream; solo menu remains offline');
     continue;
    }
+   // The original selection imports additional native sprite utilities
+   // between releases. Append only the four names required by our preload;
+   // preserve every upstream import and all original sprite/VFX functions.
+   if(filename==='escenas/seleccion.js'&&
+      from.startsWith('import{atacarEnMenu,precargarLineas,')&&
+      to.includes('cargarPMD,crearAnimsPMD,soloFormas,formasDe')){
+    const pattern=/import\\{([^}]+)\\}from"\\.\\.\\/sprites\\.js";/;
+    const match=body.match(pattern);
+    if(!match||!match[1].includes('atacarEnMenu')||
+       !match[1].includes('ponerRetrato'))
+     throw Error('Unknown original sprite module import; refusing guessed identifiers');
+    const imports=match[1].split(',').map(s=>s.trim()),needed=[
+     'cargarPMD','crearAnimsPMD','soloFormas','formasDe'];
+    for(const name of needed)if(!imports.includes(name))imports.push(name);
+    body=body.replace(match[0],'import{'+imports.join(',')+'}from"../sprites.js";');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
