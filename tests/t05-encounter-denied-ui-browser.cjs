@@ -29,7 +29,9 @@ const server=http.createServer(async(req,res)=>{
   const before=await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.__t05Core=await import(new URL('./torre2/campaign-core.js',src));
-   const state=window.__t05State=core.createCampaign('squirtle');
+   const initial=core.createCampaign('squirtle');
+   core.saveCampaign(initial);
+   const state=window.__t05State=core.readCampaign();
    core.saveCampaign(state);
    localStorage.setItem(core.SAVE_BACKUP_KEY,localStorage.getItem(core.SAVE_KEY));
    const saved={primary:localStorage.getItem(core.SAVE_KEY),
