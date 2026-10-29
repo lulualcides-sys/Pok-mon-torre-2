@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/33/36/37 · T07/T08: versão P2 auditável e captura diária (#313/#314)
+
+- **§7/§8 PARCIAIS:** [PR #313](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/313), merge `a4edee03abd5d76a3c557fafece06732302da740`, corrige comparação de hashes de homepage/módulos e armazena `siteVersion` e `sourceVersion` distintos. O catálogo versionado no commit `b7a1630ca94f969b337a2adb1f73a9d0b81a6d77` contém 164 movimentos nativos P2, Deoxys/Psycho Boost já presente, zero nomes adicionados/removidos, e não equipa nada na campanha. [PR #314](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/314) reduz capturas duplicadas na main, aguardando CI.
+- **§33 PARCIAL:** [CI PR #40947832817](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40947832817) **SUCESSO**, incluindo `npm test`, `check`, `check:reuse`, build, captura e Chromium real; [main #40948517288](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948517288) **SUCESSO**. [snapshot #40948517315](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948517315) **SUCESSO** com captura corretamente pulada pela prova do mesmo dia.
+- **§36 PARCIAL:** sem alterações de VFX, pixel art, sprites, cooldowns, saves, TMs, controles ou kits aprovados; Toxic #16 e Shiny #17 preservadas.
+- **§37 PARCIAL:** Pages/HTTP para os novos commits ainda pendentes de confirmação. Não confundir testes de catálogo/Chromium com 151 batalhas naturais, Pallet→Campeão ou Android físico.
+
+
 ## 29/10/2026 — §§7/8/33/36/37 · T07/T08: aba de níveis futuros e relatório por ID
 
 - **§7/§8 PARCIAIS:** [PR #294](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/294) integrada em `bd697d106438c9a397dc204cc3ecdb7509a7d64b`: aba de futuros golpes Lv8–50 da forma atual, sem TM automática ou mutação, comparada ao pool de batalha/Pokédex em fixtures 150 espécies × oito níveis e testada por toque Chromium. [PR #295](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/295) integrada em `4aca68df80efdb7d8c522f90c33ff9359a67eeff`: relatório identifica pelo ID golpe completo aprendido por XP mesmo quando coincide no nome com ULT reduzida Lv8.
