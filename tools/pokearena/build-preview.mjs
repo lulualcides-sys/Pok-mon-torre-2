@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
+import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -108,6 +109,16 @@ await fs.writeFile(index,html);
 // every animation for every Pokémon before showing the menu on Android.
 const clientSource=html.match(/src="(src-[0-9a-f]{10})\/main\.js"/)?.[1];
 if(!clientSource)throw Error('Original Phaser source directory missing');
+// Original League can still import ponerRetrato after Poké Arena replaced its
+// sprite helper with casillaRetrato. Ensure the missing named export exists in
+// our isolated copy, using only the already approved/native PMD texture.
+const portraitModulePath=path.join(dest,clientSource,'sprites.js');
+const portraitModuleSource=await fs.readFile(portraitModulePath,'utf8');
+const compatiblePortraitModule=ensureNativePortraitExport(portraitModuleSource);
+if(compatiblePortraitModule!==portraitModuleSource){
+ await fs.writeFile(portraitModulePath,compatiblePortraitModule);
+ console.log('Original League portrait compatibility installed (native textures only)');
+}
 const selectionFile=path.join(dest,clientSource,'escenas/seleccion.js');
 const {paginateSelectionSource}=await import('./torre2-selection-pages.mjs');
 await fs.writeFile(selectionFile,paginateSelectionSource(await fs.readFile(selectionFile,'utf8')));
