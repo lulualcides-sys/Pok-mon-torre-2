@@ -217,6 +217,52 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(nextBattle.ult.ulti&&nextBattle.ult.renderable&&!nextBattle.ult.pending,
    'Earned ULT not present in actual next Phaser battle');
   assert.ok(nextBattle.nativeTouchSlots.includes('e'),'Native battle lost ULT touch control');
+  // T07/T08: a rendered E button alone is insufficient. Cast the ULT
+  // earned through the eight actual battles, after reloading its real save.
+  // Do NOT inject energy, reset cooldowns, force damage, or alter combat state.
+  const ultBefore=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0];
+   const panel=b.panelTactil,button=panel.botones.find(x=>x.slot==='e');
+   if(!button)throw Error('Earned E-slot touch button is missing');
+   const pos=panel.pos(button),zero=panel.punto({x:0,y:0}),
+    one=panel.punto({x:1,y:1});
+   const state={uses:m.stats.usosSlot?.e||0,energy:m.energia,
+    ultimate:m.ulti,cooldown:m.cd.e,move:m.kit.e?.id,
+    nativeTouch:true,phase:b.fase};
+   panel.abajo({id:86,x:(pos.x-zero.x)/(one.x-zero.x),
+    y:(pos.y-zero.y)/(one.y-zero.y)});
+   panel.leer(x=>({ax:x.x,ay:x.y}));
+   return state;
+  });
+  assert.equal(ultBefore.move,nextBattle.ult.id,
+   'Earned ULT changed between save reload and native touch');
+  try{
+   await page.waitForFunction(before=>{
+    const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores?.[0];
+    return b.scene.isActive()&&(m?.stats.usosSlot?.e||0)>before;
+   },ultBefore.uses,{timeout:10000,polling:100});
+  }finally{
+   await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    b.panelTactil?.arriba({id:86});
+   }).catch(()=>{});
+  }
+  const ultAfter=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0];
+   return {uses:m.stats.usosSlot?.e||0,energy:m.energia,
+    ultimate:m.ulti,cooldown:m.cd.e,move:m.kit.e?.id,
+    phase:b.fase,sceneActive:b.scene.isActive()};
+  });
+  assert.ok(ultAfter.uses>ultBefore.uses,
+   'Earned Lv8 ULT did not execute through the real Phaser touch controller');
+  assert.ok(Number.isFinite(ultAfter.cooldown)&&ultAfter.cooldown>0,
+   'Earned ULT did not enter its native cooldown');
+  assert.equal(ultAfter.move,nextBattle.ult.id,
+   'Native cast must use the saved legal ULT, not another move');
+  report.earnedUltCast={before:ultBefore,after:ultAfter,
+   method:'native Phaser touch panel, no combat resources modified'};
+  await page.screenshot({path:out+'/t07-t08-earned-ult-native-touch-cast.png'});
+  console.log('PASS T07_T08 EARNED_LV8_ULT_NATIVE_TOUCH_CAST',JSON.stringify(report.earnedUltCast));
   report.earnedUlt={...report.earnedUlt,earned,reloaded,nextBattle,
    persistedIdentically:true,fromFreshLv5:true,forcedXp:false,forcedWin:false};
   saveReport();
