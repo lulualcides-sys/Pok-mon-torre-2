@@ -34,3 +34,15 @@ test('Exact HGSS/B2W2 examples, no borrowed species and inherited evolutions',()
  assert.equal(gen45KantoUnlockLevel('bulbasaur','Flare Blitz'),null);
  assert.equal(gen45KantoUnlockLevel('missing-pokemon','Flame Charge'),null);
 });
+
+test('Earliest verified HGSS/B2W2 level wins without borrowing another species',()=>{
+ // B2W2 has Crunch at 37, but HGSS already teaches Kangaskhan at 31.
+ assert.equal(GEN4_HGSS_KANTO_LEVEL_UP.kangaskhan['crunch'],31);
+ assert.equal(GEN5_B2W2_KANTO_LEVEL_UP.kangaskhan['crunch'],37);
+ assert.equal(gen45KantoUnlockLevel('kangaskhan','Crunch'),31);
+ // Strong Ground/Rock attacks stay far from the first gyms.
+ assert.equal(GEN4_HGSS_KANTO_LEVEL_UP.geodude['stone-edge'],39);
+ assert.equal(GEN5_B2W2_KANTO_LEVEL_UP.geodude['stone-edge'],50);
+ assert.equal(gen45KantoUnlockLevel('geodude','Stone Edge'),39);
+ assert.equal(gen45KantoUnlockLevel('magikarp','Crunch'),null);
+});
