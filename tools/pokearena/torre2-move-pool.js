@@ -362,7 +362,11 @@ export function availableMoves(member){
  // Existing tmMoves already enters names above; never auto-grant it.
  const early=EARLY_KANTO_LEARNSETS[member.id];
  if(early)for(const id of Object.keys(early))names.add(id);
- const moves=TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
+ // Surf's existing visual was rejected for the Kanto campaign. Preserve
+ // the catalog/renderer byte-for-byte, but never equip it through a level,
+ // imported TM claim, legacy plan or editor until explicitly approved.
+ const moves=TEST_LIBRARY.filter(x=>
+  (names.has(x.id)||names.has(norm(x.nombre)))&&canonicalMoveKey(x.nombre)!=='surf');
  const level=member.progression?.level??5;
  const {def:memberDef,etapa}=buscar(member.id);
  const activeKit=etapa?memberDef.evoluciones[etapa-1]?.kit:memberDef.kit;
