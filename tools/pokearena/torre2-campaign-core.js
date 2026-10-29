@@ -8,6 +8,7 @@ import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,r
 import {ROSTER} from '../datos.js';
 import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
+import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
@@ -635,6 +636,24 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  return {ok:true,pokemon:member,...outcome};
 }
+// The summary editor is a save transaction, not an in-memory preview.
+// Equip on a detached member first, persist the complete team checkpoint,
+// then update only the two loadout fields on the live Pokémon. A denied
+// primary/backup write leaves the old slots, marker and references intact.
+export function equipCampaignMove(s,memberIndex,slot,moveId,storage=localStorage){
+ if(!Number.isInteger(memberIndex)||memberIndex<0||memberIndex>=s?.team?.length)
+  return false;
+ const member=s.team[memberIndex];
+ const candidate={...member,moves:Array.isArray(member.moves)?[...member.moves]:member.moves};
+ if(!equipMove(candidate,slot,moveId))return false;
+ const team=s.team.slice();
+ team[memberIndex]=candidate;
+ saveCampaign({...s,team},storage);
+ member.moves=candidate.moves;
+ member.movePlanSpecies=candidate.movePlanSpecies;
+ return true;
+}
+
 export function selectTeamMember(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length)return false;
  // Summary selection must not diverge from the recoverable checkpoint.

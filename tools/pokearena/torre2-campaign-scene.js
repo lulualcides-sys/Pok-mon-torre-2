@@ -10,14 +10,14 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
+import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
- ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution} from './campaign-core.js';
+ ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove} from './campaign-core.js';
 import {MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
@@ -1253,14 +1253,19 @@ create(){
    const pending=isPendingApprovalMove(move);
    const bg=box(x,y,188,27,current?0x275749:equipped?0x1e434c:0x1a344d,
     current?0x73d8b0:equipped?0x658e96:0x3c6283);
-   bg.setInteractive({useHandCursor:true});
+   bg.setInteractive({useHandCursor:true}).setData('torre2-equip-move',move.id);
    bg.on('pointerdown',()=>{
-    if(equipMove(member,activeSlot,move.id)){
-     saveCampaign(state);this.showSummary(state,index,activeSlot,safePage);
-    }else{
-     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':'GOLPE NÃO DISPONÍVEL.';
+    let equippedNow=false;
+    try{equippedNow=equipCampaignMove(state,index,activeSlot,move.id);}
+    catch(error){
+     console.warn('Torre 2: summary move equip not saved',error);
+     this.summaryWarning='TROCA NÃO SALVA · TENTE NOVAMENTE';
      this.showSummary(state,index,activeSlot,safePage);
+     return;
     }
+    if(!equippedNow)
+     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':'GOLPE NÃO DISPONÍVEL.';
+    this.showSummary(state,index,activeSlot,safePage);
    });
    bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
