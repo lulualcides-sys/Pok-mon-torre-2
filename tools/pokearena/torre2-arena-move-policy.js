@@ -10,6 +10,15 @@ import {SURGE3_MOVES} from './surge3/catalog.js';
 import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ATTACK_SLOTS=['lmb','rmb','q','e'];
+export const PROTECTED_P2_KANTO_IDS=new Set([
+ 'bulbasaur','ivysaur','venusaur','charmander','charmeleon','charizard',
+ 'squirtle','wartortle','blastoise','pikachu','raichu','zubat','golbat',
+ 'machop','machoke','machamp','ponyta','rapidash','gastly','haunter',
+ 'gengar','onix','exeggcute','exeggutor','magikarp','gyarados','snorlax',
+ 'articuno','zapdos','mewtwo'
+]);
+// Protect verified native species even if a later upstream capture temporarily
+// omits the parent (e.g. Pichu) and our additive roster reintroduces its child.
 // User-requested fast Arena 2D pace (2–4 seconds) for only these moves.
 // NEVER mutate original native VFX/metadata; never apply during campaign.
 const ARENA_CD=Object.freeze({
@@ -193,7 +202,7 @@ export function chooseEeveeBranch(count,random=Math.random){
  const safe=Number.isFinite(roll)?Math.max(0,Math.min(.999999999,roll)):0;
  return Math.floor(safe*count)+1;
 }
-export function installArenaMovePolicy(Luchador,roster){
+export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const proto=Luchador.prototype,originalKit=proto.kitActual;
  if(typeof originalKit!=='function')throw Error('Arena fighter kitActual missing');
  const library=new Map(),nativeDodges=new Map();
@@ -222,11 +231,15 @@ export function installArenaMovePolicy(Luchador,roster){
  // Installed approved Torre 2 techniques absent from base P2 roster
  // (Surf, cross-source specials) are playable in Arena ONLY.
  for(const move of [...BATCH24_MOVES,...SURGE3_MOVES,
-                   ...FINALE_13_MOVES,...POISON_PUNCH_MOVES]){
+                   ...FINALE_13_MOVES,...POISON_PUNCH_MOVES,...extraApproved]){
   const key=idOf(move?.nombre);
   if(key&&move?.forma&&move.approved!==false&&!library.has(key))
    library.set(key,move);
  }
+ // Some moves have a validated original P2 dash/flight renderer in the
+ // general move library rather than the original ESP slot.
+ for(const m of library.values())
+  if(m?.approved!==false)addDodge(m);
  // Branch once PER fighter, only after Eevee evolves. No page-level random
  // mutation, no changing the original campaign or the global roster.
  const formaDescriptor=Object.getOwnPropertyDescriptor(proto,'forma');
@@ -254,7 +267,8 @@ export function installArenaMovePolicy(Luchador,roster){
   if(this.escena?.datos?.torre2)return original;
   const form=this.forma;
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
-  if(this.def?.torre2ArenaAdded!==true)return enforceArenaMoveCooldowns(original);
+  if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
+   return enforceArenaMoveCooldowns(original);
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
   return selectApprovedArenaKit(auto,id,library,nativeDodges);
  };
