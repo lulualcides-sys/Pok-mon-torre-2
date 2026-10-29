@@ -44,11 +44,11 @@ const server=http.createServer(async(req,res)=>{
    const core=await import(new URL('./torre2/campaign-core.js',src));
    const s=core.readCampaign();
    const c=window.__pt2Game.scene.getScene('campanha');
-   c.summaryFilter='ALL';c.summarySearch='Quick Attack';
+   c.summaryFilter='ALL';c.summarySearch='Gust';
    c.__summaryState=s;c.showSummary(s,0,0,0);
    const row=c.children.list.find(o=>o.active&&o.input?.enabled&&
-    o.getData?.('torre2-equip-move')==='quick-attack');
-   if(!row)throw Error('Earned Quick Attack is not a tappable editor row');
+    o.getData?.('torre2-equip-move')==='gust');
+   if(!row)throw Error('Earned Gust is not a tappable editor row');
    const canvas=document.querySelector('#juego canvas')||document.querySelector('canvas');
    const r=canvas.getBoundingClientRect();
    return {x:r.left+row.x*r.width/640,y:r.top+row.y*r.height/360};
@@ -56,7 +56,7 @@ const server=http.createServer(async(req,res)=>{
   await page.touchscreen.tap(target.x,target.y);
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   return c.__summaryState?.team[0]?.moves?.[0]==='quick-attack';
+   return c.__summaryState?.team[0]?.moves?.[0]==='gust';
   },null,{timeout:12000});
   const saved=await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
@@ -65,8 +65,8 @@ const server=http.createServer(async(req,res)=>{
    const p=core.readCampaign().team[0];
    return {move:p.moves?.[0],battle:pool.resolveLoadout(p).lmb?.id};
   });
-  assert.deepEqual(saved,{move:'quick-attack',battle:'quick-attack'});
-  await page.screenshot({path:'test-evidence/t08-earned-quick-attack-mobile.png'});
+  assert.deepEqual(saved,{move:'gust',battle:'gust'});
+  await page.screenshot({path:'test-evidence/t08-earned-gust-mobile.png'});
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha'),null,{timeout:60000});
   const reloaded=await page.evaluate(async()=>{
@@ -76,8 +76,8 @@ const server=http.createServer(async(req,res)=>{
    const p=core.readCampaign().team[0];
    return {move:p.moves?.[0],battle:pool.resolveLoadout(p).lmb?.id};
   });
-  assert.deepEqual(reloaded,{move:'quick-attack',battle:'quick-attack'});
+  assert.deepEqual(reloaded,{move:'gust',battle:'gust'});
   assert.deepEqual(errors,[],'Native Phaser runtime errors');
-  console.log('T08 EARNED QUICK ATTACK MOBILE TOUCH AND RELOAD PASS (FIXTURE)');
+  console.log('T08 EARNED GUST MOBILE TOUCH AND RELOAD PASS (FIXTURE)');
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1}).finally(()=>server.close());
