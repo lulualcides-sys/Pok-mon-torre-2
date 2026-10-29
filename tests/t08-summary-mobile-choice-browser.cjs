@@ -84,7 +84,7 @@ const server=http.createServer(async(req,res)=>{
   // Its original fullscreen zone overlaps the old Back region near x=615.
   await page.evaluate(()=>{
    const game=__pt2Game;
-   game.scene.launch('titulo');
+   game.scene.getScene('campanha').scene.launch('titulo');
   });
   await page.waitForFunction(()=>__pt2Game.scene.isActive('titulo'),null,{timeout:10000});
   await page.evaluate(()=>{
