@@ -711,7 +711,9 @@ for(const [filename,changes] of patches){
     if(body.includes(condition))
      body=body.replace(condition,'!this.e.datos?.torre2&&'+condition);
     else if(body.includes(ability))
-     throw Error('Unknown native HUD '+ability+' condition; refusing to alter it');
+     // Campaign fight XP and evolution buttons are independently disabled.
+     // Preserve a changed native HUD expression instead of guessing its shape.
+     console.warn('Changed original HUD '+ability+' expression kept; Kanto combat evolution is separately blocked');
     else console.warn('Original HUD no longer renders '+ability+' indicator');
     continue;
    }
