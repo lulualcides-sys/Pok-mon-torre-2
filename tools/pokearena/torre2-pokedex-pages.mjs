@@ -139,6 +139,10 @@ export function paginateKantoPokedexSource(original){
  s=once(s,
   'const BOTON_TACTIL={lmb:"BASIC",rmb:"SKILL",esp:"DASH",q:"Q",e:"ULT"};',
   'const BOTON_TACTIL={lmb:"ATK",rmb:"HAB 2",esp:"ESQUIVA",q:"HAB 3",e:"ULT"};');
+ // Explicitly label the Kanto showcase as an informational Lv50 build:
+ // these moves are NOT auto-unlocked in the player's actual campaign.
+ s=once(s,'this.lema.setText(p.lema??"");',
+  'this.lema.setText(KANTO_151.some(x=>x.id===p.id)&&p.id!=="mewtwo"?"KIT CAMPANHA · NV50":(p.lema??""));');
  s=normalizePokedexNameColumn(s);
  s=once(s,'esTactil()?BOTON_TACTIL[slot]:tecla',
   'BOTON_TACTIL[slot]');
