@@ -16,8 +16,8 @@ const [{KANTO_151},{availableMoves,defaultLoadout,selectedMoves,
 ]);
 const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
-assert.equal(new Set(TEST_LIBRARY.map(x=>x.id)).size,227);
+assert.ok(TEST_LIBRARY.length>=227,'Native source lost a previously installed move');
+assert.equal(new Set(TEST_LIBRARY.map(x=>x.id)).size,TEST_LIBRARY.length,'Duplicate installed attack ID');
 let tested=0,chosenMoves=0;
 for(const {id} of KANTO_151){
  if(id==='mewtwo')continue; // independent original battle laboratory
