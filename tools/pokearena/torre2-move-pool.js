@@ -739,6 +739,17 @@ export function equipMove(member,slot,moveId){
     picked.torre2IntroSlot!=='e')return false;
  const chosen=selectedMoves(member);
  if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;
+ // The editor exposes both the weak tutorial preview and the genuine
+ // unlocked technique. They have different IDs but are the SAME attack:
+ // do not equip Tackle (practice) and Tackle (native) in two HAB slots.
+ // E is deliberately exempt: its weak Lv8 ULT is a distinct meter action,
+ // even when the original renderer/technique is shared with a basic slot.
+ if(slot<3){
+  const technique=m=>canonicalMoveKey(m?.torre2IntroSource||m?.nombre);
+  const key=technique(picked);
+  if(chosen.slice(0,3).some((id,i)=>i!==slot&&
+   technique(pool.find(m=>m.id===id))===key))return false;
+ }
  if(early){chosen[slot]=moveId;member.moves=chosen;member.movePlanSpecies=member.id;return true;}
  while(chosen.length<4)chosen.push(pool[chosen.length]?.id);
  chosen[slot]=moveId;member.moves=chosen;
