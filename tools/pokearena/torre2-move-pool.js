@@ -598,6 +598,45 @@ export function moveUnlockLevel(member,moveName){
  const stage=frlgEvolutionLevel(species);
  return campaignLevel([stage,Math.max(10,stage),Math.max(20,stage),Math.max(32,stage)][index]);
 }
+// Some native P2 plans equip the exact same move in two different HAB slots.
+// Keep the original ULT and characteristic slots, filling only duplicates
+// with species-legal moves from the installed catalogue. Never add a VFX.
+function uniqueCampaignSlots(ids,available){
+ const result=[...ids].slice(0,4),byId=new Map(available.map(m=>[m.id,m]));
+ const keyOf=id=>{
+  const m=byId.get(id);
+  return canonicalMoveKey(m?.torre2IntroSource||m?.nombre||id);
+ };
+ const usedIds=new Set(),usedNames=new Set(),missing=[];
+ // A Lv8 weak introductory ULT is a separate energy-gated action, even
+ // when it reuses the normal move's renderer; all native IDs stay unique.
+ for(const slot of [3,0,2,1]){
+  const id=result[slot];if(!id)continue;
+  const m=byId.get(id),name=keyOf(id);
+  const introUlt=slot===3&&m?.torre2IntroPractice;
+  if(usedIds.has(id)||(!introUlt&&usedNames.has(name))){
+   result[slot]=null;missing.push({slot,original:id});
+  }else{
+   usedIds.add(id);
+   if(!introUlt)usedNames.add(name);
+  }
+ }
+ const candidates=available.filter(m=>m?.id&&m.forma&&
+  !isPendingApprovalMove(m)&&!['surf','scratch'].includes(m.id))
+  .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
+   Number(Boolean(b.torre2IntroPractice))||Number(b.dano||0)-Number(a.dano||0));
+ for(const {slot,original} of missing.sort((a,b)=>a.slot-b.slot)){
+  const free=m=>!usedIds.has(m.id)&&!usedNames.has(keyOf(m.id));
+  const candidate=candidates.find(m=>free(m)&&(slot!==0||Number(m.dano)<=12)&&Number(m.dano)>0)||
+   candidates.find(m=>free(m)&&Number(m.dano)>0)||candidates.find(free);
+  // Pokémon such as Magikarp have few authentic level-up moves; keep the
+  // original action only if no distinct rendered fallback exists at all.
+  const id=candidate?.id||original;
+  result[slot]=id;
+  usedIds.add(id);usedNames.add(keyOf(id));
+ }
+ return result;
+}
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
@@ -647,11 +686,11 @@ export function defaultLoadout(member){
   // learns no ordinary ULT in its official late FireRed level-up table.
   if(!reserved[3]&&level>=8)reserved[3]=
    available.find(m=>m.torre2IntroSlot==='e')?.id||null;
-  return reserved;
+  return uniqueCampaignSlots(reserved,available);
  }
  const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
  const ids=slots.map(slot=>canonicalMoveKey(def.kit[slot]?.nombre));
- return ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4);
+ return uniqueCampaignSlots(ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4),available);
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
@@ -705,11 +744,11 @@ export function selectedMoves(member){
    member.moves=[...chosen];
    member.movePlanSpecies=member.id;
   }
-  return chosen;
+  return uniqueCampaignSlots(chosen,available);
  }
  const chosen=member.moves?.length===4&&member.moves.every(id=>valid.has(id))?
   member.moves:defaultLoadout(member);
- return chosen.filter(id=>valid.has(id)).slice(0,4);
+ return uniqueCampaignSlots(chosen.filter(id=>valid.has(id)).slice(0,4),available).filter(Boolean);
 }
 export function equipMove(member,slot,moveId){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return false;
