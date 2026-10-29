@@ -56,6 +56,14 @@ const server=http.createServer(async(req,res)=>{
       issues.push({id,role:required[i],problem:'illegal/unrendered battle slot',move:h?.nome||h?.nombre||null});
     }
     if(new Set(slots.map(x=>x?.id)).size!==4)issues.push({id,problem:'duplicate battle slots'});
+    // Different IDs are not enough: the native Bonemerang and an early
+    // "ULT · Bonemerang" preview previously occupied two distinct slots.
+    const canonical=x=>String(x?.torre2IntroSource||x?.nombre||'')
+      .replace(/^ULT · /,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+    if(id!=='ditto'&&slots[3]&&slots.slice(0,3).some(x=>
+       canonical(x)&&canonical(x)===canonical(slots[3])))
+      issues.push({id,problem:'ULT has same underlying move as a normal HAB',
+       names:slots.map(x=>x?.nombre||null)});
    }
    for(const def of ROSTER){
     if(!known.has(def.id))continue;
