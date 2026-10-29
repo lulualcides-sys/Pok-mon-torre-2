@@ -10,7 +10,8 @@ const hub=readFileSync(new URL('../tools/pokearena/torre2-battle-path.js',import
 const campaign=readFileSync(new URL('../tools/pokearena/torre2-campaign-scene.js',import.meta.url),'utf8');
 test('trainer and wild wins call one whole-party EXP Share, not active-only',()=>{
  assert.ok(src.includes('export function awardSharedTeamExperience('));
- assert.equal((src.match(/const shared=awardSharedTeamExperience\(s,/g)||[]).length,2);
+ assert.equal((src.match(/const shared=awardSharedTeamExperience\(next,/g)||[]).length,2,
+  'Both trainer and wild rewards must use the staged campaign snapshot');
  assert.ok(src.includes("tester:member.id==='mewtwo'"));
  assert.ok(src.includes('for(let index=0;index<state.team.length;index++)'));
  assert.ok(src.includes("resolveEvolutionAfterBattle(progress,'victory',"),
@@ -19,7 +20,9 @@ test('trainer and wild wins call one whole-party EXP Share, not active-only',()=
   'FireRed branching evolves to the Kanto forms without an inaccessible choice');
  assert.ok(src.includes("member.moves=[]"),
   'Stale unevolved move slots must reset on evolution');
- assert.ok(src.includes("return {won:true,message:s.lastMessage,reward,growth,sharedExp:shared.gains,"));
+ assert.ok(src.includes("return {won:true,message:next.lastMessage,reward,growth,sharedExp:shared.gains,"));
+ assert.ok(src.includes('saveCampaign(next);')&&src.includes('Object.assign(state,next);'),
+  'Commit battle rewards only after a successful checkpoint write');
 });
 test('Brock stands in gym center and common trainers stay outside',()=>{
  assert.ok(hub.includes('const px=boss?414:('));

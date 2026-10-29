@@ -142,30 +142,52 @@ create(){
   this.result=null;
   if(completed)this.__torre2ConsumedFinished=completed;
   if(completed&&state&&!completed.marker?.training&&!completed.marker?.laboratory){
-   // Existing resolver owns rewards and saving; report only reads snapshots.
    const marker=completed.marker||{};
    const before=JSON.parse(JSON.stringify(state));
    let outcome=null,kind='trainer';
-   if(marker.kind==='rematch'){
-    if(validRematchResult(state,marker.ticket)){
-     applyPartyBattleResult(state,marker.party);
-     outcome=resolveRematch(state,marker.ticket,!!completed.won);
-     kind='rematch';
-    }
-   }else if(marker.stage===state.stage&&marker.trainer===state.trainer){
-    applyPartyBattleResult(state,marker.party);
-    const wild=marker.kind==='wild'&&state.pendingWild?.id===marker.id;
-    outcome=wild?resolveWildBattle(state,!!completed.won):
-     resolveBattle(state,!!completed.won);
-    kind=wild?'wild':'trainer';
-    state.lastMessage=outcome.message;
-    saveCampaign(state);
-   }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
-   if(outcome&&outcome.ok!==false)
-    battleReport=makeBattleReport(before,state,outcome,{
-     kind,listMoves:availableMoves,
-     tmNames:Object.fromEntries(MART_ITEMS.map(item=>[item.id,item.name]))
-    });
+   try{
+    // Battle HP/status and rewards share ONE durable checkpoint. Do not
+    // mutate the map's live state or save the result a second time.
+    const next=JSON.parse(JSON.stringify(state));
+    if(marker.kind==='rematch'){
+     if(validRematchResult(next,marker.ticket)){
+      applyPartyBattleResult(next,marker.party);
+      outcome=resolveRematch(next,marker.ticket,!!completed.won);
+      kind='rematch';
+     }
+    }else if(marker.stage===next.stage&&marker.trainer===next.trainer){
+     applyPartyBattleResult(next,marker.party);
+     const wild=marker.kind==='wild'&&next.pendingWild?.id===marker.id;
+     outcome=wild?resolveWildBattle(next,!!completed.won):
+      resolveBattle(next,!!completed.won);
+     kind=wild?'wild':'trainer';
+    }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
+    if(outcome&&outcome.ok!==false)state=next;
+   }catch(error){
+    console.warn('Torre 2: battle result could not be saved',error);
+    this.backdrop();
+    text(this,320,126,'RESULTADO NÃO SALVO',{fontSize:'19px',color:'#ff9d9d'}).setOrigin(.5);
+    text(this,320,167,'O armazenamento recusou o checkpoint da batalha.',{
+     fontSize:'11px',color:C.white}).setOrigin(.5);
+    text(this,320,191,'Nenhum XP, dinheiro ou insígnia foi confirmado.',{
+     fontSize:'11px',color:C.muted}).setOrigin(.5);
+    this.button(320,249,266,40,'TENTAR SALVAR NOVAMENTE',()=>{
+     // New event object: Phaser ignores the already-consumed result on
+     // ordinary scene.restart(), but this explicit retry must be accepted.
+     this.scene.restart({...completed});
+    },true).setData('torre2-battle-save-retry',true);
+    return;
+   }
+   // A report rendering failure is not a failed save: never offer a retry
+   // that could award the same battle twice after the checkpoint committed.
+   if(outcome&&outcome.ok!==false){
+    try{
+     battleReport=makeBattleReport(before,state,outcome,{
+      kind,listMoves:availableMoves,
+      tmNames:Object.fromEntries(MART_ITEMS.map(item=>[item.id,item.name]))
+     });
+    }catch(error){console.warn('Torre 2: battle report unavailable',error);}
+   }
   }
   if(!state)return this.starterSelection();
   this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
