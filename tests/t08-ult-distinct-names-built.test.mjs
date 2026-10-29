@@ -20,7 +20,7 @@ for(const level of [8,13,50]){
  assert.ok(kit.e?.ulti,'ULT must retain its native full-energy requirement');
  assert.ok(kit.e.nombre.startsWith('ULT · '),
   'Caterpie tutorial finisher needs a clear ULT role label');
- assert.ok(!active.some(m=>/\\btreino\\b/i.test(m.nombre)),
+ assert.ok(!active.some(m=>/\btreino\b/i.test(m.nombre)),
   'No fake training-move name may reappear');
  assert.ok(availableMoves(member).some(m=>m.id===kit.e.id),
   'The ULT must remain a selectable approved renderer');
