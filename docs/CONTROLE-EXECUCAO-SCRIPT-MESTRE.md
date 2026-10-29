@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§15/17/20/31/33/36/37 · T05/T20/T21/T22: persistência atômica de resultados
+
+- **§15/17/20 — PARCIAIS:** [PR #238](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/238) integrada em `6afdc81af2f5bddd780546068fa483d3a8d4c87f`. Trainer/wild win/loss, XP/evolução, dinheiro, ginásio, Liga/Campeão, revanches e reserva VS Seeker usam snapshot gravado antes da mutação. O relatório Phaser não causa mais segundo save nem reprocessa recompensa após falha de renderização.
+- **§31 — PARCIAL:** 18 testes compilados para negação simulada de chave primária e backup, recuperação do checkpoint e retry; teste Chromium móvel usou toque real no botão de retry após falhas simuladas, sem duplicar prêmio.
+- **§33 — PARCIAL:** [CI branch #40796828293](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40796828293) **SUCESSO**: 200 unitários, `check`, `check:reuse`, build Phaser/WebGL, 18 casos atômicos, regressões de backup/XP/TM, Chromium móvel e suíte oficial completa. [CI main #40797726032](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40797726032) **SUCESSO**.
+- **§36 — PARCIAL:** nenhum golpe, VFX, sprite, cooldown, controle ou formato de save foi alterado. PRs #16/#17/#210/#213 preservadas.
+- **§37 — PARCIAL:** [Pages #40797761968](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40797761968) **SUCESSO**, `pages_build_version=6afdc81af2f5bddd780546068fa483d3a8d4c87f`; HTTP público confirmou `src-37b137b689` às **01:04:31 UTC de 29/10/2026**. Publicação deste patch não equivale à conclusão das 37 seções nem à campanha natural/Android físico.
+
 ## 28/10/2026 — §§7/8/33/36/37 · T07/T08: compatibilidade Fire Blast por nível
 
 - **§7/§8 PARCIAIS:** [PR #236](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/236) integrou `03b76bf9373a0ff3ad950fc3ae1a7af0ffb20c1e`, preservando 227 VFX preexistentes. Fire Blast do cliente Poké Arena 2D (`proyectil`) é aprendível apenas a Lv50 por 12 tipos Fogo Kanto **legalmente compatíveis com TM38 em FireRed**, sem dar o golpe antes, mesmo se o save antigo alegar uma TM ensinada. Pokémon não Fogo seguem o sistema de TM normal. A adaptação Lv50 é exclusiva do Torre 2, não nível oficial de aprendizagem FRLG.
