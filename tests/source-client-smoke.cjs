@@ -64,7 +64,24 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/kanto-phaser-boot-failure.png',fullPage:true}).catch(()=>{});
    throw err;
   }
-  await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:45000,polling:250});
+  try{
+   await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:45000,polling:250});
+  }catch(err){
+   const diag=await page.evaluate(()=>({
+    started:window.__pt2Started,
+    hasGame:Boolean(window.__pt2Game),
+    activeScenes:window.__pt2Game?.scene?.getScenes(true)?.map(s=>s.scene.key),
+    title:document.title,
+    scripts:[...document.scripts].map(s=>s.src).filter(Boolean),
+    phaser:typeof window.Phaser,
+    canvas:!!document.querySelector('#juego canvas')
+   }));
+   console.error('PHASER START TIMEOUT DIAGNOSTIC',JSON.stringify({
+    diag,errors,consoleFailures,notFound,requestFailures
+   }));
+   await page.screenshot({path:'test-evidence/kanto-phaser-start-timeout.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   await page.waitForTimeout(800);
   const canvas=await page.evaluate(()=>{
    const c=document.querySelector('#juego canvas');
