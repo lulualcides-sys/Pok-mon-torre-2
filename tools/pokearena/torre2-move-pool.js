@@ -863,9 +863,31 @@ export function defaultLoadout(member){
    const destination=isCampaignUltimateOnlyMove(move)?3:slot;
    reserved[destination]=id;
   }
-  // For native/P2 Pokémon, the locked planned ATK must not leave them
-  // defenseless on the day they evolve. Use a genuinely learned weak move
-  // in an otherwise empty ATK/HAB slot. ULT remains locked until learned.
+  // Prefer the ORIGINAL Poké Arena 2D per-form slot in an empty
+  // campaign role, but only after the current species has legitimately
+  // unlocked that exact existing renderer. Never override approved kits,
+  // TM gates, manual selections, VFX, saved teams or the charged ULT rule.
+  // This is a read-only suggestion from native data, not a mass grant.
+  const {def:nativeDef,etapa:nativeStageIndex}=buscar(member.id);
+  const nativeStage=etapaDe(nativeDef,nativeStageIndex);
+  const nativeSlots=['lmb','rmb','q','e'];
+  const already=new Set(reserved.filter(Boolean));
+  for(let i=0;i<nativeSlots.length;i++){
+   if(reserved[i])continue;
+   const native=nativeStage?.kit?.[nativeSlots[i]];
+   if(!native?.nombre||!native?.forma||native.pendiente||
+     native.torre2Unavailable)continue;
+   const key=canonicalMoveKey(native.nombre);
+   const candidate=available.find(m=>canonicalMoveKey(m.nombre)===key&&
+     m.forma&&!isPendingApprovalMove(m)&&!campaignMoveSlotReason(member,i,m));
+   if(candidate&&!already.has(candidate.id)){
+    reserved[i]=candidate.id;
+    already.add(candidate.id);
+   }
+  }
+  // A native evolution is only a preference for still-vacant slots.
+  // If its official attack is unavailable, the existing species-legal
+  // weak fallback stays in place instead of fabricating a fifth move.
   const used=new Set(reserved.filter(Boolean));
   const nameOf=m=>canonicalMoveKey(m?.torre2IntroSource||m?.nombre);
   // Practice previews have separate internal IDs but can reuse the SAME
