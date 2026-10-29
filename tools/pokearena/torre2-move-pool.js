@@ -235,7 +235,9 @@ function campaignIntroOptions(member){
   return [{
    ...base,
    id:'torre2-intro-'+slot+'-'+source,
-   nombre:name,
+   // ULT is a distinct energy-gated slot even when its weak native
+   // renderer matches ATK. Prefix the role, never call it Treino.
+   nombre:index===3?'ULT · '+name:name,
    torre2IntroPractice:true,
    torre2IntroSlot:slot,
    torre2IntroUnlockLevel:index===3?8:5,
