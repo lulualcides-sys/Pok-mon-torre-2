@@ -165,8 +165,11 @@ assert.ok(campaignLearnset('mewtwo').length===TEST_LIBRARY.length,
 const pokedex=fs.readFileSync(path.join(root,modules,'escenas/pokedex.js'),'utf8');
 assert.ok(pokedex.includes('campaignLearnset')&&pokedex.includes('GOLPES POR LEVEL'),
  'Separate campaign learnset must display level and TM requirements');
-assert.ok(pokedex.includes('selectPokedexArenaMove(stage.kit?.[slot],original[slot],plan[i],canonicalMoveKey)'),
- 'Main Pokédex must prioritize the real Arena evolution-stage kit over the level-100 fallback');
+assert.ok(pokedex.includes('const resolved=resolveLoadout(member)')&&
+ pokedex.includes('progression:{species,level:50},tmMoves:[]')&&
+ pokedex.includes("m.method==='LEVEL'")&&
+ pokedex.includes('torre2RequiresTM:false,torre2UnlockLevel:unlocked.get(h.id)'),
+ 'Kanto Pokédex must show legal, learned Lv50 campaign kit; do not borrow native TM/locked skills');
 assert.ok(pokedex.includes('showKantoCampaignLearnset')&&pokedex.includes('GOLPES POR LEVEL'),
  'Native Pokédex must expose all installed compatible moves for selected evolution');
 assert.ok(pokedex.includes('NÃO DISPONÍVEL')||pokedex.includes('INATIVO'),
