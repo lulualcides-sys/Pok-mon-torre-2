@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§7/8/33/36/37 · T07/T08: compatibilidade Fire Blast por nível
+
+- **§7/§8 PARCIAIS:** [PR #236](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/236) integrou `03b76bf9373a0ff3ad950fc3ae1a7af0ffb20c1e`, preservando 227 VFX preexistentes. Fire Blast do cliente Poké Arena 2D (`proyectil`) é aprendível apenas a Lv50 por 12 tipos Fogo Kanto **legalmente compatíveis com TM38 em FireRed**, sem dar o golpe antes, mesmo se o save antigo alegar uma TM ensinada. Pokémon não Fogo seguem o sistema de TM normal. A adaptação Lv50 é exclusiva do Torre 2, não nível oficial de aprendizagem FRLG.
+- **§33 PARCIAL:** [CI #40794417801](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40794417801) **SUCESSO**: npm test/check/check:reuse, auditoria de 12 espécies e renderer original, built Phaser/WebGL, battle Chromium: fixture Charizard Lv50 disparou Fire Blast em toque real; **não** é XP/evolução natural. [CI main #40795948490](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40795948490) **SUCESSO**.
+- **§36 PARCIAL:** diff sem alteração de animações, golpes, sprites, cooldowns, gameplay da Arena, saves ou liga; PRs Toxic #16 e Shiny #17 intocadas.
+- **§37 PARCIAL:** [Pages #40795984761](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40795984761) ainda não confirmado por HTTP ao criar o registro; exigir commit `03b76bf9373a0ff3ad950fc3ae1a7af0ffb20c1e`. Validação natural Pallet→Campeão e físico Android continuam pendentes.
+
+
 ## 28/10/2026 — §§5/7/8/31/33/36/37 · T03/T05: escolha de Eevee persistida antes da mutação
 
 - **§5/§7/§8 — PARCIAIS:** [PR #234](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/234), squash `811137633cc7c1fc8721d84c52283d3ca1b8d097`, mantém a evolução por nível 30 em equipe ou PC sem conceder escolha antecipada. Só após gravação bem-sucedida muda espécie, progressão, kit e registro da Pokédex; objetos/UIDs/TMs/HP originais preservados.
