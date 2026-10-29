@@ -39,6 +39,8 @@ const server=http.createServer(async(req,res)=>{
     progression:{species:'ivysaur',level:16}};
    s.team[2]={id:'nidoran-f',uid:'role-nidoran-f',hp:100,tmMoves:[],
     progression:{species:'nidoran-f',level:13}};
+   s.team[3]={id:'bulbasaur',uid:'role-bulbasaur-l5',hp:100,tmMoves:[],
+    progression:{species:'bulbasaur',level:5}};
    __roleCore.saveCampaign(s);
    window.__roleState=s;
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
@@ -71,10 +73,10 @@ const server=http.createServer(async(req,res)=>{
     y:rect.top+target.y*rect.height/360,
     reason:target.getData('torre2-equip-reason')};
   },id);
-  const findPage=async(id,slot)=>{
+  const findPage=async(id,slot,teamIndex=1)=>{
    for(let p=0;p<15;p++){
     await page.evaluate(([nextSlot,nextPage])=>
-     __pt2Game.scene.getScene('campanha').showSummary(__roleState,1,nextSlot,nextPage),
+     __pt2Game.scene.getScene('campanha').showSummary(__roleState,teamIndex,nextSlot,nextPage),
      [slot,p]);
     const found=await locate(id);
     if(found)return found;
@@ -83,21 +85,22 @@ const server=http.createServer(async(req,res)=>{
   };
   // A normal approved preview tapped in ATK must navigate to its actual
   // HAB2 role without silently modifying the saved loadout.
-  const ordinary=base.available.find(x=>x.startsWith('torre2-intro-rmb-'));
+  const ordinary=await page.evaluate(()=>__rolePool.availableMoves(__roleState.team[3])
+   .find(x=>x.torre2IntroSlot==='rmb')?.id);
   assert.ok(ordinary,'Ivysaur genuine HAB2 preview unavailable');
   // The normal skill can fall beyond page 15 in the unfiltered native
   // library. Use the SAME in-game search field to locate its touch row.
   await page.evaluate(id=>{
    const c=__pt2Game.scene.getScene('campanha');
-   const move=__rolePool.availableMoves(__roleState.team[1]).find(m=>m.id===id);
+   const move=__rolePool.availableMoves(__roleState.team[3]).find(m=>m.id===id);
    c.summaryFilter='ALL';c.summarySearch=move.nombre;
   },ordinary);
-  const wrongHAB=await findPage(ordinary,0);
+  const wrongHAB=await findPage(ordinary,0,3);
   assert.ok(wrongHAB?.reason?.includes('PREVIA DE OUTRO SLOT'),
    'A wrong-slot normal move was not rejected: '+JSON.stringify(wrongHAB));
   const beforeRedirect=await page.evaluate(()=>JSON.stringify({
-   ram:__roleState.team[1].moves||null,
-   disk:__roleCore.readCampaign().team[1].moves||null
+   ram:__roleState.team[3].moves||null,
+   disk:__roleCore.readCampaign().team[3].moves||null
   }));
   await page.touchscreen.tap(wrongHAB.x,wrongHAB.y);
   const navigated=await page.evaluate(()=>{
@@ -112,12 +115,12 @@ const server=http.createServer(async(req,res)=>{
     o.active&&o.getData?.('torre2-equip-move')===id),ordinary);
   assert.equal(visibleAfterRedirect,true,
    'The original move disappeared after redirecting to HAB2');
-  const properHAB=await findPage(ordinary,1);
+  const properHAB=await findPage(ordinary,1,3);
   assert.ok(properHAB&&!properHAB.reason,
    'Redirected normal move remains disabled in the genuine HAB2 slot');
   const afterRedirect=await page.evaluate(()=>JSON.stringify({
-   ram:__roleState.team[1].moves||null,
-   disk:__roleCore.readCampaign().team[1].moves||null
+   ram:__roleState.team[3].moves||null,
+   disk:__roleCore.readCampaign().team[3].moves||null
   }));
   assert.equal(afterRedirect,beforeRedirect,
    'Wrong-slot navigation must not auto-equip or rewrite a save');
