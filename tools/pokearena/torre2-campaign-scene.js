@@ -10,7 +10,7 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey} from './move-pool.js';
+import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
@@ -1116,6 +1116,9 @@ create(){
   // Exclusive mobile screen: prevent touches on Back and attack rows from
   // passing to other scene hotspots (notably original fullscreen behind it).
   this.scene.bringToTop();
+  // The original title's fullscreen hotspot can receive a second mobile
+  // pointer beneath this screen; keep it stopped while managing the party.
+  if(this.scene.isActive('titulo'))this.scene.stop('titulo');
   this.input.setTopOnly(true);
   this.add.zone(320,180,640,360).setDepth(2).setInteractive()
    .setData('torre2-summary-input-shield',true)
@@ -1125,12 +1128,12 @@ create(){
   const stats=pokemonStats(member),pool=availableMoves(member);
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
+  const slotReason=move=>campaignMoveSlotReason(member,activeSlot,move);
   const battleKit=resolveLoadout(member),introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
   const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
   this.summaryFilter??='ALL';this.summarySearch??='';
   const slotCodes=['LMB','RMB','Q','E'];
-  const slotNames=earlyPlan?['ATK','HAB 2','HAB 3','ULT']:
-   ['ATAQUE 1','ATAQUE 2','ESPECIAL','FINALIZADOR'];
+  const slotNames=['ATK','HAB 2','HAB 3','ULT'];
   const types={NORMAL:0xb9c4d2,FIRE:0xf0804d,WATER:0x6fb7f0,ELECTRIC:0xeec95d,
     GRASS:0x83d18a,ICE:0x9bdcee,FIGHTING:0xdb8e77,POISON:0xb98cd9,
     GROUND:0xc3aa77,FLYING:0x98c6e3,PSYCHIC:0xe997bf,BUG:0xaacb70,
@@ -1160,7 +1163,11 @@ create(){
   box(10,8,620,36,0x10243d,0x456b91);
   label(23,15,'POKÉMON / SUMÁRIO',C.gold,16);
   // Avoid the legacy fullscreen hitbox around x=624.
-  button(494,13,108,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
+  button(494,13,108,27,'◀ EQUIPE',()=>{
+   this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
+   // No scene.restart: retain browser fullscreen and native Phaser canvas.
+   this.renderCampaign(state);
+  }).setData('torre2-summary-back',true);
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);
@@ -1203,7 +1210,7 @@ create(){
     this.showSummary(state,index,slot,page);
     return;
    }
-   this.summaryFilter='ALL';this.summarySearch='';this.scene.restart();
+   this.summaryFilter='ALL';this.summarySearch='';this.renderCampaign(state);
   },index===state.active).setData('torre2-active-select',true);
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
@@ -1250,12 +1257,17 @@ create(){
     const old=byName.get(key);
     const score=m=>
      (m.torre2IntroPractice?(stats.level<=8?30:1):(stats.level>8?30:0))+
-     (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0);
+     (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0)+
+     (slotReason(m)===null?50:0);
     if(!old||score(move)>score(old))byName.set(key,move);
    }
    return [...byName.values()];
   };
-  const displayed=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch));
+  // Learned moves all remain visible; compatible choices appear first.
+  // No hidden ULT in HAB slots or silent equip failure on mobile.
+  const displayed=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch))
+   .sort((a,b)=>Number(!!slotReason(a))-Number(!!slotReason(b)));
+  const compatibleCount=displayed.filter(m=>!slotReason(m)).length;
   label(230,195,'BIBLIOTECA · '+displayed.length+' GOLPES',C.gold,12);
   button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
   button(541,187,75,25,'BUSCAR',()=>{
@@ -1268,22 +1280,33 @@ create(){
   const filtered=displayed;
   const pageSize=6,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const safePage=Math.min(pages-1,Math.max(0,page));
-  if(this.summaryFilter!=='ALL'||this.summarySearch)
-   label(230,213,'FILTRO: '+this.summaryFilter+
-    (this.summarySearch?'  ·  '+this.summarySearch.toUpperCase():''),
-    '#95ceef',9);
+  if(!this.summaryWarning){
+   const hint=this.summaryFilter!=='ALL'||this.summarySearch?
+    'FILTRO '+this.summaryFilter+(this.summarySearch?' · '+this.summarySearch.toUpperCase():''):
+    slotNames[activeSlot]+' · '+compatibleCount+'/'+displayed.length+' COMPATÍVEIS';
+   label(230,211,hint,'#95ceef',8);
+  }
   const rowsY=223;
   filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
    const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
    const equipped=chosen.includes(move.id);
    const current=chosen[activeSlot]===move.id;
-   const pending=isPendingApprovalMove(move);
-   const bg=box(x,y,188,27,current?0x275749:equipped?0x1e434c:0x1a344d,
-    current?0x73d8b0:equipped?0x658e96:0x3c6283);
+   const pending=isPendingApprovalMove(move),reason=slotReason(move);
+   const bg=box(x,y,188,27,current?0x275749:reason?0x162737:equipped?0x1e434c:0x1a344d,
+    current?0x73d8b0:reason?0x53667b:equipped?0x658e96:0x3c6283);
    bg.setDepth(12).setInteractive({useHandCursor:true})
-    .setData('torre2-equip-move',move.id);
+    .setData('torre2-equip-move',move.id)
+    .setData('torre2-equip-reason',reason);
    bg.on('pointerdown',(_pointer,_x,_y,event)=>{
     event?.stopPropagation?.();
+    if(reason){
+     this.summaryWarning=reason.includes('ULT')&&activeSlot!==3?
+      'GOLPE FORTE: SELECIONE E (ULT)':'BLOQUEADO: '+reason;
+     // Switch selection to E, but never overwrite its equipped move without
+     // an explicit second tap; the E library is immediately sorted for ULT.
+     this.showSummary(state,index,reason.includes('ULT')&&activeSlot!==3?3:activeSlot,0);
+     return;
+    }
     let equippedNow=false;
     try{equippedNow=equipCampaignMove(state,index,activeSlot,move.id);}
     catch(error){
@@ -1301,12 +1324,12 @@ create(){
    });
    bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
-   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+
+   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':reason?'× ':'+ ')+
     (move.torre2IntroSlot==='e'?'ULT · ':'')+move.nombre+
     (move.approved?' ✓':''),
-    current?'#bcffe3':'#ebf5ff',10);
-   label(x+6,y+16,move.tipo,C.muted,8);
-   if(pending)label(x+77,y+16,'NEW','#ffdc89',8);
+    current?'#bcffe3':reason?'#9caec1':'#ebf5ff',10);
+   label(x+6,y+16,reason||move.tipo,reason?'#f4b69a':C.muted,8);
+   if(pending)label(x+110,y+16,'NEW','#ffdc89',8);
    label(x+181,y+16,'CD '+move.cd+'s',C.muted,8).setOrigin(1,0);
   });
   if(filtered.length===0)label(242,255,this.summaryFilter==='NEW'?'TODOS OS GOLPES APROVADOS ✓':'NENHUM GOLPE ENCONTRADO',C.muted,11);
