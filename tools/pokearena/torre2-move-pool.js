@@ -11,7 +11,9 @@ import {kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
 import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel} from './gen7-letsgo-learnsets.js';
 import {GEN5_KANTO_LEVEL_UP,gen5KantoUnlockLevel} from './gen5-existing-levels.js';
-import {FRLG_LEVEL_UP,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
+import {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP,gen45KantoUnlockLevel}
+ from './torre2-gen45-kanto-learnsets.js';
+import {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -263,6 +265,19 @@ export function availableMoves(member){
   const installed=GEN7_INSTALLED.get(gen7MoveKey(gen5Name));
   if(installed)names.add(canonicalMoveKey(installed.nombre));
  }
+ // HGSS and B2W2 verified legal level-up moves for every Kanto species.
+ // Search its ancestors only; never borrow a different family or VFX.
+ for(const generation of [GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP]){
+  let ancestor=member.id,steps=0;
+  while(generation[ancestor]&&steps++<5){
+   for(const name of Object.keys(generation[ancestor])){
+    const installed=GEN7_INSTALLED.get(gen7MoveKey(name));
+    if(installed)names.add(canonicalMoveKey(installed.nombre));
+   }
+   ancestor=KANTO_LEVEL_EVOLUTIONS[ancestor]?.[0];
+   if(!ancestor)break;
+  }
+ }
  // Only a legally TM38-compatible Fire species gets this user-requested
  // late campaign level unlock, and only using the installed native attack.
  if(fireBlastAtLevel(member.id)!==null&&GEN7_INSTALLED.has('fireblast'))
@@ -417,9 +432,17 @@ export function availableMoves(member){
      !evoLocked.has(key)&&!isPendingApprovalMove(m)){
    const gen5=gen5KantoUnlockLevel(member.id,key);
    const gen7=gen7LetsGoUnlockLevel(member.id,key);
-   const recent=gen5??gen7;
-   if(recent!==null&&level>=campaignLevel(Math.max(13,activeStage,recent)))
-    return true;
+   const gen45=gen45KantoUnlockLevel(member.id,key);
+   // Existing Gen5 signatures and Gen7 unlocks keep priority; HGSS/B2W2
+   // only fill absent options, not overwrite previously approved levels.
+   const recent=gen5??gen7??gen45;
+   if(recent!==null){
+    const power=Number(m.poder)||0;
+    const laterPowerFloor=gen5===null&&gen7===null?
+     (power>=120?45:power>=100?38:power>=80?28:power>=60?20:13):13;
+    if(level>=campaignLevel(Math.max(13,activeStage,recent,laterPowerFloor)))
+     return true;
+   }
   }
   if(!early){
    if(official!==null&&level>=campaignLevel(official))return true;
@@ -509,9 +532,16 @@ export function moveUnlockLevel(member,moveName){
  // review-pending animation receives a later-generation unlock.
  if(!frlgMachineCompatible(species,key)){
   const installed=GEN7_INSTALLED.get(gen7MoveKey(key));
-  const recent=installed?(gen5KantoUnlockLevel(species,key)??
-   gen7LetsGoUnlockLevel(species,key)):null;
-  if(recent!==null)return campaignLevel(Math.max(13,frlgEvolutionLevel(species),recent));
+  const gen5=installed?gen5KantoUnlockLevel(species,key):null;
+  const gen7=installed?gen7LetsGoUnlockLevel(species,key):null;
+  const gen45=installed?gen45KantoUnlockLevel(species,key):null;
+  const recent=gen5??gen7??gen45;
+  if(recent!==null){
+   const power=Number(installed.poder)||0;
+   const laterPowerFloor=gen5===null&&gen7===null?
+    (power>=120?45:power>=100?38:power>=80?28:power>=60?20:13):13;
+   return campaignLevel(Math.max(13,frlgEvolutionLevel(species),recent,laterPowerFloor));
+  }
  }
  const bonus=CHARACTERISTIC_BONUS_LEVELS[species]?.[key];
  if(Number.isInteger(bonus))return campaignLevel(bonus);
