@@ -14,7 +14,7 @@ import {GEN5_KANTO_LEVEL_UP,gen5KantoUnlockLevel} from './gen5-existing-levels.j
 import {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP,gen45KantoUnlockLevel}
  from './gen45-kanto-learnsets.js';
 import {KANTO_STAB_TM_MASTERY_LEVELS,kantoStabTmMasteryLevel}
- from './torre2-stab-tm-mastery.js';
+ from './stab-tm-mastery.js';
 import {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
