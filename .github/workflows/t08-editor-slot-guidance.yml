@@ -1,0 +1,63 @@
+name: T08 — Real move editor legal-slot navigation
+on:
+  push:
+    branches: [fix/t08-editor-redirect-compatible-slot-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  editor:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit tests, syntax and approved VFX integrity
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-move-pool.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/t08-editor-slot-suggestion-built.test.mjs
+          node --check tests/t08-arena-roles-summary-mobile-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture original client and build versioned Phaser/WebGL
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+               && node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/version.json \
+               && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+      - name: Check editor roles, level unlocks, ULT and FRLG coverage
+        run: |
+          set -euo pipefail
+          node tests/t08-editor-slot-suggestion-built.test.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
+          node tests/t08-kanto-no-duplicate-native-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          node tests/t08-leech-seed-campaign-balance-built.test.mjs
+      - name: Mobile touch navigation, fullscreen and entire Phaser browser suite
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t08-arena-roles-summary-mobile-browser.cjs
+          npm run test:browser
+      - name: Archive reproducible evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t08-editor-compatible-slot-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14
