@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+
+## 29/10/2026 — T07/T08: Pokédex não anuncia Surf HM reprovado (#292)
+
+- **Correção integrada:** [PR #292](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/292), squash `319630920ce747f5ef9c1d7c96199f3cd51b9b8a`. A batalha já bloqueava Surf, mas `campaignLearnset` ainda listava o HM como ensinável na Pokédex por enumerar as TMs do catálogo; o índice agora exclui apenas Surf. A animação original permanece instalada, sem alterações em VFX, TMs gravadas, saves, sprites, cooldowns ou outros movimentos.
+- **Provas:** [CI de branch #40890065314](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40890065314) **SUCESSO**: `npm test`, `check`, `check:reuse`, build Phaser/WebGL, matriz 151×227, regressão Chromium e cinco espécies (Squirtle, Blastoise, Lapras, Vaporeon, Dragonite) sem Surf no índice; [CI main #40891739947](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40891739947) **SUCESSO**. **Pages e HTTP ainda pendentes nesta anotação; não presumir publicação.**
+- **Limites:** teste de índice compilado, não jornada natural nem Android físico. T07/T08 e §§7/8/33/36/37 permanecem **PARCIAIS**; os 136 movimentos FRLG inventariados sem renderer não foram criados. Scratch adiado, Surf reprovado, Ditto/Transform adiado.
+
+
 ## 29/10/2026 — decisão do usuário: pular os efeitos secundários e prosseguir T03
 
 - **Não implementar nesta etapa:** Leer, Growl, Tail Whip, Focus Energy, Disable, Poison Powder, Slash, Stun Spore, Defense Curl ou Withdraw. O usuário considerou esses dez efeitos desnecessários para a prioridade atual. A matriz T07 de movimentos sem renderer continua apenas como inventário informativo, **não como fila de implementação mandatória**.
