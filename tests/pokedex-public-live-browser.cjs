@@ -44,7 +44,7 @@ const expected={
     'Public Pages is serving an older build than the deployment just uploaded');
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('pokedex'),
    null,{timeout:90000});
-  const result=await page.evaluate(async(expect)=>{
+  const result=await page.evaluate(async({expect,release})=>{
    const scene=window.__pt2Game.scene.getScene('pokedex');
    const build=document.querySelector('meta[name="pokemon-torre-build"]')?.content;
    const installed=performance.getEntriesByType('resource').map(x=>x.name)
@@ -72,11 +72,55 @@ const expected={
      descriptor:scene.lema?.text||''
     };
    }
-   return{build,installed,cardCount:scene.casillas.length,observations};
-  },expected);
+   // Inspect actual PUBLIC Phaser Pokédex stage cards, not only compiled
+   // fixtures. Mewtwo is a laboratory encounter, not a Kanto campaign slot.
+   // No XP, save, TM, or battle state is changed by these read-only checks.
+   const root=new URL('.',location.href);
+   const [{KANTO_151},{resolveLoadout}]=await Promise.all([
+    import(new URL(release+'/torre2/all-kanto-species.js',root).href),
+    import(new URL(release+'/torre2/move-pool.js',root).href)
+   ]);
+   const eligible=new Set(KANTO_151.filter(p=>p.id!=='mewtwo').map(p=>p.id));
+   const found=new Set(),problems=[],roles=['lmb','rmb','q','e'];
+   const savedBefore=JSON.stringify(Object.fromEntries(
+    Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
+   for(let i=0;i<scene.casillas.length;i++){
+    const family=scene.casillas[i]?.p;
+    if(!family)continue;
+    scene.elegir(i);
+    for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
+     const stage=scene.etapas[stageIndex];
+     if(stage?.mega)continue;
+     const id=String(stageIndex===0?family.id:
+      (family.evoluciones?.[stageIndex-1]?.nombre||stage?.nombre||'')).toLowerCase();
+     if(!eligible.has(id))continue;
+     scene.irEtapa(stageIndex);
+     const displayed=scene.etapas[scene.etapa]?.kit||{};
+     const expectedKit=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
+     found.add(id);
+     for(const role of roles){
+      const move=displayed[role],real=expectedKit[role];
+      if(!move?.id||!move?.forma||move.pendiente||
+         move.torre2Unavailable||move.torre2RequiresTM)
+       problems.push({id,role,kind:'missing/locked/TM',move:move?.nombre||null});
+      if(move?.id!==real?.id)
+       problems.push({id,role,kind:'Pokédex differs from battle',
+        view:move?.id||null,battle:real?.id||null});
+     }
+    }
+   }
+   const savedAfter=JSON.stringify(Object.fromEntries(
+    Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
+   if(savedBefore!==savedAfter)
+    problems.push({kind:'public Pokédex inspection modified player save'});
+   const kanto={eligible:eligible.size,visible:found.size,
+    missing:[...eligible].filter(id=>!found.has(id)),
+    problems:problems.slice(0,40),totalProblems:problems.length};
+   return{build,installed,cardCount:scene.casillas.length,observations,kanto};
+  },{expect:expected,release:version.modules});
   const report={url,build:result.build,publicVersion:version.modules,
    installed:result.installed,cardCount:result.cardCount,
-   observations:result.observations,errors,missing};
+   observations:result.observations,kanto:result.kanto,errors,missing};
   fs.writeFileSync('test-evidence/pokedex-public-live-audit.json',
    JSON.stringify(report,null,2));
   console.log('PUBLIC_POKEDEX_AUDIT',JSON.stringify(report));
@@ -85,6 +129,14 @@ const expected={
   assert.ok(result.installed.some(s=>s.includes('/'+version.modules+'/main.js')),
    'Browser loaded a stale Phaser entrypoint');
   assert.ok(result.cardCount>=90,'Expected at least 90 roster families');
+  assert.equal(result.kanto.eligible,150,'Kanto campaign should cover 150 species');
+  assert.deepEqual(result.kanto.missing,[],
+   'Some Kanto species are absent from the ACTUAL public Pokédex');
+  assert.equal(result.kanto.visible,150,
+   'Public Pokédex does not expose all 150 campaign species');
+  assert.equal(result.kanto.totalProblems,0,
+   'Public Kanto stage kits differ from real Lv50 battle loadouts: '+
+    JSON.stringify(result.kanto.problems));
   for(const [id,names] of Object.entries(expected)){
    const item=result.observations[id];
    assert.ok(item&&!item.error,id+' missing on public Pokédex');
