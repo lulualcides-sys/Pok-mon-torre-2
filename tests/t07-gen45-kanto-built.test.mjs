@@ -90,4 +90,27 @@ const summary={
  newPairsSample:additions.slice(0,28),
  examples:family.filter(x=>['charmander','charmeleon','charizard','magmar','ponyta','squirtle','pikachu','rattata'].includes(x.id))
 };
+// Machine-readable 151 x 227 audit. "Unavailable" is not a defect:
+ // many official moves are inherently incompatible with a given species.
+ // Mewtwo remains a separate unrestricted test fixture and is labeled.
+const matrix=KANTO_151.map(({id})=>{
+ const learnset=new Map(campaignLearnset(id).map(m=>[m.id,m]));
+ return {species:id,mode:id==='mewtwo'?'UNRESTRICTED_TEST_FIXTURE':'CAMPAIGN',
+  moves:TEST_LIBRARY.map(move=>{
+   const acquired=learnset.get(move.id);
+   return {id:move.id,name:move.nombre,origin:move.source,
+    status:acquired?.method==='LEVEL'?'LEVEL':
+      acquired?.method==='TM'?'TM':'INCOMPATIBLE_OR_UNINSTALLED',
+    level:acquired?.level??null,
+    renderer:move.forma,approved:!isPendingApprovalMove(move)};
+  })};
+});
+fs.mkdirSync('test-evidence',{recursive:true});
+fs.writeFileSync('test-evidence/t07-kanto-151x227-coverage.json',
+ JSON.stringify({note:'Compiled client fixtures, NOT a naturally played game.',
+  ...summary,matrix},null,2)+'\n');
+console.log('T07_MATRIX_GENERATED',JSON.stringify({
+ species:matrix.length,catalog:TEST_LIBRARY.length,
+ cells:matrix.reduce((n,row)=>n+row.moves.length,0),
+ output:'test-evidence/t07-kanto-151x227-coverage.json'}));
 console.log('T07_ALL_KANTO_GEN45_VERIFIED',JSON.stringify(summary));
