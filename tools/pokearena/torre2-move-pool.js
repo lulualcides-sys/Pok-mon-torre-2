@@ -35,12 +35,9 @@ export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
  'charmander','charmeleon','charizard','vulpix','ninetales',
  'growlithe','arcanine','ponyta','rapidash','magmar','flareon','moltres'
 ]);
-// Torre 2 custom progression of the ORIGINAL Poké Arena 2D shell spin.
-// Hydro Typhoon is a Blastoise Unite signature, not a FRLG level-up move.
-// A capped Squirtle Lv8 ULT preview does NOT grant full power early.
-export const KANTO_HYDRO_TYPHOON_UNLOCK=Object.freeze({
- squirtle:23,wartortle:16,blastoise:36
-});
+// Hydro Typhoon is Blastoise's UNITE Move, not an official FireRed move.
+// Keep the existing native Poké Arena 2D VFX as Blastoise-only bonus.
+export const KANTO_HYDRO_TYPHOON_UNLOCK=Object.freeze({blastoise:36});
 const fireBlastAtLevel=id=>
  KANTO_FIRE_BLAST_SPECIES.includes(id)&&frlgMachineCompatible(id,'fire-blast')?
  KANTO_FIRE_BLAST_LEVEL:null;
@@ -429,10 +426,13 @@ export function availableMoves(member){
    return (natural!==null&&level>=campaignLevel(natural)&&
     !evoLocked.has(key))||taughtCompatible(key);
   }
-  // Native Squirtle-line Hydro Typhoon is a custom campaign unlock, not
-  // a free starter move or a fabricated FireRed learnset.
-  if(key==='hydro-typhoon'&&Object.hasOwn(KANTO_HYDRO_TYPHOON_UNLOCK,member.id))
-   return level>=KANTO_HYDRO_TYPHOON_UNLOCK[member.id]&&
+  // Squirtle/Wartortle cannot learn the Blastoise-only UNITE Move.
+  // The existing effect stays available to evolved Blastoise at Lv36,
+  // distinctly labeled as a Torre 2 bonus rather than FRLG level-up.
+  if(key==='hydro-typhoon'&&
+     ['squirtle','wartortle','blastoise'].includes(member.id))
+   return member.id==='blastoise'&&
+    level>=KANTO_HYDRO_TYPHOON_UNLOCK.blastoise&&
     !evoLocked.has(key)&&!isPendingApprovalMove(m)&&Boolean(m.forma);
   // Fire Blast is neither a Lv5 starter move nor a free compatible TM:
   // the existing native Fire Blast must wait until our campaign Lv50.
@@ -672,10 +672,6 @@ export function defaultLoadout(member){
   for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
    if(byId.has(id)&&!reserved.includes(id))reserved[slot]=id;
   }
-  // Once learned, Squirtle defaults to the ORIGINAL Hydro Typhoon ULT.
-  // Manually saved ULT choices still win via selectedMoves.
-  if(member.id==='squirtle'&&level>=KANTO_HYDRO_TYPHOON_UNLOCK.squirtle&&
-     byId.has('hydro-typhoon'))reserved[3]='hydro-typhoon';
   // For native/P2 Pokémon, the locked planned ATK must not leave them
   // defenseless on the day they evolve. Use a genuinely learned weak move
   // in an otherwise empty ATK/HAB slot. ULT remains locked until learned.
