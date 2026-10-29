@@ -1,7 +1,7 @@
 name: T08 — Arena 2D role rules, fullscreen and summary touch
 on:
   push:
-    branches: [fix/t08-native-arena-ult-slots-summary-fullscreen-20261029]
+    branches: [fix/t08-native-arena-ult-slots-summary-fullscreen-20261029, fix/t08-pages-rea-characteristic-roles-20261029]
   workflow_dispatch:
 permissions:
   contents: read
@@ -45,7 +45,15 @@ jobs:
         run: |
           set -euo pipefail
           node tools/pokearena/audit-moves.mjs
+          node tests/batch24-built.test.mjs
+          node tests/misty-surge-built.test.mjs
+          node tests/surge3-built.test.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
           node tests/t08-arena-role-slots-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          node tests/finale13-built.test.mjs
           node tests/t08-kanto-no-duplicate-native-built.test.mjs
           node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
           node tests/t08-151-signature-ult-built.test.mjs
@@ -57,6 +65,7 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
           node tests/t08-arena-roles-summary-mobile-browser.cjs
           node tests/t08-summary-mobile-choice-browser.cjs
           node tests/t05-summary-equip-denied-ui-browser.cjs

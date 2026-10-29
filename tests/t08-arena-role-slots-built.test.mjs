@@ -65,6 +65,18 @@ for(const {id} of KANTO_151){
 }
 assert.deepEqual(bad.slice(0,15),[],'Unsafe Kanto roles: '+JSON.stringify(bad.slice(0,20)));
 assert.ok(blockedStrong>100,'No strong learned moves were challenged');
+for(const [species,signature] of [['porygon','tri-attack'],
+ ['dugtrio','tri-attack'],['gengar','shadow-ball']]){
+ const member=make(species,70),kit=resolveLoadout(member);
+ assert.equal(kit.e?.id,signature,
+  species+' must default to its learned approved characteristic ULT on E');
+ assert.ok(!['lmb','rmb','q'].some(key=>kit[key]?.id===signature),
+  species+' must not expose a charged characteristic ULT as a normal HAB');
+}
+const protect=TEST_LIBRARY.find(m=>m.id==='protect');
+assert.ok(protect?.forma,'The approved Protect renderer must remain installed');
+assert.equal(isCampaignUltimateOnlyMove(protect),false,
+ 'Zero-damage FRLG Protect must not be misclassified as charged E-only');
 const ivy=make('ivysaur',16);
 const ivyPool=availableMoves(ivy);
 const ivyUlt=ivyPool.find(m=>m.torre2IntroSlot==='e');

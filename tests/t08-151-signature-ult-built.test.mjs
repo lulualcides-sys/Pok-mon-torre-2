@@ -11,7 +11,7 @@ const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const {modules}=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8'));
 const load=p=>import(pathToFileURL(path.join(base,modules,p)).href);
 const [{KANTO_151},{TEST_LIBRARY,availableMoves,selectedMoves,resolveLoadout,
- moveUnlockLevel,equipMove}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
+ moveUnlockLevel,equipMove,isCampaignUltimateOnlyMove}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
  {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS},
  {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP},
  {GEN7_LETSGO_LEVEL_UP},{GEN5_KANTO_LEVEL_UP},{EARLY_KANTO_LEARNSETS}]
@@ -64,7 +64,12 @@ for(const {id,tipos} of KANTO_151){
    assert.equal(availableMoves(member).find(m=>m.torre2IntroSlot==='e')?.id,
     e.id,id+' battle and move summary disagree at Lv8');
   }
-  if(level===50&&id!=='ditto'&&kit.e?.dano<7)
+  // Flare Blitz is an approved native multi-contact finisher: its 5 base
+  // damage is per contact, not the complete attack. Never weaken the E-only
+  // role or alter the original animation just to satisfy a single-hit check.
+  const nativeMultiContact=['ponyta','rapidash'].includes(id)&&
+   kit.e?.id==='flare-blitz'&&isCampaignUltimateOnlyMove(kit.e);
+  if(level===50&&id!=='ditto'&&kit.e?.dano<7&&!nativeMultiContact)
    unbalanced.push({species:id,name:kit.e.nombre,damage:kit.e.dano});
   checkedLevels++;
  }
