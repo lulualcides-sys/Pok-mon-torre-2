@@ -33,11 +33,11 @@ jobs:
             if [ "$i" -eq 4 ]; then exit 1; fi
             sleep $((i*8))
           done
-      - name: Run real Pokédex scene and entire browser regression
+      - name: Prove native Phaser Pokédex starts without TIPOS, and browser-wide regression
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
-          node tests/source-client-smoke.cjs
+          node tests/t18-pokedex-native-colors-browser.cjs
           npm run test:browser
       - name: Keep screenshot evidence
         if: always()
