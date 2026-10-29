@@ -23,11 +23,13 @@ function fixture(){
   deny:key=>{denied=key;},allow:()=>{denied=null;}
  };
  globalThis.localStorage=storage;
- const s=core.createCampaign('squirtle');
- const member=s.team[1]; // Lv50 Mewtwo is an existing unrestricted test fixture.
- member.moves=pool.selectedMoves(member);
- member.movePlanSpecies=member.id;
+ const initial=core.createCampaign('squirtle');
+ initial.team[1].moves=pool.selectedMoves(initial.team[1]);
+ initial.team[1].movePlanSpecies=initial.team[1].id;
+ core.saveCampaign(initial,storage);
+ const s=core.readCampaign(storage); // Normalize additive legacy defaults.
  core.saveCampaign(s,storage);
+ const member=s.team[1]; // Lv50 Mewtwo is an existing unrestricted test fixture.
  storage.setItem(core.SAVE_BACKUP_KEY,storage.getItem(core.SAVE_KEY));
  const chosen=pool.selectedMoves(member);
  const next=pool.availableMoves(member).find(m=>!chosen.includes(m.id));
