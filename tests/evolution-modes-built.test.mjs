@@ -17,8 +17,22 @@ assert.doesNotMatch(fighter,/if\(false&&intento\?\.mega/,'other modes must not b
 assert.match(touch,/BOTONES=calcular\(CONTROLES\.tactil\?\.tam\)\.filter\(b=>!escena\.datos\?\.torre2\|\|b\.slot!=="mega"\)/,
  'touch EVO must appear in Training/Arena and be absent in Kanto');
 assert.match(touch,/slot:"mega"/,'original touch EVO must exist in other modes');
-assert.match(hud,/!this\.e\.datos\?\.torre2&&l\.puedeEvolucionar/,'dynamic evolution prompt must remain outside campaign');
-assert.match(hud,/!this\.e\.datos\?\.torre2&&l\.puedeMega/,'Mega prompt must remain outside campaign');
+// Older native HUD builds displayed optional EVO/MEGA text prompts; both
+// were scoped to non-campaign battles. The current upstream HUD removed these
+// prompts entirely but still uses puedeEvolucionar to decorate the XP bar.
+// Never mistake that passive progress bar for a callable evolution action.
+// If a future native client restores either prompt, require the Kanto guard.
+const oldEvoPrompt='l.puedeEvolucionar&&l.humano&&parpadeo';
+const oldMegaPrompt='l.puedeMega&&l.humano&&parpadeo';
+for(const [name,oldCondition] of [['evolution',oldEvoPrompt],['mega',oldMegaPrompt]]){
+ if(hud.includes(oldCondition))
+  assert.ok(hud.includes('!this.e.datos?.torre2&&'+oldCondition),
+   name+' prompt must be hidden in the Kanto campaign');
+ else
+  assert.ok(!hud.includes('else if('+oldCondition+')est.push('),
+   name+' prompt must never reappear unguarded');
+}
+assert.match(hud,/puedeEvolucionar/,'native HUD evolution XP indicator still exists');
 assert.match(battle,/this\.datos\?\.torre2\?"":" · "\+n\(k\.mega\)/,'combat help must be mode-scoped');
 assert.match(title,/txt:"KANTO CAMPAIGN"/,'Kanto accessible in original Play menu');
 assert.match(title,/txt:"TRAINING"/,'Training still exists');
