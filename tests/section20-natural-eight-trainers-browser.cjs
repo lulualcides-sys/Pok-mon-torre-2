@@ -24,7 +24,7 @@ const server=http.createServer(async(req,res)=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
   '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
- const page=await browser.newPage({viewport:{width:1280,height:720},hasTouch:true});
+ const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  const report={method:'Native Phaser live AUTO, no HP/KO/result cheats; one starter, Mewtwo in PC; consecutive route trainers 1-8',steps:[]};
  const saveReport=()=>fs.writeFileSync(out+'/natural-first-eight.json',JSON.stringify(report,null,2));
@@ -175,8 +175,16 @@ const server=http.createServer(async(req,res)=>{
   const earned=await game();
   const rawBeforeReload=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
   assert.ok(rawBeforeReload,'No persisted native campaign save after earned Lv8');
+  // Keep the eight battles on the unchanged desktop controller. Enabling
+  // touch from the start changes AUTO match dynamics (Rocket double battle).
+  // Switch Chromium input capability only for the saved next-battle check;
+  // the SAME page/origin/localStorage is reloaded, not a copied fixture.
+  const cdp=await page.context().newCDPSession(page);
+  await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:1});
   await page.reload({waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  assert.ok(await page.evaluate(()=>navigator.maxTouchPoints>0),
+   'Chromium touch emulation was not enabled for the earned ULT check');
   await page.evaluate(async()=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    window.kanto=await import(new URL('./torre2/campaign-core.js',main));
