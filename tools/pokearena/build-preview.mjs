@@ -652,6 +652,16 @@ for(const [filename,changes] of patches){
     body=body.replace(begin,begin+factor);
     continue;
    }
+   // The versioned Kanto Pokédex generator below completely rebuilds the
+   // portrait cards with setDisplaySize(CEL-4,CEL-4). The older optional
+   // exact-image-size patch is redundant after upstream changes its image
+   // expression. Never rewrite or remove a changed native portrait.
+   if(filename==='escenas/pokedex.js'&&
+      from.startsWith('this.add.image(x+1,y+1,\`retrato-')&&
+      to.includes('.setDisplaySize(CEL-4,CEL-4)')){
+    console.warn('Native Pokédex portrait expression changed; Kanto card generator handles sizing');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
