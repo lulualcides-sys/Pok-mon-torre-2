@@ -703,7 +703,7 @@ export function isCampaignUltimateOnlyMove(move){
  // Some original Poké Arena abilities omit Gen3 power metadata even though
  // the move is a high-tier finisher (Flare Blitz is multi-contact/charged).
  // Keep the authentic renderer and name, but gate this move behind E.
- if(canonicalMoveKey(move.nombre)==='flare-blitz')return true;
+ if(['flare-blitz','earthquake'].includes(canonicalMoveKey(move.nombre)))return true;
  // Original P2 marks some harmless defensive/status actions as `ulti`
  // because they occupied its E slot. In the campaign they remain legal
  // normal HAB actions (e.g. earned FRLG Protect); only a genuinely
@@ -774,12 +774,18 @@ function uniqueCampaignSlots(ids,available,member){
   const id=result[slot];if(!id)continue;
   const m=byId.get(id),name=keyOf(id);
   const introUlt=slot===3&&m?.torre2IntroPractice;
+  // The capped Lv8 ULT preview is a separate action for onboarding, but
+  // at Lv13+ its underlying move name must not be duplicated in a normal
+  // HAB slot (Cubone/Marowak Bonemerang was both Q and ULT).
+  // Prefer keeping the exclusive charged ULT and finding another already
+  // unlocked, species-legal skill for the normal slot; never grant a TM.
+  const reserveUltimateName=introUlt&&(member.progression?.level??5)>=13;
   if(!m||campaignMoveSlotReason(member,slot,m)||usedIds.has(id)||
      (!introUlt&&usedNames.has(name))){
    result[slot]=null;missing.push({slot,original:id});
   }else{
    usedIds.add(id);
-   if(!introUlt)usedNames.add(name);
+   if(!introUlt||reserveUltimateName)usedNames.add(name);
   }
  }
  const candidates=available.filter(m=>m?.id&&m.forma&&
@@ -852,6 +858,13 @@ export function defaultLoadout(member){
    const id=canonicalMoveKey(name);
    return byId.has(id)?id:null;
   });
+  // Cubone/Marowak keep their approved Bonemerang in HAB3. Once a
+  // legitimately learned Earthquake is available, its wide-area native
+  // renderer becomes the charged finisher instead of repeating the same
+  // Bonemerang under a separate tutorial ULT ID.
+  if(['cubone','marowak'].includes(member.id)&&level>=13&&
+     byId.has('earthquake')&&isCampaignUltimateOnlyMove(byId.get('earthquake')))
+    reserved[3]='earthquake';
   // Auto-equip each matching characteristic move only once it REALLY unlocks.
   // A TM move is never granted solely by being characteristic.
   for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){

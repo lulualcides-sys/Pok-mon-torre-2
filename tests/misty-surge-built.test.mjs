@@ -218,15 +218,18 @@ for(const [from,to] of [['gloom','vileplume'],['poliwhirl','poliwrath']]){
  for(const slot of ['lmb','rmb','q','e'])
   assert.ok(kit[slot]?.forma,to+' evolved battle slot '+slot+' is empty');
 }
-// Pokédex uses the exact active Arena/VS CPU evolved kit, whereas the
-// Kanto campaign has its own level/TM-gated selectable loadouts.
+// Kanto Pokédex must show the campaign's legally selectable level-50
+// preview, not native Arena-only TM moves, fake LOCKED placeholders or
+// the unrestricted Lv100 debug kit. The Arena/VS original stays untouched.
 const dexCode=fs.readFileSync(file('escenas/pokedex.js'),'utf8');
 assert.match(dexCode,/function kantoDexStages\(def\)/);
-// The native per-evolution Arena kit now takes priority; the old direct
-// level-100 campaign fallback must not silently replace a stage-specific move.
-assert.match(dexCode,/const h=selectPokedexArenaMove\(stage\.kit\?\.\[slot\],original\[slot\],plan\[i\],canonicalMoveKey\)/);
-assert.doesNotMatch(dexCode,/const equipped=resolveLoadout\(member\)/,
- 'Other-mode Pokédex must not be replaced by campaign level-100 kit');
+assert.match(dexCode,/const member=\{id:species,progression:\{species,level:50\},tmMoves:\[\]\}/);
+assert.match(dexCode,/const resolved=resolveLoadout\(member\)/);
+assert.match(dexCode,/const unlocked=new Map\(campaignLearnset\(species\)/);
+assert.match(dexCode,/if\(!h\?\.id\|\|!h\?\.nombre\|\|!h\?\.forma\|\|!unlocked\.has\(h\.id\)\)/);
+assert.match(dexCode,/torre2RequiresTM:false,torre2UnlockLevel:unlocked\.get\(h\.id\)/);
+assert.doesNotMatch(dexCode,/const h=selectPokedexArenaMove\(stage\.kit/,
+ 'Do not reintroduce the original bug: a native TM must not override a legal campaign skill');
 assert.match(dexCode,/this\.etapas=kantoDexStages\(p\)/);
 for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
  assert.ok(dexCode.includes('"'+role+'"'),'Missing Pokédex role '+role);
