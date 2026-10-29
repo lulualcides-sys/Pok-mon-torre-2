@@ -6,7 +6,7 @@
 - **§7/§8 PARCIAIS:** [PR #292](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/292), commit `319630920ce747f5ef9c1d7c96199f3cd51b9b8a`: o índice `campaignLearnset` deixa de oferecer Surf como TM/HM da campanha, alinhando Pokédex e `moveUnlockLevel` ao bloqueio já existente no combate/editor. Cinco espécies verificadas; renderer original e dados de save preservados.
 - **§33 PARCIAL:** [CI #40890065314](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40890065314) e [CI main #40891739947](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40891739947) **SUCESSO**, com unitários, `check`, `check:reuse`, build Phaser/WebGL, matriz 151×227 e Chromium. São fixtures de catálogo/índice, não 151 batalhas reais.
 - **§36 PARCIAL:** 227 efeitos, sprites, cooldowns, TM, saves, Toxic #16 e Shiny #17 intactos; Surf permanece instalado mas reprovado para campanha.
-- **§37 PARCIAL:** Pages/HTTP ainda **PENDENTES** nesta anotação. Não declarar SHA publicado sem verificação pública.
+- **§37 PARCIAL:** [Pages #40891815415](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40891815415) **SUCESSO**, `pages_build_version=319630920ce747f5ef9c1d7c96199f3cd51b9b8a`; confirmação **HTTP público** da versão `src-a2ca650ee5` às **14:35:30 UTC** de 29/10/2026. O deploy prova a correção publicada, não a campanha completa.
 - **Faltam:** 136 lacunas FRLG sem renderer, progressão e evolução prolongadas por campanha natural, 151 espécies em combate, até o Campeão e Android físico. T07/T08 **não concluídos**.
 
 
