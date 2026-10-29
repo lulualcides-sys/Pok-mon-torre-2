@@ -7,7 +7,7 @@ import {SURGE3_MOVES} from './surge3/catalog.js';
 import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
-import {kanto151SlotPlan} from './all-kanto-species.js';
+import {KANTO_151,kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
 import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel} from './gen7-letsgo-learnsets.js';
 import {GEN5_KANTO_LEVEL_UP,gen5KantoUnlockLevel} from './gen5-existing-levels.js';
@@ -223,7 +223,12 @@ function campaignIntroOptions(member){
  const preview=resolveKantoIntro(m,{},{
   library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[id]||{},
-  levelUp:FRLG_LEVEL_UP[id]||{},unlockLevel:frlgUnlockLevel
+  levelUp:FRLG_LEVEL_UP[id]||{},unlockLevel:frlgUnlockLevel,
+  verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
+   GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
+   EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
+  verifiedParents:KANTO_LEVEL_EVOLUTIONS,
+  speciesTypes:KANTO_TYPES.get(id)||[]
  });
  return SLOTS.flatMap((slot,index)=>{
   const base=preview[slot];
@@ -443,6 +448,24 @@ export function availableMoves(member){
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
   if(taughtCompatible(key))return true;
+  // A move could be a FireRed TM AND a real level-up in HGSS/B2W2/Let's
+  // Go. The previous blanket !frlgMachineCompatible check silently hid
+  // those verified moves even after their natural level. Do not mislabel
+  // their supplementary learning as a free FRLG TM.
+  // Keep TM17 Protect's approved FireRed-only gate; Surf's renderer
+  // remains rejected and cannot auto-equip by this supplementary path.
+  if(official===null&&frlgMachineCompatible(member.id,key)&&
+     !['surf','protect','scratch'].includes(key)&&!evoLocked.has(key)&&
+     !isPendingApprovalMove(m)&&Boolean(m.forma)){
+    const later=[gen5KantoUnlockLevel(member.id,key),
+      gen7LetsGoUnlockLevel(member.id,key),
+      gen45KantoUnlockLevel(member.id,key)].filter(Number.isInteger);
+    if(later.length){
+      const required=campaignLevel(Math.max(13,activeStage,
+        Math.min(...later)));
+      if(level>=required)return true;
+    }
+  }
   // Level-only mastery for an INSTALLED same-type TM attack (never Lv5).
   const mastery=official===null?kantoStabTmMasteryLevel(member.id,key,m.tipo):null;
   if(mastery!==null&&level>=mastery&&!evoLocked.has(key)&&
@@ -637,6 +660,32 @@ function uniqueCampaignSlots(ids,available){
  }
  return result;
 }
+// Preserve the player's own equipped E slot. This runs ONLY when building
+// an automatic kit. Native P2 presets that leave Harden/String Shot/Pound or
+// other basic skills as ULT are replaced by a real unlocked species move,
+// or its separate power-capped energy-only Lv8 signature preview.
+const KANTO_TYPES=new Map(KANTO_151.map(({id,tipos})=>[id,tipos]));
+function meaningfulDefaultUltimate(member,chosen,available){
+ const result=[...chosen];
+ if(member.id==='mewtwo'||(member.progression?.level??5)<13)return result;
+ const used=new Set(result.slice(0,3).filter(Boolean));
+ const types=KANTO_TYPES.get(member.id)||[];
+ const ranked=available.filter(m=>m?.id&&m.forma&&
+  !used.has(m.id)&&Number(m.dano)>0&&!isPendingApprovalMove(m)&&
+  !['surf','scratch'].includes(m.id)&&
+  (!m.torre2IntroSlot||m.torre2IntroSlot==='e'));
+ const score=m=>Number(m?.dano||0)+
+  (Number(m?.dano)>=7&&types.includes(m?.tipo)?30:0)-
+  Number(Boolean(m?.torre2IntroPractice))*3;
+ ranked.sort((a,b)=>score(b)-score(a)||a.nombre.localeCompare(b.nombre));
+ const current=available.find(m=>m.id===result[3]);
+ const proposed=ranked[0];
+ // Never replace a stronger, distinctive ULT only because another skill
+ // exists. Every replacement must improve the score from ALREADY earned moves.
+ if(proposed&&(!current||!current.forma||score(proposed)>score(current)+4))
+  result[3]=proposed.id;
+ return result;
+}
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
@@ -686,11 +735,11 @@ export function defaultLoadout(member){
   // learns no ordinary ULT in its official late FireRed level-up table.
   if(!reserved[3]&&level>=8)reserved[3]=
    available.find(m=>m.torre2IntroSlot==='e')?.id||null;
-  return uniqueCampaignSlots(reserved,available);
+  return uniqueCampaignSlots(meaningfulDefaultUltimate(member,reserved,available),available);
  }
  const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
  const ids=slots.map(slot=>canonicalMoveKey(def.kit[slot]?.nombre));
- return uniqueCampaignSlots(ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4),available);
+ return uniqueCampaignSlots(meaningfulDefaultUltimate(member,ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4),available),available);
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
@@ -839,7 +888,12 @@ export function resolveLoadout(member){
  };
  return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
-  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel});
+  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel,
+  verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
+   GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
+   EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
+  verifiedParents:KANTO_LEVEL_EVOLUTIONS,
+  speciesTypes:KANTO_TYPES.get(member.id)||[]});
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);

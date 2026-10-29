@@ -4,6 +4,8 @@
  * Real FRLG unlocks/TM learnability and all original Arena 2D kits are intact.
  */
 
+import {chooseKantoSignatureUlt} from './kanto-ultimate-policy.js';
+
 export const KANTO_INTRO=Object.freeze({
   start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:16,
   maxStarterDamage:9, maxIntroUltDamage:12
@@ -42,7 +44,10 @@ function trainingMove(source,tag,slot,level,duplicate=false){
  return move;
 }
 /** Campaign-only safety overlay. Respects player-equipped weak practice moves. */
-export function resolveKantoIntro(member,installed,{library,canonical,earlyLevels={},levelUp={},unlockLevel}={}){
+export function resolveKantoIntro(member,installed,{
+ library,canonical,earlyLevels={},levelUp={},unlockLevel,
+ verifiedTables=[],verifiedParents={},speciesTypes=[]
+}={}){
  const level=member?.progression?.level??5,id=member?.id;
  if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
  // Ditto learns only Transform in FireRed. The temporary weak tutorial
@@ -156,8 +161,22 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  if(level>=KANTO_INTRO.ultAt){
   const ultCandidate=candidates.find(c=>!selected.some(x=>idOf(x.torre2IntroSource)===c.key)&&c.move.dano>0)
     ||candidates.find(c=>c.move.dano>0);
-  const base=ultCandidate?.move||fallback;
-  const finisher=trainingMove(base,idOf(base.nombre),'e',ultCandidate?.learned??level,true);
+  // Each species previews its OWN verified, approved late-game technique.
+  // Only this energy-gated campaign action has capped damage: its authentic
+  // normal move remains locked until its official/campaign learn level.
+  const signature=chooseKantoSignatureUlt(id,library,{
+   levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes
+  });
+  const base=signature||ultCandidate?.move||fallback;
+  const finisher=trainingMove(base,idOf(base.nombre),'e',signature?8:ultCandidate?.learned??level,true);
+  if(signature){
+   finisher.dano=Math.min(KANTO_INTRO.maxIntroUltDamage,
+    Math.max(7,Math.min(12,Number(base.dano)||7)));
+   finisher.cd=Math.max(9,finisher.cd);
+   finisher.coste=Math.max(24,finisher.coste);
+   // Cap Gen3 power metadata too, not merely the renderer damage field.
+   if(Number.isFinite(finisher.poder))finisher.poder=Math.min(60,finisher.poder);
+  }
   finisher.nombre='ULT · '+String(base.nombre||'Struggle');
   if(!result.e?.forma||result.e?.pendiente||
      (starterWindow&&!result.e?.torre2IntroPractice))
