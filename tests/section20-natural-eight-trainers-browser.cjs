@@ -236,11 +236,25 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(ultBefore.move,nextBattle.ult.id,
    'Earned ULT changed between save reload and native touch');
+  console.log('T07_T08_NATIVE_ULT_PRECAST',JSON.stringify(ultBefore));
   try{
    await page.waitForFunction(before=>{
     const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores?.[0];
     return b.scene.isActive()&&(m?.stats.usosSlot?.e||0)>before;
    },ultBefore.uses,{timeout:10000,polling:100});
+  }catch(error){
+   const diag=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores?.[0];
+    return {sceneActive:b.scene.isActive(),phase:b.fase,
+     uses:m?.stats?.usosSlot?.e||0,energy:m?.energia,ultimate:m?.ulti,
+     cooldown:m?.cd?.e,action:m?.accion,paused:b.pausado,
+     auto:b.__torre2AutoMode?.enabled,move:m?.kit?.e?.id};
+   });
+   report.earnedUltCast={before:ultBefore,failed:diag,error:String(error)};
+   saveReport();
+   console.error('T07_T08_NATIVE_ULT_CAST_DIAGNOSTIC',JSON.stringify(diag));
+   await page.screenshot({path:out+'/t07-t08-earned-ult-cast-failure.png'});
+   throw error;
   }finally{
    await page.evaluate(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
