@@ -821,6 +821,9 @@ export function selectedMoves(member){
    // Real characteristic skills take over only in normal progression.
    if((member.progression?.level??5)<KANTO_INTRO.tutorialUntil)continue;
    if(!valid.has(id))continue; // not learned yet or no taught TM
+   // A signature auto-upgrade must never save a charged-ULT-only attack
+   // inside HAB2/HAB3. It can be offered for the E slot independently.
+   if(campaignMoveSlotReason(member,slot,available.find(m=>m.id===id)))continue;
    if(chosen.includes(id)){seen.add(id);continue}
    if(fresh||!seen.has(id)){
     chosen[slot]=id;seen.add(id);upgraded=true;
@@ -829,7 +832,10 @@ export function selectedMoves(member){
   if(seen.size)member.torre2CharacteristicSeen=[...seen];
   // Persist even when the unlocked signature came from a fallback for an
   // invalid legacy slot, rather than from the explicit auto-upgrade branch.
-  if(!fresh&&(upgraded||chosen.some((id,i)=>id!==member.moves[i]))){
+  // Legacy saves can hold forbidden old role IDs; normalize the battle
+  // read-only, without overwriting the persistent four saved selections.
+  // Only a genuine newly unlocked characteristic move is auto-persisted.
+  if(!fresh&&upgraded){
    member.moves=[...chosen];
    member.movePlanSpecies=member.id;
   }
