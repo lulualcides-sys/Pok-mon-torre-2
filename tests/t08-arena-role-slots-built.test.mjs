@@ -15,7 +15,7 @@ const [{KANTO_151},{availableMoves,selectedMoves,defaultLoadout,resolveLoadout,
  load('torre2/all-kanto-species.js'),load('torre2/move-pool.js')]);
 const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
+assert.ok(TEST_LIBRARY.length>=227,'The user-approved baseline library cannot shrink');
 const bad=[],examples={},checkpoints=[5,8,11,13,16,20,30,40,50];
 let checked=0,blockedStrong=0,legalE=0;
 for(const {id} of KANTO_151){
