@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§5/7/8/31/33/36/37 · T03/T05: escolha de Eevee persistida antes da mutação
+
+- **§5/§7/§8 — PARCIAIS:** [PR #234](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/234), squash `811137633cc7c1fc8721d84c52283d3ca1b8d097`, mantém a evolução por nível 30 em equipe ou PC sem conceder escolha antecipada. Só após gravação bem-sucedida muda espécie, progressão, kit e registro da Pokédex; objetos/UIDs/TMs/HP originais preservados.
+- **§31 — PARCIAL:** quatro testes de falha simulada nas duas chaves do armazenamento (PC/equipe), checkpoint e backup byte a byte, recusa sem mutação e retry; UI móvel Phaser conserva a tela de escolha com aviso visível após duas recusas. Não é Android físico.
+- **§33/§36 — PARCIAIS:** [CI branch #40790262909](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40790262909) **SUCESSO**, incluindo `npm test`, `check`, `check:reuse`, build, regressões Eevee e browser completo. [CI main #40791204928](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40791204928) **SUCESSO**. Golpes, VFX, pixel art, sprites, cooldowns, controles nativos e formato de saves não alterados.
+- **§37 — PARCIAL:** [Pages #40791239485](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40791239485) **PENDENTE** de deploy/HTTP para SHA `811137633cc7c1fc8721d84c52283d3ca1b8d097`. Testes usam fixtures; não concluir T03/T05, as 37 seções, campanha integral ou Android físico.
+
+
 ## 28/10/2026 — §§22/23/31/33/36/37 · T05/T23: uso de itens e TM sem mutação antes do save
 
 - **§22/§23 — PARCIAIS:** [PR #227](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/227) integrada no `e0dce9a2faebee8f13b5af188ecd34d73342fd46`. Poção, Super Poção, remédios de status e ensino de TM só atualizam HP/status/`tmMoves`/inventário/mensagem **após** `saveCampaign` confirmar. A UI Phaser exibe erro vermelho e aceita repetir após recusa de gravação; não altera lógica de batalha, movesets, VFX, sprites, cooldowns nem formato de save.
