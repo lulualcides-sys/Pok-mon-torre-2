@@ -121,7 +121,7 @@ export function paginateKantoPokedexSource(original){
   // Arena kit. The separately documented fifth role is a defensive Dodge,
   // never an incidental fifth attacking native ESP such as Vine Whip.
   // Retain species-specific defensive visuals (e.g. flying dodge) when real.
-  const priorDodge=stage.kit?.esp?.forma?stage.kit.esp:original.esp;
+  const priorDodge=stage.kit?.esp?.forma?stage.kit.esp:resolved.esp;
   const isDefensive=priorDodge?.forma&&(!Number.isFinite(priorDodge.dano)||priorDodge.dano<=0)&&
    ['dash','vuelo','esquiva','teleport','blink','salto'].includes(priorDodge.forma);
   kit.esp={...(isDefensive?priorDodge:{
