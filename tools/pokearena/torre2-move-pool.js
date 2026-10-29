@@ -630,6 +630,10 @@ export function isCampaignUltimateOnlyMove(move){
  if(!move)return false;
  if(move.torre2IntroSlot==='e')return true;
  if(move.torre2IntroPractice)return false;
+ // Some original Poké Arena abilities omit Gen3 power metadata even though
+ // the move is a high-tier finisher (Flare Blitz is multi-contact/charged).
+ // Keep the authentic renderer and name, but gate this move behind E.
+ if(canonicalMoveKey(move.nombre)==='flare-blitz')return true;
  return move.ulti===true||Number(move.dano)>=13||Number(move.poder)>=80;
 }
 export function campaignMoveSlotReason(member,slot,move){
