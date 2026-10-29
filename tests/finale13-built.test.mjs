@@ -35,7 +35,7 @@ for(const h of reviewedMoves){
   .some(x=>x.id===h.id),'Mewtwo must equip '+h.nombre);
 }
 for(const [id,pokemon] of [
- ['psychic','alakazam'],['sleep-powder','butterfree'],['surf','lapras'],
+ ['psychic','alakazam'],['sleep-powder','butterfree'],
  ['ice-punch','hitmonchan'],['poison-punch','muk'],['thunder-punch','electabuzz'],
  ['fire-punch','magmar'],['cross-chop','machamp'],['aerial-ace','pidgeot'],
  ['flame-wheel','rapidash'],['light-screen','mr-mime'],
@@ -43,6 +43,17 @@ for(const [id,pokemon] of [
 ])assert.ok(availableMoves({id:pokemon,progression:{species:pokemon,level:70},
   ...(id==='protect'?{tmMoves:['protect']}:{})})
  .some(x=>x.id===id),id+' not learned by '+pokemon);
+// The installed Surf renderer is preserved for historical/visual audit,
+// but the user's latest decision rejects it for Kanto campaign equipment.
+// Do not turn the old Finale 13 smoke test into a Surf auto-unlock.
+assert.ok(TEST_LIBRARY.some(m=>m.id==='surf'),'Never delete the installed Surf VFX');
+for(const id of ['lapras','squirtle','blastoise']){
+ const member={id,progression:{species:id,level:70},tmMoves:['surf']};
+ const before=JSON.stringify(member);
+ assert.ok(!availableMoves(member).some(m=>m.id==='surf'),
+  'Rejected Surf must not enter the campaign: '+id);
+ assert.equal(JSON.stringify(member),before,'Reading moves must not rewrite save');
+}
 let spanX=0,spanY=0,fullScreenRain=false;
 let usedColors=new Set(),renderBounds=null;
 function graphic(){
