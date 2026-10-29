@@ -51,6 +51,7 @@ const moves=[...byMove.values()].sort((a,b)=>
    'NO_APPROVED_INSTALLED_RENDERER',
   fourSourceReview:'REQUIRED_BEFORE_VFX; not certified by this inventory'
  }));
+console.log('T07_FRLG_GAP_DRIFT_DIAGNOSTIC',JSON.stringify({distinct:moves.length,campaignPairs,labPairs,baseline:{distinct:136,campaignPairs:639,labPairs:6},top:moves.slice(0,15).map(x=>[x.move,x.regularSpeciesCount])}));
 assert.ok(moves.length<=136,'New missing FRLG move appeared; audit catalogue aliases');
 assert.ok(campaignPairs<=639,'More regular Kanto FRLG gaps than the baseline');
 assert.ok(labPairs<=6,'More laboratory Mewtwo FRLG gaps than the baseline');
