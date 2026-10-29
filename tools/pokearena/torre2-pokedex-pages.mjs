@@ -16,6 +16,18 @@ export function normalizePokedexNameColumn(s){
  }
  return s;
 }
+/** Pick the actual move from this Poké Arena evolution stage first.
+ * A Torre 2 campaign fallback is shown ONLY if it matches the expected
+ * species/slot move; never invent a renderer or borrow another stage.
+ * Read-only: this function does not equip, unlock or mutate saves. */
+export function selectPokedexArenaMove(nativeMove,fallback,expectedName,canonical){
+ const valid=m=>Boolean(m?.nombre&&m?.forma&&!m?.torre2Unavailable&&!m?.pendiente);
+ if(valid(nativeMove))return nativeMove;
+ if(valid(fallback)&&expectedName&&canonical(fallback.nombre)===canonical(expectedName))
+  return fallback;
+ return null;
+}
+
 export function paginateKantoPokedexSource(original){
  let s=String(original);
  s=once(s,
@@ -32,7 +44,7 @@ export function paginateKantoPokedexSource(original){
   'import{resolveLoadout,moveUnlockLevel,canonicalMoveKey,TEST_LIBRARY,campaignLearnset}from"../torre2/move-pool.js";'+
   'import{frlgMachineCompatible}from"../torre2/frlg-learnsets.js";'+
   'import{kanto151SlotPlan}from"../torre2/all-kanto-species.js";');
- const sync=String.raw`// Upstream Poké Arena versions may rename their original type palette.
+ const sync=String.raw`\n ${selectPokedexArenaMove.toString()}\n // Upstream Poké Arena versions may rename their original type palette.
  // Prefer its native colors if available, otherwise use the same colors as
  // the Torre 2 campaign. This affects ONLY Pokédex card decoration.
  const TORRE2_KANTO_TYPE_PALETTE=Object.freeze({
@@ -78,8 +90,10 @@ export function paginateKantoPokedexSource(original){
   const original=resolveLoadout(member);
   const kit={...original},slots=['lmb','rmb','q','e'];
   for(let i=0;i<slots.length;i++){
-   const slot=slots[i],named=canonicalMoveKey(plan[i]);
-   const h=original[slot];
+   const slot=slots[i];
+   // Native Poké Arena 2D per-evolution technique takes precedence in the
+   // Pokédex. The campaign move library remains a separate level-gated tab.
+   const h=selectPokedexArenaMove(stage.kit?.[slot],original[slot],plan[i],canonicalMoveKey);
    if(!h?.nombre||!h?.forma){
     kit[slot]={nombre:'LOCKED',forma:'golpe',tipo:'NORMAL',dano:0,
      coste:0,cd:0,pendiente:true,torre2Unavailable:true};
@@ -95,7 +109,7 @@ export function paginateKantoPokedexSource(original){
   // Arena kit. The separately documented fifth role is a defensive Dodge,
   // never an incidental fifth attacking native ESP such as Vine Whip.
   // Retain species-specific defensive visuals (e.g. flying dodge) when real.
-  const priorDodge=original.esp;
+  const priorDodge=stage.kit?.esp?.forma?stage.kit.esp:original.esp;
   const isDefensive=priorDodge?.forma&&(!Number.isFinite(priorDodge.dano)||priorDodge.dano<=0)&&
    ['dash','vuelo','esquiva','teleport','blink','salto'].includes(priorDodge.forma);
   kit.esp={...(isDefensive?priorDodge:{
