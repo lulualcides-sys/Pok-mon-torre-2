@@ -92,6 +92,7 @@ jobs:
           node tests/surge3-built.test.mjs
           node tests/kanto-151-built.test.mjs
           node tests/frlg-learnsets-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
           node tests/finale13-built.test.mjs
           echo "Inventário checado: 23 famílias Kanto com evoluções, 5 comandos e ginásios reais."
       - name: Testar a arena Phaser original no Chromium antes de publicar
