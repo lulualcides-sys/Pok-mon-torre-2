@@ -180,7 +180,9 @@ export function resolveKantoIntro(member,installed,{
   }
   finisher.nombre='ULT · '+String(base.nombre||'Struggle');
   if(!result.e?.forma||result.e?.pendiente||
-     (starterWindow&&!result.e?.torre2IntroPractice))
+     (starterWindow&&!result.e?.torre2IntroPractice)||
+     (result.e?.torre2IntroPractice&&blockedSignature&&
+      idOf(result.e.torre2IntroSource)===blockedSignature))
    result.e=finisher;
  }
  return result;
