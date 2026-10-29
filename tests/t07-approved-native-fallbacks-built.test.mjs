@@ -32,7 +32,7 @@ const legal=(id,level,key)=>availableMoves(member(id,level))
  .some(m=>!m.torre2IntroPractice&&canonicalMoveKey(m.nombre)===key);
 assert.ok(legal('seel',21,'aurora-beam'),'FRLG Seel Lv21 must retain Aurora Beam');
 assert.ok(!legal('seel',20,'aurora-beam'),'FRLG Seel Lv20 cannot learn Aurora Beam early');
-assert.ok(legal('dewgong',5,'aurora-beam'),'FRLG Dewgong knows Aurora Beam at Lv1');
+assert.ok(legal('dewgong',34,'aurora-beam'),'FRLG Dewgong knows Aurora Beam after legal evolution');
 assert.ok(legal('shellder',22,'aurora-beam'),'FRLG Shellder Lv22 must retain Aurora Beam');
 assert.ok(legal('vaporeon',36,'aurora-beam'),'FRLG Vaporeon Lv36 must retain Aurora Beam');
 assert.ok(legal('alakazam',33,'calm-mind'),'FRLG Alakazam Lv33 must retain Calm Mind');
