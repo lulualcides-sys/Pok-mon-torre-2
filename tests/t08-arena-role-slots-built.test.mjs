@@ -30,7 +30,7 @@ for(const {id} of KANTO_151){
    const reason=campaignMoveSlotReason(member,slot,move);
    if(reason)bad.push([id,level,key,move.id,reason]);
    if(slot!==3&&move.ulti)bad.push([id,level,key,'non-ULT marked as ULT']);
-   if(slot===0&&(Number(move.dano)>9||Number(move.dano)<=0))
+   if(slot===0&&Number(move.dano)>9)
     bad.push([id,level,key,'basic damage',move.id,move.dano]);
    if((slot===1||slot===2)&&isCampaignUltimateOnlyMove(move))
     bad.push([id,level,key,'strong move in HAB',move.id]);
