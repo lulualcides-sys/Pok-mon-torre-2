@@ -94,6 +94,39 @@ const server=http.createServer(async(req,res)=>{
      if(exampleNames.includes(id))samples[id]=Object.fromEntries(required.map(slot=>[slot,kit[slot]?.nombre||'NONE']));
     });
    }
+   // Check the ACTUAL Phaser scene after choosing every card and evolution,
+   // not just kantoDexStages() in isolation. P2 has later-generation parent
+   // families (Pichu/Munchlax) and alternate forms; only 150 distinct Kanto
+   // stages belong to the campaign (Mewtwo stays in the laboratory).
+   const scene=window.__pt2Game.scene.getScene('pokedex');
+   const uiSeen=new Set(),uiProblems=[];
+   for(let cardIndex=0;cardIndex<scene.casillas.length;cardIndex++){
+    const family=scene.casillas[cardIndex]?.p;
+    if(!family)continue;
+    scene.elegir(cardIndex);
+    for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
+     const stage=scene.etapas[stageIndex];
+     if(stage?.mega)continue;
+     const id=String(stageIndex===0?family.id:
+      (family.evoluciones?.[stageIndex-1]?.nombre||stage?.nombre||'')).toLowerCase();
+     if(!known.has(id)||id==='mewtwo'||uiSeen.has(id))continue;
+     scene.irEtapa(stageIndex);
+     const displayed=scene.etapas[scene.etapa]?.kit||{};
+     const battle=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
+     uiSeen.add(id);
+     for(const role of required){
+      const view=displayed[role],actual=battle[role];
+      if(!view?.id||!view?.forma||view.pendiente||
+         view.torre2Unavailable||view.torre2RequiresTM||view.id!==actual?.id)
+       uiProblems.push({id,role,card:family.id,stage:stageIndex,
+        view:view?.id||null,battle:actual?.id||null,
+        afterStage:scene.etapas[scene.etapa]?.nombre||null});
+     }
+    }
+   }
+   if(uiSeen.size!==150)issues.push({problem:'not all 150 Kanto stages are shown',
+    found:uiSeen.size,missing:KANTO_151.filter(p=>p.id!=='mewtwo'&&!uiSeen.has(p.id)).map(p=>p.id)});
+   issues.push(...uiProblems);
    const sourceDeoxys=ROSTER.find(x=>x.id==='deoxys');
    const dex=sourceDeoxys&&kantoDexStages(sourceDeoxys)[0]?.kit;
    if(!dex||dex.lmb?.nombre!=='Confusion'||dex.rmb?.nombre!=='Psychic'||
