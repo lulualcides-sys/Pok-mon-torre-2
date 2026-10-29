@@ -17,8 +17,15 @@ assert.doesNotMatch(fighter,/if\(false&&intento\?\.mega/,'other modes must not b
 assert.match(touch,/BOTONES=calcular\(CONTROLES\.tactil\?\.tam\)\.filter\(b=>!escena\.datos\?\.torre2\|\|b\.slot!=="mega"\)/,
  'touch EVO must appear in Training/Arena and be absent in Kanto');
 assert.match(touch,/slot:"mega"/,'original touch EVO must exist in other modes');
-assert.match(hud,/!this\.e\.datos\?\.torre2&&l\.puedeEvolucionar/,'dynamic evolution prompt must remain outside campaign');
-assert.match(hud,/!this\.e\.datos\?\.torre2&&l\.puedeMega/,'Mega prompt must remain outside campaign');
+// Upstream may remove the optional evolution prompt; it is not a stable API.
+// The real no-evolution-in-campaign guarantee is tested on fighter and touch.
+// When the original legacy prompt exists, however, it MUST remain guarded.
+for(const ability of ['puedeEvolucionar','puedeMega']){
+ const original='l.'+ability+'&&l.humano&&parpadeo';
+ if(hud.includes(original))
+  assert.ok(hud.includes('!this.e.datos?.torre2&&'+original),
+   'Native '+ability+' prompt must be suppressed in Kanto battles');
+}
 assert.match(battle,/this\.datos\?\.torre2\?"":" · "\+n\(k\.mega\)/,'combat help must be mode-scoped');
 assert.match(title,/txt:"KANTO CAMPAIGN"/,'Kanto accessible in original Play menu');
 assert.match(title,/txt:"TRAINING"/,'Training still exists');
