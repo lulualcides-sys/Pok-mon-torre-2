@@ -564,6 +564,18 @@ for(const [filename,changes] of patches){
    // Only Kanto's Phaser code is altered by this patch; never block its
    // release on an unrelated legacy-mode preload variation.
    if(filename==='escenas/liga.js'){
+    // The original sprites import may reorder or omit symbols. Our existing
+    // League preload uses these four native functions, so add only missing
+    // imports instead of leaving a runtime ReferenceError after a green build.
+    if(from.startsWith('import{dexAspecto,ponerRetrato}')){
+     const native=body.match(/import\{([^}]+)\}from["']\.\.\/sprites\.js["'];/);
+     if(!native)throw Error('Unknown League native sprites import');
+     const names=native[1].split(',').map(s=>s.trim());
+     for(const symbol of ['dexAspecto','ponerRetrato','cargarPMD','soloFormas'])
+      if(!names.includes(symbol))names.push(symbol);
+     body=body.replace(native[0],'import{'+names.join(',')+'}from"../sprites.js";');
+     continue;
+    }
     // The native League has changed its init signature, but its PMD
     // portraits still must be preloaded BEFORE create() builds the cards.
     if(from.startsWith('init(datos)')){
