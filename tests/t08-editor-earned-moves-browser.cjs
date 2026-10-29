@@ -28,18 +28,22 @@ const server=http.createServer(async(req,res)=>{
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4588/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
-  const target=await page.evaluate(async()=>{
+  await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=await import(new URL('./torre2/campaign-core.js',src));
-   const pool=await import(new URL('./torre2/move-pool.js',src));
    const s=core.createCampaign('bulbasaur');
    s.team[0]={...s.team[0],id:'pidgey',
     progression:{...s.team[0].progression,species:'pidgey',level:11},
     tmMoves:[],moves:null,movePlanSpecies:null};
    core.saveCampaign(s);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
+  const target=await page.evaluate(async()=>{
+   const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
+   const core=await import(new URL('./torre2/campaign-core.js',src));
+   const s=core.readCampaign();
    const c=window.__pt2Game.scene.getScene('campanha');
-   await new Promise(resolve=>setTimeout(resolve,800));
    c.summaryFilter='ALL';c.summarySearch='Quick Attack';
    c.__summaryState=s;c.showSummary(s,0,0,0);
    const row=c.children.list.find(o=>o.active&&o.input?.enabled&&
