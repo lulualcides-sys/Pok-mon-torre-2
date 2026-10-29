@@ -54,14 +54,14 @@ for(const [id,real] of [['nidoran-m','poison-sting'],['mankey','karate-chop']]){
  assert.equal(equipMove(p,3,real),false,
   id+' ULT must stay weak through Lv12');
 }
-for(const id of ['nidoran-m','mankey']){
- const p=member(id,25);
+for(const [id,level] of [['nidoran-m',25],['charizard',50]]){
+ const p=member(id,level);
  const equipped=selectedMoves(p);
  const option=availableMoves(p).find(m=>!m.torre2IntroPractice&&
   !equipped.includes(m.id)&&m.forma);
  assert.ok(option,'Expected later real option '+id);
  assert.equal(equipMove(p,3,option.id),true,
-  id+' cannot replace level-25 ULT with legal installed move');
+  id+' cannot replace late ULT with legal installed move');
  assert.equal(resolveLoadout(p).e?.id,option.id);
  assert.equal(resolveLoadout(p).e?.ulti,true);
 }
