@@ -931,7 +931,7 @@ if(!finalHTML.includes(oldModule))
 // A GitHub Pages deploy can finish while a mobile WebView keeps the old
 // /arena2d/index.html. The JS tree is content-addressed; also make the
 // HTML independently verify the latest published version once per load.
-const freshnessGuard=\`<script>
+const freshnessGuard=`<script>
 (function(){
  const shown=document.querySelector('meta[name="pokemon-torre-build"]')?.content;
  if(!shown||location.protocol==='file:')return;
@@ -950,7 +950,7 @@ const freshnessGuard=\`<script>
    location.replace(url.toString());
   }).catch(()=>{});
 })();
-</script>\`;
+</script>`;
 const stampedHTML=finalHTML.replace(oldModule,
  'src="'+versionedSource+'/main.js"')
  .replace('</head>',
