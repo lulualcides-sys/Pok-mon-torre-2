@@ -34,8 +34,15 @@ for(const h of reviewedMoves){
  assert.ok(availableMoves({id:'mewtwo',progression:{species:'mewtwo',level:50}})
   .some(x=>x.id===h.id),'Mewtwo must equip '+h.nombre);
 }
+// Surf remains present as the original renderer for laboratory/legacy
+// compatibility, but its visual was rejected for Kanto campaign use.
+// The editor must not teach it automatically to Lapras (or any teammate).
+assert.ok(TEST_LIBRARY.some(m=>m.id==='surf'&&m.forma),
+ 'Do not erase the original Surf renderer while its campaign use is blocked');
+assert.ok(!availableMoves({id:'lapras',progression:{species:'lapras',level:70}})
+ .some(m=>m.id==='surf'),'Rejected Surf leaked into Lapras campaign');
 for(const [id,pokemon] of [
- ['psychic','alakazam'],['sleep-powder','butterfree'],['surf','lapras'],
+ ['psychic','alakazam'],['sleep-powder','butterfree'],
  ['ice-punch','hitmonchan'],['poison-punch','muk'],['thunder-punch','electabuzz'],
  ['fire-punch','magmar'],['cross-chop','machamp'],['aerial-ace','pidgeot'],
  ['flame-wheel','rapidash'],['light-screen','mr-mime'],
