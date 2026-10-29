@@ -95,6 +95,7 @@ jobs:
           node tests/t07-frlg-natural-catalog-built.test.mjs
           node tests/t08-kanto-no-duplicate-native-built.test.mjs
           node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
           echo "Inventário checado: 23 famílias Kanto com evoluções, 5 comandos e ginásios reais."
