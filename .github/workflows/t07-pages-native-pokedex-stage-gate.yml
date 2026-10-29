@@ -8,6 +8,9 @@ on:
       - 'tools/pokearena/torre2-pokedex-pages.mjs'
       - '.github/workflows/t07-pages-native-pokedex-stage-gate.yml'
   workflow_dispatch:
+concurrency:
+  group: t07-pages-native-pokedex-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
