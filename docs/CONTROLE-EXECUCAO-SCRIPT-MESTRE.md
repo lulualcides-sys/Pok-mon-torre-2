@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§7/8/33/36/37 · T07/T08: revisão integral por espécie, gerações IV e V (PR #241)
+
+- **§7 / §8 PARCIAIS:** [PR #241](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/241) squash `9bca3c3c0a7fb1078900d71f6c96d2a80b886684`: PokeAPI HGSS/B2W2 método oficial level-up para **151 Kanto**, respectivamente **1.905** e **2.078** pares; adaptação exclusiva de metadados, conectada somente aos **227 efeitos já existentes e elegíveis**. Com FireRed+Let's Go, foram comprovadas **186 opções adicionais legalmente instaladas, em 108 espécies**; cada espécie conserva bloqueio de evolução/nível e TMs não ensinadas, sem duplicar VFX. Mewtwo de laboratório continua explicitamente identificado como fixture irrestrita, não prova de campanha real.
+- **§33 PARCIAL:** [CI branch #40799487762](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40799487762) **SUCESSO**, 202/202 npm tests, check/check:reuse, build Phaser, testes reais da biblioteca e Chromium full; artefato `t07-kanto-151x227-coverage.json` com **34.277 células**. A equipe/níveis dos cenários são artificiais, não ganhos por XP natural. [CI main #40800684464](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40800684464) **SUCESSO**.
+- **§36 PARCIAL:** sem novos efeitos, sprites, cooldowns, alterações à Arena, mecanismos de save ou VFX aprovados; PRs de Toxic #16 / Shiny #17 preservadas. A PR anterior #239 foi fechada para evitar conflito com trabalho T05 #238.
+- **§37 PARCIAL:** [Pages #40800712739](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40800712739) **SUCESSO e conferência HTTP público**, commit exato `9bca3c3c0a7fb1078900d71f6c96d2a80b886684`, versão `src-a8cb9ecd1f`. Faltam ainda partida natural contínua, 151 linhas de evolução sem fixture, XP/save/reload prolongados e homologação Android físico.
+
+
 ## 28/10/2026 — §§15/17/20/31/33/36/37 · T05/T20/T21/T22: persistência atômica de resultados
 
 - **§15/17/20 — PARCIAIS:** [PR #238](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/238) integrada em `6afdc81af2f5bddd780546068fa483d3a8d4c87f`. Trainer/wild win/loss, XP/evolução, dinheiro, ginásio, Liga/Campeão, revanches e reserva VS Seeker usam snapshot gravado antes da mutação. O relatório Phaser não causa mais segundo save nem reprocessa recompensa após falha de renderização.
