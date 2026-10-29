@@ -682,8 +682,27 @@ export function defaultLoadout(member){
     (i===0?pool.find(unique):null);
    if(next){reserved[i]=next.id;used.add(next.id);usedNames.add(nameOf(next))}
   }
-  // A weak meter-gated finisher remains available even for a species that
-  // learns no ordinary ULT in its official late FireRed level-up table.
+  // T07/T08: select a real, species-legal damaging ULT, not a generic
+  // Tackle/Pound preview. Available moves already enforce level, evolution,
+  // FRLG learnsets, and taught TM compatibility for every Kanto species.
+  const ultKey=id=>canonicalMoveKey(byId.get(id)?.torre2IntroSource||
+   byId.get(id)?.nombre||id);
+  const regular=new Set(reserved.slice(0,3).filter(Boolean).map(ultKey));
+  const finisherPool=available.filter(m=>m?.id&&m.forma&&
+   !m.torre2IntroPractice&&!isPendingApprovalMove(m)&&
+   Number(m.dano)>0&&!['tackle','pound','struggle','scratch',
+    'growl','tail-whip'].includes(canonicalMoveKey(m.nombre))&&
+   !regular.has(canonicalMoveKey(m.nombre)))
+   .sort((a,b)=>Number(b.poder||b.dano*5)-Number(a.poder||a.dano*5)||
+    Number(b.dano)-Number(a.dano));
+  const planned=byId.get(reserved[3]);
+  const plannedWeak=!planned||planned.torre2IntroPractice||
+   Number(planned.dano)<=8||
+   ['tackle','pound','struggle','scratch'].includes(ultKey(reserved[3]));
+  if(level>=KANTO_INTRO.tutorialUntil&&plannedWeak&&finisherPool.length)
+   reserved[3]=finisherPool[0].id;
+  // Magikarp, Ditto etc. may genuinely lack a strong legal attack.
+  // Never invent an incompatible move merely to fill the ULT slot.
   if(!reserved[3]&&level>=8)reserved[3]=
    available.find(m=>m.torre2IntroSlot==='e')?.id||null;
   return uniqueCampaignSlots(reserved,available);
