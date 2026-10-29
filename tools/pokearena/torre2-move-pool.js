@@ -568,8 +568,12 @@ export function campaignLearnset(species){
     practice:move.torre2IntroPractice===true,
     slot:move.torre2IntroSlot||null}));
  }
+ // Surf's legacy renderer remains installed, but campaignLearnset feeds
+ // the Pokédex/editor index: do not advertise a rejected HM as teachable.
+ // The actual battle resolver already blocks Surf, including imported saves.
  for(const move of TEST_LIBRARY)
-  if(!list.has(move.id)&&frlgMachineCompatible(id,move.id))
+  if(canonicalMoveKey(move.nombre)!=='surf'&&
+     !list.has(move.id)&&frlgMachineCompatible(id,move.id))
    list.set(move.id,Object.freeze({
     id:move.id,name:move.nombre,type:move.tipo,level:null,method:'TM'}));
  const result=Object.freeze([...list.values()].sort((a,b)=>
