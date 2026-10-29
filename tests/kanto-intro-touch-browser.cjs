@@ -27,11 +27,17 @@ const server=http.createServer(async(req,res)=>{
   });
   // In a new game, first select a real Kanto starter and enter first battle.
   const results=[];
-  for(const species of ['bulbasaur','charmander','squirtle']){
+  for(const species of ['bulbasaur','charmander','squirtle','ponyta']){
    for(const level of [5,7,8]){
     await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:18000});
     await page.evaluate(({species,level})=>{
-     const s=window.core.createCampaign(species);
+     const s=window.core.createCampaign(species==='ponyta'?'squirtle':species);
+     // Ponyta is a controlled Lv5 party fixture, not a fourth canonical
+     // starter. The battle and touch inputs remain real Phaser/WebGL.
+     if(species==='ponyta'){
+      s.team[0].id='ponyta';
+      s.team[0].progression.species='ponyta';
+     }
      s.team[0].progression.level=level;
      window.core.saveCampaign(s);
      window.__pt2Game.scene.getScene('campanha').enterBattle(s,false);
@@ -48,6 +54,13 @@ const server=http.createServer(async(req,res)=>{
     for(const slot of ['lmb','rmb','q']){
      assert.ok(snap.slots[slot].name&&snap.slots[slot].name!=='LOCKED',species+' '+level+' missing '+slot);
      assert.equal(snap.slots[slot].locked,false,species+' '+level+' pending '+slot);
+    }
+    if(species==='ponyta'&&level===5){
+     const names=['lmb','rmb','q'].map(slot=>snap.slots[slot].name);
+     assert.ok(names.includes('Tackle'),'Verified Ponyta Tackle not present in real Phaser battle');
+     assert.ok(names.includes('Ember'),'Existing weak Ponyta Ember preview lost');
+     assert.ok(names.includes('Quick Attack'),'Existing Ponyta Quick Attack lost');
+     assert.ok(!names.some(name=>/^Struggle/.test(name)),'Ponyta still has a Struggle filler');
     }
     if(level<8)assert.ok(!snap.slots.e.name||snap.slots.e.locked||snap.slots.e.name==='LOCKED',species+' ULT active before 8');
     else assert.ok(snap.slots.e.ulti,species+' Lv8 ULT missing');
@@ -78,7 +91,7 @@ const server=http.createServer(async(req,res)=>{
    }
   }
   assert.deepEqual(errors,[],'Phaser uncaught exceptions');
-  assert.equal(results.length,12);
+  assert.equal(results.length,16);
   console.log('PASS_KANTO_REAL_TOUCH',JSON.stringify(results));
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
