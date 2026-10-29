@@ -11,7 +11,12 @@ export function clearDepartingCombat(scene){
  for(const effect of effects){
   if(!effect||destroyed.has(effect))continue;
   destroyed.add(effect);
-  effect.destroy?.();
+  try{effect.destroy?.()}
+  catch(error){
+   // Native Phaser can throw while tearing down a stale VFX. Queued
+   // contacts are already discarded; finish the rest of recall cleanup.
+   console.warn('Torre 2: efeito anterior falhou ao destruir',String(error));
+  }
  }
  for(const actor of scene.luchadores||[]){
   if(!actor)continue;
