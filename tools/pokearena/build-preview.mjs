@@ -635,6 +635,19 @@ for(const [filename,changes] of patches){
     body=addTorre2FormsToNativeCatalog(body);
     continue;
    }
+   // Later native form inserts are located by semantic key, never by
+   // original FORMAS constructor ordering. No approved VFX is replaced.
+   if(filename==='habilidades.js'&&
+      from.startsWith('torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(')&&
+      to.startsWith('torre2_steelbeam:')){
+    const before='torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(l,h,extra,FORMAS),';
+    const steel='torre2_steelbeam:(l,h,extra)=>TORRE2_FORMS.torre2_steelbeam(l,h,extra,chorro),';
+    if(!body.includes(before)||!body.includes('const FORMAS={...TORRE2_FORMS,')||
+       !body.includes('chorro')||body.includes(steel))
+     throw Error('Unknown native Phaser abilities catalog; cannot safely install Steel Beam');
+    body=body.replace(before,steel+before);
+    continue;
+   }
    // October upstream adjusted the fighter's underlying Defense formula.
    // Wrap its ORIGINAL result in the same campaign-only Screech multiplier;
    // never replace its base, Mega, boss or Arena-mode calculations.
