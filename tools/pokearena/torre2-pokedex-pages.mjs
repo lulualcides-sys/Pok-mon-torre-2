@@ -16,8 +16,19 @@ export function normalizePokedexNameColumn(s){
  }
  return s;
 }
+// The original Poké Arena now sometimes omits TIPOS from its Pokédex import.
+// Our existing Kanto card renderer still needs the exported palette for the
+// original dual-type pixel bars. Add ONLY the missing import; do not replace
+// native palettes, graphics, scene state or Pokémon move metadata.
+export function ensurePokedexTypePaletteImport(source){
+ const s=String(source);
+ const match=s.match(/import\s*\{([^}]+)\}\s*from\s*["']\.\.\/datos\.js["'];/);
+ if(!match)throw Error('Unrecognized original Pokédex datos import');
+ if(match[1].split(',').map(x=>x.trim()).includes('TIPOS'))return s;
+ return s.replace(match[0],match[0]+'import{TIPOS}from"../datos.js";');
+}
 export function paginateKantoPokedexSource(original){
- let s=String(original);
+ let s=ensurePokedexTypePaletteImport(original);
  s=once(s,
   'this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+i%COLS*CEL,GY+Math.floor(i/COLS)*CEL,i));',
   'this.dexPage=Math.floor(this.foco/36);this.dexPages=Math.ceil(ROSTER.length/36);this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+(i%36)%COLS*CEL,GY+Math.floor((i%36)/COLS)*CEL,i));');
