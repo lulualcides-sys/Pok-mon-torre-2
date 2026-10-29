@@ -38,6 +38,14 @@ export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
 const fireBlastAtLevel=id=>
  KANTO_FIRE_BLAST_SPECIES.includes(id)&&frlgMachineCompatible(id,'fire-blast')?
  KANTO_FIRE_BLAST_LEVEL:null;
+// Approved, species-specific preview finishers; full-power moves keep their
+// existing FRLG/campaign unlock gates. No Arena/VS kit or VFX is changed.
+const PREFERRED_KANTO_ULT_PREVIEWS=Object.freeze({
+ vulpix:'fire-blast',ivysaur:'solar-beam'
+});
+const thematicPreview=id=>
+ id==='vulpix'&&fireBlastAtLevel(id)===null?null:
+ PREFERRED_KANTO_ULT_PREVIEWS[id]||null;
 /* One Pokémon move, one catalog entry — whether the original captured client
  * or the original game calls it by Portuguese, English or an alias.
  * Never make a second VFX of an existing Poké Arena 2D move. The native
@@ -228,7 +236,7 @@ function campaignIntroOptions(member){
    GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
    EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
   verifiedParents:KANTO_LEVEL_EVOLUTIONS,
-  speciesTypes:KANTO_TYPES.get(id)||[]
+  speciesTypes:KANTO_TYPES.get(id)||[],preferredSignature:thematicPreview(id)
  });
  return SLOTS.flatMap((slot,index)=>{
   const base=preview[slot];
@@ -671,6 +679,8 @@ export function campaignMoveSlotReason(member,slot,move){
  }
  if((slot===1||slot===2)&&isCampaignUltimateOnlyMove(move))
   return 'GOLPE FORTE: SÓ ULT';
+ if(slot===3&&!move.torre2IntroPractice&&!isCampaignUltimateOnlyMove(move))
+  return 'ULT EXIGE GOLPE OFENSIVO FORTE';
  return null;
 }
 /** Suggest a legal editor slot; never equip or mutate a saved Pokémon.
@@ -745,7 +755,8 @@ function meaningfulDefaultUltimate(member,chosen,available){
  const ranked=available.filter(m=>m?.id&&m.forma&&
   !used.has(m.id)&&Number(m.dano)>0&&!isPendingApprovalMove(m)&&
   !['surf','scratch'].includes(m.id)&&
-  (!m.torre2IntroSlot||m.torre2IntroSlot==='e'));
+  (!m.torre2IntroSlot||m.torre2IntroSlot==='e')&&
+  !campaignMoveSlotReason(member,3,m));
  const score=m=>Number(m?.dano||0)+
   (Number(m?.dano)>=7&&types.includes(m?.tipo)?30:0)-
   Number(Boolean(m?.torre2IntroPractice))*3;
@@ -1005,8 +1016,16 @@ export function resolveLoadout(member){
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||
   kanto151SlotPlan(member.id);
  const plannedE=canonicalMoveKey(plan?.[3]);
+ // Keep an explicitly equipped capped E preview in battle. An evolved
+ // species with no level-up claim to its future finisher (Gloom/Solar Beam)
+ // still cannot borrow that locked move as an automatic default.
+ const earnedSignature=plannedE&&frlgUnlockLevel(member.id,plannedE)!==null;
+ const customFireBlast=plannedE==='fire-blast'&&fireBlastAtLevel(member.id)!==null;
+ const explicitE=member.movePlanSpecies===member.id&&
+  member.moves?.[3]===out.e?.id;
  const blockedSignature=(member.progression?.level??5)>=KANTO_INTRO.tutorialUntil&&
-  plannedE&&!dict.has(plannedE)?plannedE:null;
+  plannedE&&!dict.has(plannedE)&&!earnedSignature&&!customFireBlast&&!explicitE?
+  plannedE:null;
  const battle=resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
   levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel,
@@ -1014,7 +1033,8 @@ export function resolveLoadout(member){
    GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
    EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
   verifiedParents:KANTO_LEVEL_EVOLUTIONS,
-  speciesTypes:KANTO_TYPES.get(member.id)||[],blockedSignature});
+  speciesTypes:KANTO_TYPES.get(member.id)||[],blockedSignature,
+  preferredSignature:thematicPreview(member.id)});
  // The early overlay can inject Leech Seed after selectedMoves. Balance
  // FINAL campaign battle slots including practice, evolution and saved kits.
  for(const slot of SLOTS)if(battle[slot])
