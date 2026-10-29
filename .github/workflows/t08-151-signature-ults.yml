@@ -21,7 +21,7 @@ jobs:
           npm install --no-audit --no-fund
           npm run check
           npm run check:reuse
-          node --check tools/pokearena/torre2-kanto-ultimate-policy.js
+          node --check tools/pokearena/kanto-ultimate-policy.js
           node --check tools/pokearena/torre2-kanto-intro-moves.js
           node --check tools/pokearena/torre2-move-pool.js
           node --check tests/t08-151-signature-ult-built.test.mjs
