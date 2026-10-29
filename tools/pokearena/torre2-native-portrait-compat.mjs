@@ -13,11 +13,11 @@ export function ensureNativePortraitExport(source){
   return src+'\nexport{ponerRetrato};\n';
  // Use the already loaded native PMD portrait. No artwork, pixels, layout,
  // combat animation or scene input is introduced or replaced here.
- return src+\`
-\nexport function ponerRetrato(scene,image,dex){
- const key='retrato-'+String(dex||'');
- if(scene?.textures?.exists?.(key)&&image?.setTexture)image.setTexture(key);
- return image;
+ return src+'\\nexport function ponerRetrato(scene,image,dex){'+
+  '\\n const key="retrato-"+String(dex||"");'+
+  '\\n if(scene?.textures?.exists?.(key)&&image?.setTexture)image.setTexture(key);'+
+  '\\n return image;'+
+  '\\n}\\n';
 }
 \`;
 }
