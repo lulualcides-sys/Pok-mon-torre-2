@@ -103,3 +103,44 @@ test('deferred Scratch is not fabricated from Tackle in Charmander onboarding',(
  }
  assert.equal(JSON.stringify(withoutScratch),original,'source renderers changed');
 });
+
+test('Lv5 Ponyta fills a Struggle slot with legal installed HGSS Tackle, not Scratch or Surf',()=>{
+ const library=[
+  {id:'quick-attack',nombre:'Quick Attack',forma:'approved-dash',tipo:'NORMAL',dano:6,cd:3,coste:8},
+  {id:'ember',nombre:'Ember',forma:'approved-ember',tipo:'FIRE',dano:8,cd:4,coste:8},
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'scratch',nombre:'Scratch',forma:'legacy-scratch',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'surf',nombre:'Surf',forma:'legacy-surf',tipo:'WATER',dano:7,cd:3,coste:8},
+  {id:'vine-whip',nombre:'Vine Whip',forma:'approved-vine',tipo:'GRASS',dano:8,cd:3,coste:8}
+ ];
+ const before=JSON.stringify(library);
+ const member={id:'ponyta',progression:{level:5}};
+ const out=resolveKantoIntro(member,{},{
+  library,canonical:canon,
+  levelUp:{'quick-attack':1,growl:5,ember:14},
+  verifiedTables:[{ponyta:{tackle:1,scratch:1,surf:1},bulbasaur:{'vine-whip':1}}]
+ });
+ assert.deepEqual(slots.map(k=>out[k].torre2IntroSource),
+  ['quick-attack','ember','tackle']);
+ assert.ok(slots.every(k=>out[k].dano<=KANTO_INTRO.maxStarterDamage));
+ assert.ok(slots.every(k=>!out[k].nombre.startsWith('Struggle')));
+ assert.equal(out.q.forma,'approved-contact');
+ assert.equal(JSON.stringify(library),before,'approved effects were mutated');
+ assert.equal(JSON.stringify(member),JSON.stringify({id:'ponyta',progression:{level:5}}));
+});
+
+test('Gen VII compact keys are accepted only for own verified installed early moves',()=>{
+ const library=[
+  {id:'ember',nombre:'Ember',forma:'approved-ember',tipo:'FIRE',dano:8,cd:4,coste:8},
+  {id:'quick-attack',nombre:'Quick Attack',forma:'approved-dash',tipo:'NORMAL',dano:6,cd:3,coste:8},
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'water-gun',nombre:'Water Gun',forma:'approved-water',tipo:'WATER',dano:7,cd:3,coste:8}
+ ];
+ const out=resolveKantoIntro({id:'vulpix',progression:{level:5}}, {},{
+  library,canonical:canon,levelUp:{ember:1,'quick-attack':13},
+  verifiedTables:[{vulpix:{tackle:1},squirtle:{watergun:1}}]
+ });
+ assert.deepEqual(slots.map(k=>out[k].torre2IntroSource),
+  ['ember','quick-attack','tackle']);
+ assert.ok(!slots.some(k=>out[k].torre2IntroSource==='water-gun'));
+});
