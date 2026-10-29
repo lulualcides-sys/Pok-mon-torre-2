@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
   "source": "https://www.pokearena2d.com/",
-  "sourceVersion": "src-d9f553206c",
+  "sourceVersion": "src-e33a12a75f",
+  "siteVersion": "src-32e8c9ae9b",
   "note": "Only confirmed native source names. Kanto compatibility is official level-up metadata; battle availability, VFX, user-approved ULT rules and save safety still require independent validation.",
   "originalMoveCount": 164,
   "nativePokemonCount": 32,
