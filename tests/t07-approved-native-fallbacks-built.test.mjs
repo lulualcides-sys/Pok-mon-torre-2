@@ -35,8 +35,8 @@ assert.ok(!legal('seel',20,'aurora-beam'),'FRLG Seel Lv20 cannot learn Aurora Be
 assert.ok(legal('dewgong',34,'aurora-beam'),'FRLG Dewgong knows Aurora Beam after legal evolution');
 assert.ok(legal('shellder',22,'aurora-beam'),'FRLG Shellder Lv22 must retain Aurora Beam');
 assert.ok(legal('vaporeon',36,'aurora-beam'),'FRLG Vaporeon Lv36 must retain Aurora Beam');
-assert.ok(legal('alakazam',33,'calm-mind'),'FRLG Alakazam Lv33 must retain Calm Mind');
-assert.ok(!legal('alakazam',32,'calm-mind'),'FRLG Alakazam Lv32 cannot learn Calm Mind early');
+assert.ok(legal('alakazam',36,'calm-mind'),'FRLG Alakazam can use Calm Mind after Lv36 evolution');
+assert.ok(!legal('alakazam',35,'calm-mind'),'Torre 2 Alakazam cannot exist before Lv36 evolution');
 assert.ok(!legal('bulbasaur',50,'aurora-beam'),'Unrelated Kanto species cannot gain Aurora Beam');
 assert.ok(!legal('rattata',50,'calm-mind'),'Unrelated Kanto species cannot gain Calm Mind');
 console.log('PASS_T07_APPROVED_NATIVE_FALLBACKS',JSON.stringify({
