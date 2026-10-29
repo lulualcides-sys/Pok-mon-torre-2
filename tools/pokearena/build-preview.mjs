@@ -684,6 +684,22 @@ for(const [filename,changes] of patches){
     if(!body.includes(guard))body=body.replace(updated[0],updated[0]+guard);
     continue;
    }
+   // The native fighter's speed getter now carries additional modifiers.
+   // Wrap only the original base speed sum; never discard native modifiers
+   // or apply our movement normalization outside added Kanto species.
+   if(filename==='luchador.js'&&from.startsWith('get velBase(){return')&&
+      to.includes('synchronizedArenaSpeed(')){
+    const begin='get velBase(){',start=body.indexOf(begin);
+    const end=start<0?-1:body.indexOf('}',start+begin.length);
+    const native='this.forma.vel+(this.mega?this.forma.mega.vel:0)';
+    if(start<0||end<0||body.indexOf(begin,start+1)>=0||
+       !body.slice(start,start+350).includes(native))
+     throw Error('Unrecognized native speed getter: '+body.slice(start,start+250));
+    const updated='synchronizedArenaSpeed('+native+
+      ',{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,campaign:!!this.escena.datos?.torre2})';
+    body=body.slice(0,start)+body.slice(start).replace(native,updated);
+    continue;
+   }
    // October upstream adjusted the fighter's underlying Defense formula.
    // Wrap its ORIGINAL result in the same campaign-only Screech multiplier;
    // never replace its base, Mega, boss or Arena-mode calculations.
