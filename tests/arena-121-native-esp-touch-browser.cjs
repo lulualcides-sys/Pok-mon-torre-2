@@ -54,7 +54,16 @@ const server=http.createServer(async(req,res)=>{
     const pos=p.pos(b),origin=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
     const touch={id:87,x:(pos.x-origin.x)/(unit.x-origin.x),
       y:(pos.y-origin.y)/(unit.y-origin.y)};
-    p.abajo(touch);p.leer(x=>({ax:x.x,ay:x.y}));
+    p.abajo(touch);
+    // In the original Poké Arena mobile controller, aimed ESP Teleport
+    // fires ONLY on pointerup, not pointerdown; it supports drag-to-aim.
+    // Reproduce that real gesture instead of bypassing original controls.
+    if(s.luchadores[0].kit.esp?.alPunto){
+     p.mover({...touch,x:touch.x+40/(unit.x-origin.x),
+       y:touch.y-22/(unit.y-origin.y)});
+     p.arriba({id:87});
+    }
+    p.leer(x=>({ax:x.x,ay:x.y}));
    });
    await page.waitForTimeout(460);
    const after=await page.evaluate(()=>{
