@@ -76,9 +76,10 @@ const expected={
    // fixtures. Mewtwo is a laboratory encounter, not a Kanto campaign slot.
    // No XP, save, TM, or battle state is changed by these read-only checks.
    const root=new URL('.',location.href);
-   const [{KANTO_151},{resolveLoadout}]=await Promise.all([
+   const [{KANTO_151},{resolveLoadout},{kantoDexStages}]=await Promise.all([
     import(new URL(release+'/torre2/all-kanto-species.js',root).href),
-    import(new URL(release+'/torre2/move-pool.js',root).href)
+    import(new URL(release+'/torre2/move-pool.js',root).href),
+    import(new URL(release+'/escenas/pokedex.js',root).href)
    ]);
    const eligible=new Set(KANTO_151.filter(p=>p.id!=='mewtwo').map(p=>p.id));
    const found=new Set(),problems=[],roles=['lmb','rmb','q','e'];
@@ -99,6 +100,8 @@ const expected={
      scene.irEtapa(stageIndex);
      const displayed=scene.etapas[scene.etapa]?.kit||{};
      const expectedKit=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
+     const computed=kantoDexStages(family)[stageIndex]?.kit||{};
+     const afterStageName=scene.etapas[scene.etapa]?.nombre;
      found.add(id);
      for(const role of roles){
       const move=displayed[role],real=expectedKit[role];
@@ -106,8 +109,8 @@ const expected={
          move.torre2Unavailable||move.torre2RequiresTM)
        problems.push({id,role,family:family.id,stageIndex,stageName:stage?.nombre,kind:'missing/locked/TM',move:move?.nombre||null});
       if(move?.id!==real?.id)
-       problems.push({id,role,family:family.id,stageIndex,stageName:stage?.nombre,kind:'Pokédex differs from battle',
-        view:move?.id||null,battle:real?.id||null});
+       problems.push({id,role,family:family.id,stageIndex,stageName:stage?.nombre,afterStageName,kind:'Pokédex differs from battle',
+        view:move?.id||null,battle:real?.id||null,computed:computed[role]?.id||null});
      }
     }
    }
