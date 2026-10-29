@@ -93,7 +93,9 @@ const expected={
      if(stage?.mega)continue;
      const id=String(stageIndex===0?family.id:
       (family.evoluciones?.[stageIndex-1]?.nombre||stage?.nombre||'')).toLowerCase();
-     if(!eligible.has(id))continue;
+     // Native P2 may expose alternate/mega/costume forms with the same
+     // Kanto species ID. They are NOT separate Kanto campaign evolutions.
+     if(!eligible.has(id)||found.has(id))continue;
      scene.irEtapa(stageIndex);
      const displayed=scene.etapas[scene.etapa]?.kit||{};
      const expectedKit=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
@@ -102,9 +104,9 @@ const expected={
       const move=displayed[role],real=expectedKit[role];
       if(!move?.id||!move?.forma||move.pendiente||
          move.torre2Unavailable||move.torre2RequiresTM)
-       problems.push({id,role,kind:'missing/locked/TM',move:move?.nombre||null});
+       problems.push({id,role,family:family.id,stageIndex,stageName:stage?.nombre,kind:'missing/locked/TM',move:move?.nombre||null});
       if(move?.id!==real?.id)
-       problems.push({id,role,kind:'Pokédex differs from battle',
+       problems.push({id,role,family:family.id,stageIndex,stageName:stage?.nombre,kind:'Pokédex differs from battle',
         view:move?.id||null,battle:real?.id||null});
      }
     }
