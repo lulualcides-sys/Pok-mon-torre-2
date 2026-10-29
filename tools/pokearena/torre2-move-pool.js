@@ -626,14 +626,22 @@ export function defaultLoadout(member){
   // defenseless on the day they evolve. Use a genuinely learned weak move
   // in an otherwise empty ATK/HAB slot. ULT remains locked until learned.
   const used=new Set(reserved.filter(Boolean));
+  const nameOf=m=>canonicalMoveKey(m?.torre2IntroSource||m?.nombre);
+  // Practice previews have separate internal IDs but can reuse the SAME
+  // real technique. Never auto-equip a second "Pound" in HAB3 merely
+  // because a Lv16 Kadabra has both native Pound and weak Pound preview.
+  const usedNames=new Set(reserved.slice(0,3).filter(Boolean)
+   .map(id=>nameOf(byId.get(id))).filter(Boolean));
   const pool=available.filter(m=>m?.id&&m.torre2IntroSlot!=='e'&&
     Number.isFinite(m.dano)&&m.dano>0)
-   .sort((a,b)=>Number(a.dano)-Number(b.dano));
+   .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
+     Number(Boolean(b.torre2IntroPractice))||Number(a.dano)-Number(b.dano));
   for(const i of [0,1,2]){
    if(reserved[i])continue;
-   const next=pool.find(m=>!used.has(m.id)&&(i!==0||m.dano<=12))||
-    (i===0?pool.find(m=>!used.has(m.id)):null);
-   if(next){reserved[i]=next.id;used.add(next.id)}
+   const unique=m=>!used.has(m.id)&&!usedNames.has(nameOf(m));
+   const next=pool.find(m=>unique(m)&&(i!==0||m.dano<=12))||
+    (i===0?pool.find(unique):null);
+   if(next){reserved[i]=next.id;used.add(next.id);usedNames.add(nameOf(next))}
   }
   // A weak meter-gated finisher remains available even for a species that
   // learns no ordinary ULT in its official late FireRed level-up table.
@@ -748,6 +756,12 @@ export function resolveLoadout(member){
   if(attack)out[SLOTS[i]]={...attack,pendiente:false,
    ...(i===3?{ulti:true}:{})};
  });
+ // The early meter-gated finisher may reuse an approved weak attack's
+ // renderer, but it is a distinct battle action. Keep the real move name
+ // and label ONLY the E action as ULT, not as a fabricated "Treino" attack.
+ // This also prevents two identical visible names in Caterpie's four slots.
+ if(out.e?.torre2IntroPractice&&!String(out.e.nombre).startsWith('ULT · '))
+  out.e={...out.e,nombre:'ULT · '+out.e.nombre};
  // Native P2 evolution skills are re-slotted ONLY inside the Kanto campaign;
  // the Arena and VS CPU keep their original kits untouched.
  if(nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id))out.esp={
