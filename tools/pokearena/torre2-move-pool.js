@@ -703,7 +703,7 @@ export function isCampaignUltimateOnlyMove(move){
  // Some original Poké Arena abilities omit Gen3 power metadata even though
  // the move is a high-tier finisher (Flare Blitz is multi-contact/charged).
  // Keep the authentic renderer and name, but gate this move behind E.
- if(canonicalMoveKey(move.nombre)==='flare-blitz')return true;
+ if(['flare-blitz','earthquake'].includes(canonicalMoveKey(move.nombre)))return true;
  // Original P2 marks some harmless defensive/status actions as `ulti`
  // because they occupied its E slot. In the campaign they remain legal
  // normal HAB actions (e.g. earned FRLG Protect); only a genuinely
@@ -858,6 +858,13 @@ export function defaultLoadout(member){
    const id=canonicalMoveKey(name);
    return byId.has(id)?id:null;
   });
+  // Cubone/Marowak keep their approved Bonemerang in HAB3. Once a
+  // legitimately learned Earthquake is available, its wide-area native
+  // renderer becomes the charged finisher instead of repeating the same
+  // Bonemerang under a separate tutorial ULT ID.
+  if(['cubone','marowak'].includes(member.id)&&level>=13&&
+     byId.has('earthquake')&&isCampaignUltimateOnlyMove(byId.get('earthquake')))
+    reserved[3]='earthquake';
   // Auto-equip each matching characteristic move only once it REALLY unlocks.
   // A TM move is never granted solely by being characteristic.
   for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
