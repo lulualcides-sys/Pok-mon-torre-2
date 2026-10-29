@@ -46,7 +46,7 @@ function trainingMove(source,tag,slot,level,duplicate=false){
 /** Campaign-only safety overlay. Respects player-equipped weak practice moves. */
 export function resolveKantoIntro(member,installed,{
  library,canonical,earlyLevels={},levelUp={},unlockLevel,
- verifiedTables=[],verifiedParents={},speciesTypes=[]
+ verifiedTables=[],verifiedParents={},speciesTypes=[],blockedSignature=null
 }={}){
  const level=member?.progression?.level??5,id=member?.id;
  if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
@@ -165,7 +165,8 @@ export function resolveKantoIntro(member,installed,{
   // Only this energy-gated campaign action has capped damage: its authentic
   // normal move remains locked until its official/campaign learn level.
   const signature=chooseKantoSignatureUlt(id,library,{
-   levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes
+   levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes,
+   blockedName:blockedSignature
   });
   const base=signature||ultCandidate?.move||fallback;
   const finisher=trainingMove(base,idOf(base.nombre),'e',signature?8:ultCandidate?.learned??level,true);
