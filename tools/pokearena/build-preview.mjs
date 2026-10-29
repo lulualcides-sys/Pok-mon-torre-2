@@ -664,6 +664,19 @@ for(const [filename,changes] of patches){
     }else throw Error('Cannot identify native status interceptor after upstream poison change');
     continue;
    }
+   // The native training damage recorder now initializes differently.
+   // Keep its original implementation; only ensure Kanto battles have
+   // the native damage ledger before the unchanged recorder runs.
+   if(filename==='escenas/combate.js'&&
+      from.startsWith('anotarEntreno(d){this.registroDano.push(')&&
+      to.includes('this.datos?.torre2&&!Array.isArray')){
+    const entry='anotarEntreno(d){';
+    if(!body.includes(entry)||body.indexOf(entry)!==body.lastIndexOf(entry))
+     throw Error('Unknown native training recorder entry; cannot safely guard it');
+    const guard='if(this.datos?.torre2&&!Array.isArray(this.registroDano)){this.registroDano=[];this.comboActual=0;this.mejorCombo=0;this.ultimoGolpeEntreno=-Infinity;this.ultimoDano=0;}';
+    if(!body.includes(guard))body=body.replace(entry,entry+guard);
+    continue;
+   }
    // October upstream adjusted the fighter's underlying Defense formula.
    // Wrap its ORIGINAL result in the same campaign-only Screech multiplier;
    // never replace its base, Mega, boss or Arena-mode calculations.
