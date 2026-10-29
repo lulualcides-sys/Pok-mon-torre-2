@@ -1,7 +1,7 @@
 name: T07/T08 — ULT conquistada por XP natural e preservada no Phaser
 on:
   push:
-    branches: [test/t07-t08-earned-ult-natural-eight-20261029]
+    branches: [test/t07-t08-earned-ult-natural-eight-20261029, test/t07-t08-earned-ult-real-touch-20261029]
   workflow_dispatch:
 permissions:
   contents: read
