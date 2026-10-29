@@ -817,6 +817,14 @@ export function equipMove(member,slot,moveId){
  // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
  // A learned native move can replace the fixed ATK from Lv9 onward.
  // The first eight levels retain the approved weak onboarding controls.
+ // ATK remains a low-power basic throughout the campaign. Previously this
+ // was only enforced indirectly when Wing Attack occupied another slot;
+ // selecting a different ULT made the stronger attack equipable in ATK.
+ if(early&&slot===0&&!picked.torre2IntroPractice&&
+    (Number(picked.dano)>9||
+     (canonicalMoveKey(early[3])!==canonicalMoveKey(early[0])&&
+      picked.id===canonicalMoveKey(early[3]))))
+  return false;
  if(early&&level<=KANTO_INTRO.ultAt&&slot===0&&
     moveId!==canonicalMoveKey(early[0])&&
     picked.torre2IntroSlot!=='lmb')return false;
@@ -866,6 +874,20 @@ export function equipMove(member,slot,moveId){
  member.movePlanSpecies=member.id;
  return true;
 }
+// Only the campaign battle copy of Leech Seed is adjusted, never the
+// original Poké Arena 2D attack, approved effect or Arena/VS modes.
+// Native runtime ticks each second: before 3 × 6 × 1.5 = up to 27 HP;
+// after 2 × 5 × 1 = up to 10 HP. Healing cannot exceed drained HP.
+export const KANTO_CAMPAIGN_LEECH_SEED=Object.freeze({dps:2,dur:5,cura:1});
+export function balanceCampaignLeechSeed(move){
+ if(!move?.drenaje||canonicalMoveKey(move.torre2IntroSource||move.nombre)!=='leech-seed')
+  return move;
+ const drain=move.drenaje;
+ return {...move,drenaje:{...drain,
+  dps:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dps,Number(drain.dps)||0)),
+  dur:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dur,Number(drain.dur)||0)),
+  cura:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.cura,Number(drain.cura)||0))}};
+}
 export function resolveLoadout(member){
  const pool=availableMoves(member),dict=new Map(pool.map(h=>[h.id,h]));
  const out={};
@@ -886,14 +908,27 @@ export function resolveLoadout(member){
   nombre:'Dodge',forma:'dash',tipo:'NORMAL',dano:0,
   dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
  };
- return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
+ // A later-stage signature preview must not impersonate the stage's
+ // canonical E move while that actual move is still locked (e.g. Gloom
+ // Lv21 cannot borrow its future Solar Beam as a tutorial ULT).
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||
+  kanto151SlotPlan(member.id);
+ const plannedE=canonicalMoveKey(plan?.[3]);
+ const blockedSignature=(member.progression?.level??5)>=KANTO_INTRO.tutorialUntil&&
+  plannedE&&!dict.has(plannedE)?plannedE:null;
+ const battle=resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
   levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel,
   verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
    GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
    EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
   verifiedParents:KANTO_LEVEL_EVOLUTIONS,
-  speciesTypes:KANTO_TYPES.get(member.id)||[]});
+  speciesTypes:KANTO_TYPES.get(member.id)||[],blockedSignature});
+ // The early overlay can inject Leech Seed after selectedMoves. Balance
+ // FINAL campaign battle slots including practice, evolution and saved kits.
+ for(const slot of SLOTS)if(battle[slot])
+  battle[slot]=balanceCampaignLeechSeed(battle[slot]);
+ return battle;
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);
