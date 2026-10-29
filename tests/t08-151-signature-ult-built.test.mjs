@@ -11,7 +11,7 @@ const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const {modules}=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8'));
 const load=p=>import(pathToFileURL(path.join(base,modules,p)).href);
 const [{KANTO_151},{TEST_LIBRARY,availableMoves,selectedMoves,resolveLoadout,
- moveUnlockLevel}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
+ moveUnlockLevel,equipMove}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
  {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS},
  {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP},
  {GEN7_LETSGO_LEVEL_UP},{GEN5_KANTO_LEVEL_UP},{EARLY_KANTO_LEARNSETS}]
