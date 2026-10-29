@@ -21,6 +21,19 @@ const SLOTS=['lmb','rmb','q','e'];
 // campaign. TMs remain teach-only, evolution boundaries stay intact.
 export const KANTO_CAMPAIGN_MOVE_CAP=50;
 const campaignLevel=at=>Math.min(KANTO_CAMPAIGN_MOVE_CAP,at);
+// T07 user-approved level-only adaptation of TM38: a strong fire attack
+// learned late in OUR campaign rather than free at the start. Every species
+// is actually Fire-type Kanto and legally learns TM38 in FireRed/LeafGreen.
+// Other non-Fire species retain the existing real TM teaching system.
+// No renderer, original client kit, attack power, CD or save data is changed.
+export const KANTO_FIRE_BLAST_LEVEL=50;
+export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
+ 'charmander','charmeleon','charizard','vulpix','ninetales',
+ 'growlithe','arcanine','ponyta','rapidash','magmar','flareon','moltres'
+]);
+const fireBlastAtLevel=id=>
+ KANTO_FIRE_BLAST_SPECIES.includes(id)&&frlgMachineCompatible(id,'fire-blast')?
+ KANTO_FIRE_BLAST_LEVEL:null;
 /* One Pokémon move, one catalog entry — whether the original captured client
  * or the original game calls it by Portuguese, English or an alias.
  * Never make a second VFX of an existing Poké Arena 2D move. The native
@@ -250,6 +263,10 @@ export function availableMoves(member){
   const installed=GEN7_INSTALLED.get(gen7MoveKey(gen5Name));
   if(installed)names.add(canonicalMoveKey(installed.nombre));
  }
+ // Only a legally TM38-compatible Fire species gets this user-requested
+ // late campaign level unlock, and only using the installed native attack.
+ if(fireBlastAtLevel(member.id)!==null&&GEN7_INSTALLED.has('fireblast'))
+  names.add('fire-blast');
  if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
  if(['voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('sonic-boom');
  if(['voltorb','electrode'].includes(member.id))names.add('screech');
@@ -373,6 +390,13 @@ export function availableMoves(member){
    'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':25
   };
   if(key==='protect')return taughtCompatible(key);
+  // Fire Blast is neither a Lv5 starter move nor a free compatible TM:
+  // the existing native Fire Blast must wait until our campaign Lv50.
+  // For Ponyta/Rapidash/Magmar this also respects the official late learn
+  // while deliberately using the campaign's existing Lv50 ceiling.
+  if(key==='fire-blast'&&fireBlastAtLevel(member.id)!==null)
+   return level>=KANTO_FIRE_BLAST_LEVEL&&!evoLocked.has(key)&&
+    !isPendingApprovalMove(m)&&Boolean(m.forma);
   // Strict FireRed unlock for all official level-up moves (inherits prior
   // evolution learnsets). An unlearned TM is NEVER auto-granted.
   const official=frlgUnlockLevel(member.id,key);
@@ -473,6 +497,8 @@ export function moveUnlockLevel(member,moveName){
  const key=canonicalMoveKey(moveName),species=member?.id;
  if(!species)return null;
  if(species==='mewtwo')return 1; // unrestricted Lv50 test Pokémon
+ if(key==='fire-blast'&&fireBlastAtLevel(species)!==null)
+  return GEN7_INSTALLED.has('fireblast')?KANTO_FIRE_BLAST_LEVEL:null;
  if(key.startsWith('torre2-intro-'))
   return key.startsWith('torre2-intro-e-')?8:5;
  const local=EARLY_KANTO_LEARNSETS[species];
