@@ -717,6 +717,20 @@ for(const [filename,changes] of patches){
     else console.warn('Original HUD no longer renders '+ability+' indicator');
     continue;
    }
+   // Upstream selection portrait initializer has changed its visual chain.
+   // Append the same fallback after the ORIGINAL img statement, preserving
+   // its native size, origin, colors, frames and input hitboxes.
+   if(filename==='escenas/seleccion.js'&&
+      from.startsWith('const img=this.add.image(x+2,y+3,')&&
+      to.includes('ponerRetrato(this,img,p.dex)')){
+    const key='const img=this.add.image(x+2,y+3,\`retrato-${p.dex}\`)';
+    const at=body.indexOf(key),end=at<0?-1:body.indexOf(';',at+key.length);
+    if(at<0||end<0||end-at>240)
+     throw Error('Native selection portrait initializer changed; refusing to guess placement: '+body.slice(Math.max(0,body.indexOf('retrato-')-130),body.indexOf('retrato-')+230));
+    if(!body.slice(end+1,end+155).includes('ponerRetrato(this,img,p.dex)'))
+     body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
