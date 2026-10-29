@@ -136,8 +136,22 @@ const server=http.createServer(async(req,res)=>{
   const dexErr=[];dexPage.on('pageerror',e=>dexErr.push(String(e)));
   await dexPage.goto('http://127.0.0.1:4274/arena2d/?pantalla=pokedex',
    {waitUntil:'domcontentloaded',timeout:30000});
-  await dexPage.waitForFunction(()=>window.__pt2Game?.scene?.isActive('pokedex'),
-   null,{timeout:45000});
+  try{
+   await dexPage.waitForFunction(()=>window.__pt2Game?.scene?.isActive('pokedex'),
+    null,{timeout:45000});
+  }catch(err){
+   const diag=await dexPage.evaluate(()=>({
+    started:window.__pt2Started,
+    hasGame:Boolean(window.__pt2Game),
+    activeScenes:window.__pt2Game?.scene?.getScenes(true)?.map(s=>s.scene.key),
+    url:location.href,
+    phaser:typeof window.Phaser,
+    canvas:!!document.querySelector('#juego canvas')
+   }));
+   console.error('PHASER POKEDEX TIMEOUT DIAGNOSTIC',JSON.stringify({diag,dexErr}));
+   await dexPage.screenshot({path:'test-evidence/kanto-pokedex-start-timeout.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   const dexData=await dexPage.evaluate(()=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
    const base=p.casillas.map(x=>x.p.dex);
