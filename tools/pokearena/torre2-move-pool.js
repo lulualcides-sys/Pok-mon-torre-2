@@ -621,7 +621,8 @@ function uniqueCampaignSlots(ids,available){
    if(!introUlt)usedNames.add(name);
   }
  }
- const candidates=available.filter(m=>m?.id&&m.forma)
+ const candidates=available.filter(m=>m?.id&&m.forma&&
+  !isPendingApprovalMove(m)&&!['surf','scratch'].includes(m.id))
   .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
    Number(Boolean(b.torre2IntroPractice))||Number(b.dano||0)-Number(a.dano||0));
  for(const {slot,original} of missing.sort((a,b)=>a.slot-b.slot)){
