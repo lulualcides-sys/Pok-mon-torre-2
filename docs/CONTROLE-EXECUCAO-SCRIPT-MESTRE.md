@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§20/31/33/36/37 · T05: checkpoints atômicos de início de batalha (PR #244)
+
+- **§20/§31 PARCIAIS:** [PR #244](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/244), squash `ea40242ea72833d0c067bc4aa696845c069d4bde`: busca selvagem, contador, Pokédex vista e primeiro treinador não alteram estado vivo antes do save; recusa de gravação mantém checkpoint, permite novo toque e não cria encontro fantasma. Dispensa de captura opcional também protegida.
+- **§33 PARCIAL:** [CI branch #40803347143](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40803347143) **SUCESSO** com npm test, check, check:reuse, build, teste compilado primário/backup, clique/touch nativo na grama alta, retry e regressões Chromium. [CI main #40804179033](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40804179033) **SUCESSO**. Testes usaram fixtures de armazenamento/rota; não são vitórias naturais.
+- **§36 PARCIAL:** nenhuma modificação em golpes, VFX, pixel art, sprites, cooldowns, controles aprovados, formato de saves ou frentes Toxic #16/Shiny #17/STAB #243.
+- **§37 PARCIAL:** [Pages #40804209407](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40804209407) **SUCESSO**, `pages_build_version=ea40242ea72833d0c067bc4aa696845c069d4bde`; verificação HTTP pública de `src-687c7c22c5` em **29/10/2026 às 02:08:48 UTC**. [REA main #40804178966](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40804178966) **SUCESSO**. Campanha natural completa e Android físico continuam pendentes.
+
+
 ## 28/10/2026 — §§7/8/33/36/37 · T07/T08: revisão integral por espécie, gerações IV e V (PR #241)
 
 - **§7 / §8 PARCIAIS:** [PR #241](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/241) squash `9bca3c3c0a7fb1078900d71f6c96d2a80b886684`: PokeAPI HGSS/B2W2 método oficial level-up para **151 Kanto**, respectivamente **1.905** e **2.078** pares; adaptação exclusiva de metadados, conectada somente aos **227 efeitos já existentes e elegíveis**. Com FireRed+Let's Go, foram comprovadas **186 opções adicionais legalmente instaladas, em 108 espécies**; cada espécie conserva bloqueio de evolução/nível e TMs não ensinadas, sem duplicar VFX. Mewtwo de laboratório continua explicitamente identificado como fixture irrestrita, não prova de campanha real.
