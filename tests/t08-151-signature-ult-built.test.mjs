@@ -1,0 +1,124 @@
+/* T07/T08: real versioned Phaser library, 151 Kanto × 227 installed VFX.
+ * 150 campaign species, 8 progression checkpoints each. Ditto has no
+ * installed Transform renderer; it is the sole documented ULT exception.
+ * Fixtures are NOT a played campaign or Android hardware verification.
+ */
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
+const {modules}=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8'));
+const load=p=>import(pathToFileURL(path.join(base,modules,p)).href);
+const [{KANTO_151},{TEST_LIBRARY,availableMoves,selectedMoves,resolveLoadout,
+ moveUnlockLevel}, {chooseKantoSignatureUlt,verifiedLevelUpNames}]
+ =await Promise.all([load('torre2/all-kanto-species.js'),
+ load('torre2/move-pool.js'),load('torre2/kanto-ultimate-policy.js')]);
+const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
+assert.equal(KANTO_151.length,151);
+assert.equal(TEST_LIBRARY.length,227);
+assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,227);
+const exceptions=[],unbalanced=[],badSlots=[],speciesRows=[];
+let previewSignatures=0,checkedLevels=0;
+const samples={};
+for(const {id} of KANTO_151){
+ if(id==='mewtwo')continue;
+ const signature=chooseKantoSignatureUlt(id,TEST_LIBRARY);
+ if(!signature)exceptions.push(id);
+ else{
+  previewSignatures++;
+  assert.ok(verifiedLevelUpNames(id).has(signature.id),
+   id+' ULT is not in its verified species/ancestor level-up list');
+  assert.ok(signature.forma,'No approved attack renderer for '+id);
+  assert.ok(signature.source!=='new-phaser-fx'||signature.approved===true,
+   id+' has a pending VFX');
+ }
+ for(const level of [5,7,8,13,20,30,40,50]){
+  const member=make(id,level),kit=resolveLoadout(member);
+  const active=['lmb','rmb','q','e'].map(k=>kit[k]).filter(Boolean);
+  if(level>=8){
+   if(active.length!==4||new Set(active.map(m=>m.id)).size!==4)
+    badSlots.push({species:id,level,active:active.map(m=>m.id)});
+  }else assert.equal(kit.e,undefined,id+' Lv'+level+' ULT must be locked');
+  if(active.some(m=>!m.forma))badSlots.push({species:id,level,unrendered:true});
+  if(level===8){
+   const e=kit.e;
+   assert.ok(e?.ulti&&e.torre2IntroPractice&&e.torre2IntroSlot==='e',
+    id+' missing energy-gated Lv8 ULT');
+   assert.ok(e.dano>=0&&e.dano<=12&&e.cd>=8,id+' ULT not capped');
+   if(signature){
+    assert.equal(e.torre2IntroSource,signature.id,id+' has wrong species ULT');
+    assert.ok(e.dano>=7,id+' ULT was just a weak basic hit');
+    assert.ok(e.nombre.startsWith('ULT · '));
+   }
+   assert.equal(availableMoves(member).find(m=>m.torre2IntroSlot==='e')?.id,
+    e.id,id+' battle and move summary disagree at Lv8');
+  }
+  if(level===50&&id!=='ditto'&&kit.e?.dano<7)
+   unbalanced.push({species:id,name:kit.e.nombre,damage:kit.e.dano});
+  checkedLevels++;
+ }
+ speciesRows.push({species:id,signatureULT:signature?.id||null,
+  equippedULT8:resolveLoadout(make(id,8)).e?.nombre,
+  equippedULT50:resolveLoadout(make(id,50)).e?.nombre,
+  level50LegalMoves:availableMoves(make(id,50)).filter(m=>!m.torre2IntroPractice).length});
+ if(['squirtle','bulbasaur','charmander','mankey','caterpie','magikarp','ditto','gengar'].includes(id)){
+  samples[id]={signature:signature?.nombre||null,
+   level8:resolveLoadout(make(id,8)).e?.nombre||null,
+   level50:resolveLoadout(make(id,50)).e?.nombre||null};
+ }
+}
+assert.equal(previewSignatures,149);
+assert.deepEqual(exceptions,['ditto']);
+assert.deepEqual(badSlots,[],'Repeated/missing battle buttons');
+assert.deepEqual(unbalanced,[],'Weak default Lv50 ULT despite legal moves');
+// Early preview never teaches the FULL late-game attack at Lv8.
+for(const [id,move] of [
+ ['bulbasaur','solar-beam'],['squirtle','hydro-pump'],
+ ['charmander','flamethrower'],['pikachu','thunderbolt']
+]){
+ assert.ok(!availableMoves(make(id,8)).some(m=>m.id===move),
+  id+' got full '+move+' before its real level');
+ assert.ok(availableMoves(make(id,50)).some(m=>m.id===move),
+  id+' cannot later learn full '+move);
+}
+// These moves are learned by leveling up in later VERIFIED generations,
+// although their move IDs are also compatible with FRLG TMs.
+const restored=[
+ ['charizard','dragon-claw',36],['slowpoke','rest',30],
+ ['slowbro','rest',37],['seel','dive',41],['dewgong','dive',41],
+ ['exeggcute','bullet-seed',17],['exeggutor','bullet-seed',36],
+ ['aerodactyl','fly',49],['slowpoke','rain-dance',49],
+ ['zapdos','rain-dance',50]
+];
+for(const [id,move,at] of restored){
+ assert.ok(!availableMoves(make(id,at-1)).some(m=>m.id===move),
+  id+' '+move+' unlocked too early');
+ assert.ok(availableMoves(make(id,at)).some(m=>m.id===move),
+  id+' missing verified '+move+' at Lv'+at);
+ assert.equal(moveUnlockLevel(make(id,50),move),at,
+  id+' Pokedex/real unlock diverged for '+move);
+}
+for(const [id,move] of [['psyduck','surf'],['tentacruel','surf'],
+ ['sandshrew','protect'],['sandslash','protect']])
+ assert.ok(!availableMoves(make(id,50)).some(m=>m.id===move),
+  'Rejected Surf or TM-only FRLG Protect auto-granted for '+id);
+const saved={...make('squirtle',50),
+ moves:['water-gun','bite','bubble-beam','hydro-pump'],movePlanSpecies:'squirtle'};
+const before=JSON.stringify(saved);
+assert.deepEqual(selectedMoves(saved),saved.moves);
+assert.equal(JSON.stringify(saved),before,'Reading a save changed manual ULT');
+assert.equal(resolveLoadout(saved).e?.id,'hydro-pump');
+fs.mkdirSync('test-evidence',{recursive:true});
+fs.writeFileSync('test-evidence/t08-151-signatures-227-report.json',JSON.stringify({
+ source:'compiled-fixtures-not-played-campaign',installedMoves:227,
+ allKantoSpecies:151,regularCampaignSpecies:150,
+ exceptions,restoredLearnsets:restored,
+ sourceTables:['FRLG','HGSS','B2W2','LetsGo'],species:speciesRows
+},null,2)+'\n');
+console.log('PASS_T08_151_SIGNATURE_ULT_227',JSON.stringify({
+ species:151,campaignSpecies:150,installed:227,verifiedSignatureUlts:previewSignatures,
+ exceptions,levelsChecked:checkedLevels,missingOrDuplicateSlots:badSlots.length,
+ weakLevel50Ultimate:unbalanced.length,restoredGen45LetsGoLevelUps:restored.length,
+ examples:samples,source:'compiled-fixtures; not physical Android'
+}));
