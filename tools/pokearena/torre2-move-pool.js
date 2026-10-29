@@ -223,7 +223,12 @@ function campaignIntroOptions(member){
  const preview=resolveKantoIntro(m,{},{
   library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[id]||{},
-  levelUp:FRLG_LEVEL_UP[id]||{},unlockLevel:frlgUnlockLevel
+  levelUp:FRLG_LEVEL_UP[id]||{},unlockLevel:frlgUnlockLevel,
+  verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
+   GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
+   EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
+  verifiedParents:KANTO_LEVEL_EVOLUTIONS,
+  speciesTypes:KANTO_TYPES.get(id)||[]
  });
  return SLOTS.flatMap((slot,index)=>{
   const base=preview[slot];
@@ -883,7 +888,12 @@ export function resolveLoadout(member){
  };
  return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
-  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel});
+  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel,
+  verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
+   GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
+   EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
+  verifiedParents:KANTO_LEVEL_EVOLUTIONS,
+  speciesTypes:KANTO_TYPES.get(member.id)||[]});
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);
