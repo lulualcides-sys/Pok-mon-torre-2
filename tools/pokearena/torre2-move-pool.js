@@ -739,6 +739,36 @@ export function equipMove(member,slot,moveId){
     picked.torre2IntroSlot!=='e')return false;
  const chosen=selectedMoves(member);
  if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;
+ // A newly learned native technique may replace its weak tutorial preview
+ // even when the player chooses a DIFFERENT HAB slot. The preview and native
+ // entries have different IDs but are the same move: silently keeping both
+ // creates two identical buttons. Rehome only the obsolete weak preview to
+ // another already-unlocked, distinct move; never replace a genuine manual
+ // selection or equip an unlearned move. E is a separate meter-gated action.
+ if(slot<3){
+  const technique=m=>canonicalMoveKey(m?.torre2IntroSource||m?.nombre);
+  const key=technique(picked);
+  const conflicts=chosen.slice(0,3).flatMap((id,i)=>
+   i!==slot&&technique(pool.find(m=>m.id===id))===key?[i]:[]);
+  if(conflicts.length){
+   if(conflicts.length!==1||picked.torre2IntroPractice)return false;
+   const index=conflicts[0];
+   const obsolete=pool.find(m=>m.id===chosen[index]);
+   if(!obsolete?.torre2IntroPractice)return false;
+   const taken=new Set(chosen.slice(0,3).flatMap((id,i)=>
+    i===slot||i===index?[]:[technique(pool.find(m=>m.id===id))]));
+   taken.add(key);
+   const alternative=pool.filter(m=>m?.forma&&m.id!==picked.id&&
+    m.torre2IntroSlot!=='e'&&
+    (!m.torre2IntroSlot||m.torre2IntroSlot===SLOTS[index])&&
+    Number(m.dano)>0&&(index!==0||Number(m.dano)<=12)&&
+    !taken.has(technique(m)))
+    .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
+     Number(Boolean(b.torre2IntroPractice))||Number(a.dano)-Number(b.dano))[0];
+   if(!alternative)return false;
+   chosen[index]=alternative.id;
+  }
+ }
  if(early){chosen[slot]=moveId;member.moves=chosen;member.movePlanSpecies=member.id;return true;}
  while(chosen.length<4)chosen.push(pool[chosen.length]?.id);
  chosen[slot]=moveId;member.moves=chosen;
