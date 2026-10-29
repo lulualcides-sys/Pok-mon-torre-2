@@ -21,7 +21,9 @@ function trainingMove(source,tag,slot,level,duplicate=false){
  const dmgCap=slot==='e'?KANTO_INTRO.maxIntroUltDamage:KANTO_INTRO.maxStarterDamage;
  const damage=Math.min(dmgCap,nonnegative);
  const move={...base,
-  nombre:duplicate?base.nombre+' · Treino':base.nombre,
+  // Show the real installed move name. The temporary low damage is
+  // a campaign-only balance property, not a separate attack named Treino.
+  nombre:base.nombre,
   id:duplicate?String(base.id||idOf(base.nombre))+'-practice-'+slot:base.id||idOf(base.nombre),
   dano:damage,coste:Math.min(22,Math.max(4,Number(base.coste)||8)),
   cd:Math.min(9,Math.max(1.6,Number(base.cd)||4)),
