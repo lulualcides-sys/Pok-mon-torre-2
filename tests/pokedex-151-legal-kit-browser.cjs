@@ -37,7 +37,7 @@ const server=http.createServer(async(req,res)=>{
    const [{kantoDexStages},{ROSTER},{KANTO_151},{resolveLoadout,availableMoves,campaignLearnset}]=
      await Promise.all(['escenas/pokedex.js','datos.js',
       'torre2/all-kanto-species.js','torre2/move-pool.js'].map(x=>import(base+x)));
-   const known=new Set(KANTO_151.map(x=>x.id)),checked=[],issues=[];
+   const known=new Set(KANTO_151.map(x=>x.id)),checked=[],issues=[],exceptions=[];
    const required=['lmb','rmb','q','e'],exampleNames=['mew','scyther','mr-mime','cubone','marowak','doduo'];
    const samples={};
    const localBefore=JSON.stringify(Object.fromEntries(
@@ -61,9 +61,15 @@ const server=http.createServer(async(req,res)=>{
     const canonical=x=>String(x?.torre2IntroSource||x?.nombre||'')
       .replace(/^ULT · /,'').toLowerCase().replace(/[^a-z0-9]/g,'');
     if(id!=='ditto'&&slots[3]&&slots.slice(0,3).some(x=>
-       canonical(x)&&canonical(x)===canonical(slots[3])))
-      issues.push({id,problem:'ULT has same underlying move as a normal HAB',
+       canonical(x)&&canonical(x)===canonical(slots[3]))){
+      // Caterpie normally evolves at Lv7 and has only three authentic
+      // installed techniques at a hypothetical Lv50. Do not fabricate
+      // an illegal 4th move/renderer merely to satisfy a UI checklist.
+      const scarce=id==='caterpie';
+      (scarce?exceptions:issues).push({id,
+       problem:scarce?'three-move species; hypothetical Lv50 duplicate':'ULT has same underlying move as a normal HAB',
        names:slots.map(x=>x?.nombre||null)});
+    }
    }
    for(const def of ROSTER){
     if(!known.has(def.id))continue;
@@ -98,7 +104,7 @@ const server=http.createServer(async(req,res)=>{
    if(localBefore!==localAfter)issues.push({problem:'Pokédex audit wrote player saves'});
    return {kantoSpecies:KANTO_151.length,checkedStages:checked.length,
      uniqueStages:new Set(checked).size,issues:issues.slice(0,70),
-     totalIssues:issues.length,samples};
+     totalIssues:issues.length,exceptions,samples};
   });
   fs.writeFileSync('test-evidence/pokedex-151-legal-slot-audit.json',
    JSON.stringify(audit,null,2));
