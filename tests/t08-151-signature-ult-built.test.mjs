@@ -116,7 +116,14 @@ for(const [id,move] of [['psyduck','surf'],['tentacruel','surf'],
 const saved={...make('squirtle',50),
  moves:['water-gun','bite','bubble-beam','hydro-pump'],movePlanSpecies:'squirtle'};
 const before=JSON.stringify(saved);
-assert.deepEqual(selectedMoves(saved),saved.moves);
+// Old save format is preserved, but a formerly ordinary HAB3 Bubble Beam
+// (strong enough for ULT) now resolves to another legally learned HAB move.
+const safeLoadout=selectedMoves(saved);
+assert.deepEqual(safeLoadout.slice(0,2),saved.moves.slice(0,2));
+assert.ok(!safeLoadout.slice(0,3).includes('bubble-beam'),
+ 'Strong Bubble Beam must not fire without a charged E meter');
+assert.ok(availableMoves(saved).some(m=>m.id===safeLoadout[2]),
+ 'Legacy HAB fallback must be legally available');
 assert.equal(JSON.stringify(saved),before,'Reading a save changed manual ULT');
 assert.equal(resolveLoadout(saved).e?.id,'hydro-pump');
 // Regression caught by the production Pages gate after #271: Gloom Lv21
