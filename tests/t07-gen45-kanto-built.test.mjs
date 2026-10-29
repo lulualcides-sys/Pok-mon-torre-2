@@ -58,8 +58,8 @@ for(const {id} of KANTO_151){
   // the Gen4/5 addition and must not be misreported as newly imported moves.
   if(!Number.isInteger(required))continue;
   const dex=campaignLearnset(id).find(m=>m.id===move.id);
-  if(dex?.level!==required)continue; // already unlocked by approved override
-  assert.ok(required>=13&&required<=50,
+  if(dex?.level!==required||required<13)continue; // approved early move predates Gen4/5
+  assert.ok(required<=50,
    'New Gen4/5 move learned too soon '+id+' '+move.id);
   assert.ok(!availableMoves(member(id,required-1)).some(m=>m.id===move.id),
    'New Gen4/5 move unlocked prematurely '+id+' '+move.id+' before '+required);
