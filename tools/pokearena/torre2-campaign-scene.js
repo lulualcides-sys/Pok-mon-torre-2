@@ -162,13 +162,7 @@ create(){
       resolveBattle(next,!!completed.won);
      kind=wild?'wild':'trainer';
     }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
-    if(outcome&&outcome.ok!==false){
-     state=next;
-     battleReport=makeBattleReport(before,state,outcome,{
-      kind,listMoves:availableMoves,
-      tmNames:Object.fromEntries(MART_ITEMS.map(item=>[item.id,item.name]))
-     });
-    }
+    if(outcome&&outcome.ok!==false)state=next;
    }catch(error){
     console.warn('Torre 2: battle result could not be saved',error);
     this.backdrop();
@@ -183,6 +177,16 @@ create(){
      this.scene.restart({...completed});
     },true).setData('torre2-battle-save-retry',true);
     return;
+   }
+   // A report rendering failure is not a failed save: never offer a retry
+   // that could award the same battle twice after the checkpoint committed.
+   if(outcome&&outcome.ok!==false){
+    try{
+     battleReport=makeBattleReport(before,state,outcome,{
+      kind,listMoves:availableMoves,
+      tmNames:Object.fromEntries(MART_ITEMS.map(item=>[item.id,item.name]))
+     });
+    }catch(error){console.warn('Torre 2: battle report unavailable',error);}
    }
   }
   if(!state)return this.starterSelection();
