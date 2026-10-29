@@ -24,7 +24,7 @@ const server=http.createServer(async(req,res)=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
   headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
   '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
- const page=await browser.newPage({viewport:{width:1280,height:720}});
+ const page=await browser.newPage({viewport:{width:1280,height:720},hasTouch:true});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  const report={method:'Native Phaser live AUTO, no HP/KO/result cheats; one starter, Mewtwo in PC; consecutive route trainers 1-8',steps:[]};
  const saveReport=()=>fs.writeFileSync(out+'/natural-first-eight.json',JSON.stringify(report,null,2));
@@ -214,7 +214,7 @@ const server=http.createServer(async(req,res)=>{
   saveReport();
   await page.screenshot({path:out+'/t07-t08-natural-earned-ult-next-battle.png'});
   await page.screenshot({path:out+'/natural-route1-eight-trainers-completed.png'});
-  assert.deepEqual(errors,[],'No client JS exceptions through four consecutive native battles');
+  assert.deepEqual(errors,[],'No client JS exceptions through eight consecutive native battles');
   console.log('PASS EIGHT NATURAL KANTO OPENING FIGHTS INCLUDING RIVAL; no debug KOs, natural XP, real rewards');
  }finally{saveReport();await page.close();await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});
