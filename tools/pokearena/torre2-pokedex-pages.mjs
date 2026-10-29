@@ -22,10 +22,11 @@ export function normalizePokedexNameColumn(s){
 // native palettes, graphics, scene state or Pokémon move metadata.
 export function ensurePokedexTypePaletteImport(source){
  const s=String(source);
- const match=s.match(/import\s*\{([^}]+)\}\s*from\s*["']\.\.\/datos\.js["'];/);
- if(!match)throw Error('Unrecognized original Pokédex datos import');
- if(match[1].split(',').map(x=>x.trim()).includes('TIPOS'))return s;
- return s.replace(match[0],match[0]+'import{TIPOS}from"../datos.js";');
+ const imports=[...s.matchAll(/import\s*\{([^}]+)\}\s*from\s*["']\.\.\/datos\.js["'];/g)];
+ if(!imports.length)throw Error('Unrecognized original Pokédex datos import');
+ if(imports.some(match=>match[1].split(',').map(x=>x.trim()).includes('TIPOS')))
+  return s;
+ return s.replace(imports[0][0],imports[0][0]+'import{TIPOS}from"../datos.js";');
 }
 export function paginateKantoPokedexSource(original){
  let s=ensurePokedexTypePaletteImport(original);
