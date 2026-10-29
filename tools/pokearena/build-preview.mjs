@@ -671,10 +671,17 @@ for(const [filename,changes] of patches){
       from.startsWith('anotarEntreno(d){this.registroDano.push(')&&
       to.includes('this.datos?.torre2&&!Array.isArray')){
     const entry='anotarEntreno(d){';
-    if(!body.includes(entry)||body.indexOf(entry)!==body.lastIndexOf(entry))
-     throw Error('Unknown native training recorder entry; cannot safely guard it');
+    const updated=body.match(/anotarEntreno\(d(?:,[^)]*)?\)\{/g)||[];
+    if(updated.length>1)throw Error('Ambiguous native training recorder; refusing duplicate patch');
+    if(!updated.length){
+     // The original game removed the old damage ledger callback. This
+     // legacy null-array guard is no longer relevant; do not invent a
+     // replacement that would overwrite the upstream training engine.
+     console.warn('Native anotarEntreno removed; old campaign ledger patch not needed');
+     continue;
+    }
     const guard='if(this.datos?.torre2&&!Array.isArray(this.registroDano)){this.registroDano=[];this.comboActual=0;this.mejorCombo=0;this.ultimoGolpeEntreno=-Infinity;this.ultimoDano=0;}';
-    if(!body.includes(guard))body=body.replace(entry,entry+guard);
+    if(!body.includes(guard))body=body.replace(updated[0],updated[0]+guard);
     continue;
    }
    // October upstream adjusted the fighter's underlying Defense formula.
