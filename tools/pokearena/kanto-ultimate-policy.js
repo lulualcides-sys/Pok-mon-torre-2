@@ -30,12 +30,14 @@ export function verifiedLevelUpNames(species,{
 export function chooseKantoSignatureUlt(species,library,context={}){
  if(species==='ditto')return null; // no installed Transform renderer
  const types=context.speciesTypes||[];
+ const blocked=context.blockedName?canonical(context.blockedName):null;
  const byName=new Map((library||[]).filter(m=>m?.forma&&m?.nombre)
   .map(m=>[canonical(m.nombre),m]));
  const verified=verifiedLevelUpNames(species,context);
  const matches=[...verified].map(key=>byName.get(key)).filter(m=>m&&
   (m.source!=='new-phaser-fx'||m.approved===true)&&
-  !excluded.has(canonical(m.nombre))&&Number(m.dano)>=6);
+  !excluded.has(canonical(m.nombre))&&
+  canonical(m.nombre)!==blocked&&Number(m.dano)>=6);
  matches.sort((a,b)=>{
   const score=m=>Number(types.includes(m.tipo))*75+
    Math.min(36,Number(m.dano)||0)+

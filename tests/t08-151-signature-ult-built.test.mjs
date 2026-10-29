@@ -11,7 +11,7 @@ const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const {modules}=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8'));
 const load=p=>import(pathToFileURL(path.join(base,modules,p)).href);
 const [{KANTO_151},{TEST_LIBRARY,availableMoves,selectedMoves,resolveLoadout,
- moveUnlockLevel}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
+ moveUnlockLevel,equipMove}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
  {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS},
  {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP},
  {GEN7_LETSGO_LEVEL_UP},{GEN5_KANTO_LEVEL_UP},{EARLY_KANTO_LEARNSETS}]
@@ -119,6 +119,28 @@ const before=JSON.stringify(saved);
 assert.deepEqual(selectedMoves(saved),saved.moves);
 assert.equal(JSON.stringify(saved),before,'Reading a save changed manual ULT');
 assert.equal(resolveLoadout(saved).e?.id,'hydro-pump');
+// Regression caught by the production Pages gate after #271: Gloom Lv21
+// must not impersonate its still-locked canonical Solar Beam in the E slot.
+const gloom21=make('gloom',21);
+assert.ok(!availableMoves(gloom21).some(m=>m.id==='solar-beam'));
+console.log('T08_GLOOM_DIAGNOSTIC',JSON.stringify({available:availableMoves(gloom21).map(m=>m.id),e:resolveLoadout(gloom21).e}));
+assert.notEqual(resolveLoadout(gloom21).e?.torre2IntroSource,'solar-beam',
+ 'Gloom borrowed its future evolved E attack at Lv21');
+// The original Kanto ATK is always a weak basic, even after the new ULT
+// ranking frees Wing Attack from the E slot.
+const pidgey19=make('pidgey',19);
+assert.ok(availableMoves(pidgey19).some(m=>m.id==='wing-attack'));
+console.log('T08_ATK_DIAGNOSTIC',JSON.stringify({
+ pidgey:availableMoves(pidgey19).filter(m=>['wing-attack','tackle','quick-attack'].includes(m.id))
+  .map(m=>({id:m.id,dano:m.dano,poder:m.poder,torre2IntroSlot:m.torre2IntroSlot,forma:m.forma})),
+ bulbasaur:availableMoves(make('bulbasaur',10)).filter(m=>['vine-whip','tackle'].includes(m.id))
+  .map(m=>({id:m.id,dano:m.dano,poder:m.poder,torre2IntroSlot:m.torre2IntroSlot}))
+}));
+const pidgeyBefore=JSON.stringify(pidgey19);
+assert.equal(equipMove(pidgey19,0,'wing-attack'),false,
+ 'Wing Attack is too strong for basic ATK');
+assert.equal(JSON.stringify(pidgey19),pidgeyBefore,
+ 'A refused ATK equip changed the save');
 fs.mkdirSync('test-evidence',{recursive:true});
 fs.writeFileSync('test-evidence/t08-151-signatures-227-report.json',JSON.stringify({
  source:'compiled-fixtures-not-played-campaign',installedMoves:227,

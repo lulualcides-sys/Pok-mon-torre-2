@@ -71,14 +71,20 @@ for(const id of families){
   if(unlocked&&slots[3]===ultimate)assert.equal(loadout.e?.ulti,true,
    species+' should activate its ULT once really unlocked');
   if(!unlocked){
-   // The Lv8 tutorial ULT uses a weak approved renderer; it never borrows
-   // the future canonical ultimate of this Pokémon or its evolution.
+   // Lv8 uses a capped training preview. At later earned levels a
+   // different, genuinely unlocked species attack may replace that preview
+   // as the E ultimate; never borrow the still-locked planned E finisher.
    if(level>=8){
-    assert.ok(loadout.e?.torre2IntroPractice&&loadout.e?.ulti,
-     species+' must receive only a safe tutorial ULT');
-    assert.ok(loadout.e.dano<=12,species+' ULT must remain weak');
-    assert.notEqual(canonicalMoveKey(loadout.e.torre2IntroSource),ultimate,
-     species+' cannot borrow a future/evolved finisher');
+    assert.ok(loadout.e?.forma&&loadout.e?.ulti,
+     species+' must retain a playable energy-gated E slot');
+    if(loadout.e.torre2IntroPractice){
+     assert.ok(loadout.e.dano<=12,species+' preview ULT must remain weak');
+    }else{
+     assert.ok(availableMoves(member).some(m=>m.id===loadout.e.id),
+      species+' E is not a genuinely learned move');
+    }
+    assert.notEqual(canonicalMoveKey(loadout.e.torre2IntroSource||loadout.e.id),
+     ultimate,species+' cannot borrow a future/evolved finisher');
    }else assert.equal(loadout.e,undefined,'ULT blocked until Lv8');
   }
   if(evolved){
