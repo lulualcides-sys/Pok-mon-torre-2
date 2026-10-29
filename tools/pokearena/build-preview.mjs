@@ -679,7 +679,7 @@ for(const [filename,changes] of patches){
    if(filename==='escenas/seleccion.js'&&
       from.startsWith('import{atacarEnMenu,precargarLineas,')&&
       to.includes('cargarPMD,crearAnimsPMD,soloFormas,formasDe')){
-    const pattern=/import\\{([^}]+)\\}from"\\.\\.\\/sprites\\.js";/;
+    const pattern=/import\{([^}]+)\}from"\.\.\/sprites\.js";/;
     const match=body.match(pattern);
     if(!match||!match[1].includes('atacarEnMenu')||
        !match[1].includes('ponerRetrato'))
