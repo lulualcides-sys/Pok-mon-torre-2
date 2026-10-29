@@ -111,6 +111,17 @@ export function createCampaign(starter){
   wildEncountersStage:0,pendingWild:null,
   badges:[],leagueHonors:[],gymTMClaims:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
 }
+// Production-only new game. The original createCampaign factory deliberately
+// retains its historical Mewtwo fixture for test/replay compatibility; do not
+// let that level-50 debug fighter enter a NEW player's Kanto journey.
+// Legacy saves are never rewritten or stripped of Pokémon by this function.
+export function createPlayerCampaign(starter){
+ const state=createCampaign(starter);
+ state.team=state.team.filter(member=>member.id!=='mewtwo');
+ if(state.team.length!==1||state.team[0].id!==starter)
+  throw Error('Fresh Kanto campaign must contain exactly its chosen starter');
+ return state;
+}
 // A string can be valid JSON while no longer being a usable campaign.
 // Do not overwrite the last good backup with such a structurally broken save.
 function usableCampaignSnapshot(s){
@@ -252,13 +263,9 @@ export function readCampaign(storage=localStorage){
   if(s.pendingWild&&(!Number.isFinite(s.pendingWild.hpPercent)||s.pendingWild.hpPercent<1)){
    s.pendingWild.hpPercent=100;migrated=true;
   }
-  // Existing player saves receive exactly one permanent level-50 test Mewtwo.
-  if(![...s.team,...(s.box||[])].some(p=>p.id==='mewtwo')){
-   // Keep the tester playable immediately, without discarding the sixth team member.
-   if(s.team.length>=6)s.box.push(s.team.pop());
-   s.team.push(newMember('mewtwo',50));
-   migrated=true;
-  }
+  // Never silently add a level-50 tester to a genuine player's save.
+  // Previous saves containing Mewtwo remain unchanged: the migration only
+  // fills missing metadata and never deletes existing Pokémon or PC data.
   // Invalid stale wild markers from a previous stage must never be replayed.
   if(s.pendingWild&&s.pendingWild.stage!==s.stage){s.pendingWild=null;migrated=true}
   for(const member of [...s.team,...s.box])if(enforceCampaignCap(member,s.stage))migrated=true;

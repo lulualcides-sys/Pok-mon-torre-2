@@ -1,0 +1,61 @@
+name: T01 — Real starter-only Kanto campaign
+on:
+  push:
+    branches: [fix/t01-fresh-starter-no-lab-mewtwo-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  starters:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate syntax, campaign saves, policies and native VFX
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/t01-starter-no-lab-mewtwo-built.test.mjs
+          node --check tests/t05-starter-denied-ui-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Build original versioned Phaser WebGL client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+             && node tools/pokearena/build-preview.mjs \
+             && test -s _site/arena2d/version.json \
+             && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Real Lv5 starter and legacy save invariants
+        run: |
+          set -euo pipefail
+          node tests/t01-starter-no-lab-mewtwo-built.test.mjs
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
+          node tests/section20-campaign-integrity-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+      - name: Native mobile starter touch, denied-save retry and Chromium
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t05-starter-denied-ui-browser.cjs
+          node tests/source-client-smoke.cjs
+          node tests/t08-arena-roles-summary-mobile-browser.cjs
+      - name: Archive proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t01-starter-only-kanto-proof
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14

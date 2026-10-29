@@ -12,7 +12,7 @@ import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
 import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
-import {readCampaign,createCampaign,saveCampaign,resetCampaign,
+import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
@@ -234,7 +234,7 @@ create(){
    const x=135+i*185;
    this.button(x,180,166,58,id.toUpperCase(),()=>{
     try{
-     saveCampaign(createCampaign(id));
+     saveCampaign(createPlayerCampaign(id));
     }catch(error){
      console.warn('Torre 2: starter selection could not be saved',error);
      saveError.setVisible(true);
@@ -244,7 +244,7 @@ create(){
    },true).setData('torre2-starter-select',id);
   });
   text(this,ANCHO/2,270,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',statusStyle).setOrigin(.5);
-  text(this,ANCHO/2,294,'Mewtwo nível 50 será adicionado à equipe para testes.',statusStyle).setOrigin(.5);
+  text(this,ANCHO/2,294,'Sua aventura começa somente com o inicial escolhido · Mewtwo fica no laboratório.',statusStyle).setOrigin(.5);
  }
  backdrop(){
   richBackdrop(this);
