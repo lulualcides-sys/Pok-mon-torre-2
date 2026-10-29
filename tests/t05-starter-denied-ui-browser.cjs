@@ -98,11 +98,18 @@ const server=http.createServer(async(req,res)=>{
    const core=window.__starterCore,s=core.readCampaign();
    return {starter:s.starter,stage:s.stage,trainer:s.trainer,wins:s.wins,
     primary:!!localStorage.getItem(core.SAVE_KEY),
-    team:s.team.map(m=>m.id)};
+    team:s.team.map(m=>m.id),box:s.box.map(m=>m.id),
+    dexSeen:s.dexSeen,dexCaught:s.dexCaught};
   });
   assert.equal(saved.starter,'bulbasaur');
   assert.equal(saved.stage,0);assert.equal(saved.trainer,0);
   assert.equal(saved.wins,0);assert.equal(saved.primary,true);
+  assert.deepEqual(saved.team,['bulbasaur'],
+   'Native starter tap must not grant the debug Mewtwo to the Kanto party');
+  assert.deepEqual(saved.box,[],
+   'New campaign must not hide a free laboratory Mewtwo in the PC');
+  assert.deepEqual(saved.dexSeen,['bulbasaur']);
+  assert.deepEqual(saved.dexCaught,['bulbasaur']);
   assert.deepEqual(errors,[]);
   fs.writeFileSync('test-evidence/t05-starter-denied-retry.json',JSON.stringify({
    source:'native Phaser mobile touch; simulated first-save storage denial',
