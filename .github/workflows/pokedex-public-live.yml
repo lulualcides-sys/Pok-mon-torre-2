@@ -24,6 +24,9 @@ jobs:
       - name: Conferir sete casos e 150 espécies Kanto no Pages público
         env:
           CHROME_BIN: /usr/bin/google-chrome
+          # Only the post-Pages workflow can demand the NEW public build.
+          # Branch CI checks all 150 against its freshly compiled Phaser client.
+          POKEDEX_FULL_PUBLIC_AUDIT: ${{ github.event_name == 'workflow_run' && '1' || '0' }}
         run: node tests/pokedex-public-live-browser.cjs
       - name: Validar sintaxe do carregador e testes unitários
         if: github.event_name == 'push'
