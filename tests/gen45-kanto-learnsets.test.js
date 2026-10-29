@@ -29,7 +29,8 @@ test('Exact HGSS/B2W2 examples, no borrowed species and inherited evolutions',()
  assert.equal(gen45KantoUnlockLevel('charmander','fire fang'),25);
  assert.equal(gen45KantoUnlockLevel('charizard','fire fang'),25);
  assert.equal(gen45KantoUnlockLevel('ponyta','Flame Charge'),21);
- assert.equal(gen45KantoUnlockLevel('rapidash','Flare Blitz'),49);
+ // Raw HGSS precursor is Lv46; approved Torre 2 Gen V override remains Lv49.
+ assert.equal(gen45KantoUnlockLevel('rapidash','Flare Blitz'),46);
  assert.equal(gen45KantoUnlockLevel('magikarp','Thunderbolt'),null);
  assert.equal(gen45KantoUnlockLevel('bulbasaur','Flare Blitz'),null);
  assert.equal(gen45KantoUnlockLevel('missing-pokemon','Flame Charge'),null);
