@@ -13,7 +13,7 @@ const {modules}=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'
 const load=p=>import(pathToFileURL(path.join(root,modules,p)).href);
 const [{KANTO_151},
  {TEST_LIBRARY,availableMoves,campaignLearnset,moveUnlockLevel,
-  selectedMoves,equipMove,resolveLoadout},
+  selectedMoves,equipMove,resolveLoadout,campaignMoveSlotReason},
  {FRLG_LEVEL_UP,frlgUnlockLevel,frlgMachineCompatible}]=await Promise.all([
  load('torre2/all-kanto-species.js'),
  load('torre2/move-pool.js'),
@@ -65,11 +65,21 @@ for(const {id} of KANTO_151){
   assert.equal(moveUnlockLevel(member(id,50),'protect'),first,
    id+' move editor and Pokédex disagree');
   const equipped=member(id,50);
-  const already=selectedMoves(equipped).includes('protect');
-  assert.ok(already||equipMove(equipped,1,'protect'),
-   id+' cannot equip earned Protect in HAB2');
-  assert.ok(already||resolveLoadout(equipped).rmb?.id==='protect',
-   id+' earned Protect does not reach native battle');
+  const move=availableMoves(equipped).find(m=>m.id==='protect');
+  const slots=['lmb','rmb','q','e'];
+  const allowed=slots.map((_,i)=>i).filter(i=>!campaignMoveSlotReason(equipped,i,move));
+  assert.ok(allowed.length,id+' earned Protect but no legal native slot exists');
+  // Protect is a learned defensive technique, not automatically an RMB.
+  // Original P2 role metadata may reserve it for another compatible role;
+  // a forced HAB2 assertion must not bypass the charged-ULT rule.
+  const already=Object.values(resolveLoadout(equipped)).some(m=>m?.id==='protect');
+  if(!already){
+   const slot=allowed.includes(1)?1:allowed.includes(2)?2:allowed.includes(3)?3:allowed[0];
+   assert.equal(equipMove(equipped,slot,'protect'),true,
+    id+' cannot manually equip learned Protect in '+slots[slot]);
+   assert.equal(resolveLoadout(equipped)[slots[slot]]?.id,'protect',
+    id+' learned Protect did not become executable in its legal role');
+  }
  }else{
   if(ids.has('protect')||dex.get('protect')?.method==='LEVEL')
    mismatchedTM.push({species:id,reason:'TM-only granted by level'});
