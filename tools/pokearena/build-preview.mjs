@@ -110,6 +110,11 @@ await fs.writeFile(index,html);
 // every animation for every Pokémon before showing the menu on Android.
 const clientSource=html.match(/src="(src-[0-9a-f]{10})\/main\.js"/)?.[1];
 if(!clientSource)throw Error('Original Phaser source directory missing');
+// The original client still preloads eight League PNGs that are no longer in
+// its asset snapshot. Recreate only missing textures from its own native
+// 8x8 icon patterns, never replacing available upstream or approved art.
+const {installMissingNativeLeagueIcons}=await import('./install-native-league-icons.mjs');
+await installMissingNativeLeagueIcons(dest,clientSource);
 // Original League can still import ponerRetrato after Poké Arena replaced its
 // sprite helper with casillaRetrato. Ensure the missing named export exists in
 // our isolated copy, using only the already approved/native PMD texture.
