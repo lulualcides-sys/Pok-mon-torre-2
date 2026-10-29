@@ -263,13 +263,9 @@ export function readCampaign(storage=localStorage){
   if(s.pendingWild&&(!Number.isFinite(s.pendingWild.hpPercent)||s.pendingWild.hpPercent<1)){
    s.pendingWild.hpPercent=100;migrated=true;
   }
-  // Existing player saves receive exactly one permanent level-50 test Mewtwo.
-  if(![...s.team,...(s.box||[])].some(p=>p.id==='mewtwo')){
-   // Keep the tester playable immediately, without discarding the sixth team member.
-   if(s.team.length>=6)s.box.push(s.team.pop());
-   s.team.push(newMember('mewtwo',50));
-   migrated=true;
-  }
+  // Never silently add a level-50 tester to a genuine player's save.
+  // Previous saves containing Mewtwo remain unchanged: the migration only
+  // fills missing metadata and never deletes existing Pokémon or PC data.
   // Invalid stale wild markers from a previous stage must never be replayed.
   if(s.pendingWild&&s.pendingWild.stage!==s.stage){s.pendingWild=null;migrated=true}
   for(const member of [...s.team,...s.box])if(enforceCampaignCap(member,s.stage))migrated=true;
