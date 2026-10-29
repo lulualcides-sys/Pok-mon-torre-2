@@ -1,0 +1,125 @@
+name: Poké Arena 2D — catálogo de golpes nativos
+on:
+  schedule:
+    # Daily source-version probe; UTC 12:11 = 09:11 Sao Paulo.
+    - cron: '11 12 * * *'
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'tools/pokearena/sync-source-moves.mjs'
+      - 'tests/pokearena-source-catalog.test.js'
+      - '.github/workflows/pokearena-native-moves-watch.yml'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/pokearena-native-moves-watch.yml'
+permissions:
+  contents: write
+concurrency:
+  group: pokearena-native-moves-watch
+  cancel-in-progress: false
+jobs:
+  verify:
+    if: github.event_name == 'pull_request' || github.event_name == 'push'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate library compiler and existing move protections
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/sync-source-moves.mjs
+          node --test tests/pokearena-source-catalog.test.js
+          npm run check:reuse
+          npm test
+  catalog:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Detect source version without downloading the whole game
+        id: probe
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          let needsCapture=true;
+          try {
+            const res=await fetch('https://www.pokearena2d.com/',{signal:AbortSignal.timeout(18000)});
+            if(!res.ok)throw Error('HTTP '+res.status);
+            const html=await res.text();
+            const match=html.match(/src-[0-9a-f]{10}/);
+            const file='data/pokearena2d-source-moves.json';
+            const previous=fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):null;
+            if(match&&previous?.sourceVersion===match[0])needsCapture=false;
+            console.log(JSON.stringify({detected:match?.[0]||null,previous:previous?.sourceVersion||null,needsCapture}));
+          }catch(error){console.warn('Source probe inconclusive. Full capture required:',String(error));}
+          fs.appendFileSync(process.env.GITHUB_OUTPUT,'capture='+(needsCapture?'true':'false')+'\n');
+          JS
+      - name: Capture updated public Phaser modules with retries
+        if: steps.probe.outputs.capture == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt*10))
+          done
+          node tools/pokearena/build-preview.mjs
+          node tools/pokearena/audit-moves.mjs
+      - name: Compile strictly metadata-only upstream move library
+        if: steps.probe.outputs.capture == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/sync-source-moves.mjs
+          node tools/pokearena/sync-source-moves.mjs
+          node -e "const c=require('./data/pokearena2d-source-moves.json');if(c.originalMoveCount!==c.moves.length||new Set(c.moves.map(x=>x.id)).size!==c.moves.length)process.exit(1);console.log('Unique native moves:',c.moves.length)"
+      - name: Store audit for debugging without publishing source assets
+        if: steps.probe.outputs.capture == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-native-catalog-audit
+          path: |
+            site-capture/POKEARENA-MOVE-AUDIT.json
+            site-capture/CAPTURE-REPORT.json
+          retention-days: 14
+          if-no-files-found: error
+      - name: Commit only verified catalog metadata (never VFX or saves)
+        if: steps.probe.outputs.capture == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -- data/pokearena2d-source-moves.json data/pokearena2d-source-changes.json
+          if git diff --cached --quiet; then
+            echo 'No new native catalog metadata.'
+            exit 0
+          fi
+          git commit -m 'catalog: synchronize verified Poké Arena 2D native move metadata'
+          for attempt in 1 2 3; do
+            git fetch origin main
+            if ! git rebase origin/main; then
+              git rebase --abort || true
+              echo 'Main changed incompatibly; refusing to overwrite concurrent work.'
+              exit 1
+            fi
+            if git push origin HEAD:main; then exit 0; fi
+            sleep $((attempt*5))
+          done
+          echo 'Could not safely publish metadata to main.'
+          exit 1
