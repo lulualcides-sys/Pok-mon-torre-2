@@ -37,14 +37,29 @@ jobs:
       - name: Reproduce exact failed Pages gate and native-stage invariants
         run: |
           set -euo pipefail
+          node tools/pokearena/audit-moves.mjs
+          node tests/batch24-built.test.mjs
           node tests/misty-surge-built.test.mjs
-          node --test tests/pokedex-upstream-layout.test.js
+          node tests/surge3-built.test.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          node tests/t08-kanto-no-duplicate-native-built.test.mjs
           node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t08-kanto-onboarding-151-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
+          node tests/t08-leech-seed-campaign-balance-built.test.mjs
+          node tests/finale13-built.test.mjs
+          node --test tests/pokedex-upstream-layout.test.js
           node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
       - name: Chromium Phaser battle regression
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/batch24-browser.cjs
+          node tests/source-client-smoke.cjs
+          node tests/t08-arena-roles-summary-mobile-browser.cjs
           node tests/kanto-intro-touch-browser.cjs
           npm run test:browser
       - name: Keep Chromium evidence even when failing
