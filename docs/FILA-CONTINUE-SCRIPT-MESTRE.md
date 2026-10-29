@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T07/T08: publicação Pokédex real e gate público de 150 espécies
+
+- **Versão de jogo comprovada:** main `75594a3ec94359e4d55827d525fc557504fc40ea` corrigiu atualização de HTML em cache e ampliou o teste da Pokédex pública; [CI de combate #40955569636](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40955569636) **SUCESSO**, [auditoria #40955569792](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40955569792) **SUCESSO**, [Pages #40955612644](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40955612644) **SUCESSO** e `pages_build_version` exatamente igual ao SHA. Log do deploy confirmou **HTTP público** `src-68d255c704` e Chromium real dos sete casos, incluindo Marowak na aba de Cubone; [gate pós-publicação #40956758232](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40956758232) **SUCESSO** para a mesma versão.
+- **Nova prova ainda em validação:** [PR #319](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/319), branch isolada, acrescenta percurso das 150 espécies Kanto nas cartas/abas **do site público** e compara seus quatro slots ao resolvedor Lv50 da versão instalada. [CI #40960988483](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40960988483) iniciada, **não declarar aprovada antes da conclusão**. Nenhum runtime, VFX, TM, save ou sprite alterado por essa PR.
+- **Limites:** teste público de Pokédex/fixture Lv50 não é XP ganho, evolução natural nem 150 campanhas jogadas. **T07/T08 PARCIAIS**, Scratch e Transform adiados, Surf reprovado, Deoxys fora de Kanto. Captura original P2 de 29/10 já verificada; não recapturar no mesmo dia sem diff.
+
+
 ## 29/10/2026 — T07/T08: Pokédex dos 151 usa kit legal de campanha (#316)
 
 - **Código já integrado por outra frente:** [PR #316](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/316), merge `65652b9f7a5bb1fdff43bbbf238403b36d9279fc`. A Pokédex Kanto agora exibe prévia **Lv50 sem TM ensinada**, calculada pelo mesmo `resolveLoadout` da batalha e cruzada com `campaignLearnset` por nível, em vez de anunciar TM/Locked nativos indevidamente. Corrige fichas de Mew, Scyther, Mr. Mime, Cubone, Marowak e Doduo; Mewtwo de laboratório e Deoxys preservam kits nativos. A prévia não equipa nem concede golpes no save.
