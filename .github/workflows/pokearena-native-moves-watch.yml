@@ -33,9 +33,24 @@ jobs:
           set -euo pipefail
           npm install --no-audit --no-fund
           node --check tools/pokearena/sync-source-moves.mjs
+          node --check tools/pokearena/audit-moves.mjs
           node --test tests/pokearena-source-catalog.test.js
+          npm run check
           npm run check:reuse
           npm test
+      - name: Validate actual Phaser capture, site provenance and Chromium
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+          node tools/pokearena/build-preview.mjs
+          node tools/pokearena/audit-moves.mjs
+          node -e "const a=require('./site-capture/POKEARENA-MOVE-AUDIT.json');const v=require('./_site/arena2d/version.json');if(a.siteVersion!==v.src)throw Error('Homepage provenance mismatch');"
+          node tools/pokearena/sync-source-moves.mjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
   catalog:
     if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     runs-on: ubuntu-24.04
@@ -62,8 +77,12 @@ jobs:
             const match=html.match(/src-[0-9a-f]{10}/);
             const file='data/pokearena2d-source-moves.json';
             const previous=fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):null;
-            if(match&&previous?.sourceVersion===match[0])needsCapture=false;
-            console.log(JSON.stringify({detected:match?.[0]||null,previous:previous?.sourceVersion||null,needsCapture}));
+            // Compare homepage src to homepage src, not the Phaser modules hash.
+            // Those hashes are distinct; comparing them forced unnecessary full captures.
+            const previousSiteVersion=previous?.siteVersion||null;
+            if(match&&previousSiteVersion===match[0])needsCapture=false;
+            console.log(JSON.stringify({detected:match?.[0]||null,
+              previousSiteVersion,previousModuleVersion:previous?.sourceVersion||null,needsCapture}));
           }catch(error){console.warn('Source probe inconclusive. Full capture required:',String(error));}
           fs.appendFileSync(process.env.GITHUB_OUTPUT,'capture='+(needsCapture?'true':'false')+'\n');
           JS

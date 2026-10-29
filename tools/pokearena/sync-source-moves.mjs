@@ -58,10 +58,14 @@ const moves=audit.originalMoves.map(move=>{
 const nativePokemon=[...new Set(moves.flatMap(m=>m.nativeExamples.map(e=>String(e.pokemon))))].sort();
 const version=audit.version?.modules||audit.version||null;
 if(!version)throw Error('Source version missing: catalog not updated');
+const siteVersion=audit.siteVersion||null;
+if(siteVersion&&!/^src-[0-9a-f]{10}$/.test(siteVersion))
+ throw Error('Invalid captured homepage source version: refusing catalog update');
 const catalog={
  schemaVersion:1,
  source:'https://www.pokearena2d.com/',
  sourceVersion:version,
+ siteVersion,
  note:'Only confirmed native source names. Kanto compatibility is official level-up metadata; battle availability, VFX, user-approved ULT rules and save safety still require independent validation.',
  originalMoveCount:moves.length,
  nativePokemonCount:nativePokemon.length,
@@ -76,7 +80,9 @@ const changed=moves.filter(m=>prevMoves.has(m.id)&&JSON.stringify(prevMoves.get(
 const newSpecies=nativePokemon.filter(s=>!(historic?.nativePokemon||[]).includes(s));
 const change={
  schemaVersion:1,source:catalog.source,previousVersion:historic?.sourceVersion||null,
- currentVersion:version,comparison:historic?'differential':'initial-baseline',
+ currentVersion:version,
+ previousSiteVersion:historic?.siteVersion||null,currentSiteVersion:siteVersion,
+ comparison:historic?'differential':'initial-baseline',
  additions:historic?additions:[],removals:historic?removals:[],changed:historic?changed:[],
  newSourcePokemon:historic?newSpecies:[],
  initialSnapshotCount:historic?null:moves.length,
@@ -90,8 +96,9 @@ function writeIfChanged(file,value){
  return true;
 }
 const catalogWritten=writeIfChanged(output,catalog);
-const noteworthy=!historic||additions.length||removals.length||changed.length||newSpecies.length;
+const siteChanged=Boolean(historic&&siteVersion&&siteVersion!==historic.siteVersion);
+const noteworthy=!historic||additions.length||removals.length||changed.length||newSpecies.length||siteChanged;
 const changesWritten=noteworthy?writeIfChanged(changeOutput,change):false;
 console.log(JSON.stringify({sourceVersion:version,originalMoves:moves.length,nativePokemon:nativePokemon.length,
- baseline:!historic,newMoves:historic?additions.length:0,removed:historic?removals.length:0,
+ baseline:!historic,siteVersion,siteChanged,newMoves:historic?additions.length:0,removed:historic?removals.length:0,
  modified:historic?changed.length:0,newSourcePokemon:historic?newSpecies:[],catalogWritten,changesWritten},null,2));

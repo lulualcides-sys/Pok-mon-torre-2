@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 const root=path.resolve('_site/arena2d');
-const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
+const sourceBuild=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'));
+const version=sourceBuild.modules;
 if(!version)throw Error('run capture-client + build-preview first');
 const base=pathToFileURL(path.join(root,version,'datos.js'));
 const {ROSTER,TODOS}=await import(base);
@@ -122,7 +123,8 @@ const checks=['Rock Slide','Rock Throw','Stone Edge','Psybeam','Egg Bomb','High 
  'Swift','Lovely Kiss','Soft-Boiled','Surf','Confuse Ray','Splash','Seismic Toss',
  'Bonemerang','Bone Club','Tri Attack','Pay Day','Shadow Ball','Thunderbolt','Ice Beam']
  .map(name=>({name,...classify(name)}));
-const report={version,audit:'captured Poké Arena Phaser game (not Pokémon Torre 1)',
+const report={version,siteVersion:sourceBuild.src||null,
+ audit:'captured Poké Arena Phaser game (not Pokémon Torre 1)',
  source:'https://www.pokearena2d.com/',activeLines:ROSTER.length,allLines:TODOS.length,
  originalMoveCount:implemented.length,mewtwoSelectables:pool.TEST_LIBRARY.length,
  originalMoves:implemented,customMoves:pool.SIGNATURE_MOVES,
