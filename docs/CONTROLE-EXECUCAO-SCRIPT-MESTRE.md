@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/31/33/36/37 · T08: técnica de treino versus nativa sem duplicação
+
+- **§7/§8 PARCIAIS:** [PR #266](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/266), squash `a14f99690b07f98894744f39f2934e6dd79ca2b1`, corrige editor que permitia duas cópias visuais do mesmo golpe em HAB diferentes por IDs distintos de preview e nativo. Realoja somente preview fraco obsoleto para alternativa legal/desbloqueada; sem alternativa, rejeita a edição sem mutar o save. ULT E continua independente.
+- **§31/§33 PARCIAIS:** [CI #40831859248](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40831859248) **SUCESSO** com 203 unitários, `check`, `check:reuse`, build Phaser/WebGL, 151×227, 238 colisões simuladas (107 realocações, 131 recusas), 104 upgrades no próprio slot e regressões Chromium. XP real de Ponyta até Lv21, Flame Charge, toque móvel, reload e ataque nativo comprovados, porém **a partir de checkpoint fixture Lv20/Stage1**. [CI inicial #40831637465](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40831637465) **FALHOU**; corrigida antes do merge. [main #40832562044](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40832562044) e [REA #40832562045](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40832562045) **SUCESSO**.
+- **§36 PARCIAL:** sem mudanças em 227 VFX, sprites, pixel art, dano, cooldowns, catálogo, TM, formato de save, Toxic #16 ou Shiny #17. Apenas lógica de equipagem, teste compilado e workflow.
+- **§37 PARCIAL:** [Pages #40832682117](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40832682117) **SUCESSO** com `pages_build_version=a14f99690b07f98894744f39f2934e6dd79ca2b1`; verificação **HTTP pública** de `src-ce27b9b0ba` às **07:05:21 UTC** de 29/10/2026. Ainda não há prova de Pallet→Campeão natural, 151 batalhas reais ou Android físico; nenhuma seção adicional foi declarada VALIDADA.
+
 ## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08: Ghost sem colisão de slot e Ponyta Lv21 por XP nativo
 
 - **§7/§8 PARCIAIS:** [PR #264](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/264), squash `18cb9ae7740d419251111fd522d0cb8be5a70fca`: Gastly/Haunter/Gengar não sobrescrevem Confuse Ray com Shadow Ball quando TM30 é legalmente ensinada; dois slots distintos, sem TM grátis ou efeito novo. Teste compilado para as três formas.
