@@ -1,4 +1,4 @@
-/* T07/T08: actual compiled Phaser inventory, 151 Kanto × 227 installed
+/* T07/T08: actual compiled Phaser inventory, 151 Kanto × current native installed
  * attacks. An FRLG level-up attack must never disappear merely because it
  * also appears in the TM table. Laboratory Mewtwo is a distinct test mode.
  * Fixtures are NOT evidence of a complete naturally played campaign.
@@ -24,8 +24,8 @@ const member=(id,level,tmMoves=[])=>({
  id,progression:{species:id,level},tmMoves
 });
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
-assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,227);
+assert.ok(TEST_LIBRARY.length>=227,'Approved baseline has lost installed move entries');
+assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,TEST_LIBRARY.length,'Duplicate native move IDs');
 assert.ok(TEST_LIBRARY.every(m=>m.forma),'Installed attack has no renderer');
 const expectedProtectSpecies=[
  'blastoise','cloyster','kingler','krabby','omanyte','omastar',
@@ -35,7 +35,7 @@ const naturallyProtect=[],lostNatural=[],mismatchedTM=[];
 let installedNaturalPairs=0,checked=0;
 for(const {id} of KANTO_151){
  if(id==='mewtwo'){
-  assert.equal(availableMoves(member(id,50)).length,227,
+  assert.equal(availableMoves(member(id,50)).length,TEST_LIBRARY.length,
    'Original Mewtwo laboratory must remain unrestricted');
   continue;
  }

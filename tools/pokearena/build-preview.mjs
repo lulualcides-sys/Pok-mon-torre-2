@@ -6,6 +6,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
+import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -575,6 +576,11 @@ for(const [filename,changes] of patches){
    // Only Kanto's Phaser code is altered by this patch; never block its
    // release on an unrelated legacy-mode preload variation.
    if(filename==='escenas/liga.js'){
+    // Preserve the portrait helper exported by this native Poké Arena version.
+    if(from.startsWith('import{dexAspecto,ponerRetrato}')){
+     body=ensureLeagueSpriteImports(body);
+     continue;
+    }
     // The native League has changed its init signature, but its PMD
     // portraits still must be preloaded BEFORE create() builds the cards.
     if(from.startsWith('init(datos)')){

@@ -144,7 +144,17 @@ export const APPROVED_KANTO_NATIVE_OVERLAPS=Object.freeze([
  'ice-shard','psychic','shadow-ball','ice-beam'
 ]);
 const approvedKantoOverlap=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
-const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES];
+// Two native Poke Arena moves existed in the user-approved 227-effect baseline
+// (published src-8faafad601, datos.js: Suicune/Raikou), but later upstream
+// roster edits removed their LAST users. Keep their exact original move data
+// ONLY in the Torre 2 campaign pool; never alter current native Arena kits.
+// The existing 'chorro' and 'potenciar' Phaser renderers are reused as-is.
+// Appending after ROSTER ensures upstream reinstatement always takes priority.
+const approvedNativeBaselineFallbacks=[
+ {nombre:'Aurora Beam',forma:'chorro',tipo:'ICE',dano:15,largo:240,ancho:16,anchoVisual:26,carga:.25,dur:.8,empuje:50,giro:2.2,paleta:'aurora',ralentiza:.3,ralentizaDur:1.8,congela:true,coste:35,cd:7,anim:'Charge',trozos:['solar-a-hielo','solar-b-hielo','solar-c-hielo'],velTrozos:700,aditivo:true,hojaBoca:'solar-boca-hielo'},
+ {nombre:'Calm Mind',forma:'potenciar',tipo:'PSYCHIC',dur:5,mult:1.25,reduce:.15,texto:'CALM MIND',coste:30,cd:14,anim:'Charge'}
+];
+const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES,...approvedNativeBaselineFallbacks];
 const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
 const signatureByName=new Map(SIGNATURE_MOVES.map(m=>[canonicalMoveKey(m.nombre),m]));
 for(const h of rawLibrary){

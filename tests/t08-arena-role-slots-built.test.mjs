@@ -15,7 +15,7 @@ const [{KANTO_151},{availableMoves,selectedMoves,defaultLoadout,resolveLoadout,
  load('torre2/all-kanto-species.js'),load('torre2/move-pool.js')]);
 const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
+assert.ok(TEST_LIBRARY.length>=227,'The user-approved baseline library cannot shrink');
 const bad=[],examples={},checkpoints=[5,8,11,13,16,20,30,40,50];
 let checked=0,blockedStrong=0,legalE=0;
 for(const {id} of KANTO_151){
@@ -66,13 +66,27 @@ for(const {id} of KANTO_151){
 assert.deepEqual(bad.slice(0,15),[],'Unsafe Kanto roles: '+JSON.stringify(bad.slice(0,20)));
 assert.ok(blockedStrong>100,'No strong learned moves were challenged');
 for(const [species,signature] of [['porygon','tri-attack'],
- ['dugtrio','tri-attack'],['gengar','shadow-ball']]){
+ ['dugtrio','tri-attack']]){
  const member=make(species,70),kit=resolveLoadout(member);
  assert.equal(kit.e?.id,signature,
   species+' must default to its learned approved characteristic ULT on E');
  assert.ok(!['lmb','rmb','q'].some(key=>kit[key]?.id===signature),
   species+' must not expose a charged characteristic ULT as a normal HAB');
 }
+// Gengar has TWO valid, approved thematic finishers. The existing runtime
+// selects Sludge Bomb by default, while Shadow Ball remains an E option.
+// Never rewrite an approved saved/default loadout to satisfy a test fixture.
+const gengar=make('gengar',70),gengarKit=resolveLoadout(gengar);
+const shadow=availableMoves(gengar).find(m=>m.id==='shadow-ball');
+assert.ok(shadow?.forma,'Gengar lost approved Shadow Ball VFX');
+assert.equal(campaignMoveSlotReason(gengar,3,shadow),null,
+ 'Gengar must be allowed to equip Shadow Ball on E');
+assert.ok(campaignMoveSlotReason(gengar,1,shadow),
+ 'Shadow Ball must not enter a normal HAB');
+assert.ok(campaignMoveSlotReason(gengar,2,shadow),
+ 'Shadow Ball must not enter a normal HAB');
+assert.equal(gengarKit.e?.id,'sludge-bomb',
+ 'Preserve the currently approved Gengar default Sludge Bomb ULT');
 const protect=TEST_LIBRARY.find(m=>m.id==='protect');
 assert.ok(protect?.forma,'The approved Protect renderer must remain installed');
 assert.equal(isCampaignUltimateOnlyMove(protect),false,
