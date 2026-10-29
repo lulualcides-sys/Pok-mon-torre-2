@@ -71,17 +71,28 @@ jobs:
           # Keep the old Pixi test laboratory at /lab.html but launch the real
           # solo Kanto Phaser game at the stable public root once Pages is enabled.
           cp _site/index.html _site/lab.html
+          # Revision in the ROOT redirect is as important as a hashed JS
+          # file: mobile WebViews can cache /arena2d/index.html itself.
+          release="$(node -p "JSON.parse(require('fs').readFileSync('_site/arena2d/version.json','utf8')).modules")"
           cat > _site/index.html <<'EOF'
           <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
           <meta name="viewport" content="width=device-width,initial-scale=1">
-          <meta http-equiv="refresh" content="0;url=./arena2d/">
+          <meta name="pokemon-torre-build" content="__RELEASE__">
+          <meta http-equiv="refresh" content="0;url=./arena2d/index.html?torre2-release=__RELEASE__">
           <title>Pokémon Torre 2 — Kanto</title>
-          <script>location.replace('./arena2d/'+location.search+location.hash)</script>
+          <script>
+          (function(){
+           const p=new URLSearchParams(location.search);
+           p.set('torre2-release','__RELEASE__');
+           location.replace('./arena2d/index.html?'+p+location.hash);
+          })();
+          </script>
           </head><body style="background:#101725;color:#e2efff;font:18px system-ui;text-align:center;padding:30px">
           <p>Abrindo a campanha Pokémon Torre 2...</p>
-          <a href="./arena2d/" style="color:#ffe16d">Abrir jogo</a>
+          <a href="./arena2d/index.html?torre2-release=__RELEASE__" style="color:#ffe16d">Abrir jogo atualizado</a>
           </body></html>
           EOF
+          sed -i "s/__RELEASE__/$release/g" _site/index.html
       - name: Bloquear golpes duplicados e proteger artes nativas do cliente
         shell: bash
         run: |
@@ -194,3 +205,19 @@ jobs:
           done
           echo "::error::A versao atual nao esta acessivel no endereco publico do jogo"
           exit 1
+      - name: Validar a Pokédex na página PUBLICADA no Chromium
+        if: steps.pages-enabled.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          EXPECTED_POKEDEX_BUILD="$(node -p "JSON.parse(require('fs').readFileSync('_site/arena2d/version.json','utf8')).modules")" \
+          CHROME_BIN="$(command -v google-chrome)" \
+            node tests/pokedex-public-live-browser.cjs
+      - name: Guardar prova da Pokédex pública
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokedex-public-real-after-deploy
+          path: test-evidence/pokedex-public-*
+          retention-days: 14
+          if-no-files-found: warn
