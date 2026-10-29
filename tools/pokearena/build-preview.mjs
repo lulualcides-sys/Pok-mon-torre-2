@@ -860,7 +860,9 @@ const sourceImport="from './torre2-frlg-learnsets.js'";
 if(!arenaPolicySource.includes(sourceImport))
  throw Error('Arena move source metadata import changed');
 await fs.writeFile(arenaPolicyPath,arenaPolicySource.replace(sourceImport,
- "from './frlg-learnsets.js'"));
+ "from './frlg-learnsets.js'")
+ .replace("from './torre2-arena-approved-121.js'","from './arena-approved-121.js'")
+ .replace("from './torre2-arena-native-dodges.js'","from './arena-native-dodges.js'"));
 
 // Our Gen IV/V source imports the long repo filename; the captured
 // Phaser folder uses a short basename. Rewrite ONLY the copied source.
