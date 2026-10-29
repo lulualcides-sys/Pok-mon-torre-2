@@ -11,9 +11,15 @@ const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const {modules}=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8'));
 const load=p=>import(pathToFileURL(path.join(base,modules,p)).href);
 const [{KANTO_151},{TEST_LIBRARY,availableMoves,selectedMoves,resolveLoadout,
- moveUnlockLevel}, {chooseKantoSignatureUlt,verifiedLevelUpNames}]
+ moveUnlockLevel}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
+ {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS},
+ {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP},
+ {GEN7_LETSGO_LEVEL_UP},{GEN5_KANTO_LEVEL_UP},{EARLY_KANTO_LEARNSETS}]
  =await Promise.all([load('torre2/all-kanto-species.js'),
- load('torre2/move-pool.js'),load('torre2/kanto-ultimate-policy.js')]);
+ load('torre2/move-pool.js'),load('torre2/kanto-ultimate-policy.js'),
+ load('torre2/frlg-learnsets.js'),load('torre2/gen45-kanto-learnsets.js'),
+ load('torre2/gen7-letsgo-learnsets.js'),load('torre2/gen5-existing-levels.js'),
+ load('torre2/early-kanto-species.js')]);
 const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 assert.equal(KANTO_151.length,151);
 assert.equal(TEST_LIBRARY.length,227);
@@ -21,13 +27,17 @@ assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,227);
 const exceptions=[],unbalanced=[],badSlots=[],speciesRows=[];
 let previewSignatures=0,checkedLevels=0;
 const samples={};
-for(const {id} of KANTO_151){
+for(const {id,tipos} of KANTO_151){
  if(id==='mewtwo')continue;
- const signature=chooseKantoSignatureUlt(id,TEST_LIBRARY);
+ const context={levelUp:FRLG_LEVEL_UP[id]||{},earlyLevels:EARLY_KANTO_LEARNSETS[id]||{},
+  verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP,
+   GEN7_LETSGO_LEVEL_UP,EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
+  verifiedParents:KANTO_LEVEL_EVOLUTIONS,speciesTypes:tipos};
+ const signature=chooseKantoSignatureUlt(id,TEST_LIBRARY,context);
  if(!signature)exceptions.push(id);
  else{
   previewSignatures++;
-  assert.ok(verifiedLevelUpNames(id).has(signature.id),
+  assert.ok(verifiedLevelUpNames(id,context).has(signature.id),
    id+' ULT is not in its verified species/ancestor level-up list');
   assert.ok(signature.forma,'No approved attack renderer for '+id);
   assert.ok(signature.source!=='new-phaser-fx'||signature.approved===true,
