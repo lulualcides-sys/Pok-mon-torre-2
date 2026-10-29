@@ -3,8 +3,8 @@
  * Reuse the installed native/approved renderer belonging to each move.
  */
 import {frlgUnlockLevel,frlgMachineCompatible} from './torre2-frlg-learnsets.js';
-import {ARENA_APPROVED_121} from './arena-approved-121.js';
-import {selectNativeDodge,ARENA_NATIVE_DODGE_FORMS} from './arena-native-dodges.js';
+import {ARENA_APPROVED_121} from './torre2-arena-approved-121.js';
+import {selectNativeDodge,ARENA_NATIVE_DODGE_FORMS} from './torre2-arena-native-dodges.js';
 import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
 import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
