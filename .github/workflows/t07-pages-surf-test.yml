@@ -1,0 +1,56 @@
+name: T07 — Pages gate Surf rejected in campaign
+on:
+  push:
+    branches: [fix/t07-pages-rejected-surf-finale13-test-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Integrity, approved effects and unit suite
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/finale13-built.test.mjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Build versioned native Phaser capture
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+             && node tools/pokearena/build-preview.mjs \
+             && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - name: Replay former Pages blocker, restricted Surf and real Kanto roles
+        run: |
+          set -euo pipefail
+          node tests/finale13-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          node tests/t08-editor-slot-suggestion-built.test.mjs
+      - name: Browser original Phaser smoke
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          node tests/t08-arena-roles-summary-mobile-browser.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t07-pages-rejected-surf-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14
