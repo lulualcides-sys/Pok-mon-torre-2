@@ -29,7 +29,8 @@ for(const ability of ['puedeEvolucionar','puedeMega']){
 assert.match(battle,/this\.datos\?\.torre2\?"":" · "\+n\(k\.mega\)/,'combat help must be mode-scoped');
 assert.match(title,/txt:"KANTO CAMPAIGN"/,'Kanto accessible in original Play menu');
 assert.match(title,/txt:"TRAINING"/,'Training still exists');
-assert.match(title,/txt:"ARENA MODE"/,'Arena still exists');
+assert.match(title,/\{id:"arena",txt:"(?:ARENA|ARENA MODE)",escena:"preparar"/,
+ 'Arena must remain accessible from PLAY and open the original preparation scene');
 assert.match(title,/txt:"VS CPU"/,'VS CPU still exists');
 assert.doesNotMatch(title,/id:"versus",txt:"2 PLAYERS"/);
 assert.doesNotMatch(title,/id:"online",txt:"ONLINE"/);
