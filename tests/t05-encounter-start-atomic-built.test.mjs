@@ -18,7 +18,9 @@ function fixture(){
   deny:key=>{denied=key},allow:()=>{denied=null}
  };
  globalThis.localStorage=storage;
- const state=core.createCampaign('bulbasaur');
+ const initial=core.createCampaign('bulbasaur');
+ core.saveCampaign(initial,storage);
+ const state=core.readCampaign(storage); // Apply the existing additive medicine migration.
  core.saveCampaign(state,storage);
  storage.setItem(core.SAVE_BACKUP_KEY,storage.getItem(core.SAVE_KEY));
  return {state,storage};
