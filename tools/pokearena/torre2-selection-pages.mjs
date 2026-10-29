@@ -1,6 +1,19 @@
 /* Keep all roster families reachable without pushing FIGHT below the viewport. */
 export function paginateSelectionSource(source){
- const once=(a,b)=>{if(!source.includes(a))throw Error('Selection source changed: '+a);source=source.replace(a,b)};
+ const once=(a,b)=>{if(!source.includes(a)){
+  // Never silently discard an unrecognized upstream layout. Log a small,
+  // targeted source excerpt so the adaptation can be made safely without
+  // changing the approved native buttons or using guessed offsets.
+  const near=key=>{
+   const index=source.indexOf(key);
+   return index<0?null:source.slice(Math.max(0,index-180),index+330);
+  };
+  throw Error('Selection source changed: '+a+
+   '; FILAS='+JSON.stringify(near('FILAS'))+
+   '; POR_FILA='+JSON.stringify(near('POR_FILA'))+
+   '; casilla='+JSON.stringify(near('casilla('))+
+   '; beginning='+JSON.stringify(source.slice(0,430)));
+ }source=source.replace(a,b)};
  once('const FILAS=Math.ceil(ROSTER.length/POR_FILA);','const FILAS=Math.min(2,Math.ceil(ROSTER.length/POR_FILA));');
  once('const fila=Math.floor(i/POR_FILA),col=i%POR_FILA;', 'const fila=Math.floor((i%(POR_FILA*2))/POR_FILA),col=i%POR_FILA;');
  once('const enFila=Math.min(POR_FILA,ROSTER.length-fila*POR_FILA);','const enFila=POR_FILA;');
