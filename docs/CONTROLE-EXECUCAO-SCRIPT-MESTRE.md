@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§1/31/33/36/37 · T05: escolha inicial com gravação recusada
+
+- **§1 / §31 — PARCIAL:** [PR #249](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/249), squash `29493266a9d6c480515ba5a64ece2d39595d6610`. O primeiro save do inicial agora possui erro visível e retry pelo mesmo botão Phaser; armazenamento negado não cria estado falso nem exceção não tratada. Seleção por toque móvel e recuperação foram verificadas com recusa **simulada**.
+- **§33 — PARCIAL:** [CI branch #40808469808](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40808469808) **SUCESSO** (unitários, `check`, `check:reuse`, build WebGL, teste nativo mobile e regressão Chromium integral); [main #40809221632](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40809221632) **SUCESSO**; [REA #40809221484](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40809221484) **SUCESSO**.
+- **§36 — PARCIAL:** diff limitado à tela inicial, teste e workflow. Não altera catálogo de golpes, VFX, sprites, cooldowns, controles, saves ou as frentes Toxic #16 / Shiny #17.
+- **§37 — PARCIAL:** [Pages individual #40809265589](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40809265589) **CANCELADO por novo merge**; [Pages #40809424414](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40809424414) **SUCESSO**, SHA exato publicado `97206a642c7457ac743672604b45c3306914a52f` com o patch incluído; HTTP confirmou `src-b75d72afdc` às 03:03:26 UTC de 29/10/2026. Faltam jornada completa natural, demais operações e Android físico; **nenhuma seção adicional VALIDADA**.
+
+
 ## 28/10/2026 — §§20/31/33/36/37 · T05: checkpoints atômicos de início de batalha (PR #244)
 
 - **§20/§31 PARCIAIS:** [PR #244](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/244), squash `ea40242ea72833d0c067bc4aa696845c069d4bde`: busca selvagem, contador, Pokédex vista e primeiro treinador não alteram estado vivo antes do save; recusa de gravação mantém checkpoint, permite novo toque e não cria encontro fantasma. Dispensa de captura opcional também protegida.
