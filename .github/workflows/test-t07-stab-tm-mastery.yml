@@ -47,6 +47,7 @@ jobs:
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t07-fire-blast-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/t07-stab-tm-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t07-ponyta-signature-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" npm run test:browser
       - name: Salvar evidencias
