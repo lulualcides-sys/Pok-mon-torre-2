@@ -32,7 +32,23 @@ export function paginateKantoPokedexSource(original){
   'import{resolveLoadout,moveUnlockLevel,canonicalMoveKey,TEST_LIBRARY,campaignLearnset}from"../torre2/move-pool.js";'+
   'import{frlgMachineCompatible}from"../torre2/frlg-learnsets.js";'+
   'import{kanto151SlotPlan}from"../torre2/all-kanto-species.js";');
- const sync=String.raw`function kantoDexStages(def){
+ const sync=String.raw`// Upstream Poké Arena versions may rename their original type palette.
+ // Prefer its native colors if available, otherwise use the same colors as
+ // the Torre 2 campaign. This affects ONLY Pokédex card decoration.
+ const TORRE2_KANTO_TYPE_PALETTE=Object.freeze({
+  NORMAL:0xb9c4d2,FIRE:0xf0804d,WATER:0x6fb7f0,ELECTRIC:0xeec95d,
+  GRASS:0x83d18a,ICE:0x9bdcee,FIGHTING:0xdb8e77,POISON:0xb98cd9,
+  GROUND:0xc3aa77,FLYING:0x98c6e3,PSYCHIC:0xe997bf,BUG:0xaacb70,
+  ROCK:0xbaa981,GHOST:0x9b8ec5,DRAGON:0x9da9ef,DARK:0x969cac,
+  STEEL:0xa4bbc6,FAIRY:0xe5a8d6
+ });
+ function kantoDexTypeColor(type){
+  const native=typeof TIPOS==='undefined'?null:TIPOS;
+  const candidate=native?.[type];
+  return Number.isInteger(candidate)?candidate:
+   (TORRE2_KANTO_TYPE_PALETTE[type]??0x9db1c7);
+ }
+ function kantoDexStages(def){
  const stages=etapasDe(def);
  return stages.map((stage,i)=>{
   if(stage.mega)return stage;
@@ -108,7 +124,7 @@ export function paginateKantoPokedexSource(original){
  const card="casilla(p,x,y,i){"+
   "const g=this.add.graphics();g.fillStyle(0,1);g.fillRect(x,y,CEL-2,CEL-2);"+
   "const ancho=(CEL-2)/p.tipos.length;"+
-  "p.tipos.forEach((t,k)=>{g.fillStyle(TIPOS[t],1);g.fillRect(x+k*ancho,y+CEL-4,ancho,2)});"+
+  "p.tipos.forEach((t,k)=>{g.fillStyle(kantoDexTypeColor(t),1);g.fillRect(x+k*ancho,y+CEL-4,ancho,2)});"+
   "const img=this.add.image(x+1,y+1,'retrato-'+p.dex).setOrigin(0).setDisplaySize(CEL-4,CEL-4);"+
   "const zone=this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(i));"+
   "const show=Math.floor(i/36)===this.dexPage;"+
