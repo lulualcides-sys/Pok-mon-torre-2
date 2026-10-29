@@ -10,7 +10,7 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
+import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
@@ -1113,6 +1113,13 @@ create(){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  // Exclusive mobile screen: prevent touches on Back and attack rows from
+  // passing to other scene hotspots (notably original fullscreen behind it).
+  this.scene.bringToTop();
+  this.input.setTopOnly(true);
+  this.add.zone(320,180,640,360).setDepth(2).setInteractive()
+   .setData('torre2-summary-input-shield',true)
+   .on('pointerdown',(_pointer,_x,_y,event)=>event?.stopPropagation?.());
   const member=state.team[index];
   if(!member)return this.scene.restart();
   const stats=pokemonStats(member),pool=availableMoves(member);
@@ -1136,13 +1143,15 @@ create(){
    return rect;
   };
   const label=(x,y,caption,color='#dceaff',size=11)=>text(this,x,y,caption,{
-   fontSize:size+'px',color});
+   fontSize:size+'px',color}).setDepth(16);
   const button=(x,y,w,h,caption,click,selected=false)=>{
    const bg=box(x,y,w,h,selected?0x28465f:0x1b314a,selected?0xe7c56a:0x52718f);
-   bg.setInteractive({useHandCursor:true});
+   bg.setDepth(12).setInteractive({useHandCursor:true});
    bg.on('pointerover',()=>bg.setFillStyle(selected?0x385b79:0x2d506f));
    bg.on('pointerout',()=>bg.setFillStyle(selected?0x28465f:0x1b314a));
-   bg.on('pointerdown',click);
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();click();
+   });
    const name=label(x+w/2,y+h/2,caption,selected?'#ffe09a':'#e1eeff',11);
    name.setOrigin(.5);
    return bg;
@@ -1150,7 +1159,8 @@ create(){
   // Distinct header and unified back navigation.
   box(10,8,620,36,0x10243d,0x456b91);
   label(23,15,'POKÉMON / SUMÁRIO',C.gold,16);
-  button(521,13,98,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
+  // Avoid the legacy fullscreen hitbox around x=624.
+  button(494,13,108,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);
@@ -1162,7 +1172,7 @@ create(){
   box(25,103,82,81,0x091726,0x365b78);
   const portrait=()=>{
    if(!this.scene.isActive()||!this.textures.exists(key))return;
-   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(2);
+   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(3);
   };
   if(this.textures.exists(key))portrait();
   else{
@@ -1198,8 +1208,7 @@ create(){
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
-  label(231,78,earlyPlan?'LMB ATK  ·  RMB HAB 2  ·  Q HAB 3  ·  E ULT  ·  ESP ESQUIVA':
-   'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,earlyPlan?8:9);
+  label(231,78,'1. TOQUE NO SLOT   2. ESCOLHA O GOLPE NA LISTA',C.muted,9);
   slotCodes.forEach((_,i)=>{
    const id=chosen[i],battleSlot=['lmb','rmb','q','e'][i];
    const nativeMove=pool.find(m=>m.id===id);
@@ -1207,8 +1216,10 @@ create(){
    const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
    const current=activeSlot===i;
    const bg=box(x,y,189,39,current?0x294765:0x172d43,current?0xf0cb6d:0x385772);
-   bg.setInteractive({useHandCursor:true});
-   bg.on('pointerdown',()=>this.showSummary(state,index,i,0));
+   bg.setDepth(12).setInteractive({useHandCursor:true});
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();this.showSummary(state,index,i,0);
+   });
    bg.on('pointerover',()=>bg.setFillStyle(0x335977));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x294765:0x172d43));
    label(x+8,y+4,slotCodes[i]+' · '+slotNames[i],
@@ -1218,7 +1229,7 @@ create(){
    label(x+8,y+18,move?.nombre??(introStage&&i===3&&stats.level<8?
     'ULT · DESBLOQUEIA NV. 8':upcoming?
     upcoming+' · LV '+(need??'EVO'):'—'),move?C.white:'#f5c578',move?12:10);
-   if(move?.torre2IntroPractice)label(x+8,y+31,'TREINO · PODER REDUZIDO','#b1cfde',7);
+   if(move?.torre2IntroPractice)label(x+8,y+31,'INICIAL · POTÊNCIA EQUILIBRADA','#b1cfde',7);
    label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
    label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
   });
