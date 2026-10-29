@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08: Pages real e gate 150 Kanto
+
+- **§7/§8/§31 PARCIAIS:** versão main `75594a3ec94359e4d55827d525fc557504fc40ea` atualiza o HTML da Pokédex pública sem mutar saves. [PR #319](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/319) adiciona prova de **150 espécies nas abas reais da Pokédex pública**, comparando os quatro slots à fixture do resolvedor Lv50; CI [#40960988483](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40960988483) **pendente**, sem merge/publicação neste registro.
+- **§33 PARCIAL:** [CI main #40955569636](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40955569636) e [auditoria #40955569792](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40955569792) **SUCESSO**; [Chromium público #40956758232](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40956758232) **SUCESSO**, sete casos reportados sem Locked/TM. Não são batalhas naturais nem Android físico.
+- **§36 PARCIAL:** nenhum dos 227 VFX-base, sprites, cooldowns, TMs, saves, Toxic #16 ou Shiny #17 foi alterado pelo gate novo.
+- **§37 PARCIAL:** [Pages #40955612644](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40955612644) **SUCESSO**: `pages_build_version=75594a3ec94359e4d55827d525fc557504fc40ea`; log do workflow confirma **HTTP público** `src-68d255c704` e Chromium do release. Sem alegar conclusão da campanha.
+
+
 ## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08: kit legal da Pokédex #316
 
 - **§7/§8 PARCIAIS:** [PR #316](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/316) integrada em `65652b9f7a5bb1fdff43bbbf238403b36d9279fc`; a Pokédex Kanto usa `resolveLoadout`/learnset de nível em prévia Lv50 sem TM, corrigindo seis fichas com Locked/TM/ULT impróprios. Mewtwo de laboratório e Deoxys não são convertidos à campanha Kanto; nenhuma TM é concedida, nenhum kit de save é modificado.
