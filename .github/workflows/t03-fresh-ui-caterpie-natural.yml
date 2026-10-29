@@ -1,7 +1,7 @@
 name: T03 — Fresh player journey, native Caterpie evolution
 on:
   push:
-    branches: [test/t03-fresh-ui-caterpie-earned-evolution-20261029]
+    branches: [test/t03-fresh-ui-caterpie-earned-evolution-20261029, test/t07-metapod-earned-moves-summary-20261029-1048]
   workflow_dispatch:
 permissions:
   contents: read

@@ -329,6 +329,57 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
   assert.equal(restored.teamSize,2);
   assert.deepEqual(restored.box,[],'Reload must not inject lab Mewtwo after evolution');
 
+  // T07/T08 cross-layer check on a GENUINELY evolved and reloaded Metapod.
+  // Unlike the 151x227 matrix, this creature's species and XP came from
+  // native capture and two trainer victories, not a prepared checkpoint.
+  await page.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('campanha'));
+  await mapReady();
+  const earnedEditor=await page.evaluate(async uid=>{
+   const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const moves=await import(new URL('./torre2/move-pool.js',main));
+   const state=window.kanto.readCampaign();
+   const index=state.team.findIndex(m=>m.uid===uid);
+   if(index<0)throw Error('Earned Metapod missing from editor team');
+   const member=state.team[index],pool=moves.availableMoves(member);
+   const learnset=moves.campaignLearnset(member.id);
+   const kit=moves.resolveLoadout(member);
+   const before=localStorage.getItem(window.kanto.SAVE_KEY);
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   scene.summaryFilter='ALL';scene.summarySearch='';
+   scene.showSummary(state,index,0,0);
+   const visibleIds=scene.children.list.filter(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-equip-move')).map(o=>o.getData('torre2-equip-move'));
+   return {species:member.id,level:member.progression.level,
+    selected:moves.selectedMoves(member),available:pool.map(m=>m.id),
+    displayed:visibleIds,
+    active:['lmb','rmb','q','e'].map(k=>({
+     slot:k,id:kit[k]?.id||null,name:kit[k]?.nombre||null,
+     pending:kit[k]?.pendiente===true
+    })),
+    practice5:learnset.filter(m=>m.practice&&m.level===5).map(m=>m.id),
+    ult8:learnset.filter(m=>m.practice&&m.level===8&&m.slot==='e').map(m=>m.id),
+    saveUnchanged:before===localStorage.getItem(window.kanto.SAVE_KEY)};
+  },caterpie.uid);
+  assert.equal(earnedEditor.species,'metapod');
+  assert.equal(earnedEditor.level,7,'Natural evolution must not grant Lv8 early');
+  assert.equal(earnedEditor.practice5.length,3,'Pokédex must list three Lv5 skills');
+  assert.equal(earnedEditor.ult8.length,1,'Pokédex must list the future Lv8 ULT');
+  assert.ok(earnedEditor.active.slice(0,3).every(m=>m.id&&m.name&&!m.pending),
+   'Earned Metapod must have three usable battle attacks');
+  assert.equal(earnedEditor.active[3].id,null,'ULT must remain locked at Lv7');
+  assert.ok(earnedEditor.displayed.length>0,'Phaser editor displayed no move rows');
+  assert.ok(earnedEditor.displayed.every(id=>earnedEditor.available.includes(id)),
+   'Phaser editor exposed an unavailable or incompatible move');
+  assert.ok(earnedEditor.selected.slice(0,3).every(id=>
+   earnedEditor.available.includes(id)),'Saved slots disagree with legal move pool');
+  assert.equal(earnedEditor.saveUnchanged,true,'Opening the editor rewrote the save');
+  report.earnedEditor=earnedEditor;
+  persist();
+  await page.screenshot({path:evidence+'/t07-earned-metapod-editor.png'});
+  // Return through the real campaign scene without altering the saved team.
+  await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart({}));
+  await mapReady();
+
   // Enter next real route fight as the newly evolved Metapod, to prove
   // that Phaser renders the actual evolved PMD sprite and live move slots.
   await page.evaluate(uid=>{
