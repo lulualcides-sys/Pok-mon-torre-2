@@ -1240,7 +1240,22 @@ create(){
   }
   // Separated library with filters and paging: can navigate Mewtwo moves.
   this.add.rectangle(424,189,384,1,0x446580);
-  label(230,195,'BIBLIOTECA · '+pool.length+' GOLPES',C.gold,12);
+  // Power-capped Lv5 adapters use existing VFX but are NOT different
+  // species moves. List just one named option per native technique.
+  const dedupeByMove=moves=>{
+   const byName=new Map();
+   for(const move of moves){
+    const key=(move.torre2IntroSlot==='e'?'ULT:':'MOVE:')+
+     canonicalMoveKey(move.torre2IntroSource||move.nombre);
+    const old=byName.get(key);
+    const score=m=>(m.torre2IntroPractice?(stats.level<=8?30:1):stats.level>8?30:0)+
+     (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0));
+    if(!old||score(move)>score(old))byName.set(key,move);
+   }
+   return [...byName.values()];
+  };
+  const displayed=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch));
+  label(230,195,'BIBLIOTECA · '+displayed.length+' GOLPES',C.gold,12);
   button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
   button(541,187,75,25,'BUSCAR',()=>{
    const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
@@ -1249,7 +1264,7 @@ create(){
    this.showSummary(state,index,activeSlot,0);
   });
   // Virtual NEW tab shows only not-yet-approved Torre 2 moves.
-  const filtered=filterMoveLibrary(pool,this.summaryFilter,this.summarySearch);
+  const filtered=displayed;
   const pageSize=6,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const safePage=Math.min(pages-1,Math.max(0,page));
   if(this.summaryFilter!=='ALL'||this.summarySearch)
@@ -1264,8 +1279,10 @@ create(){
    const pending=isPendingApprovalMove(move);
    const bg=box(x,y,188,27,current?0x275749:equipped?0x1e434c:0x1a344d,
     current?0x73d8b0:equipped?0x658e96:0x3c6283);
-   bg.setInteractive({useHandCursor:true}).setData('torre2-equip-move',move.id);
-   bg.on('pointerdown',()=>{
+   bg.setDepth(12).setInteractive({useHandCursor:true})
+    .setData('torre2-equip-move',move.id);
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();
     let equippedNow=false;
     try{equippedNow=equipCampaignMove(state,index,activeSlot,move.id);}
     catch(error){
@@ -1275,12 +1292,17 @@ create(){
      return;
     }
     if(!equippedNow)
-     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':'GOLPE NÃO DISPONÍVEL.';
+     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':
+      activeSlot===3&&stats.level<13?
+       'ULT EQUILIBRADA ATÉ NV.12 · SELECIONE ATK/HAB 2/HAB 3':
+       'GOLPE NÃO DISPONÍVEL PARA ESSE SLOT.';
     this.showSummary(state,index,activeSlot,safePage);
    });
    bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
-   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+move.nombre+(move.approved?' ✓':''),
+   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+
+    (move.torre2IntroSlot==='e'?'ULT · ':'')+move.nombre+
+    (move.approved?' ✓':''),
     current?'#bcffe3':'#ebf5ff',10);
    label(x+6,y+16,move.tipo,C.muted,8);
    if(pending)label(x+77,y+16,'NEW','#ffdc89',8);
