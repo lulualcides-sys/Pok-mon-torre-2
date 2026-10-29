@@ -723,6 +723,14 @@ for(const [filename,changes] of patches){
    if(filename==='escenas/seleccion.js'&&
       from.startsWith('const img=this.add.image(x+2,y+3,')&&
       to.includes('ponerRetrato(this,img,p.dex)')){
+    // Current native selection creates the portrait through its own
+    // casillaRetrato() helper. It already owns the sprite and fallback;
+    // adding a second ponerRetrato would duplicate pixel art or distort
+    // a native image. Retain the new original helper unchanged.
+    if(body.includes('const{img}=casillaRetrato(this,x,y,TW,p.dex);')){
+     console.warn('Native selection casillaRetrato already draws sprite; old image patch not needed');
+     continue;
+    }
     const key='const img=this.add.image(x+2,y+3,\`retrato-${p.dex}\`)';
     const at=body.indexOf(key),end=at<0?-1:body.indexOf(';',at+key.length);
     if(at<0||end<0||end-at>240)
