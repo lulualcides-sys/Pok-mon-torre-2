@@ -95,6 +95,7 @@ jobs:
           node tests/t07-frlg-natural-catalog-built.test.mjs
           node tests/t08-kanto-no-duplicate-native-built.test.mjs
           node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t08-kanto-onboarding-151-built.test.mjs
           node tests/t07-frlg-unrendered-136x639-built.test.mjs
           node tests/t08-arena-role-slots-built.test.mjs
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
@@ -107,6 +108,7 @@ jobs:
           CHROME_BIN="$(command -v google-chrome)" node tests/batch24-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
       - name: Arquivar evidência visual do motor Phaser
         if: always()
         uses: actions/upload-artifact@v4
