@@ -19,15 +19,15 @@ assert.ok(!pool.availableMoves(pidgey).some(m=>m.id==='quick-attack'),
 assert.equal(pool.equipMove(pidgey,0,'quick-attack'),false,
  'Lv8 must not bypass the species level gate');
 pidgey.progression.level=11;
-const quick=pool.availableMoves(pidgey).find(m=>m.id==='quick-attack');
-assert.ok(quick?.forma&&quick.dano>0&&quick.dano<=12,
- 'Pidgey Lv11 needs a genuine learned weak Quick Attack');
-assert.equal(pool.equipMove(pidgey,0,'quick-attack'),true,
+const gust=pool.availableMoves(pidgey).find(m=>m.id==='gust');
+assert.ok(gust?.forma&&gust.dano>0&&gust.dano<=12,
+ 'Pidgey Lv11 needs a genuine learned weak Gust');
+assert.equal(pool.equipMove(pidgey,0,'gust'),true,
  'A learned weak attack must be selectable in ATK, not hard-locked to Tackle');
-assert.equal(pool.selectedMoves(pidgey)[0],'quick-attack');
-assert.equal(pool.resolveLoadout(pidgey).lmb?.id,'quick-attack',
+assert.equal(pool.selectedMoves(pidgey)[0],'gust');
+assert.equal(pool.resolveLoadout(pidgey).lmb?.id,'gust',
  'Battle must use the move selected in the editor');
-assert.equal(pool.equipMove(pidgey,3,'quick-attack'),false,
+assert.equal(pool.equipMove(pidgey,3,'gust'),false,
  'Lv11 must retain the weak meter-gated ULT');
 assert.equal(pool.equipMove(pidgey,0,'blizzard'),false,
  'Editor must reject an incompatible Kanto attack');
@@ -53,14 +53,14 @@ state.team[0]={...state.team[0],id:'pidgey',
  progression:{...state.team[0].progression,species:'pidgey',level:11},
  tmMoves:[],moves:null,movePlanSpecies:null};
 core.saveCampaign(state,storage);
-assert.equal(core.equipCampaignMove(state,0,0,'quick-attack',storage),true);
-assert.equal(state.team[0].moves[0],'quick-attack');
+assert.equal(core.equipCampaignMove(state,0,0,'gust',storage),true);
+assert.equal(state.team[0].moves[0],'gust');
 const loaded=core.readCampaign(storage);
-assert.equal(loaded.team[0].moves[0],'quick-attack',
+assert.equal(loaded.team[0].moves[0],'gust',
  'Equipped genuine move must survive reload from the saved checkpoint');
-assert.equal(pool.resolveLoadout(loaded.team[0]).lmb?.id,'quick-attack',
+assert.equal(pool.resolveLoadout(loaded.team[0]).lmb?.id,'gust',
  'Reloaded battle must use the saved legal move');
 console.log('T08_EARNED_EDITOR_ROLES_PASS',JSON.stringify({
- species:['pidgey','pikachu'],level11:'quick-attack',
+ species:['pidgey','pikachu'],level11:'gust',
  alternateUltimate:other.id,persisted:true,mode:'compiled-fixtures'
 }));
