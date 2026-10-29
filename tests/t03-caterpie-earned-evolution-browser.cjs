@@ -1,5 +1,5 @@
 'use strict';
-/* T03: earn Caterpie -> Metapod naturally after TWO actual trainer wins.
+/* T03: choose Bulbasaur via LIVE STARTER UI; earn Caterpie -> Metapod after TWO actual trainer wins.
  * Species of the wild encounter is controlled via the documented API RNG
  * solely so the test is repeatable. No XP, level, HP, KO, capture roll,
  * trainer result, battle timer or player combat resources are overridden.
@@ -24,7 +24,7 @@ const server=http.createServer(async(req,res)=>{
 const evidence='test-evidence';
 const report={scope:'T03 first EXP-earned evolution in the actual Kanto campaign',
  encounter:'Wild species Caterpie selected by seeded encounter RNG; native capture RNG NOT overridden',
- battles:'Two genuine trainer fights, AUTO selected by real pointer, no forced KO/HP/XP/level',
+ battles:'Fresh starter Phaser tap, two genuine trainer fights, native AUTO, no KO/HP/XP/level fixtures',
  attempts:[],victories:[],save:null};
 fs.mkdirSync(evidence,{recursive:true});
 const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json',JSON.stringify(report,null,2));
@@ -86,21 +86,36 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
 
   await page.goto('http://127.0.0.1:4422/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  // Do not fabricate or directly save a campaign fixture: open the actual
+  // starter picker and tap its Phaser input zone, exactly like a new player.
+  await page.evaluate(async()=>{
+   const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   window.kanto=await import(new URL('./torre2/campaign-core.js',main));
+   if(window.kanto.readCampaign()!==null)throw Error('Fresh run must have no save');
+   window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+  });
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.children.list.some(o=>
+    o.active&&o.input?.enabled&&o.getData?.('torre2-starter-select')==='bulbasaur');
+  },null,{timeout:50000});
+  await clickMarked('torre2-starter-select','bulbasaur');
+  await mapReady();
   const setup=await page.evaluate(async()=>{
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
-   const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
    const progression=await import(new URL('./torre2/progression.js',main));
-   const s=core.createCampaign('bulbasaur');
-   core.storePokemon(s,1); // Legal deposit of the permanent test Mewtwo.
-   core.saveCampaign(s);
-   window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+   const s=window.kanto.readCampaign();
    return {initial:s.team.map(x=>({id:x.id,level:x.progression.level})),
-    box:s.box.map(x=>x.id),threshold:progression.totalExperienceForLevel(7)};
+    box:s.box.map(x=>x.id),starter:s.starter,wins:s.wins,
+    threshold:progression.totalExperienceForLevel(7),
+    rawSave:!!localStorage.getItem(window.kanto.SAVE_KEY)};
   });
   assert.deepEqual(setup.initial,[{id:'bulbasaur',level:5}]);
-  assert.deepEqual(setup.box,['mewtwo']);
+  assert.deepEqual(setup.box,[],'No lab Mewtwo in fresh Kanto save');
+  assert.equal(setup.starter,'bulbasaur');
+  assert.equal(setup.wins,0);
+  assert.equal(setup.rawSave,true,'Native starter selection must save the new game');
   assert.equal(setup.threshold,343);
-  await mapReady();
 
   // Acquire seven extra Pokeballs with REAL Mart UI and money deduction;
   // no free inventory. Caterpie at full HP catches with normal RNG ~34%.
@@ -262,7 +277,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
    assert.equal(after.trainer,round+1);
    assert.equal(after.money,before.money+180);
    assert.equal(after.team.length,2);
-   assert.equal(after.box.join(','),'mewtwo');
+   assert.deepEqual(after.box,[],'Native fresh save must never spawn lab Mewtwo');
    assert.ok(current.experience>before.team.find(m=>m.uid===caterpie.uid).experience,
     'EXP must actually be awarded by the native trainer battle');
    if(round===0){
@@ -312,7 +327,7 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-earned-evolution.json
   assert.equal(restored.wins,2);
   assert.equal(restored.trainer,2);
   assert.equal(restored.teamSize,2);
-  assert.deepEqual(restored.box,['mewtwo']);
+  assert.deepEqual(restored.box,[],'Reload must not inject lab Mewtwo after evolution');
 
   // Enter next real route fight as the newly evolved Metapod, to prove
   // that Phaser renders the actual evolved PMD sprite and live move slots.

@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — decisão do usuário: pular os efeitos secundários e prosseguir T03
+
+- **Não implementar nesta etapa:** Leer, Growl, Tail Whip, Focus Energy, Disable, Poison Powder, Slash, Stun Spore, Defense Curl ou Withdraw. O usuário considerou esses dez efeitos desnecessários para a prioridade atual. A matriz T07 de movimentos sem renderer continua apenas como inventário informativo, **não como fila de implementação mandatória**.
+- **Transform de Ditto:** adiado por decisão do usuário; não apresentar imitação de cópia de sprite como implementação válida. **Scratch** permanece adiado e **Surf** reprovado.
+- **Nova etapa priorizada:** T03/T05 — provar fluxo de jogo novo via botão original Phaser, captura normal de Caterpie com bolas compradas, evolução autêntica Caterpie→Metapod com XP ganho em duas vitórias nativas, reload do save e sprite evoluído no combate seguinte. Teste atualizado `tests/t03-caterpie-earned-evolution-browser.cjs` e CI `.github/workflows/t03-fresh-ui-caterpie-natural.yml`. **Não declarar homologado/publicado antes de CI+Pages.**
+- Preservar 227 efeitos existentes, gráficos, golpes aprovados, movesets, economia, RNG de captura, save antigos e implantação gratuita; não fabricar vitórias ou níveis.
+
+
 
 ## 29/10/2026 — prioridade T07/T08: inventário FRLG integrado e Struggle com contato neutro
 
