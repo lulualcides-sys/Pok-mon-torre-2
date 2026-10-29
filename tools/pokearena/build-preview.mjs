@@ -4,6 +4,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -624,6 +625,14 @@ for(const [filename,changes] of patches){
    if(filename==='luchador.js'&&from.startsWith('if(this.est.congelado&&fuente!==this)')&&
       to.startsWith('if(!e.datos?.torre2&&')&&!body.includes('congelaReduce')){
     console.warn('Upstream removed legacy freeze reduction; scoped patch not needed');
+    continue;
+   }
+   // Site original reordered the native ability constructors in October.
+   // Add vetted Phaser VFX by catalog key: no native move is reordered,
+   // overridden or removed by this compatibility adaptation.
+   if(filename==='habilidades.js'&&from.startsWith('const FORMAS={')&&
+      to.includes('...TORRE2_FORMS,')){
+    body=addTorre2FormsToNativeCatalog(body);
     continue;
    }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
