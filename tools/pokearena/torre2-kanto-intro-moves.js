@@ -8,11 +8,11 @@ export const KANTO_INTRO=Object.freeze({
   start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:16,
   maxStarterDamage:9, maxIntroUltDamage:12
 });
-// A signature ULT should look and feel more powerful than a basic hit.
+// Campaign starter ULTs use compatible approved WATER/FIRE/GRASS effects.
 // Reuse EXISTING Poké Arena 2D renderers at reduced power for campaign Lv8.
 // Full-power level-up attacks, original VFX and Arena/VS modes remain intact.
 export const KANTO_STARTER_SIGNATURE_ULT=Object.freeze({
- bulbasaur:'razor-leaf',charmander:'flamethrower',squirtle:'hydro-typhoon'
+ bulbasaur:'razor-leaf',charmander:'flamethrower',squirtle:'water-pulse'
 });
 const ATTACK_SLOTS=['lmb','rmb','q'];
 const idOf=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
@@ -162,8 +162,8 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  if(level>=KANTO_INTRO.ultAt){
   const ultCandidate=candidates.find(c=>!selected.some(x=>idOf(x.torre2IntroSource)===c.key)&&c.move.dano>0)
     ||candidates.find(c=>c.move.dano>0);
-  // Type-specific native ULT: Razor Leaf, Flamethrower and Squirtle's
-  // ORIGINAL Hydro Typhoon water spin; full authentic moves remain gated.
+  // Type-specific approved ULT: Razor Leaf, Flamethrower and Water Pulse.
+  // Hydro Typhoon belongs to Blastoise (UNITE), NOT Squirtle (FireRed).
   const requested=KANTO_STARTER_SIGNATURE_ULT[id];
   const native=requested?catalog.get(requested):null;
   const signature=native?.forma&&native?.tipo===({
@@ -172,11 +172,10 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
   const base=signature||ultCandidate?.move||fallback;
   const finisher=trainingMove(base,idOf(base.nombre),'e',signature?8:ultCandidate?.learned??level,true);
   if(signature){
-   // Hydro Typhoon delivers repeated shell-spin contacts; cap each hit to
-   // three damage, never a full-strength late-game attack at Lv8.
-   finisher.dano=requested==='hydro-typhoon'?
-    Math.min(KANTO_INTRO.maxIntroUltDamage,3):
-    Math.min(KANTO_INTRO.maxIntroUltDamage,Math.max(9,finisher.dano));
+   // Signature ULT gets a stronger, but strictly capped, single hit;
+   // the native approved renderer is reused unchanged.
+   finisher.dano=Math.min(KANTO_INTRO.maxIntroUltDamage,
+    Math.max(9,finisher.dano));
    finisher.cd=Math.max(9,finisher.cd);
    finisher.coste=Math.max(22,finisher.coste);
   }
