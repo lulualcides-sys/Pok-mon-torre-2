@@ -7,7 +7,8 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const modules=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const load=name=>import(pathToFileURL(path.join(root,modules,name)));
 const [{FRLG_LEVEL_UP,FRLG_MACHINES,frlgUnlockLevel,frlgKnownMoves,frlgMachineCompatible},
- {KANTO_151}, {availableMoves,moveUnlockLevel,TEST_LIBRARY,selectedMoves,resolveLoadout,campaignLearnset}, {buscar}]
+ {KANTO_151}, {availableMoves,moveUnlockLevel,TEST_LIBRARY,selectedMoves,resolveLoadout,campaignLearnset,
+   equipMove,campaignMoveSlotReason,isCampaignUltimateOnlyMove}, {buscar}]
  =await Promise.all([
   load('torre2/frlg-learnsets.js'),load('torre2/all-kanto-species.js'),
   load('torre2/move-pool.js'),load('datos.js')
@@ -51,7 +52,10 @@ assert.equal(moveUnlockLevel(member('bulbasaur',5),'vine-whip'),10,
 assert.equal(availableMoves(member('mewtwo',50)).length,TEST_LIBRARY.length,
  'Test Mewtwo must remain unrestricted');
 
-/* Species signatures must actually appear in the battle kit, not only Dex. */
+/* Species signatures must be genuinely selectable in a legal native role.
+ * Strong attacks are now charged ULTs (E); the old hardcoded Q expectation
+ * would encourage reintroducing precisely the balance bug T08 fixed.
+ */
 for(const [species,level,id,slot] of [
  ['meowth',30,'pay-day','q'],['persian',50,'pay-day','q'],
  ['cubone',70,'bone-club','rmb'],['cubone',70,'bonemerang','q'],
@@ -64,9 +68,26 @@ for(const [species,level,id,slot] of [
  ['scyther',70,'x-scissor','q'],['beedrill',70,'x-scissor','q'],
  ['sandshrew',70,'swift','q'],['magnemite',70,'sonic-boom','q']
 ]){
- const kit=resolveLoadout(member(species,level));
- assert.equal(kit[slot]?.id,id,
-  'Characteristic move needs to be ACTIVE in battle: '+species+' '+slot+' '+id);
+ const p=member(species,level),move=availableMoves(p).find(m=>m.id===id);
+ assert.ok(move?.forma,'Species-legal installed move missing: '+species+' '+id);
+ const roles=['lmb','rmb','q','e'];
+ const legal=roles.map((_,i)=>i).filter(i=>!campaignMoveSlotReason(p,i,move));
+ const strong=isCampaignUltimateOnlyMove(move);
+ const intended=strong?3:(legal.includes(roles.indexOf(slot))?roles.indexOf(slot):
+  legal.find(i=>i!==3)??3);
+ assert.ok(legal.includes(intended),'Characteristic move has no legal role: '+species+' '+id);
+ if(strong){
+  assert.equal(intended,3,'Strong characteristic attack must use E');
+  for(let i=0;i<3;i++)assert.ok(campaignMoveSlotReason(p,i,move),
+   'Strong characteristic move leaked into ordinary slot: '+species+' '+id);
+ }
+ const kit=resolveLoadout(p);
+ if(!Object.values(kit).some(m=>m?.id===id)){
+  assert.equal(equipMove(p,intended,id),true,
+   'Learned characteristic move cannot be selected: '+species+' '+roles[intended]+' '+id);
+  assert.equal(resolveLoadout(p)[roles[intended]]?.id,id,
+   'Selected characteristic move is not active: '+species+' '+id);
+ }
 }
 assert.ok(!availableMoves(member('cubone',10)).some(x=>x.id==='bonemerang'),
  'Cubone must reach Bonemerang level before using the move');
@@ -76,17 +97,29 @@ assert.ok(!availableMoves(ghost).some(x=>x.id==='shadow-ball'),
 assert.equal(frlgUnlockLevel('gengar','shadow-ball'),36,
  'Gengar inherits Gastly natural Shadow Ball from level 36');
 ghost.progression.level=70;
-assert.equal(resolveLoadout(ghost).q?.id,'shadow-ball',
- 'At its natural unlock level, Gengar uses approved Shadow Ball in battle');
+const shadowBall=availableMoves(ghost).find(m=>m.id==='shadow-ball');
+assert.ok(shadowBall?.forma,'Gengar must retain the approved Shadow Ball renderer');
+const shadowSlot=isCampaignUltimateOnlyMove(shadowBall)?3:2;
+assert.equal(campaignMoveSlotReason(ghost,shadowSlot,shadowBall),null);
+assert.ok(resolveLoadout(ghost)[['lmb','rmb','q','e'][shadowSlot]]?.id==='shadow-ball'||
+ equipMove(ghost,shadowSlot,'shadow-ball'),
+ 'Gengar must be able to select learned Shadow Ball in its legal role');
+assert.equal(resolveLoadout(ghost)[['lmb','rmb','q','e'][shadowSlot]]?.id,'shadow-ball');
 assert.ok(!availableMoves(member('bulbasaur',70)).some(x=>x.id==='protect'),
  'TM-only Protect stays locked until explicitly taught');
 const oldPorygon=member('porygon',70);
 oldPorygon.moves=['tackle','quick-attack','swift','hyper-beam'];
 oldPorygon.movePlanSpecies='porygon';
-assert.equal(resolveLoadout(oldPorygon).q?.id,'tri-attack',
- 'Old campaign saves must install Porygons signature once');
-assert.equal(oldPorygon.moves[2],'tri-attack',
- 'One-time upgrade should survive the next campaign save');
+assert.notEqual(resolveLoadout(oldPorygon).q?.id,'tri-attack',
+ 'Legacy Porygon saves cannot cast strong Tri Attack with uncharged Q');
+assert.ok(availableMoves(oldPorygon).some(m=>m.id==='tri-attack'),
+ 'Porygon must not lose its learned signature after a legacy save');
+assert.equal(equipMove(oldPorygon,3,'tri-attack'),true,
+ 'Porygon must be able to manually equip its strong signature in E');
+assert.equal(resolveLoadout(oldPorygon).e?.id,'tri-attack',
+ 'Porygon Tri Attack must be executable only from charged E');
+assert.equal(oldPorygon.moves[3],'tri-attack',
+ 'A deliberate E selection must survive the next campaign save');
 
 for(const p of KANTO_151){
  const older=member(p.id,5),later=member(p.id,100);

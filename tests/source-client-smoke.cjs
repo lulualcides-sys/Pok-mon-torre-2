@@ -1352,7 +1352,7 @@ const server=http.createServer(async(req,res)=>{
    if(!labels().includes('NEW'))throw Error('NEW tab missing from TIPO picker');
    scene.summaryFilter='NEW';scene.summarySearch='';
    scene.showSummary(state,1,0,0);
-   if(!labels().some(x=>x.includes('FILTRO: NEW')))throw Error('NEW filter label missing');
+   if(!labels().some(x=>x.includes('FILTRO NEW')))throw Error('NEW filter label missing');
    // NEW rows are distinct from the equipped slots above them.
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
@@ -1373,7 +1373,7 @@ const server=http.createServer(async(req,res)=>{
    if(!labels().includes('NEW'))throw Error('NEW not available on reopening types');
    scene.summaryFilter='GROUND';
    scene.showSummary(state,1,0,0);
-   if(!labels().some(x=>x.includes('FILTRO: GROUND')))throw Error('GROUND filter label missing');
+   if(!labels().some(x=>x.includes('FILTRO GROUND')))throw Error('GROUND filter label missing');
    if(!labels().some(x=>x.includes('Bonemerang')))throw Error('Ground attack filtered out');
    scene.summaryFilter='ALL';scene.summarySearch='PAY';
    scene.showSummary(state,1,0,0);
