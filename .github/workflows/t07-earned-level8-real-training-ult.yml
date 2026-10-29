@@ -19,6 +19,7 @@ jobs:
           set -euo pipefail
           npm install --no-audit --no-fund
           node --check tests/t07-earned-lv8-training-ult-browser.cjs
+          node --check tests/t08-native-selection-pagination-browser.cjs
           npm run check
           npm run check:reuse
           npm test
@@ -44,6 +45,7 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t08-native-selection-pagination-browser.cjs
           node tests/t07-earned-lv8-training-ult-browser.cjs
       - name: Native Phaser browser regression
         run: |
