@@ -449,7 +449,12 @@ export function availableMoves(member){
    const gen45=gen45KantoUnlockLevel(member.id,key);
    // Existing Gen5 signatures and Gen7 unlocks keep priority; HGSS/B2W2
    // only fill absent options, not overwrite previously approved levels.
-   const recent=gen5??gen7??gen45;
+   // Prefer the earliest verified legal level-up across supplementary generations.
+  // FRLG, evolution and power floors remain enforced independently.
+  // Preserve the explicitly approved Ponyta/Rapidash Gen V signature levels.
+  // Otherwise use the earliest verified legal level from Gen IV/V/VII.
+  const levels=[gen7,gen45].filter(Number.isInteger);
+  const recent=gen5??(levels.length?Math.min(...levels):null);
    if(recent!==null){
     const power=Number(m.poder)||0;
     const laterPowerFloor=gen5===null&&gen7===null?
@@ -552,7 +557,12 @@ export function moveUnlockLevel(member,moveName){
   const gen5=installed?gen5KantoUnlockLevel(species,key):null;
   const gen7=installed?gen7LetsGoUnlockLevel(species,key):null;
   const gen45=installed?gen45KantoUnlockLevel(species,key):null;
-  const recent=gen5??gen7??gen45;
+  // The Pokédex must use the same earliest verified supplementary level
+  // as the battle move pool (subject to FRLG and evolution thresholds).
+  // Preserve the explicitly approved Ponyta/Rapidash Gen V signature levels.
+  // Otherwise use the earliest verified legal level from Gen IV/V/VII.
+  const levels=[gen7,gen45].filter(Number.isInteger);
+  const recent=gen5??(levels.length?Math.min(...levels):null);
   if(recent!==null){
    const power=Number(installed.poder)||0;
    const laterPowerFloor=gen5===null&&gen7===null?
