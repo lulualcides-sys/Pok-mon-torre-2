@@ -5,6 +5,7 @@ import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
+import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -568,12 +569,7 @@ for(const [filename,changes] of patches){
     // League preload uses these four native functions, so add only missing
     // imports instead of leaving a runtime ReferenceError after a green build.
     if(from.startsWith('import{dexAspecto,ponerRetrato}')){
-     const native=body.match(/import\{([^}]+)\}from["']\.\.\/sprites\.js["'];/);
-     if(!native)throw Error('Unknown League native sprites import');
-     const names=native[1].split(',').map(s=>s.trim());
-     for(const symbol of ['dexAspecto','ponerRetrato','cargarPMD','soloFormas'])
-      if(!names.includes(symbol))names.push(symbol);
-     body=body.replace(native[0],'import{'+names.join(',')+'}from"../sprites.js";');
+     body=ensureLeagueSpriteImports(body);
      continue;
     }
     // The native League has changed its init signature, but its PMD
