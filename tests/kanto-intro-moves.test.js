@@ -87,3 +87,19 @@ test('Struggle filler never disguises an elemental projectile as a NORMAL hit',(
  }
  assert.equal(JSON.stringify(catalog),before,'approved renderers remain unchanged');
 });
+
+test('deferred Scratch is not fabricated from Tackle in Charmander onboarding',()=>{
+ const withoutScratch=moves.filter(m=>m.id!=='scratch');
+ const original=JSON.stringify(withoutScratch);
+ const out=resolveKantoIntro({id:'charmander',progression:{level:5}}, {},{
+  library:withoutScratch,canonical:canon,levelUp:levels.charmander
+ });
+ for(const slot of slots){
+  assert.ok(out[slot]?.forma,'Lv5 must still have a usable weak control');
+  assert.ok(out[slot].dano<=KANTO_INTRO.maxStarterDamage);
+  assert.notEqual(canon(out[slot].nombre),'scratch');
+  assert.notEqual(out[slot].torre2IntroSource,'scratch');
+  assert.equal(out[slot].torre2IntroFallbackFX,undefined);
+ }
+ assert.equal(JSON.stringify(withoutScratch),original,'source renderers changed');
+});
