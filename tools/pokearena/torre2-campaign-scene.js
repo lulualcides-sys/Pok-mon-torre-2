@@ -10,7 +10,7 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot} from './move-pool.js';
+import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
@@ -1137,7 +1137,8 @@ create(){
   const equippedIds=['lmb','rmb','q','e'].map(key=>battleKit[key]?.id||null);
   const introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
   const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
-  this.summaryFilter??='ALL';this.summarySearch??='';
+  this.summaryFilter??='ALL';this.summarySearch??='';this.summaryView??='moves';
+  const showFuture=this.summaryView==='future';
   const slotCodes=['LMB','RMB','Q','E'];
   const slotNames=['ATK','HAB 2','HAB 3','ULT'];
   const types={NORMAL:0xb9c4d2,FIRE:0xf0804d,WATER:0x6fb7f0,ELECTRIC:0xeec95d,
@@ -1171,6 +1172,7 @@ create(){
   // Avoid the legacy fullscreen hitbox around x=624.
   button(494,13,108,27,'◀ EQUIPE',()=>{
    this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
+   this.summaryView='moves';
    // No scene.restart: retain browser fullscreen and native Phaser canvas.
    this.renderCampaign(state);
   }).setData('torre2-summary-back',true);
@@ -1216,7 +1218,7 @@ create(){
     this.showSummary(state,index,slot,page);
     return;
    }
-   this.summaryFilter='ALL';this.summarySearch='';this.renderCampaign(state);
+   this.summaryFilter='ALL';this.summarySearch='';this.summaryView='moves';this.renderCampaign(state);
   },index===state.active).setData('torre2-active-select',true);
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
@@ -1275,26 +1277,50 @@ create(){
    .sort((a,b)=>Number(!!slotReason(a))-Number(!!slotReason(b))||
     Number(equippedIds[activeSlot]!==a.id)-Number(equippedIds[activeSlot]!==b.id));
   const compatibleCount=displayed.filter(m=>!slotReason(m)).length;
-  label(230,195,'BIBLIOTECA · '+displayed.length+' GOLPES',C.gold,12);
-  button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
-  button(541,187,75,25,'BUSCAR',()=>{
-   const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
-   if(query===null)return;
-   this.summarySearch=query.trim().slice(0,35);
+  label(230,195,showFuture?'PRÓXIMOS':'BIBLIOTECA',C.gold,11);
+  button(334,187,105,25,showFuture?'◀ EQUIPAR':'POR NÍVEL',()=>{
+   this.summaryView=showFuture?'moves':'future';
+   this.summaryWarning=null;
    this.showSummary(state,index,activeSlot,0);
-  });
-  // Virtual NEW tab shows only not-yet-approved Torre 2 moves.
-  const filtered=displayed;
+  },showFuture).setData('torre2-summary-future-toggle',true);
+  if(!showFuture){
+   button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
+   button(541,187,75,25,'BUSCAR',()=>{
+    const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
+    if(query===null)return;
+    this.summarySearch=query.trim().slice(0,35);
+    this.showSummary(state,index,activeSlot,0);
+   });
+  }else label(465,195,'ATÉ NV. 50',C.muted,9);
+  // The upcoming view contains only real future level unlocks for THIS form.
+  // TM-only moves remain excluded; an evolution has its own learnset.
+  const filtered=showFuture?upcomingCampaignMoves(member):displayed;
   const pageSize=6,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const safePage=Math.min(pages-1,Math.max(0,page));
   if(!this.summaryWarning){
-   const hint=this.summaryFilter!=='ALL'||this.summarySearch?
-    'FILTRO '+this.summaryFilter+(this.summarySearch?' · '+this.summarySearch.toUpperCase():''):
-    slotNames[activeSlot]+' · '+compatibleCount+'/'+displayed.length+' COMPATÍVEIS';
+   const hint=showFuture?
+    'FORMA ATUAL · '+filtered.length+' FUTUROS · TM NÃO AUTOMÁTICA':
+    this.summaryFilter!=='ALL'||this.summarySearch?
+     'FILTRO '+this.summaryFilter+(this.summarySearch?' · '+this.summarySearch.toUpperCase():''):
+     slotNames[activeSlot]+' · '+compatibleCount+'/'+displayed.length+' COMPATÍVEIS';
    label(230,211,hint,'#95ceef',8);
   }
   const rowsY=223;
-  filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
+  if(showFuture){
+   filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
+    const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
+    const bg=box(x,y,188,27,move.ultimatePreview?0x3b3441:0x19364b,
+     move.ultimatePreview?0xe3c176:0x436985);
+    bg.setDepth(12).setData('torre2-summary-upcoming-move',move.id)
+     .setData('torre2-summary-upcoming-level',move.level);
+    label(x+6,y+3,(move.ultimatePreview?'E NV ':'NV ')+
+     String(move.level).padStart(2,'0')+' · '+move.name.toUpperCase().slice(0,18),
+     move.ultimatePreview?'#ffdfa4':'#edf5ff',9);
+    label(x+6,y+16,move.ultimatePreview?
+     'ULT INICIAL · POTÊNCIA REDUZIDA':String(move.type||'')+' · DESBLOQUEIA POR NÍVEL',
+     C.muted,7);
+   });
+  }else filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
    const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
    const equipped=equippedIds.includes(move.id);
    const current=equippedIds[activeSlot]===move.id;
@@ -1358,12 +1384,16 @@ create(){
    if(pending)label(x+110,y+16,'NEW','#ffdc89',8);
    label(x+181,y+16,'CD '+move.cd+'s',C.muted,8).setOrigin(1,0);
   });
-  if(filtered.length===0)label(242,255,this.summaryFilter==='NEW'?'TODOS OS GOLPES APROVADOS ✓':'NENHUM GOLPE ENCONTRADO',C.muted,11);
+  if(filtered.length===0)label(242,255,showFuture?
+   (stats.level>=50?'TODOS OS NÍVEIS LIBERADOS':'SEM NOVOS GOLPES NESTA FORMA ATÉ NV. 50'):
+   this.summaryFilter==='NEW'?'TODOS OS GOLPES APROVADOS ✓':'NENHUM GOLPE ENCONTRADO',C.muted,9);
   button(233,317,68,25,'◀ ANTES',()=>this.showSummary(state,index,activeSlot,(safePage+pages-1)%pages));
   button(306,317,125,25,(safePage+1)+' / '+pages+' PÁGINAS',()=>this.showSummary(state,index,activeSlot,0),true);
   button(437,317,73,25,'PRÓXIMO ▶',()=>this.showSummary(state,index,activeSlot,(safePage+1)%pages));
-  button(515,317,101,25,'LIMPAR',()=>{
-   this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
+  button(515,317,101,25,showFuture?'EQUIPAR':'LIMPAR',()=>{
+   if(showFuture)this.summaryView='moves';
+   else{this.summaryFilter='ALL';this.summarySearch='';}
+   this.summaryWarning=null;
    this.showSummary(state,index,activeSlot,0);
   });
   if(this.summaryWarning){
