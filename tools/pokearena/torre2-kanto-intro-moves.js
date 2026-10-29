@@ -8,6 +8,12 @@ export const KANTO_INTRO=Object.freeze({
   start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:16,
   maxStarterDamage:9, maxIntroUltDamage:12
 });
+// A signature ULT should look and feel more powerful than a basic hit.
+// Reuse EXISTING Poké Arena 2D renderers at reduced power for campaign Lv8.
+// Full-power level-up attacks, original VFX and Arena/VS modes remain intact.
+export const KANTO_STARTER_SIGNATURE_ULT=Object.freeze({
+ bulbasaur:'razor-leaf',charmander:'flamethrower',squirtle:'hydro-typhoon'
+});
 const ATTACK_SLOTS=['lmb','rmb','q'];
 const idOf=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const lowPower=move=>Number.isFinite(move?.dano)&&move.dano>=0&&move.dano<=14&&
@@ -156,8 +162,24 @@ export function resolveKantoIntro(member,installed,{library,canonical,earlyLevel
  if(level>=KANTO_INTRO.ultAt){
   const ultCandidate=candidates.find(c=>!selected.some(x=>idOf(x.torre2IntroSource)===c.key)&&c.move.dano>0)
     ||candidates.find(c=>c.move.dano>0);
-  const base=ultCandidate?.move||fallback;
-  const finisher=trainingMove(base,idOf(base.nombre),'e',ultCandidate?.learned??level,true);
+  // Type-specific native ULT: Razor Leaf, Flamethrower and Squirtle's
+  // ORIGINAL Hydro Typhoon water spin; full authentic moves remain gated.
+  const requested=KANTO_STARTER_SIGNATURE_ULT[id];
+  const native=requested?catalog.get(requested):null;
+  const signature=native?.forma&&native?.tipo===({
+   bulbasaur:'GRASS',charmander:'FIRE',squirtle:'WATER'
+  }[id])&&!(native.source==='new-phaser-fx'&&native.approved!==true)?native:null;
+  const base=signature||ultCandidate?.move||fallback;
+  const finisher=trainingMove(base,idOf(base.nombre),'e',signature?8:ultCandidate?.learned??level,true);
+  if(signature){
+   // Hydro Typhoon delivers repeated shell-spin contacts; cap each hit to
+   // three damage, never a full-strength late-game attack at Lv8.
+   finisher.dano=requested==='hydro-typhoon'?
+    Math.min(KANTO_INTRO.maxIntroUltDamage,3):
+    Math.min(KANTO_INTRO.maxIntroUltDamage,Math.max(9,finisher.dano));
+   finisher.cd=Math.max(9,finisher.cd);
+   finisher.coste=Math.max(22,finisher.coste);
+  }
   finisher.nombre='ULT · '+String(base.nombre||'Struggle');
   if(!result.e?.forma||result.e?.pendiente||
      (starterWindow&&!result.e?.torre2IntroPractice))
