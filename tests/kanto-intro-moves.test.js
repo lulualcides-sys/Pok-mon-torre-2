@@ -68,3 +68,22 @@ test('Magikarp and Ditto only borrow weak reusable contact VFX as last resort',(
   }
  }
 });
+
+test('Struggle filler never disguises an elemental projectile as a NORMAL hit',()=>{
+ const catalog=[
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:4,coste:8},
+  {id:'ember',nombre:'Ember',forma:'approved-fire-projectile',tipo:'FIRE',dano:8,cd:4,coste:8}
+ ];
+ const before=JSON.stringify(catalog);
+ const out=resolveKantoIntro({id:'ponyta',progression:{level:5}}, {},{
+  library:catalog,canonical:canon,levelUp:{ember:14}
+ });
+ assert.equal(out.lmb.forma,'approved-fire-projectile','Ponyta retains its legal weak Ember preview');
+ for(const slot of ['rmb','q']){
+  assert.equal(out[slot].forma,'approved-contact','Struggle must use neutral contact VFX');
+  assert.equal(out[slot].tipo,'NORMAL');
+  assert.ok(out[slot].dano<=5);
+  assert.match(out[slot].nombre,/^Struggle /);
+ }
+ assert.equal(JSON.stringify(catalog),before,'approved renderers remain unchanged');
+});

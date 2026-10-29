@@ -122,11 +122,13 @@ export function resolveKantoIntro(member,installed,{
  // Struggle is universal in Gen III when out of PP. Here, reuse an approved
  // non-elemental contact VFX for a deliberately weak practice manoeuvre.
  // Never make a Lv5 Magikarp use Hydro Pump, or Ditto a random Pokémon's move.
+ // Never relabel a species' elemental projectile as NORMAL Struggle.
+ // Filler uses an approved neutral contact renderer, never a new VFX.
  const tackle=catalog.get('tackle');
- const first=picked.find(x=>x.move.dano>0)?.move||
-   (tackle?{...tackle,nombre:'Struggle',tipo:'NORMAL',dano:4}:null)||
-   picked[0]?.move;
- const fallback=first||[...catalog.values()].find(x=>lowPower(x)&&x.tipo==='NORMAL'&&x.dano>0);
+ const neutral=[tackle,...catalog.values()].find(move=>
+  move&&lowPower(move)&&String(move.tipo||'').toUpperCase()==='NORMAL'&&move.dano>0);
+ const fallback=neutral?{...neutral,nombre:'Struggle',tipo:'NORMAL',
+  dano:Math.min(4,neutral.dano)}:null;
  if(!fallback)return result; // fail closed instead of injecting an unrenderable ability
  // Evolved Pokémon at/after Lv13 often already have one or two legitimate
  // attacks in their slots. Reserve those names BEFORE filling blank slots:
