@@ -111,6 +111,17 @@ export function createCampaign(starter){
   wildEncountersStage:0,pendingWild:null,
   badges:[],leagueHonors:[],gymTMClaims:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
 }
+// Production-only new game. The original createCampaign factory deliberately
+// retains its historical Mewtwo fixture for test/replay compatibility; do not
+// let that level-50 debug fighter enter a NEW player's Kanto journey.
+// Legacy saves are never rewritten or stripped of Pokémon by this function.
+export function createPlayerCampaign(starter){
+ const state=createCampaign(starter);
+ state.team=state.team.filter(member=>member.id!=='mewtwo');
+ if(state.team.length!==1||state.team[0].id!==starter)
+  throw Error('Fresh Kanto campaign must contain exactly its chosen starter');
+ return state;
+}
 // A string can be valid JSON while no longer being a usable campaign.
 // Do not overwrite the last good backup with such a structurally broken save.
 function usableCampaignSnapshot(s){
