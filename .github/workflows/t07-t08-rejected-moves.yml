@@ -1,12 +1,13 @@
 name: T07/T08 — deferred Scratch and rejected Surf gates
 on:
   push:
-    branches: [main, fix/t07-t08-rejected-surf-scratch-preview-20261029-0916]
+    branches: [main, fix/t07-t08-pages-surf-policy-regression-20261029]
     paths:
       - 'tools/pokearena/torre2-kanto-intro-moves.js'
       - 'tools/pokearena/torre2-move-pool.js'
       - 'tests/kanto-intro-moves.test.js'
       - 'tests/t08-151-signature-ult-built.test.mjs'
+      - 'tests/finale13-built.test.mjs'
       - '.github/workflows/t07-t08-rejected-moves.yml'
   pull_request:
     paths:
@@ -14,6 +15,7 @@ on:
       - 'tools/pokearena/torre2-move-pool.js'
       - 'tests/kanto-intro-moves.test.js'
       - 'tests/t08-151-signature-ult-built.test.mjs'
+      - 'tests/finale13-built.test.mjs'
   workflow_dispatch:
 permissions:
   contents: read
@@ -55,6 +57,7 @@ jobs:
           set -euo pipefail
           node tools/pokearena/audit-moves.mjs
           node tests/t08-151-signature-ult-built.test.mjs
+          node tests/finale13-built.test.mjs
           node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
           node tests/t07-frlg-unrendered-136x639-built.test.mjs
           node tests/t08-arena-role-slots-built.test.mjs
