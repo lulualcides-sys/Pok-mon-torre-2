@@ -1118,7 +1118,10 @@ create(){
   this.scene.bringToTop();
   // The original title's fullscreen hotspot can receive a second mobile
   // pointer beneath this screen; keep it stopped while managing the party.
-  if(this.scene.isActive('titulo'))this.scene.stop('titulo');
+  // Phaser may queue a title launch until after this callback; enqueue the
+  // corresponding stop unconditionally so the fullscreen hotzone cannot
+  // reactivate behind the summary on the next mobile pointer event.
+  this.scene.stop('titulo');
   this.input.setTopOnly(true);
   this.add.zone(320,180,640,360).setDepth(2).setInteractive()
    .setData('torre2-summary-input-shield',true)
