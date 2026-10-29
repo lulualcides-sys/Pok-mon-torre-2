@@ -69,13 +69,18 @@ const before=JSON.stringify(legacy.moves);
 const fixed=selectedMoves(legacy);
 assert.equal(new Set(fixed).size,4,'Legacy save still displays duplicate moves');
 assert.equal(JSON.stringify(legacy.moves),before,'Read-time repair mutated saved choices');
-assert.equal(resolveLoadout(legacy).q?.id,'bubble-beam');
+assert.notEqual(resolveLoadout(legacy).q?.id,'bubble-beam',
+ 'Legacy strong Bubble Beam is restricted to E, even if saved in HAB3');
 assert.ok(fixed.every(x=>availableMoves(legacy).some(m=>m.id===x)),
  'Legacy repair equipped a move the Pokémon cannot learn');
 assert.ok(resolveLoadout(make('bulbasaur',8)).e?.torre2IntroPractice,
  'Do not alter the Lv8 weak ULT cap');
 const m=make('ponyta',49),kit=resolveLoadout(m);
-assert.equal(kit.q?.id,'flare-blitz','Ponyta native signature must remain');
+assert.ok(availableMoves(m).some(move=>move.id==='flare-blitz'),
+ 'Ponyta native Flare Blitz must remain learned and selectable in E');
+assert.ok(!['lmb','rmb','q'].some(slot=>kit[slot]?.id==='flare-blitz'),
+ 'Flare Blitz cannot bypass the full ULT meter through HAB3');
+assert.ok(kit.e?.ulti,'Ponyta must retain a charged E ultimate');
 assert.equal(kit.rmb?.id,'flame-charge','Ponyta learned signature must remain');
 console.log('PASS_T08_KANTO_UNIQUE_NATIVE_SLOTS',JSON.stringify({
  species:150,installed:TEST_LIBRARY.length,fixtures:tested,
