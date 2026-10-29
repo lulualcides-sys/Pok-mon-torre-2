@@ -13,6 +13,8 @@ import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel} from './gen7-letsgo-learnset
 import {GEN5_KANTO_LEVEL_UP,gen5KantoUnlockLevel} from './gen5-existing-levels.js';
 import {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP,gen45KantoUnlockLevel}
  from './gen45-kanto-learnsets.js';
+import {KANTO_STAB_TM_MASTERY_LEVELS,kantoStabTmMasteryLevel}
+ from './stab-tm-mastery.js';
 import {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
 
@@ -282,6 +284,14 @@ export function availableMoves(member){
  // late campaign level unlock, and only using the installed native attack.
  if(fireBlastAtLevel(member.id)!==null&&GEN7_INSTALLED.has('fireblast'))
   names.add('fire-blast');
+ // High-tier same-type attacks already present in the approved/native
+ // 227-move library are learned late in THIS campaign when FRLG confirms
+ // species TM compatibility. Do not auto-grant off-type TM coverage.
+ for(const name of Object.keys(KANTO_STAB_TM_MASTERY_LEVELS)){
+  const installed=GEN7_INSTALLED.get(gen7MoveKey(name));
+  if(installed&&kantoStabTmMasteryLevel(member.id,name,installed.tipo)!==null)
+   names.add(canonicalMoveKey(installed.nombre));
+ }
  if(['pikachu','raichu','voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('thunder-wave');
  if(['voltorb','electrode','magnemite','magneton'].includes(member.id))names.add('sonic-boom');
  if(['voltorb','electrode'].includes(member.id))names.add('screech');
@@ -425,6 +435,10 @@ export function availableMoves(member){
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
   if(taughtCompatible(key))return true;
+  // Level-only mastery for an INSTALLED same-type TM attack (never Lv5).
+  const mastery=official===null?kantoStabTmMasteryLevel(member.id,key,m.tipo):null;
+  if(mastery!==null&&level>=mastery&&!evoLocked.has(key)&&
+     !isPendingApprovalMove(m)&&Boolean(m.forma))return true;
   // FRLG retains priority for level-up/TM; later generations only fill
   // legal moves absent from Gen III. No auto-learned Gen VII TM, event,
   // tutor, pending VFX or evolution-only attack before its evolved form.
@@ -528,6 +542,9 @@ export function moveUnlockLevel(member,moveName){
  if(local?.[key]!==undefined)return campaignLevel(local[key]);
  const official=frlgUnlockLevel(species,key);
  if(official!==null)return campaignLevel(official);
+ const native=GEN7_INSTALLED.get(gen7MoveKey(key));
+ const mastery=native?kantoStabTmMasteryLevel(species,key,native.tipo):null;
+ if(mastery!==null)return mastery;
  // Match the Pokédex gate to actual available moves: no invisible or
  // review-pending animation receives a later-generation unlock.
  if(!frlgMachineCompatible(species,key)){
