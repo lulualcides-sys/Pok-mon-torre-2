@@ -539,6 +539,18 @@ export function moveUnlockLevel(member,moveName){
  const key=canonicalMoveKey(moveName),species=member?.id;
  if(!species)return null;
  if(species==='mewtwo')return 1; // unrestricted Lv50 test Pokémon
+ // The battle resolver is the source of truth for Kanto, not an approximate
+ // second learnset calculation. This prevents the Pokédex from showing a
+ // later level (or null) for an attack that the editor already unlocks.
+ // campaignLearnset uses availableMoves, not moveUnlockLevel: no recursion.
+ if(FRLG_LEVEL_UP[species]){
+  if(key.startsWith('torre2-intro-'))
+   return key.startsWith('torre2-intro-e-')?8:5;
+  const learned=campaignLearnset(species).find(row=>
+   row.method==='LEVEL'&&!row.practice&&
+   (canonicalMoveKey(row.id)===key||canonicalMoveKey(row.name)===key));
+  return learned?.level??null;
+ }
  if(key==='fire-blast'&&fireBlastAtLevel(species)!==null)
   return GEN7_INSTALLED.has('fireblast')?KANTO_FIRE_BLAST_LEVEL:null;
  if(key.startsWith('torre2-intro-'))
