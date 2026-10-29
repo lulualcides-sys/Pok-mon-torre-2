@@ -634,6 +634,11 @@ export function isCampaignUltimateOnlyMove(move){
  // the move is a high-tier finisher (Flare Blitz is multi-contact/charged).
  // Keep the authentic renderer and name, but gate this move behind E.
  if(canonicalMoveKey(move.nombre)==='flare-blitz')return true;
+ // Original P2 marks some harmless defensive/status actions as `ulti`
+ // because they occupied its E slot. In the campaign they remain legal
+ // normal HAB actions (e.g. earned FRLG Protect); only a genuinely
+ // damaging finisher or an explicit Lv8 preview is meter-gated.
+ if((Number(move.dano)||0)===0&&(Number(move.poder)||0)===0)return false;
  return move.ulti===true||Number(move.dano)>=13||Number(move.poder)>=80;
 }
 export function campaignMoveSlotReason(member,slot,move){
@@ -722,6 +727,12 @@ function meaningfulDefaultUltimate(member,chosen,available){
   Number(Boolean(m?.torre2IntroPractice))*3;
  ranked.sort((a,b)=>score(b)-score(a)||a.nombre.localeCompare(b.nombre));
  const current=available.find(m=>m.id===result[3]);
+ // A species-specific approved signature is intentional, not a weak
+ // fallback. Do not silently replace its E role with generic Hyper Beam
+ // merely because the latter scores a few points higher.
+ const signatureUlt=(CHARACTERISTIC_KANTO_ROLES[member.id]||[]).some(([,id])=>
+  id===result[3]&&current&&isCampaignUltimateOnlyMove(current));
+ if(signatureUlt)return result;
  const proposed=ranked[0];
  // Never replace a stronger, distinctive ULT only because another skill
  // exists. Every replacement must improve the score from ALREADY earned moves.
@@ -751,7 +762,13 @@ export function defaultLoadout(member){
   // Auto-equip each matching characteristic move only once it REALLY unlocks.
   // A TM move is never granted solely by being characteristic.
   for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
-   if(byId.has(id)&&!reserved.includes(id))reserved[slot]=id;
+   const move=byId.get(id);
+   if(!move||reserved.includes(id))continue;
+   // Strong characteristic attacks belong to the native energy-gated E
+   // control, never the old HAB3 preference. This is a new default only:
+   // player-selected E slots in existing saves are preserved below.
+   const destination=isCampaignUltimateOnlyMove(move)?3:slot;
+   reserved[destination]=id;
   }
   // For native/P2 Pokémon, the locked planned ATK must not leave them
   // defenseless on the day they evolve. Use a genuinely learned weak move
