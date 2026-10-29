@@ -1,12 +1,26 @@
 name: Pokédex — varredura integral 151 espécies e seis falhas reportadas
 on:
   push:
-    branches: [fix/pokedex-151-audit-legal-battle-loadouts-20261029]
+    branches: [main, fix/pokedex-151-audit-legal-battle-loadouts-20261029]
+    paths:
+      - 'tools/pokearena/torre2-pokedex-pages.mjs'
+      - 'tools/pokearena/torre2-move-pool.js'
+      - 'tools/pokearena/torre2-all-kanto-species.js'
+      - 'tools/pokearena/torre2-kanto-intro-moves.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/pokedex-151-legal-kit-browser.cjs'
+      - '.github/workflows/pokedex-151-legal-kits.yml'
   pull_request:
     paths:
       - 'tools/pokearena/torre2-pokedex-pages.mjs'
+      - 'tools/pokearena/torre2-move-pool.js'
+      - 'tools/pokearena/torre2-all-kanto-species.js'
+      - 'tools/pokearena/torre2-kanto-intro-moves.js'
+      - 'tools/pokearena/build-preview.mjs'
       - 'tests/pokedex-151-legal-kit-browser.cjs'
       - '.github/workflows/pokedex-151-legal-kits.yml'
+  schedule:
+    - cron: '45 13 * * *'
   workflow_dispatch:
 permissions:
   contents: read
