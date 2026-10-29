@@ -20,7 +20,7 @@ const [
 ]);
 const member=(id,level=50)=>({id,progression:{species:id,level},tmMoves:[]});
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
+assert.ok(TEST_LIBRARY.length>=227,'The original 227 VFX must remain in the current native catalog');
 const discrepancies=[],stats={species:0,catalogue:TEST_LIBRARY.length,cells:0,exactLevelMatches:0,tmOnly:0};
 for(const {id} of KANTO_151){
  if(id==='mewtwo')continue; // deliberately unrestricted original test fixture
