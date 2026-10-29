@@ -222,7 +222,9 @@ for(const [from,to] of [['gloom','vileplume'],['poliwhirl','poliwrath']]){
 // Kanto campaign has its own level/TM-gated selectable loadouts.
 const dexCode=fs.readFileSync(file('escenas/pokedex.js'),'utf8');
 assert.match(dexCode,/function kantoDexStages\(def\)/);
-assert.match(dexCode,/const h=original\[slot\]/);
+// The native per-evolution Arena kit now takes priority; the old direct
+// level-100 campaign fallback must not silently replace a stage-specific move.
+assert.match(dexCode,/const h=selectPokedexArenaMove\\(stage\\.kit\\?\\.\\[slot\\],original\\[slot\\],plan\\[i\\],canonicalMoveKey\\)/);
 assert.doesNotMatch(dexCode,/const equipped=resolveLoadout\(member\)/,
  'Other-mode Pokédex must not be replaced by campaign level-100 kit');
 assert.match(dexCode,/this\.etapas=kantoDexStages\(p\)/);
