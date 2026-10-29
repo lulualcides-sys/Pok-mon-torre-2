@@ -582,6 +582,37 @@ export function campaignLearnset(species){
  return result;
 }
 
+
+/** T08 — Next obtainable attacks in the CURRENT species' Kanto campaign.
+ * Source of truth is the battle move pool, identical to the Pokédex levels.
+ * Early E is only a capped, charged preview; its full native attack stays
+ * locked until its own unlock level. TMs never unlock from XP alone.
+ * Reading the list does not equip, mutate or save any Pokémon.
+ */
+export function upcomingCampaignMoves(member){
+ if(!member?.id)return [];
+ const level=Number(member.progression?.level??5);
+ const seen=new Set();
+ return campaignLearnset(member.id).filter(row=>{
+  if(row.method!=='LEVEL'||!Number.isInteger(row.level)||
+     row.level<=level||row.level>KANTO_CAMPAIGN_MOVE_CAP)return false;
+  if(row.practice&&!(row.slot==='e'&&row.level===KANTO_INTRO.ultAt))
+   return false;
+  if(!row.practice){
+   const installed=TEST_LIBRARY.find(move=>move.id===row.id);
+   if(!installed?.forma||isPendingApprovalMove(installed))return false;
+  }
+  // A capped Lv8 ULT and its later full-power native move have DIFFERENT
+  // availability; show both rather than falsely granting the native at Lv8.
+  const key=(row.practice?'INTRO_E:':'NATIVE:')+canonicalMoveKey(row.name);
+  if(seen.has(key))return false;
+  seen.add(key);
+  return true;
+ }).map(row=>Object.freeze({
+  ...row,ultimatePreview:row.practice&&row.slot==='e'
+ }));
+}
+
 export function moveUnlockLevel(member,moveName){
  const key=canonicalMoveKey(moveName),species=member?.id;
  if(!species)return null;
