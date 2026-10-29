@@ -1,0 +1,71 @@
+name: T08 — Arena 2D role rules, fullscreen and summary touch
+on:
+  push:
+    branches: [fix/t08-native-arena-ult-slots-summary-fullscreen-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  kanto-slot-roles:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check syntax, all unit tests, VFX and reuse integrity
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-move-pool.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/t08-arena-role-slots-built.test.mjs
+          node --check tests/t08-arena-roles-summary-mobile-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Compile captured native Poké Arena 2D Phaser game
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+                && node tools/pokearena/build-preview.mjs \
+                && test -s _site/arena2d/version.json \
+                && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+      - name: Check 150 Kanto kits and charged ULT exclusivity
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/pokearena/audit-moves.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
+          node tests/t08-kanto-no-duplicate-native-built.test.mjs
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t08-leech-seed-campaign-balance-built.test.mjs
+          node tests/misty-surge-built.test.mjs
+          node tests/t05-summary-equip-atomic-built.test.mjs
+      - name: Touch real mobile Chromium and return without losing fullscreen
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t08-arena-roles-summary-mobile-browser.cjs
+          node tests/t08-summary-mobile-choice-browser.cjs
+          node tests/t05-summary-equip-denied-ui-browser.cjs
+          npm run test:browser
+      - name: Archive touch and full battle evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t08-arena-role-slots-mobile-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 21

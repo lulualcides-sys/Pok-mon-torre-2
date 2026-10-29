@@ -43,7 +43,13 @@ for(const {id} of KANTO_151){
 }
 const squirtle=make('squirtle',50);
 const squirtleSelected=selectedMoves(squirtle);
-assert.ok(squirtleSelected.includes('bubble-beam'));
+// Bubble Beam is a stronger native Water attack, now reserved for the
+// full-meter E slot when chosen manually; it must never be auto-injected
+// into HAB2/3 just to fill a duplicated original role.
+const bubbleBeam=availableMoves(squirtle).find(m=>m.id==='bubble-beam');
+assert.ok(bubbleBeam,'Legally learned Bubble Beam disappeared from editor');
+assert.ok(!squirtleSelected.slice(0,3).includes('bubble-beam'),
+ 'Native stronger Bubble Beam must not bypass the charged ULT gate');
 assert.ok(squirtleSelected.includes('hydro-pump'));
 assert.ok(!squirtleSelected.some((x,i)=>squirtleSelected.indexOf(x)!==i));
 assert.ok(squirtleSelected.includes('bite'),
@@ -63,13 +69,18 @@ const before=JSON.stringify(legacy.moves);
 const fixed=selectedMoves(legacy);
 assert.equal(new Set(fixed).size,4,'Legacy save still displays duplicate moves');
 assert.equal(JSON.stringify(legacy.moves),before,'Read-time repair mutated saved choices');
-assert.equal(resolveLoadout(legacy).q?.id,'bubble-beam');
+assert.notEqual(resolveLoadout(legacy).q?.id,'bubble-beam',
+ 'Legacy strong Bubble Beam is restricted to E, even if saved in HAB3');
 assert.ok(fixed.every(x=>availableMoves(legacy).some(m=>m.id===x)),
  'Legacy repair equipped a move the Pokémon cannot learn');
 assert.ok(resolveLoadout(make('bulbasaur',8)).e?.torre2IntroPractice,
  'Do not alter the Lv8 weak ULT cap');
 const m=make('ponyta',49),kit=resolveLoadout(m);
-assert.equal(kit.q?.id,'flare-blitz','Ponyta native signature must remain');
+assert.ok(availableMoves(m).some(move=>move.id==='flare-blitz'),
+ 'Ponyta native Flare Blitz must remain learned and selectable in E');
+assert.ok(!['lmb','rmb','q'].some(slot=>kit[slot]?.id==='flare-blitz'),
+ 'Flare Blitz cannot bypass the full ULT meter through HAB3');
+assert.ok(kit.e?.ulti,'Ponyta must retain a charged E ultimate');
 assert.equal(kit.rmb?.id,'flame-charge','Ponyta learned signature must remain');
 console.log('PASS_T08_KANTO_UNIQUE_NATIVE_SLOTS',JSON.stringify({
  species:150,installed:TEST_LIBRARY.length,fixtures:tested,
