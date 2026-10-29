@@ -36,7 +36,8 @@ assert.match(hud,/puedeEvolucionar/,'native HUD evolution XP indicator still exi
 assert.match(battle,/this\.datos\?\.torre2\?"":" · "\+n\(k\.mega\)/,'combat help must be mode-scoped');
 assert.match(title,/txt:"KANTO CAMPAIGN"/,'Kanto accessible in original Play menu');
 assert.match(title,/txt:"TRAINING"/,'Training still exists');
-assert.match(title,/txt:"ARENA MODE"/,'Arena still exists');
+assert.match(title,/id:"arena",txt:"ARENA(?: MODE)?",escena:"preparar"/,
+ 'Original Arena mode must remain linked to its native Phaser scene');
 assert.match(title,/txt:"VS CPU"/,'VS CPU still exists');
 assert.doesNotMatch(title,/id:"versus",txt:"2 PLAYERS"/);
 assert.doesNotMatch(title,/id:"online",txt:"ONLINE"/);
