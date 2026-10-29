@@ -1,5 +1,7 @@
 /* T08: the Lv9 editor must not equip the SAME installed technique twice
- * under a tutorial-preview ID and a genuine native ID. This is a compiled
+ * under a tutorial-preview ID and a genuine native ID. A legal native
+ * upgrade rehomes an obsolete preview instead of silently duplicating it.
+ * This is a compiled
  * resolver fixture, NOT XP earned through a natural trainer battle.
  * ULT (E) remains a separate, energy-gated action by design.
  */
@@ -14,7 +16,7 @@ const [{KANTO_151},{availableMoves,selectedMoves,equipMove,canonicalMoveKey}]=
  await Promise.all([load('torre2/all-kanto-species.js'),load('torre2/move-pool.js')]);
 const slots=['lmb','rmb','q','e'];
 const technique=m=>canonicalMoveKey(m?.torre2IntroSource||m?.nombre);
-let duplicateAttempts=0,legalReplacements=0;
+let duplicateAttempts=0,autoRehomed=0,rejected=0,legalReplacements=0;
 const examples=[];
 for(const {id} of KANTO_151){
  if(id==='mewtwo')continue; // unrestricted laboratory character
@@ -34,13 +36,25 @@ for(const {id} of KANTO_151){
   // would have been accepted before this fix, because preview IDs differ.
   assert.ok(!originals.includes(native.id),id+' native ID unexpectedly equipped');
   const target=(from+1)%3;
-  assert.equal(equipMove(member,target,native.id),false,
-   id+' duplicated '+native.nombre+' between HAB slots');
-  assert.deepEqual(member.moves,originals,id+' rejected equip changed save');
+  member.moves=[...originals];member.movePlanSpecies=id;
+  const equipped=equipMove(member,target,native.id);
+  if(equipped){
+   assert.equal(member.moves[target],native.id,id+' native equip was lost');
+   const now=member.moves.map(moveId=>pool.find(m=>m.id===moveId));
+   assert.notEqual(technique(now[from]),technique(now[target]),
+    id+' left duplicate native/practice names in HAB slots');
+   assert.ok(now[from]?.forma,'Replacement must use installed renderer');
+   assert.ok(pool.some(m=>m.id===now[from].id),
+    'Replacement cannot invent a new move');
+   autoRehomed++;
+  }else{
+   assert.deepEqual(member.moves,originals,id+' rejected equip changed save');
+   rejected++;
+  }
   assert.equal(member.movePlanSpecies,id);
   duplicateAttempts++;
   if(examples.length<12)examples.push({id,from:slots[from],target:slots[target],
-   native:native.id,practice:preview[from].id});
+   native:native.id,practice:preview[from].id,equipped});
  }
  // Replacing the preview IN ITS OWN SLOT is still permitted when another
  // basic slot does not already use the same underlying technique.
@@ -60,5 +74,6 @@ for(const {id} of KANTO_151){
 }
 assert.ok(duplicateAttempts>0,'No genuine native/preview alias was exercised');
 assert.ok(legalReplacements>0,'No legal in-place upgrade was exercised');
+assert.ok(autoRehomed>0,'No native upgrade rehomed its obsolete preview');
 console.log('T08 EQUIVALENT PRACTICE/NATIVE EDITOR GUARD PASS',
- JSON.stringify({species:150,duplicateAttempts,legalReplacements,examples}));
+ JSON.stringify({species:150,duplicateAttempts,autoRehomed,rejected,legalReplacements,examples}));
