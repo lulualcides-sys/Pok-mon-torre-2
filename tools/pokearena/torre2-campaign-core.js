@@ -426,7 +426,13 @@ export function startBattle(s){
  // ace in the Pokédex before the player has actually faced that species.
  const firstSeen=opponent.leader?
   STAGES[s.stage]?.leaderTeam?.[0]||opponent.id:opponent.id;
- recordSeen(s,firstSeen);saveCampaign(s);
+ // The first seen species belongs to the battle checkpoint. A denied
+ // write must not register a Pokémon in RAM that the save never recorded.
+ const nextDexSeen=[...(s.dexSeen||[])];
+ const next={...s,dexSeen:nextDexSeen};
+ recordSeen(next,firstSeen);
+ saveCampaign(next);
+ s.dexSeen=nextDexSeen;
  const tier=opponent.leader?
   (s.stage>=8?'maestro':s.stage>=4?'dificil':'normal'):
   (s.stage>=8?'maestro':s.stage>=3?'normal':'facil');
@@ -678,8 +684,16 @@ export function startWildEncounter(s,random=Math.random){
  const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
  const wild={id,stage:s.stage,trainer:s.trainer,
   level:wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100};
- s.pendingWild=wild;s.wildEncountersStage++;
- recordSeen(s,id);saveCampaign(s);
+ // Stage the encounter, counter and Pokédex together. Storage denial
+ // must leave the original route and RNG retry available without a phantom
+ // encounter, incremented counter or newly seen species in memory.
+ const dexSeen=[...(s.dexSeen||[])];
+ const next={...s,pendingWild:wild,wildEncountersStage:(s.wildEncountersStage||0)+1,dexSeen};
+ recordSeen(next,id);
+ saveCampaign(next);
+ s.pendingWild=wild;
+ s.wildEncountersStage=next.wildEncountersStage;
+ s.dexSeen=dexSeen;
  return {ok:true,encounter:wild};
 }
 export function startWildBattle(s){
