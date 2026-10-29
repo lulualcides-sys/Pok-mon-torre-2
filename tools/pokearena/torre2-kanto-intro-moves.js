@@ -196,7 +196,13 @@ export function resolveKantoIntro(member,installed,{
   // unlocks at the existing later campaign level. Never grant the native
   // high-power move early or copy another species' effect.
   const preferred=preferredSignature?catalog.get(idOf(preferredSignature)):null;
-  const signature=preferred?.forma&&Number(preferred.dano)>=6?preferred:
+  // An explicit evolution/level block outranks a curated preview, and
+  // pending custom VFX cannot bypass the same approval gate as the selector.
+  // Do not change the approved preferred preview when it is still legal.
+  const preferredAllowed=preferred?.forma&&Number(preferred.dano)>=6&&
+   idOf(preferred.nombre)!==idOf(blockedSignature)&&
+   (preferred.source!=='new-phaser-fx'||preferred.approved===true);
+  const signature=preferredAllowed?preferred:
    chooseKantoSignatureUlt(id,library,{
     levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes,
     blockedName:blockedSignature
