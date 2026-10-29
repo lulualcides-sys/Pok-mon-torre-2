@@ -320,6 +320,14 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
       save.team.every(m=>m.hp===100)&&
       scene.children.list.some(x=>x.active&&x.getData?.('torre2-center-heal-done')===true);
     },after.wins,{timeout:20000});
+    // mapReady alone can see a stale battle-path while the Center's
+    // 450ms post-heal scene restart is still pending. Require the ACTUAL
+    // native route CTA to be interactive before pressing into next battle.
+    await page.waitForFunction(()=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     return scene.scene.isActive()&&scene.children.list.some(o=>
+      o.active&&o.input?.enabled&&o.getData?.('torre2-central-cta')===true);
+    },null,{timeout:20000});
     await mapReady();
     const healed=await snapshot();
     assert.equal(healed.money,after.money,'Free Center must not charge money');
