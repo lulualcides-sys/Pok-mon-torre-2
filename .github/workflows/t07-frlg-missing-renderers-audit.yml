@@ -1,0 +1,45 @@
+name: T07 — audit 151 FRLG species vs 227 native approved move renderers
+on:
+  push:
+    branches: [audit/t07-official-frlg-missing-renderers-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  missing-renderer-audit:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install and validate audit
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t07-frlg-missing-renderers-151-built.test.mjs
+      - name: Capture and build versioned original Phaser/WebGL game
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" = 3 ]; then exit 1; fi
+            sleep $((attempt*7))
+          done
+      - name: Compare all official FireRed level-up techniques with installed approved VFX
+        run: |
+          set -euo pipefail
+          node tests/t07-frlg-missing-renderers-151-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          node tests/t07-invalid-tm-save-151x227-built.test.mjs
+      - name: Upload complete prioritized 151-species/227-move coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t07-frlg-missing-renderers-151-vs-227
+          path: test-evidence/t07-frlg-151-missing-renderers.json
+          if-no-files-found: warn
+          retention-days: 30
