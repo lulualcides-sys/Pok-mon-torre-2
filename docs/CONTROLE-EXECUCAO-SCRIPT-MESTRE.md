@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 28/10/2026 — §§7/8/33/36/37 · T07/T08: ataque STAB compatível por nível — 151 Kanto
+
+- **§7/§8 PARCIAIS:** [PR #243](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/243) integrada em `9932a8005bf575c14468562bccb3163cdf3ccac9`. Adição de metadados para 21 TMs ofensivas já presentes no catálogo de 227, desbloqueadas Lv30–50 somente com STAB e compatibilidade de espécie TM de FRLG; 146 combinações espécie×golpe novas no exato limite de nível, 188 pares com renderer existente; preserva níveis naturais FRLG, Fire Blast 50, TMs ensinadas e exclusão do Surf reprovado. Nenhum VFX novo, sprite, cooldown, API de save ou Arena alterado.
+- **§33 PARCIAL:** [CI branch #40803652089](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40803652089) **SUCESSO**: `npm test`, check/check:reuse, build Phaser/WebGL, auditoria 151 espécies, teste Chromium de **Lapras Lv50 Blizzard** por botão real, além dos anteriores Charizard Fire Blast e regressão browser integral. Execução via fixture: **não demonstra campanha natural**. [CI main #40805232691](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40805232691) aguardando confirmação.
+- **§36 PARCIAL:** sprite/VFX/cooldowns aprovados e políticas das quatro fontes não foram alterados; atualizou-se somente a elegibilidade por nível. A auditoria visual do renderer nativo de Blizzard (`tormentaHojas`) ainda é pendente, sem assumir aprovação estética.
+- **§37 PARCIAL:** confirmar antes de marcar como publicado o commit `9932a8005bf575c14468562bccb3163cdf3ccac9` e a versão HTTP real do Pages, ainda pendentes neste registro. Progresso natural, save longo e Android físico também pendentes.
+
+
 ## 28/10/2026 — §§20/31/33/36/37 · T05: checkpoints atômicos de início de batalha (PR #244)
 
 - **§20/§31 PARCIAIS:** [PR #244](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/244), squash `ea40242ea72833d0c067bc4aa696845c069d4bde`: busca selvagem, contador, Pokédex vista e primeiro treinador não alteram estado vivo antes do save; recusa de gravação mantém checkpoint, permite novo toque e não cria encontro fantasma. Dispensa de captura opcional também protegida.
