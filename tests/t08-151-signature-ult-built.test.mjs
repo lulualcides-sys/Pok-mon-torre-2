@@ -123,6 +123,7 @@ assert.equal(resolveLoadout(saved).e?.id,'hydro-pump');
 // must not impersonate its still-locked canonical Solar Beam in the E slot.
 const gloom21=make('gloom',21);
 assert.ok(!availableMoves(gloom21).some(m=>m.id==='solar-beam'));
+console.log('T08_GLOOM_DIAGNOSTIC',JSON.stringify({available:availableMoves(gloom21).map(m=>m.id),e:resolveLoadout(gloom21).e}));
 assert.notEqual(resolveLoadout(gloom21).e?.torre2IntroSource,'solar-beam',
  'Gloom borrowed its future evolved E attack at Lv21');
 // The original Kanto ATK is always a weak basic, even after the new ULT
