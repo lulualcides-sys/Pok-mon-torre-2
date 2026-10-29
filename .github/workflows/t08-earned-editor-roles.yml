@@ -47,6 +47,7 @@ jobs:
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/kanto-intro-touch-browser.cjs
+          node tests/t08-editor-earned-moves-browser.cjs
           node tests/t05-summary-equip-denied-ui-browser.cjs
           npm run test:browser
       - name: Keep browser evidence
