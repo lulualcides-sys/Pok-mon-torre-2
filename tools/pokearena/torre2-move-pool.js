@@ -756,9 +756,27 @@ export function resolveLoadout(member){
   nombre:'Dodge',forma:'dash',tipo:'NORMAL',dano:0,
   dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
  };
- return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
+ const resolved=resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
   levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel});
+ // Some inherited original Arena kits (e.g. Squirtle Bubble Beam) and weak
+ // evolution fallbacks temporarily put ONE legitimate attack in two slots.
+ // Disambiguate ONLY the visible control label; never replace its approved
+ // VFX, attack, damage, cooldown, slot ID or the player's saved selection.
+ // In particular this avoids the misleading invented "Treino" move labels.
+ const shown=new Set();
+ for(const [i,slot] of SLOTS.entries()){
+  const move=resolved[slot];
+  if(!move?.forma||!move.nombre)continue;
+  const source=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+  if(shown.has(source)){
+   const role=['ATK','HAB 2','HAB 3','ULT'][i];
+   const bare=String(move.nombre).replace(/^(?:ATK|HAB [23]|ULT) · /,'');
+   resolved[slot]={...move,nombre:role+' · '+bare};
+  }
+  shown.add(source);
+ }
+ return resolved;
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);
