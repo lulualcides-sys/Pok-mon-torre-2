@@ -662,6 +662,17 @@ for(const [filename,changes] of patches){
     console.warn('Native Pokédex portrait expression changed; Kanto card generator handles sizing');
     continue;
    }
+   // The source app changed its legacy account-login redirect. Offline
+   // solo mode already removes ONLINE menu actions from the actual menu
+   // and disconnects chat/polling; never overwrite unrelated title logic.
+   if(filename==='escenas/titulo.js'&&
+      from.startsWith('if(o.menu==="online"&&!red.cuenta')&&
+      to==='if(o.menu==="online")return;'){
+    if(!body.includes('jugar:[{id:"kanto",txt:"KANTO CAMPAIGN"'))
+     throw Error('Offline menu stripping not applied before title guard skip');
+    console.warn('Legacy ONLINE-account redirect moved upstream; solo menu remains offline');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
