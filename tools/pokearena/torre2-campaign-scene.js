@@ -1302,7 +1302,8 @@ create(){
    bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
    label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+
-    (move.torre2IntroSlot==='e'?'ULT · ':'')+move.nombre+
+    (move.torre2IntroSlot==='e'&&!move.nombre.startsWith('ULT · ')?'ULT · ':'')+
+    move.nombre+
     (move.approved?' ✓':''),
     current?'#bcffe3':'#ebf5ff',10);
    label(x+6,y+16,move.tipo,C.muted,8);
