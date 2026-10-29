@@ -234,6 +234,8 @@ await Promise.all([
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
+ ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
+ ['tools/pokearena/torre2-arena-native-dodges.js','arena-native-dodges.js'],
  ['tools/pokearena/torre2-auto-battle.js','auto-battle.js'],
  ['tools/pokearena/torre2-audio-settings.js','audio-settings.js'],
  ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js'],
@@ -858,7 +860,9 @@ const sourceImport="from './torre2-frlg-learnsets.js'";
 if(!arenaPolicySource.includes(sourceImport))
  throw Error('Arena move source metadata import changed');
 await fs.writeFile(arenaPolicyPath,arenaPolicySource.replace(sourceImport,
- "from './frlg-learnsets.js'"));
+ "from './frlg-learnsets.js'")
+ .replace("from './torre2-arena-approved-121.js'","from './arena-approved-121.js'")
+ .replace("from './torre2-arena-native-dodges.js'","from './arena-native-dodges.js'"));
 
 // Our Gen IV/V source imports the long repo filename; the captured
 // Phaser folder uses a short basename. Rewrite ONLY the copied source.
@@ -879,7 +883,8 @@ if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
- 'installArenaMovePolicy(Luchador,__torre2ArenaRoster);\n');
+ 'import{TEST_LIBRARY as __torre2ArenaApprovedLibrary}from"./torre2/move-pool.js";'+
+ 'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
@@ -914,6 +919,7 @@ for(const filename of [
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
+ 'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
  'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
  'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
