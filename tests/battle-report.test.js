@@ -28,6 +28,29 @@ test('battle report uses real before/after rewards and is read-only',()=>{
  assert.deepEqual(report.tms,['Rock Tomb']);
  assert.equal(JSON.stringify(after),original,'Displaying results must not grant rewards again');
 });
+test('native full-power move unlock is reported even if same-name Lv8 ULT preview existed',()=>{
+ const preview={id:'torre2-intro-e-hydro-pump',nombre:'Hydro Pump',
+  torre2IntroPractice:true,torre2IntroSlot:'e'};
+ const native={id:'hydro-pump',nombre:'Hydro Pump',forma:'torre2_hydropump'};
+ const before=state({team:[mon('squirtle','one',46)]});
+ const after=state({team:[mon('squirtle','one',47)]});
+ const original=JSON.stringify({before,after});
+ const options={listMoves:m=>m.progression.level<47?[preview]:[preview,native]};
+ const report=makeBattleReport(before,after,{won:true,sharedExp:[
+  {uid:'one',index:0,reward:130}]},options);
+ assert.deepEqual(report.moves,[{id:'squirtle',name:'Hydro Pump',fullPower:true}],
+  'Earned full-power attack must not be hidden by the early charged preview');
+ assert.equal(JSON.stringify({before,after}),original,'Read-only report rewrote a campaign save');
+});
+test('first Lv8 energy-gated ULT is shown as reduced preview, never as full native attack',()=>{
+ const preview={id:'torre2-intro-e-hydro-pump',nombre:'Hydro Pump',
+  torre2IntroPractice:true,torre2IntroSlot:'e'};
+ const before=state({team:[mon('squirtle','one',7)]});
+ const after=state({team:[mon('squirtle','one',8)]});
+ const report=makeBattleReport(before,after,{won:true},{
+  listMoves:m=>m.progression.level>=8?[preview]:[]});
+ assert.deepEqual(report.moves,[{id:'squirtle',name:'Hydro Pump',preview:true}]);
+});
 test('loss has no fictitious XP, money or badges',()=>{
  const report=makeBattleReport(state(),state({losses:1}),{won:false,message:'Derrota'});
  assert.equal(report.won,false);assert.equal(report.money,0);
