@@ -1,5 +1,14 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 28/10/2026 — PRIORIDADE T07/T08: revisão INTEGRAL dos 227 golpes para os 151 Pokémon
+
+**Pedido expresso:** não tratar Fire Blast como correção isolada. Auditar TODOS os golpes realmente instalados (originais Poké Arena 2D + assinaturas T2), compatibilidade espécie por espécie, progressão 5–50 e atribuição de golpes característicos. Usar FRLG como base e gerações IV, V e VII apenas para completar movimentos existentes, sem criar golpe/efeito ou liberar golpes fortes antecipadamente. Respeitar os três golpes fracos Lv5, ULT fraca Lv8, upgrades balanceados até Lv50, TMs aprendidas legitimamente, evoluções, editor, Pokédex, loadout e saves.
+
+**Constatação no código:** `tools/pokearena/torre2-gen5-existing-levels.js` contém somente Ponyta/Rapidash (Flame Charge Lv21, Flare Blitz Lv49). Isto **não comprova** cobertura Gen V para os outros 149 Pokémon. A política de quatro fontes em `docs/agentes/POLITICA-GOLPES-INTEGRAL.md` é obrigatória para qualquer VFX novo, mas o objetivo desta etapa é **reutilizar somente o catálogo já instalado**. Não declarar 151 movesets revisados antes de matriz de cobertura, testes e validação Phaser reais.
+
+**Próximo patch de código:** inventariar os 227 nomes/IDs/forma/proveniência/estado de aprovação; cruzar 151 espécies × tabelas FRLG e IV/V/VII com fontes oficiais, produzir matriz de gaps e corrigir em lotes pequenos e independentes os aprendizados ausentes, sem tocar Toxic #16/Shiny #17. Adicionar testes de bloqueio por nível, editor, evolução, save/reload, Pokédex, battle Chromium. Apenas integrar com CI verde, confirmar SHA público por HTTP. Status **PENDENTE DE IMPLEMENTAÇÃO**, não VALIDADO.
+
+
 ## 28/10/2026 — T07/T08: Fire Blast existente por nível 50 (PR #236)
 
 - **Código integrado:** [PR #236](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/236), squash `03b76bf9373a0ff3ad950fc3ae1a7af0ffb20c1e`. O catálogo original de **227 efeitos** foi preservado; o `Fire Blast` nativo (`forma=proyectil`, cooldown nativo inalterado) passa a ser aprendido aos **50** por exatamente **12 espécies Fogo de Kanto compatíveis com TM38 FRLG**: Charmander, Charmeleon, Charizard, Vulpix, Ninetales, Growlithe, Arcanine, Ponyta, Rapidash, Magmar, Flareon e Moltres. Nenhum golpe novo/VFX/sprite/controle/cooldown criado ou substituído. O nível 50 é adaptação da campanha Torre 2 para o aprendizado por nível do golpe que, no FireRed para Charmander/Charmeleon/Charizard, é TM38; Ponyta/Magmar/Rapidash aprendem naturalmente em níveis oficiais posteriores, comprimidos conforme teto preexistente do jogo.
