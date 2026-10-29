@@ -46,7 +46,7 @@ function trainingMove(source,tag,slot,level,duplicate=false){
 /** Campaign-only safety overlay. Respects player-equipped weak practice moves. */
 export function resolveKantoIntro(member,installed,{
  library,canonical,earlyLevels={},levelUp={},unlockLevel,
- verifiedTables=[],verifiedParents={},speciesTypes=[],blockedSignature=null
+ verifiedTables=[],verifiedParents={},speciesTypes=[],blockedSignature=null,preferredSignature=null
 }={}){
  const level=member?.progression?.level??5,id=member?.id;
  if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
@@ -191,10 +191,16 @@ export function resolveKantoIntro(member,installed,{
   // Each species previews its OWN verified, approved late-game technique.
   // Only this energy-gated campaign action has capped damage: its authentic
   // normal move remains locked until its official/campaign learn level.
-  const signature=chooseKantoSignatureUlt(id,library,{
-   levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes,
-   blockedName:blockedSignature
-  });
+  // A campaign-specific finisher may reuse an ALREADY installed renderer.
+  // Fire Blast remains a power-capped Lv8 preview; the real TM38 renderer
+  // unlocks at the existing later campaign level. Never grant the native
+  // high-power move early or copy another species' effect.
+  const preferred=preferredSignature?catalog.get(idOf(preferredSignature)):null;
+  const signature=preferred?.forma&&Number(preferred.dano)>=6?preferred:
+   chooseKantoSignatureUlt(id,library,{
+    levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes,
+    blockedName:blockedSignature
+   });
   const base=signature||ultCandidate?.move||fallback;
   const finisher=trainingMove(base,idOf(base.nombre),'e',signature?8:ultCandidate?.learned??level,true);
   if(signature){
