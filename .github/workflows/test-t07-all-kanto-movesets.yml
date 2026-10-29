@@ -1,7 +1,7 @@
 name: T07/T08 — all 151 Kanto Gen4/5 movesets against 227 installed effects
 on:
   push:
-    branches: [feat/t07-kanto-gen45-151-20261028]
+    branches: [feat/t07-kanto-gen45-151-20261028, fix/t07-frlg-natural-protect-151-20261029]
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,6 +40,9 @@ jobs:
           node tests/t07-fire-blast-kanto-built.test.mjs
           node tests/t07-151-movesets-built.test.mjs
           node tests/t07-gen45-kanto-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+          node tests/t08-kanto-dex-live-levels-built.test.mjs
       - name: Regressao de navegador Chromium real
         run: |
           set -euo pipefail
