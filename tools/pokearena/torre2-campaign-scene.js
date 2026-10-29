@@ -1313,7 +1313,7 @@ create(){
       // Keep the requested move visible after switching the active slot.
       // The compatible rows are sorted ahead of blocked rows, so page zero
       // is not always the page containing the move the player tapped.
-      const reordered=filterMoveLibrary(pool,this.summaryFilter,this.summarySearch)
+      const reordered=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch))
        .sort((a,b)=>Number(!!campaignMoveSlotReason(member,suggestion,a))-
         Number(!!campaignMoveSlotReason(member,suggestion,b)));
       const row=reordered.findIndex(option=>option.id===move.id);
