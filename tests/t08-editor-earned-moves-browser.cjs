@@ -68,7 +68,9 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(saved,{move:'gust',battle:'gust'});
   await page.screenshot({path:'test-evidence/t08-earned-gust-mobile.png'});
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha'),null,{timeout:60000});
+  // The explicit ?original=1 URL intentionally reopens the original title.
+  // Save persistence must be checked there, without faking a campaign entry.
+  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
   const reloaded=await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=await import(new URL('./torre2/campaign-core.js',src));
