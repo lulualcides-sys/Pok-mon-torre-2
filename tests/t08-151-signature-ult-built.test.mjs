@@ -119,6 +119,21 @@ const before=JSON.stringify(saved);
 assert.deepEqual(selectedMoves(saved),saved.moves);
 assert.equal(JSON.stringify(saved),before,'Reading a save changed manual ULT');
 assert.equal(resolveLoadout(saved).e?.id,'hydro-pump');
+// Regression caught by the production Pages gate after #271: Gloom Lv21
+// must not impersonate its still-locked canonical Solar Beam in the E slot.
+const gloom21=make('gloom',21);
+assert.ok(!availableMoves(gloom21).some(m=>m.id==='solar-beam'));
+assert.notEqual(resolveLoadout(gloom21).e?.torre2IntroSource,'solar-beam',
+ 'Gloom borrowed its future evolved E attack at Lv21');
+// The original Kanto ATK is always a weak basic, even after the new ULT
+// ranking frees Wing Attack from the E slot.
+const pidgey19=make('pidgey',19);
+assert.ok(availableMoves(pidgey19).some(m=>m.id==='wing-attack'));
+const pidgeyBefore=JSON.stringify(pidgey19);
+assert.equal(equipMove(pidgey19,0,'wing-attack'),false,
+ 'Wing Attack is too strong for basic ATK');
+assert.equal(JSON.stringify(pidgey19),pidgeyBefore,
+ 'A refused ATK equip changed the save');
 fs.mkdirSync('test-evidence',{recursive:true});
 fs.writeFileSync('test-evidence/t08-151-signatures-227-report.json',JSON.stringify({
  source:'compiled-fixtures-not-played-campaign',installedMoves:227,
