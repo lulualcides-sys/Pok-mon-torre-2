@@ -27,7 +27,8 @@ assert.ok(TEST_LIBRARY.length>=227,'Original approved catalogue was truncated');
 assert.equal(new Set(TEST_LIBRARY.map(m=>canonicalMoveKey(m.nombre))).size,
  TEST_LIBRARY.length,'Duplicate editor rows after native fallback');
 const member=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
-// Intro Lv8 previews may share the technique name but are NOT the full move.\nconst legal=(id,level,key)=>availableMoves(member(id,level))
+// Intro Lv8 previews may share the technique name but are NOT the full move.
+const legal=(id,level,key)=>availableMoves(member(id,level))
  .some(m=>!m.torre2IntroPractice&&canonicalMoveKey(m.nombre)===key);
 assert.ok(legal('seel',21,'aurora-beam'),'FRLG Seel Lv21 must retain Aurora Beam');
 assert.ok(!legal('seel',20,'aurora-beam'),'FRLG Seel Lv20 cannot learn Aurora Beam early');
