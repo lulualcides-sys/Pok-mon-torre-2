@@ -748,6 +748,12 @@ export function resolveLoadout(member){
   if(attack)out[SLOTS[i]]={...attack,pendiente:false,
    ...(i===3?{ulti:true}:{})};
  });
+ // The early meter-gated finisher may reuse an approved weak attack's
+ // renderer, but it is a distinct battle action. Keep the real move name
+ // and label ONLY the E action as ULT, not as a fabricated "Treino" attack.
+ // This also prevents two identical visible names in Caterpie's four slots.
+ if(out.e?.torre2IntroPractice&&!String(out.e.nombre).startsWith('ULT · '))
+  out.e={...out.e,nombre:'ULT · '+out.e.nombre};
  // Native P2 evolution skills are re-slotted ONLY inside the Kanto campaign;
  // the Arena and VS CPU keep their original kits untouched.
  if(nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id))out.esp={
