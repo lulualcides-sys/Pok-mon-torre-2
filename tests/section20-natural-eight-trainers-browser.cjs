@@ -31,7 +31,7 @@ const server=http.createServer(async(req,res)=>{
  const game=()=>page.evaluate(()=>{
   const s=window.kanto.readCampaign();return {
    trainer:s?.trainer,wins:s?.wins,losses:s?.losses,stage:s?.stage,money:s?.money,
-   team:s?.team?.map(m=>({id:m.id,hp:m.hp,level:m.progression?.level})),
+   team:s?.team?.map(m=>({id:m.id,uid:m.uid,hp:m.hp,level:m.progression?.level,experience:m.progression?.experience})), 
    box:s?.box?.map(m=>m.id)
   };
  });
@@ -53,6 +53,7 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(async()=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
+   window.moves=await import(new URL('./torre2/move-pool.js',main));
    const s=core.createCampaign('bulbasaur');
    core.saveCampaign(s);
    core.storePokemon(s,1);
@@ -65,6 +66,11 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(before.team.map(x=>x.id),['bulbasaur']);
   assert.equal(before.team[0].level,5);
   assert.deepEqual(before.box,['mewtwo']);
+  const firstKit=await page.evaluate(()=>window.moves.resolveLoadout(window.kanto.readCampaign().team[0]));
+  assert.ok(['lmb','rmb','q'].every(slot=>firstKit[slot]?.forma&&!firstKit[slot]?.pendiente),
+   'Legitimate Lv5 starter must have three usable native attacks');
+  assert.equal(firstKit.e,undefined,'Legitimate Lv5 starter cannot equip ULT');
+  report.earnedUlt={initial:{level:5,experience:before.team[0].experience,ultLocked:true},unlockedAt:null};
   const names=['pidgey','rattata','caterpie','charmander'];
  const total=8;
   for(let round=0;round<total;round++){
@@ -126,6 +132,27 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(entry.after.losses,0);
    const payout=opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180;
    assert.equal(entry.after.money,before.money+payout,'Real trainer/Rocket/Rival payout');
+   assert.ok(entry.after.team[0].experience>before.team[0].experience,
+    'Each genuine trainer victory must award starter XP');
+   assert.ok(entry.after.team[0].level>=before.team[0].level,
+    'Genuine XP must never reduce the starter level');
+   const earnedKit=await page.evaluate(()=>{
+    const member=window.kanto.readCampaign().team[0],kit=window.moves.resolveLoadout(member);
+    return {level:member.progression.level,experience:member.progression.experience,
+     slots:Object.fromEntries(['lmb','rmb','q','e'].map(slot=>[slot,kit[slot]?{
+      id:kit[slot].id,name:kit[slot].nombre,ulti:kit[slot].ulti===true,
+      pending:kit[slot].pendiente===true,practice:kit[slot].torre2IntroPractice===true,
+      renderable:Boolean(kit[slot].forma)}:null]))};
+   });
+   entry.earnedKit=earnedKit;
+   assert.ok(['lmb','rmb','q'].every(slot=>earnedKit.slots[slot]?.renderable&&!earnedKit.slots[slot]?.pending),
+    'Natural XP cannot remove three starter attack controls');
+   if(earnedKit.level<8)assert.equal(earnedKit.slots.e,null,'ULT unlocked before earned Lv8');
+   else {
+    assert.ok(earnedKit.slots.e?.ulti&&earnedKit.slots.e?.renderable&&!earnedKit.slots.e?.pending,
+     'Earned Lv8+ did not unlock a renderable ULT');
+    if(!report.earnedUlt.unlockedAt)report.earnedUlt.unlockedAt={round:round+1,...earnedKit};
+   }
    assert.deepEqual(entry.after.box,['mewtwo']);
    assert.equal(entry.after.team.length,1);
    // Game's normal reward routine restores active HP; no direct heal call.
@@ -143,6 +170,49 @@ const server=http.createServer(async(req,res)=>{
    }
    before=entry.after;
   }
+  assert.ok(report.earnedUlt.unlockedAt,
+   'Eight unmodified early-route victories did not reach an earned Lv8 ULT; inspect XP evidence');
+  const earned=await game();
+  const rawBeforeReload=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
+  assert.ok(rawBeforeReload,'No persisted native campaign save after earned Lv8');
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  await page.evaluate(async()=>{
+   const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
+   window.kanto=await import(new URL('./torre2/campaign-core.js',main));
+   window.moves=await import(new URL('./torre2/move-pool.js',main));
+   window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
+   !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
+  const reloaded=await game();
+  const rawAfterReload=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
+  assert.equal(rawAfterReload,rawBeforeReload,'Reload must not rewrite genuine earned XP');
+  assert.equal(reloaded.team[0].uid,earned.team[0].uid,'Starter identity changed after reload');
+  assert.equal(reloaded.team[0].level,earned.team[0].level,'Earned level lost on reload');
+  assert.equal(reloaded.team[0].experience,earned.team[0].experience,'Earned XP lost on reload');
+  assert.equal(reloaded.wins,8,'Eight natural victories did not persist');
+  await clickTag('torre2-central-cta');
+  await page.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.fase==='lucha'&&b.__torre2PartyInstalled&&b.panelTactil;
+  },null,{timeout:60000});
+  const nextBattle=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),a=b.luchadores[0];
+   return {species:b.datos.p1,level:b.datos.torre2.playerLevel,
+    ult:{id:a.kit.e?.id,name:a.kit.e?.nombre,ulti:a.kit.e?.ulti===true,
+     pending:a.kit.e?.pendiente===true,renderable:Boolean(a.kit.e?.forma)},
+    nativeTouchSlots:b.panelTactil.botones.map(x=>x.slot)};
+  });
+  assert.equal(nextBattle.species,'bulbasaur');
+  assert.equal(nextBattle.level,earned.team[0].level);
+  assert.ok(nextBattle.ult.ulti&&nextBattle.ult.renderable&&!nextBattle.ult.pending,
+   'Earned ULT not present in actual next Phaser battle');
+  assert.ok(nextBattle.nativeTouchSlots.includes('e'),'Native battle lost ULT touch control');
+  report.earnedUlt={...report.earnedUlt,earned,reloaded,nextBattle,
+   persistedIdentically:true,fromFreshLv5:true,forcedXp:false,forcedWin:false};
+  saveReport();
+  await page.screenshot({path:out+'/t07-t08-natural-earned-ult-next-battle.png'});
   await page.screenshot({path:out+'/natural-route1-eight-trainers-completed.png'});
   assert.deepEqual(errors,[],'No client JS exceptions through four consecutive native battles');
   console.log('PASS EIGHT NATURAL KANTO OPENING FIGHTS INCLUDING RIVAL; no debug KOs, natural XP, real rewards');
