@@ -300,6 +300,38 @@ const persist=()=>fs.writeFileSync(evidence+'/t03-caterpie-chain-earned-evolutio
     await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('campanha')
      .children.list.some(x=>x.active&&x.getData?.('torre2-report-continue')===true),
      null,{timeout:15000});
+    // Native Center between fights, NOT test-granted HP or invulnerability.
+    // The actual free heal keeps longer routes survivable even when the
+    // opponent AI focuses the original Bulbasaur for five fights in a row.
+    // Interact with the real Phaser Center button and let its saved
+    // 1.4-second treatment/animation finish before the next battle.
+    await page.evaluate(()=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     scene.centerScreen(window.kanto.readCampaign());
+    });
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+     .children.list.some(x=>x.active&&x.getData?.('torre2-center-heal')===true),
+     null,{timeout:12000});
+    await clickMarked('torre2-center-heal',true);
+    await page.waitForFunction(wins=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     const save=window.kanto.readCampaign();
+     return scene.scene.isActive()&&save.wins===wins&&
+      save.team.every(m=>m.hp===100)&&
+      scene.children.list.some(x=>x.active&&x.getData?.('torre2-center-heal-done')===true);
+    },after.wins,{timeout:20000});
+    await mapReady();
+    const healed=await snapshot();
+    assert.equal(healed.money,after.money,'Free Center must not charge money');
+    assert.equal(healed.wins,after.wins,'Center must not award a trainer victory');
+    assert.equal(healed.trainer,after.trainer,'Center changed route trainer progress');
+    assert.equal(healed.team.find(m=>m.uid===caterpie.uid)?.experience,current.experience,
+     'Center must not grant experience or skip evolution');
+    assert.ok(healed.team.every(m=>m.hp===100),'Real Center did not cure the whole party');
+    report.centerHeals??=[];
+    report.centerHeals.push({afterWin:after.wins,uid:caterpie.uid,
+     healed:true,experienceUnchanged:true,moneyUnchanged:true});
+    persist();
    }
    if(current.id==='butterfree')break;
   }
