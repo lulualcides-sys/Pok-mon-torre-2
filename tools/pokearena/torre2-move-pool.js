@@ -136,6 +136,14 @@ function collect(def){
  }
  return moves;
 }
+// The upstream Poké Arena 2D client may later add a move we had already
+// pixel-animated and approved in Torre 2. Preserve these FOUR older approved
+// Kanto renderer implementations, while leaving the upstream Arena/VS kits
+// completely intact. These are NOT permission to create future duplicates.
+export const APPROVED_KANTO_NATIVE_OVERLAPS=Object.freeze([
+ 'ice-shard','psychic','shadow-ball','ice-beam'
+]);
+const approvedKantoOverlap=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
 const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES];
 const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
 const signatureByName=new Map(SIGNATURE_MOVES.map(m=>[canonicalMoveKey(m.nombre),m]));
@@ -153,10 +161,15 @@ for(const h of rawLibrary){
   const signature=signatureByName.get(sameMove);
   const inheritedSignature=!signatureEntries.has(h)&&
    signature&&signature.forma===h.forma;
-  ids.set(id,{...h,...(inheritedSignature?signature:{}),id,
+  // The original upstream renderer remains available in Poké Arena modes;
+  // ONLY the Torre 2 editor/battle pool uses our prior approved VFX.
+  const preserveApproved=approvedKantoOverlap.has(sameMove)&&
+   !signatureEntries.has(h)&&signature?.approved===true&&Boolean(signature.forma);
+  const resolvedId=preserveApproved?signature.id:id;
+  ids.set(resolvedId,{...h,...(inheritedSignature||preserveApproved?signature:{}),id:resolvedId,
    ...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
    source:nativeCrunch?'torre2-visual-override':
-    signatureEntries.has(h)||inheritedSignature?'new-phaser-fx':'arena2d-original'});
+    signatureEntries.has(h)||inheritedSignature||preserveApproved?'new-phaser-fx':'arena2d-original'});
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
