@@ -46,8 +46,10 @@ const squirtleSelected=selectedMoves(squirtle);
 assert.ok(squirtleSelected.includes('bubble-beam'));
 assert.ok(squirtleSelected.includes('hydro-pump'));
 assert.ok(!squirtleSelected.some((x,i)=>squirtleSelected.indexOf(x)!==i));
-assert.ok(squirtleSelected.includes('surf'),
- 'A legal installed alternative must replace repeated Bubble Beam');
+assert.ok(squirtleSelected.includes('bite'),
+ 'An approved species-legal alternative must replace repeated Bubble Beam');
+assert.ok(!squirtleSelected.includes('surf'),
+ 'Do not auto-equip the previously rejected Surf effect');
 const egg=selectedMoves(make('exeggcute',50));
 assert.equal(new Set(egg).size,4,'Exeggcute Barrage duplicated');
 const fish=selectedMoves(make('magikarp',50));
