@@ -928,10 +928,33 @@ const finalHTML=await fs.readFile(index,'utf8');
 const oldModule='src="'+clientSource+'/main.js"';
 if(!finalHTML.includes(oldModule))
  throw Error('Main Phaser module URL not found for cache-busted revision');
+// A GitHub Pages deploy can finish while a mobile WebView keeps the old
+// /arena2d/index.html. The JS tree is content-addressed; also make the
+// HTML independently verify the latest published version once per load.
+const freshnessGuard=`<script>
+(function(){
+ const shown=document.querySelector('meta[name="pokemon-torre-build"]')?.content;
+ if(!shown||location.protocol==='file:')return;
+ const check='version.json?refresh='+encodeURIComponent(shown)+'-'+Date.now();
+ fetch(check,{cache:'no-store',credentials:'omit'})
+  .then(r=>r.ok?r.json():null)
+  .then(v=>{
+   const latest=v&&v.modules;
+   if(!/^src-[a-f0-9]{10}$/.test(latest||'')||latest===shown)return;
+   const url=new URL(location.href);
+   const key='torre2-release';
+   if(url.searchParams.get(key)===latest)return;
+   url.searchParams.set(key,latest);
+   // Changing URL ensures the stale HTML and all ESM imports get
+   // a genuinely new CDN cache key; never change campaign saves.
+   location.replace(url.toString());
+  }).catch(()=>{});
+})();
+</script>`;
 const stampedHTML=finalHTML.replace(oldModule,
  'src="'+versionedSource+'/main.js"')
  .replace('</head>',
- '<meta name="pokemon-torre-build" content="'+versionedSource+'">\n</head>');
+ '<meta name="pokemon-torre-build" content="'+versionedSource+'">\n'+freshnessGuard+'\n</head>');
 await fs.writeFile(index,stampedHTML);
 await fs.rename(path.join(dest,clientSource),path.join(dest,versionedSource));
 console.log('Versioned Phaser modules for mobile cache:',versionedSource);
