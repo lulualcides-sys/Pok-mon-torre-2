@@ -58,7 +58,9 @@ export function resolveKantoIntro(member,installed,{
  // Above level 12, respect every legitimate equipped attack verbatim.
  // Retain only the weak training placeholders in still-empty slots until a
  // real species move is learned, so level 13 never makes the ULT disappear.
- if(!starterWindow&&complete)return installed;
+ const staleE=blockedSignature&&installed.e?.torre2IntroPractice&&
+  idOf(installed.e.torre2IntroSource)===blockedSignature;
+ if(!starterWindow&&complete&&!staleE)return installed;
  const result={...installed};
  // ULT is not usable below level 8, even if an old save used E or an
  // accidentally equipped high-level finisher at Lv5.
