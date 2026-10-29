@@ -555,7 +555,10 @@ export function moveUnlockLevel(member,moveName){
   const gen5=installed?gen5KantoUnlockLevel(species,key):null;
   const gen7=installed?gen7LetsGoUnlockLevel(species,key):null;
   const gen45=installed?gen45KantoUnlockLevel(species,key):null;
-  const recent=gen5??gen7??gen45;
+  // The Pokédex must use the same earliest verified supplementary level
+  // as the battle move pool (subject to FRLG and evolution thresholds).
+  const levels=[gen5,gen7,gen45].filter(Number.isInteger);
+  const recent=levels.length?Math.min(...levels):null;
   if(recent!==null){
    const power=Number(installed.poder)||0;
    const laterPowerFloor=gen5===null&&gen7===null?
