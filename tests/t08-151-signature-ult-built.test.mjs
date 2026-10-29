@@ -129,6 +129,12 @@ assert.notEqual(resolveLoadout(gloom21).e?.torre2IntroSource,'solar-beam',
 // ranking frees Wing Attack from the E slot.
 const pidgey19=make('pidgey',19);
 assert.ok(availableMoves(pidgey19).some(m=>m.id==='wing-attack'));
+console.log('T08_ATK_DIAGNOSTIC',JSON.stringify({
+ pidgey:availableMoves(pidgey19).filter(m=>['wing-attack','tackle','quick-attack'].includes(m.id))
+  .map(m=>({id:m.id,dano:m.dano,poder:m.poder,torre2IntroSlot:m.torre2IntroSlot,forma:m.forma})),
+ bulbasaur:availableMoves(make('bulbasaur',10)).filter(m=>['vine-whip','tackle'].includes(m.id))
+  .map(m=>({id:m.id,dano:m.dano,poder:m.poder,torre2IntroSlot:m.torre2IntroSlot}))
+}));
 const pidgeyBefore=JSON.stringify(pidgey19);
 assert.equal(equipMove(pidgey19,0,'wing-attack'),false,
  'Wing Attack is too strong for basic ATK');
