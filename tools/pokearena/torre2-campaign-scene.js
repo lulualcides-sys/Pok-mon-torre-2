@@ -1135,6 +1135,7 @@ create(){
   const battleKit=resolveLoadout(member);
   // Highlight exactly the moves the battle controller will execute.
   const equippedIds=['lmb','rmb','q','e'].map(key=>battleKit[key]?.id||null);
+  const introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
   const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
   this.summaryFilter??='ALL';this.summarySearch??='';
   const slotCodes=['LMB','RMB','Q','E'];
