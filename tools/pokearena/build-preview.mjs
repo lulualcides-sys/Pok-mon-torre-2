@@ -883,7 +883,8 @@ if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
- 'installArenaMovePolicy(Luchador,__torre2ArenaRoster);\n');
+ 'import{TEST_LIBRARY as __torre2ArenaApprovedLibrary}from"./torre2/move-pool.js";'+
+ 'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
