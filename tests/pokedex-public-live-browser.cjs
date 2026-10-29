@@ -48,10 +48,18 @@ const expected={
     .filter(x=>/\/src-[0-9a-f]{10}\/main\.js/.test(x));
    const observations={};
    for(const [id,names] of Object.entries(expect)){
-    const i=scene.casillas.findIndex(x=>x?.p?.id===id);
-    if(i<0){observations[id]={error:'not in ROSTER'};continue}
+    // The original Poké Arena roster stores evolutions under their
+    // family card: Marowak is tab 2 of Cubone, not a separate card.
+    const family=id==='marowak'?'cubone':id;
+    const i=scene.casillas.findIndex(x=>x?.p?.id===family);
+    if(i<0){observations[id]={error:'family not in ROSTER'};continue}
     scene.elegir(i);
-    const kit=scene.etapas[0]?.kit||{};
+    if(id==='marowak'){
+     const evo=scene.etapas.findIndex(x=>x?.nombre?.toLowerCase()==='marowak');
+     if(evo<0){observations[id]={error:'Marowak evolution tab missing'};continue}
+     scene.irEtapa(evo);
+    }
+    const kit=scene.etapas[scene.etapa]?.kit||{};
     const slots=['lmb','rmb','q','e'];
     observations[id]={
      slots:Object.fromEntries(slots.map(slot=>[slot,kit[slot]?.nombre||null])),
