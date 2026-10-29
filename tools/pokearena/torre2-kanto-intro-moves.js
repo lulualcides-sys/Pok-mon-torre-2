@@ -82,14 +82,27 @@ export function resolveKantoIntro(member,installed,{
  const official=Object.entries(levelUp)
   .filter(([key,at])=>at<=previewLimit)
   .sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
- const candidates=[];
- const push=(name,learned,priority=0)=>{
+ // HGSS/B2W2 use hyphenated IDs; Let's Go stores compact IDs (e.g.
+ // quickattack). Resolve only an unambiguous INSTALLED renderer, never an
+ // invented move or an unrelated species' attack.
+ const compactCatalog=new Map();
+ for(const [key,move] of catalog){
+  const compact=key.replace(/-/g,'');
+  if(compactCatalog.has(compact)&&compactCatalog.get(compact)!==move)
+   compactCatalog.set(compact,null);
+  else if(!compactCatalog.has(compact))compactCatalog.set(compact,move);
+ }
+ const candidates=[],supplemental=[];
+ const push=(name,learned,priority=0,target=candidates)=>{
   const key=canonical?canonical(name):idOf(name);
-  // Scratch remains deferred: never relabel Tackle as Scratch when the
-  // canonical renderer is absent. Keep the legal learnset metadata intact.
-  const move=catalog.get(key);
-  if(!move||!lowPower(move)||candidates.some(x=>x.key===key))return;
-  candidates.push({key,move,learned,priority});
+  const move=catalog.get(key)||compactCatalog.get(key.replace(/-/g,''));
+  const actual=move?(canonical?canonical(move.nombre):idOf(move.nombre)):key;
+  // Scratch is deferred and Surf rejected. Do not preview them even if a
+  // stale renderer exists in the original catalog or in a legacy save.
+  if(['scratch','surf'].includes(actual)||!move||!lowPower(move)||
+     (target===supplemental&&move.source==='new-phaser-fx'&&move.approved!==true)||
+     [...candidates,...supplemental].some(x=>x.key===actual))return;
+  target.push({key:actual,move,learned,priority});
  };
  for(const [name,at] of official)push(name,at,0);
  // Curated early-route adaptations are already in Torre 2; use their
@@ -111,6 +124,23 @@ export function resolveKantoIntro(member,installed,{
   if(picked.length>=3)break;
   if(c.learned>previewLimit||picked.some(p=>p.key===c.key))continue;
   picked.push(c);
+ }
+ // Only replace otherwise generic Struggle slots. Keep all previously
+ // selected FRLG/curated moves unchanged. Later verified generations can
+ // supply a real species move at Lv1–8 if its VFX is already approved.
+ // Level 0 evolution-only entries are not early level-up moves.
+ if(picked.length<3){
+  for(const table of verifiedTables){
+   for(const [name,at] of Object.entries(table?.[id]||{}))
+    if(Number.isInteger(at)&&at>=1&&at<=previewLimit)
+     push(name,at,3,supplemental);
+  }
+  supplemental.sort((a,b)=>a.learned-b.learned||a.key.localeCompare(b.key));
+  for(const c of [...supplemental.filter(c=>c.move.dano>0),
+                   ...supplemental.filter(c=>!(c.move.dano>0))]){
+   if(picked.length>=3)break;
+   if(!picked.some(p=>p.key===c.key))picked.push(c);
+  }
  }
  // Struggle is universal in Gen III when out of PP. Here, reuse an approved
  // non-elemental contact VFX for a deliberately weak practice manoeuvre.
