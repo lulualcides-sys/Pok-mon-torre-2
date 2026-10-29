@@ -32,6 +32,7 @@ jobs:
             sleep $((n*8))
           done
           node tools/pokearena/audit-moves.mjs
+          node tests/t08-duplicate-summary-names-diagnostic.mjs
           node tests/misty-surge-built.test.mjs
           node tests/frlg-learnsets-built.test.mjs
           node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
