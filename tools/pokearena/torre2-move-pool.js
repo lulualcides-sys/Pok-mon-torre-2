@@ -436,7 +436,7 @@ export function availableMoves(member){
    return true;
   if(taughtCompatible(key))return true;
   // Level-only mastery for an INSTALLED same-type TM attack (never Lv5).
-  const mastery=kantoStabTmMasteryLevel(member.id,key,m.tipo);
+  const mastery=official===null?kantoStabTmMasteryLevel(member.id,key,m.tipo):null;
   if(mastery!==null&&level>=mastery&&!evoLocked.has(key)&&
      !isPendingApprovalMove(m)&&Boolean(m.forma))return true;
   // FRLG retains priority for level-up/TM; later generations only fill
