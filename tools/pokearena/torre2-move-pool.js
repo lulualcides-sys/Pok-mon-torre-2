@@ -449,7 +449,10 @@ export function availableMoves(member){
    const gen45=gen45KantoUnlockLevel(member.id,key);
    // Existing Gen5 signatures and Gen7 unlocks keep priority; HGSS/B2W2
    // only fill absent options, not overwrite previously approved levels.
-   const recent=gen5??gen7??gen45;
+   // Prefer the earliest verified legal level-up across supplementary generations.
+  // FRLG, evolution and power floors remain enforced independently.
+  const levels=[gen5,gen7,gen45].filter(Number.isInteger);
+  const recent=levels.length?Math.min(...levels):null;
    if(recent!==null){
     const power=Number(m.poder)||0;
     const laterPowerFloor=gen5===null&&gen7===null?
