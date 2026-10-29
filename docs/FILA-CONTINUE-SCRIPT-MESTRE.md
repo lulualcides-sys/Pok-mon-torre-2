@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T07/T08: substituir apenas Struggle por golpe legal instalado (PR #286)
+
+- **Implementado:** [PR #286](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/286), squash `1652fbeca96359d28a977de6936f996b418ae04f`. O seletor de treino Lv5 agora consulta entradas por espécie de HGSS/B2W2/Let's Go **somente se faltarem opções após FRLG e adaptações já aprovadas**. Exige nível oficial 1–16, renderer instalado, dano fraco e VFX aprovado quando novo; resolve aliases compactos Gen VII sem ambiguidade. Nunca atribui Scratch adiado, Surf reprovado, ataques de outras espécies ou TMs não ensinadas. Ponyta Lv5 passa a oferecer Quick Attack, Ember fraco e Tackle legal HGSS/Let's Go no lugar de Struggle; não altera golpe real desbloqueado mais tarde.
+- **Evidências:** [CI isolada #40876873091](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40876873091) **SUCESSO**: `npm test`, `check`, `check:reuse`, build Phaser/WebGL, matriz Kanto 151×227, compatibilidade FRLG/TMs, níveis 5–50, toque real no Chromium móvel com Ponyta e regressão integral. [CI main #40878011958](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40878011958) e [REA #40878012196](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40878012196) **SUCESSO**. Toques reais com equipe preparada e energia de teste, **não** XP ou campanha natural.
+- **Publicação:** Pages #40878012321 e #40878062043 **CANCELADOS por concorrência**; [Pages #40879179659](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40879179659) para SHA descendente `fa8bd008c437d58adb0c9c144e964e5cbe5ac3ea` **EM ANDAMENTO — HTTP NÃO CONFIRMADO**. Atualizar com prova antes de declarar publicado.
+- **Status:** T07/T08 **PARCIAIS**; a melhora genérica não inventa 136 VFX FRLG ausentes nem resolve Ditto/Transform. Scratch e Surf continuam bloqueados. Saves, sprites, cooldowns, TMs e os 227 VFX aprovados intocados. Faltam 151 partidas naturais, evolução/XP prolongados, campanha até Campeão e Android físico.
+
 
 ## 29/10/2026 — prioridade T07/T08: inventário FRLG integrado e Struggle com contato neutro
 
