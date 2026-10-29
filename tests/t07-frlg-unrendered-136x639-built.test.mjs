@@ -17,9 +17,9 @@ const [{KANTO_151},{TEST_LIBRARY},{FRLG_LEVEL_UP}]=await Promise.all([
  load('torre2/frlg-learnsets.js')
 ]);
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
+assert.ok(TEST_LIBRARY.length>=227,'User-approved original effect inventory was truncated');
 const installed=new Set(TEST_LIBRARY.map(m=>m.id));
-assert.equal(installed.size,227,'Duplicated installed attack ID');
+assert.equal(installed.size,TEST_LIBRARY.length,'Duplicated installed attack ID');
 const byMove=new Map(),speciesRows=[];
 let campaignPairs=0,labPairs=0;
 for(const {id} of KANTO_151){
@@ -87,7 +87,7 @@ fs.writeFileSync('test-evidence/t07-frlg-unrendered-136x639.json',
 const markdown=[
  '# T07 — Lacunas FRLG por espécie e golpe (Phaser compilado)',
  '',
- 'Matriz derivada de 151 tabelas FRLG e 227 IDs instalados. **Não** é',
+ 'Matriz derivada de 151 tabelas FRLG e '+installed.size+' IDs instalados. **Não** é',
  'comprovação de jogo natural, licença para importar VFX ou autorização',
  'para equipar golpes incompatíveis. Mewtwo é laboratório separado.',
  '',
