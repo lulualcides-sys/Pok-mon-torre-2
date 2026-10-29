@@ -701,6 +701,20 @@ for(const [filename,changes] of patches){
     console.warn('Original selection mode-button positioning changed upstream; native coordinates kept');
     continue;
    }
+   // The original HUD moved its optional evolve/mega text branches.
+   // Disable only an intact old indicator condition inside Kanto battles.
+   // If upstream removed the indicator entirely, nothing needs patching.
+   if(filename==='hud.js'&&from.startsWith('else if(l.puede')&&
+      to.includes('this.e.datos?.torre2')){
+    const ability=from.includes('puedeMega')?'puedeMega':'puedeEvolucionar';
+    const condition='l.'+ability+'&&l.humano&&parpadeo';
+    if(body.includes(condition))
+     body=body.replace(condition,'!this.e.datos?.torre2&&'+condition);
+    else if(body.includes(ability))
+     throw Error('Unknown native HUD '+ability+' condition; refusing to alter it');
+    else console.warn('Original HUD no longer renders '+ability+' indicator');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
