@@ -14,6 +14,8 @@ export function normalizePokedexNameColumn(s){
   s=once(s,'const nx=Math.max(TX+(esTactil()?52:38),TX+6+Math.max(...etiquetas.map(t=>t.width))+8);',
    'const nx=Math.max(TX+72,TX+6+Math.max(...etiquetas.map(t=>t.width))+8);');
  }
+ s=once(s,'export{Pokedex,cifras,etapasDe};',
+  'export{Pokedex,cifras,etapasDe,kantoDexStages};');
  return s;
 }
 /** Pick the actual move from this Poké Arena evolution stage first.
@@ -70,13 +72,13 @@ export function paginateKantoPokedexSource(original){
  return stages.map((stage,i)=>{
   if(stage.mega)return stage;
   const species=(i===0?def.id:(def.evoluciones?.[i-1]?.nombre||'')).toLowerCase();
-  const plan=earlyKantoSlotPlan(species)||nativeKantoEvolutionPlan(species)||
-   kanto151SlotPlan(species)||['lmb','rmb','q','e'].map(slot=>stage.kit?.[slot]?.nombre||null);
-  if(!plan?.some(Boolean))return stage;
+  // Mewtwo's unrestricted debug laboratory uses unrelated attack IDs;
+  // its Pokédex must retain the actual Poké Arena 2D native Mewtwo kit.
+  if(species==='mewtwo')return stage;
   // These are the same REAL stage kits as VS CPU/Training/Arena, never
   // the campaign level-100 chosen moves. Campaign level/TM data is
   // available separately through the GOLPES POR LEVEL overlay.
-  const member={id:species,progression:{species,level:100}};
+  const member={id:species,progression:{species,level:50},tmMoves:[]};
   // Newly introduced Kanto evolutions can inherit an invalid speed/attack
   // number from the original Poké Arena stage calculator. A NaN previously
   // left the right-hand Pokédex panel empty on Nidorino/Nidoking.
@@ -92,21 +94,26 @@ export function paginateKantoPokedexSource(original){
    def:safe(stage.def,safe(evo?.def,safe(def.def,1))),
    regen:safe(stage.regen,safe(def.regen,4))
   };
-  const original=resolveLoadout(member);
-  const kit={...original},slots=['lmb','rmb','q','e'];
-  for(let i=0;i<slots.length;i++){
-   const slot=slots[i];
-   // Native Poké Arena 2D per-evolution technique takes precedence in the
-   // Pokédex. The campaign move library remains a separate level-gated tab.
-   const h=selectPokedexArenaMove(stage.kit?.[slot],original[slot],plan[i],canonicalMoveKey);
-   if(!h?.nombre||!h?.forma){
-    kit[slot]={nombre:'LOCKED',forma:'golpe',tipo:'NORMAL',dano:0,
+  // Show the same legal, installed four-slot kit the campaign battle
+  // resolver actually offers at Lv50, without teaching any TM. The old
+  // native-first mix displayed unavailable Blizzard/Hyper Beam on Marowak
+  // while hiding legitimate skills behind "Locked" on Mew/Scyther/Doduo.
+  // Native Arena kits themselves are NEVER modified by this display.
+  const resolved=resolveLoadout(member);
+  const unlocked=new Map(campaignLearnset(species)
+   .filter(m=>m.method==='LEVEL').map(m=>[m.id,m.level]));
+  const kit={...stage.kit},slots=['lmb','rmb','q','e'];
+  for(const slot of slots){
+   const h=resolved[slot];
+   if(!h?.id||!h?.nombre||!h?.forma||!unlocked.has(h.id)){
+    // Fail closed on an unverified battle renderer, never claim it is
+    // learned or display an incompatible native TM as an active skill.
+    kit[slot]={nombre:'INATIVO',forma:'golpe',tipo:'NORMAL',dano:0,
      coste:0,cd:0,pendiente:true,torre2Unavailable:true};
     continue;
    }
-   // No misleading campaign-lock labels in the OTHER-MODE Pokédex.
-   // Its full learnset panel still lists true levels/TMs separately.
-   kit[slot]={...h,pendiente:false,
+   kit[slot]={...h,pendiente:false,torre2Unavailable:false,
+    torre2RequiresTM:false,torre2UnlockLevel:unlocked.get(h.id),
     ...(slot==='e'?{ulti:true}:{})
    };
   }
