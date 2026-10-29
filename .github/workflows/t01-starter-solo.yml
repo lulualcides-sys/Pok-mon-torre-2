@@ -50,7 +50,7 @@ jobs:
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/t05-starter-denied-ui-browser.cjs
           node tests/source-client-smoke.cjs
-          npm run test:browser
+          node tests/t08-arena-roles-summary-mobile-browser.cjs
       - name: Archive proof
         if: always()
         uses: actions/upload-artifact@v4
