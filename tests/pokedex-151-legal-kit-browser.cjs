@@ -114,9 +114,10 @@ const server=http.createServer(async(req,res)=>{
    const s=window.__pt2Game.scene.getScene('pokedex');
    const i=s.casillas.findIndex(x=>x?.p?.id==='mew');
    s.elegir(i);
-   return {label:s.etapas[0].kit.e?.nombre,drawn:s.movs.list
+   return {label:s.etapas[0].kit.e?.nombre,lema:s.lema.text,drawn:s.movs.list
     .filter(x=>typeof x.text==='string').map(x=>x.text)};
   });
+  assert.match(scene.lema,/KIT CAMPANHA · NV50/,'Not labeled as Lv50 preview');
   assert.ok(!scene.drawn.some(x=>/locked|inativo|ensinar tm/i.test(x)),
    'Mew shown with a locked, inactive or unearned TM slot');
   assert.ok(scene.label&&!/struggle/i.test(scene.label),'Mew has no real ULT');
