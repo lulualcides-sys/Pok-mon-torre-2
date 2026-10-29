@@ -44,6 +44,9 @@ for(const pokemon of KANTO_151){
   assert.ok(frlgMachineCompatible(pokemon.id,key),
    'Illegal FireRed TM for '+pokemon.id+' '+key);
   assert.ok(level>=30,'High tier cannot unlock in first gyms');
+  // FireRed's ORIGINAL level-up always wins over optional TM mastery.
+  // Paras naturally learns Giga Drain at Lv43; never demand it at Lv38.
+  if(frlgUnlockLevel(pokemon.id,key)!==null)continue;
   if(!native?.forma||isPendingApprovalMove(native))continue;
   renderable++;
   const actual=availableMoves(m(pokemon.id,level)).find(x=>x.id===key);
