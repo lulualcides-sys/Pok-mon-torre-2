@@ -734,11 +734,27 @@ create(){
   // Captures offered after victories are optional. The old guard silently
   // restarted the map forever from Trainer 2 onward.
   if(!wild&&state.pendingCapture){
+   const message='Captura opcional dispensada; próximo treinador liberado.';
+   try{saveCampaign({...state,pendingCapture:null,lastMessage:message});}
+   catch(error){
+    console.warn('Torre 2: optional capture dismissal not saved',error);
+    text(this,320,312,'PROGRESSO NÃO SALVO · TENTE NOVAMENTE',{
+     fontSize:'11px',color:'#ff9d9d'
+    }).setOrigin(.5).setDepth(1000).setData('torre2-battle-save-error',true);
+    return;
+   }
    state.pendingCapture=null;
-   state.lastMessage='Captura opcional dispensada; próximo treinador liberado.';
-   saveCampaign(state);
+   state.lastMessage=message;
   }
-  const match=wild?startWildBattle(state):startBattle(state);
+  let match;
+  try{match=wild?startWildBattle(state):startBattle(state);}
+  catch(error){
+   console.warn('Torre 2: battle checkpoint not saved',error);
+   text(this,320,312,'BATALHA NÃO SALVA · TENTE NOVAMENTE',{
+    fontSize:'11px',color:'#ff9d9d'
+   }).setOrigin(.5).setDepth(1000).setData('torre2-battle-save-error',true);
+   return;
+  }
   const foe={id:match.p2,level:match.torre2.enemyLevel,
    leader:state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
@@ -843,7 +859,16 @@ create(){
    {fontSize:'11px',color:C.gold});
   modalButton(174,292,224,31,'◀ VOLTAR AO MAPA',close);
   modalButton(465,292,224,31,'PROCURAR POKÉMON',()=>{
-   const found=startWildEncounter(state);
+   let found;
+   try{found=startWildEncounter(state);}
+   catch(error){
+    console.warn('Torre 2: wild encounter not saved',error);
+    const notice=text(this,320,266,'ENCONTRO NÃO SALVO · TENTE NOVAMENTE',{
+     fontSize:'11px',color:'#ff9d9d'
+    }).setOrigin(.5).setDepth(620).setData('torre2-wild-save-error',true);
+    this.time.delayedCall(2300,()=>notice.active&&notice.destroy());
+    return;
+   }
    if(found.ok){close();this.enterBattle(state,true);}
    else{
     close();
