@@ -62,8 +62,12 @@ jobs:
             const match=html.match(/src-[0-9a-f]{10}/);
             const file='data/pokearena2d-source-moves.json';
             const previous=fs.existsSync(file)?JSON.parse(fs.readFileSync(file,'utf8')):null;
-            if(match&&previous?.sourceVersion===match[0])needsCapture=false;
-            console.log(JSON.stringify({detected:match?.[0]||null,previous:previous?.sourceVersion||null,needsCapture}));
+            // Compare homepage src to homepage src, not the Phaser modules hash.
+            // Those hashes are distinct; comparing them forced unnecessary full captures.
+            const previousSiteVersion=previous?.siteVersion||null;
+            if(match&&previousSiteVersion===match[0])needsCapture=false;
+            console.log(JSON.stringify({detected:match?.[0]||null,
+              previousSiteVersion,previousModuleVersion:previous?.sourceVersion||null,needsCapture}));
           }catch(error){console.warn('Source probe inconclusive. Full capture required:',String(error));}
           fs.appendFileSync(process.env.GITHUB_OUTPUT,'capture='+(needsCapture?'true':'false')+'\n');
           JS
