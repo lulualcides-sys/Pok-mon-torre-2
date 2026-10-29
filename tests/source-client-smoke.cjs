@@ -369,8 +369,20 @@ const server=http.createServer(async(req,res)=>{
   await league.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await league.waitForFunction(()=>window.__pt2Started===true&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
   await league.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('liga'));
-  await league.waitForFunction(()=>window.__pt2Game?.scene.isActive('liga')&&
-    window.__pt2Game.scene.getScene('liga').celdas?.length>0,null,{timeout:35000});
+  try{
+   await league.waitForFunction(()=>window.__pt2Game?.scene.isActive('liga')&&
+     window.__pt2Game.scene.getScene('liga').celdas?.length>0,null,{timeout:35000});
+  }catch(err){
+   const diag=await league.evaluate(()=>{
+    const game=window.__pt2Game,scene=game?.scene?.getScene('liga');
+    return {started:window.__pt2Started,active:game?.scene?.getScenes(true)?.map(s=>s.scene.key),
+     hasLeague:Boolean(scene),celdas:scene?.celdas?.length,
+     leagueKeys:scene?Object.keys(scene).slice(0,60):[],canvas:!!document.querySelector('#juego canvas')};
+   });
+   console.error('PHASER LEAGUE TIMEOUT DIAGNOSTIC',JSON.stringify({diag,leagueErrors,leagueMisses}));
+   await league.screenshot({path:'test-evidence/kanto-league-timeout.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   const leaguePortraits=await league.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('liga');
    // The original League altered its celdas representation upstream.
