@@ -111,6 +111,13 @@ const server=http.createServer(async(req,res)=>{
       (family.evoluciones?.[stageIndex-1]?.nombre||stage?.nombre||'')).toLowerCase();
      if(!known.has(id)||id==='mewtwo'||uiSeen.has(id))continue;
      scene.irEtapa(stageIndex);
+     // Native P2 lazy-loads each evolved PMD Idle sprite. The tab is NOT
+     // selected until the async Phaser loader completes; wait for real UI.
+     const until=Date.now()+15000;
+     while(scene.etapa!==stageIndex){
+      if(Date.now()>until)throw Error('Evolution tab failed to load: '+id);
+      await new Promise(resolve=>setTimeout(resolve,40));
+     }
      const displayed=scene.etapas[scene.etapa]?.kit||{};
      const battle=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
      uiSeen.add(id);

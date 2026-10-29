@@ -44,7 +44,7 @@ const expected={
     'Public Pages is serving an older build than the deployment just uploaded');
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('pokedex'),
    null,{timeout:90000});
-  const result=await page.evaluate(async({expect,release})=>{
+  const result=await page.evaluate(async({expect,release,auditFull})=>{
    const scene=window.__pt2Game.scene.getScene('pokedex');
    const build=document.querySelector('meta[name="pokemon-torre-build"]')?.content;
    const installed=performance.getEntriesByType('resource').map(x=>x.name)
@@ -85,6 +85,7 @@ const expected={
    const found=new Set(),problems=[],roles=['lmb','rmb','q','e'];
    const savedBefore=JSON.stringify(Object.fromEntries(
     Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
+   if(auditFull){
    for(let i=0;i<scene.casillas.length;i++){
     const family=scene.casillas[i]?.p;
     if(!family)continue;
@@ -98,6 +99,14 @@ const expected={
      // Kanto species ID. They are NOT separate Kanto campaign evolutions.
      if(!eligible.has(id)||found.has(id))continue;
      scene.irEtapa(stageIndex);
+     // PMD Idle sheets load asynchronously on the first evolution click.
+     // Reading immediately after irEtapa() incorrectly inspects the BASE
+     // form (Pidgey instead of Pidgeot, Caterpie instead of Butterfree).
+     const until=Date.now()+15000;
+     while(scene.etapa!==stageIndex){
+      if(Date.now()>until)throw Error('Evolution tab failed to load: '+id);
+      await new Promise(resolve=>setTimeout(resolve,40));
+     }
      const displayed=scene.etapas[scene.etapa]?.kit||{};
      const expectedKit=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
      const computed=kantoDexStages(family)[stageIndex]?.kit||{};
@@ -114,15 +123,17 @@ const expected={
      }
     }
    }
+   }
    const savedAfter=JSON.stringify(Object.fromEntries(
     Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
    if(savedBefore!==savedAfter)
     problems.push({kind:'public Pokédex inspection modified player save'});
-   const kanto={eligible:eligible.size,visible:found.size,
+   const kanto=auditFull?{eligible:eligible.size,visible:found.size,
     missing:[...eligible].filter(id=>!found.has(id)),
-    problems:problems.slice(0,40),totalProblems:problems.length};
+    problems:problems.slice(0,40),totalProblems:problems.length}:null;
    return{build,installed,cardCount:scene.casillas.length,observations,kanto};
-  },{expect:expected,release:version.modules});
+  },{expect:expected,release:version.modules,
+   auditFull:process.env.POKEDEX_FULL_PUBLIC_AUDIT==='1'});
   const report={url,build:result.build,publicVersion:version.modules,
    installed:result.installed,cardCount:result.cardCount,
    observations:result.observations,kanto:result.kanto,errors,missing};
