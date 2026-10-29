@@ -11,7 +11,7 @@ const base=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const {modules}=JSON.parse(fs.readFileSync(path.join(base,'version.json'),'utf8'));
 const load=p=>import(pathToFileURL(path.join(base,modules,p)).href);
 const [{KANTO_151},{TEST_LIBRARY,availableMoves,selectedMoves,resolveLoadout,
- moveUnlockLevel,equipMove,isCampaignUltimateOnlyMove}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
+ moveUnlockLevel,campaignLearnset,equipMove,isCampaignUltimateOnlyMove}, {chooseKantoSignatureUlt,verifiedLevelUpNames},
  {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS},
  {GEN4_HGSS_KANTO_LEVEL_UP,GEN5_B2W2_KANTO_LEVEL_UP},
  {GEN7_LETSGO_LEVEL_UP},{GEN5_KANTO_LEVEL_UP},{EARLY_KANTO_LEARNSETS}]
@@ -126,6 +126,17 @@ const surfSave={...make('squirtle',50),tmMoves:['surf']};
 const surfSaveBefore=JSON.stringify(surfSave);
 assert.ok(!availableMoves(surfSave).some(m=>m.id==='surf'));
 assert.equal(JSON.stringify(surfSave),surfSaveBefore);
+// The Pokédex reads campaignLearnset, not just the battle menu. A rejected
+// renderer must not appear as an allegedly teachable HM in that index.
+for(const id of ['squirtle','blastoise','lapras','vaporeon','dragonite']){
+ const rows=campaignLearnset(id);
+ assert.ok(!rows.some(row=>row.id==='surf'),
+  id+' Pokédex incorrectly advertises rejected Surf as a TM/HM');
+ assert.equal(moveUnlockLevel(make(id,50),'surf'),null,
+  id+' unlock index disagrees with rejected Surf');
+}
+assert.ok(TEST_LIBRARY.some(m=>m.id==='surf'&&m.forma),
+ 'Existing Surf renderer must remain intact for historical review');
 assert.ok(!resolveLoadout(make('charmander',5)).lmb?.torre2IntroFallbackFX,
  'Deferred Scratch must not impersonate a Tackle renderer');
 const saved={...make('squirtle',50),
