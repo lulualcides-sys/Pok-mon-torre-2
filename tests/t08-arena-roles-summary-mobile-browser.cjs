@@ -75,9 +75,9 @@ const server=http.createServer(async(req,res)=>{
   },id);
   const findPage=async(id,slot,teamIndex=1)=>{
    for(let p=0;p<15;p++){
-    await page.evaluate(([nextSlot,nextPage])=>
-     __pt2Game.scene.getScene('campanha').showSummary(__roleState,teamIndex,nextSlot,nextPage),
-     [slot,p]);
+    await page.evaluate(([nextTeam,nextSlot,nextPage])=>
+     __pt2Game.scene.getScene('campanha').showSummary(__roleState,nextTeam,nextSlot,nextPage),
+     [teamIndex,slot,p]);
     const found=await locate(id);
     if(found)return found;
    }
