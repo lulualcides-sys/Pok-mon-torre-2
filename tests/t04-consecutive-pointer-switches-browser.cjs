@@ -84,15 +84,19 @@ const server=http.createServer(async(req,res)=>{
    foe.hp=foe.hpMax;foe.est={};foe.dolorHasta=-1;
    foe.accion=null;foe.dash=null;
    const dir=foe.x>=me.x?1:-1;
-   foe.x=me.x+dir*82;foe.y=me.y;
+   // The native difficult AUTO may kite past the 640x360 arena edge
+   // while waiting for a melee slot. Keep the pre-hit POSITION fixture
+   // visible and within Double Kick range, never altering HP/energy/AI.
+   me.x=320;me.y=180;me.spr?.setPosition(me.x,me.y);
+   foe.x=me.x+dir*62;foe.y=me.y;
    foe.spr?.setPosition(foe.x,foe.y);
-   // Isolated POSITION fixture: follow a retreating AUTO fighter ONLY
-   // between casts. During a native lunge, the passive target must stay put:
-   // otherwise it would move away with the attacker and make melee miss.
+   // Stabilize only idle actors; a native lunge and its real hit callback
+   // must execute untouched. The pointer recall remains a genuine click.
    const followTarget=()=>{
     if(b.__t04FirstHit){b.events.off('update',followTarget);return;}
-    if(me.accion)return;
-    foe.x=me.x+dir*82;foe.y=me.y;
+    if(me.accion||me.dash)return;
+    me.x=320;me.y=180;me.spr?.setPosition(me.x,me.y);
+    foe.x=me.x+dir*62;foe.y=me.y;
     foe.spr?.setPosition(foe.x,foe.y);
     me.ax=foe.x;me.ay=foe.y;
    };
