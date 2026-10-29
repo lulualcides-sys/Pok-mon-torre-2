@@ -690,6 +690,17 @@ for(const [filename,changes] of patches){
     body=body.replace(match[0],'import{'+imports.join(',')+'}from"../sprites.js";');
     continue;
    }
+   // Native selection now computes mode-button x positions differently.
+   // We already removed VERSUS and kept only VS CPU / TRAINING above.
+   // Do not guess new hitbox positions by patching an obsolete literal.
+   if(filename==='escenas/seleccion.js'&&
+      from==='ANCHO/2-130+i*130,27,m.nombre'&&
+      to==='ANCHO/2-67+i*134,27,m.nombre'){
+    if(!body.includes('const MODOS=[{id:"cpu",nombre:"VS CPU"},{id:"entreno",nombre:"TRAINING"}];'))
+     throw Error('Cannot preserve new native mode positioning without solo-mode filter');
+    console.warn('Original selection mode-button positioning changed upstream; native coordinates kept');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
