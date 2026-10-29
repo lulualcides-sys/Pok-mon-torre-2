@@ -1,0 +1,55 @@
+name: T04 — native HUD evolution prompt compatibility
+on:
+  push:
+    branches: [fix/t04-evolution-hud-native-removal-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  evolution-hud:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit, source syntax and approved VFX integrity
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/evolution-modes-built.test.mjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture current native source and compile real Phaser client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+               && node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+          node tools/pokearena/audit-moves.mjs
+      - name: Native EVO in other modes and hidden only in Kanto
+        run: |
+          set -euo pipefail
+          node tests/solo-kanto-built.test.mjs
+          node tests/evolution-modes-built.test.mjs
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+      - name: Native Chromium browser and real touch
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          node tests/t08-summary-mobile-choice-browser.cjs
+      - name: Evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t04-native-evolution-hud-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14
