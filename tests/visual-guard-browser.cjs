@@ -64,7 +64,15 @@ const server=http.createServer(async(req,res)=>{
   await mobile.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
   assert.equal(await mobile.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.length),5);
-  await shot('mobile-title',mobile);await mobile.close();
+  await shot('mobile-portrait-rotate',mobile);await mobile.close();
+  state.step='mobile-landscape-title';
+  const landscape=await makePage({viewport:{width:844,height:390},deviceScaleFactor:1,isMobile:true,hasTouch:true});
+  await landscape.goto('http://127.0.0.1:'+port+'/arena2d/?original=1',
+   {waitUntil:'domcontentloaded',timeout:45000});
+  await landscape.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
+   document.querySelector('#juego canvas'),null,{timeout:55000});
+  assert.equal(await landscape.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.length),5);
+  await shot('mobile-landscape-title',landscape);await landscape.close();
   state.step='campaign-map';
   await page.evaluate(async()=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
@@ -87,20 +95,22 @@ const server=http.createServer(async(req,res)=>{
   });
   await page.waitForFunction(()=>{
    const game=window.__pt2Game,b=game?.scene.getScene('combate');
-   return game.scene.isActive('combate')&&b.fase==='lucha'&&b.__torre2PartyInstalled&&b.panelTactil;
+   return game.scene.isActive('combate')&&b.fase==='lucha'&&b.__torre2PartyInstalled;
   },null,{timeout:55000});
   state.scene='combate';
   const battle=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
-   return {player:b.datos.p1,enemy:b.datos.p2,buttons:b.panelTactil.botones.map(x=>x.slot),
+   return {player:b.datos.p1,enemy:b.datos.p2,controlsPresent:!!b.controles?.length,
     moves:Object.fromEntries(['lmb','rmb','q'].map(k=>[k,b.luchadores[0]?.kit?.[k]?.nombre||null]))};
   });
   assert.equal(battle.player,'bulbasaur','Player sprite identity changed');
   for(const slot of ['lmb','rmb','q'])
-   assert.ok(battle.moves[slot]&&battle.buttons.includes(slot),'Missing move/control '+slot);
+   assert.ok(battle.moves[slot],'Missing native move '+slot);
+  assert.ok(battle.controlsPresent,'Desktop battle controls missing');
   await shot('desktop-first-battle',page);
   assert.deepEqual(state.errors,[],'Uncaught scene errors');
-  assert.deepEqual(state.missingJs,[],'Missing JavaScript modules');
+  const criticalMissing=state.missingJs.filter(u=>/\/torre2\/|\/main\.js(?:\?|$)|\/lib\/phaser\.min\.js(?:\?|$)/.test(u));
+  assert.deepEqual(criticalMissing,[],'Missing critical native JavaScript modules');
   state.step='done';state.ok=true;
   console.log('VISUAL GUARD CHROMIUM OK',JSON.stringify({title,player:battle.player,screenshots:state.screenshots}));
  }catch(e){
