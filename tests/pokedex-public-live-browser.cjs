@@ -29,8 +29,9 @@ const expected={
   const errors=[],missing=[],failedRequests=[];
   page.on('pageerror',e=>errors.push(String(e)));
   page.on('requestfailed',request=>{
+   const failure=request.failure();
    if(failedRequests.length<40)failedRequests.push({
-    url:request.url(),error:request.failure()?.errorText||'unknown'
+    url:request.url(),error:typeof failure==='string'?failure:(failure?.errorText||'unknown')
    });
   });
   page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(base))missing.push([r.status(),r.url()])});
