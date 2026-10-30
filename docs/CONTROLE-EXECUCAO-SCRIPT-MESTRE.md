@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8/33/37 · publicação versus auditoria pública independente
+
+- **§37 publicação comprovada:** Pages #41050085664, SHA `477dac7410ad7a89f73dfb9a9946187cbdbca657`, Chromium público `src-dc921f3851` na checagem de sete casos.
+- **§§7/8/33 permanecem PARCIAIS:** auditoria independente #41050887159 timeout na ativação da cena após 90 s; sem artifact. Patch diagnóstico em PR isolada, sem alterar runtime/VFX/saves e sem enfraquecer validação de 150 espécies. Exigir nova CI e resultado completo antes de homologar.
+- **§20 PARCIAL:** PR #329 ainda aberta, Brock não comprovado; PRs concorrentes #352/#353 tratam captura, sem sobreposição neste lote.
+
 ## 30/10/2026 — §§7/8/33/36/37 · Surf VFX aprovado ≠ HM liberado (lote em validação)
 
 - **§7/§8 PARCIAIS:** corrigida a orientação obsoleta que chamava Surf de reprovado. VFX aprovado deve permanecer no catálogo; aquisição TM/HM da campanha continua separada. Teste compilado agora verifica imutabilidade do renderer Surf após consultas; Scratch/Transform adiados. Nenhum VFX, moveset, save ou regra de desbloqueio foi alterado.
