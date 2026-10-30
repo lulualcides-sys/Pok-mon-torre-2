@@ -10,11 +10,28 @@ export function setWeather(state,kind){
  if(!Object.hasOwn(WEATHER_NAMES,kind))return false;
  state.kind=kind;state.remaining=kind==='none'?0:WEATHER_DURATION;state.elapsed=0;state.revision++;return true;
 }
-export function weatherDamageMultiplier(state,type,move=''){
- const kind=state?.kind||'none';let factor=1;
- if(kind==='sun')factor=type==='FIRE'?1.5:type==='WATER'?.5:1;
- if(kind==='rain')factor=type==='WATER'?1.5:type==='FIRE'?.5:1;
+// Torre 2's requested 20% gym/campaign type-affinity bonus is NOT the
+// original Gen III +50% move-type boost. A matching species gains exactly
+// +20% direct attack damage, including coverage moves. Dual types do not stack.
+// The existing sun/rain *penalties* and Solar Beam drawback remain intact.
+export const WEATHER_AFFINITY_TYPES=Object.freeze({
+ sun:Object.freeze(['FIRE']),
+ rain:Object.freeze(['WATER']),
+ sand:Object.freeze(['ROCK','GROUND','STEEL']),
+ hail:Object.freeze(['ICE'])
+});
+export const WEATHER_AFFINITY_BONUS=1.2;
+export function weatherDamageMultiplier(state,type,move='',attackerTypes=[]){
+ const kind=state?.kind||'none';
+ if(kind==='none'||!(Number(state?.remaining)>0))return 1;
+ let factor=1;
+ if(kind==='sun'&&type==='WATER')factor*=.5;
+ if(kind==='rain'&&type==='FIRE')factor*=.5;
  if(isSolarBeam(move)&&['rain','sand','hail'].includes(kind))factor*=.5;
+ // Use the attacker's native live types, not pre-evolution/metadata or the
+ // defender types. A species benefits only from its own matching weather.
+ if(Array.isArray(attackerTypes)&&attackerTypes.some(t=>
+   WEATHER_AFFINITY_TYPES[kind]?.includes(t)))factor*=WEATHER_AFFINITY_BONUS;
  return factor;
 }
 export function weatherRecoveryFraction(state){return state?.kind==='sun'?2/3:!state||state.kind==='none'?1/2:1/4;}
