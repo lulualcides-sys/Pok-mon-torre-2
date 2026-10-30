@@ -63,7 +63,7 @@ test('Author-defined leaders and wild captures retain their exact species and te
 });
 
 test('Campaign cooldown is exactly 1.5 seconds for Charge Beam and Supersonic',()=>{
- assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5});
+ assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8});
  for(const label of ['Charge Beam','Supersonic']){
   const native={nombre:label,cd:5.8,forma:'proyectil',dano:4};
   const copy=moves.balanceCampaignQuickCooldown(native);
