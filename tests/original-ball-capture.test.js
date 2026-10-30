@@ -49,6 +49,7 @@ test('success creates up to three brief, bounded stars; never a permanent dot ri
   }
  }
  assert.equal(gotchaSparklePoints(.1).length,3,'Three stars must be visible early in the GOTCHA animation');
+ assert.ok(gotchaSparklePoints(.1).some(p=>p.y>0),'One success star must remain below the ball, outside the GOTCHA panel');
  assert.deepEqual(gotchaSparklePoints(1),[]);
 });
 test('GOTCHA sparkles use crisp small pixel crosses, not rings or big particles',()=>{
