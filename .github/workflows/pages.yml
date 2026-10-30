@@ -43,6 +43,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Guardião rápido das imagens de referência aprovadas
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/dev/approved-visual-guard.mjs
       - name: Adicionar cliente Phaser autorizado do Poké Arena como arena isolada
         shell: bash
         run: |
@@ -127,6 +132,19 @@ jobs:
           CHROME_BIN="$(command -v google-chrome)" node tests/surge-shop-rematch-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
+      - name: Guardião Chromium — título mobile, mapa e batalha (sem novo build)
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/visual-guard-browser.cjs
+      - name: Resumo automático de erro antes do deploy
+        if: failure()
+        shell: bash
+        env:
+          CI_RESULT: failure
+        run: |
+          node tools/dev/ci-diagnostics.mjs --stage pages-predeploy
+          cat test-evidence/visual-guard/diagnostic.md >> "$GITHUB_STEP_SUMMARY"
       - name: Arquivar evidência visual do motor Phaser
         if: always()
         uses: actions/upload-artifact@v4
@@ -234,3 +252,19 @@ jobs:
           path: test-evidence/pokedex-public-*
           retention-days: 14
           if-no-files-found: warn
+      - name: Registrar falhas posteriores à etapa de publicação
+        if: failure()
+        shell: bash
+        env:
+          CI_RESULT: failure
+        run: |
+          node tools/dev/ci-diagnostics.mjs --stage pages-postdeploy
+          cat test-evidence/visual-guard/diagnostic.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Arquivar relatório final de falhas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-guard-pages-final-${{ github.run_attempt }}
+          path: test-evidence/visual-guard/
+          if-no-files-found: warn
+          retention-days: 14
