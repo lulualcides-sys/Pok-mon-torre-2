@@ -1,15 +1,9 @@
 name: Surge, TM badge gate, sprite shop and all-map VS Seeker
 on:
+  push:
+    branches: [fix/surge-tm-sprites-all-route-rematches-20261030]
   pull_request:
-    paths:
-      - 'tools/pokearena/torre2-*.js'
-      - 'tools/pokearena/surge3/catalog.js'
-      - 'tests/surge-shop-rematch-allmaps-built.test.mjs'
-      - 'tests/surge3-built.test.mjs'
-      - 'tests/rematches-built.test.mjs'
-      - 'tests/t23-kanto-mart-tm-integrity-built.test.mjs'
-      - 'tests/t05-mart-purchase-atomic-built.test.mjs'
-      - '.github/workflows/surge-shop-rematch-ci.yml'
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
