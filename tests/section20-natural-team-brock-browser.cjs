@@ -309,6 +309,7 @@ const server=http.createServer(async(req,res)=>{
  const validateNaturalIvysaur=process.env.T03_NATURAL_EVOLUTION==='1';
   let earlyTeamReady=false;
   let naturalRetries=0;
+  const retriesPerCheckpoint=new Map();
   for(let round=0;round<total;round++){
    if(round===5&&!earlyTeamReady){await prepareNaturalTeam({minimumTeam:2});await trainNaturalTeam();before=await game();earlyTeamReady=true;}
    // Fund the second genuine catch from route prize money if the first
@@ -465,11 +466,26 @@ const server=http.createServer(async(req,res)=>{
     report.realDefeats.push(defeat);
     console.log('T20 GENUINE ROUTE DEFEAT',JSON.stringify(defeat));
     saveReport();
-    if(++naturalRetries>3)
-     throw Error('Too many genuine losses; review balance, never forge results: '+
-      JSON.stringify(report.realDefeats));
+    // Genuine losses remain in the save. A global three-loss ceiling
+    // incorrectly exhausts the Rocket and Fire rival retry budgets together.
+    // Limit retries per actual checkpoint AND across the whole route.
+    naturalRetries++;
+    const checkpointLosses=(retriesPerCheckpoint.get(round)||0)+1;
+    retriesPerCheckpoint.set(round,checkpointLosses);
+    if(checkpointLosses>3||naturalRetries>7)
+     throw Error('Genuine route loss budget exceeded; investigate combat balance: '+
+      JSON.stringify({checkpoint:round+1,checkpointLosses,naturalRetries,defeats:report.realDefeats}));
     await centerHeal();
     before=await game();
+    // Improve the team's chances through real grass encounters and XP only.
+    // No direct edits to level, enemy HP, RNG, money, KO or battle winner.
+    if(round===5||round===12||round===13){
+     const goal=round===5?12:Math.max(15,Math.min(16,before.team[0].level+1));
+     if(before.team[0].level<goal){
+      await trainNaturalTeam({targetStarterLevel:goal,maxRounds:16});
+      before=await game();
+     }
+    }
     --round;
     continue;
    }
