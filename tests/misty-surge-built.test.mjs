@@ -71,14 +71,20 @@ for(const id of families){
   if(unlocked&&slots[3]===ultimate)assert.equal(loadout.e?.ulti,true,
    species+' should activate its ULT once really unlocked');
   if(!unlocked){
-   // The Lv8 tutorial ULT uses a weak approved renderer; it never borrows
-   // the future canonical ultimate of this Pokémon or its evolution.
+   // Lv8 uses a capped training preview. At later earned levels a
+   // different, genuinely unlocked species attack may replace that preview
+   // as the E ultimate; never borrow the still-locked planned E finisher.
    if(level>=8){
-    assert.ok(loadout.e?.torre2IntroPractice&&loadout.e?.ulti,
-     species+' must receive only a safe tutorial ULT');
-    assert.ok(loadout.e.dano<=12,species+' ULT must remain weak');
-    assert.notEqual(canonicalMoveKey(loadout.e.torre2IntroSource),ultimate,
-     species+' cannot borrow a future/evolved finisher');
+    assert.ok(loadout.e?.forma&&loadout.e?.ulti,
+     species+' must retain a playable energy-gated E slot');
+    if(loadout.e.torre2IntroPractice){
+     assert.ok(loadout.e.dano<=12,species+' preview ULT must remain weak');
+    }else{
+     assert.ok(availableMoves(member).some(m=>m.id===loadout.e.id),
+      species+' E is not a genuinely learned move');
+    }
+    assert.notEqual(canonicalMoveKey(loadout.e.torre2IntroSource||loadout.e.id),
+     ultimate,species+' cannot borrow a future/evolved finisher');
    }else assert.equal(loadout.e,undefined,'ULT blocked until Lv8');
   }
   if(evolved){
@@ -212,13 +218,18 @@ for(const [from,to] of [['gloom','vileplume'],['poliwhirl','poliwrath']]){
  for(const slot of ['lmb','rmb','q','e'])
   assert.ok(kit[slot]?.forma,to+' evolved battle slot '+slot+' is empty');
 }
-// Pokédex uses the exact active Arena/VS CPU evolved kit, whereas the
-// Kanto campaign has its own level/TM-gated selectable loadouts.
+// Kanto Pokédex must show the campaign's legally selectable level-50
+// preview, not native Arena-only TM moves, fake LOCKED placeholders or
+// the unrestricted Lv100 debug kit. The Arena/VS original stays untouched.
 const dexCode=fs.readFileSync(file('escenas/pokedex.js'),'utf8');
 assert.match(dexCode,/function kantoDexStages\(def\)/);
-assert.match(dexCode,/const h=original\[slot\]/);
-assert.doesNotMatch(dexCode,/const equipped=resolveLoadout\(member\)/,
- 'Other-mode Pokédex must not be replaced by campaign level-100 kit');
+assert.match(dexCode,/const member=\{id:species,progression:\{species,level:50\},tmMoves:\[\]\}/);
+assert.match(dexCode,/const resolved=resolveLoadout\(member\)/);
+assert.match(dexCode,/const unlocked=new Map\(campaignLearnset\(species\)/);
+assert.match(dexCode,/if\(!h\?\.id\|\|!h\?\.nombre\|\|!h\?\.forma\|\|!unlocked\.has\(h\.id\)\)/);
+assert.match(dexCode,/torre2RequiresTM:false,torre2UnlockLevel:unlocked\.get\(h\.id\)/);
+assert.doesNotMatch(dexCode,/const h=selectPokedexArenaMove\(stage\.kit/,
+ 'Do not reintroduce the original bug: a native TM must not override a legal campaign skill');
 assert.match(dexCode,/this\.etapas=kantoDexStages\(p\)/);
 for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
  assert.ok(dexCode.includes('"'+role+'"'),'Missing Pokédex role '+role);
@@ -261,8 +272,10 @@ for(const foe of surgeMatch.foes){
 }
 assert.equal(surgeMatch.foes[0].loadout.rmb.forma,'torre2_surge_sonic_boom');
 assert.equal(surgeMatch.foes[0].loadout.q.forma,'torre2_surge_screech');
-for(const foe of surgeMatch.foes.slice(1))
- assert.equal(foe.loadout.rmb.forma,'torre2_surge_thunder_wave');
+assert.equal(surgeMatch.foes[1].loadout.rmb.nombre,'Thunder Shock');
+assert.equal(surgeMatch.foes[2].loadout.rmb.forma,'torre2_surge_thunder_wave');
+assert.equal(surgeMatch.foes[2].loadout.e.nombre,'Thunderbolt');
+assert.equal(surgeMatch.foes[2].loadout.q.nombre,'Shock Wave');
 assert.equal(TEST_LIBRARY.filter(x=>x.nombre==='Dragon Pulse').length,1);
 const regionSource=fs.readFileSync(file('torre2/battle-path.js'),'utf8');
 assert.match(regionSource,/ROTA 3  >  MT. MOON/);

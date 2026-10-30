@@ -80,7 +80,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(fixture.extras.badges.length,1);
   assert.equal(fixture.extras.tms.length,1);
   assert.ok(fixture.lines.some(s=>s.includes('IVYSAUR')));
-  assert.ok(fixture.lines.some(s=>s.includes('GOLPE: RAZOR LEAF')));
+  assert.ok(fixture.lines.some(s=>s.includes('IVYSAUR: NOVO GOLPE · RAZOR LEAF')),
+   'The native mobile report must name the move recipient, not just the attack');
   const beforeReportPage=fixture.lines.join(' | ');
   await page.screenshot({path:'test-evidence/t27-mobile-battle-report-page1.png'});
   await touch(570,280);

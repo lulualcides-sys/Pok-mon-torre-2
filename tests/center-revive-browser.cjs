@@ -73,6 +73,22 @@ const server=http.createServer(async(req,res)=>{
    });
    assert.equal(busy.busy,true);assert.equal(busy.locked,true);
    assert.deepEqual(busy.hp,entry.hp,'center does not write save before healing animation');
+   // Verify the actual animated Phaser Image texture, not only the drawing
+   // helper's source code. Each present team member gets ONE approved sprite.
+   const balls=await page.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const images=c.children.list.filter(o=>o.active&&o.getData?.('torre2-center-heal-ball')!==undefined);
+    return images.map(o=>({type:o.type,texture:o.texture?.key,size:o.displayWidth,
+     alpha:o.alpha,tweening:c.tweens.getTweensOf(o).length>0}));
+   });
+   assert.equal(balls.length,entry.hp.length,'Center should show actual team size');
+   for(const icon of balls){
+    assert.equal(icon.type,'Image','Healing ball must be a cached Phaser Image');
+    assert.equal(icon.texture,'torre2-original-ball-pokeball','Only approved crisp texture');
+    assert.equal(icon.size,32,'Center ball remains native 2x pixel size');
+    assert.ok(icon.alpha>=.27&&icon.alpha<=1,'Healing pulse keeps its alpha range');
+    assert.equal(icon.tweening,true,'Existing glowing heal tween must still run');
+   }
    await page.screenshot({path:'test-evidence/center-heal-'+label+'-start.png',fullPage:true});
    // The confirmation zone exists only for 450ms. Screenshots/Chrome capture
    // may miss that narrow window. Inspect the durable save, not a transient UI.

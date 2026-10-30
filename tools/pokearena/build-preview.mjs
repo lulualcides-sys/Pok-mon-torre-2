@@ -4,6 +4,9 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import {createHash} from 'node:crypto';
+import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
+import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
+import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -39,6 +42,10 @@ const {installFRLGNPCs}=await import('./install-frlg-npcs.mjs');
 const originalNPCs=await installFRLGNPCs(dest);
 const {installBadgeSprites}=await import('./install-badge-sprites.mjs');
 await installBadgeSprites(dest);
+// Bundle authentic FRLG GBA item icons locally; no runtime network dependency.
+const {installFRLGMartItems}=await import('./install-frlg-mart-item-icons.mjs');
+const martIcons=await installFRLGMartItems(dest);
+console.log('Original FireRed Mart item icons verified:',JSON.stringify(martIcons));
 
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');
@@ -107,6 +114,21 @@ await fs.writeFile(index,html);
 // every animation for every Pokémon before showing the menu on Android.
 const clientSource=html.match(/src="(src-[0-9a-f]{10})\/main\.js"/)?.[1];
 if(!clientSource)throw Error('Original Phaser source directory missing');
+// The original client still preloads eight League PNGs that are no longer in
+// its asset snapshot. Recreate only missing textures from its own native
+// 8x8 icon patterns, never replacing available upstream or approved art.
+const {installMissingNativeLeagueIcons}=await import('./install-native-league-icons.mjs');
+await installMissingNativeLeagueIcons(dest,clientSource);
+// Original League can still import ponerRetrato after Poké Arena replaced its
+// sprite helper with casillaRetrato. Ensure the missing named export exists in
+// our isolated copy, using only the already approved/native PMD texture.
+const portraitModulePath=path.join(dest,clientSource,'sprites.js');
+const portraitModuleSource=await fs.readFile(portraitModulePath,'utf8');
+const compatiblePortraitModule=ensureNativePortraitExport(portraitModuleSource);
+if(compatiblePortraitModule!==portraitModuleSource){
+ await fs.writeFile(portraitModulePath,compatiblePortraitModule);
+ console.log('Original League portrait compatibility installed (native textures only)');
+}
 const selectionFile=path.join(dest,clientSource,'escenas/seleccion.js');
 const {paginateSelectionSource}=await import('./torre2-selection-pages.mjs');
 await fs.writeFile(selectionFile,paginateSelectionSource(await fs.readFile(selectionFile,'utf8')));
@@ -169,6 +191,7 @@ await Promise.all([
  ['tools/pokearena/torre2-gen3-status.js','gen3-status.js'],
  ['tools/pokearena/torre2-trainer-items.js','trainer-items.js'],
  ['tools/pokearena/torre2-trainer-strategy.js','trainer-strategy.js'],
+ ['tools/pokearena/gym-leader-loadouts.js','gym-leader-loadouts.js'],
  ['tools/pokearena/torre2-training.js','training.js'],
  ['tools/pokearena/torre2-weather.js','weather.js'],
  ['tools/pokearena/torre2-weather-pixels.js','weather-pixels.js'],
@@ -178,6 +201,7 @@ await Promise.all([
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
+ ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
  ['tools/pokearena/torre2-battle-report.js','battle-report.js'],
  ['tools/pokearena/torre2-hall-of-fame.js','hall-of-fame.js'],
@@ -192,6 +216,7 @@ await Promise.all([
  ['tools/pokearena/torre2-frlg-interiors.js','frlg-interiors.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
  ['tools/pokearena/torre2-kanto-intro-moves.js','kanto-intro-moves.js'],
+ ['tools/pokearena/kanto-ultimate-policy.js','kanto-ultimate-policy.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
  ['tools/pokearena/torre2-finale13.js','finale13.js'],
  ['tools/pokearena/torre2-finale13-catalog.js','torre2-finale13-catalog.js'],
@@ -215,6 +240,8 @@ await Promise.all([
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
+ ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
+ ['tools/pokearena/torre2-arena-native-dodges.js','arena-native-dodges.js'],
  ['tools/pokearena/torre2-auto-battle.js','auto-battle.js'],
  ['tools/pokearena/torre2-audio-settings.js','audio-settings.js'],
  ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js'],
@@ -472,7 +499,7 @@ patches.push(['luchador.js',[
  ['recibir(fuente,g){if(this.ko)return"nada";',
   'recibir(fuente,g){if(this.ko)return"nada";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente?.est?.torre2SandAccuracy&&Math.random()<(fuente.est.torre2SandAccuracy.chance??.28))return"miss";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente&&fuente!==this&&weatherThunderMiss(this.escena.__torre2Weather,g?.nombre||fuente.kit?.[g?.slot]?.nombre))return"miss";'],
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);',
-  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;d*=weatherDamageMultiplier(e.__torre2Weather,g.tipo,g.nombre||fuente?.kit?.[g.slot]?.nombre);}']
+  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;d*=weatherDamageMultiplier(e.__torre2Weather,g.tipo,g.nombre||fuente?.kit?.[g.slot]?.nombre,g.tick?[]:fuente?.tipos);}']
 ]]);
 // Native Poké Arena anotarEntreno(d) writes registroDano.push() even after
 // direct damage in a Torre 2 trainer or laboratory fight. Unlike original
@@ -562,6 +589,11 @@ for(const [filename,changes] of patches){
    // Only Kanto's Phaser code is altered by this patch; never block its
    // release on an unrelated legacy-mode preload variation.
    if(filename==='escenas/liga.js'){
+    // Preserve the portrait helper exported by this native Poké Arena version.
+    if(from.startsWith('import{dexAspecto,ponerRetrato}')){
+     body=ensureLeagueSpriteImports(body);
+     continue;
+    }
     // The native League has changed its init signature, but its PMD
     // portraits still must be preloaded BEFORE create() builds the cards.
     if(from.startsWith('init(datos)')){
@@ -625,6 +657,200 @@ for(const [filename,changes] of patches){
     console.warn('Upstream removed legacy freeze reduction; scoped patch not needed');
     continue;
    }
+   // Site original reordered the native ability constructors in October.
+   // Add vetted Phaser VFX by catalog key: no native move is reordered,
+   // overridden or removed by this compatibility adaptation.
+   if(filename==='habilidades.js'&&from.startsWith('const FORMAS={')&&
+      to.includes('...TORRE2_FORMS,')){
+    body=addTorre2FormsToNativeCatalog(body);
+    continue;
+   }
+   // Later native form inserts are located by semantic key, never by
+   // original FORMAS constructor ordering. No approved VFX is replaced.
+   if(filename==='habilidades.js'&&
+      from.startsWith('torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(')&&
+      to.startsWith('torre2_steelbeam:')){
+    const before='torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(l,h,extra,FORMAS),';
+    const steel='torre2_steelbeam:(l,h,extra)=>TORRE2_FORMS.torre2_steelbeam(l,h,extra,chorro),';
+    if(!body.includes(before)||!body.includes('const FORMAS={...TORRE2_FORMS,')||
+       !body.includes('chorro')||body.includes(steel))
+     throw Error('Unknown native Phaser abilities catalog; cannot safely install Steel Beam');
+    body=body.replace(before,steel+before);
+    continue;
+   }
+   // Native status callbacks changed in a newer upstream client. The
+   // campaign's Gen III status interceptor is already attached above to
+   // ponerEstado itself; do not rewrite an unrelated native poison handler.
+   if(filename==='luchador.js'&&
+      from.startsWith('this.ponerEstado("veneno",v.dur,')&&
+      to.includes('v.toxic?"toxic":"veneno"')){
+    const pattern=/this\.ponerEstado\(\s*"veneno"\s*,\s*v\.dur\s*,\s*\{[^}]{0,140}\}\s*\)/;
+    const match=body.match(pattern);
+    if(match){
+     body=body.replace(match[0],to);
+    }else if(body.includes('applyGen3Status(this,nombre,datos)')&&
+             body.includes('ponerEstado(')){
+     console.warn('Native poison invocation changed; Kanto Gen3 status interceptor retained');
+    }else throw Error('Cannot identify native status interceptor after upstream poison change');
+    continue;
+   }
+   // The native training damage recorder now initializes differently.
+   // Keep its original implementation; only ensure Kanto battles have
+   // the native damage ledger before the unchanged recorder runs.
+   if(filename==='escenas/combate.js'&&
+      from.startsWith('anotarEntreno(d){this.registroDano.push(')&&
+      to.includes('this.datos?.torre2&&!Array.isArray')){
+    const entry='anotarEntreno(d){';
+    const updated=body.match(/anotarEntreno\(d(?:,[^)]*)?\)\{/g)||[];
+    if(updated.length>1)throw Error('Ambiguous native training recorder; refusing duplicate patch');
+    if(!updated.length){
+     // The original game removed the old damage ledger callback. This
+     // legacy null-array guard is no longer relevant; do not invent a
+     // replacement that would overwrite the upstream training engine.
+     console.warn('Native anotarEntreno removed; old campaign ledger patch not needed');
+     continue;
+    }
+    const guard='if(this.datos?.torre2&&!Array.isArray(this.registroDano)){this.registroDano=[];this.comboActual=0;this.mejorCombo=0;this.ultimoGolpeEntreno=-Infinity;this.ultimoDano=0;}';
+    if(!body.includes(guard))body=body.replace(updated[0],updated[0]+guard);
+    continue;
+   }
+   // The native fighter's speed getter now carries additional modifiers.
+   // Wrap only the original base speed sum; never discard native modifiers
+   // or apply our movement normalization outside added Kanto species.
+   if(filename==='luchador.js'&&from.startsWith('get velBase(){return')&&
+      to.includes('synchronizedArenaSpeed(')){
+    const begin='get velBase(){',start=body.indexOf(begin);
+    const end=start<0?-1:body.indexOf('}',start+begin.length);
+    const native='this.forma.vel+(this.mega?this.forma.mega.vel:0)';
+    if(start<0||end<0||body.indexOf(begin,start+1)>=0||
+       !body.slice(start,start+350).includes(native))
+     throw Error('Unrecognized native speed getter: '+body.slice(start,start+250));
+    const updated='synchronizedArenaSpeed('+native+
+      ',{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,campaign:!!this.escena.datos?.torre2})';
+    body=body.slice(0,start)+body.slice(start).replace(native,updated);
+    continue;
+   }
+   // The original team-selection renderer changed its metadata field
+   // names. Retain its updated built-in role/kit fallbacks; only fix the
+   // previous exact unguarded expression if it still exists.
+   if(filename==='escenas/seleccion.js'&&from==='const R=ROLES[r];'){
+    if(body.includes('const R=ROLES[r]'))body=body.replace(
+     'const R=ROLES[r]','const R=ROLES[r]??ROLES.MIXTO');
+    else console.warn('Native team selection changed role lookup; preserving original');
+    continue;
+   }
+   if(filename==='escenas/seleccion.js'&&
+      from.startsWith('const h=p.kit[slot];const ky=')){
+    if(body.includes('const h=p.kit[slot]'))
+     body=body.replace('const h=p.kit[slot]',
+      'const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0}');
+    else console.warn('Native team selection changed kit lookup; preserving original');
+    continue;
+   }
+   // October upstream adjusted the fighter's underlying Defense formula.
+   // Wrap its ORIGINAL result in the same campaign-only Screech multiplier;
+   // never replace its base, Mega, boss or Arena-mode calculations.
+   if(filename==='luchador.js'&&
+      from.startsWith('get defensa(){return(')&&
+      to.includes('torre2Screech')){
+    const begin='get defensa(){return';
+    const at=body.indexOf(begin),context=at<0?'':body.slice(at,at+420);
+    if(at<0||body.indexOf(begin,at+1)>=0||
+       !context.includes('this.forma.def')||
+       !context.includes('this.jefe?.def')||
+       context.includes('torre2Screech'))
+     throw Error('Unknown native Defense getter; refusing nonlocal Screech modification: '+context);
+    const factor='(this.escena?.datos?.torre2?2/(2+(this.est?.torre2Screech?.stages||0)):1)*';
+    body=body.replace(begin,begin+factor);
+    continue;
+   }
+   // The versioned Kanto Pokédex generator below completely rebuilds the
+   // portrait cards with setDisplaySize(CEL-4,CEL-4). The older optional
+   // exact-image-size patch is redundant after upstream changes its image
+   // expression. Never rewrite or remove a changed native portrait.
+   if(filename==='escenas/pokedex.js'&&
+      from.startsWith('this.add.image(x+1,y+1,\`retrato-')&&
+      to.includes('.setDisplaySize(CEL-4,CEL-4)')){
+    console.warn('Native Pokédex portrait expression changed; Kanto card generator handles sizing');
+    continue;
+   }
+   // The source app changed its legacy account-login redirect. Offline
+   // solo mode already removes ONLINE menu actions from the actual menu
+   // and disconnects chat/polling; never overwrite unrelated title logic.
+   if(filename==='escenas/titulo.js'&&
+      from.startsWith('if(o.menu==="online"&&!red.cuenta')&&
+      to==='if(o.menu==="online")return;'){
+    if(!body.includes('jugar:[{id:"kanto",txt:"KANTO CAMPAIGN"'))
+     throw Error('Offline menu stripping not applied before title guard skip');
+    console.warn('Legacy ONLINE-account redirect moved upstream; solo menu remains offline');
+    continue;
+   }
+   // The original selection imports additional native sprite utilities
+   // between releases. Append only the four names required by our preload;
+   // preserve every upstream import and all original sprite/VFX functions.
+   if(filename==='escenas/seleccion.js'&&
+      from.startsWith('import{atacarEnMenu,precargarLineas,')&&
+      to.includes('cargarPMD,crearAnimsPMD,soloFormas,formasDe')){
+    const pattern=/import\{([^}]+)\}from"\.\.\/sprites\.js";/;
+    const match=body.match(pattern);
+    if(!match||!match[1].includes('atacarEnMenu')||
+       !match[1].includes('ponerRetrato'))
+     throw Error('Unknown original sprite module import; refusing guessed identifiers');
+    const imports=match[1].split(',').map(s=>s.trim()),needed=[
+     'cargarPMD','crearAnimsPMD','soloFormas','formasDe'];
+    for(const name of needed)if(!imports.includes(name))imports.push(name);
+    body=body.replace(match[0],'import{'+imports.join(',')+'}from"../sprites.js";');
+    continue;
+   }
+   // Native selection now computes mode-button x positions differently.
+   // We already removed VERSUS and kept only VS CPU / TRAINING above.
+   // Do not guess new hitbox positions by patching an obsolete literal.
+   if(filename==='escenas/seleccion.js'&&
+      from==='ANCHO/2-130+i*130,27,m.nombre'&&
+      to==='ANCHO/2-67+i*134,27,m.nombre'){
+    if(!body.includes('const MODOS=[{id:"cpu",nombre:"VS CPU"},{id:"entreno",nombre:"TRAINING"}];'))
+     throw Error('Cannot preserve new native mode positioning without solo-mode filter');
+    console.warn('Original selection mode-button positioning changed upstream; native coordinates kept');
+    continue;
+   }
+   // The original HUD moved its optional evolve/mega text branches.
+   // Disable only an intact old indicator condition inside Kanto battles.
+   // If upstream removed the indicator entirely, nothing needs patching.
+   if(filename==='hud.js'&&from.startsWith('else if(l.puede')&&
+      to.includes('this.e.datos?.torre2')){
+    const ability=from.includes('puedeMega')?'puedeMega':'puedeEvolucionar';
+    const condition='l.'+ability+'&&l.humano&&parpadeo';
+    if(body.includes(condition))
+     body=body.replace(condition,'!this.e.datos?.torre2&&'+condition);
+    else if(body.includes(ability))
+     // Campaign fight XP and evolution buttons are independently disabled.
+     // Preserve a changed native HUD expression instead of guessing its shape.
+     console.warn('Changed original HUD '+ability+' expression kept; Kanto combat evolution is separately blocked');
+    else console.warn('Original HUD no longer renders '+ability+' indicator');
+    continue;
+   }
+   // Upstream selection portrait initializer has changed its visual chain.
+   // Append the same fallback after the ORIGINAL img statement, preserving
+   // its native size, origin, colors, frames and input hitboxes.
+   if(filename==='escenas/seleccion.js'&&
+      from.startsWith('const img=this.add.image(x+2,y+3,')&&
+      to.includes('ponerRetrato(this,img,p.dex)')){
+    // Current native selection creates the portrait through its own
+    // casillaRetrato() helper. It already owns the sprite and fallback;
+    // adding a second ponerRetrato would duplicate pixel art or distort
+    // a native image. Retain the new original helper unchanged.
+    if(body.includes('const{img}=casillaRetrato(this,x,y,TW,p.dex);')){
+     console.warn('Native selection casillaRetrato already draws sprite; old image patch not needed');
+     continue;
+    }
+    const key='const img=this.add.image(x+2,y+3,\`retrato-${p.dex}\`)';
+    const at=body.indexOf(key),end=at<0?-1:body.indexOf(';',at+key.length);
+    if(at<0||end<0||end-at>240)
+     throw Error('Native selection portrait initializer changed; refusing to guess placement: '+body.slice(Math.max(0,body.indexOf('const bloqueado=')-330),body.indexOf('const bloqueado=')+200));
+    if(!body.slice(end+1,end+155).includes('ponerRetrato(this,img,p.dex)'))
+     body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
@@ -640,7 +866,9 @@ const sourceImport="from './torre2-frlg-learnsets.js'";
 if(!arenaPolicySource.includes(sourceImport))
  throw Error('Arena move source metadata import changed');
 await fs.writeFile(arenaPolicyPath,arenaPolicySource.replace(sourceImport,
- "from './frlg-learnsets.js'"));
+ "from './frlg-learnsets.js'")
+ .replace("from './torre2-arena-approved-121.js'","from './arena-approved-121.js'")
+ .replace("from './torre2-arena-native-dodges.js'","from './arena-native-dodges.js'"));
 
 // Our Gen IV/V source imports the long repo filename; the captured
 // Phaser folder uses a short basename. Rewrite ONLY the copied source.
@@ -658,10 +886,31 @@ const fighterPath=path.join(dest,clientSource,'luchador.js');
 const fighterCode=await fs.readFile(fighterPath,'utf8');
 if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
  throw Error('Upstream Arena fighter incompatible with isolated move policy');
+// Regression: Dodrio can remain at fractional HP (e.g. 0.4) after the
+// final native poison tick. The HUD rounds that to an empty health bar,
+// but recibir() does not call morir() unless HP is exactly <= 0.
+// Resolve only sub-1 residual POISON HP on our added Arena species.
+// Never change ordinary hits, poison potency, native client Pokémon,
+// training immortality, campaign, approved VFX, or the K.O. callback.
+const nativePoisonHit='this.hp=Math.max(this.inmortal?1:0,this.hp-d);';
+if(fighterCode.split(nativePoisonHit).length!==2)
+ throw Error('Upstream Arena poison HP path changed');
+// Native HP regeneration can also start during the first 1.5s of a newly
+// applied poison (before its first damaging tick sets ultimoDano).
+// Don't let that small heal make the final poison tick non-lethal.
+// Scope to Torre2-added Arena species and the active poison status only.
+const nativeRegenGuard='!this.est.enfermo&&!this.escena.datos?.torre2';
+if(fighterCode.split(nativeRegenGuard).length!==2)
+ throw Error('Upstream Arena HP recovery guard changed');
+const poisonHpFixed=fighterCode.replace(nativePoisonHit,
+ nativePoisonHit+'if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;');
+await fs.writeFile(fighterPath,poisonHpFixed.replace(nativeRegenGuard,
+ '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&this.est.veneno)&&!this.escena.datos?.torre2'));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
- 'installArenaMovePolicy(Luchador,__torre2ArenaRoster);\n');
+ 'import{TEST_LIBRARY as __torre2ArenaApprovedLibrary}from"./torre2/move-pool.js";'+
+ 'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
@@ -683,6 +932,13 @@ const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
 await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
  await fs.readFile(pokedexPath,'utf8')));
 
+// The base client already ships the five Greninja styles for Froakie,
+// Frogadier and Greninja. Use the ORIGINAL sprites, metadata and red aura;
+// expose them in the independent local Arena without modifying upstream.
+const {installGreninjaVariants}=await import('./torre2-greninja-variants.mjs');
+const greninjaVariants=await installGreninjaVariants(dest,clientSource);
+console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
+
 // Avoid stale attack VFX on mobile browsers and GitHub Pages caching.
 // Previously all revisions imported exactly the same /src-8d89349697/*.js
 // URL: a ?v= query added to /arena2d/ never invalidated those modules.
@@ -690,13 +946,15 @@ await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
 // module tree under a fresh, content-addressed src-xxxxxxxxxx directory.
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
- 'main.js','habilidades.js','luchador.js','datos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
+ 'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
- 'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/battle-path.js',
+ 'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
+ 'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/versus-intro.js','torre2/battle-path.js',
  'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
@@ -710,10 +968,33 @@ const finalHTML=await fs.readFile(index,'utf8');
 const oldModule='src="'+clientSource+'/main.js"';
 if(!finalHTML.includes(oldModule))
  throw Error('Main Phaser module URL not found for cache-busted revision');
+// A GitHub Pages deploy can finish while a mobile WebView keeps the old
+// /arena2d/index.html. The JS tree is content-addressed; also make the
+// HTML independently verify the latest published version once per load.
+const freshnessGuard=`<script>
+(function(){
+ const shown=document.querySelector('meta[name="pokemon-torre-build"]')?.content;
+ if(!shown||location.protocol==='file:')return;
+ const check='version.json?refresh='+encodeURIComponent(shown)+'-'+Date.now();
+ fetch(check,{cache:'no-store',credentials:'omit'})
+  .then(r=>r.ok?r.json():null)
+  .then(v=>{
+   const latest=v&&v.modules;
+   if(!/^src-[a-f0-9]{10}$/.test(latest||'')||latest===shown)return;
+   const url=new URL(location.href);
+   const key='torre2-release';
+   if(url.searchParams.get(key)===latest)return;
+   url.searchParams.set(key,latest);
+   // Changing URL ensures the stale HTML and all ESM imports get
+   // a genuinely new CDN cache key; never change campaign saves.
+   location.replace(url.toString());
+  }).catch(()=>{});
+})();
+</script>`;
 const stampedHTML=finalHTML.replace(oldModule,
  'src="'+versionedSource+'/main.js"')
  .replace('</head>',
- '<meta name="pokemon-torre-build" content="'+versionedSource+'">\n</head>');
+ '<meta name="pokemon-torre-build" content="'+versionedSource+'">\n'+freshnessGuard+'\n</head>');
 await fs.writeFile(index,stampedHTML);
 await fs.rename(path.join(dest,clientSource),path.join(dest,versionedSource));
 console.log('Versioned Phaser modules for mobile cache:',versionedSource);

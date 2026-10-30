@@ -64,7 +64,24 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/kanto-phaser-boot-failure.png',fullPage:true}).catch(()=>{});
    throw err;
   }
-  await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:45000,polling:250});
+  try{
+   await page.waitForFunction(()=>window.__pt2Started===true,null,{timeout:45000,polling:250});
+  }catch(err){
+   const diag=await page.evaluate(()=>({
+    started:window.__pt2Started,
+    hasGame:Boolean(window.__pt2Game),
+    activeScenes:window.__pt2Game?.scene?.getScenes(true)?.map(s=>s.scene.key),
+    title:document.title,
+    scripts:[...document.scripts].map(s=>s.src).filter(Boolean),
+    phaser:typeof window.Phaser,
+    canvas:!!document.querySelector('#juego canvas')
+   }));
+   console.error('PHASER START TIMEOUT DIAGNOSTIC',JSON.stringify({
+    diag,errors,consoleFailures,notFound,requestFailures
+   }));
+   await page.screenshot({path:'test-evidence/kanto-phaser-start-timeout.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   await page.waitForTimeout(800);
   const canvas=await page.evaluate(()=>{
    const c=document.querySelector('#juego canvas');
@@ -119,8 +136,22 @@ const server=http.createServer(async(req,res)=>{
   const dexErr=[];dexPage.on('pageerror',e=>dexErr.push(String(e)));
   await dexPage.goto('http://127.0.0.1:4274/arena2d/?pantalla=pokedex',
    {waitUntil:'domcontentloaded',timeout:30000});
-  await dexPage.waitForFunction(()=>window.__pt2Game?.scene?.isActive('pokedex'),
-   null,{timeout:45000});
+  try{
+   await dexPage.waitForFunction(()=>window.__pt2Game?.scene?.isActive('pokedex'),
+    null,{timeout:45000});
+  }catch(err){
+   const diag=await dexPage.evaluate(()=>({
+    started:window.__pt2Started,
+    hasGame:Boolean(window.__pt2Game),
+    activeScenes:window.__pt2Game?.scene?.getScenes(true)?.map(s=>s.scene.key),
+    url:location.href,
+    phaser:typeof window.Phaser,
+    canvas:!!document.querySelector('#juego canvas')
+   }));
+   console.error('PHASER POKEDEX TIMEOUT DIAGNOSTIC',JSON.stringify({diag,dexErr}));
+   await dexPage.screenshot({path:'test-evidence/kanto-pokedex-start-timeout.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   const dexData=await dexPage.evaluate(()=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
    const base=p.casillas.map(x=>x.p.dex);
@@ -338,8 +369,20 @@ const server=http.createServer(async(req,res)=>{
   await league.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await league.waitForFunction(()=>window.__pt2Started===true&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
   await league.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('liga'));
-  await league.waitForFunction(()=>window.__pt2Game?.scene.isActive('liga')&&
-    window.__pt2Game.scene.getScene('liga').celdas?.length>0,null,{timeout:35000});
+  try{
+   await league.waitForFunction(()=>window.__pt2Game?.scene.isActive('liga')&&
+     window.__pt2Game.scene.getScene('liga').celdas?.length>0,null,{timeout:35000});
+  }catch(err){
+   const diag=await league.evaluate(()=>{
+    const game=window.__pt2Game,scene=game?.scene?.getScene('liga');
+    return {started:window.__pt2Started,active:game?.scene?.getScenes(true)?.map(s=>s.scene.key),
+     hasLeague:Boolean(scene),celdas:scene?.celdas?.length,
+     leagueKeys:scene?Object.keys(scene).slice(0,60):[],canvas:!!document.querySelector('#juego canvas')};
+   });
+   console.error('PHASER LEAGUE TIMEOUT DIAGNOSTIC',JSON.stringify({diag,leagueErrors,leagueMisses}));
+   await league.screenshot({path:'test-evidence/kanto-league-timeout.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   const leaguePortraits=await league.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('liga');
    // The original League altered its celdas representation upstream.
@@ -1098,7 +1141,7 @@ const server=http.createServer(async(req,res)=>{
     const c=window.__pt2Game.scene.getScene('combate'),enemy=c.luchadores[1];
     enemy.hp=Math.max(1,enemy.hpMax*.12);
     const opener=c.children.list.find(o=>o.type==='Zone'&&
-      Math.abs(o.x-470)<2&&Math.abs(o.y-61)<2&&o.input?.enabled);
+      Math.abs(o.x-430)<2&&Math.abs(o.y-241)<2&&o.input?.enabled);
     if(!opener)return {opener:false};
     opener.emit('pointerdown');
     const menu=c.children.list.filter(o=>typeof o.text==='string')
@@ -1352,7 +1395,7 @@ const server=http.createServer(async(req,res)=>{
    if(!labels().includes('NEW'))throw Error('NEW tab missing from TIPO picker');
    scene.summaryFilter='NEW';scene.summarySearch='';
    scene.showSummary(state,1,0,0);
-   if(!labels().some(x=>x.includes('FILTRO: NEW')))throw Error('NEW filter label missing');
+   if(!labels().some(x=>x.includes('FILTRO NEW')))throw Error('NEW filter label missing');
    // NEW rows are distinct from the equipped slots above them.
    const pendingRows=scene.children.list.filter(x=>typeof x.text==='string'&&
     x.x>=230&&x.y>=222&&x.y<315).map(x=>x.text);
@@ -1373,7 +1416,7 @@ const server=http.createServer(async(req,res)=>{
    if(!labels().includes('NEW'))throw Error('NEW not available on reopening types');
    scene.summaryFilter='GROUND';
    scene.showSummary(state,1,0,0);
-   if(!labels().some(x=>x.includes('FILTRO: GROUND')))throw Error('GROUND filter label missing');
+   if(!labels().some(x=>x.includes('FILTRO GROUND')))throw Error('GROUND filter label missing');
    if(!labels().some(x=>x.includes('Bonemerang')))throw Error('Ground attack filtered out');
    scene.summaryFilter='ALL';scene.summarySearch='PAY';
    scene.showSummary(state,1,0,0);

@@ -1,0 +1,58 @@
+name: Pokémon Torre 2 — VS treinadores antes de publicar
+
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-versus-intro.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/versus-intro-*'
+      - '.github/workflows/versus-intro-validation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phaser-versus:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 23
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sintaxe e regressão de campanha
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-versus-intro.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/build-preview.mjs
+          node --check tests/versus-intro-browser.cjs
+          npm install --no-audit --no-fund
+          npm test
+      - name: Reconstruir cliente real Phaser
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt * 6))
+          done
+          node tests/versus-intro-built.test.mjs
+      - name: Validar VS no Chromium real
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/versus-intro-browser.cjs
+      - name: Publicar evidências de renderização
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokemon-torre-2-versus-chromium
+          path: test-evidence/versus-intro/
+          if-no-files-found: warn
+          retention-days: 14

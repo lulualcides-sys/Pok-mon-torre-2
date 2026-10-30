@@ -184,6 +184,18 @@ export function drawTrainer(g,cx,cy,kind='youngster',scale=1){
  }
 }
 function px(g,x,y,w,h,c){g.fillStyle(c,1);g.fillRect(Math.round(x),Math.round(y),w,h)}
+// Original Pokémon FireRed/LeafGreen GBA icon files bundled by the build.
+// Authentic FireRed item icon + original item/type-specific palette, generated
+// as local transparent PNGs at build time. Do not alter battle Pokéball VFX.
+export const FRLG_MART_ITEM_FILES=Object.freeze([
+ 'antidote','paralyzeheal','awakening','burnheal','iceheal','fullheal',
+ 'tm-rock-tomb','pokeball','greatball','ultraball','potion','superpotion',
+ 'tm-thunderbolt','tm-water-pulse','tm-flamethrower','tm-ice-beam',
+ 'tm-shock-wave','tm-giga-drain','tm-calm-mind','tm-fire-blast','tm-earthquake'
+]);
+export function frlgMartIcon(item){
+ return FRLG_MART_ITEM_FILES.includes(item?.id)?item.id:null;
+}
 export function drawShopItem(g,cx,cy,item,scale=2){
  const kind=typeof item==='string'?item:item?.kind||'ball';
  const type=typeof item==='string'?item:item?.id||'pokeball';
@@ -193,20 +205,53 @@ export function drawShopItem(g,cx,cy,item,scale=2){
   // party HUD and red recall beams (never a generic WebGL circle).
   drawBallSprite(g,cx,cy,type,scale,0,false);
  }else if(kind==='tm'){
+  // Colored cartridge/disc sprite: each TM has a stable distinct palette.
+  const palette=[0x6eafce,0xe7b25e,0x81c393,0xbe91d8,0xc6d86e,0xd38e86];
+  const hash=[...type].reduce((n,c)=>n+c.charCodeAt(0),0);
+  const face=palette[hash%palette.length];
   px(g,x+2*scale,y+2*scale,14*scale,14*scale,0x202b4a);
-  px(g,x+3*scale,y+3*scale,12*scale,12*scale,0x6eafce);
+  px(g,x+3*scale,y+3*scale,12*scale,12*scale,face);
   px(g,x+5*scale,y+5*scale,8*scale,8*scale,0xcde9f5);
   px(g,x+8*scale,y+8*scale,2*scale,2*scale,0x1f4874);
-  px(g,x+3*scale,y+3*scale,4*scale,3*scale,0xa78dd6);
+  px(g,x+3*scale,y+3*scale,4*scale,3*scale,0xf0f4ff);
   px(g,x+12*scale,y+11*scale,3*scale,4*scale,0x5184ba);
  }else{
-  // Potion, Super Potion: small glass vial with cork and colored fluid.
-  const fluid=type==='superpotion'?0xeed75b:0xbd72f1;
+  // Actual individually rasterized 18px pixel item art, not text glyphs.
+  const fluid=type==='superpotion'?0xeed75b:
+   type==='potion'?0xbd72f1:type==='fullheal'?0xf5e5a3:
+   type==='antidote'?0xa7f19a:type==='paralyzeheal'?0xeccd68:
+   type==='awakening'?0xf3a0c5:type==='burnheal'?0xf29a71:0x8fe0ef;
   px(g,x+7*scale,y+1*scale,4*scale,3*scale,0xe9dba8);
   px(g,x+5*scale,y+4*scale,8*scale,3*scale,0x283d61);
   px(g,x+4*scale,y+7*scale,10*scale,9*scale,0x96cce1);
   px(g,x+6*scale,y+9*scale,6*scale,5*scale,fluid);
   px(g,x+5*scale,y+8*scale,2*scale,6*scale,0xd8f4ff);
   px(g,x+4*scale,y+15*scale,10*scale,2*scale,0x315e81);
+  if(kind==='status'){
+   px(g,x+8*scale,y+10*scale,2*scale,4*scale,0xffffff);
+   px(g,x+7*scale,y+11*scale,4*scale,2*scale,0xffffff);
+  }
  }
+}
+// Rasterize existing approved Phaser pixel stencils to reusable texture sprites.
+// No Canvas2D gameplay fallback, no external asset or cross-mode VFX changes.
+export function shopItemSprite(scene,item){
+ const key='torre2-mart-item-'+item.id;
+ if(!scene.textures.exists(key)){
+  const file=frlgMartIcon(item),native=file&&'torre2-frlg-mart-'+file;
+  if(native&&scene.textures.exists(native)){
+   // Same decoded original image; no per-card Graphics re-rasterization.
+   const bitmap=scene.textures.get(native).getSourceImage();
+   const texture=scene.textures.addImage(key,bitmap);
+   if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
+    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }else{
+   // Offline/test fallback only: approved existing pixel stencils.
+   const g=scene.make.graphics({x:0,y:0,add:false});
+   drawShopItem(g,12,12,item,1);
+   g.generateTexture(key,24,24);
+   g.destroy();
+  }
+ }
+ return key;
 }

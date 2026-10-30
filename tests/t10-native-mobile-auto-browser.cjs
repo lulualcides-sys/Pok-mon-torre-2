@@ -88,11 +88,16 @@ const report={scope:'T10 native AUTO touch in Arena CPU and solo Kanto campaign'
      save:save?{wins:save.wins,losses:save.losses,stage:save.stage,trainer:save.trainer,
       money:save.money,items:save.inventory,party:save.team.map(m=>m.uid)}:null};
    },kind);
-   assert.equal(initial.enabled,false,kind+' AUTO must default OFF');
-   assert.equal(initial.text,'AUTO');
+   // Arena original starts manual, but Kanto campaign now starts AUTO ON.
+   const defaultOn=kind==='campaign';
+   assert.equal(initial.enabled,defaultOn,kind+' native default must be preserved');
+   assert.equal(initial.text,defaultOn?'AUTO ✓':'AUTO');
+   assert.equal(initial.initialCalls,0,'Instrumentation installed after startup');
    assert.ok(initial.controlIsPlayer&&initial.ownController,'AUTO must control human only');
    assert.ok(initial.nativeAI);
-   await tap(page,initial.position[0],initial.position[1]);
+   // Tapping the already-on Kanto AUTO would turn it OFF; only Arena
+   // requires the first touch. Confirm the native IA reads actual frames.
+   if(!defaultOn)await tap(page,initial.position[0],initial.position[1]);
    await page.waitForFunction(()=>{
     const a=window.__pt2Game.scene.getScene('combate').__torre2AutoMode;
     return a?.enabled&&a.__t10Calls>0;
@@ -113,7 +118,7 @@ const report={scope:'T10 native AUTO touch in Arena CPU and solo Kanto campaign'
     const a=window.__pt2Game.scene.getScene('combate').__torre2AutoMode;
     return {enabled:a.enabled,text:a.label.text,calls:a.__t10Calls};
    });
-   assert.equal(off.enabled,false,'AUTO should disable on second native touch');
+   assert.equal(off.enabled,false,'One native touch must disable active AUTO in either mode');
    assert.equal(off.text,'AUTO');
    await page.waitForTimeout(400);
    const later=await page.evaluate(kind=>{

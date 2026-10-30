@@ -43,6 +43,11 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
+      - name: Guardião rápido das imagens de referência aprovadas
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/dev/approved-visual-guard.mjs
       - name: Adicionar cliente Phaser autorizado do Poké Arena como arena isolada
         shell: bash
         run: |
@@ -71,35 +76,79 @@ jobs:
           # Keep the old Pixi test laboratory at /lab.html but launch the real
           # solo Kanto Phaser game at the stable public root once Pages is enabled.
           cp _site/index.html _site/lab.html
+          # Revision in the ROOT redirect is as important as a hashed JS
+          # file: mobile WebViews can cache /arena2d/index.html itself.
+          release="$(node -p "JSON.parse(require('fs').readFileSync('_site/arena2d/version.json','utf8')).modules")"
           cat > _site/index.html <<'EOF'
           <!doctype html><html lang="pt-BR"><head><meta charset="utf-8">
           <meta name="viewport" content="width=device-width,initial-scale=1">
-          <meta http-equiv="refresh" content="0;url=./arena2d/">
+          <meta name="pokemon-torre-build" content="__RELEASE__">
+          <meta http-equiv="refresh" content="0;url=./arena2d/index.html?torre2-release=__RELEASE__">
           <title>Pokémon Torre 2 — Kanto</title>
-          <script>location.replace('./arena2d/'+location.search+location.hash)</script>
+          <script>
+          (function(){
+           const p=new URLSearchParams(location.search);
+           p.set('torre2-release','__RELEASE__');
+           location.replace('./arena2d/index.html?'+p+location.hash);
+          })();
+          </script>
           </head><body style="background:#101725;color:#e2efff;font:18px system-ui;text-align:center;padding:30px">
           <p>Abrindo a campanha Pokémon Torre 2...</p>
-          <a href="./arena2d/" style="color:#ffe16d">Abrir jogo</a>
+          <a href="./arena2d/index.html?torre2-release=__RELEASE__" style="color:#ffe16d">Abrir jogo atualizado</a>
           </body></html>
           EOF
+          sed -i "s/__RELEASE__/$release/g" _site/index.html
       - name: Bloquear golpes duplicados e proteger artes nativas do cliente
         shell: bash
         run: |
           set -euo pipefail
           node tools/pokearena/audit-moves.mjs
+          node tests/versus-intro-built.test.mjs
+          node tests/center-revive-built.test.mjs
           node tests/batch24-built.test.mjs
           node tests/misty-surge-built.test.mjs
+          node tests/misty-wild-capture-ui-built.test.mjs
+          node tests/rival-payday-cooldowns-built.test.mjs
+          node tests/surge-shop-rematch-allmaps-built.test.mjs
+          node tests/surge3-built.test.mjs
+          node tests/rematches-built.test.mjs
+          node tests/t23-kanto-mart-tm-integrity-built.test.mjs
           node tests/surge3-built.test.mjs
           node tests/kanto-151-built.test.mjs
           node tests/frlg-learnsets-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          node tests/t08-kanto-no-duplicate-native-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t08-kanto-onboarding-151-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
+          node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
           echo "Inventário checado: 23 famílias Kanto com evoluções, 5 comandos e ginásios reais."
       - name: Testar a arena Phaser original no Chromium antes de publicar
         shell: bash
         run: |
           npm install --no-audit --no-fund
+          CHROME_BIN="$(command -v google-chrome)" node tests/versus-intro-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/center-revive-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/batch24-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/surge-shop-rematch-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
+      - name: Guardião Chromium — título mobile, mapa e batalha (sem novo build)
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/visual-guard-browser.cjs
+      - name: Resumo automático de erro antes do deploy
+        if: failure()
+        shell: bash
+        env:
+          CI_RESULT: failure
+        run: |
+          node tools/dev/ci-diagnostics.mjs --stage pages-predeploy
+          cat test-evidence/visual-guard/diagnostic.md >> "$GITHUB_STEP_SUMMARY"
       - name: Arquivar evidência visual do motor Phaser
         if: always()
         uses: actions/upload-artifact@v4
@@ -130,13 +179,19 @@ jobs:
           fi
       - if: steps.pages-enabled.outputs.enabled == 'true'
         uses: actions/configure-pages@v5
+      # GitHub keeps artifacts from earlier attempts of the SAME run.
+      # A rerun with the default 'github-pages' name creates duplicates and
+      # deploy-pages rejects both even when the new build passes Chromium.
       - if: steps.pages-enabled.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
+          name: github-pages-attempt-${{ github.run_attempt }}
           path: _site/
       - if: steps.pages-enabled.outputs.enabled == 'true'
         id: deploy
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-attempt-${{ github.run_attempt }}
       - name: Verificar no Pages publico se o codigo novo foi servido
         if: steps.pages-enabled.outputs.enabled == 'true'
         shell: bash
@@ -185,3 +240,55 @@ jobs:
           done
           echo "::error::A versao atual nao esta acessivel no endereco publico do jogo"
           exit 1
+      - name: Garantir que retry HTTP 503 não dispensa nenhuma verificação
+        if: steps.pages-enabled.outputs.enabled == 'true'
+        run: node --test tests/pages-public-503-retry.test.cjs
+      - name: Validar a Pokédex na página PUBLICADA no Chromium
+        if: steps.pages-enabled.outputs.enabled == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="$(node -p "JSON.parse(require('fs').readFileSync('_site/arena2d/version.json','utf8')).modules")"
+          # GitHub Pages sometimes serves a transient 503 for one hashed JS
+          # asset after deployment. Only that precise case permits a retry.
+          # Each attempt re-runs ALL original public Chromium assertions.
+          for attempt in 1 2 3; do
+            rm -f test-evidence/pokedex-public-boot-diagnostic.json \
+              test-evidence/pokedex-public-live-audit.json
+            if EXPECTED_POKEDEX_BUILD="$expected" \
+                CHROME_BIN="$(command -v google-chrome)" \
+                node tests/pokedex-public-live-browser.cjs; then
+              echo "Pokédex pública aprovada no Chromium (tentativa $attempt; $expected)"
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ] || ! node tools/dev/pages-public-503-retry.cjs; then
+              echo "::error::Pokédex pública reprovada: falha persistente ou não transitória"
+              exit 1
+            fi
+            echo "::warning::HTTP 503 isolado no Pages; repetir auditoria integral ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+      - name: Guardar prova da Pokédex pública
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokedex-public-real-after-deploy
+          path: test-evidence/pokedex-public-*
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Registrar falhas posteriores à etapa de publicação
+        if: failure()
+        shell: bash
+        env:
+          CI_RESULT: failure
+        run: |
+          node tools/dev/ci-diagnostics.mjs --stage pages-postdeploy
+          cat test-evidence/visual-guard/diagnostic.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Arquivar relatório final de falhas
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-guard-pages-final-${{ github.run_attempt }}
+          path: test-evidence/visual-guard/
+          if-no-files-found: warn
+          retention-days: 14

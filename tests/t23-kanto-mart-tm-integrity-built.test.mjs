@@ -21,6 +21,10 @@ const factory=(stage=0)=>{
  storage.clear();
  const s=core.createCampaign('bulbasaur');
  s.stage=stage;s.trainer=0;s.money=25000;
+ s.badges=core.GYMS.slice(0,Math.min(stage,8)).map(g=>g.badge);
+ // Gym TM already earned/spent, so Mart purchase is a replacement.
+ s.gymTMClaims=GYM_TM_REWARDS.slice(0,Math.min(stage,8)).filter(Boolean);
+ s.inventory.tms=[];
  core.saveCampaign(s);return core.readCampaign();
 };
 const kantoIds=new Set(KANTO_151.map(x=>x.id));
@@ -119,6 +123,7 @@ test('T23 all available gym TM rewards are claimed once, and spending cannot res
  assert.equal(ids.length,7,'Toxic is separately blocked, never invent the missing gym TM');
  for(let gym=0;gym<8;gym++){
   const reward=GYM_TM_REWARDS[gym],s=factory(gym+1);
+  if(reward)s.gymTMClaims=s.gymTMClaims.filter(id=>id!==reward);
   if(!reward){
    assert.equal(core.grantGymTM(s,gym).claimed,false);
    continue;

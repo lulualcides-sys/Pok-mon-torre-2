@@ -1,0 +1,43 @@
+name: T26 — original League icons no 404
+on:
+  push:
+    branches: [fix/t26-native-league-icon-404-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  league-icons:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit tests and source invariants
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm test
+      - name: Capture original Phaser, compile and verify actual native PNG textures
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          node tests/t26-native-league-icons-built.test.mjs
+          node tests/evolution-modes-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+      - name: Native browser regressions
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: t26-league-icons-failure
+          path: |
+            site-capture/CAPTURE-REPORT.json
+            test-evidence/
+          retention-days: 7

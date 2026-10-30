@@ -1,0 +1,63 @@
+name: Pokédex Deoxys native moves and non-Kanto regression
+on:
+  push:
+    branches: [fix/pokedex-nonkanto-native-kits-deoxys-20261029]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-pokedex-pages.mjs'
+      - 'tests/pokedex-deoxys-native-browser.cjs'
+      - '.github/workflows/pokedex-deoxys-native.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  deoxys:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax, unit tests and approved battle effects
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-pokedex-pages.mjs
+          node --check tests/pokedex-deoxys-native-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture native source and compile full Phaser game
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+                && node tools/pokearena/build-preview.mjs \
+                && test -s _site/arena2d/version.json \
+                && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+      - name: Kanto 151 battle gates and evolved Pokédex unchanged
+        run: |
+          set -euo pipefail
+          node tools/pokearena/audit-moves.mjs > /dev/null
+          node tests/t07-151-movesets-built.test.mjs
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+          node tests/t03-evolved-pokedex-built.test.mjs
+      - name: Verify actual Deoxys Pokédex, power-up and native moves on Chromium
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t18-pokedex-native-colors-browser.cjs
+          node tests/pokedex-deoxys-native-browser.cjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: deoxys-pokedex-native-evidence
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn

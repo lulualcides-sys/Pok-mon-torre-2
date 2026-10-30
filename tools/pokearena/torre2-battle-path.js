@@ -173,6 +173,8 @@ export function renderBattlePath(scene,state,handlers){
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
+ button(scene,424,103,107,24,'VS SEEKER',()=>handlers.rematchAtlas?.(),
+  {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
  // When a NORMAL battle advances the checkpoint beyond the current
  // route page, reveal the new checkpoint automatically. Manual browsing of
  // earlier pages stays intact until a new trainer is actually beaten.

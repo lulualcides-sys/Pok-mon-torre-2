@@ -1,0 +1,87 @@
+name: Pokédex — checar site público real (não apenas build)
+on:
+  pull_request:
+    paths:
+      - 'tests/pokedex-public-live-browser.cjs'
+      - 'tests/pages-public-503-retry.test.cjs'
+      - 'tools/dev/pages-public-503-retry.cjs'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/pokedex-public-live.yml'
+  push:
+    branches: [fix/verify-public-pokedex-and-cache-20261029, test/t07-t08-public-150-kanto-dex-20261029]
+  workflow_run:
+    workflows: ["Pokémon Torre 2 — Publicação GitHub Pages"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  live-pokedex:
+    if: ${{ github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar Chromium regression dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validar retry somente para HTTP 503 transitório
+        run: |
+          node --check tools/dev/pages-public-503-retry.cjs
+          node --test tests/pages-public-503-retry.test.cjs
+      - name: Conferir sete casos e 150 espécies Kanto no Pages público
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          # Only the post-Pages workflow can demand the NEW public build.
+          # Branch CI checks all 150 against its freshly compiled Phaser client.
+          POKEDEX_FULL_PUBLIC_AUDIT: ${{ github.event_name == 'workflow_run' && '1' || '0' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Reuse the same strict 503-only gate as Pages. Every retry runs
+          # the entire public Chromium audit; no assertion is skipped.
+          for attempt in 1 2 3; do
+            rm -f test-evidence/pokedex-public-boot-diagnostic.json test-evidence/pokedex-public-live-audit.json
+            if node tests/pokedex-public-live-browser.cjs; then
+              echo "Pokédex pública aprovada (tentativa $attempt)"
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ] || ! node tools/dev/pages-public-503-retry.cjs; then
+              echo "::error::Auditoria pública falhou: erro não transitório ou 503 persistente"
+              exit 1
+            fi
+            echo "::warning::503 isolado confirmado; repetindo auditoria integral ($attempt/3)"
+            sleep $((attempt * 10))
+          done
+      - name: Validar sintaxe do carregador e testes unitários
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/build-preview.mjs
+          node --check tests/pokedex-public-live-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Recriar versão Phaser e conferir atualização de HTML local
+        if: github.event_name == 'push' || github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+          grep -Fq 'version.json?refresh=' _site/arena2d/index.html
+          grep -Fq 'torre2-release' _site/arena2d/index.html
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/pokedex-deoxys-native-browser.cjs
+          node tests/pokedex-151-legal-kit-browser.cjs
+      - name: Guardar evidências do site público
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokedex-public-live-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14

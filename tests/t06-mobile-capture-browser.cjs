@@ -72,8 +72,28 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
   });
   assert.ok(before.id);
   assert.ok(before.stock>=2);
-  await tap(470,61);
+  // Real mobile screenshot and hit-zone proof. The Pokéball is centered
+  // directly above Dash rather than occupying the top-right health HUD.
+  const placed=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const ball=b.children.list.find(o=>o.getData?.('torre2-capture-single-button')&&o.type==='Image');
+   const zone=b.children.list.find(o=>o.getData?.('torre2-capture-single-button')&&o.type==='Zone');
+   return {ball:{x:ball?.x,y:ball?.y,visible:ball?.visible},
+    zone:{x:zone?.x,y:zone?.y,interactive:!!zone?.input?.enabled}};
+  });
+  assert.deepEqual(placed,{ball:{x:430,y:241,visible:true},
+   zone:{x:430,y:241,interactive:true}});
+  await page.screenshot({path:'test-evidence/t06-mobile-button-above-dash.png'});
+  await tap(430,241);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
+  const hidden=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const ball=b.children.list.find(o=>o.getData?.('torre2-capture-single-button')&&o.type==='Image');
+   const zone=b.children.list.find(o=>o.getData?.('torre2-capture-single-button')&&o.type==='Zone');
+   return {ballHidden:!ball?.visible,interactive:!!zone?.input?.enabled};
+  });
+  assert.deepEqual(hidden,{ballHidden:true,interactive:false},
+   'Selection modal must hide and disable underlying Pokéball button');
   await page.screenshot({path:'test-evidence/t06-mobile-pokeball-menu.png'});
   await tap(316,186);
   await page.waitForFunction(()=>{
@@ -90,7 +110,7 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
   assert.equal(failed.uid,before.party[0],'Breakout cannot replace the starter');
   assert.equal(failed.wins,before.wins);
   await page.evaluate(()=>{window.__pt2Game.scene.getScene('combate').__torre2CaptureRandom=()=>0;});
-  await tap(470,61);
+  await tap(430,241);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
   await tap(316,186);
   await page.waitForFunction(()=>{

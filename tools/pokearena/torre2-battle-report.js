@@ -10,8 +10,22 @@ const delta=(before,after)=>unique(after).filter(x=>!unique(before).includes(x))
 const uid=(member,index)=>member?.uid||'index:'+index;
 const safeList=(member,listMoves)=>{
  if(typeof listMoves!=='function'||!member)return [];
- try{return unique(listMoves(member).map(m=>String(m?.nombre||m?.name||m||'').trim()).filter(Boolean))}
- catch{return []} // Report must never prevent return to the campaign map.
+ try{
+  // The Lv8 capped charged preview and its earned full-power native version
+  // deliberately share a human-readable NAME but have DIFFERENT MOVE IDs.
+  // Compare installed identity, not the label: otherwise the battle report
+  // hides the player's genuine later level unlock (Hydro Pump, Fire Blast).
+  const seen=new Set(),items=[];
+  for(const move of listMoves(member)||[]){
+   const name=String(move?.nombre||move?.name||move||'').trim();
+   const key=String(move?.id||name.toLowerCase()).trim().toLowerCase();
+   if(!name||!key||seen.has(key))continue;
+   seen.add(key);
+   items.push({key,name,practice:move?.torre2IntroPractice===true,
+    preview:move?.torre2IntroPractice===true&&move?.torre2IntroSlot==='e'});
+  }
+  return items;
+ }catch{return []} // A report failure must never trap the saved campaign.
 };
 export function makeBattleReport(before,after,outcome,{
  kind='trainer',listMoves=null,tmNames={}
@@ -32,9 +46,17 @@ export function makeBattleReport(before,after,outcome,{
   team.push({id:member.id,from:old.id,levelBefore,levelAfter,
    experience,tester:Boolean(gain?.tester)});
   if(old.id!==member.id)evolutions.push({from:old.id,to:member.id});
-  const known=new Set(safeList(old,listMoves).map(s=>s.toLowerCase()));
-  for(const name of safeList(member,listMoves)){
-   if(!known.has(name.toLowerCase()))moves.push({id:member.id,name});
+  const previously=safeList(old,listMoves);
+  const known=new Set(previously.map(move=>move.key));
+  const previews=new Set(previously.filter(move=>move.practice)
+   .map(move=>move.name.toLowerCase()));
+  for(const move of safeList(member,listMoves)){
+   if(known.has(move.key))continue;
+   const learned={id:member.id,name:move.name};
+   if(move.preview)learned.preview=true;
+   else if(!move.practice&&previews.has(move.name.toLowerCase()))
+    learned.fullPower=true;
+   moves.push(learned);
   }
  });
  const gymBadges=delta(before.badges,after.badges);
@@ -50,6 +72,23 @@ export function makeBattleReport(before,after,outcome,{
   winCount:num(after.wins)-num(before.wins),
   defeatCount:num(after.losses)-num(before.losses)
  };
+}
+/** Human-readable reward events; the recipient is always displayed FIRST.
+ * The compact labels preserve both species and learned move on small screens.
+ * Never recalculate unlocks or mutate the campaign snapshot here.
+ */
+export function battleReportDetailLines(report){
+ if(!report)return [];
+ return [
+  ...report.evolutions.map(e=>display(e.from)+' → '+display(e.to)),
+  ...report.moves.map(e=>display(e.id)+': '+
+   (e.preview?'ULT INICIAL (REDUZIDA) · ':
+    e.fullPower?'GOLPE COMPLETO · ':'NOVO GOLPE · ')+
+   String(e.name||'').toUpperCase()),
+  ...report.badges.map(e=>'INSÍGNIA: '+String(e).toUpperCase()),
+  ...report.leagueHonors.map(e=>'LIGA: '+String(e).toUpperCase()),
+  ...report.tms.map(e=>'TM: '+String(e).toUpperCase())
+ ];
 }
 /* Low-cost native Phaser pixel UI; all input stays in the battle-path scene.
  * Interactive topmost backdrop prevents clicks passing through to trainers,
@@ -89,13 +128,7 @@ export function showBattleReport(scene,report){
   label(452,y,member.tester?'TESTE':('+'+member.experience+' XP'),9,'#d6e8ef');
  });
  if(!listed.length)label(66,157,'SEM ALTERAÇÕES NA EQUIPE',11,'#b3c4d3');
- const extras=[
-  ...report.evolutions.map(e=>display(e.from)+' → '+display(e.to)),
-  ...report.moves.map(e=>'GOLPE: '+e.name.toUpperCase()),
-  ...report.badges.map(e=>'INSÍGNIA: '+String(e).toUpperCase()),
-  ...report.leagueHonors.map(e=>'LIGA: '+String(e).toUpperCase()),
-  ...report.tms.map(e=>'TM: '+String(e).toUpperCase())
- ];
+ const extras=battleReportDetailLines(report);
  // Every reward must remain inspectable, even after six evolutions or
  // several newly learned moves. Two readable lines per page (not a clipped
  // concatenation that silently hides later TMs and league honors).

@@ -6,9 +6,11 @@ export {validRematchResult};
  */
 import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle,levelEvolutionChoices} from './progression.js';
 import {ROSTER} from '../datos.js';
-import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
+import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
+import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
+import {KANTO_LEVEL_EVOLUTIONS} from './frlg-learnsets.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -98,6 +100,26 @@ export const KANTO_DEX=Object.freeze('Bulbasaur,Ivysaur,Venusaur,Charmander,Char
 // Four and Champion battles rather than dozens of identical boss rematches.
 export const TRAINERS_PER_GYM=stage=>stage<8?13+stage*2:stage===8?17:0;
 
+// NPC species follow the same Kanto level thresholds as player evolutions.
+// Never choose an arbitrary branch (Eevee), and never evolve a fighter mid-battle.
+const trainerEvolutionSteps=new Map();
+for(const [to,[from,atLevel]] of Object.entries(KANTO_LEVEL_EVOLUTIONS)){
+ const options=trainerEvolutionSteps.get(from)||[];
+ options.push({to,atLevel});
+ trainerEvolutionSteps.set(from,options);
+}
+export function trainerSpeciesForLevel(species,level){
+ let current=String(species||'').toLowerCase();
+ if(!Number.isInteger(level)||level<1)return current;
+ for(let i=0;i<4;i++){
+  const options=trainerEvolutionSteps.get(current)||[];
+  if(options.length!==1||level<options[0].atLevel)break;
+  current=options[0].to;
+ }
+ return current;
+}
+
+
 function newMember(species,level=5){
  const exp=createPokemonProgression(species,level);
  return {id:species,progression:exp,uid:species+'-'+Math.random().toString(36).slice(2,9),hp:100};
@@ -109,6 +131,17 @@ export function createCampaign(starter){
   money:1400,inventory:{pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]},
   wildEncountersStage:0,pendingWild:null,
   badges:[],leagueHonors:[],gymTMClaims:[],lastMessage:'Campanha iniciada. Treine e enfrente os 13 treinadores antes de Brock.',champion:false};
+}
+// Production-only new game. The original createCampaign factory deliberately
+// retains its historical Mewtwo fixture for test/replay compatibility; do not
+// let that level-50 debug fighter enter a NEW player's Kanto journey.
+// Legacy saves are never rewritten or stripped of Pokémon by this function.
+export function createPlayerCampaign(starter){
+ const state=createCampaign(starter);
+ state.team=state.team.filter(member=>member.id!=='mewtwo');
+ if(state.team.length!==1||state.team[0].id!==starter)
+  throw Error('Fresh Kanto campaign must contain exactly its chosen starter');
+ return state;
 }
 // A string can be valid JSON while no longer being a usable campaign.
 // Do not overwrite the last good backup with such a structurally broken save.
@@ -251,13 +284,9 @@ export function readCampaign(storage=localStorage){
   if(s.pendingWild&&(!Number.isFinite(s.pendingWild.hpPercent)||s.pendingWild.hpPercent<1)){
    s.pendingWild.hpPercent=100;migrated=true;
   }
-  // Existing player saves receive exactly one permanent level-50 test Mewtwo.
-  if(![...s.team,...(s.box||[])].some(p=>p.id==='mewtwo')){
-   // Keep the tester playable immediately, without discarding the sixth team member.
-   if(s.team.length>=6)s.box.push(s.team.pop());
-   s.team.push(newMember('mewtwo',50));
-   migrated=true;
-  }
+  // Never silently add a level-50 tester to a genuine player's save.
+  // Previous saves containing Mewtwo remain unchanged: the migration only
+  // fills missing metadata and never deletes existing Pokémon or PC data.
   // Invalid stale wild markers from a previous stage must never be replayed.
   if(s.pendingWild&&s.pendingWild.stage!==s.stage){s.pendingWild=null;migrated=true}
   for(const member of [...s.team,...s.box])if(enforceCampaignCap(member,s.stage))migrated=true;
@@ -395,13 +424,16 @@ export function currentOpponent(s){
  const rivalId=originalStarter==='charmander'?'squirtle':
   originalStarter==='squirtle'?'bulbasaur':'charmander';
  const championId=rivalChampionTeam(originalStarter).at(-1);
- const species=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
+ const level=trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader);
+ const baseSpecies=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
   role==='rocket'?(['zubat','machop','ekans'].includes(list[s.trainer%list.length])?
    list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
+ // Fixed gym/League rosters remain untouched; rival and regular NPCs evolve
+ // as their levels rise, with the actual evolved sprite and attacks.
+ const species=leader?baseSpecies:trainerSpeciesForLevel(baseSpecies,level);
  return {id:species,leader,kind:role,
   name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':'Treinador '+(s.trainer+1),
-  level:trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader),
-  arena:gym.arena,city:gym.city};
+  level,arena:gym.arena,city:gym.city};
 }
 // Route selection must never create a full-HP battle actor from a fainted save.
 // Resume with an already-conscious reserve, or let the player use the Center.
@@ -635,6 +667,24 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  return {ok:true,pokemon:member,...outcome};
 }
+// The summary editor is a save transaction, not an in-memory preview.
+// Equip on a detached member first, persist the complete team checkpoint,
+// then update only the two loadout fields on the live Pokémon. A denied
+// primary/backup write leaves the old slots, marker and references intact.
+export function equipCampaignMove(s,memberIndex,slot,moveId,storage=localStorage){
+ if(!Number.isInteger(memberIndex)||memberIndex<0||memberIndex>=s?.team?.length)
+  return false;
+ const member=s.team[memberIndex];
+ const candidate={...member,moves:Array.isArray(member.moves)?[...member.moves]:member.moves};
+ if(!equipMove(candidate,slot,moveId))return false;
+ const team=s.team.slice();
+ team[memberIndex]=candidate;
+ saveCampaign({...s,team},storage);
+ member.moves=candidate.moves;
+ member.movePlanSpecies=candidate.movePlanSpecies;
+ return true;
+}
+
 export function selectTeamMember(s,index){
  if(!Number.isInteger(index)||index<0||index>=s.team.length)return false;
  // Summary selection must not diverge from the recoverable checkpoint.
@@ -730,7 +780,7 @@ export function resolveWildBattle(s,won){
  });
 }
 export function purchaseItem(s,itemId){
- const item=MART_ITEMS.find(i=>i.id===itemId&&s.stage>=(i.minStage??0));
+ const item=MART_ITEMS.find(i=>i.id===itemId&&martItemUnlocked(s,i));
  if(!item)return {ok:false,reason:'Item não está disponível nesta cidade.'};
  if(!Number.isFinite(s.money)||s.money<item.price)return {ok:false,reason:'Poké Dollars insuficientes.'};
  if(item.kind==='tm'&&s.inventory.tms.includes(itemId))
@@ -809,18 +859,22 @@ export function teachTM(s,itemId,memberIndex=s.active){
  return {ok:true,move:item.move};
 }
 
-export function rematchOpponent(s,index){
- if(s.stage<1||s.stage>=8||!Number.isInteger(index)||index<0||index>=s.trainer||index>=TRAINERS_PER_GYM(s.stage))return null;
- const foe=currentOpponent({...s,trainer:index});
+export function rematchOpponent(s,index,mapStage=s.stage){
+ const stage=Number(mapStage);
+ if(!Number.isInteger(stage)||stage<0||stage>8||stage>s.stage||
+  !Number.isInteger(index)||index<0||index>=TRAINERS_PER_GYM(stage)||
+  (stage===s.stage&&index>=s.trainer))return null;
+ const foe=currentOpponent({...s,stage,trainer:index,champion:false});
  if(!foe||!['trainer','rocket'].includes(foe.kind)||foe.leader)return null;
- return {...foe,level:Math.min(currentLevelCap(s.stage),foe.level+Math.min(10,(s.badges?.length||0)*2))};
+ const level=Math.min(currentLevelCap(s.stage),foe.level+Math.min(10,(s.badges?.length||0)*2));
+ return {...foe,level,id:trainerSpeciesForLevel(foe.id,level),mapStage:stage};
 }
-export function startRematch(s,index){
- const opponent=rematchOpponent(s,index);
+export function startRematch(s,index,mapStage=s.stage){
+ const opponent=rematchOpponent(s,index,mapStage);
  if(!opponent)return {ok:false,reason:'Este treinador ainda não tem revanche disponível.'};
  // Reserve the VS Seeker ticket only after the pending fight is durable.
  const next=JSON.parse(JSON.stringify(s));
- const ticket=reserveRematch(next,index);
+ const ticket=reserveRematch(next,index,opponent.mapStage);
  if(!ticket)return {ok:false,reason:'VS Seeker: '+rematchState(next).charge+'/3 atividades. Vença outras batalhas para recarregar.'};
  saveCampaign(next);
  Object.assign(s,next);
@@ -832,8 +886,8 @@ export function resolveRematch(s,ticket,won){
   if(!consumeRematchResult(next,ticket))return {ok:false,reason:'Resultado antigo de revanche ignorado.'};
   let money=0,xp=0,shared=null;
   if(won){
-   money=Math.floor((180+next.stage*60)/2);
-   xp=Math.max(1,Math.floor(xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),'trainer')*.6));
+   money=Math.floor((180+ticket.stage*60)/2);
+   xp=Math.max(1,Math.floor(xpRewardFor(ticket.stage,TRAINERS_PER_GYM(ticket.stage),'trainer')*.6));
    shared=awardSharedTeamExperience(next,xp,{kind:'trainer'});
    next.money=(next.money||0)+money;
    next.rematches.wins=(next.rematches.wins||0)+1;

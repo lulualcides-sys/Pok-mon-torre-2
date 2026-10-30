@@ -1,0 +1,54 @@
+name: T07 — lacunas FRLG deduplicadas 151×227
+on:
+  push:
+    branches: [audit/t07-frlg-unrendered-136x639-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  audit-gaps:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Complete tests, policies, syntax
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          node --check tests/t07-frlg-unrendered-136x639-built.test.mjs
+          npm test
+      - name: Build captured Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+      - name: Verify missing FRLG matrix and no invented VFX
+        run: |
+          set -euo pipefail
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          node tests/t07-151-movesets-built.test.mjs
+          node tests/t07-invalid-tm-save-151x227-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+      - name: Full Chromium regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          npm run test:browser
+      - name: Preserve matrix
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t07-frlg-136-moves-639-pairs
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 30

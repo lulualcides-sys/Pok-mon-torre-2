@@ -40,7 +40,13 @@ const server=http.createServer(async(req,res)=>{
   core.saveCampaign(core.createCampaign('bulbasaur'));
   window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
  });
- await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
+ // A scene can be marked active while its first frame/asset preload is
+ // still rendering. The VS scene expects the real map to be ready, just as a
+ // human tapping the battle CTA would. Never launch a fixture mid-preload.
+ await page.waitForFunction(()=>{
+  const c=window.__pt2Game.scene.getScene('campanha');
+  return c.scene.isActive()&&c.__torre2BattlePath?.stage===0;
+ },null,{timeout:45000});
  const battle=async(wild=false,full=false)=>{
   await page.evaluate(({wild,full})=>{
    const s=core.readCampaign();s.team.forEach(m=>m.hp=100);s.inventory.pokeball=15;
@@ -49,12 +55,25 @@ const server=http.createServer(async(req,res)=>{
    if(wild){s.pendingWild=null;core.startWildEncounter(s,()=>0);}
    window.__pt2Game.scene.getScene('campanha').enterBattle(s,wild);
   },{wild,full});
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,null,{timeout:20000});
+  try{
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&
+    window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,null,{timeout:20000});
+  }catch(error){
+   const state=await page.evaluate(()=>{
+    const g=window.__pt2Game,c=g.scene.getScene('campanha'),b=g.scene.getScene('combate');
+    return {campaignActive:c.scene.isActive(),combatActive:b.scene.isActive(),
+     pathReady:!!c.__torre2BattlePath,versusActive:c.children.list.some(o=>
+      o.getData?.('torre2-versus-intro')&&o.active),
+     combatData:b.datos?.torre2?.kind,installed:!!b.__torre2PartyInstalled};
+   });
+   fs.writeFileSync('test-evidence/ball-intro-timeout.json',JSON.stringify(state,null,2));
+   throw new Error('Battle entry failure '+JSON.stringify(state)+' '+String(error));
+  }
   await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.luchadores.forEach(a=>a.inmortal=true);});
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:12000});
  };
  await battle();
- for(let i=0;i<5;i++){
+ for(let i=0;i<3;i++){
   await page.evaluate(i=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__testBallTrace=[];b.__torre2BeamDebug=null;
    const collect=()=>{
@@ -83,6 +102,17 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(identity.portrait,'retrato-'+identity.dex,'HUD portrait follows the incoming Pokemon');
   console.log('swap',i+1);
  }
+ // A fourth voluntary switch is forbidden. A mandatory KO switch must remain allowed.
+ const limit=await page.evaluate(()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  const before=b.datos.torre2.party.playerIndex;
+  const other=before===0?1:0;
+  b.__torre2SideParty.slots[other].emit('pointerdown');
+  return {before,after:b.datos.torre2.party.playerIndex,
+   changes:b.__torre2PlayerSwitches,locked:b.__torre2Changing};
+ });
+ assert.deepEqual(limit,{before:1,after:1,changes:3,locked:false},
+  'Exactly 3 voluntary player switches; fourth click does nothing');
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
@@ -103,7 +133,7 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(mode=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>mode==='caught'?0:.999999;
    const zone=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
-   zone(470,61).emit('pointerdown');
+   zone(430,241).emit('pointerdown');
    const assertNoManualAim = !zone(522,184);
    if(!assertNoManualAim)throw Error('Manual capture aim must not exist');
 
@@ -112,6 +142,15 @@ const server=http.createServer(async(req,res)=>{
  };
  await throwBall('breakout');
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='ABSORB');
+ const thrown=await page.evaluate(()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  return {key:b.__torre2CaptureBallSprite?.texture?.key,
+   objectType:b.__torre2CaptureBallSprite?.type,
+   native:b.__torre2CaptureBallSprite?.getData('torre2-original-ball-sprite'),
+   opened:b.__torre2CaptureDebug?.ballOpened};
+ });
+ assert.deepEqual(thrown,{key:'torre2-original-ball-pokeball-open',objectType:'Image',native:'pokeball',opened:true},
+  'Capture must animate a genuine cached Phaser Image, not per-cell Graphics');
  await page.screenshot({path:'test-evidence/ball-capture-absorb.png'});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='RESUME',null,{timeout:15000});
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
@@ -138,9 +177,22 @@ const server=http.createServer(async(req,res)=>{
    throw Error('Saved member should not have burn before throwing');
   b.__torre2CaptureRandom=()=>0;
   const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
-  z(470,61).emit('pointerdown');z(316,186).emit('pointerdown');
+  z(430,241).emit('pointerdown');z(316,186).emit('pointerdown');
  });
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:15000});
+ const gotcha=await page.evaluate(()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  return {key:b.__torre2CaptureBallSprite?.texture?.key,
+   sparkle:b.__torre2CaptureSparkles,
+   active:b.__torre2CaptureBallSprite?.active,opened:b.__torre2CaptureDebug?.ballOpened};
+ });
+ assert.equal(gotcha.key,'torre2-original-ball-pokeball');
+ assert.equal(gotcha.active,true);
+ assert.equal(gotcha.opened,false,'Captured ball must seal before the three shakes and GOTCHA');
+ assert.deepEqual(gotcha.sparkle,{kind:'gotcha',maxStars:3,durationMs:560});
+ // Capture the FIRST real on-screen sparkle frame. Taking several full
+ // screenshots serially lets the 560 ms tween finish before the named image.
+ await page.waitForTimeout(110);
  await page.screenshot({path:'test-evidence/ball-gotcha.png'});
  assert.equal(await page.evaluate(()=>core.readCampaign().box.length),1);
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);

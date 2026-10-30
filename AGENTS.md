@@ -2,6 +2,12 @@
 
 Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de cada patch, consultar o índice `docs/GUIA-RAPIDO-REPOSITORIO.md` e abrir **somente** o código, testes e documentos necessários ao escopo. O plano de economia e suas limitações estão em `docs/ECONOMIA-DE-CONTEXTO-ASTRA.md`.
 
+## Memória operacional de baixo custo (Obsidian/Markdown)
+
+- **Antes da busca de código**, quando houver shell Node no checkout, executar `node tools/dev/memoria-contexto.mjs <area>` (consulte `--list`). As notas ficam em [`docs/memoria/00-INDICE.md`](docs/memoria/00-INDICE.md) e podem ser abertas localmente no Obsidian.
+- **Não usar resumo para substituir** a leitura integral da política de golpes, Script Mestre, fila e fontes obrigatórias. Sempre verificar HEAD/PRs/CI atuais; o comando é um índice pequeno, não memória viva nem prova de testes.
+- Graphiti está apenas catalogado no Arsenal, **não conectado** a este projeto. Nunca criar custos de LLM, embeddings ou banco de grafos sem teste e justificativa.
+
 ## Regras inegociáveis
 
 - **Preservar todos os golpes, efeitos, sprites e mecânicas já aprovados.** Não sobrescrever aprovações ou alterar o padrão nativo do Poké Arena 2D.
@@ -27,3 +33,11 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 - **Testes em fixture, percurso por depuração e testes de chefes não são prova de campanha jogada normalmente.** Marcar seções como concluídas apenas depois de cumprir seus critérios no jogo real.
 
 - **Comando do usuário `continue` / `Continue este chat`:** abrir a [FILA DE CONTINUIDADE T01–T31](docs/FILA-CONTINUE-SCRIPT-MESTRE.md), conferir o HEAD, os PRs concorrentes e começar o primeiro item ainda não validado e não bloqueado. O usuário já autorizou o Script Mestre; não pedir aval a cada patch. Para cada lote, executar o que for possível de forma concreta, testar, integrar/publicar somente quando validado, e registrar evidências e pendências na fila e no controle das 37 seções. A numeração T01–T31 é operacional, distinta das 37 seções do Script Mestre. Nunca marcar um item como completo com base apenas em código escrito ou um fixture.
+
+## Fluxo padrão — Superpowers + Spec Kit (desde 30/10/2026)
+
+- **Padrão obrigatório para qualquer `continue`, bug ou feature:** usar a [constituição Spec Kit](.specify/memory/constitution.md) e as [especificações de continuidade](specs/001-master-script-continuity/spec.md) como **complementos**, sem substituir o Script Mestre, esta política ou a fila T01–T31.
+- **Antes de agir:** conferir `main`, PRs/branches e CI concorrentes; recuperar checkpoint/controle, identificar a primeira tarefa não bloqueada e atualizar sua especificação, plano e checklist (`specs/<id>-<tema>/spec.md`, `plan.md`, `tasks.md`). Evitar duplicação de documentação e PRs.
+- **Com Superpowers disponível:** aplicar `brainstorming` em mudanças novas de comportamento (sem pedir aprovações repetidas de decisões já tomadas no Script Mestre), `systematic-debugging` em defeitos, `test-driven-development` em regressões, `executing-plans` em planos aprovados e `verification-before-completion` antes de comunicar resultado; solicitar revisão quando possível. Sem acesso à skill, executar o equivalente manualmente e dizer que não houve invocação do plugin.
+- **Ciclo mínimo:** reproduzir → RED (quando aplicável) → mudança pequena e isolada → GREEN → testes focados + CI/build/navegador aplicáveis → revisão → PR/merge → confirmar Pages HTTP no SHA exato. Nunca reportar sucesso sem evidência nova.
+- **Registro obrigatório:** arquivos modificados, SHA/PR, testes realmente executados (fixture vs. Chromium vs. campanha natural vs. Android físico), conclusão de CI e estado de publicação. Adoção destes métodos **não** conclui nenhuma seção do Script Mestre nem instala automaticamente o CLI Spec Kit.

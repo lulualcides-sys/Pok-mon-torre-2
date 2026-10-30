@@ -7,7 +7,7 @@ import {SURGE3_MOVES} from './surge3/catalog.js';
 import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
-import {kanto151SlotPlan} from './all-kanto-species.js';
+import {KANTO_151,kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
 import {GEN7_LETSGO_LEVEL_UP,gen7LetsGoUnlockLevel} from './gen7-letsgo-learnsets.js';
 import {GEN5_KANTO_LEVEL_UP,gen5KantoUnlockLevel} from './gen5-existing-levels.js';
@@ -30,6 +30,25 @@ const campaignLevel=at=>Math.min(KANTO_CAMPAIGN_MOVE_CAP,at);
 // is actually Fire-type Kanto and legally learns TM38 in FireRed/LeafGreen.
 // Other non-Fire species retain the existing real TM teaching system.
 // No renderer, original client kit, attack power, CD or save data is changed.
+// T16: Rain Dance has an already-approved pixel renderer. These 40 Kanto
+// WATER/ELECTRIC species are compatible with TM18 in the pinned FRLG table.
+// User-authorized Torre 2 house rule: a curated Lv25 level unlock; no TM
+// is consumed and no other weather move/VFX becomes equipable by this patch.
+export const KANTO_RAIN_DANCE_SPECIES=Object.freeze([
+ 'squirtle', 'wartortle', 'blastoise', 'lapras', 'vaporeon',
+ 'gyarados', 'starmie', 'slowbro', 'poliwag', 'poliwhirl',
+ 'poliwrath', 'psyduck', 'golduck', 'staryu', 'slowpoke',
+ 'seel', 'dewgong', 'shellder', 'cloyster', 'tentacool',
+ 'tentacruel', 'horsea', 'seadra', 'krabby', 'kingler',
+ 'goldeen', 'seaking', 'omanyte', 'omastar', 'kabuto',
+ 'kabutops', 'pikachu', 'raichu', 'electabuzz', 'voltorb',
+ 'electrode', 'magnemite', 'magneton', 'zapdos', 'jolteon'
+
+]);
+export const KANTO_RAIN_DANCE_LEVEL=25;
+// Explicit legacy late-generation mastery gates from the Script Mestre.
+// Do not auto-grant these two status moves at Lv25.
+export const KANTO_RAIN_DANCE_LATE_LEVELS=Object.freeze({slowpoke:49,zapdos:50});
 export const KANTO_FIRE_BLAST_LEVEL=50;
 export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
  'charmander','charmeleon','charizard','vulpix','ninetales',
@@ -38,6 +57,14 @@ export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
 const fireBlastAtLevel=id=>
  KANTO_FIRE_BLAST_SPECIES.includes(id)&&frlgMachineCompatible(id,'fire-blast')?
  KANTO_FIRE_BLAST_LEVEL:null;
+// Approved, species-specific preview finishers; full-power moves keep their
+// existing FRLG/campaign unlock gates. No Arena/VS kit or VFX is changed.
+const PREFERRED_KANTO_ULT_PREVIEWS=Object.freeze({
+ vulpix:'fire-blast',ivysaur:'solar-beam'
+});
+const thematicPreview=id=>
+ id==='vulpix'&&fireBlastAtLevel(id)===null?null:
+ PREFERRED_KANTO_ULT_PREVIEWS[id]||null;
 /* One Pokémon move, one catalog entry — whether the original captured client
  * or the original game calls it by Portuguese, English or an alias.
  * Never make a second VFX of an existing Poké Arena 2D move. The native
@@ -128,7 +155,25 @@ function collect(def){
  }
  return moves;
 }
-const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES];
+// The upstream Poké Arena 2D client may later add a move we had already
+// pixel-animated and approved in Torre 2. Preserve these FOUR older approved
+// Kanto renderer implementations, while leaving the upstream Arena/VS kits
+// completely intact. These are NOT permission to create future duplicates.
+export const APPROVED_KANTO_NATIVE_OVERLAPS=Object.freeze([
+ 'ice-shard','psychic','shadow-ball','ice-beam'
+]);
+const approvedKantoOverlap=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
+// Two native Poke Arena moves existed in the user-approved 227-effect baseline
+// (published src-8faafad601, datos.js: Suicune/Raikou), but later upstream
+// roster edits removed their LAST users. Keep their exact original move data
+// ONLY in the Torre 2 campaign pool; never alter current native Arena kits.
+// The existing 'chorro' and 'potenciar' Phaser renderers are reused as-is.
+// Appending after ROSTER ensures upstream reinstatement always takes priority.
+const approvedNativeBaselineFallbacks=[
+ {nombre:'Aurora Beam',forma:'chorro',tipo:'ICE',dano:15,largo:240,ancho:16,anchoVisual:26,carga:.25,dur:.8,empuje:50,giro:2.2,paleta:'aurora',ralentiza:.3,ralentizaDur:1.8,congela:true,coste:35,cd:7,anim:'Charge',trozos:['solar-a-hielo','solar-b-hielo','solar-c-hielo'],velTrozos:700,aditivo:true,hojaBoca:'solar-boca-hielo'},
+ {nombre:'Calm Mind',forma:'potenciar',tipo:'PSYCHIC',dur:5,mult:1.25,reduce:.15,texto:'CALM MIND',coste:30,cd:14,anim:'Charge'}
+];
+const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES,...approvedNativeBaselineFallbacks];
 const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
 const signatureByName=new Map(SIGNATURE_MOVES.map(m=>[canonicalMoveKey(m.nombre),m]));
 for(const h of rawLibrary){
@@ -145,10 +190,22 @@ for(const h of rawLibrary){
   const signature=signatureByName.get(sameMove);
   const inheritedSignature=!signatureEntries.has(h)&&
    signature&&signature.forma===h.forma;
-  ids.set(id,{...h,...(inheritedSignature?signature:{}),id,
+  // The original upstream renderer remains available in Poké Arena modes;
+  // ONLY the Torre 2 editor/battle pool uses our prior approved VFX.
+  const preserveApproved=approvedKantoOverlap.has(sameMove)&&
+   !signatureEntries.has(h)&&signature?.approved===true&&Boolean(signature.forma);
+  const resolvedId=preserveApproved?signature.id:id;
+  // A native placeholder can carry pendiente=true even after the SAME VFX
+  // was independently approved in Torre 2. The approved campaign override
+  // must not inherit that stale flag (Bug Bite, Bite, Swift); never clear
+  // pending for an unapproved renderer or modify the native Arena kit.
+  const approvedInherited=(inheritedSignature||preserveApproved)&&
+   signature?.approved===true&&signature?.pendiente!==true;
+  ids.set(resolvedId,{...h,...(inheritedSignature||preserveApproved?signature:{}),id:resolvedId,
+   ...(approvedInherited?{pendiente:false}:{}),
    ...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
    source:nativeCrunch?'torre2-visual-override':
-    signatureEntries.has(h)||inheritedSignature?'new-phaser-fx':'arena2d-original'});
+    signatureEntries.has(h)||inheritedSignature||preserveApproved?'new-phaser-fx':'arena2d-original'});
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
@@ -188,9 +245,9 @@ export const CHARACTERISTIC_KANTO_ROLES=Object.freeze({
  scyther:[[2,'x-scissor']],beedrill:[[2,'x-scissor']],
  parasect:[[2,'x-scissor']],
  sandshrew:[[2,'swift']],sandslash:[[2,'swift']],
- gastly:[[2,'confuse-ray'],[2,'shadow-ball']],
- haunter:[[2,'confuse-ray'],[2,'shadow-ball']],
- gengar:[[2,'confuse-ray'],[2,'shadow-ball']],
+ gastly:[[1,'confuse-ray'],[2,'shadow-ball']],
+ haunter:[[1,'confuse-ray'],[2,'shadow-ball']],
+ gengar:[[1,'confuse-ray'],[2,'shadow-ball']],
  vulpix:[[2,'confuse-ray']],ninetales:[[2,'confuse-ray']],
  magnemite:[[2,'sonic-boom']],magneton:[[2,'sonic-boom']],
  geodude:[[2,'rock-blast']],graveler:[[2,'rock-blast']],
@@ -223,17 +280,24 @@ function campaignIntroOptions(member){
  const preview=resolveKantoIntro(m,{},{
   library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[id]||{},
-  levelUp:FRLG_LEVEL_UP[id]||{},unlockLevel:frlgUnlockLevel
+  levelUp:FRLG_LEVEL_UP[id]||{},unlockLevel:frlgUnlockLevel,
+  verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
+   GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
+   EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
+  verifiedParents:KANTO_LEVEL_EVOLUTIONS,
+  speciesTypes:KANTO_TYPES.get(id)||[],preferredSignature:thematicPreview(id)
  });
  return SLOTS.flatMap((slot,index)=>{
   const base=preview[slot];
   if(!base?.forma)return [];
   const source=canonicalMoveKey(base.torre2IntroSource||base.nombre);
-  const name=String(base.nombre).replace(/ · Treino$/,'');
+  // Genuine installed move names stay visible. Early power caps are internal
+  // campaign balance metadata, not additional named attacks in the menu.
+  const name=String(base.nombre).replace(/ · Treino$/,'').replace(/^ULT · /,'');
   return [{
    ...base,
    id:'torre2-intro-'+slot+'-'+source,
-   nombre:index===3?name:name+' · Treino',
+   nombre:name,
    torre2IntroPractice:true,
    torre2IntroSlot:slot,
    torre2IntroUnlockLevel:index===3?8:5,
@@ -346,7 +410,7 @@ export function availableMoves(member){
   'aerial-ace':['pidgeotto','pidgeot','fearow','scyther','farfetchd','dodrio','aerodactyl','charizard'],
   'flame-wheel':['growlithe','arcanine','vulpix','ninetales','ponyta','rapidash'],
   'light-screen':['abra','kadabra','alakazam','mr-mime','clefairy','clefable','starmie','magnemite','magneton'],
-  'rain-dance':['squirtle','wartortle','blastoise','lapras','vaporeon','gyarados','starmie','slowbro','poliwag','poliwhirl','poliwrath'],
+  'rain-dance':KANTO_RAIN_DANCE_SPECIES,
   'sand-attack':['pidgey','pidgeotto','pidgeot','sandshrew','sandslash','cubone','marowak','diglett','dugtrio','eevee']
  };
  for(const [name,species] of Object.entries(kantoFinish))
@@ -355,7 +419,11 @@ export function availableMoves(member){
  // Existing tmMoves already enters names above; never auto-grant it.
  const early=EARLY_KANTO_LEARNSETS[member.id];
  if(early)for(const id of Object.keys(early))names.add(id);
- const moves=TEST_LIBRARY.filter(x=>names.has(x.id)||names.has(norm(x.nombre)));
+ // Surf's existing visual was rejected for the Kanto campaign. Preserve
+ // the catalog/renderer byte-for-byte, but never equip it through a level,
+ // imported TM claim, legacy plan or editor until explicitly approved.
+ const moves=TEST_LIBRARY.filter(x=>
+  (names.has(x.id)||names.has(norm(x.nombre)))&&canonicalMoveKey(x.nombre)!=='surf');
  const level=member.progression?.level??5;
  const {def:memberDef,etapa}=buscar(member.id);
  const activeKit=etapa?memberDef.evoluciones[etapa-1]?.kit:memberDef.kit;
@@ -378,7 +446,7 @@ export function availableMoves(member){
  const ordinaryBonus={
   'poison-punch':24,'ice-punch':26,'thunder-punch':26,'fire-punch':26,
   'flame-wheel':18,'surf':30,'psychic':30,'cross-chop':35,
-  'aerial-ace':25,'light-screen':25,'rain-dance':25,
+  'aerial-ace':25,'light-screen':25,'rain-dance':KANTO_RAIN_DANCE_LEVEL,
   'sand-attack':9,'sleep-powder':10,'protect':99
  };
  const plan=earlyKantoSlotPlan(member.id)||
@@ -401,6 +469,11 @@ export function availableMoves(member){
 
  const filtered=moves.filter(m=>{
   const key=canonicalMoveKey(m.nombre);
+  // Prior approved verified-level exceptions: Slowpoke Lv49, Zapdos Lv50.
+  // Their canonical/Pokedex timing must not regress during T16 expansion.
+  if(key==='rain-dance'&&kantoFinish[key]?.includes(member.id)&&
+     level<(KANTO_RAIN_DANCE_LATE_LEVELS[member.id]??KANTO_RAIN_DANCE_LEVEL))
+   return false;
   // Some original Poké Arena Raichu evolutions still carry an older
   // evolution-only lock. Explicitly unlock these three NEW status moves on
   // their own species/level, without lifting locks on any approved attacks.
@@ -412,9 +485,15 @@ export function availableMoves(member){
   // All PRE-EXISTING moves retain their original evolution/level locks.
   const newMoveRequiredLevel={
    'sand-attack':9,'sleep-powder':10,'aerial-ace':25,
-   'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':25
+   'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':KANTO_RAIN_DANCE_LEVEL
   };
-  if(key==='protect')return taughtCompatible(key);
+  // Protect is both TM17 and a native FRLG level-up move for nine
+  // Kanto species. Never suppress legal natural learning because of TM17.
+  if(key==='protect'){
+   const natural=frlgUnlockLevel(member.id,key);
+   return (natural!==null&&level>=campaignLevel(natural)&&
+    !evoLocked.has(key))||taughtCompatible(key);
+  }
   // Fire Blast is neither a Lv5 starter move nor a free compatible TM:
   // the existing native Fire Blast must wait until our campaign Lv50.
   // For Ponyta/Rapidash/Magmar this also respects the official late learn
@@ -422,6 +501,10 @@ export function availableMoves(member){
   if(key==='fire-blast'&&fireBlastAtLevel(member.id)!==null)
    return level>=KANTO_FIRE_BLAST_LEVEL&&!evoLocked.has(key)&&
     !isPendingApprovalMove(m)&&Boolean(m.forma);
+  // A native rain effect is the only weather move approved for equipment;
+  // never grant it to a species missing FireRed TM18 compatibility.
+  if(key==='rain-dance'&&kantoFinish[key]?.includes(member.id)&&
+     !frlgMachineCompatible(member.id,key))return false;
   // Strict FireRed unlock for all official level-up moves (inherits prior
   // evolution learnsets). An unlearned TM is NEVER auto-granted.
   const official=frlgUnlockLevel(member.id,key);
@@ -435,6 +518,24 @@ export function availableMoves(member){
   if(early&&kantoFinish[key]?.includes(member.id)&&level>=(newMoveRequiredLevel[key]??ordinaryBonus[key]??10))
    return true;
   if(taughtCompatible(key))return true;
+  // A move could be a FireRed TM AND a real level-up in HGSS/B2W2/Let's
+  // Go. The previous blanket !frlgMachineCompatible check silently hid
+  // those verified moves even after their natural level. Do not mislabel
+  // their supplementary learning as a free FRLG TM.
+  // Keep TM17 Protect's approved FireRed-only gate; Surf's renderer
+  // remains rejected and cannot auto-equip by this supplementary path.
+  if(official===null&&frlgMachineCompatible(member.id,key)&&
+     !['surf','protect','scratch'].includes(key)&&!evoLocked.has(key)&&
+     !isPendingApprovalMove(m)&&Boolean(m.forma)){
+    const later=[gen5KantoUnlockLevel(member.id,key),
+      gen7LetsGoUnlockLevel(member.id,key),
+      gen45KantoUnlockLevel(member.id,key)].filter(Number.isInteger);
+    if(later.length){
+      const required=campaignLevel(Math.max(13,activeStage,
+        Math.min(...later)));
+      if(level>=required)return true;
+    }
+  }
   // Level-only mastery for an INSTALLED same-type TM attack (never Lv5).
   const mastery=official===null?kantoStabTmMasteryLevel(member.id,key,m.tipo):null;
   if(mastery!==null&&level>=mastery&&!evoLocked.has(key)&&
@@ -525,14 +626,49 @@ export function campaignLearnset(species){
     practice:move.torre2IntroPractice===true,
     slot:move.torre2IntroSlot||null}));
  }
+ // Surf's legacy renderer remains installed, but campaignLearnset feeds
+ // the Pokédex/editor index: do not advertise a rejected HM as teachable.
+ // The actual battle resolver already blocks Surf, including imported saves.
  for(const move of TEST_LIBRARY)
-  if(!list.has(move.id)&&frlgMachineCompatible(id,move.id))
+  if(canonicalMoveKey(move.nombre)!=='surf'&&
+     !list.has(move.id)&&frlgMachineCompatible(id,move.id))
    list.set(move.id,Object.freeze({
     id:move.id,name:move.nombre,type:move.tipo,level:null,method:'TM'}));
  const result=Object.freeze([...list.values()].sort((a,b)=>
   (a.level??999)-(b.level??999)||a.name.localeCompare(b.name)));
  KANTO_LEARNSET_CACHE.set(id,result);
  return result;
+}
+
+
+/** T08 — Next obtainable attacks in the CURRENT species' Kanto campaign.
+ * Source of truth is the battle move pool, identical to the Pokédex levels.
+ * Early E is only a capped, charged preview; its full native attack stays
+ * locked until its own unlock level. TMs never unlock from XP alone.
+ * Reading the list does not equip, mutate or save any Pokémon.
+ */
+export function upcomingCampaignMoves(member){
+ if(!member?.id)return [];
+ const level=Number(member.progression?.level??5);
+ const seen=new Set();
+ return campaignLearnset(member.id).filter(row=>{
+  if(row.method!=='LEVEL'||!Number.isInteger(row.level)||
+     row.level<=level||row.level>KANTO_CAMPAIGN_MOVE_CAP)return false;
+  if(row.practice&&!(row.slot==='e'&&row.level===KANTO_INTRO.ultAt))
+   return false;
+  if(!row.practice){
+   const installed=TEST_LIBRARY.find(move=>move.id===row.id);
+   if(!installed?.forma||isPendingApprovalMove(installed))return false;
+  }
+  // A capped Lv8 ULT and its later full-power native move have DIFFERENT
+  // availability; show both rather than falsely granting the native at Lv8.
+  const key=(row.practice?'INTRO_E:':'NATIVE:')+canonicalMoveKey(row.name);
+  if(seen.has(key))return false;
+  seen.add(key);
+  return true;
+ }).map(row=>Object.freeze({
+  ...row,ultimatePreview:row.practice&&row.slot==='e'
+ }));
 }
 
 export function moveUnlockLevel(member,moveName){
@@ -590,6 +726,154 @@ export function moveUnlockLevel(member,moveName){
  const stage=frlgEvolutionLevel(species);
  return campaignLevel([stage,Math.max(10,stage),Math.max(20,stage),Math.max(32,stage)][index]);
 }
+// Some native P2 plans equip the exact same move in two different HAB slots.
+// Keep the original ULT and characteristic slots, filling only duplicates
+// with species-legal moves from the installed catalogue. Never add a VFX.
+// Campaign-only native Poké Arena roles: LMB weak basic, RMB/Q normal
+// skills, E the full-meter finisher. Never change original Arena/VS kits.
+export function isCampaignUltimateOnlyMove(move){
+ if(!move)return false;
+ if(move.torre2IntroSlot==='e')return true;
+ if(move.torre2IntroPractice)return false;
+ // Some original Poké Arena abilities omit Gen3 power metadata even though
+ // the move is a high-tier finisher (Flare Blitz is multi-contact/charged).
+ // Keep the authentic renderer and name, but gate this move behind E.
+ if(['flare-blitz','earthquake'].includes(canonicalMoveKey(move.nombre)))return true;
+ // Original P2 marks some harmless defensive/status actions as `ulti`
+ // because they occupied its E slot. In the campaign they remain legal
+ // normal HAB actions (e.g. earned FRLG Protect); only a genuinely
+ // damaging finisher or an explicit Lv8 preview is meter-gated.
+ if((Number(move.dano)||0)===0&&(Number(move.poder)||0)===0)return false;
+ return move.ulti===true||Number(move.dano)>=13||Number(move.poder)>=80;
+}
+export function campaignMoveSlotReason(member,slot,move){
+ if(!Number.isInteger(slot)||slot<0||slot>=4)return 'SLOT INVÁLIDO';
+ if(!move?.forma)return 'SEM EFEITO';
+ if(member?.id==='mewtwo')return null; // debug-only unrestricted lab
+ if(isPendingApprovalMove(move))return 'EFEITO EM REVISÃO';
+ const level=member?.progression?.level??5;
+ if(slot===3&&level<KANTO_INTRO.ultAt)return 'ULT NO NV. 8';
+ if(move.torre2IntroSlot&&move.torre2IntroSlot!==SLOTS[slot]){
+  // Few-move species (Magikarp/Ditto) may share the existing neutral
+  // Struggle practice across HAB slots at Lv13+. This NEVER carries the
+  // E-only ULT or a strong/elemental move into a normal skill button.
+  const neutralFallback=slot>0&&slot<3&&level>=KANTO_INTRO.tutorialUntil&&
+   move.torre2IntroPractice&&move.torre2IntroSlot!=='e'&&
+   canonicalMoveKey(move.torre2IntroSource||move.nombre).startsWith('struggle');
+  if(!neutralFallback)
+   return move.torre2IntroSlot==='e'?'SÓ ULT (E)':'PREVIA DE OUTRO SLOT';
+ }
+ if(level<=8&&!move.torre2IntroPractice)return 'GOLPE NATIVO BLOQUEADO';
+ if(slot===3&&level<KANTO_INTRO.tutorialUntil&&!move.torre2IntroPractice)
+  return 'ULT FORTE APÓS NV. 12';
+ if(slot===0){
+  if(isCampaignUltimateOnlyMove(move)||Number(move.dano)>9)
+   return 'GOLPE FORTE: SÓ ULT';
+ }
+ if((slot===1||slot===2)&&isCampaignUltimateOnlyMove(move))
+  return 'GOLPE FORTE: SÓ ULT';
+ if(slot===3&&!move.torre2IntroPractice&&!isCampaignUltimateOnlyMove(move))
+  return 'ULT EXIGE GOLPE OFENSIVO FORTE';
+ return null;
+}
+/** Suggest a legal editor slot; never equip or mutate a saved Pokémon.
+ * A compatible learned move can be rejected only because the player
+ * tapped an incompatible button. Open the right role instead of leaving
+ * the user at an apparently broken library entry.
+ */
+export function suggestedCampaignMoveSlot(member,activeSlot,move){
+ if(!Number.isInteger(activeSlot)||activeSlot<0||activeSlot>3||!move)
+  return null;
+ if(!campaignMoveSlotReason(member,activeSlot,move))return activeSlot;
+ const legal=[0,1,2,3].filter(i=>!campaignMoveSlotReason(member,i,move));
+ if(!legal.length)return null;
+ // Preserve the approved charged ULT boundary even if a native attack
+ // renderer or a saved legacy kit suggests another position.
+ if(isCampaignUltimateOnlyMove(move))return legal.includes(3)?3:null;
+ const preferred=['lmb','rmb','q','e'].indexOf(move.torre2IntroSlot);
+ if(legal.includes(preferred))return preferred;
+ // Ordinary attacks and defensive moves should remain in HAB2/HAB3
+ // whenever possible, rather than unnecessarily consuming the ULT slot.
+ return legal.find(i=>i===1||i===2)??legal.find(i=>i===0)??legal[0];
+}
+function uniqueCampaignSlots(ids,available,member){
+ const result=[...ids].slice(0,4),byId=new Map(available.map(m=>[m.id,m]));
+ const keyOf=id=>{
+  const m=byId.get(id);
+  return canonicalMoveKey(m?.torre2IntroSource||m?.nombre||id);
+ };
+ const usedIds=new Set(),usedNames=new Set(),missing=[];
+ // A Lv8 weak introductory ULT is a separate energy-gated action, even
+ // when it reuses the normal move's renderer; all native IDs stay unique.
+ for(const slot of [3,0,2,1]){
+  const id=result[slot];if(!id)continue;
+  const m=byId.get(id),name=keyOf(id);
+  const introUlt=slot===3&&m?.torre2IntroPractice;
+  // The capped Lv8 ULT preview is a separate action for onboarding, but
+  // at Lv13+ its underlying move name must not be duplicated in a normal
+  // HAB slot (Cubone/Marowak Bonemerang was both Q and ULT).
+  // Prefer keeping the exclusive charged ULT and finding another already
+  // unlocked, species-legal skill for the normal slot; never grant a TM.
+  const reserveUltimateName=introUlt&&(member.progression?.level??5)>=13;
+  if(!m||campaignMoveSlotReason(member,slot,m)||usedIds.has(id)||
+     (!introUlt&&usedNames.has(name))){
+   result[slot]=null;missing.push({slot,original:id});
+  }else{
+   usedIds.add(id);
+   if(!introUlt||reserveUltimateName)usedNames.add(name);
+  }
+ }
+ const candidates=available.filter(m=>m?.id&&m.forma&&
+  !isPendingApprovalMove(m)&&!['surf','scratch'].includes(m.id))
+  .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
+   Number(Boolean(b.torre2IntroPractice))||Number(b.dano||0)-Number(a.dano||0));
+ for(const {slot,original} of missing.sort((a,b)=>a.slot-b.slot)){
+  const free=m=>!usedIds.has(m.id)&&
+   (slot===3&&m.torre2IntroPractice||!usedNames.has(keyOf(m.id)))&&
+   !campaignMoveSlotReason(member,slot,m);
+  const candidate=candidates.find(m=>free(m)&&Number(m.dano)>0)||
+   candidates.find(free);
+  // A forbidden original cannot reappear as a fallback.
+  const id=candidate?.id||null;
+  result[slot]=id;
+  if(id){usedIds.add(id);if(!(slot===3&&candidate?.torre2IntroPractice))
+   usedNames.add(keyOf(id));}
+ }
+ return result;
+}
+// Preserve the player's own equipped E slot. This runs ONLY when building
+// an automatic kit. Native P2 presets that leave Harden/String Shot/Pound or
+// other basic skills as ULT are replaced by a real unlocked species move,
+// or its separate power-capped energy-only Lv8 signature preview.
+const KANTO_TYPES=new Map(KANTO_151.map(({id,tipos})=>[id,tipos]));
+function meaningfulDefaultUltimate(member,chosen,available){
+ const result=[...chosen];
+ if(member.id==='mewtwo'||(member.progression?.level??5)<13)return result;
+ const used=new Set(result.slice(0,3).filter(Boolean));
+ const types=KANTO_TYPES.get(member.id)||[];
+ const ranked=available.filter(m=>m?.id&&m.forma&&
+  !used.has(m.id)&&Number(m.dano)>0&&!isPendingApprovalMove(m)&&
+  !['surf','scratch'].includes(m.id)&&
+  (!m.torre2IntroSlot||m.torre2IntroSlot==='e')&&
+  !campaignMoveSlotReason(member,3,m));
+ const score=m=>Number(m?.dano||0)+
+  (Number(m?.dano)>=7&&types.includes(m?.tipo)?30:0)-
+  Number(Boolean(m?.torre2IntroPractice))*3;
+ ranked.sort((a,b)=>score(b)-score(a)||a.nombre.localeCompare(b.nombre));
+ const current=available.find(m=>m.id===result[3]);
+ // A species-specific approved signature is intentional, not a weak
+ // fallback. Do not silently replace its E role with generic Hyper Beam
+ // merely because the latter scores a few points higher.
+ const signatureUlt=(CHARACTERISTIC_KANTO_ROLES[member.id]||[]).some(([,id])=>
+  id===result[3]&&current&&isCampaignUltimateOnlyMove(current));
+ if(signatureUlt)return result;
+ const proposed=ranked[0];
+ // Never replace a stronger, distinctive ULT only because another skill
+ // exists. Every replacement must improve the score from ALREADY earned moves.
+ if(proposed&&(!current||!current.forma||score(proposed)>score(current)+4))
+  result[3]=proposed.id;
+ return result;
+}
 export function defaultLoadout(member){
  const available=availableMoves(member),byId=new Map(available.map(m=>[m.id,m]));
  if(member.id==='mewtwo')return ['bonemerang','bone-club','tri-attack','pay-day'];
@@ -609,33 +893,76 @@ export function defaultLoadout(member){
    const id=canonicalMoveKey(name);
    return byId.has(id)?id:null;
   });
+  // Cubone/Marowak keep their approved Bonemerang in HAB3. Once a
+  // legitimately learned Earthquake is available, its wide-area native
+  // renderer becomes the charged finisher instead of repeating the same
+  // Bonemerang under a separate tutorial ULT ID.
+  if(['cubone','marowak'].includes(member.id)&&level>=13&&
+     byId.has('earthquake')&&isCampaignUltimateOnlyMove(byId.get('earthquake')))
+    reserved[3]='earthquake';
   // Auto-equip each matching characteristic move only once it REALLY unlocks.
   // A TM move is never granted solely by being characteristic.
   for(const [slot,id] of CHARACTERISTIC_KANTO_ROLES[member.id]||[]){
-   if(byId.has(id)&&!reserved.includes(id))reserved[slot]=id;
+   const move=byId.get(id);
+   if(!move||reserved.includes(id))continue;
+   // Strong characteristic attacks belong to the native energy-gated E
+   // control, never the old HAB3 preference. This is a new default only:
+   // player-selected E slots in existing saves are preserved below.
+   const destination=isCampaignUltimateOnlyMove(move)?3:slot;
+   reserved[destination]=id;
   }
-  // For native/P2 Pokémon, the locked planned ATK must not leave them
-  // defenseless on the day they evolve. Use a genuinely learned weak move
-  // in an otherwise empty ATK/HAB slot. ULT remains locked until learned.
+  // Prefer the ORIGINAL Poké Arena 2D per-form slot in an empty
+  // campaign role, but only after the current species has legitimately
+  // unlocked that exact existing renderer. Never override approved kits,
+  // TM gates, manual selections, VFX, saved teams or the charged ULT rule.
+  // This is a read-only suggestion from native data, not a mass grant.
+  const {def:nativeDef,etapa:nativeStageIndex}=buscar(member.id);
+  const nativeStage=etapaDe(nativeDef,nativeStageIndex);
+  const nativeSlots=['lmb','rmb','q','e'];
+  const already=new Set(reserved.filter(Boolean));
+  for(let i=0;i<nativeSlots.length;i++){
+   if(reserved[i])continue;
+   const native=nativeStage?.kit?.[nativeSlots[i]];
+   if(!native?.nombre||!native?.forma||native.pendiente||
+     native.torre2Unavailable)continue;
+   const key=canonicalMoveKey(native.nombre);
+   const candidate=available.find(m=>canonicalMoveKey(m.nombre)===key&&
+     m.forma&&!isPendingApprovalMove(m)&&!campaignMoveSlotReason(member,i,m));
+   if(candidate&&!already.has(candidate.id)){
+    reserved[i]=candidate.id;
+    already.add(candidate.id);
+   }
+  }
+  // A native evolution is only a preference for still-vacant slots.
+  // If its official attack is unavailable, the existing species-legal
+  // weak fallback stays in place instead of fabricating a fifth move.
   const used=new Set(reserved.filter(Boolean));
+  const nameOf=m=>canonicalMoveKey(m?.torre2IntroSource||m?.nombre);
+  // Practice previews have separate internal IDs but can reuse the SAME
+  // real technique. Never auto-equip a second "Pound" in HAB3 merely
+  // because a Lv16 Kadabra has both native Pound and weak Pound preview.
+  const usedNames=new Set(reserved.slice(0,3).filter(Boolean)
+   .map(id=>nameOf(byId.get(id))).filter(Boolean));
   const pool=available.filter(m=>m?.id&&m.torre2IntroSlot!=='e'&&
     Number.isFinite(m.dano)&&m.dano>0)
-   .sort((a,b)=>Number(a.dano)-Number(b.dano));
+   .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
+     Number(Boolean(b.torre2IntroPractice))||Number(a.dano)-Number(b.dano));
   for(const i of [0,1,2]){
    if(reserved[i])continue;
-   const next=pool.find(m=>!used.has(m.id)&&(i!==0||m.dano<=12))||
-    (i===0?pool.find(m=>!used.has(m.id)):null);
-   if(next){reserved[i]=next.id;used.add(next.id)}
+   const unique=m=>!used.has(m.id)&&!usedNames.has(nameOf(m));
+   const next=pool.find(m=>unique(m)&&(i!==0||m.dano<=12))||
+    (i===0?pool.find(unique):null);
+   if(next){reserved[i]=next.id;used.add(next.id);usedNames.add(nameOf(next))}
   }
   // A weak meter-gated finisher remains available even for a species that
   // learns no ordinary ULT in its official late FireRed level-up table.
   if(!reserved[3]&&level>=8)reserved[3]=
    available.find(m=>m.torre2IntroSlot==='e')?.id||null;
-  return reserved;
+  return uniqueCampaignSlots(meaningfulDefaultUltimate(member,reserved,available),available,member);
  }
  const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
  const ids=slots.map(slot=>canonicalMoveKey(def.kit[slot]?.nombre));
- return ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4);
+ return uniqueCampaignSlots(meaningfulDefaultUltimate(member,ids.map((id,i)=>available.find(m=>m.id===id)?.id||available[i]?.id).filter(Boolean).slice(0,4),available),available,member);
 }
 export function selectedMoves(member){
  const available=availableMoves(member),valid=new Set(available.map(x=>x.id));
@@ -650,13 +977,14 @@ export function selectedMoves(member){
   // species. Do not let them override the new stage's three weak attacks.
   // Respect manual selections ONLY if made for this very evolution form.
   if(member.movePlanSpecies!==member.id)return defaults;
-  return defaults.map((fallback,i)=>{
+  return uniqueCampaignSlots(defaults.map((fallback,i)=>{
    const id=member.moves?.[i],move=available.find(m=>m.id===id);
    if(!move)return fallback;
-   if(move.torre2IntroSlot===SLOTS[i])return id;
-   if(i<3&&level>KANTO_INTRO.ultAt&&!move.torre2IntroPractice)return id;
+   if(!campaignMoveSlotReason(member,i,move)&&move.torre2IntroSlot===SLOTS[i])return id;
+   if(i<3&&level>KANTO_INTRO.ultAt&&!move.torre2IntroPractice&&
+      !campaignMoveSlotReason(member,i,move))return id;
    return fallback;
-  });
+  }),available,member);
  }
  const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id)||
   // The native client has no per-species role plan for this Gen V family.
@@ -677,6 +1005,9 @@ export function selectedMoves(member){
    // Real characteristic skills take over only in normal progression.
    if((member.progression?.level??5)<KANTO_INTRO.tutorialUntil)continue;
    if(!valid.has(id))continue; // not learned yet or no taught TM
+   // A signature auto-upgrade must never save a charged-ULT-only attack
+   // inside HAB2/HAB3. It can be offered for the E slot independently.
+   if(campaignMoveSlotReason(member,slot,available.find(m=>m.id===id)))continue;
    if(chosen.includes(id)){seen.add(id);continue}
    if(fresh||!seen.has(id)){
     chosen[slot]=id;seen.add(id);upgraded=true;
@@ -685,15 +1016,18 @@ export function selectedMoves(member){
   if(seen.size)member.torre2CharacteristicSeen=[...seen];
   // Persist even when the unlocked signature came from a fallback for an
   // invalid legacy slot, rather than from the explicit auto-upgrade branch.
-  if(!fresh&&(upgraded||chosen.some((id,i)=>id!==member.moves[i]))){
+  // Legacy saves can hold forbidden old role IDs; normalize the battle
+  // read-only, without overwriting the persistent four saved selections.
+  // Only a genuine newly unlocked characteristic move is auto-persisted.
+  if(!fresh&&upgraded){
    member.moves=[...chosen];
    member.movePlanSpecies=member.id;
   }
-  return chosen;
+  return uniqueCampaignSlots(chosen,available,member);
  }
  const chosen=member.moves?.length===4&&member.moves.every(id=>valid.has(id))?
   member.moves:defaultLoadout(member);
- return chosen.filter(id=>valid.has(id)).slice(0,4);
+ return uniqueCampaignSlots(chosen.filter(id=>valid.has(id)).slice(0,4),available,member).filter(Boolean);
 }
 export function equipMove(member,slot,moveId){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return false;
@@ -708,15 +1042,59 @@ export function equipMove(member,slot,moveId){
  if(member.id!=='mewtwo'&&level<=8&&!picked.torre2IntroPractice)return false;
  if(member.id!=='mewtwo'&&level<KANTO_INTRO.tutorialUntil&&
     slot===3&&!picked.torre2IntroPractice)return false;
- if(picked.torre2IntroSlot&&picked.torre2IntroSlot!==SLOTS[slot])return false;
+ if(campaignMoveSlotReason(member,slot,picked))return false;
  const early=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id);
  // Kanto-only roles: weak ATK and dedicated energy-gated ultimate.
- if(early&&slot===0&&moveId!==canonicalMoveKey(early[0])&&
+ // A learned native move can replace the fixed ATK from Lv9 onward.
+ // The first eight levels retain the approved weak onboarding controls.
+ // ATK remains a low-power basic throughout the campaign. Previously this
+ // was only enforced indirectly when Wing Attack occupied another slot;
+ // selecting a different ULT made the stronger attack equipable in ATK.
+ if(early&&slot===0&&!picked.torre2IntroPractice&&
+    (Number(picked.dano)>9||
+     (canonicalMoveKey(early[3])!==canonicalMoveKey(early[0])&&
+      picked.id===canonicalMoveKey(early[3]))))
+  return false;
+ if(early&&level<=KANTO_INTRO.ultAt&&slot===0&&
+    moveId!==canonicalMoveKey(early[0])&&
     picked.torre2IntroSlot!=='lmb')return false;
- if(early&&slot===3&&moveId!==canonicalMoveKey(early[3])&&
+ // The early ULT is power-capped until Lv12. After that the player may
+ // freely choose any legally unlocked technique for the energy-gated E slot.
+ if(early&&level<KANTO_INTRO.tutorialUntil&&slot===3&&
+    moveId!==canonicalMoveKey(early[3])&&
     picked.torre2IntroSlot!=='e')return false;
  const chosen=selectedMoves(member);
  if(chosen.some((id,i)=>id===moveId&&i!==slot))return false;
+ // A newly learned native technique may replace its weak tutorial preview
+ // even when the player chooses a DIFFERENT HAB slot. The preview and native
+ // entries have different IDs but are the same move: silently keeping both
+ // creates two identical buttons. Rehome only the obsolete weak preview to
+ // another already-unlocked, distinct move; never replace a genuine manual
+ // selection or equip an unlearned move. E is a separate meter-gated action.
+ if(slot<3){
+  const technique=m=>canonicalMoveKey(m?.torre2IntroSource||m?.nombre);
+  const key=technique(picked);
+  const conflicts=chosen.slice(0,3).flatMap((id,i)=>
+   i!==slot&&technique(pool.find(m=>m.id===id))===key?[i]:[]);
+  if(conflicts.length){
+   if(conflicts.length!==1||picked.torre2IntroPractice)return false;
+   const index=conflicts[0];
+   const obsolete=pool.find(m=>m.id===chosen[index]);
+   if(!obsolete?.torre2IntroPractice)return false;
+   const taken=new Set(chosen.slice(0,3).flatMap((id,i)=>
+    i===slot||i===index?[]:[technique(pool.find(m=>m.id===id))]));
+   taken.add(key);
+   const alternative=pool.filter(m=>m?.forma&&m.id!==picked.id&&
+    m.torre2IntroSlot!=='e'&&
+    (!m.torre2IntroSlot||m.torre2IntroSlot===SLOTS[index])&&
+    Number(m.dano)>0&&(index!==0||Number(m.dano)<=12)&&
+    !taken.has(technique(m))&&!campaignMoveSlotReason(member,index,m))
+    .sort((a,b)=>Number(Boolean(a.torre2IntroPractice))-
+     Number(Boolean(b.torre2IntroPractice))||Number(a.dano)-Number(b.dano))[0];
+   if(!alternative)return false;
+   chosen[index]=alternative.id;
+  }
+ }
  if(early){chosen[slot]=moveId;member.moves=chosen;member.movePlanSpecies=member.id;return true;}
  while(chosen.length<4)chosen.push(pool[chosen.length]?.id);
  chosen[slot]=moveId;member.moves=chosen;
@@ -726,23 +1104,85 @@ export function equipMove(member,slot,moveId){
  member.movePlanSpecies=member.id;
  return true;
 }
+// Only the campaign battle copy of Leech Seed is adjusted, never the
+// original Poké Arena 2D attack, approved effect or Arena/VS modes.
+// Native runtime ticks each second: before 3 × 6 × 1.5 = up to 27 HP;
+// after 2 × 5 × 1 = up to 10 HP. Healing cannot exceed drained HP.
+export const KANTO_CAMPAIGN_LEECH_SEED=Object.freeze({dps:2,dur:5,cura:1});
+export function balanceCampaignLeechSeed(move){
+ if(!move?.drenaje||canonicalMoveKey(move.torre2IntroSource||move.nombre)!=='leech-seed')
+  return move;
+ const drain=move.drenaje;
+ return {...move,drenaje:{...drain,
+  dps:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dps,Number(drain.dps)||0)),
+  dur:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dur,Number(drain.dur)||0)),
+  cura:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.cura,Number(drain.cura)||0))}};
+}
+// Campaign-only cooldown override. The source native move and Arena/VS
+// retain their original cooldown; only the isolated campaign copy changes.
+export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
+ 'charge-beam':1.5,
+ supersonic:1.5,
+ 'seismic-toss':1.8
+});
+export function balanceCampaignQuickCooldown(move){
+ // Lv8 practice ULTs have their own minimum cooldown (>= 8s), even if
+ // they borrow the visual effect of Charge Beam or Supersonic.
+ if(!move||move.torre2IntroPractice)return move;
+ const name=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ const cd=KANTO_CAMPAIGN_QUICK_COOLDOWNS[name];
+ return Number.isFinite(cd)?{...move,cd}:move;
+}
 export function resolveLoadout(member){
  const pool=availableMoves(member),dict=new Map(pool.map(h=>[h.id,h]));
  const out={};
  selectedMoves(member).forEach((id,i)=>{
   const attack=dict.get(id);
   if(attack)out[SLOTS[i]]={...attack,pendiente:false,
-   ...(i===3?{ulti:true}:{})};
+   ulti:i===3};
  });
+ // The early meter-gated finisher may reuse an approved weak attack's
+ // renderer, but it is a distinct battle action. Keep the real move name
+ // and label ONLY the E action as ULT, not as a fabricated "Treino" attack.
+ // This also prevents two identical visible names in Caterpie's four slots.
+ if(out.e?.torre2IntroPractice&&!String(out.e.nombre).startsWith('ULT · '))
+  out.e={...out.e,nombre:'ULT · '+out.e.nombre};
  // Native P2 evolution skills are re-slotted ONLY inside the Kanto campaign;
  // the Arena and VS CPU keep their original kits untouched.
  if(nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id))out.esp={
   nombre:'Dodge',forma:'dash',tipo:'NORMAL',dano:0,
   dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
  };
- return resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
+ // A later-stage signature preview must not impersonate the stage's
+ // canonical E move while that actual move is still locked (e.g. Gloom
+ // Lv21 cannot borrow its future Solar Beam as a tutorial ULT).
+ const plan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id)||
+  kanto151SlotPlan(member.id);
+ const plannedE=canonicalMoveKey(plan?.[3]);
+ // Keep an explicitly equipped capped E preview in battle. An evolved
+ // species with no level-up claim to its future finisher (Gloom/Solar Beam)
+ // still cannot borrow that locked move as an automatic default.
+ const earnedSignature=plannedE&&frlgUnlockLevel(member.id,plannedE)!==null;
+ const customFireBlast=plannedE==='fire-blast'&&fireBlastAtLevel(member.id)!==null;
+ const explicitE=member.movePlanSpecies===member.id&&
+  member.moves?.[3]===out.e?.id;
+ const blockedSignature=(member.progression?.level??5)>=KANTO_INTRO.tutorialUntil&&
+  plannedE&&!dict.has(plannedE)&&!earnedSignature&&!customFireBlast&&!explicitE?
+  plannedE:null;
+ const battle=resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
-  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel});
+  levelUp:FRLG_LEVEL_UP[member.id]||{},unlockLevel:frlgUnlockLevel,
+  verifiedTables:[FRLG_LEVEL_UP,GEN4_HGSS_KANTO_LEVEL_UP,
+   GEN5_B2W2_KANTO_LEVEL_UP,GEN7_LETSGO_LEVEL_UP,
+   EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
+  verifiedParents:KANTO_LEVEL_EVOLUTIONS,
+  speciesTypes:KANTO_TYPES.get(member.id)||[],blockedSignature,
+  preferredSignature:thematicPreview(member.id)});
+ // The early overlay can inject Leech Seed after selectedMoves. Balance
+ // FINAL campaign battle slots including practice, evolution and saved kits.
+ for(const slot of SLOTS)if(battle[slot])
+  battle[slot]=balanceCampaignQuickCooldown(balanceCampaignLeechSeed(battle[slot]));
+ return battle;
 }
 export function pokemonStats(member){
  const {def,etapa}=buscar(member.id);

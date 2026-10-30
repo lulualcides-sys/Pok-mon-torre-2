@@ -12,7 +12,7 @@ Este repositório é o **Pokémon Torre 2**, não o Torre 1. Estas são instruç
 4. **Emerald Arena (E)** — pesquisar e portar quando permitido as rotinas novas MIT para movimento, temporização, física, projéteis, efeitos de cenário, entrada, contato e colisões, com atribuição e termos preservados; o motor decompilado, artes e recursos de terceiros não estão automaticamente sob MIT.
 
 **Procedimento obrigatório ANTES de qualquer VFX novo**:
-- Conferir nome canônico e aliases PT/EN no cliente atual, os 37 movimentos do baseline e o acervo de 151 candidatos; não duplicar nenhum. Surf está reprovado, Scratch adiado.
+- Conferir nome canônico e aliases PT/EN no cliente atual, os 37 movimentos do baseline e o acervo de 151 candidatos; não duplicar nenhum. **Decisão mais recente de 30/10/2026: o VFX Surf está APROVADO e deve ser preservado.** Isso NÃO libera automaticamente TM/HM Surf na campanha: o gate de obtenção/equipamento exige decisão e patch próprios. Scratch e Transform permanecem adiados. A proibição histórica de Surf foi superada somente quanto à aprovação do efeito.
 - Abrir efetivamente os quatro projetos/arquivos relevantes e localizar para **cada fonte** o recurso específico, caminho, símbolo/função e licença. Distinguir "estudado", "inspirado" e **"efetivamente reutilizado"**.
 - Selecionar e adaptar os melhores recursos; **a prioridade é reaproveitamento funcional**, não produzir 8–16 quadros novos por padrão.
 - Registrar para cada um dos quatro: nome do efeito original, função/arquivo de origem, contribuição **real** ao novo golpe, arquivo/trecho local onde foi integrado e permissão/licença. Se indisponível, declarar motivo e **pedir autorização ao usuário antes de dispensar uma das fontes**.

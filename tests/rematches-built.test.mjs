@@ -5,7 +5,7 @@ const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'))
 const core=await import(pathToFileURL(path.join(root,version,'torre2/campaign-core.js')).href);
 const map=new Map();globalThis.localStorage={getItem:k=>map.get(k)||null,setItem:(k,v)=>map.set(k,v),removeItem:k=>map.delete(k)};
 const s=core.createCampaign('charmander');s.stage=1;s.trainer=3;s.badges=['Boulder'];s.rematches={charge:3,sequence:0,wins:0,pending:null};
-assert.equal(core.rematchOpponent(s,3),null);assert.equal(core.rematchOpponent({...s,stage:0},0),null);
+assert.equal(core.rematchOpponent(s,3),null);assert.ok(core.rematchOpponent({...s,stage:0},0),'Brock-route rematches now unlocked');
 const before=JSON.stringify({stage:s.stage,trainer:s.trainer,badges:s.badges,tms:s.inventory.tms,wins:s.wins});
 const initialMoney=s.money,r=core.startRematch(s,0);assert.ok(r.ok);assert.equal(s.rematches.charge,0);assert.equal(core.startRematch(s,0).ok,false);
 const loaded=core.readCampaign(),result=core.resolveRematch(loaded,r.ticket,true);assert.ok(result.ok);assert.ok(result.xp>0);assert.equal(result.money,120);assert.equal(loaded.money,initialMoney+120);

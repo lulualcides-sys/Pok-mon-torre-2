@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Protect previously existing static reference pixels; gameplay and approved moves are not frozen. Changes require explicit visual review.",
+  "baselineSource": "GitHub main Git blob objects, 2026-10-30; preservation is not a copyright claim.",
+  "assets": [
+    {
+      "path": "reference-assets/kanto/ui/badges/frlg-badges.png",
+      "gitBlobSha": "e9edda3189b08d8d0d3d564236588f1ce7d78cdd",
+      "why": "FRLG badge sheet; original provenance and rights in badges/README.md"
+    },
+    {
+      "path": "tools/pokearena/kanto-approved-ui.avif",
+      "gitBlobSha": "e04eba5d368d8a023e6f13e21326656825601579",
+      "why": "Existing approved UI reference"
+    },
+    {
+      "path": "tools/pokearena/pokemon-torre-logo.b64",
+      "gitBlobSha": "e3e8941429beba87ee6e2779b11135ee7ce7dade",
+      "why": "Existing Pokémon Torre logo asset source"
+    }
+  ]
+}

@@ -3,18 +3,34 @@
  * Reuse the installed native/approved renderer belonging to each move.
  */
 import {frlgUnlockLevel,frlgMachineCompatible} from './torre2-frlg-learnsets.js';
+import {ARENA_APPROVED_121} from './torre2-arena-approved-121.js';
+import {selectNativeDodge,ARENA_NATIVE_DODGE_FORMS} from './torre2-arena-native-dodges.js';
+import {BATCH24_MOVES} from './batch24/catalog.js';
+import {SURGE3_MOVES} from './surge3/catalog.js';
+import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 const idOf=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const ATTACK_SLOTS=['lmb','rmb','q','e'];
+export const PROTECTED_P2_KANTO_IDS=new Set([
+ 'bulbasaur','ivysaur','venusaur','charmander','charmeleon','charizard',
+ 'squirtle','wartortle','blastoise','pikachu','raichu','zubat','golbat',
+ 'machop','machoke','machamp','ponyta','rapidash','gastly','haunter',
+ 'gengar','onix','exeggcute','exeggutor','magikarp','gyarados','snorlax',
+ 'articuno','zapdos','mewtwo'
+]);
+// Protect verified native species even if a later upstream capture temporarily
+// omits the parent (e.g. Pichu) and our additive roster reintroduces its child.
 // User-requested fast Arena 2D pace (2–4 seconds) for only these moves.
 // NEVER mutate original native VFX/metadata; never apply during campaign.
 const ARENA_CD=Object.freeze({
  'blizzard':4,'blizard':4,'ventisca':4,
  'thunder':3,
  'psybeam':3,'psy-beam':3,
+ 'discharge':3,'descarga':3,
  'fire-blast':3.5,'llamarada':3.5,
  'solar-beam':3,'solarbeam':3,'rayo-solar':3,
  'charge':3,'carga':3,
  'hydro-pump':3.5,'hidrobomba':3.5,
+ 'hyper-beam':4,'hiperrayo':4,
  'seismic-toss':3,'sismic-toss':3,'movimiento-sismico':3,
  'egg-bomb':3,'eggbomb':3,'bomba-de-ovo':3,'bomba-ovo':3,
  'bomba-de-ovos':3,'bomba-de-huevos':3,'bomba-huevo':3,'bomba-de-huevo':3
@@ -82,6 +98,48 @@ export function enforceArenaMoveCooldowns(kit){
  }
  return output;
 }
+// Gengar is a native Arena fighter, so the added-species filter does not
+// sanitize its original kit. Replace any generic Hyper Beam OR repeated
+// attack with a genuinely installed distinct Gengar-compatible renderer.
+// Prefer Dark Pulse: its approved pixel-art VFX is already in Batch 24 and
+// this Gen IV technique belongs in Arena, never the FRLG campaign learnset.
+// Keep Shadow Ball as the thematic E/ULT, even when upstream kits move it.
+export function replaceGengarHyperBeam(kit,library){
+ if(!kit||!library)return kit;
+ // A later upstream Gengar stage may put Night Shade on E. Keep the
+ // species' real Shadow Ball as ULT, using the original renderer when
+ // equipped elsewhere. Do not clone it into two attack slots.
+ const nativeShadow=library.get('shadow-ball');
+ const validShadow=nativeShadow?.forma&&nativeShadow?.approved!==false&&Number(nativeShadow.dano)>0;
+ let output=kit;
+ if(validShadow&&idOf(output.e?.nombre)!=='shadow-ball'){
+  const elsewhere=ATTACK_SLOTS.slice(0,3).find(s=>idOf(output[s]?.nombre)==='shadow-ball');
+  const oldE=output.e;
+  output={...output,e:{...(elsewhere?output[elsewhere]:nativeShadow),pendiente:false,ulti:true}};
+  if(elsewhere&&oldE)output[elsewhere]={...oldE,pendiente:false,ulti:false};
+ }
+ const preferred=['dark-pulse','shadow-punch','night-shade','psychic',
+  'dream-eater','shadow-ball','sludge-bomb'];
+ const used=new Set();
+ for(const slot of ATTACK_SLOTS){
+  const key=idOf(output[slot]?.nombre);
+  if(!key)continue;
+  if(key!=='hyper-beam'&&!used.has(key)){
+   used.add(key);
+   continue;
+  }
+  // Include all four occupied slots, including later ones, so replacing
+  // Sludge Bomb cannot accidentally duplicate Shadow Ball or another move.
+  const occupied=new Set(ATTACK_SLOTS.map(s=>idOf(output[s]?.nombre)).filter(Boolean));
+  const move=preferred.map(name=>library.get(name)).find(m=>m?.forma&&
+   m?.approved!==false&&Number(m.dano)>0&&!occupied.has(idOf(m.nombre)));
+  if(!move){used.add(key);continue;} // no invented forms or illegal changes
+  if(output===kit)output={...kit};
+  output[slot]={...move,pendiente:false,ulti:slot==='e'};
+  used.add(idOf(move.nombre));
+ }
+ return output;
+}
 export function selectArenaSpeciesKit(kit,species,types,library){
  const id=idOf(species),signature=idOf(SIGNATURES[id]);
  if(!kit||!id)return kit;
@@ -141,16 +199,62 @@ export function selectArenaSpeciesKit(kit,species,types,library){
  }
  return enforceArenaMoveCooldowns(output);
 }
+/* Resolve only user-approved Arena-121 kits. Missing approval/renderers
+ * fall back to real already installed moves; never simulate an effect,
+ * grant a campaign TM, or overwrite a player save.
+ */
+export function selectApprovedArenaKit(nativeKit,species,library,nativeDodges){
+ const id=idOf(species),plan=ARENA_APPROVED_121[id];
+ if(!plan)return enforceArenaMoveCooldowns(nativeKit);
+ const slots=['lmb','rmb','q','e'];
+ // Allow only verified installed move objects, including accepted Surf
+ // and Seismic Toss renderers; never invent a forma from a name.
+ const valid=m=>Boolean(m?.nombre&&m?.forma&&m.approved!==false&&
+  !['evolucionar','megaevolucionar','renacer'].includes(m.forma));
+ const original={...nativeKit},used=new Set(),selected=[];
+ // Ditto's Transform, Caterpie's Rede Total and Weedle's Chuva de Ferrões
+ // are explicitly reserved; never pretend these are playable.
+ for(let i=0;i<4;i++){
+  const want=plan[i],key=idOf(want),candidate=library.get(key);
+  if(want&&valid(candidate)&&!used.has(key)){
+   selected.push({...candidate,pendiente:false,ulti:i===3});
+   used.add(key);
+   continue;
+  }
+  const same=nativeKit[slots[i]];
+  // Prefer the real original slot, then a real approved alternative.
+  const fallback=[same,...slots.map(k=>nativeKit[k])]
+   .find(m=>valid(m)&&!used.has(idOf(m.nombre)));
+  if(fallback){
+   selected.push({...fallback,pendiente:false,ulti:i===3});
+   used.add(idOf(fallback.nombre));
+  }else selected.push(null);
+ }
+ const output={...original};
+ for(let i=0;i<4;i++)if(selected[i])output[slots[i]]=selected[i];
+ const chosen=slots.map(k=>output[k]?.nombre||'');
+ output.esp=selectNativeDodge(id,chosen,nativeDodges,original.esp);
+ if(!output.esp?.forma||!['dash','vuelo'].includes(output.esp.forma))
+  output.esp=original.esp;
+ // Keep approved attack forms and cooldowns. Native ESP has its own move
+ // cooldown and sprite/rendered animation, as in the original Arena 2D.
+ return enforceArenaMoveCooldowns(output);
+}
 export function chooseEeveeBranch(count,random=Math.random){
  if(!Number.isInteger(count)||count<1)throw new RangeError('Eevee needs available evolutions');
  const roll=Number(random());
  const safe=Number.isFinite(roll)?Math.max(0,Math.min(.999999999,roll)):0;
  return Math.floor(safe*count)+1;
 }
-export function installArenaMovePolicy(Luchador,roster){
+export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
  const proto=Luchador.prototype,originalKit=proto.kitActual;
  if(typeof originalKit!=='function')throw Error('Arena fighter kitActual missing');
- const library=new Map();
+ const library=new Map(),nativeDodges=new Map();
+ const addDodge=h=>{
+  const key=idOf(h?.nombre);
+  if(key&&ARENA_NATIVE_DODGE_FORMS.includes(h.forma)&&!nativeDodges.has(key))
+   nativeDodges.set(key,h);
+ };
  const register=kit=>{
   for(const m of Object.values(kit||{})){
    const k=idOf(m?.nombre);
@@ -160,7 +264,26 @@ export function installArenaMovePolicy(Luchador,roster){
  for(const def of roster){
   register(def.kit);
   for(const evo of def.evoluciones||[]){register(evo.kit);register(evo.mega?.kit);}
+  // Extract DEFENSIVE ORIGINAL P2 assets only, never derive dodge
+  // animation from a fake per-species render. Include inherited kit ESP.
+  if(def.torre2ArenaAdded!==true){
+   addDodge(def.kit?.esp);
+   for(const e of def.evoluciones||[])
+    addDodge({...def.kit?.esp,...e.kit?.esp});
+  }
  }
+ // Installed approved Torre 2 techniques absent from base P2 roster
+ // (Surf, cross-source specials) are playable in Arena ONLY.
+ for(const move of [...BATCH24_MOVES,...SURGE3_MOVES,
+                   ...FINALE_13_MOVES,...POISON_PUNCH_MOVES,...extraApproved]){
+  const key=idOf(move?.nombre);
+  if(key&&move?.forma&&move.approved!==false&&!library.has(key))
+   library.set(key,move);
+ }
+ // Some moves have a validated original P2 dash/flight renderer in the
+ // general move library rather than the original ESP slot.
+ for(const m of library.values())
+  if(m?.approved!==false)addDodge(m);
  // Branch once PER fighter, only after Eevee evolves. No page-level random
  // mutation, no changing the original campaign or the global roster.
  const formaDescriptor=Object.getOwnPropertyDescriptor(proto,'forma');
@@ -188,8 +311,10 @@ export function installArenaMovePolicy(Luchador,roster){
   if(this.escena?.datos?.torre2)return original;
   const form=this.forma;
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
-  const kits=this.def?.torre2ArenaAdded===true?
-   selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library):original;
-  return enforceArenaMoveCooldowns(kits);
+  if(id==='gengar')return enforceArenaMoveCooldowns(replaceGengarHyperBeam(original,library));
+  if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
+   return enforceArenaMoveCooldowns(original);
+  const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
+  return selectApprovedArenaKit(auto,id,library,nativeDodges);
  };
 }

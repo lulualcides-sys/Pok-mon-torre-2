@@ -10,13 +10,54 @@ on:
       - 'data/kanto-new-phaser-moves.json'
       - 'tests/public-phaser-preview.cjs'
       - '.github/workflows/pokearena-source-snapshot.yml'
+  schedule:
+    # Daily fallback; the source branch may already have been captured today.
+    - cron: '17 12 * * *'
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: pokearena-source-snapshot
+  cancel-in-progress: false
+
 jobs:
+  daily-gate:
+    runs-on: ubuntu-24.04
+    outputs:
+      capture: ${{ steps.check.outputs.capture }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Avoid duplicate source downloads on the same Sao Paulo date
+        id: check
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo 'capture=true' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          today="$(TZ=America/Sao_Paulo date +%F)"
+          if git fetch --no-tags origin refs/heads/pokearena2d-cliente-phaser 2>/dev/null; then
+            provenance="$(git show FETCH_HEAD:capture-provenance.json 2>/dev/null || true)"
+            captured="$(printf '%s' "$provenance" | jq -r '.capturedAt // empty' 2>/dev/null || true)"
+            if [ -n "$captured" ]; then
+              captured_day="$(TZ=America/Sao_Paulo date -d "$captured" +%F 2>/dev/null || true)"
+              if [ "$captured_day" = "$today" ]; then
+                echo "Existing first-party capture on $today; skip redundant full download."
+                echo 'capture=false' >> "$GITHUB_OUTPUT"
+                exit 0
+              fi
+            fi
+          fi
+          echo "No verified capture on $today; full source check required."
+          echo 'capture=true' >> "$GITHUB_OUTPUT"
   capture:
+    needs: daily-gate
+    if: needs.daily-gate.outputs.capture == 'true'
     runs-on: ubuntu-24.04
     timeout-minutes: 18
     steps:

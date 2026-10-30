@@ -1,4 +1,5 @@
-import {createTrainerStrategy,chooseTrainerSwitch} from './trainer-strategy.js';
+import {createTrainerStrategy,chooseTrainerSwitch,pressureGymLeaderInput} from './trainer-strategy.js';
+import {improveGymLeaderLoadout} from './gym-leader-loadouts.js';
 import {gen3Effectiveness} from './gen3-types.js';
 import {createWeather,setWeather,tickWeather,WEATHER_NAMES} from './weather.js';
 import {installWeatherPixels} from './weather-pixels.js';
@@ -10,11 +11,12 @@ import {clearDepartingCombat} from './combat-boundary.js';
  * knockouts transition to the next Pokémon without advancing trainer progress.
  * The fight ends only when one entire party is defeated.
  */
-import {STAGES,campaignStarter,rivalChampionTeam,readCampaign,recordSeen,saveCampaign} from './campaign-core.js';
-import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
+import {STAGES,campaignStarter,rivalChampionTeam,trainerSpeciesForLevel,readCampaign,recordSeen,saveCampaign} from './campaign-core.js';
+import {resolveLoadout,availableMoves,campaignMoveSlotReason,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar,etapaDe} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
+import {originalBallSprite} from './ball-sprites.js';
 import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
 
@@ -31,24 +33,27 @@ export function createPartyMatch(state,opponent,wild=false){
  }));
  const gym=STAGES[state.stage];
  const pool=gym?.enemy||[opponent.id];
- const leaderTeam=opponent.leader&&Array.isArray(gym?.leaderTeam)?
+ const leaderTeam=!wild&&opponent.leader&&Array.isArray(gym?.leaderTeam)?
   (state.stage===12?rivalChampionTeam(campaignStarter(state)):gym.leaderTeam):null;
  const count=wild?1:leaderTeam?leaderTeam.length:opponent.leader?
   Math.min(6,state.stage>=8?4:state.stage>=4?3:2):
   Math.min(4,1+Math.floor((state.trainer+(state.stage||0))/5));
  const foes=Array.from({length:count},(_,i)=>{
-  const id=leaderTeam?leaderTeam[i]:i===0?opponent.id:
+  const baseId=leaderTeam?leaderTeam[i]:i===0?opponent.id:
    pool[(state.trainer+i)%pool.length]||opponent.id;
   // The true gym ace is the LAST enemy, not the first. Preserves 15/17
   // trainer checkpoints and saved opponent indices for existing journeys.
   const level=leaderTeam&&Array.isArray(gym.leaderLevels)?
    gym.leaderLevels[i]:leaderTeam&&i<count-1?
    Math.max(7,opponent.level-(count-i)*2):opponent.level;
+  // Only trainer NPCs evolve by level before the match. Keep authored gym
+  // lineups and wild species exactly as selected, with matching real VFX.
+  const id=wild||leaderTeam?baseId:trainerSpeciesForLevel(baseId,level);
   const loadout=resolveLoadout({id,progression:{species:id,level}});
   if(leaderTeam&&state.stage===2&&SURGE_LEADER_LOADOUTS[id]){
-   // Original FireRed leader team, not a generic Electric template:
-   // Voltorb: Tackle / Sonic Boom / Screech / Shock Wave;
-   // Pikachu & Raichu: Quick Attack / Thunder Wave / Double Team / Shock Wave.
+   // Keep each member's distinct electric tactics and real native VFX:
+   // basic attack, utility and an E-only finisher with appropriate weight.
+   // This affects only Lt. Surge's trainer party, not player movesets.
    const role=['lmb','rmb','q','e'];
    SURGE_LEADER_LOADOUTS[id].forEach((name,index)=>{
     const move=TEST_LIBRARY.find(m=>m.nombre===name);
@@ -57,13 +62,21 @@ export function createPartyMatch(state,opponent,wild=false){
      ...(index===3?{ulti:true}:{})};
    });
   }
-  return {id,level,hp:100,loadout};
+  const finalLoadout=leaderTeam&&state.stage<8&&state.stage!==2?
+   improveGymLeaderLoadout({id,level,loadout,
+    types:etapaDe(buscar(id).def,buscar(id).etapa).tipos||[],
+    available:availableMoves({id,progression:{species:id,level}}),
+    slotReason:campaignMoveSlotReason}):loadout;
+  return {id,level,hp:100,loadout:finalLoadout};
  });
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))
   playerIndex=friend.findIndex(m=>m.hp>0);
  if(playerIndex<0)playerIndex=0;
- return {friend,foes,playerIndex,enemyIndex:0,changes:0,strategic:!wild&&opponent.leader===true,trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
+ return {friend,foes,playerIndex,enemyIndex:0,changes:0,
+  strategic:!wild&&opponent.leader===true,
+  gymLeader:!wild&&opponent.leader===true&&state.stage<8,
+  trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
 }
 export function applyPartyBattleResult(state,party){
  if(!party||!Array.isArray(party.friend))return;
@@ -106,13 +119,13 @@ export function applyPartyBattleResult(state,party){
 function drawPixelBall(g,x,y,alive,active){
  x=Math.round(x);y=Math.round(y);
  if(active){
-  g.fillStyle(0x10283d);g.fillRect(x-10,y-10,20,20);
-  g.lineStyle(1,0xffd475);g.strokeRect(x-10,y-10,20,20);
-  g.fillStyle(0xffebae);g.fillRect(x-8,y-8,3,2);
+  g.fillStyle(0x10283d);g.fillRect(x-9,y-9,18,18);
+  g.lineStyle(1,0xffd475);g.strokeRect(x-9,y-9,18,18);
+  g.fillStyle(0xffebae);g.fillRect(x-7,y-7,3,2);
  }
- drawCaptureBall(g,x,y,'pokeball',.68);
+ // The actual ball is a cached Phaser Image; only the highlight stays in Graphics.
  if(!alive){
-  g.fillStyle(0x071827,.78);g.fillRect(x-8,y-8,16,16);
+  g.fillStyle(0x071827,.78);g.fillRect(x-7,y-7,14,14);
   g.fillStyle(0x7c91a0);g.fillRect(x-3,y-1,6,2);
  }
 }
@@ -121,6 +134,8 @@ export function installPartyBattle(scene){
  const party=payload?.party;
  if(!party||scene.__torre2PartyInstalled||!scene.luchadores?.[1])return;
  scene.__torre2PartyInstalled=true;
+ scene.__torre2PlayerSwitches=0;
+ scene.__torre2PlayerSwitchLimit=3;
  // Phaser reuses the same Scene instance on restart. Clear the switch lock
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
@@ -135,10 +150,20 @@ export function installPartyBattle(scene){
  scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));
  const trainerItems=createTrainerItems(party.trainerItems||{});
  scene.__torre2TrainerItems=trainerItems;
- const strategy=scene.__torre2TrainerStrategy=createTrainerStrategy(party.strategic===true);
+ const strategy=scene.__torre2TrainerStrategy=createTrainerStrategy(
+  party.strategic===true,{gymLeader:party.gymLeader===true});
  const enemyControl=scene.controles?.[1],readControl=enemyControl?.leer;
- if(readControl)enemyControl.leer=function(dt){return trainerItems.pending?null:readControl.call(this,dt)};
- scene.events.once('shutdown',()=>{if(readControl)enemyControl.leer=readControl;scene.__torre2TrainerItems=null});
+ const bossPressure={nextBasicAt:2,assisted:0};
+ scene.__torre2GymPressure=party.gymLeader?bossPressure:null;
+ if(readControl)enemyControl.leer=function(dt){
+  if(trainerItems.pending)return null;
+  const native=readControl.call(this,dt);
+  if(!party.gymLeader)return native;
+  const guided=pressureGymLeaderInput(scene,actors[1],actors[0],native,bossPressure);
+  if(guided!==native)bossPressure.assisted++;
+  return guided;
+ };
+ scene.events.once('shutdown',()=>{if(readControl)enemyControl.leer=readControl;scene.__torre2TrainerItems=null;scene.__torre2GymPressure=null});
  // fase alone blocks input in P2, but its paso still advances projectiles,
  // status damage and regeneration. Suspend simulation, not the Phaser clock.
  const nativeStep=scene.paso;
@@ -185,6 +210,9 @@ export function installPartyBattle(scene){
  // Keep only individual pixel Pokéballs below each original HP bar.
  // No large black scoreboard tables or top-center text swap selector.
  const graphics=scene.add.graphics().setDepth(2480);
+ // 12 slots maximum: reuse identical original item sprites instead of
+ // repainting fractional-pixel balls every HUD frame.
+ const hudBalls=Array.from({length:12},()=>originalBallSprite(scene,0,0,'pokeball',16,2481).setVisible(false));
  const sharedBeam=scene.add.graphics().setDepth(2603);
  const sharedBall=scene.add.graphics().setDepth(2604);
  const memberDex=m=>{
@@ -228,6 +256,9 @@ export function installPartyBattle(scene){
    tooltip.setVisible(false);
    if(!member||i===party.playerIndex||member.hp<=0||
       scene.__torre2Changing||scene.__torre2BallTransitions||scene.fase!=='lucha')return;
+   if(scene.__torre2PlayerSwitches>=scene.__torre2PlayerSwitchLimit){
+    announce('LIMITE DE 3 TROCAS POR BATALHA');return;
+   }
    recall(0,i);
   });
   icons.push(img);slotZones.push(zone);
@@ -235,11 +266,16 @@ export function installPartyBattle(scene){
  scene.__torre2SideParty={x:slotX,start:slotStart,step:slotStep,
   slots:slotZones,icons};
  function redrawPartyHud(){
-  graphics.clear();sidebar.clear();
-  for(const [members,idx,start] of [
-   [party.friend,party.playerIndex,31],[party.foes,party.enemyIndex,477]]){
-   members.slice(0,6).forEach((m,i)=>
-    drawPixelBall(graphics,start+i*21,64,m.hp>0,i===idx));
+  graphics.clear();sidebar.clear();hudBalls.forEach(icon=>icon.setVisible(false));
+  for(const [members,idx,start,side] of [
+   [party.friend,party.playerIndex,31,0],[party.foes,party.enemyIndex,477,1]]){
+   members.slice(0,6).forEach((m,i)=>{
+    const x=start+i*21,alive=m.hp>0;
+    drawPixelBall(graphics,x,64,alive,i===idx);
+    const icon=hudBalls[side*6+i];
+    icon.setPosition(x,64).setVisible(true).setAlpha(alive?1:.45);
+    if(alive)icon.clearTint();else icon.setTint(0x8593a2);
+   });
   }
   sidebar.fillStyle(0x061726,.88);
   sidebar.fillRoundedRect(6,103,55,222,7);
@@ -297,6 +333,10 @@ export function installPartyBattle(scene){
  }
  function recall(side,next,kind='switch'){
   if(scene.__torre2Changing||!scene.scene.isActive())return;
+  if(side===0&&kind==='switch'){
+   if(scene.__torre2PlayerSwitches>=scene.__torre2PlayerSwitchLimit)return;
+   scene.__torre2PlayerSwitches++;
+  }
   scene.__torre2Changing=true;
   levelLabels.forEach(o=>o.setVisible(false));
   clearDepartingCombat(scene);
@@ -504,6 +544,6 @@ export function installPartyBattle(scene){
   for(const zone of slotZones)zone.destroy();
   for(const img of icons)img?.destroy();
   sidebar.destroy();
-  sharedBeam.destroy();sharedBall.destroy();graphics.destroy();
+  sharedBeam.destroy();sharedBall.destroy();graphics.destroy();hudBalls.forEach(icon=>icon.destroy());
  });
 }

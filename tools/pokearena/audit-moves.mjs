@@ -4,7 +4,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
 const root=path.resolve('_site/arena2d');
-const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
+const sourceBuild=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'));
+const version=sourceBuild.modules;
 if(!version)throw Error('run capture-client + build-preview first');
 const base=pathToFileURL(path.join(root,version,'datos.js'));
 const {ROSTER,TODOS}=await import(base);
@@ -62,9 +63,24 @@ const duplicatedSelections=[...groupedMoves.entries()]
  .filter(([_,rows])=>rows.length!==1)
  .map(([id,rows])=>({id,entries:rows}));
 const originalKeys=new Map(implemented.map(row=>[key(row.name),row.name]));
+const allowedLegacy=new Set(pool.APPROVED_KANTO_NATIVE_OVERLAPS||[]);
+const legacyOverlaps=pool.SIGNATURE_MOVES
+ .filter(m=>originalKeys.has(key(m.nombre))&&allowedLegacy.has(key(m.nombre)));
 const collisions=pool.SIGNATURE_MOVES
- .filter(m=>originalKeys.has(key(m.nombre)))
+ .filter(m=>originalKeys.has(key(m.nombre))&&!allowedLegacy.has(key(m.nombre)))
  .map(m=>({name:m.nombre,existingOriginal:originalKeys.get(key(m.nombre))}));
+// A new native version may not silently erase a user-approved old renderer.
+// The exception applies ONLY to the campaign/Mewtwo editor library, not the
+// original Arena/VS definitions, and demands a genuinely approved VFX.
+const invalidLegacy=legacyOverlaps.filter(m=>{
+ const selected=pool.TEST_LIBRARY.find(x=>key(x.nombre)===key(m.nombre));
+ return m.approved!==true||!m.forma||!selected||
+  selected.forma!==m.forma||selected.id!==m.id||
+  selected.source!=='new-phaser-fx';
+});
+if(invalidLegacy.length)throw Error('APPROVED_VFX_CHANGED_BY_UPSTREAM: '+
+ JSON.stringify(invalidLegacy.map(x=>({id:x.id,name:x.nombre}))));
+
 const customKeys=new Map(),repeatedCustom=[];
 for(const move of pool.SIGNATURE_MOVES){
  const normalized=key(move.nombre);
@@ -107,11 +123,14 @@ const checks=['Rock Slide','Rock Throw','Stone Edge','Psybeam','Egg Bomb','High 
  'Swift','Lovely Kiss','Soft-Boiled','Surf','Confuse Ray','Splash','Seismic Toss',
  'Bonemerang','Bone Club','Tri Attack','Pay Day','Shadow Ball','Thunderbolt','Ice Beam']
  .map(name=>({name,...classify(name)}));
-const report={version,audit:'captured Poké Arena Phaser game (not Pokémon Torre 1)',
+const report={version,siteVersion:sourceBuild.src||null,
+ audit:'captured Poké Arena Phaser game (not Pokémon Torre 1)',
  source:'https://www.pokearena2d.com/',activeLines:ROSTER.length,allLines:TODOS.length,
  originalMoveCount:implemented.length,mewtwoSelectables:pool.TEST_LIBRARY.length,
  originalMoves:implemented,customMoves:pool.SIGNATURE_MOVES,
- deduplication:{duplicatedSelections,collisions,repeatedCustom,sharedNativeVisuals,
+ deduplication:{duplicatedSelections,collisions,
+   legacyApprovedOverlap:legacyOverlaps.map(m=>({id:m.id,name:m.nombre,form:m.forma})),
+   repeatedCustom,sharedNativeVisuals,
   policy:'Native Poké Arena 2D sprites and attacks stay approved; one canonical PT/EN name; recolor is NOT a new move.'},
  keyChecks:checks,byType,totals,
  caveats:['IN_SITE means declared in a Pokémon kit, not each move screenshot-tested',

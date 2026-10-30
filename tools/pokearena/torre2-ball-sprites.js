@@ -84,3 +84,44 @@ export function drawBallSprite(g,cx,cy,kind='pokeball',scale=2,angle=0,opened=fa
   g.fillStyle(0xfff4b5);g.fillRect(ox+7*scale,oy+7*scale,2*scale,2*scale);
  }
 }
+
+
+/* The user-approved 16×16 Pokéball source becomes an actual Phaser texture.
+ * Rasterize ONCE at scale 1 and animate the Image object with Phaser GPU
+ * rotation/nearest sampling. Never rotate/repaint every pixel per frame.
+ * This is the existing user-supplied art, not an unlicensed new rip.
+ */
+// Cache both approved pixel-art states. The opened ball has a larger transparent
+// canvas so its split upper/lower shells are never clipped at 16x16.
+export function ballTextureKey(kind='pokeball',opened=false){
+ const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
+ return 'torre2-original-ball-'+type+(opened?'-open':'');
+}
+function ensureBallTexture(scene,kind='pokeball',opened=false){
+ const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
+ const key=ballTextureKey(type,opened);
+ if(!scene.textures.exists(key)){
+  const size=opened?24:16,center=size/2;
+  const gfx=scene.make.graphics({x:0,y:0,add:false});
+  drawBallSprite(gfx,center,center,type,1,0,opened);
+  gfx.generateTexture(key,size,size);
+  gfx.destroy();
+ }
+ const texture=scene.textures.get(key);
+ if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
+  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ return key;
+}
+export function setBallOpened(sprite,kind='pokeball',opened=false,size=16){
+ const key=ensureBallTexture(sprite.scene,kind,opened);
+ const frameSize=opened?size*1.5:size;
+ sprite.setTexture(key).setDisplaySize(frameSize,frameSize);
+ sprite.setData('torre2-ball-opened',!!opened);
+ return sprite;
+}
+export function originalBallSprite(scene,x,y,kind='pokeball',size=16,depth=2309){
+ const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
+ const key=ensureBallTexture(scene,type,false);
+ return scene.add.image(Math.round(x),Math.round(y),key)
+  .setDisplaySize(size,size).setDepth(depth).setData('torre2-original-ball-sprite',type);
+}

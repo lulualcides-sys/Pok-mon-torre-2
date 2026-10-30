@@ -54,5 +54,15 @@ for(const {id} of KANTO_151){
  }
  report.checked++;
 }
+// The verified HGSS/Let's Go Lv1 Tackle is an authentic Ponyta option.
+// Previously its third Lv5 button was an invented Struggle duplicate because
+// only FRLG/curated early entries were considered for training previews.
+const ponyta5=resolveLoadout({id:'ponyta',progression:{species:'ponyta',level:5},tmMoves:[]});
+const ponytaSources=['lmb','rmb','q'].map(slot=>ponyta5[slot]?.torre2IntroSource);
+assert.ok(ponytaSources.includes('tackle'),'Ponyta must preview its verified installed Tackle');
+assert.ok(ponytaSources.includes('ember'),'Ponyta must keep its approved weak Ember preview');
+assert.ok(ponytaSources.includes('quick-attack'),'Ponyta must keep native Quick Attack');
+assert.ok(!ponytaSources.includes('struggle'),'Verified real move should replace Struggle');
+report.ponytaLv5=ponytaSources;
 assert.equal(report.checked,150,'All 150 Kanto species other than test Mewtwo should be audited');
 console.log('T08 KANTO ONBOARDING 151',JSON.stringify(report));

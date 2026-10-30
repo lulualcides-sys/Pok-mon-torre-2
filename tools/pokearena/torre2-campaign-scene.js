@@ -10,19 +10,20 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {availableMoves,selectedMoves,equipMove,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary} from './move-pool.js';
+import {cargarPMD,soloFormas} from '../sprites.js';
+import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
-import {readCampaign,createCampaign,saveCampaign,resetCampaign,
- GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
+import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
+ GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,trainerSpeciesForLevel,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
- ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution} from './campaign-core.js';
-import {MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
+ ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove} from './campaign-core.js';
+import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
 import {prepareTrainingMatch,installTrainingDummy} from './training.js';
-import {drawTrainer,drawShopItem} from './campaign-sprites.js';
+import {drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ITEM_FILES} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
@@ -34,6 +35,9 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
+import {originalBallSprite} from './ball-sprites.js';
+import {routeNode} from './route-data.js';
+import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -47,6 +51,41 @@ function portraitId(member){
  return (etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150';
 }
 function portraitKey(member){return 'torre2-portrait-'+portraitId(member)}
+// The Kanto Pokédex is in National Dex order. Use its number for every
+// grass entry instead of the native roster fallback (which can select Mewtwo).
+// Keep identity stable for Nidoran genders and Mr Mime without changing saves.
+function grassPortraitDex(id){
+ const alias={'nidoran-f':'nidoran♀','nidoran-m':'nidoran♂','mr-mime':'mrmime'};
+ const key=alias[id]||String(id||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+ const index=KANTO_DEX.findIndex(name=>name.toLowerCase().replace(/[^a-z0-9♀♂]+/g,'')===key);
+ return index>=0?String(index+1).padStart(4,'0'):null;
+}
+// The native battle loader downloads full PMD animation sets for the entire
+// party. Begin the active pair and two nearby reserves DURING the approved
+// 2.5 s VS instead of starting all these requests only after the transition.
+// Phaser's shared TextureManager lets the combat loader skip cached sheets.
+// Bound to four species to protect mobile WebGL memory and VS smoothness.
+export function prewarmVersusBattleSprites(scene,match){
+ const p=match?.torre2?.party,manifest=scene?.registry?.get?.('manifiesto');
+ if(!match?.torre2?.versus||!p||!manifest||scene.load?.isLoading?.())
+  return{queued:0,reason:'not-ready'};
+ const selected=[p.friend?.[p.playerIndex],p.foes?.[p.enemyIndex??0],
+  p.friend?.find((m,i)=>i!==p.playerIndex&&m.hp>0),
+  p.foes?.find((m,i)=>i!==(p.enemyIndex??0)&&m.hp>0)].filter(Boolean);
+ const dexList=[...new Set(selected.map(m=>portraitId(m)))];
+ const forms=soloFormas(manifest,dexList);
+ const queued=cargarPMD(scene,forms);
+ const report={queued,species:dexList,startedAt:Date.now(),readyAt:null};
+ if(scene.game)scene.game.__torre2BattlePrewarm=report;
+ if(queued){
+  const loaded=()=>{report.readyAt=Date.now();scene.events?.off('shutdown',cleanup)};
+  const cleanup=()=>scene.load?.off('complete',loaded);
+  scene.load.once('complete',loaded);
+  scene.events?.once('shutdown',cleanup);
+  scene.load.start();
+ }else report.readyAt=report.startedAt;
+ return report;
+}
 // Only the explicit reset link modifies the browser's private Kanto save.
 // Remove the URL flag immediately so page reloads never reset repeatedly.
 export function consumeCampaignResetLink(storage=localStorage,url=window.location,
@@ -70,6 +109,13 @@ class Campanha extends Phaser.Scene{
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
   const state=readCampaign();
+  // Nine tiny original GBA item icons shared by every Mart page.
+  // Load once into Phaser's image cache, never over the network during shopping.
+  for(const file of FRLG_MART_ITEM_FILES){
+   const key='torre2-frlg-mart-'+file;
+   if(!this.textures.exists(key))
+    this.load.image(key,'assets/ui/frlg/items/'+file+'.png');
+  }
   // Mobile performance: the old loader uploaded every Kanto map and all
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
@@ -113,6 +159,12 @@ class Campanha extends Phaser.Scene{
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  // Only this region's twelve unique wild entries; reuse existing small PMD
+  // portraits, not twelve full animation sheets (mobile GPU memory).
+  for(const id of [...new Set(wildAvailability(stage).wild)].slice(0,12)){
+   const dex=grassPortraitDex(id);
+   if(dex)toLoad.add(dex);
+  }
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
   // Pokémon no longer present in team / first PC box page need not stay
   // in the GPU after repeated captures and campaign restarts.
@@ -234,7 +286,7 @@ create(){
    const x=135+i*185;
    this.button(x,180,166,58,id.toUpperCase(),()=>{
     try{
-     saveCampaign(createCampaign(id));
+     saveCampaign(createPlayerCampaign(id));
     }catch(error){
      console.warn('Torre 2: starter selection could not be saved',error);
      saveError.setVisible(true);
@@ -244,7 +296,7 @@ create(){
    },true).setData('torre2-starter-select',id);
   });
   text(this,ANCHO/2,270,'Movimentação e golpes: combate original Phaser · progressão: Torre 1',statusStyle).setOrigin(.5);
-  text(this,ANCHO/2,294,'Mewtwo nível 50 será adicionado à equipe para testes.',statusStyle).setOrigin(.5);
+  text(this,ANCHO/2,294,'Sua aventura começa somente com o inicial escolhido · Mewtwo fica no laboratório.',statusStyle).setOrigin(.5);
  }
  backdrop(){
   richBackdrop(this);
@@ -433,6 +485,7 @@ create(){
   };
   const path=renderBattlePath(this,state,{
    rematch:i=>this.rematchScreen(state,i),
+   rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),
    gym:()=>this.gymScreen(state),
    training:()=>this.enterTraining(state),
@@ -680,23 +733,75 @@ create(){
    fontSize:'12px',color:C.muted}).setOrigin(.5);
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
- rematchScreen(state,index){
-  const foe=rematchOpponent(state,index);if(!foe)return;
+ // VS Seeker on every previously cleared Kanto map without changing progress.
+ rematchAtlasScreen(state,mapStage=Math.min(state.stage,8),page=0){
+  const eligible=Array.from({length:9},(_,stage)=>({
+   stage,name:STAGES[stage]?.city||'KANTO',
+   trainers:Array.from({length:TRAINERS_PER_GYM(stage)},(_,i)=>
+    rematchOpponent(state,i,stage)?i:null).filter(i=>i!==null)
+  })).filter(m=>m.trainers.length);
+  if(!eligible.some(m=>m.stage===mapStage))mapStage=eligible.at(-1)?.stage??0;
+  const current=eligible.find(m=>m.stage===mapStage),trainers=current?.trainers||[];
+  const maxPage=Math.max(0,Math.ceil(trainers.length/6)-1);
+  page=Math.max(0,Math.min(maxPage,page));
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,23,'VS SEEKER · REVANCHES DE KANTO',{
+   ...titleStyle,fontSize:'18px'}).setOrigin(.5);
+  text(this,320,47,'MAPAS CONCLUÍDOS · CARGA '+(state.rematches?.charge||0)+'/3 · SEM NOVAS INSÍGNIAS',{
+   fontSize:'10px',color:C.muted}).setOrigin(.5);
+  eligible.forEach((entry,i)=>{
+   const x=112+(i%3)*207,y=81+Math.floor(i/3)*29;
+   this.button(x,y,194,25,entry.name.toUpperCase().slice(0,19),()=>
+    this.rematchAtlasScreen(state,entry.stage,0),true)
+    .setData('torre2-rematch-map',entry.stage);
+  });
+  text(this,320,168,(current?.name||'KANTO').toUpperCase()+
+   ' · TREINADORES '+trainers.length+' · PÁGINA '+(page+1)+'/'+(maxPage+1),{
+    fontSize:'11px',color:C.gold}).setOrigin(.5);
+  trainers.slice(page*6,page*6+6).forEach((index,i)=>{
+   const x=165+(i%2)*315,y=203+Math.floor(i/2)*31;
+   const foe=rematchOpponent(state,index,mapStage);
+   this.button(x,y,295,27,'#'+(index+1)+' · '+foe.name.toUpperCase()+' Nv.'+foe.level,
+    ()=>this.rematchScreen(state,index,mapStage),true)
+    .setData('torre2-rematch-trainer',mapStage+':'+index);
+  });
+  if(page>0)this.button(70,320,100,29,'◀ ANTERIOR',()=>
+   this.rematchAtlasScreen(state,mapStage,page-1));
+  if(page<maxPage)this.button(570,320,105,29,'PRÓXIMA ▶',()=>
+   this.rematchAtlasScreen(state,mapStage,page+1));
+  this.button(320,320,170,30,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  this.__torre2RematchAtlas={mapStage,page,count:trainers.length,maps:eligible.map(m=>m.stage)};
+ }
+ rematchScreen(state,index,mapStage=state.stage){
+  const foe=rematchOpponent(state,index,mapStage);if(!foe)return;
   this.children.removeAll(true);this.backdrop();
   text(this,320,60,'REVANCHE · '+foe.name.toUpperCase(),titleStyle).setOrigin(.5);
-  text(this,320,110,'Equipe até Nv.'+foe.level+' · VS Seeker '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
+  text(this,320,110,'MAPA '+(STAGES[mapStage]?.city||'KANTO').toUpperCase()+
+   ' · EQUIPE Nv.'+foe.level+' · VS '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
   text(this,320,151,'Recarrega ao vencer 3 outras batalhas.',statusStyle).setOrigin(.5);
   text(this,320,178,'Não concede insígnias, TMs ou progresso da história.',statusStyle).setOrigin(.5);
   this.button(320,235,240,40,'REVANCHE',()=>{
-   const result=startRematch(state,index);
+   const result=startRematch(state,index,mapStage);
    if(!result.ok){text(this,320,278,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5);return;}
-   const party=createPartyMatch({...state,trainer:index},currentOpponent({...state,trainer:index}),false);
-   for(const member of party.foes){member.level=Math.min(currentLevelCap(state.stage),member.level+Math.min(10,(state.badges?.length||0)*2));member.loadout=resolveLoadout({id:member.id,progression:{species:member.id,level:member.level}});}
+   // Temporary opponent uses the selected map; story stage and trainer stay fixed.
+   const party=createPartyMatch({...state,stage:mapStage,trainer:index},
+    currentOpponent({...state,stage:mapStage,trainer:index,champion:false}),false);
+   const boost=Math.min(10,(state.badges?.length||0)*2);
+   party.foes.forEach((member,i)=>{
+    member.level=i===0?foe.level:
+     Math.min(currentLevelCap(state.stage),member.level+boost);
+    member.id=trainerSpeciesForLevel(member.id,member.level);
+    member.loadout=resolveLoadout({id:member.id,progression:{species:member.id,level:member.level}});
+   });
    const p=party.friend[party.playerIndex],e=party.foes[0];
    const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
-   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
+   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,
+   versus:versusOpponentProfile({stage:mapStage,trainer:index,
+    kind:routeNode(mapStage,index,TRAINERS_PER_GYM(mapStage)).type,
+    name:foe.name,city:STAGES[mapStage]?.city,rematch:true}),
+   playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
   },true);
-  this.button(320,320,230,32,'◀ MAPA',()=>this.scene.restart());
+  this.button(320,320,230,32,'◀ REVANCHES',()=>this.rematchAtlasScreen(state,mapStage));
  }
  enterTraining(state){
   this.children.removeAll(true);this.backdrop();
@@ -768,9 +873,16 @@ create(){
    return;
   }
   const foe={id:match.p2,level:match.torre2.enemyLevel,
-   leader:state.trainer>=TRAINERS_PER_GYM(state.stage)};
+   leader:!wild&&state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
+  if(!wild){
+   const opponent=currentOpponent(state);
+   if(opponent)match.torre2.versus=versusOpponentProfile({
+    stage:state.stage,trainer:state.trainer,kind:opponent.kind,
+    leader:opponent.leader,name:opponent.name,city:opponent.city
+   });
+  }
   // The encounter descriptor names the ace; the party opens with its first
   // member. Sprite, level, stats and loadout must all use that same member.
   const firstPlayer=party.friend[party.playerIndex],firstEnemy=party.foes[party.enemyIndex];
@@ -785,24 +897,18 @@ create(){
  launchBattle(match,wild=false){
   // Campaign-only level HUD, using the real saved levels and leader cap.
   // The original Arena 2D sprites, attacks and other modes remain untouched.
-  const game=this.game;let frames=0;
+  const game=this.game;let frames=0,combatEntered=false;
   // The previous fight may return to the hub before 60 frames have passed.
   // Never let its stale installer grab the NEXT match (including training).
   if(game.__torre2BattleAttach)
    game.events.off('step',game.__torre2BattleAttach);
   const attach=()=>{
    const battle=game.scene.getScene('combate');
+   // The 1.48s VS runs while campanha is still active. The old 60-frame
+   // exit guard must not retire this installer BEFORE combat even starts.
+   if(battle.scene.isActive())combatEntered=true;
    if(battle.scene.isActive()&&battle.luchadores?.length===2&&
       !battle.__torre2PartyInstalled){
-    const levelPanel=battle.add.graphics().setDepth(1170);
-    levelPanel.fillStyle(0x071a2b,.92);
-    levelPanel.fillRoundedRect(189,5,262,24,3);
-    levelPanel.lineStyle(1,0xd3ac60);
-    levelPanel.strokeRoundedRect(189,5,262,24,3);
-    text(battle,199,10,'SEU NV.'+match.torre2.playerLevel+
-     '   RIVAL NV.'+match.torre2.enemyLevel+
-     '   TETO NV.'+match.torre2.hardCap,{
-     fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
     installPartyBattle(battle);
     if(match.torre2.laboratory)installLaboratoryControls(battle);
     else if(match.torre2.training)installTrainingDummy(battle);
@@ -810,19 +916,35 @@ create(){
     // Phaser restarts the SAME battle scene to send out the next Pokémon.
     // Keep this ONE listener while battling so every replacement gets a HUD.
    }
-   if((game.scene.isActive('campanha')&&frames>60)||++frames>18000){
+   if((combatEntered&&game.scene.isActive('campanha')&&frames>60)||++frames>18000){
     game.events.off('step',attach);
     if(game.__torre2BattleAttach===attach)game.__torre2BattleAttach=null;
    }
   };
   game.__torre2BattleAttach=attach;
   game.events.on('step',attach);
-  // Defer scene transition until the current pointer event finishes.
-  // On mobile, starting combate during a pointerdown can route the same
-  // tap to the battle scene and immediately close/restart it.
-  this.time.delayedCall(0,()=>{
+  // Introduce real trainers, rivals, leaders, Elite and VS Seeker battles.
+  // Keep wild encounters/training instantaneous, and do not touch the match
+  // payload or the combat-side scene restart on a new Pokémon.
+  // The VS timer already runs outside pointerdown. Transition directly
+  // at its end; queuing a nested zero-delay Phaser event can be lost on
+  // re-entrant rematch/party flows. Only the NO-VS fallback needs deferral.
+  const enterCombat=()=>{
    if(this.scene.isActive())this.scene.start('combate',match);
-  });
+  };
+  try{
+   if(playVersusIntro(this,match,enterCombat)){
+    // Prefetch sprites only while the cinematic is already running; do not
+    // extend/shorten VS, alter battle logic, or preload outside Kanto.
+    try{prewarmVersusBattleSprites(this,match)}
+    catch(error){console.warn('Torre 2: VS sprite prewarm skipped',error)}
+    return;
+   }
+  }catch(error){
+   console.warn('Torre 2: versus intro skipped safely',error);
+  }
+  // Defer only when no VS was rendered, to protect the original tap.
+  this.time.delayedCall(0,enterCombat);
  }
  grassScreen(state){
   // Do not destroy the loaded overworld when entering tall grass. Removing
@@ -859,13 +981,25 @@ create(){
   msg(320,88,area.area.toUpperCase(),{fontSize:'13px',color:C.gold});
   msg(320,111,'ENCONTROS REGIONAIS (FIRE RED)',{
    fontSize:'11px',color:C.blue});
-  area.wild.slice(0,12).forEach((id,i)=>{
+  // Green means genuinely caught (Pokédex), never merely available in grass.
+  const caught=new Set(state.dexCaught||[]);
+  [...new Set(area.wild)].slice(0,12).forEach((id,i)=>{
    const x=111+(i%4)*142,y=148+Math.floor(i/4)*29;
-   const ok=area.available.includes(id);
-   const badge=this.add.rectangle(x+wideOffset,y,132,25,ok?0x24553f:0x223345)
-    .setStrokeStyle(1,ok?0x7dd597:0x445468).setDepth(617);
-   msg(x,y,id.toUpperCase()+(ok?' ✓':' · FUTURO'),{
-    fontSize:'9px',color:ok?'#d7ffda':'#8ca9bb'});
+   const owned=caught.has(id);
+   const available=area.available.includes(id);
+   this.add.rectangle(x+wideOffset,y,132,25,owned?0x24553f:0x223345)
+    .setStrokeStyle(1,owned?0x7dd597:0x5d91b4).setDepth(617);
+   const dex=grassPortraitDex(id),key=dex&&'torre2-portrait-'+dex;
+   if(key&&this.textures.exists(key)){
+    // Original PMD pixel portrait, with no silhouette substitution or VFX.
+    this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.add.image(x-49+wideOffset,y,key).setDisplaySize(22,22)
+     .setDepth(619).setData('torre2-grass-sprite',id);
+   }
+   msg(x+11,y,id.toUpperCase()+(available?'':' · FUTURO'),{
+    fontSize:available?'9px':'8px',
+    color:owned?'#d7ffda':available?'#f5f3e8':'#8ca9bb'})
+    .setData('torre2-grass-name',id);
   });
   msg(320,248,'ENCONTROS REALIZADOS: '+(state.wildEncountersStage||0)+' · SEM LIMITE',
    {fontSize:'11px',color:C.gold});
@@ -915,8 +1049,10 @@ create(){
    }).setOrigin(.5).setDepth(610);
    for(const [i,member] of state.team.slice(0,6).entries()){
     const x=320-(Math.min(6,state.team.length)-1)*43+i*86;
-    const icon=this.add.graphics().setDepth(610);
-    ball(icon,x,160,13);
+    // Use the same approved nearest-filtered 16x16 Pokéball texture as
+    // captures and the party HUD. Keep the original healing glow/pulse.
+    const icon=originalBallSprite(this,x,160,'pokeball',32,610)
+     .setData('torre2-center-heal-ball',i);
     icon.setAlpha(.27);
     this.tweens.add({targets:icon,alpha:1,duration:260,delay:i*150,
      yoyo:true,repeat:1,ease:'Sine.easeInOut'});
@@ -960,13 +1096,18 @@ create(){
   this.children.removeAll(true);this.backdrop();
   text(this,320,23,'POKÉ MART · $'+state.money,{
    ...titleStyle,fontSize:'19px'}).setOrigin(.5);
-  const items=MART_ITEMS.filter(i=>state.stage>=(i.minStage||0));
+  const items=MART_ITEMS.filter(i=>martItemUnlocked(state,i));
   const count=Math.max(1,Math.ceil(items.length/6));
   const pageNum=Math.min(count-1,Math.max(0,page));
   items.slice(pageNum*6,(pageNum+1)*6).forEach((item,i)=>{
    const x=168+(i%2)*301,y=95+Math.floor(i/2)*66;
    this.card(x-141,y-20,283,57,state.money>=item.price?0x568fbb:0x6b5669);
-   drawShopItem(this.add.graphics().setDepth(5),x-118,y+6,item,1);
+   const art=this.add.image(x-118,y+6,shopItemSprite(this,item));
+   // Original FRLG indexed icon at its native pixel resolution (no serrated
+   // fractional upscaling), with GBA palette-zero transparency preserved.
+   const w=art.frame?.width||24,h=art.frame?.height||24;
+   art.setDisplaySize(Math.min(28,w),Math.min(28,h)).setDepth(5)
+    .setData('torre2-mart-item-sprite',item.id);
    text(this,x-98,y-9,item.name,{fontSize:'11px',color:C.white});
    text(this,x-98,y+9,'$'+item.price+(item.kind==='tm'?' · TM':' · '+item.kind.toUpperCase()),{
     fontSize:'10px',color:C.muted});
@@ -1113,17 +1254,34 @@ create(){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  // Exclusive mobile screen: prevent touches on Back and attack rows from
+  // passing to other scene hotspots (notably original fullscreen behind it).
+  this.scene.bringToTop();
+  // The original title's fullscreen hotspot can receive a second mobile
+  // pointer beneath this screen; keep it stopped while managing the party.
+  // Phaser may queue a title launch until after this callback; enqueue the
+  // corresponding stop unconditionally so the fullscreen hotzone cannot
+  // reactivate behind the summary on the next mobile pointer event.
+  this.scene.stop('titulo');
+  this.input.setTopOnly(true);
+  this.add.zone(320,180,640,360).setDepth(2).setInteractive()
+   .setData('torre2-summary-input-shield',true)
+   .on('pointerdown',(_pointer,_x,_y,event)=>event?.stopPropagation?.());
   const member=state.team[index];
   if(!member)return this.scene.restart();
   const stats=pokemonStats(member),pool=availableMoves(member);
   // Campaign preload also loads this PMD portrait; keep the summary image visible.
   const chosen=selectedMoves(member),activeSlot=Math.min(3,Math.max(0,slot));
-  const battleKit=resolveLoadout(member),introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
+  const slotReason=move=>campaignMoveSlotReason(member,activeSlot,move);
+  const battleKit=resolveLoadout(member);
+  // Highlight exactly the moves the battle controller will execute.
+  const equippedIds=['lmb','rmb','q','e'].map(key=>battleKit[key]?.id||null);
+  const introStage=member.id!=='mewtwo'&&Object.values(battleKit).some(move=>move?.torre2IntroPractice);
   const earlyPlan=earlyKantoSlotPlan(member.id)||nativeKantoEvolutionPlan(member.id);
-  this.summaryFilter??='ALL';this.summarySearch??='';
+  this.summaryFilter??='ALL';this.summarySearch??='';this.summaryView??='moves';
+  const showFuture=this.summaryView==='future';
   const slotCodes=['LMB','RMB','Q','E'];
-  const slotNames=earlyPlan?['ATK','HAB 2','HAB 3','ULT']:
-   ['ATAQUE 1','ATAQUE 2','ESPECIAL','FINALIZADOR'];
+  const slotNames=['ATK','HAB 2','HAB 3','ULT'];
   const types={NORMAL:0xb9c4d2,FIRE:0xf0804d,WATER:0x6fb7f0,ELECTRIC:0xeec95d,
     GRASS:0x83d18a,ICE:0x9bdcee,FIGHTING:0xdb8e77,POISON:0xb98cd9,
     GROUND:0xc3aa77,FLYING:0x98c6e3,PSYCHIC:0xe997bf,BUG:0xaacb70,
@@ -1136,13 +1294,15 @@ create(){
    return rect;
   };
   const label=(x,y,caption,color='#dceaff',size=11)=>text(this,x,y,caption,{
-   fontSize:size+'px',color});
+   fontSize:size+'px',color}).setDepth(16);
   const button=(x,y,w,h,caption,click,selected=false)=>{
    const bg=box(x,y,w,h,selected?0x28465f:0x1b314a,selected?0xe7c56a:0x52718f);
-   bg.setInteractive({useHandCursor:true});
+   bg.setDepth(12).setInteractive({useHandCursor:true});
    bg.on('pointerover',()=>bg.setFillStyle(selected?0x385b79:0x2d506f));
    bg.on('pointerout',()=>bg.setFillStyle(selected?0x28465f:0x1b314a));
-   bg.on('pointerdown',click);
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();click();
+   });
    const name=label(x+w/2,y+h/2,caption,selected?'#ffe09a':'#e1eeff',11);
    name.setOrigin(.5);
    return bg;
@@ -1150,7 +1310,13 @@ create(){
   // Distinct header and unified back navigation.
   box(10,8,620,36,0x10243d,0x456b91);
   label(23,15,'POKÉMON / SUMÁRIO',C.gold,16);
-  button(521,13,98,27,'◀ EQUIPE',()=>{this.summaryFilter='ALL';this.summarySearch='';this.scene.restart()});
+  // Avoid the legacy fullscreen hitbox around x=624.
+  button(494,13,108,27,'◀ EQUIPE',()=>{
+   this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
+   this.summaryView='moves';
+   // No scene.restart: retain browser fullscreen and native Phaser canvas.
+   this.renderCampaign(state);
+  }).setData('torre2-summary-back',true);
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);
@@ -1162,7 +1328,7 @@ create(){
   box(25,103,82,81,0x091726,0x365b78);
   const portrait=()=>{
    if(!this.scene.isActive()||!this.textures.exists(key))return;
-   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(2);
+   this.add.image(66,143,key).setDisplaySize(74,74).setDepth(3);
   };
   if(this.textures.exists(key))portrait();
   else{
@@ -1193,22 +1359,22 @@ create(){
     this.showSummary(state,index,slot,page);
     return;
    }
-   this.summaryFilter='ALL';this.summarySearch='';this.scene.restart();
+   this.summaryFilter='ALL';this.summarySearch='';this.summaryView='moves';this.renderCampaign(state);
   },index===state.active).setData('torre2-active-select',true);
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
   label(231,59,'GOLPES EQUIPADOS',C.gold,14);
-  label(231,78,earlyPlan?'LMB ATK  ·  RMB HAB 2  ·  Q HAB 3  ·  E ULT  ·  ESP ESQUIVA':
-   'TOQUE NO SLOT QUE DESEJA ALTERAR',C.muted,earlyPlan?8:9);
+  label(231,78,'1. TOQUE NO SLOT   2. ESCOLHA O GOLPE NA LISTA',C.muted,9);
   slotCodes.forEach((_,i)=>{
-   const id=chosen[i],battleSlot=['lmb','rmb','q','e'][i];
-   const nativeMove=pool.find(m=>m.id===id);
-   const move=introStage?(battleKit[battleSlot]||null):nativeMove;
+   const battleSlot=['lmb','rmb','q','e'][i];
+   const move=battleKit[battleSlot]||null;
    const x=229+(i%2)*194,y=93+Math.floor(i/2)*43;
    const current=activeSlot===i;
    const bg=box(x,y,189,39,current?0x294765:0x172d43,current?0xf0cb6d:0x385772);
-   bg.setInteractive({useHandCursor:true});
-   bg.on('pointerdown',()=>this.showSummary(state,index,i,0));
+   bg.setDepth(12).setInteractive({useHandCursor:true});
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();this.showSummary(state,index,i,0);
+   });
    bg.on('pointerover',()=>bg.setFillStyle(0x335977));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x294765:0x172d43));
    label(x+8,y+4,slotCodes[i]+' · '+slotNames[i],
@@ -1218,7 +1384,7 @@ create(){
    label(x+8,y+18,move?.nombre??(introStage&&i===3&&stats.level<8?
     'ULT · DESBLOQUEIA NV. 8':upcoming?
     upcoming+' · LV '+(need??'EVO'):'—'),move?C.white:'#f5c578',move?12:10);
-   if(move?.torre2IntroPractice)label(x+8,y+31,'TREINO · PODER REDUZIDO','#b1cfde',7);
+   if(move?.torre2IntroPractice)label(x+8,y+31,'INICIAL · POTÊNCIA EQUILIBRADA','#b1cfde',7);
    label(x+180,y+4,move?.tipo??'',hex(move?.tipo),9).setOrigin(1,0);
    label(x+180,y+21,'CD '+(move?.cd??0)+'s',C.muted,9).setOrigin(1,0);
   });
@@ -1229,53 +1395,146 @@ create(){
   }
   // Separated library with filters and paging: can navigate Mewtwo moves.
   this.add.rectangle(424,189,384,1,0x446580);
-  label(230,195,'BIBLIOTECA · '+pool.length+' GOLPES',C.gold,12);
-  button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
-  button(541,187,75,25,'BUSCAR',()=>{
-   const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
-   if(query===null)return;
-   this.summarySearch=query.trim().slice(0,35);
+  // Power-capped Lv5 adapters use existing VFX but are NOT different
+  // species moves. List just one named option per native technique.
+  const dedupeByMove=moves=>{
+   const byName=new Map();
+   for(const move of moves){
+    const key=(move.torre2IntroSlot==='e'?'ULT:':'MOVE:')+
+     canonicalMoveKey(move.torre2IntroSource||move.nombre);
+    const old=byName.get(key);
+    const score=m=>
+     (equippedIds[activeSlot]===m.id?120:0)+
+     (m.torre2IntroPractice?(stats.level<=8?30:1):(stats.level>8?30:0))+
+     (m.torre2IntroSlot===slotCodes[activeSlot].toLowerCase()?2:0)+
+     (slotReason(m)===null?50:0);
+    if(!old||score(move)>score(old))byName.set(key,move);
+   }
+   return [...byName.values()];
+  };
+  // Learned moves all remain visible; compatible choices appear first.
+  // No hidden ULT in HAB slots or silent equip failure on mobile.
+  const displayed=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch))
+   .sort((a,b)=>Number(!!slotReason(a))-Number(!!slotReason(b))||
+    Number(equippedIds[activeSlot]!==a.id)-Number(equippedIds[activeSlot]!==b.id));
+  const compatibleCount=displayed.filter(m=>!slotReason(m)).length;
+  label(230,195,showFuture?'PRÓXIMOS':'BIBLIOTECA',C.gold,11);
+  button(334,187,105,25,showFuture?'◀ EQUIPAR':'POR NÍVEL',()=>{
+   this.summaryView=showFuture?'moves':'future';
+   this.summaryWarning=null;
    this.showSummary(state,index,activeSlot,0);
-  });
-  // Virtual NEW tab shows only not-yet-approved Torre 2 moves.
-  const filtered=filterMoveLibrary(pool,this.summaryFilter,this.summarySearch);
+  },showFuture).setData('torre2-summary-future-toggle',true);
+  if(!showFuture){
+   button(445,187,91,25,'TIPO ▾',()=>this.showMoveTypePicker(state,index,activeSlot),false);
+   button(541,187,75,25,'BUSCAR',()=>{
+    const query=window.prompt('Buscar golpe por nome (vazio para limpar):',this.summarySearch||'');
+    if(query===null)return;
+    this.summarySearch=query.trim().slice(0,35);
+    this.showSummary(state,index,activeSlot,0);
+   });
+  }else label(465,195,'ATÉ NV. 50',C.muted,9);
+  // The upcoming view contains only real future level unlocks for THIS form.
+  // TM-only moves remain excluded; an evolution has its own learnset.
+  const filtered=showFuture?upcomingCampaignMoves(member):displayed;
   const pageSize=6,pages=Math.max(1,Math.ceil(filtered.length/pageSize));
   const safePage=Math.min(pages-1,Math.max(0,page));
-  if(this.summaryFilter!=='ALL'||this.summarySearch)
-   label(230,213,'FILTRO: '+this.summaryFilter+
-    (this.summarySearch?'  ·  '+this.summarySearch.toUpperCase():''),
-    '#95ceef',9);
+  if(!this.summaryWarning){
+   const hint=showFuture?
+    'FORMA ATUAL · '+filtered.length+' FUTUROS · TM NÃO AUTOMÁTICA':
+    this.summaryFilter!=='ALL'||this.summarySearch?
+     'FILTRO '+this.summaryFilter+(this.summarySearch?' · '+this.summarySearch.toUpperCase():''):
+     slotNames[activeSlot]+' · '+compatibleCount+'/'+displayed.length+' COMPATÍVEIS';
+   label(230,211,hint,'#95ceef',8);
+  }
   const rowsY=223;
-  filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
+  if(showFuture){
+   filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
+    const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
+    const bg=box(x,y,188,27,move.ultimatePreview?0x3b3441:0x19364b,
+     move.ultimatePreview?0xe3c176:0x436985);
+    bg.setDepth(12).setData('torre2-summary-upcoming-move',move.id)
+     .setData('torre2-summary-upcoming-level',move.level);
+    label(x+6,y+3,(move.ultimatePreview?'E NV ':'NV ')+
+     String(move.level).padStart(2,'0')+' · '+move.name.toUpperCase().slice(0,18),
+     move.ultimatePreview?'#ffdfa4':'#edf5ff',9);
+    label(x+6,y+16,move.ultimatePreview?
+     'ULT INICIAL · POTÊNCIA REDUZIDA':String(move.type||'')+' · DESBLOQUEIA POR NÍVEL',
+     C.muted,7);
+   });
+  }else filtered.slice(safePage*pageSize,(safePage+1)*pageSize).forEach((move,i)=>{
    const x=230+(i%2)*193,y=rowsY+Math.floor(i/2)*30;
-   const equipped=chosen.includes(move.id);
-   const current=chosen[activeSlot]===move.id;
-   const pending=isPendingApprovalMove(move);
-   const bg=box(x,y,188,27,current?0x275749:equipped?0x1e434c:0x1a344d,
-    current?0x73d8b0:equipped?0x658e96:0x3c6283);
-   bg.setInteractive({useHandCursor:true});
-   bg.on('pointerdown',()=>{
-    if(equipMove(member,activeSlot,move.id)){
-     saveCampaign(state);this.showSummary(state,index,activeSlot,safePage);
-    }else{
-     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':'GOLPE NÃO DISPONÍVEL.';
-     this.showSummary(state,index,activeSlot,safePage);
+   const equipped=equippedIds.includes(move.id);
+   const current=equippedIds[activeSlot]===move.id;
+   const pending=isPendingApprovalMove(move),reason=slotReason(move);
+   const bg=box(x,y,188,27,current?0x275749:reason?0x162737:equipped?0x1e434c:0x1a344d,
+    current?0x73d8b0:reason?0x53667b:equipped?0x658e96:0x3c6283);
+   bg.setDepth(12).setInteractive({useHandCursor:true})
+    .setData('torre2-equip-move',move.id)
+    .setData('torre2-equip-reason',reason);
+   bg.on('pointerdown',(_pointer,_x,_y,event)=>{
+    event?.stopPropagation?.();
+    if(reason){
+     const suggestion=suggestedCampaignMoveSlot(member,activeSlot,move);
+     if(suggestion!==null&&suggestion!==activeSlot){
+      // A wrong-slot tap is navigation, NEVER an implicit equip. The
+      // player must explicitly choose the technique again in the new slot.
+      this.summaryWarning=reason.includes('ULT')?
+       'GOLPE FORTE: SELECIONE E (ULT)':
+       'SLOT CORRETO: '+slotNames[suggestion]+' · TOQUE NO GOLPE NOVAMENTE';
+      // Keep the requested move visible after switching the active slot.
+      // The compatible rows are sorted ahead of blocked rows, so page zero
+      // is not always the page containing the move the player tapped.
+      const reordered=dedupeByMove(filterMoveLibrary(pool,this.summaryFilter,this.summarySearch))
+       .sort((a,b)=>Number(!!campaignMoveSlotReason(member,suggestion,a))-
+        Number(!!campaignMoveSlotReason(member,suggestion,b)));
+      const row=reordered.findIndex(option=>option.id===move.id);
+      this.showSummary(state,index,suggestion,row<0?0:Math.floor(row/6));
+     }else{
+      this.summaryWarning='BLOQUEADO: '+reason;
+      this.showSummary(state,index,activeSlot,0);
+     }
+     return;
     }
+    let equippedNow=false;
+    try{equippedNow=equipCampaignMove(state,index,activeSlot,move.id);}
+    catch(error){
+     console.warn('Torre 2: summary move equip not saved',error);
+     this.summaryWarning='TROCA NÃO SALVA · TENTE NOVAMENTE';
+     this.showSummary(state,index,activeSlot,safePage);
+     return;
+    }
+    if(equippedNow){
+     this.summaryWarning=null;
+     this.showSummary(state,index,activeSlot,0);
+     return;
+    }
+    if(!equippedNow)
+     this.summaryWarning=equipped?'ESSE GOLPE JÁ ESTÁ EM OUTRO SLOT.':
+      activeSlot===3&&stats.level<13?
+       'ULT EQUILIBRADA ATÉ NV.12 · SELECIONE ATK/HAB 2/HAB 3':
+       'GOLPE NÃO DISPONÍVEL PARA ESSE SLOT.';
+    this.showSummary(state,index,activeSlot,safePage);
    });
    bg.on('pointerover',()=>bg.setFillStyle(0x305c70));
    bg.on('pointerout',()=>bg.setFillStyle(current?0x275749:equipped?0x1e434c:0x1a344d));
-   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':'+ ')+move.nombre+(move.approved?' ✓':''),
-    current?'#bcffe3':'#ebf5ff',10);
-   label(x+6,y+16,move.tipo,C.muted,8);
-   if(pending)label(x+77,y+16,'NEW','#ffdc89',8);
+   label(x+6,y+3,(current?'✓ ':equipped?'◆ ':reason?'× ':'+ ')+
+    (move.torre2IntroSlot==='e'?'ULT · ':'')+move.nombre+
+    (move.approved?' ✓':''),
+    current?'#bcffe3':reason?'#9caec1':'#ebf5ff',10);
+   label(x+6,y+16,reason||move.tipo,reason?'#f4b69a':C.muted,8);
+   if(pending)label(x+110,y+16,'NEW','#ffdc89',8);
    label(x+181,y+16,'CD '+move.cd+'s',C.muted,8).setOrigin(1,0);
   });
-  if(filtered.length===0)label(242,255,this.summaryFilter==='NEW'?'TODOS OS GOLPES APROVADOS ✓':'NENHUM GOLPE ENCONTRADO',C.muted,11);
+  if(filtered.length===0)label(242,255,showFuture?
+   (stats.level>=50?'TODOS OS NÍVEIS LIBERADOS':'SEM NOVOS GOLPES NESTA FORMA ATÉ NV. 50'):
+   this.summaryFilter==='NEW'?'TODOS OS GOLPES APROVADOS ✓':'NENHUM GOLPE ENCONTRADO',C.muted,9);
   button(233,317,68,25,'◀ ANTES',()=>this.showSummary(state,index,activeSlot,(safePage+pages-1)%pages));
   button(306,317,125,25,(safePage+1)+' / '+pages+' PÁGINAS',()=>this.showSummary(state,index,activeSlot,0),true);
   button(437,317,73,25,'PRÓXIMO ▶',()=>this.showSummary(state,index,activeSlot,(safePage+1)%pages));
-  button(515,317,101,25,'LIMPAR',()=>{
-   this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
+  button(515,317,101,25,showFuture?'EQUIPAR':'LIMPAR',()=>{
+   if(showFuture)this.summaryView='moves';
+   else{this.summaryFilter='ALL';this.summarySearch='';}
+   this.summaryWarning=null;
    this.showSummary(state,index,activeSlot,0);
   });
   if(this.summaryWarning){

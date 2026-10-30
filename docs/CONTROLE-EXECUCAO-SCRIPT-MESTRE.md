@@ -1,5 +1,159 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8/20/33/37: publicação T08 confirmada, T20 permanece parcial
+
+- **Correção pontual de §7/8 homologada:** PR #368 integrada à `main` no SHA `7f13affd0ff0afbba8f3f54c1646de10b28f6c3d`; 4 workflows relevantes verdes (#41104671463, #41104670842, #41104670806, #41104670793). Pages #41104806619 **success**, com verificação HTTP da versão `src-5f26a94885` e `PASS_PUBLIC_POKEDEX_RELEASE`. Isso comprova o bloqueio de ULT preferida excluída e a publicação, **não** todos os 151 golpes ou disparos naturais de ULT.
+- **§20/T20 ainda não validado:** PR #329 fechada sem merge; PR #369 aberta em rascunho, HEAD `c3571f8` sobre main `7f13aff`. CI #41104057240 chegou legalmente à Rocket e depois falhou; CI #41107213221 falhou por Pokébolas esgotadas antes da segunda captura. Patch `aba07c4` corrige apenas o roteiro de fuga e reabastecimento por vitórias; `c3571f8` acrescenta telemetria passiva de movimento/energia/recargas para possível timeout. Nenhum código de combate/VFX/save alterado nesses commits.
+- **Gates separados:** guardião da PR #369 [#41110964852](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41110964852) **success**; CI T20 [#41110958613](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41110958613) **sem conclusão na última consulta**. Não marcar §§20/33/37 concluídos por um teste visual ou por CI pendente.
+- **Critério de aceite restante:** 13 treinadores, Brock, insígnia Rocha e TM39 legítimos no mesmo save sem checkpoint fabricado; depois revisão, merge, testes aplicáveis, deploy novo e HTTP SHA correspondente. A jornada Pallet→Campeão e teste Android físico seguem não homologados.
+
+
+## 30/10/2026 — §§7/8/33/37: ULT preferida não pode contornar exclusões (PR #368)
+
+- **RED isolado:** avaliação do código-fonte `kanto-ultimate-policy.js` + `torre2-kanto-intro-moves.js` da branch antes do patch mostrou `Tackle/Surf/Scratch/Transform` selecionados pela preferência explícita para Bulbasaur Lv8. Isso **não é teste CI nem campanha jogada**.
+- **GREEN isolado:** após compartilhar `isKantoSignatureUltNameAllowed` entre seletor e preferência, os quatro casos retornam `Vine Whip`; 19 testes do arquivo de introdução executados em harness JS isolado, 19 passaram. SHA `aa0cd1c0eabebb611e9568e6860c3f1155a7dc63`, PR #368 draft. CI completa, Chromium real, merge e Pages deste patch **pendentes**.
+- **Publicação anterior verificada:** #365 integrada em `4e1e71c6`; Pages #41093592373 e auditoria pública #41095150874 **success** nesse SHA. #367 integrada em `a1aada1e`, publicação correspondente ainda não comprovada nesta execução.
+- **Preservação:** nenhum VFX/arte/sprite/save/TM/HM alterado; Surf VFX aprovado, Scratch/Transform adiados. §7/8/33/37 e T20 **PARCIAIS**; nenhuma vitória real ou Brock homologado por este lote.
+
+
+## 30/10/2026 — §37: auditoria pública independente com HTTP 503 isolado
+
+- Pages #41090646026 **success** para main `387d741dc4939a084efdcc7c1bcb90a431ca1123`, versão HTTP `src-78948ecbc5`; o próprio Pages passou no Chromium público. Auditoria independente posterior #41091689377 **failure** por um único `503` em `src-78948ecbc5/red.js`, sem `pageerror`, `window.__pt2Game=false`, screenshot/diagnóstico anexados. Não classificar como regressão comprovada do jogo nem como auditoria aprovada.
+- PR deste lote propõe reutilizar exatamente o classificador restrito de 503 do Pages no workflow independente: até 3 auditorias completas, falhas reais continuam vermelhas. CI, merge e publicação **pendentes**; T07/T08 e T20 permanecem PARCIAIS.
+
+
+## 30/10/2026 — §§7/8/33/37: bloqueio de VFX não aprovado na introdução (PR #365)
+
+- **RED comprovado:** CI #41084164169 falhou nas duas novas regressões: `unapproved FRLG renderer leaked into Lv5` e `unapproved neutral contact` reutilizado em Struggle. O teste foi criado antes da correção, SHA `c4107505c26f56470704069d6a071ea5a50d5f94`.
+- **Patch proposto:** SHA `4070ccbfb4f7d3489fa4290633af981a12dea692` na PR #365, um predicado de aprovação para custom VFX nos candidatos Lv5/ULT e no fallback. Não altera biblioteca de 227 VFX, sprites, cooldowns, saves, TMs, HM ou Arena. CI/Chromium/guardião desse SHA ainda em andamento quando registrado: **não homologado nem publicado**.
+- **Publicação anterior comprovada:** main `8ac91ddee8df3230e6d2c067dc62f00b67d38f9b`, Pages #41082618111 success, com etapa HTTP e Chromium público success; não atribuir essa publicação ao patch #365.
+- **Estado:** §§7/8/33/37 e T07/T08 **PARCIAIS**; §20/Brock e percurso Pallet→Campeão não homologados. Surf aprovado como VFX, Scratch/Transform adiados.
+
+
+
+## 30/10/2026 — §37 publicação: HTTP 503 pós-deploy diagnosticado, sem homologação nova
+
+- Main `d8b3c8b43436081e681c05ebe938e24234383750` integra #358. Combate CI #41072165629 e auditoria 150 espécies #41072786298 **verdes**; Pages #41072227909 **vermelho** apesar de confirmar `src-616165d778` no HTTP. Log do Chromium: `503` em `torre2/laboratory.js`, `window.__pt2Game=false`, zero canvas e timeout de 90 s. Pages #41045137532 falhara antes em `assets/vfx/hilo.png` (503).
+- Patch em branch isolada `fix/pages-public-pokedex-503-retry-20261030`: permitir somente repetição limitada da auditoria integral se houver prova de HTTP 503 isolado no domínio Pages. Não dispensa nenhuma assertiva nem mascara erro persistente; testes Node específicos incluídos. **PR #362**: CI #41075928453 **success** (Node, npm test/check/check:reuse, build e Chromium), guardião visual #41075928433 **success**. **Merge e Pages do patch pendentes.**
+- **§37 permanece PARCIAL** para esse HEAD até Pages sucesso + HTTP SHA comprovado; §§7/8 e T20 permanecem PARCIAIS, sem evidência nova de três golpes naturais Lv5, ULT legítima, Brock ou jornada Pallet→Campeão. Nenhum save, sprite, efeito aprovado, Surf ou HM foi modificado.
+
+
+## 30/10/2026 — §§7/8: regressão de assinatura detectada e patch ainda não homologado
+
+- PR #358: CI #41066647123 provou que a filtragem indiscriminada de `pendiente` reduziu 149 ULTs temáticas para 144. Afetou Caterpie, Metapod, Weedle, Kakuna e Eevee porque Bug Bite, Bite e Swift tinham VFX aprovado mas herdavam a flag de placeholder nativo.
+- Patch de agregação da biblioteca T2 remove **somente** o bloqueio herdado para VFX explicitamente aprovados, sem tocar nos renderizadores, saves ou Arena nativa. Teste compilado mantém exigência 149/150; **CI/merge/Pages pendentes**. Não marcar seções concluídas.
+
+
+## 30/10/2026 — T07/T08: impedir prévias de golpes bloqueados (PR em validação)
+
+- **Diagnóstico no código:** `resolveKantoIntro` aceitava renderizadores marcados `pendiente`, `torre2Unavailable`, `torre2RequiresTM` ou `torre2RequiresHM`; `trainingMove` podia retirar `pendiente` e exibir um golpe que não deveria ser liberado. O seletor de ULT temática também não filtrava esses bloqueios.
+- **Patch isolado proposto:** excluir esses candidatos dos três controles Lv5 e da ULT Lv8, sem tocar nos 227 VFX, nomes aprovados, HM Surf, Scratch/Transform adiados, saves, TM ou mecânica Arena. Regressão Node + build + Chromium na CI própria; **não homologar antes de CI verde**.
+- **Prova independente anterior:** Pages [#41054058050](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41054058050) verde para `a5cff40ea1fab273ea725409cc126f4568e655a0`, HTTP `src-1ca23478c2`. Auditoria pública integral [#41055385370](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41055385370) passou no Chromium: **150/150** espécies Kanto, zero divergências de slots em Lv50, sem erro HTTP/Phaser. Isso **não prova** os três ataques autênticos Lv5, ULT acionada naturalmente ou Brock.
+- **Pendente:** CI/revisão/merge/Pages do patch; T07/T08 e T20 continuam PARCIAIS. Não alterar PRs concorrentes #270/#329.
+
+
+## 30/10/2026 — §§7/8/33/37 · publicação versus auditoria pública independente
+
+- **§37 publicação comprovada:** Pages #41050085664, SHA `477dac7410ad7a89f73dfb9a9946187cbdbca657`, Chromium público `src-dc921f3851` na checagem de sete casos.
+- **§§7/8/33 permanecem PARCIAIS:** auditoria independente #41050887159 timeout na ativação da cena após 90 s; sem artifact. Patch diagnóstico em PR isolada, sem alterar runtime/VFX/saves e sem enfraquecer validação de 150 espécies. Exigir nova CI e resultado completo antes de homologar.
+- **§20 PARCIAL:** PR #329 ainda aberta, Brock não comprovado; PRs concorrentes #352/#353 tratam captura, sem sobreposição neste lote.
+
+## 30/10/2026 — §§7/8/33/36/37 · Surf VFX aprovado ≠ HM liberado (lote em validação)
+
+- **§7/§8 PARCIAIS:** corrigida a orientação obsoleta que chamava Surf de reprovado. VFX aprovado deve permanecer no catálogo; aquisição TM/HM da campanha continua separada. Teste compilado agora verifica imutabilidade do renderer Surf após consultas; Scratch/Transform adiados. Nenhum VFX, moveset, save ou regra de desbloqueio foi alterado.
+- **§33/§37 PENDENTES NESTE LOTE:** CI/Chromium, merge e Pages HTTP do SHA ainda não verificados; sem alegar publicação. **§36:** nenhuma modificação de gameplay. T20 #329 continua sem Brock homologado.
+
+## 29/10/2026 — §§20/33/36/37 · T20 oito vitórias de produção e dificuldade real da Rocket
+
+- **§20 PARCIAL:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328) integrada `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO**: oito confrontos nativos reais com inicial criado via factory de produção, sem Mewtwo debug, ULT desbloqueada por XP, save persistente/reload e controles Phaser testados; não comprova menu inicial nem 13 treinadores+Brock.
+- **§20 bloqueio identificado:** [CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269) **FALHA genuína na sexta batalha**: Rocket Zubat/Mankey derrota Bulbasaur Lv9 solo; stage0, trainer5, wins5, losses1, HP0. A PR [#329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) revisada usa equipe obtida por capturas selvagens legítimas antes da Rocket, Centro Pokémon real em perdas, sem injetar HP/XP/wins. [CI #40991020627](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40991020627) ainda sujeita a resultado e não deve ser declarada aprovada antecipadamente.
+- **§33/36 PARCIAIS:** #328 e #329 mudam testes/workflows, não runtime, client original, 227 efeitos, 121 kits de Arena, sprites, cooldowns, TMs ou formato de save.
+- **§37 PARCIAL:** CI de patch != HTTP de Pages; só publicar se a main correspondente passar e sua versão pública for comprovada. Sequência Pallet→Campeão sem checkpoint e Android físico pendentes.
+
+
+
+## 29/10/2026 — §20/T20 · Pallet primeiras quatro batalhas naturais e gates de produção
+
+- **§20 PARCIAL:** [PR #326](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/326) integrada em `b6ecd4ac50ecfb74fc6f05d54f09f62d898c0be4`; [CI #40983712619](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983712619) **SUCESSO** com 4 vitórias naturais consecutivas (Pidgey, Rattata, Caterpie, rival Charmander) no Phaser, Bulbasaur Lv5→9 e dinheiro $1400→$2400. Inicial de QA com Mewtwo enviado ao PC; não valida seleção via UI, Brock ou Pallet→Campeão.
+- **§20 em teste:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328)/[CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087): 8 lutas com `createPlayerCampaign` de produção, zero Mewtwo debug, ULT Lv8 por XP e reload. [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329)/[CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269): 13 treinadores, compras/capturas reais, Rival e Brock. **Não declarar sucesso enquanto CI incompleto**, nem confundir execução de fixture de fábrica com escolha de inicial pelo menu.
+- **§33/§36 PARCIAIS:** #326 somente workflow de QA, #328 novo teste/workflow, #329 muda somente teste sob flag opt-in (legado preservado) + workflow. Zero modificação de runtime/VFX/sprites/movesets/cooldowns/saves; nenhuma das 37 seções foi declarada concluída.
+- **§37 PARCIAL:** publicação de #326 em `main` depende da CI Pages correspondente, não apenas do merge; verificar SHA e HTTP antes de afirmar implantação. O QA daqui não altera a versão jogável.
+
+
+
+## 29/10/2026 — §20/T20 · Cinco vitórias reais consecutivas da Liga, sem afirmar Pallet→Campeão
+
+- **§20 PARCIAL, progressão comprovada:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210) integrada na `main` em `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO** em cinco lutas nativas consecutivas com o mesmo save: Lorelei 85s, Bruno 78s, Agatha 93s, Lance 209s e Campeão 283s. Sem vitórias, KO, EXP nem progresso inseridos depois do **único checkpoint inicial de Victory Road**; Centro Pokémon, trocas, AUTO e save/reload reais. Hall da Fama, cinco honras, oito insígnias e campeão persistente.
+- **§33 PARCIAL:** [CI `main` #40977593904](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977593904) **SUCESSO**. PR [#322](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/322) integrada no squash `7e253dd37f6523832db3b878166142f7b5eb5136`; [CI #40977896743](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977896743) **SUCESSO** com auditoria de todos os três iniciais/rosters/níveis do Campeão, bloqueio pós-Hall, equipe desmaiada e Chromium completo. É teste estrutural em fixture, não jornada natural.
+- **§36 PARCIAL:** alterações de #210 somente em teste/workflow, preservados VFX/sprites/kits originais, 121 kits Arena, campanha e saves dos jogadores. Surf explicitamente aprovado pelo usuário em momento posterior ao veto histórico; nenhuma mudança da política de TM/HM da campanha neste lote.
+- **§37 PARCIAL:** publicação do commit T20 só pode ser afirmada após Pages + HTTP público no SHA exato; CI de combate bem-sucedida isoladamente não é confirmação de publicação.
+- **Critério ainda não cumprido:** Pallet→Victory Road→Campeão em uma jornada naturalmente jogada sem checkpoint inicial, todas as evoluções/trocas/capturas/PC e Android físico. T20 permanece parcial. Evidências e plano: [relatório T20](RELATORIO-T20-LIGA-CINCO-CHEFES-2026-10-29.md).
+
+
+
+## 29/10/2026 — §§7/8/33/36/37 · T07/T08: versão P2 auditável e captura diária (#313/#314)
+
+- **§7/§8 PARCIAIS:** [PR #313](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/313), merge `a4edee03abd5d76a3c557fafece06732302da740`, corrige comparação de hashes de homepage/módulos e armazena `siteVersion` e `sourceVersion` distintos. O catálogo versionado no commit `b7a1630ca94f969b337a2adb1f73a9d0b81a6d77` contém 164 movimentos nativos P2, Deoxys/Psycho Boost já presente, zero nomes adicionados/removidos, e não equipa nada na campanha. [PR #314](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/314), squash `e348b895de1d9fae1ef4bd71d77d541edbff8cc8`, reduz capturas duplicadas na main; [CI PR #40948701442](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948701442) e [main #40949654511](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40949654511) **SUCESSO**; [watcher main #40949654316](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40949654316) **SUCESSO** com probe sem recaptura e verify ignorado.
+- **§33 PARCIAL:** [CI PR #40947832817](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40947832817) **SUCESSO**, incluindo `npm test`, `check`, `check:reuse`, build, captura e Chromium real; [main #40948517288](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948517288) **SUCESSO**. [snapshot #40948517315](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948517315) **SUCESSO** com captura corretamente pulada pela prova do mesmo dia.
+- **§36 PARCIAL:** sem alterações de VFX, pixel art, sprites, cooldowns, saves, TMs, controles ou kits aprovados; Toxic #16 e Shiny #17 preservadas.
+- **§37 PARCIAL:** [Pages #40948559706](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948559706) **SUCESSO**, `pages_build_version=a4edee03abd5d76a3c557fafece06732302da740` e HTTP público `src-fcf5701b08` em 29/10 às 20:28 UTC. [Pages #40949711074](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40949711074) **SUCESSO** para SHA exato `e348b895de1d9fae1ef4bd71d77d541edbff8cc8`, HTTP público `src-c426115643` às **20:38:26 UTC** de 29/10. A prova é de publicação, não de campanha natural. Não confundir testes de catálogo/Chromium com 151 batalhas naturais, Pallet→Campeão ou Android físico.
+
+
+## 29/10/2026 — §§7/8/33/36/37 · T07/T08: aba de níveis futuros e relatório por ID
+
+- **§7/§8 PARCIAIS:** [PR #294](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/294) integrada em `bd697d106438c9a397dc204cc3ecdb7509a7d64b`: aba de futuros golpes Lv8–50 da forma atual, sem TM automática ou mutação, comparada ao pool de batalha/Pokédex em fixtures 150 espécies × oito níveis e testada por toque Chromium. [PR #295](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/295) integrada em `4aca68df80efdb7d8c522f90c33ff9359a67eeff`: relatório identifica pelo ID golpe completo aprendido por XP mesmo quando coincide no nome com ULT reduzida Lv8.
+- **§33 PARCIAL:** [CI #40893974230](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40893974230), [#40894017446](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40894017446), [main #40895470218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40895470218), [main #40895470292](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40895470292), [#40895111964](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40895111964) e [main #40896622980](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40896622980) **SUCESSO**; [REA #40896622999](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40896622999) **SUCESSO**. Fixtures e Chromium móvel simulado, não Android físico.
+- **§36 PARCIAL:** sem alterar 227 VFX, sprites, cooldowns, TMs, saves, Toxic #16 ou Shiny #17.
+- **§37 PARCIAL:** [Pages #40895536099](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40895536099) cancelado por novo merge; [Pages #40896678770](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40896678770) **SUCESSO**, `pages_build_version=4aca68df80efdb7d8c522f90c33ff9359a67eeff`; o job confirmou **HTTP público** da versão `src-8faafad601` em 29/10/2026 às **15:05:51 UTC**. T07/T08 não homologados integralmente.
+
+
+## 29/10/2026 — §§7/8/33/36/37 · T07/T08: Pokédex e Surf reprovado
+
+- **§7/§8 PARCIAIS:** [PR #292](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/292), commit `319630920ce747f5ef9c1d7c96199f3cd51b9b8a`: o índice `campaignLearnset` deixa de oferecer Surf como TM/HM da campanha, alinhando Pokédex e `moveUnlockLevel` ao bloqueio já existente no combate/editor. Cinco espécies verificadas; renderer original e dados de save preservados.
+- **§33 PARCIAL:** [CI #40890065314](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40890065314) e [CI main #40891739947](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40891739947) **SUCESSO**, com unitários, `check`, `check:reuse`, build Phaser/WebGL, matriz 151×227 e Chromium. São fixtures de catálogo/índice, não 151 batalhas reais.
+- **§36 PARCIAL:** 227 efeitos, sprites, cooldowns, TM, saves, Toxic #16 e Shiny #17 intactos; Surf permanece instalado mas reprovado para campanha.
+- **§37 PARCIAL:** [Pages #40891815415](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40891815415) **SUCESSO**, `pages_build_version=319630920ce747f5ef9c1d7c96199f3cd51b9b8a`; confirmação **HTTP público** da versão `src-a2ca650ee5` às **14:35:30 UTC** de 29/10/2026. O deploy prova a correção publicada, não a campanha completa.
+- **Faltam:** 136 lacunas FRLG sem renderer, progressão e evolução prolongadas por campanha natural, 151 espécies em combate, até o Campeão e Android físico. T07/T08 **não concluídos**.
+
+
+
+## 29/10/2026 — §§7/8/33/36/37 · T07/T08: lacunas FRLG e Struggle visualmente coerente
+
+- **§7/§8 PARCIAIS:** [PR #274](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/274), merge `b3f9e509ae708a89282d09dfbca6f15c27feda1d`, adicionou somente auditoria deduplicada de 151 espécies × 227 efeitos instalados, identificando 136 movimentos oficiais FRLG sem renderer, 639 pares da campanha e 6 pares do Mewtwo laboratório. **Não** implementou esses VFX, nem alterou learnsets/saves. [PR #277](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/277), squash `0572161adb8b3818b2f87a2b655d6373a86f415b`, corrigiu fallback Lv5 que disfarçava projétil elemental como Struggle NORMAL; agora reutiliza somente contato neutro aprovado. Teste Ponyta Lv5 e preservação byte a byte do catálogo no unitário; sem VFX novo, alterações de TM, sprites ou saves.
+- **§33 PARCIAL:** [CI #40860719560](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40860719560) e [CI #40860913609](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40860913609) **SUCESSO** com `npm test`, `check`, `check:reuse`, build Phaser/WebGL, matriz T07/T08 e Chromium completo; [CI main #40862612986](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40862612986) **SUCESSO**. Testes de 151 espécies são fixtures compiladas; não comprovam 151 jornadas naturais nem Android físico.
+- **§36 PARCIAL:** preservados os 227 VFX instalados, sprites, cooldowns, catálogo, TMs e saves aprovados; nenhuma exceção à política integral das quatro fontes concedida. Scratch permanece adiado, Surf reprovado, Transform ausente para Ditto; Toxic #16/Shiny #17 intocados.
+- **§37 PARCIAL:** [Pages #40861803768](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40861803768) **SUCESSO** com HTTP público do SHA `b3f9e509ae708a89282d09dfbca6f15c27feda1d` e versão `src-c28fe68146` às 11:04:46 UTC. [Pages #40862663366](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40862663366) **SUCESSO**: HTTP público confirmou o SHA `0572161adb8b3818b2f87a2b655d6373a86f415b` e a versão `src-d7f73b3a0e` às 11:10:35 UTC.
+- **Critério restante:** T07/T08 e §§7/8/33/36/37 continuam **PARCIAIS**: 136 lacunas FRLG ainda sem renderer, cobertura de golpes reais Lv5/ULT Lv8 e níveis 13–50 em 151 espécies, XP/evolução/editor/PC/saves por campanha naturalmente jogada, até o Campeão, Android físico e revisão de licenças de qualquer VFX novo.
+
+## 29/10/2026 — §§7/8/31/33/36/37 · T08: técnica de treino versus nativa sem duplicação
+
+- **§7/§8 PARCIAIS:** [PR #266](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/266), squash `a14f99690b07f98894744f39f2934e6dd79ca2b1`, corrige editor que permitia duas cópias visuais do mesmo golpe em HAB diferentes por IDs distintos de preview e nativo. Realoja somente preview fraco obsoleto para alternativa legal/desbloqueada; sem alternativa, rejeita a edição sem mutar o save. ULT E continua independente.
+- **§31/§33 PARCIAIS:** [CI #40831859248](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40831859248) **SUCESSO** com 203 unitários, `check`, `check:reuse`, build Phaser/WebGL, 151×227, 238 colisões simuladas (107 realocações, 131 recusas), 104 upgrades no próprio slot e regressões Chromium. XP real de Ponyta até Lv21, Flame Charge, toque móvel, reload e ataque nativo comprovados, porém **a partir de checkpoint fixture Lv20/Stage1**. [CI inicial #40831637465](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40831637465) **FALHOU**; corrigida antes do merge. [main #40832562044](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40832562044) e [REA #40832562045](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40832562045) **SUCESSO**.
+- **§36 PARCIAL:** sem mudanças em 227 VFX, sprites, pixel art, dano, cooldowns, catálogo, TM, formato de save, Toxic #16 ou Shiny #17. Apenas lógica de equipagem, teste compilado e workflow.
+- **§37 PARCIAL:** [Pages #40832682117](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40832682117) **SUCESSO** com `pages_build_version=a14f99690b07f98894744f39f2934e6dd79ca2b1`; verificação **HTTP pública** de `src-ce27b9b0ba` às **07:05:21 UTC** de 29/10/2026. Ainda não há prova de Pallet→Campeão natural, 151 batalhas reais ou Android físico; nenhuma seção adicional foi declarada VALIDADA.
+
+## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08: Ghost sem colisão de slot e Ponyta Lv21 por XP nativo
+
+- **§7/§8 PARCIAIS:** [PR #264](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/264), squash `18cb9ae7740d419251111fd522d0cb8be5a70fca`: Gastly/Haunter/Gengar não sobrescrevem Confuse Ray com Shadow Ball quando TM30 é legalmente ensinada; dois slots distintos, sem TM grátis ou efeito novo. Teste compilado para as três formas.
+- **§31/§33 PARCIAIS:** [CI #40825542321](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40825542321) **SUCESSO**: 203 unitários, `check`, `check:reuse`, build Phaser/WebGL, 151×227 e navegador Chromium completo. Em fixture **Ponyta Lv20 a 1 XP de Lv21, Squirtle Lv20, Stage 1**, batalha **nativa sem KO/XP/vitória forçados** venceu Sandshrew; Ponyta ganhou XP de verdade até Lv21 (9.612 XP), desbloqueou Flame Charge, selecionou pelo sumário em toque mobile, sobreviveu ao reload e acionou o ataque no motor nativo. Artefato [#12877155186](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40825542321/artifacts/12877155186). **Não é jornada natural desde Pallet**.
+- **§36 PARCIAL:** não alterados VFX, sprites, dano, cooldowns, mecânicas, saves, política das quatro fontes, Toxic #16 e Shiny #17. PR #261 sobreposta não integrada.
+- **§37 PARCIAL:** [main #40826243645](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40826243645) **SUCESSO**; [Pages #40826269839](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40826269839) **SUCESSO**, `pages_build_version=18cb9ae7740d419251111fd522d0cb8be5a70fca`, HTTP público `src-85e6f3c81a` às 06:00:47 UTC de 29/10/2026. Permanecem pendentes campanha completa sem fixture, todas as espécies e Android físico; nenhuma das 37 seções foi declarada integralmente validada por esta execução.
+
+## 29/10/2026 — §§7/8/33/36/37 · T07/T08: legalidade FRLG, sumário e exclusões Kanto
+
+- **§7/§8 PARCIAIS:** [PR #256](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/256) corrigiu Protect natural de nove espécies FRLG e preservou TM17; [PR #259](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/259) corrigiu seleção real Nidoran♂/Mankey no sumário móvel, mas seu deploy falhou por ULT duplicada. [PR #260](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/260), `f33c4658c45f8d3bb382c40d454930a7b5bbda3c`, resolveu Caterpie/ULT sem novos efeitos nem alteração de dano/CD. [PR #262](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/262), `6feb09dfb2c2bdaa34556f0c33422c4367c6bac4`, adicionou gate compilado para 150 espécies × 227 ataques × 5 níveis, 32.393 TMs incompatíveis injetadas, zero concessões e 32 ataques instalados sem atribuição automática a Kanto; lista integral na fila e artefato CI. Mewtwo irrestrito é laboratório, não campanha natural.
+- **§33 PARCIAL:** [CI #40815424064](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40815424064) Protect **SUCESSO**; [CI #40821644471](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40821644471) ULT **SUCESSO** com Chromium completo; [main #40822532286](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40822532286) **SUCESSO**; [CI #40822576423](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40822576423) TMs **SUCESSO** após atualização da base, 203 unitários, `check`, `check:reuse`, build Phaser e regressões de navegador. O [deploy #40821335440](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40821335440) da PR #259 **FALHOU**; a regressão foi corrigida, não ocultada.
+- **§36 PARCIAL:** 227 VFX preexistentes, sprites, cooldowns, controles, mecânicas e saves mantidos; #262 acrescenta apenas teste/workflow. PRs Toxic #16, Shiny #17 e sobreposição #261 não integradas nesta frente.
+- **§37 PARCIAL:** [Pages #40816903035](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40816903035) **SUCESSO**, SHA `d5ea9616e2d4891bef56cf408ce59ab55eb43290`, HTTP `src-b2eee384f3` às 04:22:59 UTC; [Pages #40822565792](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40822565792) **SUCESSO**, SHA `f33c4658c45f8d3bb382c40d454930a7b5bbda3c`, HTTP `src-82269bea65` às 05:21:57 UTC. [Pages #40823682468](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40823682468) **SUCESSO** para SHA `6feb09dfb2c2bdaa34556f0c33422c4367c6bac4`, `pages_build_version` idêntico e confirmação **HTTP público** `src-48e3ae45e5` em 29/10/2026 às 05:33:55 UTC. Faltam XP/campanha natural, todas as espécies em batalha prolongada e Android físico.
+
+## 29/10/2026 — §§7/8/31/33/36/37 · T05: sumário de golpes com gravação atômica
+
+- **§7/§8/§31 PARCIAIS:** [PR #255](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/255), commit `a6489d88e83447696e8f44ae4ea0b95077098419`: o editor de golpes do sumário não modifica mais o Pokémon vivo antes de salvar; a seleção é validada na cópia, persiste antes do commit em RAM, mostra erro recuperável quando `localStorage` recusa e preserva os quatro slots anteriores. Nenhum desbloqueio, TM ou efeito foi refeito.
+- **§33 PARCIAL:** [CI branch #40814769576](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40814769576), [CI main #40815489492](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40815489492) e [REA #40815489473](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40815489473) **SUCESSO**. Incluídos testes compilados com falha de gravação primária/backup, retry, reload, identidade da equipe e toque no sumário Phaser/WebGL pelo Chromium móvel; `npm test`, `check`, `check:reuse`, build e regressões completas passaram.
+- **§36 PARCIAL:** preservados golpes/VFX/pixel art/sprites/cooldowns, controles aprovados, save v1 e frentes T03/T04/Toxic/Shiny. Falha de armazenamento é **fixture**, não Android físico nem jornada natural.
+- **§37 PARCIAL:** [Pages #40815517623](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40815517623) **SUCESSO**, `pages_build_version=a6489d88e83447696e8f44ae4ea0b95077098419`; HTTP público confirmou `src-fde1b99a53` às **04:07:13 UTC de 29/10/2026**. Nenhuma seção adicional foi declarada integralmente VALIDADA.
+
+
 ## 28/10/2026 — §§7/8/33/36/37 · T07/T08: desbloqueios Gen IV/V/VII e índice consultável
 
 - **§7/§8 PARCIAIS:** [PR #247](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/247), `999ce50a6733e3952d1db194a4854722c5e872fb`, sincronizou a regra de menor nível legal entre gerações; preservou prioridade FRLG, evolução, potência e exceção explícita Ponyta/Rapidash Flare Blitz Lv49. [PR #248](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/248), `97206a642c7457ac743672604b45c3306914a52f`, sincronizou o método exportado `moveUnlockLevel` com `campaignLearnset`/combate para 150 espécies normais, sem modificar a tela da Pokédex nem o Mewtwo de teste. Fire Blast Lv50 e TM exclusivamente ensináveis mantidas.
@@ -697,3 +851,11 @@
 - **§36 — PARCIAL:** diff sem mudanças em golpes, VFX, pixel art, sprites, cooldowns, controles nativos, efeitos aprovados ou saves anteriores. Frentes Toxic #16, Shiny #17, Liga #210 e evolução/PC #213 preservadas.
 - **§37 — PARCIAL:** [Pages #40787225675](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40787225675) **SUCESSO**, `pages_build_version=167371d2f4dcfbac8a7fcfa6855d42ce52509ebd`, HTTP público confirmou `src-bee13a892e` às **23:28:37 UTC de 28/10/2026**.
 - **Limites:** seleção, falhas de armazenamento e equipe são fixtures; não há prova de Android físico, K.O. naturalmente jogado nem percurso completo Pallet→Campeão. T05 e §§31/33/36/37 continuam PARCIAIS; nenhuma das 37 seções foi declarada integralmente VALIDADA com base neste patch.
+
+
+## 30/10/2026 — §§7/8/20/33/36/37 · T37 Pages: re-run ambíguo corrigido em PR, ainda não publicado
+
+- **§37 PARCIAL:** [Pages #41017521799](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41017521799) tentativa 1 fez deploy `31ec7e98` e confirmou HTTP `src-ad06504c6f`, porém o Chromium público encontrou **503** no sprite `assets/pmd/0145/Idle-Anim.png`; job vermelho. Na tentativa 2, `actions/deploy-pages@v4` encontrou **dois artefatos `github-pages`** no mesmo run e abortou. Deploy HTTP anterior não equivale a validação final verde.
+- **§33/§36 PARCIAIS:** [PR #345](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/345) corrige somente o nome upload/deploy para `github-pages-attempt-${{ github.run_attempt }}`, com teste de contrato e workflow isolado; [CI #41019213974](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41019213974) **pendente**. Não houve merge, nem nova publicação atribuível a esta PR. Runtime, saves, VFX, pixel art, sprites, cooldowns, TM e controles inalterados.
+- **§§7/8 PARCIAIS:** Charmander Lv5 ainda apresenta duas manobras Struggle; não confundir 150 kits compilados com três técnicas autênticas ou ULT disparada naturalmente. Scratch adiado; Surf não deve ser recriado/alterado sem autorização.
+- **§20 PARCIAL:** [CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) alcançou 12 treinadores e 8 vitórias selvagens com capturas, mas sofreu derrotas reais no 13º treinador e falhou. Brock, 13 vitórias consecutivas e campanha completa **não comprovados**.

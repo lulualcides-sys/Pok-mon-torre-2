@@ -47,6 +47,26 @@ export function routeNode(stage,index,max){
 // Gym rewards only refer to installed moves. Toxic awaits its own implementation.
 export const GYM_TM_REWARDS=Object.freeze(['tm-rock-tomb','tm-water-pulse',
  'tm-shock-wave','tm-giga-drain',null,'tm-calm-mind','tm-fire-blast','tm-earthquake']);
+// A shop TM is available only after defeating the relevant Kanto leader.
+// Gym rewards stay in their existing one-time award logic. Badge checks are
+// independent of the current city index, protecting old/imported saves.
+export const SHOP_TM_BADGE_STAGE=Object.freeze({
+ 'tm-rock-tomb':0,'tm-water-pulse':1,
+ 'tm-thunderbolt':2,'tm-shock-wave':2,
+ 'tm-giga-drain':3,'tm-ice-beam':4,
+ 'tm-calm-mind':5,'tm-flamethrower':6,'tm-fire-blast':6,
+ 'tm-earthquake':7
+});
+export function martItemUnlocked(state,item){
+ if(!item||!Number.isInteger(state?.stage))return false;
+ if(state.stage<(item.minStage??0))return false;
+ if(item.kind!=='tm')return true;
+ const gym=SHOP_TM_BADGE_STAGE[item.id];
+ return Number.isInteger(gym)&&
+  state.stage>gym&&Array.isArray(state.badges)&&
+  state.badges.includes(['Rocha','Cascata','Trovao','Arco-Iris',
+   'Alma','Pantano','Vulcao','Terra'][gym]);
+}
 export const MART_ITEMS=Object.freeze([
  {id:'antidote',name:'ANTÍDOTO',price:100,kind:'status',cures:['veneno']},
  {id:'paralyzeheal',name:'ANTI-PARALISIA',price:200,kind:'status',cures:['paralizado']},
@@ -60,10 +80,10 @@ export const MART_ITEMS=Object.freeze([
  {id:'ultraball',name:'ULTRA BALL',price:1200,kind:'ball',minStage:4},
  {id:'potion',name:'POÇÃO',price:300,kind:'heal',heal:25},
  {id:'superpotion',name:'SUPER POÇÃO',price:700,kind:'heal',heal:60,minStage:2},
- {id:'tm-thunderbolt',name:'TM24 THUNDERBOLT',price:1800,kind:'tm',move:'Thunderbolt',minStage:2},
- {id:'tm-water-pulse',name:'TM03 WATER PULSE',price:1500,kind:'tm',move:'Water Pulse',minStage:1},
- {id:'tm-flamethrower',name:'TM35 FLAMETHROWER',price:2200,kind:'tm',move:'Flamethrower',minStage:3},
- {id:'tm-ice-beam',name:'TM13 ICE BEAM',price:2400,kind:'tm',move:'Ice Beam',minStage:4},
+ {id:'tm-thunderbolt',name:'TM24 THUNDERBOLT',price:1800,kind:'tm',move:'Thunderbolt',minStage:3},
+ {id:'tm-water-pulse',name:'TM03 WATER PULSE',price:1500,kind:'tm',move:'Water Pulse',minStage:2},
+ {id:'tm-flamethrower',name:'TM35 FLAMETHROWER',price:2200,kind:'tm',move:'Flamethrower',minStage:7},
+ {id:'tm-ice-beam',name:'TM13 ICE BEAM',price:2400,kind:'tm',move:'Ice Beam',minStage:5},
  {id:'tm-shock-wave',name:'TM34 SHOCK WAVE',price:1800,kind:'tm',move:'Shock Wave',minStage:3},
  {id:'tm-giga-drain',name:'TM19 GIGA DRAIN',price:2200,kind:'tm',move:'Giga Drain',minStage:4},
  {id:'tm-calm-mind',name:'TM04 CALM MIND',price:2600,kind:'tm',move:'Calm Mind',minStage:6},
