@@ -17,7 +17,7 @@ globalThis.localStorage={
  removeItem:key=>records.delete(key)
 };
 
-test('Misty's grass uses the actual random wild species, not leader Staryu',()=>{
+test("Misty's grass uses the actual random wild species, not leader Staryu",()=>{
  const state=core.createCampaign('squirtle');
  state.stage=1;
  state.trainer=core.TRAINERS_PER_GYM(1);
