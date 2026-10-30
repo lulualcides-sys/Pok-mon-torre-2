@@ -41,6 +41,16 @@ Fonte oficial: https://github.com/yamadashy/repomix ; https://github.com/ast-gre
 
 Estas ferramentas só geram economia quando o ambiente de desenvolvimento de fato as executar, e não por existirem no repositório.
 
+## Memória Obsidian/Markdown — piloto sem API
+
+Foi adicionado um roteiro compacto em `docs/memoria/00-INDICE.md` com uma nota `BASE.md` e sete notas de área. `node tools/dev/memoria-contexto.mjs <area>` apresenta apenas a base e a área escolhida (até 5.500 caracteres), junto com o SHA local, e não lê repositório, Script Mestre ou filas inteiros. `--list` exibe os domínios. O script não instala ferramentas nem conversa com modelos.
+
+Abra `docs/memoria` como vault do **Obsidian** em um clone local se desejar uma interface de navegação; o Markdown funciona sem o aplicativo. A memória não é uma segunda lista de pendências: atualizar sempre a fila e os documentos de execução que já são oficiais.
+
+**Graphiti:** existente como referência/submódulo no [Arsenal](https://github.com/lulualcides-sys/Arsenal/tree/main/fontes/ferramentas/graphiti), mas **não incorporado, instalado ou conectado** ao Pokémon Torre 2. Sua ingestão requer infraestrutura e potencial consumo de tokens/embeddings. Só avaliar após medir qualidade e economia do fluxo Markdown; não confundir limite de caracteres com economia real de créditos.
+
+Verificação focada: `node --test tests/memoria-contexto.test.js`. Esta ferramenta **não substitui** execução do CI completo, testes de navegador e evidências do jogo.
+
 ## Testes focados e teste final
 O utilitário `tools/dev/testes-focados.mjs` permite executar suites unitárias existentes por domínio. Ele **não** muda `package.json`, workflows, shaders, golpes, arte, campanha nem GitHub Pages.
 
