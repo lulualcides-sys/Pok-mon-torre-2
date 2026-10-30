@@ -15,7 +15,10 @@ const idOf=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').repla
 // A renderer that exists but is pending, unavailable or HM/TM-gated is
 // NOT an installed, usable Lv5 preview. Do not clear its lock via trainingMove.
 const introRenderable=move=>Boolean(move?.forma)&&!move.pendiente&&
- !move.torre2Unavailable&&!move.torre2RequiresTM&&!move.torre2RequiresHM;
+ !move.torre2Unavailable&&!move.torre2RequiresTM&&!move.torre2RequiresHM&&
+ // An unapproved custom renderer is not a usable campaign technique, even
+ // when an official learnset mentions its name or Struggle needs a fallback.
+ (move.source!=='new-phaser-fx'||move.approved===true);
 const lowPower=move=>Number.isFinite(move?.dano)&&move.dano>=0&&move.dano<=14&&
   introRenderable(move)&&move.ulti!==true;
 // A few Pokémon have only one genuine FireRed move at Lv5 (e.g. Magikarp,
