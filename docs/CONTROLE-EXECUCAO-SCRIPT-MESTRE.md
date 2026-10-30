@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8/33/37: bloqueio de VFX não aprovado na introdução (PR #365)
+
+- **RED comprovado:** CI #41084164169 falhou nas duas novas regressões: `unapproved FRLG renderer leaked into Lv5` e `unapproved neutral contact` reutilizado em Struggle. O teste foi criado antes da correção, SHA `c4107505c26f56470704069d6a071ea5a50d5f94`.
+- **Patch proposto:** SHA `4070ccbfb4f7d3489fa4290633af981a12dea692` na PR #365, um predicado de aprovação para custom VFX nos candidatos Lv5/ULT e no fallback. Não altera biblioteca de 227 VFX, sprites, cooldowns, saves, TMs, HM ou Arena. CI/Chromium/guardião desse SHA ainda em andamento quando registrado: **não homologado nem publicado**.
+- **Publicação anterior comprovada:** main `8ac91ddee8df3230e6d2c067dc62f00b67d38f9b`, Pages #41082618111 success, com etapa HTTP e Chromium público success; não atribuir essa publicação ao patch #365.
+- **Estado:** §§7/8/33/37 e T07/T08 **PARCIAIS**; §20/Brock e percurso Pallet→Campeão não homologados. Surf aprovado como VFX, Scratch/Transform adiados.
+
+
 
 ## 30/10/2026 — §37 publicação: HTTP 503 pós-deploy diagnosticado, sem homologação nova
 

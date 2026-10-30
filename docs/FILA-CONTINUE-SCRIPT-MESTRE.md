@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — T07/T08: regressão RED comprovada de VFX sem aprovação (PR #365)
+
+- HEAD de referência antes do lote: main `8ac91ddee8df3230e6d2c067dc62f00b67d38f9b`; Pages #41082618111 **success**, incluindo etapa de confirmação HTTP do commit e Chromium público. Pages anterior #41076752622 **failure** no SHA antigo `655aded12`, portanto não é o estado atual.
+- PR #365 isolada: regressões `tests/kanto-intro-moves.test.js` reproduziram **duas falhas reais** na CI RED #41084164169: técnica FRLG com `source: new-phaser-fx` e `approved:false` vazou ao Lv5; Struggle reutilizou contato customizado não aprovado.
+- Correção mínima `tools/pokearena/torre2-kanto-intro-moves.js`: `introRenderable` só permite renderizador customizado quando `approved===true`; vale para golpes oficiais, candidatos, fallback e ULT. Nenhum VFX, save, TM/HM, sprite ou cliente Arena nativo foi modificado. GREEN em CI/Chromium #41084264305/#41084264322 e guardião #41084264356 **pendente de conclusão** neste registro; PR permanece draft até todos os gates verdes.
+- T07/T08, 151 partidas reais, ULT com energia legitimamente carregada, Brock e T20 **continuam PARCIAIS**. Scratch/Transform adiados; Surf VFX aprovado e HM separado. Após gates, revisar main concorrente, integrar e conferir Pages HTTP SHA exato.
+
+
 
 ## 30/10/2026 — BLOQUEIO PRIORITÁRIO: Pages HTTP 503 após deploy, correção isolada em revisão
 

@@ -1,5 +1,15 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote T07/T08 — VFX sem aprovação não entra no Lv5/ULT (30/10/2026)
+- [x] Inspecionar AGENTS, política integral, 4-fontes exigidas para **novo VFX** (não criado aqui), Script Mestre, fila, Spec Kit, main, PRs e Pages.
+- [x] Escrever regressões antes do patch: CI #41084164169 **RED** por duas assertivas (renderer FRLG e contato Struggle não aprovados).
+- [x] Corrigir somente `introRenderable` para exigir `approved===true` quando `source==='new-phaser-fx'`; SHA `4070ccbfb4f7d3489fa4290633af981a12dea692`.
+- [ ] CI de branch final: `npm test`, `check`, `check:reuse`, build, matriz 151, Chromium real e guardião visual verdes.
+- [ ] Revisão, compatibilidade com main atual, merge da PR #365 apenas após todos os gates verdes.
+- [ ] Pages deploy do SHA integrado + confirmação HTTP no endereço público correto.
+- [ ] Provar ULT com energia natural e três técnicas autênticas Lv5 para 151; campanha longa e Brock ainda pendentes.
+
+
 ## Lote 30/10 — diagnóstico de boot público
 - [x] Reproduzir evidência da falha externa: CI #41050887159 (`waitForFunction` 90 s, sem artifact) versus Pages #41050085664 verde e versão pública `src-dc921f3851`.
 - [x] Acrescentar captura de estado Phaser/erros/rede e screenshot antes de relançar o timeout; verificar sintaxe JavaScript.
