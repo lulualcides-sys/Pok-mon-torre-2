@@ -256,7 +256,7 @@ export function installWildCapture(scene){
      caption.setData('torre2-capture-save-error',true);
      scene.__torre2CaptureDebug.state='SAVE_ERROR';
      busy=false;scene.__torre2CaptureBusy=false;scene.fase=oldPhase;
-     refresh();
+     
      scene.time.delayedCall(2400,()=>{if(caption.active)caption.destroy()});
      return;
     }
@@ -335,7 +335,7 @@ export function installWildCapture(scene){
               showBall(origin.x,origin.y,0,true);
              },onComplete:()=>{
               restore();gfx.destroy();ballSprite.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
-              scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';refresh();
+              scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';
              }});
            }
           });
