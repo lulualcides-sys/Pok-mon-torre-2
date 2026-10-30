@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
- CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile}
+ CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput}
  from '../tools/pokearena/torre2-auto-battle.js';
 const makeObject=()=>{
  const handlers=new Map;
@@ -260,4 +260,37 @@ test('AUTO attaches when campaign native controller arrives after create',()=>{
  assert.equal(s.__torre2AutoMode.zone.x,579);
  assert.equal(frames.size,0,'no deferred listener left');
  s.handlers.get('shutdown')();
+});
+
+test('Campaign AUTO level 2 is more aggressive without any combat-stat cheat',()=>{
+ assert.ok(CAMPAIGN_AUTO_OFFENSIVE.reaccion<=.025,'Level 2 reacts faster than the old 45 ms profile');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.error,0);
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.basicos,1,'Use the native basic attack whenever the brain chooses it');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.ventaja,1,'No Maestro hidden 35% damage buff');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
+});
+test('Only active campaign AUTO closes distance on idle frames; preserves skills, dodges and low HP',()=>{
+ const actor={x:30,y:40,hp:90,hpMax:100,kit:{lmb:{alcance:60}}};
+ const foe={x:210,y:40,hp:90,hpMax:100};
+ const s={datos:{torre2:{kind:'trainer'}},fase:'lucha',luchadores:[actor,foe]};
+ const idle={mx:0,my:0,ax:210,ay:40,lmb:false,rmb:false,q:false,e:false,esp:false};
+ const input=pressureCampaignAutoInput(s,actor,idle);
+ assert.deepEqual(input,{...idle,mx:1,my:0});
+ assert.deepEqual(idle,{mx:0,my:0,ax:210,ay:40,lmb:false,rmb:false,q:false,e:false,esp:false},
+  'Native AI input is never mutated');
+ assert.strictEqual(pressureCampaignAutoInput({...s,datos:{modo:'arena'}},actor,idle),idle,
+  'Arena AUTO must never inherit campaign level 2 pressure');
+ assert.strictEqual(pressureCampaignAutoInput({...s,fase:'intro'},actor,idle),idle);
+ for(const modified of [{...idle,esp:true},{...idle,q:true},{...idle,lmb:true},
+  {...idle,mx:-1,my:0}]){
+  assert.strictEqual(pressureCampaignAutoInput(s,actor,modified),modified,
+   'Never override an AI dodge, real native cast or deliberate movement');
+ }
+ const fragile={...actor,hp:20};
+ s.luchadores=[fragile,foe];
+ assert.strictEqual(pressureCampaignAutoInput(s,fragile,idle),idle,
+  'Low HP retains all native defensive decisions');
+ actor.hp=90;foe.x=70;s.luchadores=[actor,foe];
+ assert.strictEqual(pressureCampaignAutoInput(s,actor,idle),idle,
+  'Do not force movement at close range');
 });
