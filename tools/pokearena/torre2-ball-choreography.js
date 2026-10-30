@@ -62,6 +62,35 @@ export function drawReleaseBurst(g,x,y,progress=0){
  }
 }
 
+// GOTCHA-only: three tiny four-point glints, fading in staggered order.
+// Unlike the old ten static squares, they never appear on a failed catch.
+export function gotchaSparklePoints(progress){
+ const t=clamp01(progress);
+ const seeds=[[-21,-14,.02],[20,-18,.14],[1,-27,.26]];
+ return seeds.flatMap(([x,y,start])=>{
+  const u=(t-start)/.59;
+  if(u<0||u>=1)return [];
+  const alpha=Math.sin(Math.PI*u)*.92;
+  if(alpha<=0)return [];
+  const drift=Math.round(4*u);
+  return [{x:Math.round(x+(x<0?-drift:x>0?drift:0)),
+   y:Math.round(y-drift),alpha,size:Math.sin(Math.PI*u)>.72?2:1}];
+ });
+}
+export function drawGotchaSparkles(g,x,y,progress){
+ const cx=Math.round(x),cy=Math.round(y);
+ for(const p of gotchaSparklePoints(progress)){
+  const px=cx+p.x,py=cy+p.y;
+  g.fillStyle(0xfff5c8,p.alpha);
+  g.fillRect(px,py-2*p.size,1,2*p.size);
+  g.fillRect(px,py+1,p.size===2?1:1,2*p.size);
+  g.fillRect(px-2*p.size,py,2*p.size,1);
+  g.fillRect(px+1,py,2*p.size,1);
+  g.fillStyle(0xffd06c,p.alpha);
+  g.fillRect(px,py,1,1);
+ }
+}
+
 // Snapshot the full-size body's center ONCE. PMD frames contain transparent
 // padding; manifest head/feet describe the actual body, not the image bounds.
 export function snapshotBody(actor){
