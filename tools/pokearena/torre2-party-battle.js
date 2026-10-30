@@ -19,6 +19,13 @@ import {originalBallSprite} from './ball-sprites.js';
 import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
 
+export const PLAYER_MANUAL_SWITCH_LIMIT=3;
+export function canPlayerManualSwitch(party,next){
+ return Boolean(party&&Number.isInteger(next)&&next>=0&&
+  next<party.friend?.length&&next!==party.playerIndex&&
+  Number(party.friend[next]?.hp)>0&&
+  Number(party.playerManualSwitches||0)<PLAYER_MANUAL_SWITCH_LIMIT);
+}
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
  return scene.add.text(x,y,value,{fontFamily:'Pixelify Sans,monospace',
@@ -67,7 +74,9 @@ export function createPartyMatch(state,opponent,wild=false){
  if(!(friend[playerIndex]?.hp>0))
   playerIndex=friend.findIndex(m=>m.hp>0);
  if(playerIndex<0)playerIndex=0;
- return {friend,foes,playerIndex,enemyIndex:0,changes:0,strategic:!wild&&opponent.leader===true,trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
+ return {friend,foes,playerIndex,enemyIndex:0,changes:0,playerManualSwitches:0,
+   playerPotionUses:0,strategic:!wild&&opponent.leader===true,
+   trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
 }
 export function applyPartyBattleResult(state,party){
  if(!party||!Array.isArray(party.friend))return;
@@ -203,6 +212,7 @@ export function installPartyBattle(scene){
  const sidebar=scene.add.graphics().setDepth(2500);
  const icons=[],slotZones=[];
  const tooltip=label(scene,111,125,'',10,'#fff0cc',2606).setVisible(false);
+ const switchCounter=label(scene,34,337,'TROCAS 0/3',8,'#ffdfa4',2508);
  const slotX=34,slotStart=123,slotStep=33;
  // Preloaded Pokédex portraits guarantee visible sprites for ALL reserves;
  // where an Idle PMD frame is already cached, prefer the battle body sprite.
@@ -243,6 +253,7 @@ export function installPartyBattle(scene){
   slots:slotZones,icons};
  function redrawPartyHud(){
   graphics.clear();sidebar.clear();hudBalls.forEach(icon=>icon.setVisible(false));
+  switchCounter.setText('TROCAS '+(party.playerManualSwitches||0)+'/'+PLAYER_MANUAL_SWITCH_LIMIT);
   for(const [members,idx,start,side] of [
    [party.friend,party.playerIndex,31,0],[party.foes,party.enemyIndex,477,1]]){
    members.slice(0,6).forEach((m,i)=>{
@@ -309,6 +320,13 @@ export function installPartyBattle(scene){
  }
  function recall(side,next,kind='switch'){
   if(scene.__torre2Changing||!scene.scene.isActive())return;
+  if(side===0&&kind==='switch'){
+   if(!canPlayerManualSwitch(party,next)){
+    announce('LIMITE DE '+PLAYER_MANUAL_SWITCH_LIMIT+' TROCAS POR BATALHA!');
+    return;
+   }
+   party.playerManualSwitches=(party.playerManualSwitches||0)+1;
+  }
   scene.__torre2Changing=true;
   levelLabels.forEach(o=>o.setVisible(false));
   clearDepartingCombat(scene);
@@ -512,7 +530,7 @@ export function installPartyBattle(scene){
   scene.game.events.off('step',refreshSidebar);
   scene.__torre2PartyInstalled=false;
   scene.__torre2SideParty=null;
-  tooltip.destroy();
+  tooltip.destroy();switchCounter.destroy();
   for(const zone of slotZones)zone.destroy();
   for(const img of icons)img?.destroy();
   sidebar.destroy();
