@@ -237,6 +237,22 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(nextBattle.ult.ulti&&nextBattle.ult.renderable&&!nextBattle.ult.pending,
    'Earned ULT not present in actual next Phaser battle');
   assert.ok(nextBattle.nativeTouchSlots.includes('e'),'Native battle lost ULT touch control');
+  // The production campaign deliberately starts AUTO ON after a reload.
+  // Switch it OFF via the visible native Phaser control only when proving
+  // manual touch inputs. Never modify AI flags or fighter state directly.
+  const autoTouch=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const z=b.__torre2AutoMode?.zone;
+   if(!b.__torre2AutoMode?.enabled||!z?.active)
+    throw Error('Expected enabled campaign AUTO at new battle');
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:rect.x+z.x*rect.width/640,y:rect.y+z.y*rect.height/360};
+  });
+  await page.mouse.click(autoTouch.x,autoTouch.y);
+  await page.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.__torre2AutoMode?.enabled===false;
+  },null,{timeout:7000});
   // T07/T08: test real inputs after earned XP and save/reload without
   // injecting energy, ultimate meter, cooldown, KO or experience.
   // Unlocking E at Lv8 does not automatically fill the native ULT meter.

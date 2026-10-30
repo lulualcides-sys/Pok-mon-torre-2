@@ -2,11 +2,6 @@ name: T07/T08 — earned Lv8 native AUTO default regression
 on:
   push:
     branches: [fix/t07-earned-ult-auto-default-20261030]
-  pull_request:
-    paths:
-      - 'tests/t07-earned-level8-three-natural-wins-touch-browser.cjs'
-      - 'tests/t07-earned-lv8-training-ult-browser.cjs'
-      - '.github/workflows/t07-earned-ult-auto-default-regression.yml'
 permissions:
   contents: read
 jobs:

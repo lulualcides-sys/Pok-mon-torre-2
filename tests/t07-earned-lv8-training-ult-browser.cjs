@@ -236,6 +236,22 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(beforeUlt.e.forma&&!beforeUlt.e.pending);
    assert.ok(beforeUlt.meter>=99,'Native training rules did not fill ULT meter');
    assert.equal(beforeUlt.saved,rawBeforeReload,'Entering training modified campaign checkpoint');
+   // AUTO stays enabled by default for natural trainer wins. For the
+   // explicit MANUAL touchscreen E proof, turn it off using the real UI.
+   // This never changes earned XP, meter, damage or approved VFX.
+   const autoTouch=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    const z=b.__torre2AutoMode?.zone;
+    if(!b.__torre2AutoMode?.enabled||!z?.active)
+     throw Error('Expected campaign AUTO enabled in native training battle');
+    const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+    return {x:rect.x+z.x*rect.width/640,y:rect.y+z.y*rect.height/360};
+   });
+   await page.mouse.click(autoTouch.x,autoTouch.y);
+   await page.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.__torre2AutoMode?.enabled===false;
+   },null,{timeout:7000});
    // Native touchscreen panel input. No direct changes to HP, damage,
    // cooldown, energy, ULT meter, EXP or enemy AI.
    await page.evaluate(()=>{
