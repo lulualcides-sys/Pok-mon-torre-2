@@ -71,6 +71,12 @@ jobs:
           node-version: '24'
       - name: Preparar dependência de navegador já usada pelo jogo
         run: npm install --no-audit --no-fund
+      - name: Checar sintaxe, preservação de VFX e regressões unitárias existentes
+        run: |
+          set -euo pipefail
+          npm run check
+          npm run check:reuse
+          npm test
       - name: Montar cliente Phaser original
         run: |
           set -euo pipefail
