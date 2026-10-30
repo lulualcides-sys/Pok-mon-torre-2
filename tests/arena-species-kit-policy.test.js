@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,replaceGengarHyperBeam,chooseEeveeBranch,installArenaMovePolicy}
  from '../tools/pokearena/torre2-arena-move-policy.js';
+import darkPulse from '../tools/pokearena/batch24/dark-pulse.js';
 const move=(nombre,dano=10,cd=5,tipo='NORMAL')=>({nombre,forma:'proyectil',dano,cd,tipo,coste:20,alcance:200});
 const set=(...moves)=>new Map(moves.map(m=>[m.nombre.toLowerCase(),m]));
 test('Blizzard Hydro Pump Seismic Toss and Egg Bomb use the requested 2–4s Arena rhythm',()=>{
@@ -286,4 +287,42 @@ test('Live Gengar Arena policy also covers evolved Gastly but not campaign or ot
  assert.equal(nativeKit.q.nombre,'Hyper Beam','Native source untouched');
  assert.equal(new Fighter(gastly,false,1).kitActual().rmb.nombre,'Shadow Ball',
   'Haunter existing approved move remains untouched');
+});
+
+test('Gengar duplicated native Sludge Bomb is replaced by the approved Dark Pulse VFX',()=>{
+ const hypnosis=move('Hypnosis',0,12,'PSYCHIC'),
+  sludge=move('Sludge Bomb',22,7,'POISON'),
+  shadow=move('Shadow Ball',24,6,'GHOST'),
+  dodge=move('Dodge',0,4);
+ const native={lmb:hypnosis,rmb:sludge,q:{...sludge},e:shadow,esp:dodge};
+ const originalSlots=['lmb','rmb','q','e'].map(k=>native[k].nombre);
+ assert.deepEqual(originalSlots,['Hypnosis','Sludge Bomb','Sludge Bomb','Shadow Ball'],
+  'Reproduce the exact Gengar duplication observed in real Chromium');
+ assert.equal(darkPulse.approved,true,'Use an approved effect, never invent a new renderer');
+ assert.equal(darkPulse.forma,'torre2_batch24_dark_pulse','Installed Batch24 VFX');
+ const library=set(hypnosis,sludge,shadow,darkPulse);
+ const fixed=replaceGengarHyperBeam(native,library);
+ const names=['lmb','rmb','q','e'].map(k=>fixed[k]?.nombre);
+ assert.deepEqual(names,['Hypnosis','Sludge Bomb','Dark Pulse','Shadow Ball']);
+ assert.equal(new Set(names).size,4,'No duplicate moves in the four attack slots');
+ assert.strictEqual(fixed.lmb,native.lmb,'Preserve native Hypnosis');
+ assert.strictEqual(fixed.rmb,native.rmb,'Preserve native Sludge Bomb and its VFX');
+ assert.strictEqual(fixed.e,native.e,'Preserve native Shadow Ball ULT');
+ assert.strictEqual(fixed.esp,native.esp,'Preserve dodge');
+ assert.equal(fixed.q.forma,darkPulse.forma,'Reuse already-approved Dark Pulse animation');
+ assert.equal(fixed.q.dano,darkPulse.dano,'Reuse balanced installed attack damage');
+ assert.equal(fixed.q.cd,darkPulse.cd,'Reuse installed attack cooldown');
+ assert.equal(fixed.q.ulti,false,'Dark Pulse must not become a second ultimate');
+ assert.equal(fixed.q.pendiente,false,'New attack must be selectable');
+ assert.strictEqual(replaceGengarHyperBeam(fixed,library),fixed,'No repeated kit rewrites');
+ assert.equal(native.q.nombre,'Sludge Bomb','Never mutate original/native kit');
+});
+test('Gengar Hyper Beam is replaced with Dark Pulse without copying an occupied move',()=>{
+ const base={lmb:move('Hypnosis',0),rmb:move('Sludge Bomb',22,7,'POISON'),
+  q:move('Hyper Beam',33,4),e:move('Shadow Ball',25,6,'GHOST')};
+ const pool=set(...Object.values(base),darkPulse);
+ const out=replaceGengarHyperBeam(base,pool);
+ assert.equal(out.q.nombre,'Dark Pulse');
+ assert.equal(new Set(['lmb','rmb','q','e'].map(s=>out[s].nombre)).size,4);
+ assert.equal(base.q.nombre,'Hyper Beam','Original native source remains intact');
 });
