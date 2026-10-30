@@ -90,9 +90,9 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
    const b=window.__pt2Game.scene.getScene('combate');
    const ball=b.children.list.find(o=>o.getData?.('torre2-capture-single-button')&&o.type==='Image');
    const zone=b.children.list.find(o=>o.getData?.('torre2-capture-single-button')&&o.type==='Zone');
-   return {!ball:!!ball?.visible,interactive:!!zone?.input?.enabled};
+   return {ballHidden:!ball?.visible,interactive:!!zone?.input?.enabled};
   });
-  assert.deepEqual(hidden,{'!ball':true,interactive:false},
+  assert.deepEqual(hidden,{ballHidden:true,interactive:false},
    'Selection modal must hide and disable underlying Pokéball button');
   await page.screenshot({path:'test-evidence/t06-mobile-pokeball-menu.png'});
   await tap(316,186);
