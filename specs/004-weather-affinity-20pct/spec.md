@@ -4,11 +4,13 @@
 Quando um golpe de clima estiver ativo, Pokémon cujo tipo combina com esse clima causam +20% de dano **ofensivo**, até ele acabar. A regra é própria de Pokémon Torre 2, não uma reivindicação das regras originais de FireRed. Não inventar VFX nem golpes pendentes.
 
 ## Especificação
-- Sunny Day / SOL: FIRE.
-- Rain Dance / CHUVA: WATER.
-- Sandstorm / AREIA: ROCK, GROUND ou STEEL.
-- Hail / GRANIZO: ICE.
-- Qualquer ataque não-puro da espécie elegível ganha **um** fator 1.2 independente do tipo do golpe; Pokémon de tipo duplo não empilham 20% duas vezes.
+- Sunny Day / SOL: beneficiados FIRE e GRASS; prejudicados WATER e ICE.
+- Rain Dance / CHUVA: beneficiados WATER e ELECTRIC; prejudicados FIRE, GROUND e ROCK.
+- Sandstorm / AREIA: beneficiados ROCK, GROUND e STEEL; prejudicados GRASS, FLYING e ICE.
+- Hail / GRANIZO: beneficiados ICE e WATER; prejudicados FIRE, GRASS e DRAGON.
+- Qualquer ataque não-puro da espécie elegível ganha **um** fator 1.2 ou sofre **um** fator .8, independente do tipo do golpe.
+- Pokémon duplo tipo que reúna afinidade e oposição ao mesmo clima fica neutro (1.0); dois tipos do mesmo lado não empilham.
+- As penalidades originais de 50% por golpe Água no sol, Fogo na chuva e Solar Beam ficam preservadas. Se coincidirem com -20% por espécie, aplica-se só a penalidade maior (-50%), não ambas, evitando dano cair a 40% por dupla penalização.
 - Efeitos do oponente também são elegíveis, sem vantagem apenas ao jogador.
 - O estado climático é único e simétrico, dura 20 segundos simulados e termina sem persistência nos saves.
 - Preservar: água -50% no sol, fogo -50% na chuva, Solar Beam -50% em chuva/areia/granizo, Thunder/precisão, imunidades e dano residual, recuperação, animações e cooldowns.

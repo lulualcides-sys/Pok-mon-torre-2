@@ -74,14 +74,27 @@ const server=http.createServer(async(req,res)=>{
   // A real Water-type source is required for the requested +20% species
   // affinity. Use a modest hit to avoid saturating the target's HP at 4x.
   const normal=damage('none'),rain=damage('rain'),sun=damage('sun');
+  const hostile=kind=>{
+   // Real Water Pokémon dealing NORMAL-type coverage damage. This isolates
+   // the species penalty from the original -50% Water move in sunlight.
+   weather.setWeather(b.__torre2Weather,kind);
+   e.est={};e.hp=e.hpMax;
+   const before=e.hp;
+   const hit=e.recibir(p,{dano:5,tipo:'NORMAL',slot:'lmb',nombre:'Tackle'});
+   return {lost:before-e.hp,hit};
+  };
+  const neutralSpecies=hostile('none'),opposedSpecies=hostile('sun');
   weather.setWeather(b.__torre2Weather,'sun');p.est={};p.ponerEstado('congelado',10,{});
   const freezeImmune=!p.est.congelado;
   weather.setWeather(b.__torre2Weather,'hail');b.__torre2Weather.remaining=.05;
-  return {count:all.length,ids:all.every((m,i)=>m.p1===lab.KANTO_151_IDS[i]),losses,normal,rain,sun,freezeImmune};
+  return {count:all.length,ids:all.every((m,i)=>m.p1===lab.KANTO_151_IDS[i]),losses,normal,rain,sun,neutralSpecies,opposedSpecies,freezeImmune};
  });
  console.log('WEATHER_MEASUREMENT',result);
  assert.equal(result.count,151);assert.equal(result.ids,true);assert.ok(result.losses[0]>0);assert.equal(result.losses[1],0);
  assert.ok(result.rain.lost>result.normal.lost,'Blastoise must gain the live Water affinity +20%');assert.ok(result.sun.lost<result.normal.lost);assert.equal(result.freezeImmune,true);
+ assert.ok(result.neutralSpecies.lost>0,'Neutral Tackle must deal genuine native damage');
+ assert.ok(Math.abs(result.opposedSpecies.lost/result.neutralSpecies.lost-.8)<.04,
+  'A Water-type Blastoise must suffer -20% offensive damage under sunlight');
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2Weather.kind==='none');
  await page.screenshot({path:'test-evidence/laboratory-battle.png'});
  await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.scene.start('campanha',{finished:true,won:true,marker:b.datos.torre2});});

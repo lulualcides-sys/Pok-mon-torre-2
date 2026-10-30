@@ -96,8 +96,8 @@ test('weather changes and residual penalties are never overpowered or stacked',(
  setWeather(w,'sun');
  assert.equal(damage(w,'WATER','Surf',['FIRE']),.6,
   'A Fire species retains the -50% sun penalty for Water moves');
- assert.equal(damage(w,'FIRE','Ember',['WATER']),1,
-  'Non-Fire attackers cannot inherit the sun buff from a Fire move');
+ assert.equal(damage(w,'FIRE','Ember',['WATER']),.8,
+  'Water attackers lose 20% direct damage in sunlight, even with Fire moves');
  setWeather(w,'rain');
  assert.equal(damage(w,'FIRE','Ember',['WATER']),.6);
  assert.equal(damage(w,'GRASS','Solar Beam',['WATER']),.6,
@@ -107,7 +107,7 @@ test('weather changes and residual penalties are never overpowered or stacked',(
  setWeather(w,'hail');
  assert.equal(damage(w,'GRASS','Solar Beam',['ICE']),.6);
  assert.equal(damage(w,'ICE','Ice Beam',['ICE','WATER']),1.2);
- assert.equal(damage(w,'ICE','Ice Beam',['FIRE']),1);
+ assert.equal(damage(w,'ICE','Ice Beam',['FIRE']),.8);
  assert.equal(damage({kind:'sun',remaining:0},'FIRE','Ember',['FIRE']),1,
   'An expired weather state cannot grant a hidden buff');
  setWeather(w,'none');
@@ -122,4 +122,55 @@ test('fractional final frame expires weather and never extends bonus to a sixth 
  tickWeather(w,.001,[]);
  assert.equal(w.kind,'none');
  assert.equal(damage(w,'NORMAL','Tackle',['FIRE']),1);
+});
+
+test('friendly and opposing climate species have ±20% for ALL four climates',()=>{
+ const w=createWeather();
+ const matrix=[
+  ['sun',['FIRE','GRASS'],['WATER','ICE']],
+  ['rain',['WATER','ELECTRIC'],['FIRE','GROUND','ROCK']],
+  ['sand',['ROCK','GROUND','STEEL'],['GRASS','FLYING','ICE']],
+  ['hail',['ICE','WATER'],['FIRE','GRASS','DRAGON']]
+ ];
+ for(const [kind,plus,minus] of matrix){
+  setWeather(w,kind);
+  for(const species of plus){
+   assert.equal(damage(w,'NORMAL','Tackle',[species]),1.2,kind+' favorable '+species);
+   assert.equal(damage(w,'NORMAL','Tackle',[species,species]),1.2,
+    'Same side dual types never stack: '+kind+' '+species);
+  }
+  for(const species of minus){
+   assert.equal(damage(w,'NORMAL','Tackle',[species]),.8,kind+' opposing '+species);
+   assert.equal(damage(w,'NORMAL','Tackle',[species,species]),.8,
+    'Same side adverse dual types never stack: '+kind+' '+species);
+  }
+  assert.equal(damage(w,'NORMAL','Tackle',[plus[0],minus[0]]),1,
+   'Conflicting two-type affinity cancels: '+kind);
+  assert.equal(damage(w,'NORMAL','Tackle',[minus[0],plus[0]]),1,
+   'Dual type order cannot bias climate modifier: '+kind);
+  assert.equal(damage(w,'NORMAL','Tackle',['NORMAL']),1,
+   'Unrelated Normal remains neutral: '+kind);
+  tickWeather(w,20,[]);
+  assert.equal(damage(w,'NORMAL','Tackle',[minus[0]]),1,
+   'Penalty must expire exactly with its weather: '+kind);
+ }
+});
+
+test('original move-specific penalties and new species penalties cannot compound',()=>{
+ const w=createWeather();
+ setWeather(w,'sun');
+ assert.equal(damage(w,'WATER','Water Gun',['WATER']),.5,
+  'Water species already suffers the stronger original -50% Water-move penalty');
+ assert.equal(damage(w,'WATER','Water Gun',['ICE']),.5);
+ assert.equal(damage(w,'WATER','Water Gun',['FIRE']),.6,
+  'Friendly Fire species can still use a disadvantaged Water coverage move');
+ assert.equal(damage(w,'WATER','Water Gun',['GRASS','WATER']),.5,
+  'Opposed and favorable dual types neutralize; old move penalty remains');
+ setWeather(w,'rain');
+ assert.equal(damage(w,'FIRE','Flamethrower',['FIRE']),.5);
+ assert.equal(damage(w,'FIRE','Flamethrower',['WATER']),.6);
+ assert.equal(damage(w,'FIRE','Flamethrower',['ELECTRIC','GROUND']),.5);
+ setWeather(w,'hail');
+ assert.equal(damage(w,'GRASS','Solar Beam',['GRASS']),.5);
+ assert.equal(damage(w,'GRASS','Solar Beam',['ICE']),.6);
 });
