@@ -1,3 +1,4 @@
+import {weatherSpeciesMultiplier} from './weather.js';
 /* Torre 2 real-time adaptation, not a claim of original FRLG trainer AI.
  * Decisions use the visible opponent's types, our own HP and known moves.
  * No input queue, future commands, HP edits or extra attacks are consulted.
@@ -6,19 +7,23 @@ export function createTrainerStrategy(enabled=false,{gymLeader=false}={}){
  const gym=Boolean(enabled&&gymLeader);
  return {enabled,gymLeader:gym,nextCheck:gym?5:8,nextSwitch:gym?5:8,switches:0};
 }
-export function chooseTrainerSwitch(state,{time,activeIndex,members,opponentTypes,blocked=false},effectiveness){
+export function chooseTrainerSwitch(state,{time,activeIndex,members,opponentTypes,blocked=false,weather=null},effectiveness){
  if(!state.enabled||blocked||!Number.isFinite(time)||time<state.nextCheck||time<state.nextSwitch||state.switches>=3)return -1;
  state.nextCheck=time+(state.gymLeader?3:4);
  const active=members[activeIndex];
  if(!active||active.hp<=0)return -1;
  const rating=m=>{
-  const offense=Math.max(0,...Object.values(m.loadout||{}).filter(h=>h&&!h.pendiente&&h.dano>0).map(h=>effectiveness(h.tipo,opponentTypes)));
+  // Visible battle climate influences the tactical ranking, never damage.
+  const affinity=weatherSpeciesMultiplier(weather,m.types||[]);
+  const offense=affinity*Math.max(0,...Object.values(m.loadout||{})
+   .filter(h=>h&&!h.pendiente&&Number(h.dano)>0)
+   .map(h=>effectiveness(h.tipo,opponentTypes)));
   const threat=Math.max(1,...opponentTypes.map(t=>effectiveness(t,m.types)));
-  return {offense,threat,score:offense/threat+Math.min(1,m.hp/100)*.35};
+  return {offense,threat,affinity,score:offense/threat+Math.min(1,m.hp/100)*.35};
  };
  const current=rating(active);
  if(active.hp>25&&current.threat<(state.gymLeader?1.5:2)&&
-    current.offense>(state.gymLeader?.8:.5))return -1;
+    current.offense>(state.gymLeader?.8:.5)&&current.affinity>=1)return -1;
  let best=-1,bestScore=current.score;
  for(let i=0;i<members.length;i++){
   const candidate=members[i];if(i===activeIndex||!candidate||candidate.hp<=25)continue;
@@ -26,7 +31,10 @@ export function chooseTrainerSwitch(state,{time,activeIndex,members,opponentType
   const safer=r.threat<current.threat&&r.offense>=1;
   const useful=current.offense<=.5&&r.offense>=1&&r.threat<=current.threat;
   const preserve=active.hp<=25&&candidate.hp>=50&&r.threat<=current.threat&&r.offense>=1;
-  if((safer||useful||preserve)&&r.score>bestScore+(state.gymLeader?.16:.25)){best=i;bestScore=r.score;}
+  // A healthy Gym reserve can answer a visible weather disadvantage.
+  const climate=state.gymLeader&&candidate.hp>=50&&r.affinity>1&&
+   current.affinity<1&&r.threat<=current.threat&&r.offense>=current.offense;
+  if((safer||useful||preserve||climate)&&r.score>bestScore+(state.gymLeader?.16:.25)){best=i;bestScore=r.score;}
  }
  if(best>=0){state.switches++;
   const cooldown=state.gymLeader?16:20;
@@ -68,7 +76,8 @@ export function pressureGymLeaderInput(scene,actor,foe,input,state){
    Number(actor.calor||0)>=75||
    (Number.isFinite(scene.t)&&scene.t<(state?.nextBasicAt??0))||
    foe.est?.contra||foe.est?.disfraz||
-   (foe.est?.invul?.hasta??0)>(actor.t??0))return result;
+   (foe.est?.invul?.hasta??0)>(actor.t??0)||
+   (foe.est?.vuelo?.hasta??0)>(actor.t??0))return result;
  if(state&&Number.isFinite(scene.t))state.nextBasicAt=scene.t+1.2;
  return {...result,lmb:true,ax:foe.x,ay:foe.y};
 }

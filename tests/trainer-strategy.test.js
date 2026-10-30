@@ -28,3 +28,26 @@ test('maximum three tactical switches per battle',()=>{
  for(const time of [8,28,48])assert.equal(choose(s,request(members,time)),1);
  assert.equal(choose(s,request(members,68)),-1);assert.equal(s.switches,3);
 });
+
+test('gym can swap to a healthy weather-favored reserve but never dodge the switch cap',()=>{
+ const boss=createTrainerStrategy(true,{gymLeader:true});
+ const foes=[mon(['FIRE'],'FIRE'),mon(['WATER'],'WATER')];
+ const context=(weather,time=5)=>({time,activeIndex:0,members:foes,
+  opponentTypes:['NORMAL'],weather});
+ const rain={kind:'rain',remaining:12};
+ assert.equal(choose(boss,context(rain)),1,'visible rain favors healthy Water');
+ assert.equal(boss.switches,1);
+ assert.equal(choose(boss,context(rain,10)),-1,'native cooldown remains active');
+ assert.equal(choose(createTrainerStrategy(true),context(rain,8)),-1,
+  'common trainers retain their approved tactical policy');
+ assert.equal(choose(createTrainerStrategy(true,{gymLeader:true}),
+  context({kind:'rain',remaining:0})),-1,'expired climate never counts');
+});
+test('gym cannot prefer friendly weather if the opposing matchup is worse',()=>{
+ const boss=createTrainerStrategy(true,{gymLeader:true});
+ const request={time:5,activeIndex:0,
+  members:[mon(['FIRE'],'FIRE'),mon(['WATER'],'WATER')],
+  opponentTypes:['GRASS'],weather:{kind:'rain',remaining:10}};
+ assert.equal(choose(boss,request),-1);
+ assert.equal(boss.switches,0);
+});
