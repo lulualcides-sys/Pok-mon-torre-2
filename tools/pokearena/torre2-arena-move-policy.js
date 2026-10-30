@@ -103,8 +103,23 @@ export function enforceArenaMoveCooldowns(kit){
 // attack with a genuinely installed distinct Gengar-compatible renderer.
 // Prefer Dark Pulse: its approved pixel-art VFX is already in Batch 24 and
 // this Gen IV technique belongs in Arena, never the FRLG campaign learnset.
+// Keep Shadow Ball as the thematic E/ULT, even when upstream kits move it.
 export function replaceGengarHyperBeam(kit,library){
  if(!kit||!library)return kit;
+ // A later upstream Gengar stage may put Night Shade on E. Keep the
+ // species' real Shadow Ball as ULT, using the original renderer when
+ // equipped elsewhere. Do not clone it into two attack slots.
+ const nativeShadow=library.get('shadow-ball');
+ const validShadow=nativeShadow?.forma&&nativeShadow?.approved!==false&&Number(nativeShadow.dano)>0;
+ let output=kit;
+ if(validShadow&&idOf(output.e?.nombre)!=='shadow-ball'){
+  const elsewhere=ATTACK_SLOTS.slice(0,3).find(s=>idOf(output[s]?.nombre)==='shadow-ball');
+  const oldE=output.e;
+  output={...output,e:{...(elsewhere?output[elsewhere]:nativeShadow),pendiente:false,ulti:true}};
+  if(elsewhere&&oldE)output[elsewhere]={...oldE,pendiente:false,ulti:false};
+ }else if(idOf(output.e?.nombre)==='shadow-ball'&&output.e?.ulti!==true){
+  output={...output,e:{...output.e,ulti:true}};
+ }
  const preferred=['dark-pulse','shadow-punch','night-shade','psychic',
   'dream-eater','shadow-ball','sludge-bomb'];
  const used=new Set();
