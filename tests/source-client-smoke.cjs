@@ -1140,25 +1140,18 @@ const server=http.createServer(async(req,res)=>{
   const captureHud=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('combate'),enemy=c.luchadores[1];
     enemy.hp=Math.max(1,enemy.hpMax*.12);
-    const opener=c.children.list.find(o=>o.type==='Zone'&&
-      Math.abs(o.x-470)<2&&Math.abs(o.y-61)<2&&o.input?.enabled);
+    const opener=c.children.list.find(o=>
+     o.getData?.('torre2-single-capture')===true&&o.input?.enabled);
     if(!opener)return {opener:false};
-    opener.emit('pointerdown');
-    const menu=c.children.list.filter(o=>typeof o.text==='string')
-      .map(o=>o.text).join(' | ');
-    const choice=c.children.list.find(o=>o.type==='Zone'&&
-      Math.abs(o.x-316)<2&&Math.abs(o.y-187)<2&&o.input?.enabled);
-    if(!choice)return {opener:true,menu,choice:false};
-    // Capture is rolled at physical impact, NOT on the menu click.
-    // Inject a deterministic RNG into the isolated test scene.
+    // Capture roll still occurs at actual physical impact, not on pointerdown.
     c.__torre2CaptureRandom=()=>0;
-    choice.emit('pointerdown');
-    return {opener:true,choice:true,menu,phase:c.fase};
+    opener.emit('pointerdown');
+    const oldMenu=c.children.list.some(o=>
+     typeof o.text==='string'&&o.text.includes('LANÇAR POKÉBOLA'));
+    return {opener:true,oldMenu,phase:c.fase};
   });
-  assert.ok(captureHud.opener&&captureHud.choice,
-   'Wild battle must expose clickable Phaser Pokéball controls');
-  assert.ok(captureHud.menu.includes('LANÇAR POKÉBOLA')&&!captureHud.menu.includes('AJUSTE O ALVO'),
-   'Three selectable balls appear in the native capture HUD');
+  assert.equal(captureHud.opener,true,'Wild battle has one clickable Pokéball button');
+  assert.equal(captureHud.oldMenu,false,'Legacy three-ball selection UI must be absent');
   assert.equal(captureHud.phase,'capturando',
    'Throwing a ball must pause real attacks while animation plays');
   // Capture the ACTUAL native Phaser GOTCHA state, not a composed PNG preview.
