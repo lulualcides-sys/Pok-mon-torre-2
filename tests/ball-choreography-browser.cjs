@@ -133,10 +133,13 @@ const server=http.createServer(async(req,res)=>{
  const throwBall=async(mode)=>{
   await page.evaluate(mode=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__torre2CaptureRandom=()=>mode==='caught'?0:.999999;
-   const zone=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
-   zone(470,61).emit('pointerdown');
-   const assertNoManualAim = !zone(522,184);
-   if(!assertNoManualAim)throw Error('Manual capture aim must not exist');
+   const zone=b.children.list.find(o=>
+    o.getData?.('torre2-single-capture')===true&&o.input?.enabled);
+   if(!zone)throw Error('Single pinned Pokeball button missing');
+   zone.emit('pointerdown');
+   const legacyAim=b.children.list.some(o=>o.type==='Zone'&&
+    Math.abs(o.x-522)<2&&Math.abs(o.y-184)<2&&o.input?.enabled);
+   if(legacyAim)throw Error('Manual capture aim must not exist');
 
    // Single touch directly starts one ball; no separate aim or menu.
   },mode);
@@ -177,8 +180,10 @@ const server=http.createServer(async(req,res)=>{
   if(core.readCampaign().team[core.readCampaign().active].status)
    throw Error('Saved member should not have burn before throwing');
   b.__torre2CaptureRandom=()=>0;
-  const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
-  z(470,61).emit('pointerdown');
+  const z=b.children.list.find(o=>
+   o.getData?.('torre2-single-capture')===true&&o.input?.enabled);
+  if(!z)throw Error('Single pinned capture button unavailable');
+  z.emit('pointerdown');
  });
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:15000});
  const gotcha=await page.evaluate(()=>{
