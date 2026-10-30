@@ -880,17 +880,17 @@ const fighterPath=path.join(dest,clientSource,'luchador.js');
 const fighterCode=await fs.readFile(fighterPath,'utf8');
 if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
  throw Error('Upstream Arena fighter incompatible with isolated move policy');
-// An added Arena species like Dodrio can receive 2 poison damage / 1.5s.
-// Native HP out-of-combat recovery (1.3 HP/s) starts after four seconds,
-// nearly negating the toxin and leaving a poisoned fighter un-KO-able.
-// Disable ONLY that passive recovery during poison on Torre2-added species;
-// preserve original client Pokémon, HP stats, approved VFX/moves and
-// the campaign. Residual ticks still use the native recibir()->morir()->alKO path.
-const nativeRegenGuard='!this.est.enfermo&&!this.escena.datos?.torre2';
-if(fighterCode.split(nativeRegenGuard).length!==2)
- throw Error('Upstream Arena passive HP regeneration guard changed');
-await fs.writeFile(fighterPath,fighterCode.replace(nativeRegenGuard,
- '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&this.est.veneno)&&!this.escena.datos?.torre2'));
+// Regression: Dodrio can remain at fractional HP (e.g. 0.4) after the
+// final native poison tick. The HUD rounds that to an empty health bar,
+// but recibir() does not call morir() unless HP is exactly <= 0.
+// Resolve only sub-1 residual POISON HP on our added Arena species.
+// Never change ordinary hits, poison potency, native client Pokémon,
+// training immortality, campaign, approved VFX, or the K.O. callback.
+const nativePoisonHit='this.hp=Math.max(this.inmortal?1:0,this.hp-d);';
+if(fighterCode.split(nativePoisonHit).length!==2)
+ throw Error('Upstream Arena poison HP path changed');
+await fs.writeFile(fighterPath,fighterCode.replace(nativePoisonHit,
+ nativePoisonHit+'if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;'));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
