@@ -13,6 +13,8 @@ const excluded=new Set([
  'bide','reversal','memento','belly-drum','double-edge','giga-impact',
  'focus-punch','solar-blade'
 ]);
+// Share canonical exclusions with the explicit preferredSignature path.
+export const isKantoSignatureUltNameAllowed=name=>!excluded.has(canonical(name));
 export function verifiedLevelUpNames(species,{
  levelUp={},earlyLevels={},verifiedTables=[],verifiedParents={}
 }={}){
@@ -37,7 +39,7 @@ export function chooseKantoSignatureUlt(species,library,context={}){
  const verified=verifiedLevelUpNames(species,context);
  const matches=[...verified].map(key=>byName.get(key)).filter(m=>m&&
   (m.source!=='new-phaser-fx'||m.approved===true)&&
-  !excluded.has(canonical(m.nombre))&&
+  isKantoSignatureUltNameAllowed(m.nombre)&&
   canonical(m.nombre)!==blocked&&Number(m.dano)>=6);
  matches.sort((a,b)=>{
   const score=m=>Number(types.includes(m.tipo))*75+
