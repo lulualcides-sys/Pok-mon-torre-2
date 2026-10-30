@@ -8,7 +8,7 @@ A T20 anterior, run #41109051839, venceu 13 treinadores e o primeiro Pokémon de
 2. O disparo básico **que o assistente do AUTO acrescenta** deve apontar para o adversário ativo, respeitando cooldown, energia, calor, status e hitboxes nativos. IA que já escolheu golpes/defesa não deve ser modificada.
 3. O modo AUTO nunca executa entrada manual anterior quando a IA não oferece um objeto de comandos. O botão continua alternando para controles manuais imediatamente.
 4. Observabilidade limitada a contadores em memória (leituras, mudanças de oponente, assistência de aproximação/LMB, falha de leitura), sem loops/timers próprios e sem persistência no save.
-5. Arena/VS, efeitos aprovados, 151 espécies, 227 VFX, sprites, dano, recarga, XP, RNG, captura e saves intocados.
+5. Arena/VS, efeitos aprovados, 151 espécies, 227 VFX, sprites, dano, recarga, XP, RNG, captura e saves intocados. Em particular, quando a IA original da Arena retorna null, o leitor humano original continua sendo o fallback preexistente; somente a campanha neutraliza entradas manuais antigas.
 6. CI focada + `npm test` + política VFX + build original + Chromium real T10/T19, browser completo e oito treinadores legítimos. Não declarar vitória de Brock, Rocha, TM39 ou desempenho superior antes de T20 integral.
 
 ## Regras de liberação

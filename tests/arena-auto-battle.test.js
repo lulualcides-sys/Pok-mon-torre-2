@@ -448,3 +448,19 @@ test('AUTO rebind telemetry remains bounded and native attacks remain gated',()=
  assert.equal(out.lmb,true);assert.equal(out.ax,100);
  assert.deepEqual(idle,{mx:0,my:0,ax:0,ay:0,lmb:false});
 });
+
+test('Original Arena AUTO retains its manual fallback for missing native AI input',()=>{
+ const s=scene({modo:'arena'}),human=s.controles[0];
+ let reads=0;
+ human.leer=()=>{reads++;return {mx:.5,my:.25,ax:80,ay:60,lmb:true}};
+ const a=installAutoBattle(s,()=>({leer:()=>null}));
+ assert.equal(a.enabled,false);
+ a.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(a.enabled,true);
+ assert.deepEqual(human.leer(.016),{mx:.5,my:.25,ax:80,ay:60,lmb:true},
+  'Native Arena fallback must match pre-patch behavior exactly');
+ assert.equal(reads,1);
+ assert.equal(a.diagnostics.nativeNoInput,0,
+  'No Kanto telemetry or change to the original Arena fallback');
+ s.handlers.get('shutdown')();
+});

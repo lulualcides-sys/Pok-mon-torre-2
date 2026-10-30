@@ -167,7 +167,9 @@ export function installAutoBattle(scene,makeNativeAI){
   const step=Number(dt);
   const it=state.ai.leer(Number.isFinite(step)&&step>0?Math.max(.001,Math.min(.10,step)):1/60);
   if(!it||typeof it!=='object'){
-   // AUTO must never fall back to a stale held human touchscreen button.
+   // Preserve the approved original Arena AUTO: native AI null falls back
+   // to the human reader there. Only campaign AUTO neutralizes stale touch.
+   if(!scene.datos?.torre2)return state.read.call(this,dt,...args);
    stats.nativeNoInput++;
    return {mx:0,my:0,ax:foe?.x??fighter?.x??0,
     ay:foe?.y??fighter?.y??0,lmb:false,rmb:false,q:false,
