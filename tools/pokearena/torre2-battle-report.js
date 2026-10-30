@@ -73,6 +73,23 @@ export function makeBattleReport(before,after,outcome,{
   defeatCount:num(after.losses)-num(before.losses)
  };
 }
+/** Human-readable reward events; the recipient is always displayed FIRST.
+ * The compact labels preserve both species and learned move on small screens.
+ * Never recalculate unlocks or mutate the campaign snapshot here.
+ */
+export function battleReportDetailLines(report){
+ if(!report)return [];
+ return [
+  ...report.evolutions.map(e=>display(e.from)+' → '+display(e.to)),
+  ...report.moves.map(e=>display(e.id)+': '+
+   (e.preview?'ULT INICIAL (REDUZIDA) · ':
+    e.fullPower?'GOLPE COMPLETO · ':'NOVO GOLPE · ')+
+   String(e.name||'').toUpperCase()),
+  ...report.badges.map(e=>'INSÍGNIA: '+String(e).toUpperCase()),
+  ...report.leagueHonors.map(e=>'LIGA: '+String(e).toUpperCase()),
+  ...report.tms.map(e=>'TM: '+String(e).toUpperCase())
+ ];
+}
 /* Low-cost native Phaser pixel UI; all input stays in the battle-path scene.
  * Interactive topmost backdrop prevents clicks passing through to trainers,
  * reset, shop, or another encounter while results are being read.
@@ -111,14 +128,7 @@ export function showBattleReport(scene,report){
   label(452,y,member.tester?'TESTE':('+'+member.experience+' XP'),9,'#d6e8ef');
  });
  if(!listed.length)label(66,157,'SEM ALTERAÇÕES NA EQUIPE',11,'#b3c4d3');
- const extras=[
-  ...report.evolutions.map(e=>display(e.from)+' → '+display(e.to)),
-  ...report.moves.map(e=>(e.preview?'ULT INICIAL (REDUZIDA): ':
-   e.fullPower?'GOLPE COMPLETO: ':'GOLPE: ')+e.name.toUpperCase()),
-  ...report.badges.map(e=>'INSÍGNIA: '+String(e).toUpperCase()),
-  ...report.leagueHonors.map(e=>'LIGA: '+String(e).toUpperCase()),
-  ...report.tms.map(e=>'TM: '+String(e).toUpperCase())
- ];
+ const extras=battleReportDetailLines(report);
  // Every reward must remain inspectable, even after six evolutions or
  // several newly learned moves. Two readable lines per page (not a clipped
  // concatenation that silently hides later TMs and league honors).
