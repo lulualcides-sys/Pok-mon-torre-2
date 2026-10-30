@@ -101,13 +101,10 @@ const server=http.createServer(async(req,res)=>{
    });
    assert.equal(entry.open.player,before.team[0].id);
    assert.equal(entry.open.enemy,opponent.id,'Expected next real route trainer');
-   assert.equal(entry.open.auto,false,'AUTO resets between fights');
-   const button=await page.evaluate(()=>{
-    const b=window.__pt2Game.scene.getScene('combate');
-    const zone=b.__torre2AutoMode.zone,rect=document.querySelector('#juego canvas').getBoundingClientRect();
-    return {x:rect.x+zone.x*rect.width/640,y:rect.y+zone.y*rect.height/360};
-   });
-   await page.mouse.click(button.x,button.y);
+   // Campaign AUTO is deliberately ON by default. Clicking the toggle
+   // here would turn it OFF and invalidate this natural-XP battle proof.
+   // Leave the user's default untouched; only read the native Phaser state.
+   assert.equal(entry.open.auto,true,'Campaign AUTO must start enabled');
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled,
     null,{timeout:5000});
    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat-'+starter+'.png'});
