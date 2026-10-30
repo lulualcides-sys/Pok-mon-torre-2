@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §37: auditoria pública independente com HTTP 503 isolado
+
+- Pages #41090646026 **success** para main `387d741dc4939a084efdcc7c1bcb90a431ca1123`, versão HTTP `src-78948ecbc5`; o próprio Pages passou no Chromium público. Auditoria independente posterior #41091689377 **failure** por um único `503` em `src-78948ecbc5/red.js`, sem `pageerror`, `window.__pt2Game=false`, screenshot/diagnóstico anexados. Não classificar como regressão comprovada do jogo nem como auditoria aprovada.
+- PR deste lote propõe reutilizar exatamente o classificador restrito de 503 do Pages no workflow independente: até 3 auditorias completas, falhas reais continuam vermelhas. CI, merge e publicação **pendentes**; T07/T08 e T20 permanecem PARCIAIS.
+
+
 ## 30/10/2026 — §§7/8/33/37: bloqueio de VFX não aprovado na introdução (PR #365)
 
 - **RED comprovado:** CI #41084164169 falhou nas duas novas regressões: `unapproved FRLG renderer leaked into Lv5` e `unapproved neutral contact` reutilizado em Struggle. O teste foi criado antes da correção, SHA `c4107505c26f56470704069d6a071ea5a50d5f94`.
