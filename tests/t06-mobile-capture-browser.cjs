@@ -72,7 +72,7 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
   });
   assert.ok(before.id);
   assert.ok(before.stock>=2);
-  await tap(405,53);
+  await tap(466,237);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
   await page.screenshot({path:'test-evidence/t06-mobile-pokeball-menu.png'});
   await tap(316,186);
@@ -90,7 +90,7 @@ const report={scope:'T06 native mobile Pokeball HUD, breakout, GOTCHA, save/relo
   assert.equal(failed.uid,before.party[0],'Breakout cannot replace the starter');
   assert.equal(failed.wins,before.wins);
   await page.evaluate(()=>{window.__pt2Game.scene.getScene('combate').__torre2CaptureRandom=()=>0;});
-  await tap(405,53);
+  await tap(466,237);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
   await tap(316,186);
   await page.waitForFunction(()=>{
