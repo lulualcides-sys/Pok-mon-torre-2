@@ -64,8 +64,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(initial.profile.error,0,'Campaign AUTO level 2 avoids aim error');
   assert.equal(initial.profile.basicos,1,'Campaign AUTO level 2 maximizes native basic pressure');
   assert.equal(initial.profile.agresividad,1);
-  assert.equal(initial.offense.pBasico,.14,'Real native basic attack threshold must be tuned');
-  assert.equal(initial.offense.pConGanas,.20);
+  assert.ok(initial.offense.pBasico<=.14,'Real native basic attack threshold must be tuned');
+  assert.ok(initial.offense.pConGanas<=.20,'Preserve stronger per-species learned confidence thresholds');
   assert.equal(initial.offense.pSinGanas,.34);
   assert.equal(initial.offense.pAhorro,.08);
   const on=await page.evaluate(()=>{
@@ -87,7 +87,7 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(playing.advantage,1,'Combat AUTO may not silently buff attack damage');
   assert.equal(playing.profile.agresividad,1);
-  assert.equal(playing.offense.pBasico,.14);
+  assert.ok(playing.offense.pBasico<=.14);
   assert.equal(playing.offense.pAhorro,.08);
   assert.ok(Object.values(playing.uses).reduce((sum,n)=>sum+Number(n||0),0)>=1,
    'Real native Phaser AUTO must actually cast a learned move during combat');
