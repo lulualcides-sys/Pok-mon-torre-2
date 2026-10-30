@@ -42,11 +42,10 @@ export function installWildCapture(scene){
  const enemy=scene.luchadores?.[1];
  if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
- const hud=frame(scene,390,41,160,42);
- const icon=originalBallSprite(scene,405,53,'pokeball',16,2705);
- txt(scene,422,47,'CAPTURAR',11,'#fff0b9');
- const hpLine=txt(scene,401,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
- hit(scene,470,61,160,42,showChoices);
+ const icon=originalBallSprite(scene,405,53,'pokeball',22,2705);
+ icon.setData('torre2-capture-single-button',true);
+ const hpLine=txt(scene,424,68,'',9,'#a9ead3');
+ hit(scene,405,53,36,34,showChoices).setData('torre2-capture-single-button',true);
  // FireRed-style RUN is valid only for a wild encounter. The trainer and
  // original Arena battles never install this overlay. Unlike a KO, fleeing
  // has no win, loss, XP, badge or capture roll. Preserve live party HP/status

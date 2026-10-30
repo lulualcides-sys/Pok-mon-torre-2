@@ -88,7 +88,7 @@ test('Campaign AUTO refreshes original AI once per Pokémon species after native
   return {leer:()=>({mx:instance,my:0,from:identity,lmb:true})};
  });
  assert.equal(constructions,1);
- state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,true);
  assert.equal(control.leer(.016).mx,1);
  // Native reiniciar() mutates the same actor, not the control or scene.
  control.l.def={id:'pikachu'};
@@ -125,7 +125,7 @@ test('Campaign AUTO also refreshes when evolution stage changes within one base 
   const stage=actor.etapa;created++;
   return {leer:()=>({mx:stage,my:0,lmb:true})};
  });
- state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,true);
  assert.equal(control.leer(.016).mx,0);
  assert.equal(state.autoSpecies,'squirtle:0');
  control.l.etapa=1; // Wartortle: ROSTER def.id remains Squirtle.
@@ -224,13 +224,14 @@ test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buff
  assert.ok(CAMPAIGN_AUTO_OFFENSIVE.basicos>.85,
   'Native cfg.basicos only controls ordinary-projectile awareness, NOT basic attack frequency');
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
- assert.equal(k.__torre2AutoMode.enabled,false,'Manual control is still default');
+ assert.equal(k.__torre2AutoMode.enabled,true,'Campaign AUTO is ON from battle start');
+ assert.equal(a.__torre2AutoMode.enabled,false,'Arena still starts manual');
+ k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(k.__torre2AutoMode.enabled,false,'Player can disable AUTO');
  assert.deepEqual(k.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
-  'Before toggle, even campaign human input remains manual');
+  'Manual reader restored when player disables AUTO');
  k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
- assert.equal(k.__torre2AutoMode.enabled,true);
- k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
- assert.equal(k.__torre2AutoMode.enabled,false);
+ assert.equal(k.__torre2AutoMode.enabled,true,'Player can re-enable AUTO');
  k.handlers.get('shutdown')();a.handlers.get('shutdown')();
 });
 

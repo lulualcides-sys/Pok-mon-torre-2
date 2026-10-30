@@ -52,6 +52,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  if(!scene?.add||!party||!actor)return null;
  const depth=7400;
  let opened=false,target=party.playerIndex,lastUse=-Infinity,objects=[];
+ let potionUses=0;
  // Native Phaser can pan AND zoom while the party fights. The Bag uses
  // fixed 640x360 HUD coordinates, so both scroll and zoom must be canceled
  // for graphics, labels and INPUT hitzones together. Scale compensation is
@@ -118,7 +119,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   bg.fillStyle(0x142e43).fillRoundedRect(56,36,528,289,8);
   bg.lineStyle(2,0xd9b660).strokeRoundedRect(56,36,528,289,8);
   label(320,56,'BOLSA DE BATALHA',17,'#ffe2a2');
-  label(320,79,'ESCOLHA O POKÉMON E O ITEM',10,'#d1e6f4');
+  label(320,79,'POÇÕES '+potionUses+'/3 · ESCOLHA O ITEM',10,'#d1e6f4');
   party.friend.slice(0,6).forEach((m,i)=>{
    const x=112+i*82,y=111;
    const selected=i===target,hp=clamp(i===party.playerIndex?
@@ -135,7 +136,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    const item=catalog.get(id);
    const qty=state?.inventory?.[id]||0;
    const x=index%2===0?210:433,y=155+Math.floor(index/2)*34;
-   const enabled=qty>0;
+   const enabled=qty>0&&(item?.kind!=='heal'||potionUses<3);
    const z=button(x,y,210,29,(item?.name||format(id))+'  x'+qty,()=>use(id),enabled);
    z?.setData('torre2-battle-bag-item',id);
   });
@@ -152,6 +153,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    scene.__torre2CaptureBusy||scene.__torre2BallTransitions){
    close();return;
   }
+  if(catalog.get(itemId)?.kind==='heal'&&potionUses>=3){draw('LIMITE DE 3 POÇÕES');return}
   const save=readCampaign();
   if(!save||save.stage!==scene.datos?.torre2?.stage||
    save.trainer!==scene.datos?.torre2?.trainer){close();return;}
@@ -160,6 +162,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    status:serializeGen3Status(actor),confused:!!actor.est?.confuso}:null;
   const result=applyBattleBagItem(save,party,itemId,target,live);
   if(!result.ok){draw(result.reason);return}
+  if(catalog.get(itemId)?.kind==='heal')potionUses++;
   saveCampaign(save);
   if(active){
    actor.hp=Math.min(actor.hpMax,Math.max(1,actor.hpMax*result.toHp/100));

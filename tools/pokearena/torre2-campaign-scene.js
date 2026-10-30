@@ -875,15 +875,6 @@ create(){
    if(battle.scene.isActive())combatEntered=true;
    if(battle.scene.isActive()&&battle.luchadores?.length===2&&
       !battle.__torre2PartyInstalled){
-    const levelPanel=battle.add.graphics().setDepth(1170);
-    levelPanel.fillStyle(0x071a2b,.92);
-    levelPanel.fillRoundedRect(189,5,262,24,3);
-    levelPanel.lineStyle(1,0xd3ac60);
-    levelPanel.strokeRoundedRect(189,5,262,24,3);
-    text(battle,199,10,'SEU NV.'+match.torre2.playerLevel+
-     '   RIVAL NV.'+match.torre2.enemyLevel+
-     '   TETO NV.'+match.torre2.hardCap,{
-     fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
     installPartyBattle(battle);
     if(match.torre2.laboratory)installLaboratoryControls(battle);
     else if(match.torre2.training)installTrainingDummy(battle);

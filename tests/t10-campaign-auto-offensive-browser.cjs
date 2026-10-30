@@ -58,7 +58,7 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(initial.campaign,true);
   assert.equal(initial.species,'squirtle');
-  assert.equal(initial.enabled,false,'Manual control MUST remain default');
+  assert.equal(initial.enabled,true,'Kanto AUTO MUST start enabled');
   assert.equal(initial.advantage,1,'Auto cannot apply Maestro native 35% damage buff');
   assert.ok(initial.profile.reaccion<=.025,'Campaign AUTO level 2 reacts in <=25ms');
   assert.equal(initial.profile.error,0,'Campaign AUTO level 2 avoids aim error');
@@ -70,10 +70,9 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(initial.offense.pAhorro,.08);
   const on=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),a=b.__torre2AutoMode;
-   a.zone.emit('pointerdown',{id:131},0,0,{stopPropagation(){}});
    return {enabled:a.enabled,advantage:a.control.l.ventaja,profile:{...a.ai.cfg}};
   });
-  assert.equal(on.enabled,true,'Campaign AUTO button must enable offensive brain');
+  assert.equal(on.enabled,true,'Campaign AUTO starts enabled without user interaction');
   assert.equal(on.advantage,1);
   assert.equal(on.profile.ventaja,1);
   assert.equal(on.profile.reaccion,.02);
