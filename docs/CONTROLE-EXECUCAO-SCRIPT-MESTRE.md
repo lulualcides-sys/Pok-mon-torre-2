@@ -7,6 +7,7 @@
 - **§33 PARCIAL:** [CI #40982113567](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40982113567) **SUCESSO no HEAD `953708247bd67a613448a9389631ae07863181a0`**, com testes, `check`, `check:reuse`, build, matriz de movesets e Chromium completo. Evidência de três batalhas reais limitada ao Bulbasaur e três treinadores iniciais; matrizes 151 espécies são fixtures compiladas.
 - **§36 PARCIAL:** patch somente teste e workflow, sem alterar VFX aprovados, sprites, cooldowns, TMs, controles de produção, formato de saves ou frentes Toxic #16/Shiny #17.
 - **§37 PARCIAL:** merge confirmado, mas **Pages/HTTP do SHA `766dcc0b1d2a8fa22be941b409f2691bcc74281a` ainda não confirmados nesta nota**. Não declarar publicação até obter prova do SHA exato.
+- **Regra vigente para Surf:** instrução explícita desta execução o mantém **REPROVADO**; uma nota histórica T20 diz o contrário. Não modificar HM/TM, VFX ou saves com base nessa divergência; solicitar reconciliação somente antes de eventual patch que dependa de Surf.
 - **Pendências:** ULT disparada com medidor adquirido naturalmente, outras espécies em batalhas prolongadas, evolução/captura/PC pela interface, jornada Pallet→Campeão sem checkpoint e Android físico. Nenhuma das 37 seções é encerrada por este teste.
 
 
