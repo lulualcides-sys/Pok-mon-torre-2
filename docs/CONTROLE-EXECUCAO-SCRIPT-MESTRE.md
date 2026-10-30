@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§22/36/37 · T22 Pages bloqueado por zona Phaser ainda não registrada
+
+- **Evidência de falha:** [Pages #41014661865](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41014661865) reprovou no Chromium ao clicar no mapa 0 do VS Seeker imediatamente após abrir o atlas. O controle existia, mas o teste não esperava a fila de hit-test nativa do Phaser. O mapa não foi selecionado; publicação cancelada.
+- **Correção isolada integrada:** [PR #343](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/343), SHA `31ec7e98e1d06f56373311c223aaf6e6e733fbf9`, adicionou espera por `scene.input.hitTestPointer` e diagnóstico de ponteiro/câmera, sem callbacks falsos. [CI #41016990703](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41016990703) **SUCESSO**, incluindo Chromium real e regressões de batalha; [CI main #41017487843](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41017487843) iniciada.
+- **Status:** §§22/36/37 **PARCIAIS** até confirmar CI main e Pages SHA exato via HTTP. T07/T08 e T20 não mudam de status por esta correção. Nenhum golpe, VFX, sprite, TM, cooldown, save ou progresso de campanha foi modificado.
+
 ## 29/10/2026 — §§20/33/36/37 · T20 oito vitórias de produção e dificuldade real da Rocket
 
 - **§20 PARCIAL:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328) integrada `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO**: oito confrontos nativos reais com inicial criado via factory de produção, sem Mewtwo debug, ULT desbloqueada por XP, save persistente/reload e controles Phaser testados; não comprova menu inicial nem 13 treinadores+Brock.
