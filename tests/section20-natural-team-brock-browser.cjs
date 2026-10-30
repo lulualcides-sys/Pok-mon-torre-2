@@ -123,15 +123,18 @@ const server=http.createServer(async(req,res)=>{
   console.log('PASS NATIVE STARTER SELECTED AFTER REAL KO',JSON.stringify(after));
   await backToMap();
  };
- const prepareNaturalTeam=async()=>{
+ const prepareNaturalTeam=async({minimumTeam=2,strict=false}={})=>{
   const before=await game();
-  report.teamPreparation={before,throws:[],captures:[],shop:[]};
+  report.teamPreparation??={before,throws:[],captures:[],shop:[],retreats:[]};
   await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    c.martScreen(window.kanto.readCampaign());
   });
   await sync();
-  for(let i=0;i<12;i++){
+  // Purchase only real affordable stock; successive visits are funded by
+  // actual route victories, never by synthetic money or free Pokéballs.
+  const affordable=Math.min(12,Math.floor((await game()).money/200));
+  for(let i=0;i<affordable;i++){
    const old=await game();
    await clickMarked('torre2-mart-buy','pokeball');
    const now=await game();
@@ -141,7 +144,7 @@ const server=http.createServer(async(req,res)=>{
   }
   await backToMap();
   let encounters=0;
-  while((await game()).team.length<3&&(await game()).balls>0&&encounters<12){
+  while((await game()).team.length<minimumTeam&&(await game()).balls>0&&encounters<12){
    encounters++;
    const old=await game();
    await page.evaluate(()=>{
@@ -185,15 +188,38 @@ const server=http.createServer(async(req,res)=>{
      battle=false;
     }
    }
-   if(await page.evaluate(()=>window.__pt2Game.scene.isActive('campanha')))await centerHeal();
-   else throw new Error('Wild capture sequence still in a live battle; '+JSON.stringify(await game()));
+   if(!await page.evaluate(()=>window.__pt2Game.scene.isActive('campanha'))){
+    // An exhausted inventory cannot throw again. Leave through the genuine
+    // FireRed-style RUN control, preserving active HP, RNG, XP and saves.
+    // The old test threw here, preventing a lawful return to the Mart.
+    const retreatBefore=await game();
+    const run=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate');
+     const z=b.children.list.find(o=>o.active&&o.input?.enabled&&
+      o.getData?.('torre2-wild-run')===true);
+     if(!z)throw Error('Native RUN button missing after Pokéballs exhausted');
+     return {x:z.x,y:z.y};
+    });
+    await tap(run.x,run.y);
+    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),
+     null,{timeout:16000});
+    const retreatAfter=await game();
+    for(const key of ['trainer','stage','wins','losses','money','balls'])
+     assert.equal(retreatAfter[key],retreatBefore[key],
+      'Native RUN must not award anything or skip campaign: '+key);
+    report.teamPreparation.retreats.push({before:retreatBefore,after:retreatAfter});
+    saveReport();
+    console.log('PASS NATURAL WILD RUN AFTER EXHAUSTED BALLS',JSON.stringify(retreatAfter));
+   }
+   await centerHeal();
    assert.equal((await game()).trainer,old.trainer,'Wild encounters never advance trainer checkpoint');
   }
   report.teamPreparation.after=await game();
   saveReport();
-  assert.ok(report.teamPreparation.after.team.length>=3,
-   'At least two genuine RNG captures are required before Rival checkpoint');
-  assert.equal(report.teamPreparation.after.trainer,5,'Five earned wins precede early Rocket-team preparation');
+  if(strict)assert.ok(report.teamPreparation.after.team.length>=minimumTeam,
+   'At least two genuine RNG captures required before Rival; not enough earned resources');
+  assert.equal(report.teamPreparation.after.trainer,before.trainer,
+   'Wild captures must not skip any trainer checkpoint');
   assert.deepEqual(report.teamPreparation.after.box,expectedBox,
    'No QA Mewtwo or unexpected PC Pokémon in production beginning');
   console.log('PASS REAL TEAM PREPARATION',JSON.stringify(report.teamPreparation.after));
@@ -284,8 +310,17 @@ const server=http.createServer(async(req,res)=>{
   let earlyTeamReady=false;
   let naturalRetries=0;
   for(let round=0;round<total;round++){
-   if(round===5&&!earlyTeamReady){await prepareNaturalTeam();await trainNaturalTeam();before=await game();earlyTeamReady=true;}
+   if(round===5&&!earlyTeamReady){await prepareNaturalTeam({minimumTeam:2});await trainNaturalTeam();before=await game();earlyTeamReady=true;}
+   // Fund the second genuine catch from route prize money if the first
+   // Mart inventory ran out. A real capture is required by the Fire rival;
+   // random failure is recorded rather than patched with a guaranteed roll.
+   if(round>=8&&round<=12&&before.team.length<3&&before.money>=400){
+    await prepareNaturalTeam({minimumTeam:3,strict:false});
+    before=await game();
+   }
    if(round===12){
+    assert.ok(before.team.length>=3,
+     'Need two genuinely caught teammates before rival; no synthetic Pokémon');
     // Legitimate wild XP before the Fire rival, never altered enemy stats.
     // Both route trainers and leader remain subject to their original cap.
     await trainNaturalTeam({targetStarterLevel:14,maxRounds:16});
@@ -415,7 +450,8 @@ const server=http.createServer(async(req,res)=>{
    const payout=opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180;
    assert.equal(entry.after.money,before.money+payout,'Real trainer/Rocket/Rival payout');
    assert.deepEqual(entry.after.box,expectedBox);
-   assert.equal(entry.after.team.length,round<5?1:3);
+   assert.equal(entry.after.team.length,before.team.length,
+    'Ordinary trainer battle must not fabricate or drop teammates');
    if(opponent.leader){
     assert.deepEqual(entry.after.badges,['Rocha'],'Brock grants first and only badge');
     assert.ok(entry.after.tms.includes('tm-rock-tomb'),'Brock grants unique FireRed TM39');
