@@ -1,5 +1,7 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+**CHECKPOINT MAIS RECENTE (30/10/2026):** [T07/T08 e T20 — evidências verificadas, bloqueios e próxima etapa](CHECKPOINT-SCRIPT-MESTRE-2026-10-30.md). Histórico abaixo preservado; nunca interpretar um teste pendente como sucesso, nem reiniciar as seções já integradas.
+
 ## 29/10/2026 — T20: OITO vitórias reais com inicial de produção, ULT Lv8 e reload comprovados
 
 - **APROVADO E INTEGRADO:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328), squash `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO COMPLETO**, incluindo unidade, integridade, build original Phaser, oito batalhas consecutivas naturais, ULT aprendida por EXP a partir de Lv5, save byte a byte após reload, slot E no combate seguinte, controles mobile simulados e regressões de navegador. Usa `createPlayerCampaign('bulbasaur')` de produção, **sem Mewtwo QA na equipe ou PC**. Factory inicial não prova clique de seleção de Pokémon no menu.
