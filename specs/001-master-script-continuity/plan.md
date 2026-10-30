@@ -51,3 +51,12 @@
 - Risco controlado: o teste exige VFX Surf instalado, preserva seus metadados após consultas e mantém HM indisponível na campanha sem autorização específica.
 - Verificação: `npm test`, `npm run check`, `npm run check:reuse`, build, teste compilado T08 e Chromium pelo workflow do PR. Não afirmar execução local ou Pages antes dos gates.
 - Concorrência: não tocar PR #329 (T20), #270 (ULT), Toxic #16 nem Shiny #17. Rollback isolado do patch documental/teste, sem migração de save.
+
+
+## Lote 30/10 — corrigir a classificação de falhas HTTP públicas, não a jogabilidade
+
+- **RED real:** Pages #41045137532 falhou com HTTP 503 em `assets/vfx/hilo.png`; Pages #41072227909 falhou com HTTP 503 em `torre2/laboratory.js` apesar de confirmar a versão pública. Diagnóstico e screenshot foram gerados pelo teste existente.
+- **Mudança mínima:** `tools/dev/pages-public-503-retry.cjs` classifica exclusivamente 503 do domínio Pages e rejeita outros erros; `tests/pages-public-503-retry.test.cjs` testa casos positivos/negativos. `.github/workflows/pages.yml` repete o **mesmo** Chromium integral no máximo duas vezes adicionais após erro comprovadamente transitório. `.github/workflows/pokedex-public-live.yml` executa os testes do classificador em PR.
+- **Não alterar:** Phaser, client original, 227 VFX, Surf aprovado, Scratch/Transform adiados, capturas, Pokémon, saves, TM/HM, arte, guardião visual ou PRs #329/#360/#361.
+- **Gates:** Node RED/GREEN, CI da PR, build/Chromium existentes, revisão de diff, merge apenas com checks verdes, Pages main e HTTP SHA exato. Falha persistente exige investigar asset real, não ignorar o erro.
+- **Rollback:** reverter apenas o classificador e o bloco de retry dos workflows; não há migração de dados.

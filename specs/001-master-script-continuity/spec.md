@@ -59,3 +59,10 @@ Dado outro agente com PR aberta no mesmo componente, quando surge nova tarefa:
 ## Lote T07/T08 — aprovação Surf e gate HM (30/10/2026)
 **Cenário:** Surf permanece no catálogo VFX aprovado, enquanto a campanha não concede HM Surf por nível, TM gravada sem liberação ou editor. Scratch/Transform seguem adiados.
 **Aceite:** teste compilado preserva renderer e metadados Surf após consultas a Pokédex/moveset; nenhum save é reescrito; nenhum HM é liberado. Testes Chromium/CI completos antes de merge; este lote não valida ULT em combate nem Brock.
+
+
+## Lote 30/10 — Pages: HTTP 503 transitório na auditoria Chromium pública
+
+**Falha reproduzida:** Pages #41072227909, SHA main `d8b3c8b43436081e681c05ebe938e24234383750`, implantou e confirmou `src-616165d778`, mas o Chromium recebeu HTTP 503 de `/arena2d/src-616165d778/torre2/laboratory.js`, não inicializou Phaser e encerrou após 90 s. A auditoria pública independente #41072786298 no mesmo SHA foi verde. Isto evidencia intermitência de entrega, não autoriza concluir que o problema nunca ocorrerá.
+
+**Aceite:** uma falha somente por HTTP 503 em assets do domínio público oficial, sem outros erros de runtime/requisição, permite até duas **novas auditorias completas** (máximo três execuções). Qualquer 404/500, asset de outro host, erro Phaser, diagnóstico ausente, erro de slots, versão errada ou 503 persistente mantém CI vermelha. Cada execução exige o mesmo SHA/version.json e as mesmas sete espécies; auditoria de 150 espécies permanece independente. Não mexer em código do jogo, saves, VFX ou baseline.

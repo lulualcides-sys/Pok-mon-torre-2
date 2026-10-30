@@ -1,7 +1,12 @@
 name: Pokédex — checar site público real (não apenas build)
 on:
   pull_request:
-    paths: ['tests/pokedex-public-live-browser.cjs', '.github/workflows/pokedex-public-live.yml']
+    paths:
+      - 'tests/pokedex-public-live-browser.cjs'
+      - 'tests/pages-public-503-retry.test.cjs'
+      - 'tools/dev/pages-public-503-retry.cjs'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/pokedex-public-live.yml'
   push:
     branches: [fix/verify-public-pokedex-and-cache-20261029, test/t07-t08-public-150-kanto-dex-20261029]
   workflow_run:
@@ -23,6 +28,10 @@ jobs:
           node-version: '24'
       - name: Instalar Chromium regression dependencies
         run: npm install --no-audit --no-fund
+      - name: Validar retry somente para HTTP 503 transitório
+        run: |
+          node --check tools/dev/pages-public-503-retry.cjs
+          node --test tests/pages-public-503-retry.test.cjs
       - name: Conferir sete casos e 150 espécies Kanto no Pages público
         env:
           CHROME_BIN: /usr/bin/google-chrome

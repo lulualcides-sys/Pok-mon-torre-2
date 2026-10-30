@@ -38,3 +38,12 @@ Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funci
 - [ ] CI `npm test`/`check`/`check:reuse`/build/Chromium do SHA da PR integralmente verde.
 - [ ] Revisão, merge e verificação Pages HTTP do SHA exato, caso haja publicação.
 - [ ] Prova de ULT com medidor ganho em combate natural e 13 treinadores + Brock: continuam pendentes, sem confundir este patch com homologação.
+
+
+## Lote 30/10 — Pages 503 isolado, sem enfraquecer publicação
+
+- [x] Identificar no log Pages #41072227909 a falha HTTP 503 de `laboratory.js` com `src-616165d778`, e comparar com auditoria independente #41072786298 verde no mesmo HEAD.
+- [x] Criar classificador conservador e testes Node para 503 isolado, 404/500, origem incorreta, erros Phaser e falha de requisição adicional; integrar retry com limite três no workflow.
+- [x] PR #362: CI #41075928453 **success** (classificador Node, npm test/check/check:reuse, build e Chromium público); guardião visual #41075928433 **success** (arte estática e screenshots Phaser).
+- [ ] Revisar diff, compatibilidade com HEAD e mesclar somente após todos os gates aplicáveis verdes.
+- [ ] Verificar novo Pages completo e HTTP público no SHA exato; manter T07/T08, T20 e 37 seções parciais até prova própria.
