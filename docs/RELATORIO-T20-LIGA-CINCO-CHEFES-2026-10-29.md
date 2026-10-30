@@ -16,7 +16,7 @@
 ## Nova auditoria complementar em desenvolvimento
 
 - PR [#322](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/322): audita **Bulbasaur/Charmander/Squirtle** como iniciais ORIGINAIS; versões distintas do time do Campeão e níveis FRLG `59,57,59,59,61,63`; não confunde troca de Pokémon com inicial; combate não inicia com equipe desmaiada nem reabre após Hall da Fama.
-- Testes em `tests/t20-three-starter-champion-stage-built.test.mjs`, workflow `.github/workflows/master-t20-champion-three-starters.yml`, CI [#40977896743](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977896743). **Não marcar como integrado até CI verde e merge.**
+- Testes em `tests/t20-three-starter-champion-stage-built.test.mjs`, workflow `.github/workflows/master-t20-champion-three-starters.yml`, CI [#40977896743](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977896743). **INTEGRADO** no squash `7e253dd37f6523832db3b878166142f7b5eb5136`, [CI #40977896743](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977896743) **SUCESSO** (unitários, build, auditoria dos três iniciais e regressão Chromium).
 - Esse teste é estrutural sobre o Phaser compilado. **Não** substitui cinco batalhas reais para cada um dos três iniciais.
 
 ## Pendências reais T20
