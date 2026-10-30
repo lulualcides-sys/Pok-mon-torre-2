@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene}
+import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
+ CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile}
  from '../tools/pokearena/torre2-auto-battle.js';
 const makeObject=()=>{
  const handlers=new Map;
@@ -204,7 +205,7 @@ test('Scene prototype wrapping preserves original create and delegates AI',()=>{
  s.handlers.get('shutdown')();
 });
 
-test('Only Kanto campaign AUTO gets original native difficult tactical level',()=>{
+test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buffs',()=>{
  const tiers=[];
  const NativeBrain=class{constructor(_actor,tier){tiers.push(tier)}leer(){return{mx:1,my:0}}};
  class Kanto{constructor(){Object.assign(this,scene({torre2:{kind:'trainer',stage:1}}))}create(){}}
@@ -213,8 +214,22 @@ test('Only Kanto campaign AUTO gets original native difficult tactical level',()
  bindAutoBattleToScene(OriginalArena,NativeBrain);
  const k=new Kanto(),a=new OriginalArena();
  k.create();a.create();
- assert.deepEqual(tiers,['dificil','normal'],
-  'Native original tactics without changing damage or original Arena tier');
+ assert.deepEqual(tiers,[CAMPAIGN_AUTO_OFFENSIVE,'normal'],
+  'Campaign uses offensive native tactics; original Arena remains normal');
+ assert.strictEqual(campaignAutoProfile(k),CAMPAIGN_AUTO_OFFENSIVE);
+ assert.equal(campaignAutoProfile(a),'normal');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.ventaja,1,
+  'Never import Maestro native 35% hidden damage advantage');
+ assert.ok(CAMPAIGN_AUTO_OFFENSIVE.reaccion<.08,'Must react faster than native Hard');
+ assert.ok(CAMPAIGN_AUTO_OFFENSIVE.basicos>.85,'Must attack more often than native Maestro');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
+ assert.equal(k.__torre2AutoMode.enabled,false,'Manual control is still default');
+ assert.deepEqual(k.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
+  'Before toggle, even campaign human input remains manual');
+ k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(k.__torre2AutoMode.enabled,true);
+ k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(k.__torre2AutoMode.enabled,false);
  k.handlers.get('shutdown')();a.handlers.get('shutdown')();
 });
 
