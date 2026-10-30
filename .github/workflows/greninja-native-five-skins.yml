@@ -47,7 +47,8 @@ jobs:
           set -euo pipefail
           CHROME_BIN="$(command -v google-chrome)" node tests/arena-preview-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/arena-auto-battle-browser.cjs
-          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-evolved-selection-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-base-form-touch-browser.cjs
       - name: Keep evidence and variant screenshots
         if: always()
         uses: actions/upload-artifact@v4
