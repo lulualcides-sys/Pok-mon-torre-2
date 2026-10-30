@@ -1141,7 +1141,7 @@ const server=http.createServer(async(req,res)=>{
     const c=window.__pt2Game.scene.getScene('combate'),enemy=c.luchadores[1];
     enemy.hp=Math.max(1,enemy.hpMax*.12);
     const opener=c.children.list.find(o=>o.type==='Zone'&&
-      Math.abs(o.x-405)<2&&Math.abs(o.y-53)<2&&o.input?.enabled);
+      Math.abs(o.x-430)<2&&Math.abs(o.y-241)<2&&o.input?.enabled);
     if(!opener)return {opener:false};
     opener.emit('pointerdown');
     const menu=c.children.list.filter(o=>typeof o.text==='string')
