@@ -899,7 +899,7 @@ if(fighterCode.split(nativeRegenGuard).length!==2)
 const poisonHpFixed=fighterCode.replace(nativePoisonHit,
  nativePoisonHit+'if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;');
 await fs.writeFile(fighterPath,poisonHpFixed.replace(nativeRegenGuard,
- '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&this.est.veneno)&&!this.escena.datos?.torre2'));
+ '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&this.est.veneno)&&!this.escena.datos?.torre2'));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
