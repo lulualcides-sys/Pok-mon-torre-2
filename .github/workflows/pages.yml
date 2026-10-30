@@ -240,14 +240,34 @@ jobs:
           done
           echo "::error::A versao atual nao esta acessivel no endereco publico do jogo"
           exit 1
+      - name: Garantir que retry HTTP 503 não dispensa nenhuma verificação
+        if: steps.pages-enabled.outputs.enabled == 'true'
+        run: node --test tests/pages-public-503-retry.test.cjs
       - name: Validar a Pokédex na página PUBLICADA no Chromium
         if: steps.pages-enabled.outputs.enabled == 'true'
         shell: bash
         run: |
           set -euo pipefail
-          EXPECTED_POKEDEX_BUILD="$(node -p "JSON.parse(require('fs').readFileSync('_site/arena2d/version.json','utf8')).modules")" \
-          CHROME_BIN="$(command -v google-chrome)" \
-            node tests/pokedex-public-live-browser.cjs
+          expected="$(node -p "JSON.parse(require('fs').readFileSync('_site/arena2d/version.json','utf8')).modules")"
+          # GitHub Pages sometimes serves a transient 503 for one hashed JS
+          # asset after deployment. Only that precise case permits a retry.
+          # Each attempt re-runs ALL original public Chromium assertions.
+          for attempt in 1 2 3; do
+            rm -f test-evidence/pokedex-public-boot-diagnostic.json \
+              test-evidence/pokedex-public-live-audit.json
+            if EXPECTED_POKEDEX_BUILD="$expected" \
+                CHROME_BIN="$(command -v google-chrome)" \
+                node tests/pokedex-public-live-browser.cjs; then
+              echo "Pokédex pública aprovada no Chromium (tentativa $attempt; $expected)"
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ] || ! node tools/dev/pages-public-503-retry.cjs; then
+              echo "::error::Pokédex pública reprovada: falha persistente ou não transitória"
+              exit 1
+            fi
+            echo "::warning::HTTP 503 isolado no Pages; repetir auditoria integral ($attempt/3)"
+            sleep $((attempt * 10))
+          done
       - name: Guardar prova da Pokédex pública
         if: always()
         uses: actions/upload-artifact@v4
