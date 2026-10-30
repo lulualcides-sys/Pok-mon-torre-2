@@ -34,6 +34,7 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
+import {originalBallSprite} from './ball-sprites.js';
 import {routeNode} from './route-data.js';
 import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
@@ -1017,8 +1018,10 @@ create(){
    }).setOrigin(.5).setDepth(610);
    for(const [i,member] of state.team.slice(0,6).entries()){
     const x=320-(Math.min(6,state.team.length)-1)*43+i*86;
-    const icon=this.add.graphics().setDepth(610);
-    ball(icon,x,160,13);
+    // Use the same approved nearest-filtered 16x16 Pokéball texture as
+    // captures and the party HUD. Keep the original healing glow/pulse.
+    const icon=originalBallSprite(this,x,160,'pokeball',32,610)
+     .setData('torre2-center-heal-ball',i);
     icon.setAlpha(.27);
     this.tweens.add({targets:icon,alpha:1,duration:260,delay:i*150,
      yoyo:true,repeat:1,ease:'Sine.easeInOut'});

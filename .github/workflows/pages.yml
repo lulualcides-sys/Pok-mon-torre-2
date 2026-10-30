@@ -104,6 +104,7 @@ jobs:
           set -euo pipefail
           node tools/pokearena/audit-moves.mjs
           node tests/versus-intro-built.test.mjs
+          node tests/center-revive-built.test.mjs
           node tests/batch24-built.test.mjs
           node tests/misty-surge-built.test.mjs
           node tests/misty-wild-capture-ui-built.test.mjs
@@ -129,6 +130,7 @@ jobs:
         run: |
           npm install --no-audit --no-fund
           CHROME_BIN="$(command -v google-chrome)" node tests/versus-intro-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/center-revive-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/batch24-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/surge-shop-rematch-browser.cjs
