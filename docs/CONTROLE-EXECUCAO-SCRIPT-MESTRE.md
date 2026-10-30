@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+
+## 30/10/2026 — §37 publicação: HTTP 503 pós-deploy diagnosticado, sem homologação nova
+
+- Main `d8b3c8b43436081e681c05ebe938e24234383750` integra #358. Combate CI #41072165629 e auditoria 150 espécies #41072786298 **verdes**; Pages #41072227909 **vermelho** apesar de confirmar `src-616165d778` no HTTP. Log do Chromium: `503` em `torre2/laboratory.js`, `window.__pt2Game=false`, zero canvas e timeout de 90 s. Pages #41045137532 falhara antes em `assets/vfx/hilo.png` (503).
+- Patch em branch isolada `fix/pages-public-pokedex-503-retry-20261030`: permitir somente repetição limitada da auditoria integral se houver prova de HTTP 503 isolado no domínio Pages. Não dispensa nenhuma assertiva nem mascara erro persistente; testes Node específicos incluídos. **CI/merge/publicação do patch pendentes.**
+- **§37 permanece PARCIAL** para esse HEAD até Pages sucesso + HTTP SHA comprovado; §§7/8 e T20 permanecem PARCIAIS, sem evidência nova de três golpes naturais Lv5, ULT legítima, Brock ou jornada Pallet→Campeão. Nenhum save, sprite, efeito aprovado, Surf ou HM foi modificado.
+
+
 ## 30/10/2026 — §§7/8: regressão de assinatura detectada e patch ainda não homologado
 
 - PR #358: CI #41066647123 provou que a filtragem indiscriminada de `pendiente` reduziu 149 ULTs temáticas para 144. Afetou Caterpie, Metapod, Weedle, Kakuna e Eevee porque Bug Bite, Bite e Swift tinham VFX aprovado mas herdavam a flag de placeholder nativo.
