@@ -8,6 +8,7 @@ on:
       - 'tools/pokearena/torre2-move-pool.js'
       - 'tools/pokearena/torre2-signature-fx.js'
       - 'tests/rival-payday-cooldowns-built.test.mjs'
+      - 'tests/surge-shop-rematch-browser.cjs'
       - '.github/workflows/rival-payday-validation.yml'
 permissions:
   contents: read
