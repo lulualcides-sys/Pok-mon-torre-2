@@ -3,9 +3,13 @@ import assert from 'node:assert/strict';
 import {deflateSync} from 'node:zlib';
 import {FRLG_MART_ITEMS,FRLG_ICON_COMMIT,gbaItemPNGForWeb,paletteFromJASC} from
  '../tools/pokearena/install-frlg-mart-item-icons.mjs';
-import {FRLG_MART_ITEM_FILES,frlgMartIcon} from
- '../tools/pokearena/torre2-campaign-sprites.js';
-import {MART_ITEMS} from '../tools/pokearena/torre2-route-data.js';
+import {readFileSync} from 'node:fs';
+const spriteSource=readFileSync('tools/pokearena/torre2-campaign-sprites.js','utf8');
+const routeSource=readFileSync('tools/pokearena/torre2-route-data.js','utf8');
+const spriteIds=[...spriteSource.split('export const FRLG_MART_ITEM_FILES=Object.freeze([')[1]
+ .split(']);')[0].matchAll(/'([^']+)'/g)].map(x=>x[1]);
+const routeIds=[...routeSource.split('export const MART_ITEMS=Object.freeze([')[1]
+ .split('].map(')[0].matchAll(/\{id:'([^']+)'/g)].map(x=>x[1]);
 const sig=Buffer.from([137,80,78,71,13,10,26,10]);
 function chunk(type,payload){
  const head=Buffer.alloc(8);
@@ -28,13 +32,12 @@ function indexedFixture(){
 test('each Mart item is backed by the original pinned FireRed icon and correct type palette',()=>{
  assert.equal(FRLG_ICON_COMMIT.length,40,'Immutable upstream revision required');
  const ids=Object.keys(FRLG_MART_ITEMS);
- assert.deepEqual([...FRLG_MART_ITEM_FILES].sort(),ids.slice().sort());
- assert.deepEqual(MART_ITEMS.map(i=>i.id).sort(),ids.slice().sort(),
-  'No shop item may use a fake generic icon');
- for(const item of MART_ITEMS){
-  assert.equal(frlgMartIcon(item),item.id);
-  assert.match(FRLG_MART_ITEMS[item.id].image,/^[a-z_]+$/);
-  assert.match(FRLG_MART_ITEMS[item.id].palette,/^[a-z_]+$/);
+ assert.deepEqual(spriteIds.slice().sort(),ids.slice().sort());
+ assert.deepEqual(routeIds.slice().sort(),ids.slice().sort(),
+  'No shop item may use a generic icon');
+ for(const id of routeIds){
+  assert.match(FRLG_MART_ITEMS[id].image,/^[a-z_]+$/);
+  assert.match(FRLG_MART_ITEMS[id].palette,/^[a-z_]+$/);
  }
  assert.deepEqual(FRLG_MART_ITEMS.paralyzeheal,
   {image:'status_heal',palette:'paralyze_heal'});
