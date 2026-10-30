@@ -84,9 +84,7 @@ const report={scope:'T06 native desktop full-team capture sent to PC, breakout, 
   await page.evaluate(id=>{window.__t06CaughtId=id;},before.id);
   assert.ok(before.stock>=2);
   await tap(470,61);
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
-  await page.screenshot({path:'test-evidence/t06-full-party-pokeball-menu.png'});
-  await tap(316,186);
+  await page.screenshot({path:'test-evidence/t06-full-party-pokeball-one-tap.png'});
   await page.waitForFunction(()=>{
    const d=window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug;
    return d?.state==='RESUME';
@@ -102,8 +100,6 @@ const report={scope:'T06 native desktop full-team capture sent to PC, breakout, 
   assert.equal(failed.wins,before.wins);
   await page.evaluate(()=>{window.__pt2Game.scene.getScene('combate').__torre2CaptureRandom=()=>0;});
   await tap(470,61);
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:6000});
-  await tap(316,186);
   // Desktop capture may return to the campaign before the next browser
   // polling tick; accept completed persistence as well as the short GOTCHA.
   try{
