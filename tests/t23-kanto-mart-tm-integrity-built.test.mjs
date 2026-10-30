@@ -21,6 +21,7 @@ const factory=(stage=0)=>{
  storage.clear();
  const s=core.createCampaign('bulbasaur');
  s.stage=stage;s.trainer=0;s.money=25000;
+ s.badges=core.GYMS.slice(0,Math.min(stage,8)).map(g=>g.badge);
  core.saveCampaign(s);return core.readCampaign();
 };
 const kantoIds=new Set(KANTO_151.map(x=>x.id));
