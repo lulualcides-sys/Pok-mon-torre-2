@@ -1,4 +1,5 @@
 import {WEATHER_MOVES,weatherSpeciesMultiplier} from './weather.js';
+import {gen3Effectiveness} from './gen3-types.js';
 /* Optional single-player AUTO button backed by the native Poké Arena IA.
  * Kanto campaign starts ON; original Arena modes start OFF. No stat bonuses,
  * battle math, cooldown or approved VFX changes. */
@@ -60,6 +61,27 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
  const basic=actor.kit?.lmb;
  const range=Number(basic?.alcance??basic?.largo??0);
  const basicReach=Number.isFinite(range)&&range>0?range:0;
+ // A weak resisted basic can stall Beedrill-vs-Beedrill AUTO for minutes,
+ // even though the player has a legal stronger Peck/Fury Attack in RMB/Q.
+ // Do not change actual damage, native hitboxes or approved cooldowns:
+ // encourage a safe approach for an ALREADY-EQUIPPED effective attack.
+ const foeTypes=Array.isArray(foe.tipos)&&foe.tipos.length?foe.tipos:null;
+ const basicPower=foeTypes&&Number(basic?.dano)>0?
+  Number(basic.dano)*gen3Effectiveness(basic.tipo,foeTypes):0;
+ let better=null;
+ if(foeTypes&&basicPower>0){
+  for(const slot of ['rmb','q']){
+   const move=actor.kit?.[slot];
+   const reach=Number(move?.alcance??move?.largo??0);
+   const power=Number(move?.dano)*gen3Effectiveness(move?.tipo,foeTypes);
+   const cooldown=Number(actor.cd?.[slot]);
+   if(!move?.forma||move.pendiente||!Number.isFinite(reach)||reach<=0||
+      !Number.isFinite(power)||power<=basicPower*1.5||
+      !Number.isFinite(cooldown)||cooldown>1.5||
+      !Number.isFinite(actor.energia)||actor.energia<Number(move.coste??0))continue;
+   if(!better||power>better.power)better={slot,move,reach,power,cooldown};
+  }
+ }
  // No reckless pressure while badly hurt or the native AI is evading.
  const hpRatio=Number(actor.hpMax)>0?actor.hp/actor.hpMax:1;
  if(hpRatio<.32)return input;
@@ -70,7 +92,8 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
  let output=input;
  // Correct the old idle-only chase: native AI often circles sideways, so
  // the old check (movement magnitude < .12) was almost never reached.
- const approachAt=Math.max(55,Math.min(140,basicReach?basicReach*.76:75));
+ const approachAt=Math.max(55,Math.min(140,
+  better?better.reach*.76:basicReach?basicReach*.76:75));
  if(hpRatio>=.43&&!danger&&distance>approachAt*1.15){
   const mx=Number(input.mx)||0,my=Number(input.my)||0;
   const magnitude=Math.hypot(mx,my);
@@ -84,6 +107,16 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
    output={...input,mx:wx/norm,my:wy/norm};
   }
  }
+ // A higher-value RMB/Q gets one legal opportunity before LMB pressure.
+ // Never override a native attack, dodge, immunity, or an equipped ULT.
+ const ready=Number(actor.calor??0)<(brain?.c?.calorTope??80)&&
+  !actor.dash&&!actor.accion?.bloquea&&!actor.est?.aturdido&&
+  !actor.est?.dormido&&!actor.est?.congelado&&!actor.est?.recarga&&
+  !foe.est?.contra&&!foe.est?.disfraz&&
+  (foe.est?.invul?.hasta??0)<=(actor.t??0)&&
+  (foe.est?.vuelo?.hasta??0)<=(actor.t??0);
+ if(ready&&better&&better.cooldown<=0&&distance<=better.reach*.86)
+  return {...output,[better.slot]:true,ax:foe.x,ay:foe.y};
  // ACTUAL basic attack opportunity: native cooldown, energy, heat,
  // invulnerability and animation locks all remain enforced.
  if(!basic||basic.pendiente||basicReach<=0||distance>basicReach*.86||
