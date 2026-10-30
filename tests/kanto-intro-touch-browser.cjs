@@ -43,6 +43,16 @@ const server=http.createServer(async(req,res)=>{
      window.__pt2Game.scene.getScene('campanha').enterBattle(s,false);
     },{species,level});
     await page.waitForFunction(()=>{const g=window.__pt2Game,b=g.scene.getScene('combate');return g.scene.isActive('combate')&&b.__torre2PartyInstalled&&b.fase==='lucha'&&b.panelTactil},null,{timeout:25000});
+    // Kanto now starts AUTO ON. To verify REAL manual mobile buttons, the
+    // player first switches AUTO OFF using its own Phaser touch zone.
+    const mode=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate'),auto=b.__torre2AutoMode;
+     if(!auto?.enabled)throw Error('Campaign AUTO must start ON');
+     auto.zone.emit('pointerdown',{id:181},0,0,{stopPropagation(){}});
+     return {before:true,after:auto.enabled,label:auto.label.text};
+    });
+    assert.deepEqual(mode,{before:true,after:false,label:'AUTO'},
+     'Manual move buttons must be tested after the user disables AUTO');
     const snap=await page.evaluate(()=>{
      const b=window.__pt2Game.scene.getScene('combate'),me=b.luchadores[0];
      me.inmortal=true;b.luchadores[1].inmortal=true;
