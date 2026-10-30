@@ -181,7 +181,7 @@ export function installPartyBattle(scene){
    if(event?.kind==='healed')announce('+'+Math.round(event.hp)+' HP');
    const next=chooseTrainerSwitch(strategy,{time:this.t,activeIndex:party.enemyIndex,
     blocked:this.__torre2Changing||this.fase!=='lucha'||!!trainerItems.pending||!!actors[1].accion||!!actors[1].dash||actors.some(a=>a.hp<=0||a.ko),
-    opponentTypes:actors[0].tipos||[],members:party.foes.map((m,i)=>{
+    opponentTypes:actors[0].tipos||[],weather,members:party.foes.map((m,i)=>{
      const {def,etapa}=buscar(m.id);return {...m,types:etapaDe(def,etapa).tipos||[],hp:i===party.enemyIndex?clamp(actors[1].hp/actors[1].hpMax*100):m.hp};
     })},gen3Effectiveness);
    if(next>=0){announce('RIVAL RECOLHE SEU POKÉMON!');recall(1,next);}

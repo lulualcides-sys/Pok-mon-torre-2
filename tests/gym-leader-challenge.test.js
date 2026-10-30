@@ -58,3 +58,18 @@ test('gym tactics react earlier, but stay limited to three swaps with timeouts',
   enabled:true,gymLeader:false,nextCheck:8,nextSwitch:8,switches:0
  });
 });
+
+test('leader pressure respects native airborne immunity and resumes after landing',()=>{
+ const actor={x:0,y:0,t:6,hp:100,hpMax:100,energia:40,calor:0,
+  cd:{lmb:0},est:{},kit:{lmb:{alcance:180,coste:12}}};
+ const foe={x:60,y:0,hp:100,est:{vuelo:{hasta:9}}};
+ const scene={fase:'lucha',t:8,datos:{torre2:{party:{gymLeader:true}}}};
+ const input={mx:0,my:0},before=JSON.stringify(input);
+ const blocked=pressureGymLeaderInput(scene,actor,foe,input,{nextBasicAt:0});
+ assert.equal(blocked.lmb,undefined);
+ assert.equal(JSON.stringify(input),before,'no native input mutation');
+ foe.est.vuelo.hasta=6;
+ const allowed=pressureGymLeaderInput(scene,actor,foe,input,{nextBasicAt:0});
+ assert.equal(allowed.lmb,true);
+ assert.equal(allowed.ax,foe.x);
+});
