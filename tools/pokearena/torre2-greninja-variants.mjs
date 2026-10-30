@@ -35,8 +35,8 @@ export function patchGreninjaAspectSource(source){
  // The original hides BLACK whenever BLACK+RED is unlocked and locks most
  // colors behind Discord. In this independent, free, OFFLINE fan game only,
  // allow both skins together. Do not touch the original client or its server.
- s=replaceOnce(s,'function abiertos(id){const t=todos(id);',
-  'function abiertos(id){if(id==="froakie")return todos(id);const t=todos(id);',
+ s=replaceOnce(s,'function abiertos(id){',
+  'function abiertos(id){if(id==="froakie")return todos(id);',
   'five skins visible with no Discord dependency');
  // Leave the original navy Froakie selected by default rather than silently
  // forcing the first unlocked variant on existing users without preferences.
