@@ -43,6 +43,9 @@ test('every TM is hidden and cannot be bought before its particular leader is de
   assert.equal(core.purchaseItem(atStage,tm.id).ok,false,tm.id+' bypasses badge');
   atStage.badges.push(core.GYMS[gym].badge);
   assert.ok(routes.martItemUnlocked(atStage,tm),tm.id+' must unlock on victory');
+  // Original Kanto migration awards leader TMs once. An already owned gym TM
+  // cannot be bought again; simulate spending it before a paid replacement.
+  atStage.inventory.tms=atStage.inventory.tms.filter(id=>id!==tm.id);
   assert.equal(core.purchaseItem(atStage,tm.id).ok,true,tm.id+' paid purchase denied');
  }
  assert.ok(routes.MART_ITEMS.filter(i=>i.kind!=='tm').every(i=>
