@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8/31/33/36/37 · T07/T08 Charmander/Squirtle e nova base de testes
+
+- **§7/§8/§31 PARCIAIS:** [CI #40994024445](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40994024445) **SUCESSO** no HEAD `ec159a49`, com três vitórias nativas Phaser/AUTO para Charmander e três para Squirtle, XP Lv5→8, reload e ULT no slot E. **Nenhuma ULT foi lançada** (ambas `ultCast:false`); cenário inicial via API, controle táctil simulado no navegador, não Pallet→Campeão ou Android físico. [CI #40987990223](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40987990223) havia registrado derrota genuína de Charmander, logo não há prova de consistência de balanceamento; Ember/Struggle 2/3 ainda não satisfazem três golpes oficiais Lv5.
+- **§33 PARCIAL:** [PR #327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327) sincronizada sem perder histórico: merge commit `c51972c0` incorpora `main` `3f920834`, preservando somente teste/workflow no diff. [CI #40999290700](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40999290700) em execução; não considerar aprovada até terminar.
+- **§36 PARCIAL:** nenhuma mudança de runtime, 227 VFX aprovados, sprites, cooldowns, TMs, saves, Toxic #16 ou Shiny #17; Scratch adiado, Surf reprovado. Fonte original P2 capturada uma vez em 30/10 às 00:06 Brasília, `src-ccb26f5340`; não alegar novos golpes sem diff verificável.
+- **§37 PARCIAL:** #327 permanece sem merge/deploy; Pages HTTP/SHA deste patch **não confirmado**. A publicação corrente de `main` tem CI/Pages próprias e não deve ser atribuída à PR. Faltam provas integrais das 37 seções e campanha natural até o Campeão.
+
 ## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08 Charmander perdeu combate nativo; #327 revisada
 
 - **§7/§8/§31 PARCIAIS:** [CI #40987990223](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40987990223) registrou derrota genuína de Charmander Lv5 contra Pidgey Lv6 no primeiro combate AUTO: 0 vitórias, 1 derrota, HP 0 contra 27,78/48. O catálogo compilado mostra Ember, Struggle 2, Struggle 3. Não é prova de desbloqueio da ULT por XP para Charmander; Squirtle não foi executado nesse run.
