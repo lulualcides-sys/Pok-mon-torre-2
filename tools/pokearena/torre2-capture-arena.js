@@ -4,11 +4,18 @@ import {serializeGen3Status} from './gen3-status.js';
  * Four internal RNG checks determine the outcome, never four attempts.
  * Separate from approved Arena 2D Pokémon sprites and move effects.
  */
-import {captureChance,fighterCaptureStatus} from './capture-mechanics.js';
+import {fighterCaptureStatus} from './capture-mechanics.js';
 import {drawBallSprite,originalBallSprite,ballTextureKey,setBallOpened} from './ball-sprites.js';
 import {readCampaign,saveCampaign,attemptCapture} from './campaign-core.js';
 import {ballArc,drawRedBeam,drawReleaseBurst,drawGotchaSparkles,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
 const FONT='Pixelify Sans,monospace';
+// Prefer affordable stock; no automatic Ultra Ball waste while normal
+// Pokéballs remain. One tap always consumes exactly one ball on impact.
+export function selectCaptureBall(inventory){
+ return ['pokeball','greatball','ultraball'].find(kind=>
+  Number.isInteger(inventory?.[kind])&&inventory[kind]>0)||null;
+}
+
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 // One ball atlas drives captures, party switch, and Pokéball HUD.
 export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opened=false){
@@ -42,11 +49,14 @@ export function installWildCapture(scene){
  const enemy=scene.luchadores?.[1];
  if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
- const hud=frame(scene,390,41,160,42);
- const icon=originalBallSprite(scene,405,53,'pokeball',16,2705);
- txt(scene,422,47,'CAPTURAR',11,'#fff0b9');
- const hpLine=txt(scene,401,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
- hit(scene,470,61,160,42,showChoices);
+ // One compact Pokéball icon performs ONE actual throw. Ordinary Pokéballs
+ // are used first; Great/Ultra are fallbacks only when cheaper stock runs out.
+ // The old 3-row ball selection modal and its aim phase are removed.
+ frame(scene,451,43,38,36).setDepth(7200);
+ originalBallSprite(scene,470,61,'pokeball',24,7205);
+ hit(scene,470,61,40,39,(_pointer,_x,_y,event)=>{
+  event?.stopPropagation?.();captureOnce();
+ }).setDepth(7210).setData('torre2-single-capture',true);
  // FireRed-style RUN is valid only for a wild encounter. The trainer and
  // original Arena battles never install this overlay. Unlike a KO, fleeing
  // has no win, loss, XP, badge or capture roll. Preserve live party HP/status
@@ -84,50 +94,30 @@ export function installWildCapture(scene){
   scene.fase='torre2-escape';
   scene.scene.start('campanha');
  }).setDepth(7206).setData('torre2-wild-run',true);
- let menu=[],busy=false,activeVisuals=[];
+ let busy=false,activeVisuals=[];
  const portraitCenter=()=>{
   const sprite=enemyPortrait(enemy);
   return sprite?snapshotBody(enemy).center:{x:Number(enemy.x)||444,y:Number(enemy.y)||221};
  };
  const cleanup=()=>{
-  scene.events.off('update',refresh);
   scene.__torre2WildCapture=false;scene.__torre2CaptureBusy=false;
   for(const item of activeVisuals)item.destroy?.();
   activeVisuals=[];
  };
  scene.events.once('shutdown',cleanup);
- function refresh(){
-  if(!scene.scene.isActive()||!enemy.hpMax)return;
-  const percent=Math.max(0,Math.ceil(100*enemy.hp/enemy.hpMax));
-  hpLine.setText('HP '+percent+'% · '+(percent<=25?'BOA CHANCE':
-   percent<=50?'ENFRAQUECIDO':'ENFRAQUEÇA'));
- }
- scene.events.on('update',refresh);refresh();
- function add(item){menu.push(item);return item}
- function close(){for(const item of menu)item.destroy?.();menu=[];
-  if(scene.fase==='torre2-aim')scene.fase='lucha';}
- function showChoices(){
-  if(busy||enemy.hp<=0||scene.__torre2Changing||scene.__torre2BallTransitions||!['lucha','torre2-aim'].includes(scene.fase))return;
-  close();
-  const state=readCampaign();if(!state?.pendingWild)return;
-  scene.fase='torre2-aim';
-  add(frame(scene,173,109,299,169));
-  add(txt(scene,188,119,'LANÇAR POKÉBOLA',15,'#ffe5a4'));
-  const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
-  add(txt(scene,187,142,state.pendingWild.id.toUpperCase()+
-   ' · HP '+hp+'%',11,'#d2f5e5'));
-  const labels={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL'};
-  for(const [i,kind]of ['pokeball','greatball','ultraball'].entries()){
-   const y=178+i*27,owned=state.inventory[kind]||0;
-   add(originalBallSprite(scene,200,y+4,kind,16,2708));
-   const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,
-    status:fighterCaptureStatus(enemy)},kind);
-   add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
-    '  '+Math.round(chance*100)+'%',10,owned?'#f9f6e9':'#a88c9b'));
-   if(owned)add(hit(scene,316,y+8,275,25,()=>throwBall(kind)));
+ function captureOnce(){
+  if(busy||enemy.hp<=0||scene.__torre2Changing||
+     scene.__torre2BallTransitions||scene.__torre2BattleBagOpen||
+     scene.fase!=='lucha'||!scene.scene.isActive())return;
+  const state=readCampaign();
+  if(!state?.pendingWild)return;
+  const kind=selectCaptureBall(state.inventory);
+  if(!kind){
+   const msg=txt(scene,470,91,'SEM POKÉBOLAS!',10,'#ffb5ad').setOrigin(.5);
+   scene.time.delayedCall(1300,()=>msg.active&&msg.destroy());
+   return;
   }
-  add(txt(scene,225,265,'TOQUE NA MARGEM PARA VOLTAR',8,'#9bd9dc'));
-  add(hit(scene,324,290,250,17,close));
+  throwBall(kind);
  }
  function throwBall(kind){
   if(busy||enemy.hp<=0||!enemy.hpMax)return;
@@ -160,7 +150,7 @@ export function installWildCapture(scene){
    save.active=party.playerIndex;
   }
   const aimed=portraitCenter();
-  busy=true;scene.__torre2CaptureBusy=true;close();
+  busy=true;scene.__torre2CaptureBusy=true;
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
   // Exactly one inventory decrement, one capture roll and one projectile.
   const oldPhase=scene.fase;scene.fase='capturando';
