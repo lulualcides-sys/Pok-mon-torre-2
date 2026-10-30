@@ -3,10 +3,14 @@ on:
   pull_request:
     paths:
       - 'tools/pokearena/torre2-capture-arena.js'
+      - 'tools/pokearena/torre2-ball-sprites.js'
+      - 'tools/pokearena/torre2-ball-choreography.js'
       - 'tools/pokearena/torre2-campaign-scene.js'
       - 'tools/pokearena/torre2-party-battle.js'
       - 'tools/pokearena/torre2-campaign-art.js'
       - 'tests/misty-wild-capture-ui-built.test.mjs'
+      - 'tests/original-ball-capture.test.js'
+      - 'tests/ball-choreography-browser.cjs'
       - '.github/workflows/capture-misty-ui-validation.yml'
 permissions:
   contents: read
@@ -42,3 +46,4 @@ jobs:
           CHROME_BIN: /usr/bin/google-chrome
         run: |
           node tests/t06-desktop-capture-browser.cjs
+          node tests/ball-choreography-browser.cjs
