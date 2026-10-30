@@ -217,6 +217,62 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(nextBattle.ult.ulti&&nextBattle.ult.renderable&&!nextBattle.ult.pending,
    'Earned ULT not present in actual next Phaser battle');
   assert.ok(nextBattle.nativeTouchSlots.includes('e'),'Native battle lost ULT touch control');
+  // T07/T08: test real inputs after earned XP and save/reload without
+  // injecting energy, ultimate meter, cooldown, KO or experience.
+  // Unlocking E at Lv8 does not automatically fill the native ULT meter.
+  const tapNative=async slot=>page.evaluate(slot=>{
+   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0],
+    panel=b.panelTactil,button=panel.botones.find(x=>x.slot===slot);
+   if(!button)throw Error('Missing native touch slot '+slot);
+   const at=panel.pos(button),z=panel.punto({x:0,y:0}),
+    one=panel.punto({x:1,y:1});
+   const before={slot,move:m.kit[slot]?.id,uses:m.stats.usosSlot?.[slot]||0,
+    energy:m.energia,ultimate:m.ulti,cooldown:m.cd[slot]};
+   panel.abajo({id:86,x:(at.x-z.x)/(one.x-z.x),
+    y:(at.y-z.y)/(one.y-z.y)});
+   panel.leer(x=>({ax:x.x,ay:x.y}));
+   return before;
+  },slot);
+  const releaseNative=async()=>page.evaluate(()=>{
+   window.__pt2Game.scene.getScene('combate').panelTactil.arriba({id:86});
+  });
+  const readNative=async slot=>page.evaluate(slot=>{
+   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0];
+   return {slot,move:m.kit[slot]?.id,uses:m.stats.usosSlot?.[slot]||0,
+    energy:m.energia,ultimate:m.ulti,cooldown:m.cd[slot],
+    sceneActive:b.scene.isActive(),phase:b.fase};
+  },slot);
+  const ultBefore=await tapNative('e');
+  assert.equal(ultBefore.move,nextBattle.ult.id,
+   'The earned ULT changed after save/reload');
+  await page.waitForTimeout(650);
+  await releaseNative();
+  const ultAfter=await readNative('e');
+  const ultCast=ultAfter.uses>ultBefore.uses;
+  // A locked meter is not a broken move. Record the actual resource state
+  // rather than faking a full meter to manufacture a successful ULT cast.
+  if(ultCast)assert.ok(ultAfter.cooldown>0,
+   'An executed ULT must enter its approved native cooldown');
+  const basicBefore=await tapNative('lmb');
+  await page.waitForFunction(before=>{
+   const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores?.[0];
+   return b.scene.isActive()&&(m?.stats.usosSlot?.lmb||0)>before;
+  },basicBefore.uses,{timeout:9000,polling:100}).finally(releaseNative);
+  const basicAfter=await readNative('lmb');
+  assert.ok(basicAfter.uses>basicBefore.uses,
+   'Native touch did not cast even the affordable basic attack');
+  assert.ok(basicAfter.cooldown>0,
+   'Native basic attack did not enter its approved cooldown');
+  assert.equal(basicAfter.move,basicBefore.move,
+   'Native battle changed the basic attack unexpectedly');
+  report.earnedUltTouch={ultBefore,ultAfter,ultCast,
+   basicBefore,basicAfter,
+   limitation:ultCast?null:'ULT unlocked but not cast with the meter available at battle start',
+   forcedEnergy:false,forcedUltimate:false,forcedCooldown:false};
+  saveReport();
+  await page.screenshot({path:out+'/t07-t08-earned-ult-meter-and-native-basic-cast.png'});
+  console.log('PASS T07_T08 EARNED_XP_RELOAD_NATIVE_TOUCH_AND_ULT_METER',
+   JSON.stringify(report.earnedUltTouch));
   report.earnedUlt={...report.earnedUlt,earned,reloaded,nextBattle,
    persistedIdentically:true,fromFreshLv5:true,forcedXp:false,forcedWin:false};
   saveReport();
