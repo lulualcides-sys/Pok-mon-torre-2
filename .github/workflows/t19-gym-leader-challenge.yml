@@ -41,6 +41,7 @@ jobs:
           node tests/trainer-strategy-browser.cjs
           node tests/t12-trainer-native-ai-after-switch-browser.cjs
           node tests/t26-kanto-leaders-badges-mobile-browser.cjs
+          node tests/t19-gym-leader-challenge-browser.cjs
       - name: Full applicable browser regression suite
         run: |
           set -euo pipefail
