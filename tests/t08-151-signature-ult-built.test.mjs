@@ -34,7 +34,19 @@ for(const {id,tipos} of KANTO_151){
    GEN7_LETSGO_LEVEL_UP,EARLY_KANTO_LEARNSETS,GEN5_KANTO_LEVEL_UP],
   verifiedParents:KANTO_LEVEL_EVOLUTIONS,speciesTypes:tipos};
  const signature=chooseKantoSignatureUlt(id,TEST_LIBRARY,context);
- if(!signature)exceptions.push(id);
+ if(!signature){
+  exceptions.push(id);
+  // Diagnostic only: preserve the 149/150 gate; identify the real missing
+  // approved VFX and its source lock instead of lowering the assertion.
+  const verified=verifiedLevelUpNames(id,context);
+  const installed=TEST_LIBRARY.filter(m=>verified.has(String(m.nombre||'').toLowerCase()
+   .replace(/[^a-z0-9]+/g,'-'))).map(m=>({
+    id:m.id,name:m.nombre,damage:m.dano,source:m.source,forma:m.forma,
+    pending:!!m.pendiente,unavailable:!!m.torre2Unavailable,
+    tm:!!m.torre2RequiresTM,hm:!!m.torre2RequiresHM
+  }));
+  console.error('T08_MISSING_SIGNATURE',JSON.stringify({id,installed}));
+ }
  else{
   previewSignatures++;
   assert.ok(verifiedLevelUpNames(id,context).has(signature.id),
