@@ -191,6 +191,7 @@ await Promise.all([
  ['tools/pokearena/torre2-gen3-status.js','gen3-status.js'],
  ['tools/pokearena/torre2-trainer-items.js','trainer-items.js'],
  ['tools/pokearena/torre2-trainer-strategy.js','trainer-strategy.js'],
+ ['tools/pokearena/gym-leader-loadouts.js','gym-leader-loadouts.js'],
  ['tools/pokearena/torre2-training.js','training.js'],
  ['tools/pokearena/torre2-weather.js','weather.js'],
  ['tools/pokearena/torre2-weather-pixels.js','weather-pixels.js'],
