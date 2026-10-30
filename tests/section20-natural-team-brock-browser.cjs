@@ -380,6 +380,9 @@ const server=http.createServer(async(req,res)=>{
     null,{timeout:5000});
    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat.png'});
    const started=Date.now();
+   // Browser-only telemetry. Observe passive Phaser state every ~12 real
+   // seconds; never call the native AI reader, modify combat or fake wins.
+   await page.evaluate(()=>{window.__t20CombatTrace=[];window.__t20FinSince=null;});
    try{
     // Native combat sometimes reaches fase='fin' after the final KO but
     // never returns to campanha. Diagnose that deadlock promptly instead
@@ -391,6 +394,26 @@ const server=http.createServer(async(req,res)=>{
      if(window.__pt2Game.scene.isActive('campanha')&&
        !!s&&(s.wins===previousWins+1||s.losses>previousLosses))return 'saved-result';
      const b=window.__pt2Game.scene.getScene('combate');
+     const now=performance.now(),samples=window.__t20CombatTrace||[];
+     if(b.scene.isActive()&&(!samples.length||now-samples.at(-1).ms>=12000)){
+      const actors=b.luchadores||[],p=b.datos?.torre2?.party;
+      const actor=m=>m?{
+       x:Number(m.x),y:Number(m.y),hp:Number(m.hp),hpMax:Number(m.hpMax),
+       energia:Number(m.energia),calor:Number(m.calor),
+       ko:!!m.ko,dash:!!m.dash,accion:!!m.accion,
+       cd:{lmb:m.cd?.lmb,rmb:m.cd?.rmb,q:m.cd?.q,e:m.cd?.e},
+       uses:{lmb:m.stats?.usosSlot?.lmb,rmb:m.stats?.usosSlot?.rmb,
+        q:m.stats?.usosSlot?.q,e:m.stats?.usosSlot?.e},
+       basic:{name:m.kit?.lmb?.nombre,range:m.kit?.lmb?.alcance,
+        cost:m.kit?.lmb?.coste,pending:m.kit?.lmb?.pendiente},
+       rivalRef:actors.indexOf(m.rival)
+      }:null;
+      samples.push({ms:now,phase:b.fase,time:b.t,auto:!!b.__torre2AutoMode?.enabled,
+       playerIndex:p?.playerIndex,enemyIndex:p?.enemyIndex,
+       actors:actors.map(actor)});
+      if(samples.length>16)samples.shift();
+      window.__t20CombatTrace=samples;
+     }
      if(b.scene.isActive()&&b.fase==='fin'){
       window.__t20FinSince??=performance.now();
       if(performance.now()-window.__t20FinSince>12000)return 'stuck-native-fin';
@@ -414,7 +437,14 @@ const server=http.createServer(async(req,res)=>{
       installed:b.__torre2PartyInstalled,changing:b.__torre2Changing,
       bagOpen:b.__torre2BattleBagOpen,ballTransitions:b.__torre2BallTransitions,
       paused:b.pausado,clockPaused:b.time?.paused,
-      clockScale:b.time?.timeScale,gameTimeScale:b.game?.loop?.timeScale};
+      clockScale:b.time?.timeScale,gameTimeScale:b.game?.loop?.timeScale,
+      auto:{enabled:b.__torre2AutoMode?.enabled,
+       actorSpecies:b.__torre2AutoMode?.autoSpecies,
+       brain:b.__torre2AutoMode?.ai?.c?{
+        pBasico:b.__torre2AutoMode.ai.c.pBasico,
+        pConGanas:b.__torre2AutoMode.ai.c.pConGanas,
+        pSinGanas:b.__torre2AutoMode.ai.c.pSinGanas}:null},
+      telemetry:(window.__t20CombatTrace||[]).slice(-16)};
     });
     await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-failure.png'});
     saveReport();
