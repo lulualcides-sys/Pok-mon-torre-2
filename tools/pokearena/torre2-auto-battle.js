@@ -1,3 +1,4 @@
+import {WEATHER_MOVES,weatherSpeciesMultiplier} from './weather.js';
 /* Optional single-player AUTO button backed by the native Poké Arena IA.
  * Kanto campaign starts ON; original Arena modes start OFF. No stat bonuses,
  * battle math, cooldown or approved VFX changes. */
@@ -99,6 +100,54 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
  // added LMB; never override a native skill, dash, dodge or manual controls.
  return {...output,lmb:true,ax:foe.x,ay:foe.y};
 }
+export function chooseCampaignAutoWeatherInput(scene,actor,input){
+ if(!scene?.datos?.torre2||scene.fase!=='lucha'||scene.pausado||
+   scene.__torre2Changing||scene.__torre2BattleBagOpen||
+   scene.__torre2BallTransitions||scene.__torre2CaptureBusy||
+   !actor||!input||typeof input!=='object'||actor.ko||
+   !(Number(actor.hp)>0)||!(Number(actor.hpMax)>0)||
+   actor.hp/actor.hpMax<.35||actor.dash||
+   actor.accion?.bloquea||actor.est?.aturdido||
+   actor.est?.dormido||actor.est?.congelado||actor.est?.recarga||
+   input.esp||input.mega||input.rmb||input.q||input.e)return input;
+ const foe=livingCampaignOpponent(scene,actor);
+ if(!foe||!Array.isArray(actor.tipos)||!actor.tipos.length||
+   !Array.isArray(foe.tipos)||!foe.tipos.length)return input;
+ const weather=scene.__torre2Weather;
+ if(!weather||typeof weather.kind!=='string')return input;
+ const score=kind=>{
+  if(!kind||kind==='none')return 0;
+  const status={kind,remaining:20};
+  const own=weatherSpeciesMultiplier(status,actor.tipos);
+  const rival=weatherSpeciesMultiplier(status,foe.tipos);
+  return (own-1)+(1-rival)*.75;
+ };
+ const existing=weather.remaining>0?weather.kind:'none';
+ const baseline=score(existing);
+ // Campaign's ordinary abilities are RMB and Q; E is an exclusive ULT.
+ // Never equip a new move here: the Pokémon must already own this kit.
+ for(const slot of ['rmb','q']){
+  const move=actor.kit?.[slot],kind=WEATHER_MOVES[move?.nombre];
+  if(!kind||!move.forma||move.pendiente||move.torre2Unavailable)continue;
+  const remaining=Number(weather.remaining)||0;
+  if(existing===kind&&remaining>3.5)continue;
+  const advantage=score(kind),gain=advantage-
+   (existing===kind?0:baseline);
+  // Avoid a neutral/negative spell unless it dispels a hostile climate.
+  if((advantage<.12&&!(baseline<-.15&&advantage>=0))||
+     gain<.12)continue;
+  if(!Number.isFinite(actor.cd?.[slot])||actor.cd[slot]>0||
+     !Number.isFinite(actor.energia)||actor.energia<Number(move.coste||0)||
+     Number(actor.calor??0)>=80)continue;
+  const danger=Array.isArray(scene.efectos)&&scene.efectos.some(effect=>
+   effect?.vivo&&effect?.dueno&&effect.dueno!==actor&&
+   Number.isFinite(effect.x)&&Number.isFinite(effect.y)&&
+   Math.hypot(effect.x-actor.x,effect.y-actor.y)<95);
+  if(danger)return input;
+  return {...input,lmb:false,rmb:slot==='rmb',q:slot==='q',e:false,mega:false};
+ }
+ return input;
+}
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
 const OFFLINE_MODES=new Set(['cpu','entreno','arena']);
@@ -178,7 +227,7 @@ export function installAutoBattle(scene,makeNativeAI){
   const pressured=pressureCampaignAutoInput(scene,fighter,it,state.ai);
   if(!it.lmb&&pressured.lmb)stats.assistedBasicFrames++;
   if(pressured.mx!==it.mx||pressured.my!==it.my)stats.assistedChaseFrames++;
-  return {...pressured,mega:false};
+  return {...chooseCampaignAutoWeatherInput(scene,fighter,pressured),mega:false};
  };
  original.leer=safeRead;
  scene.__torre2AutoMode=state;
