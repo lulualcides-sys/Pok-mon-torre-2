@@ -69,6 +69,16 @@ const server=http.createServer(async(req,res)=>{
     return {x:r.left+item.x*r.width/640,y:r.top+item.y*r.height/360};
    },id);
    await page.mouse.click(pos.x,pos.y);
+   await page.waitForTimeout(320);
+   const probe=await page.evaluate(id=>{
+    const s=window.__pt2Game.scene.getScene('seleccion'),a=window.__greninjaAspectos;
+    return {id,saved:JSON.parse(localStorage.getItem('pa-aspectos')||'{}').froakie,
+     selected:a.aspectoDe('froakie'),texture:s.paneles[0].sprite?.texture?.key,
+     selector:!!s.paneles[0].selector,positions:s.paneles[0].posVersiones,
+     canvas:document.querySelector('#juego canvas')?.getBoundingClientRect().toJSON(),
+     current:s.eleccion[0]};
+   },id);
+   console.log('GRENINJA_SELECTOR_PROBE',JSON.stringify({pos,probe}));
    await page.waitForFunction(id=>{
     const s=window.__pt2Game.scene.getScene('seleccion');
     return window.__greninjaAspectos.aspectoDe('froakie')===id&&
