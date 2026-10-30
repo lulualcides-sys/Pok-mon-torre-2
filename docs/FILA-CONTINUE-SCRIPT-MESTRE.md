@@ -1,5 +1,11 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — T22: bloqueio real do Pages por clique prematuro no VS Seeker (sem alterar o jogo)
+
+- **Patch integrado:** [PR #343](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/343), squash `31ec7e98e1d06f56373311c223aaf6e6e733fbf9`. O [Pages #41014661865](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41014661865) **FALHOU** antes do deploy: o teste Chromium clicava no mapa Brock do VS Seeker antes de o Phaser registrar a nova zona interativa. O ponteiro real (224,162) correspondia ao mundo (112,81); a escala estava correta. Não era justificável alterar controles de produção ou desabilitar o teste.
+- **Correção comprovada em PR:** o teste agora aguarda a **hit-test nativa** registrar a zona, realiza clique de mouse real e verifica a mudança de mapa. [CI de branch #41016990703](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41016990703) **SUCESSO**, incluindo npm test, check, check:reuse, build Phaser e Chromium (VS Seeker, source smoke e regressão de revanche). [CI main #41017487843](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41017487843) iniciada; **Pages SHA/HTTP ainda não confirmado neste checkpoint**.
+- **Limite:** é correção de sincronização do teste, não nova implementação de golpes, captura ou campanha. T07/T08 e T20 continuam PARCIAIS; não inventar vitória em Brock ou 151 partidas reais. Scratch adiado e Surf reprovado conforme a instrução atual. Saves, 227 VFX aprovados, sprites, TMs e cooldowns intocados.
+
 **CHECKPOINT MAIS RECENTE (30/10/2026):** [T07/T08 e T20 — evidências verificadas, bloqueios e próxima etapa](CHECKPOINT-SCRIPT-MESTRE-2026-10-30.md). Histórico abaixo preservado; nunca interpretar um teste pendente como sucesso, nem reiniciar as seções já integradas.
 
 ## 29/10/2026 — T20: OITO vitórias reais com inicial de produção, ULT Lv8 e reload comprovados
