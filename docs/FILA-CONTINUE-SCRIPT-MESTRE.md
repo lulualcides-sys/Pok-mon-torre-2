@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T07/T08 · três vitórias nativas Lv5→8 e persistência (#321)
+
+- **Teste integrado:** [PR #321](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/321), squash `766dcc0b1d2a8fa22be941b409f2691bcc74281a`. [CI HEAD #40982113567](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40982113567) **SUCESSO**, inclusive `npm test`, `check`, `check:reuse`, build Phaser/WebGL, matriz de movesets e regressão Chromium completa. O teste jogou Pidgey, Rattata e Caterpie em três lutas consecutivas com Bulbasaur Lv5→6→7→8 por XP e recompensas nativos, sem injetar KO, XP, HP ou medidor. Ao fim: três vitórias, zero derrotas, Lv8, 602 XP, save/reload preservado, ULT Solar Beam no slot E da batalha seguinte; golpe básico Tackle foi executado pelo controlador nativo no Chromium.
+- **Limites importantes:** seleção inicial e transferência de Mewtwo para PC foram feitas por API de preparação de teste, não pela interface de jogo novo; `panelTactil` foi acionado no contexto do navegador, não em touchscreen físico. A ULT **não foi lançada** (`ultCast=false`), pois o medidor estava insuficiente. Não equivale a 151 campanhas, Pallet→Campeão nem Android físico. O patch contém somente teste/workflow; não modifica runtime, VFX, sprites, TMs, cooldowns ou saves.
+- **Publicação:** Pages e HTTP do SHA de merge **ainda não verificados nesta anotação**; §37 e T07/T08 continuam **PARCIAIS**. Próxima prioridade: demonstrar lançamento da ULT com medidor carregado naturalmente e progressão/evoluções em campanha sem fixture inicial, preservando os 227 efeitos aprovados e as restrições do usuário.
+
+
 ## 29/10/2026 — T20 PRIORIDADE: 5 chefes reais da Liga no mesmo save — PR #210 integrada
 
 - **Teste integrado:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210), merge `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO**, jogou Lorelei→Bruno→Agatha→Lance→Campeão com o mesmo save, cinco vitórias Phaser legítimas, curas pelo Centro, reloads sem perda, Hall da Fama. [CI main #40977593904](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977593904) **SUCESSO**.
