@@ -43,10 +43,20 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          failures=0
           for starter in charmander squirtle; do
             echo "START_NATIVE_LV8_PROOF=$starter"
-            T07_STARTER="$starter" node tests/t07-earned-level8-three-natural-wins-touch-browser.cjs
+            if T07_STARTER="$starter" node tests/t07-earned-level8-three-natural-wins-touch-browser.cjs; then
+              echo "PASS_NATIVE_LV8_PROOF=$starter"
+            else
+              echo "FAIL_NATIVE_LV8_PROOF=$starter (genuine result preserved)"
+              failures=$((failures+1))
+            fi
           done
+          if [ "$failures" -ne 0 ]; then
+            echo "FAILED_NATIVE_LV8_STARTERS=$failures"
+            exit 1
+          fi
       - name: Regressões completas Chromium Phaser
         run: |
           set -euo pipefail

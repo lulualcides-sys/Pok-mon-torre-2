@@ -72,6 +72,11 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(['lmb','rmb','q'].every(slot=>firstKit[slot]?.forma&&!firstKit[slot]?.pendiente),
    'Legitimate Lv5 starter must have three usable native attacks');
   assert.equal(firstKit.e,undefined,'Legitimate Lv5 starter cannot equip ULT');
+  report.initialKit=Object.fromEntries(['lmb','rmb','q'].map(slot=>[slot,{
+   id:firstKit[slot]?.id,name:firstKit[slot]?.nombre,type:firstKit[slot]?.tipo,
+   damage:firstKit[slot]?.dano,cooldown:firstKit[slot]?.cd,
+   practice:firstKit[slot]?.torre2IntroPractice===true
+  }]));
   report.earnedUlt={initial:{level:5,experience:before.team[0].experience,ultLocked:true},unlockedAt:null};
   const names=['pidgey','rattata','caterpie'];
  const total=3;
@@ -110,8 +115,12 @@ const server=http.createServer(async(req,res)=>{
    try{
     await page.waitForFunction(round=>{
      const s=window.kanto.readCampaign();
-     return window.__pt2Game.scene.isActive('campanha')&&s?.wins===round+1;
+     return window.__pt2Game.scene.isActive('campanha')&&
+      (s?.wins===round+1||s?.losses>0);
     },round,{timeout:240000,polling:250});
+    const outcome=await game();
+    if(outcome.losses>0)
+     throw new Error('Genuine native defeat, not a completed victory: '+JSON.stringify(outcome));
    }catch(error){
     entry.failedReason=String(error);
     entry.game=await game();
@@ -120,7 +129,16 @@ const server=http.createServer(async(req,res)=>{
      return {active:b.scene.isActive(),phase:b.fase,
       hp:b.luchadores?.map(m=>({hp:m.hp,hpMax:m.hpMax})),
       playerIndex:b.datos?.torre2?.party?.playerIndex,
-      enemyIndex:b.datos?.torre2?.party?.enemyIndex};
+      enemyIndex:b.datos?.torre2?.party?.enemyIndex,
+      autoEnabled:b.__torre2AutoMode?.enabled,
+      fighters:b.luchadores?.map(m=>({
+       species:m?.datos?.id||m?.id,
+       usedSlots:m?.stats?.usosSlot,
+       energy:m?.energia,ultimateMeter:m?.ulti,
+       moves:Object.fromEntries(['lmb','rmb','q','e'].map(slot=>[slot,m?.kit?.[slot]?{
+        id:m.kit[slot].id,name:m.kit[slot].nombre,damage:m.kit[slot].dano,
+        type:m.kit[slot].tipo,cd:m.cd?.[slot]}:null]))
+      }))};
     });
     await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-failure-'+starter+'.png'});
     saveReport();
