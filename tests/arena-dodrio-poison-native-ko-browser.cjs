@@ -44,7 +44,7 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
     }),id);
    await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&
     window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:25000});
-   const pre=await page.evaluate(()=>{
+   const pre=await page.evaluate(species=>{
     const scene=window.__pt2Game.scene.getScene('combate');
     const src=scene.luchadores[0],victim=scene.luchadores[1];
     const actualPoison=src.kit.rmb?.veneno; // Original Gengar Sludge Bomb metadata.
@@ -56,7 +56,10 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
     src.inmortal=true; // Protect only the unrelated attacker so no other round starts.
     scene.controles[0].leer=()=>({mx:0,my:0,ax:src.x,ay:src.y});
     scene.controles[1].leer=()=>({mx:0,my:0,ax:victim.x,ay:victim.y});
-    victim.hp=9; // Low opening HP, not an injected knockout.
+    victim.hp=species==='dodrio'?10.4:9;
+    // Dodrio: 10.4 - 5*2 native poison ticks = 0.4 HP without the
+    // repair. HUD renders an empty bar, but an unpatched KO never fires.
+    // Doduo: conventional integer lethal HP control case.
     const realKO=scene.alKO;
     window.__dodrioPoisonEvent=null;window.__dodrioPoisonCount=0;
     scene.alKO=function(fallen,from){
@@ -71,8 +74,8 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
     return {species:victim.nombre,base:victim.def.id,stage:victim.etapa,hp:victim.hp,
      hpMax:victim.hpMax,regen:victim.regen,poison:actualPoison,
      poisonApplied:!!victim.est.veneno,phase:scene.fase};
-   });
-   assert.equal(pre.hp,9);
+   },id);
+   assert.equal(pre.hp,id==='dodrio'?10.4:9);
    assert.equal(pre.poisonApplied,true);
    assert.equal(pre.phase,'lucha');
    // Observes native status ticks and K.O. (no fake attacker damage).
@@ -97,7 +100,10 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
    assert.equal(event.count,1,id+' native KO must fire once');
    assert.equal(event.event.before.ko,true);
    assert.equal(event.event.before.hp,0);
-   assert.equal(event.event.before.poison,true);
+   // Native morir() clears all statuses BEFORE calling alKO; the
+   // already-asserted poisonApplied flag proves this K.O. came from a
+   // real poison tick, not fabricated damage or manual alKO.
+   assert.equal(event.event.before.poison,false);
    assert.equal(event.event.before.phase,'lucha');
    assert.equal(event.event.after.phase,'ko');
    assert.equal(event.event.after.score[0],1);
