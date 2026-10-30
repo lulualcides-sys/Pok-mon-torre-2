@@ -184,6 +184,19 @@ export function drawTrainer(g,cx,cy,kind='youngster',scale=1){
  }
 }
 function px(g,x,y,w,h,c){g.fillStyle(c,1);g.fillRect(Math.round(x),Math.round(y),w,h)}
+// Original Pokémon FireRed/LeafGreen GBA icon files bundled by the build.
+export const FRLG_MART_ICON_FILES=Object.freeze([
+ 'antidote','status_heal','full_heal','potion','large_potion',
+ 'poke_ball','great_ball','ultra_ball','tm_hm'
+]);
+export function frlgMartIcon(item){
+ if(item?.kind==='tm')return 'tm_hm';
+ const map={antidote:'antidote',paralyzeheal:'status_heal',
+  awakening:'status_heal',burnheal:'status_heal',iceheal:'status_heal',
+  fullheal:'full_heal',pokeball:'poke_ball',greatball:'great_ball',
+  ultraball:'ultra_ball',potion:'potion',superpotion:'large_potion'};
+ return map[item?.id]||null;
+}
 export function drawShopItem(g,cx,cy,item,scale=2){
  const kind=typeof item==='string'?item:item?.kind||'ball';
  const type=typeof item==='string'?item:item?.id||'pokeball';
@@ -226,10 +239,20 @@ export function drawShopItem(g,cx,cy,item,scale=2){
 export function shopItemSprite(scene,item){
  const key='torre2-mart-item-'+item.id;
  if(!scene.textures.exists(key)){
-  const g=scene.make.graphics({x:0,y:0,add:false});
-  drawShopItem(g,12,12,item,1);
-  g.generateTexture(key,24,24);
-  g.destroy();
+  const file=frlgMartIcon(item),native=file&&'torre2-frlg-mart-'+file;
+  if(native&&scene.textures.exists(native)){
+   // Same decoded original image; no per-card Graphics re-rasterization.
+   const bitmap=scene.textures.get(native).getSourceImage();
+   const texture=scene.textures.addImage(key,bitmap);
+   if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
+    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }else{
+   // Offline/test fallback only: approved existing pixel stencils.
+   const g=scene.make.graphics({x:0,y:0,add:false});
+   drawShopItem(g,12,12,item,1);
+   g.generateTexture(key,24,24);
+   g.destroy();
+  }
  }
  return key;
 }
