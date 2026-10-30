@@ -68,7 +68,7 @@ export function gotchaSparklePoints(progress){
  const t=clamp01(progress);
  // Three visible pixel-art twinkles, clustered around the captured ball.
  // No large rectangles, no permanent sparkle, and no shiny-Pokemon side effects.
- const seeds=[[-16,-15,0],[17,-14,.12],[0,-25,.22]];
+ const seeds=[[-16,-15,0],[17,-14,.07],[0,-25,.12]];
  return seeds.flatMap(([x,y,start])=>{
   const u=(t-start)/.76;
   if(u<0||u>=1)return [];
