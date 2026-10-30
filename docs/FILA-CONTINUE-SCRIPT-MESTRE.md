@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — T20: gate de evolução Caterpie corrigido, aguardando CI
+
+- **Falha verificada:** [CI #41021932709](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41021932709) reprovou após **duas vitórias reais** (Pidgey e Rattata), antes do terceiro combate, por esperar Caterpie quando o motor retornou Metapod. O adversário evolui legalmente de Caterpie no **Lv7** e de Metapod no Lv10; isso é um erro de expectativa do teste, **não uma derrota nem um VFX ausente**.
+- **Patch isolado:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit 2b12d3d9eab3788a8cc7c91bbbbde03706f1b6fb, verifica formas por limiares FRLG Lv7/10 e corrige a mensagem final para **13 treinadores + Brock**. Sintaxe JS analisada por V8; **CI/Chromium completo no novo HEAD ainda não confirmado**. Não há merge, deploy nem prova de Brock.
+- **Próximo gate:** aguardar CI do novo commit, examinar logs e artefatos; se verde, revisar compatibilidade com main, fazer merge apenas com todos os gates aprovados e verificar Pages SHA/HTTP. T07/T08 e T20 continuam **PARCIAIS**; nenhum golpe, VFX, sprite, TM, cooldown ou save alterado.
+
+
+
 ## 30/10/2026 — T20: Rocket vencida após oito vitórias selvagens; CI falhou por contador absoluto
 
 - **Evidência real, sem declaração de Brock:** [CI #41006367570](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41006367570) falhou no teste, mas o log prova cinco vitórias de treinador, duas capturas selvagens legais, oito vitórias selvagens com XP e **vitória contra Rocket**: `trainer=6`, `wins=14`, `losses=0`, `stage=0`. A falha foi um timeout de 240 segundos após a vitória, porque o teste esperava `wins===6` e ignorava oito vitórias selvagens acumuladas; combate nativo encerrado em `fase=fin`.
