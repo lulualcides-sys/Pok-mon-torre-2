@@ -31,6 +31,8 @@ test('VS cannot award XP, badges, TM or change saves',()=>{
  assert.doesNotMatch(source,/localStorage|saveCampaign|resolveBattle|resolveWildBattle|applyPartyBattleResult|damage|xpReward|grantGymTM/);
  assert.match(campaign,/if\(playVersusIntro\(this,match,enterCombat\)\)return/);
  assert.match(campaign,/if\(this\.scene\.isActive\(\)\)this\.scene\.start\('combate',match\)/);
+ assert.match(campaign,/if\(battle\.scene\.isActive\(\)\)combatEntered=true/);
+ assert.match(campaign,/combatEntered&&game\.scene\.isActive\('campanha'\)/);
 });
 test('build includes versus module and native cache fingerprint',()=>{
  assert.match(builder,/\['tools\/pokearena\/torre2-versus-intro\.js','versus-intro\.js'\]/);
