@@ -71,9 +71,9 @@ const server=http.createServer(async(req,res)=>{
    })).filter(o=>o.tag!==undefined||Math.abs(o.x-112)<100&&Math.abs(o.y-81)<25);
   });
   console.log('VS SEEKeR MAP POSITION TRACE',JSON.stringify(positions));
-  // The source client renders at 1280x720 with a 2x camera over
-  // 640x360 UI coordinates. The existing browser click is correct; capture
-  // actual native hit-testing before changing any production input logic.
+  // The source client renders a 640x360 UI via a 2x camera. The previous
+  // browser gate clicked before the newly created Phaser zone was registered.
+  // Wait for native input readiness, never invoke a button callback directly.
   const mapPoint=await page.evaluate(()=>{
    const scene=__pt2Game.scene.getScene('campanha');
    const zone=scene.children.list.find(o=>o.active&&o.input?.enabled&&
@@ -85,7 +85,13 @@ const server=http.createServer(async(req,res)=>{
     zone:{x:zone.x,y:zone.y,width:zone.width,height:zone.height}};
   });
   await page.mouse.move(mapPoint.x,mapPoint.y);
-  await page.waitForTimeout(100);
+  // Phaser queues freshly created interactive zones until the next input
+  // update. Wait for the REAL native hit-test instead of racing its queue.
+  await page.waitForFunction(()=>{
+   const scene=__pt2Game.scene.getScene('campanha');
+   return scene.input.hitTestPointer(__pt2Game.input.activePointer).some(o=>
+    o.active&&o.getData?.('torre2-rematch-map')===0);
+  },null,{timeout:8000});
   const pointerTrace=await page.evaluate(()=>{
    const scene=__pt2Game.scene.getScene('campanha'),pointer=__pt2Game.input.activePointer;
    const world=scene.cameras.main.getWorldPoint(pointer.x,pointer.y);
