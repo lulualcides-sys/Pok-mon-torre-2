@@ -1,0 +1,37 @@
+name: Pokémon Torre 2 — Memória Econômica (Node/Markdown)
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/memoria-contexto.yml'
+      - 'tools/dev/memoria-contexto.mjs'
+      - 'tests/memoria-contexto.test.js'
+      - 'docs/memoria/**'
+      - 'AGENTS.md'
+      - 'docs/ECONOMIA-DE-CONTEXTO-ASTRA.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  memoria:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sintaxe e regressões do handoff
+        run: |
+          node --check tools/dev/memoria-contexto.mjs
+          node --test tests/memoria-contexto.test.js
+      - name: Verificar saída resumida e integridade do contexto
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/dev/memoria-contexto.mjs --list
+          node tools/dev/memoria-contexto.mjs campanha > /tmp/contexto-campanha.md
+          grep -q 'SCRIPT-MESTRE-DEFINITIVO' /tmp/contexto-campanha.md
+          test "$(wc -c < /tmp/contexto-campanha.md)" -le 5500

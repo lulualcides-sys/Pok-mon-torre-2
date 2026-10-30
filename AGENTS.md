@@ -2,6 +2,12 @@
 
 Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de cada patch, consultar o índice `docs/GUIA-RAPIDO-REPOSITORIO.md` e abrir **somente** o código, testes e documentos necessários ao escopo. O plano de economia e suas limitações estão em `docs/ECONOMIA-DE-CONTEXTO-ASTRA.md`.
 
+## Memória operacional de baixo custo (Obsidian/Markdown)
+
+- **Antes da busca de código**, quando houver shell Node no checkout, executar `node tools/dev/memoria-contexto.mjs <area>` (consulte `--list`). As notas ficam em [`docs/memoria/00-INDICE.md`](docs/memoria/00-INDICE.md) e podem ser abertas localmente no Obsidian.
+- **Não usar resumo para substituir** a leitura integral da política de golpes, Script Mestre, fila e fontes obrigatórias. Sempre verificar HEAD/PRs/CI atuais; o comando é um índice pequeno, não memória viva nem prova de testes.
+- Graphiti está apenas catalogado no Arsenal, **não conectado** a este projeto. Nunca criar custos de LLM, embeddings ou banco de grafos sem teste e justificativa.
+
 ## Regras inegociáveis
 
 - **Preservar todos os golpes, efeitos, sprites e mecânicas já aprovados.** Não sobrescrever aprovações ou alterar o padrão nativo do Poké Arena 2D.
