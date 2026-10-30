@@ -162,6 +162,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    status:serializeGen3Status(actor),confused:!!actor.est?.confuso}:null;
   const result=applyBattleBagItem(save,party,itemId,target,live);
   if(!result.ok){draw(result.reason);return}
+  if(catalog.get(itemId)?.kind==='heal')potionUses++;
   saveCampaign(save);
   if(active){
    actor.hp=Math.min(actor.hpMax,Math.max(1,actor.hpMax*result.toHp/100));
