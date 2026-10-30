@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
  CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput,tuneCampaignAutoBrain,
- chooseCampaignAutoWeatherInput}
+ chooseCampaignAutoWeatherInput,livingCampaignOpponent}
  from '../tools/pokearena/torre2-auto-battle.js';
 const makeObject=()=>{
  const handlers=new Map;
@@ -472,4 +472,98 @@ test('AUTO may replace harmful active climate but never a favorable one with a w
  self.kit.rmb.nombre='Rain Dance';
  assert.strictEqual(chooseCampaignAutoWeatherInput(s,self,native),native,
   'Do not refresh enemy-friendly climate');
+});
+
+test('AUTO chooses the live enemy after recall even when actor.rival points to a KO ghost',()=>{
+ const actor={lado:0,x:0,y:0,hp:80,hpMax:100,energia:100,calor:10,
+  cd:{lmb:0},kit:{lmb:{alcance:200,coste:8}},est:{}};
+ const ghost={lado:1,x:70,y:0,hp:0,ko:true,def:{id:'geodude'}};
+ const onix={lado:1,x:120,y:50,hp:70,ko:false,def:{id:'onix'},est:{}};
+ actor.rival=ghost;
+ const s={datos:{torre2:{kind:'leader'}},fase:'lucha',luchadores:[actor,onix]};
+ assert.strictEqual(livingCampaignOpponent(s,actor),onix);
+ const idle={mx:0,my:0,ax:70,ay:0,lmb:false};
+ const next=pressureCampaignAutoInput(s,actor,idle);
+ assert.equal(next.lmb,true);
+ assert.equal(next.ax,onix.x,'Forced LMB must aim at active Onix, not KO Geodude');
+ assert.equal(next.ay,onix.y);
+ assert.equal(idle.ax,70,'Original native aim remains immutable');
+ onix.hp=0;assert.strictEqual(livingCampaignOpponent(s,actor),null);
+ assert.strictEqual(pressureCampaignAutoInput(s,actor,idle),idle);
+});
+
+test('Kanto AUTO rebuilds its native brain exactly once per enemy sendout',()=>{
+ const s=scene({torre2:{kind:'leader'}}),control=s.controles[0],foe=s.luchadores[1];
+ control.l.def={id:'bulbasaur'};foe.def={id:'geodude'};foe.hp=100;
+ let builds=0;
+ const state=installAutoBattle(s,()=>({leer(){return {mx:0,my:0,ax:0,ay:0}}}));
+ // The initial factory is invoked once. Its closure represents original IA.
+ assert.equal(builds,0);
+ // Repeat with an instrumented factory using a separate native scene.
+ s.handlers.get('shutdown')();
+ const t=scene({torre2:{kind:'leader'}}),ctl=t.controles[0],enemy=t.luchadores[1];
+ ctl.l.def={id:'bulbasaur'};enemy.def={id:'geodude'};enemy.hp=100;
+ const active=installAutoBattle(t,()=>{builds++;return {leer(){return {mx:0,my:0}}}});
+ assert.equal(builds,1);
+ ctl.leer(.016);ctl.leer(.016);assert.equal(builds,1);
+ enemy.def={id:'onix'};ctl.leer(.016);
+ assert.equal(builds,2,'New foe species requires fresh native tactics');
+ assert.equal(active.autoOpponentSpecies,'onix:0');
+ assert.equal(active.diagnostics.foeRebinds,1);
+ ctl.leer(.016);assert.equal(builds,2,'Do not allocate brain each frame');
+ enemy.etapa=1;ctl.leer(.016);
+ assert.equal(builds,3,'Evolution stage also refreshes the opponent tactic');
+ assert.equal(active.diagnostics.foeRebinds,2);
+ assert.equal(active.diagnostics.playerRebinds,0);
+ t.handlers.get('shutdown')();
+});
+
+test('AUTO holds a neutral native input when IA returns null; manual toggle still works',()=>{
+ const s=scene({torre2:{kind:'trainer'}}),human=s.controles[0];
+ let manualReads=0;
+ human.leer=()=>{manualReads++;return {mx:1,my:0,lmb:true}};
+ const a=installAutoBattle(s,()=>({leer:()=>null}));
+ assert.equal(a.enabled,true);
+ const idle=human.leer(.016);
+ assert.equal(idle.mx,0);assert.equal(idle.my,0);
+ assert.equal(idle.lmb,false);assert.equal(idle.mega,false);
+ assert.equal(manualReads,0,'No held touch input may leak into AUTO');
+ assert.equal(a.diagnostics.nativeNoInput,1);
+ a.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(human.leer(.016).lmb,true);
+ assert.equal(manualReads,1,'Manual mode retains original reader');
+ s.handlers.get('shutdown')();
+});
+
+test('AUTO rebind telemetry remains bounded and native attacks remain gated',()=>{
+ const actor={lado:0,x:0,y:0,t:3,hp:90,hpMax:100,energia:99,calor:0,
+  cd:{lmb:.7},kit:{lmb:{alcance:190,coste:9}},est:{}};
+ const foe={lado:1,x:100,y:0,hp:100,est:{}};
+ const s={datos:{torre2:{}},fase:'lucha',luchadores:[actor,foe]};
+ const idle={mx:0,my:0,ax:0,ay:0,lmb:false};
+ assert.equal(pressureCampaignAutoInput(s,actor,idle).lmb,false,'Do not bypass real cooldown');
+ actor.cd.lmb=0;actor.energia=3;
+ assert.equal(pressureCampaignAutoInput(s,actor,idle).lmb,false,'Do not fabricate energy');
+ actor.energia=99;actor.est.aturdido=true;
+ assert.equal(pressureCampaignAutoInput(s,actor,idle).lmb,false,'No cast while stunned');
+ actor.est.aturdido=false;
+ const out=pressureCampaignAutoInput(s,actor,idle);
+ assert.equal(out.lmb,true);assert.equal(out.ax,100);
+ assert.deepEqual(idle,{mx:0,my:0,ax:0,ay:0,lmb:false});
+});
+
+test('Original Arena AUTO retains its manual fallback for missing native AI input',()=>{
+ const s=scene({modo:'arena'}),human=s.controles[0];
+ let reads=0;
+ human.leer=()=>{reads++;return {mx:.5,my:.25,ax:80,ay:60,lmb:true}};
+ const a=installAutoBattle(s,()=>({leer:()=>null}));
+ assert.equal(a.enabled,false);
+ a.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(a.enabled,true);
+ assert.deepEqual(human.leer(.016),{mx:.5,my:.25,ax:80,ay:60,lmb:true},
+  'Native Arena fallback must match pre-patch behavior exactly');
+ assert.equal(reads,1);
+ assert.equal(a.diagnostics.nativeNoInput,0,
+  'No Kanto telemetry or change to the original Arena fallback');
+ s.handlers.get('shutdown')();
 });

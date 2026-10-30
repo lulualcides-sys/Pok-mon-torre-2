@@ -70,13 +70,21 @@ const server=http.createServer(async(req,res)=>{
    'Legitimate Lv5 starter must have three usable native attacks');
   assert.equal(firstKit.e,undefined,'Legitimate Lv5 starter cannot equip ULT');
   report.earnedUlt={initial:{level:5,experience:before.team[0].experience,ultLocked:true},unlockedAt:null};
-  const names=['pidgey','rattata','caterpie','charmander'];
+  // Trainer evolution is calculated before combat. At this stage Caterpie
+  // legitimately appears as Metapod if its original trainer level allows it.
+  const openingBase=['pidgey','rattata','caterpie','charmander'];
  const total=8;
   for(let round=0;round<total;round++){
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
-   if(round<names.length)assert.equal(opponent.id,names[round],
-    'First four route species include the rival after Caterpie');
+   if(round<openingBase.length){
+    const canonical=await page.evaluate(({base,level})=>
+     window.kanto.trainerSpeciesForLevel(base,level),
+     {base:openingBase[round],level:opponent.level});
+    assert.equal(opponent.id,canonical,
+     'Early NPC species must follow legal original trainer evolution');
+    entry.baseSpecies=openingBase[round];entry.evolvedAtLevel=opponent.level;
+   }
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
    const expectedKind=round===3?'rival':round===5?'rocket':'trainer';
    assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
@@ -93,15 +101,11 @@ const server=http.createServer(async(req,res)=>{
    });
    assert.equal(entry.open.player,before.team[0].id);
    assert.equal(entry.open.enemy,opponent.id,'Expected next real route trainer');
-   assert.equal(entry.open.auto,false,'AUTO resets between fights');
-   const button=await page.evaluate(()=>{
-    const b=window.__pt2Game.scene.getScene('combate');
-    const zone=b.__torre2AutoMode.zone,rect=document.querySelector('#juego canvas').getBoundingClientRect();
-    return {x:rect.x+zone.x*rect.width/640,y:rect.y+zone.y*rect.height/360};
-   });
-   await page.mouse.click(button.x,button.y);
-   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled,
-    null,{timeout:5000});
+   // Campaign AUTO starts ON in production. The legacy test clicked the
+   // enabled button, switching it OFF before fighting the first trainer.
+   // Keep native AUTO active without synthetic controls, XP, damage or KO.
+   assert.equal(entry.open.auto,true,
+    'Kanto AUTO must start ON for each genuine route battle');
    await page.screenshot({path:out+'/t20-pallet-eight-trainer-'+(round+1)+'-combat.png'});
    const started=Date.now();
    try{
