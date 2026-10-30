@@ -49,3 +49,4 @@ jobs:
         run: |
           node tests/source-client-smoke.cjs
           node tests/t22-mobile-rematch-reload-browser.cjs
+          node tests/surge-shop-rematch-browser.cjs
