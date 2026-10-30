@@ -185,17 +185,16 @@ export function drawTrainer(g,cx,cy,kind='youngster',scale=1){
 }
 function px(g,x,y,w,h,c){g.fillStyle(c,1);g.fillRect(Math.round(x),Math.round(y),w,h)}
 // Original Pokémon FireRed/LeafGreen GBA icon files bundled by the build.
-export const FRLG_MART_ICON_FILES=Object.freeze([
- 'antidote','status_heal','full_heal','potion','large_potion',
- 'poke_ball','great_ball','ultra_ball','tm_hm'
+// Authentic FireRed item icon + original item/type-specific palette, generated
+// as local transparent PNGs at build time. Do not alter battle Pokéball VFX.
+export const FRLG_MART_ITEM_FILES=Object.freeze([
+ 'antidote','paralyzeheal','awakening','burnheal','iceheal','fullheal',
+ 'tm-rock-tomb','pokeball','greatball','ultraball','potion','superpotion',
+ 'tm-thunderbolt','tm-water-pulse','tm-flamethrower','tm-ice-beam',
+ 'tm-shock-wave','tm-giga-drain','tm-calm-mind','tm-fire-blast','tm-earthquake'
 ]);
 export function frlgMartIcon(item){
- if(item?.kind==='tm')return 'tm_hm';
- const map={antidote:'antidote',paralyzeheal:'status_heal',
-  awakening:'status_heal',burnheal:'status_heal',iceheal:'status_heal',
-  fullheal:'full_heal',pokeball:'poke_ball',greatball:'great_ball',
-  ultraball:'ultra_ball',potion:'potion',superpotion:'large_potion'};
- return map[item?.id]||null;
+ return FRLG_MART_ITEM_FILES.includes(item?.id)?item.id:null;
 }
 export function drawShopItem(g,cx,cy,item,scale=2){
  const kind=typeof item==='string'?item:item?.kind||'ball';
