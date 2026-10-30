@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/31/33/36/37 · PR #327: outros dois iniciais em combate real (pendente)
+
+- **§7/§8/§31 PARCIAIS:** [PR #327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327), HEAD `70dfe108001ddff19a6923a0350a816c447c6b73`, amplia a prova de XP/ULT #321 para Charmander e Squirtle, com save/reload e comandos nativos no Chromium. O teste parametrizado não modifica runtime, recursos ou saves existentes.
+- **§33 PENDENTE:** [CI #40987990223](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40987990223) em andamento; sem afirmar seis vitórias, ULT executada ou regressão completa até obter resultado final.
+- **§36 preservada no escopo do diff:** só teste e workflow, sem VFX, sprites, cooldowns, TMs, Toxic #16 ou Shiny #17. **§37 não publicado:** sem merge/Pages SHA/HTTP de #327.
+- **Critério restante:** campanhas naturais para outras espécies, ULT com medidor conquistado em batalha, Pallet→Campeão sem fixture e Android físico. Nenhuma seção nova VALIDADA.
+
+
 ## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08: Lv8 por três vitórias nativas (#321)
 
 - **§7/§8 PARCIAIS:** [PR #321](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/321), squash `766dcc0b1d2a8fa22be941b409f2691bcc74281a`. Três batalhas Phaser/AUTO reais consecutivas: Pidgey→Rattata→Caterpie; Bulbasaur Lv5→6→7→8 por XP nativo, 602 XP, 3 vitórias, 0 derrotas, sem forçar resultado/XP/HP/medidor. ULT temática Solar Beam equipada no E após Lv8, mas **não executada** por medidor insuficiente (`ultCast=false`). Golpe básico executado com cooldown nativo.
