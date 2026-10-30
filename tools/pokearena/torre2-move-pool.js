@@ -1090,7 +1090,9 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  supersonic:1.5
 });
 export function balanceCampaignQuickCooldown(move){
- if(!move)return move;
+ // Lv8 practice ULTs have their own minimum cooldown (>= 8s), even if
+ // they borrow the visual effect of Charge Beam or Supersonic.
+ if(!move||move.torre2IntroPractice)return move;
  const name=canonicalMoveKey(move.torre2IntroSource||move.nombre);
  const cd=KANTO_CAMPAIGN_QUICK_COOLDOWNS[name];
  return Number.isFinite(cd)?{...move,cd}:move;
