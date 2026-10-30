@@ -64,6 +64,22 @@ export function patchGreninjaSelectionSource(source){
  s=replaceOnce(s,blocked,
   'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));',
   'Froakie selectable in our offline Arena without League progress');
+ // Upstream draws the skin overlay inside the stats panel container. On
+ // Chromium, other scene input regions intercept its clicks. Give ONLY the
+ // Froakie popup an independent topmost Phaser container; preserve all 5
+ // genuine sprites, every other species' original selector and hit areas.
+ s=replaceOnce(s,
+  'const s=this.add.container(0,0),W=6+opciones.length*46;',
+  'const s=this.add.container(p.id==="froakie"?panel.x:0,p.id==="froakie"?PY:0),W=6+opciones.length*46;if(p.id==="froakie"){s.setDepth(9000);s.setData("torre2-greninja-popup",true)}',
+  'the 5 Greninja skin buttons stay above native scene hit zones');
+ s=replaceOnce(s,
+  'panel.contenido.add(s);panel.selector=s}',
+  'if(p.id!=="froakie")panel.contenido.add(s);panel.selector=s}',
+  'native standalone Greninja skin popup preserves exact screen coordinates');
+ s=replaceOnce(s,
+  'panel.mostrado=p?.id??null;panel.contenido?.destroy(true);',
+  'panel.mostrado=p?.id??null;if(panel.selector?.getData?.("torre2-greninja-popup"))panel.selector.destroy(true);panel.contenido?.destroy(true);',
+  'clean standalone popup on selection change without orphan hitboxes');
  return s;
 }
 export function patchGreninjaPrepararSource(source){
