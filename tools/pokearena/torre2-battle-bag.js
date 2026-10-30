@@ -153,6 +153,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    scene.__torre2CaptureBusy||scene.__torre2BallTransitions){
    close();return;
   }
+  if(catalog.get(itemId)?.kind==='heal'&&potionUses>=3){draw('LIMITE DE 3 POÇÕES');return}
   const save=readCampaign();
   if(!save||save.stage!==scene.datos?.torre2?.stage||
    save.trainer!==scene.datos?.torre2?.trainer){close();return;}
