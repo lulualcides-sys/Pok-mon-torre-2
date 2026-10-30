@@ -7,6 +7,7 @@ import {MART_ITEMS} from './route-data.js';
 import {readCampaign,saveCampaign} from './campaign-core.js';
 import {serializeGen3Status,MAIN_STATUS_KEYS} from './gen3-status.js';
 
+export const BATTLE_POTION_LIMIT=2; // Healing Potion + Super Potion together, per encounter.
 export const BATTLE_BAG_ITEMS=Object.freeze([
  'potion','superpotion','antidote','paralyzeheal',
  'awakening','burnheal','iceheal','fullheal'
@@ -24,6 +25,8 @@ export function applyBattleBagItem(state,party,itemId,target,live=null){
   return {ok:false,reason:'Escolha um Pokémon da sua equipe.'};
  if(!Number.isInteger(state.inventory?.[itemId])||state.inventory[itemId]<=0)
   return {ok:false,reason:'Item esgotado.'};
+ if(item.kind==='heal'&&Number(party.playerPotionUses||0)>=BATTLE_POTION_LIMIT)
+  return {ok:false,reason:'Limite de '+BATTLE_POTION_LIMIT+' poções por batalha.'};
  const active=target===party.playerIndex;
  const hp=clamp(active&&live?live.hp:member.hp);
  const status=active&&live?live.status??null:member.status??null;
@@ -40,6 +43,7 @@ export function applyBattleBagItem(state,party,itemId,target,live=null){
    return {ok:false,reason:'Este remédio não terá efeito.'};
  }else return {ok:false,reason:'Item indisponível em combate.'};
  state.inventory[itemId]--;
+ if(item.kind==='heal')party.playerPotionUses=(party.playerPotionUses||0)+1;
  member.hp=after;saved.hp=after;
  if(clearStatus){member.status=null;saved.status=null}
  if(clearConfusion)saved.confusion=null;
@@ -118,7 +122,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   bg.fillStyle(0x142e43).fillRoundedRect(56,36,528,289,8);
   bg.lineStyle(2,0xd9b660).strokeRoundedRect(56,36,528,289,8);
   label(320,56,'BOLSA DE BATALHA',17,'#ffe2a2');
-  label(320,79,'ESCOLHA O POKÉMON E O ITEM',10,'#d1e6f4');
+  label(320,79,'ESCOLHA O ITEM · POÇÕES '+(party.playerPotionUses||0)+'/'+BATTLE_POTION_LIMIT,10,'#d1e6f4');
   party.friend.slice(0,6).forEach((m,i)=>{
    const x=112+i*82,y=111;
    const selected=i===target,hp=clamp(i===party.playerIndex?
@@ -135,8 +139,10 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    const item=catalog.get(id);
    const qty=state?.inventory?.[id]||0;
    const x=index%2===0?210:433,y=155+Math.floor(index/2)*34;
-   const enabled=qty>0;
-   const z=button(x,y,210,29,(item?.name||format(id))+'  x'+qty,()=>use(id),enabled);
+   const limited=item?.kind==='heal'&&(party.playerPotionUses||0)>=BATTLE_POTION_LIMIT;
+   const enabled=qty>0&&!limited;
+   const z=button(x,y,210,29,(item?.name||format(id))+
+    (limited?'  LIMITE '+BATTLE_POTION_LIMIT+'/'+BATTLE_POTION_LIMIT:'  x'+qty),()=>use(id),enabled);
    z?.setData('torre2-battle-bag-item',id);
   });
   label(320,293,message||'AÇÕES EM TEMPO REAL PAUSADAS ENQUANTO A BOLSA ESTÁ ABERTA',
