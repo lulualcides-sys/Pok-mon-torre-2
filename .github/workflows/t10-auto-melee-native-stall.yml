@@ -1,0 +1,52 @@
+name: T10 - AUTO tactical resisted-basic mirror fight (no damage boosts)
+on:
+  push:
+    branches: [fix/t10-auto-super-effective-melee-stall-20261030]
+permissions:
+  contents: read
+jobs:
+  native-auto-melee:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 65
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Focused AUTO, weather and native battle source gates
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-auto-battle.js
+          node --test tests/arena-auto-battle.test.js tests/weather.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original licensed Phaser WebGL
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*7))
+          done
+      - name: Real campaign AUTO rebind, VFX and full browser regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t10-campaign-auto-offensive-browser.cjs
+          node tests/t19-auto-party-rebind-browser.cjs
+          npm run test:browser
+      - name: Real first eight production wins with AUTO
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t20-pallet-eight-production-starter-browser.cjs
+      - name: Evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t10-auto-native-melee-anti-stall
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn

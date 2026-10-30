@@ -567,3 +567,38 @@ test('Original Arena AUTO retains its manual fallback for missing native AI inpu
   'No Kanto telemetry or change to the original Arena fallback');
  s.handlers.get('shutdown')();
 });
+
+test('AUTO approaches to use a legal super-effective Peck over resisted Poison Sting',()=>{
+ const foe={x:65,y:0,hp:90,tipos:['BUG','POISON'],est:{},lado:1};
+ const actor={x:0,y:0,hp:85,hpMax:100,energia:60,calor:0,lado:0,t:6,
+  cd:{lmb:0,rmb:0,q:8},est:{},kit:{
+   lmb:{nombre:'Poison Sting',tipo:'POISON',dano:3,alcance:235,coste:12,forma:'torre2_poisonsting'},
+   rmb:{nombre:'Peck',tipo:'FLYING',dano:9,alcance:82,coste:17,forma:'approved_peck'},
+   q:{nombre:'Fury Attack',tipo:'NORMAL',dano:6,alcance:70,coste:18,forma:'approved_fury'}}};
+ const scene={datos:{torre2:{kind:'trainer'}},fase:'lucha',
+  luchadores:[actor,foe],efectos:[]};
+ const idle={mx:0,my:0,lmb:false,rmb:false,q:false,e:false,esp:false};
+ const chosen=pressureCampaignAutoInput(scene,actor,idle);
+ assert.equal(chosen.rmb,true,'Peck must be used at real melee range');
+ assert.equal(chosen.lmb,false,'Never fire two attacks simultaneously');
+ assert.deepEqual([chosen.ax,chosen.ay],[foe.x,foe.y]);
+ assert.equal(idle.rmb,false,'Native input remains immutable');
+ foe.x=155;
+ const advance=pressureCampaignAutoInput(scene,actor,idle);
+ assert.ok(advance.mx>.5,'AUTO must approach toward a stronger equipped melee move');
+ assert.equal(advance.rmb,false,'Do not hit outside real melee range');
+ foe.x=65;
+ actor.cd.rmb=3;
+ assert.equal(pressureCampaignAutoInput(scene,actor,idle).rmb,false,'No cooldown bypass');
+ actor.cd.rmb=0;actor.energia=13;
+ assert.equal(pressureCampaignAutoInput(scene,actor,idle).rmb,false,'No energy bypass');
+ actor.energia=60;
+ foe.est.vuelo={hasta:10};
+ assert.equal(pressureCampaignAutoInput(scene,actor,idle).rmb,false,'No airborne hits');
+ delete foe.est.vuelo;
+ const native={...idle,q:true};
+ assert.strictEqual(pressureCampaignAutoInput(scene,actor,native),native,
+  'Never override an already-chosen native skill');
+ assert.strictEqual(pressureCampaignAutoInput({...scene,datos:{modo:'arena'}},actor,idle),idle,
+  'Original Arena AI unchanged');
+});
