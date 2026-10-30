@@ -1,5 +1,23 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§20/33/36/37 · T20 oito vitórias de produção e dificuldade real da Rocket
+
+- **§20 PARCIAL:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328) integrada `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO**: oito confrontos nativos reais com inicial criado via factory de produção, sem Mewtwo debug, ULT desbloqueada por XP, save persistente/reload e controles Phaser testados; não comprova menu inicial nem 13 treinadores+Brock.
+- **§20 bloqueio identificado:** [CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269) **FALHA genuína na sexta batalha**: Rocket Zubat/Mankey derrota Bulbasaur Lv9 solo; stage0, trainer5, wins5, losses1, HP0. A PR [#329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) revisada usa equipe obtida por capturas selvagens legítimas antes da Rocket, Centro Pokémon real em perdas, sem injetar HP/XP/wins. [CI #40991020627](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40991020627) ainda sujeita a resultado e não deve ser declarada aprovada antecipadamente.
+- **§33/36 PARCIAIS:** #328 e #329 mudam testes/workflows, não runtime, client original, 227 efeitos, 121 kits de Arena, sprites, cooldowns, TMs ou formato de save.
+- **§37 PARCIAL:** CI de patch != HTTP de Pages; só publicar se a main correspondente passar e sua versão pública for comprovada. Sequência Pallet→Campeão sem checkpoint e Android físico pendentes.
+
+
+
+## 29/10/2026 — §20/T20 · Pallet primeiras quatro batalhas naturais e gates de produção
+
+- **§20 PARCIAL:** [PR #326](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/326) integrada em `b6ecd4ac50ecfb74fc6f05d54f09f62d898c0be4`; [CI #40983712619](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983712619) **SUCESSO** com 4 vitórias naturais consecutivas (Pidgey, Rattata, Caterpie, rival Charmander) no Phaser, Bulbasaur Lv5→9 e dinheiro $1400→$2400. Inicial de QA com Mewtwo enviado ao PC; não valida seleção via UI, Brock ou Pallet→Campeão.
+- **§20 em teste:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328)/[CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087): 8 lutas com `createPlayerCampaign` de produção, zero Mewtwo debug, ULT Lv8 por XP e reload. [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329)/[CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269): 13 treinadores, compras/capturas reais, Rival e Brock. **Não declarar sucesso enquanto CI incompleto**, nem confundir execução de fixture de fábrica com escolha de inicial pelo menu.
+- **§33/§36 PARCIAIS:** #326 somente workflow de QA, #328 novo teste/workflow, #329 muda somente teste sob flag opt-in (legado preservado) + workflow. Zero modificação de runtime/VFX/sprites/movesets/cooldowns/saves; nenhuma das 37 seções foi declarada concluída.
+- **§37 PARCIAL:** publicação de #326 em `main` depende da CI Pages correspondente, não apenas do merge; verificar SHA e HTTP antes de afirmar implantação. O QA daqui não altera a versão jogável.
+
+
+
 ## 29/10/2026 — §20/T20 · Cinco vitórias reais consecutivas da Liga, sem afirmar Pallet→Campeão
 
 - **§20 PARCIAL, progressão comprovada:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210) integrada na `main` em `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO** em cinco lutas nativas consecutivas com o mesmo save: Lorelei 85s, Bruno 78s, Agatha 93s, Lance 209s e Campeão 283s. Sem vitórias, KO, EXP nem progresso inseridos depois do **único checkpoint inicial de Victory Road**; Centro Pokémon, trocas, AUTO e save/reload reais. Hall da Fama, cinco honras, oito insígnias e campeão persistente.

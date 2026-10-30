@@ -25,10 +25,12 @@ const ARENA_CD=Object.freeze({
  'blizzard':4,'blizard':4,'ventisca':4,
  'thunder':3,
  'psybeam':3,'psy-beam':3,
+ 'discharge':3,'descarga':3,
  'fire-blast':3.5,'llamarada':3.5,
  'solar-beam':3,'solarbeam':3,'rayo-solar':3,
  'charge':3,'carga':3,
  'hydro-pump':3.5,'hidrobomba':3.5,
+ 'hyper-beam':4,'hiperrayo':4,
  'seismic-toss':3,'sismic-toss':3,'movimiento-sismico':3,
  'egg-bomb':3,'eggbomb':3,'bomba-de-ovo':3,'bomba-ovo':3,
  'bomba-de-ovos':3,'bomba-de-huevos':3,'bomba-huevo':3,'bomba-de-huevo':3
@@ -93,6 +95,48 @@ export function enforceArenaMoveCooldowns(kit){
    if(output===kit)output={...kit};
    output[slot]={...h,cd:target};
   }
+ }
+ return output;
+}
+// Gengar is a native Arena fighter, so the added-species filter does not
+// sanitize its original kit. Replace any generic Hyper Beam OR repeated
+// attack with a genuinely installed distinct Gengar-compatible renderer.
+// Prefer Dark Pulse: its approved pixel-art VFX is already in Batch 24 and
+// this Gen IV technique belongs in Arena, never the FRLG campaign learnset.
+// Keep Shadow Ball as the thematic E/ULT, even when upstream kits move it.
+export function replaceGengarHyperBeam(kit,library){
+ if(!kit||!library)return kit;
+ // A later upstream Gengar stage may put Night Shade on E. Keep the
+ // species' real Shadow Ball as ULT, using the original renderer when
+ // equipped elsewhere. Do not clone it into two attack slots.
+ const nativeShadow=library.get('shadow-ball');
+ const validShadow=nativeShadow?.forma&&nativeShadow?.approved!==false&&Number(nativeShadow.dano)>0;
+ let output=kit;
+ if(validShadow&&idOf(output.e?.nombre)!=='shadow-ball'){
+  const elsewhere=ATTACK_SLOTS.slice(0,3).find(s=>idOf(output[s]?.nombre)==='shadow-ball');
+  const oldE=output.e;
+  output={...output,e:{...(elsewhere?output[elsewhere]:nativeShadow),pendiente:false,ulti:true}};
+  if(elsewhere&&oldE)output[elsewhere]={...oldE,pendiente:false,ulti:false};
+ }
+ const preferred=['dark-pulse','shadow-punch','night-shade','psychic',
+  'dream-eater','shadow-ball','sludge-bomb'];
+ const used=new Set();
+ for(const slot of ATTACK_SLOTS){
+  const key=idOf(output[slot]?.nombre);
+  if(!key)continue;
+  if(key!=='hyper-beam'&&!used.has(key)){
+   used.add(key);
+   continue;
+  }
+  // Include all four occupied slots, including later ones, so replacing
+  // Sludge Bomb cannot accidentally duplicate Shadow Ball or another move.
+  const occupied=new Set(ATTACK_SLOTS.map(s=>idOf(output[s]?.nombre)).filter(Boolean));
+  const move=preferred.map(name=>library.get(name)).find(m=>m?.forma&&
+   m?.approved!==false&&Number(m.dano)>0&&!occupied.has(idOf(m.nombre)));
+  if(!move){used.add(key);continue;} // no invented forms or illegal changes
+  if(output===kit)output={...kit};
+  output[slot]={...move,pendiente:false,ulti:slot==='e'};
+  used.add(idOf(move.nombre));
  }
  return output;
 }
@@ -267,6 +311,7 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   if(this.escena?.datos?.torre2)return original;
   const form=this.forma;
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
+  if(id==='gengar')return enforceArenaMoveCooldowns(replaceGengarHyperBeam(original,library));
   if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
    return enforceArenaMoveCooldowns(original);
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
