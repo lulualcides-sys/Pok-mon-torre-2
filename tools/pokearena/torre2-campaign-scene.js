@@ -897,16 +897,19 @@ create(){
   // Introduce real trainers, rivals, leaders, Elite and VS Seeker battles.
   // Keep wild encounters/training instantaneous, and do not touch the match
   // payload or the combat-side scene restart on a new Pokémon.
-  const enterCombat=()=>this.time.delayedCall(0,()=>{
+  // The VS timer already runs outside pointerdown. Transition directly
+  // at its end; queuing a nested zero-delay Phaser event can be lost on
+  // re-entrant rematch/party flows. Only the NO-VS fallback needs deferral.
+  const enterCombat=()=>{
    if(this.scene.isActive())this.scene.start('combate',match);
-  });
+  };
   try{
    if(playVersusIntro(this,match,enterCombat))return;
   }catch(error){
    console.warn('Torre 2: versus intro skipped safely',error);
   }
-  // Defer transition to avoid reusing the originating mobile pointerdown.
-  enterCombat();
+  // Defer only when no VS was rendered, to protect the original tap.
+  this.time.delayedCall(0,enterCombat);
  }
  grassScreen(state){
   // Do not destroy the loaded overworld when entering tall grass. Removing
