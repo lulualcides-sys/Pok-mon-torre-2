@@ -1,13 +1,15 @@
 'use strict';
 /* True original Phaser campaign fight for the first THREE route trainers.
  * No forced KO, no fighter HP override, no instant-win, no arbitrary level.
- * A single Bulbasaur starts at Lv5; Mewtwo is moved to PC by campaign setup API (not via UI).
+ * A selected Kanto starter starts at Lv5; Mewtwo is moved to PC by campaign setup API (not via UI).
  * Every battle uses actual UI button + AUTO native controller and XP rewards.
  */
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises');
 const path=require('node:path'),http=require('node:http'),{chromium}=require('playwright-core');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
+const starter=process.env.T07_STARTER||'bulbasaur';
+assert.ok(['bulbasaur','charmander','squirtle'].includes(starter),'Only Kanto starters allowed in earned XP proof');
 const types={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg',
  '.ogg':'audio/ogg','.mp3':'audio/mpeg'};
@@ -26,8 +28,8 @@ const server=http.createServer(async(req,res)=>{
   '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
- const report={method:'Native Phaser live AUTO, no HP/KO/result cheats; one starter, Mewtwo in PC; consecutive route trainers 1-3',steps:[]};
- const saveReport=()=>fs.writeFileSync(out+'/t07-earned-level8-three-natural-wins.json',JSON.stringify(report,null,2));
+ const report={starter,method:'Native Phaser live AUTO, no HP/KO/result cheats; one starter, Mewtwo in PC; consecutive route trainers 1-3',steps:[]};
+ const saveReport=()=>fs.writeFileSync(out+'/t07-earned-level8-three-natural-wins-'+starter+'.json',JSON.stringify(report,null,2));
  const game=()=>page.evaluate(()=>{
   const s=window.kanto.readCampaign();return {
    trainer:s?.trainer,wins:s?.wins,losses:s?.losses,stage:s?.stage,money:s?.money,
@@ -50,20 +52,20 @@ const server=http.createServer(async(req,res)=>{
  try{
   await page.goto('http://127.0.0.1:4322/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:50000});
-  await page.evaluate(async()=>{
+  await page.evaluate(async starter=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
    window.moves=await import(new URL('./torre2/move-pool.js',main));
-   const s=core.createCampaign('bulbasaur');
+   const s=core.createCampaign(starter);
    core.saveCampaign(s);
    core.storePokemon(s,1);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
-  });
+  },starter);
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
   let before=await game();
   assert.equal(before.stage,0);assert.equal(before.trainer,0);assert.equal(before.wins,0);
-  assert.deepEqual(before.team.map(x=>x.id),['bulbasaur']);
+  assert.deepEqual(before.team.map(x=>x.id),[starter]);
   assert.equal(before.team[0].level,5);
   assert.deepEqual(before.box,['mewtwo']);
   const firstKit=await page.evaluate(()=>window.moves.resolveLoadout(window.kanto.readCampaign().team[0]));
@@ -212,7 +214,7 @@ const server=http.createServer(async(req,res)=>{
      pending:a.kit.e?.pendiente===true,renderable:Boolean(a.kit.e?.forma)},
     nativeTouchSlots:b.panelTactil.botones.map(x=>x.slot)};
   });
-  assert.equal(nextBattle.species,'bulbasaur');
+  assert.equal(nextBattle.species,starter);
   assert.equal(nextBattle.level,earned.team[0].level);
   assert.ok(nextBattle.ult.ulti&&nextBattle.ult.renderable&&!nextBattle.ult.pending,
    'Earned ULT not present in actual next Phaser battle');
@@ -270,14 +272,14 @@ const server=http.createServer(async(req,res)=>{
    limitation:ultCast?null:'ULT unlocked but not cast with the meter available at battle start',
    forcedEnergy:false,forcedUltimate:false,forcedCooldown:false};
   saveReport();
-  await page.screenshot({path:out+'/t07-t08-earned-ult-meter-and-native-basic-cast.png'});
+  await page.screenshot({path:out+'/t07-t08-earned-ult-meter-and-native-basic-cast-'+starter+'.png'});
   console.log('PASS T07_T08 EARNED_XP_RELOAD_NATIVE_TOUCH_AND_ULT_METER',
    JSON.stringify(report.earnedUltTouch));
   report.earnedUlt={...report.earnedUlt,earned,reloaded,nextBattle,
    persistedIdentically:true,fromFreshLv5:true,forcedXp:false,forcedWin:false};
   saveReport();
-  await page.screenshot({path:out+'/t07-t08-natural-earned-ult-next-battle.png'});
-  await page.screenshot({path:out+'/natural-route1-three-trainers-completed.png'});
+  await page.screenshot({path:out+'/t07-t08-natural-earned-ult-next-battle-'+starter+'.png'});
+  await page.screenshot({path:out+'/natural-route1-three-trainers-completed-'+starter+'.png'});
   assert.deepEqual(errors,[],'No client JS exceptions through three consecutive native battles');
   console.log('PASS THREE NATIVE KANTO OPENING TRAINER FIGHTS; no debug KOs, natural XP, real rewards');
  }finally{saveReport();await page.close();await browser.close();server.close()}
