@@ -2,7 +2,7 @@
 /*
  * Dodrio Arena poison regression on the REAL compiled Phaser engine.
  * The only fixture is a low-but-positive opening HP and applying the
- * original Weezing Sludge Bomb poison definition. HP is never set to 0,
+ * original Gengar Sludge Bomb poison definition. HP is never set to 0,
  * recibir()/morir()/alKO() are never mocked or called by the test.
  * No campaign state, original-client kit, or approved VFX is modified.
  */
@@ -40,16 +40,16 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
   for(const id of ['dodrio','doduo']){
    await page.evaluate(species=>
     window.__pt2Game.scene.getScene('titulo').scene.start('combate',{
-     modo:'cpu',p1:'weezing',p2:species,mandos:['tactil','pad0'],nivel:'facil'
+     modo:'cpu',p1:'gengar',p2:species,mandos:['tactil','pad0'],nivel:'facil'
     }),id);
    await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('combate')&&
     window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:25000});
    const pre=await page.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('combate');
     const src=scene.luchadores[0],victim=scene.luchadores[1];
-    const actualPoison=src.kit.rmb?.veneno; // Original Weezing Sludge Bomb metadata.
+    const actualPoison=src.kit.rmb?.veneno; // Original Gengar Sludge Bomb metadata.
     if(!actualPoison||!actualPoison.dano||!actualPoison.cada||!actualPoison.ticks)
-     throw Error('Missing native Weezing poison, cannot prove a real status tick');
+     throw Error('Missing native Gengar poison, cannot prove a real status tick');
     if(victim.def.torre2ArenaAdded!==true)
      throw Error('Expected Doduo Kanto-added fighter');
     if(victim.inmortal)throw Error('Arena target is unexpectedly immortal');
