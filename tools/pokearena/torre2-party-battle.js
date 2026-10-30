@@ -10,7 +10,7 @@ import {clearDepartingCombat} from './combat-boundary.js';
  * knockouts transition to the next Pokémon without advancing trainer progress.
  * The fight ends only when one entire party is defeated.
  */
-import {STAGES,campaignStarter,rivalChampionTeam,readCampaign,recordSeen,saveCampaign} from './campaign-core.js';
+import {STAGES,campaignStarter,rivalChampionTeam,trainerSpeciesForLevel,readCampaign,recordSeen,saveCampaign} from './campaign-core.js';
 import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar,etapaDe} from '../datos.js';
@@ -37,13 +37,16 @@ export function createPartyMatch(state,opponent,wild=false){
   Math.min(6,state.stage>=8?4:state.stage>=4?3:2):
   Math.min(4,1+Math.floor((state.trainer+(state.stage||0))/5));
  const foes=Array.from({length:count},(_,i)=>{
-  const id=leaderTeam?leaderTeam[i]:i===0?opponent.id:
+  const baseId=leaderTeam?leaderTeam[i]:i===0?opponent.id:
    pool[(state.trainer+i)%pool.length]||opponent.id;
   // The true gym ace is the LAST enemy, not the first. Preserves 15/17
   // trainer checkpoints and saved opponent indices for existing journeys.
   const level=leaderTeam&&Array.isArray(gym.leaderLevels)?
    gym.leaderLevels[i]:leaderTeam&&i<count-1?
    Math.max(7,opponent.level-(count-i)*2):opponent.level;
+  // Only trainer NPCs evolve by level before the match. Keep authored gym
+  // lineups and wild species exactly as selected, with matching real VFX.
+  const id=wild||leaderTeam?baseId:trainerSpeciesForLevel(baseId,level);
   const loadout=resolveLoadout({id,progression:{species:id,level}});
   if(leaderTeam&&state.stage===2&&SURGE_LEADER_LOADOUTS[id]){
    // Original FireRed leader team, not a generic Electric template:
