@@ -7,6 +7,9 @@ on:
       - 'tools/pokearena/torre2-auto-battle.js'
       - 'tests/arena-auto-battle.test.js'
       - 'tests/t10-campaign-auto-offensive-browser.cjs'
+      - 'tests/t10-native-mobile-auto-browser.cjs'
+      - 'tests/campaign-auto-tempo-browser.cjs'
+      - 'tests/t19-auto-party-rebind-browser.cjs'
       - '.github/workflows/master-t10-t27-aggressive-auto-reports.yml'
   workflow_dispatch:
 permissions:
@@ -55,6 +58,7 @@ jobs:
           set -euo pipefail
           CHROME_BIN="$(command -v google-chrome)" node tests/arena-auto-battle-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/campaign-auto-tempo-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/t10-native-mobile-auto-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t19-auto-party-rebind-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/combat-rules-browser.cjs
       - name: Save diagnostics
