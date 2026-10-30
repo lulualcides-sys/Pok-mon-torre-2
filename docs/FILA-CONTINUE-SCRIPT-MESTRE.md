@@ -1,4 +1,10 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
+ 
+## 30/10/2026 — T20: KO final preso em fase fin na batalha 11 (CI #41022942486)
+
+- **PROVA REAL, NÃO CONCLUSÃO:** [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **FALHA** após dez treinadores derrotados, oito encontros selvagens vencidos e duas capturas legítimas. Na batalha 11 (Pidgey/Rattata/Butterfree), o último Butterfree chegou a **0/92 HP**, Pikachu tinha **61,84/66 HP**, mas a cena combate permaneceu ativa em fase fin por 240 segundos, sem vitória gravada nem retorno à campanha. Não contabilizar treinador 11, Brock, insígnia ou TM.
+- **Diagnóstico isolado:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit b386d3ca6092e2847aac7649286326c9f1d642dc, altera **somente o teste**: detecta fin preso após 12 s, coleta relógio/estado Phaser, equipe e placar sem forçar resultado ou mudar código do jogo. [Nova CI #41028820921](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41028820921) **iniciada; resultado ainda não verificado**. Investigar se o timer de transição nativo foi pausado; não afirmar causa antes do diagnóstico. T07/T08/T20 permanecem PARCIAIS.
+
 
 ## 30/10/2026 — T20: gate de evolução Caterpie corrigido, aguardando CI
 
