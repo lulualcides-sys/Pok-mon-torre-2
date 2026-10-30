@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
- CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput,tuneCampaignAutoBrain}
+ CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput,tuneCampaignAutoBrain,
+ chooseCampaignAutoWeatherInput}
  from '../tools/pokearena/torre2-auto-battle.js';
 const makeObject=()=>{
  const handlers=new Map;
@@ -368,4 +369,107 @@ test('Level 3 pursues sideways native movement only when safe and in the Kanto c
  const danger={vivo:true,dueno:enemy,x:15,y:15};
  assert.strictEqual(pressureCampaignAutoInput({...s,efectos:[danger]},actor,sidestep),sidestep,
   'Do not override native evasion near hostile projectiles');
+});
+
+test('Campaign AUTO tactically uses ready approved Rain Dance only in a legal normal slot',()=>{
+ const actor={x:110,y:110,hp:90,hpMax:100,energia:100,calor:0,
+  tipos:['WATER'],kit:{lmb:{nombre:'Tackle'},rmb:{
+   nombre:'Rain Dance',forma:'torre2_finale_raindance',coste:35
+  }},cd:{rmb:0},est:{}};
+ const foe={x:220,y:110,hp:100,hpMax:100,tipos:['FIRE'],est:{}};
+ actor.rival=foe;
+ const rain={kind:'none',remaining:0},s={
+  datos:{torre2:{kind:'trainer'}},fase:'lucha',luchadores:[actor,foe],
+  __torre2Weather:rain
+ };
+ const native={mx:0,my:1,lmb:true,rmb:false,q:false,e:false,
+  esp:false,mega:false,ax:foe.x,ay:foe.y};
+ const out=chooseCampaignAutoWeatherInput(s,actor,native);
+ assert.equal(out.rmb,true,'AUTO casts equipped rain before normal LMB when tactically favorable');
+ assert.equal(out.lmb,false,'Never cast two moves from one tactical input');
+ assert.equal(out.e,false,'Weather cannot steal charged ULT');
+ assert.strictEqual(native.lmb,true,'Native AI input is not mutated');
+ // Native weather activation will update the SAME state after an actual cast.
+ rain.kind='rain';rain.remaining=18;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'No redundant early recast under live Rain Dance');
+ rain.remaining=3;
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,native).rmb,true,
+  'May refresh only as weather expires, if native CD allows');
+ actor.cd.rmb=4;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Native cooldown is mandatory for refreshes');
+ actor.cd.rmb=0;
+ actor.energia=18;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Cannot use Rain Dance without real energy');
+ actor.energia=100;
+ foe.tipos=['WATER'];
+ rain.kind='none';rain.remaining=0;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Do not waste a turn on a weather that favors both equally');
+ foe.tipos=['FIRE'];actor.tipos=['FIRE'];
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Do not choose a harmful weather for the user');
+});
+test('Campaign weather AUTO respects dodge, teammate changes, manual/Arena and unapproved slots',()=>{
+ const actor={x:0,y:0,hp:90,hpMax:100,tipos:['ELECTRIC'],
+  energia:100,calor:0,kit:{q:{nombre:'Rain Dance',
+    forma:'torre2_finale_raindance',coste:35}},cd:{q:0}};
+ const enemy={x:100,y:0,hp:100,tipos:['ROCK']};actor.rival=enemy;
+ const scene={datos:{torre2:{kind:'wild'}},fase:'lucha',
+  __torre2Weather:{kind:'none',remaining:0},luchadores:[actor,enemy]};
+ const quiet={mx:0,my:0,lmb:false,q:false,rmb:false,e:false,esp:false};
+ assert.equal(chooseCampaignAutoWeatherInput(scene,actor,quiet).q,true,
+  'AUTO casts real Q weather for electric species against rock opposition');
+ for(const input of [{...quiet,esp:true},{...quiet,rmb:true},
+  {...quiet,e:true},{...quiet,q:true}]){
+  assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,input),input,
+   'Native escape or a selected normal/ULT cast must take priority');
+ }
+ for(const modified of [
+  {...scene,datos:{modo:'arena'}},{...scene,fase:'capturando'},
+  {...scene,__torre2Changing:true},{...scene,pausado:true}
+ ]){
+  assert.strictEqual(chooseCampaignAutoWeatherInput(modified,actor,quiet),quiet,
+   'Only unblocked live campaign AUTO may plan weather');
+ }
+ const statuses=[{aturdido:true},{dormido:true},{congelado:true},{recarga:true}];
+ for(const status of statuses){
+  actor.est=status;
+  assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet);
+ }
+ actor.est={};
+ actor.accion={bloquea:true};
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet);
+ actor.accion=null;
+ actor.kit.q.pendiente=true;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'No missing visual or pending ability allowed');
+ actor.kit.q.pendiente=false;
+ actor.kit.q.nombre='Sunny Day';
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'Do not cast unavailable weather just because the motor supports its name');
+ actor.kit.q.nombre='Rain Dance';
+ actor.hp=25;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'Do not sacrifice survival for weather at critical health');
+ actor.hp=90;
+ scene.efectos=[{vivo:true,dueno:enemy,x:2,y:3}];
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'Nearby hostile projectile takes precedence over weather setup');
+});
+test('AUTO may replace harmful active climate but never a favorable one with a worse spell',()=>{
+ const self={x:0,y:0,hp:100,hpMax:100,energia:100,calor:0,
+  tipos:['FIRE'],kit:{rmb:{nombre:'Sunny Day',forma:'native_sun',coste:30}},
+  cd:{rmb:0}};
+ const foe={x:100,y:0,hp:100,tipos:['WATER']};self.rival=foe;
+ const s={datos:{torre2:{}},fase:'lucha',
+  __torre2Weather:{kind:'rain',remaining:9},luchadores:[self,foe]};
+ const native={lmb:true,q:false,rmb:false,e:false,esp:false};
+ assert.equal(chooseCampaignAutoWeatherInput(s,self,native).rmb,true,
+  'An installed and ready sun can counter rain disadvantage');
+ self.kit.rmb.nombre='Rain Dance';
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,self,native),native,
+  'Do not refresh enemy-friendly climate');
 });

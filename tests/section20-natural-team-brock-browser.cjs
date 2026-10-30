@@ -530,7 +530,12 @@ const server=http.createServer(async(req,res)=>{
      assert.ok(Number.isInteger(cap)&&cap>=before.team[0].level,
       'Native campaign cap must be valid for this stage');
      const goal=Math.min(cap,round===5?12:Math.max(15,Math.min(16,before.team[0].level+1)));
-     const supportGoal=round===5?0:Math.min(cap-1,Math.max(11,before.team[0].level-1));
+     // This is a readiness target, not a mandatory FRLG level.
+     // With three naturally caught allies, 16 real grass wins took the
+     // last support from Lv9 to Lv12. The arbitrary Lv13 gate stopped the
+     // 13th trainer retry before the actual combat could be evaluated.
+     // Keep hard battles, real XP, level caps, losses and full Brock proof.
+     const supportGoal=round===5?0:Math.min(cap-2,Math.max(10,before.team[0].level-2));
      if(before.team[0].level<goal||
         (supportGoal>0&&before.team.slice(1).some(m=>m.level<supportGoal))){
       await trainNaturalTeam({targetStarterLevel:goal,targetSupportLevel:supportGoal,maxRounds:16});
