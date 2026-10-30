@@ -81,11 +81,9 @@ function save(){fs.mkdirSync('test-evidence',{recursive:true});
   });
   report.initial=initial;save();
   assert.deepEqual(initial.party.map(m=>m.id),['wartortle','pikachu']);
-  assert.equal(initial.selected,0);assert.equal(initial.auto,false);
+  assert.equal(initial.selected,0);assert.equal(initial.auto,true);
   assert.equal(initial.brain,true);
-  await tap(579,146);
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate')
-   .__torre2AutoMode?.enabled===true,null,{timeout:10000});
+  // Campaign AUTO is ON without a tap; switching still rebinds native AI.
   await tap(34,156); // native left sidebar Pokémon slot 1, no direct state edits
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),p=b.datos?.torre2?.party;
