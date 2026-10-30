@@ -6,7 +6,7 @@ Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funci
 - [x] T002 — Criar `.specify/memory/constitution.md` com precedência e garantias de não regressão.
 - [x] T003 — Criar `spec.md` e `plan.md` ancorados no Script Mestre existente.
 - [x] T004 — Adicionar esta fila com critérios e evidências, sem declarar conclusão das 37 seções.
-- [ ] T005 — Atualizar `AGENTS.md` para invocar Superpowers e Spec Kit por padrão.
+- [x] T005 — Atualizar `AGENTS.md` para invocar Superpowers e Spec Kit por padrão.
 - [ ] T006 — Conferir arquivos e integridade documental no GitHub, revisar diff e abrir PR.
 - [ ] T007 — Conferir checks do PR e integrar apenas quando validado; não afirmar Pages antes de prova.
 
