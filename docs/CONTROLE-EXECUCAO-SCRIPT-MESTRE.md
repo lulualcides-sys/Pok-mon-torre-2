@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — T07/T08: impedir prévias de golpes bloqueados (PR em validação)
+
+- **Diagnóstico no código:** `resolveKantoIntro` aceitava renderizadores marcados `pendiente`, `torre2Unavailable`, `torre2RequiresTM` ou `torre2RequiresHM`; `trainingMove` podia retirar `pendiente` e exibir um golpe que não deveria ser liberado. O seletor de ULT temática também não filtrava esses bloqueios.
+- **Patch isolado proposto:** excluir esses candidatos dos três controles Lv5 e da ULT Lv8, sem tocar nos 227 VFX, nomes aprovados, HM Surf, Scratch/Transform adiados, saves, TM ou mecânica Arena. Regressão Node + build + Chromium na CI própria; **não homologar antes de CI verde**.
+- **Prova independente anterior:** Pages [#41054058050](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41054058050) verde para `a5cff40ea1fab273ea725409cc126f4568e655a0`, HTTP `src-1ca23478c2`. Auditoria pública integral [#41055385370](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41055385370) passou no Chromium: **150/150** espécies Kanto, zero divergências de slots em Lv50, sem erro HTTP/Phaser. Isso **não prova** os três ataques autênticos Lv5, ULT acionada naturalmente ou Brock.
+- **Pendente:** CI/revisão/merge/Pages do patch; T07/T08 e T20 continuam PARCIAIS. Não alterar PRs concorrentes #270/#329.
+
+
 ## 30/10/2026 — §§7/8/33/37 · publicação versus auditoria pública independente
 
 - **§37 publicação comprovada:** Pages #41050085664, SHA `477dac7410ad7a89f73dfb9a9946187cbdbca657`, Chromium público `src-dc921f3851` na checagem de sete casos.

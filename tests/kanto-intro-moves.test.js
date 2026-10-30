@@ -188,3 +188,32 @@ test('preferred Lv8 ULT cannot bypass pending VFX approval',()=>{
   'pending renderer cannot be promoted to a thematic ULT');
  assert.equal(JSON.stringify(library),original);
 });
+
+test('Lv5/Lv8 never promote a pending, unavailable or HM/TM-gated renderer',()=>{
+ const library=[
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'ember',nombre:'Ember',forma:'approved-fire',tipo:'FIRE',dano:8,cd:4,coste:8},
+  {id:'quick-attack',nombre:'Quick Attack',forma:'approved-dash',tipo:'NORMAL',dano:7,cd:3,coste:8,torre2RequiresTM:true},
+  {id:'flame-wheel',nombre:'Flame Wheel',forma:'approved-flame',tipo:'FIRE',dano:9,cd:4,coste:8,torre2Unavailable:true},
+  {id:'fire-spin',nombre:'Fire Spin',forma:'approved-spin',tipo:'FIRE',dano:9,cd:4,coste:8,pendiente:true},
+  {id:'flamethrower',nombre:'Flamethrower',forma:'approved-jet',tipo:'FIRE',dano:12,cd:4,coste:8,torre2RequiresHM:true}
+ ];
+ const before=JSON.stringify(library);
+ const context={library,canonical:canon,speciesTypes:['FIRE'],
+  levelUp:{ember:1,'quick-attack':1,'flame-wheel':6,'fire-spin':8,flamethrower:10},
+  preferredSignature:'quick-attack'};
+ for(const level of [5,8]){
+  const out=resolveKantoIntro({id:'ponyta',progression:{level}}, {},context);
+  const names=['lmb','rmb','q','e'].map(k=>out[k]?.torre2IntroSource).filter(Boolean);
+  assert.ok(names.includes('ember'),'the approved species attack must remain available');
+  for(const blocked of ['quick-attack','flame-wheel','fire-spin','flamethrower'])
+   assert.ok(!names.includes(blocked),blocked+' must not bypass its lock at Lv'+level);
+  assert.ok(['lmb','rmb','q'].every(k=>out[k]?.forma&&!out[k]?.pendiente));
+  if(level===8){
+   assert.equal(out.e.torre2IntroSource,'ember',
+    'a blocked preferred ULT must fall back to a verified installed renderer');
+   assert.ok(out.e.ulti&&out.e.dano<=KANTO_INTRO.maxIntroUltDamage);
+  }else assert.equal(out.e,undefined);
+ }
+ assert.equal(JSON.stringify(library),before,'approved source VFX metadata changed');
+});

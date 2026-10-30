@@ -31,7 +31,8 @@ export function chooseKantoSignatureUlt(species,library,context={}){
  if(species==='ditto')return null; // no installed Transform renderer
  const types=context.speciesTypes||[];
  const blocked=context.blockedName?canonical(context.blockedName):null;
- const byName=new Map((library||[]).filter(m=>m?.forma&&m?.nombre)
+ const byName=new Map((library||[]).filter(m=>m?.forma&&m?.nombre&&
+  !m.pendiente&&!m.torre2Unavailable&&!m.torre2RequiresTM&&!m.torre2RequiresHM)
   .map(m=>[canonical(m.nombre),m]));
  const verified=verifiedLevelUpNames(species,context);
  const matches=[...verified].map(key=>byName.get(key)).filter(m=>m&&
