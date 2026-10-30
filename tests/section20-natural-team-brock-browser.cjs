@@ -303,8 +303,28 @@ const server=http.createServer(async(req,res)=>{
     await clickTag('torre2-report-continue');
     await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('campanha').children.list.find(
       o=>o.active&&o.getData?.('torre2-report-continue')===true),null,{timeout:12000});
+    // Natural route strategy: revive the entire team after a battle when
+    // anyone is fainted or injured. Round 11 previously began with Bulbasaur
+    // and Pikachu at 0 HP, because a victory only restored the active fighter.
+    // Use the actual Phaser Center heal button and ordinary persistent save:
+    // NEVER set fighter HP or edit XP, trainer indexes or victory counters.
+    if(entry.after.team.some(m=>m.hp<100)){
+     const prev=await game();
+     await centerHeal();
+     const healed=await game();
+     assert.ok(healed.team.every(m=>m.hp===100),'Real Center must revive party');
+     assert.equal(healed.trainer,prev.trainer,'Center must not skip trainers');
+     assert.equal(healed.wins,prev.wins,'Center must not grant victories');
+     assert.equal(healed.losses,prev.losses,'Center must not erase real defeats');
+     assert.equal(healed.money,prev.money,'Center must not mint rewards');
+     assert.equal(healed.balls,prev.balls,'Center must preserve capture inventory');
+     entry.center={before:prev.team,after:healed.team};
+     saveReport();
+     console.log('PASS NATURAL CENTER BETWEEN TRAINERS',JSON.stringify({
+      nextTrainer:round+2,before:prev.team,after:healed.team}));
+    }
    }
-   before=entry.after;
+   before=await game();
   }
   // Optional T03 extension: win ACTUAL native battles after Brock, with
   // absolutely no XP/level/result/HP fixture and no EVO during battle.
