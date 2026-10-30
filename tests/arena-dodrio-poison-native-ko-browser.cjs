@@ -70,10 +70,22 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
      window.__dodrioPoisonEvent={before,after:{phase:this.fase,score:[...this.victorias]}};
      return result;
     };
+    window.__dodrioPoisonTicks=[];
+    const receiveNative=victim.recibir;
+    victim.recibir=function(attacker,hit){
+     const before=this.hp,at=this.escena.t,poison=!!this.est.veneno;
+     const out=receiveNative.call(this,attacker,hit);
+     if(hit?.tick&&hit?.puro&&hit?.tipo==='POISON')
+      window.__dodrioPoisonTicks.push({at,before,after:this.hp,poison,
+       elapsed:this.est.veneno?.acum??null,ko:this.ko,result:out});
+     return out;
+    };
     victim.envenenar(actualPoison,src);
     return {species:victim.nombre,base:victim.def.id,stage:victim.etapa,hp:victim.hp,
      hpMax:victim.hpMax,regen:victim.regen,poison:actualPoison,
-     poisonApplied:!!victim.est.veneno,phase:scene.fase};
+     poisonApplied:!!victim.est.veneno,
+     appliedAt:scene.t,expiresAt:victim.est.veneno?.hasta,
+     phase:scene.fase};
    },id);
    assert.equal(pre.hp,id==='dodrio'?10.4:9);
    assert.equal(pre.poisonApplied,true);
@@ -88,14 +100,15 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
      const l=scene.luchadores?.[1];return {active:scene.scene.isActive(),
       phase:scene.fase,hp:l?.hp,ko:l?.ko,inmortal:l?.inmortal,
       poison:l?.est?.veneno||null,lastHit:l?.ultimoDano,t:scene.t,
-      score:scene.victorias,observed:window.__dodrioPoisonEvent};
+      score:scene.victorias,observed:window.__dodrioPoisonEvent,
+      ticks:window.__dodrioPoisonTicks||[]};
     });
     evidence.cases.push({id,pre,diagnostic,error:String(err)});
     await save();
     throw new Error('Poison failed to KO '+id+': '+JSON.stringify(diagnostic));
    }
    const event=await page.evaluate(()=>({event:window.__dodrioPoisonEvent,
-    count:window.__dodrioPoisonCount}));
+    count:window.__dodrioPoisonCount,ticks:window.__dodrioPoisonTicks||[]}));
    evidence.cases.push({id,pre,event});await save();
    assert.equal(event.count,1,id+' native KO must fire once');
    assert.equal(event.event.before.ko,true);
