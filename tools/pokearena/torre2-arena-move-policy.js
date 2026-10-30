@@ -25,10 +25,12 @@ const ARENA_CD=Object.freeze({
  'blizzard':4,'blizard':4,'ventisca':4,
  'thunder':3,
  'psybeam':3,'psy-beam':3,
+ 'discharge':3,'descarga':3,
  'fire-blast':3.5,'llamarada':3.5,
  'solar-beam':3,'solarbeam':3,'rayo-solar':3,
  'charge':3,'carga':3,
  'hydro-pump':3.5,'hidrobomba':3.5,
+ 'hyper-beam':4,'hiperrayo':4,
  'seismic-toss':3,'sismic-toss':3,'movimiento-sismico':3,
  'egg-bomb':3,'eggbomb':3,'bomba-de-ovo':3,'bomba-ovo':3,
  'bomba-de-ovos':3,'bomba-de-huevos':3,'bomba-huevo':3,'bomba-de-huevo':3
