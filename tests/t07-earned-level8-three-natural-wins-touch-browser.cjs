@@ -1,7 +1,7 @@
 'use strict';
 /* True original Phaser campaign fight for the first THREE route trainers.
  * No forced KO, no fighter HP override, no instant-win, no arbitrary level.
- * A single Bulbasaur starts at Lv5; Mewtwo is transferred to PC normally.
+ * A single Bulbasaur starts at Lv5; Mewtwo is moved to PC by campaign setup API (not via UI).
  * Every battle uses actual UI button + AUTO native controller and XP rewards.
  */
 const assert=require('node:assert/strict');
@@ -77,9 +77,9 @@ const server=http.createServer(async(req,res)=>{
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
    if(round<names.length)assert.equal(opponent.id,names[round],
-    'First four route species include the rival after Caterpie');
+    'First three route species must match Pidgey, Rattata and Caterpie');
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
-   const expectedKind=round===3?'rival':round===5?'rocket':'trainer';
+   const expectedKind='trainer';
    assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
    await clickTag('torre2-central-cta');
    await page.waitForFunction(()=>{
@@ -265,7 +265,7 @@ const server=http.createServer(async(req,res)=>{
    'Native basic attack did not enter its approved cooldown');
   assert.equal(basicAfter.move,basicBefore.move,
    'Native battle changed the basic attack unexpectedly');
-  report.earnedUltTouch={ultBefore,ultAfter,ultCast,
+  report.earnedUltTouch={inputMethod:'Phaser panelTactil methods invoked in browser context; not physical touchscreen events',ultBefore,ultAfter,ultCast,
    basicBefore,basicAfter,
    limitation:ultCast?null:'ULT unlocked but not cast with the meter available at battle start',
    forcedEnergy:false,forcedUltimate:false,forcedCooldown:false};
@@ -279,6 +279,6 @@ const server=http.createServer(async(req,res)=>{
   await page.screenshot({path:out+'/t07-t08-natural-earned-ult-next-battle.png'});
   await page.screenshot({path:out+'/natural-route1-three-trainers-completed.png'});
   assert.deepEqual(errors,[],'No client JS exceptions through three consecutive native battles');
-  console.log('PASS THREE NATURAL KANTO OPENING FIGHTS INCLUDING RIVAL; no debug KOs, natural XP, real rewards');
+  console.log('PASS THREE NATIVE KANTO OPENING TRAINER FIGHTS; no debug KOs, natural XP, real rewards');
  }finally{saveReport();await page.close();await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});
