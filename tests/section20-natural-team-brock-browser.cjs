@@ -297,20 +297,40 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat.png'});
    const started=Date.now();
    try{
-    await page.waitForFunction(({previousWins,previousLosses})=>{
+    // Native combat sometimes reaches fase='fin' after the final KO but
+    // never returns to campanha. Diagnose that deadlock promptly instead
+    // of burning four minutes and mistaking a 0-HP foe for a saved win.
+    // This watchdog only observes Phaser; it NEVER changes HP, wins,
+    // the native clock, or the campaign's scene transition.
+    const terminal=await page.waitForFunction(({previousWins,previousLosses})=>{
      const s=window.kanto.readCampaign();
-     return window.__pt2Game.scene.isActive('campanha')&&
-      !!s&&(s.wins===previousWins+1||s.losses>previousLosses);
+     if(window.__pt2Game.scene.isActive('campanha')&&
+       !!s&&(s.wins===previousWins+1||s.losses>previousLosses))return 'saved-result';
+     const b=window.__pt2Game.scene.getScene('combate');
+     if(b.scene.isActive()&&b.fase==='fin'){
+      window.__t20FinSince??=performance.now();
+      if(performance.now()-window.__t20FinSince>12000)return 'stuck-native-fin';
+     }else window.__t20FinSince=null;
+     return false;
     },{previousWins:before.wins,previousLosses:before.losses},{timeout:240000,polling:250});
+    const outcome=await terminal.jsonValue();
+    if(outcome!=='saved-result')throw Error('Native Phaser combat stuck in fin after KO; no durable campaign result');
    }catch(error){
     entry.failedReason=String(error);
     entry.game=await game();
     entry.battle=await page.evaluate(()=>{
      const b=window.__pt2Game.scene.getScene('combate');
+     const party=b.datos?.torre2?.party;
      return {active:b.scene.isActive(),phase:b.fase,
-      hp:b.luchadores?.map(m=>({hp:m.hp,hpMax:m.hpMax})),
-      playerIndex:b.datos?.torre2?.party?.playerIndex,
-      enemyIndex:b.datos?.torre2?.party?.enemyIndex};
+      hp:b.luchadores?.map(m=>({hp:m.hp,hpMax:m.hpMax,ko:m.ko})),
+      playerIndex:party?.playerIndex,enemyIndex:party?.enemyIndex,
+      friend:party?.friend?.map(m=>({id:m.id,hp:m.hp})),
+      foes:party?.foes?.map(m=>({id:m.id,hp:m.hp})),
+      victories:b.victorias,round:b.numRonda,required:b.paraGanar,
+      installed:b.__torre2PartyInstalled,changing:b.__torre2Changing,
+      bagOpen:b.__torre2BattleBagOpen,ballTransitions:b.__torre2BallTransitions,
+      paused:b.pausado,clockPaused:b.time?.paused,
+      clockScale:b.time?.timeScale,gameTimeScale:b.game?.loop?.timeScale};
     });
     await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-failure.png'});
     saveReport();
