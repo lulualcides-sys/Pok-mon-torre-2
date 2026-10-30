@@ -2,6 +2,15 @@
  * than inventing moves, bypassing cooldowns or modifying battle math.
  * OFF by default on every new match; original controls restored on exit.
  */
+// Higher than native "dificil" in offensive decision-making, but explicitly
+// WITHOUT the native "maestro" damage multiplier (ventaja:1.35). This only
+// drives the human-controlled fighter while Campaign AUTO is enabled.
+export const CAMPAIGN_AUTO_OFFENSIVE=Object.freeze({
+ reaccion:.045,error:2,esquiva:.78,basicos:.94,reflejo:.12,
+ reflejoRival:.22,agresividad:1,juicio:1,umbralUlti:.72,ventaja:1
+});
+export const campaignAutoProfile=scene=>scene?.datos?.torre2?
+ CAMPAIGN_AUTO_OFFENSIVE:'normal';
 const OFFLINE_MODES=new Set(['cpu','entreno','arena']);
 const HUMAN_TYPES=new Set(['kbm','tactil','teclado2']);
 const isHuman=c=>HUMAN_TYPES.has(c?.tipo)||/^pad[0-9]+$/.test(c?.tipo||'');
@@ -119,9 +128,10 @@ export function bindAutoBattleToScene(Scene,IA){
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
-  // Only opt-in campaign AUTO uses the native stronger tactical tier.
-  // No attack/damage, move, cooldown, speed, HP or VFX is modified.
-  const tactic=this.datos?.torre2?'dificil':'normal';
+  // Campaign AUTO: stronger-than-Hard tactical parameters ONLY for the
+  // player AUTO brain. No bonus damage, speed, energy, cooldown or VFX changes.
+  // Manual control and the original Arena AUTO still use their old settings.
+  const tactic=campaignAutoProfile(this);
   const install=()=>installAutoBattle(this,fighter=>new IA(fighter,tactic));
   if(!install()&&autoBattleAllowed(this)&&!this.__torre2AutoRetry){
    // Campaign/Phaser may create the player controller AFTER create().
