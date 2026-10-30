@@ -1,4 +1,7 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
+
+## Lote 30/10 — diagnóstico do boot da Pokédex pública
+**Problema observável:** após Pages #41050085664 verde no SHA `477dac7410ad7a89f73dfb9a9946187cbdbca657` e versão HTTP `src-dc921f3851`, a auditoria pública integral #41050887159 falhou no `waitForFunction` da cena Pokédex (90 s), antes de criar artifact. **Aceite do lote:** em eventual timeout, salvar JSON com estado Phaser, requisições/erros, screenshot quando possível e manter CI vermelha. Não alterar runtime, saves, VFX nem reduzir o gate dos 150 Pokémon.
 **Identificador:** 001-master-script-continuity
 **Estado:** Em andamento — documentação de fluxo; execução das seções do Script Mestre permanece parcial
 **Fonte funcional:** [Script Mestre definitivo](../../docs/SCRIPT-MESTRE-DEFINITIVO-2026-10-27.md) · [controle](../../docs/CONTROLE-EXECUCAO-SCRIPT-MESTRE.md) · [fila](../../docs/FILA-CONTINUE-SCRIPT-MESTRE.md)
