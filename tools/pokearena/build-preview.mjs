@@ -926,6 +926,13 @@ const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
 await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
  await fs.readFile(pokedexPath,'utf8')));
 
+// The base client already ships the five Greninja styles for Froakie,
+// Frogadier and Greninja. Use the ORIGINAL sprites, metadata and red aura;
+// expose them in the independent local Arena without modifying upstream.
+const {installGreninjaVariants}=await import('./torre2-greninja-variants.mjs');
+const greninjaVariants=await installGreninjaVariants(dest,clientSource);
+console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
+
 // Avoid stale attack VFX on mobile browsers and GitHub Pages caching.
 // Previously all revisions imported exactly the same /src-8d89349697/*.js
 // URL: a ?v= query added to /arena2d/ never invalidated those modules.
@@ -935,7 +942,7 @@ const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
- 'main.js','habilidades.js','luchador.js','datos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
+ 'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
