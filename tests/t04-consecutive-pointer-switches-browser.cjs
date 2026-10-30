@@ -126,16 +126,18 @@ const server=http.createServer(async(req,res)=>{
     initialUses:me.stats.usosSlot?.[slot]||0};
   });
   assert.equal(ready.renderer,'torre2_doublekick');
-  // Click the actual AUTO toggle: original Poké Arena IA must issue the
-  // Double Kick through the real cooldown/energy/renderer pipeline.
+  // Kanto's approved campaign AUTO defaults to ON. The former test
+  // clicked an already-enabled toggle and DISABLED native IA by mistake.
+  // Keep the native initial state; use a real pointer only when it is OFF.
   const autoTap=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),z=b.__torre2AutoMode.zone;
    const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-   return {x:rect.left+z.x*rect.width/640,y:rect.top+z.y*rect.height/360};
+   return {x:rect.left+z.x*rect.width/640,y:rect.top+z.y*rect.height/360,
+    initiallyEnabled:b.__torre2AutoMode.enabled};
   });
-  await page.mouse.click(autoTap.x,autoTap.y);
+  if(!autoTap.initiallyEnabled)await page.mouse.click(autoTap.x,autoTap.y);
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled),
-   true,'Real AUTO pointer must enable native AI');
+   true,'Real native AUTO must remain enabled for the original Double Kick');
   try {
    await page.waitForFunction(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
