@@ -72,6 +72,11 @@ const report={scope:'T06 native desktop full-team capture sent to PC, breakout, 
    return b.scene.isActive()&&b.__torre2WildCapture&&b.__torre2PartyInstalled&&
     b.fase==='lucha'&&!b.__torre2Changing&&!b.__torre2BallTransitions;
   },null,{timeout:70000});
+  // Campaign AUTO starts ON. For a manual catch, the user first taps AUTO
+  // OFF so the native fighter cannot KO the wild Pokémon between throws.
+  await tap(579,146);
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled),
+   false,'Capture fixture uses the real AUTO toggle, not a forced AI override');
   const before=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),s=t06.readCampaign();
    b.luchadores.forEach(a=>a.inmortal=true); // Stable UI fixture only.
