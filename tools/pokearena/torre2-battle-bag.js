@@ -136,7 +136,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    const item=catalog.get(id);
    const qty=state?.inventory?.[id]||0;
    const x=index%2===0?210:433,y=155+Math.floor(index/2)*34;
-   const enabled=qty>0;
+   const enabled=qty>0&&(item?.kind!=='heal'||potionUses<3);
    const z=button(x,y,210,29,(item?.name||format(id))+'  x'+qty,()=>use(id),enabled);
    z?.setData('torre2-battle-bag-item',id);
   });
