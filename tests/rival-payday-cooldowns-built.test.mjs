@@ -71,6 +71,8 @@ test('Campaign cooldown is exactly 1.5 seconds for Charge Beam and Supersonic',(
   assert.equal(native.cd,5.8,'Native original must remain untouched');
   assert.notStrictEqual(copy,native);
  }
+ const practice={nombre:'ULT · Supersonic',torre2IntroSource:'supersonic',torre2IntroPractice:true,cd:8};
+ assert.strictEqual(moves.balanceCampaignQuickCooldown(practice),practice,'Lv8 practice ULT must stay capped');
  const other={nombre:'Thunderbolt',cd:7.1};
  assert.strictEqual(moves.balanceCampaignQuickCooldown(other),other);
  const source=fs.readFileSync(new URL('../tools/pokearena/torre2-move-pool.js',import.meta.url),'utf8');
