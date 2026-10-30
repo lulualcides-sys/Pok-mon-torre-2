@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T20: OITO vitórias reais com inicial de produção, ULT Lv8 e reload comprovados
+
+- **APROVADO E INTEGRADO:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328), squash `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO COMPLETO**, incluindo unidade, integridade, build original Phaser, oito batalhas consecutivas naturais, ULT aprendida por EXP a partir de Lv5, save byte a byte após reload, slot E no combate seguinte, controles mobile simulados e regressões de navegador. Usa `createPlayerCampaign('bulbasaur')` de produção, **sem Mewtwo QA na equipe ou PC**. Factory inicial não prova clique de seleção de Pokémon no menu.
+- **T20 ainda PARCIAL:** oito lutas não são os 13 treinadores, Brock ou Pallet→Liga. [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) tenta 13 treinadores, duas capturas selvagens e Brock no mesmo save. A [primeira CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269) **FALHOU por derrota real** contra Rocket (Zubat+Mankey): Bulbasaur solo Lv9, wins5/losses1/trainer5; não houve vitória falsificada. A versão revisada testa compra de Pokébolas e duas capturas **antes da Rocket**, cura no Centro real e até três derrotas/repetições legítimas, CI [#40991020627](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40991020627), não presumir resultado.
+- Preservar todos os 121 kits de Arena, VFX aprovados, Surf aprovado pelo usuário, sprites e saves; nenhuma alteração de combate foi feita nesses patches de QA.
+
+
+
 ## 29/10/2026 — T20: primeiro trecho de Pallet real (quatro lutas) comprovado; oito lutas e Brock sob teste
 
 - **Verificado e integrado:** [PR #326](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/326), squash `b6ecd4ac50ecfb74fc6f05d54f09f62d898c0be4`; [CI #40983712619](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983712619) **SUCESSO**: quatro vitórias Phaser consecutivas Lv5→9 (Pidgey, Rattata, Caterpie e rival Charmander), dinheiro normal 1400→2400 e XP/HP/saves preservados. **Limite importante:** este teste cria o inicial pelo `createCampaign` de QA e deposita o Mewtwo de laboratório no PC, **não** prova escolha de inicial pela UI nem jornada Pallet→Brock.
