@@ -768,7 +768,7 @@ create(){
    return;
   }
   const foe={id:match.p2,level:match.torre2.enemyLevel,
-   leader:state.trainer>=TRAINERS_PER_GYM(state.stage)};
+   leader:!wild&&state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
   // The encounter descriptor names the ace; the party opens with its first
@@ -859,13 +859,16 @@ create(){
   msg(320,88,area.area.toUpperCase(),{fontSize:'13px',color:C.gold});
   msg(320,111,'ENCONTROS REGIONAIS (FIRE RED)',{
    fontSize:'11px',color:C.blue});
-  area.wild.slice(0,12).forEach((id,i)=>{
+  // Green means genuinely caught (Pokédex), never merely available in grass.
+  const caught=new Set(state.dexCaught||[]);
+  [...new Set(area.wild)].slice(0,12).forEach((id,i)=>{
    const x=111+(i%4)*142,y=148+Math.floor(i/4)*29;
-   const ok=area.available.includes(id);
-   const badge=this.add.rectangle(x+wideOffset,y,132,25,ok?0x24553f:0x223345)
-    .setStrokeStyle(1,ok?0x7dd597:0x445468).setDepth(617);
-   msg(x,y,id.toUpperCase()+(ok?' ✓':' · FUTURO'),{
-    fontSize:'9px',color:ok?'#d7ffda':'#8ca9bb'});
+   const owned=caught.has(id);
+   const available=area.available.includes(id);
+   this.add.rectangle(x+wideOffset,y,132,25,owned?0x24553f:0x223345)
+    .setStrokeStyle(1,owned?0x7dd597:0x5d91b4).setDepth(617);
+   msg(x,y,id.toUpperCase()+(available?'':' · FUTURO'),{
+    fontSize:'9px',color:owned?'#d7ffda':available?'#f5f3e8':'#8ca9bb'});
   });
   msg(320,248,'ENCONTROS REALIZADOS: '+(state.wildEncountersStage||0)+' · SEM LIMITE',
    {fontSize:'11px',color:C.gold});
