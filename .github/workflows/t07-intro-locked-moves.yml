@@ -37,6 +37,7 @@ jobs:
           node tests/t07-151-movesets-built.test.mjs
           node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
           node tests/t08-kanto-ult-level-transition-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
       - name: Chromium real da campanha e regressões Phaser
         run: |
           set -euo pipefail
