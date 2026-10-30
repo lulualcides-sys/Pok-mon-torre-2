@@ -59,8 +59,9 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(initial.species,'squirtle');
   assert.equal(initial.enabled,false,'Manual control MUST remain default');
   assert.equal(initial.advantage,1,'Auto cannot apply Maestro native 35% damage buff');
-  assert.ok(initial.profile.reaccion<.08,'Campaign brain must be faster than Hard');
-  assert.ok(initial.profile.basicos>.85,'Campaign brain must press basic attacks more than Maestro');
+  assert.ok(initial.profile.reaccion<=.025,'Campaign AUTO level 2 reacts in <=25ms');
+  assert.equal(initial.profile.error,0,'Campaign AUTO level 2 avoids aim error');
+  assert.equal(initial.profile.basicos,1,'Campaign AUTO level 2 maximizes native basic pressure');
   assert.equal(initial.profile.agresividad,1);
   const on=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),a=b.__torre2AutoMode;
@@ -70,6 +71,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(on.enabled,true,'Campaign AUTO button must enable offensive brain');
   assert.equal(on.advantage,1);
   assert.equal(on.profile.ventaja,1);
+  assert.equal(on.profile.reaccion,.02);
+  assert.equal(on.profile.basicos,1);
   await page.waitForTimeout(3500);
   const playing=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0],a=b.__torre2AutoMode;
