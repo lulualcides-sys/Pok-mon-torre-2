@@ -61,6 +61,7 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
     // repair. HUD renders an empty bar, but an unpatched KO never fires.
     // Doduo: conventional integer lethal HP control case.
     const realKO=scene.alKO;
+    scene.__dodrioPoisonNativeAlKO=realKO;
     window.__dodrioPoisonEvent=null;window.__dodrioPoisonCount=0;
     scene.alKO=function(fallen,from){
      window.__dodrioPoisonCount++;
@@ -121,7 +122,14 @@ async function save(){await fs.mkdir('test-evidence',{recursive:true});
    assert.equal(event.event.after.phase,'ko');
    assert.equal(event.event.after.score[0],1);
    // Reload the scene for the next species without mutating the save.
-   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('titulo'));
+   await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('combate');
+    // Same Phaser Scene object is reused across species: restore the
+    // instrumented callback to avoid a double-count on the next round.
+    scene.alKO=scene.__dodrioPoisonNativeAlKO;
+    delete scene.__dodrioPoisonNativeAlKO;
+    scene.scene.start('titulo');
+   });
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('titulo'),null,{timeout:15000});
   }
   assert.deepEqual(errors,[],'No uncaught Phaser JS exception from poison K.O.');
