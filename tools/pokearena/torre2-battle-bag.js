@@ -119,7 +119,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   bg.fillStyle(0x142e43).fillRoundedRect(56,36,528,289,8);
   bg.lineStyle(2,0xd9b660).strokeRoundedRect(56,36,528,289,8);
   label(320,56,'BOLSA DE BATALHA',17,'#ffe2a2');
-  label(320,79,'ESCOLHA O POKÉMON E O ITEM',10,'#d1e6f4');
+  label(320,79,'POÇÕES '+potionUses+'/3 · ESCOLHA O ITEM',10,'#d1e6f4');
   party.friend.slice(0,6).forEach((m,i)=>{
    const x=112+i*82,y=111;
    const selected=i===target,hp=clamp(i===party.playerIndex?
