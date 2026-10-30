@@ -125,6 +125,8 @@ export function installPartyBattle(scene){
  const party=payload?.party;
  if(!party||scene.__torre2PartyInstalled||!scene.luchadores?.[1])return;
  scene.__torre2PartyInstalled=true;
+ scene.__torre2PlayerSwitches=0;
+ scene.__torre2PlayerSwitchLimit=3;
  // Phaser reuses the same Scene instance on restart. Clear the switch lock
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
@@ -235,6 +237,9 @@ export function installPartyBattle(scene){
    tooltip.setVisible(false);
    if(!member||i===party.playerIndex||member.hp<=0||
       scene.__torre2Changing||scene.__torre2BallTransitions||scene.fase!=='lucha')return;
+   if(scene.__torre2PlayerSwitches>=scene.__torre2PlayerSwitchLimit){
+    announce('LIMITE DE 3 TROCAS POR BATALHA');return;
+   }
    recall(0,i);
   });
   icons.push(img);slotZones.push(zone);
@@ -309,6 +314,10 @@ export function installPartyBattle(scene){
  }
  function recall(side,next,kind='switch'){
   if(scene.__torre2Changing||!scene.scene.isActive())return;
+  if(side===0&&kind==='switch'){
+   if(scene.__torre2PlayerSwitches>=scene.__torre2PlayerSwitchLimit)return;
+   scene.__torre2PlayerSwitches++;
+  }
   scene.__torre2Changing=true;
   levelLabels.forEach(o=>o.setVisible(false));
   clearDepartingCombat(scene);
