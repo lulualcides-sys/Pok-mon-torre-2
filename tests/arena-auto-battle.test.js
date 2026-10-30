@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
- CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput}
+ CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput,tuneCampaignAutoBrain}
  from '../tools/pokearena/torre2-auto-battle.js';
 const makeObject=()=>{
  const handlers=new Map;
@@ -221,7 +221,8 @@ test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buff
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.ventaja,1,
   'Never import Maestro native 35% hidden damage advantage');
  assert.ok(CAMPAIGN_AUTO_OFFENSIVE.reaccion<.08,'Must react faster than native Hard');
- assert.ok(CAMPAIGN_AUTO_OFFENSIVE.basicos>.85,'Must attack more often than native Maestro');
+ assert.ok(CAMPAIGN_AUTO_OFFENSIVE.basicos>.85,
+  'Native cfg.basicos only controls ordinary-projectile awareness, NOT basic attack frequency');
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
  assert.equal(k.__torre2AutoMode.enabled,false,'Manual control is still default');
  assert.deepEqual(k.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
@@ -265,7 +266,8 @@ test('AUTO attaches when campaign native controller arrives after create',()=>{
 test('Campaign AUTO level 2 is more aggressive without any combat-stat cheat',()=>{
  assert.ok(CAMPAIGN_AUTO_OFFENSIVE.reaccion<=.025,'Level 2 reacts faster than the old 45 ms profile');
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.error,0);
- assert.equal(CAMPAIGN_AUTO_OFFENSIVE.basicos,1,'Use the native basic attack whenever the brain chooses it');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.basicos,1,
+  'Native projectile awareness is independent of attack decisions');
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.ventaja,1,'No Maestro hidden 35% damage buff');
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
 });
@@ -293,4 +295,76 @@ test('Only active campaign AUTO closes distance on idle frames; preserves skills
  actor.hp=90;foe.x=70;s.luchadores=[actor,foe];
  assert.strictEqual(pressureCampaignAutoInput(s,actor,idle),idle,
   'Do not force movement at close range');
+});
+
+test('Level 3 uses real native attack thresholds, not cfg.basicos as a fake offensive knob',()=>{
+ const native={c:{pBasico:.30,pConGanas:.30,pSinGanas:.50,pSeguro:.85,
+  pAhorro:.50,reservaEnergia:60,energiaTope:95,pPlantarse:.50,
+  rodeo:.60,lateral:.25,rangoBanda:25,combos:[{usar:'q',prioridad:2}]}};
+ const original={...native.c};
+ const campaign=scene({torre2:{kind:'trainer'}});
+ const ret=tuneCampaignAutoBrain(campaign,native);
+ assert.strictEqual(ret,native);
+ assert.deepEqual(native.c.combos,original.combos,'Preserve official species combo rules');
+ assert.equal(native.c.pBasico,.14,'Basic attack hit confidence threshold is actually lowered');
+ assert.equal(native.c.pConGanas,.20,'Offensive skill confidence threshold is lowered');
+ assert.equal(native.c.pSinGanas,.34);
+ assert.equal(native.c.pAhorro,.08,'Native skill energy conservation reduced');
+ assert.equal(native.c.reservaEnergia,30);
+ assert.equal(native.c.energiaTope,72);
+ assert.equal(native.c.pPlantarse,.22,'Reduce passive standing decisions');
+ assert.equal(native.c.rodeo,.36,'Less circling, more forward pursuit');
+ assert.equal(native.c.lateral,.14);
+ assert.deepEqual(original,{pBasico:.30,pConGanas:.30,pSinGanas:.50,pSeguro:.85,
+  pAhorro:.50,reservaEnergia:60,energiaTope:95,pPlantarse:.50,
+  rodeo:.60,lateral:.25,rangoBanda:25,combos:[{usar:'q',prioridad:2}]},
+  'Per-species native brain must not be modified globally');
+ const arena={c:{pBasico:.3}};
+ assert.strictEqual(tuneCampaignAutoBrain(scene({modo:'arena'}),arena),arena);
+ assert.equal(arena.c.pBasico,.3,'Arena native AI unchanged');
+});
+
+test('Only campaign AUTO fires ready native LMB at reachable enemies with enough energy',()=>{
+ const actor={x:0,y:0,t:5,hp:90,hpMax:100,energia:85,calor:20,
+  cd:{lmb:0},kit:{lmb:{alcance:180,coste:8,pendiente:false}},est:{}};
+ const enemy={x:100,y:0,hp:100,hpMax:100,est:{}};
+ const b={datos:{torre2:{kind:'wild'}},fase:'lucha',luchadores:[actor,enemy]};
+ const idle={mx:0,my:0,ax:100,ay:0,lmb:false,rmb:false,q:false,e:false,esp:false};
+ const brain={c:{calorTope:80}};
+ assert.equal(pressureCampaignAutoInput(b,actor,idle,brain).lmb,true);
+ assert.equal(idle.lmb,false,'Native controller input must not be mutated');
+ for(const props of [{cd:{lmb:.8}},{energia:2},{calor:85},
+  {kit:{lmb:{alcance:180,coste:8,pendiente:true}}},
+  {accion:{bloquea:true}},{est:{aturdido:{hasta:8}}}]){
+  const damaged={...actor,...props};
+  const src={...b,luchadores:[damaged,enemy]};
+  assert.equal(pressureCampaignAutoInput(src,damaged,idle,brain).lmb,false,
+   'No cast during native cooldown, low energy, heat, locked animation, status or unlearned move');
+ }
+ assert.strictEqual(pressureCampaignAutoInput({...b,datos:{modo:'arena'}},actor,idle,brain),idle);
+ assert.strictEqual(pressureCampaignAutoInput({...b,fase:'capturando'},actor,idle,brain),idle);
+ for(const input of [{...idle,q:true},{...idle,rmb:true},{...idle,e:true},{...idle,esp:true}]){
+  assert.strictEqual(pressureCampaignAutoInput(b,actor,input,brain),input,
+   'Never override native skills or evasion');
+ }
+ enemy.est.invul={hasta:12};
+ assert.equal(pressureCampaignAutoInput(b,actor,idle,brain).lmb,false,
+  'Do not waste attacks during opponent invulnerability');
+});
+
+test('Level 3 pursues sideways native movement only when safe and in the Kanto campaign',()=>{
+ const actor={x:0,y:0,hp:90,hpMax:100,kit:{lmb:{alcance:70}}};
+ const enemy={x:300,y:0,hp:100,est:{}};
+ const s={datos:{torre2:{}},fase:'lucha',luchadores:[actor,enemy]};
+ const sidestep={mx:0,my:1,ax:300,ay:0};
+ const force=pressureCampaignAutoInput(s,actor,sidestep);
+ assert.ok(force.mx>.5,'Native circling now becomes actual forward offensive pressure');
+ assert.ok(force.my>0&&force.my<.6,'Keep some native strafing');
+ assert.deepEqual(sidestep,{mx:0,my:1,ax:300,ay:0},'Do not mutate AI input');
+ assert.strictEqual(pressureCampaignAutoInput({...s,datos:{modo:'arena'}},actor,sidestep),sidestep);
+ const retreat={...sidestep,mx:-1,my:0};
+ assert.strictEqual(pressureCampaignAutoInput(s,actor,retreat),retreat,'Keep intentional retreats');
+ const danger={vivo:true,dueno:enemy,x:15,y:15};
+ assert.strictEqual(pressureCampaignAutoInput({...s,efectos:[danger]},actor,sidestep),sidestep,
+  'Do not override native evasion near hostile projectiles');
 });

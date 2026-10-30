@@ -50,11 +50,13 @@ jobs:
         run: |
           set -euo pipefail
           CHROME_BIN="$(command -v google-chrome)" node tests/t27-native-mobile-report-pages-browser.cjs
-      - name: Existing manual/Arena control and battle browser regressions
+      - name: Focused manual/Arena controls, party rebind and native battle regression
         run: |
           set -euo pipefail
           CHROME_BIN="$(command -v google-chrome)" node tests/arena-auto-battle-browser.cjs
-          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+          CHROME_BIN="$(command -v google-chrome)" node tests/campaign-auto-tempo-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/t19-auto-party-rebind-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/combat-rules-browser.cjs
       - name: Save diagnostics
         if: always()
         uses: actions/upload-artifact@v4

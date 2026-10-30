@@ -9,23 +9,81 @@ export const CAMPAIGN_AUTO_OFFENSIVE=Object.freeze({
  reaccion:.02,error:0,esquiva:.86,basicos:1,reflejo:.10,
  reflejoRival:.18,agresividad:1,juicio:1,umbralUlti:.60,ventaja:1
 });
-// The native brain can remain stationary in its idle decision windows.
-// In Kanto AUTO ONLY, close distance when the opponent is alive, far away,
-// and our fighter has sufficient HP; never override its attacks/evasions.
-export function pressureCampaignAutoInput(scene,actor,input){
+// These are actual native offensive decision thresholds in cerebros.js.
+// Unlike the cfg.basicos field (projectile threat awareness), c.pBasico
+// gates firing LMB; pConGanas/pSinGanas gate offensive RMB/Q decisions.
+// Clone per-player brain, never mutate the source shared by enemy or Arena.
+export function tuneCampaignAutoBrain(scene,brain){
+ if(!scene?.datos?.torre2||!brain?.c||typeof brain.c!=='object')return brain;
+ const c=brain.c;
+ brain.c={...c,
+  pBasico:Math.min(c.pBasico??.30,.14),
+  pConGanas:Math.min(c.pConGanas??.30,.20),
+  pSinGanas:Math.min(c.pSinGanas??.50,.34),
+  pSeguro:Math.min(c.pSeguro??.85,.68),
+  pAhorro:Math.min(c.pAhorro??.50,.08),
+  reservaEnergia:Math.min(c.reservaEnergia??60,30),
+  energiaTope:Math.min(c.energiaTope??95,72),
+  pPlantarse:Math.min(c.pPlantarse??.50,.22),
+  rodeo:Math.min(c.rodeo??.60,.36),
+  lateral:Math.min(c.lateral??.25,.14),
+  rangoBanda:Math.min(c.rangoBanda??25,18)
+ };
+ return brain;
+}
+// Campaign AUTO only. Fill true native offensive gaps, never bypass move
+// readiness, invent a skill, change damage, or override a chosen cast/dodge.
+export function pressureCampaignAutoInput(scene,actor,input,brain=null){
  if(!scene?.datos?.torre2||scene.fase!=='lucha'||!actor||!input||
     typeof input!=='object'||input.esp||input.lmb||input.rmb||input.q||input.e||
-    Math.hypot(Number(input.mx)||0,Number(input.my)||0)>=.12)return input;
- const foe=scene.luchadores?.find(p=>p&&p!==actor&&Number(p.hp)>0);
- if(!foe||!(Number(actor.hp)>0)||!Number.isFinite(actor.x)||!Number.isFinite(actor.y)||
+    input.mega)return input;
+ const foe=actor.rival&&actor.rival!==actor?actor.rival:
+  scene.luchadores?.find(p=>p&&p!==actor&&Number(p.hp)>0);
+ if(!foe||foe.ko||!(Number(foe.hp)>0)||!(Number(actor.hp)>0)||
+    !Number.isFinite(actor.x)||!Number.isFinite(actor.y)||
     !Number.isFinite(foe.x)||!Number.isFinite(foe.y))return input;
- if(Number(actor.hpMax)>0&&actor.hp/actor.hpMax<.32)return input;
  const dx=foe.x-actor.x,dy=foe.y-actor.y,distance=Math.hypot(dx,dy);
- // Native world units; stop well before contact to retain dodge/spacing.
- const reach=Number(actor.kit?.lmb?.alcance);
- const approachAt=Math.max(55,Math.min(125,Number.isFinite(reach)?reach*.75:75));
- if(distance<=approachAt||distance>950)return input;
- return {...input,mx:dx/distance,my:dy/distance};
+ if(distance<1||distance>950)return input;
+ const ux=dx/distance,uy=dy/distance;
+ const basic=actor.kit?.lmb;
+ const range=Number(basic?.alcance??basic?.largo??0);
+ const basicReach=Number.isFinite(range)&&range>0?range:0;
+ // No reckless pressure while badly hurt or the native AI is evading.
+ const hpRatio=Number(actor.hpMax)>0?actor.hp/actor.hpMax:1;
+ if(hpRatio<.32)return input;
+ const danger=Array.isArray(scene.efectos)&&scene.efectos.some(effect=>
+  effect?.vivo&&effect?.dueno&&effect.dueno!==actor&&
+  Number.isFinite(effect.x)&&Number.isFinite(effect.y)&&
+  Math.hypot(effect.x-actor.x,effect.y-actor.y)<85);
+ let output=input;
+ // Correct the old idle-only chase: native AI often circles sideways, so
+ // the old check (movement magnitude < .12) was almost never reached.
+ const approachAt=Math.max(55,Math.min(140,basicReach?basicReach*.76:75));
+ if(hpRatio>=.43&&!danger&&distance>approachAt*1.15){
+  const mx=Number(input.mx)||0,my=Number(input.my)||0;
+  const magnitude=Math.hypot(mx,my);
+  const forward=magnitude>.12?(mx*ux+my*uy)/magnitude:0;
+  // Respect an intentional retreat, including defense against melee foes.
+  if(magnitude<.12)output={...input,mx:ux,my:uy};
+  else if(forward>=-.05&&forward<.60){
+   const blend=.76,wx=blend*ux+(1-blend)*mx/magnitude;
+   const wy=blend*uy+(1-blend)*my/magnitude;
+   const norm=Math.hypot(wx,wy)||1;
+   output={...input,mx:wx/norm,my:wy/norm};
+  }
+ }
+ // ACTUAL basic attack opportunity: native cooldown, energy, heat,
+ // invulnerability and animation locks all remain enforced.
+ if(!basic||basic.pendiente||basicReach<=0||distance>basicReach*.86||
+    !(Number(actor.cd?.lmb)<=0)||!(Number(actor.energia)>=(basic.coste??0))||
+    !Number.isFinite(actor.energia)||
+    Number(actor.calor??0)>=(brain?.c?.calorTope??80)||
+    actor.dash||actor.accion?.bloquea||
+    actor.est?.aturdido||actor.est?.dormido||actor.est?.congelado||
+    actor.est?.recarga||foe.est?.contra||foe.est?.disfraz||
+    (foe.est?.invul?.hasta??0)>(actor.t??0)||
+    (foe.est?.vuelo?.hasta??0)>(actor.t??0))return output;
+ return {...output,lmb:true};
 }
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
@@ -53,7 +111,8 @@ export function installAutoBattle(scene,makeNativeAI){
  // Original Arena stores an evolution FAMILY in def.id and the evolved form
  // in etapa. Both must be part of the key (e.g. Squirtle -> Wartortle).
  const fighterSpecies=actor=>String(actor?.def?.id||actor?.dex||'')+':'+String(actor?.etapa??0);
- const state={enabled:false,control:original,read:original.leer,ai:makeNativeAI(original.l),
+ const state={enabled:false,control:original,read:original.leer,
+  ai:tuneCampaignAutoBrain(scene,makeNativeAI(original.l)),
   autoActor:original.l,autoSpecies:fighterSpecies(original.l),
   button:null, label:null, zone:null,cleaned:false};
  if(typeof state.ai?.leer!=='function')throw Error('Native Poké Arena IA missing');
@@ -70,13 +129,14 @@ export function installAutoBattle(scene,makeNativeAI){
    if(fighter&&(fighter!==state.autoActor||species!==state.autoSpecies)){
     const ai=makeNativeAI(fighter);
     if(typeof ai?.leer!=='function')throw Error('Native Poké Arena IA missing after party switch');
-    state.ai=ai;state.autoActor=fighter;state.autoSpecies=species;
+    state.ai=tuneCampaignAutoBrain(scene,ai);
+    state.autoActor=fighter;state.autoSpecies=species;
    }
   }
   // Official AI respects Pokémon move slots, readiness, HP and real energy.
   // Clone its mutable per-frame input to avoid modifying the native controller.
   const it=state.ai.leer(Math.max(.001,Number(dt)||1/60));
-  return it?{...pressureCampaignAutoInput(scene,original.l,it),mega:false}:
+  return it?{...pressureCampaignAutoInput(scene,original.l,it,state.ai),mega:false}:
    state.read.call(this,dt,...args);
  };
  original.leer=safeRead;
