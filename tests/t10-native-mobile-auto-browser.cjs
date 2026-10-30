@@ -88,11 +88,11 @@ const report={scope:'T10 native AUTO touch in Arena CPU and solo Kanto campaign'
      save:save?{wins:save.wins,losses:save.losses,stage:save.stage,trainer:save.trainer,
       money:save.money,items:save.inventory,party:save.team.map(m=>m.uid)}:null};
    },kind);
-   assert.equal(initial.enabled,false,kind+' AUTO must default OFF');
-   assert.equal(initial.text,'AUTO');
+   assert.equal(initial.enabled,kind==='campaign',kind+' AUTO must default ON in campaign only');
+   assert.equal(initial.text,kind==='campaign'?'AUTO ✓':'AUTO');
    assert.ok(initial.controlIsPlayer&&initial.ownController,'AUTO must control human only');
    assert.ok(initial.nativeAI);
-   await tap(page,initial.position[0],initial.position[1]);
+   if(kind!=='campaign')await tap(page,initial.position[0],initial.position[1]);
    await page.waitForFunction(()=>{
     const a=window.__pt2Game.scene.getScene('combate').__torre2AutoMode;
     return a?.enabled&&a.__t10Calls>0;
