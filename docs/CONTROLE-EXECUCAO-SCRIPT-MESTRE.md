@@ -3,7 +3,7 @@
 ## 30/10/2026 — §§20/33/36/37 · evolução NPC no gate T20
 
 - **§20 PARCIAL:** [CI #41021932709](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41021932709) comprovou vitórias nativas contra Pidgey e Rattata, depois **falhou antes da terceira luta** por expectativa obsoleta Caterpie versus Metapod legítimo Lv7. Não confundir assert com derrota em batalha; Brock e 13 treinadores ainda não comprovados.
-- **§33 PARCIAL:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) recebeu commit 2b12d3d9eab3788a8cc7c91bbbbde03706f1b6fb para exigir Caterpie/Metapod/Butterfree conforme níveis oficiais 7/10. Sintaxe verificada em V8; **CI nova e regressão Chromium não confirmadas**.
+- **§33 PARCIAL:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) recebeu commit 2b12d3d9eab3788a8cc7c91bbbbde03706f1b6fb para exigir Caterpie/Metapod/Butterfree conforme níveis oficiais 7/10. Sintaxe verificada em V8; [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **em andamento; Chromium ainda não confirmado**.
 - **§36 PARCIAL:** somente teste de QA, sem mudanças em runtime, VFX, sprites, cooldowns, TM ou saves; Toxic #16 e Shiny #17 preservados.
 - **§37 PARCIAL:** nenhum merge/Pages deste patch; SHA HTTP só será declarado após CI verde e implantação comprovada. T07/T08 seguem com lacunas reais de golpes Lv5 e ULT disparada.
 
