@@ -5,7 +5,7 @@
 
 - **HEAD conferido:** `d8b3c8b43436081e681c05ebe938e24234383750`, merge #358. Auditoria de 150 espécies #41072786298 **success** nesse SHA; CI de combate #41072165629 **success**. Isso não prova Brock, ULT natural nem 37 seções.
 - **Pages #41072227909 FALHOU após publicar:** o workflow confirmou via HTTP `src-616165d778`, mas Chromium registrou `503 /arena2d/src-616165d778/torre2/laboratory.js`, cena Phaser ausente e timeout 90 s. Pages #41045137532 já tinha registrado outro 503 transitório em `assets/vfx/hilo.png`.
-- **Branch isolada:** `fix/pages-public-pokedex-503-retry-20261030`. Retry somente após diagnóstico comprovando 503 isolado do Pages, no máximo 3 auditorias **completas**, sem suprimir 404/500, erros Phaser, versões erradas ou falhas persistentes. CI/merge/Pages novos **ainda não comprovados** neste registro.
+- **Branch isolada:** `fix/pages-public-pokedex-503-retry-20261030`. Retry somente após diagnóstico comprovando 503 isolado do Pages, no máximo 3 auditorias **completas**, sem suprimir 404/500, erros Phaser, versões erradas ou falhas persistentes. **PR #362**, CI pública Chromium #41075928453 **success** (Node retry, npm test/check/check:reuse, build e navegador), guardião visual #41075928433 **success** (assets e screenshots Phaser). **Merge e Pages novos pendentes**.
 - **Próximo passo:** validar PR/CI e HTTP SHA exato; em seguida retomar T07/T08 (três golpes Lv5/ULT real) e T20 (Brock natural), respeitando PRs concorrentes #329/#360/#361. Sem alteração de gameplay/VFX/saves neste lote.
 
 
