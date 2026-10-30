@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,chooseEeveeBranch,installArenaMovePolicy}
+import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,replaceGengarHyperBeam,chooseEeveeBranch,installArenaMovePolicy}
  from '../tools/pokearena/torre2-arena-move-policy.js';
 const move=(nombre,dano=10,cd=5,tipo='NORMAL')=>({nombre,forma:'proyectil',dano,cd,tipo,coste:20,alcance:200});
 const set=(...moves)=>new Map(moves.map(m=>[m.nombre.toLowerCase(),m]));
@@ -47,10 +47,11 @@ test('Thunder cooldown is 3s in Arena without changing other electrical moves or
  assert.equal(output.lmb.cd,3,'Thunder is exactly 3s');
  assert.equal(output.rmb.cd,6.25,'Thunderbolt stays untouched');
  assert.equal(output.q.cd,9,'Thunder Wave stays untouched');
- assert.equal(output.e.cd,7.5,'Discharge stays untouched');
+ assert.equal(output.e.cd,3,'Discharge must follow the requested 3s cooldown');
  assert.strictEqual(output.rmb,native.rmb);
  assert.strictEqual(output.q,native.q);
- assert.strictEqual(output.e,native.e);
+ assert.notStrictEqual(output.e,native.e);
+ assert.equal(native.e.cd,7.5,'Original Discharge metadata is preserved');
  assert.strictEqual(output.esp,native.esp);
  assert.equal(native.lmb.cd,15,'Original source client remains unchanged');
  assert.equal(output.lmb.forma,native.lmb.forma,'Approved VFX renderer untouched');
@@ -226,4 +227,63 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.equal(story.forma.nombre,'VAPOREON','Campaign stays on existing evolution branch');
  assert.strictEqual(story.kitActual(),eevee.evoluciones[0].kit,'No Arena cooldown patch in campaign');
  assert.equal(story.puedeEvolucionar,true,'Campaign evolution rule unchanged');
+});
+
+test('Psybeam, Discharge and Hyper Beam take 3s / 3s / 4s without touching VFX or campaign',()=>{
+ const base={lmb:move('Psybeam',14,0,'PSYCHIC'),
+  rmb:move('Discharge',17,0,'ELECTRIC'),
+  q:move('Hyper Beam',32,0,'NORMAL'),
+  e:move('Shadow Ball',22,8,'GHOST')};
+ const tuned=enforceArenaMoveCooldowns(base);
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>tuned[slot].cd),[3,3,4]);
+ for(const slot of ['lmb','rmb','q']){
+  assert.equal(base[slot].cd,0,'Original move must not be mutated');
+  assert.equal(tuned[slot].forma,base[slot].forma,'Keep approved renderer');
+  assert.equal(tuned[slot].dano,base[slot].dano,'Keep damage');
+ }
+ assert.strictEqual(tuned.e,base.e,'Unrelated move remains native');
+ assert.strictEqual(enforceArenaMoveCooldowns(tuned),tuned);
+ const aliases={lmb:move('Psy Beam',15,0),rmb:move('Descarga',18,0),q:move('Hiperrayo',30,0)};
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>enforceArenaMoveCooldowns(aliases)[slot].cd),[3,3,4]);
+});
+test('Native Gengar drops only generic Hyper Beam in Arena and keeps approved Ghost/Poison VFX',()=>{
+ const shadow=move('Shadow Ball',23,6,'GHOST'),sludge=move('Sludge Bomb',24,7,'POISON');
+ const nightmare=move('Night Shade',15,5,'GHOST'),hypnosis=move('Hypnosis',0,5,'PSYCHIC');
+ const beam=move('Hyper Beam',35,0,'NORMAL');
+ const native={lmb:hypnosis,rmb:shadow,q:beam,e:nightmare,esp:move('Dodge',0,1)};
+ const pool=set(shadow,sludge,nightmare,hypnosis,beam);
+ const cleaned=replaceGengarHyperBeam(native,pool);
+ assert.equal(cleaned.q.nombre,'Sludge Bomb','Prefer installed Sludge Bomb when Shadow Ball already equipped');
+ assert.equal(cleaned.q.forma,sludge.forma,'Do not fake or replace VFX');
+ assert.equal(cleaned.q.dano,sludge.dano,'Keep installed move power');
+ assert.deepEqual(['lmb','rmb','e'].map(k=>cleaned[k]),['lmb','rmb','e'].map(k=>native[k]));
+ assert.strictEqual(cleaned.esp,native.esp,'Original dodge remains untouched');
+ assert.equal(native.q.nombre,'Hyper Beam','Never mutate original native kit');
+ assert.ok(!['lmb','rmb','q','e'].some(k=>cleaned[k]?.nombre==='Hyper Beam'));
+ const missing=replaceGengarHyperBeam({lmb:beam},new Map());
+ assert.equal(missing.lmb.nombre,'Hyper Beam','Never insert a nonexistent renderer');
+});
+test('Live Gengar Arena policy also covers evolved Gastly but not campaign or other native species',()=>{
+ class Fighter{
+  constructor(def,campaign=false,stage=0){this.def=def;this.etapa=stage;this.mega=false;
+   this.aspecto=null;this.escena={datos:campaign?{torre2:true}:{modo:'cpu'}};}
+  get forma(){return this.etapa?{...this.def,...this.def.evoluciones[this.etapa-1]}:this.def;}
+  get puedeEvolucionar(){return this.etapa<this.def.evoluciones.length;}
+  kitActual(){return this.forma.kit;}
+ }
+ const shadow=move('Shadow Ball',24,5,'GHOST'),sludge=move('Sludge Bomb',24,5,'POISON');
+ const beam=move('Hyper Beam',30,0,'NORMAL'),confusion=move('Confusion',8,4,'PSYCHIC');
+ const nativeKit={lmb:confusion,rmb:shadow,q:beam,e:move('Night Shade',19,5,'GHOST')};
+ const gastly={id:'gastly',tipos:['GHOST','POISON'],kit:{lmb:confusion},
+  evoluciones:[{nombre:'HAUNTER',kit:{lmb:confusion,rmb:shadow}},
+   {nombre:'GENGAR',kit:nativeKit}]};
+ const donor={id:'muk',tipos:['POISON'],kit:{lmb:sludge},evoluciones:[]};
+ installArenaMovePolicy(Fighter,[gastly,donor]);
+ const arena=new Fighter(gastly,false,2),campaign=new Fighter(gastly,true,2);
+ const corrected=arena.kitActual();
+ assert.equal(corrected.q.nombre,'Sludge Bomb','Gengar evolution must be corrected at fighter runtime');
+ assert.strictEqual(campaign.kitActual(),nativeKit,'Gen III campaign keeps original kit');
+ assert.equal(nativeKit.q.nombre,'Hyper Beam','Native source untouched');
+ assert.equal(new Fighter(gastly,false,1).kitActual().rmb.nombre,'Shadow Ball',
+  'Haunter existing approved move remains untouched');
 });

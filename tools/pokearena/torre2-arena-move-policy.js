@@ -98,6 +98,28 @@ export function enforceArenaMoveCooldowns(kit){
  }
  return output;
 }
+// Gengar is an original Poké Arena fighter, so the added-species kit
+// filter never ran for it. Remove only a generic Hyper Beam that appears
+// in its active non-campaign Arena kit; keep every other native slot/VFX.
+// Use a real installed, damaging Ghost/Poison attack (never fake a renderer).
+export function replaceGengarHyperBeam(kit,library){
+ if(!kit||!library)return kit;
+ const used=new Set(ATTACK_SLOTS.map(slot=>idOf(kit[slot]?.nombre)).filter(k=>k&&k!=='hyper-beam'));
+ let result=kit;
+ const preferences=['shadow-ball','sludge-bomb','shadow-punch','dark-pulse','night-shade','dream-eater'];
+ for(const slot of ATTACK_SLOTS){
+  if(idOf(kit[slot]?.nombre)!=='hyper-beam')continue;
+  const good=m=>m?.forma&&m?.approved!==false&&Number(m.dano)>0&&!used.has(idOf(m.nombre));
+  const replacement=preferences.map(k=>library.get(k)).find(good)||
+   [...library.values()].filter(m=>['GHOST','POISON'].includes(m?.tipo)&&good(m))
+    .sort((a,b)=>slot==='e'?Number(b.dano)-Number(a.dano):Number(a.dano)-Number(b.dano))[0];
+  if(!replacement)continue; // never insert an unimplemented attack
+  if(result===kit)result={...kit};
+  result[slot]={...replacement,pendiente:false,ulti:slot==='e'};
+  used.add(idOf(replacement.nombre));
+ }
+ return result;
+}
 export function selectArenaSpeciesKit(kit,species,types,library){
  const id=idOf(species),signature=idOf(SIGNATURES[id]);
  if(!kit||!id)return kit;
@@ -269,6 +291,7 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   if(this.escena?.datos?.torre2)return original;
   const form=this.forma;
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
+  if(id==='gengar')return enforceArenaMoveCooldowns(replaceGengarHyperBeam(original,library));
   if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
    return enforceArenaMoveCooldowns(original);
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
