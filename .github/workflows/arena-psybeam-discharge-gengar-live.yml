@@ -1,9 +1,10 @@
-name: Arena — Psybeam Discharge Gengar native cooldown verification
+name: Arena — Psybeam Discharge and Gengar approved moves
 
 on:
   push:
     branches:
       - fix/arena-psybeam-discharge-gengar-live-20261030
+      - fix/arena-gengar-dark-pulse-no-duplicate-20261030
   workflow_dispatch:
 
 permissions:
