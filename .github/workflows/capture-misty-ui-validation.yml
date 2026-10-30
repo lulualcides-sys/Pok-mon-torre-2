@@ -53,8 +53,7 @@ jobs:
         with:
           name: gotcha-bright-stars-real-phaser
           path: |
-            test-evidence/ball-gotcha-early.png
             test-evidence/ball-gotcha.png
-            test-evidence/ball-gotcha-late.png
+            test-evidence/ball-capture-absorb.png
           if-no-files-found: error
           retention-days: 7
