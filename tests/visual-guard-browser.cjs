@@ -88,6 +88,36 @@ const server=http.createServer(async(req,res)=>{
   state.scene='campanha';
   assert.equal(await page.evaluate(()=>window.kanto.readCampaign().team[0].id),'bulbasaur');
   await shot('desktop-campaign-map',page);
+  state.step='wild-grass-sprites';
+  const grass=await page.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   const save=window.kanto.readCampaign();
+   const listed=[...new Set(window.kanto.wildAvailability(save.stage).wild)].slice(0,12);
+   scene.grassScreen(save);
+   const sprites=scene.children.list.filter(o=>o.active&&o.getData?.('torre2-grass-sprite'))
+    .map(o=>({species:o.getData('torre2-grass-sprite'),texture:o.texture?.key,width:o.displayWidth,height:o.displayHeight}));
+   const labels=scene.children.list.filter(o=>o.active&&o.getData?.('torre2-grass-name'))
+    .map(o=>o.getData('torre2-grass-name'));
+   return {listed,sprites,labels,overlayActive:scene.__torre2GrassOverlay?.active};
+  });
+  assert.equal(grass.overlayActive,true,'Grass modal did not appear');
+  assert.deepEqual(grass.sprites.map(o=>o.species),grass.listed,'Each wild entry needs its own PMD sprite');
+  assert.deepEqual(grass.labels,grass.listed,'Each sprite must keep its correct species name');
+  assert.ok(grass.sprites.length>0,'No wild sprites found');
+  for(const entry of grass.sprites){
+   assert.match(entry.texture,/^torre2-portrait-\\d{4}$/,'A Pokémon must use its actual PMD portrait');
+   assert.equal(entry.width,22);
+   assert.equal(entry.height,22);
+  }
+  await shot('desktop-grass-pokemon-sprites',page);
+  // Exit the live Phaser overlay using the same mouse control as a player.
+  const grassBack=await page.evaluate(()=>{
+   const r=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:r.x+174*r.width/640,y:r.y+292*r.height/360};
+  });
+  await page.mouse.click(grassBack.x,grassBack.y);
+  await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('campanha').__torre2GrassOverlay,
+   null,{timeout:10000});
   state.step='first-battle';
   await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
