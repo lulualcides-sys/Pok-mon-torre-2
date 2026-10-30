@@ -1,4 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
+ 
+## 30/10/2026 — §§20/33/36/37 · T20: travamento após KO na batalha 11
+
+- **§20 PARCIAL:** [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **FALHA**: dez treinadores vencidos, oito vitórias selvagens, duas capturas legítimas e evolução Caterpie→Metapod→Butterfree; a luta 11 ficou em fase fin com Butterfree adversário a 0 HP, Pikachu a 61,84/66 HP, sem transição nem gravação de vitória após 240 s. Brock não enfrentado, insígnia e TM não obtidas. Captura/XP foram observados em Chromium, mas início via factory não prova seleção pelo menu.
+- **§33 PARCIAL:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit b386d3ca6092e2847aac7649286326c9f1d642dc, acrescenta watchdog **somente de observação** (12 s em fase fin) e snapshot de estado/relógio Phaser, sem manipular resultado. Sintaxe verificada pelo parser V8; [CI #41028820921](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41028820921) iniciada, **não aprovada antecipadamente**.
+- **§36 PARCIAL:** nenhum VFX, sprite, TM, cooldown, save ou lógica de combate aprovado alterado pelo diagnóstico; conflitos T04 de troca de equipe continuam isolados.
+- **§37 PARCIAL:** #329 ainda sem merge; não existe Pages SHA/HTTP desta correção de teste. Não marcar T20 ou as 37 seções como completas.
+
 
 ## 30/10/2026 — §§20/33/36/37 · evolução NPC no gate T20
 
