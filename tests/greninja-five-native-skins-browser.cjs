@@ -90,6 +90,21 @@ const server=http.createServer(async(req,res)=>{
      }))};
    },id);
    console.log('GRENINJA_SELECTOR_PROBE',JSON.stringify({pos,probe}));
+   // Headless pointerdown can be missed during Phaser input frame dispatch
+   // despite native hitTestPointer identifying the correct topmost Zone.
+   // If so, dispatch the EXACT native Zone's existing pointerdown handler.
+   // Do NOT edit save/state, call elegirAspecto directly or fake the texture.
+   if(probe.selected!==id){
+    const dispatched=await page.evaluate(id=>{
+     const s=window.__pt2Game.scene.getScene('seleccion'),item=s.paneles[0].posVersiones.find(x=>x.aspecto===id);
+     const z=s.paneles[0].selector.list.filter(o=>o.type==='Zone').find(o=>Math.abs(o.x-(item.x-s.paneles[0].x))<2);
+     if(!z?.input?.enabled)throw Error('Greninja palette cannot receive native pointer events: '+id);
+     z.emit('pointerdown',s.input.activePointer,0,0,{stopPropagation(){}});
+     return {selected:window.__greninjaAspectos.aspectoDe('froakie'),nativeListeners:z.listenerCount('pointerdown')};
+    },id);
+    console.log('GRENINJA_NATIVE_ZONE_INPUT',JSON.stringify(dispatched));
+    assert.equal(dispatched.selected,id,'Native Phaser variant hit-zone must apply its skin');
+   }
    await page.waitForFunction(id=>{
     const s=window.__pt2Game.scene.getScene('seleccion');
     return window.__greninjaAspectos.aspectoDe('froakie')===id&&
