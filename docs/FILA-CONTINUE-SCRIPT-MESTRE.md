@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — T20: Rocket vencida após oito vitórias selvagens; CI falhou por contador absoluto
+
+- **Evidência real, sem declaração de Brock:** [CI #41006367570](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41006367570) falhou no teste, mas o log prova cinco vitórias de treinador, duas capturas selvagens legais, oito vitórias selvagens com XP e **vitória contra Rocket**: `trainer=6`, `wins=14`, `losses=0`, `stage=0`. A falha foi um timeout de 240 segundos após a vitória, porque o teste esperava `wins===6` e ignorava oito vitórias selvagens acumuladas; combate nativo encerrado em `fase=fin`.
+- **Correção isolada ainda sob CI:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit `97e56b2b` / HEAD `9b62ccb8`, compara vitórias com `before.wins+1`, verifica uma vitória real por combate selvagem e não altera XP/HP/resultados. [Nova CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) iniciada; **não declarar 13 treinadores/Brock aprovados nem mesclar antes de todos os gates verdes**.
+- **T07/T08 e T20 PARCIAIS:** a prova é de execução real da Rocket, não de jornada Pallet→Campeão. Sem modificação de runtime, golpes, 227 VFX aprovados, sprites, cooldowns, TMs ou saves. Confirmar compatibilidade com a main, Chromium, merge e SHA HTTP Pages antes de declarar publicação.
+
+
 **CHECKPOINT MAIS RECENTE (30/10/2026):** [T07/T08 e T20 — evidências verificadas, bloqueios e próxima etapa](CHECKPOINT-SCRIPT-MESTRE-2026-10-30.md). Histórico abaixo preservado; nunca interpretar um teste pendente como sucesso, nem reiniciar as seções já integradas.
 
 ## 29/10/2026 — T20: OITO vitórias reais com inicial de produção, ULT Lv8 e reload comprovados
