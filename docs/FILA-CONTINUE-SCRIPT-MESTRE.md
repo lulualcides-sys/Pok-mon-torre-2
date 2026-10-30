@@ -1,5 +1,11 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — T07/T08: Surf aprovado como VFX, HM ainda sem liberação (patch em validação)
+
+- A política integral antiga continha a frase obsoleta «Surf está reprovado». A aprovação posterior de 30/10 prevalece: **preservar renderer Surf** e **não conceder HM automaticamente** em campanha. Scratch/Transform continuam adiados.
+- Lote isolado atualiza política, rótulos e regressão de imutabilidade do VFX em teste compilado. **Sem modificação de motor, golpes aprovados, saves ou liberação de TM/HM.** CI/Chromium/merge/Pages deste lote ainda não verificados; não contar como T07/T08 concluídos.
+- T20 permanece bloqueado no 13º rival da PR #329: CI #41028820921 com três derrotas legítimas; Brock não testado nessa execução.
+
 **CHECKPOINT MAIS RECENTE (30/10/2026):** [T07/T08 e T20 — evidências verificadas, bloqueios e próxima etapa](CHECKPOINT-SCRIPT-MESTRE-2026-10-30.md). Histórico abaixo preservado; nunca interpretar um teste pendente como sucesso, nem reiniciar as seções já integradas.
 
 ## 29/10/2026 — T20: OITO vitórias reais com inicial de produção, ULT Lv8 e reload comprovados

@@ -52,3 +52,7 @@ Dado outro agente com PR aberta no mesmo componente, quando surge nova tarefa:
 - Modificar o motor Phaser, alterar VFX/cooldowns/IA, reformular movesets e saves.
 - Integrar uma PR de combate concorrente ou declarar o Script Mestre concluído.
 - Publicar automaticamente no GitHub Pages apenas porque a documentação foi adicionada.
+
+## Lote T07/T08 — aprovação Surf e gate HM (30/10/2026)
+**Cenário:** Surf permanece no catálogo VFX aprovado, enquanto a campanha não concede HM Surf por nível, TM gravada sem liberação ou editor. Scratch/Transform seguem adiados.
+**Aceite:** teste compilado preserva renderer e metadados Surf após consultas a Pokédex/moveset; nenhum save é reescrito; nenhum HM é liberado. Testes Chromium/CI completos antes de merge; este lote não valida ULT em combate nem Brock.

@@ -119,24 +119,34 @@ for(const [id,move] of [['psyduck','surf'],['tentacruel','surf'],
  ['vaporeon','surf'],['dragonite','surf'],
  ['sandshrew','protect'],['sandslash','protect']])
  assert.ok(!availableMoves(make(id,50)).some(m=>m.id===move),
-  'Rejected Surf or TM-only FRLG Protect auto-granted for '+id);
-// Even a legal HM/TM claim cannot enable a rejected renderer. This does not
-// erase the claim from existing saves or modify the 227 installed effects.
+  'Surf HM not unlocked or TM-only FRLG Protect auto-granted for '+id);
+// Surf's existing renderer is APPROVED. Its campaign HM acquisition is still
+// locked independently; a legacy TM claim must remain untouched, not auto-equipped.
+// Do not erase saved claims or modify any installed effects.
 const surfSave={...make('squirtle',50),tmMoves:['surf']};
 const surfSaveBefore=JSON.stringify(surfSave);
 assert.ok(!availableMoves(surfSave).some(m=>m.id==='surf'));
 assert.equal(JSON.stringify(surfSave),surfSaveBefore);
-// The Pokédex reads campaignLearnset, not just the battle menu. A rejected
-// renderer must not appear as an allegedly teachable HM in that index.
+// The Pokédex reads campaignLearnset, not just the battle menu. An approved
+// renderer alone must not advertise an unimplemented HM acquisition route.
 for(const id of ['squirtle','blastoise','lapras','vaporeon','dragonite']){
  const rows=campaignLearnset(id);
  assert.ok(!rows.some(row=>row.id==='surf'),
-  id+' Pokédex incorrectly advertises rejected Surf as a TM/HM');
+  id+' Pokédex incorrectly advertises Surf HM before campaign authorization');
  assert.equal(moveUnlockLevel(make(id,50),'surf'),null,
-  id+' unlock index disagrees with rejected Surf');
+  id+' unlock index disagrees with locked Surf HM');
 }
-assert.ok(TEST_LIBRARY.some(m=>m.id==='surf'&&m.forma),
- 'Existing Surf renderer must remain intact for historical review');
+const approvedSurfVfx=TEST_LIBRARY.find(m=>m.id==='surf');
+assert.ok(approvedSurfVfx?.forma,
+ 'Approved Surf renderer must remain installed, independently of campaign HM');
+const surfVfxBefore=JSON.stringify(approvedSurfVfx);
+// Read-only campaign gates must not rewrite approved renderer metadata.
+for(const id of ['squirtle','lapras','vaporeon']){
+ availableMoves(make(id,50));
+ campaignLearnset(id);
+}
+assert.equal(JSON.stringify(approvedSurfVfx),surfVfxBefore,
+ 'Checking Surf HM availability mutated its approved VFX');
 assert.ok(!resolveLoadout(make('charmander',5)).lmb?.torre2IntroFallbackFX,
  'Deferred Scratch must not impersonate a Tackle renderer');
 const saved={...make('squirtle',50),

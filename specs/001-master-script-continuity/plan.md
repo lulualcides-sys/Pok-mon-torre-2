@@ -42,3 +42,9 @@
 - **Risco:** CLI Spec Kit não disponível. **Mitigação:** arquivos em formato compatível, sem dependência de CLI.
 - **Risco:** múltiplos agentes alterando `AGENTS.md`. **Mitigação:** branch isolada, não fazer force-push, rever base antes do merge.
 - **Rollback:** reverter apenas commits de documentação; nenhuma migração de dados é necessária.
+
+## Lote T07/T08 — separar VFX Surf de liberação HM (30/10/2026)
+- Escopo: comentário do onboarding, teste de catálogo compilado, política integral e nomes de workflow; nenhuma lógica Phaser/WebGL, efeito, save, TM ou sprite alterado.
+- Risco controlado: o teste exige VFX Surf instalado, preserva seus metadados após consultas e mantém HM indisponível na campanha sem autorização específica.
+- Verificação: `npm test`, `npm run check`, `npm run check:reuse`, build, teste compilado T08 e Chromium pelo workflow do PR. Não afirmar execução local ou Pages antes dos gates.
+- Concorrência: não tocar PR #329 (T20), #270 (ULT), Toxic #16 nem Shiny #17. Rollback isolado do patch documental/teste, sem migração de save.
