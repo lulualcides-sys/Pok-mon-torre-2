@@ -24,3 +24,10 @@ Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funci
 - `docs/CHECKPOINT-SCRIPT-MESTRE-2026-10-30.md`: §20 e T07/T08 parciais. Não usar o resultado antigo de CI como se fosse o mais recente sem nova consulta.
 
 **Atualização posterior:** só marcar T005–T007 como concluídos após verificar cada etapa. Nenhum `[x]` acima significa implementação de gameplay.
+
+## Lote T07/T08 — Surf aprovado / HM separado (30/10/2026)
+- [x] Diagnóstico: política integral e mensagens do teste ainda chamavam Surf de reprovado, contradizendo aprovação mais recente.
+- [x] Patch proposto: manter o VFX aprovado, atualizar política/comentários/nomes do gate e acrescentar assertiva de imutabilidade do renderer no teste compilado.
+- [ ] CI `npm test`/`check`/`check:reuse`/build/Chromium do SHA da PR integralmente verde.
+- [ ] Revisão, merge e verificação Pages HTTP do SHA exato, caso haja publicação.
+- [ ] Prova de ULT com medidor ganho em combate natural e 13 treinadores + Brock: continuam pendentes, sem confundir este patch com homologação.

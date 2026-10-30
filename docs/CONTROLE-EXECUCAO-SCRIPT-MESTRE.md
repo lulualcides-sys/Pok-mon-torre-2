@@ -1,5 +1,10 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8/33/36/37 · Surf VFX aprovado ≠ HM liberado (lote em validação)
+
+- **§7/§8 PARCIAIS:** corrigida a orientação obsoleta que chamava Surf de reprovado. VFX aprovado deve permanecer no catálogo; aquisição TM/HM da campanha continua separada. Teste compilado agora verifica imutabilidade do renderer Surf após consultas; Scratch/Transform adiados. Nenhum VFX, moveset, save ou regra de desbloqueio foi alterado.
+- **§33/§37 PENDENTES NESTE LOTE:** CI/Chromium, merge e Pages HTTP do SHA ainda não verificados; sem alegar publicação. **§36:** nenhuma modificação de gameplay. T20 #329 continua sem Brock homologado.
+
 ## 29/10/2026 — §§20/33/36/37 · T20 oito vitórias de produção e dificuldade real da Rocket
 
 - **§20 PARCIAL:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328) integrada `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO**: oito confrontos nativos reais com inicial criado via factory de produção, sem Mewtwo debug, ULT desbloqueada por XP, save persistente/reload e controles Phaser testados; não comprova menu inicial nem 13 treinadores+Brock.

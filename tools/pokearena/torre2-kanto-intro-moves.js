@@ -97,8 +97,8 @@ export function resolveKantoIntro(member,installed,{
   const key=canonical?canonical(name):idOf(name);
   const move=catalog.get(key)||compactCatalog.get(key.replace(/-/g,''));
   const actual=move?(canonical?canonical(move.nombre):idOf(move.nombre)):key;
-  // Scratch is deferred and Surf rejected. Do not preview them even if a
-  // stale renderer exists in the original catalog or in a legacy save.
+  // Scratch is deferred. Surf VFX is approved, but its HM/campaign unlock
+  // remains separate: never auto-preview Surf at Lv5 or grant it via a save.
   if(['scratch','surf'].includes(actual)||!move||!lowPower(move)||
      (target===supplemental&&move.source==='new-phaser-fx'&&move.approved!==true)||
      [...candidates,...supplemental].some(x=>x.key===actual))return;
