@@ -227,13 +227,16 @@ const server=http.createServer(async(req,res)=>{
  // Actual wild encounters are part of a playable Kanto route. Training here
  // earns XP and recorded wild victories in native Phaser fights; it never injects levels, wins, HP or meter.
  // The sixth trainer (Rocket) has beaten untrained teams repeatedly.
- const trainNaturalTeam=async({targetStarterLevel=12,maxRounds=8}={})=>{
+ const trainNaturalTeam=async({targetStarterLevel=12,targetSupportLevel=0,maxRounds=8}={})=>{
   report.wildTrainingPhases??=[];
-  const phase={before:await game(),targetStarterLevel,rounds:[]};
+  const phase={before:await game(),targetStarterLevel,targetSupportLevel,rounds:[]};
   report.wildTrainingPhases.push(phase);
   for(let n=0;n<maxRounds;n++){
    const before=await game();
-   if(before.team[0].level>=targetStarterLevel)break;
+   // At Brock, the Lv14 cap makes more starter XP impossible.
+   // Earn team XP normally for uncapped captured members instead.
+   if(before.team[0].level>=targetStarterLevel&&
+      (!targetSupportLevel||before.team.slice(1).every(m=>m.level>=targetSupportLevel)))break;
    const beforeXp=await page.evaluate(()=>window.kanto.readCampaign().team.map(
     m=>Number(m.progression?.experience)||0));
    await page.evaluate(()=>{
@@ -280,7 +283,10 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(phase.after.trainer,phase.before.trainer,
    'Training must never advance a route trainer');
   assert.ok(phase.after.team[0].level >= (phase.before.trainer===5?10:targetStarterLevel),
-   'Starter did not reach the natural training goal; do not inject XP');
+   'Starter did not reach attainable natural training goal; no XP injection');
+  if(targetSupportLevel)
+   assert.ok(phase.after.team.slice(1).every(m=>m.level>=targetSupportLevel),
+    'Captured teammates did not reach natural training goal; preserve real outcomes');
  };
 
  try{
@@ -480,9 +486,21 @@ const server=http.createServer(async(req,res)=>{
     // Improve the team's chances through real grass encounters and XP only.
     // No direct edits to level, enemy HP, RNG, money, KO or battle winner.
     if(round===5||round===12||round===13){
-     const goal=round===5?12:Math.max(15,Math.min(16,before.team[0].level+1));
-     if(before.team[0].level<goal){
-      await trainNaturalTeam({targetStarterLevel:goal,maxRounds:16});
+     // Use the game's current cap, not a fabricated Lv15/16 target while
+     // Brock stage-0 is capped at Lv14. Improve the captured party instead.
+     const cap=await page.evaluate(async()=>{
+      const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
+      if(!main)throw Error('Missing original Phaser main module');
+      const levels=await import(new URL('./torre2/kanto-levels.js',main));
+      return levels.currentLevelCap(window.kanto.readCampaign().stage);
+     });
+     assert.ok(Number.isInteger(cap)&&cap>=before.team[0].level,
+      'Native campaign cap must be valid for this stage');
+     const goal=Math.min(cap,round===5?12:Math.max(15,Math.min(16,before.team[0].level+1)));
+     const supportGoal=round===5?0:Math.min(cap-1,Math.max(11,before.team[0].level-1));
+     if(before.team[0].level<goal||
+        (supportGoal>0&&before.team.slice(1).some(m=>m.level<supportGoal))){
+      await trainNaturalTeam({targetStarterLevel:goal,targetSupportLevel:supportGoal,maxRounds:16});
       before=await game();
      }
     }
