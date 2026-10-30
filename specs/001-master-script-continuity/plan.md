@@ -1,4 +1,7 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
+
+## Plano 30/10 — investigar timeout real da Pokédex pública
+**Escopo:** somente `tests/pokedex-public-live-browser.cjs` e registros de evidência. Capturar `document.readyState`, cenas Phaser ativas, canvas, erros de página, HTTP >=400, requisições falhas e screenshot ao falhar no boot; relançar o erro original. Revisar artifact e comparar com a execução Pages que passou antes de alterar código do jogo. **Rollback:** reverter este teste; não há migração de saves nem alteração de efeitos. **Concorrência:** não tocar PRs #329, #352, #353, Toxic #16 ou Shiny #17. Gates: sintaxe CJS, guardião Chromium no PR e, após merge autorizado, auditoria pública integral.
 **Escopo deste PR:** introdução segura do método; sem alteração de runtime.
 **Branch:** `docs/spec-kit-superpowers-master-workflow-20261030`
 
