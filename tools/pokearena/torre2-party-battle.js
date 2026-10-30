@@ -1,4 +1,5 @@
-import {createTrainerStrategy,chooseTrainerSwitch} from './trainer-strategy.js';
+import {createTrainerStrategy,chooseTrainerSwitch,pressureGymLeaderInput} from './trainer-strategy.js';
+import {improveGymLeaderLoadout} from './gym-leader-loadouts.js';
 import {gen3Effectiveness} from './gen3-types.js';
 import {createWeather,setWeather,tickWeather,WEATHER_NAMES} from './weather.js';
 import {installWeatherPixels} from './weather-pixels.js';
@@ -11,7 +12,7 @@ import {clearDepartingCombat} from './combat-boundary.js';
  * The fight ends only when one entire party is defeated.
  */
 import {STAGES,campaignStarter,rivalChampionTeam,trainerSpeciesForLevel,readCampaign,recordSeen,saveCampaign} from './campaign-core.js';
-import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
+import {resolveLoadout,availableMoves,campaignMoveSlotReason,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar,etapaDe} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
@@ -61,13 +62,21 @@ export function createPartyMatch(state,opponent,wild=false){
      ...(index===3?{ulti:true}:{})};
    });
   }
-  return {id,level,hp:100,loadout};
+  const finalLoadout=leaderTeam&&state.stage<8&&state.stage!==2?
+   improveGymLeaderLoadout({id,level,loadout,
+    types:etapaDe(buscar(id).def,buscar(id).etapa).tipos||[],
+    available:availableMoves({id,progression:{species:id,level}}),
+    slotReason:campaignMoveSlotReason}):loadout;
+  return {id,level,hp:100,loadout:finalLoadout};
  });
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))
   playerIndex=friend.findIndex(m=>m.hp>0);
  if(playerIndex<0)playerIndex=0;
- return {friend,foes,playerIndex,enemyIndex:0,changes:0,strategic:!wild&&opponent.leader===true,trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
+ return {friend,foes,playerIndex,enemyIndex:0,changes:0,
+  strategic:!wild&&opponent.leader===true,
+  gymLeader:!wild&&opponent.leader===true&&state.stage<8,
+  trainerItems:trainerInventory(state.stage,opponent.leader,state.trainer,wild)};
 }
 export function applyPartyBattleResult(state,party){
  if(!party||!Array.isArray(party.friend))return;
@@ -141,10 +150,20 @@ export function installPartyBattle(scene){
  scene.events.once('shutdown',()=>levelLabels.forEach(o=>o.destroy()));
  const trainerItems=createTrainerItems(party.trainerItems||{});
  scene.__torre2TrainerItems=trainerItems;
- const strategy=scene.__torre2TrainerStrategy=createTrainerStrategy(party.strategic===true);
+ const strategy=scene.__torre2TrainerStrategy=createTrainerStrategy(
+  party.strategic===true,{gymLeader:party.gymLeader===true});
  const enemyControl=scene.controles?.[1],readControl=enemyControl?.leer;
- if(readControl)enemyControl.leer=function(dt){return trainerItems.pending?null:readControl.call(this,dt)};
- scene.events.once('shutdown',()=>{if(readControl)enemyControl.leer=readControl;scene.__torre2TrainerItems=null});
+ const bossPressure={nextBasicAt:2,assisted:0};
+ scene.__torre2GymPressure=party.gymLeader?bossPressure:null;
+ if(readControl)enemyControl.leer=function(dt){
+  if(trainerItems.pending)return null;
+  const native=readControl.call(this,dt);
+  if(!party.gymLeader)return native;
+  const guided=pressureGymLeaderInput(scene,actors[1],actors[0],native,bossPressure);
+  if(guided!==native)bossPressure.assisted++;
+  return guided;
+ };
+ scene.events.once('shutdown',()=>{if(readControl)enemyControl.leer=readControl;scene.__torre2TrainerItems=null;scene.__torre2GymPressure=null});
  // fase alone blocks input in P2, but its paso still advances projectiles,
  // status damage and regeneration. Suspend simulation, not the Phaser clock.
  const nativeStep=scene.paso;

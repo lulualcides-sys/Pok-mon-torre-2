@@ -191,6 +191,7 @@ await Promise.all([
  ['tools/pokearena/torre2-gen3-status.js','gen3-status.js'],
  ['tools/pokearena/torre2-trainer-items.js','trainer-items.js'],
  ['tools/pokearena/torre2-trainer-strategy.js','trainer-strategy.js'],
+ ['tools/pokearena/gym-leader-loadouts.js','gym-leader-loadouts.js'],
  ['tools/pokearena/torre2-training.js','training.js'],
  ['tools/pokearena/torre2-weather.js','weather.js'],
  ['tools/pokearena/torre2-weather-pixels.js','weather-pixels.js'],
@@ -498,7 +499,7 @@ patches.push(['luchador.js',[
  ['recibir(fuente,g){if(this.ko)return"nada";',
   'recibir(fuente,g){if(this.ko)return"nada";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente?.est?.torre2SandAccuracy&&Math.random()<(fuente.est.torre2SandAccuracy.chance??.28))return"miss";if(this.escena?.datos?.torre2&&!g?.tick&&!g?.puro&&fuente&&fuente!==this&&weatherThunderMiss(this.escena.__torre2Weather,g?.nombre||fuente.kit?.[g?.slot]?.nombre))return"miss";'],
  ['let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);',
-  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;d*=weatherDamageMultiplier(e.__torre2Weather,g.tipo,g.nombre||fuente?.kit?.[g.slot]?.nombre);}']
+  'let d=g.dano*mult*(g.puro?1:REGLAS.danoGlobal);if(e.datos?.torre2&&!g.puro){if(this.est.torre2LightScreen&&gen3Category(g.tipo)==="SPECIAL")d*=.5;d*=weatherDamageMultiplier(e.__torre2Weather,g.tipo,g.nombre||fuente?.kit?.[g.slot]?.nombre,g.tick?[]:fuente?.tipos);}']
 ]]);
 // Native Poké Arena anotarEntreno(d) writes registroDano.push() even after
 // direct damage in a Torre 2 trainer or laboratory fight. Unlike original

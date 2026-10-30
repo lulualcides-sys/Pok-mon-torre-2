@@ -10,12 +10,47 @@ export function setWeather(state,kind){
  if(!Object.hasOwn(WEATHER_NAMES,kind))return false;
  state.kind=kind;state.remaining=kind==='none'?0:WEATHER_DURATION;state.elapsed=0;state.revision++;return true;
 }
-export function weatherDamageMultiplier(state,type,move=''){
- const kind=state?.kind||'none';let factor=1;
- if(kind==='sun')factor=type==='FIRE'?1.5:type==='WATER'?.5:1;
- if(kind==='rain')factor=type==='WATER'?1.5:type==='FIRE'?.5:1;
- if(isSolarBeam(move)&&['rain','sand','hail'].includes(kind))factor*=.5;
- return factor;
+// Custom Kanto climate affinity, NOT the original Gen III +50% move boost.
+// A species earns a single +20% for friendly climate or -20% for hostile
+// climate (including its coverage attacks). For dual-type Pokémon with one
+// favorable AND one opposed type, these cancel to neutral instead of stacking.
+// No effect is inferred from move type: actual active fighter types only.
+export const WEATHER_AFFINITY_TYPES=Object.freeze({
+ sun:Object.freeze(['FIRE','GRASS']),
+ rain:Object.freeze(['WATER','ELECTRIC']),
+ sand:Object.freeze(['ROCK','GROUND','STEEL']),
+ hail:Object.freeze(['ICE','WATER'])
+});
+export const WEATHER_OPPOSED_TYPES=Object.freeze({
+ sun:Object.freeze(['WATER','ICE']),
+ rain:Object.freeze(['FIRE','GROUND','ROCK']),
+ sand:Object.freeze(['GRASS','FLYING','ICE']),
+ hail:Object.freeze(['FIRE','GRASS','DRAGON'])
+});
+export const WEATHER_AFFINITY_BONUS=1.2;
+export const WEATHER_OPPOSITION_PENALTY=.8;
+export function weatherSpeciesMultiplier(state,attackerTypes=[]){
+ const kind=state?.kind||'none';
+ if(kind==='none'||!(Number(state?.remaining)>0)||
+    !Array.isArray(attackerTypes))return 1;
+ const favorable=attackerTypes.some(t=>WEATHER_AFFINITY_TYPES[kind]?.includes(t));
+ const opposed=attackerTypes.some(t=>WEATHER_OPPOSED_TYPES[kind]?.includes(t));
+ if(favorable&&opposed)return 1; // eg Water/Ground under rain
+ return favorable?WEATHER_AFFINITY_BONUS:opposed?WEATHER_OPPOSITION_PENALTY:1;
+}
+export function weatherDamageMultiplier(state,type,move='',attackerTypes=[]){
+ const kind=state?.kind||'none';
+ if(kind==='none'||!(Number(state?.remaining)>0))return 1;
+ let movePenalty=1;
+ if(kind==='sun'&&type==='WATER')movePenalty*=.5;
+ if(kind==='rain'&&type==='FIRE')movePenalty*=.5;
+ if(isSolarBeam(move)&&['rain','sand','hail'].includes(kind))movePenalty*=.5;
+ const species=weatherSpeciesMultiplier(state,attackerTypes);
+ // Do not compound two independent weather penalties for an opposed
+ // attacker: it already takes the stronger -50% move penalty, if present.
+ // This keeps weak matches challenging without making them unusable.
+ return species<1&&movePenalty<1?Math.min(species,movePenalty):
+  species*movePenalty;
 }
 export function weatherRecoveryFraction(state){return state?.kind==='sun'?2/3:!state||state.kind==='none'?1/2:1/4;}
 const moveKey=name=>String(name||'').normalize('NFKD')
@@ -48,7 +83,9 @@ export function tickWeather(state,dt,actors=[]){
    if(actor.hp<=0&&!fainted.includes(actor))fainted.push(actor);
   }
  }
- if(state.remaining<=0)setWeather(state,'none');
+ // Fractional Phaser-frame accumulation can leave ~1e-12s instead of zero.
+ // Treat that as finished to avoid an extra invisible damage-buff frame.
+ if(state.remaining<=1e-6)setWeather(state,'none');
  return fainted;
 }
 export function weatherFromMove(actor,move){

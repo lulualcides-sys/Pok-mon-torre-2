@@ -83,8 +83,11 @@ const server=http.createServer(async(req,res)=>{
   for(let round=0;round<total;round++){
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
-   if(round<names.length)assert.equal(opponent.id,names[round],
-    'First three route species must match Pidgey, Rattata and Caterpie');
+   const expectedSpecies=round===2
+    ?(opponent.level>=10?'butterfree':opponent.level>=7?'metapod':'caterpie')
+    :names[round];
+   assert.equal(opponent.id,expectedSpecies,
+    'Route species must honor genuine Caterpie evolution thresholds');
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
    const expectedKind='trainer';
    assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
@@ -101,13 +104,10 @@ const server=http.createServer(async(req,res)=>{
    });
    assert.equal(entry.open.player,before.team[0].id);
    assert.equal(entry.open.enemy,opponent.id,'Expected next real route trainer');
-   assert.equal(entry.open.auto,false,'AUTO resets between fights');
-   const button=await page.evaluate(()=>{
-    const b=window.__pt2Game.scene.getScene('combate');
-    const zone=b.__torre2AutoMode.zone,rect=document.querySelector('#juego canvas').getBoundingClientRect();
-    return {x:rect.x+zone.x*rect.width/640,y:rect.y+zone.y*rect.height/360};
-   });
-   await page.mouse.click(button.x,button.y);
+   // Campaign AUTO is deliberately ON by default. Clicking the toggle
+   // here would turn it OFF and invalidate this natural-XP battle proof.
+   // Leave the user's default untouched; only read the native Phaser state.
+   assert.equal(entry.open.auto,true,'Campaign AUTO must start enabled');
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled,
     null,{timeout:5000});
    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat-'+starter+'.png'});
@@ -237,6 +237,22 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(nextBattle.ult.ulti&&nextBattle.ult.renderable&&!nextBattle.ult.pending,
    'Earned ULT not present in actual next Phaser battle');
   assert.ok(nextBattle.nativeTouchSlots.includes('e'),'Native battle lost ULT touch control');
+  // The production campaign deliberately starts AUTO ON after a reload.
+  // Switch it OFF via the visible native Phaser control only when proving
+  // manual touch inputs. Never modify AI flags or fighter state directly.
+  const autoTouch=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const z=b.__torre2AutoMode?.zone;
+   if(!b.__torre2AutoMode?.enabled||!z?.active)
+    throw Error('Expected enabled campaign AUTO at new battle');
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:rect.x+z.x*rect.width/640,y:rect.y+z.y*rect.height/360};
+  });
+  await page.mouse.click(autoTouch.x,autoTouch.y);
+  await page.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.__torre2AutoMode?.enabled===false;
+  },null,{timeout:7000});
   // T07/T08: test real inputs after earned XP and save/reload without
   // injecting energy, ultimate meter, cooldown, KO or experience.
   // Unlocking E at Lv8 does not automatically fill the native ULT meter.
