@@ -65,6 +65,10 @@ const server=http.createServer(async(req,res)=>{
     if(opts?.length!==6)throw Error('Native variant overlay does not show all six choices');
     const item=opts.find(x=>x.aspecto===id);
     if(!item)throw Error('Variant missing from native selector: '+id);
+    const z=s.paneles[0].selector.list.filter(o=>o.type==='Zone').find(o=>Math.abs(o.x-(item.x-s.paneles[0].x))<2);
+    if(!z)throw Error('Native hit-zone not found for '+id);
+    window.__greninjaPointerHits??={};
+    z.on('pointerdown',()=>{window.__greninjaPointerHits[id]=(window.__greninjaPointerHits[id]||0)+1});
     const r=document.querySelector('#juego canvas').getBoundingClientRect();
     return {x:r.left+item.x*r.width/640,y:r.top+item.y*r.height/360};
    },id);
@@ -76,7 +80,14 @@ const server=http.createServer(async(req,res)=>{
      selected:a.aspectoDe('froakie'),texture:s.paneles[0].sprite?.texture?.key,
      selector:!!s.paneles[0].selector,positions:s.paneles[0].posVersiones,
      canvas:document.querySelector('#juego canvas')?.getBoundingClientRect().toJSON(),
-     current:s.eleccion[0]};
+     current:s.eleccion[0],spy:window.__greninjaPointerHits?.[id]||0,
+     activePointer:{x:s.input.activePointer?.x,y:s.input.activePointer?.y},
+     hitObjects:(s.input.hitTestPointer?.(s.input.activePointer)||[]).slice(0,8).map(o=>({
+      type:o.type,x:o.x,y:o.y,depth:o.depth,container:o.parentContainer?.type
+     })),
+     skinZones:s.paneles[0].selector?.list?.filter(o=>o.type==='Zone').map(o=>({
+      x:o.x,y:o.y,active:o.active,input:o.input?.enabled,depth:o.depth
+     }))};
    },id);
    console.log('GRENINJA_SELECTOR_PROBE',JSON.stringify({pos,probe}));
    await page.waitForFunction(id=>{
