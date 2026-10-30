@@ -53,7 +53,7 @@ test('A real Staryu encounter awards Staryu, not Zubat, after a successful throw
  const battle=party.createPartyMatch(state,opponent,true);
  assert.deepEqual(battle.foes.map(p=>p.id),['staryu']);
  assert.equal(match.p2,'staryu');
- const result=core.attemptCapture(state,()=>0,'ultraball',{
+ const result=core.attemptCapture(state,()=>0,'pokeball',{
   duringBattle:true,hpPercent:17,hp:17,hpMax:100,status:'sleep'
  });
  assert.equal(result.ok,true);
