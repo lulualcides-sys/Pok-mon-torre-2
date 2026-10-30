@@ -4,7 +4,7 @@ import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,replaceGengarHyperBeam,c
  from '../tools/pokearena/torre2-arena-move-policy.js';
 import darkPulse from '../tools/pokearena/batch24/dark-pulse.js';
 const move=(nombre,dano=10,cd=5,tipo='NORMAL')=>({nombre,forma:'proyectil',dano,cd,tipo,coste:20,alcance:200});
-const set=(...moves)=>new Map(moves.map(m=>[m.nombre.toLowerCase(),m]));
+const set=(...moves)=>new Map(moves.map(m=>[m.nombre.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''),m]));
 test('Blizzard Hydro Pump Seismic Toss and Egg Bomb use the requested 2–4s Arena rhythm',()=>{
  const kit={lmb:move('Hydro Pump',20,0,'WATER'),
             rmb:move('Seismic Toss',16,0,'FIGHTING'),
@@ -282,7 +282,7 @@ test('Live Gengar Arena policy also covers evolved Gastly but not campaign or ot
  installArenaMovePolicy(Fighter,[gastly,donor]);
  const arena=new Fighter(gastly,false,2),campaign=new Fighter(gastly,true,2);
  const corrected=arena.kitActual();
- assert.equal(corrected.q.nombre,'Sludge Bomb','Gengar evolution must be corrected at fighter runtime');
+ assert.equal(corrected.q.nombre,'Dark Pulse','Gengar evolution must receive the approved distinct Dark Pulse at fighter runtime');
  assert.strictEqual(campaign.kitActual(),nativeKit,'Gen III campaign keeps original kit');
  assert.equal(nativeKit.q.nombre,'Hyper Beam','Native source untouched');
  assert.equal(new Fighter(gastly,false,1).kitActual().rmb.nombre,'Shadow Ball',
