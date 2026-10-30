@@ -9,7 +9,7 @@ const LEADERS=Object.freeze([
  'brock','misty','surge','erika','koga','sabrina','blaine',
  'giovanni','lorelei','bruno','agatha','lance','rival'
 ]);
-export const VERSUS_DURATION_MS=1480;
+export const VERSUS_DURATION_MS=2500;
 
 export function versusOpponentProfile({
  stage=0,trainer=0,kind='trainer',leader=false,name='Treinador',
@@ -140,7 +140,7 @@ export function playVersusIntro(scene,match,onComplete){
  scene.tweens.add({targets:shadow,alpha:.7,duration:270,yoyo:true,repeat:2});
  scene.tweens.add({targets:flash,alpha:{from:0,to:.40},
   duration:65,yoyo:true,delay:410});
- scene.tweens.add({targets:overlay,alpha:0,duration:180,delay:1270});
+ scene.tweens.add({targets:overlay,alpha:0,duration:180,delay:VERSUS_DURATION_MS-210});
  timer=scene.time.delayedCall(VERSUS_DURATION_MS,advance);
  return true;
 }
