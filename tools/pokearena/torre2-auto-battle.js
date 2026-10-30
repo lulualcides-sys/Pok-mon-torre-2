@@ -111,7 +111,7 @@ export function installAutoBattle(scene,makeNativeAI){
  // Original Arena stores an evolution FAMILY in def.id and the evolved form
  // in etapa. Both must be part of the key (e.g. Squirtle -> Wartortle).
  const fighterSpecies=actor=>String(actor?.def?.id||actor?.dex||'')+':'+String(actor?.etapa??0);
- const state={enabled:false,control:original,read:original.leer,
+ const state={enabled:!!scene.datos?.torre2,control:original,read:original.leer,
   ai:tuneCampaignAutoBrain(scene,makeNativeAI(original.l)),
   autoActor:original.l,autoSpecies:fighterSpecies(original.l),
   button:null, label:null, zone:null,cleaned:false};
@@ -153,7 +153,7 @@ export function installAutoBattle(scene,makeNativeAI){
   bg.setStrokeStyle(1,state.enabled?0x5af4a0:0x9eacbe,.95);
   text.setText(state.enabled?'AUTO ✓':'AUTO').setColor(state.enabled?'#baffd2':'#dce5ef');
  }
- refresh(); // Display OFF immediately, before the first pointer/keyboard event.
+ refresh(); // Kanto starts ON; other offline modes remain manual by default.
  hot.on('pointerdown',(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
   if(state.cleaned||scene.fase==='fin'||scene.sim)return;
