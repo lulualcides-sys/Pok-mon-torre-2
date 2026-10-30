@@ -66,28 +66,32 @@ export function drawReleaseBurst(g,x,y,progress=0){
 // Unlike the old ten static squares, they never appear on a failed catch.
 export function gotchaSparklePoints(progress){
  const t=clamp01(progress);
- const seeds=[[-21,-14,.02],[20,-18,.14],[1,-27,.26]];
+ // Three visible pixel-art twinkles, clustered around the captured ball.
+ // No large rectangles, no permanent sparkle, and no shiny-Pokemon side effects.
+ const seeds=[[-16,-15,0],[17,-14,0],[0,14,0]];
  return seeds.flatMap(([x,y,start])=>{
-  const u=(t-start)/.59;
+  const u=(t-start)/.76;
   if(u<0||u>=1)return [];
-  const alpha=Math.sin(Math.PI*u)*.92;
+  const alpha=Math.min(1,Math.sin(Math.PI*u)*1.25);
   if(alpha<=0)return [];
-  const drift=Math.round(4*u);
+  const drift=Math.round(3*u);
   return [{x:Math.round(x+(x<0?-drift:x>0?drift:0)),
-   y:Math.round(y-drift),alpha,size:Math.sin(Math.PI*u)>.72?2:1}];
+   y:Math.round(y-drift),alpha,size:Math.sin(Math.PI*u)>.55?3:2}];
  });
 }
 export function drawGotchaSparkles(g,x,y,progress){
  const cx=Math.round(x),cy=Math.round(y);
  for(const p of gotchaSparklePoints(progress)){
-  const px=cx+p.x,py=cy+p.y;
-  g.fillStyle(0xfff5c8,p.alpha);
-  g.fillRect(px,py-2*p.size,1,2*p.size);
-  g.fillRect(px,py+1,p.size===2?1:1,2*p.size);
-  g.fillRect(px-2*p.size,py,2*p.size,1);
-  g.fillRect(px+1,py,2*p.size,1);
-  g.fillStyle(0xffd06c,p.alpha);
-  g.fillRect(px,py,1,1);
+  const px=cx+p.x,py=cy+p.y,r=p.size;
+  // Soft golden outline + bright ivory core, all pixel-aligned.
+  g.fillStyle(0xeaa840,p.alpha*.85);
+  g.fillRect(px-1,py-r-2,3,2*r+5);
+  g.fillRect(px-r-2,py-1,2*r+5,3);
+  g.fillStyle(0xfff9d8,p.alpha);
+  g.fillRect(px,py-r-1,1,2*r+3);
+  g.fillRect(px-r-1,py,2*r+3,1);
+  g.fillStyle(0xffffff,p.alpha);
+  g.fillRect(px-1,py-1,3,3);
  }
 }
 
@@ -124,7 +128,11 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
   drawBall.originalBallSprite(scene,body.center.x,body.center.y,'pokeball',16,2306).setVisible(false):null;
  const showBall=(x,y,angle=0,opened=false)=>{
-  if(nativeBall)nativeBall.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
+  if(nativeBall){
+   // Reuse the approved opened shell for recall/release, not a closed static ball.
+   drawBall.setBallOpened?.(nativeBall,'pokeball',opened,16);
+   nativeBall.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
+  }
   else drawBall(g,x,y,'pokeball',1.15,angle,opened);
  };
  g.__torre2BallWorld=true;

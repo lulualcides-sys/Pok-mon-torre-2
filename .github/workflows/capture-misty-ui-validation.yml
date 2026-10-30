@@ -47,3 +47,13 @@ jobs:
         run: |
           node tests/t06-desktop-capture-browser.cjs
           node tests/ball-choreography-browser.cjs
+      - name: Capture real GOTCHA screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gotcha-bright-stars-real-phaser
+          path: |
+            test-evidence/ball-gotcha.png
+            test-evidence/ball-capture-absorb.png
+          if-no-files-found: error
+          retention-days: 7

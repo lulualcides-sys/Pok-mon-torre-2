@@ -5,7 +5,7 @@ import {serializeGen3Status} from './gen3-status.js';
  * Separate from approved Arena 2D Pokémon sprites and move effects.
  */
 import {captureChance,fighterCaptureStatus} from './capture-mechanics.js';
-import {drawBallSprite,originalBallSprite,ballTextureKey} from './ball-sprites.js';
+import {drawBallSprite,originalBallSprite,ballTextureKey,setBallOpened} from './ball-sprites.js';
 import {readCampaign,saveCampaign,attemptCapture} from './campaign-core.js';
 import {ballArc,drawRedBeam,drawReleaseBurst,drawGotchaSparkles,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
 const FONT='Pixelify Sans,monospace';
@@ -16,6 +16,7 @@ export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opene
 }
 // The same sprite factory is passed into native send-out/recall animations.
 drawCaptureBall.originalBallSprite=originalBallSprite;
+drawCaptureBall.setBallOpened=setBallOpened;
 function txt(scene,x,y,value,size=11,color='#f5f4e5'){
  return scene.add.text(x,y,value,{fontFamily:FONT,fontSize:size+'px',
   fontStyle:'bold',color,stroke:'#0a233b',strokeThickness:3}).setDepth(2706);
@@ -214,7 +215,8 @@ export function installWildCapture(scene){
   activeVisuals.push(ballSprite);
   scene.__torre2CaptureDebug={state:'THROW',aim:{...aimed},target:{...focus},hits:false,
    texture:ballTextureKey(kind)};
-  const showBall=(x,y,angle=0)=>{
+  const showBall=(x,y,angle=0,opened=false)=>{
+   setBallOpened(ballSprite,kind,opened,16);
    ballSprite.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
   };
   const drawBall=(x,y,angle=0)=>{
@@ -261,6 +263,9 @@ export function installWildCapture(scene){
      return;
     }
     scene.__torre2CaptureDebug.state='ABSORB';
+    // Open top shell for suction; close only after the target is fully absorbed.
+    showBall(end.x,end.y,0,true);
+    scene.__torre2CaptureDebug.ballOpened=true;
     caption.setText('O RAIO VERMELHO ENVOLVEU O POKÉMON!');
     const beam={t:0},focus={x:enemyX,y:enemyY};
     scene.tweens.add({targets:beam,t:1,duration:400,
@@ -271,8 +276,10 @@ export function installWildCapture(scene){
       scene.__torre2CaptureDebug.beam={from:{...end},to:{...center}};
       gfx.clear();drawRedBeam(gfx,end,center,1-beam.t*.5,body?.width);
       drawReleaseBurst(gfx,focus.x,focus.y,beam.t);
-      showBall(end.x,end.y,0);
+      showBall(end.x,end.y,0,true);
      },onComplete:()=>{
+      showBall(end.x,end.y,0,false);
+      scene.__torre2CaptureDebug.ballOpened=false;
       absorbed=true;
       scene.__torre2CaptureDebug.state='DROP';
       hideGround();
@@ -327,7 +334,7 @@ export function installWildCapture(scene){
               pose={center,scale:.02+.98*t,alpha:t};applyPose();
               gfx.clear();drawRedBeam(gfx,origin,center,1-t*.7,body?.width);
               drawReleaseBurst(gfx,center.x,center.y,t);
-              showBall(origin.x,origin.y,0);
+              showBall(origin.x,origin.y,0,true);
              },onComplete:()=>{
               restore();gfx.destroy();ballSprite.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
               scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';refresh();
