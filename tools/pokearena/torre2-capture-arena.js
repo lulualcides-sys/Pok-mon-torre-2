@@ -16,6 +16,7 @@ export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opene
 }
 // The same sprite factory is passed into native send-out/recall animations.
 drawCaptureBall.originalBallSprite=originalBallSprite;
+drawCaptureBall.setBallOpened=setBallOpened;
 function txt(scene,x,y,value,size=11,color='#f5f4e5'){
  return scene.add.text(x,y,value,{fontFamily:FONT,fontSize:size+'px',
   fontStyle:'bold',color,stroke:'#0a233b',strokeThickness:3}).setDepth(2706);
