@@ -657,8 +657,13 @@ const server=http.createServer(async(req,res)=>{
      const rect=document.querySelector('#juego canvas').getBoundingClientRect();
      return {x:rect.x+zone.x*rect.width/640,y:rect.y+zone.y*rect.height/360};
     });
-    await page.mouse.click(autoButton.x,autoButton.y);
-    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled,
+    // The native campaign AUTO already starts enabled. The former
+    // unconditional pointer toggled it OFF in the post-Brock evolution test.
+    const autoEnabled=await page.evaluate(()=>
+     window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled===true);
+    if(!autoEnabled)await page.mouse.click(autoButton.x,autoButton.y);
+    await page.waitForFunction(()=>
+     window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled===true,
      null,{timeout:7000});
     try{
      await page.waitForFunction(({wins,losses})=>{
