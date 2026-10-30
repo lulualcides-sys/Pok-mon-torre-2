@@ -132,8 +132,9 @@ export function installWildCapture(scene){
   const save=readCampaign();if(!save?.pendingWild||(save.inventory?.[kind]??0)<1)return;
   // A wild capture must always award the same species actually on the field.
   const partyFoe=scene.datos?.torre2?.party?.foes?.[scene.datos.torre2.party.enemyIndex];
-  if(!partyFoe||partyFoe.id!==save.pendingWild.id){
-   console.error('Torre 2: wild capture species mismatch',partyFoe?.id,save.pendingWild.id);
+  if(!partyFoe||partyFoe.id!==save.pendingWild.id||
+     scene.datos?.p2!==save.pendingWild.id){
+   console.error('Torre 2: wild capture species mismatch',partyFoe?.id,scene.datos?.p2,save.pendingWild.id);
    const warning=txt(scene,320,100,'CAPTURA BLOQUEADA · ESPÉCIE INCONSISTENTE',10,'#ff9d9d').setOrigin(.5);
    scene.time.delayedCall(2200,()=>warning.active&&warning.destroy());
    return;
@@ -207,11 +208,11 @@ export function installWildCapture(scene){
   const shot=player?.spr?snapshotBody(player).center:{x:116,y:281};
   const end={x:aimed.x,y:aimed.y-18};
   const ballPos={t:0,angle:0};
-  const fieldBallScale=1.6; // 20% smaller, preserve the 16×16 pixel atlas.
+  const fieldBallScale=1.3; // Smaller native 16×16 pixel Pokéball; no rescaled blur or VFX clone.
   scene.__torre2CaptureDebug={state:'THROW',aim:{...aimed},target:{...focus},hits:false};
   const drawBall=(x,y,angle=0)=>{
    gfx.clear();
-   px(gfx,x-13,y+19,26,3,0x061e27,.65);
+   px(gfx,x-11,y+16,22,3,0x061e27,.60);
    drawCaptureBall(gfx,x,y,kind,fieldBallScale,angle);
   };
   const restore=()=>{

@@ -47,6 +47,15 @@ function portraitId(member){
  return (etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150';
 }
 function portraitKey(member){return 'torre2-portrait-'+portraitId(member)}
+// The Kanto Pokédex is in National Dex order. Use its number for every
+// grass entry instead of the native roster fallback (which can select Mewtwo).
+// Keep identity stable for Nidoran genders and Mr Mime without changing saves.
+function grassPortraitDex(id){
+ const alias={'nidoran-f':'nidoran♀','nidoran-m':'nidoran♂','mr-mime':'mrmime'};
+ const key=alias[id]||String(id||'').toLowerCase().replace(/[^a-z0-9]+/g,'');
+ const index=KANTO_DEX.findIndex(name=>name.toLowerCase().replace(/[^a-z0-9♀♂]+/g,'')===key);
+ return index>=0?String(index+1).padStart(4,'0'):null;
+}
 // Only the explicit reset link modifies the browser's private Kanto save.
 // Remove the URL flag immediately so page reloads never reset repeatedly.
 export function consumeCampaignResetLink(storage=localStorage,url=window.location,
@@ -113,6 +122,12 @@ class Campanha extends Phaser.Scene{
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  // Only this region's twelve unique wild entries; reuse existing small PMD
+  // portraits, not twelve full animation sheets (mobile GPU memory).
+  for(const id of [...new Set(wildAvailability(stage).wild)].slice(0,12)){
+   const dex=grassPortraitDex(id);
+   if(dex)toLoad.add(dex);
+  }
   if(state?.box)for(const p of state.box.slice(0,12))toLoad.add(portraitId(p));
   // Pokémon no longer present in team / first PC box page need not stay
   // in the GPU after repeated captures and campaign restarts.
@@ -916,8 +931,17 @@ create(){
    const available=area.available.includes(id);
    this.add.rectangle(x+wideOffset,y,132,25,owned?0x24553f:0x223345)
     .setStrokeStyle(1,owned?0x7dd597:0x5d91b4).setDepth(617);
-   msg(x,y,id.toUpperCase()+(available?'':' · FUTURO'),{
-    fontSize:'9px',color:owned?'#d7ffda':available?'#f5f3e8':'#8ca9bb'});
+   const dex=grassPortraitDex(id),key=dex&&'torre2-portrait-'+dex;
+   if(key&&this.textures.exists(key)){
+    // Original PMD pixel portrait, with no silhouette substitution or VFX.
+    this.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    this.add.image(x-49+wideOffset,y,key).setDisplaySize(22,22)
+     .setDepth(619).setData('torre2-grass-sprite',id);
+   }
+   msg(x+11,y,id.toUpperCase()+(available?'':' · FUTURO'),{
+    fontSize:available?'9px':'8px',
+    color:owned?'#d7ffda':available?'#f5f3e8':'#8ca9bb'})
+    .setData('torre2-grass-name',id);
   });
   msg(320,248,'ENCONTROS REALIZADOS: '+(state.wildEncountersStage||0)+' · SEM LIMITE',
    {fontSize:'11px',color:C.gold});

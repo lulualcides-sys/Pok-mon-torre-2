@@ -109,13 +109,13 @@ export function applyPartyBattleResult(state,party){
 function drawPixelBall(g,x,y,alive,active){
  x=Math.round(x);y=Math.round(y);
  if(active){
-  g.fillStyle(0x10283d);g.fillRect(x-10,y-10,20,20);
-  g.lineStyle(1,0xffd475);g.strokeRect(x-10,y-10,20,20);
-  g.fillStyle(0xffebae);g.fillRect(x-8,y-8,3,2);
+  g.fillStyle(0x10283d);g.fillRect(x-9,y-9,18,18);
+  g.lineStyle(1,0xffd475);g.strokeRect(x-9,y-9,18,18);
+  g.fillStyle(0xffebae);g.fillRect(x-7,y-7,3,2);
  }
- drawCaptureBall(g,x,y,'pokeball',.84);
+ drawCaptureBall(g,x,y,'pokeball',.66);
  if(!alive){
-  g.fillStyle(0x071827,.78);g.fillRect(x-8,y-8,16,16);
+  g.fillStyle(0x071827,.78);g.fillRect(x-7,y-7,14,14);
   g.fillStyle(0x7c91a0);g.fillRect(x-3,y-1,6,2);
  }
 }
