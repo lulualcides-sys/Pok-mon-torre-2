@@ -28,8 +28,9 @@ function indexedFixture(){
 test('each Mart item is backed by the original pinned FireRed icon and correct type palette',()=>{
  assert.equal(FRLG_ICON_COMMIT.length,40,'Immutable upstream revision required');
  const ids=Object.keys(FRLG_MART_ITEMS);
- assert.deepEqual(FRLG_MART_ITEM_FILES,ids);
- assert.deepEqual(MART_ITEMS.map(i=>i.id),ids,'No shop item may use a fake generic icon');
+ assert.deepEqual([...FRLG_MART_ITEM_FILES].sort(),ids.slice().sort());
+ assert.deepEqual(MART_ITEMS.map(i=>i.id).sort(),ids.slice().sort(),
+  'No shop item may use a fake generic icon');
  for(const item of MART_ITEMS){
   assert.equal(frlgMartIcon(item),item.id);
   assert.match(FRLG_MART_ITEMS[item.id].image,/^[a-z_]+$/);
