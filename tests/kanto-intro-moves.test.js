@@ -217,3 +217,43 @@ test('Lv5/Lv8 never promote a pending, unavailable or HM/TM-gated renderer',()=>
  }
  assert.equal(JSON.stringify(library),before,'approved source VFX metadata changed');
 });
+
+test('RED: official Lv5 and Lv8 paths reject an unapproved custom renderer',()=>{
+ const library=[
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'ember',nombre:'Ember',forma:'unapproved-fire',tipo:'FIRE',dano:8,cd:4,coste:8,
+   source:'new-phaser-fx',approved:false},
+  {id:'quick-attack',nombre:'Quick Attack',forma:'approved-dash',tipo:'NORMAL',dano:7,cd:3,coste:8,
+   source:'new-phaser-fx',approved:true}
+ ];
+ const before=JSON.stringify(library);
+ const config={library,canonical:canon,levelUp:{ember:1,'quick-attack':1},
+  speciesTypes:['FIRE'],preferredSignature:'ember'};
+ for(const level of [5,8]){
+  const out=resolveKantoIntro({id:'ponyta',progression:{level}}, {},config);
+  const selected=['lmb','rmb','q','e'].map(slot=>out[slot]).filter(Boolean);
+  assert.ok(selected.every(move=>move.forma!=='unapproved-fire'),
+   'unapproved FRLG renderer leaked into Lv'+level);
+  assert.ok(selected.some(move=>move.forma==='approved-dash'),
+   'approved renderer should remain selectable at Lv'+level);
+ }
+ assert.equal(JSON.stringify(library),before,'source VFX metadata must not be mutated');
+});
+
+test('RED: unapproved neutral contact cannot become Struggle fallback',()=>{
+ const library=[
+  {id:'tackle',nombre:'Tackle',forma:'unapproved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8,
+   source:'new-phaser-fx',approved:false},
+  {id:'quick-attack',nombre:'Quick Attack',forma:'approved-contact',tipo:'NORMAL',dano:6,cd:3,coste:8,
+   source:'new-phaser-fx',approved:true},
+  {id:'ember',nombre:'Ember',forma:'approved-ember',tipo:'FIRE',dano:8,cd:4,coste:8}
+ ];
+ const before=JSON.stringify(library);
+ const out=resolveKantoIntro({id:'ponyta',progression:{level:5}}, {},{
+  library,canonical:canon,levelUp:{ember:1}
+ });
+ assert.ok(['lmb','rmb','q'].every(slot=>out[slot]?.forma&&
+  out[slot].forma!=='unapproved-contact'));
+ assert.ok(['lmb','rmb','q'].some(slot=>out[slot].forma==='approved-contact'));
+ assert.equal(JSON.stringify(library),before);
+});
