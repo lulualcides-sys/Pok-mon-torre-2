@@ -1,4 +1,3 @@
-import {originalBallSprite} from './ball-sprites.js';
 /* Pokémon Torre 2 — reusable Phaser/WebGL Pokéball choreography.
  * Kinematic phases inspired by the MIT-licensed arena controller in
  * GBurgardt/pokemon-emerald-arena. Pixel-cell ball art is owned by Torre 2.
@@ -122,8 +121,8 @@ export function restoreBody(body){
 export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0}){
  actor.actualizarGraficos?.(0);
  const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
- const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image?
-  originalBallSprite(scene,body.center.x,body.center.y,'pokeball',16,2306).setVisible(false):null;
+ const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
+  drawBall.originalBallSprite(scene,body.center.x,body.center.y,'pokeball',16,2306).setVisible(false):null;
  const showBall=(x,y,angle=0,opened=false)=>{
   if(nativeBall)nativeBall.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
   else drawBall(g,x,y,'pokeball',1.15,angle,opened);
