@@ -24,6 +24,13 @@ const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 assert.equal(KANTO_151.length,151);
 assert.ok(TEST_LIBRARY.length>=227,'Native source lost one of 227 baseline effects');
 assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,TEST_LIBRARY.length,'Duplicate native move IDs');
+// Native source placeholders may be pending, but their explicitly approved
+// Torre 2 renderer replacements must remain usable for thematic Lv8 ULTs.
+for(const id of ['bug-bite','bite','swift']){
+ const move=TEST_LIBRARY.find(m=>m.id===id);
+ assert.ok(move?.forma&&move.approved===true&&!move.pendiente,
+  id+' inherited a stale native pending flag despite its approved VFX');
+}
 const exceptions=[],unbalanced=[],badSlots=[],speciesRows=[];
 let previewSignatures=0,checkedLevels=0;
 const samples={};
