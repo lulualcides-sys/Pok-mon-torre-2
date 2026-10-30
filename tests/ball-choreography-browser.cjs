@@ -116,9 +116,10 @@ const server=http.createServer(async(req,res)=>{
   const b=window.__pt2Game.scene.getScene('combate');
   return {key:b.__torre2CaptureBallSprite?.texture?.key,
    objectType:b.__torre2CaptureBallSprite?.type,
-   native:b.__torre2CaptureBallSprite?.getData('torre2-original-ball-sprite')};
+   native:b.__torre2CaptureBallSprite?.getData('torre2-original-ball-sprite'),
+   opened:b.__torre2CaptureDebug?.ballOpened};
  });
- assert.deepEqual(thrown,{key:'torre2-original-ball-pokeball',objectType:'Image',native:'pokeball'},
+ assert.deepEqual(thrown,{key:'torre2-original-ball-pokeball-open',objectType:'Image',native:'pokeball',opened:true},
   'Capture must animate a genuine cached Phaser Image, not per-cell Graphics');
  await page.screenshot({path:'test-evidence/ball-capture-absorb.png'});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='RESUME',null,{timeout:15000});
@@ -153,10 +154,11 @@ const server=http.createServer(async(req,res)=>{
   const b=window.__pt2Game.scene.getScene('combate');
   return {key:b.__torre2CaptureBallSprite?.texture?.key,
    sparkle:b.__torre2CaptureSparkles,
-   active:b.__torre2CaptureBallSprite?.active};
+   active:b.__torre2CaptureBallSprite?.active,opened:b.__torre2CaptureDebug?.ballOpened};
  });
  assert.equal(gotcha.key,'torre2-original-ball-pokeball');
  assert.equal(gotcha.active,true);
+ assert.equal(gotcha.opened,false,'Captured ball must seal before the three shakes and GOTCHA');
  assert.deepEqual(gotcha.sparkle,{kind:'gotcha',maxStars:3,durationMs:560});
  // Record the real rendered Phaser frames while the success-only glints are active.
  // Three snapshots protect against CI screenshot timing and permit visual review.
