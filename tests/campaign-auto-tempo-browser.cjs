@@ -69,7 +69,7 @@ const server=http.createServer(async(req,res)=>{
    });
    console.log('CAMPAIGN_AUTO_TEMPO',JSON.stringify({viewport,first}));
    assert.equal(first.mode,'cpu');
-   assert.equal(first.label,'AUTO');assert.equal(first.enabled,false);
+   assert.equal(first.label,'AUTO ✓');assert.equal(first.enabled,true);
    assert.equal(first.buttonVisible,true);
    assert.equal(first.inside,true,'AUTO button must be ON the logical canvas');
    assert.equal(first.controlIsHuman,true);
@@ -80,7 +80,6 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/kanto-auto-speed-'+(mobile?'mobile':'desktop')+'-before.png'});
    const px=first.canvas.x+first.zone.x*first.canvas.w/640,
      py=first.canvas.y+first.zone.y*first.canvas.h/360;
-   if(mobile)await page.touchscreen.tap(px,py);else await page.mouse.click(px,py);
    const enabled=await page.evaluate(()=>{
     const a=window.__pt2Game.scene.getScene('combate').__torre2AutoMode;
     return {enabled:a.enabled,label:a.label.text};
@@ -89,7 +88,10 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(enabled.label.includes('AUTO'));
    if(mobile)await page.touchscreen.tap(px,py);else await page.mouse.click(px,py);
    assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled),
-    false,'Second touch returns manual control');
+    false,'First touch returns manual control');
+   if(mobile)await page.touchscreen.tap(px,py);else await page.mouse.click(px,py);
+   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled),
+    true,'Second touch re-enables AUTO');
    assert.deepEqual(errors,[],'No JS runtime errors during campaign AUTO');
    await page.screenshot({path:'test-evidence/kanto-auto-speed-'+(mobile?'mobile':'desktop')+'-after.png'});
    await page.close();
