@@ -272,8 +272,10 @@ for(const foe of surgeMatch.foes){
 }
 assert.equal(surgeMatch.foes[0].loadout.rmb.forma,'torre2_surge_sonic_boom');
 assert.equal(surgeMatch.foes[0].loadout.q.forma,'torre2_surge_screech');
-for(const foe of surgeMatch.foes.slice(1))
- assert.equal(foe.loadout.rmb.forma,'torre2_surge_thunder_wave');
+assert.equal(surgeMatch.foes[1].loadout.rmb.nombre,'Thunder Shock');
+assert.equal(surgeMatch.foes[2].loadout.rmb.forma,'torre2_surge_thunder_wave');
+assert.equal(surgeMatch.foes[2].loadout.e.nombre,'Thunderbolt');
+assert.equal(surgeMatch.foes[2].loadout.q.nombre,'Shock Wave');
 assert.equal(TEST_LIBRARY.filter(x=>x.nombre==='Dragon Pulse').length,1);
 const regionSource=fs.readFileSync(file('torre2/battle-path.js'),'utf8');
 assert.match(regionSource,/ROTA 3  >  MT. MOON/);
