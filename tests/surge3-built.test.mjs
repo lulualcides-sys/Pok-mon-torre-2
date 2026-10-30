@@ -57,6 +57,11 @@ for(const foe of foes){
  assert.deepEqual(['lmb','rmb','q','e'].map(k=>foe.loadout[k].nombre),
   SURGE_LEADER_LOADOUTS[foe.id],foe.id+' boss must have true FireRed four moves');
  assert.equal(foe.loadout.e.ulti,true);
+ assert.equal(new Set(['lmb','rmb','q','e'].map(slot=>foe.loadout[slot].nombre)).size,4,
+  'Lt. Surge must not repeat the same move in two roles');
+ assert.ok(foe.loadout.e.dano>0,
+  'Lt. Surge must reserve the strongest attack for ULT, not a status move');
+ assert.notEqual(foe.loadout.q.nombre,foe.loadout.e.nombre);
 }
 const captured=fs.readFileSync(path.join(root,dir,'luchador.js'),'utf8');
 assert.ok(captured.includes('torre2Screech?.stages||0'),

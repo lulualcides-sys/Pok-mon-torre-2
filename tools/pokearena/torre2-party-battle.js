@@ -49,9 +49,9 @@ export function createPartyMatch(state,opponent,wild=false){
   const id=wild||leaderTeam?baseId:trainerSpeciesForLevel(baseId,level);
   const loadout=resolveLoadout({id,progression:{species:id,level}});
   if(leaderTeam&&state.stage===2&&SURGE_LEADER_LOADOUTS[id]){
-   // Original FireRed leader team, not a generic Electric template:
-   // Voltorb: Tackle / Sonic Boom / Screech / Shock Wave;
-   // Pikachu & Raichu: Quick Attack / Thunder Wave / Double Team / Shock Wave.
+   // Keep each member's distinct electric tactics and real native VFX:
+   // basic attack, utility and an E-only finisher with appropriate weight.
+   // This affects only Lt. Surge's trainer party, not player movesets.
    const role=['lmb','rmb','q','e'];
    SURGE_LEADER_LOADOUTS[id].forEach((name,index)=>{
     const move=TEST_LIBRARY.find(m=>m.nombre===name);

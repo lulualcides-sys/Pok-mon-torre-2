@@ -1087,7 +1087,8 @@ export function balanceCampaignLeechSeed(move){
 // retain their original cooldown; only the isolated campaign copy changes.
 export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'charge-beam':1.5,
- supersonic:1.5
+ supersonic:1.5,
+ 'seismic-toss':1.8
 });
 export function balanceCampaignQuickCooldown(move){
  // Lv8 practice ULTs have their own minimum cooldown (>= 8s), even if

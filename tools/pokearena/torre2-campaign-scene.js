@@ -18,11 +18,11 @@ import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
  ensureConsciousActive,pendingEeveeEvolution,chooseEeveeEvolution,equipCampaignMove} from './campaign-core.js';
-import {MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
+import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
 import {prepareTrainingMatch,installTrainingDummy} from './training.js';
-import {drawTrainer,drawShopItem} from './campaign-sprites.js';
+import {drawTrainer,drawShopItem,shopItemSprite} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
@@ -433,6 +433,7 @@ create(){
   };
   const path=renderBattlePath(this,state,{
    rematch:i=>this.rematchScreen(state,i),
+   rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),
    gym:()=>this.gymScreen(state),
    training:()=>this.enterTraining(state),
@@ -680,27 +681,71 @@ create(){
    fontSize:'12px',color:C.muted}).setOrigin(.5);
   this.button(320,319,225,37,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
- rematchScreen(state,index){
-  const foe=rematchOpponent(state,index);if(!foe)return;
+ // VS Seeker on every previously cleared Kanto map without changing progress.
+ rematchAtlasScreen(state,mapStage=Math.min(state.stage,8),page=0){
+  const eligible=Array.from({length:9},(_,stage)=>({
+   stage,name:STAGES[stage]?.city||'KANTO',
+   trainers:Array.from({length:TRAINERS_PER_GYM(stage)},(_,i)=>
+    rematchOpponent(state,i,stage)?i:null).filter(i=>i!==null)
+  })).filter(m=>m.trainers.length);
+  if(!eligible.some(m=>m.stage===mapStage))mapStage=eligible.at(-1)?.stage??0;
+  const current=eligible.find(m=>m.stage===mapStage),trainers=current?.trainers||[];
+  const maxPage=Math.max(0,Math.ceil(trainers.length/6)-1);
+  page=Math.max(0,Math.min(maxPage,page));
+  this.children.removeAll(true);this.backdrop();
+  text(this,320,23,'VS SEEKER · REVANCHES DE KANTO',{
+   ...titleStyle,fontSize:'18px'}).setOrigin(.5);
+  text(this,320,47,'MAPAS CONCLUÍDOS · CARGA '+(state.rematches?.charge||0)+'/3 · SEM NOVAS INSÍGNIAS',{
+   fontSize:'10px',color:C.muted}).setOrigin(.5);
+  eligible.forEach((entry,i)=>{
+   const x=112+(i%3)*207,y=81+Math.floor(i/3)*29;
+   this.button(x,y,194,25,entry.name.toUpperCase().slice(0,19),()=>
+    this.rematchAtlasScreen(state,entry.stage,0),true)
+    .setData('torre2-rematch-map',entry.stage);
+  });
+  text(this,320,168,(current?.name||'KANTO').toUpperCase()+
+   ' · TREINADORES '+trainers.length+' · PÁGINA '+(page+1)+'/'+(maxPage+1),{
+    fontSize:'11px',color:C.gold}).setOrigin(.5);
+  trainers.slice(page*6,page*6+6).forEach((index,i)=>{
+   const x=165+(i%2)*315,y=203+Math.floor(i/2)*31;
+   const foe=rematchOpponent(state,index,mapStage);
+   this.button(x,y,295,27,'#'+(index+1)+' · '+foe.name.toUpperCase()+' Nv.'+foe.level,
+    ()=>this.rematchScreen(state,index,mapStage),true)
+    .setData('torre2-rematch-trainer',mapStage+':'+index);
+  });
+  if(page>0)this.button(70,320,100,29,'◀ ANTERIOR',()=>
+   this.rematchAtlasScreen(state,mapStage,page-1));
+  if(page<maxPage)this.button(570,320,105,29,'PRÓXIMA ▶',()=>
+   this.rematchAtlasScreen(state,mapStage,page+1));
+  this.button(320,320,170,30,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  this.__torre2RematchAtlas={mapStage,page,count:trainers.length,maps:eligible.map(m=>m.stage)};
+ }
+ rematchScreen(state,index,mapStage=state.stage){
+  const foe=rematchOpponent(state,index,mapStage);if(!foe)return;
   this.children.removeAll(true);this.backdrop();
   text(this,320,60,'REVANCHE · '+foe.name.toUpperCase(),titleStyle).setOrigin(.5);
-  text(this,320,110,'Equipe até Nv.'+foe.level+' · VS Seeker '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
+  text(this,320,110,'MAPA '+(STAGES[mapStage]?.city||'KANTO').toUpperCase()+
+   ' · EQUIPE Nv.'+foe.level+' · VS '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
   text(this,320,151,'Recarrega ao vencer 3 outras batalhas.',statusStyle).setOrigin(.5);
   text(this,320,178,'Não concede insígnias, TMs ou progresso da história.',statusStyle).setOrigin(.5);
   this.button(320,235,240,40,'REVANCHE',()=>{
-   const result=startRematch(state,index);
+   const result=startRematch(state,index,mapStage);
    if(!result.ok){text(this,320,278,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5);return;}
-   const party=createPartyMatch({...state,trainer:index},currentOpponent({...state,trainer:index}),false);
-   for(const member of party.foes){
-    member.level=Math.min(currentLevelCap(state.stage),member.level+Math.min(10,(state.badges?.length||0)*2));
+   // Temporary opponent uses the selected map; story stage and trainer stay fixed.
+   const party=createPartyMatch({...state,stage:mapStage,trainer:index},
+    currentOpponent({...state,stage:mapStage,trainer:index,champion:false}),false);
+   const boost=Math.min(10,(state.badges?.length||0)*2);
+   party.foes.forEach((member,i)=>{
+    member.level=i===0?foe.level:
+     Math.min(currentLevelCap(state.stage),member.level+boost);
     member.id=trainerSpeciesForLevel(member.id,member.level);
     member.loadout=resolveLoadout({id:member.id,progression:{species:member.id,level:member.level}});
-   }
+   });
    const p=party.friend[party.playerIndex],e=party.foes[0];
    const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
    this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
   },true);
-  this.button(320,320,230,32,'◀ MAPA',()=>this.scene.restart());
+  this.button(320,320,230,32,'◀ REVANCHES',()=>this.rematchAtlasScreen(state,mapStage));
  }
  enterTraining(state){
   this.children.removeAll(true);this.backdrop();
@@ -967,13 +1012,14 @@ create(){
   this.children.removeAll(true);this.backdrop();
   text(this,320,23,'POKÉ MART · $'+state.money,{
    ...titleStyle,fontSize:'19px'}).setOrigin(.5);
-  const items=MART_ITEMS.filter(i=>state.stage>=(i.minStage||0));
+  const items=MART_ITEMS.filter(i=>martItemUnlocked(state,i));
   const count=Math.max(1,Math.ceil(items.length/6));
   const pageNum=Math.min(count-1,Math.max(0,page));
   items.slice(pageNum*6,(pageNum+1)*6).forEach((item,i)=>{
    const x=168+(i%2)*301,y=95+Math.floor(i/2)*66;
    this.card(x-141,y-20,283,57,state.money>=item.price?0x568fbb:0x6b5669);
-   drawShopItem(this.add.graphics().setDepth(5),x-118,y+6,item,1);
+   this.add.image(x-118,y+6,shopItemSprite(this,item))
+    .setDisplaySize(28,28).setDepth(5).setData('torre2-mart-item-sprite',item.id);
    text(this,x-98,y-9,item.name,{fontSize:'11px',color:C.white});
    text(this,x-98,y+9,'$'+item.price+(item.kind==='tm'?' · TM':' · '+item.kind.toUpperCase()),{
     fontSize:'10px',color:C.muted});

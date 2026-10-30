@@ -6,13 +6,18 @@ export function rematchState(state){
  r.sequence=Math.max(0,Math.floor(Number(r.sequence)||0));return r;
 }
 export function rechargeRematches(state){const r=rematchState(state);r.charge=Math.min(REMATCH_ACTIVITIES,r.charge+1);}
-export function reserveRematch(state,index){
+export function reserveRematch(state,index,mapStage=state.stage){
  const r=rematchState(state);if(r.charge<REMATCH_ACTIVITIES)return null;
- r.charge=0;r.sequence++;r.pending={token:r.sequence,stage:state.stage,trainer:index,progress:state.trainer};return {...r.pending};
+ r.charge=0;r.sequence++;
+ // mapStage identifies the defeated trainer's area. progressStage/progress
+ // identify the live journey; the ticket cannot advance the main campaign.
+ r.pending={token:r.sequence,stage:mapStage,trainer:index,
+  progressStage:state.stage,progress:state.trainer};
+ return {...r.pending};
 }
 export function validRematchResult(state,ticket){
  const p=state.rematches?.pending;
- return !!p&&p.token===ticket?.token&&p.stage===ticket.stage&&p.trainer===ticket.trainer&&state.stage===p.stage&&state.trainer===p.progress;
+ return !!p&&p.token===ticket?.token&&p.stage===ticket.stage&&p.trainer===ticket.trainer&&state.stage===(p.progressStage??p.stage)&&state.trainer===p.progress;
 }
 export function consumeRematchResult(state,ticket){
  if(!validRematchResult(state,ticket))return false;

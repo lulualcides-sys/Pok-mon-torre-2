@@ -30,9 +30,10 @@ export const SURGE3_MOVES=Object.freeze([
  })
 ]);
 export const SURGE_LEADER_LOADOUTS=Object.freeze({
- // Exactly four FRLG moves each, mapped to Kanto controls:
- // ATK, HAB2, HAB3, ULT (E). No alteration to personal party loadouts.
+ // Four UNIQUE thematic attacks, ascending in offensive role:
+ // ATK (basic), HAB2 (coverage), HAB3 (setup/attack), E (finisher).
+ // Retain approved native/Surge VFX; no change to the official species/levels.
  voltorb:Object.freeze(['Tackle','Sonic Boom','Screech','Shock Wave']),
- pikachu:Object.freeze(['Quick Attack','Thunder Wave','Double Team','Shock Wave']),
- raichu:Object.freeze(['Quick Attack','Thunder Wave','Double Team','Shock Wave'])
+ pikachu:Object.freeze(['Quick Attack','Thunder Shock','Thunder Wave','Shock Wave']),
+ raichu:Object.freeze(['Quick Attack','Thunder Wave','Shock Wave','Thunderbolt'])
 });
