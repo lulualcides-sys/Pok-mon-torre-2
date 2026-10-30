@@ -45,7 +45,7 @@ const server=http.createServer(async(req,res)=>{
  const snapshot=await page.evaluate(()=>localStorage.getItem(core.SAVE_KEY));
  await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').enterTraining(core.readCampaign()));
  await page.screenshot({path:'test-evidence/laboratory-menu.png'});
- await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('campanha');Object.assign(c.__labConfig,{player:'charizard',enemy:'onix',level:50,weather:'sand'});c.enterTraining(core.readCampaign());});
+ await page.evaluate(()=>{const c=window.__pt2Game.scene.getScene('campanha');Object.assign(c.__labConfig,{player:'blastoise',enemy:'onix',level:50,weather:'sand'});c.enterTraining(core.readCampaign());});
  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
  const launch=await page.evaluate(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {x:r.x+r.width*.5,y:r.y+r.height*310/360}});
  await page.mouse.click(launch.x,launch.y);
@@ -70,7 +70,9 @@ const server=http.createServer(async(req,res)=>{
   p.est={};e.est={};p.hp=p.hpMax;e.hp=e.hpMax;
   const before=[p.hp,e.hp];weather.tickWeather(b.__torre2Weather,4,[p,e]);
   const losses=[before[0]-p.hp,before[1]-e.hp];
-  const damage=kind=>{weather.setWeather(b.__torre2Weather,kind);e.est={};e.hp=e.hpMax;const hp=e.hp;const hit=e.recibir(p,{dano:10,tipo:'WATER',slot:'q'});return {lost:hp-e.hp,hit};};
+  const damage=kind=>{weather.setWeather(b.__torre2Weather,kind);e.est={};e.hp=e.hpMax;const hp=e.hp;const hit=e.recibir(p,{dano:5,tipo:'WATER',slot:'q'});return {lost:hp-e.hp,hit};};
+  // A real Water-type source is required for the requested +20% species
+  // affinity. Use a modest hit to avoid saturating the target's HP at 4x.
   const normal=damage('none'),rain=damage('rain'),sun=damage('sun');
   weather.setWeather(b.__torre2Weather,'sun');p.est={};p.ponerEstado('congelado',10,{});
   const freezeImmune=!p.est.congelado;
@@ -79,7 +81,7 @@ const server=http.createServer(async(req,res)=>{
  });
  console.log('WEATHER_MEASUREMENT',result);
  assert.equal(result.count,151);assert.equal(result.ids,true);assert.ok(result.losses[0]>0);assert.equal(result.losses[1],0);
- assert.ok(result.rain.lost>result.normal.lost);assert.ok(result.sun.lost<result.normal.lost);assert.equal(result.freezeImmune,true);
+ assert.ok(result.rain.lost>result.normal.lost,'Blastoise must gain the live Water affinity +20%');assert.ok(result.sun.lost<result.normal.lost);assert.equal(result.freezeImmune,true);
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2Weather.kind==='none');
  await page.screenshot({path:'test-evidence/laboratory-battle.png'});
  await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.scene.start('campanha',{finished:true,won:true,marker:b.datos.torre2});});
