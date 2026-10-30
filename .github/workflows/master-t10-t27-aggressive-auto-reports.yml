@@ -2,6 +2,12 @@ name: Master T10/T27 — campaign-only aggressive AUTO and named move rewards
 on:
   push:
     branches: [feat/master-auto-campaign-aggression-report-owners-20261030]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-auto-battle.js'
+      - 'tests/arena-auto-battle.test.js'
+      - 'tests/t10-campaign-auto-offensive-browser.cjs'
+      - '.github/workflows/master-t10-t27-aggressive-auto-reports.yml'
   workflow_dispatch:
 permissions:
   contents: read
