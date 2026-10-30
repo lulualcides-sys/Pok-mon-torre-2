@@ -70,6 +70,7 @@ const server=http.createServer(async(req,res)=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
    if(!main)throw Error('Missing native Phaser main module');
    const core=await import(new URL('./torre2/campaign-core.js',main));
+   window.kanto=core;
    core.saveCampaign(core.createPlayerCampaign('bulbasaur'));
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
