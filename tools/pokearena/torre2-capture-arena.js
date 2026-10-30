@@ -130,6 +130,14 @@ export function installWildCapture(scene){
  function throwBall(kind){
   if(busy||enemy.hp<=0||!enemy.hpMax)return;
   const save=readCampaign();if(!save?.pendingWild||(save.inventory?.[kind]??0)<1)return;
+  // A wild capture must always award the same species actually on the field.
+  const partyFoe=scene.datos?.torre2?.party?.foes?.[scene.datos.torre2.party.enemyIndex];
+  if(!partyFoe||partyFoe.id!==save.pendingWild.id){
+   console.error('Torre 2: wild capture species mismatch',partyFoe?.id,save.pendingWild.id);
+   const warning=txt(scene,320,100,'CAPTURA BLOQUEADA · ESPÉCIE INCONSISTENTE',10,'#ff9d9d').setOrigin(.5);
+   scene.time.delayedCall(2200,()=>warning.active&&warning.destroy());
+   return;
+  }
   // Capture returns directly to the campaign: preserve the current party HP
   // instead of restoring the pre-battle save when awarding the wild Pokémon.
   const party=scene.datos?.torre2?.party;
@@ -199,11 +207,12 @@ export function installWildCapture(scene){
   const shot=player?.spr?snapshotBody(player).center:{x:116,y:281};
   const end={x:aimed.x,y:aimed.y-18};
   const ballPos={t:0,angle:0};
+  const fieldBallScale=1.6; // 20% smaller, preserve the 16×16 pixel atlas.
   scene.__torre2CaptureDebug={state:'THROW',aim:{...aimed},target:{...focus},hits:false};
   const drawBall=(x,y,angle=0)=>{
    gfx.clear();
-   px(gfx,x-15,y+22,31,3,0x061e27,.65);
-   drawCaptureBall(gfx,x,y,kind,2,angle);
+   px(gfx,x-13,y+19,26,3,0x061e27,.65);
+   drawCaptureBall(gfx,x,y,kind,fieldBallScale,angle);
   };
   const restore=()=>{
    absorbed=false;pose=null;detachPose();
@@ -254,7 +263,7 @@ export function installWildCapture(scene){
       scene.__torre2CaptureDebug.beam={from:{...end},to:{...center}};
       gfx.clear();drawRedBeam(gfx,end,center,1-beam.t*.5,body?.width);
       drawReleaseBurst(gfx,focus.x,focus.y,beam.t);
-      drawCaptureBall(gfx,end.x,end.y,kind,2,0,true);
+      drawCaptureBall(gfx,end.x,end.y,kind,fieldBallScale,0,true);
      },onComplete:()=>{
       absorbed=true;
       scene.__torre2CaptureDebug.state='DROP';
@@ -276,7 +285,7 @@ export function installWildCapture(scene){
            if(!scene.scene.isActive())return;
            gfx.clear();
            if(result.ok){
-            drawCaptureBall(gfx,end.x,floorY,kind,2);
+            drawCaptureBall(gfx,end.x,floorY,kind,fieldBallScale);
             for(let i=0;i<10;i++){
              const angle=i*Math.PI/5;
              px(gfx,end.x+Math.cos(angle)*26,floorY+Math.sin(angle)*25,
@@ -305,7 +314,7 @@ export function installWildCapture(scene){
               pose={center,scale:.02+.98*t,alpha:t};applyPose();
               gfx.clear();drawRedBeam(gfx,origin,center,1-t*.7,body?.width);
               drawReleaseBurst(gfx,center.x,center.y,t);
-              drawCaptureBall(gfx,origin.x,origin.y,kind,2,0,true);
+              drawCaptureBall(gfx,origin.x,origin.y,kind,fieldBallScale,0,true);
              },onComplete:()=>{
               restore();gfx.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
               scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';refresh();
