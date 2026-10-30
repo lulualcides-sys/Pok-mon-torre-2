@@ -71,17 +71,41 @@ const server=http.createServer(async(req,res)=>{
    })).filter(o=>o.tag!==undefined||Math.abs(o.x-112)<100&&Math.abs(o.y-81)<25);
   });
   console.log('VS SEEKeR MAP POSITION TRACE',JSON.stringify(positions));
-  await click(112,81);
+  // Convert a LIVE Phaser object's world center through the current camera
+  // and game scale. A hard-coded 640x360 canvas ratio can click the wrong
+  // element when the original client changes its renderer dimensions.
+  const mapPoint=await page.evaluate(()=>{
+   const scene=__pt2Game.scene.getScene('campanha');
+   const zone=scene.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-rematch-map')===0);
+   if(!zone)throw Error('Brock map zone not interactive');
+   const camera=scene.cameras.main,size=scene.scale.gameSize;
+   const rect=(document.querySelector('#juego canvas')||document.querySelector('canvas')).getBoundingClientRect();
+   const screenX=camera.x+(zone.x-camera.scrollX)*camera.zoomX;
+   const screenY=camera.y+(zone.y-camera.scrollY)*camera.zoomY;
+   return {x:rect.left+screenX*rect.width/size.width,
+    y:rect.top+screenY*rect.height/size.height,
+    trace:{zone:{x:zone.x,y:zone.y,width:zone.width,height:zone.height},
+     gameSize:{width:size.width,height:size.height},
+     camera:{x:camera.x,y:camera.y,zoomX:camera.zoomX,zoomY:camera.zoomY,
+      scrollX:camera.scrollX,scrollY:camera.scrollY},
+     canvas:{width:rect.width,height:rect.height}}};
+  });
+  console.log('VS SEEKER MAP0 ACTUAL CLICK',JSON.stringify(mapPoint));
+  await page.mouse.click(mapPoint.x,mapPoint.y);
   try{
    await page.waitForFunction(()=>__pt2Game.scene.getScene('campanha').__torre2RematchAtlas?.mapStage===0,
-    null,{timeout:2200});
+    null,{timeout:5000});
   }catch(err){
    const info=await page.evaluate(()=>{
-    const scene=__pt2Game.scene.getScene('campanha');
+    const scene=__pt2Game.scene.getScene('campanha'),pointer=__pt2Game.input.activePointer;
+    const world=pointer&&scene.cameras.main.getWorldPoint(pointer.x,pointer.y);
     return {selection:scene.__torre2RematchAtlas,
-     pointer:__pt2Game.input.activePointer?{x:__pt2Game.input.activePointer.x,y:__pt2Game.input.activePointer.y}:null};
+     pointer:pointer?{x:pointer.x,y:pointer.y,worldX:world?.x,worldY:world?.y}:null};
    });
-   throw Error('Map0 pointer miss '+JSON.stringify(info)+' '+String(err));
+   fs.mkdirSync('test-evidence',{recursive:true});
+   await page.screenshot({path:'test-evidence/surge-map0-pointer-failure.png'});
+   throw Error('Map0 native pointer miss '+JSON.stringify({mapPoint,info})+' '+String(err));
   }
   assert.ok(await page.evaluate(()=>__pt2Game.scene.getScene('campanha').children.list.some(o=>
    o.active&&o.getData?.('torre2-rematch-trainer')==='0:0')));
