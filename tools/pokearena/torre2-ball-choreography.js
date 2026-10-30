@@ -1,3 +1,4 @@
+import {originalBallSprite} from './ball-sprites.js';
 /* Pokémon Torre 2 — reusable Phaser/WebGL Pokéball choreography.
  * Kinematic phases inspired by the MIT-licensed arena controller in
  * GBurgardt/pokemon-emerald-arena. Pixel-cell ball art is owned by Torre 2.
@@ -121,6 +122,12 @@ export function restoreBody(body){
 export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0}){
  actor.actualizarGraficos?.(0);
  const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
+ const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image?
+  originalBallSprite(scene,body.center.x,body.center.y,'pokeball',16,2306).setVisible(false):null;
+ const showBall=(x,y,angle=0,opened=false)=>{
+  if(nativeBall)nativeBall.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
+  else drawBall(g,x,y,'pokeball',1.15,angle,opened);
+ };
  g.__torre2BallWorld=true;
  // The oval arena camera pans/zooms over a world wider than the 640px HUD.
  // Keep the hand in that world, near the actor, rather than using HUD edges.
@@ -139,7 +146,7 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  const clean=()=>{if(done)return;done=true;
   scene.__torre2BallTransitions=Math.max(0,(scene.__torre2BallTransitions||1)-1);
   scene.game.events.off('poststep',step);scene.events.off('preupdate',hold);
-  scene.events.off('shutdown',clean);g.destroy();};
+  scene.events.off('shutdown',clean);g.destroy();nativeBall?.destroy();};
  const step=(_time,delta)=>{
   if(done||!scene.scene.isActive())return clean();
   elapsed+=Math.min(64,Math.max(1,Number(delta)||16.667));hold();g.clear();
@@ -147,7 +154,7 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
   if(mode==='release'&&elapsed<360){
    state='THROW';poseBody(body,center,.01,0);
    const p=ballArc(from,landing,elapsed/360,48);
-   drawBall(g,p.x,p.y,'pokeball',1.15,elapsed/60);
+   showBall(p.x,p.y,elapsed/60);
   }else{
    const t=clamp01((elapsed-(mode==='release'?360:80))/420);
    state=t===0?'OPEN':mode==='recall'?'ABSORB':'RELEASE';
@@ -157,7 +164,7 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
    }else poseBody(body,center,.04+.96*t,t);
    drawRedBeam(g,origin,center,Math.min(1,(1-t)*4),body.width);
    drawReleaseBurst(g,center.x,center.y,t);
-   drawBall(g,origin.x,origin.y,'pokeball',1.15,0,true);
+   showBall(origin.x,origin.y,0,true);
    if(t>=1){
     if(mode==='release')restoreBody(body);else poseBody(body,origin,.01,0);
     clean();onComplete();return;
