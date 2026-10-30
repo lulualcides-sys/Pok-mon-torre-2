@@ -1,5 +1,9 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## Lote T07/T08 — não promover VFX customizado sem aprovação (30/10/2026)
+**Falha observável:** mesmo com `pendiente:false`, um renderer `source: new-phaser-fx` e `approved:false` pode entrar nos três golpes Lv5 via learnset FRLG ou servir de Struggle neutro; a preferência de ULT já tinha um gate próprio, mas o fallback não. **Aceite:** nenhum renderer customizado não aprovado entra por esses caminhos em Lv5/Lv8; os aprovados permanecem disponíveis; entradas originais não sofrem mutação. Não criar efeito nem liberar HM, Scratch ou Transform. RED real: CI #41084164169 (dois asserts falhos). Prova de 151 partidas e ULT com medidor natural permanece fora deste lote.
+
+
 ## Lote 30/10 — diagnóstico do boot da Pokédex pública
 **Problema observável:** após Pages #41050085664 verde no SHA `477dac7410ad7a89f73dfb9a9946187cbdbca657` e versão HTTP `src-dc921f3851`, a auditoria pública integral #41050887159 falhou no `waitForFunction` da cena Pokédex (90 s), antes de criar artifact. **Aceite do lote:** em eventual timeout, salvar JSON com estado Phaser, requisições/erros, screenshot quando possível e manter CI vermelha. Não alterar runtime, saves, VFX nem reduzir o gate dos 150 Pokémon.
 **Identificador:** 001-master-script-continuity

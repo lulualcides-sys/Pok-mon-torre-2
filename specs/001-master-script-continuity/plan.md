@@ -1,5 +1,11 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Lote T07/T08 — gate de VFX customizado na introdução (30/10/2026)
+- **Arquivos:** `tests/kanto-intro-moves.test.js` (regressões RED) e `tools/pokearena/torre2-kanto-intro-moves.js` (um gate em `introRenderable`). Não editar `kanto-ultimate-policy.js`, catálogos, sprites ou fontes externas.
+- **Causa:** `push()` filtrava `approved` apenas em `supplemental`, e o fallback neutro chamava `lowPower()` sem verificar aprovação de `new-phaser-fx`. Centralizar gate impede os dois vazamentos sem mudar VFX.
+- **Processo:** branch isolada da main `8ac91ddee8df3230e6d2c067dc62f00b67d38f9b`, PR #365. RED #41084164169; patch SHA `4070ccbfb4f7d3489fa4290633af981a12dea692`. Aguardar CI/Chromium e guardião do HEAD final, revisão, compatibilidade main e Pages HTTP após merge. **Rollback:** reverter somente predicado/testes; nenhum save migrado.
+
+
 ## Plano 30/10 — investigar timeout real da Pokédex pública
 **Escopo:** somente `tests/pokedex-public-live-browser.cjs` e registros de evidência. Capturar `document.readyState`, cenas Phaser ativas, canvas, erros de página, HTTP >=400, requisições falhas e screenshot ao falhar no boot; relançar o erro original. Revisar artifact e comparar com a execução Pages que passou antes de alterar código do jogo. **Rollback:** reverter este teste; não há migração de saves nem alteração de efeitos. **Concorrência:** não tocar PRs #329, #352, #353, Toxic #16 ou Shiny #17. Gates: sintaxe CJS, guardião Chromium no PR e, após merge autorizado, auditoria pública integral.
 **Escopo deste PR:** introdução segura do método; sem alteração de runtime.
