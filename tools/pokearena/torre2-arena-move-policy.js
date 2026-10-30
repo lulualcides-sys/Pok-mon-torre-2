@@ -117,8 +117,6 @@ export function replaceGengarHyperBeam(kit,library){
   const oldE=output.e;
   output={...output,e:{...(elsewhere?output[elsewhere]:nativeShadow),pendiente:false,ulti:true}};
   if(elsewhere&&oldE)output[elsewhere]={...oldE,pendiente:false,ulti:false};
- }else if(idOf(output.e?.nombre)==='shadow-ball'&&output.e?.ulti!==true){
-  output={...output,e:{...output.e,ulti:true}};
  }
  const preferred=['dark-pulse','shadow-punch','night-shade','psychic',
   'dream-eater','shadow-ball','sludge-bomb'];
