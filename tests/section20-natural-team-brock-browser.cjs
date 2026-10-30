@@ -92,6 +92,36 @@ const server=http.createServer(async(req,res)=>{
     !window.__pt2Game.scene.getScene('campanha').__torre2CenterBusy;
   },null,{timeout:20000});
   await backToMap();
+  await selectHealthyStarter();
+ };
+ // The Center heals every member but intentionally preserves the active slot.
+ // If a reserve became active after a genuine KO, select the starter through
+ // the normal Phaser summary's USAR NA BATALHA button. No save editing,
+ // synthetic control events, bonus healing, or level/XP changes.
+ const selectHealthyStarter=async()=>{
+  const before=await game();
+  if(before.active===0)return;
+  assert.ok(before.team[0]?.hp>0,'The starter must be conscious before selection');
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   c.showSummary(window.kanto.readCampaign(),0);
+  });
+  await sync();
+  await clickMarked('torre2-active-select',true);
+  await page.waitForFunction(()=>window.kanto.readCampaign()?.active===0,
+   null,{timeout:10000});
+  const after=await game();
+  for(const key of ['trainer','wins','losses','stage','money','balls'])
+   assert.equal(after[key],before[key],'Selecting starter must not mutate '+key);
+  assert.deepEqual(after.team,before.team,'Selecting starter must preserve HP and levels');
+  assert.deepEqual(after.badges,before.badges);
+  assert.deepEqual(after.tms,before.tms);
+  report.starterSelections??=[];
+  report.starterSelections.push({beforeActive:before.active,afterActive:after.active,
+   afterTeam:after.team});
+  saveReport();
+  console.log('PASS NATIVE STARTER SELECTED AFTER REAL KO',JSON.stringify(after));
+  await backToMap();
  };
  const prepareNaturalTeam=async()=>{
   const before=await game();
