@@ -1,3 +1,4 @@
+import {WEATHER_MOVES,weatherSpeciesMultiplier} from './weather.js';
 /* Optional single-player AUTO button. Reuse the client's native IA rather
  * than inventing moves, bypassing cooldowns or modifying battle math.
  * OFF by default on every new match; original controls restored on exit.
@@ -85,6 +86,61 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
     (foe.est?.vuelo?.hasta??0)>(actor.t??0))return output;
  return {...output,lmb:true};
 }
+/* Tactical campaign weather from genuinely equipped Phaser kits only.
+ * No invented move, free cast, damage/stat modification, or forced cooldown.
+ * Native E finisher and dodge retain priority; normal LMB may be preempted
+ * once when the weather decision offers a material team advantage.
+ */
+export function chooseCampaignAutoWeatherInput(scene,actor,input){
+ if(!scene?.datos?.torre2||scene.fase!=='lucha'||scene.pausado||
+   scene.__torre2Changing||scene.__torre2BattleBagOpen||
+   scene.__torre2BallTransitions||scene.__torre2CaptureBusy||
+   !actor||!input||typeof input!=='object'||actor.ko||
+   !(Number(actor.hp)>0)||!(Number(actor.hpMax)>0)||
+   actor.hp/actor.hpMax<.35||actor.dash||
+   actor.accion?.bloquea||actor.est?.aturdido||
+   actor.est?.dormido||actor.est?.congelado||actor.est?.recarga||
+   input.esp||input.mega||input.rmb||input.q||input.e)return input;
+ const foe=actor.rival&&actor.rival!==actor&&
+   Number(actor.rival.hp)>0&&!actor.rival.ko?actor.rival:
+   scene.luchadores?.find(a=>a&&a!==actor&&Number(a.hp)>0&&!a.ko);
+ if(!foe||!Array.isArray(actor.tipos)||!actor.tipos.length||
+   !Array.isArray(foe.tipos)||!foe.tipos.length)return input;
+ const weather=scene.__torre2Weather;
+ if(!weather||typeof weather.kind!=='string')return input;
+ const score=kind=>{
+  if(!kind||kind==='none')return 0;
+  const status={kind,remaining:20};
+  const own=weatherSpeciesMultiplier(status,actor.tipos);
+  const rival=weatherSpeciesMultiplier(status,foe.tipos);
+  return (own-1)+(1-rival)*.75;
+ };
+ const existing=weather.remaining>0?weather.kind:'none';
+ const baseline=score(existing);
+ // Campaign's ordinary abilities are RMB and Q; E is an exclusive ULT.
+ // Never equip a new move here: the Pokémon must already own this kit.
+ for(const slot of ['rmb','q']){
+  const move=actor.kit?.[slot],kind=WEATHER_MOVES[move?.nombre];
+  if(!kind||!move.forma||move.pendiente||move.torre2Unavailable)continue;
+  const remaining=Number(weather.remaining)||0;
+  if(existing===kind&&remaining>3.5)continue;
+  const advantage=score(kind),gain=advantage-
+   (existing===kind?0:baseline);
+  // Avoid a neutral/negative spell unless it dispels a hostile climate.
+  if((advantage<.12&&!(baseline<-.15&&advantage>=0))||
+     gain<.12)continue;
+  if(!Number.isFinite(actor.cd?.[slot])||actor.cd[slot]>0||
+     !Number.isFinite(actor.energia)||actor.energia<Number(move.coste||0)||
+     Number(actor.calor??0)>=80)continue;
+  const danger=Array.isArray(scene.efectos)&&scene.efectos.some(effect=>
+   effect?.vivo&&effect?.dueno&&effect.dueno!==actor&&
+   Number.isFinite(effect.x)&&Number.isFinite(effect.y)&&
+   Math.hypot(effect.x-actor.x,effect.y-actor.y)<95);
+  if(danger)return input;
+  return {...input,lmb:false,rmb:slot==='rmb',q:slot==='q',e:false,mega:false};
+ }
+ return input;
+}
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
 const OFFLINE_MODES=new Set(['cpu','entreno','arena']);
@@ -136,7 +192,8 @@ export function installAutoBattle(scene,makeNativeAI){
   // Official AI respects Pokémon move slots, readiness, HP and real energy.
   // Clone its mutable per-frame input to avoid modifying the native controller.
   const it=state.ai.leer(Math.max(.001,Number(dt)||1/60));
-  return it?{...pressureCampaignAutoInput(scene,original.l,it,state.ai),mega:false}:
+  return it?{...chooseCampaignAutoWeatherInput(scene,original.l,
+    pressureCampaignAutoInput(scene,original.l,it,state.ai)),mega:false}:
    state.read.call(this,dt,...args);
  };
  original.leer=safeRead;
