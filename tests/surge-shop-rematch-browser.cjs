@@ -138,9 +138,10 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(mart.icons.length>0&&mart.icons.every(o=>o.texture==='torre2-mart-item-'+o.id),
    'Mart must render actual item texture sprites');
+  console.log('MART FRLG ORIGINAL SOURCES',JSON.stringify(mart.icons));
+  await page.screenshot({path:'test-evidence/mart-frlg-original-icons.png'});
   assert.ok(mart.icons.every(o=>o.source?.includes('/assets/ui/frlg/items/'+o.id+'.png')),
    'Visible Mart must use original FireRed PNGs, not generic graphics stencils');
-  await page.screenshot({path:'test-evidence/mart-frlg-original-icons.png'});
   assert.ok(!mart.offer.includes('tm-giga-drain')&&!mart.offer.includes('tm-fire-blast'),
    'Shop must not expose unearned leader TMs');
   assert.deepEqual(errors,[],'No Phaser runtime error in maps or shop');
