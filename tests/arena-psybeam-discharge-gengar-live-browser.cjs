@@ -54,9 +54,36 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
    if(check.species==='gengar'){
     const names=Object.values(initial.kit).map(v=>v.nombre);
     assert.ok(!names.includes('Hyper Beam'),'Native Gengar must never be equipped with generic Hyper Beam');
-    assert.ok(names.some(name=>['Shadow Ball','Sludge Bomb','Shadow Punch','Night Shade','Dark Pulse'].includes(name)),
-     'Gengar must retain a damaging thematic attack');
-    report.checks.push({species:'gengar',nativeKit:initial.kit,passed:true});
+    assert.deepEqual(names,['Hypnosis','Sludge Bomb','Dark Pulse','Shadow Ball'],
+     'Gengar must use the four approved distinct attacks in the actual Phaser kit');
+    assert.equal(new Set(names).size,4,'Duplicate Sludge Bomb must never reach native battle');
+    assert.equal(initial.kit.q.forma,'torre2_batch24_dark_pulse',
+     'Use the installed approved Dark Pulse pixel-art VFX');
+    assert.equal(initial.kit.q.pendiente,false,'Dark Pulse must be usable immediately in Arena');
+    assert.ok(initial.buttons.includes('q'),'Dark Pulse button must be present');
+    // Actually cast Dark Pulse through the original touch controller and
+    // ensure it is accepted by the native Phaser runtime (not just in metadata).
+    const before=await page.evaluate(()=>{
+     const scene=__pt2Game.scene.getScene('combate'),l=scene.luchadores[0],p=scene.panelTactil;
+     l.energia=100;l.ulti=100;l.accion=null;l.dash=null;l.est={};
+     l.dolorHasta=-1;l.ultimoAtaque=-100;l.ultimoBasico=-100;
+     scene.pausado=false;scene.pausaGolpe=0;scene.fase='lucha';
+     const b=p.botones.find(v=>v.slot==='q'),at=p.pos(b);
+     const origin=p.punto({x:0,y:0}),unit=p.punto({x:1,y:1});
+     p.abajo({id:90,x:(at.x-origin.x)/(unit.x-origin.x),
+       y:(at.y-origin.y)/(unit.y-origin.y)});
+     p.leer(x=>({ax:x.x,ay:x.y}));
+     return l.stats.usosSlot?.q||0;
+    });
+    await wait(470);
+    const cast=await page.evaluate(()=>{
+     const scene=__pt2Game.scene.getScene('combate'),l=scene.luchadores[0];
+     scene.panelTactil.arriba({id:90});
+     return {uses:l.stats.usosSlot?.q||0,cd:l.cd.q,forma:l.kit.q?.forma};
+    });
+    assert.ok(cast.uses>before,'Dark Pulse must execute a native Phaser cast');
+    assert.ok(cast.cd>0,'Dark Pulse must enter its native cooldown');
+    report.checks.push({species:'gengar',nativeKit:initial.kit,darkPulseCast:cast,passed:true});
    }else{
     assert.ok(initial.slot,check.species+' missing '+check.move+' in live Phaser kit');
     assert.equal(initial.kit[initial.slot].cd,check.seconds,
