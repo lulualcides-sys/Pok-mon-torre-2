@@ -15,6 +15,7 @@ import {resolveLoadout,TEST_LIBRARY} from './move-pool.js';
 import {SURGE_LEADER_LOADOUTS} from './surge3/catalog.js';
 import {buscar,etapaDe} from '../datos.js';
 import {drawCaptureBall} from './capture-arena.js';
+import {originalBallSprite} from './ball-sprites.js';
 import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
 
@@ -113,7 +114,7 @@ function drawPixelBall(g,x,y,alive,active){
   g.lineStyle(1,0xffd475);g.strokeRect(x-9,y-9,18,18);
   g.fillStyle(0xffebae);g.fillRect(x-7,y-7,3,2);
  }
- drawCaptureBall(g,x,y,'pokeball',.66);
+ // The actual ball is a cached Phaser Image; only the highlight stays in Graphics.
  if(!alive){
   g.fillStyle(0x071827,.78);g.fillRect(x-7,y-7,14,14);
   g.fillStyle(0x7c91a0);g.fillRect(x-3,y-1,6,2);
@@ -188,6 +189,9 @@ export function installPartyBattle(scene){
  // Keep only individual pixel Pokéballs below each original HP bar.
  // No large black scoreboard tables or top-center text swap selector.
  const graphics=scene.add.graphics().setDepth(2480);
+ // 12 slots maximum: reuse identical original item sprites instead of
+ // repainting fractional-pixel balls every HUD frame.
+ const hudBalls=Array.from({length:12},()=>originalBallSprite(scene,0,0,'pokeball',16,2481).setVisible(false));
  const sharedBeam=scene.add.graphics().setDepth(2603);
  const sharedBall=scene.add.graphics().setDepth(2604);
  const memberDex=m=>{
@@ -238,11 +242,16 @@ export function installPartyBattle(scene){
  scene.__torre2SideParty={x:slotX,start:slotStart,step:slotStep,
   slots:slotZones,icons};
  function redrawPartyHud(){
-  graphics.clear();sidebar.clear();
-  for(const [members,idx,start] of [
-   [party.friend,party.playerIndex,31],[party.foes,party.enemyIndex,477]]){
-   members.slice(0,6).forEach((m,i)=>
-    drawPixelBall(graphics,start+i*21,64,m.hp>0,i===idx));
+  graphics.clear();sidebar.clear();hudBalls.forEach(icon=>icon.setVisible(false));
+  for(const [members,idx,start,side] of [
+   [party.friend,party.playerIndex,31,0],[party.foes,party.enemyIndex,477,1]]){
+   members.slice(0,6).forEach((m,i)=>{
+    const x=start+i*21,alive=m.hp>0;
+    drawPixelBall(graphics,x,64,alive,i===idx);
+    const icon=hudBalls[side*6+i];
+    icon.setPosition(x,64).setVisible(true).setAlpha(alive?1:.45);
+    if(alive)icon.clearTint();else icon.setTint(0x8593a2);
+   });
   }
   sidebar.fillStyle(0x061726,.88);
   sidebar.fillRoundedRect(6,103,55,222,7);
@@ -507,6 +516,6 @@ export function installPartyBattle(scene){
   for(const zone of slotZones)zone.destroy();
   for(const img of icons)img?.destroy();
   sidebar.destroy();
-  sharedBeam.destroy();sharedBall.destroy();graphics.destroy();
+  sharedBeam.destroy();sharedBall.destroy();graphics.destroy();hudBalls.forEach(icon=>icon.destroy());
  });
 }

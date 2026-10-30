@@ -84,3 +84,29 @@ export function drawBallSprite(g,cx,cy,kind='pokeball',scale=2,angle=0,opened=fa
   g.fillStyle(0xfff4b5);g.fillRect(ox+7*scale,oy+7*scale,2*scale,2*scale);
  }
 }
+
+
+/* The user-approved 16×16 Pokéball source becomes an actual Phaser texture.
+ * Rasterize ONCE at scale 1 and animate the Image object with Phaser GPU
+ * rotation/nearest sampling. Never rotate/repaint every pixel per frame.
+ * This is the existing user-supplied art, not an unlicensed new rip.
+ */
+export function ballTextureKey(kind='pokeball'){
+ const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
+ return 'torre2-original-ball-'+type;
+}
+export function originalBallSprite(scene,x,y,kind='pokeball',size=16,depth=2309){
+ const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
+ const key=ballTextureKey(type);
+ if(!scene.textures.exists(key)){
+  const canvas=scene.make.graphics({x:0,y:0,add:false});
+  drawBallSprite(canvas,8,8,type,1,0,false);
+  canvas.generateTexture(key,16,16);
+  canvas.destroy();
+ }
+ const texture=scene.textures.get(key);
+ if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
+  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ return scene.add.image(Math.round(x),Math.round(y),key)
+  .setDisplaySize(size,size).setDepth(depth).setData('torre2-original-ball-sprite',type);
+}

@@ -112,6 +112,14 @@ const server=http.createServer(async(req,res)=>{
  };
  await throwBall('breakout');
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='ABSORB');
+ const thrown=await page.evaluate(()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  return {key:b.__torre2CaptureBallSprite?.texture?.key,
+   objectType:b.__torre2CaptureBallSprite?.type,
+   native:b.__torre2CaptureBallSprite?.getData('torre2-original-ball-sprite')};
+ });
+ assert.deepEqual(thrown,{key:'torre2-original-ball-pokeball',objectType:'Image',native:'pokeball'},
+  'Capture must animate a genuine cached Phaser Image, not per-cell Graphics');
  await page.screenshot({path:'test-evidence/ball-capture-absorb.png'});
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='RESUME',null,{timeout:15000});
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
@@ -141,6 +149,16 @@ const server=http.createServer(async(req,res)=>{
   z(470,61).emit('pointerdown');z(316,186).emit('pointerdown');
  });
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:15000});
+ const gotcha=await page.evaluate(()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  return {key:b.__torre2CaptureBallSprite?.texture?.key,
+   sparkle:b.__torre2CaptureSparkles,
+   active:b.__torre2CaptureBallSprite?.active};
+ });
+ assert.equal(gotcha.key,'torre2-original-ball-pokeball');
+ assert.equal(gotcha.active,true);
+ assert.deepEqual(gotcha.sparkle,{kind:'gotcha',maxStars:3,durationMs:560});
+ await page.waitForTimeout(180);
  await page.screenshot({path:'test-evidence/ball-gotcha.png'});
  assert.equal(await page.evaluate(()=>core.readCampaign().box.length),1);
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
