@@ -40,7 +40,13 @@ const server=http.createServer(async(req,res)=>{
   core.saveCampaign(core.createCampaign('bulbasaur'));
   window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
  });
- await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
+ // A scene can be marked active while its first frame/asset preload is
+ // still rendering. The VS scene expects the real map to be ready, just as a
+ // human tapping the battle CTA would. Never launch a fixture mid-preload.
+ await page.waitForFunction(()=>{
+  const c=window.__pt2Game.scene.getScene('campanha');
+  return c.scene.isActive()&&c.__torre2BattlePath?.stage===0;
+ },null,{timeout:45000});
  const battle=async(wild=false,full=false)=>{
   await page.evaluate(({wild,full})=>{
    const s=core.readCampaign();s.team.forEach(m=>m.hp=100);s.inventory.pokeball=15;
@@ -49,7 +55,20 @@ const server=http.createServer(async(req,res)=>{
    if(wild){s.pendingWild=null;core.startWildEncounter(s,()=>0);}
    window.__pt2Game.scene.getScene('campanha').enterBattle(s,wild);
   },{wild,full});
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,null,{timeout:20000});
+  try{
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&
+    window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,null,{timeout:20000});
+  }catch(error){
+   const state=await page.evaluate(()=>{
+    const g=window.__pt2Game,c=g.scene.getScene('campanha'),b=g.scene.getScene('combate');
+    return {campaignActive:c.scene.isActive(),combatActive:b.scene.isActive(),
+     pathReady:!!c.__torre2BattlePath,versusActive:c.children.list.some(o=>
+      o.getData?.('torre2-versus-intro')&&o.active),
+     combatData:b.datos?.torre2?.kind,installed:!!b.__torre2PartyInstalled};
+   });
+   fs.writeFileSync('test-evidence/ball-intro-timeout.json',JSON.stringify(state,null,2));
+   throw new Error('Battle entry failure '+JSON.stringify(state)+' '+String(error));
+  }
   await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.luchadores.forEach(a=>a.inmortal=true);});
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:12000});
  };

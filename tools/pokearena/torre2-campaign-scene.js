@@ -34,6 +34,8 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
+import {routeNode} from './route-data.js';
+import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -758,7 +760,11 @@ create(){
    });
    const p=party.friend[party.playerIndex],e=party.foes[0];
    const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
-   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
+   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,
+   versus:versusOpponentProfile({stage:mapStage,trainer:index,
+    kind:routeNode(mapStage,index,TRAINERS_PER_GYM(mapStage)).type,
+    name:foe.name,city:STAGES[mapStage]?.city,rematch:true}),
+   playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
   },true);
   this.button(320,320,230,32,'◀ REVANCHES',()=>this.rematchAtlasScreen(state,mapStage));
  }
@@ -835,6 +841,13 @@ create(){
    leader:!wild&&state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
+  if(!wild){
+   const opponent=currentOpponent(state);
+   if(opponent)match.torre2.versus=versusOpponentProfile({
+    stage:state.stage,trainer:state.trainer,kind:opponent.kind,
+    leader:opponent.leader,name:opponent.name,city:opponent.city
+   });
+  }
   // The encounter descriptor names the ace; the party opens with its first
   // member. Sprite, level, stats and loadout must all use that same member.
   const firstPlayer=party.friend[party.playerIndex],firstEnemy=party.foes[party.enemyIndex];
@@ -849,13 +862,16 @@ create(){
  launchBattle(match,wild=false){
   // Campaign-only level HUD, using the real saved levels and leader cap.
   // The original Arena 2D sprites, attacks and other modes remain untouched.
-  const game=this.game;let frames=0;
+  const game=this.game;let frames=0,combatEntered=false;
   // The previous fight may return to the hub before 60 frames have passed.
   // Never let its stale installer grab the NEXT match (including training).
   if(game.__torre2BattleAttach)
    game.events.off('step',game.__torre2BattleAttach);
   const attach=()=>{
    const battle=game.scene.getScene('combate');
+   // The 1.48s VS runs while campanha is still active. The old 60-frame
+   // exit guard must not retire this installer BEFORE combat even starts.
+   if(battle.scene.isActive())combatEntered=true;
    if(battle.scene.isActive()&&battle.luchadores?.length===2&&
       !battle.__torre2PartyInstalled){
     const levelPanel=battle.add.graphics().setDepth(1170);
@@ -874,19 +890,29 @@ create(){
     // Phaser restarts the SAME battle scene to send out the next Pokémon.
     // Keep this ONE listener while battling so every replacement gets a HUD.
    }
-   if((game.scene.isActive('campanha')&&frames>60)||++frames>18000){
+   if((combatEntered&&game.scene.isActive('campanha')&&frames>60)||++frames>18000){
     game.events.off('step',attach);
     if(game.__torre2BattleAttach===attach)game.__torre2BattleAttach=null;
    }
   };
   game.__torre2BattleAttach=attach;
   game.events.on('step',attach);
-  // Defer scene transition until the current pointer event finishes.
-  // On mobile, starting combate during a pointerdown can route the same
-  // tap to the battle scene and immediately close/restart it.
-  this.time.delayedCall(0,()=>{
+  // Introduce real trainers, rivals, leaders, Elite and VS Seeker battles.
+  // Keep wild encounters/training instantaneous, and do not touch the match
+  // payload or the combat-side scene restart on a new Pokémon.
+  // The VS timer already runs outside pointerdown. Transition directly
+  // at its end; queuing a nested zero-delay Phaser event can be lost on
+  // re-entrant rematch/party flows. Only the NO-VS fallback needs deferral.
+  const enterCombat=()=>{
    if(this.scene.isActive())this.scene.start('combate',match);
-  });
+  };
+  try{
+   if(playVersusIntro(this,match,enterCombat))return;
+  }catch(error){
+   console.warn('Torre 2: versus intro skipped safely',error);
+  }
+  // Defer only when no VS was rendered, to protect the original tap.
+  this.time.delayedCall(0,enterCombat);
  }
  grassScreen(state){
   // Do not destroy the loaded overworld when entering tall grass. Removing
