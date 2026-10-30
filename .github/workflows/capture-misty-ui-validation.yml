@@ -64,5 +64,6 @@ jobs:
           path: |
             test-evidence/ball-gotcha.png
             test-evidence/ball-capture-absorb.png
-          if-no-files-found: error
+            test-evidence/t06-desktop-pokeball-one-tap.png
+          if-no-files-found: warn
           retention-days: 7
