@@ -73,7 +73,7 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:12000});
  };
  await battle();
- for(let i=0;i<5;i++){
+ for(let i=0;i<3;i++){
   await page.evaluate(i=>{
    const b=window.__pt2Game.scene.getScene('combate');b.__testBallTrace=[];b.__torre2BeamDebug=null;
    const collect=()=>{
@@ -102,6 +102,14 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(identity.portrait,'retrato-'+identity.dex,'HUD portrait follows the incoming Pokemon');
   console.log('swap',i+1);
  }
+ const limited=await page.evaluate(()=>{
+  const b=window.__pt2Game.scene.getScene('combate'),p=b.datos.torre2.party;
+  const before=p.playerIndex;
+  b.__torre2SideParty.slots[0].emit('pointerdown');
+  return {before,after:p.playerIndex,used:p.playerManualSwitches};
+ });
+ assert.deepEqual(limited,{before:1,after:1,used:3},
+  'Fourth voluntary swap must be rejected');
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
@@ -126,7 +134,7 @@ const server=http.createServer(async(req,res)=>{
    const assertNoManualAim = !zone(522,184);
    if(!assertNoManualAim)throw Error('Manual capture aim must not exist');
 
-   zone(316,186).emit('pointerdown');zone(316,186)?.emit('pointerdown');
+   // Single touch directly starts one ball; no separate aim or menu.
   },mode);
  };
  await throwBall('breakout');
@@ -166,7 +174,7 @@ const server=http.createServer(async(req,res)=>{
    throw Error('Saved member should not have burn before throwing');
   b.__torre2CaptureRandom=()=>0;
   const z=(x,y)=>b.children.list.find(o=>o.type==='Zone'&&Math.abs(o.x-x)<2&&Math.abs(o.y-y)<2&&o.input?.enabled);
-  z(470,61).emit('pointerdown');z(316,186).emit('pointerdown');
+  z(470,61).emit('pointerdown');
  });
  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug?.state==='CAUGHT',null,{timeout:15000});
  const gotcha=await page.evaluate(()=>{
@@ -210,7 +218,7 @@ const server=http.createServer(async(req,res)=>{
   frameErrors:window.__pt2Game.scene.getScene('combate').erroresFotograma||0}));
  assert.equal(metrics.frameErrors,0);
  fs.writeFileSync('test-evidence/ball-metrics.json',JSON.stringify(metrics));
- console.log('PASS: 5 swaps, hidden throw, breakout, automatic target, caught full party/PC, single consumption, reload, mobile',metrics,errors);
+ console.log('PASS: 3 capped swaps, hidden throw, breakout, automatic target, caught full party/PC, single consumption, reload, mobile',metrics,errors);
  assert.deepEqual(errors,[]);
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close()});
