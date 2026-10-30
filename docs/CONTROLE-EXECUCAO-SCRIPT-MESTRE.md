@@ -1,5 +1,15 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §20/T20 · Cinco vitórias reais consecutivas da Liga, sem afirmar Pallet→Campeão
+
+- **§20 PARCIAL, progressão comprovada:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210) integrada na `main` em `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO** em cinco lutas nativas consecutivas com o mesmo save: Lorelei 85s, Bruno 78s, Agatha 93s, Lance 209s e Campeão 283s. Sem vitórias, KO, EXP nem progresso inseridos depois do **único checkpoint inicial de Victory Road**; Centro Pokémon, trocas, AUTO e save/reload reais. Hall da Fama, cinco honras, oito insígnias e campeão persistente.
+- **§33 PARCIAL:** [CI `main` #40977593904](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977593904) **SUCESSO**. PR [#322](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/322) apresenta auditoria dos três iniciais no Campeão e da trava pós-Hall; CI [#40977896743](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977896743) não deve ser antecipada como finalizada.
+- **§36 PARCIAL:** alterações de #210 somente em teste/workflow, preservados VFX/sprites/kits originais, 121 kits Arena, campanha e saves dos jogadores. Surf explicitamente aprovado pelo usuário em momento posterior ao veto histórico; nenhuma mudança da política de TM/HM da campanha neste lote.
+- **§37 PARCIAL:** publicação do commit T20 só pode ser afirmada após Pages + HTTP público no SHA exato; CI de combate bem-sucedida isoladamente não é confirmação de publicação.
+- **Critério ainda não cumprido:** Pallet→Victory Road→Campeão em uma jornada naturalmente jogada sem checkpoint inicial, todas as evoluções/trocas/capturas/PC e Android físico. T20 permanece parcial. Evidências e plano: [relatório T20](RELATORIO-T20-LIGA-CINCO-CHEFES-2026-10-29.md).
+
+
+
 ## 29/10/2026 — §§7/8/33/36/37 · T07/T08: versão P2 auditável e captura diária (#313/#314)
 
 - **§7/§8 PARCIAIS:** [PR #313](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/313), merge `a4edee03abd5d76a3c557fafece06732302da740`, corrige comparação de hashes de homepage/módulos e armazena `siteVersion` e `sourceVersion` distintos. O catálogo versionado no commit `b7a1630ca94f969b337a2adb1f73a9d0b81a6d77` contém 164 movimentos nativos P2, Deoxys/Psycho Boost já presente, zero nomes adicionados/removidos, e não equipa nada na campanha. [PR #314](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/314), squash `e348b895de1d9fae1ef4bd71d77d541edbff8cc8`, reduz capturas duplicadas na main; [CI PR #40948701442](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948701442) e [main #40949654511](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40949654511) **SUCESSO**; [watcher main #40949654316](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40949654316) **SUCESSO** com probe sem recaptura e verify ignorado.

@@ -1,5 +1,15 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T20 PRIORIDADE: 5 chefes reais da Liga no mesmo save — PR #210 integrada
+
+- **Teste integrado:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210), merge `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO**, jogou Lorelei→Bruno→Agatha→Lance→Campeão com o mesmo save, cinco vitórias Phaser legítimas, curas pelo Centro, reloads sem perda, Hall da Fama. [CI main #40977593904](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977593904) **SUCESSO**.
+- **Restrição irrenunciável:** checkpoint **inicial** de Victory Road foi preparado, stage8/trainer17/Lv54. Portanto prova T20 é **PARCIAL** e não valida jornada Pallet→Campeão. Relatório de evidências: [RELATORIO-T20-LIGA-CINCO-CHEFES-2026-10-29.md](RELATORIO-T20-LIGA-CINCO-CHEFES-2026-10-29.md).
+- **Próximo teste T20:** PR [#322](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/322), CI [#40977896743](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977896743), confere os 3 iniciais e as três equipes do Campeão no build atual. Não registrar como mesclado sem prova posterior.
+- **Primeiro item ainda não validado de ponta a ponta:** Pallet→Victory Road por batalhas naturais com evolução, captura, PC e reloads reais (T03/T05/T19); depois repetir a Liga sem fixture (T20). Sem inventar checkpoints/vitórias nem declarar a seção 20 concluída.
+- **Decisão mais recente:** Surf **aprovado** pelo usuário. Linhas históricas abaixo que diziam "reprovado" registram política anterior e não devem sobrescrever a aprovação vigente; a restrição de TM/HM na campanha não foi alterada neste lote. Preservar os 121 kits Arena e todos os efeitos e sprites aprovados.
+
+
+
 ## 29/10/2026 — T07/T08: proveniência da versão original e captura diária sem repetição (#313/#314)
 
 - **Correção integrada:** [PR #313](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/313), squash `a4edee03abd5d76a3c557fafece06732302da740`. O watcher confundia o hash `src-*` da homepage com o hash dos módulos Phaser, fazendo a sondagem diária considerar atualização inexistente. O audit agora registra `siteVersion` e `sourceVersion` separadamente; a captura isolada usa `capture-provenance.json` e data local de São Paulo para não baixar novamente ~1.560 arquivos no mesmo dia, com execução manual preservada. [PR #314](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/314), squash `e348b895de1d9fae1ef4bd71d77d541edbff8cc8`, elimina a segunda captura redundante do job `verify` em push. [CI PR #40948701442](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40948701442) **SUCESSO** com build e Chromium; [CI main #40949654511](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40949654511) **SUCESSO**. [Watcher main #40949654316](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40949654316) **SUCESSO**: probe executado, recaptura completa, compilação redundante e job verify corretamente **ignorados** porque a homepage não mudou.
