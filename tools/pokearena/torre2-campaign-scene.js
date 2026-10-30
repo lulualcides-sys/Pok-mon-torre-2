@@ -34,6 +34,8 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
+import {routeNode} from './route-data.js';
+import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
@@ -758,7 +760,11 @@ create(){
    });
    const p=party.friend[party.playerIndex],e=party.foes[0];
    const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
-   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
+   this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,
+   versus:versusOpponentProfile({stage:mapStage,trainer:index,
+    kind:routeNode(mapStage,index,TRAINERS_PER_GYM(mapStage)).type,
+    name:foe.name,city:STAGES[mapStage]?.city,rematch:true}),
+   playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
   },true);
   this.button(320,320,230,32,'◀ REVANCHES',()=>this.rematchAtlasScreen(state,mapStage));
  }
@@ -835,6 +841,13 @@ create(){
    leader:!wild&&state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
+  if(!wild){
+   const opponent=currentOpponent(state);
+   if(opponent)match.torre2.versus=versusOpponentProfile({
+    stage:state.stage,trainer:state.trainer,kind:opponent.kind,
+    leader:opponent.leader,name:opponent.name,city:opponent.city
+   });
+  }
   // The encounter descriptor names the ace; the party opens with its first
   // member. Sprite, level, stats and loadout must all use that same member.
   const firstPlayer=party.friend[party.playerIndex],firstEnemy=party.foes[party.enemyIndex];
@@ -881,12 +894,19 @@ create(){
   };
   game.__torre2BattleAttach=attach;
   game.events.on('step',attach);
-  // Defer scene transition until the current pointer event finishes.
-  // On mobile, starting combate during a pointerdown can route the same
-  // tap to the battle scene and immediately close/restart it.
-  this.time.delayedCall(0,()=>{
+  // Introduce real trainers, rivals, leaders, Elite and VS Seeker battles.
+  // Keep wild encounters/training instantaneous, and do not touch the match
+  // payload or the combat-side scene restart on a new Pokémon.
+  const enterCombat=()=>this.time.delayedCall(0,()=>{
    if(this.scene.isActive())this.scene.start('combate',match);
   });
+  try{
+   if(playVersusIntro(this,match,enterCombat))return;
+  }catch(error){
+   console.warn('Torre 2: versus intro skipped safely',error);
+  }
+  // Defer transition to avoid reusing the originating mobile pointerdown.
+  enterCombat();
  }
  grassScreen(state){
   // Do not destroy the loaded overworld when entering tall grass. Removing
