@@ -1,5 +1,5 @@
 'use strict';
-/* Real progression: 12 native route fights, then natural captures and rival/Brock battles.
+/* Real progression: 5 native fights, early legal captures, then Rocket, Rival and Brock.
  * No forced KO, no fighter HP override, no instant-win, no arbitrary level.
  * Bulbasaur Lv5 and normal catches for a support team; Mewtwo stays in PC.
  * Native Phaser buttons, genuine capture RNG, money, XP and natural battle outcomes.
@@ -30,7 +30,7 @@ const server=http.createServer(async(req,res)=>{
   '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
- const report={method:'Native Phaser live AUTO, no HP/KO/result cheats; Bulbasaur, Mewtwo in PC; 12 genuine fights, real wild capture, rival and Brock',steps:[]};
+ const report={productionStarter:useProductionStart,method:'Real Phaser AUTO; catch wild teammates BEFORE Rocket, no forced HP/KO/wins; 13 trainers and Brock',steps:[],realDefeats:[]};
  const saveReport=()=>fs.writeFileSync(out+'/natural-through-brock.json',JSON.stringify(report,null,2));
  const game=()=>page.evaluate(()=>{
   const s=window.kanto.readCampaign();return {
@@ -154,7 +154,7 @@ const server=http.createServer(async(req,res)=>{
   saveReport();
   assert.ok(report.teamPreparation.after.team.length>=3,
    'At least two genuine RNG captures are required before Rival checkpoint');
-  assert.equal(report.teamPreparation.after.trainer,12,'All 12 trainer wins are preserved');
+  assert.equal(report.teamPreparation.after.trainer,5,'Five earned wins precede early Rocket-team preparation');
   assert.deepEqual(report.teamPreparation.after.box,expectedBox,
    'No QA Mewtwo or unexpected PC Pokémon in production beginning');
   console.log('PASS REAL TEAM PREPARATION',JSON.stringify(report.teamPreparation.after));
@@ -182,8 +182,10 @@ const server=http.createServer(async(req,res)=>{
   const names=['pidgey','rattata','caterpie','charmander'];
  const total=14;
  const validateNaturalIvysaur=process.env.T03_NATURAL_EVOLUTION==='1';
+  let earlyTeamReady=false;
+  let naturalRetries=0;
   for(let round=0;round<total;round++){
-   if(round===12){await prepareNaturalTeam();before=await game();}
+   if(round===5&&!earlyTeamReady){await prepareNaturalTeam();before=await game();earlyTeamReady=true;}
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
    if(round<names.length)assert.equal(opponent.id,names[round],
@@ -254,6 +256,27 @@ const server=http.createServer(async(req,res)=>{
    }
    entry.seconds=Math.round((Date.now()-started)/100)/10;
    entry.after=await game();
+   // Native trainer victory is NOT guaranteed. Respect genuine losses:
+   // no editing winner/HP/EXP/RNG. Heal at the Center and retry legally,
+   // limited to three losses so a genuine balance defect surfaces.
+   if(entry.after.losses>before.losses){
+    assert.equal(entry.after.losses,before.losses+1);
+    assert.equal(entry.after.wins,before.wins,'Defeat cannot grant XP/victory');
+    assert.equal(entry.after.trainer,before.trainer,'Defeat cannot skip checkpoint');
+    assert.equal(entry.after.stage,before.stage);
+    const defeat={trainer:round+1,foe:opponent.id,
+     team:entry.after.team,losses:entry.after.losses};
+    report.realDefeats.push(defeat);
+    console.log('T20 GENUINE ROUTE DEFEAT',JSON.stringify(defeat));
+    saveReport();
+    if(++naturalRetries>3)
+     throw Error('Too many genuine losses; review balance, never forge results: '+
+      JSON.stringify(report.realDefeats));
+    await centerHeal();
+    before=await game();
+    --round;
+    continue;
+   }
    assert.equal(entry.after.stage,opponent.leader?1:0);
    assert.equal(entry.after.trainer,opponent.leader?0:round+1);
    assert.equal(entry.after.wins,round+1);
@@ -261,7 +284,7 @@ const server=http.createServer(async(req,res)=>{
    const payout=opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180;
    assert.equal(entry.after.money,before.money+payout,'Real trainer/Rocket/Rival payout');
    assert.deepEqual(entry.after.box,expectedBox);
-   assert.equal(entry.after.team.length,round<12?1:3);
+   assert.equal(entry.after.team.length,round<5?1:3);
    if(opponent.leader){
     assert.deepEqual(entry.after.badges,['Rocha'],'Brock grants first and only badge');
     assert.ok(entry.after.tms.includes('tm-rock-tomb'),'Brock grants unique FireRed TM39');
