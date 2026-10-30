@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {deflateSync} from 'node:zlib';
-import {FRLG_MART_ICONS,FRLG_ICON_COMMIT,gbaItemPNGForWeb} from
+import {FRLG_MART_ITEMS,FRLG_ICON_COMMIT,gbaItemPNGForWeb,paletteFromJASC} from
  '../tools/pokearena/install-frlg-mart-item-icons.mjs';
-import {FRLG_MART_ICON_FILES,frlgMartIcon} from
+import {FRLG_MART_ITEM_FILES,frlgMartIcon} from
  '../tools/pokearena/torre2-campaign-sprites.js';
 import {MART_ITEMS} from '../tools/pokearena/torre2-route-data.js';
 const sig=Buffer.from([137,80,78,71,13,10,26,10]);
@@ -25,16 +25,27 @@ function indexedFixture(){
  return Buffer.concat([sig,chunk('IHDR',ihdr),chunk('PLTE',plte),
   chunk('IDAT',pixels),chunk('IEND',Buffer.alloc(0))]);
 }
-test('FireRed Mart item mapping points only to pinned native GBA icon filenames',()=>{
+test('each Mart item is backed by the original pinned FireRed icon and correct type palette',()=>{
  assert.equal(FRLG_ICON_COMMIT.length,40,'Immutable upstream revision required');
- assert.deepEqual(FRLG_MART_ICON_FILES,FRLG_MART_ICONS);
+ const ids=Object.keys(FRLG_MART_ITEMS);
+ assert.deepEqual(FRLG_MART_ITEM_FILES,ids);
+ assert.deepEqual(MART_ITEMS.map(i=>i.id),ids,'No shop item may use a fake generic icon');
  for(const item of MART_ITEMS){
-  const file=frlgMartIcon(item);
-  assert.ok(FRLG_MART_ICONS.includes(file),item.id+' has no native original icon');
+  assert.equal(frlgMartIcon(item),item.id);
+  assert.match(FRLG_MART_ITEMS[item.id].image,/^[a-z_]+$/);
+  assert.match(FRLG_MART_ITEMS[item.id].palette,/^[a-z_]+$/);
  }
- assert.equal(frlgMartIcon({id:'tm-rock-tomb',kind:'tm'}),'tm_hm');
- assert.equal(frlgMartIcon({id:'superpotion',kind:'heal'}),'large_potion');
- assert.equal(frlgMartIcon({id:'pokeball',kind:'ball'}),'poke_ball');
+ assert.deepEqual(FRLG_MART_ITEMS.paralyzeheal,
+  {image:'status_heal',palette:'paralyze_heal'});
+ assert.deepEqual(FRLG_MART_ITEMS['tm-rock-tomb'],
+  {image:'tm_hm',palette:'rock_tm_hm'});
+ assert.deepEqual(FRLG_MART_ITEMS['tm-thunderbolt'],
+  {image:'tm_hm',palette:'electric_tm_hm'});
+});
+test('authentic JASC GBA palettes reject unknown source files',()=>{
+ const p=paletteFromJASC('JASC-PAL\n0100\n2\n4 8 16\n40 80 160\n');
+ assert.deepEqual([...p],[4,8,16,40,80,160]);
+ assert.throws(()=>paletteFromJASC('fake'),/Unrecognized/);
 });
 test('indexed GBA pixel icon transparency is preserved without rescaling or palette edits',()=>{
  const src=indexedFixture(),web=gbaItemPNGForWeb(src);
@@ -46,4 +57,14 @@ test('indexed GBA pixel icon transparency is preserved without rescaling or pale
  assert.deepEqual(gbaItemPNGForWeb(web),web,'do not duplicate transparency metadata');
  assert.equal(src.indexOf(Buffer.from('tRNS')),-1,'source icon is unchanged');
  assert.throws(()=>gbaItemPNGForWeb(Buffer.from('not a PNG')),/Invalid/);
+});
+
+test('same real GBA pixel stencil accepts original distinct status/TM palettes',()=>{
+ const src=indexedFixture(),palette=Buffer.from([1,2,3,10,20,30]);
+ const converted=gbaItemPNGForWeb(src,palette);
+ const marker=converted.indexOf(Buffer.from('PLTE'));
+ assert.ok(marker>0);
+ assert.deepEqual([...converted.subarray(marker+4,marker+10)],[1,2,3,10,20,30]);
+ assert.ok(converted.indexOf(Buffer.from('tRNS'))>0);
+ assert.deepEqual(gbaItemPNGForWeb(converted,palette),converted);
 });
