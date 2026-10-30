@@ -1,0 +1,107 @@
+name: Pokémon Torre 2 — Guardião visual
+on:
+  pull_request:
+    paths:
+      - 'src/**'
+      - 'tools/pokearena/**'
+      - 'tools/dev/approved-visual-guard.mjs'
+      - 'tools/dev/ci-diagnostics.mjs'
+      - 'tests/**'
+      - 'data/**'
+      - 'reference-assets/**'
+      - '.github/workflows/pages.yml'
+      - '.github/workflows/visual-guard.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'data/approved-visual-baseline.json'
+      - 'reference-assets/**'
+      - 'tools/pokearena/kanto-approved-ui.avif'
+      - 'tools/pokearena/pokemon-torre-logo.b64'
+      - 'tools/dev/approved-visual-guard.mjs'
+      - 'tools/dev/ci-diagnostics.mjs'
+      - 'tests/approved-visual-guard.test.js'
+      - 'tests/ci-diagnostics.test.js'
+      - '.github/workflows/visual-guard.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pokemon-torre2-visual-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  approved-assets:
+    name: Approved static art — fast check
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Testar guardião e gerador de diagnóstico
+        run: node --test tests/approved-visual-guard.test.js tests/ci-diagnostics.test.js
+      - name: Bloquear alterações acidentais de referências aprovadas
+        run: node tools/dev/approved-visual-guard.mjs
+      - name: Diagnóstico se houver falha
+        if: failure()
+        env:
+          CI_RESULT: failure
+        run: |
+          node tools/dev/ci-diagnostics.mjs --stage visual-approved-assets
+          cat test-evidence/visual-guard/diagnostic.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Arquivar evidências
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-guard-asset-evidence-${{ github.run_attempt }}
+          path: test-evidence/visual-guard/
+          if-no-files-found: warn
+          retention-days: 14
+  browser-visual:
+    name: Native Phaser — desktop/mobile screenshots
+    if: github.event_name != 'push'
+    needs: approved-assets
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Preparar dependência de navegador já usada pelo jogo
+        run: npm install --no-audit --no-fund
+      - name: Montar cliente Phaser original
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs \
+               && node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo '::error::Cliente Phaser incompleto; não concluir aprovação visual'
+              exit 1
+            fi
+            sleep $((attempt*8))
+          done
+      - name: Capturar título, mobile, mapa e combate em Chromium
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/visual-guard-browser.cjs
+      - name: Gerar diagnóstico automático na falha
+        if: failure()
+        env:
+          CI_RESULT: failure
+        run: |
+          node tools/dev/ci-diagnostics.mjs --stage browser-visual
+          cat test-evidence/visual-guard/diagnostic.md >> "$GITHUB_STEP_SUMMARY"
+      - name: Arquivar screenshots e relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-guard-phaser-${{ github.run_attempt }}
+          path: test-evidence/visual-guard/
+          if-no-files-found: warn
+          retention-days: 14
