@@ -63,8 +63,26 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(selection.maps.includes(0)&&selection.maps.includes(1)&&selection.maps.includes(2),
    'Earlier cities missing from rematch atlas');
   assert.ok(selection.controls.includes(0),'Brock map must be clickable');
+  const positions=await page.evaluate(()=>{
+   const scene=__pt2Game.scene.getScene('campanha');
+   return scene.children.list.filter(o=>o.active&&o.input?.enabled).map(o=>({
+    tag:o.getData?.('torre2-rematch-map'),x:o.x,y:o.y,depth:o.depth,
+    width:o.width,height:o.height
+   })).filter(o=>o.tag!==undefined||Math.abs(o.x-112)<100&&Math.abs(o.y-81)<25);
+  });
+  console.log('VS SEEKeR MAP POSITION TRACE',JSON.stringify(positions));
   await click(112,81);
-  await page.waitForFunction(()=>__pt2Game.scene.getScene('campanha').__torre2RematchAtlas?.mapStage===0);
+  try{
+   await page.waitForFunction(()=>__pt2Game.scene.getScene('campanha').__torre2RematchAtlas?.mapStage===0,
+    null,{timeout:2200});
+  }catch(err){
+   const info=await page.evaluate(()=>{
+    const scene=__pt2Game.scene.getScene('campanha');
+    return {selection:scene.__torre2RematchAtlas,
+     pointer:__pt2Game.input.activePointer?{x:__pt2Game.input.activePointer.x,y:__pt2Game.input.activePointer.y}:null};
+   });
+   throw Error('Map0 pointer miss '+JSON.stringify(info)+' '+String(err));
+  }
   assert.ok(await page.evaluate(()=>__pt2Game.scene.getScene('campanha').children.list.some(o=>
    o.active&&o.getData?.('torre2-rematch-trainer')==='0:0')));
   const mart=await page.evaluate(()=>{
