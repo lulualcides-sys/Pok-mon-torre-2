@@ -1083,6 +1083,20 @@ export function balanceCampaignLeechSeed(move){
   dur:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.dur,Number(drain.dur)||0)),
   cura:Math.max(0,Math.min(KANTO_CAMPAIGN_LEECH_SEED.cura,Number(drain.cura)||0))}};
 }
+// Campaign-only cooldown override. The source native move and Arena/VS
+// retain their original cooldown; only the isolated campaign copy changes.
+export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
+ 'charge-beam':1.5,
+ supersonic:1.5
+});
+export function balanceCampaignQuickCooldown(move){
+ // Lv8 practice ULTs have their own minimum cooldown (>= 8s), even if
+ // they borrow the visual effect of Charge Beam or Supersonic.
+ if(!move||move.torre2IntroPractice)return move;
+ const name=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ const cd=KANTO_CAMPAIGN_QUICK_COOLDOWNS[name];
+ return Number.isFinite(cd)?{...move,cd}:move;
+}
 export function resolveLoadout(member){
  const pool=availableMoves(member),dict=new Map(pool.map(h=>[h.id,h]));
  const out={};
@@ -1131,7 +1145,7 @@ export function resolveLoadout(member){
  // The early overlay can inject Leech Seed after selectedMoves. Balance
  // FINAL campaign battle slots including practice, evolution and saved kits.
  for(const slot of SLOTS)if(battle[slot])
-  battle[slot]=balanceCampaignLeechSeed(battle[slot]);
+  battle[slot]=balanceCampaignQuickCooldown(balanceCampaignLeechSeed(battle[slot]));
  return battle;
 }
 export function pokemonStats(member){

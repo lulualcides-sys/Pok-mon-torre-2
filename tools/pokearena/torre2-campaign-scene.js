@@ -13,7 +13,7 @@ import {ROSTER,buscar} from '../datos.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
- GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,startBattle,
+ GYMS,STAGES,TRAINERS_PER_GYM,STARTERS,currentOpponent,trainerSpeciesForLevel,startBattle,
  resolveBattle,attemptCapture,selectTeamMember,healTeam,KANTO_DEX,
  storePokemon,withdrawPokemon,swapPokemon,wildAvailability,startWildEncounter,
  startWildBattle,resolveWildBattle,purchaseItem,usePotion,useStatusCure,teachTM,
@@ -691,7 +691,11 @@ create(){
    const result=startRematch(state,index);
    if(!result.ok){text(this,320,278,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5);return;}
    const party=createPartyMatch({...state,trainer:index},currentOpponent({...state,trainer:index}),false);
-   for(const member of party.foes){member.level=Math.min(currentLevelCap(state.stage),member.level+Math.min(10,(state.badges?.length||0)*2));member.loadout=resolveLoadout({id:member.id,progression:{species:member.id,level:member.level}});}
+   for(const member of party.foes){
+    member.level=Math.min(currentLevelCap(state.stage),member.level+Math.min(10,(state.badges?.length||0)*2));
+    member.id=trainerSpeciesForLevel(member.id,member.level);
+    member.loadout=resolveLoadout({id:member.id,progression:{species:member.id,level:member.level}});
+   }
    const p=party.friend[party.playerIndex],e=party.foes[0];
    const touch='ontouchstart' in window||navigator.maxTouchPoints>0;
    this.launchBattle({p1:p.id,p2:e.id,modo:'cpu',nivel:'normal',arena:result.opponent.arena,mandos:[touch?'tactil':'kbm','cpu'],torre2:{stage:state.stage,trainer:state.trainer,kind:'rematch',ticket:result.ticket,party,playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
