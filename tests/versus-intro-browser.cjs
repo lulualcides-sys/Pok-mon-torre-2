@@ -55,6 +55,12 @@ const server=http.createServer(async(req,res)=>{
    const s=window.__pt2Game.scene.getScene('campanha');
    return !!s.children.list.find(o=>o.getData?.('torre2-versus-intro')&&o.active);
   },null,{timeout:8000});
+  // Real Phaser warmup overlaps native PMD texture downloads with the
+  // existing 2.5 s VS. The battle still owns normal loading and animation.
+  const warmup=await page.evaluate(()=>window.__pt2Game.__torre2BattlePrewarm);
+  assert.ok(warmup?.queued>0,'Trainer intro should warm first-pair PMD animations');
+  assert.ok(warmup.species.includes('0001')&&warmup.species.includes('0016'),
+   'Warmup includes actual Bulbasaur/Pidgey, never guessed sprites');
   const vs=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
    const overlay=scene.children.list.find(o=>o.getData?.('torre2-versus-intro'));
@@ -86,8 +92,9 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(combat.p2,'pidgey');
   assert.equal(combat.trainer,0);
   assert.deepEqual(errors,[],'No runtime page errors');
+  const loaded=await page.evaluate(()=>window.__pt2Game.__torre2BattlePrewarm);
   fs.writeFileSync('test-evidence/versus-intro/result.json',
-   JSON.stringify({vs,combat,errors,method:'Real browser CTA → visible VS → native battle'},null,2));
+   JSON.stringify({vs,combat,loaded,errors,method:'Real browser CTA → visible 2.5s VS with PMD prewarm → native battle'},null,2));
   console.log('Phaser VS intro validated:',JSON.stringify({vs,combat}));
  }finally{await browser.close()}
 })().catch(error=>{console.error(error);process.exitCode=1}).finally(()=>server.close());

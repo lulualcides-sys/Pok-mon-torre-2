@@ -131,11 +131,21 @@ const server=http.createServer(async(req,res)=>{
    const offer=scene.children.list.filter(o=>o.active&&o.getData?.('torre2-mart-buy'))
     .map(o=>o.getData('torre2-mart-buy'));
    const icons=scene.children.list.filter(o=>o.active&&o.getData?.('torre2-mart-item-sprite'))
-    .map(o=>({id:o.getData('torre2-mart-item-sprite'),texture:o.texture?.key}));
+    .map(o=>({id:o.getData('torre2-mart-item-sprite'),
+      texture:o.texture?.key,
+      nativeSource:!!scene.textures.get('torre2-frlg-mart-'+o.getData('torre2-mart-item-sprite'))?.getSourceImage()&&
+       scene.textures.get(o.texture.key).getSourceImage()===
+       scene.textures.get('torre2-frlg-mart-'+o.getData('torre2-mart-item-sprite')).getSourceImage()}));
    return {offer,icons};
   });
   assert.ok(mart.icons.length>0&&mart.icons.every(o=>o.texture==='torre2-mart-item-'+o.id),
    'Mart must render actual item texture sprites');
+  console.log('MART FRLG ORIGINAL SOURCES',JSON.stringify(mart.icons));
+  await page.screenshot({path:'test-evidence/mart-frlg-original-icons.png'});
+  // Phaser's image loader intentionally creates blob: URLs for the decoded
+  // assets; identity of the decoded native PNG verifies real source reuse.
+  assert.ok(mart.icons.every(o=>o.nativeSource===true),
+   'Each displayed shop texture must reuse the decoded original FireRed PNG');
   assert.ok(!mart.offer.includes('tm-giga-drain')&&!mart.offer.includes('tm-fire-blast'),
    'Shop must not expose unearned leader TMs');
   assert.deepEqual(errors,[],'No Phaser runtime error in maps or shop');

@@ -42,6 +42,10 @@ const {installFRLGNPCs}=await import('./install-frlg-npcs.mjs');
 const originalNPCs=await installFRLGNPCs(dest);
 const {installBadgeSprites}=await import('./install-badge-sprites.mjs');
 await installBadgeSprites(dest);
+// Bundle authentic FRLG GBA item icons locally; no runtime network dependency.
+const {installFRLGMartItems}=await import('./install-frlg-mart-item-icons.mjs');
+const martIcons=await installFRLGMartItems(dest);
+console.log('Original FireRed Mart item icons verified:',JSON.stringify(martIcons));
 
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');

@@ -30,7 +30,9 @@ test('VS does not run on wild encounters, lab or training',()=>{
 });
 test('VS cannot award XP, badges, TM or change saves',()=>{
  assert.doesNotMatch(source,/localStorage|saveCampaign|resolveBattle|resolveWildBattle|applyPartyBattleResult|damage|xpReward|grantGymTM/);
- assert.match(campaign,/if\(playVersusIntro\(this,match,enterCombat\)\)return/);
+ assert.match(campaign,/if\(playVersusIntro\(this,match,enterCombat\)\)\{/);
+ assert.match(campaign,/prewarmVersusBattleSprites\(this,match\)/);
+ assert.match(campaign,/cargarPMD\(scene,forms\)/);
  assert.match(campaign,/if\(this\.scene\.isActive\(\)\)this\.scene\.start\('combate',match\)/);
  assert.match(campaign,/if\(battle\.scene\.isActive\(\)\)combatEntered=true/);
  assert.match(campaign,/combatEntered&&game\.scene\.isActive\('campanha'\)/);

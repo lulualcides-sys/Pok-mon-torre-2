@@ -42,10 +42,19 @@ export function installWildCapture(scene){
  const enemy=scene.luchadores?.[1];
  if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
- const icon=originalBallSprite(scene,405,53,'pokeball',22,2705);
+ // Mobile: Pokéball-only action immediately ABOVE the Dash circle (native
+ // 640x360 coordinates), separated from Q, Bag, RUN, Auto and HUD hit zones.
+ const captureButton=scene.add.circle(430,241,19,0x14364b,.88)
+  .setStrokeStyle(2,0xf7d885).setDepth(2704);
+ const icon=originalBallSprite(scene,430,241,'pokeball',24,2705);
  icon.setData('torre2-capture-single-button',true);
- const hpLine=txt(scene,424,68,'',9,'#a9ead3');
- hit(scene,405,53,36,34,showChoices).setData('torre2-capture-single-button',true);
+ const captureZone=hit(scene,430,241,38,38,showChoices)
+  .setData('torre2-capture-single-button',true);
+ const setCaptureIconVisible=visible=>{
+  captureButton.setVisible(visible);icon.setVisible(visible);
+  if(visible)captureZone.setInteractive({useHandCursor:true});
+  else captureZone.disableInteractive();
+ };
  // FireRed-style RUN is valid only for a wild encounter. The trainer and
  // original Arena battles never install this overlay. Unlike a KO, fleeing
  // has no win, loss, XP, badge or capture roll. Preserve live party HP/status
@@ -89,27 +98,27 @@ export function installWildCapture(scene){
   return sprite?snapshotBody(enemy).center:{x:Number(enemy.x)||444,y:Number(enemy.y)||221};
  };
  const cleanup=()=>{
-  scene.events.off('update',refresh);
+  // Capture HUD has no per-frame text redraw; HP remains in the native
+  // upper-right battle bar and in the selectable ball/chance menu.
   scene.__torre2WildCapture=false;scene.__torre2CaptureBusy=false;
+  captureZone.destroy();icon.destroy();captureButton.destroy();
   for(const item of activeVisuals)item.destroy?.();
   activeVisuals=[];
  };
  scene.events.once('shutdown',cleanup);
- function refresh(){
-  if(!scene.scene.isActive()||!enemy.hpMax)return;
-  const percent=Math.max(0,Math.ceil(100*enemy.hp/enemy.hpMax));
-  hpLine.setText('HP '+percent+'% · '+(percent<=25?'BOA CHANCE':
-   percent<=50?'ENFRAQUECIDO':'ENFRAQUEÇA'));
- }
- scene.events.on('update',refresh);refresh();
  function add(item){menu.push(item);return item}
  function close(){for(const item of menu)item.destroy?.();menu=[];
-  if(scene.fase==='torre2-aim')scene.fase='lucha';}
+  if(scene.fase==='torre2-aim')scene.fase='lucha';
+  setCaptureIconVisible(!busy);
+ }
  function showChoices(){
   if(busy||enemy.hp<=0||scene.__torre2Changing||scene.__torre2BallTransitions||!['lucha','torre2-aim'].includes(scene.fase))return;
   close();
   const state=readCampaign();if(!state?.pendingWild)return;
   scene.fase='torre2-aim';
+  // This menu crosses the Pokéball's screen position. Hide the underlying
+  // icon and disable its native hit zone until the player leaves the menu.
+  setCaptureIconVisible(false);
   add(frame(scene,173,109,299,169));
   add(txt(scene,188,119,'LANÇAR POKÉBOLA',15,'#ffe5a4'));
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
@@ -257,7 +266,7 @@ export function installWildCapture(scene){
      caption.setData('torre2-capture-save-error',true);
      scene.__torre2CaptureDebug.state='SAVE_ERROR';
      busy=false;scene.__torre2CaptureBusy=false;scene.fase=oldPhase;
-     refresh();
+     setCaptureIconVisible(true);
      scene.time.delayedCall(2400,()=>{if(caption.active)caption.destroy()});
      return;
     }
@@ -336,7 +345,8 @@ export function installWildCapture(scene){
               showBall(origin.x,origin.y,0,true);
              },onComplete:()=>{
               restore();gfx.destroy();ballSprite.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
-              scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';refresh();
+              scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';
+              setCaptureIconVisible(true);
              }});
            }
           });

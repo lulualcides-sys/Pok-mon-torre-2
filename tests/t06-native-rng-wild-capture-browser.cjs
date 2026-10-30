@@ -81,7 +81,7 @@ const saveReport=()=>fs.writeFileSync('test-evidence/t06-native-rng-capture.json
   assert.notEqual(original.enemy.inmortal,true,'No invulnerability fixture');
   let result;
   for(let attempt=1;attempt<=2;attempt++){
-   await click(470,61);
+   await click(430,241);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',
     null,{timeout:7000});
    await click(316,186);

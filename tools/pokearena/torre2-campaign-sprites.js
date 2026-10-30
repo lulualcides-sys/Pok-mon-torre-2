@@ -184,6 +184,18 @@ export function drawTrainer(g,cx,cy,kind='youngster',scale=1){
  }
 }
 function px(g,x,y,w,h,c){g.fillStyle(c,1);g.fillRect(Math.round(x),Math.round(y),w,h)}
+// Original Pokémon FireRed/LeafGreen GBA icon files bundled by the build.
+// Authentic FireRed item icon + original item/type-specific palette, generated
+// as local transparent PNGs at build time. Do not alter battle Pokéball VFX.
+export const FRLG_MART_ITEM_FILES=Object.freeze([
+ 'antidote','paralyzeheal','awakening','burnheal','iceheal','fullheal',
+ 'tm-rock-tomb','pokeball','greatball','ultraball','potion','superpotion',
+ 'tm-thunderbolt','tm-water-pulse','tm-flamethrower','tm-ice-beam',
+ 'tm-shock-wave','tm-giga-drain','tm-calm-mind','tm-fire-blast','tm-earthquake'
+]);
+export function frlgMartIcon(item){
+ return FRLG_MART_ITEM_FILES.includes(item?.id)?item.id:null;
+}
 export function drawShopItem(g,cx,cy,item,scale=2){
  const kind=typeof item==='string'?item:item?.kind||'ball';
  const type=typeof item==='string'?item:item?.id||'pokeball';
@@ -226,10 +238,20 @@ export function drawShopItem(g,cx,cy,item,scale=2){
 export function shopItemSprite(scene,item){
  const key='torre2-mart-item-'+item.id;
  if(!scene.textures.exists(key)){
-  const g=scene.make.graphics({x:0,y:0,add:false});
-  drawShopItem(g,12,12,item,1);
-  g.generateTexture(key,24,24);
-  g.destroy();
+  const file=frlgMartIcon(item),native=file&&'torre2-frlg-mart-'+file;
+  if(native&&scene.textures.exists(native)){
+   // Same decoded original image; no per-card Graphics re-rasterization.
+   const bitmap=scene.textures.get(native).getSourceImage();
+   const texture=scene.textures.addImage(key,bitmap);
+   if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
+    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }else{
+   // Offline/test fallback only: approved existing pixel stencils.
+   const g=scene.make.graphics({x:0,y:0,add:false});
+   drawShopItem(g,12,12,item,1);
+   g.generateTexture(key,24,24);
+   g.destroy();
+  }
  }
  return key;
 }
