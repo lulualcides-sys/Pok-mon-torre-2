@@ -3,7 +3,7 @@
 ## 30/10/2026 — T20: gate de evolução Caterpie corrigido, aguardando CI
 
 - **Falha verificada:** [CI #41021932709](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41021932709) reprovou após **duas vitórias reais** (Pidgey e Rattata), antes do terceiro combate, por esperar Caterpie quando o motor retornou Metapod. O adversário evolui legalmente de Caterpie no **Lv7** e de Metapod no Lv10; isso é um erro de expectativa do teste, **não uma derrota nem um VFX ausente**.
-- **Patch isolado:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit 2b12d3d9eab3788a8cc7c91bbbbde03706f1b6fb, verifica formas por limiares FRLG Lv7/10 e corrige a mensagem final para **13 treinadores + Brock**. Sintaxe JS analisada por V8; **CI/Chromium completo no novo HEAD ainda não confirmado**. Não há merge, deploy nem prova de Brock.
+- **Patch isolado:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit 2b12d3d9eab3788a8cc7c91bbbbde03706f1b6fb, verifica formas por limiares FRLG Lv7/10 e corrige a mensagem final para **13 treinadores + Brock**. Sintaxe JS analisada por V8; [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **em andamento; Chromium ainda não confirmado**. Não há merge, deploy nem prova de Brock.
 - **Próximo gate:** aguardar CI do novo commit, examinar logs e artefatos; se verde, revisar compatibilidade com main, fazer merge apenas com todos os gates aprovados e verificar Pages SHA/HTTP. T07/T08 e T20 continuam **PARCIAIS**; nenhum golpe, VFX, sprite, TM, cooldown ou save alterado.
 
 
