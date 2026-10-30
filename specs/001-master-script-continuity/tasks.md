@@ -1,5 +1,17 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote de continuidade T20 — 30/10/2026, PR #369 (evidências recentes)
+
+- [x] Conferir main `7f13aff`, PR #368 integrada, Pages #41104806619 **success** com HTTP `src-5f26a94885`; preservar os efeitos e saves existentes.
+- [x] Fechar a PR #329 sem merge após falhas verificadas; abrir a PR #369 sobre main atual, sem reverter os patches aprovados.
+- [x] Reproduzir e registrar falha de captura esgotada na CI #41107213221 (após 5 treinadores reais); criar teste de fuga RUN nativa `aba07c4` e instrumentação passiva `c3571f8`, sem alteração de runtime.
+- [x] Guardião visual #41110964852 **success** para `c3571f8` (teste estático e Phaser desktop/mobile).
+- [ ] **Aguardar conclusão real, ler log/artifacts e diagnosticar** CI T20 do mesmo HEAD #41110958613; não usar workflow do commit anterior como evidência atual.
+- [ ] Comprovar com Chromium 13 treinadores + Brock, Rocha e TM39 com vitórias legítimas; corrigir somente causas reproduzidas de timeout, sem alterar RNG/XP/HP/AI às cegas.
+- [ ] Completar gates de PR #369, merge e novo Pages com checagem pública de SHA; só então avançar à próxima etapa T20.
+- [ ] Continuar T07/T08: 151 espécies e ULT verdadeiramente disparada com energia natural, sem desfazer a correção pontual da PR #368.
+
+
 ## Lote T08 — ULT preferida excluída, PR #368 (30/10)
 
 - [x] Revalidar main `a1aada1e`, PRs concorrentes, política integral de quatro fontes, Surf aprovado e Scratch/Transform adiados; não criar VFX.
