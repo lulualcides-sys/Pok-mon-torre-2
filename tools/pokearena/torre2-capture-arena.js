@@ -14,6 +14,8 @@ function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.roun
 export function drawCaptureBall(g,cx,cy,kind='pokeball',scale=2,rotation=0,opened=false){
  return drawBallSprite(g,cx,cy,kind,scale,rotation,opened);
 }
+// The same sprite factory is passed into native send-out/recall animations.
+drawCaptureBall.originalBallSprite=originalBallSprite;
 function txt(scene,x,y,value,size=11,color='#f5f4e5'){
  return scene.add.text(x,y,value,{fontFamily:FONT,fontSize:size+'px',
   fontStyle:'bold',color,stroke:'#0a233b',strokeThickness:3}).setDepth(2706);
