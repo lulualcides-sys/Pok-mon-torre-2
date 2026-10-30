@@ -88,7 +88,7 @@ test('Campaign AUTO refreshes original AI once per Pokémon species after native
   return {leer:()=>({mx:instance,my:0,from:identity,lmb:true})};
  });
  assert.equal(constructions,1);
- state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,true,'Campaign auto starts enabled');
  assert.equal(control.leer(.016).mx,1);
  // Native reiniciar() mutates the same actor, not the control or scene.
  control.l.def={id:'pikachu'};
@@ -125,7 +125,7 @@ test('Campaign AUTO also refreshes when evolution stage changes within one base 
   const stage=actor.etapa;created++;
   return {leer:()=>({mx:stage,my:0,lmb:true})};
  });
- state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,true,'Campaign AUTO starts on after evolution');
  assert.equal(control.leer(.016).mx,0);
  assert.equal(state.autoSpecies,'squirtle:0');
  control.l.etapa=1; // Wartortle: ROSTER def.id remains Squirtle.
@@ -151,13 +151,27 @@ test('Original Arena AUTO does not recreate its controller when species changes'
  s.handlers.get('shutdown')();
 });
 
-test('AUTO OFF by default every new battle, no multiple button installs',()=>{
+test('Standalone Arena AUTO remains OFF by default, no duplicate button install',()=>{
  const s=scene(),a=installAutoBattle(s,()=>({leer:()=>({})}));
  assert.equal(installAutoBattle(s,()=>({leer:()=>({})})),null);
  assert.equal(a.enabled,false);
  s.handlers.get('shutdown')();
  const next=scene(),b=installAutoBattle(next,()=>({leer:()=>({})}));
  assert.equal(b.enabled,false);
+});
+test('AUTO ON by default each new Kanto encounter and can be toggled OFF and ON',()=>{
+ const s=scene({torre2:{kind:'trainer'}}),a=installAutoBattle(s,()=>({leer:()=>({mx:1,my:0,lmb:true})}));
+ assert.equal(a.enabled,true);assert.equal(a.label.text,'AUTO ✓');
+ assert.equal(s.controles[0].leer(.016).lmb,true);
+ a.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(a.enabled,false);assert.equal(a.label.text,'AUTO');
+ assert.equal(s.controles[0].leer(.016).lmb,false);
+ a.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(a.enabled,true);
+ s.handlers.get('shutdown')();
+ const next=scene({torre2:{kind:'wild'}}),b=installAutoBattle(next,()=>({leer:()=>({mx:1})}));
+ assert.equal(b.enabled,true,'A fresh battle resets to AUTO ON');
+ next.handlers.get('shutdown')();
 });
 test('AUTO keyboard B toggles, and button stays within virtual screen on wide cameras',()=>{
  const s=scene(),a=installAutoBattle(s,()=>({leer:()=>({mx:0,my:0})}));
@@ -224,13 +238,15 @@ test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buff
  assert.ok(CAMPAIGN_AUTO_OFFENSIVE.basicos>.85,
   'Native cfg.basicos only controls ordinary-projectile awareness, NOT basic attack frequency');
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
- assert.equal(k.__torre2AutoMode.enabled,false,'Manual control is still default');
- assert.deepEqual(k.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
-  'Before toggle, even campaign human input remains manual');
- k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
- assert.equal(k.__torre2AutoMode.enabled,true);
+ assert.equal(k.__torre2AutoMode.enabled,true,'Kanto campaign must start AUTO ON');
+ assert.equal(k.__torre2AutoMode.label.text,'AUTO ✓');
+ assert.equal(a.__torre2AutoMode.enabled,false,'Original Arena remains AUTO OFF');
  k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
  assert.equal(k.__torre2AutoMode.enabled,false);
+ assert.deepEqual(k.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
+  'Turning AUTO off restores original human input immediately');
+ k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(k.__torre2AutoMode.enabled,true);
  k.handlers.get('shutdown')();a.handlers.get('shutdown')();
 });
 
