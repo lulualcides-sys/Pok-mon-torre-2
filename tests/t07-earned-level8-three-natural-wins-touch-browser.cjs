@@ -105,7 +105,7 @@ const server=http.createServer(async(req,res)=>{
    await page.mouse.click(button.x,button.y);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled,
     null,{timeout:5000});
-   await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat.png'});
+   await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat-'+starter+'.png'});
    const started=Date.now();
    try{
     await page.waitForFunction(round=>{
@@ -122,7 +122,7 @@ const server=http.createServer(async(req,res)=>{
       playerIndex:b.datos?.torre2?.party?.playerIndex,
       enemyIndex:b.datos?.torre2?.party?.enemyIndex};
     });
-    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-failure.png'});
+    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-failure-'+starter+'.png'});
     saveReport();
     throw new Error('Natural training ladder failed at '+(round+1)+': '+JSON.stringify(entry));
    }
