@@ -1,7 +1,6 @@
-/* Optional single-player AUTO button. Reuse the client's native IA rather
- * than inventing moves, bypassing cooldowns or modifying battle math.
- * OFF by default on every new match; original controls restored on exit.
- */
+/* Optional single-player AUTO button backed by the native Poké Arena IA.
+ * Kanto campaign starts ON; original Arena modes start OFF. No stat bonuses,
+ * battle math, cooldown or approved VFX changes. */
 // Campaign AUTO level 2: more proactive than the previous above-Hard
 // profile. Native AI still owns attacks, dodges, energy and move cooldowns.
 // NO native Maestro 35% hidden damage multiplier or player stat bonuses.
@@ -31,14 +30,26 @@ export function tuneCampaignAutoBrain(scene,brain){
  };
  return brain;
 }
+// Native combat reuses one Phaser fighter instance when a new enemy is sent
+// out. Prefer the active opposite-side fighter over a stale rival pointer;
+// never aim at a defeated or allied member while a recall is underway.
+export function livingCampaignOpponent(scene,actor){
+ if(!actor)return null;
+ const active=scene?.luchadores?.find(other=>
+  other&&other!==actor&&Number(other.hp)>0&&!other.ko&&
+  !(Number.isFinite(actor.lado)&&Number.isFinite(other.lado)&&
+    actor.lado===other.lado));
+ if(active)return active;
+ const rival=actor.rival;
+ return rival&&rival!==actor&&Number(rival.hp)>0&&!rival.ko?rival:null;
+}
 // Campaign AUTO only. Fill true native offensive gaps, never bypass move
 // readiness, invent a skill, change damage, or override a chosen cast/dodge.
 export function pressureCampaignAutoInput(scene,actor,input,brain=null){
  if(!scene?.datos?.torre2||scene.fase!=='lucha'||!actor||!input||
     typeof input!=='object'||input.esp||input.lmb||input.rmb||input.q||input.e||
     input.mega)return input;
- const foe=actor.rival&&actor.rival!==actor?actor.rival:
-  scene.luchadores?.find(p=>p&&p!==actor&&Number(p.hp)>0);
+ const foe=livingCampaignOpponent(scene,actor);
  if(!foe||foe.ko||!(Number(foe.hp)>0)||!(Number(actor.hp)>0)||
     !Number.isFinite(actor.x)||!Number.isFinite(actor.y)||
     !Number.isFinite(foe.x)||!Number.isFinite(foe.y))return input;
@@ -83,7 +94,10 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
     actor.est?.recarga||foe.est?.contra||foe.est?.disfraz||
     (foe.est?.invul?.hasta??0)>(actor.t??0)||
     (foe.est?.vuelo?.hasta??0)>(actor.t??0))return output;
- return {...output,lmb:true};
+ // A pressured attack must face the live foe. Native IA may be holding a
+ // pre-switch aim from the previous enemy. Only update aim when this helper
+ // added LMB; never override a native skill, dash, dodge or manual controls.
+ return {...output,lmb:true,ax:foe.x,ay:foe.y};
 }
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
@@ -114,6 +128,10 @@ export function installAutoBattle(scene,makeNativeAI){
  const state={enabled:!!scene.datos?.torre2,control:original,read:original.leer,
   ai:tuneCampaignAutoBrain(scene,makeNativeAI(original.l)),
   autoActor:original.l,autoSpecies:fighterSpecies(original.l),
+  autoOpponent:livingCampaignOpponent(scene,original.l),
+  autoOpponentSpecies:fighterSpecies(livingCampaignOpponent(scene,original.l)),
+  diagnostics:{reads:0,playerRebinds:0,foeRebinds:0,
+   nativeNoInput:0,assistedBasicFrames:0,assistedChaseFrames:0},
   button:null, label:null, zone:null,cleaned:false};
  if(typeof state.ai?.leer!=='function')throw Error('Native Poké Arena IA missing');
  const safeRead=function(dt,...args){
@@ -124,20 +142,41 @@ export function installAutoBattle(scene,makeNativeAI){
   // though the actor reference is unchanged. Recreate the original native IA
   // only at a genuine new species/actor boundary, preserving normal inputs,
   // cooldowns, damage, energy and every approved move/VFX.
+  const fighter=original.l;
+  const foe=livingCampaignOpponent(scene,fighter);
   if(scene.datos?.torre2){
-   const fighter=original.l,species=fighterSpecies(fighter);
-   if(fighter&&(fighter!==state.autoActor||species!==state.autoSpecies)){
+   const species=fighterSpecies(fighter),foeSpecies=fighterSpecies(foe);
+   const playerChanged=fighter!==state.autoActor||species!==state.autoSpecies;
+   const foeChanged=foe!==state.autoOpponent||foeSpecies!==state.autoOpponentSpecies;
+   // Reset tactical memory after either *side* is recalled. Native fighters
+   // may be reused in place; resetting only for player switches leaves stale
+   // target/attack decisions after Brock sends out Onix or a rival switches.
+   if(fighter&&(playerChanged||foeChanged)){
     const ai=makeNativeAI(fighter);
     if(typeof ai?.leer!=='function')throw Error('Native Poké Arena IA missing after party switch');
     state.ai=tuneCampaignAutoBrain(scene,ai);
     state.autoActor=fighter;state.autoSpecies=species;
+    state.autoOpponent=foe;state.autoOpponentSpecies=foeSpecies;
+    if(playerChanged)state.diagnostics.playerRebinds++;
+    if(foeChanged)state.diagnostics.foeRebinds++;
    }
   }
-  // Official AI respects Pokémon move slots, readiness, HP and real energy.
-  // Clone its mutable per-frame input to avoid modifying the native controller.
-  const it=state.ai.leer(Math.max(.001,Number(dt)||1/60));
-  return it?{...pressureCampaignAutoInput(scene,original.l,it,state.ai),mega:false}:
-   state.read.call(this,dt,...args);
+  // Keep a bounded in-memory diagnostic for real browser failures. Frame
+  // counts are NOT hit counts or proof of damage. No console spam/log arrays.
+  const stats=state.diagnostics;stats.reads++;
+  const step=Number(dt);
+  const it=state.ai.leer(Number.isFinite(step)&&step>0?Math.max(.001,Math.min(.10,step)):1/60);
+  if(!it||typeof it!=='object'){
+   // AUTO must never fall back to a stale held human touchscreen button.
+   stats.nativeNoInput++;
+   return {mx:0,my:0,ax:foe?.x??fighter?.x??0,
+    ay:foe?.y??fighter?.y??0,lmb:false,rmb:false,q:false,
+    e:false,esp:false,mega:false};
+  }
+  const pressured=pressureCampaignAutoInput(scene,fighter,it,state.ai);
+  if(!it.lmb&&pressured.lmb)stats.assistedBasicFrames++;
+  if(pressured.mx!==it.mx||pressured.my!==it.my)stats.assistedChaseFrames++;
+  return {...pressured,mega:false};
  };
  original.leer=safeRead;
  scene.__torre2AutoMode=state;
