@@ -16,6 +16,7 @@ Objetivo: permitir que o agente leia **somente os arquivos necessários para o p
 | Efeitos novos em pixel art | `tools/pokearena/torre2-*-fx.js`, `data/move-reuse-policy.json`, `tests/move-reuse-policy.test.js` | **Ler obrigatoriamente** `docs/agentes/POLITICA-GOLPES-INTEGRAL.md` e `docs/FICHA-REAPROVEITAMENTO-4-FONTES.md` |
 | Cliente e geração de páginas | `tools/pokearena/capture-client.mjs`, `tools/pokearena/build-preview.mjs`, `tools/pokearena/torre2-selection-pages.mjs` | `docs/REA-IMPLEMENTACAO-INTEGRAL.md` |
 | CI e publicação | `.github/workflows/ci.yml`, `.github/workflows/pages.yml`; `package.json` | `docs/ECONOMIA-DE-CONTEXTO-ASTRA.md` |
+| Guardião visual/diagnóstico | `tools/dev/approved-visual-guard.mjs`, `ci-diagnostics.mjs`; `tests/visual-guard-browser.cjs`; `.github/workflows/visual-guard.yml` | `docs/guardiao-visual.md`, `data/approved-visual-baseline.json`; apenas suporte ao Script Mestre |
 
 Todos os caminhos sem prefixo na coluna «Código» permanecem em `tools/pokearena/`. A tabela **não substitui** as dependências reais e pode ficar desatualizada; conferir o código sempre que houver alteração relevante.
 
