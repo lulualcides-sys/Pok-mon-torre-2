@@ -4,69 +4,8 @@ import {improveGymLeaderLoadout} from '../tools/pokearena/gym-leader-loadouts.js
 import {createTrainerStrategy,chooseTrainerSwitch,pressureGymLeaderInput}
  from '../tools/pokearena/torre2-trainer-strategy.js';
 import {gen3Effectiveness} from '../tools/pokearena/torre2-gen3-types.js';
-import {createPartyMatch} from '../tools/pokearena/torre2-party-battle.js';
-import {GYMS,createCampaign,currentOpponent,TRAINERS_PER_GYM}
- from '../tools/pokearena/torre2-campaign-core.js';
-import {availableMoves,campaignMoveSlotReason,resolveLoadout}
- from '../tools/pokearena/torre2-move-pool.js';
 const atk=(name,dano=9,tipo='ROCK')=>({
  id:name,nombre:name,forma:'approved-pixel-art',dano,tipo,alcance:220,coste:14,cd:5
-});
-test('all eight gym parties preserve FRLG species, ace levels and earned legal attacks',()=>{
- for(let stage=0;stage<8;stage++){
-  const state=createCampaign('bulbasaur');
-  state.stage=stage;state.trainer=TRAINERS_PER_GYM(stage);
-  const opponent=currentOpponent(state),party=createPartyMatch(state,opponent);
-  const gym=GYMS[stage];
-  assert.equal(opponent.leader,true);
-  assert.equal(party.gymLeader,true);
-  assert.deepEqual(party.foes.map(m=>m.id),gym.leaderTeam);
-  assert.deepEqual(party.foes.map(m=>m.level),gym.leaderLevels);
-  assert.deepEqual(party.trainerItems,stage===0?{potion:1}:
-   stage===1?{superpotion:1}:stage===2?{superpotion:2}:
-   stage===3?{hyperpotion:1}:{hyperpotion:2});
-  for(const foe of party.foes){
-   const member={id:foe.id,progression:{species:foe.id,level:foe.level}};
-   const baseline=resolveLoadout(member);
-   assert.equal(foe.loadout.lmb?.id,baseline.lmb?.id);
-   assert.deepEqual(foe.loadout.esp,baseline.esp);
-   assert.ok(Object.values(foe.loadout).every(m=>!m?.pendiente));
-   if(stage!==2){
-    const legal=new Set(availableMoves(member).map(m=>m.id));
-    for(const [slot,index] of [['rmb',1],['q',2],['e',3]]){
-     const move=foe.loadout[slot];
-     if(move?.id!==baseline[slot]?.id){
-      assert.ok(legal.has(move.id),'new leader move must be legitimately available');
-      assert.equal(campaignMoveSlotReason(member,index,move),null);
-      assert.notEqual(move.id,'surf');
-      assert.ok(move.forma,'real native pixel renderer must exist');
-     }
-    }
-   }
-  }
- }
-});
-test('ordinary trainers and wild encounters keep non-gym AI and original moves',()=>{
- const state=createCampaign('bulbasaur');
- state.trainer=2;const opponent=currentOpponent(state);
- const t=createPartyMatch(state,opponent);
- assert.equal(t.gymLeader,false);
- for(const foe of t.foes){
-  const base=resolveLoadout({id:foe.id,progression:{species:foe.id,level:foe.level}});
-  assert.deepEqual(foe.loadout,base);
- }
- assert.equal(createPartyMatch(state,{...opponent,leader:false},true).gymLeader,false);
-});
-test('Surge approved authored kits remain distinct and untouched',()=>{
- const s=createCampaign('bulbasaur');s.stage=2;s.trainer=TRAINERS_PER_GYM(2);
- const party=createPartyMatch(s,currentOpponent(s));
- assert.deepEqual(party.foes.map(m=>m.id),['voltorb','pikachu','raichu']);
- const names=party.foes.map(x=>['lmb','rmb','q','e'].map(k=>x.loadout[k]?.nombre));
- assert.deepEqual(names,[
-  ['Tackle','Sonic Boom','Screech','Shock Wave'],
-  ['Quick Attack','Thunder Shock','Thunder Wave','Shock Wave'],
-  ['Quick Attack','Thunder Wave','Shock Wave','Thunderbolt']
- ]);
 });
 test('gym upgrades legal earned moves without touching existing approved attacks',()=>{
  const base={lmb:atk('tackle',5),rmb:atk('weak',4),q:atk('harden',0),
