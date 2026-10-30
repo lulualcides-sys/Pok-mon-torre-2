@@ -1,5 +1,20 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T07/T08: cobertura de Charmander e Squirtle por XP nativo (#327; validação pendente)
+
+- **PR de testes em draft [#327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327)**, HEAD `70dfe108001ddff19a6923a0350a816c447c6b73`: parametriza a prova já integrada #321 para Charmander e Squirtle; verifica três treinadores reais por espécie, XP Lv5→8, persistência, três golpes Lv5, ULT no E, toque Phaser e cooldown básico. Preserva teste padrão Bulbasaur.
+- **[CI #40987990223](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40987990223) INICIADA, SEM CONCLUSÃO nesta atualização.** Sintaxe, unitários, `check`, `check:reuse`, captura/build e matriz compilada passaram na inspeção intermediária; as seis batalhas e regressão Chromium completa ainda exigem resultado final. Não marcar validado, não integrar ou publicar antecipadamente.
+- **Limites:** partida inicial preparada via API, não jornada integral pela interface; a ULT é desbloqueada mas seu lançamento com medidor natural não está comprovado. Nenhum VFX, sprite, TM, cooldown ou save de produção alterado. O watcher original P2 de 29/10 já foi verificado; não repetir captura diária. T07/T08 continuam PARCIAIS.
+
+
+## 29/10/2026 — T07/T08 · três vitórias nativas Lv5→8 e persistência (#321)
+
+- **Teste integrado:** [PR #321](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/321), squash `766dcc0b1d2a8fa22be941b409f2691bcc74281a`. [CI HEAD #40982113567](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40982113567) **SUCESSO**, inclusive `npm test`, `check`, `check:reuse`, build Phaser/WebGL, matriz de movesets e regressão Chromium completa. O teste jogou Pidgey, Rattata e Caterpie em três lutas consecutivas com Bulbasaur Lv5→6→7→8 por XP e recompensas nativos, sem injetar KO, XP, HP ou medidor. Ao fim: três vitórias, zero derrotas, Lv8, 602 XP, save/reload preservado, ULT Solar Beam no slot E da batalha seguinte; golpe básico Tackle foi executado pelo controlador nativo no Chromium.
+- **Limites importantes:** seleção inicial e transferência de Mewtwo para PC foram feitas por API de preparação de teste, não pela interface de jogo novo; `panelTactil` foi acionado no contexto do navegador, não em touchscreen físico. A ULT **não foi lançada** (`ultCast=false`), pois o medidor estava insuficiente. Não equivale a 151 campanhas, Pallet→Campeão nem Android físico. O patch contém somente teste/workflow; não modifica runtime, VFX, sprites, TMs, cooldowns ou saves.
+- **Conflito de instruções a não propagar:** o topo histórico da fila T20 diz que Surf foi aprovado, mas a instrução explícita recebida nesta execução mantém **Surf REPROVADO** para novos patches de campanha. Não ativar Surf, alterar TM/HM ou refazer seu VFX sem reconciliação expressa do usuário; preservar o código existente.
+- **Publicação confirmada:** [Pages #40983349266](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983349266) **SUCESSO**, `pages_build_version=766dcc0b1d2a8fa22be941b409f2691bcc74281a`; o próprio job verificou por **HTTP público** `src-6ce5f73afb` em 30/10/2026 às 01:09:26 UTC e passou a Pokédex pública Chromium. §37 e T07/T08 continuam **PARCIAIS**. Próxima prioridade: demonstrar lançamento da ULT com medidor carregado naturalmente e progressão/evoluções em campanha sem fixture inicial, preservando os 227 efeitos aprovados e as restrições do usuário.
+
+
 ## 29/10/2026 — T20 PRIORIDADE: 5 chefes reais da Liga no mesmo save — PR #210 integrada
 
 - **Teste integrado:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210), merge `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO**, jogou Lorelei→Bruno→Agatha→Lance→Campeão com o mesmo save, cinco vitórias Phaser legítimas, curas pelo Centro, reloads sem perda, Hall da Fama. [CI main #40977593904](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977593904) **SUCESSO**.

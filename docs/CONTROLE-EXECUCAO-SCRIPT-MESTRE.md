@@ -1,5 +1,24 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/31/33/36/37 · PR #327: outros dois iniciais em combate real (pendente)
+
+- **§7/§8/§31 PARCIAIS:** [PR #327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327), HEAD `70dfe108001ddff19a6923a0350a816c447c6b73`, amplia a prova de XP/ULT #321 para Charmander e Squirtle, com save/reload e comandos nativos no Chromium. O teste parametrizado não modifica runtime, recursos ou saves existentes.
+- **§33 PENDENTE:** [CI #40987990223](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40987990223) em andamento; sem afirmar seis vitórias, ULT executada ou regressão completa até obter resultado final.
+- **§36 preservada no escopo do diff:** só teste e workflow, sem VFX, sprites, cooldowns, TMs, Toxic #16 ou Shiny #17. **§37 não publicado:** sem merge/Pages SHA/HTTP de #327.
+- **Critério restante:** campanhas naturais para outras espécies, ULT com medidor conquistado em batalha, Pallet→Campeão sem fixture e Android físico. Nenhuma seção nova VALIDADA.
+
+
+## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08: Lv8 por três vitórias nativas (#321)
+
+- **§7/§8 PARCIAIS:** [PR #321](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/321), squash `766dcc0b1d2a8fa22be941b409f2691bcc74281a`. Três batalhas Phaser/AUTO reais consecutivas: Pidgey→Rattata→Caterpie; Bulbasaur Lv5→6→7→8 por XP nativo, 602 XP, 3 vitórias, 0 derrotas, sem forçar resultado/XP/HP/medidor. ULT temática Solar Beam equipada no E após Lv8, mas **não executada** por medidor insuficiente (`ultCast=false`). Golpe básico executado com cooldown nativo.
+- **§31 PARCIAL:** save e reload mantiveram identidade, nível, XP e vitórias; início da campanha e PC preparados por API de teste, não pelo fluxo completo de UI. `panelTactil` acionado por métodos do navegador, não por toque físico Android.
+- **§33 PARCIAL:** [CI #40982113567](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40982113567) **SUCESSO no HEAD `953708247bd67a613448a9389631ae07863181a0`**, com testes, `check`, `check:reuse`, build, matriz de movesets e Chromium completo. Evidência de três batalhas reais limitada ao Bulbasaur e três treinadores iniciais; matrizes 151 espécies são fixtures compiladas.
+- **§36 PARCIAL:** patch somente teste e workflow, sem alterar VFX aprovados, sprites, cooldowns, TMs, controles de produção, formato de saves ou frentes Toxic #16/Shiny #17.
+- **§37 PARCIAL:** [Pages #40983349266](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983349266) **SUCESSO**: `pages_build_version=766dcc0b1d2a8fa22be941b409f2691bcc74281a`, **HTTP público** `src-6ce5f73afb` confirmado pelo job às 01:09:26 UTC de 30/10/2026, seguido de `PASS_PUBLIC_POKEDEX_RELEASE`. Publicação não significa conclusão da campanha.
+- **Regra vigente para Surf:** instrução explícita desta execução o mantém **REPROVADO**; uma nota histórica T20 diz o contrário. Não modificar HM/TM, VFX ou saves com base nessa divergência; solicitar reconciliação somente antes de eventual patch que dependa de Surf.
+- **Pendências:** ULT disparada com medidor adquirido naturalmente, outras espécies em batalhas prolongadas, evolução/captura/PC pela interface, jornada Pallet→Campeão sem checkpoint e Android físico. Nenhuma das 37 seções é encerrada por este teste.
+
+
 ## 29/10/2026 — §20/T20 · Cinco vitórias reais consecutivas da Liga, sem afirmar Pallet→Campeão
 
 - **§20 PARCIAL, progressão comprovada:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210) integrada na `main` em `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO** em cinco lutas nativas consecutivas com o mesmo save: Lorelei 85s, Bruno 78s, Agatha 93s, Lance 209s e Campeão 283s. Sem vitórias, KO, EXP nem progresso inseridos depois do **único checkpoint inicial de Victory Road**; Centro Pokémon, trocas, AUTO e save/reload reais. Hall da Fama, cinco honras, oito insígnias e campeão persistente.
