@@ -1,5 +1,13 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote 30/10 — 503 isolado na auditoria independente
+- [x] Diagnosticar RED real #41091689377: único HTTP 503 em `src-78948ecbc5/red.js`; ausência de erro Phaser; Pages #41090646026 aprovado para mesmo release.
+- [x] Reusar classificador/testes estritos existentes e adicionar loop de até 3 auditorias completas no workflow independente, sem alterar runtime.
+- [ ] CI de PR: teste do classificador, Chromium, testes aplicáveis, revisão e compatibilidade com main.
+- [ ] Integrar somente com gates verdes; confirmar Pages HTTP no SHA integrado e auditoria independente sem erro.
+- [ ] Retomar T07/T08 natural e T20; não homologar 151 partidas ou Brock por fixtures.
+
+
 ## Lote T07/T08 — VFX sem aprovação não entra no Lv5/ULT (30/10/2026)
 - [x] Inspecionar AGENTS, política integral, 4-fontes exigidas para **novo VFX** (não criado aqui), Script Mestre, fila, Spec Kit, main, PRs e Pages.
 - [x] Escrever regressões antes do patch: CI #41084164169 **RED** por duas assertivas (renderer FRLG e contato Struggle não aprovados).

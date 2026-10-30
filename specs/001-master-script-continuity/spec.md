@@ -1,5 +1,10 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## Lote 30/10 — CI pública independente contra 503 isolado
+
+**RED observado:** workflow público independente #41091689377, versão `src-78948ecbc5`, único 503 em `/red.js`, nenhuma exceção Phaser, apesar de Pages #41090646026 verde. **Aceite:** somente falha comprovada exclusivamente por 503 no domínio oficial permite até duas novas auditorias integrais (máximo 3); todo outro erro, falta de diagnóstico, versão/slots errados ou 503 persistente falha. Nenhuma mudança no jogo, saves, VFX ou baseline.
+
+
 ## Lote T07/T08 — não promover VFX customizado sem aprovação (30/10/2026)
 **Falha observável:** mesmo com `pendiente:false`, um renderer `source: new-phaser-fx` e `approved:false` pode entrar nos três golpes Lv5 via learnset FRLG ou servir de Struggle neutro; a preferência de ULT já tinha um gate próprio, mas o fallback não. **Aceite:** nenhum renderer customizado não aprovado entra por esses caminhos em Lv5/Lv8; os aprovados permanecem disponíveis; entradas originais não sofrem mutação. Não criar efeito nem liberar HM, Scratch ou Transform. RED real: CI #41084164169 (dois asserts falhos). Prova de 151 partidas e ULT com medidor natural permanece fora deste lote.
 

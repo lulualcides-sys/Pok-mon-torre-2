@@ -1,5 +1,12 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — gate público independente: 503 comprovado, correção em PR
+
+- Main após PR #365: `4e1e71c694e7620d5093fed3aa19f60dc62875be`; quatro gates do HEAD da #365 **success** (#41084497053/#41084497106/#41084497085/#41084497083), merge concluído, Pages desse SHA ainda sem prova HTTP.
+- Auditoria independente #41091689377 da main anterior falhou por `503` único em `red.js` do Pages, enquanto o próprio deploy #41090646026 aprovou Chromium e HTTP. Lote isolado altera somente `.github/workflows/pokedex-public-live.yml`, usando `tools/dev/pages-public-503-retry.cjs` já testado: máximo 3 tentativas completas, nenhum 404/500/erro Phaser tolerado. **PR/CI pendentes**.
+- Após os gates, voltar a três técnicas reais Lv5/ULT Lv8 dos 151 e T20 sem alegar campanha completa. Scratch/Transform adiados, Surf aprovado como VFX.
+
+
 ## 30/10/2026 — T07/T08: regressão RED comprovada de VFX sem aprovação (PR #365)
 
 - HEAD de referência antes do lote: main `8ac91ddee8df3230e6d2c067dc62f00b67d38f9b`; Pages #41082618111 **success**, incluindo etapa de confirmação HTTP do commit e Chromium público. Pages anterior #41076752622 **failure** no SHA antigo `655aded12`, portanto não é o estado atual.

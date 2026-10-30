@@ -1,5 +1,11 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Lote 30/10 — retry estrito no workflow público independente
+
+- Reusar `tools/dev/pages-public-503-retry.cjs` e testes existentes sem modificar o classificador; alterar somente o passo Chromium de `.github/workflows/pokedex-public-live.yml` para até 3 execuções completas com limpeza de diagnóstico antes de cada tentativa.
+- RED: #41091689377; teste do classificador já existe e será executado pela CI da PR. Validar YAML/workflow, CI e navegador; não mesclar com checks vermelhos. Rollback: reverter apenas workflow; sem mudanças de runtime.
+
+
 ## Lote T07/T08 — gate de VFX customizado na introdução (30/10/2026)
 - **Arquivos:** `tests/kanto-intro-moves.test.js` (regressões RED) e `tools/pokearena/torre2-kanto-intro-moves.js` (um gate em `introRenderable`). Não editar `kanto-ultimate-policy.js`, catálogos, sprites ou fontes externas.
 - **Causa:** `push()` filtrava `approved` apenas em `supplemental`, e o fallback neutro chamava `lowPower()` sem verificar aprovação de `new-phaser-fx`. Centralizar gate impede os dois vazamentos sem mudar VFX.
