@@ -176,7 +176,14 @@ for(const h of rawLibrary){
   const preserveApproved=approvedKantoOverlap.has(sameMove)&&
    !signatureEntries.has(h)&&signature?.approved===true&&Boolean(signature.forma);
   const resolvedId=preserveApproved?signature.id:id;
+  // A native placeholder can carry pendiente=true even after the SAME VFX
+  // was independently approved in Torre 2. The approved campaign override
+  // must not inherit that stale flag (Bug Bite, Bite, Swift); never clear
+  // pending for an unapproved renderer or modify the native Arena kit.
+  const approvedInherited=(inheritedSignature||preserveApproved)&&
+   signature?.approved===true&&signature?.pendiente!==true;
   ids.set(resolvedId,{...h,...(inheritedSignature||preserveApproved?signature:{}),id:resolvedId,
+   ...(approvedInherited?{pendiente:false}:{}),
    ...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
    source:nativeCrunch?'torre2-visual-override':
     signatureEntries.has(h)||inheritedSignature||preserveApproved?'new-phaser-fx':'arena2d-original'});

@@ -12,8 +12,12 @@ export const KANTO_INTRO=Object.freeze({
 });
 const ATTACK_SLOTS=['lmb','rmb','q'];
 const idOf=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// A renderer that exists but is pending, unavailable or HM/TM-gated is
+// NOT an installed, usable Lv5 preview. Do not clear its lock via trainingMove.
+const introRenderable=move=>Boolean(move?.forma)&&!move.pendiente&&
+ !move.torre2Unavailable&&!move.torre2RequiresTM&&!move.torre2RequiresHM;
 const lowPower=move=>Number.isFinite(move?.dano)&&move.dano>=0&&move.dano<=14&&
-  Boolean(move?.forma)&&move.ulti!==true;
+  introRenderable(move)&&move.ulti!==true;
 // A few Pokémon have only one genuine FireRed move at Lv5 (e.g. Magikarp,
 // Ditto). They get a weak, generic Struggle-training fallback, NOT an
 // incompatible elemental or evolved-species power.
@@ -199,7 +203,7 @@ export function resolveKantoIntro(member,installed,{
   // An explicit evolution/level block outranks a curated preview, and
   // pending custom VFX cannot bypass the same approval gate as the selector.
   // Do not change the approved preferred preview when it is still legal.
-  const preferredAllowed=preferred?.forma&&Number(preferred.dano)>=6&&
+  const preferredAllowed=introRenderable(preferred)&&Number(preferred.dano)>=6&&
    idOf(preferred.nombre)!==idOf(blockedSignature)&&
    (preferred.source!=='new-phaser-fx'||preferred.approved===true);
   const signature=preferredAllowed?preferred:

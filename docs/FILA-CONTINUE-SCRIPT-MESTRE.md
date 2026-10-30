@@ -1,5 +1,19 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — T07/T08: RED real, 5 ULTs afetadas por flag nativa herdada
+
+- PR #358: CI #41058186253 passou no gate próprio, mas três workflows adicionais falharam (`144 !== 149`); CI #41066647123 diagnosticou **Caterpie, Metapod, Weedle, Kakuna e Eevee**. Bug Bite, Bite e Swift estão aprovados, porém o catálogo herdava `pendiente:true` de placeholders nativos. Não apagar esses VFX.
+- Correção isolada no agregador T2, não no kit nativo, com teste de regressão dos três renderizadores aprovados. **Novo SHA em CI; não mesclar enquanto qualquer gate estiver vermelho.** T07/T08 e T20 permanecem PARCIAIS.
+
+
+## 30/10/2026 — T07/T08: impedir prévias de golpes bloqueados (PR em validação)
+
+- **Diagnóstico no código:** `resolveKantoIntro` aceitava renderizadores marcados `pendiente`, `torre2Unavailable`, `torre2RequiresTM` ou `torre2RequiresHM`; `trainingMove` podia retirar `pendiente` e exibir um golpe que não deveria ser liberado. O seletor de ULT temática também não filtrava esses bloqueios.
+- **Patch isolado proposto:** excluir esses candidatos dos três controles Lv5 e da ULT Lv8, sem tocar nos 227 VFX, nomes aprovados, HM Surf, Scratch/Transform adiados, saves, TM ou mecânica Arena. Regressão Node + build + Chromium na CI própria; **não homologar antes de CI verde**.
+- **Prova independente anterior:** Pages [#41054058050](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41054058050) verde para `a5cff40ea1fab273ea725409cc126f4568e655a0`, HTTP `src-1ca23478c2`. Auditoria pública integral [#41055385370](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41055385370) passou no Chromium: **150/150** espécies Kanto, zero divergências de slots em Lv50, sem erro HTTP/Phaser. Isso **não prova** os três ataques autênticos Lv5, ULT acionada naturalmente ou Brock.
+- **Pendente:** CI/revisão/merge/Pages do patch; T07/T08 e T20 continuam PARCIAIS. Não alterar PRs concorrentes #270/#329.
+
+
 ## 30/10/2026 — publicação de captura comprovada; auditoria pública integral ainda vermelha
 
 - Pages #41050085664 **sucesso** para `main` `477dac7410ad7a89f73dfb9a9946187cbdbca657`; teste público Chromium do deploy registrou `PASS_PUBLIC_POKEDEX_RELEASE src-dc921f3851` (7 casos; não equivale à auditoria integral).
