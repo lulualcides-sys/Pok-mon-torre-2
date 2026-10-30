@@ -38,7 +38,25 @@ jobs:
           # Only the post-Pages workflow can demand the NEW public build.
           # Branch CI checks all 150 against its freshly compiled Phaser client.
           POKEDEX_FULL_PUBLIC_AUDIT: ${{ github.event_name == 'workflow_run' && '1' || '0' }}
-        run: node tests/pokedex-public-live-browser.cjs
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Reuse the same strict 503-only gate as Pages. Every retry runs
+          # the entire public Chromium audit; no assertion is skipped.
+          for attempt in 1 2 3; do
+            rm -f test-evidence/pokedex-public-boot-diagnostic.json \\
+              test-evidence/pokedex-public-live-audit.json
+            if node tests/pokedex-public-live-browser.cjs; then
+              echo "Pokédex pública aprovada (tentativa $attempt)"
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ] || ! node tools/dev/pages-public-503-retry.cjs; then
+              echo "::error::Auditoria pública falhou: erro não transitório ou 503 persistente"
+              exit 1
+            fi
+            echo "::warning::503 isolado confirmado; repetindo auditoria integral ($attempt/3)"
+            sleep $((attempt * 10))
+          done
       - name: Validar sintaxe do carregador e testes unitários
         if: github.event_name == 'push' || github.event_name == 'pull_request'
         run: |
