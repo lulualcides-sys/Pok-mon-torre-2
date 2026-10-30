@@ -12,7 +12,7 @@ const load=x=>import(pathToFileURL(path.join(root,modules,x)).href);
 const [{
  TEST_LIBRARY,availableMoves,equipMove,resolveLoadout,selectedMoves,
  campaignMoveSlotReason,KANTO_RAIN_DANCE_SPECIES,KANTO_RAIN_DANCE_LEVEL
-},{frlgMachineCompatible}, {WEATHER_MOVES}]=await Promise.all([
+},{frlgMachineCompatible,frlgEvolutionLevel}, {WEATHER_MOVES}]=await Promise.all([
  load('torre2/move-pool.js'),load('torre2/frlg-learnsets.js'),load('torre2/weather.js')
 ]);
 assert.equal(KANTO_RAIN_DANCE_LEVEL,25);
@@ -32,13 +32,14 @@ for(const id of KANTO_RAIN_DANCE_SPECIES){
  const before=make(id,24);
  assert.equal(availableMoves(before).some(m=>m.id==='rain-dance'),false,
   id+' illegally learned Rain Dance before level 25');
- const member=make(id,25);
+ const equipmentLevel=Math.max(KANTO_RAIN_DANCE_LEVEL,frlgEvolutionLevel(id));
+ const member=make(id,equipmentLevel);
  const legal=availableMoves(member).find(m=>m.id==='rain-dance');
  assert.ok(legal?.forma&&!legal.pendiente,id+' lacks approved climate renderer');
  assert.equal(Number(legal.dano),0,id+' weather move must be non damaging');
  let slot=-1;
  for(const candidate of [1,2]){
-  const pokemon=make(id,25);
+  const pokemon=make(id,equipmentLevel);
   if(campaignMoveSlotReason(pokemon,candidate,legal))continue;
   if(!equipMove(pokemon,candidate,'rain-dance'))continue;
   assert.equal(selectedMoves(pokemon)[candidate],'rain-dance');
@@ -47,8 +48,11 @@ for(const id of KANTO_RAIN_DANCE_SPECIES){
   assert.notEqual(kit.e?.id,'rain-dance','Weather must never replace the charged finisher');
   slot=candidate;break;
  }
- assert.notEqual(slot,-1,id+' failed to equip rain in HAB2/HAB3 at Lv25');
- successes.push({id,slot});
+ assert.notEqual(slot,-1,id+' failed to equip rain in HAB2/HAB3: '+
+  JSON.stringify({equipmentLevel,defaultSlots:selectedMoves(make(id,equipmentLevel)),
+   reasonHAB2:campaignMoveSlotReason(member,1,legal),
+   reasonHAB3:campaignMoveSlotReason(member,2,legal)}));
+ successes.push({id,slot,at:equipmentLevel});
 }
 for(const [id,kind] of Object.entries({
  'sunny-day':'sun','sandstorm':'sand','hail':'hail'
