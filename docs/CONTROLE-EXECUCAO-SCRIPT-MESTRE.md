@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8/20/33/37: publicação T08 confirmada, T20 permanece parcial
+
+- **Correção pontual de §7/8 homologada:** PR #368 integrada à `main` no SHA `7f13affd0ff0afbba8f3f54c1646de10b28f6c3d`; 4 workflows relevantes verdes (#41104671463, #41104670842, #41104670806, #41104670793). Pages #41104806619 **success**, com verificação HTTP da versão `src-5f26a94885` e `PASS_PUBLIC_POKEDEX_RELEASE`. Isso comprova o bloqueio de ULT preferida excluída e a publicação, **não** todos os 151 golpes ou disparos naturais de ULT.
+- **§20/T20 ainda não validado:** PR #329 fechada sem merge; PR #369 aberta em rascunho, HEAD `c3571f8` sobre main `7f13aff`. CI #41104057240 chegou legalmente à Rocket e depois falhou; CI #41107213221 falhou por Pokébolas esgotadas antes da segunda captura. Patch `aba07c4` corrige apenas o roteiro de fuga e reabastecimento por vitórias; `c3571f8` acrescenta telemetria passiva de movimento/energia/recargas para possível timeout. Nenhum código de combate/VFX/save alterado nesses commits.
+- **Gates separados:** guardião da PR #369 [#41110964852](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41110964852) **success**; CI T20 [#41110958613](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41110958613) **sem conclusão na última consulta**. Não marcar §§20/33/37 concluídos por um teste visual ou por CI pendente.
+- **Critério de aceite restante:** 13 treinadores, Brock, insígnia Rocha e TM39 legítimos no mesmo save sem checkpoint fabricado; depois revisão, merge, testes aplicáveis, deploy novo e HTTP SHA correspondente. A jornada Pallet→Campeão e teste Android físico seguem não homologados.
+
+
 ## 30/10/2026 — §§7/8/33/37: ULT preferida não pode contornar exclusões (PR #368)
 
 - **RED isolado:** avaliação do código-fonte `kanto-ultimate-policy.js` + `torre2-kanto-intro-moves.js` da branch antes do patch mostrou `Tackle/Surf/Scratch/Transform` selecionados pela preferência explícita para Bulbasaur Lv8. Isso **não é teste CI nem campanha jogada**.
