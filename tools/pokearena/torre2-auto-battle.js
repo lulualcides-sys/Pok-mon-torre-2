@@ -1,5 +1,5 @@
 import {WEATHER_MOVES,weatherSpeciesMultiplier} from './weather.js';
-import {gen3Effectiveness} from './gen3-types.js';
+import {gen3Effectiveness} from './torre2-gen3-types.js';
 /* Optional single-player AUTO button backed by the native Poké Arena IA.
  * Kanto campaign starts ON; original Arena modes start OFF. No stat bonuses,
  * battle math, cooldown or approved VFX changes. */
