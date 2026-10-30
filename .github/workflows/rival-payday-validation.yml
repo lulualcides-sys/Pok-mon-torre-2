@@ -37,8 +37,15 @@ jobs:
           node tests/rival-payday-cooldowns-built.test.mjs
           node tests/misty-wild-capture-ui-built.test.mjs
           node tests/misty-surge-built.test.mjs
+          node --test tests/surge-shop-rematch-allmaps-built.test.mjs
+          node tests/surge3-built.test.mjs
+          node tests/rematches-built.test.mjs
+          node --test tests/t23-kanto-mart-tm-integrity-built.test.mjs
+          node --test tests/t05-mart-purchase-atomic-built.test.mjs
           node tests/evolution-modes-built.test.mjs
       - name: Smoke-test native Phaser arena in Chromium
         env:
           CHROME_BIN: /usr/bin/google-chrome
-        run: node tests/source-client-smoke.cjs
+        run: |
+          node tests/source-client-smoke.cjs
+          node tests/t22-mobile-rematch-reload-browser.cjs
