@@ -1,0 +1,55 @@
+name: Master T20 — Pallet 13 route trainers, genuine captures and Brock (no debug)
+on:
+  push:
+    branches: [test/t20-pallet-brock-main-auto-20261030]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  natural-pallet-brock:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 63
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate existing battle policy and safety
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/section20-natural-team-brock-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build authorized original Phaser/WebGL
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Real Pallet to Brock gameplay on one production starter save
+        env:
+          T20_PRODUCTION_START: '1'
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/section20-natural-team-brock-browser.cjs
+      - name: Native Phaser browser regressions
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Archive legitimate outcomes and failure diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t20-real-pallet-brock-no-debug
+          path: |
+            test-evidence/natural-through-brock.json
+            test-evidence/natural-route1-*
+            test-evidence/t03-natural-*
+          retention-days: 21
+          if-no-files-found: warn
