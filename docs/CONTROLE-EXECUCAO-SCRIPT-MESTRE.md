@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8/33/37: ULT preferida não pode contornar exclusões (PR #368)
+
+- **RED isolado:** avaliação do código-fonte `kanto-ultimate-policy.js` + `torre2-kanto-intro-moves.js` da branch antes do patch mostrou `Tackle/Surf/Scratch/Transform` selecionados pela preferência explícita para Bulbasaur Lv8. Isso **não é teste CI nem campanha jogada**.
+- **GREEN isolado:** após compartilhar `isKantoSignatureUltNameAllowed` entre seletor e preferência, os quatro casos retornam `Vine Whip`; 19 testes do arquivo de introdução executados em harness JS isolado, 19 passaram. SHA `aa0cd1c0eabebb611e9568e6860c3f1155a7dc63`, PR #368 draft. CI completa, Chromium real, merge e Pages deste patch **pendentes**.
+- **Publicação anterior verificada:** #365 integrada em `4e1e71c6`; Pages #41093592373 e auditoria pública #41095150874 **success** nesse SHA. #367 integrada em `a1aada1e`, publicação correspondente ainda não comprovada nesta execução.
+- **Preservação:** nenhum VFX/arte/sprite/save/TM/HM alterado; Surf VFX aprovado, Scratch/Transform adiados. §7/8/33/37 e T20 **PARCIAIS**; nenhuma vitória real ou Brock homologado por este lote.
+
+
 ## 30/10/2026 — §37: auditoria pública independente com HTTP 503 isolado
 
 - Pages #41090646026 **success** para main `387d741dc4939a084efdcc7c1bcb90a431ca1123`, versão HTTP `src-78948ecbc5`; o próprio Pages passou no Chromium público. Auditoria independente posterior #41091689377 **failure** por um único `503` em `src-78948ecbc5/red.js`, sem `pageerror`, `window.__pt2Game=false`, screenshot/diagnóstico anexados. Não classificar como regressão comprovada do jogo nem como auditoria aprovada.

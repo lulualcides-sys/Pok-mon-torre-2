@@ -1,5 +1,15 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote T08 — ULT preferida excluída, PR #368 (30/10)
+
+- [x] Revalidar main `a1aada1e`, PRs concorrentes, política integral de quatro fontes, Surf aprovado e Scratch/Transform adiados; não criar VFX.
+- [x] Reproduzir RED com código-fonte real: Tackle, Surf, Scratch e Transform entram pela preferência explícita antes da correção; adicionar regressão (`2aeff6de`).
+- [x] Aplicar gate canônico compartilhado (`aa0cd1c0`), executar harness isolado de 19 testes do arquivo (19/19 verdes) e revisar diff de três arquivos.
+- [ ] CI HEAD PR #368: `npm test`, `check`, `check:reuse`, build, Chromium e guardião visual completos e verdes.
+- [ ] Revisar compatibilidade com main atual, merge somente após gates verdes e confirmar Pages/HTTP SHA exato.
+- [ ] Validar 151 kits e ULT com energia em partidas naturais; Brock/T20 e 37 seções seguem parciais.
+
+
 ## Lote 30/10 — 503 isolado na auditoria independente
 - [x] Diagnosticar RED real #41091689377: único HTTP 503 em `src-78948ecbc5/red.js`; ausência de erro Phaser; Pages #41090646026 aprovado para mesmo release.
 - [x] Reusar classificador/testes estritos existentes e adicionar loop de até 3 auditorias completas no workflow independente, sem alterar runtime.

@@ -1,5 +1,13 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — T08: bloquear ULT preferida excluída (PR #368, em validação)
+
+- Main revalidada: `a1aada1e19000747f9c2ba9747254ec97379da0b` (#367 integrada). PR #365 integrada em `4e1e71c6`; Pages #41093592373 e auditoria pública #41095150874 **success** nesse SHA. Publicação do SHA novo `a1aada1e` ainda **não confirmada**.
+- **Defeito reproduzido no código-fonte real** (execução isolada JS, não CI): o caminho `preferredSignature` ignorava as exclusões do seletor e aceitava `Tackle`, `Surf`, `Scratch` e `Transform` como ULT Lv8. Teste RED adicionado no commit `2aeff6de`; patch mínimo nos dois módulos em `aa0cd1c0` compartilha a regra canônica. Reexecução isolada: 19/19 testes do arquivo passaram; **npm test/CI/Chromium ainda pendentes**.
+- Branch `fix/t08-preferred-ult-excluded-gate-20261030`, PR #368 **draft**; nenhum VFX, sprite, save, TM/HM ou arte foi alterado. Surf segue **aprovado como efeito**, sem liberação HM; Scratch/Transform continuam adiados. Não mesclar antes dos gates verdes nem afirmar publicação.
+- Próximo: verificar CI/Chromium do HEAD, revisão e compatibilidade com main; só então merge e Pages HTTP SHA exato. Continuar cobertura natural T07/T08 (151, três golpes Lv5, ULT com energia) e T20/Brock sem homologação antecipada.
+
+
 ## 30/10/2026 — gate público independente: 503 comprovado, correção em PR
 
 - Main após PR #365: `4e1e71c694e7620d5093fed3aa19f60dc62875be`; quatro gates do HEAD da #365 **success** (#41084497053/#41084497106/#41084497085/#41084497083), merge concluído, Pages desse SHA ainda sem prova HTTP.
