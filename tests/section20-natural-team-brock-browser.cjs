@@ -159,6 +159,59 @@ const server=http.createServer(async(req,res)=>{
    'No QA Mewtwo or unexpected PC Pokémon in production beginning');
   console.log('PASS REAL TEAM PREPARATION',JSON.stringify(report.teamPreparation.after));
  };
+ // Actual wild encounters are part of a playable Kanto route. Training here
+ // earns XP in native Phaser fights; it never grants levels, wins, HP or meter.
+ // The sixth trainer (Rocket) has beaten untrained teams repeatedly.
+ const trainNaturalTeam=async()=>{
+  report.wildTraining={before:await game(),rounds:[]};
+  for(let n=0;n<8;n++){
+   const before=await game();
+   if(before.team[0].level>=12)break;
+   const beforeXp=await page.evaluate(()=>window.kanto.readCampaign().team.map(
+    m=>Number(m.progression?.experience)||0));
+   await page.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    c.grassScreen(window.kanto.readCampaign());
+   });
+   await sync();await tap(465,292);
+   await page.waitForFunction(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.fase==='lucha'&&b.__torre2WildCapture&&
+     b.__torre2AutoMode?.zone?.active;
+   },null,{timeout:65000});
+   const encounter=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return {foe:b.datos?.p2,foeLevel:b.datos?.torre2?.enemyLevel};
+   });
+   const autoButton=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),z=b.__torre2AutoMode.zone,
+     rect=document.querySelector('#juego canvas').getBoundingClientRect();
+    return {x:rect.x+z.x*rect.width/640,y:rect.y+z.y*rect.height/360};
+   });
+   await page.mouse.click(autoButton.x,autoButton.y);
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled,
+    null,{timeout:7000});
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),
+    null,{timeout:180000,polling:250});
+   const after=await game();
+   const afterXp=await page.evaluate(()=>window.kanto.readCampaign().team.map(
+    m=>Number(m.progression?.experience)||0));
+   const gained=afterXp.map((v,i)=>v-(beforeXp[i]||0));
+   const event={attempt:n+1,encounter,before,after,gained};
+   report.wildTraining.rounds.push(event);saveReport();
+   assert.equal(after.trainer,before.trainer,'Wild training cannot skip a route trainer');
+   assert.equal(after.stage,before.stage,'Wild training cannot skip a badge');
+   if(!(gained.some(v=>v>0)))
+    throw Error('No natural XP gained in wild encounter: '+JSON.stringify(event));
+   console.log('PASS NATURAL WILD TRAINING',JSON.stringify(event));
+   await centerHeal();
+  }
+  report.wildTraining.after=await game();saveReport();
+  assert.equal(report.wildTraining.after.trainer,5,
+   'Training must leave Rocket as the sixth trainer');
+  assert.ok(report.wildTraining.after.team[0].level>=10,
+   'Starter still underlevelled after genuine wild training; do not inject XP');
+ };
 
  try{
   await page.goto('http://127.0.0.1:4322/arena2d/?original=1',{waitUntil:'domcontentloaded'});
@@ -185,7 +238,7 @@ const server=http.createServer(async(req,res)=>{
   let earlyTeamReady=false;
   let naturalRetries=0;
   for(let round=0;round<total;round++){
-   if(round===5&&!earlyTeamReady){await prepareNaturalTeam();before=await game();earlyTeamReady=true;}
+   if(round===5&&!earlyTeamReady){await prepareNaturalTeam();await trainNaturalTeam();before=await game();earlyTeamReady=true;}
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
    if(round<names.length)assert.equal(opponent.id,names[round],
