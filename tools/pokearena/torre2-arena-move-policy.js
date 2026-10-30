@@ -123,7 +123,6 @@ export function replaceGengarHyperBeam(kit,library){
  const preferred=['dark-pulse','shadow-punch','night-shade','psychic',
   'dream-eater','shadow-ball','sludge-bomb'];
  const used=new Set();
- let output=kit;
  for(const slot of ATTACK_SLOTS){
   const key=idOf(output[slot]?.nombre);
   if(!key)continue;
