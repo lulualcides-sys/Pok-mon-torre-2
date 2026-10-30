@@ -1,24 +1,16 @@
 import {drawKantoTiles} from './kanto-tiles.js';
 import {WORLD_SHEET,decorateWorldWithSprites} from './cc0-overworld.js';
 import {renderLocationTiles} from './frlg-location.js';
+import {drawBallSprite} from './ball-sprites.js';
 /* Torre 2 — Kanto premium UI. Native Phaser Graphics/WebGL pixel art,
  * never a pasted mockup, CSS effects or Canvas 2D.
  */
 const px=(g,x,y,w,h,c,a=1)=>{g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.max(1,Math.round(w)),Math.max(1,Math.round(h)))};
 const edge=(g,x,y,w,h,c)=>{g.lineStyle(1,c,1);g.strokeRect(x,y,w,h)};
 const rand=(seed)=>{let x=seed>>>0;return ()=>((x=(Math.imul(x,1664525)+1013904223)>>>0)/4294967296)};
+// Match the capture and party HUD's actual pixel-art Poké Ball atlas.
 export function ball(g,x,y,r=9){
- g.fillStyle(0x05162a);g.fillCircle(x+1,y+2,r+2);
- g.fillStyle(0xffffff);g.fillCircle(x,y,r);
- // Render the red half as native pixel strips, preserving the black seam.
- for(let yy=-r;yy<0;yy++){
-  const ww=Math.floor(Math.sqrt(r*r-yy*yy));
-  px(g,x-ww,y+yy,ww*2,1,0xef514a);
- }
- px(g,x-r,y-1,r*2,3,0x14243b);
- g.fillStyle(0x14243b);g.fillCircle(x,y,Math.max(3,r*.4));
- g.fillStyle(0xffffff);g.fillCircle(x,y,Math.max(2,r*.23));
- px(g,x-4,y-r+3,3,2,0xffffff);
+ return drawBallSprite(g,x,y,'pokeball',Math.max(.5,Math.min(1.4,r/10)),0);
 }
 export function panel(g,x,y,w,h,gold=false){
  const trim=gold?0xeac16e:0x67b9e8;

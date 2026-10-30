@@ -1,0 +1,44 @@
+name: Misty wild capture and pixel-ball regression
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-capture-arena.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/torre2-party-battle.js'
+      - 'tools/pokearena/torre2-campaign-art.js'
+      - 'tests/misty-wild-capture-ui-built.test.mjs'
+      - '.github/workflows/capture-misty-ui-validation.yml'
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Static checks and unit tests
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          for source in tools/pokearena/torre2-*.js; do node --check "$source"; done
+          npm test
+      - name: Build real Phaser client
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/index.html
+      - name: Check captured species and UI against real built code
+        run: |
+          node tests/misty-wild-capture-ui-built.test.mjs
+          node tests/section20-repeatable-grass-built.test.mjs
+          node tests/t05-wild-capture-atomic-built.test.mjs
+          node tests/misty-surge-built.test.mjs
+      - name: Browser validate existing wild capture and HUD
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/t06-desktop-capture-browser.cjs
