@@ -6,10 +6,11 @@ export {validRematchResult};
  */
 import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle,levelEvolutionChoices} from './progression.js';
 import {ROSTER} from '../datos.js';
-import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
+import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
 import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
+import {KANTO_LEVEL_EVOLUTIONS} from './frlg-learnsets.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -98,6 +99,26 @@ export const KANTO_DEX=Object.freeze('Bulbasaur,Ivysaur,Venusaur,Charmander,Char
 // gradually more towards Giovanni, a real Victory Road, then direct Elite
 // Four and Champion battles rather than dozens of identical boss rematches.
 export const TRAINERS_PER_GYM=stage=>stage<8?13+stage*2:stage===8?17:0;
+
+// NPC species follow the same Kanto level thresholds as player evolutions.
+// Never choose an arbitrary branch (Eevee), and never evolve a fighter mid-battle.
+const trainerEvolutionSteps=new Map();
+for(const [to,[from,atLevel]] of Object.entries(KANTO_LEVEL_EVOLUTIONS)){
+ const options=trainerEvolutionSteps.get(from)||[];
+ options.push({to,atLevel});
+ trainerEvolutionSteps.set(from,options);
+}
+export function trainerSpeciesForLevel(species,level){
+ let current=String(species||'').toLowerCase();
+ if(!Number.isInteger(level)||level<1)return current;
+ for(let i=0;i<4;i++){
+  const options=trainerEvolutionSteps.get(current)||[];
+  if(options.length!==1||level<options[0].atLevel)break;
+  current=options[0].to;
+ }
+ return current;
+}
+
 
 function newMember(species,level=5){
  const exp=createPokemonProgression(species,level);
@@ -403,13 +424,16 @@ export function currentOpponent(s){
  const rivalId=originalStarter==='charmander'?'squirtle':
   originalStarter==='squirtle'?'bulbasaur':'charmander';
  const championId=rivalChampionTeam(originalStarter).at(-1);
- const species=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
+ const level=trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader);
+ const baseSpecies=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
   role==='rocket'?(['zubat','machop','ekans'].includes(list[s.trainer%list.length])?
    list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
+ // Fixed gym/League rosters remain untouched; rival and regular NPCs evolve
+ // as their levels rise, with the actual evolved sprite and attacks.
+ const species=leader?baseSpecies:trainerSpeciesForLevel(baseSpecies,level);
  return {id:species,leader,kind:role,
   name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':'Treinador '+(s.trainer+1),
-  level:trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader),
-  arena:gym.arena,city:gym.city};
+  level,arena:gym.arena,city:gym.city};
 }
 // Route selection must never create a full-HP battle actor from a fainted save.
 // Resume with an already-conscious reserve, or let the player use the Center.
@@ -756,7 +780,7 @@ export function resolveWildBattle(s,won){
  });
 }
 export function purchaseItem(s,itemId){
- const item=MART_ITEMS.find(i=>i.id===itemId&&s.stage>=(i.minStage??0));
+ const item=MART_ITEMS.find(i=>i.id===itemId&&martItemUnlocked(s,i));
  if(!item)return {ok:false,reason:'Item não está disponível nesta cidade.'};
  if(!Number.isFinite(s.money)||s.money<item.price)return {ok:false,reason:'Poké Dollars insuficientes.'};
  if(item.kind==='tm'&&s.inventory.tms.includes(itemId))
@@ -835,18 +859,22 @@ export function teachTM(s,itemId,memberIndex=s.active){
  return {ok:true,move:item.move};
 }
 
-export function rematchOpponent(s,index){
- if(s.stage<1||s.stage>=8||!Number.isInteger(index)||index<0||index>=s.trainer||index>=TRAINERS_PER_GYM(s.stage))return null;
- const foe=currentOpponent({...s,trainer:index});
+export function rematchOpponent(s,index,mapStage=s.stage){
+ const stage=Number(mapStage);
+ if(!Number.isInteger(stage)||stage<0||stage>8||stage>s.stage||
+  !Number.isInteger(index)||index<0||index>=TRAINERS_PER_GYM(stage)||
+  (stage===s.stage&&index>=s.trainer))return null;
+ const foe=currentOpponent({...s,stage,trainer:index,champion:false});
  if(!foe||!['trainer','rocket'].includes(foe.kind)||foe.leader)return null;
- return {...foe,level:Math.min(currentLevelCap(s.stage),foe.level+Math.min(10,(s.badges?.length||0)*2))};
+ const level=Math.min(currentLevelCap(s.stage),foe.level+Math.min(10,(s.badges?.length||0)*2));
+ return {...foe,level,id:trainerSpeciesForLevel(foe.id,level),mapStage:stage};
 }
-export function startRematch(s,index){
- const opponent=rematchOpponent(s,index);
+export function startRematch(s,index,mapStage=s.stage){
+ const opponent=rematchOpponent(s,index,mapStage);
  if(!opponent)return {ok:false,reason:'Este treinador ainda não tem revanche disponível.'};
  // Reserve the VS Seeker ticket only after the pending fight is durable.
  const next=JSON.parse(JSON.stringify(s));
- const ticket=reserveRematch(next,index);
+ const ticket=reserveRematch(next,index,opponent.mapStage);
  if(!ticket)return {ok:false,reason:'VS Seeker: '+rematchState(next).charge+'/3 atividades. Vença outras batalhas para recarregar.'};
  saveCampaign(next);
  Object.assign(s,next);
@@ -858,8 +886,8 @@ export function resolveRematch(s,ticket,won){
   if(!consumeRematchResult(next,ticket))return {ok:false,reason:'Resultado antigo de revanche ignorado.'};
   let money=0,xp=0,shared=null;
   if(won){
-   money=Math.floor((180+next.stage*60)/2);
-   xp=Math.max(1,Math.floor(xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),'trainer')*.6));
+   money=Math.floor((180+ticket.stage*60)/2);
+   xp=Math.max(1,Math.floor(xpRewardFor(ticket.stage,TRAINERS_PER_GYM(ticket.stage),'trainer')*.6));
    shared=awardSharedTeamExperience(next,xp,{kind:'trainer'});
    next.money=(next.money||0)+money;
    next.rematches.wins=(next.rematches.wins||0)+1;

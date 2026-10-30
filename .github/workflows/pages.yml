@@ -100,6 +100,12 @@ jobs:
           node tools/pokearena/audit-moves.mjs
           node tests/batch24-built.test.mjs
           node tests/misty-surge-built.test.mjs
+          node tests/misty-wild-capture-ui-built.test.mjs
+          node tests/rival-payday-cooldowns-built.test.mjs
+          node tests/surge-shop-rematch-allmaps-built.test.mjs
+          node tests/surge3-built.test.mjs
+          node tests/rematches-built.test.mjs
+          node tests/t23-kanto-mart-tm-integrity-built.test.mjs
           node tests/surge3-built.test.mjs
           node tests/kanto-151-built.test.mjs
           node tests/frlg-learnsets-built.test.mjs
@@ -118,6 +124,7 @@ jobs:
           npm install --no-audit --no-fund
           CHROME_BIN="$(command -v google-chrome)" node tests/batch24-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/surge-shop-rematch-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
       - name: Arquivar evidência visual do motor Phaser
@@ -150,13 +157,19 @@ jobs:
           fi
       - if: steps.pages-enabled.outputs.enabled == 'true'
         uses: actions/configure-pages@v5
+      # GitHub keeps artifacts from earlier attempts of the SAME run.
+      # A rerun with the default 'github-pages' name creates duplicates and
+      # deploy-pages rejects both even when the new build passes Chromium.
       - if: steps.pages-enabled.outputs.enabled == 'true'
         uses: actions/upload-pages-artifact@v3
         with:
+          name: github-pages-attempt-${{ github.run_attempt }}
           path: _site/
       - if: steps.pages-enabled.outputs.enabled == 'true'
         id: deploy
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-attempt-${{ github.run_attempt }}
       - name: Verificar no Pages publico se o codigo novo foi servido
         if: steps.pages-enabled.outputs.enabled == 'true'
         shell: bash

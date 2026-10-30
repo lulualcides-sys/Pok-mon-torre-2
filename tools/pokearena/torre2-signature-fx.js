@@ -255,12 +255,15 @@ export function triattack(l,h,extra){
  }});
 }
 function coin(g,x,y,size,face){
- const w=p(Math.max(2,size*(.25+.75*Math.abs(Math.cos(face)))));
- block(g,x-w-2,y-size-2,(w+2)*2,(size+2)*2,colors.outline);
+ // Every contour and glint scales with the coin; do not leave a large
+ // two-pixel outline around a 40%-smaller body.
+ const s=size/6;
+ const w=Math.max(2*s,size*(.25+.75*Math.abs(Math.cos(face))));
+ block(g,x-w-2*s,y-size-2*s,(w+2*s)*2,(size+2*s)*2,colors.outline);
  block(g,x-w,y-size,w*2,size*2,colors.goldDark);
- block(g,x-w+2,y-size+1,Math.max(2,w*2-4),size*2-3,colors.golden);
- block(g,x-w+3,y-size+2,Math.max(1,w-1),3,colors.goldLit);
- if(w>=5){block(g,x-1,y-size*.4,2,size*.8,colors.goldDark)}
+ block(g,x-w+2*s,y-size+s,Math.max(2*s,w*2-4*s),size*2-3*s,colors.golden);
+ block(g,x-w+3*s,y-size+2*s,Math.max(s,w-s),3*s,colors.goldLit);
+ if(w>=5*s){block(g,x-s,y-size*.4,2*s,size*.8,colors.goldDark)}
 }
 export function payday(l,h,extra){
  const e=l.escena,ang=Math.atan2(l.ay-l.y,l.ax-l.x),g=shape(e),trail=shape(e,1508);
@@ -280,7 +283,7 @@ export function payday(l,h,extra){
    const x=p(ox+Math.cos(ang)*d-Math.sin(ang)*side*fanCurve),
          y=p(oy+Math.sin(ang)*d*.72+Math.cos(ang)*side*fanCurve*.8+
             height*Math.sin(pi*t)-11*Math.sin(pi*t*1.6));
-   coin(g,x,y,6,t*21+i*.83);
+   coin(g,x,y,3.6,t*21+i*.83); // 60% of previous size, nine contacts unchanged
    block(trail,x-4-Math.cos(ang)*10,y-1,4,3,colors.goldLit,.35);
    // Brief afterimages fill the entire cone, not only the nearest row.
    if(i%2===0){block(trail,x+Math.sin(ang)*7,y-7,2,2,colors.white,.62);}

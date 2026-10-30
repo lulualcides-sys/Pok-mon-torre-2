@@ -1,0 +1,49 @@
+name: T37 — Pages rerun artifact isolation and Phaser gates
+on:
+  push:
+    branches: [fix/t37-pages-artifact-per-attempt-20261030]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pages-artifact-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Complete unit tests and approved-move safety checks
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build captured original Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+                && node tools/pokearena/build-preview.mjs \
+                && test -s _site/arena2d/index.html \
+                && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+      - name: Kanto 151 and browser Phaser regressions
+        run: |
+          set -euo pipefail
+          node tests/t08-kanto-onboarding-151-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
+      - name: Preserve real Chromium evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t37-pages-rerun-contract-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14

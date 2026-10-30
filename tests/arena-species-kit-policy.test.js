@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,chooseEeveeBranch,installArenaMovePolicy}
+import {selectArenaSpeciesKit,enforceArenaMoveCooldowns,replaceGengarHyperBeam,chooseEeveeBranch,installArenaMovePolicy}
  from '../tools/pokearena/torre2-arena-move-policy.js';
+import darkPulse from '../tools/pokearena/batch24/dark-pulse.js';
 const move=(nombre,dano=10,cd=5,tipo='NORMAL')=>({nombre,forma:'proyectil',dano,cd,tipo,coste:20,alcance:200});
-const set=(...moves)=>new Map(moves.map(m=>[m.nombre.toLowerCase(),m]));
+const set=(...moves)=>new Map(moves.map(m=>[m.nombre.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,''),m]));
 test('Blizzard Hydro Pump Seismic Toss and Egg Bomb use the requested 2–4s Arena rhythm',()=>{
  const kit={lmb:move('Hydro Pump',20,0,'WATER'),
             rmb:move('Seismic Toss',16,0,'FIGHTING'),
@@ -47,10 +48,11 @@ test('Thunder cooldown is 3s in Arena without changing other electrical moves or
  assert.equal(output.lmb.cd,3,'Thunder is exactly 3s');
  assert.equal(output.rmb.cd,6.25,'Thunderbolt stays untouched');
  assert.equal(output.q.cd,9,'Thunder Wave stays untouched');
- assert.equal(output.e.cd,7.5,'Discharge stays untouched');
+ assert.equal(output.e.cd,3,'Discharge must follow the requested 3s cooldown');
  assert.strictEqual(output.rmb,native.rmb);
  assert.strictEqual(output.q,native.q);
- assert.strictEqual(output.e,native.e);
+ assert.notStrictEqual(output.e,native.e);
+ assert.equal(native.e.cd,7.5,'Original Discharge metadata is preserved');
  assert.strictEqual(output.esp,native.esp);
  assert.equal(native.lmb.cd,15,'Original source client remains unchanged');
  assert.equal(output.lmb.forma,native.lmb.forma,'Approved VFX renderer untouched');
@@ -226,4 +228,130 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.equal(story.forma.nombre,'VAPOREON','Campaign stays on existing evolution branch');
  assert.strictEqual(story.kitActual(),eevee.evoluciones[0].kit,'No Arena cooldown patch in campaign');
  assert.equal(story.puedeEvolucionar,true,'Campaign evolution rule unchanged');
+});
+
+test('Psybeam, Discharge and Hyper Beam take 3s / 3s / 4s without touching VFX or campaign',()=>{
+ const base={lmb:move('Psybeam',14,0,'PSYCHIC'),
+  rmb:move('Discharge',17,0,'ELECTRIC'),
+  q:move('Hyper Beam',32,0,'NORMAL'),
+  e:move('Shadow Ball',22,8,'GHOST')};
+ const tuned=enforceArenaMoveCooldowns(base);
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>tuned[slot].cd),[3,3,4]);
+ for(const slot of ['lmb','rmb','q']){
+  assert.equal(base[slot].cd,0,'Original move must not be mutated');
+  assert.equal(tuned[slot].forma,base[slot].forma,'Keep approved renderer');
+  assert.equal(tuned[slot].dano,base[slot].dano,'Keep damage');
+ }
+ assert.strictEqual(tuned.e,base.e,'Unrelated move remains native');
+ assert.strictEqual(enforceArenaMoveCooldowns(tuned),tuned);
+ const aliases={lmb:move('Psy Beam',15,0),rmb:move('Descarga',18,0),q:move('Hiperrayo',30,0)};
+ assert.deepEqual(['lmb','rmb','q'].map(slot=>enforceArenaMoveCooldowns(aliases)[slot].cd),[3,3,4]);
+});
+test('Native Gengar drops only generic Hyper Beam in Arena and keeps approved Ghost/Poison VFX',()=>{
+ const shadow=move('Shadow Ball',23,6,'GHOST'),sludge=move('Sludge Bomb',24,7,'POISON');
+ const nightmare=move('Night Shade',15,5,'GHOST'),hypnosis=move('Hypnosis',0,5,'PSYCHIC');
+ const beam=move('Hyper Beam',35,0,'NORMAL');
+ const native={lmb:hypnosis,rmb:shadow,q:beam,e:nightmare,esp:move('Dodge',0,1)};
+ const pool=set(shadow,sludge,nightmare,hypnosis,beam);
+ const cleaned=replaceGengarHyperBeam(native,pool);
+ assert.equal(cleaned.q.nombre,'Sludge Bomb','Prefer installed Sludge Bomb when Shadow Ball already equipped');
+ assert.equal(cleaned.q.forma,sludge.forma,'Do not fake or replace VFX');
+ assert.equal(cleaned.q.dano,sludge.dano,'Keep installed move power');
+ assert.strictEqual(cleaned.lmb,native.lmb,'Do not change Hypnosis');
+ assert.equal(cleaned.rmb.nombre,'Night Shade','Reuse existing alternate attack after relocating Shadow Ball');
+ assert.equal(cleaned.rmb.forma,nightmare.forma,'Preserve approved Night Shade renderer');
+ assert.equal(cleaned.e.nombre,'Shadow Ball','Gengar signature move must be the actual ULT');
+ assert.equal(cleaned.e.forma,shadow.forma,'Reuse installed native Shadow Ball renderer');
+ assert.equal(cleaned.e.ulti,true,'Keep E as the actual ultimate');
+ assert.equal(new Set(['lmb','rmb','q','e'].map(k=>cleaned[k]?.nombre)).size,4);
+ assert.strictEqual(cleaned.esp,native.esp,'Original dodge remains untouched');
+ assert.equal(native.q.nombre,'Hyper Beam','Never mutate original native kit');
+ assert.ok(!['lmb','rmb','q','e'].some(k=>cleaned[k]?.nombre==='Hyper Beam'));
+ const missing=replaceGengarHyperBeam({lmb:beam},new Map());
+ assert.equal(missing.lmb.nombre,'Hyper Beam','Never insert a nonexistent renderer');
+});
+test('Live Gengar Arena policy also covers evolved Gastly but not campaign or other native species',()=>{
+ class Fighter{
+  constructor(def,campaign=false,stage=0){this.def=def;this.etapa=stage;this.mega=false;
+   this.aspecto=null;this.escena={datos:campaign?{torre2:true}:{modo:'cpu'}};}
+  get forma(){return this.etapa?{...this.def,...this.def.evoluciones[this.etapa-1]}:this.def;}
+  get puedeEvolucionar(){return this.etapa<this.def.evoluciones.length;}
+  kitActual(){return this.forma.kit;}
+ }
+ const shadow=move('Shadow Ball',24,5,'GHOST'),sludge=move('Sludge Bomb',24,5,'POISON');
+ const beam=move('Hyper Beam',30,0,'NORMAL'),confusion=move('Confusion',8,4,'PSYCHIC');
+ const nativeKit={lmb:confusion,rmb:shadow,q:beam,e:move('Night Shade',19,5,'GHOST')};
+ const gastly={id:'gastly',tipos:['GHOST','POISON'],kit:{lmb:confusion},
+  evoluciones:[{nombre:'HAUNTER',kit:{lmb:confusion,rmb:shadow}},
+   {nombre:'GENGAR',kit:nativeKit}]};
+ const donor={id:'muk',tipos:['POISON'],kit:{lmb:sludge},evoluciones:[]};
+ installArenaMovePolicy(Fighter,[gastly,donor]);
+ const arena=new Fighter(gastly,false,2),campaign=new Fighter(gastly,true,2);
+ const corrected=arena.kitActual();
+ assert.equal(corrected.q.nombre,'Dark Pulse','Gengar evolution must receive the approved distinct Dark Pulse at fighter runtime');
+ assert.strictEqual(campaign.kitActual(),nativeKit,'Gen III campaign keeps original kit');
+ assert.equal(nativeKit.q.nombre,'Hyper Beam','Native source untouched');
+ assert.equal(new Fighter(gastly,false,1).kitActual().rmb.nombre,'Shadow Ball',
+  'Haunter existing approved move remains untouched');
+});
+
+test('Gengar duplicated native Sludge Bomb is replaced by the approved Dark Pulse VFX',()=>{
+ const hypnosis=move('Hypnosis',0,12,'PSYCHIC'),
+  sludge=move('Sludge Bomb',22,7,'POISON'),
+  shadow=move('Shadow Ball',24,6,'GHOST'),
+  dodge=move('Dodge',0,4);
+ const native={lmb:hypnosis,rmb:sludge,q:{...sludge},e:shadow,esp:dodge};
+ const originalSlots=['lmb','rmb','q','e'].map(k=>native[k].nombre);
+ assert.deepEqual(originalSlots,['Hypnosis','Sludge Bomb','Sludge Bomb','Shadow Ball'],
+  'Reproduce the exact Gengar duplication observed in real Chromium');
+ assert.equal(darkPulse.approved,true,'Use an approved effect, never invent a new renderer');
+ assert.equal(darkPulse.forma,'torre2_batch24_dark_pulse','Installed Batch24 VFX');
+ const library=set(hypnosis,sludge,shadow,darkPulse);
+ const fixed=replaceGengarHyperBeam(native,library);
+ const names=['lmb','rmb','q','e'].map(k=>fixed[k]?.nombre);
+ assert.deepEqual(names,['Hypnosis','Sludge Bomb','Dark Pulse','Shadow Ball']);
+ assert.equal(new Set(names).size,4,'No duplicate moves in the four attack slots');
+ assert.strictEqual(fixed.lmb,native.lmb,'Preserve native Hypnosis');
+ assert.strictEqual(fixed.rmb,native.rmb,'Preserve native Sludge Bomb and its VFX');
+ assert.strictEqual(fixed.e,native.e,'Preserve native Shadow Ball ULT');
+ assert.strictEqual(fixed.esp,native.esp,'Preserve dodge');
+ assert.equal(fixed.q.forma,darkPulse.forma,'Reuse already-approved Dark Pulse animation');
+ assert.equal(fixed.q.dano,darkPulse.dano,'Reuse balanced installed attack damage');
+ assert.equal(fixed.q.cd,darkPulse.cd,'Reuse installed attack cooldown');
+ assert.equal(fixed.q.ulti,false,'Dark Pulse must not become a second ultimate');
+ assert.equal(fixed.q.pendiente,false,'New attack must be selectable');
+ assert.strictEqual(replaceGengarHyperBeam(fixed,library),fixed,'No repeated kit rewrites');
+ assert.equal(native.q.nombre,'Sludge Bomb','Never mutate original/native kit');
+});
+test('Gengar Hyper Beam is replaced with Dark Pulse without copying an occupied move',()=>{
+ const base={lmb:move('Hypnosis',0),rmb:move('Sludge Bomb',22,7,'POISON'),
+  q:move('Hyper Beam',33,4),e:move('Shadow Ball',25,6,'GHOST')};
+ const pool=set(...Object.values(base),darkPulse);
+ const out=replaceGengarHyperBeam(base,pool);
+ assert.equal(out.q.nombre,'Dark Pulse');
+ assert.equal(new Set(['lmb','rmb','q','e'].map(s=>out[s].nombre)).size,4);
+ assert.equal(base.q.nombre,'Hyper Beam','Original native source remains intact');
+});
+
+test('Upstream native Gengar Night Shade ULT is corrected to Shadow Ball while duplicate becomes Dark Pulse',()=>{
+ const hypnosis=move('Hypnosis',0,12,'PSYCHIC'),
+  sludge=move('Sludge Bomb',23,7,'POISON'),
+  shadow=move('Shadow Ball',25,6,'GHOST'),
+  night=move('Night Shade',15,5,'GHOST');
+ const native={lmb:hypnosis,rmb:sludge,q:{...sludge},e:night};
+ const pool=set(hypnosis,sludge,shadow,night,darkPulse);
+ const out=replaceGengarHyperBeam(native,pool);
+ assert.deepEqual(['lmb','rmb','q','e'].map(s=>out[s].nombre),
+  ['Hypnosis','Sludge Bomb','Dark Pulse','Shadow Ball']);
+ assert.equal(new Set(['lmb','rmb','q','e'].map(s=>out[s].nombre)).size,4);
+ assert.equal(out.q.forma,darkPulse.forma,'Dark Pulse pixel art stays installed');
+ assert.equal(out.e.forma,shadow.forma,'Original Shadow Ball VFX is preserved');
+ assert.equal(out.e.ulti,true,'Strong signature ultimate belongs exclusively on E');
+ assert.strictEqual(out.lmb,native.lmb);assert.strictEqual(out.rmb,native.rmb);
+ assert.equal(native.q.nombre,'Sludge Bomb','No mutation of approved source client');
+ assert.equal(native.e.nombre,'Night Shade','No mutation of native/campaign moves');
+ assert.deepEqual(
+  ['lmb','rmb','q','e'].map(s=>replaceGengarHyperBeam(out,pool)[s].nombre),
+  ['Hypnosis','Sludge Bomb','Dark Pulse','Shadow Ball'],
+  'Gengar stage kit does not reshuffle at successive reads');
 });

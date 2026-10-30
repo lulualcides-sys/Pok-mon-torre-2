@@ -1,0 +1,52 @@
+name: Master T20 — eight real Pallet fights from production starter (no debug Mewtwo)
+on:
+  push:
+    branches: [test/master-t20-pallet-eight-production-starter-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  eight-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 39
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit tests, build integrity and source checks
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t20-pallet-eight-production-starter-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture and build real Phaser game
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Eight real consecutive victories with real EXP (no test Mewtwo or forced KO)
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t20-pallet-eight-production-starter-browser.cjs
+      - name: Regress original Phaser battle controllers
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Save every combat diagnostic and snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t20-real-pallet-production-eight
+          path: |
+            test-evidence/t20-pallet-eight-*
+            test-evidence/t20-pallet-eight-real-production-starter.json
+          retention-days: 21
+          if-no-files-found: warn

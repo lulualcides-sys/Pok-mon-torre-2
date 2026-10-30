@@ -880,6 +880,26 @@ const fighterPath=path.join(dest,clientSource,'luchador.js');
 const fighterCode=await fs.readFile(fighterPath,'utf8');
 if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
  throw Error('Upstream Arena fighter incompatible with isolated move policy');
+// Regression: Dodrio can remain at fractional HP (e.g. 0.4) after the
+// final native poison tick. The HUD rounds that to an empty health bar,
+// but recibir() does not call morir() unless HP is exactly <= 0.
+// Resolve only sub-1 residual POISON HP on our added Arena species.
+// Never change ordinary hits, poison potency, native client Pokémon,
+// training immortality, campaign, approved VFX, or the K.O. callback.
+const nativePoisonHit='this.hp=Math.max(this.inmortal?1:0,this.hp-d);';
+if(fighterCode.split(nativePoisonHit).length!==2)
+ throw Error('Upstream Arena poison HP path changed');
+// Native HP regeneration can also start during the first 1.5s of a newly
+// applied poison (before its first damaging tick sets ultimoDano).
+// Don't let that small heal make the final poison tick non-lethal.
+// Scope to Torre2-added Arena species and the active poison status only.
+const nativeRegenGuard='!this.est.enfermo&&!this.escena.datos?.torre2';
+if(fighterCode.split(nativeRegenGuard).length!==2)
+ throw Error('Upstream Arena HP recovery guard changed');
+const poisonHpFixed=fighterCode.replace(nativePoisonHit,
+ nativePoisonHit+'if(!this.inmortal&&this.def?.torre2ArenaAdded===true&&!this.escena.datos?.torre2&&g.puro&&g.tick&&g.tipo==="POISON"&&this.hp>0&&this.hp<1)this.hp=0;');
+await fs.writeFile(fighterPath,poisonHpFixed.replace(nativeRegenGuard,
+ '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&!this.escena.entreno&&this.est.veneno)&&!this.escena.datos?.torre2'));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
@@ -906,6 +926,13 @@ const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
 await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
  await fs.readFile(pokedexPath,'utf8')));
 
+// The base client already ships the five Greninja styles for Froakie,
+// Frogadier and Greninja. Use the ORIGINAL sprites, metadata and red aura;
+// expose them in the independent local Arena without modifying upstream.
+const {installGreninjaVariants}=await import('./torre2-greninja-variants.mjs');
+const greninjaVariants=await installGreninjaVariants(dest,clientSource);
+console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
+
 // Avoid stale attack VFX on mobile browsers and GitHub Pages caching.
 // Previously all revisions imported exactly the same /src-8d89349697/*.js
 // URL: a ?v= query added to /arena2d/ never invalidated those modules.
@@ -915,7 +942,7 @@ const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
- 'main.js','habilidades.js','luchador.js','datos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
+ 'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',

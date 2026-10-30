@@ -25,7 +25,8 @@ function fixture(){
  };
  globalThis.localStorage=db;
  const s=core.createCampaign('bulbasaur');
- s.stage=1;s.money=5000;
+ s.stage=1;s.money=5000;s.badges=[core.GYMS[0].badge];
+ s.gymTMClaims=['tm-rock-tomb']; // Original leader prize was already spent.
  core.saveCampaign(s,db);
  const normalized=core.readCampaign(db);
  core.saveCampaign(normalized,db);

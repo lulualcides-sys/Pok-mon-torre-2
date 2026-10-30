@@ -1,0 +1,53 @@
+name: Rival evolution, Pay Day and Kanto cooldown validation
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-party-battle.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/torre2-move-pool.js'
+      - 'tools/pokearena/torre2-signature-fx.js'
+      - 'tests/rival-payday-cooldowns-built.test.mjs'
+      - 'tests/surge-shop-rematch-browser.cjs'
+      - '.github/workflows/rival-payday-validation.yml'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Static source and unit regressions
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          for source in tools/pokearena/torre2-*.js; do node --check "$source"; done
+          npm test
+      - name: Build actual native Phaser game
+        run: |
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/index.html
+      - name: Verify rival species, move cooldown and Pay Day pixel art
+        run: |
+          node tests/rival-payday-cooldowns-built.test.mjs
+          node tests/misty-wild-capture-ui-built.test.mjs
+          node tests/misty-surge-built.test.mjs
+          node --test tests/surge-shop-rematch-allmaps-built.test.mjs
+          node tests/surge3-built.test.mjs
+          node tests/rematches-built.test.mjs
+          node --test tests/t23-kanto-mart-tm-integrity-built.test.mjs
+          node --test tests/t05-mart-purchase-atomic-built.test.mjs
+          node tests/evolution-modes-built.test.mjs
+      - name: Smoke-test native Phaser arena in Chromium
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/surge-shop-rematch-browser.cjs
+          node tests/source-client-smoke.cjs
+          node tests/t22-mobile-rematch-reload-browser.cjs

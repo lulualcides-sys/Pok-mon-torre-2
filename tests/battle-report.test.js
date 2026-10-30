@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {makeBattleReport,showBattleReport} from '../tools/pokearena/torre2-battle-report.js';
+import {makeBattleReport,showBattleReport,battleReportDetailLines}
+ from '../tools/pokearena/torre2-battle-report.js';
 const mon=(id,uid,level=5)=>({id,uid,progression:{level}});
 const state=(extras={})=>({
  team:[mon('bulbasaur','one'),mon('mewtwo','test',50)],
@@ -50,6 +51,41 @@ test('first Lv8 energy-gated ULT is shown as reduced preview, never as full nati
  const report=makeBattleReport(before,after,{won:true},{
   listMoves:m=>m.progression.level>=8?[preview]:[]});
  assert.deepEqual(report.moves,[{id:'squirtle',name:'Hydro Pump',preview:true}]);
+});
+test('each move reward identifies the actual recipient, including identical attack names',()=>{
+ const before=state({team:[mon('squirtle','water',7),mon('nidoran-f','poison',7),
+  mon('rattata','normal',7)]});
+ const after=state({team:[mon('squirtle','water',8),mon('nidoran-f','poison',8),
+  mon('rattata','normal',8)]});
+ const original=JSON.stringify({before,after});
+ const reward=makeBattleReport(before,after,{won:true,sharedExp:[
+  {uid:'water',index:0,reward:42},{uid:'poison',index:1,reward:42},
+  {uid:'normal',index:2,reward:42}
+ ]},{listMoves:m=>m.progression.level<8?[]:[{
+  id:'torre2-intro-e-quick-attack',nombre:'Quick Attack',
+  torre2IntroPractice:true,torre2IntroSlot:'e'
+ }]});
+ const details=battleReportDetailLines(reward);
+ assert.deepEqual(details,[
+  'SQUIRTLE: ULT INICIAL (REDUZIDA) · QUICK ATTACK',
+  'NIDORAN F: ULT INICIAL (REDUZIDA) · QUICK ATTACK',
+  'RATTATA: ULT INICIAL (REDUZIDA) · QUICK ATTACK'
+ ]);
+ assert.equal(details.length,3,'Do not merge different recipients by move name');
+ assert.equal(JSON.stringify({before,after}),original,'Report is entirely read-only');
+});
+test('the report identifies both a normal full-power unlock and its Pokémon',()=>{
+ const before=state({team:[mon('squirtle','one',46)]});
+ const after=state({team:[mon('squirtle','one',47)]});
+ const preview={id:'torre2-intro-e-hydro-pump',nombre:'Hydro Pump',
+  torre2IntroPractice:true,torre2IntroSlot:'e'};
+ const original={id:'hydro-pump',nombre:'Hydro Pump'};
+ const report=makeBattleReport(before,after,{won:true},{
+  listMoves:m=>m.progression.level<47?[preview]:[preview,original]
+ });
+ assert.deepEqual(battleReportDetailLines(report),[
+  'SQUIRTLE: GOLPE COMPLETO · HYDRO PUMP'
+ ]);
 });
 test('loss has no fictitious XP, money or badges',()=>{
  const report=makeBattleReport(state(),state({losses:1}),{won:false,message:'Derrota'});
