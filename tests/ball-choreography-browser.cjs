@@ -113,6 +113,10 @@ const server=http.createServer(async(req,res)=>{
  await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
  await battle(true,true);
+ // AUTO starts ON in the campaign. Disable it via the existing control to
+ // test successive Pokéball attempts without automatically KO'ing the target.
+ await page.evaluate(()=>window.__pt2Game.scene.getScene('combate')
+  .__torre2AutoMode.zone.emit('pointerdown'));
  // Status is inflicted via the real Gen III engine, not inserted into save.
  // Both breakout and catch must retain status for the active Pokemon.
  await page.evaluate(async()=>{
