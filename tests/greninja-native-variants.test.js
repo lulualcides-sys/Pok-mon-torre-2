@@ -30,12 +30,15 @@ test('upstream other-Pokémon unlocks and account flags are untouched',()=>{
  assert.equal((s.match(/function aspectoDe/g)||[]).length,1);
 });
 test('Arena selection preloads sprites and labels RED AURA without ranked unlock',()=>{
- const source=`class Seleccion{preload(){this._torre2Selecao=soloFormas(m,formasDe(ROSTER.map(p=>p.id)));cargarPMD(this,this._torre2Selecao,["Idle"]);}versiones(){const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:8,color:puesta?"#ffd447":"#8fb3e6"})}casilla(p){const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);}}`;
+ const source=`class Seleccion{preload(){this._torre2Selecao=soloFormas(m,formasDe(ROSTER.map(p=>p.id)));cargarPMD(this,this._torre2Selecao,["Idle"]);}ficha(panel,p){panel.mostrado=p?.id??null;panel.contenido?.destroy(true);}versiones(panel,p){const s=this.add.container(0,0),W=6+opciones.length*46;const t=texto(this,x+21,y+45,a?NOMBRE_ASPECTO[a]??a.toUpperCase():"NORMAL",{tam:8,color:puesta?"#ffd447":"#8fb3e6"});panel.contenido.add(s);panel.selector=s}casilla(p){const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);}}`;
  const patched=patchGreninjaSelectionSource(source);
  assert.match(patched,/for\(const dex of \["0656","0657","0658"\]\)/);
  assert.match(patched,/tam:a==="azabacheaura"\?6:8/);
  assert.match(patched,/this.modo==="ranked"\?\!desbloqueadoRanked\(p.id\)/);
  assert.match(patched,/\["cpu","entreno","versus"\]/);
+ assert.match(patched,/torre2-greninja-popup/,'Popup is a top-level input surface');
+ assert.match(patched,/if\(p.id!=="froakie"\)panel.contenido.add\(s\)/,
+  'Other Pokémon retain their native selector parenting');
  assert.throws(()=>patchGreninjaSelectionSource(patched),/changed or ambiguous/);
 });
 test('Six-player local Arena allows Froakie but never alters league.js',()=>{
