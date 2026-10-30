@@ -44,8 +44,7 @@ jobs:
           # Reuse the same strict 503-only gate as Pages. Every retry runs
           # the entire public Chromium audit; no assertion is skipped.
           for attempt in 1 2 3; do
-            rm -f test-evidence/pokedex-public-boot-diagnostic.json \\
-              test-evidence/pokedex-public-live-audit.json
+            rm -f test-evidence/pokedex-public-boot-diagnostic.json test-evidence/pokedex-public-live-audit.json
             if node tests/pokedex-public-live-browser.cjs; then
               echo "Pokédex pública aprovada (tentativa $attempt)"
               exit 0
