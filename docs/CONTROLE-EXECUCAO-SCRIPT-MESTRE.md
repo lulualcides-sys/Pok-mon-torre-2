@@ -1,5 +1,14 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §20/T20 · Pallet primeiras quatro batalhas naturais e gates de produção
+
+- **§20 PARCIAL:** [PR #326](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/326) integrada em `b6ecd4ac50ecfb74fc6f05d54f09f62d898c0be4`; [CI #40983712619](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983712619) **SUCESSO** com 4 vitórias naturais consecutivas (Pidgey, Rattata, Caterpie, rival Charmander) no Phaser, Bulbasaur Lv5→9 e dinheiro $1400→$2400. Inicial de QA com Mewtwo enviado ao PC; não valida seleção via UI, Brock ou Pallet→Campeão.
+- **§20 em teste:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328)/[CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087): 8 lutas com `createPlayerCampaign` de produção, zero Mewtwo debug, ULT Lv8 por XP e reload. [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329)/[CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269): 13 treinadores, compras/capturas reais, Rival e Brock. **Não declarar sucesso enquanto CI incompleto**, nem confundir execução de fixture de fábrica com escolha de inicial pelo menu.
+- **§33/§36 PARCIAIS:** #326 somente workflow de QA, #328 novo teste/workflow, #329 muda somente teste sob flag opt-in (legado preservado) + workflow. Zero modificação de runtime/VFX/sprites/movesets/cooldowns/saves; nenhuma das 37 seções foi declarada concluída.
+- **§37 PARCIAL:** publicação de #326 em `main` depende da CI Pages correspondente, não apenas do merge; verificar SHA e HTTP antes de afirmar implantação. O QA daqui não altera a versão jogável.
+
+
+
 ## 29/10/2026 — §20/T20 · Cinco vitórias reais consecutivas da Liga, sem afirmar Pallet→Campeão
 
 - **§20 PARCIAL, progressão comprovada:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210) integrada na `main` em `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO** em cinco lutas nativas consecutivas com o mesmo save: Lorelei 85s, Bruno 78s, Agatha 93s, Lance 209s e Campeão 283s. Sem vitórias, KO, EXP nem progresso inseridos depois do **único checkpoint inicial de Victory Road**; Centro Pokémon, trocas, AUTO e save/reload reais. Hall da Fama, cinco honras, oito insígnias e campeão persistente.
