@@ -60,6 +60,32 @@ function grassPortraitDex(id){
  const index=KANTO_DEX.findIndex(name=>name.toLowerCase().replace(/[^a-z0-9♀♂]+/g,'')===key);
  return index>=0?String(index+1).padStart(4,'0'):null;
 }
+// The native battle loader downloads full PMD animation sets for the entire
+// party. Begin the active pair and two nearby reserves DURING the approved
+// 2.5 s VS instead of starting all these requests only after the transition.
+// Phaser's shared TextureManager lets the combat loader skip cached sheets.
+// Bound to four species to protect mobile WebGL memory and VS smoothness.
+export function prewarmVersusBattleSprites(scene,match){
+ const p=match?.torre2?.party,manifest=scene?.registry?.get?.('manifiesto');
+ if(!match?.torre2?.versus||!p||!manifest||scene.load?.isLoading?.())
+  return{queued:0,reason:'not-ready'};
+ const selected=[p.friend?.[p.playerIndex],p.foes?.[p.enemyIndex??0],
+  p.friend?.find((m,i)=>i!==p.playerIndex&&m.hp>0),
+  p.foes?.find((m,i)=>i!==(p.enemyIndex??0)&&m.hp>0)].filter(Boolean);
+ const dexList=[...new Set(selected.map(m=>portraitId(m)))];
+ const forms=soloFormas(manifest,dexList);
+ const queued=cargarPMD(scene,forms);
+ const report={queued,species:dexList,startedAt:Date.now(),readyAt:null};
+ if(scene.game)scene.game.__torre2BattlePrewarm=report;
+ if(queued){
+  const loaded=()=>{report.readyAt=Date.now();scene.events?.off('shutdown',cleanup)};
+  const cleanup=()=>scene.load?.off('complete',loaded);
+  scene.load.once('complete',loaded);
+  scene.events?.once('shutdown',cleanup);
+  scene.load.start();
+ }else report.readyAt=report.startedAt;
+ return report;
+}
 // Only the explicit reset link modifies the browser's private Kanto save.
 // Remove the URL flag immediately so page reloads never reset repeatedly.
 export function consumeCampaignResetLink(storage=localStorage,url=window.location,
@@ -907,7 +933,13 @@ create(){
    if(this.scene.isActive())this.scene.start('combate',match);
   };
   try{
-   if(playVersusIntro(this,match,enterCombat))return;
+   if(playVersusIntro(this,match,enterCombat)){
+    // Prefetch sprites only while the cinematic is already running; do not
+    // extend/shorten VS, alter battle logic, or preload outside Kanto.
+    try{prewarmVersusBattleSprites(this,match)}
+    catch(error){console.warn('Torre 2: VS sprite prewarm skipped',error)}
+    return;
+   }
   }catch(error){
    console.warn('Torre 2: versus intro skipped safely',error);
   }
