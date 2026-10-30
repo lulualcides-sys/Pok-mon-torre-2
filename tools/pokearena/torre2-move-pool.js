@@ -46,6 +46,9 @@ export const KANTO_RAIN_DANCE_SPECIES=Object.freeze([
 
 ]);
 export const KANTO_RAIN_DANCE_LEVEL=25;
+// Explicit legacy late-generation mastery gates from the Script Mestre.
+// Do not auto-grant these two status moves at Lv25.
+export const KANTO_RAIN_DANCE_LATE_LEVELS=Object.freeze({slowpoke:49,zapdos:50});
 export const KANTO_FIRE_BLAST_LEVEL=50;
 export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
  'charmander','charmeleon','charizard','vulpix','ninetales',
@@ -466,6 +469,11 @@ export function availableMoves(member){
 
  const filtered=moves.filter(m=>{
   const key=canonicalMoveKey(m.nombre);
+  // Prior approved verified-level exceptions: Slowpoke Lv49, Zapdos Lv50.
+  // Their canonical/Pokedex timing must not regress during T16 expansion.
+  if(key==='rain-dance'&&kantoFinish[key]?.includes(member.id)&&
+     level<(KANTO_RAIN_DANCE_LATE_LEVELS[member.id]??KANTO_RAIN_DANCE_LEVEL))
+   return false;
   // Some original Poké Arena Raichu evolutions still carry an older
   // evolution-only lock. Explicitly unlock these three NEW status moves on
   // their own species/level, without lifting locks on any approved attacks.

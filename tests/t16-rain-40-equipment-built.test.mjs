@@ -11,7 +11,8 @@ const {modules}=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'
 const load=x=>import(pathToFileURL(path.join(root,modules,x)).href);
 const [{
  TEST_LIBRARY,availableMoves,equipMove,resolveLoadout,selectedMoves,
- campaignMoveSlotReason,KANTO_RAIN_DANCE_SPECIES,KANTO_RAIN_DANCE_LEVEL
+ campaignMoveSlotReason,KANTO_RAIN_DANCE_SPECIES,KANTO_RAIN_DANCE_LEVEL,
+ KANTO_RAIN_DANCE_LATE_LEVELS,moveUnlockLevel
 },{frlgMachineCompatible,frlgEvolutionLevel}, {WEATHER_MOVES}]=await Promise.all([
  load('torre2/move-pool.js'),load('torre2/frlg-learnsets.js'),load('torre2/weather.js')
 ]);
@@ -32,7 +33,8 @@ for(const id of KANTO_RAIN_DANCE_SPECIES){
  const before=make(id,24);
  assert.equal(availableMoves(before).some(m=>m.id==='rain-dance'),false,
   id+' illegally learned Rain Dance before level 25');
- const equipmentLevel=Math.max(KANTO_RAIN_DANCE_LEVEL,frlgEvolutionLevel(id));
+ const equipmentLevel=Math.max(KANTO_RAIN_DANCE_LEVEL,frlgEvolutionLevel(id),
+  KANTO_RAIN_DANCE_LATE_LEVELS[id]||0);
  const member=make(id,equipmentLevel);
  const legal=availableMoves(member).find(m=>m.id==='rain-dance');
  assert.ok(legal?.forma&&!legal.pendiente,id+' lacks approved climate renderer');
@@ -60,6 +62,14 @@ for(const [id,kind] of Object.entries({
  assert.equal(Object.values(WEATHER_MOVES).includes(kind),true);
  assert.equal(TEST_LIBRARY.some(m=>m.id===id),false,
   id+' must not be advertised as executable without vetted four-source FX');
+}
+for(const [id,level] of Object.entries(KANTO_RAIN_DANCE_LATE_LEVELS)){
+ assert.equal(availableMoves(make(id,level-1)).some(m=>m.id==='rain-dance'),false,
+  id+' legacy later-generation rain mastery unlocked too early');
+ assert.equal(availableMoves(make(id,level)).some(m=>m.id==='rain-dance'),true,
+  id+' legacy rain mastery lost at Lv'+level);
+ assert.equal(moveUnlockLevel(make(id,50),'rain-dance'),level,
+  id+' Pokédex learn level changed');
 }
 for(const id of ['charizard','bulbasaur','geodude','moltres']){
  // FireRed TM18 compatibility alone must not auto-grant climate affinity
