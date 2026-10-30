@@ -113,3 +113,13 @@ test('weather changes and residual penalties are never overpowered or stacked',(
  setWeather(w,'none');
  assert.equal(damage(w,'NORMAL','Tackle',['ROCK','ICE']),1);
 });
+
+test('fractional final frame expires weather and never extends bonus to a sixth window',()=>{
+ const w=createWeather();
+ setWeather(w,'sun');
+ tickWeather(w,19.999,[]);
+ assert.equal(w.kind,'sun');
+ tickWeather(w,.001,[]);
+ assert.equal(w.kind,'none');
+ assert.equal(damage(w,'NORMAL','Tackle',['FIRE']),1);
+});

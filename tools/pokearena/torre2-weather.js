@@ -65,7 +65,9 @@ export function tickWeather(state,dt,actors=[]){
    if(actor.hp<=0&&!fainted.includes(actor))fainted.push(actor);
   }
  }
- if(state.remaining<=0)setWeather(state,'none');
+ // Fractional Phaser-frame accumulation can leave ~1e-12s instead of zero.
+ // Treat that as finished to avoid an extra invisible damage-buff frame.
+ if(state.remaining<=1e-6)setWeather(state,'none');
  return fainted;
 }
 export function weatherFromMove(actor,move){
