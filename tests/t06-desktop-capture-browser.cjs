@@ -109,6 +109,15 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
   assert.equal(failed.wins,before.wins);
   await page.evaluate(()=>{window.__pt2Game.scene.getScene('combate').__torre2CaptureRandom=()=>0;});
   await tap(470,61);
+  const retry=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const z=b.children.list.find(o=>o.getData?.('torre2-single-capture'));
+   return {phase:b.fase,debug:b.__torre2CaptureDebug,auto:b.__torre2AutoMode?.enabled,
+    zone:z?{x:z.x,y:z.y,active:z.active}:null,
+    enemyHp:b.luchadores[1].hp,playerHp:b.luchadores[0].hp,
+    stock:t06.readCampaign().inventory.pokeball};
+  });
+  console.log('SECOND_ONE_TAP_DEBUG',JSON.stringify(retry));
   // Desktop capture may return to the campaign before the next browser
   // polling tick; accept completed persistence as well as the short GOTCHA.
   try{
@@ -126,6 +135,7 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
      pending:s?.pendingWild,party:s?.team.map(m=>m.id),
      campaignActive:window.__pt2Game.scene.isActive('campanha')};
    });
+   console.log('SECOND_ONE_TAP_TIMEOUT',JSON.stringify(diagnostic));
    fs.writeFileSync('test-evidence/t06-desktop-timeout.json',JSON.stringify(diagnostic,null,2));
    await page.screenshot({path:'test-evidence/t06-desktop-timeout.png'});
    throw error;
