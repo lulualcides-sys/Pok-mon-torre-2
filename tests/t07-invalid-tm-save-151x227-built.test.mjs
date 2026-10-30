@@ -1,6 +1,6 @@
 /* T07/T08 integrity: an old/imported save containing TM claims that the
  * Kanto species cannot learn in FireRed must never create extra attack
- * options. This covers all 151 x 227 catalogue cells, not just Protect.
+ * options. This covers all 151 species against the live installed catalogue\n * (227 approved baseline effects plus any later valid entries), not just Protect.
  * Compiled Phaser fixtures only; no natural XP or Android claim.
  */
 import assert from 'node:assert/strict';
@@ -18,8 +18,9 @@ const [{KANTO_151},{TEST_LIBRARY,availableMoves,campaignLearnset,
 ]);
 
 assert.equal(KANTO_151.length,151);
-assert.equal(TEST_LIBRARY.length,227);
-assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,227);
+assert.ok(TEST_LIBRARY.length>=227,'The approved 227-effect baseline was truncated');
+assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,TEST_LIBRARY.length,
+  'The installed catalogue contains duplicate move IDs');
 const levels=[5,8,13,25,50];
 const make=(id,level,tmMoves=[])=>({
   id,progression:{species:id,level},tmMoves
@@ -65,7 +66,7 @@ for(const {id} of KANTO_151){
     legalFRLGTMs:legalTM,level50Options:availableMoves(make(id,50)).length});
 }
 assert.equal(checked,150);
-assert.equal(comparisons,150*227*levels.length);
+assert.equal(comparisons,150*TEST_LIBRARY.length*levels.length);
 assert.deepEqual(violations,[],
   'Incompatible imported TM claims leaked into battle/editor');
 const unassigned=TEST_LIBRARY.filter(move=>!learnedInKanto.has(move.id))
@@ -76,7 +77,7 @@ const report={
   classification:'Unassigned means no Kanto level/TM grant in current game; it does NOT prove the move is illegal in all Pokémon generations.',
   species:KANTO_151.length,normalCampaignSpecies:checked,
   mewtwo:'UNRESTRICTED_LAB_EXCLUDED',
-  installed:TEST_LIBRARY.length,levels,
+  installed:TEST_LIBRARY.length,approvedBaseline:227,levels,
   matrixCells:KANTO_151.length*TEST_LIBRARY.length,
   invalidTMClaimsTested:incompatibleClaims,
   levelComparisons:comparisons,leaks:violations.length,
