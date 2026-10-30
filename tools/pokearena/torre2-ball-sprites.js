@@ -91,22 +91,37 @@ export function drawBallSprite(g,cx,cy,kind='pokeball',scale=2,angle=0,opened=fa
  * rotation/nearest sampling. Never rotate/repaint every pixel per frame.
  * This is the existing user-supplied art, not an unlicensed new rip.
  */
-export function ballTextureKey(kind='pokeball'){
+// Cache both approved pixel-art states. The opened ball has a larger transparent
+// canvas so its split upper/lower shells are never clipped at 16x16.
+export function ballTextureKey(kind='pokeball',opened=false){
  const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
- return 'torre2-original-ball-'+type;
+ return 'torre2-original-ball-'+type+(opened?'-open':'');
 }
-export function originalBallSprite(scene,x,y,kind='pokeball',size=16,depth=2309){
+function ensureBallTexture(scene,kind='pokeball',opened=false){
  const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
- const key=ballTextureKey(type);
+ const key=ballTextureKey(type,opened);
  if(!scene.textures.exists(key)){
-  const canvas=scene.make.graphics({x:0,y:0,add:false});
-  drawBallSprite(canvas,8,8,type,1,0,false);
-  canvas.generateTexture(key,16,16);
-  canvas.destroy();
+  const size=opened?24:16,center=size/2;
+  const gfx=scene.make.graphics({x:0,y:0,add:false});
+  drawBallSprite(gfx,center,center,type,1,0,opened);
+  gfx.generateTexture(key,size,size);
+  gfx.destroy();
  }
  const texture=scene.textures.get(key);
  if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ return key;
+}
+export function setBallOpened(sprite,kind='pokeball',opened=false,size=16){
+ const key=ensureBallTexture(sprite.scene,kind,opened);
+ const frameSize=opened?size*1.5:size;
+ sprite.setTexture(key).setDisplaySize(frameSize,frameSize);
+ sprite.setData('torre2-ball-opened',!!opened);
+ return sprite;
+}
+export function originalBallSprite(scene,x,y,kind='pokeball',size=16,depth=2309){
+ const type=Object.prototype.hasOwnProperty.call(BALL_FRAMES,kind)?kind:'pokeball';
+ const key=ensureBallTexture(scene,type,false);
  return scene.add.image(Math.round(x),Math.round(y),key)
   .setDisplaySize(size,size).setDepth(depth).setData('torre2-original-ball-sprite',type);
 }
