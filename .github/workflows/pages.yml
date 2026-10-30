@@ -124,6 +124,7 @@ jobs:
           npm install --no-audit --no-fund
           CHROME_BIN="$(command -v google-chrome)" node tests/batch24-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/source-client-smoke.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/surge-shop-rematch-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
       - name: Arquivar evidência visual do motor Phaser
