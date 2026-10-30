@@ -12,6 +12,7 @@ on:
       - 'tests/original-ball-capture.test.js'
       - 'tests/ball-choreography-browser.cjs'
       - '.github/workflows/capture-misty-ui-validation.yml'
+      - '.github/workflows/capture-misty-ui-validation.yml'
 permissions:
   contents: read
 jobs:
@@ -47,3 +48,14 @@ jobs:
         run: |
           node tests/t06-desktop-capture-browser.cjs
           node tests/ball-choreography-browser.cjs
+
+      - name: Save real GOTCHA screenshot for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gotcha-capture-real-phaser
+          path: |
+            test-evidence/ball-gotcha.png
+            test-evidence/ball-capture-absorb.png
+          if-no-files-found: warn
+          retention-days: 7
