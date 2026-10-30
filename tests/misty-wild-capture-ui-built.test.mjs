@@ -90,6 +90,7 @@ test('Campaign HUD, capture ball and party all use the same pixel atlas',()=>{
  const lineup=fs.readFileSync(new URL('../tools/pokearena/torre2-party-battle.js',import.meta.url),'utf8');
  assert.match(art,/import \{drawBallSprite\} from '\.\/ball-sprites\.js'/);
  assert.match(art,/return drawBallSprite\(g,x,y,'pokeball'/);
- assert.match(capture,/const fieldBallScale=1\.3/);
- assert.match(lineup,/drawCaptureBall\(g,x,y,'pokeball',\.66\)/);
+ assert.match(capture,/const ballSprite=originalBallSprite\(scene,end\.x,end\.y,kind,16,2309\)/);
+ assert.match(lineup,/const hudBalls=Array\.from\(/);
+ assert.match(lineup,/originalBallSprite\(scene,0,0,'pokeball',16,2481\)/);
 });
