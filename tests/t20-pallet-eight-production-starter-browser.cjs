@@ -70,13 +70,21 @@ const server=http.createServer(async(req,res)=>{
    'Legitimate Lv5 starter must have three usable native attacks');
   assert.equal(firstKit.e,undefined,'Legitimate Lv5 starter cannot equip ULT');
   report.earnedUlt={initial:{level:5,experience:before.team[0].experience,ultLocked:true},unlockedAt:null};
-  const names=['pidgey','rattata','caterpie','charmander'];
+  // Trainer evolution is calculated before combat. At this stage Caterpie
+  // legitimately appears as Metapod if its original trainer level allows it.
+  const openingBase=['pidgey','rattata','caterpie','charmander'];
  const total=8;
   for(let round=0;round<total;round++){
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
-   if(round<names.length)assert.equal(opponent.id,names[round],
-    'First four route species include the rival after Caterpie');
+   if(round<openingBase.length){
+    const canonical=await page.evaluate(({base,level})=>
+     window.kanto.trainerSpeciesForLevel(base,level),
+     {base:openingBase[round],level:opponent.level});
+    assert.equal(opponent.id,canonical,
+     'Early NPC species must follow legal original trainer evolution');
+    entry.baseSpecies=openingBase[round];entry.evolvedAtLevel=opponent.level;
+   }
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
    const expectedKind=round===3?'rival':round===5?'rocket':'trainer';
    assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
