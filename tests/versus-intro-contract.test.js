@@ -7,11 +7,12 @@ const builder=readFileSync('tools/pokearena/build-preview.mjs','utf8');
 
 test('VS is a Phaser graphics scene, not an HTML overlay or a video',()=>{
  assert.match(source,/scene\.add\.container\(/);
+ assert.match(source,/delay:VERSUS_DURATION_MS-210/);
  assert.match(source,/scene\.tweens\.add\(/);
  assert.match(source,/addRedPlayer\(/);
  assert.match(source,/addFireRedNPC\(/);
  assert.match(source,/originalBallSprite\(/);
- assert.match(source,/VERSUS_DURATION_MS=1480/);
+ assert.match(source,/VERSUS_DURATION_MS=2500/);
  assert.doesNotMatch(source,/document\.createElement|canvas\.getContext|<video|<iframe/);
 });
 test('VS uses named opponents and real party counts, not hard-coded 6 balls',()=>{
