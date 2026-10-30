@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§7/8: regressão de assinatura detectada e patch ainda não homologado
+
+- PR #358: CI #41066647123 provou que a filtragem indiscriminada de `pendiente` reduziu 149 ULTs temáticas para 144. Afetou Caterpie, Metapod, Weedle, Kakuna e Eevee porque Bug Bite, Bite e Swift tinham VFX aprovado mas herdavam a flag de placeholder nativo.
+- Patch de agregação da biblioteca T2 remove **somente** o bloqueio herdado para VFX explicitamente aprovados, sem tocar nos renderizadores, saves ou Arena nativa. Teste compilado mantém exigência 149/150; **CI/merge/Pages pendentes**. Não marcar seções concluídas.
+
+
 ## 30/10/2026 — T07/T08: impedir prévias de golpes bloqueados (PR em validação)
 
 - **Diagnóstico no código:** `resolveKantoIntro` aceitava renderizadores marcados `pendiente`, `torre2Unavailable`, `torre2RequiresTM` ou `torre2RequiresHM`; `trainingMove` podia retirar `pendiente` e exibir um golpe que não deveria ser liberado. O seletor de ULT temática também não filtrava esses bloqueios.
