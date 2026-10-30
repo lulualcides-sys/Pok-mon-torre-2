@@ -880,6 +880,17 @@ const fighterPath=path.join(dest,clientSource,'luchador.js');
 const fighterCode=await fs.readFile(fighterPath,'utf8');
 if(!fighterCode.includes('class Luchador')||!fighterCode.includes('kitActual('))
  throw Error('Upstream Arena fighter incompatible with isolated move policy');
+// An added Arena species like Dodrio can receive 2 poison damage / 1.5s.
+// Native HP out-of-combat recovery (1.3 HP/s) starts after four seconds,
+// nearly negating the toxin and leaving a poisoned fighter un-KO-able.
+// Disable ONLY that passive recovery during poison on Torre2-added species;
+// preserve original client Pokémon, HP stats, approved VFX/moves and
+// the campaign. Residual ticks still use the native recibir()->morir()->alKO path.
+const nativeRegenGuard='!this.est.enfermo&&!this.escena.datos?.torre2';
+if(fighterCode.split(nativeRegenGuard).length!==2)
+ throw Error('Upstream Arena passive HP regeneration guard changed');
+await fs.writeFile(fighterPath,fighterCode.replace(nativeRegenGuard,
+ '!this.est.enfermo&&!(this.def?.torre2ArenaAdded===true&&this.est.veneno)&&!this.escena.datos?.torre2'));
 await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
