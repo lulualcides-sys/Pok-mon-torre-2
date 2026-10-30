@@ -105,7 +105,7 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(grass.labels,grass.listed,'Each sprite must keep its correct species name');
   assert.ok(grass.sprites.length>0,'No wild sprites found');
   for(const entry of grass.sprites){
-   assert.match(entry.texture,/^torre2-portrait-\\d{4}$/,'A Pokémon must use its actual PMD portrait');
+   assert.match(entry.texture,/^torre2-portrait-\d{4}$/,'A Pokémon must use its actual PMD portrait');
    assert.equal(entry.width,22);
    assert.equal(entry.height,22);
   }
