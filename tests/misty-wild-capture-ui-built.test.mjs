@@ -10,6 +10,7 @@ const modules=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'))
 const base=path.join(root,modules,'torre2');
 const core=await import(pathToFileURL(path.join(base,'campaign-core.js')).href);
 const party=await import(pathToFileURL(path.join(base,'party-battle.js')).href);
+const capture=await import(pathToFileURL(path.join(base,'capture-arena.js')).href);
 const records=new Map();
 globalThis.localStorage={
  getItem:key=>records.get(key)??null,
@@ -93,4 +94,39 @@ test('Campaign HUD, capture ball and party all use the same pixel atlas',()=>{
  assert.match(capture,/const ballSprite=originalBallSprite\(scene,end\.x,end\.y,kind,16,2309\)/);
  assert.match(lineup,/const hudBalls=Array\.from\(/);
  assert.match(lineup,/originalBallSprite\(scene,0,0,'pokeball',16,2481\)/);
+});
+
+test('One Pokéball touch chooses common first, then Great/Ultra without wasting rarer balls',()=>{
+ assert.equal(capture.selectCaptureBall({pokeball:3,greatball:5,ultraball:5}),'pokeball');
+ assert.equal(capture.selectCaptureBall({pokeball:0,greatball:2,ultraball:8}),'greatball');
+ assert.equal(capture.selectCaptureBall({pokeball:0,greatball:0,ultraball:1}),'ultraball');
+ assert.equal(capture.selectCaptureBall({pokeball:0,greatball:0,ultraball:0}),null);
+ const source=fs.readFileSync(new URL('../tools/pokearena/torre2-capture-arena.js',import.meta.url),'utf8');
+ assert.match(source,/torre2-single-capture/);
+ assert.match(source,/function captureOnce\(/);
+ assert.doesNotMatch(source,/function showChoices\(/,'Single button replaces three-row modal');
+ assert.doesNotMatch(source,/scene\.fase='torre2-aim'/);
+});
+test('Player gets 3 voluntary switches per battle; forced KO is not a manual request',()=>{
+ assert.equal(party.PLAYER_MANUAL_SWITCH_LIMIT,3);
+ const state=core.createCampaign('squirtle');
+ const match=party.createPartyMatch(state,{id:'rattata',level:5},true);
+ assert.equal(match.playerManualSwitches,0);
+ assert.equal(match.playerPotionUses,0);
+ assert.equal(party.canPlayerManualSwitch(match,1),true);
+ match.playerIndex=1;match.playerManualSwitches=1;
+ assert.equal(party.canPlayerManualSwitch(match,0),true);
+ match.playerIndex=0;match.playerManualSwitches=3;
+ assert.equal(party.canPlayerManualSwitch(match,1),false);
+ // Enemy tactical swaps and knocked-out Pokémon replacements are separate.
+ assert.equal(match.changes,0);
+ const source=fs.readFileSync(new URL('../tools/pokearena/torre2-party-battle.js',import.meta.url),'utf8');
+ assert.match(source,/if\(side===0&&kind==='switch'\)/);
+ assert.match(source,/if\(kind==='faint'\)/);
+});
+test('Arena top level-cap table removed without deleting Kanto level-cap rules',()=>{
+ const source=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-scene.js',import.meta.url),'utf8');
+ assert.doesNotMatch(source,/fillRoundedRect\(189,5,262,24,3\)/);
+ assert.doesNotMatch(source,/'SEU NV\.'/);
+ assert.match(source,/hardCap:currentLevelCap\(state.stage\)/);
 });
