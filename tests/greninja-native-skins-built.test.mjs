@@ -6,7 +6,7 @@ import {GRENINJA_DEX,GRENINJA_VARIANTS,verifyGreninjaManifest}
  from '../tools/pokearena/torre2-greninja-variants.mjs';
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const version=JSON.parse(await fs.readFile(path.join(root,'version.json'),'utf8'));
-const client=version.src;
+const client=version.modules; // Fingerprinted final patched Phaser source, not upstream version.src
 assert.match(client,/^src-[a-f0-9]{10}$/);
 const manifest=JSON.parse(await fs.readFile(path.join(root,'assets/pmd/manifest.json'),'utf8'));
 const count=verifyGreninjaManifest(manifest);
