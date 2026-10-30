@@ -1,5 +1,11 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T07/T08: derrota real Charmander e diagnóstico independente de Squirtle (#327)
+
+- **Bloqueio confirmado:** [CI #40987990223](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40987990223) **FALHOU**: Charmander Lv5 foi derrotado por Pidgey Lv6 no primeiro combate Phaser/AUTO, `wins=0`, `losses=1`, HP próprio 0 e HP adversário 27,78/48. Não é vitória, nem prova de progressão Charmander Lv8; Squirtle não executou nessa CI por interrupção antecipada. O catálogo compilado ainda mostra Ember + Struggle 2 + Struggle 3 no Lv5 de Charmander; não inventar Scratch, Growl ou golpe incompatível.
+- **Diagnóstico implementado sem alterar gameplay:** [PR #327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327), HEAD `ec159a49a98c6e9bd2f4c98d22c46cb7b2f78491`: detecta derrota ao terminar a luta, registra kits e contadores nativos, e executa os dois iniciais independentemente. **CI #40994024445 iniciada; resultado ainda não confirmado.** CI deve falhar se qualquer inicial perder. Nenhum merge, Pages ou HTTP deste HEAD confirmado.
+- **Próximo:** investigar uso real de Ember/Struggle pelo AUTO e viabilidade de Charmander sem adulterar vitórias, XP, dano ou os 231 movimentos compilados; obter evidência independente de Squirtle. T07/T08 **PARCIAIS**; Android físico, campanha natural completa e ULT efetivamente lançada continuam pendentes.
+
 ## 29/10/2026 — T07/T08: cobertura de Charmander e Squirtle por XP nativo (#327; validação pendente)
 
 - **PR de testes em draft [#327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327)**, HEAD `70dfe108001ddff19a6923a0350a816c447c6b73`: parametriza a prova já integrada #321 para Charmander e Squirtle; verifica três treinadores reais por espécie, XP Lv5→8, persistência, três golpes Lv5, ULT no E, toque Phaser e cooldown básico. Preserva teste padrão Bulbasaur.

@@ -1,5 +1,12 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08 Charmander perdeu combate nativo; #327 revisada
+
+- **§7/§8/§31 PARCIAIS:** [CI #40987990223](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40987990223) registrou derrota genuína de Charmander Lv5 contra Pidgey Lv6 no primeiro combate AUTO: 0 vitórias, 1 derrota, HP 0 contra 27,78/48. O catálogo compilado mostra Ember, Struggle 2, Struggle 3. Não é prova de desbloqueio da ULT por XP para Charmander; Squirtle não foi executado nesse run.
+- **§33 PARCIAL:** [PR #327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327), commit `ec159a49a98c6e9bd2f4c98d22c46cb7b2f78491`, ajusta apenas teste/workflow para interromper espera quando houver derrota, registrar slots/uso/dano e testar ambos os iniciais mesmo se um falhar; **CI #40994024445 em execução, não aprovada**.
+- **§36 PARCIAL:** não houve alteração de runtime, VFX aprovados, sprites, cooldowns, TM, saves ou mecânicas de campanha. Scratch continua adiado, Surf não habilitado e Deoxys fora da campanha.
+- **§37 PARCIAL:** #327 não foi mesclada nem publicada; não atribuir SHA de Pages a esta revisão. Faltam provas de campanha natural completa, ULT disparada com medidor ganho em jogo e Android físico.
+
 ## 29/10/2026 — §§7/8/31/33/36/37 · PR #327: outros dois iniciais em combate real (pendente)
 
 - **§7/§8/§31 PARCIAIS:** [PR #327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327), HEAD `70dfe108001ddff19a6923a0350a816c447c6b73`, amplia a prova de XP/ULT #321 para Charmander e Squirtle, com save/reload e comandos nativos no Chromium. O teste parametrizado não modifica runtime, recursos ou saves existentes.
