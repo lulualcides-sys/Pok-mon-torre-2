@@ -6,7 +6,7 @@ export {validRematchResult};
  */
 import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle,levelEvolutionChoices} from './progression.js';
 import {ROSTER} from '../datos.js';
-import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS} from './route-data.js';
+import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
 import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
@@ -780,7 +780,7 @@ export function resolveWildBattle(s,won){
  });
 }
 export function purchaseItem(s,itemId){
- const item=MART_ITEMS.find(i=>i.id===itemId&&s.stage>=(i.minStage??0));
+ const item=MART_ITEMS.find(i=>i.id===itemId&&martItemUnlocked(s,i));
  if(!item)return {ok:false,reason:'Item não está disponível nesta cidade.'};
  if(!Number.isFinite(s.money)||s.money<item.price)return {ok:false,reason:'Poké Dollars insuficientes.'};
  if(item.kind==='tm'&&s.inventory.tms.includes(itemId))
@@ -859,19 +859,22 @@ export function teachTM(s,itemId,memberIndex=s.active){
  return {ok:true,move:item.move};
 }
 
-export function rematchOpponent(s,index){
- if(s.stage<1||s.stage>=8||!Number.isInteger(index)||index<0||index>=s.trainer||index>=TRAINERS_PER_GYM(s.stage))return null;
- const foe=currentOpponent({...s,trainer:index});
+export function rematchOpponent(s,index,mapStage=s.stage){
+ const stage=Number(mapStage);
+ if(!Number.isInteger(stage)||stage<0||stage>8||stage>s.stage||
+  !Number.isInteger(index)||index<0||index>=TRAINERS_PER_GYM(stage)||
+  (stage===s.stage&&index>=s.trainer))return null;
+ const foe=currentOpponent({...s,stage,trainer:index,champion:false});
  if(!foe||!['trainer','rocket'].includes(foe.kind)||foe.leader)return null;
  const level=Math.min(currentLevelCap(s.stage),foe.level+Math.min(10,(s.badges?.length||0)*2));
- return {...foe,level,id:trainerSpeciesForLevel(foe.id,level)};
+ return {...foe,level,id:trainerSpeciesForLevel(foe.id,level),mapStage:stage};
 }
-export function startRematch(s,index){
- const opponent=rematchOpponent(s,index);
+export function startRematch(s,index,mapStage=s.stage){
+ const opponent=rematchOpponent(s,index,mapStage);
  if(!opponent)return {ok:false,reason:'Este treinador ainda não tem revanche disponível.'};
  // Reserve the VS Seeker ticket only after the pending fight is durable.
  const next=JSON.parse(JSON.stringify(s));
- const ticket=reserveRematch(next,index);
+ const ticket=reserveRematch(next,index,opponent.mapStage);
  if(!ticket)return {ok:false,reason:'VS Seeker: '+rematchState(next).charge+'/3 atividades. Vença outras batalhas para recarregar.'};
  saveCampaign(next);
  Object.assign(s,next);
@@ -883,8 +886,8 @@ export function resolveRematch(s,ticket,won){
   if(!consumeRematchResult(next,ticket))return {ok:false,reason:'Resultado antigo de revanche ignorado.'};
   let money=0,xp=0,shared=null;
   if(won){
-   money=Math.floor((180+next.stage*60)/2);
-   xp=Math.max(1,Math.floor(xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),'trainer')*.6));
+   money=Math.floor((180+ticket.stage*60)/2);
+   xp=Math.max(1,Math.floor(xpRewardFor(ticket.stage,TRAINERS_PER_GYM(ticket.stage),'trainer')*.6));
    shared=awardSharedTeamExperience(next,xp,{kind:'trainer'});
    next.money=(next.money||0)+money;
    next.rematches.wins=(next.rematches.wins||0)+1;
