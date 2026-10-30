@@ -1139,6 +1139,9 @@ const server=http.createServer(async(req,res)=>{
     null,{timeout:24000});
   const captureHud=await offline.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('combate'),enemy=c.luchadores[1];
+    // A user preparing a manual catch disables default AUTO before reducing
+    // the opponent to capture HP, otherwise the AI may finish it first.
+    if(c.__torre2AutoMode?.enabled)c.__torre2AutoMode.zone.emit('pointerdown');
     enemy.hp=Math.max(1,enemy.hpMax*.12);
     const opener=c.children.list.find(o=>
      o.getData?.('torre2-single-capture')===true&&o.input?.enabled);
