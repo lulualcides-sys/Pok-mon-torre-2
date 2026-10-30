@@ -98,27 +98,35 @@ export function enforceArenaMoveCooldowns(kit){
  }
  return output;
 }
-// Gengar is an original Poké Arena fighter, so the added-species kit
-// filter never ran for it. Remove only a generic Hyper Beam that appears
-// in its active non-campaign Arena kit; keep every other native slot/VFX.
-// Use a real installed, damaging Ghost/Poison attack (never fake a renderer).
+// Gengar is a native Arena fighter, so the added-species filter does not
+// sanitize its original kit. Replace any generic Hyper Beam OR repeated
+// attack with a genuinely installed distinct Gengar-compatible renderer.
+// Prefer Dark Pulse: its approved pixel-art VFX is already in Batch 24 and
+// this Gen IV technique belongs in Arena, never the FRLG campaign learnset.
 export function replaceGengarHyperBeam(kit,library){
  if(!kit||!library)return kit;
- const used=new Set(ATTACK_SLOTS.map(slot=>idOf(kit[slot]?.nombre)).filter(k=>k&&k!=='hyper-beam'));
- let result=kit;
- const preferences=['shadow-ball','sludge-bomb','shadow-punch','dark-pulse','night-shade','dream-eater'];
+ const preferred=['dark-pulse','shadow-punch','night-shade','psychic',
+  'dream-eater','shadow-ball','sludge-bomb'];
+ const used=new Set();
+ let output=kit;
  for(const slot of ATTACK_SLOTS){
-  if(idOf(kit[slot]?.nombre)!=='hyper-beam')continue;
-  const good=m=>m?.forma&&m?.approved!==false&&Number(m.dano)>0&&!used.has(idOf(m.nombre));
-  const replacement=preferences.map(k=>library.get(k)).find(good)||
-   [...library.values()].filter(m=>['GHOST','POISON'].includes(m?.tipo)&&good(m))
-    .sort((a,b)=>slot==='e'?Number(b.dano)-Number(a.dano):Number(a.dano)-Number(b.dano))[0];
-  if(!replacement)continue; // never insert an unimplemented attack
-  if(result===kit)result={...kit};
-  result[slot]={...replacement,pendiente:false,ulti:slot==='e'};
-  used.add(idOf(replacement.nombre));
+  const key=idOf(output[slot]?.nombre);
+  if(!key)continue;
+  if(key!=='hyper-beam'&&!used.has(key)){
+   used.add(key);
+   continue;
+  }
+  // Include all four occupied slots, including later ones, so replacing
+  // Sludge Bomb cannot accidentally duplicate Shadow Ball or another move.
+  const occupied=new Set(ATTACK_SLOTS.map(s=>idOf(output[s]?.nombre)).filter(Boolean));
+  const move=preferred.map(name=>library.get(name)).find(m=>m?.forma&&
+   m?.approved!==false&&Number(m.dano)>0&&!occupied.has(idOf(m.nombre)));
+  if(!move){used.add(key);continue;} // no invented forms or illegal changes
+  if(output===kit)output={...kit};
+  output[slot]={...move,pendiente:false,ulti:slot==='e'};
+  used.add(idOf(move.nombre));
  }
- return result;
+ return output;
 }
 export function selectArenaSpeciesKit(kit,species,types,library){
  const id=idOf(species),signature=idOf(SIGNATURES[id]);
