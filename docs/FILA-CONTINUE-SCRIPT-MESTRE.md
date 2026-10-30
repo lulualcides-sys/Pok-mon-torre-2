@@ -1,5 +1,14 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 29/10/2026 — T20: primeiro trecho de Pallet real (quatro lutas) comprovado; oito lutas e Brock sob teste
+
+- **Verificado e integrado:** [PR #326](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/326), squash `b6ecd4ac50ecfb74fc6f05d54f09f62d898c0be4`; [CI #40983712619](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983712619) **SUCESSO**: quatro vitórias Phaser consecutivas Lv5→9 (Pidgey, Rattata, Caterpie e rival Charmander), dinheiro normal 1400→2400 e XP/HP/saves preservados. **Limite importante:** este teste cria o inicial pelo `createCampaign` de QA e deposita o Mewtwo de laboratório no PC, **não** prova escolha de inicial pela UI nem jornada Pallet→Brock.
+- **Em validação, não mesclar antecipadamente:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328), [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087), refaz oito lutas com `createPlayerCampaign`, sem Mewtwo de laboratório na equipe **ou** no PC, com ULT desbloqueada por XP e reload; [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), [CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269), executa 13 treinadores, compras reais de Pokébolas, duas capturas selvagens por RNG legítimo, Rival e Brock, exigindo insígnia Rocha e TM Rock Tomb. Os workflows têm gates antes de qualquer merge.
+- **Pendente:** vencer de fato 13 treinadores e Brock sem estado artificial, sem perder continuidade, depois avançar até Misty e Liga no **mesmo save**. `createPlayerCampaign` é factory de produção, mas não substitui clique de seleção de inicial na interface. Falha/derrota legítima deve ser registrada, nunca mascarada por `resolveBattle`, edição de HP ou RNG.
+- **Preservar:** 121 kits aprovados do modo Arena, golpes e esquivas já publicados, cliente original P2 e todos os saves. Surf aprovado pelo usuário; não alterar TM/HM de campanha sem patch próprio.
+
+
+
 ## 29/10/2026 — T20 PRIORIDADE: 5 chefes reais da Liga no mesmo save — PR #210 integrada
 
 - **Teste integrado:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210), merge `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO**, jogou Lorelei→Bruno→Agatha→Lance→Campeão com o mesmo save, cinco vitórias Phaser legítimas, curas pelo Centro, reloads sem perda, Hall da Fama. [CI main #40977593904](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40977593904) **SUCESSO**.
