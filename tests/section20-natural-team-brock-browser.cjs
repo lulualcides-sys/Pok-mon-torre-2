@@ -144,7 +144,7 @@ const server=http.createServer(async(req,res)=>{
   }
   await backToMap();
   let encounters=0;
-  while((await game()).team.length<minimumTeam&&(await game()).balls>0&&encounters<12){
+  while((await game()).team.length<minimumTeam&&(await game()).balls>0&&encounters<24){
    encounters++;
    const old=await game();
    await page.evaluate(()=>{
@@ -155,8 +155,29 @@ const server=http.createServer(async(req,res)=>{
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&
     window.__pt2Game.scene.getScene('combate').fase==='lucha'&&
     window.__pt2Game.scene.getScene('combate').__torre2WildCapture,null,{timeout:65000});
-   let battle=true,attempts=0;
-   while(battle&&(await game()).balls>0&&attempts++<20){
+   // A player can RUN from a low-probability encounter instead of wasting
+   // every real ball on a single rare species. No forced RNG or species.
+   const candidate=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    const wild=window.kanto.readCampaign()?.pendingWild;
+    const enemy=b.luchadores?.[1],mechanics=window.__t20CaptureMechanics;
+    if(!wild||!enemy?.hpMax||!mechanics)throw Error('Missing genuine capture state');
+    return {species:wild.id,enemy:b.datos.p2,hp:enemy.hp,
+     hpMax:enemy.hpMax,rate:mechanics.catchRate(wild.id),
+     chance:mechanics.captureChance({...wild,wild:true,
+      hp:enemy.hp,hpMax:enemy.hpMax,
+      status:mechanics.fighterCaptureStatus(enemy)},'pokeball')};
+   });
+   assert.equal(candidate.species,candidate.enemy,'Native wild species mismatch');
+   assert.ok(Number.isFinite(candidate.chance)&&candidate.chance>=0&&candidate.chance<=1,
+    'Invalid native capture probability');
+   report.teamPreparation.encounters??=[];
+   report.teamPreparation.encounters.push({index:encounters,...candidate});
+   saveReport();
+   // Three or fewer native Poké Ball attempts on favorable opponents.
+   // Preserve remaining inventory for real later encounters if RNG fails.
+   let battle=candidate.chance>=.27,attempts=0;
+   while(battle&&(await game()).balls>0&&attempts++<3){
     const t0=await game();
     await sync();
     // The currently installed capture zone may have moved above Dash.
@@ -178,8 +199,15 @@ const server=http.createServer(async(req,res)=>{
        (b.scene.isActive()&&b.fase==='lucha'&&!b.__torre2CaptureBusy);
     },null,{timeout:25000});
     const now=await game();
-    report.teamPreparation.throws.push({encounter:encounters,beforeBalls:t0.balls,
-     afterBalls:now.balls,team:now.team.map(m=>m.id),losses:now.losses});
+    const visual=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate');
+     const d=b?.__torre2CaptureDebug;
+     return d?{state:d.state,hits:d.hits,texture:d.texture}:null;
+    });
+    report.teamPreparation.throws.push({encounter:encounters,
+     species:candidate.species,chance:candidate.chance,
+     beforeBalls:t0.balls,afterBalls:now.balls,
+     team:now.team.map(m=>m.id),losses:now.losses,visual});
     saveReport();
     if(now.team.length>t0.team.length){
      report.teamPreparation.captures.push(now.team.at(-1));
@@ -189,8 +217,8 @@ const server=http.createServer(async(req,res)=>{
     }
    }
    if(!await page.evaluate(()=>window.__pt2Game.scene.isActive('campanha'))){
-    // An exhausted inventory cannot throw again. Leave through the genuine
-    // FireRed-style RUN control, preserving active HP, RNG, XP and saves.
+    // RUN from an unfavorable encounter or three genuine failed throws.
+    // No synthetic capture, HP restoration, encounter or item reward.
     // The old test threw here, preventing a lawful return to the Mart.
     const retreatBefore=await game();
     const run=await page.evaluate(()=>{
@@ -209,7 +237,7 @@ const server=http.createServer(async(req,res)=>{
       'Native RUN must not award anything or skip campaign: '+key);
     report.teamPreparation.retreats.push({before:retreatBefore,after:retreatAfter});
     saveReport();
-    console.log('PASS NATURAL WILD RUN AFTER EXHAUSTED BALLS',JSON.stringify(retreatAfter));
+    console.log('PASS NATIVE WILD RUN WITH PRESERVED SAVE',JSON.stringify({candidate,after:retreatAfter}));
    }
    await centerHeal();
    assert.equal((await game()).trainer,old.trainer,'Wild encounters never advance trainer checkpoint');
@@ -295,6 +323,7 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(async production=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
+   window.__t20CaptureMechanics=await import(new URL('./torre2/capture-mechanics.js',main));
    const s=production?core.createPlayerCampaign('bulbasaur'):
      core.createCampaign('bulbasaur');
    core.saveCampaign(s);
@@ -317,7 +346,11 @@ const server=http.createServer(async(req,res)=>{
   let naturalRetries=0;
   const retriesPerCheckpoint=new Map();
   for(let round=0;round<total;round++){
-   if(round===5&&!earlyTeamReady){await prepareNaturalTeam({minimumTeam:2});await trainNaturalTeam();before=await game();earlyTeamReady=true;}
+   if(round===5&&!earlyTeamReady){
+    await prepareNaturalTeam({minimumTeam:2,strict:true});
+    await trainNaturalTeam({targetStarterLevel:11,targetSupportLevel:7,maxRounds:12});
+    before=await game();earlyTeamReady=true;
+   }
    // Fund the second genuine catch from route prize money if the first
    // Mart inventory ran out. A real capture is required by the Fire rival;
    // random failure is recorded rather than patched with a guaranteed roll.
