@@ -8,6 +8,10 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises');
 const path=require('node:path'),http=require('node:http'),{chromium}=require('playwright-core');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
+// Optional strict production route: NO test-factory level 50 Mewtwo.
+// The default old QA replay remains byte-for-byte equivalent in behavior.
+const useProductionStart=process.env.T20_PRODUCTION_START==='1';
+const expectedBox=useProductionStart?[]:['mewtwo'];
 const types={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg',
  '.ogg':'audio/ogg','.mp3':'audio/mpeg'};
@@ -151,28 +155,30 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(report.teamPreparation.after.team.length>=3,
    'At least two genuine RNG captures are required before Rival checkpoint');
   assert.equal(report.teamPreparation.after.trainer,12,'All 12 trainer wins are preserved');
-  assert.equal(report.teamPreparation.after.box.join(','),'mewtwo');
+  assert.deepEqual(report.teamPreparation.after.box,expectedBox,
+   'No QA Mewtwo or unexpected PC Pokémon in production beginning');
   console.log('PASS REAL TEAM PREPARATION',JSON.stringify(report.teamPreparation.after));
  };
 
  try{
   await page.goto('http://127.0.0.1:4322/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:50000});
-  await page.evaluate(async()=>{
+  await page.evaluate(async production=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
-   const s=core.createCampaign('bulbasaur');
+   const s=production?core.createPlayerCampaign('bulbasaur'):
+     core.createCampaign('bulbasaur');
    core.saveCampaign(s);
-   core.storePokemon(s,1);
+   if(!production)core.storePokemon(s,1);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
-  });
+  },useProductionStart);
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
   let before=await game();
   assert.equal(before.stage,0);assert.equal(before.trainer,0);assert.equal(before.wins,0);
   assert.deepEqual(before.team.map(x=>x.id),['bulbasaur']);
   assert.equal(before.team[0].level,5);
-  assert.deepEqual(before.box,['mewtwo']);
+  assert.deepEqual(before.box,expectedBox);
   const names=['pidgey','rattata','caterpie','charmander'];
  const total=14;
  const validateNaturalIvysaur=process.env.T03_NATURAL_EVOLUTION==='1';
@@ -254,7 +260,7 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(entry.after.losses,before.losses,'No loss fabricated during trainer victory');
    const payout=opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180;
    assert.equal(entry.after.money,before.money+payout,'Real trainer/Rocket/Rival payout');
-   assert.deepEqual(entry.after.box,['mewtwo']);
+   assert.deepEqual(entry.after.box,expectedBox);
    assert.equal(entry.after.team.length,round<12?1:3);
    if(opponent.leader){
     assert.deepEqual(entry.after.badges,['Rocha'],'Brock grants first and only badge');
