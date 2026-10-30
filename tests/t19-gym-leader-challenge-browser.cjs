@@ -59,7 +59,9 @@ const server=http.createServer(async(req,res)=>{
      }
      return {id:m.id,level:m.level,originalLmb:baseline.lmb?.id,
       chosenLmb:m.loadout.lmb?.id,originalDodge:baseline.esp?.forma,
-      chosenDodge:m.loadout.esp?.forma,upgrades};
+      chosenDodge:m.loadout.esp?.forma,upgrades,
+      chosenNames:['lmb','rmb','q','e'].map(slot=>m.loadout[slot]?.nombre),
+      allReal:['lmb','rmb','q','e'].every(slot=>!!m.loadout[slot]?.forma)};
     });
     result.push({stage,leader:core.GYMS[stage].leader,
      expectedIds:core.GYMS[stage].leaderTeam,
@@ -77,17 +79,31 @@ const server=http.createServer(async(req,res)=>{
   report.rosters=rosters;store();
   assert.equal(rosters.length,8);
   let improvements=0;
+  const surge={
+   voltorb:['Tackle','Sonic Boom','Screech','Shock Wave'],
+   pikachu:['Quick Attack','Thunder Shock','Thunder Wave','Shock Wave'],
+   raichu:['Quick Attack','Thunder Wave','Shock Wave','Thunderbolt']
+  };
   for(const g of rosters){
    assert.equal(g.gymLeader,true);
    assert.deepEqual(g.party.map(m=>m.id),g.expectedIds);
    assert.deepEqual(g.party.map(m=>m.level),g.expectedLevels);
    for(const m of g.party){
-    assert.equal(m.chosenLmb,m.originalLmb,'Do not change approved basic attack');
     assert.equal(m.chosenDodge,m.originalDodge,'Do not change approved dodge');
+    assert.ok(m.allReal,'Every Gym fighter must retain four real renderable moves');
+    if(g.stage===2){
+     // The previously approved Lt. Surge authored four-slot kits predate
+     // this optimizer. Compare against that frozen canonical contract, not
+     // against the ordinary level-up auto-loadout (which differs by design).
+     assert.deepEqual(m.chosenNames,surge[m.id],
+      'Lt. Surge author-approved kit must remain byte-equivalent in role and name');
+     continue;
+    }
+    assert.equal(m.chosenLmb,m.originalLmb,'Do not change approved basic attack');
     assert.ok(m.upgrades.length<=2,'At most two learned upgrades per gym fighter');
-    assert.ok(m.upgrades.every(u=>u.legal),'No unapproved, locked or incompatible move');
-    if(g.stage===2)assert.deepEqual(m.upgrades,[],
-     'Lt. Surge approved authored kit is left untouched');
+    assert.ok(m.upgrades.every(u=>u.legal),
+     'No unapproved, locked or incompatible move: '+g.leader+'/'+m.id+'/'+
+       JSON.stringify(m.upgrades));
     improvements+=m.upgrades.length;
    }
   }
