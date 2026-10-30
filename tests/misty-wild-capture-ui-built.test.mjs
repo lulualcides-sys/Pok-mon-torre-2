@@ -43,6 +43,30 @@ test("Misty's grass uses the actual random wild species, not leader Staryu",()=>
  assert.equal(state.pendingWild,null);
 });
 
+test('A real Staryu encounter awards Staryu, not Zubat, after a successful throw',()=>{
+ const state=core.createCampaign('squirtle');
+ state.stage=1;state.trainer=core.TRAINERS_PER_GYM(1);
+ state.pendingWild={id:'staryu',stage:1,trainer:state.trainer,level:18,hpPercent:17};
+ core.saveCampaign(state);
+ const match=core.startWildBattle(state);
+ const opponent={id:match.p2,level:match.torre2.enemyLevel,leader:true};
+ const battle=party.createPartyMatch(state,opponent,true);
+ assert.deepEqual(battle.foes.map(p=>p.id),['staryu']);
+ assert.equal(match.p2,'staryu');
+ const result=core.attemptCapture(state,()=>0,'ultraball',{
+  duringBattle:true,hpPercent:17,hp:17,hpMax:100,status:'sleep'
+ });
+ assert.equal(result.ok,true);
+ assert.equal(result.pokemon.id,'staryu');
+ assert.ok(state.dexCaught.includes('staryu'));
+ assert.equal(core.readCampaign().team.at(-1).id,'staryu');
+ assert.equal(core.readCampaign().pendingWild,null);
+});
+test('The shown enemy identity must match the pending species before throwing',()=>{
+ const source=fs.readFileSync(new URL('../tools/pokearena/torre2-capture-arena.js',import.meta.url),'utf8');
+ assert.match(source,/scene\.datos\?\.p2!==save\.pendingWild\.id/);
+});
+
 test('Wild grass is always separate from Misty team (including Staryu itself)',()=>{
  const state=core.createCampaign('squirtle');
  state.stage=1;state.trainer=core.TRAINERS_PER_GYM(1);
