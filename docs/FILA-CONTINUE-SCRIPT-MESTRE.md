@@ -1,5 +1,11 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## 30/10/2026 — publicação de captura comprovada; auditoria pública integral ainda vermelha
+
+- Pages #41050085664 **sucesso** para `main` `477dac7410ad7a89f73dfb9a9946187cbdbca657`; teste público Chromium do deploy registrou `PASS_PUBLIC_POKEDEX_RELEASE src-dc921f3851` (7 casos; não equivale à auditoria integral).
+- Auditoria independente #41050887159 **falhou** após 90 s esperando a cena Pokédex; não produziu artifact. A causa ainda não está provada. Patch de diagnóstico isolado captura estado Phaser, rede e screenshot em falhas futuras; CI/merge/Pages deste patch pendentes.
+- **T07/T08 e T20 continuam PARCIAIS**; não reabrir efeitos aprovados, nem declarar Brock ou os 150 kits homologados.
+
 ## 30/10/2026 — T07/T08: Surf aprovado como VFX, HM ainda sem liberação (patch em validação)
 
 - A política integral antiga continha a frase obsoleta «Surf está reprovado». A aprovação posterior de 30/10 prevalece: **preservar renderer Surf** e **não conceder HM automaticamente** em campanha. Scratch/Transform continuam adiados.
