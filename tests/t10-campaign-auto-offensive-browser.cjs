@@ -52,7 +52,8 @@ const server=http.createServer(async(req,res)=>{
    const b=window.__pt2Game.scene.getScene('combate'),a=b.__torre2AutoMode,me=a.control.l;
    window.__t10Control={control:a.control,original:a.read};
    return {campaign:!!b.datos.torre2,enabled:a.enabled,
-    originalReader:typeof a.read==='function',profile:{...a.ai.cfg},
+    originalReader:typeof a.read==='function',profile:{...a.ai.cfg},offense:{pBasico:a.ai.c.pBasico,pConGanas:a.ai.c.pConGanas,
+     pSinGanas:a.ai.c.pSinGanas,pAhorro:a.ai.c.pAhorro,rangoBanda:a.ai.c.rangoBanda},
     advantage:me.ventaja,slots:Object.keys(me.kit),species:b.datos.p1};
   });
   assert.equal(initial.campaign,true);
@@ -63,6 +64,10 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(initial.profile.error,0,'Campaign AUTO level 2 avoids aim error');
   assert.equal(initial.profile.basicos,1,'Campaign AUTO level 2 maximizes native basic pressure');
   assert.equal(initial.profile.agresividad,1);
+  assert.equal(initial.offense.pBasico,.14,'Real native basic attack threshold must be tuned');
+  assert.equal(initial.offense.pConGanas,.20);
+  assert.equal(initial.offense.pSinGanas,.34);
+  assert.equal(initial.offense.pAhorro,.08);
   const on=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),a=b.__torre2AutoMode;
    a.zone.emit('pointerdown',{id:131},0,0,{stopPropagation(){}});
@@ -77,10 +82,15 @@ const server=http.createServer(async(req,res)=>{
   const playing=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),m=b.luchadores[0],a=b.__torre2AutoMode;
    return {phase:b.fase,enabled:a?.enabled,uses:{...(m?.stats?.usosSlot||{})},
-    energy:m?.energia,advantage:m?.ventaja,profile:{...(a?.ai?.cfg||{})}};
+    energy:m?.energia,advantage:m?.ventaja,profile:{...(a?.ai?.cfg||{})},
+    offense:{pBasico:a?.ai?.c?.pBasico,pAhorro:a?.ai?.c?.pAhorro}};
   });
   assert.equal(playing.advantage,1,'Combat AUTO may not silently buff attack damage');
   assert.equal(playing.profile.agresividad,1);
+  assert.equal(playing.offense.pBasico,.14);
+  assert.equal(playing.offense.pAhorro,.08);
+  assert.ok(Object.values(playing.uses).reduce((sum,n)=>sum+Number(n||0),0)>=1,
+   'Real native Phaser AUTO must actually cast a learned move during combat');
   assert.equal(playing.enabled,true,'AUTO remains active after live decision frames');
   await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),a=b.__torre2AutoMode;
