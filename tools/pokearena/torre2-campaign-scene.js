@@ -23,7 +23,7 @@ import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
 import {prepareTrainingMatch,installTrainingDummy} from './training.js';
-import {drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ICON_FILES} from './campaign-sprites.js';
+import {drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ITEM_FILES} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
@@ -111,7 +111,7 @@ class Campanha extends Phaser.Scene{
   const state=readCampaign();
   // Nine tiny original GBA item icons shared by every Mart page.
   // Load once into Phaser's image cache, never over the network during shopping.
-  for(const file of FRLG_MART_ICON_FILES){
+  for(const file of FRLG_MART_ITEM_FILES){
    const key='torre2-frlg-mart-'+file;
    if(!this.textures.exists(key))
     this.load.image(key,'assets/ui/frlg/items/'+file+'.png');
