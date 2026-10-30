@@ -788,3 +788,11 @@
 - **§36 — PARCIAL:** diff sem mudanças em golpes, VFX, pixel art, sprites, cooldowns, controles nativos, efeitos aprovados ou saves anteriores. Frentes Toxic #16, Shiny #17, Liga #210 e evolução/PC #213 preservadas.
 - **§37 — PARCIAL:** [Pages #40787225675](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40787225675) **SUCESSO**, `pages_build_version=167371d2f4dcfbac8a7fcfa6855d42ce52509ebd`, HTTP público confirmou `src-bee13a892e` às **23:28:37 UTC de 28/10/2026**.
 - **Limites:** seleção, falhas de armazenamento e equipe são fixtures; não há prova de Android físico, K.O. naturalmente jogado nem percurso completo Pallet→Campeão. T05 e §§31/33/36/37 continuam PARCIAIS; nenhuma das 37 seções foi declarada integralmente VALIDADA com base neste patch.
+
+
+## 30/10/2026 — §§7/8/20/33/36/37 · T37 Pages: re-run ambíguo corrigido em PR, ainda não publicado
+
+- **§37 PARCIAL:** [Pages #41017521799](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41017521799) tentativa 1 fez deploy `31ec7e98` e confirmou HTTP `src-ad06504c6f`, porém o Chromium público encontrou **503** no sprite `assets/pmd/0145/Idle-Anim.png`; job vermelho. Na tentativa 2, `actions/deploy-pages@v4` encontrou **dois artefatos `github-pages`** no mesmo run e abortou. Deploy HTTP anterior não equivale a validação final verde.
+- **§33/§36 PARCIAIS:** [PR #345](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/345) corrige somente o nome upload/deploy para `github-pages-attempt-${{ github.run_attempt }}`, com teste de contrato e workflow isolado; [CI #41019213974](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41019213974) **pendente**. Não houve merge, nem nova publicação atribuível a esta PR. Runtime, saves, VFX, pixel art, sprites, cooldowns, TM e controles inalterados.
+- **§§7/8 PARCIAIS:** Charmander Lv5 ainda apresenta duas manobras Struggle; não confundir 150 kits compilados com três técnicas autênticas ou ULT disparada naturalmente. Scratch adiado; Surf não deve ser recriado/alterado sem autorização.
+- **§20 PARCIAL:** [CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) alcançou 12 treinadores e 8 vitórias selvagens com capturas, mas sofreu derrotas reais no 13º treinador e falhou. Brock, 13 vitórias consecutivas e campanha completa **não comprovados**.
