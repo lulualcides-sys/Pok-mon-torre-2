@@ -71,17 +71,56 @@ const server=http.createServer(async(req,res)=>{
    })).filter(o=>o.tag!==undefined||Math.abs(o.x-112)<100&&Math.abs(o.y-81)<25);
   });
   console.log('VS SEEKeR MAP POSITION TRACE',JSON.stringify(positions));
-  await click(112,81);
+  // The source client renders a 640x360 UI via a 2x camera. The previous
+  // browser gate clicked before the newly created Phaser zone was registered.
+  // Wait for native input readiness, never invoke a button callback directly.
+  const mapPoint=await page.evaluate(()=>{
+   const scene=__pt2Game.scene.getScene('campanha');
+   const zone=scene.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-rematch-map')===0);
+   if(!zone)throw Error('Brock map zone not interactive');
+   const rect=(document.querySelector('#juego canvas')||document.querySelector('canvas')).getBoundingClientRect();
+   return {x:rect.left+zone.x*rect.width/640,
+    y:rect.top+zone.y*rect.height/360,
+    zone:{x:zone.x,y:zone.y,width:zone.width,height:zone.height}};
+  });
+  await page.mouse.move(mapPoint.x,mapPoint.y);
+  // Phaser queues freshly created interactive zones until the next input
+  // update. Wait for the REAL native hit-test instead of racing its queue.
+  await page.waitForFunction(()=>{
+   const scene=__pt2Game.scene.getScene('campanha');
+   return scene.input.hitTestPointer(__pt2Game.input.activePointer).some(o=>
+    o.active&&o.getData?.('torre2-rematch-map')===0);
+  },null,{timeout:8000});
+  const pointerTrace=await page.evaluate(()=>{
+   const scene=__pt2Game.scene.getScene('campanha'),pointer=__pt2Game.input.activePointer;
+   const world=scene.cameras.main.getWorldPoint(pointer.x,pointer.y);
+   const label=o=>({x:o.x,y:o.y,width:o.width,height:o.height,depth:o.depth,
+    type:o.type,tag:o.getData?.('torre2-rematch-map'),
+    scene:o.scene?.sys?.settings?.key,active:o.active});
+   const hits=typeof scene.input.hitTestPointer==='function'?
+    scene.input.hitTestPointer(pointer).map(label):[];
+   const bounds=scene.children.list.filter(o=>o.active&&o.input?.enabled&&
+    o.getBounds?.().contains(world.x,world.y)).map(label);
+   return {pointer:{x:pointer.x,y:pointer.y,worldX:world.x,worldY:world.y},
+    hits,bounds,topOnly:scene.input.topOnly,
+    activeScenes:__pt2Game.scene.getScenes(true).map(s=>s.sys.settings.key)};
+  });
+  console.log('VS SEEKER MAP0 HIT TEST',JSON.stringify({mapPoint,pointerTrace}));
+  await page.mouse.click(mapPoint.x,mapPoint.y);
   try{
    await page.waitForFunction(()=>__pt2Game.scene.getScene('campanha').__torre2RematchAtlas?.mapStage===0,
-    null,{timeout:2200});
+    null,{timeout:5000});
   }catch(err){
    const info=await page.evaluate(()=>{
-    const scene=__pt2Game.scene.getScene('campanha');
+    const scene=__pt2Game.scene.getScene('campanha'),pointer=__pt2Game.input.activePointer;
+    const world=pointer&&scene.cameras.main.getWorldPoint(pointer.x,pointer.y);
     return {selection:scene.__torre2RematchAtlas,
-     pointer:__pt2Game.input.activePointer?{x:__pt2Game.input.activePointer.x,y:__pt2Game.input.activePointer.y}:null};
+     pointer:pointer?{x:pointer.x,y:pointer.y,worldX:world?.x,worldY:world?.y}:null};
    });
-   throw Error('Map0 pointer miss '+JSON.stringify(info)+' '+String(err));
+   fs.mkdirSync('test-evidence',{recursive:true});
+   await page.screenshot({path:'test-evidence/surge-map0-pointer-failure.png'});
+   throw Error('Map0 native pointer miss '+JSON.stringify({mapPoint,pointerTrace,info})+' '+String(err));
   }
   assert.ok(await page.evaluate(()=>__pt2Game.scene.getScene('campanha').children.list.some(o=>
    o.active&&o.getData?.('torre2-rematch-trainer')==='0:0')));
