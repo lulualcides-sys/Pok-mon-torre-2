@@ -257,3 +257,27 @@ test('RED: unapproved neutral contact cannot become Struggle fallback',()=>{
  assert.ok(['lmb','rmb','q'].some(slot=>out[slot].forma==='approved-contact'));
  assert.equal(JSON.stringify(library),before);
 });
+
+
+test('RED: preferred Lv8 ULT cannot bypass excluded Tackle, Surf HM or deferred Scratch/Transform',()=>{
+ const library=[
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,cd:3,coste:8},
+  {id:'vine-whip',nombre:'Vine Whip',forma:'approved-vine',tipo:'GRASS',dano:9,cd:4,coste:8},
+  {id:'scratch',nombre:'Scratch',forma:'legacy-scratch',tipo:'NORMAL',dano:8,cd:3,coste:8},
+  {id:'transform',nombre:'Transform',forma:'legacy-transform',tipo:'NORMAL',dano:8,cd:3,coste:8},
+  {id:'surf',nombre:'Surf',forma:'approved-surf',tipo:'WATER',dano:12,cd:6,coste:16}
+ ];
+ const original=JSON.stringify(library);
+ const member={id:'bulbasaur',progression:{level:8}};
+ for(const preferredSignature of ['Tackle','Surf','Scratch','Transform']){
+  const out=resolveKantoIntro(member,{},{
+   library,canonical:canon,levelUp:{tackle:1,'vine-whip':10},
+   speciesTypes:['GRASS'],preferredSignature
+  });
+  assert.equal(out.e?.torre2IntroSource,'vine-whip',
+   preferredSignature+' must not bypass the canonical ULT exclusions');
+  assert.ok(out.e?.ulti&&out.e.dano<=KANTO_INTRO.maxIntroUltDamage);
+ }
+ assert.equal(JSON.stringify(library),original,'approved VFX must remain unchanged');
+ assert.deepEqual(member,{id:'bulbasaur',progression:{level:8}});
+});
