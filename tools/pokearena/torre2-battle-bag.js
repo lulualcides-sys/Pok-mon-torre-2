@@ -52,6 +52,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  if(!scene?.add||!party||!actor)return null;
  const depth=7400;
  let opened=false,target=party.playerIndex,lastUse=-Infinity,objects=[];
+ let potionUses=0;
  // Native Phaser can pan AND zoom while the party fights. The Bag uses
  // fixed 640x360 HUD coordinates, so both scroll and zoom must be canceled
  // for graphics, labels and INPUT hitzones together. Scale compensation is
