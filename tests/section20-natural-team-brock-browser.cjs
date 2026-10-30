@@ -601,8 +601,14 @@ const server=http.createServer(async(req,res)=>{
      const rect=document.querySelector('#juego canvas').getBoundingClientRect();
      return {x:rect.x+zone.x*rect.width/640,y:rect.y+zone.y*rect.height/360};
     });
-    await page.mouse.click(autoButton.x,autoButton.y);
-    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode.enabled,
+    // Campaign AUTO is ON by default, including the optional natural T03
+    // evolution follow-up. The old unconditional click switched it OFF.
+    // Respect the installed native state; only toggle when genuinely OFF.
+    const autoInitiallyEnabled=await page.evaluate(()=>
+     window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled===true);
+    if(!autoInitiallyEnabled)await page.mouse.click(autoButton.x,autoButton.y);
+    await page.waitForFunction(()=>
+     window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled===true,
      null,{timeout:7000});
     try{
      await page.waitForFunction(({wins,losses})=>{
