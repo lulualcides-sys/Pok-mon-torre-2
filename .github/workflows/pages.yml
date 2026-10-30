@@ -101,6 +101,7 @@ jobs:
           node tests/batch24-built.test.mjs
           node tests/misty-surge-built.test.mjs
           node tests/misty-wild-capture-ui-built.test.mjs
+          node tests/rival-payday-cooldowns-built.test.mjs
           node tests/surge3-built.test.mjs
           node tests/kanto-151-built.test.mjs
           node tests/frlg-learnsets-built.test.mjs
