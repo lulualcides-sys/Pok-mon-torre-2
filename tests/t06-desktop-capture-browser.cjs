@@ -77,7 +77,18 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
   await page.evaluate(id=>{window.__t06CaughtId=id;},before.id);
   assert.ok(before.stock>=2);
   await tap(470,61);
+  const singleTap=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const z=b.children.list.find(o=>o.getData?.('torre2-single-capture')===true);
+   return {phase:b.fase,debug:b.__torre2CaptureDebug||null,
+    zone:z?{x:z.x,y:z.y,width:z.width,height:z.height,active:z.active,depth:z.depth}:null,
+    playerHp:b.luchadores[0]?.hp,foeHp:b.luchadores[1]?.hp,
+    auto:b.__torre2AutoMode?.enabled,bag:b.__torre2BattleBagOpen,
+    active:b.scene.isActive()};
+  });
+  console.log('ONE_TAP_CAPTURE_DEBUG',JSON.stringify(singleTap));
   await page.screenshot({path:'test-evidence/t06-desktop-pokeball-one-tap.png'});
+  assert.ok(singleTap.debug,'One tap must directly begin native Pokeball flight');
   await page.waitForFunction(()=>{
    const d=window.__pt2Game.scene.getScene('combate').__torre2CaptureDebug;
    return d?.state==='RESUME';
