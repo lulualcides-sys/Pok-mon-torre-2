@@ -4,7 +4,7 @@
  * Real FRLG unlocks/TM learnability and all original Arena 2D kits are intact.
  */
 
-import {chooseKantoSignatureUlt} from './kanto-ultimate-policy.js';
+import {chooseKantoSignatureUlt,isKantoSignatureUltNameAllowed} from './kanto-ultimate-policy.js';
 
 export const KANTO_INTRO=Object.freeze({
   start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:16,
@@ -206,7 +206,8 @@ export function resolveKantoIntro(member,installed,{
   // An explicit evolution/level block outranks a curated preview, and
   // pending custom VFX cannot bypass the same approval gate as the selector.
   // Do not change the approved preferred preview when it is still legal.
-  const preferredAllowed=introRenderable(preferred)&&Number(preferred.dano)>=6&&
+  const preferredAllowed=introRenderable(preferred)&&
+   isKantoSignatureUltNameAllowed(preferred?.nombre)&&Number(preferred.dano)>=6&&
    idOf(preferred.nombre)!==idOf(blockedSignature)&&
    (preferred.source!=='new-phaser-fx'||preferred.approved===true);
   const signature=preferredAllowed?preferred:

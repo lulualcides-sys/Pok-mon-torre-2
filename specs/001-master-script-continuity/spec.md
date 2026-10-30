@@ -1,5 +1,10 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## Lote T08 — ULT preferida respeita exclusões canônicas (30/10, PR #368)
+
+**Defeito reproduzível:** `resolveKantoIntro` aceitava `preferredSignature` instalada com dano >=6 sem aplicar as exclusões do seletor canônico, permitindo ULT `Tackle`, `Surf`, `Scratch` ou `Transform` quando passada por configuração. **Aceite:** a preferência excluída deve cair no seletor legal (no fixture Bulbasaur Lv8, `Vine Whip`); a preferência temática permitida deve continuar disponível. Não mudar o efeito Surf aprovado nem liberar HM, Scratch/Transform, alterar saves ou os 227 VFX. **Escopo:** só predicado, teste e documentação; não homologa 151 espécies nem combate natural.
+
+
 ## Lote 30/10 — CI pública independente contra 503 isolado
 
 **RED observado:** workflow público independente #41091689377, versão `src-78948ecbc5`, único 503 em `/red.js`, nenhuma exceção Phaser, apesar de Pages #41090646026 verde. **Aceite:** somente falha comprovada exclusivamente por 503 no domínio oficial permite até duas novas auditorias integrais (máximo 3); todo outro erro, falta de diagnóstico, versão/slots errados ou 503 persistente falha. Nenhuma mudança no jogo, saves, VFX ou baseline.

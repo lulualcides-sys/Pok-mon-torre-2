@@ -1,5 +1,12 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Lote T08 — gate compartilhado de ULT preferida (30/10, PR #368)
+
+- **Causa:** o seletor `chooseKantoSignatureUlt` tinha `excluded` canônico; o caminho `preferredSignature` em `resolveKantoIntro` checava apenas renderização, dano e bloqueio pontual. Corrigir compartilhando predicado exportado, sem editar catálogos, VFX, TM/HM, saves, cooldowns ou UI.
+- **RED→GREEN:** regressão adicionada primeiro (`2aeff6de`); execução isolada do código-fonte antes da correção falhou para Tackle/Surf/Scratch/Transform; depois `aa0cd1c0` retornou Vine Whip nos quatro casos, 19/19 testes do arquivo no harness isolado. Esse harness **não substitui** `npm test`, `check`, `check:reuse`, build, CI, Chromium ou Pages.
+- **Gates/rollback:** PR #368 draft; aguardar todos os workflows do HEAD e revisão; revalidar main, merge somente verde, conferir SHA publicado via Pages HTTP. Rollback restrito ao predicado compartilhado e teste. Não tocar PRs #270/#329, Toxic #16 ou Shiny #17.
+
+
 ## Lote 30/10 — retry estrito no workflow público independente
 
 - Reusar `tools/dev/pages-public-503-retry.cjs` e testes existentes sem modificar o classificador; alterar somente o passo Chromium de `.github/workflows/pokedex-public-live.yml` para até 3 execuções completas com limpeza de diagnóstico antes de cada tentativa.
