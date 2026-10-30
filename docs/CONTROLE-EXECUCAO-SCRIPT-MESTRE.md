@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §§20/33/36/37 · Rocket real vencida; teste corrigido, gates pendentes
+
+- **§20 PARCIAL:** [CI #41006367570](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41006367570) registrou 5 vitórias iniciais, 2 capturas legais, 8 vitórias selvagens com XP e vitória legítima na Rocket (`trainer=6`, `wins=14`, `losses=0`). O teste falhou por aguardar `wins===6` após XP selvagem; não por derrota. Brock e 13 treinadores não foram comprovados.
+- **§33 PARCIAL:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) atualizada no HEAD `9b62ccb8`, agora exige `before.wins+1` e vitória selvagem por XP sem falsificação. [CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) em execução na abertura deste registro. Não declarar aprovado antes da conclusão e da regressão Chromium.
+- **§36 PARCIAL:** alteração somente no teste e workflow; sem VFX novo, mudança de combate, saves, sprites, cooldowns ou TM. Toxic #16 e Shiny #17 intocados.
+- **§37 PARCIAL:** sem merge ou Pages deste patch. Validar SHA/HTTP após todos os gates, sem confundir prova do teste com publicação ou campanha integral.
+
+
 ## 29/10/2026 — §§20/33/36/37 · T20 oito vitórias de produção e dificuldade real da Rocket
 
 - **§20 PARCIAL:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328) integrada `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO**: oito confrontos nativos reais com inicial criado via factory de produção, sem Mewtwo debug, ULT desbloqueada por XP, save persistente/reload e controles Phaser testados; não comprova menu inicial nem 13 treinadores+Brock.
