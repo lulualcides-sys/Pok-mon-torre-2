@@ -44,12 +44,17 @@ export function installWildCapture(scene){
  scene.__torre2WildCapture=true;
  // Mobile: Pokéball-only action immediately ABOVE the Dash circle (native
  // 640x360 coordinates), separated from Q, Bag, RUN, Auto and HUD hit zones.
- const captureButton=scene.add.circle(466,237,19,0x14364b,.88)
+ const captureButton=scene.add.circle(430,241,19,0x14364b,.88)
   .setStrokeStyle(2,0xf7d885).setDepth(2704);
- const icon=originalBallSprite(scene,466,237,'pokeball',24,2705);
+ const icon=originalBallSprite(scene,430,241,'pokeball',24,2705);
  icon.setData('torre2-capture-single-button',true);
- const captureZone=hit(scene,466,237,38,38,showChoices)
+ const captureZone=hit(scene,430,241,38,38,showChoices)
   .setData('torre2-capture-single-button',true);
+ const setCaptureIconVisible=visible=>{
+  captureButton.setVisible(visible);icon.setVisible(visible);
+  if(visible)captureZone.setInteractive({useHandCursor:true});
+  else captureZone.disableInteractive();
+ };
  // FireRed-style RUN is valid only for a wild encounter. The trainer and
  // original Arena battles never install this overlay. Unlike a KO, fleeing
  // has no win, loss, XP, badge or capture roll. Preserve live party HP/status
@@ -103,12 +108,17 @@ export function installWildCapture(scene){
  scene.events.once('shutdown',cleanup);
  function add(item){menu.push(item);return item}
  function close(){for(const item of menu)item.destroy?.();menu=[];
-  if(scene.fase==='torre2-aim')scene.fase='lucha';}
+  if(scene.fase==='torre2-aim')scene.fase='lucha';
+  setCaptureIconVisible(!busy);
+ }
  function showChoices(){
   if(busy||enemy.hp<=0||scene.__torre2Changing||scene.__torre2BallTransitions||!['lucha','torre2-aim'].includes(scene.fase))return;
   close();
   const state=readCampaign();if(!state?.pendingWild)return;
   scene.fase='torre2-aim';
+  // This menu crosses the Pokéball's screen position. Hide the underlying
+  // icon and disable its native hit zone until the player leaves the menu.
+  setCaptureIconVisible(false);
   add(frame(scene,173,109,299,169));
   add(txt(scene,188,119,'LANÇAR POKÉBOLA',15,'#ffe5a4'));
   const hp=Math.max(1,Math.ceil(enemy.hp/enemy.hpMax*100));
