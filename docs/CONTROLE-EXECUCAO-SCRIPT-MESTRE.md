@@ -1,5 +1,15 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§7/8/31/33/36/37 · T07/T08: Lv8 por três vitórias nativas (#321)
+
+- **§7/§8 PARCIAIS:** [PR #321](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/321), squash `766dcc0b1d2a8fa22be941b409f2691bcc74281a`. Três batalhas Phaser/AUTO reais consecutivas: Pidgey→Rattata→Caterpie; Bulbasaur Lv5→6→7→8 por XP nativo, 602 XP, 3 vitórias, 0 derrotas, sem forçar resultado/XP/HP/medidor. ULT temática Solar Beam equipada no E após Lv8, mas **não executada** por medidor insuficiente (`ultCast=false`). Golpe básico executado com cooldown nativo.
+- **§31 PARCIAL:** save e reload mantiveram identidade, nível, XP e vitórias; início da campanha e PC preparados por API de teste, não pelo fluxo completo de UI. `panelTactil` acionado por métodos do navegador, não por toque físico Android.
+- **§33 PARCIAL:** [CI #40982113567](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40982113567) **SUCESSO no HEAD `953708247bd67a613448a9389631ae07863181a0`**, com testes, `check`, `check:reuse`, build, matriz de movesets e Chromium completo. Evidência de três batalhas reais limitada ao Bulbasaur e três treinadores iniciais; matrizes 151 espécies são fixtures compiladas.
+- **§36 PARCIAL:** patch somente teste e workflow, sem alterar VFX aprovados, sprites, cooldowns, TMs, controles de produção, formato de saves ou frentes Toxic #16/Shiny #17.
+- **§37 PARCIAL:** merge confirmado, mas **Pages/HTTP do SHA `766dcc0b1d2a8fa22be941b409f2691bcc74281a` ainda não confirmados nesta nota**. Não declarar publicação até obter prova do SHA exato.
+- **Pendências:** ULT disparada com medidor adquirido naturalmente, outras espécies em batalhas prolongadas, evolução/captura/PC pela interface, jornada Pallet→Campeão sem checkpoint e Android físico. Nenhuma das 37 seções é encerrada por este teste.
+
+
 ## 29/10/2026 — §20/T20 · Cinco vitórias reais consecutivas da Liga, sem afirmar Pallet→Campeão
 
 - **§20 PARCIAL, progressão comprovada:** PR [#210](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/210) integrada na `main` em `b3ede4153966cc79b747beb1704d427e6d891ad5`. [CI #40749103218](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40749103218) **SUCESSO** em cinco lutas nativas consecutivas com o mesmo save: Lorelei 85s, Bruno 78s, Agatha 93s, Lance 209s e Campeão 283s. Sem vitórias, KO, EXP nem progresso inseridos depois do **único checkpoint inicial de Victory Road**; Centro Pokémon, trocas, AUTO e save/reload reais. Hall da Fama, cinco honras, oito insígnias e campeão persistente.
