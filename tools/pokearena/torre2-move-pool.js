@@ -30,6 +30,22 @@ const campaignLevel=at=>Math.min(KANTO_CAMPAIGN_MOVE_CAP,at);
 // is actually Fire-type Kanto and legally learns TM38 in FireRed/LeafGreen.
 // Other non-Fire species retain the existing real TM teaching system.
 // No renderer, original client kit, attack power, CD or save data is changed.
+// T16: Rain Dance has an already-approved pixel renderer. These 40 Kanto
+// WATER/ELECTRIC species are compatible with TM18 in the pinned FRLG table.
+// User-authorized Torre 2 house rule: a curated Lv25 level unlock; no TM
+// is consumed and no other weather move/VFX becomes equipable by this patch.
+export const KANTO_RAIN_DANCE_SPECIES=Object.freeze([
+ 'squirtle', 'wartortle', 'blastoise', 'lapras', 'vaporeon',
+ 'gyarados', 'starmie', 'slowbro', 'poliwag', 'poliwhirl',
+ 'poliwrath', 'psyduck', 'golduck', 'staryu', 'slowpoke',
+ 'seel', 'dewgong', 'shellder', 'cloyster', 'tentacool',
+ 'tentacruel', 'horsea', 'seadra', 'krabby', 'kingler',
+ 'goldeen', 'seaking', 'omanyte', 'omastar', 'kabuto',
+ 'kabutops', 'pikachu', 'raichu', 'electabuzz', 'voltorb',
+ 'electrode', 'magnemite', 'magneton', 'zapdos', 'jolteon'
+
+]);
+export const KANTO_RAIN_DANCE_LEVEL=25;
 export const KANTO_FIRE_BLAST_LEVEL=50;
 export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
  'charmander','charmeleon','charizard','vulpix','ninetales',
@@ -391,7 +407,7 @@ export function availableMoves(member){
   'aerial-ace':['pidgeotto','pidgeot','fearow','scyther','farfetchd','dodrio','aerodactyl','charizard'],
   'flame-wheel':['growlithe','arcanine','vulpix','ninetales','ponyta','rapidash'],
   'light-screen':['abra','kadabra','alakazam','mr-mime','clefairy','clefable','starmie','magnemite','magneton'],
-  'rain-dance':['squirtle','wartortle','blastoise','lapras','vaporeon','gyarados','starmie','slowbro','poliwag','poliwhirl','poliwrath'],
+  'rain-dance':KANTO_RAIN_DANCE_SPECIES,
   'sand-attack':['pidgey','pidgeotto','pidgeot','sandshrew','sandslash','cubone','marowak','diglett','dugtrio','eevee']
  };
  for(const [name,species] of Object.entries(kantoFinish))
@@ -427,7 +443,7 @@ export function availableMoves(member){
  const ordinaryBonus={
   'poison-punch':24,'ice-punch':26,'thunder-punch':26,'fire-punch':26,
   'flame-wheel':18,'surf':30,'psychic':30,'cross-chop':35,
-  'aerial-ace':25,'light-screen':25,'rain-dance':25,
+  'aerial-ace':25,'light-screen':25,'rain-dance':KANTO_RAIN_DANCE_LEVEL,
   'sand-attack':9,'sleep-powder':10,'protect':99
  };
  const plan=earlyKantoSlotPlan(member.id)||
@@ -461,7 +477,7 @@ export function availableMoves(member){
   // All PRE-EXISTING moves retain their original evolution/level locks.
   const newMoveRequiredLevel={
    'sand-attack':9,'sleep-powder':10,'aerial-ace':25,
-   'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':25
+   'psychic':30,'cross-chop':35,'light-screen':25,'rain-dance':KANTO_RAIN_DANCE_LEVEL
   };
   // Protect is both TM17 and a native FRLG level-up move for nine
   // Kanto species. Never suppress legal natural learning because of TM17.
@@ -477,6 +493,10 @@ export function availableMoves(member){
   if(key==='fire-blast'&&fireBlastAtLevel(member.id)!==null)
    return level>=KANTO_FIRE_BLAST_LEVEL&&!evoLocked.has(key)&&
     !isPendingApprovalMove(m)&&Boolean(m.forma);
+  // A native rain effect is the only weather move approved for equipment;
+  // never grant it to a species missing FireRed TM18 compatibility.
+  if(key==='rain-dance'&&kantoFinish[key]?.includes(member.id)&&
+     !frlgMachineCompatible(member.id,key))return false;
   // Strict FireRed unlock for all official level-up moves (inherits prior
   // evolution learnsets). An unlearned TM is NEVER auto-granted.
   const official=frlgUnlockLevel(member.id,key);

@@ -15,3 +15,12 @@ Adicionar somente `tests/t16-weather-equipment-built.test.mjs` e CI `.github/wor
 
 ## Independencia
 Branch isolada da `main` 8908e9d. Nao tocar T20 PR #369, T10 PR #374 nem Phoenix outras frentes. Nao marcar clima inteiro concluido so por aprovar uma entrada.
+
+## Extensao de equipamento autorizada (30/10/2026)
+
+- Recursos já aprovados: apenas Rain Dance (`torre2_finale_raindance`) em Phaser/WebGL. O patch não altera nem recria suas partículas, nem `weather-pixels.js`.
+- Acrescentar Rain Dance como opção manual Lv25 a 40 espécies WATER/ELECTRIC compatíveis com TM18 no arquivo de metadados FRLG; bloquear níveis inferiores e não alterar ULT.
+- A política de quatro fontes bloqueia a fabricação de efeitos novos. Manter Sunny Day (TM11), Sandstorm (TM37) e Hail (TM07) como estados de motor não equipáveis até comprovar VFX próprio com proveniência/autorizações.
+- Alterações exclusivamente em `torre2-move-pool.js`, teste compilado, CI isolada e planos Spec Kit. Nenhuma migração de saves, nenhuma alteração ao modo Arena/VS.
+- Verificações: Node unit, check, check:reuse, build do cliente original, teste de equipamentos compilado de 40 espécies, contrato de slot/U LT e laboratório real Chromium do clima.
+- Rollback: reverter alteração da lista `KANTO_RAIN_DANCE_SPECIES` e a nova CI/teste; preservar todos os módulos de clima existentes.
