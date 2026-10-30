@@ -11,6 +11,11 @@ on:
       - 'tests/misty-wild-capture-ui-built.test.mjs'
       - 'tests/original-ball-capture.test.js'
       - 'tests/ball-choreography-browser.cjs'
+      - 'tools/pokearena/torre2-battle-bag.js'
+      - 'tests/battle-bag-built.test.mjs'
+      - 'tests/t06-desktop-capture-browser.cjs'
+      - 'tests/t06-mobile-capture-browser.cjs'
+      - 'tests/t06-full-party-pc-capture-browser.cjs'
       - '.github/workflows/capture-misty-ui-validation.yml'
 permissions:
   contents: read
@@ -38,6 +43,7 @@ jobs:
       - name: Check captured species and UI against real built code
         run: |
           node tests/misty-wild-capture-ui-built.test.mjs
+          node --test tests/battle-bag-built.test.mjs
           node tests/section20-repeatable-grass-built.test.mjs
           node tests/t05-wild-capture-atomic-built.test.mjs
           node tests/misty-surge-built.test.mjs
@@ -46,7 +52,10 @@ jobs:
           CHROME_BIN: /usr/bin/google-chrome
         run: |
           node tests/t06-desktop-capture-browser.cjs
+          node tests/t06-mobile-capture-browser.cjs
+          node tests/t06-full-party-pc-capture-browser.cjs
           node tests/ball-choreography-browser.cjs
+          node tests/battle-bag-browser.cjs
       - name: Capture real GOTCHA screenshots
         if: always()
         uses: actions/upload-artifact@v4
