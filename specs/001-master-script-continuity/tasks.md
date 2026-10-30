@@ -1,4 +1,11 @@
 # Tarefas — 001 / Superpowers + Spec Kit
+
+## Lote 30/10 — diagnóstico de boot público
+- [x] Reproduzir evidência da falha externa: CI #41050887159 (`waitForFunction` 90 s, sem artifact) versus Pages #41050085664 verde e versão pública `src-dc921f3851`.
+- [x] Acrescentar captura de estado Phaser/erros/rede e screenshot antes de relançar o timeout; verificar sintaxe JavaScript.
+- [ ] Revisão e CI Chromium do PR desta branch.
+- [ ] Diagnosticar a causa real com o novo artifact e corrigir se necessário; não confundir timeout com falta de 150 kits.
+- [ ] Comprovar auditoria pública integral, sem falha, no SHA publicado.
 Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funcional é concluída só pela criação destes documentos.**
 
 ## Integração documental (este PR)
