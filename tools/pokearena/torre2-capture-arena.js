@@ -49,14 +49,32 @@ export function installWildCapture(scene){
  const enemy=scene.luchadores?.[1];
  if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
- // One compact Pokéball icon performs ONE actual throw. Ordinary Pokéballs
- // are used first; Great/Ultra are fallbacks only when cheaper stock runs out.
- // The old 3-row ball selection modal and its aim phase are removed.
- frame(scene,451,43,38,36).setDepth(7200);
- originalBallSprite(scene,470,61,'pokeball',24,7205);
- hit(scene,470,61,40,39,(_pointer,_x,_y,event)=>{
+ // The native Arena camera follows fighters and changes zoom during throws.
+ // Keep the ONLY capture button pinned to the logical 640x360 HUD, so the
+ // second throw is just as accessible as the first after a breakout.
+ const pinCaptureHud=o=>{
+  o.setScrollFactor(0);
+  const baseX=o.x,baseY=o.y,scaleX=o.scaleX,scaleY=o.scaleY;
+  const sync=()=>{
+   if(!o.active)return;
+   const cam=scene.cameras.main,z=Math.max(.01,cam.zoom||1);
+   const cx=cam.width/2,cy=cam.height/2,sx=cam.width/640,sy=cam.height/360;
+   o.setPosition(cx+(baseX*sx-cx)/z,cy+(baseY*sy-cy)/z);
+   o.setScale(scaleX*sx/z,scaleY*sy/z);
+  };
+  scene.events.on('update',sync);
+  o.once('destroy',()=>scene.events.off('update',sync));
+  sync();return o;
+ };
+ const captureFrame=scene.add.graphics().setPosition(470,61).setDepth(7200);
+ captureFrame.fillStyle(0x061120).fillRoundedRect(-17,-15,38,36,3);
+ captureFrame.fillStyle(0xf0d07d).fillRoundedRect(-19,-18,38,36,3);
+ captureFrame.fillStyle(0x113952).fillRoundedRect(-17,-16,34,32,3);
+ pinCaptureHud(captureFrame);
+ const captureIcon=pinCaptureHud(originalBallSprite(scene,470,61,'pokeball',24,7205));
+ const captureZone=pinCaptureHud(hit(scene,470,61,40,39,(_pointer,_x,_y,event)=>{
   event?.stopPropagation?.();captureOnce();
- }).setDepth(7210).setData('torre2-single-capture',true);
+ }).setDepth(7210).setData('torre2-single-capture',true));
  // FireRed-style RUN is valid only for a wild encounter. The trainer and
  // original Arena battles never install this overlay. Unlike a KO, fleeing
  // has no win, loss, XP, badge or capture roll. Preserve live party HP/status
@@ -100,6 +118,7 @@ export function installWildCapture(scene){
   return sprite?snapshotBody(enemy).center:{x:Number(enemy.x)||444,y:Number(enemy.y)||221};
  };
  const cleanup=()=>{
+  captureFrame.destroy();captureIcon.destroy();captureZone.destroy();
   scene.__torre2WildCapture=false;scene.__torre2CaptureBusy=false;
   for(const item of activeVisuals)item.destroy?.();
   activeVisuals=[];
