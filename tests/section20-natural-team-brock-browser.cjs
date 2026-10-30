@@ -1,5 +1,5 @@
 'use strict';
-/* Real progression: 5 native fights, early legal captures, then Rocket, Rival and Brock.
+/* Real progression: 5 native fights, early legal captures, natural training, then Rocket, Rival and Brock.
  * No forced KO, no fighter HP override, no instant-win, no arbitrary level.
  * Bulbasaur Lv5 and normal catches for a support team; Mewtwo stays in PC.
  * Native Phaser buttons, genuine capture RNG, money, XP and natural battle outcomes.
@@ -125,7 +125,16 @@ const server=http.createServer(async(req,res)=>{
    let battle=true,attempts=0;
    while(battle&&(await game()).balls>0&&attempts++<20){
     const t0=await game();
-    await sync();await tap(470,61);
+    await sync();
+    // The currently installed capture zone may have moved above Dash.
+    // Click the live Phaser hit target, not an obsolete screen location.
+    const ballControl=await page.evaluate(()=>{
+     const b=window.__pt2Game.scene.getScene('combate');
+     const z=b.children.list.find(o=>o.active&&o.input?.enabled&&
+      o.getData?.('torre2-capture-single-button')===true);
+     return z?{x:z.x,y:z.y}:{x:470,y:61};
+    });
+    await tap(ballControl.x,ballControl.y);
     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',null,{timeout:12000});
     await sync();await tap(316,186);
     await page.waitForFunction(n=>window.kanto.readCampaign()?.inventory?.pokeball===n-1,
@@ -162,11 +171,13 @@ const server=http.createServer(async(req,res)=>{
  // Actual wild encounters are part of a playable Kanto route. Training here
  // earns XP and recorded wild victories in native Phaser fights; it never injects levels, wins, HP or meter.
  // The sixth trainer (Rocket) has beaten untrained teams repeatedly.
- const trainNaturalTeam=async()=>{
-  report.wildTraining={before:await game(),rounds:[]};
-  for(let n=0;n<8;n++){
+ const trainNaturalTeam=async({targetStarterLevel=12,maxRounds=8}={})=>{
+  report.wildTrainingPhases??=[];
+  const phase={before:await game(),targetStarterLevel,rounds:[]};
+  report.wildTrainingPhases.push(phase);
+  for(let n=0;n<maxRounds;n++){
    const before=await game();
-   if(before.team[0].level>=12)break;
+   if(before.team[0].level>=targetStarterLevel)break;
    const beforeXp=await page.evaluate(()=>window.kanto.readCampaign().team.map(
     m=>Number(m.progression?.experience)||0));
    await page.evaluate(()=>{
@@ -188,7 +199,8 @@ const server=http.createServer(async(req,res)=>{
      rect=document.querySelector('#juego canvas').getBoundingClientRect();
     return {x:rect.x+z.x*rect.width/640,y:rect.y+z.y*rect.height/360};
    });
-   await page.mouse.click(autoButton.x,autoButton.y);
+   if(!await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled))
+    await page.mouse.click(autoButton.x,autoButton.y);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled,
     null,{timeout:7000});
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),
@@ -198,7 +210,7 @@ const server=http.createServer(async(req,res)=>{
     m=>Number(m.progression?.experience)||0));
    const gained=afterXp.map((v,i)=>v-(beforeXp[i]||0));
    const event={attempt:n+1,encounter,before,after,gained};
-   report.wildTraining.rounds.push(event);saveReport();
+   phase.rounds.push(event);saveReport();
    assert.equal(after.trainer,before.trainer,'Wild training cannot skip a route trainer');
    assert.equal(after.wins,before.wins+1,'Wild battle must earn exactly one native victory');
    assert.equal(after.losses,before.losses,'Wild training must not conceal a defeat');
@@ -208,11 +220,11 @@ const server=http.createServer(async(req,res)=>{
    console.log('PASS NATURAL WILD TRAINING',JSON.stringify(event));
    await centerHeal();
   }
-  report.wildTraining.after=await game();saveReport();
-  assert.equal(report.wildTraining.after.trainer,5,
-   'Training must leave Rocket as the sixth trainer');
-  assert.ok(report.wildTraining.after.team[0].level>=10,
-   'Starter still underlevelled after genuine wild training; do not inject XP');
+  phase.after=await game();saveReport();
+  assert.equal(phase.after.trainer,phase.before.trainer,
+   'Training must never advance a route trainer');
+  assert.ok(phase.after.team[0].level >= (phase.before.trainer===5?10:targetStarterLevel),
+   'Starter did not reach the natural training goal; do not inject XP');
  };
 
  try{
@@ -243,6 +255,12 @@ const server=http.createServer(async(req,res)=>{
   let naturalRetries=0;
   for(let round=0;round<total;round++){
    if(round===5&&!earlyTeamReady){await prepareNaturalTeam();await trainNaturalTeam();before=await game();earlyTeamReady=true;}
+   if(round===12){
+    // Legitimate wild XP before the Fire rival, never altered enemy stats.
+    // Both route trainers and leader remain subject to their original cap.
+    await trainNaturalTeam({targetStarterLevel:14,maxRounds:16});
+    before=await game();
+   }
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
    if(round<names.length){
@@ -285,13 +303,14 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(entry.open.enemy,opponent.leader?'geodude':opponent.id,
     'First real boss sprite is Geodude, not the unseen Onix ace');
    if(opponent.leader)assert.deepEqual(entry.open.party,['geodude','onix']);
-   assert.equal(entry.open.auto,false,'AUTO resets between fights');
+   // The campaign starts AUTO enabled in current releases; older revisions
+   // require a real click. Do not toggle it OFF by accident.
    const button=await page.evaluate(()=>{
     const b=window.__pt2Game.scene.getScene('combate');
     const zone=b.__torre2AutoMode.zone,rect=document.querySelector('#juego canvas').getBoundingClientRect();
     return {x:rect.x+zone.x*rect.width/640,y:rect.y+zone.y*rect.height/360};
    });
-   await page.mouse.click(button.x,button.y);
+   if(!entry.open.auto)await page.mouse.click(button.x,button.y);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2AutoMode?.enabled,
     null,{timeout:5000});
    await page.screenshot({path:out+'/natural-route1-trainer-'+(round+1)+'-combat.png'});
