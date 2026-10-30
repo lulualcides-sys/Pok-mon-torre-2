@@ -64,6 +64,10 @@ const saveReport=()=>fs.writeFileSync('test-evidence/t06-live-rng-gotcha.json',J
    return b.scene.isActive()&&b.__torre2WildCapture&&b.__torre2PartyInstalled&&
     b.fase==='lucha'&&!b.__torre2Changing&&!b.__torre2BallTransitions;
   },null,{timeout:70000});
+  // Capture-focused natural RNG check: user disables default-on campaign
+  // AUTO through its actual button, so the wild opponent isn't KO'd before
+  // the one-tap Pokéball check. No RNG or HP tampering.
+  await click(579,146);
   const original=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),s=__t06Core.readCampaign();
    return {species:s.pendingWild?.id,stock:s.inventory.pokeball,
@@ -83,9 +87,6 @@ const saveReport=()=>fs.writeFileSync('test-evidence/t06-live-rng-gotcha.json',J
   let result;
   for(let attempt=1;attempt<=40;attempt++){
    await click(470,61);
-   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='torre2-aim',
-    null,{timeout:7000});
-   await click(316,186);
    // Poll for one of the TWO authentic RNG outcomes, not a predefined success.
    await page.waitForFunction(()=>{
     const game=window.__pt2Game,b=game.scene.getScene('combate'),s=__t06Core.readCampaign();
