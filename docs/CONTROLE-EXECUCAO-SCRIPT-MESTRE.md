@@ -1,5 +1,14 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 29/10/2026 — §§20/33/36/37 · T20 oito vitórias de produção e dificuldade real da Rocket
+
+- **§20 PARCIAL:** [PR #328](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/328) integrada `e49e7a8406be215dce21c60cc9a55ada506e109f`; [CI #40990097087](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990097087) **SUCESSO**: oito confrontos nativos reais com inicial criado via factory de produção, sem Mewtwo debug, ULT desbloqueada por XP, save persistente/reload e controles Phaser testados; não comprova menu inicial nem 13 treinadores+Brock.
+- **§20 bloqueio identificado:** [CI #40990285269](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40990285269) **FALHA genuína na sexta batalha**: Rocket Zubat/Mankey derrota Bulbasaur Lv9 solo; stage0, trainer5, wins5, losses1, HP0. A PR [#329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) revisada usa equipe obtida por capturas selvagens legítimas antes da Rocket, Centro Pokémon real em perdas, sem injetar HP/XP/wins. [CI #40991020627](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40991020627) ainda sujeita a resultado e não deve ser declarada aprovada antecipadamente.
+- **§33/36 PARCIAIS:** #328 e #329 mudam testes/workflows, não runtime, client original, 227 efeitos, 121 kits de Arena, sprites, cooldowns, TMs ou formato de save.
+- **§37 PARCIAL:** CI de patch != HTTP de Pages; só publicar se a main correspondente passar e sua versão pública for comprovada. Sequência Pallet→Campeão sem checkpoint e Android físico pendentes.
+
+
+
 ## 29/10/2026 — §20/T20 · Pallet primeiras quatro batalhas naturais e gates de produção
 
 - **§20 PARCIAL:** [PR #326](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/326) integrada em `b6ecd4ac50ecfb74fc6f05d54f09f62d898c0be4`; [CI #40983712619](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/40983712619) **SUCESSO** com 4 vitórias naturais consecutivas (Pidgey, Rattata, Caterpie, rival Charmander) no Phaser, Bulbasaur Lv5→9 e dinheiro $1400→$2400. Inicial de QA com Mewtwo enviado ao PC; não valida seleção via UI, Brock ou Pallet→Campeão.
