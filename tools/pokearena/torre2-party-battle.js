@@ -31,7 +31,7 @@ export function createPartyMatch(state,opponent,wild=false){
  }));
  const gym=STAGES[state.stage];
  const pool=gym?.enemy||[opponent.id];
- const leaderTeam=opponent.leader&&Array.isArray(gym?.leaderTeam)?
+ const leaderTeam=!wild&&opponent.leader&&Array.isArray(gym?.leaderTeam)?
   (state.stage===12?rivalChampionTeam(campaignStarter(state)):gym.leaderTeam):null;
  const count=wild?1:leaderTeam?leaderTeam.length:opponent.leader?
   Math.min(6,state.stage>=8?4:state.stage>=4?3:2):
@@ -110,7 +110,7 @@ function drawPixelBall(g,x,y,alive,active){
   g.lineStyle(1,0xffd475);g.strokeRect(x-10,y-10,20,20);
   g.fillStyle(0xffebae);g.fillRect(x-8,y-8,3,2);
  }
- drawCaptureBall(g,x,y,'pokeball',.68);
+ drawCaptureBall(g,x,y,'pokeball',.84);
  if(!alive){
   g.fillStyle(0x071827,.78);g.fillRect(x-8,y-8,16,16);
   g.fillStyle(0x7c91a0);g.fillRect(x-3,y-1,6,2);
