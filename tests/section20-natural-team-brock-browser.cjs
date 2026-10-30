@@ -1,5 +1,5 @@
 'use strict';
-/* Real progression: 12 native route fights, then natural captures and rival/Brock battles.
+/* Real progression: 5 native fights, early legal captures, then Rocket, Rival and Brock.
  * No forced KO, no fighter HP override, no instant-win, no arbitrary level.
  * Bulbasaur Lv5 and normal catches for a support team; Mewtwo stays in PC.
  * Native Phaser buttons, genuine capture RNG, money, XP and natural battle outcomes.
@@ -8,6 +8,10 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises');
 const path=require('node:path'),http=require('node:http'),{chromium}=require('playwright-core');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
+// Optional strict production route: NO test-factory level 50 Mewtwo.
+// The default old QA replay remains byte-for-byte equivalent in behavior.
+const useProductionStart=process.env.T20_PRODUCTION_START==='1';
+const expectedBox=useProductionStart?[]:['mewtwo'];
 const types={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg',
  '.ogg':'audio/ogg','.mp3':'audio/mpeg'};
@@ -26,7 +30,7 @@ const server=http.createServer(async(req,res)=>{
   '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
- const report={method:'Native Phaser live AUTO, no HP/KO/result cheats; Bulbasaur, Mewtwo in PC; 12 genuine fights, real wild capture, rival and Brock',steps:[]};
+ const report={productionStarter:useProductionStart,method:'Real Phaser AUTO; catch wild teammates BEFORE Rocket, no forced HP/KO/wins; 13 trainers and Brock',steps:[],realDefeats:[]};
  const saveReport=()=>fs.writeFileSync(out+'/natural-through-brock.json',JSON.stringify(report,null,2));
  const game=()=>page.evaluate(()=>{
   const s=window.kanto.readCampaign();return {
@@ -150,34 +154,38 @@ const server=http.createServer(async(req,res)=>{
   saveReport();
   assert.ok(report.teamPreparation.after.team.length>=3,
    'At least two genuine RNG captures are required before Rival checkpoint');
-  assert.equal(report.teamPreparation.after.trainer,12,'All 12 trainer wins are preserved');
-  assert.equal(report.teamPreparation.after.box.join(','),'mewtwo');
+  assert.equal(report.teamPreparation.after.trainer,5,'Five earned wins precede early Rocket-team preparation');
+  assert.deepEqual(report.teamPreparation.after.box,expectedBox,
+   'No QA Mewtwo or unexpected PC Pokémon in production beginning');
   console.log('PASS REAL TEAM PREPARATION',JSON.stringify(report.teamPreparation.after));
  };
 
  try{
   await page.goto('http://127.0.0.1:4322/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:50000});
-  await page.evaluate(async()=>{
+  await page.evaluate(async production=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
    const core=window.kanto=await import(new URL('./torre2/campaign-core.js',main));
-   const s=core.createCampaign('bulbasaur');
+   const s=production?core.createPlayerCampaign('bulbasaur'):
+     core.createCampaign('bulbasaur');
    core.saveCampaign(s);
-   core.storePokemon(s,1);
+   if(!production)core.storePokemon(s,1);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
-  });
+  },useProductionStart);
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
   let before=await game();
   assert.equal(before.stage,0);assert.equal(before.trainer,0);assert.equal(before.wins,0);
   assert.deepEqual(before.team.map(x=>x.id),['bulbasaur']);
   assert.equal(before.team[0].level,5);
-  assert.deepEqual(before.box,['mewtwo']);
+  assert.deepEqual(before.box,expectedBox);
   const names=['pidgey','rattata','caterpie','charmander'];
  const total=14;
  const validateNaturalIvysaur=process.env.T03_NATURAL_EVOLUTION==='1';
+  let earlyTeamReady=false;
+  let naturalRetries=0;
   for(let round=0;round<total;round++){
-   if(round===12){await prepareNaturalTeam();before=await game();}
+   if(round===5&&!earlyTeamReady){await prepareNaturalTeam();before=await game();earlyTeamReady=true;}
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
    if(round<names.length)assert.equal(opponent.id,names[round],
@@ -248,14 +256,35 @@ const server=http.createServer(async(req,res)=>{
    }
    entry.seconds=Math.round((Date.now()-started)/100)/10;
    entry.after=await game();
+   // Native trainer victory is NOT guaranteed. Respect genuine losses:
+   // no editing winner/HP/EXP/RNG. Heal at the Center and retry legally,
+   // limited to three losses so a genuine balance defect surfaces.
+   if(entry.after.losses>before.losses){
+    assert.equal(entry.after.losses,before.losses+1);
+    assert.equal(entry.after.wins,before.wins,'Defeat cannot grant XP/victory');
+    assert.equal(entry.after.trainer,before.trainer,'Defeat cannot skip checkpoint');
+    assert.equal(entry.after.stage,before.stage);
+    const defeat={trainer:round+1,foe:opponent.id,
+     team:entry.after.team,losses:entry.after.losses};
+    report.realDefeats.push(defeat);
+    console.log('T20 GENUINE ROUTE DEFEAT',JSON.stringify(defeat));
+    saveReport();
+    if(++naturalRetries>3)
+     throw Error('Too many genuine losses; review balance, never forge results: '+
+      JSON.stringify(report.realDefeats));
+    await centerHeal();
+    before=await game();
+    --round;
+    continue;
+   }
    assert.equal(entry.after.stage,opponent.leader?1:0);
    assert.equal(entry.after.trainer,opponent.leader?0:round+1);
    assert.equal(entry.after.wins,round+1);
    assert.equal(entry.after.losses,before.losses,'No loss fabricated during trainer victory');
    const payout=opponent.leader?1200:opponent.kind==='rival'?460:opponent.kind==='rocket'?360:180;
    assert.equal(entry.after.money,before.money+payout,'Real trainer/Rocket/Rival payout');
-   assert.deepEqual(entry.after.box,['mewtwo']);
-   assert.equal(entry.after.team.length,round<12?1:3);
+   assert.deepEqual(entry.after.box,expectedBox);
+   assert.equal(entry.after.team.length,round<5?1:3);
    if(opponent.leader){
     assert.deepEqual(entry.after.badges,['Rocha'],'Brock grants first and only badge');
     assert.ok(entry.after.tms.includes('tm-rock-tomb'),'Brock grants unique FireRed TM39');
@@ -274,8 +303,28 @@ const server=http.createServer(async(req,res)=>{
     await clickTag('torre2-report-continue');
     await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('campanha').children.list.find(
       o=>o.active&&o.getData?.('torre2-report-continue')===true),null,{timeout:12000});
+    // Natural route strategy: revive the entire team after a battle when
+    // anyone is fainted or injured. Round 11 previously began with Bulbasaur
+    // and Pikachu at 0 HP, because a victory only restored the active fighter.
+    // Use the actual Phaser Center heal button and ordinary persistent save:
+    // NEVER set fighter HP or edit XP, trainer indexes or victory counters.
+    if(entry.after.team.some(m=>m.hp<100)){
+     const prev=await game();
+     await centerHeal();
+     const healed=await game();
+     assert.ok(healed.team.every(m=>m.hp===100),'Real Center must revive party');
+     assert.equal(healed.trainer,prev.trainer,'Center must not skip trainers');
+     assert.equal(healed.wins,prev.wins,'Center must not grant victories');
+     assert.equal(healed.losses,prev.losses,'Center must not erase real defeats');
+     assert.equal(healed.money,prev.money,'Center must not mint rewards');
+     assert.equal(healed.balls,prev.balls,'Center must preserve capture inventory');
+     entry.center={before:prev.team,after:healed.team};
+     saveReport();
+     console.log('PASS NATURAL CENTER BETWEEN TRAINERS',JSON.stringify({
+      nextTrainer:round+2,before:prev.team,after:healed.team}));
+    }
    }
-   before=entry.after;
+   before=await game();
   }
   // Optional T03 extension: win ACTUAL native battles after Brock, with
   // absolutely no XP/level/result/HP fixture and no EVO during battle.
