@@ -75,7 +75,7 @@ const server=http.createServer(async(req,res)=>{
   await page.screenshot({path:'test-evidence/versus-intro/versus-first-trainer.png'});
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
-   return b.scene.isActive()&&b.datos?.torre2?.kind==='trainer';
+   return b.scene.isActive()&&b.__torre2PartyInstalled&&b.datos?.torre2?.kind==='trainer';
   },null,{timeout:45000});
   const combat=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
