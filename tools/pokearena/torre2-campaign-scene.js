@@ -10,6 +10,7 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
+import {cargarPMD,soloFormas} from '../sprites.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
@@ -22,7 +23,7 @@ import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
 import {prepareTrainingMatch,installTrainingDummy} from './training.js';
-import {drawTrainer,drawShopItem,shopItemSprite} from './campaign-sprites.js';
+import {drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ICON_FILES} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
@@ -82,6 +83,13 @@ class Campanha extends Phaser.Scene{
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
   const state=readCampaign();
+  // Nine tiny original GBA item icons shared by every Mart page.
+  // Load once into Phaser's image cache, never over the network during shopping.
+  for(const file of FRLG_MART_ICON_FILES){
+   const key='torre2-frlg-mart-'+file;
+   if(!this.textures.exists(key))
+    this.load.image(key,'assets/ui/frlg/items/'+file+'.png');
+  }
   // Mobile performance: the old loader uploaded every Kanto map and all
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
@@ -1062,8 +1070,12 @@ create(){
   items.slice(pageNum*6,(pageNum+1)*6).forEach((item,i)=>{
    const x=168+(i%2)*301,y=95+Math.floor(i/2)*66;
    this.card(x-141,y-20,283,57,state.money>=item.price?0x568fbb:0x6b5669);
-   this.add.image(x-118,y+6,shopItemSprite(this,item))
-    .setDisplaySize(28,28).setDepth(5).setData('torre2-mart-item-sprite',item.id);
+   const art=this.add.image(x-118,y+6,shopItemSprite(this,item));
+   // Original FRLG indexed icon at its native pixel resolution (no serrated
+   // fractional upscaling), with GBA palette-zero transparency preserved.
+   const w=art.frame?.width||24,h=art.frame?.height||24;
+   art.setDisplaySize(Math.min(28,w),Math.min(28,h)).setDepth(5)
+    .setData('torre2-mart-item-sprite',item.id);
    text(this,x-98,y-9,item.name,{fontSize:'11px',color:C.white});
    text(this,x-98,y+9,'$'+item.price+(item.kind==='tm'?' · TM':' · '+item.kind.toUpperCase()),{
     fontSize:'10px',color:C.muted});
