@@ -42,6 +42,7 @@ jobs:
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/t10-campaign-auto-offensive-browser.cjs
           node tests/t19-auto-party-rebind-browser.cjs
+          node tests/t10-native-mobile-auto-browser.cjs
       - name: Full applicable browser regression suite
         run: |
           set -euo pipefail

@@ -9,7 +9,7 @@ A T20 anterior, run #41109051839, venceu 13 treinadores e o primeiro Pokémon de
 3. O modo AUTO nunca executa entrada manual anterior quando a IA não oferece um objeto de comandos. O botão continua alternando para controles manuais imediatamente.
 4. Observabilidade limitada a contadores em memória (leituras, mudanças de oponente, assistência de aproximação/LMB, falha de leitura), sem loops/timers próprios e sem persistência no save.
 5. Arena/VS, efeitos aprovados, 151 espécies, 227 VFX, sprites, dano, recarga, XP, RNG, captura e saves intocados. Em particular, quando a IA original da Arena retorna null, o leitor humano original continua sendo o fallback preexistente; somente a campanha neutraliza entradas manuais antigas.
-6. CI focada + `npm test` + política VFX + build original + Chromium real T10/T19, browser completo e oito treinadores legítimos. Não declarar vitória de Brock, Rocha, TM39 ou desempenho superior antes de T20 integral.
+6. CI focada + `npm test` + política VFX + build original + Chromium real T10/T19, teste AUTO mobile touchscreen Arena e campanha (padrões OFF/ON respectivamente, toque desliga e restauração), browser completo e oito treinadores legítimos. Não declarar vitória de Brock, Rocha, TM39 ou desempenho superior antes de T20 integral.
 
 ## Regras de liberação
 Branch separada; revisão de diff; PR pronta só após CI verde e guardião visual; merge com SHA e verificação de Pages público. Se os testes reais falharem, conservar PR em draft, anexar logs e corrigir a causa.
