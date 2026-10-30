@@ -861,8 +861,8 @@ create(){
   this.launchBattle(match,wild);
  }
  launchBattle(match,wild=false){
-  // Campaign-only level HUD, using the real saved levels and leader cap.
-  // The original Arena 2D sprites, attacks and other modes remain untouched.
+  // Keep Kanto level caps in battle rules; remove only the intrusive
+  // top-of-arena "SEU NV / RIVAL NV / TETO NV" panel.
   const game=this.game;let frames=0,combatEntered=false;
   // The previous fight may return to the hub before 60 frames have passed.
   // Never let its stale installer grab the NEXT match (including training).
@@ -875,15 +875,6 @@ create(){
    if(battle.scene.isActive())combatEntered=true;
    if(battle.scene.isActive()&&battle.luchadores?.length===2&&
       !battle.__torre2PartyInstalled){
-    const levelPanel=battle.add.graphics().setDepth(1170);
-    levelPanel.fillStyle(0x071a2b,.92);
-    levelPanel.fillRoundedRect(189,5,262,24,3);
-    levelPanel.lineStyle(1,0xd3ac60);
-    levelPanel.strokeRoundedRect(189,5,262,24,3);
-    text(battle,199,10,'SEU NV.'+match.torre2.playerLevel+
-     '   RIVAL NV.'+match.torre2.enemyLevel+
-     '   TETO NV.'+match.torre2.hardCap,{
-     fontSize:'11px',fontStyle:'bold',color:'#fff0c6'}).setDepth(1171);
     installPartyBattle(battle);
     if(match.torre2.laboratory)installLaboratoryControls(battle);
     else if(match.torre2.training)installTrainingDummy(battle);
