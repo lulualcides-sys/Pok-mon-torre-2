@@ -158,8 +158,14 @@ const server=http.createServer(async(req,res)=>{
  assert.equal(gotcha.key,'torre2-original-ball-pokeball');
  assert.equal(gotcha.active,true);
  assert.deepEqual(gotcha.sparkle,{kind:'gotcha',maxStars:3,durationMs:560});
- await page.waitForTimeout(180);
+ // Record the real rendered Phaser frames while the success-only glints are active.
+ // Three snapshots protect against CI screenshot timing and permit visual review.
+ await page.waitForTimeout(110);
+ await page.screenshot({path:'test-evidence/ball-gotcha-early.png'});
+ await page.waitForTimeout(95);
  await page.screenshot({path:'test-evidence/ball-gotcha.png'});
+ await page.waitForTimeout(70);
+ await page.screenshot({path:'test-evidence/ball-gotcha-late.png'});
  assert.equal(await page.evaluate(()=>core.readCampaign().box.length),1);
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'));
