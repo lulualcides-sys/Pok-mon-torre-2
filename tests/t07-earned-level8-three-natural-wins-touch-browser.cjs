@@ -83,8 +83,11 @@ const server=http.createServer(async(req,res)=>{
   for(let round=0;round<total;round++){
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
-   if(round<names.length)assert.equal(opponent.id,names[round],
-    'First three route species must match Pidgey, Rattata and Caterpie');
+   const expectedSpecies=round===2
+    ?(opponent.level>=10?'butterfree':opponent.level>=7?'metapod':'caterpie')
+    :names[round];
+   assert.equal(opponent.id,expectedSpecies,
+    'Route species must honor genuine Caterpie evolution thresholds');
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
    const expectedKind='trainer';
    assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
