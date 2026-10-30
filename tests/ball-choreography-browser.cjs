@@ -158,7 +158,25 @@ const server=http.createServer(async(req,res)=>{
  assert.equal(gotcha.key,'torre2-original-ball-pokeball');
  assert.equal(gotcha.active,true);
  assert.deepEqual(gotcha.sparkle,{kind:'gotcha',maxStars:3,durationMs:560});
- await page.waitForTimeout(180);
+ // Capture the actual success-only Phaser animation (not a mockup).
+ // A 180 ms delay from CAUGHT was too late on slow CI runners.
+ await page.evaluate(()=>window.__pt2Game.loop.wake());
+ const sparkleProof=await page.evaluate(async()=>{
+  const b=window.__pt2Game.scene.getScene('combate');
+  await new Promise(resolve=>{
+   const check=()=>{
+    const fx=b.__torre2CaptureSparkles;
+    const ball=b.__torre2CaptureBallSprite;
+    if(fx?.kind==='gotcha'&&ball?.active&&ball.visible)resolve();
+    else requestAnimationFrame(check);
+   };
+   check();
+  });
+  return {kind:b.__torre2CaptureSparkles.kind,
+   texture:b.__torre2CaptureBallSprite.texture.key};
+ });
+ assert.equal(sparkleProof.kind,'gotcha');
+ assert.equal(sparkleProof.texture,'torre2-original-ball-pokeball');
  await page.screenshot({path:'test-evidence/ball-gotcha.png'});
  assert.equal(await page.evaluate(()=>core.readCampaign().box.length),1);
  assert.equal(await page.evaluate(()=>core.readCampaign().inventory.pokeball),14);
