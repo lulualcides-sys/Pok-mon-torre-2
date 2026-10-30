@@ -2,13 +2,31 @@
  * than inventing moves, bypassing cooldowns or modifying battle math.
  * OFF by default on every new match; original controls restored on exit.
  */
-// Higher than native "dificil" in offensive decision-making, but explicitly
-// WITHOUT the native "maestro" damage multiplier (ventaja:1.35). This only
-// drives the human-controlled fighter while Campaign AUTO is enabled.
+// Campaign AUTO level 2: more proactive than the previous above-Hard
+// profile. Native AI still owns attacks, dodges, energy and move cooldowns.
+// NO native Maestro 35% hidden damage multiplier or player stat bonuses.
 export const CAMPAIGN_AUTO_OFFENSIVE=Object.freeze({
- reaccion:.045,error:2,esquiva:.78,basicos:.94,reflejo:.12,
- reflejoRival:.22,agresividad:1,juicio:1,umbralUlti:.72,ventaja:1
+ reaccion:.02,error:0,esquiva:.86,basicos:1,reflejo:.10,
+ reflejoRival:.18,agresividad:1,juicio:1,umbralUlti:.60,ventaja:1
 });
+// The native brain can remain stationary in its idle decision windows.
+// In Kanto AUTO ONLY, close distance when the opponent is alive, far away,
+// and our fighter has sufficient HP; never override its attacks/evasions.
+export function pressureCampaignAutoInput(scene,actor,input){
+ if(!scene?.datos?.torre2||scene.fase!=='lucha'||!actor||!input||
+    typeof input!=='object'||input.esp||input.lmb||input.rmb||input.q||input.e||
+    Math.hypot(Number(input.mx)||0,Number(input.my)||0)>=.12)return input;
+ const foe=scene.luchadores?.find(p=>p&&p!==actor&&Number(p.hp)>0);
+ if(!foe||!(Number(actor.hp)>0)||!Number.isFinite(actor.x)||!Number.isFinite(actor.y)||
+    !Number.isFinite(foe.x)||!Number.isFinite(foe.y))return input;
+ if(Number(actor.hpMax)>0&&actor.hp/actor.hpMax<.32)return input;
+ const dx=foe.x-actor.x,dy=foe.y-actor.y,distance=Math.hypot(dx,dy);
+ // Native world units; stop well before contact to retain dodge/spacing.
+ const reach=Number(actor.kit?.lmb?.alcance);
+ const approachAt=Math.max(55,Math.min(125,Number.isFinite(reach)?reach*.75:75));
+ if(distance<=approachAt||distance>950)return input;
+ return {...input,mx:dx/distance,my:dy/distance};
+}
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
 const OFFLINE_MODES=new Set(['cpu','entreno','arena']);
@@ -58,7 +76,8 @@ export function installAutoBattle(scene,makeNativeAI){
   // Official AI respects Pokémon move slots, readiness, HP and real energy.
   // Clone its mutable per-frame input to avoid modifying the native controller.
   const it=state.ai.leer(Math.max(.001,Number(dt)||1/60));
-  return it?{...it,mega:false}:state.read.call(this,dt,...args);
+  return it?{...pressureCampaignAutoInput(scene,original.l,it),mega:false}:
+   state.read.call(this,dt,...args);
  };
  original.leer=safeRead;
  scene.__torre2AutoMode=state;
