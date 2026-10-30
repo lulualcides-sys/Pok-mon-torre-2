@@ -128,7 +128,11 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
   drawBall.originalBallSprite(scene,body.center.x,body.center.y,'pokeball',16,2306).setVisible(false):null;
  const showBall=(x,y,angle=0,opened=false)=>{
-  if(nativeBall)nativeBall.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
+  if(nativeBall){
+   // Reuse the approved opened shell for recall/release, not a closed static ball.
+   drawBall.setBallOpened?.(nativeBall,'pokeball',opened,16);
+   nativeBall.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
+  }
   else drawBall(g,x,y,'pokeball',1.15,angle,opened);
  };
  g.__torre2BallWorld=true;
