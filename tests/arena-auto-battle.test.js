@@ -88,7 +88,7 @@ test('Campaign AUTO refreshes original AI once per Pokémon species after native
   return {leer:()=>({mx:instance,my:0,from:identity,lmb:true})};
  });
  assert.equal(constructions,1);
- state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,true);
  assert.equal(control.leer(.016).mx,1);
  // Native reiniciar() mutates the same actor, not the control or scene.
  control.l.def={id:'pikachu'};
@@ -125,7 +125,7 @@ test('Campaign AUTO also refreshes when evolution stage changes within one base 
   const stage=actor.etapa;created++;
   return {leer:()=>({mx:stage,my:0,lmb:true})};
  });
- state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,true);
  assert.equal(control.leer(.016).mx,0);
  assert.equal(state.autoSpecies,'squirtle:0');
  control.l.etapa=1; // Wartortle: ROSTER def.id remains Squirtle.
