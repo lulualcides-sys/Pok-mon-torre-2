@@ -76,11 +76,11 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
       const before=me.stats.usosSlot?.[slot]||0;
       p.abajo(finger);
       p.leer(x=>({ax:x.x,ay:x.y}));
-      p.arriba({id:89});
       return {before,remaining:me.cd[slot]};
      },initial.slot);
     };
-    const firstBefore=await touch();await wait(460);
+    const release=()=>page.evaluate(()=>__pt2Game.scene.getScene('combate').panelTactil.arriba({id:89}));
+    const firstBefore=await touch();await wait(460);await release();
     const first=await page.evaluate(slot=>{
      const p=__pt2Game.scene.getScene('combate').luchadores[0];
      return {casts:p.stats.usosSlot?.[slot]||0,cd:p.cd[slot]};
@@ -89,7 +89,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
      check.move+' must fire via native touch control');
     assert.ok(first.cd>1.8,
      check.move+' must start actual cooldown after native cast: '+JSON.stringify(first));
-    const deniedBefore=await touch();await wait(240);
+    const deniedBefore=await touch();await wait(240);await release();
     const denied=await page.evaluate(slot=>{
      const p=__pt2Game.scene.getScene('combate').luchadores[0];
      return {casts:p.stats.usosSlot?.[slot]||0,cd:p.cd[slot]};
@@ -102,7 +102,7 @@ const wait=ms=>new Promise(resolve=>setTimeout(resolve,ms));
      const s=__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
      return me?.cd?.[slot]<=0;
     },initial.slot,{timeout:8500});
-    const readyBefore=await touch();await wait(460);
+    const readyBefore=await touch();await wait(460);await release();
     const ready=await page.evaluate(slot=>{
      const p=__pt2Game.scene.getScene('combate').luchadores[0];
      return {casts:p.stats.usosSlot?.[slot]||0,cd:p.cd[slot]};
