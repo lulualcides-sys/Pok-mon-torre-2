@@ -118,6 +118,18 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
     stock:t06.readCampaign().inventory.pokeball};
   });
   console.log('SECOND_ONE_TAP_DEBUG',JSON.stringify(retry));
+  await page.waitForTimeout(900);
+  const tweenProbe=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const all=b.tweens.getTweens?.()||[];
+   return {debug:b.__torre2CaptureDebug,phase:b.fase,
+    sceneActive:b.scene.isActive(),scenePaused:b.scene.isPaused?.(),
+    sceneTime:b.time.now,gameFrame:b.game.loop.frame,gamePaused:b.game.loop.running,
+    managerPaused:b.tweens.paused,tweens:all.map(t=>({progress:t.progress,isPlaying:t.isPlaying?.(),
+     paused:t.paused,state:t.state,duration:t.duration,
+     targetT:t.targets?.[0]?.t})).slice(0,9)};
+  });
+  console.log('SECOND_ONE_TAP_TWEEN_PROBE',JSON.stringify(tweenProbe));
   // Desktop capture may return to the campaign before the next browser
   // polling tick; accept completed persistence as well as the short GOTCHA.
   try{
