@@ -234,6 +234,8 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(before.team.map(x=>x.id),['bulbasaur']);
   assert.equal(before.team[0].level,5);
   assert.deepEqual(before.box,expectedBox);
+  // The third trainer starts as Caterpie but legally evolves at Lv7/10.
+  // Assert its independent FRLG evolution thresholds, not a stale base sprite.
   const names=['pidgey','rattata','caterpie','charmander'];
  const total=14;
  const validateNaturalIvysaur=process.env.T03_NATURAL_EVOLUTION==='1';
@@ -243,8 +245,13 @@ const server=http.createServer(async(req,res)=>{
    if(round===5&&!earlyTeamReady){await prepareNaturalTeam();await trainNaturalTeam();before=await game();earlyTeamReady=true;}
    const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
    const entry={round:round+1,expected:opponent.id,role:opponent.kind,before};report.steps.push(entry);
-   if(round<names.length)assert.equal(opponent.id,names[round],
-    'First four route species include the rival after Caterpie');
+   if(round<names.length){
+    const expectedSpecies=round===2
+     ?(opponent.level>=10?'butterfree':opponent.level>=7?'metapod':'caterpie')
+     :names[round];
+    assert.equal(opponent.id,expectedSpecies,
+     'Early route species must follow canonical Kanto evolution levels');
+   }
    assert.ok(opponent.id,'Every route checkpoint must expose actual species');
    const expectedKind=round===13?'leader':round===3||round===12?'rival':round===5?'rocket':'trainer';
    assert.equal(opponent.kind,expectedKind,'Early route trainer roles must stay canonical');
@@ -547,6 +554,6 @@ const server=http.createServer(async(req,res)=>{
   }
   await page.screenshot({path:out+'/natural-route1-through-brock-completed.png'});
   assert.deepEqual(errors,[],'No client JS exceptions through four consecutive native battles');
-  console.log('PASS 12 REAL TRAINERS + NATURAL CAPTURES + RIVAL AND BROCK; no debug KOs, normal XP/rewards');
+  console.log('PASS 13 REAL ROUTE TRAINERS + NATURAL CAPTURES + BROCK; no debug KOs, normal XP/rewards');
  }finally{saveReport();await page.close();await browser.close();server.close()}
 })().catch(error=>{console.error(error);server.close();process.exitCode=1});
