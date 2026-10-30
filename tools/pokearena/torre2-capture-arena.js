@@ -5,9 +5,9 @@ import {serializeGen3Status} from './gen3-status.js';
  * Separate from approved Arena 2D Pokémon sprites and move effects.
  */
 import {captureChance,fighterCaptureStatus} from './capture-mechanics.js';
-import {drawBallSprite} from './ball-sprites.js';
+import {drawBallSprite,originalBallSprite,ballTextureKey} from './ball-sprites.js';
 import {readCampaign,saveCampaign,attemptCapture} from './campaign-core.js';
-import {ballArc,drawRedBeam,drawReleaseBurst,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
+import {ballArc,drawRedBeam,drawReleaseBurst,drawGotchaSparkles,snapshotBody,poseBody,restoreBody} from './ball-choreography.js';
 const FONT='Pixelify Sans,monospace';
 function px(g,x,y,w,h,c,a=1){g.fillStyle(c,a);g.fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));}
 // One ball atlas drives captures, party switch, and Pokéball HUD.
@@ -40,7 +40,7 @@ export function installWildCapture(scene){
  if(!enemy?.hpMax)return;
  scene.__torre2WildCapture=true;
  const hud=frame(scene,390,41,160,42);
- const icon=scene.add.graphics().setDepth(2705);drawCaptureBall(icon,405,53,'pokeball',1);
+ const icon=originalBallSprite(scene,405,53,'pokeball',16,2705);
  txt(scene,422,47,'CAPTURAR',11,'#fff0b9');
  const hpLine=txt(scene,401,65,'HP 100% · ENFRAQUEÇA',10,'#a9ead3');
  hit(scene,470,61,160,42,showChoices);
@@ -116,8 +116,7 @@ export function installWildCapture(scene){
   const labels={pokeball:'POKÉ BALL',greatball:'GREAT BALL',ultraball:'ULTRA BALL'};
   for(const [i,kind]of ['pokeball','greatball','ultraball'].entries()){
    const y=178+i*27,owned=state.inventory[kind]||0;
-   const draw=add(scene.add.graphics().setDepth(2708));
-   drawCaptureBall(draw,200,y+4,kind,1);
+   add(originalBallSprite(scene,200,y+4,kind,16,2708));
    const chance=captureChance({...state.pendingWild,wild:true,hpPercent:hp,hp:enemy.hp,hpMax:enemy.hpMax,
     status:fighterCaptureStatus(enemy)},kind);
    add(txt(scene,220,y-5,labels[kind]+'  x'+owned+
@@ -208,12 +207,18 @@ export function installWildCapture(scene){
   const shot=player?.spr?snapshotBody(player).center:{x:116,y:281};
   const end={x:aimed.x,y:aimed.y-18};
   const ballPos={t:0,angle:0};
-  const fieldBallScale=1.3; // Smaller native 16×16 pixel Pokéball; no rescaled blur or VFX clone.
-  scene.__torre2CaptureDebug={state:'THROW',aim:{...aimed},target:{...focus},hits:false};
+  const ballSprite=originalBallSprite(scene,end.x,end.y,kind,16,2309).setVisible(false);
+  scene.__torre2CaptureBallSprite=ballSprite;
+  activeVisuals.push(ballSprite);
+  scene.__torre2CaptureDebug={state:'THROW',aim:{...aimed},target:{...focus},hits:false,
+   texture:ballTextureKey(kind)};
+  const showBall=(x,y,angle=0)=>{
+   ballSprite.setVisible(true).setPosition(Math.round(x),Math.round(y)).setRotation(angle);
+  };
   const drawBall=(x,y,angle=0)=>{
    gfx.clear();
-   px(gfx,x-11,y+16,22,3,0x061e27,.60);
-   drawCaptureBall(gfx,x,y,kind,fieldBallScale,angle);
+   px(gfx,Math.round(x)-10,Math.round(y)+12,20,2,0x061e27,.48);
+   showBall(x,y,angle);
   };
   const restore=()=>{
    absorbed=false;pose=null;detachPose();
@@ -244,7 +249,7 @@ export function installWildCapture(scene){
      // A blocked primary/backup write is not a completed throw. Restore the
      // native enemy and controls; keep the Pokéball for a genuine retry.
      console.warn('Torre 2: wild capture not saved',error);
-     restore();gfx.destroy();
+     restore();gfx.destroy();ballSprite.destroy();
      caption.setText('CAPTURA NÃO SALVA · TENTE NOVAMENTE').setColor('#ff9d9d');
      caption.setData('torre2-capture-save-error',true);
      scene.__torre2CaptureDebug.state='SAVE_ERROR';
@@ -264,7 +269,7 @@ export function installWildCapture(scene){
       scene.__torre2CaptureDebug.beam={from:{...end},to:{...center}};
       gfx.clear();drawRedBeam(gfx,end,center,1-beam.t*.5,body?.width);
       drawReleaseBurst(gfx,focus.x,focus.y,beam.t);
-      drawCaptureBall(gfx,end.x,end.y,kind,fieldBallScale,0,true);
+      showBall(end.x,end.y,0);
      },onComplete:()=>{
       absorbed=true;
       scene.__torre2CaptureDebug.state='DROP';
@@ -286,12 +291,17 @@ export function installWildCapture(scene){
            if(!scene.scene.isActive())return;
            gfx.clear();
            if(result.ok){
-            drawCaptureBall(gfx,end.x,floorY,kind,fieldBallScale);
-            for(let i=0;i<10;i++){
-             const angle=i*Math.PI/5;
-             px(gfx,end.x+Math.cos(angle)*26,floorY+Math.sin(angle)*25,
-              3,3,i%2?0xfff2b8:0xffd04d);
-            }
+            showBall(end.x,floorY,0);
+            // Short success-only animation; never paint permanent squares.
+            const sparkle={t:0};
+            scene.__torre2CaptureSparkles={kind:'gotcha',maxStars:3,durationMs:560};
+            scene.tweens.add({targets:sparkle,t:1,duration:560,ease:'Sine.easeInOut',
+             onUpdate:()=>{
+              if(!gfx.active)return;
+              gfx.clear();drawGotchaSparkles(gfx,end.x,floorY,sparkle.t);
+             },
+             onComplete:()=>{if(gfx.active)gfx.clear();}
+            });
             // A brief clear success panel matches the moment shown in the user's
             // capture reference, without changing original Arena 2D effects.
             const panel=frame(scene,156,133,328,68);
@@ -315,9 +325,9 @@ export function installWildCapture(scene){
               pose={center,scale:.02+.98*t,alpha:t};applyPose();
               gfx.clear();drawRedBeam(gfx,origin,center,1-t*.7,body?.width);
               drawReleaseBurst(gfx,center.x,center.y,t);
-              drawCaptureBall(gfx,origin.x,origin.y,kind,fieldBallScale,0,true);
+              showBall(origin.x,origin.y,0);
              },onComplete:()=>{
-              restore();gfx.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
+              restore();gfx.destroy();ballSprite.destroy();caption.destroy();busy=false;scene.__torre2CaptureBusy=false;
               scene.fase=oldPhase;scene.__torre2CaptureDebug.state='RESUME';refresh();
              }});
            }
