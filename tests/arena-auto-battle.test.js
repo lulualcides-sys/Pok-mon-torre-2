@@ -224,13 +224,14 @@ test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buff
  assert.ok(CAMPAIGN_AUTO_OFFENSIVE.basicos>.85,
   'Native cfg.basicos only controls ordinary-projectile awareness, NOT basic attack frequency');
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
- assert.equal(k.__torre2AutoMode.enabled,false,'Manual control is still default');
+ assert.equal(k.__torre2AutoMode.enabled,true,'Campaign AUTO is ON from battle start');
+ assert.equal(a.__torre2AutoMode.enabled,false,'Arena still starts manual');
+ k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(k.__torre2AutoMode.enabled,false,'Player can disable AUTO');
  assert.deepEqual(k.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
-  'Before toggle, even campaign human input remains manual');
+  'Manual reader restored when player disables AUTO');
  k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
- assert.equal(k.__torre2AutoMode.enabled,true);
- k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
- assert.equal(k.__torre2AutoMode.enabled,false);
+ assert.equal(k.__torre2AutoMode.enabled,true,'Player can re-enable AUTO');
  k.handlers.get('shutdown')();a.handlers.get('shutdown')();
 });
 
