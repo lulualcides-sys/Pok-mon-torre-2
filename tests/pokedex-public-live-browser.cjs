@@ -26,8 +26,13 @@ const expected={
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720},
    isMobile:true,hasTouch:true,serviceWorkers:'block'});
-  const errors=[],missing=[];
+  const errors=[],missing=[],failedRequests=[];
   page.on('pageerror',e=>errors.push(String(e)));
+  page.on('requestfailed',request=>{
+   if(failedRequests.length<40)failedRequests.push({
+    url:request.url(),error:request.failure()?.errorText||'unknown'
+   });
+  });
   page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(base))missing.push([r.status(),r.url()])});
   // A unique navigation URL avoids reusing the user's old cached HTML.
   const unique=Date.now().toString(36);
@@ -42,8 +47,33 @@ const expected={
   if(process.env.EXPECTED_POKEDEX_BUILD)
    assert.equal(version.modules,process.env.EXPECTED_POKEDEX_BUILD,
     'Public Pages is serving an older build than the deployment just uploaded');
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('pokedex'),
-   null,{timeout:90000});
+  try{
+   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('pokedex'),
+    null,{timeout:90000});
+  }catch(error){
+   // The independent 150-species public audit previously timed out before
+   // saving evidence. Preserve the REAL browser state; never fake a pass.
+   const state=await page.evaluate(()=>({
+    readyState:document.readyState,url:location.href,
+    gamePresent:Boolean(window.__pt2Game),
+    scenes:window.__pt2Game?.scene?.scenes?.map(scene=>({
+     key:scene.sys?.settings?.key,active:Boolean(scene.sys?.isActive?.())
+    })).slice(0,25)||[],
+    canvasCount:document.querySelectorAll('canvas').length,
+    title:document.title,body:document.body?.innerText?.slice(0,500)||''
+   })).catch(e=>({evaluationError:String(e)}));
+   const diagnostic={
+    failure:String(error),publicVersion:version.modules,state,
+    errors,missing,failedRequests
+   };
+   fs.writeFileSync('test-evidence/pokedex-public-boot-diagnostic.json',
+    JSON.stringify(diagnostic,null,2));
+   console.error('PUBLIC_POKEDEX_BOOT_DIAGNOSTIC',JSON.stringify(diagnostic));
+   await page.screenshot({
+    path:'test-evidence/pokedex-public-boot-failure.png',fullPage:true,timeout:15000
+   }).catch(e=>console.error('PUBLIC_POKEDEX_SCREENSHOT_FAILURE',String(e)));
+   throw error;
+  }
   const result=await page.evaluate(async({expect,release,auditFull})=>{
    const scene=window.__pt2Game.scene.getScene('pokedex');
    const build=document.querySelector('meta[name="pokemon-torre-build"]')?.content;
