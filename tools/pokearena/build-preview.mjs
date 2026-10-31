@@ -217,6 +217,7 @@ await Promise.all([
  ['tools/pokearena/torre2-frlg-npc.js','frlg-npc.js'],
  ['tools/pokearena/torre2-frlg-interiors.js','frlg-interiors.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
+ ['tools/pokearena/torre2-collection-ui.js','collection-ui.js'],
  ['tools/pokearena/torre2-kanto-intro-moves.js','kanto-intro-moves.js'],
  ['tools/pokearena/kanto-ultimate-policy.js','kanto-ultimate-policy.js'],
  ['tools/pokearena/torre2-signature-fx.js','signature-fx.js'],
