@@ -122,8 +122,7 @@ const restored=[
  ['charizard','dragon-claw',36],['slowpoke','rest',30],
  ['slowbro','rest',37],['seel','dive',41],['dewgong','dive',41],
  ['exeggcute','bullet-seed',17],['exeggutor','bullet-seed',36],
- ['aerodactyl','fly',49],['slowpoke','rain-dance',49],
- ['zapdos','rain-dance',50]
+ ['aerodactyl','fly',49],['slowpoke','rain-dance',49]
 ];
 for(const [id,move,at] of restored){
  assert.ok(!availableMoves(make(id,at-1)).some(m=>m.id===move),
@@ -133,6 +132,16 @@ for(const [id,move,at] of restored){
  assert.equal(moveUnlockLevel(make(id,50),move),at,
   id+' Pokedex/real unlock diverged for '+move);
 }
+// T16 weather-role policy overrides the later-gen Lv50 Zapdos Rain Dance
+// unlock ONLY inside the custom Torre 2 campaign (not in source learnsets).
+// Thunder retains normal Electric progression and rain accuracy separately.
+const zapdos=make('zapdos',50);
+assert.equal(availableMoves(zapdos).some(m=>m.id==='rain-dance'),false,
+ 'Zapdos must not get a Water-only climate setup move');
+assert.equal(campaignLearnset('zapdos').some(m=>m.id==='rain-dance'),false,
+ 'Pokédex must not advertise off-theme Rain Dance to Electric');
+assert.ok(availableMoves(zapdos).some(m=>m.id==='thunder'),
+ 'Removing Rain Dance must not remove actual Electric offense');
 for(const [id,move] of [['psyduck','surf'],['tentacruel','surf'],
  ['squirtle','surf'],['blastoise','surf'],['lapras','surf'],
  ['vaporeon','surf'],['dragonite','surf'],
