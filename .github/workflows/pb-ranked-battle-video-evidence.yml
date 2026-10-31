@@ -1,0 +1,78 @@
+name: PB Ranked - amostragem visual das batalhas oficiais
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - .github/workflows/pb-ranked-battle-video-evidence.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  official-battle-video-frames:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Ferramentas de amostragem
+        run: |
+          python -m pip install -q yt-dlp pillow
+          ffmpeg -version | head -1
+      - name: Baixar temporariamente vídeos OFICIAIS e criar amostras visuais
+        shell: bash
+        run: |
+          set -uo pipefail
+          mkdir -p /tmp/pb-ranked-video evidence/pb-ranked-official-videos
+          printf "Source: https://pokemonbattlegrounds.com/ (Latest battles)\nOnly temporary public video research. Do not redistribute original videos or sprites.\n" > evidence/pb-ranked-official-videos/README.txt
+          for vid in J_CxwaMNjmk XQy0APLPCL8 Fq1z0wXktLE; do
+            echo "===== $vid ====="
+            yt-dlp --no-playlist --no-progress --socket-timeout 12 --retries 2 \
+              --format "bv*[height<=480]+ba/b[height<=480]/best" \
+              --merge-output-format mp4 --max-filesize 200M \
+              --output "/tmp/pb-ranked-video/${vid}.%(ext)s" \
+              "https://www.youtube.com/watch?v=${vid}" \
+              > "evidence/pb-ranked-official-videos/${vid}-download-log.txt" 2>&1 || true
+            video=$(find /tmp/pb-ranked-video -maxdepth 1 -type f -name "${vid}.*" ! -name '*.part' | head -n1)
+            if [ -n "$video" ]; then
+              mkdir -p "evidence/pb-ranked-official-videos/$vid"
+              ffmpeg -hide_banner -loglevel error -i "$video" \
+                -vf "fps=1/7,scale=768:-2" -frames:v 70 -q:v 5 \
+                "evidence/pb-ranked-official-videos/$vid/frame-%03d.jpg" || true
+              ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1 "$video" \
+                > "evidence/pb-ranked-official-videos/$vid/duration.txt" || true
+              rm -f "$video"
+            fi
+          done
+          python - <<'PY'
+          from PIL import Image,ImageOps,ImageDraw
+          from pathlib import Path
+          base=Path('evidence/pb-ranked-official-videos')
+          for root in base.iterdir():
+            if not root.is_dir():continue
+            frames=sorted(root.glob('frame-*.jpg'))
+            for i in range(0,len(frames),20):
+              batch=frames[i:i+20]
+              canvas=Image.new('RGB',(960,5*175),(24,24,24))
+              draw=ImageDraw.Draw(canvas)
+              for j,p in enumerate(batch):
+                im=Image.open(p).convert('RGB')
+                im.thumbnail((230,145))
+                x=(j%4)*240;y=(j//4)*175
+                canvas.paste(im,(x,y+20))
+                draw.text((x+3,y+3),f'{root.name}  {p.stem}',fill='white')
+              canvas.save(root/f'contact-sheet-{i//20+1:02d}.jpg',quality=81)
+            print(root.name,'frames',len(frames))
+          PY
+      - name: Guardar SOMENTE amostras, sem vídeos completos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pb-ranked-official-battles-frame-research
+          path: evidence/pb-ranked-official-videos/
+          retention-days: 7
+          if-no-files-found: warn
