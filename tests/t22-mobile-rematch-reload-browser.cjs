@@ -139,9 +139,28 @@ const server=http.createServer(async(req,res)=>{
    'Failed rematch must stay in original campaign menu');
   assert.deepEqual(errors,[],'No Phaser runtime exceptions');
   await page.screenshot({path:'test-evidence/t22-mobile-rematch-replay-denied.png'});
-  const report={scope:'T22 native mobile VS Seeker ticket single-reservation and reload',
-   fixture:'Misty-stage trainer checkpoints/recharge prepared; battle start real, no artificial victory',
-   before,reserved,afterReload,afterDenied,inBattle};
+  // The original denial remains; explicit resume of THIS saved ticket is
+  // a separate control and never creates another reservation or payout.
+  const hasResume=await page.evaluate(()=>window.__pt2Game.scene
+   .getScene('campanha').children.list.some(obj=>obj.input?.enabled&&
+    obj.getData?.('torre2-rematch-resume')===true));
+  assert.equal(hasResume,true,'Interrupted VS Seeker battle needs resume control');
+  await touch(320,286);
+  await page.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b.scene.isActive()&&b.__torre2PartyInstalled&&
+    b.datos?.torre2?.kind==='rematch'&&b.fase==='lucha';
+  },null,{timeout:65000});
+  const resumedTicket=await page.evaluate(()=>window.__pt2Game.scene
+   .getScene('combate').datos.torre2.ticket);
+  assert.deepEqual(resumedTicket,inBattle.ticket,'Resume must use original ticket, not replace it');
+  const afterResume=await snapshot();
+  assert.deepEqual(afterResume,reserved,
+   'Native battle resume must not spend additional charge or grant rewards');
+  await page.screenshot({path:'test-evidence/t22-mobile-rematch-resumed.png'});
+  const report={scope:'T22 native mobile VS Seeker interrupted ticket resume and anti-duplicate',
+   fixture:'Misty-stage trainer checkpoints/recharge prepared; start and resume real, no artificial victory',
+   before,reserved,afterReload,afterDenied,afterResume,inBattle,resumedTicket};
   fs.writeFileSync('test-evidence/t22-mobile-rematch-reload.json',JSON.stringify(report,null,2));
   console.log('T22 MOBILE REAL REMATCH RELOAD PASS',JSON.stringify({
    foe:inBattle.foe,charge:reserved.rematches.charge,

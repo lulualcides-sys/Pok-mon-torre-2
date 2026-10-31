@@ -2,6 +2,13 @@ name: Master T22 — VS Seeker mobile restart and anti-duplicate
 on:
   push:
     branches: [test/master-t22-mobile-rematch-reload-20261028]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-rematch-policy.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tests/rematch-policy.test.js'
+      - 'tests/t22-mobile-rematch-reload-browser.cjs'
+      - '.github/workflows/master-t22-mobile-rematch.yml'
   workflow_dispatch:
 
 permissions:

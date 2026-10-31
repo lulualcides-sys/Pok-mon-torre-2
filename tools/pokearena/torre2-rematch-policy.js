@@ -7,7 +7,16 @@ export function rematchState(state){
 }
 export function rechargeRematches(state){const r=rematchState(state);r.charge=Math.min(REMATCH_ACTIVITIES,r.charge+1);}
 export function reserveRematch(state,index,mapStage=state.stage){
- const r=rematchState(state);if(r.charge<REMATCH_ACTIVITIES)return null;
+ const r=rematchState(state);
+ // A valid interrupted battle keeps its durable ticket. The same
+ // progress checkpoint can never replace it, even after recharge.
+ // A ticket from a PREVIOUS story checkpoint cannot be resumed, so permit
+ // a new reservation after three real activities instead of deadlocking
+ // the VS Seeker indefinitely on a stale pending record.
+ const pending=r.pending;
+ const stillValid=pending&&state.stage===(pending.progressStage??pending.stage)&&
+  state.trainer===pending.progress;
+ if(stillValid||r.charge<REMATCH_ACTIVITIES)return null;
  r.charge=0;r.sequence++;
  // mapStage identifies the defeated trainer's area. progressStage/progress
  // identify the live journey; the ticket cannot advance the main campaign.
