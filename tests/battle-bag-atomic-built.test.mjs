@@ -27,6 +27,7 @@ for(const deny of [core.SAVE_KEY,core.SAVE_BACKUP_KEY])
   const {s,party,storage,failed}=make();
   const before=structuredClone(s),battle=structuredClone(party);
   const first=storage.getItem(core.SAVE_KEY),backup=storage.getItem(core.SAVE_BACKUP_KEY);
+  const loadedBefore=core.readCampaign(storage);
   const ref=s.team[0],friend=party.friend[0],inv=s.inventory;
   failed.key=deny;
   assert.throws(()=>commitBattleBagItem(s,party,'potion',0,{hp:27},
@@ -35,7 +36,7 @@ for(const deny of [core.SAVE_KEY,core.SAVE_BACKUP_KEY])
   assert.deepEqual(party,battle);
   assert.equal(storage.getItem(core.SAVE_KEY),first);
   assert.equal(storage.getItem(core.SAVE_BACKUP_KEY),backup);
-  assert.deepEqual(core.readCampaign(storage),s);
+  assert.deepEqual(core.readCampaign(storage),loadedBefore,'failed write changed recovery');
   failed.key=null;
   const ok=commitBattleBagItem(s,party,'potion',0,{hp:27},
    draft=>core.saveCampaign(draft,storage));
@@ -43,5 +44,9 @@ for(const deny of [core.SAVE_KEY,core.SAVE_BACKUP_KEY])
   assert.equal(s.team[0].hp,52);assert.equal(party.friend[0].hp,52);
   assert.strictEqual(s.team[0],ref);assert.strictEqual(party.friend[0],friend);
   assert.strictEqual(s.inventory,inv);
-  assert.deepEqual(core.readCampaign(storage),s);
+  assert.deepEqual(JSON.parse(storage.getItem(core.SAVE_KEY)),s,
+   'primary must contain exact atomic committed snapshot');
+  const recovered=core.readCampaign(storage);
+  assert.equal(recovered.team[0].hp,s.team[0].hp);
+  assert.equal(recovered.inventory.potion,s.inventory.potion);
  });

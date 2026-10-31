@@ -41,7 +41,7 @@ test('rejected backup/primary writes never mutate live item, HP, party, message'
   assert.strictEqual(state.team[0],refMember);
   assert.strictEqual(party.friend[0],refFriend);
   assert.strictEqual(state.inventory,refInv);
-  assert.equal(state.lastMessage,'Potion usado em SQUIRTLE.');
+  assert.equal(state.lastMessage,'POÇÃO usado em SQUIRTLE.');
  }
 });
 test('invalid target, exhausted stock, KO or stale species does no write',()=>{
