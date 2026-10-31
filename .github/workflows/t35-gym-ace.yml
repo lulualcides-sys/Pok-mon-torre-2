@@ -1,0 +1,33 @@
+name: T35 — canonical gym ace decoration (isolated, no deployment)
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-gym-ace.js'
+      - 'tests/gym-ace.test.js'
+      - '.github/workflows/t35-gym-ace.yml'
+  push:
+    branches: [feat/t35-gym-ace-decor-20261031]
+permissions:
+  contents: read
+concurrency:
+  group: t35-ace-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  ace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Test canonical species, local assets and visual-only renderer
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-gym-ace.js
+          node --test tests/gym-ace.test.js
+          npm run check
+          npm run check:reuse
+      - name: Existing gameplay unit regressions
+        run: npm test
