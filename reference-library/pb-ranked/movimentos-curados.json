@@ -1,0 +1,232 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com/",
+  "audited": "2026-10-31",
+  "coverage": "public JS/DOM only, NOT recorded gameplay",
+  "animations": [
+    {
+      "name": "Attack",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Hop",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Charge",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Double",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Hurt",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Idle",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Ko",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "RearUp",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Rotate",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Shoot",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Sleep",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Slice",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "SpAttack",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Swing",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Twirl",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "Walk",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "charge",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "double",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "idle",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "swing",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    },
+    {
+      "name": "walk",
+      "kind": "actor-state-or-animation-name",
+      "confidence": "string-symbol-observed"
+    }
+  ],
+  "actionIdentifiers": [
+    {
+      "name": "dodge",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "Dodge",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "Charge",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "Double",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "Idle",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "Swing",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "Walk",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "block",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "charge",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "dash",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "double",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "hit",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "idle",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "run",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "swing",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "throw",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    },
+    {
+      "name": "walk",
+      "kind": "potential-input-or-motion-symbol",
+      "confidence": "static-symbol-only"
+    }
+  ],
+  "mechanicsFromPublicText": [
+    {
+      "name": "AUTO",
+      "description": "AI can direct movement/dodges/attacks; manual move calls can be mixed",
+      "verified": "public game instructions; not simulated"
+    },
+    {
+      "name": "MANUAL",
+      "description": "Drag or virtual joystick controls position; moves fired by buttons",
+      "verified": "public text, not gameplay"
+    },
+    {
+      "name": "DODGE",
+      "description": "Directional dash is documented",
+      "verified": "public game instructions; timing not measured"
+    },
+    {
+      "name": "PROJECTILE",
+      "description": "Spatial travel and miss possible",
+      "verified": "public rules, not witnessed"
+    },
+    {
+      "name": "HIT",
+      "description": "Damage should be synchronized with actual impact",
+      "verified": "design target; PB gameplay unverified"
+    }
+  ],
+  "knownLimitations": [
+    "Screenshots show OAuth gate with Discord/Google.",
+    "No real battle entered; all movements are static indicators.",
+    "Original animations and code/assets are not redistributed to public repo.",
+    "No guarantee that every referenced animation is active in a game match."
+  ]
+}
