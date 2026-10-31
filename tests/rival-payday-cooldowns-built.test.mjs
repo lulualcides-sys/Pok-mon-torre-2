@@ -62,9 +62,9 @@ test('Author-defined leaders and wild captures retain their exact species and te
  assert.deepEqual(wild.foes.map(x=>x.id),['zubat']);
 });
 
-test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg Bomb 2.3s',()=>{
- assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8,'egg-bomb':2.3});
- for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',1.8],['Egg Bomb',2.3]]){
+test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg Bomb 2.3s, Hex 3s',()=>{
+ assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8,'egg-bomb':2.3,hex:3});
+ for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',1.8],['Egg Bomb',2.3],['Hex',3]]){
   const native={nombre:label,cd:label==='Egg Bomb'?1.2:5.8,forma:'proyectil',dano:4};
   const copy=moves.balanceCampaignQuickCooldown(native);
   assert.equal(copy.cd,expected,label);
@@ -73,6 +73,10 @@ test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg 
  }
  const practice={nombre:'ULT · Supersonic',torre2IntroSource:'supersonic',torre2IntroPractice:true,cd:8};
  assert.strictEqual(moves.balanceCampaignQuickCooldown(practice),practice,'Lv8 practice ULT must stay capped');
+ const originalHex={nombre:'Hex',cd:6};
+ const campaignHex=moves.balanceCampaignQuickCooldown(originalHex);
+ assert.equal(campaignHex.cd,3,'Hex must use 3s only in campaign');
+ assert.equal(originalHex.cd,6,'Arena/VS native Hex cooldown must not mutate');
  const other={nombre:'Thunderbolt',cd:7.1};
  assert.strictEqual(moves.balanceCampaignQuickCooldown(other),other);
  const source=fs.readFileSync(new URL('../tools/pokearena/torre2-move-pool.js',import.meta.url),'utf8');
