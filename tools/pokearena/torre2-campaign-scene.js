@@ -1355,6 +1355,10 @@ create(){
   label(119,114,'TIPO',C.muted,10);
   label(119,131,stats.types[0],hex(stats.types[0]),12);
   label(119,151,'NV. '+stats.level,C.white,11);
+  // Distinguish a real Shiny individual in the native summary without
+  // recoloring the approved PMD portrait or inventing a Shiny sprite.
+  if(member.shiny===true)
+   label(119,168,'✦ SHINY',C.gold,11).setData('torre2-shiny-summary-label',true);
   const statRows=[['HP',stats.hp,180,0x64cb9c],['ATK',stats.attack,160,0xf6a268],
                   ['DEF',stats.defense,165,0x7ab3f5],['SPD',stats.speed,200,0x9cd4d7]];
   statRows.forEach(([name,value,max,color],i)=>{
@@ -1663,6 +1667,10 @@ create(){
   const supported=new Set(ROSTER.flatMap(p=>[p.id,...(p.evoluciones||[]).map(x=>x.nombre.toLowerCase())]));
   text(this,ANCHO/2,47,'VISTOS '+(state.dexSeen?.length??0)+'  ·  CAPTURADOS '+(state.dexCaught?.length??0)+
    '  ·  Somente espécies integradas entram em batalha.',statusStyle).setOrigin(.5);
+  if((state.dexShinySeen||[]).length)
+   text(this,ANCHO/2,61,'✦ SHINY AVISTADOS '+state.dexShinySeen.length+
+    ' · CAPTURADOS '+(state.dexShinyCaught?.length??0),{
+    ...statusStyle,color:'#f0d789',fontSize:'9px'}).setOrigin(.5);
   const page=Math.min(this.dexPage||0,6);
   for(let i=0;i<22;i++){
    const index=page*22+i;if(index>=KANTO_DEX.length)break;
@@ -1671,9 +1679,13 @@ create(){
    const ready=supported.has(slug),caught=(state.dexCaught||[]).includes(slug);
    const seen=caught||(state.dexSeen||[]).includes(slug);
    const x=35+(i>=11?295:0),y=75+(i%11)*21;
-   const marker=caught?' ★':seen?' ◦':ready?' ✓':'';
+   const shinyCaught=(state.dexShinyCaught||[]).includes(slug);
+   const shinySeen=shinyCaught||(state.dexShinySeen||[]).includes(slug);
+   // Regular caught species keep their original ★. ✦ is reserved for a
+   // recorded Shiny sighting; never claim a Shiny capture from sighting.
+   const marker=shinyCaught?' ✦ SHINY':shinySeen?' ✦':caught?' ★':seen?' ◦':ready?' ✓':'';
    text(this,x,y,String(index+1).padStart(3,'0')+'. '+raw+marker,{
-    fontSize:'11px',color:caught?C.gold:seen?C.blue:C.muted});
+    fontSize:'11px',color:shinyCaught?'#f5db86':caught?C.gold:seen?C.blue:C.muted});
   }
   this.button(91,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
   this.button(360,329,160,31,'PÁGINA '+(page+1)+'/7',()=>{
