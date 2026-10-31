@@ -196,6 +196,28 @@
         "Pikachu Volt Tackle"
       ],
       "note": "Manual Ice Beam Sing Body Slam clicks/casts; Body Slam icy visuals possibly overlap from another move and not reliable as isolated morphology"
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411",
+      "status": "MATCH_11_DISTINCT_CASTS_REPORTED",
+      "mode": "Practice vs Bot, mode=practice as observed from public UI client; 1 Easy",
+      "battleStarted": true,
+      "arena": "Cerulean Cave",
+      "outcome": "VICTORY reported but contradictory KO account; NOT independently verified",
+      "team": [
+        "Magnezone",
+        "Torkoal",
+        "Toxicroak"
+      ],
+      "castReportedUnique": 11,
+      "newUniqueNamesVersusPrevious": 10,
+      "manualCastsReported": 9,
+      "autoCastsReported": 2,
+      "frameByFrameVisualsArchived": 0,
+      "missing": [
+        "Toxicroak Mud Bomb"
+      ],
+      "note": "The bot/Unranked queue label was a UI display issue; practiceBtn sends mode=practice. Agent result conflict: victory while all own Pokémon KO."
     }
   ],
   "coverage": {
@@ -214,7 +236,7 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 24,
+    "uniqueMovesWithBrowserAgentUseReported": 34,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
     "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
@@ -240,7 +262,16 @@
     "pendingNext": [
       "Pikachu Iron Tail",
       "Pikachu Volt Tackle"
-    ]
+    ],
+    "latestBatchFive": {
+      "attempted": 12,
+      "distinctUsedReported": 11,
+      "alreadySeenNames": 1,
+      "newNames": 10,
+      "remaining": 1,
+      "verifiedWin": false,
+      "source": "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+    }
   },
   "warnings": [
     "Do not add inferred shapes to observed visual coverage",
