@@ -3,6 +3,7 @@ import {improveGymLeaderLoadout} from './gym-leader-loadouts.js';
 import {gen3Effectiveness} from './gen3-types.js';
 import {createWeather,setWeather,tickWeather,WEATHER_NAMES} from './weather.js';
 import {installWeatherPixels} from './weather-pixels.js';
+import {installWeatherStatusFloat} from './weather-status-float.js';
 import {serializeGen3Status,restoreGen3Status,statusLabel} from './gen3-status.js';
 import {trainerInventory,createTrainerItems,trainerItemStep,TRAINER_ITEM_RULES} from './trainer-items.js';
 import {clearDepartingCombat} from './combat-boundary.js';
@@ -151,6 +152,9 @@ export function installPartyBattle(scene){
  setWeather(weather,payload.weather||'none');
  // Original pixel-weather overlay is separate from every approved attack VFX.
  installWeatherPixels(scene,weather);
+ // Side-of-sprite ATK ±20% only when the actual species modifier applies.
+ // The weather status overlay is cosmetic and never touches the damage path.
+ installWeatherStatusFloat(scene,weather,actors,party);
  const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2802);
  scene.events.once('shutdown',()=>{weatherHud.destroy();scene.__torre2Weather=null;scene.__torre2Rain=null;});
  const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));
