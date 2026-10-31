@@ -67,9 +67,21 @@ const runRea=(subcommand,targetId,extra=[])=>{
    const target=targets.find(t=>t.type==='page'&&t.url?.startsWith(origin));
    if(!target)throw new Error('Chrome did not reach an eligible public page on the expected origin');
    browser=await chromium.connectOverCDP('http://127.0.0.1:9222');
-   const context=browser.contexts()[0];
-   const page=context.pages().find(p=>p.url().startsWith(origin));
-   if(!page)throw new Error('Page not in the public origin');
+   const context=browser.contexts()[0]||await browser.newContext();
+   // CDP discovery can see a tab before Playwright has hydrated its Page
+   // object; never misclassify this attachment race as an origin refusal.
+   let page=context.pages().find(p=>p.url().startsWith(origin));
+   if(!page){
+     await delay(1100);
+     page=context.pages().find(p=>p.url().startsWith(origin));
+   }
+   if(!page){
+     page=await context.newPage();
+     try{await page.goto(origin,{waitUntil:'domcontentloaded',timeout:25000});}
+     catch(error){report.limitations.push('Public page navigation: '+safe(error.message))}
+     if(!page.url().startsWith(origin))
+       throw new Error('Public page unavailable after CDP attach; url='+redactUrl(page.url()));
+   }
    await page.waitForTimeout(2200);
    const dom=await page.evaluate(()=>{
       const text=n=>String(n?.textContent||'').replace(/\s+/g,' ').trim().slice(0,90);
