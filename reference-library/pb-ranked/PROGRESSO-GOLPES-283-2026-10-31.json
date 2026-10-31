@@ -10,9 +10,11 @@
     "defaultAccessible": 191,
     "requiresEditing": 54,
     "protectedByPolicy": 45,
-    "reportedUsedInRecentBatchRuns": 45,
-    "rosterNamesNotYetUsedInBatchRuns": 200,
-    "frameByFrameVfxCaptured": 0
+    "reportedUsedInRecentBatchRuns": 55,
+    "rosterNamesNotYetUsedInBatchRuns": 190,
+    "frameByFrameVfxCaptured": 0,
+    "lowConfidenceNewAgentClaimsFromBatchSeven": 10,
+    "strongerPreviousBatchAgentReports": 45
   },
   "testedSources": [
     "https://agent.tinyfish.ai/runs/360cdf8c-52a2-4dec-87de-16c21fb8d821",
@@ -530,11 +532,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Close Combat",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "punches and red flash reported",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Confuse Ray",
@@ -1091,11 +1105,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Egg Bomb",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "yellow egg and orange explosion reported",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Electro Ball",
@@ -1284,11 +1310,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Fire Punch",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "red-orange flame around fist",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "First Impression",
@@ -1685,11 +1723,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Gunk Shot",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "green sludge with dark specks",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Gyro Ball",
@@ -1992,11 +2042,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Ice Punch",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "blue frost/crystal energy",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Ice Shard",
@@ -2234,11 +2296,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Leaf Storm",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "green leaf tornado reported",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Leech Seed",
@@ -2350,11 +2424,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Megahorn",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "horn charge, blue energy trail reported",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Metal Burst",
@@ -2578,7 +2664,8 @@
           "manual-click"
         ],
         "sourceUrls": [
-          "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
+          "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8",
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
         ],
         "notes": [
           "Not very effective"
@@ -2898,7 +2985,8 @@
           "auto-cast"
         ],
         "sourceUrls": [
-          "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
+          "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8",
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
         ],
         "notes": [
           "Effective"
@@ -3507,11 +3595,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Sleep Powder",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "green sparkling cloud reported",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Sludge Bomb",
@@ -3649,11 +3749,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Stone Edge",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "grey rock columns reported",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Substitute",
@@ -3881,11 +3993,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Thunder Punch",
+        "methods": [
+          "aggregate-agent-report; individual click not confirmed"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
+        ],
+        "notes": [
+          "yellow crackling energy around strike",
+          "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Verify actual click/cast from screenshots before classifying as visually observed; preserve approved VFX"
     },
     {
       "name": "Thunder Wave",
@@ -4256,7 +4380,7 @@
       "toDo": "Isolate visual effect and test original implementation before any modification"
     }
   ],
-  "lastRecordedRun": "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae",
+  "lastRecordedRun": "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f",
   "nextFocus": {
     "mode": "default-first batches",
     "note": "Continue on other groups with many unobserved moves; do not treat AUTO claims as frame-verified",
