@@ -1,0 +1,44 @@
+{
+  "date": "2026-10-31",
+  "runUrl": "https://agent.tinyfish.ai/runs/e40f4695-c2b4-415d-ada1-9f4fb5d98ace",
+  "team": [
+    {
+      "name": "Malamar",
+      "defaults": [
+        "Psycho Cut",
+        "Night Slash",
+        "Superpower",
+        "Hypnosis"
+      ]
+    },
+    {
+      "name": "Noivern",
+      "defaults": [
+        "Supersonic",
+        "Boomburst",
+        "Dragon Claw",
+        "Acrobatics"
+      ]
+    },
+    {
+      "name": "Pikachu",
+      "defaults": [
+        "Thunderbolt",
+        "Quick Attack",
+        "Iron Tail",
+        "Volt Tackle"
+      ]
+    }
+  ],
+  "teamSaved": true,
+  "format": "3v3",
+  "mode": "Practice vs Bot Easy",
+  "queuePositionAtStop": 21,
+  "battleStarted": false,
+  "attacksUsed": 0,
+  "reason": "Server queue and automation session budget; no gameplay",
+  "pikaIronTail": false,
+  "pikaVoltTackle": false,
+  "nextStep": "Reuse saved team, keypresses z/x/c and 1–4 once queue opens; budget must be reviewed first",
+  "visualAnimationProof": false
+}
