@@ -164,14 +164,18 @@ export function installPartyBattle(scene){
  const strategy=scene.__torre2TrainerStrategy=createTrainerStrategy(
   party.strategic===true,{gymLeader:party.gymLeader===true});
  const enemyControl=scene.controles?.[1],readControl=enemyControl?.leer;
- const bossPressure={nextBasicAt:2,assisted:0};
+ const bossPressure={nextBasicAt:2,nextSpecialAt:2,assisted:0,assistedSpecials:0};
  scene.__torre2GymPressure=party.gymLeader?bossPressure:null;
  if(readControl)enemyControl.leer=function(dt){
   if(trainerItems.pending)return null;
   const native=readControl.call(this,dt);
   if(!party.gymLeader)return native;
   const guided=pressureGymLeaderInput(scene,actors[1],actors[0],native,bossPressure);
-  if(guided!==native)bossPressure.assisted++;
+  if(guided!==native){
+   bossPressure.assisted++;
+   if((guided?.rmb||guided?.q)&&!native?.rmb&&!native?.q)
+    bossPressure.assistedSpecials++;
+  }
   return guided;
  };
  scene.events.once('shutdown',()=>{if(readControl)enemyControl.leer=readControl;scene.__torre2TrainerItems=null;scene.__torre2GymPressure=null});
