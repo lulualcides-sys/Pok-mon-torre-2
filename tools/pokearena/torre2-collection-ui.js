@@ -37,7 +37,7 @@ export function kantoDexPageModel(state,dex,supported=[],requestedPage=0,pageSiz
  const shinySeen=onlyKanto(state?.dexShinySeen);
  for(const id of caught)seen.add(id);
  for(const id of shinySeen)seen.add(id);
- for(const id of shinyCaught){seen.add(id);shinySeen.add(id)}
+ for(const id of shinyCaught){caught.add(id);seen.add(id);shinySeen.add(id)}
  const available=idSet(supported);
  const safeSize=Math.max(1,Math.floor(Number(pageSize)||22));
  const pages=Math.max(1,Math.ceil(entries.length/safeSize));
