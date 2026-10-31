@@ -470,6 +470,8 @@ create(){
   // Keep all trainer/leader counters and the existing localStorage save IDs.
   // Retain older scene helpers below for PC, Center, Mart and summary only.
   this.children.removeAll(true);
+  // Prevent stale city metadata from outliving its Phaser objects on return.
+  this.__torre2CeruleanCity=null;
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
    this.__torre2PathPage=undefined;
