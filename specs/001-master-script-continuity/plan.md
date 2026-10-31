@@ -1,5 +1,12 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Plano de continuidade pós-CI verde — T20→T19 (31/10/2026)
+1. Preservar a prova completa da PR #369 (squash `1fcc64eb`): 13 treinadores genuínos, captura nativa de Spearow e Geodude, Brock, Rocha e TM Rock Tomb; CI #41153415212 e visual #41153419869 aprovados. O merge não introduziu ajustes de combate e não implica publicação HTTP automática.
+2. Revalidar testes/Pages da `main` integrada. Não confundir o resultado da branch antiga com teste da `main` nova. Sem comprovação de SHA público, registrar publicação como pendente.
+3. Prioridade T19: estender a prova natural a Cerulean/Misty no save efetivamente conquistado, sem injetar níveis, insígnias, HP, vitórias ou TMs; amostrar XP/cooldowns, recuperação no Centro e persistência após reload. Manter teste de longa duração isolado de CI rotineira.
+4. Se houver falha, reproduzir em Chromium com logs e corrigir apenas a causa concreta, sem alterar VFX aprovados, IA Arena ou T10 #381. Não reutilizar a branch antiga #369 para novos recursos.
+
+
 ## Lote T03 — escolha de Eevee sem UID legado (30/10/2026)
 - **Causa:** seletor de UI exige UID; saves antigos permitem membros sem UID, portanto Eevee elegível não pode escolher Vaporeon/Jolteon/Flareon.
 - **Patch mínimo:** apenas `torre2-campaign-core.js`, helper de tokens determinísticos por localização/índice e sem colisão, mapeamento por índice do membro selecionado, UID persistido somente após `saveCampaign` concluir. Sem migração em massa.
