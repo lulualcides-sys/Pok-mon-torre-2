@@ -27,3 +27,12 @@ export function addCitySprite(scene,name,x,y,height,{depth=20+y/1000}={}){
   .setDisplaySize(geometry.width,geometry.height).setDepth(depth)
   .setData('torre2-city-atlas-piece',name);
 }
+
+// Preload anticipates a valid leader result without applying rewards or saving.
+export function needsCeruleanAtlas(state,result,trainerLimit){
+ if(state?.stage===1)return true;
+ const m=result?.marker;
+ return state?.stage===0&&result?.finished===true&&result.won===true&&
+  m?.stage===0&&m.trainer===state.trainer&&state.trainer>=trainerLimit&&
+  !m.training&&!m.laboratory&&m.kind!=='wild'&&m.kind!=='rematch';
+}

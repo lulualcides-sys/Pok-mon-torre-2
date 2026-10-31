@@ -32,11 +32,15 @@ function masonry(g,x,y,w,h){
  px(g,x-1,y-3,w+2,4,0xdddcc2);px(g,x,y-2,w,1,0xfff2d1);
 }
 function pavement(g,x,y,w,h){
- px(g,x,y,w,h,0xcfcbb0);
- for(let yy=0;yy<h;yy+=8)for(let xx=0;xx<w;xx+=12){
-  const width=Math.min(11,w-xx),height=Math.min(7,h-yy);
-  px(g,x+xx,y+yy,width,height,(xx+yy)%3?0xe0dcc3:0xd9d5b9);
-  px(g,x+xx,y+yy,width,1,0xeee9d0);
+ const r=rng(41+x*17+y*31);
+ px(g,x,y,w,h,0xaaa88e);
+ for(let yy=0;yy<h;yy+=5)for(let xx=-7;xx<w;xx+=9){
+  const left=Math.max(0,xx+(yy%10?4:0)),right=Math.min(w,xx+(yy%10?4:0)+8);
+  if(right<=left)continue;
+  const height=Math.min(4,h-yy),shade=[0xd8d4b8,0xe1dcc3,0xcac9af,0xd2cfb6][Math.floor(r()*4)];
+  px(g,x+left,y+yy,right-left,height,shade);
+  px(g,x+left,y+yy,right-left,1,0xeee7ce,.65);
+  if(r()>.7)px(g,x+left+1,y+yy+2,1,1,0xb4b49d,.6);
  }
 }
 function steps(g,x,y,w,n){
@@ -117,9 +121,9 @@ function banner(g,x,y){
 export function renderCityScenery(scene){
  const water=scene.add.graphics().setDepth(0).setData('torre2-city-layer','water');
  px(water,0,0,640,360,0x188bb7);
- const random=rng(125);for(let i=0;i<260;i++){
+ const random=rng(125);for(let i=0;i<1600;i++){
   const x=random()*640,y=random()*310;
-  px(water,x,y,4+random()*11,2,i%3?0x27a7c3:0x64cad7,.45);
+  px(water,x,y,2+random()*8,1+random()*2,i%3?0x27a7c3:0x64cad7,.45);
  }
  const terrain=scene.add.graphics().setDepth(2).setData('torre2-city-layer','terrain');
  // Two stone islands separated by a canal, with a smaller west channel.
@@ -129,6 +133,11 @@ export function renderCityScenery(scene){
  px(terrain,154,196,44,80,0x188bb7);masonry(terrain,146,195,8,78);masonry(terrain,198,195,8,78);
  for(const [x,y,w,h]of [[1,39,73,30],[165,38,169,30],[408,39,47,35],[584,38,60,36],[1,187,44,74],[209,263,118,16],[409,259,40,14]]){
   px(terrain,x,y,w,h,0x3d914e);px(terrain,x+2,y+2,w-4,h-4,0x6aae55);
+  const grass=rng(x*9+y);
+  for(let i=0;i<w*h/12;i++){
+   const xx=x+2+grass()*(w-4),yy=y+2+grass()*(h-4);
+   px(terrain,xx,yy,1,2,i%3?0x438f49:0x98c765,.8);
+  }
  }
  // Canal bridge with masonry arch, deck, balustrades and stair approaches.
  const bridge=scene.add.graphics().setDepth(5).setData('torre2-city-layer','bridge');

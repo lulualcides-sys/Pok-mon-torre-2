@@ -47,15 +47,15 @@ const server=http.createServer((req,res)=>{
     .filter(o=>o.getData?.('torre2-city-atlas-piece')).map(o=>o.getData('torre2-city-atlas-piece')));
    for(const name of ['center','gym','mart','house','tree','planter'])assert.ok(pieces.includes(name),'Missing cropped atlas piece '+name);
    await page.screenshot({path:'test-evidence/city-layered-'+label+'.png'});
-   await named('torre2-city-landmark','center');
+   await click(123,128); // Actual atlas door, independent of the label zone.
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-center-pc')));
    await named('torre2-center-pc',true);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-pc-team-index')===0));
    await click(549,21);await city();
-   await named('torre2-city-landmark','mart');
+   await click(103,230);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-mart-buy')==='pokeball'));
    await click(120,315);await city();
-   await named('torre2-city-landmark','gym');
+   await click(515,134);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.text?.includes('FALTAM 13')));
    await click(320,306);await city();
    await named('torre2-city-action','EQUIPE');
@@ -90,6 +90,26 @@ const server=http.createServer((req,res)=>{
    // must be exactly one, regardless of unrelated engine/game events.
    assert.equal(timers.cityWaterLoops,1,
     'route/city roundtrip leaked native water timers: '+JSON.stringify(timers));
+   // Exercise the real result-consumption lifecycle, with no cached atlas.
+   // Only the battle outcome is a fixture; create() must earn stage 1 itself.
+   await page.evaluate(async()=>{
+    const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+    const core=await import(new URL('./torre2/campaign-core.js',main));
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    const state=core.createPlayerCampaign('bulbasaur');
+    state.trainer=core.TRAINERS_PER_GYM(0);core.saveCampaign(state);
+    scene.children.removeAll(true);
+    scene.textures.remove('torre2-city-atlas-v1');
+    scene.scene.restart({finished:true,won:true,marker:{stage:0,trainer:state.trainer}});
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .some(o=>o.getData?.('torre2-report-continue')),null,{timeout:60000});
+   await named('torre2-report-continue',true);
+   await named('torre2-open-city',true);await city();
+   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(o=>o.getData?.('torre2-city-atlas-piece')==='gym').length),1,
+    'first Brock victory must display the atlas without a second restart');
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-first-arrival.png'});
    assert.deepEqual(errors,[]);
    fs.writeFileSync('test-evidence/city-layered-'+label+'.json',JSON.stringify({...report,timers,errors,fixture:true},null,2));
    console.log(label+' city WebGL + Center/PC/Mart/gym/summary/badges passed');

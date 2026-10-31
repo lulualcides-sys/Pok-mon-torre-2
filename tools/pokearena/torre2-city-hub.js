@@ -30,7 +30,8 @@ function landmark(scene,p,fn){
  const g=scene.add.graphics().setDepth(60);
  panel(g,p.x-39,p.y+2,78,13);
  text(scene,p.x,p.y+8,p.label,8,'#fff0ba',61).setOrigin(.5);
- const z=scene.add.zone(p.x,p.y-6,82,36).setDepth(70).setInteractive({useHandCursor:true})
+ const top=p.doorY-12,bottom=p.y+15;
+ const z=scene.add.zone(p.x,(top+bottom)/2,82,bottom-top).setDepth(70).setInteractive({useHandCursor:true})
   .setData('torre2-city-landmark',p.id);
  z.on('pointerdown',(_p,_x,_y,e)=>{e?.stopPropagation?.();fn()});
  z.on('pointerover',()=>g.setAlpha(.78)).on('pointerout',()=>g.setAlpha(1));
