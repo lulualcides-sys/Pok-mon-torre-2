@@ -1,5 +1,8 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## Lote T22 — ticket legado de revanche sem token (31/10/2026)
+**Falha RED reproduzida no módulo atual:** `pending` de save legado sem `token` pode impedir nova reserva mesmo com 3 cargas, aceitar resultado igualmente sem token e lançar TypeError quando ticket é nulo. **Aceite:** não recompensar ticket sem token inteiro positivo; não lançar erro em resultado ausente; permitir reserva normal quando `pending` é inválido, sem alterar dados do save até o usuário reservar; tickets válidos mantêm uso único. Sem mudar runtime de combate, recompensas, badges, TMs, VFX ou sprites. Testes de unidade não equivalem a partida natural.
+
 ## Lote T03 — Eevee em saves legados sem UID (30/10/2026, aguardando CI)
 **Falha no código da main `be1d230c`:** `pendingEeveeEvolution` expõe `uid:undefined` para Eevee Lv30 em saves v1 sem UID; `chooseEeveeEvolution` rejeita qualquer UID não string. A escolha fica bloqueada mesmo com nível legítimo. **Aceite:** token estável não mutante para Eevee legado na equipe/PC, proteção contra colisão com UIDs reais, escolha Lv30 somente, gravação atômica antes de atribuir identidade; Shiny, TM, HP, XP, Pokédex, outros membros e saves preservados. Testes são fixtures, não campanha natural; merge/Pages pendentes.
 
