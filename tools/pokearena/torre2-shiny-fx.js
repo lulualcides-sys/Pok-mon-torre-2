@@ -27,7 +27,7 @@ export function installShinyEntrance(scene,fighter,side=0){
  }
  function tick(_time,delta=0){
   if(token.disposed)return;
-  elapsed+=Math.max(0,Math.min(100,Number(delta)||0));
+  elapsed+=Math.max(0,Number.isFinite(Number(delta))?Number(delta):0);
   if(elapsed>=SHINY_DURATION_MS||fighter.ko||fighter.spr?.active===false){
    dispose();return;
   }
