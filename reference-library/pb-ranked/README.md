@@ -5,6 +5,22 @@
 
 **Escopo solicitado:** exclusivamente conteúdo de gameplay individual, sem PvP online, ranking ou multiplayer humano; a autenticação foi efetuada legitimamente pelo usuário no perfil privado do TinyFish para o treino contra bot. O titular do projeto informou autorização de acesso e uso **não comercial** para estudo. Não publicar arquivos brutos do jogo nem misturar ativos de terceiros no GitHub Pages sem comprovação do alcance dessa licença.
 
+## Progresso real e retomar sem retrabalho — atualização final de 31/10
+
+**21 nomes de golpes tiveram uso relatado durante partidas contra bot na coleta recente.** A cobertura técnica da biblioteca é 283 nomes; 245 estão no elenco público. Esses números não equivalem a animações 1:1 copiadas nem a implementação no Torre 2.
+
+- [Status por golpe (283 registros, com 21 usos relatados)](PROGRESSO-GOLPES-283-2026-10-31.json)
+- [Guia para sessões de navegador e correção de botões `stale`](GUIA-TESTE-LOTES-SEM-RETRABALHO.md)
+- [Primeiro combate: Greninja/Aegislash/Ribombee — 12 usos](RESULTADO-PRIMEIRA-PARTIDA-12-GOLPES.json)
+- [Segundo combate: Pikachu/Arcanine — vitória, nove usos, só quatro nomes distintos](RESULTADO-SEGUNDA-PARTIDA-9-USOS-4-GOLPES.json)
+- [Terceiro combate: Lapras/Arcanine — derrota, três ataques manuais e cinco pendentes](RESULTADO-TERCEIRA-PARTIDA-3-GOLPES-MANUAIS.json)
+- [Plano de menor esforço de edição — 37 partidas e 54 alterações planejadas](ESTRATEGIA-LOTES-SEM-RETRABALHO.md)
+- [45 nomes com proteção documental por aprovação anterior](PRESERVAR-GOLPES-APROVADOS.md)
+
+**Faltam registros de uso para 224 nomes do elenco público nesse acompanhamento de lotes.** Nenhum vídeo quadro-a-quadro nem recurso proprietário foi copiado.
+
+---
+
 ## PESQUISA EM LOTES — todos os 283 nomes
 
 O catálogo possui **283 nomes** analisados estaticamente, dos quais **245 pertencem ao roster público** de 127 Pokémon. Para evitar pesquisar golpe por golpe, os 245 nomes estão organizados em **21 lotes**, cada um com três Pokémon e quatro golpes por espécie, sem repetição de cobertura planejada. Os outros 38 aparecem no AST mas não num pool público do elenco.
