@@ -10,7 +10,7 @@ const all=new Set(roster.species.flatMap(s=>s.pool.map(m=>norm(m.name))));
 const defaults=new Set(roster.species.flatMap(s=>s.defaults.map(m=>norm(m.name))));
 const found=new Set();
 const errors=[];let countedEdits=0,countedDefaults=0,countedRares=0;
-for(const [idx,batch] of plan.batches.entries()){
+for(const [idx,batch] of plan.battles.entries()){
  if(batch.status!=='PLANNED_NOT_PLAYED')errors.push('Not a planned batch: '+(idx+1));
  if(batch.team.length!==3)errors.push('Not 3v3 '+(idx+1));
  const perTeam=new Set();
@@ -44,10 +44,10 @@ for(const [idx,batch] of plan.batches.entries()){
    }
  }
 }
-if(plan.totalMatches!==plan.batches.length)errors.push('Wrong totalMatches');
+if(plan.totalMatches!==plan.battles.length)errors.push('Wrong totalMatches');
 if(plan.totalDistinctMoves!==all.size||found.size!==all.size)errors.push('Incomplete move names');
 for(const name of all)if(!found.has(name))errors.push('Missing name '+name);
 if(countedEdits!==plan.totals.slotReplacements||countedRares!==plan.rareUnique||countedDefaults!==plan.defaultUnique)errors.push('Incorrect plan counts');
 if(errors.length){console.error(errors.join('\n'));process.exit(1);}
-console.log(JSON.stringify({status:'PASS',allMoveNames:all.size,plannedMatches:plan.batches.length,defaultMoves:countedDefaults,rareMoves:countedRares,moveEdits:countedEdits,
+console.log(JSON.stringify({status:'PASS',allMoveNames:all.size,plannedMatches:plan.battles.length,defaultMoves:countedDefaults,rareMoves:countedRares,moveEdits:countedEdits,
  warning:'A validated plan is not proof of actual battle animations.'},null,2));
