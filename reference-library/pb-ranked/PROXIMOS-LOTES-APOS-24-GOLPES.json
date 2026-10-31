@@ -1,0 +1,798 @@
+{
+  "date": "2026-10-31",
+  "source": "Progress tracker and defaults-first plan",
+  "purpose": "Ordering untested move groups without changing approved VFX",
+  "startingCount": 24,
+  "untriedPublicRosterNames": 221,
+  "priorityNextCurrentTeam": [
+    "Iron Tail",
+    "Volt Tackle"
+  ],
+  "candidateDefaultFirst": [
+    {
+      "oldBatchNo": 5,
+      "phase": "defaults",
+      "team": [
+        "Torkoal",
+        "Toxicroak",
+        "Magnezone"
+      ],
+      "newUntested": 11,
+      "protectedInPending": 4,
+      "edits": 0,
+      "names": [
+        "Lava Plume",
+        "Overheat",
+        "Earth Power",
+        "Shell Smash",
+        "Poison Jab",
+        "Sucker Punch",
+        "Drain Punch",
+        "Mud Bomb",
+        "Flash Cannon",
+        "Discharge",
+        "Magnet Rise"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 4,
+      "phase": "defaults",
+      "team": [
+        "Muk",
+        "Exeggutor",
+        "Heracross"
+      ],
+      "newUntested": 10,
+      "protectedInPending": 4,
+      "edits": 0,
+      "names": [
+        "Gunk Shot",
+        "Fire Punch",
+        "Thunder Punch",
+        "Ice Punch",
+        "Egg Bomb",
+        "Leaf Storm",
+        "Sleep Powder",
+        "Megahorn",
+        "Close Combat",
+        "Stone Edge"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 6,
+      "phase": "defaults",
+      "team": [
+        "Rillaboom",
+        "Scyther",
+        "Tauros"
+      ],
+      "newUntested": 10,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Drum Beating",
+        "Knock Off",
+        "High Horsepower",
+        "Wood Hammer",
+        "X-Scissor",
+        "Wing Attack",
+        "Brick Break",
+        "Double-Edge",
+        "Zen Headbutt",
+        "Raging Bull"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 1,
+      "phase": "defaults",
+      "team": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise"
+      ],
+      "newUntested": 9,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Sludge Bomb",
+        "Earthquake",
+        "Outrage",
+        "Flamethrower",
+        "Fire Blast",
+        "Air Slash",
+        "Dragon Claw",
+        "Rapid Spin",
+        "Skull Bash"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 8,
+      "phase": "defaults",
+      "team": [
+        "Lopunny",
+        "Garchomp",
+        "Lucario"
+      ],
+      "newUntested": 9,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "High Jump Kick",
+        "Bounce",
+        "Dizzy Punch",
+        "Dragon Rush",
+        "Dig",
+        "Giga Impact",
+        "Aura Sphere",
+        "Bone Rush",
+        "Meteor Mash"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 2,
+      "phase": "defaults",
+      "team": [
+        "Pidgeot",
+        "Sandslash (Alola)",
+        "Ninetales (Alola)"
+      ],
+      "newUntested": 8,
+      "protectedInPending": 2,
+      "edits": 0,
+      "names": [
+        "Hurricane",
+        "Aerial Ace",
+        "Mirror Move",
+        "Icicle Crash",
+        "Drill Run",
+        "Swords Dance",
+        "Moonblast",
+        "Dark Pulse"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 10,
+      "phase": "defaults",
+      "team": [
+        "Malamar",
+        "Noivern",
+        "Pikachu"
+      ],
+      "newUntested": 8,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Psycho Cut",
+        "Superpower",
+        "Hypnosis",
+        "Supersonic",
+        "Boomburst",
+        "Acrobatics",
+        "Iron Tail",
+        "Volt Tackle"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 3,
+      "phase": "defaults",
+      "team": [
+        "Persian",
+        "Arcanine",
+        "Dodrio"
+      ],
+      "newUntested": 7,
+      "protectedInPending": 2,
+      "edits": 0,
+      "names": [
+        "Play Rough",
+        "Power Gem",
+        "Shadow Ball",
+        "Tri Attack",
+        "Drill Peck",
+        "Brave Bird",
+        "Hyper Beam"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 7,
+      "phase": "defaults",
+      "team": [
+        "Gyarados",
+        "Kingdra",
+        "Aggron"
+      ],
+      "newUntested": 7,
+      "protectedInPending": 2,
+      "edits": 0,
+      "names": [
+        "Waterfall",
+        "Ice Fang",
+        "Dragon Dance",
+        "Dragon Pulse",
+        "Rain Dance",
+        "Thunder",
+        "Heavy Slam"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 11,
+      "phase": "defaults",
+      "team": [
+        "Nidoking",
+        "Dugtrio",
+        "Alakazam"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Throat Chop",
+        "Aqua Tail",
+        "Sandstorm",
+        "Rock Slide",
+        "Focus Blast",
+        "Recover"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 12,
+      "phase": "defaults",
+      "team": [
+        "Tentacruel",
+        "Jolteon",
+        "Typhlosion"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 4,
+      "edits": 0,
+      "names": [
+        "Sludge Wave",
+        "Giga Drain",
+        "Pin Missile",
+        "Double Kick",
+        "Eruption",
+        "Flame Wheel"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 13,
+      "phase": "defaults",
+      "team": [
+        "Crobat",
+        "Espeon",
+        "Mightyena"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Cross Poison",
+        "Toxic",
+        "Swift",
+        "Morning Sun",
+        "Fire Fang",
+        "Thunder Fang"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 14,
+      "phase": "defaults",
+      "team": [
+        "Swellow",
+        "Sharpedo",
+        "Wailord"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Facade",
+        "Double Team",
+        "Liquidation",
+        "Poison Fang",
+        "Water Spout",
+        "Amnesia"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 15,
+      "phase": "defaults",
+      "team": [
+        "Crawdaunt",
+        "Claydol",
+        "Salamence"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 2,
+      "edits": 0,
+      "names": [
+        "Crabhammer",
+        "Aqua Jet",
+        "Ancient Power",
+        "Self-Destruct",
+        "Draco Meteor",
+        "Roost"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 16,
+      "phase": "defaults",
+      "team": [
+        "Empoleon",
+        "Roserade",
+        "Gastrodon"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Aqua Cutter",
+        "Ice Spinner",
+        "Petal Dance",
+        "Toxic Spikes",
+        "Muddy Water",
+        "Water Pulse"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 17,
+      "phase": "defaults",
+      "team": [
+        "Weavile",
+        "Cofagrigus",
+        "Klinklang"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Low Kick",
+        "Metal Claw",
+        "Hex",
+        "Will-O-Wisp",
+        "Gear Grind",
+        "Shift Gear"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 18,
+      "phase": "defaults",
+      "team": [
+        "Mienshao",
+        "Golurk",
+        "Sylveon"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Blaze Kick",
+        "U-turn",
+        "Shadow Punch",
+        "Dynamic Punch",
+        "Hyper Voice",
+        "Mystical Fire"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 19,
+      "phase": "defaults",
+      "team": [
+        "Gourgeist",
+        "Kommo-o",
+        "Inteleon"
+      ],
+      "newUntested": 6,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Phantom Force",
+        "Seed Bomb",
+        "Clanging Scales",
+        "Clangorous Soul",
+        "Snipe Shot",
+        "Focus Energy"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 9,
+      "phase": "defaults",
+      "team": [
+        "Togekiss",
+        "Talonflame",
+        "Aegislash"
+      ],
+      "newUntested": 5,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Sky Attack",
+        "Shock Wave",
+        "Steel Wing",
+        "Flame Charge",
+        "Razor Wind"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 20,
+      "phase": "defaults",
+      "team": [
+        "Slither Wing",
+        "Iron Bundle",
+        "Lapras"
+      ],
+      "newUntested": 4,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "First Impression",
+        "Dual Wingbeat",
+        "Freeze-Dry",
+        "Icy Wind"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 21,
+      "phase": "defaults",
+      "team": [
+        "Snorlax",
+        "Ampharos",
+        "Umbreon"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Rest",
+        "Thunder Wave",
+        "Moonlight"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 22,
+      "phase": "defaults",
+      "team": [
+        "Sceptile",
+        "Gardevoir",
+        "Manectric"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Leaf Blade",
+        "Future Sight",
+        "Substitute"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 23,
+      "phase": "defaults",
+      "team": [
+        "Altaria",
+        "Cradily",
+        "Milotic"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Dragon Breath",
+        "Energy Ball",
+        "Mirror Coat"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 24,
+      "phase": "defaults",
+      "team": [
+        "Infernape",
+        "Luxray",
+        "Spiritomb"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Mach Punch",
+        "Psychic Fangs",
+        "Silver Wind"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 25,
+      "phase": "defaults",
+      "team": [
+        "Rhyperior",
+        "Electivire",
+        "Mamoswine"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 1,
+      "edits": 0,
+      "names": [
+        "Rock Wrecker",
+        "Protect",
+        "Avalanche"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 26,
+      "phase": "defaults",
+      "team": [
+        "Froslass",
+        "Darmanitan",
+        "Zoroark"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Draining Kiss",
+        "Hammer Arm",
+        "Retaliate"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 29,
+      "phase": "defaults",
+      "team": [
+        "Dragapult",
+        "Iron Moth",
+        "Iron Valiant"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Dragon Darts",
+        "Fiery Dance",
+        "Spirit Break"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 27,
+      "phase": "defaults",
+      "team": [
+        "Bisharp",
+        "Greninja",
+        "Tyrantrum"
+      ],
+      "newUntested": 2,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Metal Burst",
+        "Head Smash"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 28,
+      "phase": "defaults",
+      "team": [
+        "Hawlucha",
+        "Ribombee",
+        "Corviknight"
+      ],
+      "newUntested": 2,
+      "protectedInPending": 0,
+      "edits": 0,
+      "names": [
+        "Flying Press",
+        "Body Press"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    }
+  ],
+  "candidateCustomEdited": [
+    {
+      "oldBatchNo": 30,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Greninja",
+        "Lycanroc",
+        "Gourgeist"
+      ],
+      "newUntested": 12,
+      "protectedInPending": 2,
+      "edits": 12,
+      "names": [
+        "Cut",
+        "Lick",
+        "Spikes",
+        "Water Gun",
+        "Accelerock",
+        "Bite",
+        "Counter",
+        "Rock Climb",
+        "Confuse Ray",
+        "Leech Seed",
+        "Pain Split",
+        "Poltergeist"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 31,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Zoroark",
+        "Weavile",
+        "Lucario"
+      ],
+      "newUntested": 12,
+      "protectedInPending": 1,
+      "edits": 12,
+      "names": [
+        "Agility",
+        "Foul Play",
+        "Nasty Plot",
+        "Night Daze",
+        "Ice Shard",
+        "Pursuit",
+        "Slash",
+        "Triple Axel",
+        "Bullet Punch",
+        "Calm Mind",
+        "Feint",
+        "Metal Sound"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 32,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Exeggutor",
+        "Clefable",
+        "Iron Bundle"
+      ],
+      "newUntested": 10,
+      "protectedInPending": 1,
+      "edits": 10,
+      "names": [
+        "Psyshock",
+        "Reflect",
+        "Sunny Day",
+        "Synthesis",
+        "Cosmic Power",
+        "Follow Me",
+        "Metronome",
+        "Aurora Veil",
+        "Flip Turn",
+        "Whirlpool"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 33,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Torkoal",
+        "Magnezone",
+        "Venusaur"
+      ],
+      "newUntested": 7,
+      "protectedInPending": 1,
+      "edits": 7,
+      "names": [
+        "Curse",
+        "Heat Wave",
+        "Iron Defense",
+        "Electro Ball",
+        "Sonic Boom",
+        "Frenzy Plant",
+        "Razor Leaf"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 34,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Armaldo",
+        "Talonflame",
+        "Persian"
+      ],
+      "newUntested": 5,
+      "protectedInPending": 2,
+      "edits": 5,
+      "names": [
+        "Crush Claw",
+        "Fury Cutter",
+        "Fly",
+        "Tailwind",
+        "Pay Day"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 35,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Milotic",
+        "Rhyperior",
+        "Hawlucha"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 0,
+      "edits": 3,
+      "names": [
+        "Scald",
+        "Heat Crash",
+        "Karate Chop"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 36,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Ribombee",
+        "Comfey",
+        "Cradily"
+      ],
+      "newUntested": 3,
+      "protectedInPending": 0,
+      "edits": 3,
+      "names": [
+        "Quiver Dance",
+        "Floral Healing",
+        "Ingrain"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    },
+    {
+      "oldBatchNo": 37,
+      "phase": "rare_pool_edits",
+      "team": [
+        "Sandslash (Alola)",
+        "Steelix",
+        "Venusaur"
+      ],
+      "newUntested": 2,
+      "protectedInPending": 0,
+      "edits": 2,
+      "names": [
+        "Hail",
+        "Autotomize"
+      ],
+      "status": "NOT_EXECUTED_BY_THIS_PRIORITIZATION"
+    }
+  ],
+  "notes": [
+    "These are priorities, NOT completed browser fights",
+    "Order default-only teams ahead of custom edited teams to avoid 54 move-editor actions upfront",
+    "Prefer teams with many still-unobserved moves and verify move activation, not HUD-only",
+    "Protected moves must only be compared and preserved in Pokémon Torre 2",
+    "Recheck switch button action targets after every KO/state update; if browser agent cannot click bench controls, minimize further metered calls"
+  ]
+}
