@@ -1,0 +1,61 @@
+name: T19 — natural Vermilion trainer 5→10 with bounded wild recovery
+on:
+  push:
+    branches: [test/t19-vermilion-ten-real-grind-retry-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  native-vermilion-ten:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify actual mechanics and test
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t19-vermilion-ten-real-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Compile original Phaser/WebGL client without modifying approved assets
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: Download exact earned wild-XP checkpoint from green run
+        uses: actions/download-artifact@v4
+        with:
+          name: t19-earned-vermilion-grind-capture
+          run-id: 41199702713
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: test-evidence
+      - name: Native five trainers with heal/XP/catch recovery if genuinely defeated
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          T19_EARNED_GRIND_SAVE: test-evidence/t19-vermilion-earned-grind-save.json
+        run: |
+          set -euo pipefail
+          node tests/t19-vermilion-ten-real-browser.cjs
+      - name: Archive authentic trainer saves and diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t19-vermilion-ten-earned-native
+          path: |
+            test-evidence/t19-vermilion-ten-report.json
+            test-evidence/t19-vermilion-ten-checkpoint.json
+            test-evidence/t19-vermilion-ten-*.png
+          retention-days: 21
+          if-no-files-found: warn
