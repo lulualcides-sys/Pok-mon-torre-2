@@ -10,8 +10,8 @@
     "defaultAccessible": 191,
     "requiresEditing": 54,
     "protectedByPolicy": 45,
-    "reportedUsedInRecentBatchRuns": 21,
-    "rosterNamesNotYetUsedInBatchRuns": 224,
+    "reportedUsedInRecentBatchRuns": 24,
+    "rosterNamesNotYetUsedInBatchRuns": 221,
     "frameByFrameVfxCaptured": 0
   },
   "testedSources": [
@@ -352,11 +352,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Body Slam",
+        "methods": [
+          "manual clicked & use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32"
+        ],
+        "notes": [
+          "69 damage reportedly visible, but icy particles could originate from another simultaneous move"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Review independent screenshot evidence for isolated VFX, compare with approved Torre2 assets before implementing"
     },
     {
       "name": "Bolt Strike",
@@ -1828,11 +1839,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Ice Beam",
+        "methods": [
+          "manual clicked & use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32"
+        ],
+        "notes": [
+          "Ice-like particles and effective damage reported by browser agent"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Review independent screenshot evidence for isolated VFX, compare with approved Torre2 assets before implementing"
     },
     {
       "name": "Ice Breath",
@@ -3236,11 +3258,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Sing",
+        "methods": [
+          "manual clicked & use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32"
+        ],
+        "notes": [
+          "Status button transitioned to called/cooling; target ailment not independently verified"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Review independent screenshot evidence for isolated VFX, compare with approved Torre2 assets before implementing"
     },
     {
       "name": "Skull Bash",
@@ -3978,5 +4011,15 @@
       "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
       "toDo": "test in authenticated Practice vs Bot if worth it"
     }
-  ]
+  ],
+  "lastRecordedRun": "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32",
+  "nextFocus": {
+    "pokemon": "Pikachu",
+    "names": [
+      "Iron Tail",
+      "Volt Tackle"
+    ],
+    "blocker": "Bench Pokémon switch controls lack stable click-element IDs in live battle; requery fresh elements or use visual click when supported",
+    "note": "Avoid more paid attempts until interaction can reliably switch Pokemon"
+  }
 }
