@@ -56,6 +56,7 @@ jobs:
           path: |
             test-evidence/t19-earned-cerulean-misty-report.json
             test-evidence/t19-misty-*
+            test-evidence/t19-native-cerulean-*
             test-evidence/t19-before-misty-native.png
             test-evidence/t19-earned-misty-save.json
           retention-days: 21
