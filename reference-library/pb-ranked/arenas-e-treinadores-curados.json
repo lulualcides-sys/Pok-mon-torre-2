@@ -1,0 +1,69 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com/",
+  "date": "2026-10-31",
+  "arenaSelector": {
+    "count": 17,
+    "names": [
+      "Mt. Silver",
+      "Mt. Silver Summit",
+      "Battle Stadium",
+      "Steven's Cave",
+      "Champion Room",
+      "N's Castle",
+      "Lumiose City",
+      "Indigo Plateau",
+      "Cerulean Cave",
+      "Lumiose Conference",
+      "Aether Paradise",
+      "Aether Paradise Deck",
+      "Battle Tower",
+      "Unova League",
+      "Wyndon Stadium",
+      "Sootopolis Isle",
+      "Area Zero"
+    ],
+    "evidence": "visible/select-option names in public page; layouts not captured"
+  },
+  "trainerSelector": {
+    "count": 28,
+    "names": [
+      "Alain",
+      "Archie",
+      "Ash",
+      "AZ",
+      "Blue",
+      "Brendan",
+      "Cynthia",
+      "Dawn",
+      "Diantha",
+      "Ethan",
+      "Ghetsis",
+      "Giovanni",
+      "Gladion",
+      "Iris",
+      "Jonathan",
+      "Lance",
+      "Leon",
+      "Lillie",
+      "Lillie (dress)",
+      "Maxie",
+      "Mustard",
+      "N",
+      "Paul",
+      "Prof. Oak",
+      "Red",
+      "Silver",
+      "Steven",
+      "Wolfe"
+    ],
+    "evidence": "guest login selection UI; owning trainers and ball throws in battle not captured"
+  },
+  "unverified": [
+    "arena maps and collision",
+    "trainer throw animation",
+    "ball arc and absorption VFX",
+    "fight perspective/camera",
+    "battle stage screenshots"
+  ],
+  "scope": "no online play or authentication"
+}
