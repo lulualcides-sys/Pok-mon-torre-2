@@ -1,0 +1,45 @@
+name: T31 — Pages smoke after T24 optional capture
+on:
+  pull_request:
+    paths:
+      - 'tests/source-client-smoke.cjs'
+      - '.github/workflows/t31-pages-smoke.yml'
+permissions:
+  contents: read
+jobs:
+  phaser-pages-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source syntax and T24 separate capture contract
+        run: |
+          set -euo pipefail
+          node --check tests/source-client-smoke.cjs
+          node --test tests/t24-path-actions.test.js
+      - name: Build actual native Phaser client
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep "$((attempt*8))"
+          done
+      - name: Pages exact failing native Chromium smoke
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/source-client-smoke.cjs
+      - name: Archive Chromium screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t31-pages-native-smoke
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn
