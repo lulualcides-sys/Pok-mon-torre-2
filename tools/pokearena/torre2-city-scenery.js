@@ -174,6 +174,9 @@ export function renderCityScenery(scene){
   for(let i=0;i<15;i++)px(falls,351+i*3,256+(i+tick)%4,3,1,0xd3ffff,.8);
  };
  animate();const timer=scene.time.addEvent({delay:120,loop:true,callback:animate});
+ // Tag only this city's animation: the campaign owns other legitimate
+ // looping events, so their count must never be used as a leak threshold.
+ timer.__torre2CityWaterTimer=true;
  // Removing map objects for a menu MUST stop the animation immediately.
  // A cleanup callback bound to the root avoids accumulating scene listeners.
  ripples.once('destroy',()=>{timer.remove(false);if(falls.active)falls.destroy()});

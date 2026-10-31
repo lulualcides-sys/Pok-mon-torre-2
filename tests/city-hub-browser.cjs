@@ -71,10 +71,16 @@ const server=http.createServer((req,res)=>{
     if(!Array.isArray(clock._active)||!Array.isArray(clock._pendingInsertion))
      throw Error('Phaser Clock event queues unavailable; cannot verify cleanup');
     const pendingRemoval=new Set(clock._pendingRemoval||[]);
-    return [...clock._active,...clock._pendingInsertion]
-     .filter(e=>e.loop&&!pendingRemoval.has(e)).length;
+    const active=[...clock._active,...clock._pendingInsertion]
+     .filter(e=>e.loop&&!pendingRemoval.has(e));
+    return {allLoops:active.length,
+     cityWaterLoops:active.filter(e=>e.__torre2CityWaterTimer===true).length};
    });
-   assert.ok(timers<=3,'bounded looping events: '+timers);
+   // The original campaign legitimately runs other Phaser timers. Only
+   // the water animation belongs to this view: after route -> city there
+   // must be exactly one, regardless of unrelated engine/game events.
+   assert.equal(timers.cityWaterLoops,1,
+    'route/city roundtrip leaked native water timers: '+JSON.stringify(timers));
    assert.deepEqual(errors,[]);
    fs.writeFileSync('test-evidence/city-layered-'+label+'.json',JSON.stringify({...report,timers,errors,fixture:true},null,2));
    console.log(label+' city WebGL + Center/PC/Mart/gym/summary/badges passed');await page.close();
