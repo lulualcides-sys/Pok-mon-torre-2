@@ -1,0 +1,62 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com/",
+  "date": "2026-10-31",
+  "session": "https://agent.tinyfish.ai/runs/57f88a5e-682e-4372-bcf9-6446d2899ade",
+  "mode": "Practice vs Bot",
+  "difficulty": "Easy",
+  "format": "3v3",
+  "arena": {
+    "name": "Cerulean Cave",
+    "nameConfirmedBy": "visible battle header 'Practice 3v3 · Cerulean Cave'",
+    "visualsReported": [
+      "grey cracked stone floor",
+      "dark rocky cave",
+      "purple and blue luminous crystal formations",
+      "blue perimeter glow",
+      "central circular platform"
+    ],
+    "confidence": "browser agent visual observation; not raw sprite/atlas extraction"
+  },
+  "switchObservations": [
+    {
+      "step": "battle start",
+      "from": null,
+      "to": "Crobat",
+      "observed": "first Pokemon appeared without clearly detected trainer Pokeball throw"
+    },
+    {
+      "step": "first manual switch",
+      "from": "Crobat",
+      "to": "Charizard",
+      "observed": "visible active Pokemon replaced; no Pokeball throw seen"
+    },
+    {
+      "step": "second manual switch",
+      "from": "Charizard",
+      "to": "Snorlax",
+      "observed": "visible active Pokemon replaced; no Pokeball throw seen"
+    }
+  ],
+  "trainerThrow": {
+    "observed": false,
+    "opportunitiesChecked": 3,
+    "statement": "No throw animation was seen in 1 intro and 2 switches during this SINGLE mode/session. This does NOT establish absence across all modes, versions, trainers or situations.",
+    "notSeen": [
+      "trainer arm throwing motion",
+      "ball flight arc",
+      "ball opening/closing",
+      "red materialization flash"
+    ],
+    "notEstablished": [
+      "capture wild Pokemon animation",
+      "all arenas and trainers",
+      "any other battle mode"
+    ]
+  },
+  "implicationsForTorre2": [
+    "Do not promise exact copy of a PB Ranked trainer throw from this evidence",
+    "Propose original trainer Pokeball throw plus existing approved capture choreography",
+    "Do not overwrite approved capture VFX or Arena HUD"
+  ],
+  "sourceSeparation": "TinyFish authenticated browser report; REA public AST research is independent and not attached to this run"
+}
