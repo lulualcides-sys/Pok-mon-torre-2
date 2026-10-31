@@ -39,6 +39,7 @@ const server=http.createServer(async(req,res)=>{
    window.__bagCore=await import(new URL('./torre2/campaign-core.js',src).href);
    const state=__bagCore.createCampaign('charmander');
    state.inventory.antidote=1;
+   state.inventory.potion=5; // fourth use must remain blocked by battle quota
    __bagCore.saveCampaign(state);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
@@ -128,7 +129,9 @@ const server=http.createServer(async(req,res)=>{
     stored:s.team[0].hp,count:s.inventory.potion,open:b.__torre2BattleBagOpen};
   });
   assert.ok(healed.hp>55&&healed.hp<59,'Live 32% HP + 25% Potion');
-  assert.equal(healed.count,2);
+  assert.equal(healed.count,4);
+  assert.equal(await page.evaluate(()=>
+   __pt2Game.scene.getScene('combate').datos.torre2.party.torre2PotionUses),1);
   assert.equal(healed.open,false);
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2BattleBagSaveError),false);
   await page.evaluate(async()=>{
@@ -154,6 +157,38 @@ const server=http.createServer(async(req,res)=>{
     status:s.team[0].status,open:b.__torre2BattleBagOpen};
   });
   assert.deepEqual(cured,{live:false,stock:0,status:null,open:false});
+  // Reopen and heal with two more NORMAL native Bag clicks. The fourth
+  // must stay unavailable despite inventory remaining and modal reopening.
+  for(let use=2;use<=3;use++){
+   await page.evaluate(()=>{
+    const b=__pt2Game.scene.getScene('combate');
+    b.t+=4;
+    b.luchadores[0].hp=b.luchadores[0].hpMax*.25;
+   });
+   await clickData('torre2-battle-bag-open',true);
+   await page.evaluate(()=>new Promise(ok=>requestAnimationFrame(()=>requestAnimationFrame(ok))));
+   await clickData('torre2-battle-bag-item','potion');
+   assert.equal(await page.evaluate(()=>
+    __pt2Game.scene.getScene('combate').datos.torre2.party.torre2PotionUses),use,
+    'Potion usage is stored on encounter payload, not modal lifetime');
+  }
+  await page.evaluate(()=>{__pt2Game.scene.getScene('combate').t+=4});
+  await clickData('torre2-battle-bag-open',true);
+  await page.evaluate(()=>new Promise(ok=>requestAnimationFrame(()=>requestAnimationFrame(ok))));
+  const fourth=await page.evaluate(()=>{
+   const b=__pt2Game.scene.getScene('combate');
+   const remaining=__bagCore.readCampaign().inventory.potion;
+   const active=b.children.list.some(x=>x.active&&x.input?.enabled&&
+    x.getData?.('torre2-battle-bag-item')==='potion');
+   const quotaText=b.children.list.filter(x=>x.active&&x.type==='Text')
+    .some(x=>String(x.text).includes('POÇÕES 3/3'));
+   return{remaining,uses:b.datos.torre2.party.torre2PotionUses,
+    enabled:active,quotaText};
+  });
+  assert.deepEqual(fourth,{remaining:2,uses:3,enabled:false,quotaText:true},
+   'A fourth Potion must remain unavailable with two physical items left');
+  await page.screenshot({path:'test-evidence/battle-bag-three-potions-limit.png',fullPage:true});
+  await clickData('torre2-battle-bag-back',true);
   await page.screenshot({path:'test-evidence/battle-bag-healed-mobile.png',fullPage:true});
   // No rollback or duplicate item after returning through normal campaign resolver.
   await page.evaluate(()=>{
