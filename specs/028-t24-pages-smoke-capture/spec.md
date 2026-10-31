@@ -1,0 +1,3 @@
+# T24 — Pages smoke de captura
+
+Main 70fabdee passou 12/12 testes de PR #410 mas Pages #41197968146 falhou em tests/source-client-smoke.cjs:497 porque exigia road.types.includes('capture'). Isso era o comportamento incorreto anterior ao patch. O novo teste exige rival, rocket e líder preservados como treinadores, além de dois botões de captura independentes (índices 2 e 8). Teste de modal bloqueada permanece. Sem alterações no runtime, golpes, sprites ou saves. O smoke Chromium completo deve passar antes de merge e deploy HTTP.
