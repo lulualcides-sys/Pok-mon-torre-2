@@ -121,6 +121,28 @@
         }
       ],
       "note": "The tool report describes visual shapes for many visible-only buttons. Those descriptions are NOT accepted as evidence of their casts; only Petal Blizzard and Hydro Pump are explicit clicked and cast."
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/b5aeb38f-8488-4ef2-8922-d988ec025a63",
+      "status": "TEAM_PREPARED_BUT_SERVER_UNAVAILABLE",
+      "battleStarted": false,
+      "observed": "Greninja/Aegislash/Ribombee default team assembled, Practice vs Bot Easy clicked, server maintenance banner, 0 attacks used"
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8",
+      "status": "MATCH_STARTED_AND_12_USES_REPORTED",
+      "battleStarted": true,
+      "arena": null,
+      "mode": "Practice vs Bot EASY 3v3",
+      "outcome": "In progress when browser session ended",
+      "team": [
+        "Greninja",
+        "Aegislash",
+        "Ribombee"
+      ],
+      "castReportedUnique": 12,
+      "exactAnimationVfxVerified": 0,
+      "note": "12 move uses reported via browser agent; manual/auto separated, but frame-by-frame VFX not captured in repository."
     }
   ],
   "coverage": {
@@ -138,7 +160,11 @@
       "Fire Fang",
       "Giga Impact",
       "X-Scissor"
-    ]
+    ],
+    "uniqueMovesWithBrowserAgentUseReported": 14,
+    "uniqueMovesWithExactAnimationFramesArchived": 0,
+    "latestMatchReportedUsed12": true,
+    "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence."
   },
   "warnings": [
     "Do not add inferred shapes to observed visual coverage",
