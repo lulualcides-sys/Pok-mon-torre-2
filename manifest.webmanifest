@@ -1,0 +1,15 @@
+{
+  "name": "Poké Arena 2D",
+  "short_name": "Poké Arena",
+  "description": "Real-time 1v1 Pokémon battle fan game (alpha).",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#07060c",
+  "theme_color": "#07060c",
+  "icons": [
+    { "src": "iconos/icono-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "iconos/icono-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}

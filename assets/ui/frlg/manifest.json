@@ -1,0 +1,175 @@
+{
+  "title": "FireRed locality art",
+  "tileSize": 16,
+  "locations": {
+    "viridian": {
+      "name": "Viridian City",
+      "file": "assets/ui/frlg/viridian.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/viridian-city.png",
+      "bytes": 141798
+    },
+    "forest": {
+      "name": "Viridian Forest",
+      "file": "assets/ui/frlg/forest.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/viridian-forest.png",
+      "bytes": 130425
+    },
+    "cerulean": {
+      "name": "Cerulean City",
+      "file": "assets/ui/frlg/cerulean.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/cerulean-city.png",
+      "bytes": 148740
+    },
+    "pewter": {
+      "name": "Pewter City",
+      "file": "assets/ui/frlg/pewter.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/pewter-city.png",
+      "bytes": 137372
+    },
+    "route1": {
+      "name": "Route 1",
+      "file": "assets/ui/frlg/route1.webp",
+      "source": "https://poketrainervault.com/images/frlg/maps/Route_1.webp",
+      "bytes": 73264
+    },
+    "lavender": {
+      "name": "Lavender Town",
+      "file": "assets/ui/frlg/lavender.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/lavender-town.png",
+      "bytes": 51394
+    },
+    "vermilion": {
+      "name": "Vermilion City",
+      "file": "assets/ui/frlg/vermilion.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/vermilion-city.png",
+      "bytes": 124176
+    },
+    "fuchsia": {
+      "name": "Fuchsia City",
+      "file": "assets/ui/frlg/fuchsia.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/fuchsia-city.png",
+      "bytes": 144524
+    },
+    "cinnabar": {
+      "name": "Cinnabar Island",
+      "file": "assets/ui/frlg/cinnabar.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/cinnabar-island.png",
+      "bytes": 87542
+    },
+    "celadon": {
+      "name": "Celadon City",
+      "file": "assets/ui/frlg/celadon.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/celadon-city.png",
+      "bytes": 250462
+    },
+    "pallet": {
+      "name": "Pallet Town",
+      "file": "assets/ui/frlg/pallet.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/pallet-town.png",
+      "bytes": 59672
+    },
+    "route24": {
+      "name": "Route 24",
+      "file": "assets/ui/frlg/route24.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/routes/route-24.png",
+      "bytes": 56458
+    },
+    "route4": {
+      "name": "Route 4",
+      "file": "assets/ui/frlg/route4.webp",
+      "source": "https://poketrainervault.com/images/frlg/maps/Route_4.webp",
+      "bytes": 46322
+    },
+    "route2": {
+      "name": "Route 2",
+      "file": "assets/ui/frlg/route2.webp",
+      "source": "https://poketrainervault.com/images/frlg/maps/Route_2.webp",
+      "bytes": 142170
+    },
+    "route3": {
+      "name": "Route 3",
+      "file": "assets/ui/frlg/route3.webp",
+      "source": "https://poketrainervault.com/images/frlg/maps/Route_3.webp",
+      "bytes": 66006
+    },
+    "pokemontower": {
+      "name": "Pokémon Tower",
+      "file": "assets/ui/frlg/pokemontower.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/pokemon-tower-floors.png",
+      "bytes": 84264
+    },
+    "rockethideout": {
+      "name": "Rocket Hideout",
+      "file": "assets/ui/frlg/rockethideout.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/rocket-hideout-floors.png",
+      "bytes": 77666
+    },
+    "route25": {
+      "name": "Route 25",
+      "file": "assets/ui/frlg/route25.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/routes/route-25-bills-house.png",
+      "bytes": 56567
+    },
+    "mtmoon": {
+      "name": "Mt. Moon",
+      "file": "assets/ui/frlg/mtmoon.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/dungeons/mt-moon-floors.png",
+      "bytes": 1469153
+    },
+    "saffron": {
+      "name": "Saffron City",
+      "file": "assets/ui/frlg/saffron.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/cities/saffron-city.png",
+      "bytes": 2011357
+    },
+    "seafoam": {
+      "name": "Seafoam Islands",
+      "file": "assets/ui/frlg/seafoam.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/dungeons/seafoam-islands-floors.png",
+      "bytes": 255385
+    },
+    "silph": {
+      "name": "Silph Co.",
+      "file": "assets/ui/frlg/silph.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/silph-co-floors.png",
+      "bytes": 157140
+    },
+    "safari": {
+      "name": "Safari Zone",
+      "file": "assets/ui/frlg/safari.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/safari-zone-sections.png",
+      "bytes": 321192
+    },
+    "victory": {
+      "name": "Victory Road",
+      "file": "assets/ui/frlg/victory.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/dungeons/victory-road-floors.png",
+      "bytes": 152209
+    },
+    "indigo": {
+      "name": "Indigo Plateau",
+      "file": "assets/ui/frlg/indigo.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/indigo-plateau-elite-four.png",
+      "bytes": 101417
+    },
+    "powerplant": {
+      "name": "Power Plant",
+      "file": "assets/ui/frlg/powerplant.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/power-plant.png",
+      "bytes": 62068
+    },
+    "rocketwarehouse": {
+      "name": "Rocket Warehouse",
+      "file": "assets/ui/frlg/rocketwarehouse.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/rocket-warehouse.png",
+      "bytes": 36029
+    },
+    "ssanne": {
+      "name": "S.S. Anne",
+      "file": "assets/ui/frlg/ssanne.png",
+      "source": "user-uploaded reference: reference-assets/kanto/maps/locations/vermilion-harbor-ss-anne.png",
+      "bytes": 115151
+    }
+  },
+  "attribution": "Nintendo / Game Freak, Pokémon FireRed/LeafGreen; collected as map references from Poké Trainer Vault"
+}

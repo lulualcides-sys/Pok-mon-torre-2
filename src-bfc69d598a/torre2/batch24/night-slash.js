@@ -1,0 +1,26 @@
+// Night Slash — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "night-slash",
+  "nombre": "Night Slash",
+  "approved": true,
+  "forma": "torre2_batch24_night_slash",
+  "tipo": "DARK",
+  "categoria": "PHYSICAL",
+  "poder": 70,
+  "precisao": 100,
+  "pp": 15,
+  "fazContato": true,
+  "dano": 14,
+  "alcance": 76,
+  "coste": 24,
+  "cd": 5.8,
+  "anim": "Swing",
+  "lanzar": 0.14,
+  "style": "slash",
+  "palette": "dark",
+  "speed": 0,
+  "secondary": "critical",
+  "frames": 12,
+  "description": "Night Slash — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/night-slash"
+});

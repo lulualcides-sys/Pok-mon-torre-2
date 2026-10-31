@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#07060c">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="iconos/icono-192.png">
+<title>Pokémon Torre</title>
+<link rel="icon" href="favicon.png">
+<meta name="description" content="Real-time pixel Pokémon battles in your browser: dodge, clash beams, evolve mid-fight and climb the ranked ladder. Free fan game for PC, phone and gamepad. No download.">
+<link rel="canonical" href="https://www.pokearena2d.com/">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Poké Arena 2D · alpha">
+<meta property="og:title" content="Poké Arena 2D · alpha">
+<meta property="og:description" content="Real-time pixel Pokémon battles in your browser: dodge, clash beams, evolve mid-fight and climb the ranked ladder. Free fan game for PC, phone and gamepad. No download.">
+<meta property="og:url" content="https://www.pokearena2d.com/">
+<meta property="og:image" content="https://www.pokearena2d.com/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.pokearena2d.com/og.jpg">
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=VT323&display=block" rel="stylesheet">
+<style>
+  @font-face { font-family: "Cifras"; src: url(https://fonts.gstatic.com/s/silkscreen/v6/m8JXjfVPf62XiF7kO-i9YLNlaw.woff2) format("woff2");
+    unicode-range: U+30-39, U+3C, U+3E, U+5B, U+5D, U+2D, U+B7, U+2F, U+2B, U+28, U+29, U+3A, U+23, U+25; font-weight: 100 900; font-display: block; }
+  html, body { margin: 0; height: 100%; background: #07060c; overflow: hidden; overscroll-behavior: none; touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+  body { display: flex; align-items: center; justify-content: center; }
+  #juego canvas { image-rendering: pixelated; display: block; touch-action: none; }
+  #girar { display: none; position: fixed; inset: 0; z-index: 10; background: #07060c; color: #ffe14d;
+    font: 600 18px "Cifras", "Pixelify Sans", monospace; text-align: center; line-height: 2; padding: 24px;
+    flex-direction: column; align-items: center; justify-content: center; }
+  #girar small { color: #9b8ccf; font-size: 12px; }
+  #girar .movil { width: 46px; height: 76px; border: 4px solid #ffe14d; border-radius: 8px; margin-bottom: 18px;
+    animation: girar 1.6s ease-in-out infinite; }
+  @keyframes girar { 0%, 30% { transform: rotate(0); } 60%, 100% { transform: rotate(-90deg); } }
+  @media (orientation: portrait) and (pointer: coarse) { #girar { display: flex; } }
+  #girar b { color: #fff; }
+  #girar .boton { display: block; width: 220px; margin-top: 14px; padding: 8px 0; border: 0; border-radius: 6px; background: #ffe14d;
+    color: #07060c; font: inherit; line-height: 1.6; text-decoration: none; cursor: pointer; }
+  #girar .boton + .boton { background: #2a5694; color: #fff; }
+  .precarga { font-family: "Pixelify Sans"; font-weight: 600; position: absolute; left: -999px; }
+</style>
+<meta name="referrer" content="no-referrer">
+<meta name="pokemon-torre-build" content="src-bfc69d598a">
+<script>
+(function(){
+ const shown=document.querySelector('meta[name="pokemon-torre-build"]')?.content;
+ if(!shown||location.protocol==='file:')return;
+ const check='version.json?refresh='+encodeURIComponent(shown)+'-'+Date.now();
+ fetch(check,{cache:'no-store',credentials:'omit'})
+  .then(r=>r.ok?r.json():null)
+  .then(v=>{
+   const latest=v&&v.modules;
+   if(!/^src-[a-f0-9]{10}$/.test(latest||'')||latest===shown)return;
+   const url=new URL(location.href);
+   const key='torre2-release';
+   if(url.searchParams.get(key)===latest)return;
+   url.searchParams.set(key,latest);
+   // Changing URL ensures the stale HTML and all ESM imports get
+   // a genuinely new CDN cache key; never change campaign saves.
+   location.replace(url.toString());
+  }).catch(()=>{});
+})();
+</script>
+</head>
+<body>
+<div id="juego"></div>
+<noscript><p style="color:#e8eefc;font:14px system-ui;max-width:560px;padding:16px">Poké Arena 2D · alpha: Real-time pixel Pokémon battles in your browser: dodge, clash beams, evolve mid-fight and climb the ranked ladder. Free fan game for PC, phone and gamepad. No download. It needs JavaScript.
+Unofficial non-profit fan game, not affiliated with Nintendo, Game Freak or The Pokémon Company. <a href="/privacy" style="color:#7dd3fc">Privacy</a></p></noscript>
+<div id="girar"><div class="movil"></div>Rotate your phone<br><small>Poké Arena 2D is played in landscape</small></div>
+<script src="safari.js"></script>
+<span class="precarga">.</span>
+<script src="lib/phaser.min.js"></script>
+<script type="module" src="src-bfc69d598a/main.js"></script>
+<style>
+#pt2-boot-status{display:none;position:fixed;inset:0;background:#080c17;z-index:4000;color:#f1f6ff;
+font:14px system-ui;align-items:center;justify-content:center;text-align:center;padding:20px}
+#pt2-boot-card{width:min(420px,92vw);border:1px solid #42617d;border-radius:12px;padding:22px;
+background:#102138;box-shadow:0 12px 40px #0007}
+#pt2-boot-card h2{color:#ffdf73;margin:0 0 14px}#pt2-boot-card p{line-height:1.6}
+#pt2-retry{font:700 15px system-ui;background:#ffe177;color:#102033;border:0;padding:12px 24px;border-radius:8px}
+</style>
+<div id="pt2-boot-status" role="status" aria-live="polite">
+ <div id="pt2-boot-card"><h2>POKÉMON TORRE 2</h2>
+ <p id="pt2-boot-message">Preparando a arena...</p>
+ <button type="button" id="pt2-retry" onclick="location.reload()">TENTAR NOVAMENTE</button>
+ <p style="font-size:12px;color:#a2b8cd">Abra no Chrome e vire o celular na horizontal. O jogo é solo.</p>
+ </div>
+</div>
+<script>
+(function(){
+ var booted=false,reason='';
+ var status=document.getElementById('pt2-boot-status');
+ var message=document.getElementById('pt2-boot-message');
+ function finished(){booted=!!(window.__pt2Started&&window.__pt2Game);
+   if(booted)status.style.display='none';return booted}
+ function show(error){if(finished())return;status.style.display='flex';
+   message.textContent=error||'O jogo não conseguiu carregar. Verifique a conexão e abra no Chrome.'}
+ window.addEventListener('error',function(e){if(!finished())reason=(e.message||'Falha ao carregar um arquivo').slice(0,190)});
+ window.addEventListener('unhandledrejection',function(e){if(!finished())reason=String(e.reason?.message||e.reason||'Erro de inicialização').slice(0,190)});
+ window.setTimeout(function(){if(!finished())show('Carregamento demorando mais que o normal. '+(reason||'Tente abrir no Chrome e atualizar a página.'))},17000);
+ window.setInterval(finished,800);
+})();
+</script></body>
+</html>

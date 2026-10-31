@@ -1,0 +1,26 @@
+// Earth Power — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "earth-power",
+  "nombre": "Earth Power",
+  "approved": true,
+  "forma": "torre2_batch24_earth_power",
+  "tipo": "GROUND",
+  "categoria": "SPECIAL",
+  "poder": 90,
+  "precisao": 100,
+  "pp": 10,
+  "fazContato": false,
+  "dano": 18,
+  "alcance": 225,
+  "coste": 27,
+  "cd": 6.3,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "earth",
+  "palette": "earth",
+  "speed": 0,
+  "secondary": "spdef10",
+  "frames": 12,
+  "description": "Earth Power — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/earth-power"
+});

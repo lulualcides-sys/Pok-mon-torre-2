@@ -1,0 +1,241 @@
+/* Campaign-only onboarding: three functional weak moves at Lv5, ULT at Lv8.
+ * Practice abilities are now selectable campaign editor options with unique
+ * IDs; they never masquerade as early full-power official FRLG moves.
+ * Real FRLG unlocks/TM learnability and all original Arena 2D kits are intact.
+ */
+
+import {chooseKantoSignatureUlt,isKantoSignatureUltNameAllowed} from './kanto-ultimate-policy.js';
+
+export const KANTO_INTRO=Object.freeze({
+  start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:16,
+  maxStarterDamage:9, maxIntroUltDamage:12
+});
+const ATTACK_SLOTS=['lmb','rmb','q'];
+const idOf=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// A renderer that exists but is pending, unavailable or HM/TM-gated is
+// NOT an installed, usable Lv5 preview. Do not clear its lock via trainingMove.
+const introRenderable=move=>Boolean(move?.forma)&&!move.pendiente&&
+ !move.torre2Unavailable&&!move.torre2RequiresTM&&!move.torre2RequiresHM&&
+ // An unapproved custom renderer is not a usable campaign technique, even
+ // when an official learnset mentions its name or Struggle needs a fallback.
+ (move.source!=='new-phaser-fx'||move.approved===true);
+const lowPower=move=>Number.isFinite(move?.dano)&&move.dano>=0&&move.dano<=14&&
+  introRenderable(move)&&move.ulti!==true;
+// A few Pokémon have only one genuine FireRed move at Lv5 (e.g. Magikarp,
+// Ditto). They get a weak, generic Struggle-training fallback, NOT an
+// incompatible elemental or evolved-species power.
+function trainingMove(source,tag,slot,level,duplicate=false){
+ const base=source||{};
+ const nonnegative=Math.max(0,Number(base.dano)||0);
+ const dmgCap=slot==='e'?KANTO_INTRO.maxIntroUltDamage:KANTO_INTRO.maxStarterDamage;
+ const damage=Math.min(dmgCap,nonnegative);
+ const move={...base,
+  // Show the real installed move name. The temporary low damage is
+  // a campaign-only balance property, not a separate attack named Treino.
+  nombre:base.nombre,
+  id:duplicate?String(base.id||idOf(base.nombre))+'-practice-'+slot:base.id||idOf(base.nombre),
+  dano:damage,coste:Math.min(22,Math.max(4,Number(base.coste)||8)),
+  cd:Math.min(9,Math.max(1.6,Number(base.cd)||4)),
+  pendiente:false,torre2IntroPractice:true,
+  torre2IntroSource:idOf(base.nombre),
+  torre2PracticePreviewLevel:level};
+ // The native Gen III damage path can read poder instead of renderer dano.
+ // Every temporary campaign preview must be weak in BOTH fields; do not
+ // mutate the approved catalog, VFX, or the authentic later unlock.
+ if(Number.isFinite(move.poder))
+  move.poder=Math.min(slot==='e'?60:40,Math.max(0,move.poder));
+ // Strong multi-hit, stat drain, OHKO, heal or charged-power side effects
+ // from late game are never imported: only weak early FRLG entries feed here.
+ if(slot==='e'){
+  move.ulti=true;
+  move.cd=Math.max(8,move.cd);
+  move.coste=Math.min(30,Math.max(14,move.coste));
+ }else delete move.ulti;
+ delete move.torre2UnlockLevel;
+ delete move.torre2UnlockEvolution;
+ return move;
+}
+/** Campaign-only safety overlay. Respects player-equipped weak practice moves. */
+export function resolveKantoIntro(member,installed,{
+ library,canonical,earlyLevels={},levelUp={},unlockLevel,
+ verifiedTables=[],verifiedParents={},speciesTypes=[],blockedSignature=null,preferredSignature=null
+}={}){
+ const level=member?.progression?.level??5,id=member?.id;
+ if(id==='mewtwo'||!id||level<KANTO_INTRO.start)return installed;
+ // Ditto learns only Transform in FireRed. The temporary weak tutorial
+ // manoeuvres solve Lv5 onboarding, never become invented endgame attacks.
+ if(id==='ditto'&&level>KANTO_INTRO.tutorialUntil)return installed;
+ const starterWindow=level<KANTO_INTRO.tutorialUntil;
+ const complete=['lmb','rmb','q','e'].every(slot=>installed[slot]?.forma&&!installed[slot]?.pendiente);
+ // Above level 12, respect every legitimate equipped attack verbatim.
+ // Retain only the weak training placeholders in still-empty slots until a
+ // real species move is learned, so level 13 never makes the ULT disappear.
+ const staleE=blockedSignature&&installed.e?.torre2IntroPractice&&
+  idOf(installed.e.torre2IntroSource)===blockedSignature;
+ if(!starterWindow&&complete&&!staleE)return installed;
+ const result={...installed};
+ // ULT is not usable below level 8, even if an old save used E or an
+ // accidentally equipped high-level finisher at Lv5.
+ if(level<KANTO_INTRO.ultAt)delete result.e;
+ const catalog=new Map();
+ for(const move of library||[]){
+  if(move?.nome||move?.nombre){
+   const key=canonical?canonical(move.nombre||move.nome):idOf(move.nombre||move.nome);
+   if(key&&!catalog.has(key))catalog.set(key,move);
+  }
+ }
+ // Actual FireRed moves first, even when the renderer is from Poké Arena.
+ // The very earliest not-yet-learned move can be briefly previewed at reduced
+ // power ONLY in these tutorial battles. Learnset metadata stays authentic.
+ // Lv5 starts must include meaningful species techniques: e.g. Ponyta
+ // can train with a WEAK Ember preview, while authentic Ember still learns
+ // at Lv14. Charmander never previews Metal Claw before its genuine Lv13.
+ const previewLimit=id==='charmander'?10:KANTO_INTRO.maxPreviewLearnLevel;
+ const official=Object.entries(levelUp)
+  .filter(([key,at])=>at<=previewLimit)
+  .sort((a,b)=>a[1]-b[1]||a[0].localeCompare(b[0]));
+ // HGSS/B2W2 use hyphenated IDs; Let's Go stores compact IDs (e.g.
+ // quickattack). Resolve only an unambiguous INSTALLED renderer, never an
+ // invented move or an unrelated species' attack.
+ const compactCatalog=new Map();
+ for(const [key,move] of catalog){
+  const compact=key.replace(/-/g,'');
+  if(compactCatalog.has(compact)&&compactCatalog.get(compact)!==move)
+   compactCatalog.set(compact,null);
+  else if(!compactCatalog.has(compact))compactCatalog.set(compact,move);
+ }
+ const candidates=[],supplemental=[];
+ const push=(name,learned,priority=0,target=candidates)=>{
+  const key=canonical?canonical(name):idOf(name);
+  const move=catalog.get(key)||compactCatalog.get(key.replace(/-/g,''));
+  const actual=move?(canonical?canonical(move.nombre):idOf(move.nombre)):key;
+  // Scratch is deferred. Surf VFX is approved, but its HM/campaign unlock
+  // remains separate: never auto-preview Surf at Lv5 or grant it via a save.
+  if(['scratch','surf'].includes(actual)||!move||!lowPower(move)||
+     (target===supplemental&&move.source==='new-phaser-fx'&&move.approved!==true)||
+     [...candidates,...supplemental].some(x=>x.key===actual))return;
+  target.push({key:actual,move,learned,priority});
+ };
+ for(const [name,at] of official)push(name,at,0);
+ // Curated early-route adaptations are already in Torre 2; use their
+ // species-specific Lv1–13 moves if official renderer is missing.
+ for(const [name,at] of Object.entries(earlyLevels||{}))
+  if(at<=previewLimit)push(name,at,1);
+ // Already legitimately learned/equipped weaker moves remain candidates.
+ for(const slot of ATTACK_SLOTS){
+  const current=result[slot];
+  if(current&&lowPower(current))push(current.nombre,(unlockLevel?.(id,current.nombre)??level),2);
+ }
+ candidates.sort((a,b)=>a.priority-b.priority||a.learned-b.learned||
+  a.key.localeCompare(b.key));
+ const picked=[];
+ // Prefer three USABLE actions (damage before support) but retain Growl,
+ // String Shot etc. where a species genuinely has fewer attacks.
+ for(const c of [...candidates.filter(c=>c.move.dano>0),
+                  ...candidates.filter(c=>!(c.move.dano>0))]){
+  if(picked.length>=3)break;
+  if(c.learned>previewLimit||picked.some(p=>p.key===c.key))continue;
+  picked.push(c);
+ }
+ // Only replace otherwise generic Struggle slots. Keep all previously
+ // selected FRLG/curated moves unchanged. Later verified generations can
+ // supply a real species move at Lv1–8 if its VFX is already approved.
+ // Level 0 evolution-only entries are not early level-up moves.
+ if(picked.length<3){
+  for(const table of verifiedTables){
+   for(const [name,at] of Object.entries(table?.[id]||{}))
+    if(Number.isInteger(at)&&at>=1&&at<=previewLimit)
+     push(name,at,3,supplemental);
+  }
+  supplemental.sort((a,b)=>a.learned-b.learned||a.key.localeCompare(b.key));
+  for(const c of [...supplemental.filter(c=>c.move.dano>0),
+                   ...supplemental.filter(c=>!(c.move.dano>0))]){
+   if(picked.length>=3)break;
+   if(!picked.some(p=>p.key===c.key))picked.push(c);
+  }
+ }
+ // Struggle is universal in Gen III when out of PP. Here, reuse an approved
+ // non-elemental contact VFX for a deliberately weak practice manoeuvre.
+ // Never make a Lv5 Magikarp use Hydro Pump, or Ditto a random Pokémon's move.
+ // Never relabel a species' elemental projectile as NORMAL Struggle.
+ // Filler uses an approved neutral contact renderer, never a new VFX.
+ const tackle=catalog.get('tackle');
+ const neutral=[tackle,...catalog.values()].find(move=>
+  move&&lowPower(move)&&String(move.tipo||'').toUpperCase()==='NORMAL'&&move.dano>0);
+ const fallback=neutral?{...neutral,nombre:'Struggle',tipo:'NORMAL',
+  dano:Math.min(4,neutral.dano)}:null;
+ if(!fallback)return result; // fail closed instead of injecting an unrenderable ability
+ // Evolved Pokémon at/after Lv13 often already have one or two legitimate
+ // attacks in their slots. Reserve those names BEFORE filling blank slots:
+ // otherwise the practice overlay may duplicate a real equipped move.
+ const occupied=new Set();
+ for(const slot of ATTACK_SLOTS){
+  const actual=result[slot];
+  if(actual?.forma&&!actual.pendiente&&
+    (!starterWindow||actual.torre2IntroPractice||level>KANTO_INTRO.ultAt)){
+   occupied.add(idOf(actual.torre2IntroSource||actual.nombre));
+  }
+ }
+ const selected=[];
+ for(let i=0;i<3;i++){
+  const slot=ATTACK_SLOTS[i],actual=result[slot];
+  // Player-equipped, power-capped practice is a real campaign option now:
+  // don't replace it by an invisible, non-selectable tutorial projection.
+  if(actual?.forma&&!actual.pendiente&&
+     (!starterWindow||actual.torre2IntroPractice||level>KANTO_INTRO.ultAt)){
+   selected.push(actual);
+   continue;
+  }
+  const candidate=picked.find(c=>!occupied.has(idOf(c.move.nombre)));
+  if(candidate){
+   selected.push(trainingMove(candidate.move,candidate.key,slot,candidate.learned));
+   occupied.add(idOf(candidate.move.nombre));
+  }else{
+   const copy={...fallback,nombre:'Struggle '+(i+1),tipo:'NORMAL',dano:Math.min(5,Number(fallback.dano)||4)};
+   selected.push(trainingMove(copy,'struggle',slot,level,true));
+   occupied.add(idOf(selected.at(-1).nombre));
+  }
+  result[slot]=selected.at(-1);
+ }
+ if(level>=KANTO_INTRO.ultAt){
+  const ultCandidate=candidates.find(c=>!selected.some(x=>idOf(x.torre2IntroSource)===c.key)&&c.move.dano>0)
+    ||candidates.find(c=>c.move.dano>0);
+  // Each species previews its OWN verified, approved late-game technique.
+  // Only this energy-gated campaign action has capped damage: its authentic
+  // normal move remains locked until its official/campaign learn level.
+  // A campaign-specific finisher may reuse an ALREADY installed renderer.
+  // Fire Blast remains a power-capped Lv8 preview; the real TM38 renderer
+  // unlocks at the existing later campaign level. Never grant the native
+  // high-power move early or copy another species' effect.
+  const preferred=preferredSignature?catalog.get(idOf(preferredSignature)):null;
+  // An explicit evolution/level block outranks a curated preview, and
+  // pending custom VFX cannot bypass the same approval gate as the selector.
+  // Do not change the approved preferred preview when it is still legal.
+  const preferredAllowed=introRenderable(preferred)&&
+   isKantoSignatureUltNameAllowed(preferred?.nombre)&&Number(preferred.dano)>=6&&
+   idOf(preferred.nombre)!==idOf(blockedSignature)&&
+   (preferred.source!=='new-phaser-fx'||preferred.approved===true);
+  const signature=preferredAllowed?preferred:
+   chooseKantoSignatureUlt(id,library,{
+    levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes,
+    blockedName:blockedSignature
+   });
+  const base=signature||ultCandidate?.move||fallback;
+  const finisher=trainingMove(base,idOf(base.nombre),'e',signature?8:ultCandidate?.learned??level,true);
+  if(signature){
+   finisher.dano=Math.min(KANTO_INTRO.maxIntroUltDamage,
+    Math.max(7,Math.min(12,Number(base.dano)||7)));
+   finisher.cd=Math.max(9,finisher.cd);
+   finisher.coste=Math.max(24,finisher.coste);
+   // Cap Gen3 power metadata too, not merely the renderer damage field.
+   if(Number.isFinite(finisher.poder))finisher.poder=Math.min(60,finisher.poder);
+  }
+  finisher.nombre='ULT · '+String(base.nombre||'Struggle');
+  if(!result.e?.forma||result.e?.pendiente||
+     (starterWindow&&!result.e?.torre2IntroPractice)||
+     (result.e?.torre2IntroPractice&&blockedSignature&&
+      idOf(result.e.torre2IntroSource)===blockedSignature))
+   result.e=finisher;
+ }
+ return result;
+}
