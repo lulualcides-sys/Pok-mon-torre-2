@@ -35,7 +35,6 @@ const server=http.createServer(async(req,res)=>{
    window.__weatherTestModule=await import(new URL('./torre2/weather.js',src));
    const state=core.createPlayerCampaign('bulbasaur');
    core.saveCampaign(state);
-   window.__weatherTestSave=localStorage.getItem(core.SAVE_KEY);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
    window.__weatherTestMatch=lab.prepareLaboratoryMatch({
     player:'bulbasaur',enemy:'squirtle',level:35,weather:'sun'
@@ -45,6 +44,9 @@ const server=http.createServer(async(req,res)=>{
    null,{timeout:60000});
   await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
+   // Campaign boot may migrate legacy inventory fields. Snapshot AFTER boot,
+   // before the lab match, so cosmetic weather is the only variable.
+   window.__weatherTestSave=localStorage.getItem(window.__weatherTestCore.SAVE_KEY);
    c.launchBattle(window.__weatherTestMatch,false);
   });
   await page.waitForFunction(()=>{
