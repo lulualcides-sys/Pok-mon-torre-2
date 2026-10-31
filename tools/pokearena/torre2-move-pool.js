@@ -6,6 +6,7 @@ import {BATCH24_MOVES} from './batch24/catalog.js';
 import {SURGE3_MOVES} from './surge3/catalog.js';
 import {FINALE_13_MOVES,POISON_PUNCH_MOVES} from './torre2-finale13-catalog.js';
 import {ROSTER,buscar,etapaDe} from '../datos.js';
+import {buildCampaignDodgeTemplates,campaignNativeDodge} from './campaign-native-dodges.js';
 import {EARLY_KANTO_LEARNSETS,earlyKantoSlotPlan,nativeKantoEvolutionPlan,isKantoEvolvedForm} from './early-kanto-species.js';
 import {KANTO_151,kanto151SlotPlan} from './all-kanto-species.js';
 import {resolveKantoIntro,KANTO_INTRO} from './kanto-intro-moves.js';
@@ -207,6 +208,8 @@ for(const h of rawLibrary){
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
+// Immutable references to approved native P2 ESP templates; never save these.
+const CAMPAIGN_NATIVE_DODGES=buildCampaignDodgeTemplates(ROSTER,TEST_LIBRARY);
 // Gen VII tables can select ONLY installed native/approved renderer entries.
 // This index is deduplicated; it cannot introduce new VFX or move metadata.
 const gen7MoveKey=name=>canonicalMoveKey(name).replace(/[^a-z0-9]/g,'');
@@ -1155,12 +1158,8 @@ export function resolveLoadout(member){
  // This also prevents two identical visible names in Caterpie's four slots.
  if(out.e?.torre2IntroPractice&&!String(out.e.nombre).startsWith('ULT · '))
   out.e={...out.e,nombre:'ULT · '+out.e.nombre};
- // Native P2 evolution skills are re-slotted ONLY inside the Kanto campaign;
- // the Arena and VS CPU keep their original kits untouched.
- if(nativeKantoEvolutionPlan(member.id)||kanto151SlotPlan(member.id))out.esp={
-  nombre:'Dodge',forma:'dash',tipo:'NORMAL',dano:0,
-  dist:95,dur:.20,cd:4.2,anim:'Walk',estilo:'rapido'
- };
+ // ESP is resolved AFTER the Lv5/Lv8 overlay so it cannot duplicate an
+ // equipped attack. The original Arena/VS and 4 campaign attack slots stay intact.
  // A later-stage signature preview must not impersonate the stage's
  // canonical E move while that actual move is still locked (e.g. Gloom
  // Lv21 cannot borrow its future Solar Beam as a tutorial ULT).
@@ -1190,6 +1189,9 @@ export function resolveLoadout(member){
  // FINAL campaign battle slots including practice, evolution and saved kits.
  for(const slot of SLOTS)if(battle[slot])
   battle[slot]=balanceCampaignQuickCooldown(balanceCampaignLeechSeed(battle[slot]));
+ const found=buscar(member.id),native=found?.def?.torre2ArenaAdded===true?null:
+  (etapaDe(found.def,found.etapa)?.kit?.esp||found?.def?.kit?.esp);
+ battle.esp=campaignNativeDodge(member.id,battle,CAMPAIGN_NATIVE_DODGES,native);
  return battle;
 }
 export function pokemonStats(member){

@@ -150,7 +150,15 @@ for(const species of ['ivysaur','venusaur','charmeleon','charizard',
   }else assert.ok(availableMoves(member).some(m=>m.id===selectedMoves(member)[i]),
    species+' cannot equip an unlearned permanent move');
  }
- assert.equal(load.esp.dano,0,species+' must use Kanto-only Dodge');
+ // T13: campaign ESP now uses the same approved native dash/flight move
+ // selector as Arena. Original source kit is still untouched above.
+ assert.ok(['dash','vuelo'].includes(load.esp?.forma),
+  species+' must have a real Phaser ESP renderer');
+ assert.ok(Number.isFinite(load.esp?.cd)&&load.esp.cd>0,
+  species+' must retain the native ESP cooldown');
+ assert.ok(!['lmb','rmb','q','e'].some(slot=>
+  load[slot]?.nombre===load.esp?.nombre),
+  species+' must not equip one move in ESP and an attack slot');
  if(load.e)assert.equal(load.e.ulti,true,species+' unlocked ultimate must remain charged');
 }
 assert.equal(TRAINERS_PER_GYM(0),13);
