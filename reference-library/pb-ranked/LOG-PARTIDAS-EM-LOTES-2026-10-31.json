@@ -218,6 +218,24 @@
         "Toxicroak Mud Bomb"
       ],
       "note": "The bot/Unranked queue label was a UI display issue; practiceBtn sends mode=practice. Agent result conflict: victory while all own Pokémon KO."
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae",
+      "status": "BATTLE_12_DISTINCT_CASTS_REPORTED",
+      "battleStarted": true,
+      "mode": "Practice vs Bot EASY 3V3",
+      "outcome": "unknown; combat was still in progress",
+      "team": [
+        "Rillaboom",
+        "Scyther",
+        "Tauros"
+      ],
+      "castReportedUnique": 12,
+      "newUniqueNamesVersusPrior": 11,
+      "manualCastsReported": 8,
+      "autoCastsReported": 4,
+      "frameByFrameVisualsArchived": 0,
+      "note": "Manual eight and auto four reported. No isolated animation/hit evidence for AUTO; match still in progress"
     }
   ],
   "coverage": {
@@ -236,7 +254,7 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 34,
+    "uniqueMovesWithBrowserAgentUseReported": 45,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
     "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
@@ -271,6 +289,13 @@
       "remaining": 1,
       "verifiedWin": false,
       "source": "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+    },
+    "latestBatchSix": {
+      "reportedDistinct": 12,
+      "newDistinct": 11,
+      "manual": 8,
+      "auto": 4,
+      "matchOutcome": "not observed"
     }
   },
   "warnings": [
