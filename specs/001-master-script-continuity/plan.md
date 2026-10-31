@@ -1,5 +1,8 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Lote T22 — validação defensiva de tickets (31/10/2026)
+Arquivos: `torre2-rematch-policy.js`, `tests/rematch-policy.test.js`. RED executado sobre fonte de `main` `1fcc64eb`: reserva `null` com carga 3, resultado sem token aceito, ticket nulo lança TypeError. GREEN focado executado após patch: 8/8 verificações, sem npm/Chromium ainda. Gate: PR draft, npm test/check/check:reuse/build, guardião, Chromium desktop/mobile e Pages HTTP após merge. Rollback apenas dos dois arquivos; não sobrescrever #369, #381 ou o T22 atlas já integrado na #387.
+
 ## Lote T03 — escolha de Eevee sem UID legado (30/10/2026)
 - **Causa:** seletor de UI exige UID; saves antigos permitem membros sem UID, portanto Eevee elegível não pode escolher Vaporeon/Jolteon/Flareon.
 - **Patch mínimo:** apenas `torre2-campaign-core.js`, helper de tokens determinísticos por localização/índice e sem colisão, mapeamento por índice do membro selecionado, UID persistido somente após `saveCampaign` concluir. Sem migração em massa.
