@@ -71,14 +71,24 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
  // Correct the old idle-only chase: native AI often circles sideways, so
  // the old check (movement magnitude < .12) was almost never reached.
  const approachAt=Math.max(55,Math.min(140,basicReach?basicReach*.76:75));
+ // T19: a genuine Cerulean battle exposed a four-minute standoff against
+ // Sandshrew at 15% HP while our healthy Geodude remained far away. The
+ // original chase respected ANY backward native motion, even when the
+ // opponent was nearly defeated. Close the gap only for a safe finisher;
+ // never replace attacks, dodge, cooldowns, targeting or a risky retreat.
+ const foeFraction=Number(foe.hpMax)>0?foe.hp/foe.hpMax:1;
+ const finishChase=hpRatio>=.55&&foeFraction>0&&foeFraction<=.25&&
+  distance>approachAt*1.5;
  if(hpRatio>=.43&&!danger&&distance>approachAt*1.15){
   const mx=Number(input.mx)||0,my=Number(input.my)||0;
   const magnitude=Math.hypot(mx,my);
   const forward=magnitude>.12?(mx*ux+my*uy)/magnitude:0;
-  // Respect an intentional retreat, including defense against melee foes.
+  // Native defensive retreat is preserved unless a clearly weaker foe
+  // has <=25% HP, our fighter is healthy and no projectile is nearby.
   if(magnitude<.12)output={...input,mx:ux,my:uy};
-  else if(forward>=-.05&&forward<.60){
-   const blend=.76,wx=blend*ux+(1-blend)*mx/magnitude;
+  else if((forward>=-.05&&forward<.60)||(finishChase&&forward<-.05)){
+   const blend=finishChase?0.86:0.76;
+   const wx=blend*ux+(1-blend)*mx/magnitude;
    const wy=blend*uy+(1-blend)*my/magnitude;
    const norm=Math.hypot(wx,wy)||1;
    output={...input,mx:wx/norm,my:wy/norm};
