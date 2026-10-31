@@ -1,0 +1,5756 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "sourceRepository": "lulualcides-sys/Pok-mon-torre-2",
+  "researchBranch": "research/pb-ranked-rea-20261031",
+  "totalPBMoveNames": 283,
+  "protectedOverlap": 45,
+  "notProvenInMovePolicy": 238,
+  "caution": "Not appearing in the named approval/baseline policy does not mean move is missing in Torre2. Never overwrite current game without runtime/name audit.",
+  "criteria": "Only names explicitly present in baselineMoveIds, approved newMoves, or existingNonConformant with visualApproved are marked protected.",
+  "byType": {
+    "bug": {
+      "all": 9,
+      "protected": 4
+    },
+    "dark": {
+      "all": 14,
+      "protected": 3
+    },
+    "dragon": {
+      "all": 14,
+      "protected": 0
+    },
+    "electric": {
+      "all": 13,
+      "protected": 2
+    },
+    "fairy": {
+      "all": 8,
+      "protected": 0
+    },
+    "fighting": {
+      "all": 18,
+      "protected": 1
+    },
+    "fire": {
+      "all": 21,
+      "protected": 2
+    },
+    "flying": {
+      "all": 15,
+      "protected": 1
+    },
+    "ghost": {
+      "all": 10,
+      "protected": 2
+    },
+    "grass": {
+      "all": 17,
+      "protected": 6
+    },
+    "ground": {
+      "all": 9,
+      "protected": 2
+    },
+    "ice": {
+      "all": 15,
+      "protected": 5
+    },
+    "normal": {
+      "all": 48,
+      "protected": 8
+    },
+    "poison": {
+      "all": 8,
+      "protected": 2
+    },
+    "psychic": {
+      "all": 18,
+      "protected": 1
+    },
+    "rock": {
+      "all": 8,
+      "protected": 1
+    },
+    "steel": {
+      "all": 17,
+      "protected": 2
+    },
+    "water": {
+      "all": 21,
+      "protected": 3
+    }
+  },
+  "items": [
+    {
+      "name": "Accelerock",
+      "type": "rock",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Lycanroc"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Acrobatics",
+      "type": "flying",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 10,
+      "exampleSpecies": [
+        "Crobat",
+        "Infernape",
+        "Gliscor",
+        "Archeops",
+        "Eelektross",
+        "Talonflame",
+        "Noivern"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Aerial Ace",
+      "type": "flying",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 56,
+      "exampleSpecies": [
+        "Charizard",
+        "Pidgeot",
+        "Sandslash (Alola)",
+        "Dugtrio",
+        "Persian",
+        "Arcanine",
+        "Dodrio"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved",
+        "explicitly_locked"
+      ],
+      "approvedScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Agility",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 25,
+      "exampleSpecies": [
+        "Pidgeot",
+        "Pikachu",
+        "Arcanine",
+        "Dodrio",
+        "Scyther",
+        "Jolteon",
+        "Aerodactyl"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Air Slash",
+      "type": "flying",
+      "variants": 5,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 24,
+      "exampleSpecies": [
+        "Charizard",
+        "Pidgeot",
+        "Scyther",
+        "Dragonite",
+        "Crobat",
+        "Skarmory",
+        "Swellow"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Amnesia",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Wailord",
+        "Camerupt",
+        "Torkoal",
+        "Cradily",
+        "Mamoswine"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ancient Power",
+      "type": "rock",
+      "variants": 8,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 23,
+      "exampleSpecies": [
+        "Charizard",
+        "Exeggutor",
+        "Rhydon",
+        "Lapras",
+        "Aerodactyl",
+        "Feraligatr",
+        "Steelix"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Aqua Cutter",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Empoleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Aqua Jet",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Sharpedo",
+        "Crawdaunt",
+        "Empoleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Aqua Tail",
+      "type": "water",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Blastoise",
+        "Nidoking",
+        "Gyarados",
+        "Dragonite",
+        "Feraligatr",
+        "Milotic",
+        "Goodra"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Astral Barrage",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Aura Sphere",
+      "type": "fighting",
+      "variants": 8,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Blastoise",
+        "Lucario",
+        "Togekiss",
+        "Mienshao",
+        "Kommo-o"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Aurora Veil",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Froslass",
+        "Aurorus",
+        "Iron Bundle"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Autotomize",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Steelix",
+        "Skarmory",
+        "Aggron",
+        "Klinklang",
+        "Aegislash",
+        "Kommo-o"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Avalanche",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Mamoswine",
+        "Vanilluxe",
+        "Aurorus"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Bide",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Bite",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 33,
+      "exampleSpecies": [
+        "Blastoise",
+        "Persian",
+        "Arcanine",
+        "Gyarados",
+        "Jolteon",
+        "Aerodactyl",
+        "Snorlax"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Blast Burn",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Blaze Kick",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Mienshao"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Blizzard",
+      "type": "ice",
+      "variants": 3,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 36,
+      "exampleSpecies": [
+        "Blastoise",
+        "Sandslash (Alola)",
+        "Nidoking",
+        "Clefable",
+        "Ninetales (Alola)",
+        "Tentacruel",
+        "Rhydon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Blue Flare",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Body Press",
+      "type": "fighting",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Corviknight"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Body Slam",
+      "type": "normal",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 91,
+      "exampleSpecies": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise",
+        "Pikachu",
+        "Sandslash (Alola)",
+        "Nidoking",
+        "Clefable"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Bolt Strike",
+      "type": "electric",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Bone Rush",
+      "type": "ground",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Lucario"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Boomburst",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Noivern",
+        "Kommo-o",
+        "Rillaboom",
+        "Scream Tail"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Bounce",
+      "type": "flying",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Wailord",
+        "Lopunny",
+        "Mienshao",
+        "Greninja",
+        "Hawlucha"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Brave Bird",
+      "type": "flying",
+      "variants": 5,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 11,
+      "exampleSpecies": [
+        "Pidgeot",
+        "Dodrio",
+        "Crobat",
+        "Skarmory",
+        "Swellow",
+        "Altaria",
+        "Staraptor"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Breakneck Blitz",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Brick Break",
+      "type": "fighting",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Scyther",
+        "Heracross",
+        "Garchomp",
+        "Electivire",
+        "Hawlucha"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Bullet Punch",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Metagross",
+        "Lucario"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Calm Mind",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Alakazam",
+        "Gardevoir",
+        "Infernape",
+        "Lucario",
+        "Mienshao"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Clanging Scales",
+      "type": "dragon",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Kommo-o"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Clangorous Soul",
+      "type": "dragon",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Kommo-o"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Close Combat",
+      "type": "fighting",
+      "variants": 9,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 24,
+      "exampleSpecies": [
+        "Arcanine",
+        "Scyther",
+        "Tauros",
+        "Heracross",
+        "Sharpedo",
+        "Crawdaunt",
+        "Infernape"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Confuse Ray",
+      "type": "ghost",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 11,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Gengar",
+        "Lapras",
+        "Crobat",
+        "Ampharos",
+        "Umbreon",
+        "Cradily"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Cosmic Power",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "stat",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Clefable",
+        "Claydol",
+        "Sigilyph"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Counter",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Heracross",
+        "Lucario",
+        "Lycanroc"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Crabhammer",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Crawdaunt",
+        "Gliscor"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Cross Poison",
+      "type": "poison",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Crobat",
+        "Drapion"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Crunch",
+      "type": "dark",
+      "variants": 12,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 41,
+      "exampleSpecies": [
+        "Charizard",
+        "Blastoise",
+        "Arcanine",
+        "Rhydon",
+        "Gyarados",
+        "Aerodactyl",
+        "Snorlax"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Crush Claw",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Armaldo",
+        "Eelektross"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Curse",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 10,
+      "exampleSpecies": [
+        "Gengar",
+        "Snorlax",
+        "Steelix",
+        "Camerupt",
+        "Torkoal",
+        "Torterra",
+        "Spiritomb"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Cut",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Greninja"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dark Pulse",
+      "type": "dark",
+      "variants": 9,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 12,
+      "exampleSpecies": [
+        "Blastoise",
+        "Ninetales (Alola)",
+        "Gengar",
+        "Crobat",
+        "Umbreon",
+        "Tyranitar",
+        "Spiritomb"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dazzling Gleam",
+      "type": "fairy",
+      "variants": 3,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 9,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Ampharos",
+        "Espeon",
+        "Gardevoir",
+        "Togekiss",
+        "Floette (Eternal)",
+        "Ribombee"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dig",
+      "type": "ground",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Dugtrio",
+        "Steelix",
+        "Ninjask",
+        "Infernape",
+        "Garchomp"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Discharge",
+      "type": "electric",
+      "variants": 3,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 11,
+      "exampleSpecies": [
+        "Pikachu",
+        "Jolteon",
+        "Ampharos",
+        "Manectric",
+        "Luxray",
+        "Magnezone",
+        "Electivire"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dizzy Punch",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Lopunny"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Doom Desire",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Double Kick",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Nidoking",
+        "Jolteon",
+        "Lopunny"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Double Team",
+      "type": "normal",
+      "variants": 3,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 15,
+      "exampleSpecies": [
+        "Pikachu",
+        "Scyther",
+        "Sceptile",
+        "Swellow",
+        "Gardevoir",
+        "Ninjask",
+        "Altaria"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Double-Edge",
+      "type": "normal",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 15,
+      "exampleSpecies": [
+        "Venusaur",
+        "Tauros",
+        "Jolteon",
+        "Typhlosion",
+        "Espeon",
+        "Umbreon",
+        "Steelix"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Draco Meteor",
+      "type": "dragon",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Dragonite",
+        "Salamence"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dragon Ascent",
+      "type": "flying",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dragon Breath",
+      "type": "dragon",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 12,
+      "exampleSpecies": [
+        "Charizard",
+        "Steelix",
+        "Kingdra",
+        "Altaria",
+        "Salamence",
+        "Garchomp",
+        "Archeops"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dragon Claw",
+      "type": "dragon",
+      "variants": 5,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 21,
+      "exampleSpecies": [
+        "Charizard",
+        "Aerodactyl",
+        "Dragonite",
+        "Feraligatr",
+        "Tyranitar",
+        "Sceptile",
+        "Aggron"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dragon Dance",
+      "type": "dragon",
+      "variants": 4,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 11,
+      "exampleSpecies": [
+        "Charizard",
+        "Gyarados",
+        "Dragonite",
+        "Feraligatr",
+        "Kingdra",
+        "Tyranitar",
+        "Altaria"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dragon Darts",
+      "type": "dragon",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Dragapult"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dragon Pulse",
+      "type": "dragon",
+      "variants": 5,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 34,
+      "exampleSpecies": [
+        "Charizard",
+        "Blastoise",
+        "Nidoking",
+        "Arcanine",
+        "Rhydon",
+        "Gyarados",
+        "Lapras"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dragon Rush",
+      "type": "dragon",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Dragonite",
+        "Garchomp",
+        "Hydreigon",
+        "Dragapult",
+        "Roaring Moon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Drain Punch",
+      "type": "fighting",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Toxicroak",
+        "Mienshao",
+        "Iron Hands"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Draining Kiss",
+      "type": "fairy",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Gardevoir",
+        "Froslass",
+        "Sylveon",
+        "Ribombee",
+        "Comfey"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Drill Peck",
+      "type": "flying",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Dodrio",
+        "Skarmory",
+        "Empoleon",
+        "Corviknight",
+        "Iron Bundle"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Drill Run",
+      "type": "ground",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Rhydon",
+        "Rhyperior"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Drum Beating",
+      "type": "grass",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Rillaboom"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dual Wingbeat",
+      "type": "flying",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Aerodactyl",
+        "Salamence",
+        "Slither Wing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Dynamic Punch",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Golurk"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Earth Power",
+      "type": "ground",
+      "variants": 3,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 8,
+      "exampleSpecies": [
+        "Nidoking",
+        "Dugtrio",
+        "Camerupt",
+        "Torkoal",
+        "Claydol",
+        "Gastrodon",
+        "Sandy Shocks"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Earthquake",
+      "type": "ground",
+      "variants": 19,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 60,
+      "exampleSpecies": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise",
+        "Sandslash (Alola)",
+        "Nidoking",
+        "Dugtrio",
+        "Exeggutor"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Egg Bomb",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Exeggutor"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Electro Ball",
+      "type": "electric",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Pikachu",
+        "Ampharos",
+        "Magnezone",
+        "Electivire"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Endeavor",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Energy Ball",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Sceptile",
+        "Cradily",
+        "Torterra"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Eruption",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Typhlosion",
+        "Camerupt",
+        "Torkoal"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Extrasensory",
+      "type": "psychic",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Exeggutor",
+        "Claydol",
+        "Greninja"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Extreme Speed",
+      "type": "normal",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Arcanine",
+        "Dragonite",
+        "Lucario",
+        "Togekiss"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Facade",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Swellow",
+        "Infernape",
+        "Unfezant",
+        "Darmanitan"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fake Out",
+      "type": "normal",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Feint",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 11,
+      "exampleSpecies": [
+        "Pikachu",
+        "Persian",
+        "Scyther",
+        "Heracross",
+        "Skarmory",
+        "Sharpedo",
+        "Infernape"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fiery Dance",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Iron Moth"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fire Blast",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 35,
+      "exampleSpecies": [
+        "Charizard",
+        "Nidoking",
+        "Clefable",
+        "Ninetales (Alola)",
+        "Arcanine",
+        "Muk",
+        "Weezing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fire Fang",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 14,
+      "exampleSpecies": [
+        "Charizard",
+        "Arcanine",
+        "Aerodactyl",
+        "Steelix",
+        "Tyranitar",
+        "Mightyena",
+        "Manectric"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fire Punch",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Muk",
+        "Dragonite",
+        "Ampharos",
+        "Electivire",
+        "Darmanitan",
+        "Druddigon"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved",
+        "explicitly_locked"
+      ],
+      "approvedScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "First Impression",
+      "type": "bug",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Slither Wing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Flame Charge",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Typhlosion",
+        "Talonflame",
+        "Slither Wing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Flame Wheel",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Arcanine",
+        "Typhlosion",
+        "Torkoal",
+        "Infernape"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": "User-approved on 2026-10-23: Flame Wheel renderer must be frozen. This patch changes only Protect, Light Screen, Psychic.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Flamethrower",
+      "type": "fire",
+      "variants": 10,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 43,
+      "exampleSpecies": [
+        "Charizard",
+        "Nidoking",
+        "Clefable",
+        "Ninetales (Alola)",
+        "Arcanine",
+        "Muk",
+        "Weezing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Flare Blitz",
+      "type": "fire",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Charizard",
+        "Arcanine",
+        "Infernape",
+        "Darmanitan",
+        "Talonflame",
+        "Slither Wing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Flash Cannon",
+      "type": "steel",
+      "variants": 6,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 10,
+      "exampleSpecies": [
+        "Blastoise",
+        "Aggron",
+        "Camerupt",
+        "Metagross",
+        "Lucario",
+        "Magnezone",
+        "Vanilluxe"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move",
+        "user_visual_approved_with_license_debt"
+      ],
+      "approvedScope": "Feixe metálico do Steel Beam anterior TRANSFERIDO para Flash Cannon, sem recoil. Reuso real do efeito existente no Torre 2; ainda sem comprovar as quatro fontes; aprovado visualmente; proven",
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Flip Turn",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Milotic",
+        "Iron Bundle"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Floral Healing",
+      "type": "fairy",
+      "variants": 1,
+      "categoryMostCommon": "stat",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Comfey"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fly",
+      "type": "flying",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Salamence",
+        "Talonflame",
+        "Roaring Moon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Flying Press",
+      "type": "fighting",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Hawlucha"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Focus Blast",
+      "type": "fighting",
+      "variants": 5,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Charizard",
+        "Alakazam",
+        "Typhlosion",
+        "Sceptile",
+        "Zoroark",
+        "Druddigon",
+        "Bisharp"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Focus Energy",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 13,
+      "exampleSpecies": [
+        "Nidoking",
+        "Scyther",
+        "Kingdra",
+        "Swellow",
+        "Sharpedo",
+        "Camerupt",
+        "Salamence"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Follow Me",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Clefable",
+        "Togekiss"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Foul Play",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Umbreon",
+        "Zoroark",
+        "Malamar"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Freeze-Dry",
+      "type": "ice",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Lapras",
+        "Vanilluxe",
+        "Aurorus",
+        "Iron Bundle"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Frenzy Plant",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Venusaur"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fury Cutter",
+      "type": "bug",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 9,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Scyther",
+        "Sceptile",
+        "Ninjask",
+        "Armaldo",
+        "Gliscor",
+        "Bisharp"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fusion Bolt",
+      "type": "electric",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Fusion Flare",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Future Sight",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Alakazam",
+        "Espeon",
+        "Gardevoir",
+        "Iron Valiant"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "G-Max One Blow",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "G-Max Rapid Flow",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "G-Max Wildfire",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Gear Grind",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Klinklang"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Giga Drain",
+      "type": "grass",
+      "variants": 3,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 8,
+      "exampleSpecies": [
+        "Tentacruel",
+        "Exeggutor",
+        "Sceptile",
+        "Ninjask",
+        "Cradily",
+        "Torterra",
+        "Roserade"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Giga Impact",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 124,
+      "exampleSpecies": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise",
+        "Pidgeot",
+        "Sandslash (Alola)",
+        "Nidoking",
+        "Clefable"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Grassy Glide",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Guillotine",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Gunk Shot",
+      "type": "poison",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Muk"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Gyro Ball",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hail",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Walrein",
+        "Mamoswine",
+        "Froslass",
+        "Vanilluxe",
+        "Aurorus"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hammer Arm",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Rhydon",
+        "Snorlax",
+        "Metagross",
+        "Rhyperior",
+        "Darmanitan",
+        "Golurk"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Head Smash",
+      "type": "rock",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Aegislash",
+        "Tyrantrum"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Heat Crash",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Rhyperior"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Heat Wave",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Charizard",
+        "Arcanine",
+        "Weezing",
+        "Crobat",
+        "Torkoal"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Heavy Slam",
+      "type": "steel",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Snorlax",
+        "Steelix",
+        "Aggron",
+        "Wailord",
+        "Golurk",
+        "Sandy Shocks",
+        "Iron Hands"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hex",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Tentacruel",
+        "Gengar",
+        "Spiritomb",
+        "Froslass",
+        "Cofagrigus",
+        "Dragapult"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "High Horsepower",
+      "type": "ground",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Snorlax",
+        "Golurk",
+        "Rillaboom"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "High Jump Kick",
+      "type": "fighting",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Lopunny",
+        "Mienshao",
+        "Hawlucha"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Horn Throw",
+      "type": "dragon",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hurricane",
+      "type": "flying",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Pidgeot",
+        "Gyarados",
+        "Dragonite",
+        "Noivern",
+        "Iron Moth"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hydro Pump",
+      "type": "water",
+      "variants": 7,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 12,
+      "exampleSpecies": [
+        "Blastoise",
+        "Tentacruel",
+        "Gyarados",
+        "Lapras",
+        "Feraligatr",
+        "Kingdra",
+        "Wailord"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hyper Beam",
+      "type": "normal",
+      "variants": 5,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 124,
+      "exampleSpecies": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise",
+        "Pidgeot",
+        "Sandslash (Alola)",
+        "Nidoking",
+        "Clefable"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hyper Voice",
+      "type": "normal",
+      "variants": 3,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Gardevoir",
+        "Hydreigon",
+        "Sylveon",
+        "Scream Tail",
+        "Iron Jugulis"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hyperspace Fury",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Hypnosis",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 9,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Persian",
+        "Gengar",
+        "Exeggutor",
+        "Gardevoir",
+        "Spiritomb",
+        "Sigilyph"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ice Beam",
+      "type": "ice",
+      "variants": 8,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 40,
+      "exampleSpecies": [
+        "Blastoise",
+        "Sandslash (Alola)",
+        "Nidoking",
+        "Clefable",
+        "Ninetales (Alola)",
+        "Tentacruel",
+        "Rhydon"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ice Breath",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ice Fang",
+      "type": "ice",
+      "variants": 5,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 13,
+      "exampleSpecies": [
+        "Gyarados",
+        "Aerodactyl",
+        "Feraligatr",
+        "Steelix",
+        "Tyranitar",
+        "Mightyena",
+        "Sharpedo"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ice Punch",
+      "type": "ice",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Muk",
+        "Lopunny",
+        "Weavile",
+        "Iron Thorns"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved",
+        "explicitly_locked"
+      ],
+      "approvedScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ice Shard",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Lapras",
+        "Weavile",
+        "Mamoswine",
+        "Froslass"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ice Spinner",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Empoleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Icicle Crash",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Vanilluxe"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Icy Wind",
+      "type": "ice",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Ninetales (Alola)",
+        "Weavile",
+        "Mamoswine",
+        "Froslass",
+        "Vanilluxe",
+        "Aurorus",
+        "Iron Bundle"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Ingrain",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Cradily",
+        "Roserade",
+        "Brute Bonnet"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Iron Defense",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 13,
+      "exampleSpecies": [
+        "Blastoise",
+        "Sandslash (Alola)",
+        "Skarmory",
+        "Tyranitar",
+        "Aggron",
+        "Torkoal",
+        "Metagross"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Iron Head",
+      "type": "steel",
+      "variants": 6,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Aerodactyl",
+        "Aggron",
+        "Druddigon",
+        "Bisharp",
+        "Aegislash",
+        "Corviknight"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Iron Tail",
+      "type": "steel",
+      "variants": 5,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Pikachu",
+        "Umbreon",
+        "Steelix",
+        "Aggron",
+        "Haxorus"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Judgment",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Karate Chop",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Hawlucha"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "King's Shield",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Aegislash"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Knock Off",
+      "type": "dark",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 8,
+      "exampleSpecies": [
+        "Tyranitar",
+        "Crawdaunt",
+        "Drapion",
+        "Gliscor",
+        "Zoroark",
+        "Rillaboom",
+        "Iron Jugulis"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Lava Plume",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Typhlosion",
+        "Camerupt",
+        "Torkoal"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Leaf Blade",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Sceptile",
+        "Iron Valiant"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Leaf Storm",
+      "type": "grass",
+      "variants": 4,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Venusaur",
+        "Exeggutor",
+        "Sceptile",
+        "Torterra",
+        "Roserade",
+        "Rillaboom",
+        "Brute Bonnet"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Leech Seed",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Venusaur",
+        "Exeggutor",
+        "Cradily",
+        "Torterra",
+        "Roserade",
+        "Gourgeist",
+        "Comfey"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Lick",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Gengar",
+        "Snorlax",
+        "Greninja"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Light of Ruin",
+      "type": "fairy",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Liquidation",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Sharpedo",
+        "Inteleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Low Kick",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Toxicroak",
+        "Weavile",
+        "Electivire"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Mach Punch",
+      "type": "fighting",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Infernape"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Magnet Rise",
+      "type": "electric",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Steelix",
+        "Metagross",
+        "Magnezone"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Megahorn",
+      "type": "bug",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Nidoking",
+        "Rhydon",
+        "Heracross",
+        "Rhyperior"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Metal Burst",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Aggron",
+        "Bisharp"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Metal Claw",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 12,
+      "exampleSpecies": [
+        "Charizard",
+        "Sandslash (Alola)",
+        "Skarmory",
+        "Ninjask",
+        "Aggron",
+        "Armaldo",
+        "Metagross"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Metal Sound",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 10,
+      "exampleSpecies": [
+        "Skarmory",
+        "Aggron",
+        "Lucario",
+        "Magnezone",
+        "Klinklang",
+        "Bisharp",
+        "Aegislash"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Meteor Mash",
+      "type": "steel",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Clefable",
+        "Metagross",
+        "Lucario"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Metronome",
+      "type": "normal",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Clefable",
+        "Snorlax",
+        "Togekiss"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Mirror Coat",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Milotic",
+        "Lopunny",
+        "Magnezone",
+        "Vanilluxe",
+        "Sandy Shocks"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Mirror Move",
+      "type": "flying",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Pidgeot",
+        "Altaria",
+        "Sigilyph"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Moonblast",
+      "type": "fairy",
+      "variants": 6,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 9,
+      "exampleSpecies": [
+        "Clefable",
+        "Ninetales (Alola)",
+        "Gardevoir",
+        "Altaria",
+        "Floette (Eternal)",
+        "Sylveon",
+        "Gourgeist"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Moonlight",
+      "type": "fairy",
+      "variants": 2,
+      "categoryMostCommon": "stat",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Clefable",
+        "Umbreon",
+        "Noivern"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Morning Sun",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Espeon",
+        "Slither Wing",
+        "Iron Moth"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Mud Bomb",
+      "type": "ground",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Dugtrio",
+        "Muk",
+        "Gastrodon",
+        "Toxicroak",
+        "Mamoswine"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Muddy Water",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Gastrodon",
+        "Goodra"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Multi-Attack",
+      "type": "normal",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Mystical Fire",
+      "type": "fire",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Gardevoir",
+        "Sylveon",
+        "Flutter Mane"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Nasty Plot",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 10,
+      "exampleSpecies": [
+        "Pikachu",
+        "Ninetales (Alola)",
+        "Persian",
+        "Infernape",
+        "Spiritomb",
+        "Lucario",
+        "Toxicroak"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Night Daze",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Zoroark"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Night Slash",
+      "type": "dark",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 19,
+      "exampleSpecies": [
+        "Dugtrio",
+        "Persian",
+        "Scyther",
+        "Heracross",
+        "Skarmory",
+        "Sceptile",
+        "Sharpedo"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Nihil Light",
+      "type": "dragon",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Origin Pulse",
+      "type": "water",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Outrage",
+      "type": "dragon",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 36,
+      "exampleSpecies": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise",
+        "Nidoking",
+        "Arcanine",
+        "Rhydon",
+        "Tauros"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Overheat",
+      "type": "fire",
+      "variants": 4,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Charizard",
+        "Typhlosion",
+        "Torkoal",
+        "Infernape",
+        "Darmanitan",
+        "Iron Moth"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Pain Split",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Spiritomb",
+        "Gourgeist",
+        "Flutter Mane"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Pay Day",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Persian"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Petal Blizzard",
+      "type": "grass",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Venusaur",
+        "Roserade",
+        "Floette (Eternal)",
+        "Comfey"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Petal Dance",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Venusaur",
+        "Roserade",
+        "Floette (Eternal)",
+        "Comfey"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Phantom Force",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Golurk",
+        "Gourgeist",
+        "Dragapult",
+        "Flutter Mane"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Pin Missile",
+      "type": "bug",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Jolteon",
+        "Heracross",
+        "Drapion",
+        "Iron Thorns"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Play Rough",
+      "type": "fairy",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Persian",
+        "Arcanine",
+        "Mightyena",
+        "Luxray",
+        "Lycanroc",
+        "Comfey",
+        "Scream Tail"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Poison Fang",
+      "type": "poison",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Crobat",
+        "Sharpedo",
+        "Drapion"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Poison Jab",
+      "type": "poison",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Nidoking",
+        "Tentacruel",
+        "Toxicroak",
+        "Rhyperior",
+        "Gliscor",
+        "Haxorus",
+        "Hawlucha"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Pollen Puff",
+      "type": "bug",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Ribombee"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Poltergeist",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Gourgeist"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Power Gem",
+      "type": "rock",
+      "variants": 4,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Persian",
+        "Ampharos",
+        "Flutter Mane",
+        "Sandy Shocks"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Precipice Blades",
+      "type": "ground",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Prismatic Laser",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Protect",
+      "type": "normal",
+      "variants": 4,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 13,
+      "exampleSpecies": [
+        "Blastoise",
+        "Umbreon",
+        "Aggron",
+        "Torkoal",
+        "Crawdaunt",
+        "Armaldo",
+        "Salamence"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": "Aprovado pelo usuário: única barreira verde 30% menor (dimensões, moldura e brilhos uniformemente ×0.70); mecânica e arte pixel mantidas.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Psychic",
+      "type": "psychic",
+      "variants": 5,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 31,
+      "exampleSpecies": [
+        "Clefable",
+        "Alakazam",
+        "Gengar",
+        "Exeggutor",
+        "Lapras",
+        "Snorlax",
+        "Espeon"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": "Aprovado pelo usuário sem redesenho adicional: manter efeito, estatísticas e sincronização de impacto.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Psychic Fangs",
+      "type": "psychic",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Metagross",
+        "Luxray",
+        "Lycanroc",
+        "Scream Tail"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Psycho Cut",
+      "type": "psychic",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Alakazam",
+        "Malamar",
+        "Iron Valiant"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Psyshock",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Alakazam",
+        "Exeggutor",
+        "Gardevoir",
+        "Flutter Mane"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Psystrike",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Pump Up",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Pursuit",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 12,
+      "exampleSpecies": [
+        "Dodrio",
+        "Scyther",
+        "Tauros",
+        "Umbreon",
+        "Sceptile",
+        "Metagross",
+        "Spiritomb"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Quick Attack",
+      "type": "normal",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 25,
+      "exampleSpecies": [
+        "Pidgeot",
+        "Pikachu",
+        "Ninetales (Alola)",
+        "Dodrio",
+        "Scyther",
+        "Jolteon",
+        "Typhlosion"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Quiver Dance",
+      "type": "bug",
+      "variants": 1,
+      "categoryMostCommon": "stat",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Ribombee"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Raging Bull",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Tauros"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Rain Dance",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 9,
+      "exampleSpecies": [
+        "Blastoise",
+        "Gyarados",
+        "Lapras",
+        "Dragonite",
+        "Kingdra",
+        "Milotic",
+        "Gastrodon"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved",
+        "explicitly_locked"
+      ],
+      "approvedScope": "User-approved, locked: do not change this battle VFX/graphic while remastering Surf.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Rapid Spin",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Blastoise",
+        "Sandslash (Alola)",
+        "Torkoal",
+        "Claydol"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Razor Leaf",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Venusaur",
+        "Torterra",
+        "Floette (Eternal)",
+        "Gourgeist",
+        "Rillaboom"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Razor Wind",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Scyther",
+        "Unfezant",
+        "Talonflame",
+        "Noivern"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Recover",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Alakazam",
+        "Milotic",
+        "Gastrodon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Reflect",
+      "type": "psychic",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Alakazam",
+        "Exeggutor",
+        "Espeon",
+        "Sigilyph",
+        "Malamar",
+        "Ribombee"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Rest",
+      "type": "psychic",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Tauros",
+        "Snorlax",
+        "Wailord",
+        "Walrein",
+        "Scream Tail"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Retaliate",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Arcanine",
+        "Zoroark",
+        "Bisharp",
+        "Aegislash"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Roar of Time",
+      "type": "dragon",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Rock Climb",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Torterra",
+        "Druddigon",
+        "Lycanroc"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Rock Slide",
+      "type": "rock",
+      "variants": 5,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 14,
+      "exampleSpecies": [
+        "Dugtrio",
+        "Rhydon",
+        "Aerodactyl",
+        "Steelix",
+        "Tyranitar",
+        "Aggron",
+        "Camerupt"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Rock Wrecker",
+      "type": "rock",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Rhyperior"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Roost",
+      "type": "flying",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 9,
+      "exampleSpecies": [
+        "Pidgeot",
+        "Dragonite",
+        "Salamence",
+        "Unfezant",
+        "Talonflame",
+        "Hawlucha",
+        "Noivern"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sacred Sword",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Aegislash"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sandstorm",
+      "type": "rock",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Dugtrio",
+        "Steelix",
+        "Tyranitar",
+        "Claydol",
+        "Garchomp",
+        "Iron Thorns"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Scald",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Milotic"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Seed Bomb",
+      "type": "grass",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Venusaur",
+        "Exeggutor",
+        "Gourgeist",
+        "Brute Bonnet"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Self-Destruct",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Weezing",
+        "Claydol"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shadow Ball",
+      "type": "ghost",
+      "variants": 8,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 41,
+      "exampleSpecies": [
+        "Nidoking",
+        "Clefable",
+        "Ninetales (Alola)",
+        "Persian",
+        "Alakazam",
+        "Muk",
+        "Gengar"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shadow Punch",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Gengar",
+        "Golurk"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shadow Sneak",
+      "type": "ghost",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Spiritomb",
+        "Greninja",
+        "Aegislash",
+        "Gourgeist",
+        "Iron Valiant"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shell Guard",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shell Smash",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Blastoise",
+        "Torkoal"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shell Spin",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shift Gear",
+      "type": "steel",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Klinklang"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Shock Wave",
+      "type": "electric",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Manectric",
+        "Electivire",
+        "Togekiss"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Silver Wind",
+      "type": "bug",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Spiritomb",
+        "Ribombee"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sing",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Clefable",
+        "Lapras",
+        "Altaria",
+        "Scream Tail"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Skull Bash",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Blastoise",
+        "Sharpedo"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sky Attack",
+      "type": "flying",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Altaria",
+        "Togekiss",
+        "Unfezant",
+        "Sigilyph",
+        "Hawlucha"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Slash",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 18,
+      "exampleSpecies": [
+        "Charizard",
+        "Sandslash (Alola)",
+        "Dugtrio",
+        "Persian",
+        "Scyther",
+        "Feraligatr",
+        "Skarmory"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sleep Powder",
+      "type": "grass",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Venusaur",
+        "Exeggutor"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved",
+        "explicitly_locked"
+      ],
+      "approvedScope": "User-approved, locked: do not change this battle VFX/graphic while remastering Surf.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sludge Bomb",
+      "type": "poison",
+      "variants": 4,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 22,
+      "exampleSpecies": [
+        "Venusaur",
+        "Nidoking",
+        "Dugtrio",
+        "Tentacruel",
+        "Muk",
+        "Gengar",
+        "Exeggutor"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sludge Wave",
+      "type": "poison",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Tentacruel",
+        "Muk",
+        "Iron Moth"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Snipe Shot",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Inteleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Solar Beam",
+      "type": "grass",
+      "variants": 8,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 36,
+      "exampleSpecies": [
+        "Venusaur",
+        "Charizard",
+        "Clefable",
+        "Ninetales (Alola)",
+        "Arcanine",
+        "Exeggutor",
+        "Tauros"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sonic Boom",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Magnezone"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Spacial Rend",
+      "type": "dragon",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Spikes",
+      "type": "ground",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Skarmory",
+        "Greninja"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Spirit Break",
+      "type": "fairy",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Iron Valiant"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Steel Wing",
+      "type": "steel",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Skarmory",
+        "Unfezant",
+        "Talonflame",
+        "Corviknight"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Stone Edge",
+      "type": "rock",
+      "variants": 13,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 40,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Nidoking",
+        "Dugtrio",
+        "Rhydon",
+        "Tauros",
+        "Gyarados",
+        "Aerodactyl"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Substitute",
+      "type": "normal",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Sceptile",
+        "Manectric",
+        "Greninja"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Subzero Slammer",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sucker Punch",
+      "type": "dark",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 9,
+      "exampleSpecies": [
+        "Dugtrio",
+        "Gengar",
+        "Mightyena",
+        "Spiritomb",
+        "Toxicroak",
+        "Lycanroc",
+        "Inteleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Sunny Day",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Exeggutor",
+        "Scream Tail",
+        "Brute Bonnet",
+        "Flutter Mane",
+        "Slither Wing",
+        "Sandy Shocks",
+        "Roaring Moon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Superpower",
+      "type": "fighting",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 5,
+      "exampleSpecies": [
+        "Feraligatr",
+        "Darmanitan",
+        "Druddigon",
+        "Malamar",
+        "Slither Wing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Supersonic",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Tentacruel",
+        "Aerodactyl",
+        "Crobat",
+        "Magnezone",
+        "Noivern",
+        "Sandy Shocks"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Surf",
+      "type": "water",
+      "variants": 5,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Blastoise",
+        "Tentacruel",
+        "Lapras",
+        "Kingdra",
+        "Wailord",
+        "Milotic",
+        "Walrein"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": "User-approved on 2026-10-23: Surf renderer must be frozen. This patch changes only Protect, Light Screen, Psychic.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Surging Strikes",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Swift",
+      "type": "normal",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 13,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Persian",
+        "Jolteon",
+        "Typhlosion",
+        "Crobat",
+        "Espeon",
+        "Umbreon"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Swords Dance",
+      "type": "normal",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 15,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Dodrio",
+        "Scyther",
+        "Heracross",
+        "Ninjask",
+        "Crawdaunt",
+        "Empoleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Synthesis",
+      "type": "grass",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 10,
+      "exampleSpecies": [
+        "Venusaur",
+        "Exeggutor",
+        "Sceptile",
+        "Cradily",
+        "Torterra",
+        "Roserade",
+        "Floette (Eternal)"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Tailwind",
+      "type": "flying",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Pidgeot",
+        "Crobat",
+        "Unfezant",
+        "Sigilyph",
+        "Archeops",
+        "Talonflame",
+        "Noivern"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Throat Chop",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Nidoking",
+        "Heracross",
+        "Roaring Moon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Thunder",
+      "type": "electric",
+      "variants": 5,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 34,
+      "exampleSpecies": [
+        "Pikachu",
+        "Nidoking",
+        "Clefable",
+        "Persian",
+        "Muk",
+        "Gengar",
+        "Weezing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Thunder Fang",
+      "type": "electric",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 12,
+      "exampleSpecies": [
+        "Arcanine",
+        "Jolteon",
+        "Aerodactyl",
+        "Steelix",
+        "Tyranitar",
+        "Mightyena",
+        "Manectric"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Thunder Punch",
+      "type": "electric",
+      "variants": 5,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 10,
+      "exampleSpecies": [
+        "Charizard",
+        "Muk",
+        "Dragonite",
+        "Typhlosion",
+        "Ampharos",
+        "Infernape",
+        "Rhyperior"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved",
+        "explicitly_locked"
+      ],
+      "approvedScope": "Visually user-approved 23/10/2026. Do not modify this approved attack.",
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Thunder Wave",
+      "type": "electric",
+      "variants": 2,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 11,
+      "exampleSpecies": [
+        "Pikachu",
+        "Jolteon",
+        "Dragonite",
+        "Ampharos",
+        "Manectric",
+        "Luxray",
+        "Magnezone"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "user_visual_approved"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": "user-approved",
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Thunderbolt",
+      "type": "electric",
+      "variants": 7,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 38,
+      "exampleSpecies": [
+        "Pikachu",
+        "Nidoking",
+        "Clefable",
+        "Persian",
+        "Muk",
+        "Gengar",
+        "Weezing"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Toxic",
+      "type": "poison",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 8,
+      "exampleSpecies": [
+        "Nidoking",
+        "Muk",
+        "Weezing",
+        "Crobat",
+        "Skarmory",
+        "Roserade",
+        "Drapion"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Toxic Spikes",
+      "type": "poison",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Nidoking",
+        "Tentacruel",
+        "Roserade",
+        "Drapion"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Tri Attack",
+      "type": "normal",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Dugtrio",
+        "Dodrio",
+        "Magnezone",
+        "Togekiss",
+        "Hydreigon",
+        "Sandy Shocks",
+        "Iron Jugulis"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Trick Room",
+      "type": "psychic",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Triple Axel",
+      "type": "ice",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Weavile"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "U-turn",
+      "type": "bug",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 8,
+      "exampleSpecies": [
+        "Crobat",
+        "Infernape",
+        "Gliscor",
+        "Archeops",
+        "Zoroark",
+        "Mienshao",
+        "Inteleon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Volt Tackle",
+      "type": "electric",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Pikachu",
+        "Manectric"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Water Gun",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 15,
+      "exampleSpecies": [
+        "Blastoise",
+        "Tentacruel",
+        "Lapras",
+        "Feraligatr",
+        "Kingdra",
+        "Wailord",
+        "Crawdaunt"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Water Pulse",
+      "type": "water",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 11,
+      "exampleSpecies": [
+        "Blastoise",
+        "Tentacruel",
+        "Lapras",
+        "Kingdra",
+        "Wailord",
+        "Armaldo",
+        "Milotic"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Water Shuriken",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Greninja"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Water Spout",
+      "type": "water",
+      "variants": 2,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 1,
+      "exampleSpecies": [
+        "Wailord"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Waterfall",
+      "type": "water",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Gyarados",
+        "Feraligatr"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Whirlpool",
+      "type": "water",
+      "variants": 1,
+      "categoryMostCommon": "spec",
+      "publicRosterSpeciesCount": 6,
+      "exampleSpecies": [
+        "Gyarados",
+        "Lapras",
+        "Kingdra",
+        "Wailord",
+        "Empoleon",
+        "Iron Bundle"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Wicked Blow",
+      "type": "dark",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 0,
+      "exampleSpecies": [],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Wild Charge",
+      "type": "electric",
+      "variants": 4,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 7,
+      "exampleSpecies": [
+        "Pikachu",
+        "Arcanine",
+        "Manectric",
+        "Luxray",
+        "Eelektross",
+        "Iron Hands",
+        "Iron Thorns"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Will-O-Wisp",
+      "type": "fire",
+      "variants": 1,
+      "categoryMostCommon": "status",
+      "publicRosterSpeciesCount": 2,
+      "exampleSpecies": [
+        "Froslass",
+        "Cofagrigus"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Wing Attack",
+      "type": "flying",
+      "variants": 1,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 13,
+      "exampleSpecies": [
+        "Charizard",
+        "Pidgeot",
+        "Scyther",
+        "Aerodactyl",
+        "Dragonite",
+        "Crobat",
+        "Skarmory"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Wood Hammer",
+      "type": "grass",
+      "variants": 3,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 3,
+      "exampleSpecies": [
+        "Exeggutor",
+        "Torterra",
+        "Rillaboom"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "X-Scissor",
+      "type": "bug",
+      "variants": 5,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 19,
+      "exampleSpecies": [
+        "Sandslash (Alola)",
+        "Scyther",
+        "Crobat",
+        "Skarmory",
+        "Sceptile",
+        "Ninjask",
+        "Crawdaunt"
+      ],
+      "protectedByKnownMovePolicy": true,
+      "protectionReasons": [
+        "baseline_custom_move"
+      ],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "PRESERVE_APPROVED; COMPARE_ONLY",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    },
+    {
+      "name": "Zen Headbutt",
+      "type": "psychic",
+      "variants": 2,
+      "categoryMostCommon": "phys",
+      "publicRosterSpeciesCount": 4,
+      "exampleSpecies": [
+        "Tauros",
+        "Salamence",
+        "Metagross",
+        "Roaring Moon"
+      ],
+      "protectedByKnownMovePolicy": false,
+      "protectionReasons": [],
+      "approvedScope": null,
+      "sourcePolicyReview": null,
+      "action": "RESEARCH_FIRST; existing implementation status unknown",
+      "readyForReplication": false,
+      "visualEvidenceFromThisCrossReference": false
+    }
+  ]
+}
