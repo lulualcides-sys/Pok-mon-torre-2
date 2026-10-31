@@ -1,0 +1,43 @@
+name: Layered Kanto city — WebGL navigation and visual evidence
+on:
+  push:
+    branches: [feat/cerulean-layered-redesign-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: layered-city-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  city:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Regression and approved combat protection
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-city-scenery.js
+          node --check tools/pokearena/torre2-city-hub.js
+      - name: Build real client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$i" = 3 ]; then exit 1; fi
+          done
+      - name: Desktop and touch navigation in actual WebGL
+        run: node tests/city-hub-browser.cjs
+      - name: Upload actual game evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: layered-city-webgl
+          path: test-evidence/city-layered-*
+          retention-days: 14

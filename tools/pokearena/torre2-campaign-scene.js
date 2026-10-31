@@ -1,3 +1,4 @@
+import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -386,7 +387,7 @@ create(){
    }).setOrigin(.5);
   this.button(320,225,278,47,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
    if(ready)this.enterBattle(state);
-   else this.scene.restart();
+   else {this.__torre2CityRoute=true;this.scene.restart();}
   },ready,13);
   this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
@@ -467,10 +468,19 @@ create(){
   // The image-approved UI is a sequential battle road, not an overworld.
   // Keep all trainer/leader counters and the existing localStorage save IDs.
   // Retain older scene helpers below for PC, Center, Mart and summary only.
+  // The Phaser Scene persists across route/city/menu transitions. Stop its
+  // prior water clock event before removing visuals or drawing a new city.
+  if(this.__torre2CityWaterTimer){
+   this.time.removeEvent(this.__torre2CityWaterTimer);
+   this.__torre2CityWaterTimer=null;
+  }
   this.children.removeAll(true);
+  this.__torre2CityHub=null;
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
    this.__torre2PathPage=undefined;
+   // Preserve native route as default; layered Cerulean is an opt-in view.
+   this.__torre2CityRoute=true;
    this.__torre2PathStage=state.stage;
   }
   const movePage=delta=>{
@@ -484,7 +494,28 @@ create(){
    if(foe.leader)return this.gymScreen(state);
    this.__torre2PathDetails(text,this,foe);
   };
+  if(state.stage===1&&!this.__torre2CityRoute){
+   this.__torre2BattlePath=null;
+   const city=renderCityHub(this,state,{
+    trainerCount:TRAINERS_PER_GYM(state.stage),badgeDefinitions:GYMS,
+    center:()=>this.centerScreen(state),mart:()=>this.martScreen(state),
+    gym:()=>this.gymScreen(state),bag:()=>this.bagScreen(state),
+    dex:()=>this.dexScreen(state),badges:()=>this.badgeCaseScreen(state),
+    capture:()=>this.grassScreen(state),
+    pokemon:i=>state.team[i]&&this.showSummary(state,i),
+    trainer:(i,status)=>{
+     if(status==='current')return this.enterBattle(state);
+     if(status==='defeated')return this.rematchScreen(state,i);
+     return this.__torre2PathDetails(text,this,null);
+    },
+    refresh:()=>this.renderCampaign(state),
+    route:()=>{this.__torre2CityRoute=true;this.renderCampaign(state)}
+   });
+   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
+   return city;
+  }
   const path=renderBattlePath(this,state,{
+   city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),

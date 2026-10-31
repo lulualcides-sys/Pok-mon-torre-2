@@ -176,6 +176,10 @@ export function renderBattlePath(scene,state,handlers){
   .setOrigin(0,.5);
  button(scene,424,103,107,24,'VS SEEKER',()=>handlers.rematchAtlas?.(),
   {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
+ // Preserve the native trainer route by default. City is optional.
+ if(stage===1)button(scene,424,131,107,23,'VER CIDADE',
+  ()=>handlers.city?.(),{depth:39,small:true})
+  .setData('torre2-open-city',true);
  // When a NORMAL battle advances the checkpoint beyond the current
  // route page, reveal the new checkpoint automatically. Manual browsing of
  // earlier pages stays intact until a new trainer is actually beaten.
