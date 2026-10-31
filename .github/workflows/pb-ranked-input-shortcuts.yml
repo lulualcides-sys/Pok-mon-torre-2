@@ -1,0 +1,24 @@
+name: PB Ranked — verificar atalhos para moves e switch
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - 'tools/research/pb-ranked-input-shortcuts.cjs'
+      - '.github/workflows/pb-ranked-input-shortcuts.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-input-keys:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: node --check tools/research/pb-ranked-input-shortcuts.cjs
+      - run: node tools/research/pb-ranked-input-shortcuts.cjs
