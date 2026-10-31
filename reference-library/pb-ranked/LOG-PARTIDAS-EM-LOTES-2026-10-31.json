@@ -271,6 +271,23 @@
       "manualCastsReported": 7,
       "frameByFrameVisualsArchived": 0,
       "note": "Seven button transitions; complete VFX unverified"
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd",
+      "status": "KEYBOARD_SHORTCUTS_OPERATIONAL_EIGHT_NEW_CASTS_REPORTED",
+      "battleStarted": true,
+      "mode": "Practice vs Bot EASY 3v3",
+      "outcome": "ongoing at end; final winner unknown",
+      "team": [
+        "Venusaur",
+        "Charizard",
+        "Blastoise"
+      ],
+      "castReportedUnique": 11,
+      "newUniqueNamesVersusPrior": 8,
+      "keyboardNewNames": 8,
+      "frameByFrameVisualsArchived": 0,
+      "note": "Move slots 1–4 and switch keys z/x/c tested; eight new Kanto names with status transitions."
     }
   ],
   "coverage": {
@@ -289,7 +306,7 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 62,
+    "uniqueMovesWithBrowserAgentUseReported": 70,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
     "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
@@ -346,6 +363,20 @@
         "Meteor Mash"
       ],
       "quality": "UI states reported, frame-by-frame not archived"
+    },
+    "latestKeyboardBatch": {
+      "newMoves": 8,
+      "keys": [
+        "1",
+        "2",
+        "3",
+        "4",
+        "z",
+        "x",
+        "c",
+        "t"
+      ],
+      "source": "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
     }
   },
   "warnings": [
