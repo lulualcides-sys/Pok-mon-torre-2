@@ -1,0 +1,96 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31",
+  "runUrl": "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd",
+  "mode": "Practice vs Bot Easy, 3v3",
+  "team": [
+    "Lopunny",
+    "Garchomp",
+    "Lucario"
+  ],
+  "battleStarted": true,
+  "outcome": "Not documented by agent",
+  "recordedBrowserSteps": 51,
+  "moves": [
+    {
+      "pokemon": "Lopunny",
+      "name": "High Jump Kick",
+      "clickedManuallyAccordingToAgent": true,
+      "buttonStateEvidence": "move ready called → near ready",
+      "individualFrameSequenceArchived": false,
+      "visualSpecificMorphologyConfirmed": false,
+      "attributionCaveat": "Effectiveness label may be another move; actual cooldown state is stronger evidence than visual action."
+    },
+    {
+      "pokemon": "Lopunny",
+      "name": "Bounce",
+      "clickedManuallyAccordingToAgent": true,
+      "buttonStateEvidence": "button removed/replaced after click; cooldown inferred",
+      "individualFrameSequenceArchived": false,
+      "visualSpecificMorphologyConfirmed": false,
+      "attributionCaveat": "Effectiveness label may be another move; actual cooldown state is stronger evidence than visual action."
+    },
+    {
+      "pokemon": "Lopunny",
+      "name": "Dizzy Punch",
+      "clickedManuallyAccordingToAgent": true,
+      "buttonStateEvidence": "CSS changed to move ready near called",
+      "individualFrameSequenceArchived": false,
+      "visualSpecificMorphologyConfirmed": false,
+      "attributionCaveat": "Effectiveness label may be another move; actual cooldown state is stronger evidence than visual action."
+    },
+    {
+      "pokemon": "Garchomp",
+      "name": "Dragon Rush",
+      "clickedManuallyAccordingToAgent": true,
+      "buttonStateEvidence": "Super effective label appeared; button removed",
+      "individualFrameSequenceArchived": false,
+      "visualSpecificMorphologyConfirmed": false,
+      "attributionCaveat": "Effectiveness label may be another move; actual cooldown state is stronger evidence than visual action."
+    },
+    {
+      "pokemon": "Garchomp",
+      "name": "Dig",
+      "clickedManuallyAccordingToAgent": true,
+      "buttonStateEvidence": "move ready called state; Effective label appeared",
+      "individualFrameSequenceArchived": false,
+      "visualSpecificMorphologyConfirmed": false,
+      "attributionCaveat": "Effectiveness label may be another move; actual cooldown state is stronger evidence than visual action."
+    },
+    {
+      "pokemon": "Garchomp",
+      "name": "Giga Impact",
+      "clickedManuallyAccordingToAgent": true,
+      "buttonStateEvidence": "button disappeared after click, other abilities readied",
+      "individualFrameSequenceArchived": false,
+      "visualSpecificMorphologyConfirmed": false,
+      "attributionCaveat": "Effectiveness label may be another move; actual cooldown state is stronger evidence than visual action."
+    },
+    {
+      "pokemon": "Lucario",
+      "name": "Aura Sphere",
+      "clickedManuallyAccordingToAgent": true,
+      "buttonStateEvidence": "multiple Super effective labels appeared",
+      "individualFrameSequenceArchived": false,
+      "visualSpecificMorphologyConfirmed": false,
+      "attributionCaveat": "Effectiveness label may be another move; actual cooldown state is stronger evidence than visual action."
+    }
+  ],
+  "notExecuted": [
+    {
+      "pokemon": "Lucario",
+      "name": "Bone Rush"
+    },
+    {
+      "pokemon": "Lucario",
+      "name": "Meteor Mash"
+    }
+  ],
+  "quality": {
+    "uniqueNamedButtonActions": 7,
+    "newNames": 7,
+    "perActionStepIdsInFinalReport": false,
+    "evidence": "browser UI state changes; no raw frame/asset extraction",
+    "error": "Source summary claims 'seven confirmed', but individual numbered browser steps are not provided; treat as action reported rather than verified per-frame animation."
+  }
+}
