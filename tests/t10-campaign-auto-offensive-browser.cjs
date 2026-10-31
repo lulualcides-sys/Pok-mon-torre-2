@@ -91,6 +91,33 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(Object.values(playing.uses).reduce((sum,n)=>sum+Number(n||0),0)>=1,
    'Real native Phaser AUTO must actually cast a learned move during combat');
   assert.equal(playing.enabled,true,'AUTO remains active after live decision frames');
+  // T19: run the compiled production helper inside real booted Phaser/WebGL.
+  // The scenario is isolated: do not modify live fighters, RNG, moves or save.
+  const finish=await page.evaluate(async()=>{
+   const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
+   const {pressureCampaignAutoInput}=await import(new URL('./torre2/auto-battle.js',main));
+   const nativeScene=window.__pt2Game.scene.getScene('combate');
+   const player={x:800,y:200,hp:74,hpMax:109,kit:{lmb:{alcance:70}},
+    cd:{lmb:0},energia:85,calor:0,est:{}};
+   const target={x:400,y:200,hp:14,hpMax:94,est:{}};
+   const native={mx:1,my:0,ax:400,ay:200,lmb:false,rmb:false,q:false,
+    e:false,esp:false};
+   const fixture={datos:nativeScene.datos,fase:'lucha',
+    luchadores:[player,target],efectos:[]};
+   const close=pressureCampaignAutoInput(fixture,player,native);
+   const unsafe=pressureCampaignAutoInput({...fixture,luchadores:[
+    {...player,hp:40},target]}, {...player,hp:40},native);
+   return {isRealCampaign:!!nativeScene.datos?.torre2,
+    closeMx:close.mx,cast:close.lmb,unsafeUnchanged:unsafe===native,
+    originalMx:native.mx,originalHp:target.hp};
+  });
+  assert.equal(finish.isRealCampaign,true);
+  assert.ok(finish.closeMx<-.90,'Compiled campaign AUTO must close genuine stalled HP geometry');
+  assert.equal(finish.cast,false,'Finisher chase cannot bypass cooldown or invent attacks');
+  assert.equal(finish.unsafeUnchanged,true,'Low HP must preserve native defensive retreat');
+  assert.equal(finish.originalMx,1,'Never mutate original native input');
+  assert.equal(finish.originalHp,14,'Never fake enemy damage or defeat');
+
   await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),a=b.__torre2AutoMode;
    a.zone.emit('pointerdown',{id:132},0,0,{stopPropagation(){}});
@@ -106,7 +133,7 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.__t10Control?.control?.leer===
    window.__t10Control.original,null,{timeout:10000});
   assert.deepEqual(errors,[],'No uncaught Phaser JS error');
-  const report={initial,on,playing,off,restored:true};
+  const report={initial,on,playing,finish,off,restored:true};
   await fs.mkdir('test-evidence',{recursive:true});
   await fs.writeFile('test-evidence/t10-campaign-offensive-auto.json',JSON.stringify(report,null,2));
   console.log('PASS T10 CAMPAIGN OFFENSIVE AUTO NO BONUS DAMAGE',JSON.stringify(report));

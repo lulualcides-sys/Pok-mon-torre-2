@@ -1,9 +1,7 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
-## T19 — cinco treinadores + Misty (31/10/2026)
-- Partir da main com #400 integrado, reutilizar artifact #13033958812. Teste `tests/t19-earned-cerulean-misty-browser.cjs` e workflow dedicado com hash estrito e controles Phaser reais. Não tocar runtime, AUTO, golpes, sprites ou saves dos jogadores.
-- Verificar npm test/check/check:reuse, build, Chromium, regressão browser, guardião e Pages HTTP SHA antes de publicar. Próxima frente independente T31 #402.
-
+## T19 — Misty CI real provada e sincronização (31/10/2026)
+- HEAD antigo PR #403 `04f9e184`: workflow #41194363962 SUCCESS com 15 treinadores + Misty natural, 42 vitórias / 0 derrotas, Cascata e TM03; checkpoint e save verificados. Copiar só testes/workflow e registro de prova para main `70fabdee` (T13/T14/T24), sem tocar runtime ou saves; revalidar HEAD novo no GitHub Actions antes de merge.
 
 ## T19 — integração após main T08 (31/10/2026)
 - Preservar teste e workflow originais de #400; mesclar main `8a6f802fa7` sem force e sem perder docs de T08/T22. CI longa de HEAD sincronizado justificada por mudança de base e gate exato. Artifact natural #13032891442 é entrada da próxima etapa Misty. Sem alteração no runtime.
@@ -121,3 +119,8 @@ Arquivos: `torre2-rematch-policy.js` e `tests/rematch-policy.test.js`. RED repro
 - Branch isolada da main `679df0b6d6714ed7348dd63265d906be508c4649`, não reexecutar o roteiro T20 de ~30–53 min: usar artifact ID 13028307911 da CI verde #41162666401, com SHA-256 e provenance verificados no teste.
 - Teste incremental `tests/t19-earned-brock-five-cerulean-browser.cjs` só altera o harness; workflow `master-t19-five-earned-cerulean.yml` exige Node, npm test/check/check:reuse, build Phaser, cinco lutas Chromium, suíte browser completa e guardião PR. Falha real continua vermelha e screenshot preservada.
 - Rollback: remover workflow/teste, nenhum save/runtime alterado. Artefato expira em 21 dias; uma execução futura precisa gerar nova origem natural verificada, não inventar save.
+
+
+## T31 — plano REA TM03 (31/10/2026)
+- Causa: asserção obsoleta em `tests/solo-kanto-built.test.mjs:245` após #384; política atual de `martItemUnlocked` está correta. Alterar somente o teste e criar workflow isolado; não afrouxar unlock.
+- Verificação: npm test, check, check:reuse, capture-client, build-preview, teste built-client, Chromium completo, visual/CI da PR; rollback dos dois arquivos se regressão comprovada. Sem fonte nova de golpes.

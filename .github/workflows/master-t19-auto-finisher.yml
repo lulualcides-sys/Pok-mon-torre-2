@@ -1,0 +1,53 @@
+name: T19 — safe campaign AUTO finisher pursuit
+on:
+  push:
+    branches: [fix/t19-auto-finisher-closeout-20261031]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  safe-auto-closeout:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify native AUTO guard and full source policy
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-auto-battle.js
+          node --check tests/arena-auto-battle.test.js
+          node --test tests/arena-auto-battle.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+          node tools/dev/approved-visual-guard.mjs
+      - name: Build genuine approved Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+      - name: Native Chromium campaign AUTO safety and offensive behavior
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t10-campaign-auto-offensive-browser.cjs
+      - name: Full Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Keep native screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t19-safe-auto-finisher-diagnostics
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn

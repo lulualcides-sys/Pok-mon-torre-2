@@ -1,9 +1,8 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
-## Execução 31/10/2026 — §19/T19 Misty (branch isolada)
-- Main de partida `693c4e8c` após #400. CI #41178359400 SUCCESS, artifact natural #13033958812; dez treinadores, 36 vitórias, zero derrotas. Pages anterior #41178288040 SUCCESS, HTTP `src-6f1d462283`, **não comprova** publicação de `693c4e8c`.
-- Novo teste/workflow T19 reutiliza save sem fabricar vitórias, estágio, badges, XP, RNG ou capturas; exige cinco treinadores, Misty, Cascata/TM03 e reload. **Status: aguardando CI.** Próxima frente T31.
-
+## T19 — Misty natural COMPROVADA pela CI (31/10/2026)
+- PR #403, HEAD anterior `04f9e184`, workflow #41194363962 **SUCCESS** (job #124517430468): 15 treinadores de Cerulean + Misty vencidos no jogo real Phaser/WebGL, Insígnia Cascata, TM03, XP e reload; relatório exato `PASS T19 FIFTEEN CERULEAN TRAINERS + MISTY CASCATA TM03 XP RELOAD {"saveUnchanged":true,"stage":2,"trainer":0,"wins":42,"losses":0}`. Artefato #13041220602. Seed original de 10 treinadores #13033958812, checkpoint verificado e luta natural, sem injeção de recompensas.
+- Prova no HEAD antigo; sincronizado para testar com o código mais recente `70fabdee` (T13/T14/T24). **Não declarar prova pós-integração antes do workflow verde no novo SHA.**
 
 ## §19/T19 — dez Cerulean com save real (31/10/2026)
 - Run #41174200072 SUCCESS no HEAD `5bc77a761b`: dez combates nativos Cerulean a partir de save Pallet→Brock exportado na #398; XP, Centro, AUTO, recarga e persistência, 36 vitórias acumuladas/0 derrotas nesta execução; artifact #13032891442. Guardião #41174210095 e T25 #41174210051 SUCCESS.
@@ -905,3 +904,9 @@ Main de partida `ce38c4c2c50821723f54473a3c9e53d48a006a5e`. Reproduzido bug real
 - Reutilizar o **artefato genuíno** da CI #41162666401 (ID 13028307911, SHA-256 do save `865424a80bf46f5b43605c7cb193cf316805ad6453824b3fd7b9113748e17c18`), sem refazer os 13 treinadores e Brock em toda execução.
 - Teste novo somente navegador/CI: cinco treinadores Cerulean consecutivos com clique Phaser, Centro real, XP, save, UID, badges e TM inalteradas; derrotas reais fazem a CI falhar. Sem editar runtime, RNG, HP, XP, IA, sprites ou VFX. **Não validado até CI/Chromium GREEN; Misty/Cascata/TM03 permanecem pendentes.**
 - Próxima frente diferente: T07/T08 slots/learnsets comprovadamente faltantes, sem voltar ao T10.
+
+
+## §31/T31 — REA test gate acompanha TM de Misty (31/10/2026)
+- Diagnóstico: #41175372696 falhou no assert antigo `purchaseItem('tm-water-pulse').ok === true` com `stage=1`; a política `martItemUnlocked` exige `stage>1` **e** insígnia Cascata. O jogo bloqueou corretamente compra prematura; teste era obsoleto após #384.
+- Patch isolado: `tests/solo-kanto-built.test.mjs` e workflow de regressão com npm test/check/check:reuse, build real e Chromium. RED original comprovado; GREEN/CI ainda não concluídos. Nenhum runtime, save, VFX, sprite ou RNG alterado.
+- Main publicada antes deste lote: `ce38c4c2` Pages #41175391773 SUCCESS, HTTP `src-76f46e3486` e Pokédex pública; novo merge #401 `8a6f802f` ainda exige Pages próprio. T19 #400 passou dez treinadores (CI #41174200072), mas PR segue sem merge por conflito de base; não alegar Misty.

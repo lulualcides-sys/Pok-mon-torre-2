@@ -8,6 +8,7 @@ const unique=value=>Array.isArray(value)?[...new Set(value)]:[];
 const display=id=>String(id||'').replace(/[-_]+/g,' ').toUpperCase();
 const delta=(before,after)=>unique(after).filter(x=>!unique(before).includes(x));
 const uid=(member,index)=>member?.uid||'index:'+index;
+const hasUid=member=>typeof member?.uid==='string'&&member.uid.trim().length>0;
 const safeList=(member,listMoves)=>{
  if(typeof listMoves!=='function'||!member)return [];
  try{
@@ -33,15 +34,22 @@ export function makeBattleReport(before,after,outcome,{
  if(!before||!after||!outcome||typeof outcome.won!=='boolean')return null;
  const previous=Array.isArray(before.team)?before.team:[];
  const now=Array.isArray(after.team)?after.team:[];
- const beforeByUid=new Map(previous.map((m,i)=>[uid(m,i),m]));
- const gains=outcome.sharedExp||outcome.shared?.gains||[];
- const byUid=new Map(gains.map(g=>[g.uid,g]));
+ // Index is not identity: replacements and captures may reorder the party.
+ // A legacy member without UID can still be matched by unchanged species at
+ // the same index, but must never be misreported as somebody else's evolution.
+ const beforeByUid=new Map(previous.filter(hasUid).map(m=>[m.uid,m]));
+ const gains=Array.isArray(outcome.sharedExp)?outcome.sharedExp:
+  Array.isArray(outcome.shared?.gains)?outcome.shared.gains:[];
+ const byUid=new Map(gains.filter(g=>g&&g.uid!=null).map(g=>[g.uid,g]));
  const evolutions=[],moves=[],team=[];
  now.forEach((member,index)=>{
-  const old=beforeByUid.get(uid(member,index))||previous[index];
+  const candidate=previous[index];
+  const old=(hasUid(member)?beforeByUid.get(member.uid):null)||
+   (candidate?.id===member.id&&(!hasUid(candidate)||!hasUid(member))?
+    candidate:null);
   if(!old)return;
   const levelBefore=num(old.progression?.level),levelAfter=num(member.progression?.level);
-  const gain=byUid.get(uid(member,index))||gains.find(g=>g.index===index);
+  const gain=byUid.get(uid(member,index))||gains.find(g=>g?.index===index);
   const experience=Math.max(0,num(gain?.reward));
   team.push({id:member.id,from:old.id,levelBefore,levelAfter,
    experience,tester:Boolean(gain?.tester)});
@@ -90,6 +98,16 @@ export function battleReportDetailLines(report){
   ...report.tms.map(e=>'TM: '+String(e).toUpperCase())
  ];
 }
+// Pure page model also makes long move/badge/TM reports testable without
+// a Phaser runtime; no XP or save state is ever mutated here.
+export function battleReportPage(lines,index=0,size=2){
+ const values=Array.isArray(lines)?lines:[];
+ const pageSize=Number.isSafeInteger(size)&&size>0?size:2;
+ const pages=Math.max(1,Math.ceil(values.length/pageSize));
+ const requested=Number.isSafeInteger(index)?index:0;
+ const page=((requested%pages)+pages)%pages;
+ return {page,pages,items:values.slice(page*pageSize,(page+1)*pageSize)};
+}
 /* Low-cost native Phaser pixel UI; all input stays in the battle-path scene.
  * Interactive topmost backdrop prevents clicks passing through to trainers,
  * reset, shop, or another encounter while results are being read.
@@ -132,27 +150,33 @@ export function showBattleReport(scene,report){
  // Every reward must remain inspectable, even after six evolutions or
  // several newly learned moves. Two readable lines per page (not a clipped
  // concatenation that silently hides later TMs and league honors).
- const pages=Math.max(1,Math.ceil(extras.length/2));
+ const pages=battleReportPage(extras).pages;
  let detailPage=0;
  const line1=label(305,274,'',9,'#e4edfa',true);
  const line2=label(305,286,'',9,'#e4edfa',true);
- const compact=value=>value.length>71?value.slice(0,68)+'…':value;
+ const compact=value=>value.length>60?value.slice(0,57)+'…':value;
+ const counter=pages>1?label(545,280,'',9,'#f9de95',true):null;
  const renderDetails=()=>{
-  const block=extras.slice(detailPage*2,detailPage*2+2);
-  line1.setText(compact(block[0]||report.message||'RESULTADO SALVO'));
-  line2.setText(compact(block[1]||''));
+  const page=battleReportPage(extras,detailPage);
+  detailPage=page.page;
+  line1.setText(compact(page.items[0]||report.message||'RESULTADO SALVO'));
+  line2.setText(compact(page.items[1]||''));
+  counter?.setText((page.page+1)+'/'+page.pages);
  };
  renderDetails();
  if(pages>1){
-  label(571,280,'▶',13,'#f9de95',true);
-  const next=track(scene.add.zone(570,280,29,32)
-   .setDepth(depth+5).setInteractive({useHandCursor:true}));
-  next.setData?.('torre2-report-more',true);
-  next.on('pointerdown',(_p,_x,_y,event)=>{
-   event?.stopPropagation?.();
-   detailPage=(detailPage+1)%pages;
-   renderDetails();
-  });
+  for(const [x,symbol,delta,identifier] of [
+   [511,'◀',-1,'torre2-report-previous'],
+   [580,'▶',1,'torre2-report-more']]){
+   label(x,280,symbol,13,'#f9de95',true);
+   const arrow=track(scene.add.zone(x,280,24,32)
+    .setDepth(depth+5).setInteractive({useHandCursor:true}));
+   arrow.setData?.(identifier,true);
+   arrow.on('pointerdown',(_p,_x,_y,event)=>{
+    event?.stopPropagation?.();
+    detailPage+=delta;renderDetails();
+   });
+  }
  }
  const caption=label(320,321,'CONTINUAR  ▶',13,'#201d16',true);
  const buttonBg=track(scene.add.graphics().setDepth(depth+3));

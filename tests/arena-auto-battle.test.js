@@ -567,3 +567,54 @@ test('Original Arena AUTO retains its manual fallback for missing native AI inpu
   'No Kanto telemetry or change to the original Arena fallback');
  s.handlers.get('shutdown')();
 });
+
+test('T19: healthy AUTO closes four-minute-style retreat gap against nearly fainted Sandshrew',()=>{
+ const geodude={x:800,y:200,hp:74,hpMax:109,
+  kit:{lmb:{alcance:70,pendiente:false}},est:{},cd:{lmb:0},energia:85,calor:0};
+ const sandshrew={x:400,y:200,hp:14,hpMax:94,est:{}};
+ const battle={datos:{torre2:{kind:'trainer',stage:1}},fase:'lucha',
+  luchadores:[geodude,sandshrew],efectos:[]};
+ const backwards={mx:1,my:0,ax:400,ay:200,lmb:false,rmb:false,
+  q:false,e:false,esp:false,mega:false};
+ const inputCopy={...backwards};
+ const resumed=pressureCampaignAutoInput(battle,geodude,backwards);
+ assert.ok(resumed.mx<-.90,
+  'Safe healthy fighter must approach a distant foe at 15% HP despite stale native retreat');
+ assert.equal(resumed.my,0);
+ assert.equal(resumed.lmb,false,'Cannot invent a cast outside native reach');
+ assert.deepEqual(backwards,inputCopy,'Never mutate native input');
+ // This only closes distance. It cannot set opponent HP, bonus damage,
+ // cooldown, energy, status, victory or saved player progress.
+ assert.equal(geodude.hp,74);assert.equal(sandshrew.hp,14);
+ assert.equal(geodude.cd.lmb,0);assert.equal(geodude.energia,85);
+ assert.strictEqual(pressureCampaignAutoInput({...battle,datos:{modo:'arena'}},
+  geodude,backwards),backwards,'Original Arena AUTO remains unchanged');
+});
+
+test('T19: weak, endangered or busy AUTO still respects native defensive retreat',()=>{
+ const actor={x:800,y:200,hp:74,hpMax:109,
+  kit:{lmb:{alcance:70}},est:{}};
+ const foe={x:400,y:200,hp:14,hpMax:94};
+ const battle={datos:{torre2:{kind:'trainer'}},fase:'lucha',luchadores:[actor,foe]};
+ const native={mx:1,my:0,ax:400,ay:200,lmb:false,rmb:false,q:false,
+  e:false,esp:false};
+ const original=JSON.stringify(native);
+ for(const condition of [
+  {actor:{hp:40}},
+  {foe:{hp:50}},
+  {scene:{efectos:[{vivo:true,dueno:foe,x:795,y:200}]}},
+  {scene:{fase:'intro'}}
+ ]){
+  const ours={...actor,...condition.actor};
+  const enemy={...foe,...condition.foe};
+  const state={...battle,...condition.scene,luchadores:[ours,enemy]};
+  assert.strictEqual(pressureCampaignAutoInput(state,ours,native),native,
+   'Defensive native retreat must remain authoritative outside a safe finishing opportunity');
+ }
+ const ready={...battle,luchadores:[actor,foe]};
+ for(const locked of [{...native,esp:true},{...native,q:true},{...native,rmb:true}]){
+  assert.strictEqual(pressureCampaignAutoInput(ready,actor,locked),locked,
+   'Never cancel dodge or legitimate attack to chase a weakened foe');
+ }
+ assert.equal(JSON.stringify(native),original);
+});

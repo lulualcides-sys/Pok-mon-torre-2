@@ -1,9 +1,7 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
-## T19 — aceite natural Misty (31/10/2026)
-- Entrada: artifact #13033958812 de CI verde #41178359400, formato `t19-earned-cerulean-ten-native-save-v1`, SHA-256 e `sourceSha=e0a63cd3`, trainer=10, stage=1, Rocha/TM39 e 36 vitórias.
-- Aceite: cinco vitórias naturais adicionais, Misty real Staryu→Starmie, Cascata, TM03, stage=2/trainer=0, XP e reload. Derrota ou timeout deixa CI vermelha e preserva diagnóstico; não alegar conclusão antecipada.
-
+## T19 — aceite natural Misty COMPROVADO na CI original (31/10/2026)
+- Run #41194363962, job #124517430468, arquivo `t19-earned-cerulean-misty-report.json` e artefato #13041220602: 15 treinadores naturais de Cerulean, Misty, Cascata, TM03, XP e reload no Phaser, `stage=2`, `trainer=0`, `wins=42`, `losses=0`; sem alteração da seed legítima. Regressão obrigatória no código atual pós T13/T14/T24 antes de merge.
 
 ## T19 — dez treinadores Cerulean com prova nativa (31/10/2026)
 - Aceite verificado no HEAD antigo: CI #41174200072 comprovou dez treinadores reais e save exportado, sem injetar progresso, com 36 vitórias acumuladas e zero derrotas. Revalidação obrigatória após sincronizar main; Misty/Cascata/TM03 fora do escopo deste lote.
@@ -111,3 +109,8 @@ Dado outro agente com PR aberta no mesmo componente, quando surge nova tarefa:
 
 ## T19 — aceite incremental cinco treinadores Cerulean (31/10/2026)
 Partir de um save exportado por campanha natural e comprovado por SHA-256; realizar cinco lutas reais no Phaser com cura via Centro, sem fixture de vitória, HP, XP ou níveis. A prova exige cinco vitórias, nenhuma derrota ocultada, trainer=5, estágio 1, Rocha/TM39 e persistência após reload. Não afirmar Misty/Cascata até vencer a líder em teste separado.
+
+
+## T31 — contrato do gate REA para TM03 (31/10/2026)
+- Ao testar cliente construído, comprar Water Pulse antes de vencer Misty deve falhar; estágio 2 sem Cascata também deve falhar; estágio 2 com Cascata e dinheiro suficiente deve permitir a compra e ensino ao Squirtle.
+- Aceite: preservar política atual de TM, saves, sprites, VFX e campanhas; regressão built-client e Chromium verdes no HEAD. O teste não concede insígnia a jogador real nem prova vitória sobre Misty.

@@ -1,9 +1,7 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
-## T19 — continuação natural Misty (31/10/2026)
-- #400 MERGED `693c4e8c`, CI #41178359400 SUCCESS: dez treinadores de Cerulean, 36 vitórias, zero derrotas, save genuíno artifact #13033958812. Não repetir Brock nem dez treinadores.
-- Branch `test/t19-cerulean-misty-native-20261031`: cinco treinadores restantes e Misty com save verificado SHA-256, clique Phaser, Centro, XP, Cascata, TM03 e reload. **CI pendente; não alegar Misty vencida.** Próxima frente independente T31 #402.
-
+## T19 — Misty provada no Phaser real (31/10/2026)
+- CI #41194363962 PASS: rota natural acumulada de 15 treinadores Cerulean, Misty, Cascata, TM03, XP e reload, 42 vitórias / 0 derrotas no save exportado de CI; artifact #13041220602. PR #403 sincronizada com main `70fabdee`, revalidação obrigatória no novo HEAD. Próxima etapa legítima: Lt. Surge / Vermilion a partir do save realmente conquistado; não usar saves fabricados e não repetir Brock/Cerulean.
 
 ## T19 — dez treinadores Cerulean reais, CI verde (31/10/2026)
 - PR #400 HEAD anterior `5bc77a761b`, CI natural #41174200072 SUCCESS, guardião #41174210095 e T25 #41174210051 SUCCESS. Save legítimo de Brock #41162666401, dez treinadores Cerulean, vitórias acumuladas 36, zero derrotas, XP e reload persistentes; artifact #13032891442 com save exportado. Nenhuma vitória/insígnia de Misty ou TM03 comprovada.
@@ -858,3 +856,9 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 - Reutilizar o **artefato genuíno** da CI #41162666401 (ID 13028307911, SHA-256 do save `865424a80bf46f5b43605c7cb193cf316805ad6453824b3fd7b9113748e17c18`), sem refazer os 13 treinadores e Brock em toda execução.
 - Teste novo somente navegador/CI: cinco treinadores Cerulean consecutivos com clique Phaser, Centro real, XP, save, UID, badges e TM inalteradas; derrotas reais fazem a CI falhar. Sem editar runtime, RNG, HP, XP, IA, sprites ou VFX. **Não validado até CI/Chromium GREEN; Misty/Cascata/TM03 permanecem pendentes.**
 - Próxima frente diferente: T07/T08 slots/learnsets comprovadamente faltantes, sem voltar ao T10.
+
+
+## T31 — REA built-client shop regression (31/10/2026)
+- RED real: main `ce38c4c2`, REA run #41175372696 falhou em `tests/solo-kanto-built.test.mjs:245`: fixture comprava TM03 com `stage=1` e sem Cascata, contrariando bloqueio correto da PR #384. Não há prova de defeito no runtime.
+- Branch `fix/t31-rea-tm-badge-regression-20261031`: regressão testa negativa antes de Misty, negativa sem insígnia mesmo no estágio 2 e positiva apenas após Cascata. Runtime/saves/loja intocados; workflow de build real + Chromium dedicado. **CI/merge/Pages pendentes** até prova do HEAD.
+- Frente anterior T08 #401 integrada com gates verdes; próxima frente independente T19 Misty. Não reabrir T10.

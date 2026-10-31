@@ -1,12 +1,11 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
-## T19 — cinco treinadores e Misty (31/10/2026)
-- [x] CI #41178359400 SUCCESS, save genuíno #13033958812, #400 integrada.
-- [x] Criar teste e workflow isolados, sem manipular progresso.
-- [ ] Validar cinco treinadores, Misty, Cascata, TM03, XP, reload e hash em Chromium real; investigar logs/screenshots se falhar.
-- [ ] Exigir CI completa, revisão, merge e Pages HTTP do SHA final.
-- [ ] Próxima frente diferente: T31 #402, não T10.
-
+## T19 — 15 treinadores Cerulean + Misty: marco comprovado (31/10/2026)
+- [x] Reutilizar save natural de 10 treinadores de CI #41178359400 com hash/cadeia preservados.
+- [x] Vencer cinco treinadores restantes, Misty e obter Cascata/TM03 no cliente Phaser; CI #41194363962 SUCCESS, 42 vitórias / 0 derrotas, XP, save e reload.
+- [x] Sincronizar sem modificar gameplay para main `70fabdee` com T13/T14/T24.
+- [ ] Workflow T19 + regressões de navegador e guardião no SHA sincronizado; revisar PR #403 e integrar apenas verde.
+- [ ] Confirmar GitHub Pages do commit integrado e avançar naturalmente para Lt. Surge/Vermilion.
 
 ## T19 — dez Cerulean, HEAD sincronizado (31/10/2026)
 - [x] CI natural #41174200072, visual #41174210095, T25 #41174210051 SUCCESS no HEAD antigo; artifact #13032891442.
@@ -161,3 +160,10 @@ Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funci
 - [x] Criado teste de cinco batalhas nativas + workflow com reutilização de artifact genuíno e SHA-256 estrito; sem gameplay editado.
 - [ ] Aguardar CI HEAD exato e guardião; examinar logs/screenshots, corrigir somente falhas comprovadas, sem aprovar antes do resultado.
 - [ ] Após prova, seguir até Misty/Cascata/TM03; não declarar rota completa nem Android físico.
+
+
+## T31 — REA TM03 gate (31/10/2026)
+- [x] Diagnosticar falha real do run #41175372696 e confrontar com política de insígnia da PR #384.
+- [x] Atualizar asserções negativas/positivas no teste existente sem alterar runtime; adicionar workflow focado.
+- [ ] Exigir CI GREEN do HEAD, Chromium, guardião, revisão, merge e Pages HTTP do SHA novo.
+- [ ] Frente seguinte DIFERENTE: T19 Misty/Cascata/TM03 por save natural, sem fixture de vitória.

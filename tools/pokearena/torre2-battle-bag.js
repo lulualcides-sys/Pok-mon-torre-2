@@ -6,6 +6,8 @@
 import {MART_ITEMS} from './route-data.js';
 import {readCampaign,saveCampaign} from './campaign-core.js';
 import {serializeGen3Status,MAIN_STATUS_KEYS} from './gen3-status.js';
+import {battlePotionUses,canUseBattlePotion,recordBattlePotionUse,BATTLE_POTION_LIMIT}
+ from './battle-bag-limits.js';
 
 export const BATTLE_BAG_ITEMS=Object.freeze([
  'potion','superpotion','antidote','paralyzeheal',
@@ -80,7 +82,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  if(!scene?.add||!party||!actor)return null;
  const depth=7400;
  let opened=false,target=party.playerIndex,lastUse=-Infinity,objects=[];
- let potionUses=0,committing=false;
+ let committing=false;
  scene.__torre2BattleBagSaveError=false;
  // Native Phaser can pan AND zoom while the party fights. The Bag uses
  // fixed 640x360 HUD coordinates, so both scroll and zoom must be canceled
@@ -150,7 +152,8 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   bg.fillStyle(0x142e43).fillRoundedRect(56,36,528,289,8);
   bg.lineStyle(2,0xd9b660).strokeRoundedRect(56,36,528,289,8);
   label(320,56,'BOLSA DE BATALHA',17,'#ffe2a2');
-  label(320,79,'POÇÕES '+potionUses+'/3 · ESCOLHA O ITEM',10,'#d1e6f4');
+  label(320,79,'POÇÕES '+battlePotionUses(party)+'/'+BATTLE_POTION_LIMIT+
+   ' · ESCOLHA O ITEM',10,'#d1e6f4');
   party.friend.slice(0,6).forEach((m,i)=>{
    const x=112+i*82,y=111;
    const selected=i===target,hp=clamp(i===party.playerIndex?
@@ -167,7 +170,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    const item=catalog.get(id);
    const qty=state?.inventory?.[id]||0;
    const x=index%2===0?210:433,y=155+Math.floor(index/2)*34;
-   const enabled=qty>0&&(item?.kind!=='heal'||potionUses<3);
+   const enabled=qty>0&&(item?.kind!=='heal'||canUseBattlePotion(party));
    const z=button(x,y,210,29,(item?.name||format(id))+'  x'+qty,()=>use(id),enabled);
    z?.setData('torre2-battle-bag-item',id);
   });
@@ -184,7 +187,9 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    scene.__torre2CaptureBusy||scene.__torre2BallTransitions){
    close();return;
   }
-  if(catalog.get(itemId)?.kind==='heal'&&potionUses>=3){draw('LIMITE DE 3 POÇÕES');return}
+  if(catalog.get(itemId)?.kind==='heal'&&!canUseBattlePotion(party)){
+   draw('LIMITE DE 3 POÇÕES POR BATALHA');return;
+  }
   const save=readCampaign();
   if(!save||save.stage!==scene.datos?.torre2?.stage||
    save.trainer!==scene.datos?.torre2?.trainer){close();return;}
@@ -204,7 +209,9 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   }finally{committing=false}
   if(!result.ok){draw(result.reason);return}
   scene.__torre2BattleBagSaveError=false;
-  if(catalog.get(itemId)?.kind==='heal')potionUses++;
+  // Persist only inside this encounter's existing party payload, AFTER
+  // the inventory save is committed. HUD reinstalls keep the finite cap.
+  if(catalog.get(itemId)?.kind==='heal')recordBattlePotionUse(party);
   if(active){
    actor.hp=Math.min(actor.hpMax,Math.max(1,actor.hpMax*result.toHp/100));
    if(result.clearStatus)delete actor.est?.[result.clearStatus];
