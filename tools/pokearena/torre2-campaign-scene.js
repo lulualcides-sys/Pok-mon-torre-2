@@ -37,6 +37,7 @@ import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
 import {originalBallSprite} from './ball-sprites.js';
 import {routeNode} from './route-data.js';
+import {kantoDexPageModel,pcPageModel,pcMemberLabel,PC_FILTERS} from './collection-ui.js';
 import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
@@ -1600,97 +1601,123 @@ create(){
   });
  }
  pcScreen(state,page=0){
-  // Native Phaser PC, storing and swapping caught Pokémon, fully persistent.
-  // A quota/private-mode failure must not escape the Phaser pointer handler
-  // as an uncaught exception: the atomic core operation has NOT mutated the
-  // party, so retain the selection and show a visible, retryable error.
+  // Read-only filtered PC presentation; all transfers address original box
+  // indexes, not filtered row indexes. Saves and team order never change here.
   const attemptTransfer=perform=>{
    try{
     const done=perform();
-    if(done)this.__torre2PcSaveError=null;
+    if(done){this.__torre2PcSaveError=null;this.__torre2PcNotice=null}
     return {done,blocked:false};
    }catch(error){
     console.warn('Torre 2 PC: checkpoint could not be saved',error);
-    this.__torre2PcSaveError='SALVAMENTO BLOQUEADO · EQUIPE PRESERVADA · VERIFIQUE O NAVEGADOR';
+    this.__torre2PcSaveError='SALVAMENTO BLOQUEADO · EQUIPE PRESERVADA · TENTE NOVAMENTE';
     return {done:false,blocked:true};
    }
   };
   this.children.removeAll(true);this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  this.pcFilter=PC_FILTERS.includes(this.pcFilter)?this.pcFilter:'ALL';
+  const boxView=pcPageModel(state,page,this.pcFilter);
+  const {page:safePage,pages:totalPages}=boxView;
   text(this,20,13,'CENTRO POKÉMON · PC',{...titleStyle,fontSize:'19px'});
-  this.button(549,21,155,28,'◀ CAMPANHA',()=>{this.pcSelected=null;this.scene.restart()});
-  text(this,22,52,'EQUIPE '+state.team.length+'/6',{color:C.gold,fontSize:'14px'});
-  text(this,330,52,'ARMAZENAMENTO '+state.box.length,{color:C.gold,fontSize:'14px'});
-  const totalPages=Math.max(1,Math.ceil(state.box.length/6));
-  const safePage=Math.max(0,Math.min(totalPages-1,page));
-  state.team.forEach((m,i)=>{
-   const y=79+i*34,selected=this.pcSelected===i,isActive=i===state.active;
-   this.button(164,y,281,29,(isActive?'◆ ':'')+m.id.toUpperCase()+
-    ' NV.'+(m.progression?.level??'?')+(selected?' [SELECIONADO]':''),()=>{
-     this.pcSelected=i===this.pcSelected?null:i;this.pcScreen(state,safePage);
-    },selected);
+  this.button(549,21,155,28,'◀ CAMPANHA',()=>{
+   this.pcSelected=null;this.__torre2PcNotice=null;this.scene.restart()
   });
-  const boxPage=state.box.slice(safePage*6,(safePage+1)*6);
-  boxPage.forEach((m,i)=>{
-   const actual=safePage*6+i,y=79+i*34;
-   this.button(466,y,277,29,m.id.toUpperCase()+' · NV.'+(m.progression?.level??'?'),()=>{
+  text(this,22,52,'EQUIPE '+state.team.length+'/6',{color:C.gold,fontSize:'14px'});
+  text(this,330,52,'ARMAZENAMENTO '+boxView.total+' · ✦ '+boxView.shiny,{
+   color:C.gold,fontSize:'12px'});
+  state.team.forEach((member,i)=>{
+   const y=79+i*34,selected=this.pcSelected===i;
+   this.button(164,y,281,29,pcMemberLabel(member,{
+    active:i===state.active,selected
+   }),()=>{
+    this.pcSelected=i===this.pcSelected?null:i;
+    this.__torre2PcNotice=null;this.pcScreen(state,safePage);
+   },selected).setData('torre2-pc-team-index',i);
+  });
+  boxView.rows.forEach(({member,actualIndex},i)=>{
+   const y=79+i*34;
+   this.button(466,y,277,29,pcMemberLabel(member),()=>{
     const result=attemptTransfer(()=>{
-     if(state.team.length<6)return withdrawPokemon(state,actual);
-     if(Number.isInteger(this.pcSelected))return swapPokemon(state,this.pcSelected,actual);
+     if(state.team.length<6)return withdrawPokemon(state,actualIndex);
+     if(Number.isInteger(this.pcSelected))
+      return swapPokemon(state,this.pcSelected,actualIndex);
      return false;
     });
     if(result.done)this.pcSelected=null;
-    else if(!result.blocked)state.lastMessage='Selecione um Pokémon da equipe para trocar.';
-    this.pcScreen(state,Math.min(safePage,Math.max(0,Math.ceil(state.box.length/6)-1)));
-   });
+    else if(!result.blocked)
+     this.__torre2PcNotice='EQUIPE CHEIA · SELECIONE UM POKÉMON À ESQUERDA';
+    this.pcScreen(state,Math.min(safePage,Math.max(0,
+     Math.ceil(boxView.matched/6)-1)));
+   }).setData('torre2-pc-box-index',actualIndex);
   });
-  if(!boxPage.length)text(this,342,94,'PC VAZIO · CAPTURE POKÉMON',statusStyle);
+  if(!boxView.rows.length)text(this,344,103,boxView.total?
+   'NENHUM POKÉMON NESTE FILTRO':'PC VAZIO · CAPTURE POKÉMON',statusStyle);
+  // Four one-tap filters on the native Phaser screen; never alter box order.
+  for(const [i,filter] of PC_FILTERS.entries()){
+   const buttonLabel={ALL:'TODOS',SHINY:'✦ SHINY',KO:'KO',STATUS:'STATUS'}[filter];
+   this.button(363+i*69,282,65,26,buttonLabel,()=>{
+    this.pcFilter=filter;this.__torre2PcNotice=null;this.pcScreen(state,0);
+   },boxView.filter===filter,9).setData('torre2-pc-filter',filter);
+  }
   this.button(121,310,195,29,'GUARDAR SELECIONADO',()=>{
    const result=attemptTransfer(()=>storePokemon(state,this.pcSelected));
    if(!result.done&&!result.blocked)
-    state.lastMessage='Selecione um Pokémon; mantenha pelo menos um na equipe.';
+    this.__torre2PcNotice='SELECIONE UM POKÉMON · MANTENHA UM NA EQUIPE';
    if(result.done)this.pcSelected=null;
    this.pcScreen(state,safePage);
-  });
-  this.button(337,310,111,29,'◀ ANTERIOR',()=>this.pcScreen(state,(safePage-1+totalPages)%totalPages));
-  this.button(451,310,104,29,(safePage+1)+' / '+totalPages,()=>this.pcScreen(state,0));
-  this.button(568,310,119,29,'PRÓXIMA ▶',()=>this.pcScreen(state,(safePage+1)%totalPages));
-  text(this,20,345,this.__torre2PcSaveError||
-   'Equipe cheia? Selecione alguém à esquerda e clique no PC para trocar.',{
-   fontSize:'10px',color:this.__torre2PcSaveError?'#ff9aa8':C.muted});
+  }).setData('torre2-pc-store',true);
+  this.button(337,310,111,29,'◀ ANTERIOR',()=>
+   this.pcScreen(state,(safePage-1+totalPages)%totalPages))
+   .setData('torre2-pc-prev',true);
+  this.button(451,310,104,29,(safePage+1)+' / '+totalPages,()=>
+   this.pcScreen(state,0)).setData('torre2-pc-page',safePage);
+  this.button(568,310,119,29,'PRÓXIMA ▶',()=>
+   this.pcScreen(state,(safePage+1)%totalPages))
+   .setData('torre2-pc-next',true);
+  const notice=this.__torre2PcSaveError||this.__torre2PcNotice||
+   (boxView.filter==='ALL'?
+    'EQUIPE CHEIA? SELECIONE À ESQUERDA E TROQUE PELO PC.':
+    boxView.matched+' DE '+boxView.total+' NO FILTRO '+boxView.filter);
+  text(this,20,345,notice,{
+   fontSize:'10px',color:this.__torre2PcSaveError?'#ff9aa8':
+    this.__torre2PcNotice?'#ffdb94':C.muted});
  }
  dexScreen(state){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
-  text(this,ANCHO/2,18,'POKÉDEX DE KANTO · '+KANTO_DEX.length+' ESPÉCIES',
-    {...titleStyle,fontSize:'18px'}).setOrigin(.5,0);
-  const supported=new Set(ROSTER.flatMap(p=>[p.id,...(p.evoluciones||[]).map(x=>x.nombre.toLowerCase())]));
-  text(this,ANCHO/2,47,'VISTOS '+(state.dexSeen?.length??0)+'  ·  CAPTURADOS '+(state.dexCaught?.length??0)+
-   '  ·  Somente espécies integradas entram em batalha.',statusStyle).setOrigin(.5);
-  if((state.dexShinySeen||[]).length)
-   text(this,ANCHO/2,61,'✦ SHINY AVISTADOS '+state.dexShinySeen.length+
-    ' · CAPTURADOS '+(state.dexShinyCaught?.length??0),{
+  const supported=ROSTER.flatMap(p=>[p.id,
+   ...(p.evoluciones||[]).map(x=>x.nombre)]);
+  const view=kantoDexPageModel(state,KANTO_DEX,supported,this.dexPage||0);
+  this.dexPage=view.page;
+  text(this,ANCHO/2,18,'POKÉDEX DE KANTO · '+view.totals.all+' ESPÉCIES',
+   {...titleStyle,fontSize:'18px'}).setOrigin(.5,0);
+  text(this,ANCHO/2,47,'VISTOS '+view.totals.seen+
+   ' · CAPTURADOS '+view.totals.caught+
+   ' · Somente espécies integradas entram em batalha.',statusStyle).setOrigin(.5);
+  if(view.totals.shinySeen)
+   text(this,ANCHO/2,61,'✦ SHINY AVISTADOS '+view.totals.shinySeen+
+    ' · CAPTURADOS '+view.totals.shinyCaught,{
     ...statusStyle,color:'#f0d789',fontSize:'9px'}).setOrigin(.5);
-  const page=Math.min(this.dexPage||0,6);
-  for(let i=0;i<22;i++){
-   const index=page*22+i;if(index>=KANTO_DEX.length)break;
-   const raw=KANTO_DEX[index];
-   const slug=raw==='Nidoran♀'?'nidoran-f':raw==='Nidoran♂'?'nidoran-m':raw.toLowerCase();
-   const ready=supported.has(slug),caught=(state.dexCaught||[]).includes(slug);
-   const seen=caught||(state.dexSeen||[]).includes(slug);
+  view.rows.forEach((row,i)=>{
    const x=35+(i>=11?295:0),y=75+(i%11)*21;
-   const shinyCaught=(state.dexShinyCaught||[]).includes(slug);
-   const shinySeen=shinyCaught||(state.dexShinySeen||[]).includes(slug);
-   // Regular caught species keep their original ★. ✦ is reserved for a
-   // recorded Shiny sighting; never claim a Shiny capture from sighting.
-   const marker=shinyCaught?' ✦ SHINY':shinySeen?' ✦':caught?' ★':seen?' ◦':ready?' ✓':'';
-   text(this,x,y,String(index+1).padStart(3,'0')+'. '+raw+marker,{
-    fontSize:'11px',color:shinyCaught?'#f5db86':caught?C.gold:seen?C.blue:C.muted});
-  }
-  this.button(91,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
-  this.button(360,329,160,31,'PÁGINA '+(page+1)+'/7',()=>{
-   this.dexPage=(page+1)%7;this.dexScreen(state);
+   const marker=row.shinyCaught?' ✦ SHINY':row.shinySeen?' ✦':
+    row.caught?' ★':row.seen?' ◦':row.ready?' ✓':'';
+   text(this,x,y,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
+    fontSize:'11px',color:row.shinyCaught?'#f5db86':
+     row.caught?C.gold:row.seen?C.blue:C.muted
+   }).setData('torre2-dex-id',row.id);
   });
+  this.button(82,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
+  this.button(236,329,133,31,'◀ ANTERIOR',()=>{
+   this.dexPage=(view.page-1+view.pages)%view.pages;this.dexScreen(state);
+  }).setData('torre2-dex-prev',true);
+  text(this,382,328,'PÁG. '+(view.page+1)+'/'+view.pages,{
+   color:C.gold,fontSize:'12px'}).setOrigin(.5,0);
+  this.button(543,329,141,31,'PRÓXIMA ▶',()=>{
+   this.dexPage=(view.page+1)%view.pages;this.dexScreen(state);
+  }).setData('torre2-dex-next',true);
  }
+
 }
 export {Campanha};

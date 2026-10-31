@@ -49,7 +49,33 @@ const server=http.createServer(async(req,res)=>{
    if(wild){s.pendingWild=null;core.startWildEncounter(s,()=>0);}
    window.__pt2Game.scene.getScene('campanha').enterBattle(s,wild);
   },{wild,full});
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,null,{timeout:20000});
+  // Kanto's 2.5 s VS and Phaser PMD asset warmup are asynchronous. Under
+  // shared SwiftShader runners, 20s can expire before the first actor binds.
+  // Keep a finite strict deadline and log actual scene/loader state on failure;
+  // do NOT pretend a battle started or skip any assertion.
+  try{
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&
+    window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,
+    null,{timeout:45000});
+  }catch(error){
+   try{
+    const diagnosis=await page.evaluate(()=>{
+     const game=window.__pt2Game;
+     return {scenes:game?.scene?.scenes?.map(s=>({
+      key:s.sys?.settings?.key,active:s.scene?.isActive?.(),
+      phase:s.fase,loading:s.load?.isLoading?.(),
+      partyInstalled:!!s.__torre2PartyInstalled,
+      fighters:s.luchadores?.length
+     })),prewarm:game?.__torre2BattlePrewarm||null,
+     battleAttach:!!game?.__torre2BattleAttach};
+    });
+    console.error('MASTER PATCH BATTLE START DIAG',JSON.stringify({
+     diagnosis,pageErrors:errors,wild,full
+    }));
+    await page.screenshot({path:'test-evidence/master-start-timeout.png'});
+   }catch(diagnosticError){console.error('MASTER DIAGNOSTIC FAILED',String(diagnosticError));}
+   throw error;
+  }
   await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.luchadores.forEach(a=>a.inmortal=true);});
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').fase==='lucha',null,{timeout:12000});
  };
