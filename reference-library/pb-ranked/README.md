@@ -5,7 +5,21 @@
 
 **Escopo solicitado:** exclusivamente conteúdo de gameplay individual, sem PvP online, ranking ou multiplayer humano; a autenticação foi efetuada legitimamente pelo usuário no perfil privado do TinyFish para o treino contra bot. O titular do projeto informou autorização de acesso e uso **não comercial** para estudo. Não publicar arquivos brutos do jogo nem misturar ativos de terceiros no GitHub Pages sem comprovação do alcance dessa licença.
 
-## Última partida contra bot — Lapras (31/10/2026)
+## ATUALIZAÇÃO MAIS RECENTE — lote de 45 golpes com uso relatado (31/10/2026)
+
+**Cobertura atual dos testes recentes:** **45/245 nomes de golpes** tiveram uso relatado dentro de partidas Practice vs Bot. Restam **200/245 sem uso relatado**. O cliente público contém **283 nomes**, sendo **38 fora do elenco público**; o número de VFX completos extraídos é **zero**.
+
+### Novas partidas realizadas
+- [Magnezone, Torkoal, Toxicroak — 11 golpes diferentes usados, 10 nomes inéditos](RESULTADO-QUINTA-PARTIDA-MAGNEZONE-TORKOAL-TOXICROAK.json). `Mud Bomb` não foi lançado. O agente relatou vitória **e** desmaio de toda a equipe, resultados inconsistentes: não registrar como vitória verificada.
+- [Rillaboom, Scyther, Tauros — 12 usos diferentes relatados, 11 nomes inéditos](RESULTADO-SEXTA-PARTIDA-RILLABOOM-SCYTHER-TAUROS.json). O agente relatou oito cliques manuais e quatro usos no AUTO. Resultado final não informado. Sem confirmação quadro a quadro.
+- [Estado cumulativo por nome, tipo e proteção de VFX aprovado](PROGRESSO-GOLPES-283-2026-10-31.json) e [log cronológico](LOG-PARTIDAS-EM-LOTES-2026-10-31.json).
+- [Pesquisa do código público explicou o rótulo Unranked durante fila de Practice vs Bot](ROTAS-PRACTICE-E-UNRANKED-VERIFICADAS.md). O botão Practice envia modo `practice` e dificuldade; a etiqueta Unranked pode ser genérica.
+
+**Qualidade da evidência:** `uso relatado pelo agente` não é `animação exata reproduzida`. As 45 entradas não autorizam copiar sprites/efeitos proprietários, nem alterar os 45 efeitos sobrepostos à política de aprovação do Pokémon Torre 2. **Nenhuma mudança na versão publicada.**
+
+---
+
+## Última partida contra bot — Lapras (registro histórico anterior) —  (31/10/2026)
 
 A [sessão autenticada mais recente](https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32) observou três ações manuais de Lapras: **Ice Beam**, **Sing** e **Body Slam**. A partida ainda estava em andamento quando o agente saiu; não foi registrada vitória nem derrota. A descrição de partículas de gelo no Body Slam **não é prova do VFX desse golpe**, pois pode haver sobreposição de efeitos de ataques concorrentes.
 
