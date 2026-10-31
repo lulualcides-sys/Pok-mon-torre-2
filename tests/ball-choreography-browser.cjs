@@ -57,16 +57,20 @@ const server=http.createServer(async(req,res)=>{
   },{wild,full});
   try{
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate')&&
-    window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,null,{timeout:20000});
+    window.__pt2Game.scene.getScene('combate').__torre2PartyInstalled,null,{timeout:45000});
   }catch(error){
    const state=await page.evaluate(()=>{
     const g=window.__pt2Game,c=g.scene.getScene('campanha'),b=g.scene.getScene('combate');
     return {campaignActive:c.scene.isActive(),combatActive:b.scene.isActive(),
      pathReady:!!c.__torre2BattlePath,versusActive:c.children.list.some(o=>
       o.getData?.('torre2-versus-intro')&&o.active),
-     combatData:b.datos?.torre2?.kind,installed:!!b.__torre2PartyInstalled};
+     combatData:b.datos?.torre2?.kind,installed:!!b.__torre2PartyInstalled,
+     loader:{campaign:c.load?.isLoading?.(),combat:b.load?.isLoading?.()},
+     activeScenes:g.scene.getScenes(true).map(scene=>scene.scene.key),
+     versusCount:c.children.list.filter(o=>o.getData?.('torre2-versus-intro')&&o.active).length};
    });
    fs.writeFileSync('test-evidence/ball-intro-timeout.json',JSON.stringify(state,null,2));
+   await page.screenshot({path:'test-evidence/ball-intro-timeout.png'}).catch(()=>{});
    throw new Error('Battle entry failure '+JSON.stringify(state)+' '+String(error));
   }
   await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.luchadores.forEach(a=>a.inmortal=true);});

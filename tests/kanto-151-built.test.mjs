@@ -35,7 +35,13 @@ for(const p of KANTO_151){
    assert.ok(equipped.every(slot=>kit[slot].torre2IntroPractice===true&&
     kit[slot].dano<=12),'Ditto cannot borrow unrelated full-power attacks');
   }else assert.ok(equipped.length>=1,'No real move at all: '+p.id);
-  assert.equal(kit.esp?.forma,'dash');
+  // T13 uses a real installed P2 dash/flight ESP, not necessarily 'Dodge'.
+  assert.ok(['dash','vuelo'].includes(kit.esp?.forma),
+   'Missing real native campaign ESP: '+p.id);
+  assert.ok(Number.isFinite(kit.esp.cd)&&kit.esp.cd>0,
+   'Invalid real ESP cooldown: '+p.id);
+  assert.ok(!equipped.some(slot=>kit[slot]?.nombre===kit.esp.nombre),
+   'ESP duplicates equipped attack: '+p.id);
   const e=etapa?def.evoluciones[etapa-1]:def;
   assert.ok([e.hp,e.vel,e.atk,e.def].every(Number.isFinite),
    'No invalid NaN stat allowed: '+p.id);
