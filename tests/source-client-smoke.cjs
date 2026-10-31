@@ -478,9 +478,12 @@ const server=http.createServer(async(req,res)=>{
    const nodes=c.children.list.filter(o=>o.type==='Zone'&&
     Number.isInteger(o.getData?.('torre2-path-node')));
    const types=nodes.map(o=>o.getData('torre2-path-type'));
+   const captureBadges=c.children.list.filter(o=>o.type==='Zone'&&
+    Number.isInteger(o.getData?.('torre2-path-capture')))
+    .map(o=>o.getData('torre2-path-capture')).sort((a,b)=>a-b);
    const count=nodes.filter(o=>o.input?.enabled).length;
    const cta=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
-   return {nodes:nodes.length,types,progress:p.progress,total:p.total,
+   return {nodes:nodes.length,types,captureBadges,progress:p.progress,total:p.total,
     badge:labels.includes('0/8 INSÍGNIAS'),money:labels.includes('$1920'),
     team:c.children.list.filter(o=>o.type==='Image'&&
      String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
@@ -495,8 +498,10 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(road.total,13,'Brock still has 13 required trainers');
   assert.equal(road.nodes,14,'Thirteen trainer checkpoints plus Brock leader');
   assert.ok(road.types.includes('rival')&&road.types.includes('rocket')&&
-   road.types.includes('capture')&&road.types.includes('leader'),
-   'Battle Path presents rival, Rocket, optional wild capture and leader');
+   road.types.includes('leader')&&!road.types.includes('capture'),
+   'T24 keeps rival, Rocket and leader as native trainer/gym checkpoints');
+  assert.deepEqual(road.captureBadges,[2,8],
+   'T24 exposes optional wild capture in separate zones at trainers 3 and 9');
   assert.ok(road.title&&road.button&&road.banner&&road.environment,
    'Battle hub displays original Pewter art, a compact team and fight CTA');
   assert.ok(road.gym?.realExterior&&road.gym?.realGym,
