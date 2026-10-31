@@ -1,0 +1,96 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31T18:35:19.681Z",
+  "publicScripts": [
+    {
+      "source": "/app.js",
+      "bytes": 191766,
+      "ast_nodes": 33743,
+      "strings": 2818,
+      "templates": 303
+    },
+    {
+      "source": "/ranks.js",
+      "bytes": 4766,
+      "ast_nodes": 597,
+      "strings": 21,
+      "templates": 5
+    },
+    {
+      "source": "/cosmetics.js",
+      "bytes": 7354,
+      "ast_nodes": 829,
+      "strings": 240,
+      "templates": 0
+    },
+    {
+      "source": "/audio.js",
+      "bytes": 6946,
+      "ast_nodes": 1161,
+      "strings": 8,
+      "templates": 2
+    },
+    {
+      "source": "/grid.js",
+      "bytes": 6663,
+      "ast_nodes": 1176,
+      "strings": 62,
+      "templates": 9
+    },
+    {
+      "source": "/roster.js",
+      "bytes": 4162,
+      "ast_nodes": 526,
+      "strings": 47,
+      "templates": 0
+    },
+    {
+      "source": "/backdrop.js",
+      "bytes": 4082,
+      "ast_nodes": 643,
+      "strings": 11,
+      "templates": 4
+    },
+    {
+      "source": "/achievements.js",
+      "bytes": 4324,
+      "ast_nodes": 668,
+      "strings": 82,
+      "templates": 16
+    },
+    {
+      "source": "/abilities.js",
+      "bytes": 6295,
+      "ast_nodes": 211,
+      "strings": 97,
+      "templates": 0
+    },
+    {
+      "source": "/controls.js",
+      "bytes": 10592,
+      "ast_nodes": 1686,
+      "strings": 199,
+      "templates": 8
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "bytes": 5967574,
+      "ast_nodes": 2379232,
+      "strings": 49756,
+      "templates": 1584
+    }
+  ],
+  "failures": [],
+  "observedResourceCount": 171,
+  "staticAssetReferences": 34,
+  "mechanicIdentifiers": 503,
+  "assetCountPerCategory": {
+    "pokeball": 0,
+    "trainers": 5,
+    "arenas": 2,
+    "animation": 5,
+    "vfx-audio": 9,
+    "other": 13
+  },
+  "warning": "Public JS identifiers and paths only; no login, match, captured animation, original assets, or license inferred."
+}

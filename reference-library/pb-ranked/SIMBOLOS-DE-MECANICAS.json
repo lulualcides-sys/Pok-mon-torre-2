@@ -1,0 +1,4739 @@
+{
+  "metadata": {
+    "source": "https://ranked.pokemonbattlegrounds.com",
+    "date": "2026-10-31T18:35:19.681Z",
+    "publicScripts": [
+      {
+        "source": "/app.js",
+        "bytes": 191766,
+        "ast_nodes": 33743,
+        "strings": 2818,
+        "templates": 303
+      },
+      {
+        "source": "/ranks.js",
+        "bytes": 4766,
+        "ast_nodes": 597,
+        "strings": 21,
+        "templates": 5
+      },
+      {
+        "source": "/cosmetics.js",
+        "bytes": 7354,
+        "ast_nodes": 829,
+        "strings": 240,
+        "templates": 0
+      },
+      {
+        "source": "/audio.js",
+        "bytes": 6946,
+        "ast_nodes": 1161,
+        "strings": 8,
+        "templates": 2
+      },
+      {
+        "source": "/grid.js",
+        "bytes": 6663,
+        "ast_nodes": 1176,
+        "strings": 62,
+        "templates": 9
+      },
+      {
+        "source": "/roster.js",
+        "bytes": 4162,
+        "ast_nodes": 526,
+        "strings": 47,
+        "templates": 0
+      },
+      {
+        "source": "/backdrop.js",
+        "bytes": 4082,
+        "ast_nodes": 643,
+        "strings": 11,
+        "templates": 4
+      },
+      {
+        "source": "/achievements.js",
+        "bytes": 4324,
+        "ast_nodes": 668,
+        "strings": 82,
+        "templates": 16
+      },
+      {
+        "source": "/abilities.js",
+        "bytes": 6295,
+        "ast_nodes": 211,
+        "strings": 97,
+        "templates": 0
+      },
+      {
+        "source": "/controls.js",
+        "bytes": 10592,
+        "ast_nodes": 1686,
+        "strings": 199,
+        "templates": 8
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "bytes": 5967574,
+        "ast_nodes": 2379232,
+        "strings": 49756,
+        "templates": 1584
+      }
+    ],
+    "failures": [],
+    "observedResourceCount": 171,
+    "staticAssetReferences": 34,
+    "mechanicIdentifiers": 503,
+    "assetCountPerCategory": {
+      "pokeball": 0,
+      "trainers": 5,
+      "arenas": 2,
+      "animation": 5,
+      "vfx-audio": 9,
+      "other": 13
+    },
+    "warning": "Public JS identifiers and paths only; no login, match, captured animation, original assets, or license inferred."
+  },
+  "symbols": [
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "/assets/arena/meteorfalls_tiles.json",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "/backdrop.js",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "arena",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/backdrop.js",
+      "name": "arena",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "arena",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "ARENA TRAP",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "arenaName",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "arenaName",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "arenaOptions",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "arenaPick",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "arenaPref",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "ARENAS",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "ARENAS",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "assets/arena/meteorfalls_tiles.png",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "backdrop",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/backdrop.js",
+      "name": "backdrop battle failed",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "camera",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "cameraman",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "cupArena",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "preventScroll",
+      "kind": "object-key",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Random arena",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "Random arena",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "random arenas",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Random arenas",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "roomArena",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "scroll",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "stage",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "stage",
+      "kind": "object-key",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "STAGE14",
+      "kind": "object-key",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "STAGE17",
+      "kind": "object-key",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "STAGE18",
+      "kind": "object-key",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "startBackdrop",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/backdrop.js",
+      "name": "startBackdrop",
+      "kind": "identifier",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "The host picks the arena",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "vgcstage",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/cosmetics.js",
+      "name": "VS background",
+      "kind": "literal",
+      "groups": [
+        "arena-camera"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Blast Burn",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "block",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "block",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "blocked",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "blocks",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "burn",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Burn it all... Overheat.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Burning Bulwark",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Cannot be burned.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Cannot be burned.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Cannot be paralysed.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Cannot be paralysed.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Cannot be poisoned.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Cannot be poisoned.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Cannot fall asleep.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Cannot fall asleep.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Cotton Guard",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Cross Poison",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "d18c_burn",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "d18e_freeze_field",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "d18tv_burning_tide",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Dauntless Shield",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dauntless Shield",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbmd_dome_block",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbt_burnout",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbva_freeze_race",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbva_sleep_fall",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "eruptBlock",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "EventSleep",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "freeze",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Freeze-Dry",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "freezeDrop",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "freezes",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "freezeStream",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "guard",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "guarding",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "guards",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "guardStyle",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "iceBeamFreezeStream",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "lastBlock",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "lg13z_freeze",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "MAGIC GUARD",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "magicGuard",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "NO GUARD",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "og11mb_rot_freeze",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "poison",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/grid.js",
+      "name": "poison",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/achievements.js",
+      "name": "poison",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "poison",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Poison Fang",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Poison Jab",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Poison Point",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Poison Point",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Poison Touch",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Poison Touch",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "POISON TOUCH",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "poisonFang",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "setWeather",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Shadow Shield",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shadow Shield",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shell Guard",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "shellGuard",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "shield",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "SHIELD DUST",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shield Ram",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "shieldBlocks",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "slabBlock",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sleep",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sleep Powder",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "SLEEP STORM",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sleep... Hypnosis.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "sleepStorm",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Spiky Shield",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "The effects of the weather disappeared.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "THE WEATHER CLEARED.",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "waterWallVsBlastBurn",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "weather",
+      "kind": "object-key",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "xGuard",
+      "kind": "literal",
+      "groups": [
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "agilityDodge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "askDodge",
+      "kind": "identifier",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "bbcrunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "beatsRun",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "chop",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "CROSSFIRE DASH",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crossfireDash",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crunchCraw",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crunches",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crunchGator",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crunchMight",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crunchSnorlax",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "crunchWal",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "darkPulseDodge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dash",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "DASH",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dash-in",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dash-out",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dashFx9",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dashReady",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbj_dragon_pulse",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbmb_dragon_bite",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbmb_dragon_charge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbmb_dragon_fire",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbv4g_crunch_chomp",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbv4g_crunch_slam",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbv4r_tw_crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dbvb_dash_rev",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "dodge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "dodge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dodge",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Dodge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "dodgeBtn",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dodged",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dodges",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "drag",
+      "kind": "identifier",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "drag",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Drag to change the order",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragapult",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "DRAGAPULT",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragapultL",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragapultM8L",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "dragging",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "dragon",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/grid.js",
+      "name": "dragon",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/achievements.js",
+      "name": "dragon",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragon",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Ascent",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Breath",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Claw",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Claw/combo",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Claw/dive",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Claw/rush",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Dance",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Dance X",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Darts",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Pulse",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "DRAGON PULSE",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "DRAGON RIDER",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Rush",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "DRAGON TWIN",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragon_charge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragonClawKnockback",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragonDanceGator",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragonGlow",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "DRAGONITE",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragoniteL",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragoniteM",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragonPulseKingdra",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragonRider",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "dragonTwin",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "dragstart",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Drill Run",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "duelSteer",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "grunt",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "homeRun",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "hop",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Hop",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Hop",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "It is running.",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Karate Chop",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "karateChopsMiss",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "lg13r3d_jaw_crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "lm17_rock_dash",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8_claw_dash",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8_wing_crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8b_flip_dash",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8sc_drag_charge",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8sc_drag_fire",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8sc_drag_hit",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8ti_ape_dash",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8ti_uturn_dash",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8x_lax_grunt",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "MEGA DRAGONITE",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "mewDodges",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "mf_e_crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "mf4_dragon_roar",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "og11_chop",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "recoverUntil",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "reposition",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "run",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "rune",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "runeA",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "running",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "runThrough",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "s19r_espeed_dash",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "SHADOW DRAGON",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "shadowDragon",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "shop",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "st27pa_wing_crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "st27pb_moon_crunch",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "st27pb_quake_run",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Starts as soon as __dynamic__ is here (walkover in __dynamic__ s).",
+      "kind": "template",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "steer",
+      "kind": "identifier",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "steer",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "STEER",
+      "kind": "identifier",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "STEER",
+      "kind": "identifier",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Steer down",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Steer left",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Steer right",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Steer up",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "steer14",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "steer14k",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "steerFromKeys",
+      "kind": "identifier",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "steering",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "tapSteerTick",
+      "kind": "identifier",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Throat Chop",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "TIP_HOP4",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "TIP_HOP7",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "trunk",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "trunkDk",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "trunkHi",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walk",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Walk",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walker",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walkHi",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walking",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walkJoint",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walkLo",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Walkover (did not show up)",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Walkover (left)",
+      "kind": "literal",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walks",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "walkW",
+      "kind": "object-key",
+      "groups": [
+        "movement"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "__dynamic__ already knows __dynamic__ moves. Tap one of them to drop it first.",
+      "kind": "template",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "__dynamic__ joined your team__dynamic__. Tap it in your team to change its moves.",
+      "kind": "template",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "__dynamic__ more move__dynamic__",
+      "kind": "template",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "__dynamic__ needs __dynamic__ moves (__dynamic__ picked)",
+      "kind": "template",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": ".moves",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "askMove",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Ball and bomb moves miss it.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ball and bomb moves miss it.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Dark moves raise its Attack.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dark moves raise its Attack.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Electric moves heal it instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Electric moves heal it instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Electric moves raise its Sp. Atk instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Electric moves raise its Sp. Atk instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Electric moves raise its Speed instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Electric moves raise its Speed instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Fire moves sharply raise its Defense instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Fire moves sharply raise its Defense instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "friendRemove",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "gmaxMovesM8",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Grass moves raise its Attack instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Grass moves raise its Attack instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Ground moves heal it instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ground moves heal it instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Ground moves miss it.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ground moves miss it.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Its Mega form keeps these moves.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "koMove",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "legalMoves",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "legalMoves",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Mirror Move",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "move",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/grid.js",
+      "name": "move",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "move",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Move 1",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Move 2",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Move 3",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Move 4",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "move placeholder",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/achievements.js",
+      "name": "Move types",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "move__dynamic__",
+      "kind": "template",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move1",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move2",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move3",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move4",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move5",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move6",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move7",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "move8",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "moveButton",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "moveInfo",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "moveMeta",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "moveMon",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "moveName",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "moveName",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "moveOf",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "moves",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "moves",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Moves",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Moves half as strong at 1/2 HP or less.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Moves half as strong at 1/2 HP or less.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Moves of its own types hit even harder.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Moves of its own types hit even harder.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "moves14",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "moves18",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "movesWanted",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "movesWanted",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "moveTo",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "msmove",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "msmoves",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "notMoves",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "onMove",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Physical moves twice as strong.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Physical moves twice as strong.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "pickedMoves",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "pmove",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "pointermove",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Remove",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Remove __dynamic__",
+      "kind": "template",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Remove __dynamic__ from the team",
+      "kind": "template",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Remove from team",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "removeX",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "sendMoves",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Takes half damage from physical moves.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Takes half damage from physical moves.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Takes half damage from special moves.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Takes half damage from special moves.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "touchmove",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "updateMoves",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "updateMovesDbl",
+      "kind": "identifier",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "wantMove",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Water moves heal it instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Water moves heal it instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Water moves raise its Sp. Atk instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Water moves raise its Sp. Atk instead.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Your opponent moved on.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "zmove",
+      "kind": "object-key",
+      "groups": [
+        "movement",
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Its contact moves may poison.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Its contact moves may poison.",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Grunt Throw",
+      "kind": "literal",
+      "groups": [
+        "movement",
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "A knockout raises its Attack.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "A knockout raises its Attack.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "ability",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Ability",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "abilityName",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "abilityText",
+      "kind": "identifier",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "abilityText",
+      "kind": "identifier",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Adaptability",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Adaptability",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "ADAPTABILITY",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Ash-Greninja ability",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Attack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/grid.js",
+      "name": "Attack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Attack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "ATTACK",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "cast",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "castAnim",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "castAt",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "cooldown",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "coverRange",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "flameChargeVsSkyAttack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Hurts attackers that touch it.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Hurts attackers that touch it.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "inRange",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Its Attack cannot be lowered by the opponent.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Its Attack cannot be lowered by the opponent.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Long range",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Mega ability",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Mid range",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Multi-Attack",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "nextAttack",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "noAbility",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "nscastle",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "nscastle",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "orange",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "projectile",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Quick Attack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "quickAttack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Raises Attack or Sp. Atk when it comes in.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Raises Attack or Sp. Atk when it comes in.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Raises Attack when it comes in.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Raises Attack when it comes in.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "range",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sky Attack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "SpAttack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Tri Attack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Wing Attack",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "wingAttackSrc",
+      "kind": "object-key",
+      "groups": [
+        "pokemon-attack"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Contact may burn the attacker.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Contact may burn the attacker.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Contact may paralyse the attacker.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Contact may paralyse the attacker.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Contact may poison the attacker.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Contact may poison the attacker.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Switches between Blade and Shield Forme as it attacks and defends.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "trainer-pokeball",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Switches between Blade and Shield Forme as it attacks and defends.",
+      "kind": "literal",
+      "groups": [
+        "pokemon-attack",
+        "trainer-pokeball",
+        "defense-status"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "/trainers.json",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "/trainers.json",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "aa12a_bide_release",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "aa12a_giant_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "ace_trainer_f",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "ace_trainer_m",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "ap28mc_shard_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "askSwitch",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "assets/trainers/__dynamic__.png",
+      "kind": "template",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "bideRelease",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "cutSlicesFlamethrower",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "eruptThrow",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Flamethrower",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "FLAMETHROWER",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Flamethrower/strafe",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Flamethrower/stream",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Flamethrower/sweep",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "flamethrowerAir",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "flamethrowerCam",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "flamethrowerGroudon",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "flamethrowerSweepsClones",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "flamethrowerWeez",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "giantRelease",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ground throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Heals 1/3 of its HP when switched out.",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Heals 1/3 of its HP when switched out.",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Horn Throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "hornThrow",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "hornThrown",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "lastSwitch",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "lg13r3c_puff_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "LOCKED_TRAINERS",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/cosmetics.js",
+      "name": "LOCKED_TRAINERS",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8sc_focus_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "m8ti_rock_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "maxSwitches",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "No friends yet. Add one by their trainer name above.",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "noSwitch",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Pick your trainer name.",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "profTrainers",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "psyThrow",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "st27pa_pod_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "st27pb_mane_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "st27pd_core_release",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "st27pd_psy_throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/abilities.js",
+      "name": "Status conditions go away when switched out.",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Status conditions go away when switched out.",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "switch",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "switch",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Switch into this spot",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Switch to __dynamic__",
+      "kind": "template",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "switch__dynamic__",
+      "kind": "template",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "switch1",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "switch2",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "switch3",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "switch4",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "switch5",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "switch6",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "switches",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/controls.js",
+      "name": "Switching",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "The other trainer is ready.",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "throw",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "THROW",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "throw2",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "throwK",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "throws",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "throws back",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "throws up",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "tkThrows",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "trainer",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/cosmetics.js",
+      "name": "trainer",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/backdrop.js",
+      "name": "trainer",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "trainer",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "Trainer",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/cosmetics.js",
+      "name": "Trainer",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "TRAINER_LIST",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "trainerGrid",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "trainerOk",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/cosmetics.js",
+      "name": "trainerOk",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "trainerPick",
+      "kind": "literal",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "trainers",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/backdrop.js",
+      "name": "trainers",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "trainers",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "TRAINERS",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/roster.js",
+      "name": "TRAINERS",
+      "kind": "identifier",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/app.js",
+      "name": "wantSwitch",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "wantSwitch",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "wrestleThrow",
+      "kind": "object-key",
+      "groups": [
+        "trainer-pokeball"
+      ],
+      "observation": "source identifier, not observed animation or functional feature"
+    }
+  ]
+}

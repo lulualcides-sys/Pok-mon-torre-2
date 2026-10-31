@@ -1,0 +1,349 @@
+{
+  "metadata": {
+    "source": "https://ranked.pokemonbattlegrounds.com",
+    "date": "2026-10-31T18:35:19.681Z",
+    "publicScripts": [
+      {
+        "source": "/app.js",
+        "bytes": 191766,
+        "ast_nodes": 33743,
+        "strings": 2818,
+        "templates": 303
+      },
+      {
+        "source": "/ranks.js",
+        "bytes": 4766,
+        "ast_nodes": 597,
+        "strings": 21,
+        "templates": 5
+      },
+      {
+        "source": "/cosmetics.js",
+        "bytes": 7354,
+        "ast_nodes": 829,
+        "strings": 240,
+        "templates": 0
+      },
+      {
+        "source": "/audio.js",
+        "bytes": 6946,
+        "ast_nodes": 1161,
+        "strings": 8,
+        "templates": 2
+      },
+      {
+        "source": "/grid.js",
+        "bytes": 6663,
+        "ast_nodes": 1176,
+        "strings": 62,
+        "templates": 9
+      },
+      {
+        "source": "/roster.js",
+        "bytes": 4162,
+        "ast_nodes": 526,
+        "strings": 47,
+        "templates": 0
+      },
+      {
+        "source": "/backdrop.js",
+        "bytes": 4082,
+        "ast_nodes": 643,
+        "strings": 11,
+        "templates": 4
+      },
+      {
+        "source": "/achievements.js",
+        "bytes": 4324,
+        "ast_nodes": 668,
+        "strings": 82,
+        "templates": 16
+      },
+      {
+        "source": "/abilities.js",
+        "bytes": 6295,
+        "ast_nodes": 211,
+        "strings": 97,
+        "templates": 0
+      },
+      {
+        "source": "/controls.js",
+        "bytes": 10592,
+        "ast_nodes": 1686,
+        "strings": 199,
+        "templates": 8
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "bytes": 5967574,
+        "ast_nodes": 2379232,
+        "strings": 49756,
+        "templates": 1584
+      }
+    ],
+    "failures": [],
+    "observedResourceCount": 171,
+    "staticAssetReferences": 34,
+    "mechanicIdentifiers": 503,
+    "assetCountPerCategory": {
+      "pokeball": 0,
+      "trainers": 5,
+      "arenas": 2,
+      "animation": 5,
+      "vfx-audio": 9,
+      "other": 13
+    },
+    "warning": "Public JS identifiers and paths only; no login, match, captured animation, original assets, or license inferred."
+  },
+  "grouped": {
+    "pokeball": [],
+    "trainers": [
+      {
+        "source": "/app.js",
+        "value": "/assets/portraits/__dynamic___Normal.png",
+        "kind": "template",
+        "category": "trainers",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/roster.js",
+        "value": "/trainers.json",
+        "kind": "literal",
+        "category": "trainers",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "/trainers.json",
+        "kind": "literal",
+        "category": "trainers",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/portraits/__dynamic_____dynamic__.png",
+        "kind": "template",
+        "category": "trainers",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/trainers/__dynamic__.png",
+        "kind": "template",
+        "category": "trainers",
+        "observation": "static source reference, unverified in battle"
+      }
+    ],
+    "arenas": [
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "/assets/arena/meteorfalls_tiles.json",
+        "kind": "literal",
+        "category": "arenas",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/arena/meteorfalls_tiles.png",
+        "kind": "literal",
+        "category": "arenas",
+        "observation": "static source reference, unverified in battle"
+      }
+    ],
+    "animation": [
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "-Anim.png",
+        "kind": "literal",
+        "category": "animation",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/sprites",
+        "kind": "literal",
+        "category": "animation",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/sprites/0051/mole_heads.png",
+        "kind": "literal",
+        "category": "animation",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/sprites/0085/rotor_heads.png",
+        "kind": "literal",
+        "category": "animation",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/sprites/anims.json",
+        "kind": "literal",
+        "category": "animation",
+        "observation": "static source reference, unverified in battle"
+      }
+    ],
+    "vfx-audio": [
+      {
+        "source": "/audio.js",
+        "value": "/audio/manifest.json",
+        "kind": "literal",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/audio.js",
+        "value": "/audio/music/__dynamic__.mp3",
+        "kind": "template",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/audio.js",
+        "value": "/audio/music/battle.mp3",
+        "kind": "literal",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/audio.js",
+        "value": "/audio/music/fanfare.mp3",
+        "kind": "literal",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/audio.js",
+        "value": "/audio/music/menu.json",
+        "kind": "literal",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/audio.js",
+        "value": "/audio/sfx/__dynamic__.mp3",
+        "kind": "template",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/fx/og11metaA/__dynamic__.png",
+        "kind": "template",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/fx/og11metaB/__dynamic__.png",
+        "kind": "template",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/fx/substitute.png",
+        "kind": "literal",
+        "category": "vfx-audio",
+        "observation": "static source reference, unverified in battle"
+      }
+    ],
+    "other": [
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "__dynamic__/__dynamic__/__dynamic__-Offsets.png",
+        "kind": "template",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "__dynamic__/__dynamic__/__dynamic__-Shadow.png",
+        "kind": "template",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/app.js",
+        "value": "/api/yt/thumb/__dynamic__.jpg",
+        "kind": "template",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "/baked2/__dynamic__.json",
+        "kind": "template",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "/baked2/__dynamic__/__dynamic__.png",
+        "kind": "template",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/app.js",
+        "value": "/branding/logo_160.png",
+        "kind": "literal",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "/branding/logo_160.png",
+        "kind": "literal",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/app.js",
+        "value": "/faces/__dynamic__.png",
+        "kind": "template",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/roster.js",
+        "value": "/roster-history.json",
+        "kind": "literal",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "/roster-history.json",
+        "kind": "literal",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/roster.js",
+        "value": "/roster.json",
+        "kind": "literal",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "/roster.json",
+        "kind": "literal",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      },
+      {
+        "source": "/bundles/03413a73844b301c.js",
+        "value": "assets/npcs/brock_surf.png",
+        "kind": "literal",
+        "category": "other",
+        "observation": "static source reference, unverified in battle"
+      }
+    ]
+  }
+}
