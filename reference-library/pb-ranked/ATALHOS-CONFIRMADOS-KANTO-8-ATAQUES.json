@@ -1,0 +1,178 @@
+{
+  "date": "2026-10-31",
+  "mode": "Practice vs Bot EASY 3v3",
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "runUrl": "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd",
+  "method": "Keyboard shortcuts from public controls.js, executed with TinyFish press-key action, tested in actual battle",
+  "verifiedShortcuts": {
+    "manual": "t",
+    "moves": [
+      "1",
+      "2",
+      "3",
+      "4"
+    ],
+    "switchSlots": [
+      "z",
+      "x",
+      "c"
+    ],
+    "dodge": "space (declared but not tested here)"
+  },
+  "battleResult": "ongoing at end; final winner unknown",
+  "team": [
+    {
+      "pokemon": "Venusaur",
+      "moves": [
+        [
+          "Petal Blizzard",
+          "1"
+        ],
+        [
+          "Sludge Bomb",
+          "2"
+        ],
+        [
+          "Earthquake",
+          "3"
+        ],
+        [
+          "Outrage",
+          "4"
+        ]
+      ]
+    },
+    {
+      "pokemon": "Charizard",
+      "moves": [
+        [
+          "Flamethrower",
+          "1"
+        ],
+        [
+          "Fire Blast",
+          "2"
+        ],
+        [
+          "Air Slash",
+          "3"
+        ],
+        [
+          "Dragon Claw",
+          "4"
+        ]
+      ]
+    },
+    {
+      "pokemon": "Blastoise",
+      "moves": [
+        [
+          "Hydro Pump",
+          "1"
+        ],
+        [
+          "Rapid Spin",
+          "3"
+        ],
+        [
+          "Skull Bash",
+          "4"
+        ]
+      ]
+    }
+  ],
+  "observations": [
+    {
+      "name": "Sludge Bomb",
+      "pokemon": "Venusaur",
+      "key": "2",
+      "evidence": "move button reappeared near ready, Not very effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    },
+    {
+      "name": "Outrage",
+      "pokemon": "Venusaur",
+      "key": "4",
+      "evidence": "button disappeared, Effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    },
+    {
+      "name": "Flamethrower",
+      "pokemon": "Charizard",
+      "key": "1",
+      "evidence": "ready→ready called, Effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    },
+    {
+      "name": "Fire Blast",
+      "pokemon": "Charizard",
+      "key": "2",
+      "evidence": "ready→ready called, Effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    },
+    {
+      "name": "Air Slash",
+      "pokemon": "Charizard",
+      "key": "3",
+      "evidence": "ready near→ready near called, Effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    },
+    {
+      "name": "Dragon Claw",
+      "pokemon": "Charizard",
+      "key": "4",
+      "evidence": "ready→ready called, Effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    },
+    {
+      "name": "Rapid Spin",
+      "pokemon": "Blastoise",
+      "key": "3",
+      "evidence": "button disappeared, Super effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    },
+    {
+      "name": "Skull Bash",
+      "pokemon": "Blastoise",
+      "key": "4",
+      "evidence": "ready near→ready called near, Effective",
+      "keyboardActionReported": true,
+      "buttonStateChangeReported": true,
+      "visualFramesCaptured": false,
+      "fullVfxUnverified": true
+    }
+  ],
+  "previouslyUsedNamesAlsoRepeated": [
+    "Petal Blizzard",
+    "Earthquake",
+    "Hydro Pump"
+  ],
+  "confidence": "Agent reports supported keypress-tool functionality and specific cooldown state changes; no isolated sprite frames.",
+  "limitations": [
+    "Status/effectiveness text may belong to overlapping attacks",
+    "Switch back to fainted Venusaur caused choose prompt",
+    "Actual input mappings are defaults and user-customizable; verify controls if profile changed"
+  ],
+  "notes": "Previous bulk Kanto report claimed eight manual clicks with only 17 total actions and was set aside; this later keyboard report has stronger targeted input evidence."
+}
