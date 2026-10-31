@@ -54,7 +54,7 @@ const ids=['pallet','route1','viridian','forest2','pewter','route3','moon','rout
     });
     if(device==='mobile')await page.touchscreen.tap(xy.x,xy.y);
     else{await page.mouse.move(xy.x,xy.y);await page.mouse.down();await page.waitForTimeout(120);await page.mouse.up()}
-    await page.waitForFunction(id=>window.__pt2Game.scene.getScene('kanto-gallery').__kantoPreview.id===id,null,{timeout:5000},ids[(i+1)%ids.length]);
+    await page.waitForFunction(nextId=>window.__pt2Game.scene.getScene('kanto-gallery').__kantoPreview.id===nextId,ids[(i+1)%ids.length],{timeout:5000});
    }
    assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),initial,'gallery must preserve exact save bytes');
    assert.deepEqual(errors,[],'no page errors');
