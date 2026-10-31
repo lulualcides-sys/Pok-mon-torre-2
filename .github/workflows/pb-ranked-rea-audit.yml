@@ -1,0 +1,48 @@
+name: Pesquisa REA — PB Ranked público (isolada)
+
+on:
+  push:
+    branches:
+      - research/pb-ranked-rea-20261031
+    paths:
+      - '.github/workflows/pb-ranked-rea-audit.yml'
+      - 'tools/research/pb-ranked-rea.cjs'
+      - 'docs/REA-PB-RANKED-2026-10-31.md'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pb-ranked-rea-public
+  cancel-in-progress: false
+
+jobs:
+  observe-public-page:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validar script independente
+        run: node --check tools/research/pb-ranked-rea.cjs
+      - name: Instalar deps de navegação e REA oficial
+        run: |
+          npm install --no-audit --no-fund
+          npm install --global --no-audit --no-fund rea-agents@latest
+          rea --help >/dev/null
+          command -v google-chrome
+      - name: Inspecionar exclusivamente interface pública, sem entrar em conta
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tools/research/pb-ranked-rea.cjs
+      - name: Guardar prova parcial/erros mesmo se investigação falhar
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pb-ranked-rea-public-study
+          path: test-evidence/pb-ranked-rea/
+          if-no-files-found: warn
+          retention-days: 7
