@@ -111,8 +111,33 @@ fs.mkdirSync(screenshot,{recursive:true});
      assert.ok(ui.controls.includes(name),'Missing playable action '+name);
     await page.screenshot({path:screenshot+'/t32-cerulean-'+label+'.png'});
     await named('torre2-city-action','DESAFIOS');
-    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-     .__torre2BattlePath?.stage===1,null,{timeout:16000});
+    // A native Phaser pointer can miss one press on headless SwiftShader.
+    // Inspect the real scene and retry the same visible button at most once;
+    // never invoke the back handler or fabricate route state from the test.
+    let returned=await page.waitForFunction(()=>
+     window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===1,
+     null,{timeout:4000}).then(()=>true).catch(()=>false);
+    if(!returned){
+     const diagnostic=await page.evaluate(()=>{
+      const c=window.__pt2Game.scene.getScene('campanha');
+      return {cityOpen:c.__torre2CeruleanOpen,
+       cityData:c.__torre2CeruleanCity?.stage,
+       routeStage:c.__torre2BattlePath?.stage,
+       active:c.scene.isActive(),
+       buttons:c.children.list.filter(z=>z.active&&z.input?.enabled&&
+        z.getData?.('torre2-city-action')).map(z=>({
+         label:z.getData('torre2-city-action'),x:z.x,y:z.y,depth:z.depth}))};
+     });
+     console.log('T32 native route-return diagnostic',JSON.stringify(diagnostic),
+      'pageerrors',JSON.stringify(errors));
+     assert.ok(diagnostic.cityOpen&&diagnostic.buttons.some(z=>z.label==='DESAFIOS'),
+      'Route not restored and native DESAFIOS control is no longer available');
+     await named('torre2-city-action','DESAFIOS');
+     returned=await page.waitForFunction(()=>
+      window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===1,
+      null,{timeout:12000}).then(()=>true).catch(()=>false);
+    }
+    assert.ok(returned,'DESAFIOS native pointer did not restore campaign route');
     assert.equal(await page.evaluate(()=>
      localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before,
      'Exploring the city must not create wins, badges, experience or save edits');

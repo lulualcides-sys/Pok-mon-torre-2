@@ -39,8 +39,10 @@ function originalCityArt(scene){
 // This only affects the optional city scene, not combat, saves or XP.
 function enrichCerulean(scene){
  const canal=scene.add.graphics().setDepth(8);
- for(const [x,y] of [[42,83],[71,104],[49,133],[83,158],
-  [45,189],[78,215],[57,245]]){
+ // Keep shimmer strictly inside the narrow left-hand water canal.
+ // The previous offsets accidentally put some glints on grass and roads.
+ for(const [x,y] of [[36,83],[47,104],[40,133],[53,158],
+  [43,189],[51,215],[38,245]]){
   canal.fillStyle(0xd8f9ff,.8);canal.fillRect(x,y,5,2);
   canal.fillStyle(0x63bce5,.65);canal.fillRect(x+2,y+3,3,1);
  }
@@ -78,6 +80,8 @@ function action(scene,x,y,w,label,fn,highlight=false){
  const z=scene.add.zone(x,y,w,32).setInteractive({useHandCursor:true})
   .setDepth(33).setData('torre2-city-action',label);
  z.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
+ // A single native activation per press: Phaser pointerdown is the same
+ // interaction used by the existing campaign route. No synthetic callbacks.
  z.on('pointerdown',(_p,_lx,_ly,e)=>{e?.stopPropagation?.();fn?.()});
  paint(false);return z;
 }
