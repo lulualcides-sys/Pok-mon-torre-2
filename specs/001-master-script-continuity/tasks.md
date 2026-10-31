@@ -1,5 +1,13 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote T22 — ticket legado de revanche (31/10/2026)
+- [x] Confirmar main `1fcc64eb`, PR #369 merged e Pages #41160156153 da main anterior publicado.
+- [x] Reproduzir RED no módulo real: pending sem token bloqueia reserva, autoriza token ausente e ticket nulo lança erro.
+- [x] Corrigir validação de token positivo e criar regressões, com oito verificações focadas GREEN.
+- [ ] Obter npm test/check/check:reuse/build, Chromium desktop/mobile e guardião visual no HEAD final.
+- [ ] Revisar, integrar apenas com CI verde, confirmar Pages/HTTP SHA exato.
+- [ ] Retomar frente diferente T19/T21 ou T07/T08 após submeter este lote.
+
 ## Lote T03 — Eevee legado sem UID (30/10/2026)
 - [x] Localizar bloqueio no código da main `be1d230c` e isolar escopo sem conflito com PRs #369/#381.
 - [x] Preparar teste de regressão e correção focada para Eevee legado na equipe/PC, colisão de UID e gravação negada; **nenhuma execução ainda declarada**.
