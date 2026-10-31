@@ -13,6 +13,10 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dest=path.join(root,'arena2d');
 await fs.mkdir(root,{recursive:true});
 await fs.cp(source,dest,{recursive:true,force:true});
+// One small original atlas; cropped into independent environment sprites.
+await fs.mkdir(path.join(dest,'assets/ui/city-original'),{recursive:true});
+await fs.copyFile('reference-assets/kanto/city-original/cerulean-atlas-v1.webp',
+ path.join(dest,'assets/ui/city-original/cerulean-atlas-v1.webp'));
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
 // be verified. Never silently substitute another hand-drawn fake sprite.
@@ -207,6 +211,7 @@ await Promise.all([
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
  ['tools/pokearena/torre2-city-layout.js','city-layout.js'],
+ ['tools/pokearena/torre2-city-atlas.js','city-atlas.js'],
  ['tools/pokearena/torre2-city-scenery.js','city-scenery.js'],
  ['tools/pokearena/torre2-city-hub.js','city-hub.js'],
  ['tools/pokearena/torre2-path-actions.js','path-actions.js'],

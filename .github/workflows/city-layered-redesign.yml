@@ -1,7 +1,7 @@
 name: Layered Kanto city — WebGL navigation and visual evidence
 on:
   push:
-    branches: [feat/cerulean-layered-redesign-20261031]
+    branches: [feat/cerulean-layered-redesign-20261031, feat/cerulean-art-atlas-20261031]
   workflow_dispatch:
 permissions:
   contents: read

@@ -16,6 +16,7 @@ const server=http.createServer((req,res)=>{
   for(const [label,viewport]of [['desktop',{width:1280,height:720}],['mobile',{width:854,height:480}]]){
    const page=await browser.newPage({viewport,hasTouch:label==='mobile'}),errors=[];
    page.on('pageerror',e=>errors.push(String(e)));
+   try{
    const click=async(x,y)=>{
     const p=await page.evaluate(([x,y])=>{const r=document.querySelector('#juego canvas').getBoundingClientRect();return{x:r.x+x*r.width/640,y:r.y+y*r.height/360}},[x,y]);
     if(label==='mobile')await page.touchscreen.tap(p.x,p.y);else await page.mouse.click(p.x,p.y,{delay:120});
@@ -29,6 +30,8 @@ const server=http.createServer((req,res)=>{
     const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
     const core=await import(new URL('./torre2/campaign-core.js',main));
     const s=core.createPlayerCampaign('bulbasaur');s.stage=1;s.trainer=2;
+    s.team=['bulbasaur','charmander','squirtle','bulbasaur','charmander','squirtle'].map((id,i)=>({
+     ...core.createPlayerCampaign(id).team[0],uid:'city-ui-fixture-'+i}));
     core.saveCampaign(s);window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
    });
    // Route remains the default on entering Cerulean, even in the visual branch.
@@ -40,6 +43,9 @@ const server=http.createServer((req,res)=>{
    const report=await page.evaluate(()=>{const s=window.__pt2Game.scene.getScene('campanha');return{...s.__torre2CityHub,renderer:s.game.renderer.type,objects:s.children.length}});
    assert.equal(report.renderer,2,'actual WebGL renderer');assert.equal(report.walking,false);
    assert.deepEqual(report.hotspots.map(x=>x.id),['center','mart','gym']);
+   const pieces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(o=>o.getData?.('torre2-city-atlas-piece')).map(o=>o.getData('torre2-city-atlas-piece')));
+   for(const name of ['center','gym','mart','house','tree','planter'])assert.ok(pieces.includes(name),'Missing cropped atlas piece '+name);
    await page.screenshot({path:'test-evidence/city-layered-'+label+'.png'});
    await named('torre2-city-landmark','center');
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-center-pc')));
@@ -53,6 +59,9 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.text?.includes('FALTAM 13')));
    await click(320,306);await city();
    await named('torre2-city-action','EQUIPE');
+   await named('torre2-summary-back',true);await city();
+   await named('torre2-city-action','MAIS EQUIPE');
+   await named('torre2-city-member',5);
    await named('torre2-summary-back',true);await city();
    await named('torre2-city-action','INSÍGNIAS');
    await named('torre2-badge-case-back',true);await city();
@@ -83,7 +92,12 @@ const server=http.createServer((req,res)=>{
     'route/city roundtrip leaked native water timers: '+JSON.stringify(timers));
    assert.deepEqual(errors,[]);
    fs.writeFileSync('test-evidence/city-layered-'+label+'.json',JSON.stringify({...report,timers,errors,fixture:true},null,2));
-   console.log(label+' city WebGL + Center/PC/Mart/gym/summary/badges passed');await page.close();
+   console.log(label+' city WebGL + Center/PC/Mart/gym/summary/badges passed');
+   }catch(error){
+    await page.screenshot({path:'test-evidence/city-layered-'+label+'-failure.png'});
+    fs.writeFileSync('test-evidence/city-layered-'+label+'-failure.json',JSON.stringify({error:String(error),errors},null,2));
+    throw error;
+   }finally{await page.close();}
   }
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

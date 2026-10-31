@@ -1,8 +1,9 @@
+import {addCitySprite,CITY_ATLAS_KEY} from './city-atlas.js';
 /* Original modular pixel architecture, rendered by Phaser/WebGL.
  * No map screenshot, no uploaded sheet with uncertain redistribution rights.
  * Geometry is local to each building; vegetation uses shared original textures.
  */
-export const CITY_ART_VERSION='cerulean-layered-v1';
+export const CITY_ART_VERSION='cerulean-atlas-v2';
 const px=(g,x,y,w,h,c,a=1)=>g.fillStyle(c,a).fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));
 function rng(seed){let s=seed;return()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296)}
 function poly(g,pts,c){g.fillStyle(c);g.fillPoints(pts.map(([x,y])=>({x,y})),true)}
@@ -61,7 +62,9 @@ function roof(g,x,y,w,h,red=false){
  px(g,x+10,y,w-20,2,light);px(g,x,y+h-2,w,3,0x18394d);px(g,x+2,y+h,w-4,2,light);
 }
 function building(scene,x,y,w,h,kind='house'){
- const g=scene.add.graphics({x,y}).setDepth(20+y/1000).setData('torre2-city-building',kind);
+ const art=addCitySprite(scene,kind,x+w/2,y+h,h+9);
+ if(art)return art.setData('torre2-city-building',kind);
+ const g=scene.add.graphics({x,y}).setDepth(20+(y+h)/1000).setData('torre2-city-building',kind);
  const red=kind==='center',gym=kind==='gym';
  px(g,4,h-3,w+5,9,0x2c5553,.32);
  px(g,2,26,w-4,h-24,0x596c6b);px(g,5,27,w-10,h-28,0xe4d8b7);
@@ -150,13 +153,19 @@ export function renderCityScenery(scene){
  for(const x of [491,551])for(const y of [267,303]){px(quay,x,y,5,10,0x644a37);px(quay,x,y,5,2,0xe4c08b)}
  ellipse(quay,454,293,24,43,0x145c7c,.6);poly(quay,[[443,273],[461,273],[468,290],[460,308],[448,308],[438,290]],0xcededb);
  poly(quay,[[446,278],[458,278],[463,290],[457,301],[449,301],[443,290]],0x477a94);px(quay,446,282,14,9,0xa4c5d0);px(quay,448,284,10,5,0x315575);
- const treeKey=treeTexture(scene),positions=[
+ const treeKey=scene.textures.exists(CITY_ATLAS_KEY)?null:treeTexture(scene),positions=[
  [10,70],[43,64],[178,73],[195,61],[317,74],[333,44],[422,69],[446,51],[596,65],[628,61],
  [12,213],[25,239],[206,279],[226,291],[319,284],[414,275],[633,186],[612,182],
  [179,131],[321,223],[434,240],[32,302],[91,309],[243,309],[610,302]
  ];
- for(const [x,y]of positions)scene.add.image(x,y,treeKey).setOrigin(.5,1).setScale(.72)
-  .setDepth(20+y/1000).setData('torre2-city-layer','vegetation');
+ for(const [x,y]of positions){
+  const tree=addCitySprite(scene,'tree',x,y,44);
+  if(tree)tree.setData('torre2-city-layer','vegetation');
+  else scene.add.image(x,y,treeKey).setOrigin(.5,1).setScale(.72)
+   .setDepth(20+y/1000).setData('torre2-city-layer','vegetation');
+ }
+ for(const [x,y,w]of [[250,134,45],[297,261,32],[436,184,27],[585,176,30]])
+  addCitySprite(scene,'planter',x,y,w*188/447,{depth:25});
  const ripples=scene.add.graphics().setDepth(1).setData('torre2-city-layer','water-animation');
  const falls=scene.add.graphics().setDepth(9);
  let tick=0;

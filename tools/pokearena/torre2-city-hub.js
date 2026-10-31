@@ -83,7 +83,7 @@ export function renderCityHub(scene,state,{trainerCount,badgeDefinitions=[],...h
  const members=(state.team||[]).slice(0,6),visible=members.length>3?3:members.length;
  const offset=scene.__torre2CityTeamPage===1&&members.length>3?3:0;
  for(let i=0;i<visible;i++)if(members[offset+i])memberCard(scene,frame,state,members[offset+i],offset+i,11+i*103,316,99,handlers.pokemon);
- if(members.length>3)button(scene,308,312,21,14,offset?'◀':'▶',()=>{
+ if(members.length>3)button(scene,308,298,24,18,offset?'◀':'▶',()=>{
   scene.__torre2CityTeamPage=offset?0:1;handlers.refresh();
  },{key:'MAIS EQUIPE'});
  const actions=[['EQUIPE',()=>handlers.pokemon(state.active||0)],['BOLSA',handlers.bag],['POKÉDEX',handlers.dex],['ROTAS',handlers.route],['CAPTURA',handlers.capture]];

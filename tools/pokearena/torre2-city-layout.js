@@ -5,7 +5,7 @@ export const CERULEAN_LANDMARKS=Object.freeze([
  Object.freeze({id:'gym',label:'GINÁSIO DA MISTY',x:515,y:173})
 ]);
 const PLACES=[[193,164],[277,153],[307,202],[242,229],[176,252],
- [63,178],[435,202],[565,206],[606,251],[467,249],
+ [63,178],[435,202],[577,210],[606,251],[467,249],
  [216,109],[300,88],[449,104],[575,106],[355,165]];
 export function cityViewModel(state,trainerCount){
  const count=Math.max(0,Math.floor(Number(trainerCount)||0));

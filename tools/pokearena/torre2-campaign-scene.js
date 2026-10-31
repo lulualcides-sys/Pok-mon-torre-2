@@ -1,3 +1,4 @@
+import {CITY_ATLAS_KEY,CITY_ATLAS_FILE} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -122,6 +123,10 @@ class Campanha extends Phaser.Scene{
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
+  if(stage===1&&!this.textures.exists(CITY_ATLAS_KEY))
+   this.load.image(CITY_ATLAS_KEY,CITY_ATLAS_FILE);
+  if(stage!==1&&this.textures.exists(CITY_ATLAS_KEY))
+   this.textures.remove(CITY_ATLAS_KEY);
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
   if(AVAILABLE_FRLG.includes(world)){
