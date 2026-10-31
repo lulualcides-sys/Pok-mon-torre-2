@@ -62,13 +62,13 @@ test('Author-defined leaders and wild captures retain their exact species and te
  assert.deepEqual(wild.foes.map(x=>x.id),['zubat']);
 });
 
-test('Campaign cooldown is exactly 1.5 seconds for Charge Beam and Supersonic',()=>{
- assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8});
- for(const label of ['Charge Beam','Supersonic']){
-  const native={nombre:label,cd:5.8,forma:'proyectil',dano:4};
+test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg Bomb 2.3s',()=>{
+ assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8,'egg-bomb':2.3});
+ for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',1.8],['Egg Bomb',2.3]]){
+  const native={nombre:label,cd:label==='Egg Bomb'?1.2:5.8,forma:'proyectil',dano:4};
   const copy=moves.balanceCampaignQuickCooldown(native);
-  assert.equal(copy.cd,1.5,label);
-  assert.equal(native.cd,5.8,'Native original must remain untouched');
+  assert.equal(copy.cd,expected,label);
+  assert.equal(native.cd,label==='Egg Bomb'?1.2:5.8,'Native original must remain untouched');
   assert.notStrictEqual(copy,native);
  }
  const practice={nombre:'ULT · Supersonic',torre2IntroSource:'supersonic',torre2IntroPractice:true,cd:8};
