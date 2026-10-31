@@ -1,5 +1,12 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## T08 — corrigir metadado de poder em golpes de treino (31/10/2026)
+- [x] Reproduzir em módulo real isolado: `dano` baixo com `poder` 130/150 nos slots Lv5 e Lv8 (RED).
+- [x] Adicionar regressão `tests/kanto-intro-moves.test.js` (`83106e92`) e corrigir apenas o clone de treino (`110cc7d2`); GREEN isolado [40,40,40,60].
+- [ ] Executar gates completos e Chromium no HEAD final, revisar, mesclar somente verde e comprovar Pages HTTP do SHA integrado.
+- [ ] Frente seguinte DIFERENTE: T31 diagnóstico de carregamento ou T19 Cerulean, sem reabrir T10.
+
+
 ## Lote T22 — rematch legado (31/10/2026)
 - [x] Reproduzir RED: pendência sem token trava recarga, valida resultado falso e lança exceção em ticket nulo.
 - [x] Corrigir token durável e testar oito verificações focadas GREEN; preserva saves e combate.
