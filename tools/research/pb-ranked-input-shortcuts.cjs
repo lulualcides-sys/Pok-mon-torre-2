@@ -1,7 +1,7 @@
 'use strict';
 async function main(){
  const root='https://ranked.pokemonbattlegrounds.com';
- for(const path of ['/app.js','/bundles/03413a73844b301c.js']){
+ for(const path of ['/controls.js','/app.js','/bundles/03413a73844b301c.js']){
   const r=await fetch(root+path,{signal:AbortSignal.timeout(55000)});
   if(!r.ok)throw Error('HTTP '+r.status);
   const code=await r.text();
