@@ -4,12 +4,14 @@
  *   node tools/dev/pb-ranked-audit.mjs --format=summary
  *   node tools/dev/pb-ranked-audit.mjs --format=json --out=/tmp/pb-audit.json
  *   node tools/dev/pb-ranked-audit.mjs --format=md --out=/tmp/pb-audit.md
+ *   node tools/dev/pb-ranked-audit.mjs --format=html --out=/tmp/pb-audit.html
  * No network calls, no writes unless --out is provided, no game mutation.
  */
 import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {auditPbRanked, summarizeAudit} from './pb-ranked-audit-core.mjs';
+import {renderPbAuditHtml} from './pb-ranked-report-page.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const file=name=>JSON.parse(fs.readFileSync(path.join(root,name),'utf8'));
@@ -50,13 +52,14 @@ export function toMarkdown(report) {
 }
 function main(){
  if(process.argv.includes('--help')){
-  console.log('Use --format=summary|json|md [--out=path] [--fail-on-policy-drift]');
+  console.log('Use --format=summary|json|md|html [--out=path] [--fail-on-policy-drift]');
   return;
  }
  const format=outputArg('format')||'summary';
- if(!['summary','json','md'].includes(format))throw Error('Unsupported format '+format);
+ if(!['summary','json','md','html'].includes(format))throw Error('Unsupported format '+format);
  const audit=loadCurrentAudit();
  const body=format==='json'?JSON.stringify(audit,null,2)+'\n':
+  format==='html'?renderPbAuditHtml(audit):
   format==='md'?toMarkdown(audit):
   JSON.stringify(summarizeAudit(audit),null,2)+'\n';
  const out=outputArg('out');
