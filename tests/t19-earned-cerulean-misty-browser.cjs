@@ -59,6 +59,31 @@ const server=http.createServer(async(req,res)=>{
     level:m.progression?.level,xp:m.progression?.experience}))};
  });
  const sync=()=>page.evaluate(()=>new Promise(ok=>requestAnimationFrame(()=>requestAnimationFrame(ok))));
+ const selectHealthyStarter=async()=>{
+  const before=await game();
+  if(before.active===0)return before;
+  assert.ok(before.team[0]?.hp>0,'Starter must be conscious after native Center heal');
+  // Same native summary action used in the proven T20 journey: real Phaser click,
+  // not an edited save, a synthetic victory or a direct active-slot mutation.
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   c.showSummary(window.kanto.readCampaign(),0);
+  });
+  await clickTag('torre2-active-select');
+  await page.waitForFunction(()=>window.kanto.readCampaign()?.active===0,
+   null,{timeout:10000});
+  const after=await game();
+  for(const key of ['stage','trainer','wins','losses','money'])
+   assert.equal(after[key],before[key],'Native starter selection cannot alter '+key);
+  assert.deepEqual(after.team,before.team,'Native selection cannot modify HP, XP or UID');
+  assert.deepEqual(after.badges,before.badges);
+  assert.deepEqual(after.tms,before.tms);
+  report.starterSelections??=[];
+  report.starterSelections.push({before:before.active,after:after.active,
+   trainer:after.trainer});
+  saveReport();
+  return after;
+ };
  const clickTag=async id=>{
   await sync();
   const p=await page.evaluate(id=>{
@@ -164,7 +189,7 @@ const server=http.createServer(async(req,res)=>{
    await page.waitForFunction(()=>window.kanto.readCampaign()?.team?.every(m=>m.hp===100)&&
     !window.__pt2Game.scene.getScene('campanha').__torre2CenterBusy,
     null,{timeout:20000});
-   const restored=await game();
+   const restored=await selectHealthyStarter();
    assert.equal(restored.wins,previous.wins,'Center cannot grant a win');
    assert.equal(restored.losses,previous.losses,'Center cannot conceal a defeat');
    assert.equal(restored.trainer,previous.trainer);
@@ -226,7 +251,7 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.kanto.readCampaign()?.team?.every(m=>m.hp===100)&&
    !window.__pt2Game.scene.getScene('campanha').__torre2CenterBusy,
    null,{timeout:20000});
-  const healedMisty=await game();
+  const healedMisty=await selectHealthyStarter();
   assert.equal(healedMisty.wins,preMisty.wins);
   assert.equal(healedMisty.losses,preMisty.losses);
   assert.equal(healedMisty.trainer,15);
@@ -307,6 +332,16 @@ const server=http.createServer(async(req,res)=>{
  }catch(error){
   report.failure=String(error);
   try{report.diagnostic=await game()}catch{}
+  try{report.combatDiagnostic=await page.evaluate(()=>{
+   const b=window.__pt2Game?.scene?.getScene('combate');
+   if(!b)return {scene:'missing'};
+   return {active:b.scene.isActive(),fase:b.fase,time:b.t,
+    round:b.ronda,auto:b.__torre2AutoMode?.enabled,
+    playerIndex:b.datos?.torre2?.party?.playerIndex,
+    enemy:b.datos?.p2,
+    fighters:(b.luchadores||[]).map(m=>({id:m.id,hp:m.hp,hpMax:m.hpMax,
+     status:m.est?.status||null}))};
+  })}catch{}
   try{await page.screenshot({path:out+'/t19-native-cerulean-failure.png'})}catch{}
   saveReport();throw error;
  }finally{await page.close();await browser.close();server.close()}
