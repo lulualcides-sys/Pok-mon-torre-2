@@ -1134,7 +1134,8 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'charge-beam':1.5,
  supersonic:1.5,
  'seismic-toss':1.8,
- 'egg-bomb':2.3
+ 'egg-bomb':2.3,
+ hex:3
 });
 export function balanceCampaignQuickCooldown(move){
  // Lv8 practice ULTs have their own minimum cooldown (>= 8s), even if
