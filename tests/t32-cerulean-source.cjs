@@ -14,6 +14,8 @@ assert.match(city,/getSourceMainBounds\('cerulean'/);
 assert.match(city,/buildingInteractions\('cerulean'/);
 assert.match(city,/torre2-city-action/);
 assert.match(city,/torre2-city-landmark/);
+assert.match(city,/for\(let i=0;i<6;i\+\+\)teamCard/);
+assert.match(city,/torre2-city-party-slot/);
 assert.match(city,/battleHudUnchanged:true/);
 assert.doesNotMatch(city,/resolveBattle|awardCampaignExperience|Math\.random|localStorage|saveCampaign|\.hp\s*=/);
 console.log('PASS T32 source: Cerulean scene isolated from battle HUD and saves');

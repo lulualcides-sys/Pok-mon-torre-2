@@ -91,11 +91,18 @@ fs.mkdirSync(screenshot,{recursive:true});
       views:c.children.list.filter(z=>z.getData?.('torre2-city-real-art')===true).length,
       controls:c.children.list.filter(z=>z.getData?.('torre2-city-action'))
        .map(z=>z.getData('torre2-city-action')),
+      partySlots:c.children.list.filter(z=>z.getData?.('torre2-city-party-slot')!==undefined)
+       .map(z=>({index:z.getData('torre2-city-party-slot'),right:z.x+z.width/2})),
+      firstActionLeft:Math.min(...c.children.list.filter(z=>
+       z.getData?.('torre2-city-action')).map(z=>z.x-z.width/2)),
       battleHudUnchanged:x.battleHudUnchanged};
     });
     assert.equal(ui.stage,1);assert.equal(ui.trainer,1);assert.equal(ui.art,true);
     assert.equal(ui.views,1,'Use original cached texture only once');
     assert.equal(ui.battleHudUnchanged,true);
+    assert.deepEqual(ui.partySlots.map(z=>z.index),[0,1,2,3,4,5]);
+    assert.ok(ui.partySlots[5].right+8<=ui.firstActionLeft,
+     'Six party cards must not overlap native city controls');
     for(const name of ['center','mart','gym','bike'])
      assert.ok(ui.hotspots.includes(name),'Missing city building: '+name);
     for(const name of ['DESAFIOS','EQUIPE','BOLSA','CAPTURA','CENTRO','PRÓXIMO DESAFIO'])

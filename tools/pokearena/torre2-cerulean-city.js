@@ -45,7 +45,7 @@ function enrichCerulean(scene){
   canal.fillStyle(0x63bce5,.65);canal.fillRect(x+2,y+3,3,1);
  }
  const canalTween=scene.tweens.add({targets:canal,alpha:{from:.32,to:.86},
-  duration:1650,yoyo:true,repeat:-1});
+  x:{from:0,to:2},duration:1650,yoyo:true,repeat:-1});
  canal.once('destroy',()=>canalTween.remove());
  for(const [kind,x,y] of [['youngster',181,220],['lass',461,218],
   ['fisherman',112,245]]){
@@ -93,9 +93,12 @@ function cityHotspot(scene,sceneView,hotspot,label,fn,locked=false){
  paint(false);
  return {id:hotspot.id,x:Math.round(x),y:Math.round(y)};
 }
-function teamCard(scene,g,m,i){
- const x=14+i*99,y=313;
- box(g,x,y,94,37,0x15384c,i===0?0xf2d68f:0x477c9f);
+// Six compact, non-interactive party slots: never overlap the route controls.
+function teamCard(scene,g,m,i,active){
+ const x=14+i*48,y=313;
+ box(g,x,y,46,37,0x15384c,i===active?0xf2d68f:0x477c9f);
+ scene.add.zone(x+23,y+18,46,37).setDepth(21)
+  .setData('torre2-city-party-slot',i);
  if(!m)return;
  let dex=null;
  try{
@@ -105,14 +108,14 @@ function teamCard(scene,g,m,i){
  }catch{}
  const key='torre2-portrait-'+dex;
  if(dex&&scene.textures.exists(key))
-  scene.add.image(x+16,y+19,key).setDisplaySize(29,29).setDepth(22);
- else title(scene,x+9,y+18,'◉',15,'#ffe7a0');
- title(scene,x+35,y+10,m.id.toUpperCase().slice(0,8),7,'#fff7e9');
- title(scene,x+35,y+23,'NV.'+(m.progression?.level||5),7,'#b2dcf4');
+  scene.add.image(x+12,y+23,key).setDisplaySize(21,21).setDepth(22);
+ else title(scene,x+5,y+23,'◉',12,'#ffe7a0');
+ title(scene,x+3,y+8,m.id.toUpperCase().slice(0,7),5,'#fff7e9');
+ title(scene,x+25,y+22,'NV'+(m.progression?.level||5),6,'#b2dcf4');
  const hp=Math.min(100,Math.max(0,Number(m.hp)||0));
- g.fillStyle(0x071728);g.fillRect(x+35,y+31,53,3);
+ g.fillStyle(0x071728);g.fillRect(x+25,y+31,17,3);
  g.fillStyle(hp>50?0x65dda0:hp>25?0xf0c96a:0xe87776);
- g.fillRect(x+35,y+31,Math.round(hp*53/100),3);
+ g.fillRect(x+25,y+31,Math.round(hp*17/100),3);
 }
 export function renderCeruleanCity(scene,state,handlers={}){
  const panel=scene.add.graphics().setDepth(1)
@@ -144,17 +147,17 @@ export function renderCeruleanCity(scene,state,handlers={}){
   if(point)hotspots.push(point);
  }
  const trim=scene.add.graphics().setDepth(11);
- trim.fillStyle(0x082c47,.92);trim.fillRect(19,273,603,16);
+ trim.fillStyle(0x082c47,.92);trim.fillRoundedRect(22,274,252,14,3);
  title(scene,26,281,'CANAIS DE CERULEAN · OBJETIVO: MISTY',8,'#e5f8ff',23);
  panel.fillStyle(0x081e35);panel.fillRect(0,296,640,64);
  title(scene,14,306,'EQUIPE ATUAL',8,'#bbecf9');
  title(scene,111,306,state.team.length+'/6 POKÉMON',7,'#f4dba4');
- for(let i=0;i<3;i++)teamCard(scene,panel,state.team[i],i);
+ for(let i=0;i<6;i++)teamCard(scene,panel,state.team[i],i,state.active||0);
  const buttons=[
   ['DESAFIOS',handlers.back],['EQUIPE',()=>handlers.pokemon?.(state.active||0)],
   ['BOLSA',handlers.bag],['CAPTURA',handlers.capture],['CENTRO',handlers.center]
  ];
- buttons.forEach(([label,callback],i)=>action(scene,324+62*i,331,59,label,callback));
+ buttons.forEach(([label,callback],i)=>action(scene,344+61*i,331,56,label,callback));
  scene.__torre2CeruleanCity={stage:state.stage,trainer:state.trainer,
   realArt:!!art,hotspots,battleHudUnchanged:true};
  return scene.__torre2CeruleanCity;
