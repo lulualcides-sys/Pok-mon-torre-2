@@ -1,5 +1,12 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote T22 — rematch legado (31/10/2026)
+- [x] Reproduzir RED: pendência sem token trava recarga, valida resultado falso e lança exceção em ticket nulo.
+- [x] Corrigir token durável e testar oito verificações focadas GREEN; preserva saves e combate.
+- [ ] CI completa no HEAD final, Chromium desktop/mobile, guardião e revisão; merge só com gates verdes.
+- [ ] Pages/HTTP SHA após merge; não declarar publicado antes.
+- [ ] Próxima frente independente T19 pós-Brock→Misty.
+
 ## Checkpoint T20 após integração — 31/10/2026
 - [x] Corrida real Pallet→Brock concluída: 13 treinadores, captura de Spearow/Geodude, Brock, Rocha e TM Rock Tomb (CI #41153415212).
 - [x] Guardião visual #41153419869 e testes nativos da branch concluídos com sucesso.
