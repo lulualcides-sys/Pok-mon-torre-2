@@ -10,11 +10,12 @@
     "defaultAccessible": 191,
     "requiresEditing": 54,
     "protectedByPolicy": 45,
-    "reportedUsedInRecentBatchRuns": 55,
-    "rosterNamesNotYetUsedInBatchRuns": 190,
+    "reportedUsedInRecentBatchRuns": 62,
+    "rosterNamesNotYetUsedInBatchRuns": 183,
     "frameByFrameVfxCaptured": 0,
     "lowConfidenceNewAgentClaimsFromBatchSeven": 10,
-    "strongerPreviousBatchAgentReports": 45
+    "strongerPreviousBatchAgentReports": 45,
+    "recentBatchLowConfidenceNames": 10
   },
   "testedSources": [
     "https://agent.tinyfish.ai/runs/360cdf8c-52a2-4dec-87de-16c21fb8d821",
@@ -199,11 +200,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Aura Sphere",
+        "methods": [
+          "manual click reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
+        ],
+        "notes": [
+          "multiple Super effective labels appeared",
+          "No raw frame sequence verified; effectiveness labels may overlap"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect isolated original effect before proposing optional change"
     },
     {
       "name": "Aurora Veil",
@@ -417,11 +430,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Bounce",
+        "methods": [
+          "manual click reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
+        ],
+        "notes": [
+          "button removed/replaced after click; cooldown inferred",
+          "No raw frame sequence verified; effectiveness labels may overlap"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect isolated original effect before proposing optional change"
     },
     {
       "name": "Brave Bird",
@@ -724,11 +749,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Dig",
+        "methods": [
+          "manual click reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
+        ],
+        "notes": [
+          "move ready called state; Effective label appeared",
+          "No raw frame sequence verified; effectiveness labels may overlap"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect isolated original effect before proposing optional change"
     },
     {
       "name": "Discharge",
@@ -762,11 +799,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Dizzy Punch",
+        "methods": [
+          "manual click reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
+        ],
+        "notes": [
+          "CSS changed to move ready near called",
+          "No raw frame sequence verified; effectiveness labels may overlap"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect isolated original effect before proposing optional change"
     },
     {
       "name": "Doom Desire",
@@ -929,11 +978,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Dragon Rush",
+        "methods": [
+          "manual click reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
+        ],
+        "notes": [
+          "Super effective label appeared; button removed",
+          "No raw frame sequence verified; effectiveness labels may overlap"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect isolated original effect before proposing optional change"
     },
     {
       "name": "Drain Punch",
@@ -1684,11 +1745,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Giga Impact",
+        "methods": [
+          "manual click reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
+        ],
+        "notes": [
+          "button disappeared after click, other abilities readied",
+          "No raw frame sequence verified; effectiveness labels may overlap"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect isolated original effect before proposing optional change"
     },
     {
       "name": "Grassy Glide",
@@ -1876,11 +1949,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "High Jump Kick",
+        "methods": [
+          "manual click reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
+        ],
+        "notes": [
+          "move ready called → near ready",
+          "No raw frame sequence verified; effectiveness labels may overlap"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect isolated original effect before proposing optional change"
     },
     {
       "name": "Horn Throw",
@@ -4380,7 +4465,7 @@
       "toDo": "Isolate visual effect and test original implementation before any modification"
     }
   ],
-  "lastRecordedRun": "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f",
+  "lastRecordedRun": "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd",
   "nextFocus": {
     "mode": "default-first batches",
     "note": "Continue on other groups with many unobserved moves; do not treat AUTO claims as frame-verified",
