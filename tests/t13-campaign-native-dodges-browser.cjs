@@ -66,7 +66,8 @@ const server=http.createServer(async(req,res)=>{
     uses:me.stats.usosSlot?.esp||0,save:localStorage.getItem(window.__dodgeCore.SAVE_KEY)};
   });
   assert.equal(before.pokemon,'abra');
-  assert.equal(before.esp,'Teleport');assert.equal(before.original,'Teleport');
+  assert.equal(before.esp,before.original);
+  assert.notEqual(before.esp,'Dodge','Real Abra native ESP must be installed');
   assert.equal(before.native,true,'Campaign must use original native ESP object');
   await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate'),p=b.panelTactil;

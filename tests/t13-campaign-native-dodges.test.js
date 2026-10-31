@@ -49,6 +49,13 @@ test('original P2 species retains exact native ESP and original objects are immu
  assert.notStrictEqual(selected,original);
  assert.equal(JSON.stringify(original),old);
 });
+test('original native ESP colliding with equipped attack selects another real dodge',()=>{
+ const original=h('Quick Attack'),map=templates();
+ const output=campaignNativeDodge('bulbasaur',{lmb:{nombre:'Quick Attack'}},map,original);
+ assert.notEqual(output.nombre,'Quick Attack');
+ assert.ok(output.forma==='dash'||output.forma==='vuelo');
+ assert.ok(output.torre2CampaignNativeEvasion||output.nombre==='Dodge');
+});
 test('unavailable renderer uses existing safe dash, not a fabricated special',()=>{
  const m=campaignNativeDodge('unknown',{},new Map());
  assert.equal(m.nombre,'Dodge');

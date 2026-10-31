@@ -30,13 +30,17 @@ export function buildCampaignDodgeTemplates(roster=[],library=[]){
  return map;
 }
 export function campaignNativeDodge(species,loadout,templates,original=null){
- // The 30 original P2 Kanto forms keep their actual unchanged Arena ESP.
- if(legal(original))return {...original,torre2CampaignNativeEvasion:true};
  const attacks=['lmb','rmb','q','e'].map(k=>loadout?.[k]?.nombre).filter(Boolean);
+ const used=new Set(attacks.map(idOf));
+ // Original P2 ESP has priority if it does not duplicate an equipped
+ // attack. Arena originals remain untouched; the campaign only copies.
+ if(legal(original)&&!used.has(idOf(original.nombre)))
+  return {...original,torre2CampaignNativeEvasion:true};
  const fallback={...CAMPAIGN_DODGE_FALLBACK};
  const selected=selectNativeDodge(species,attacks,templates||new Map(),fallback);
- // Never invent an animation. The legacy dash remains a safe fallback
- // only when no compatible native renderer exists in the approved client.
- if(selected===fallback||!legal(selected))return fallback;
+ // A native ESP colliding with an ATK/HAB/ULT is not a distinct dodge.
+ // Prefer a compatible source renderer; otherwise use the existing dash.
+ if(selected===fallback||!legal(selected)||used.has(idOf(selected.nombre)))
+  return fallback;
  return {...selected,torre2CampaignNativeEvasion:true};
 }
