@@ -10,8 +10,8 @@
     "defaultAccessible": 191,
     "requiresEditing": 54,
     "protectedByPolicy": 45,
-    "reportedUsedInRecentBatchRuns": 34,
-    "rosterNamesNotYetUsedInBatchRuns": 211,
+    "reportedUsedInRecentBatchRuns": 45,
+    "rosterNamesNotYetUsedInBatchRuns": 200,
     "frameByFrameVfxCaptured": 0
   },
   "testedSources": [
@@ -454,11 +454,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Brick Break",
+        "methods": [
+          "auto use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "AUTO cast claimed in agent summary, no discrete cast snapshot or damage log for this particular move"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "Bullet Punch",
@@ -789,11 +800,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Double-Edge",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "Draco Meteor",
@@ -970,11 +992,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Drum Beating",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "Dual Wingbeat",
@@ -1034,11 +1067,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Earthquake",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "Egg Bomb",
@@ -1758,11 +1802,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "High Horsepower",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "High Jump Kick",
@@ -2117,11 +2172,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Knock Off",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "Lava Plume",
@@ -2935,7 +3001,8 @@
           "AUTO"
         ],
         "sourceUrls": [
-          "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248"
+          "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248",
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
         ],
         "notes": [
           "One of nine reported uses; repeated names deduplicated"
@@ -2966,11 +3033,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Raging Bull",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "Rain Dance",
@@ -4088,11 +4166,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Wing Attack",
+        "methods": [
+          "auto use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "AUTO cast claimed in agent summary, no discrete cast snapshot or damage log for this particular move"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "Wood Hammer",
@@ -4101,11 +4190,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Wood Hammer",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     },
     {
       "name": "X-Scissor",
@@ -4114,11 +4214,22 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "X-Scissor",
+        "methods": [
+          "auto use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "AUTO cast claimed in agent summary, no discrete cast snapshot or damage log for this particular move"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Preserve approved Torre2 VFX; only compare external reference"
     },
     {
       "name": "Zen Headbutt",
@@ -4127,23 +4238,36 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Zen Headbutt",
+        "methods": [
+          "manual use reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
+        ],
+        "notes": [
+          "manual click plus cast reported by TinyFish; no isolated frame verification"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Isolate visual effect and test original implementation before any modification"
     }
   ],
-  "lastRecordedRun": "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411",
+  "lastRecordedRun": "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae",
   "nextFocus": {
-    "pokemon": "Toxicroak",
-    "names": [
-      "Mud Bomb"
+    "mode": "default-first batches",
+    "note": "Continue on other groups with many unobserved moves; do not treat AUTO claims as frame-verified",
+    "priority": [
+      "Muk/Exeggutor/Heracross",
+      "Lopunny/Garchomp/Lucario"
     ],
-    "additionalPending": [
-      "Iron Tail",
-      "Volt Tackle"
-    ],
-    "reason": "full 3v3 match concluded before Mud Bomb; Pikachu abilities previously unavailable due to dynamic switch buttons"
+    "specialPending": [
+      "Toxicroak Mud Bomb",
+      "Pikachu Iron Tail",
+      "Pikachu Volt Tackle"
+    ]
   }
 }
