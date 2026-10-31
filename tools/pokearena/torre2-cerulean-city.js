@@ -17,7 +17,7 @@ export function ceruleanCityProjection(main){
  const w=Math.min(VIEW.w,Math.max(1,main.w));
  const h=Math.min(VIEW.h,Math.max(1,main.h));
  return {x:main.x+Math.round(Math.max(0,main.w-w)*.48),
-  y:main.y+Math.round(Math.max(0,main.h-h)*.56),w,h};
+  y:main.y+Math.round(Math.max(0,main.h-h)*.60),w,h};
 }
 function originalCityArt(scene){
  const key='frlg-location-cerulean';
