@@ -39,11 +39,20 @@ jobs:
           repository: ${{ github.repository }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test-evidence
+      - name: Download verified trainer-15 checkpoint from native failed Misty UI run
+        uses: actions/download-artifact@v4
+        with:
+          name: t19-earned-misty-native
+          run-id: 41189585783
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: test-evidence/resume
       - name: Play five remaining trainers and Misty with native Phaser
         run: |
           set -euo pipefail
           test -s test-evidence/t19-earned-cerulean-ten-save.json
-          CHROME_BIN="$(command -v google-chrome)" node tests/t19-earned-cerulean-misty-browser.cjs
+          test -s test-evidence/resume/t19-native-cerulean-earned-checkpoint.json
+          T19_EARNED_CHECKPOINT=test-evidence/resume/t19-native-cerulean-earned-checkpoint.json CHROME_BIN="$(command -v google-chrome)" node tests/t19-earned-cerulean-misty-browser.cjs
       - name: Full native Phaser browser regression
         run: |
           set -euo pipefail
