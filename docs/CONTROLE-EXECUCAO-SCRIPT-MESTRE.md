@@ -1,4 +1,29 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
+ 
+## 30/10/2026 — §§20/33/36/37 · T20: travamento após KO na batalha 11
+
+- **§20 PARCIAL:** [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **FALHA**: dez treinadores vencidos, oito vitórias selvagens, duas capturas legítimas e evolução Caterpie→Metapod→Butterfree; a luta 11 ficou em fase fin com Butterfree adversário a 0 HP, Pikachu a 61,84/66 HP, sem transição nem gravação de vitória após 240 s. Brock não enfrentado, insígnia e TM não obtidas. Captura/XP foram observados em Chromium, mas início via factory não prova seleção pelo menu.
+- **§33 PARCIAL:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit b386d3ca6092e2847aac7649286326c9f1d642dc, acrescenta watchdog **somente de observação** (12 s em fase fin) e snapshot de estado/relógio Phaser, sem manipular resultado. Sintaxe verificada pelo parser V8; [CI #41028820921](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41028820921) iniciada, **não aprovada antecipadamente**.
+- **§36 PARCIAL:** nenhum VFX, sprite, TM, cooldown, save ou lógica de combate aprovado alterado pelo diagnóstico; conflitos T04 de troca de equipe continuam isolados.
+- **§37 PARCIAL:** #329 ainda sem merge; não existe Pages SHA/HTTP desta correção de teste. Não marcar T20 ou as 37 seções como completas.
+
+
+## 30/10/2026 — §§20/33/36/37 · evolução NPC no gate T20
+
+- **§20 PARCIAL:** [CI #41021932709](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41021932709) comprovou vitórias nativas contra Pidgey e Rattata, depois **falhou antes da terceira luta** por expectativa obsoleta Caterpie versus Metapod legítimo Lv7. Não confundir assert com derrota em batalha; Brock e 13 treinadores ainda não comprovados.
+- **§33 PARCIAL:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) recebeu commit 2b12d3d9eab3788a8cc7c91bbbbde03706f1b6fb para exigir Caterpie/Metapod/Butterfree conforme níveis oficiais 7/10. Sintaxe verificada em V8; [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **em andamento; Chromium ainda não confirmado**.
+- **§36 PARCIAL:** somente teste de QA, sem mudanças em runtime, VFX, sprites, cooldowns, TM ou saves; Toxic #16 e Shiny #17 preservados.
+- **§37 PARCIAL:** nenhum merge/Pages deste patch; SHA HTTP só será declarado após CI verde e implantação comprovada. T07/T08 seguem com lacunas reais de golpes Lv5 e ULT disparada.
+
+
+
+## 30/10/2026 — §§20/33/36/37 · Rocket real vencida; teste corrigido, gates pendentes
+
+- **§20 PARCIAL:** [CI #41006367570](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41006367570) registrou 5 vitórias iniciais, 2 capturas legais, 8 vitórias selvagens com XP e vitória legítima na Rocket (`trainer=6`, `wins=14`, `losses=0`). O teste falhou por aguardar `wins===6` após XP selvagem; não por derrota. Brock e 13 treinadores não foram comprovados.
+- **§33 PARCIAL:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329) atualizada no HEAD `9b62ccb8`, agora exige `before.wins+1` e vitória selvagem por XP sem falsificação. [CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) em execução na abertura deste registro. Não declarar aprovado antes da conclusão e da regressão Chromium.
+- **§36 PARCIAL:** alteração somente no teste e workflow; sem VFX novo, mudança de combate, saves, sprites, cooldowns ou TM. Toxic #16 e Shiny #17 intocados.
+- **§37 PARCIAL:** sem merge ou Pages deste patch. Validar SHA/HTTP após todos os gates, sem confundir prova do teste com publicação ou campanha integral.
+
 
 ## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
 - **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.

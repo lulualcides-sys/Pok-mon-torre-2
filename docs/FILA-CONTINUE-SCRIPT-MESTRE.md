@@ -1,4 +1,25 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
+ 
+## 30/10/2026 — T20: KO final preso em fase fin na batalha 11 (CI #41022942486)
+
+- **PROVA REAL, NÃO CONCLUSÃO:** [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **FALHA** após dez treinadores derrotados, oito encontros selvagens vencidos e duas capturas legítimas. Na batalha 11 (Pidgey/Rattata/Butterfree), o último Butterfree chegou a **0/92 HP**, Pikachu tinha **61,84/66 HP**, mas a cena combate permaneceu ativa em fase fin por 240 segundos, sem vitória gravada nem retorno à campanha. Não contabilizar treinador 11, Brock, insígnia ou TM.
+- **Diagnóstico isolado:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit b386d3ca6092e2847aac7649286326c9f1d642dc, altera **somente o teste**: detecta fin preso após 12 s, coleta relógio/estado Phaser, equipe e placar sem forçar resultado ou mudar código do jogo. [Nova CI #41028820921](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41028820921) **iniciada; resultado ainda não verificado**. Investigar se o timer de transição nativo foi pausado; não afirmar causa antes do diagnóstico. T07/T08/T20 permanecem PARCIAIS.
+
+
+## 30/10/2026 — T20: gate de evolução Caterpie corrigido, aguardando CI
+
+- **Falha verificada:** [CI #41021932709](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41021932709) reprovou após **duas vitórias reais** (Pidgey e Rattata), antes do terceiro combate, por esperar Caterpie quando o motor retornou Metapod. O adversário evolui legalmente de Caterpie no **Lv7** e de Metapod no Lv10; isso é um erro de expectativa do teste, **não uma derrota nem um VFX ausente**.
+- **Patch isolado:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit 2b12d3d9eab3788a8cc7c91bbbbde03706f1b6fb, verifica formas por limiares FRLG Lv7/10 e corrige a mensagem final para **13 treinadores + Brock**. Sintaxe JS analisada por V8; [CI #41022942486](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41022942486) **em andamento; Chromium ainda não confirmado**. Não há merge, deploy nem prova de Brock.
+- **Próximo gate:** aguardar CI do novo commit, examinar logs e artefatos; se verde, revisar compatibilidade com main, fazer merge apenas com todos os gates aprovados e verificar Pages SHA/HTTP. T07/T08 e T20 continuam **PARCIAIS**; nenhum golpe, VFX, sprite, TM, cooldown ou save alterado.
+
+
+
+## 30/10/2026 — T20: Rocket vencida após oito vitórias selvagens; CI falhou por contador absoluto
+
+- **Evidência real, sem declaração de Brock:** [CI #41006367570](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41006367570) falhou no teste, mas o log prova cinco vitórias de treinador, duas capturas selvagens legais, oito vitórias selvagens com XP e **vitória contra Rocket**: `trainer=6`, `wins=14`, `losses=0`, `stage=0`. A falha foi um timeout de 240 segundos após a vitória, porque o teste esperava `wins===6` e ignorava oito vitórias selvagens acumuladas; combate nativo encerrado em `fase=fin`.
+- **Correção isolada ainda sob CI:** [PR #329](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/329), commit `97e56b2b` / HEAD `9b62ccb8`, compara vitórias com `before.wins+1`, verifica uma vitória real por combate selvagem e não altera XP/HP/resultados. [Nova CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) iniciada; **não declarar 13 treinadores/Brock aprovados nem mesclar antes de todos os gates verdes**.
+- **T07/T08 e T20 PARCIAIS:** a prova é de execução real da Rocket, não de jornada Pallet→Campeão. Sem modificação de runtime, golpes, 227 VFX aprovados, sprites, cooldowns, TMs ou saves. Confirmar compatibilidade com a main, Chromium, merge e SHA HTTP Pages antes de declarar publicação.
+
 
 ## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
 - **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.
