@@ -1,5 +1,8 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## §17/T22 — defesa de save legado (31/10/2026)
+- RED comprovado em código real: pending sem token válido congela VS Seeker e pode validar ticket malformado; `validRematchResult(state,null)` lança TypeError nesse caso. Patch mínimo rejeita tokens não inteiros positivos e libera nova reserva quando pendência inválida. GREEN focado 8/8; npm/CI/Chromium/Pages ainda não verificados. T20 #369 já integrada na main; próxima frente T19.
+
 ## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
 - **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.
 - **CI original da branch:** [#41153415212](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153415212) **success**: build real Phaser, testes unitários e Chromium, 13 treinadores em save único iniciado com Bulbasaur Lv5, capturas genuínas de Spearow e Geodude, quatro derrotas normais e recuperação, Brock vencido, estágio 1, insígnia **Rocha** e TM **tm-rock-tomb**. Resultado final: 37 vitórias acumuladas (inclui treino selvagem), 4 derrotas, equipe Bulbasaur Lv14 / Spearow Lv14 / Geodude Lv12. Guardião visual da branch [#41153419869](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153419869) **success**.

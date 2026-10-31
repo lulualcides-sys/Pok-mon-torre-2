@@ -1,5 +1,8 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Lote T22 — validação de tickets (31/10/2026)
+Arquivos: `torre2-rematch-policy.js` e `tests/rematch-policy.test.js`. RED reproduzido sobre main `1fcc64eb`, GREEN 8/8 focado no patch. Base sincronizada com main `a043032b` para preservar documentação concorrente. Exigir npm test/check/check:reuse/build, Chromium, guardião e Pages HTTP SHA antes de publicação; rollback restrito a esses arquivos.
+
 ## Plano de continuidade pós-CI verde — T20→T19 (31/10/2026)
 1. Preservar a prova completa da PR #369 (squash `1fcc64eb`): 13 treinadores genuínos, captura nativa de Spearow e Geodude, Brock, Rocha e TM Rock Tomb; CI #41153415212 e visual #41153419869 aprovados. O merge não introduziu ajustes de combate e não implica publicação HTTP automática.
 2. Revalidar testes/Pages da `main` integrada. Não confundir o resultado da branch antiga com teste da `main` nova. Sem comprovação de SHA público, registrar publicação como pendente.

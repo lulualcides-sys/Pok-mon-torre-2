@@ -1,5 +1,8 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## Lote T22 — ticket legado sem token (31/10/2026)
+Aceite: pendência sem token positivo seguro não bloqueia o VS Seeker carregado nem concede prêmio; resultado ausente retorna falso sem lançar erro; ticket válido permanece consumível uma única vez. Sem reescrever saves, XP, TM, VFX ou gameplay.
+
 ## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
 - **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.
 - **CI original da branch:** [#41153415212](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153415212) **success**: build real Phaser, testes unitários e Chromium, 13 treinadores em save único iniciado com Bulbasaur Lv5, capturas genuínas de Spearow e Geodude, quatro derrotas normais e recuperação, Brock vencido, estágio 1, insígnia **Rocha** e TM **tm-rock-tomb**. Resultado final: 37 vitórias acumuladas (inclui treino selvagem), 4 derrotas, equipe Bulbasaur Lv14 / Spearow Lv14 / Geodude Lv12. Guardião visual da branch [#41153419869](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153419869) **success**.
