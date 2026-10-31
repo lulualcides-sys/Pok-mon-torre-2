@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {gymInteriorModel,ACE_ANCHORS} from '../tools/pokearena/torre2-gym-interior.js';
+import {gymInteriorModel,gymRouteCount,ACE_ANCHORS} from '../tools/pokearena/torre2-gym-interior.js';
 const aces=['onix','starmie','raichu','vileplume','weezing','alakazam','arcanine','rhyhorn'];
 const gyms=aces.map((boss,i)=>({city:i?'Cerulean':'Pewter',leader:i?'Misty':'Brock',boss,leaderTeam:[boss]}));
 const limit=s=>13+2*s;
@@ -26,4 +26,14 @@ test('all eight boss species match the existing gym team without state changes',
  });
  assert.ok(ACE_ANCHORS.ace[0]-ACE_ANCHORS.leader[0]>80);
  assert.equal(gymInteriorModel({stage:8},gyms,limit,route),null);
+});
+
+test('route CTA never diverts Brock trainer 9 to the gym before route trainer 10',()=>{
+ assert.equal(gymRouteCount(0,limit),10);
+ assert.equal(9>=gymRouteCount(0,limit),false);
+ assert.equal(10>=gymRouteCount(0,limit),true);
+ assert.equal(gymRouteCount(1,limit),11);
+ assert.equal(10>=gymRouteCount(1,limit),false);
+ assert.equal(11>=gymRouteCount(1,limit),true);
+ assert.equal(gymRouteCount(8,limit),null);
 });

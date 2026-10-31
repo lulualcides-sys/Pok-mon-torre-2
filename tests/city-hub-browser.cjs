@@ -56,8 +56,10 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-mart-buy')==='pokeball'));
    await click(120,315);await city();
    await click(515,134);
-   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.text?.includes('FALTAM 13')));
-   await click(320,306);await city();
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2GymInterior?.stage===1);
+   const gymPreview=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').__torre2GymInterior);
+   assert.equal(gymPreview.ace,'starmie');assert.equal(gymPreview.aceRendered,true);
+   await named('torre2-gym-back',true);await city();
    await named('torre2-city-action','EQUIPE');
    await named('torre2-summary-back',true);await city();
    await named('torre2-city-action','MAIS EQUIPE');

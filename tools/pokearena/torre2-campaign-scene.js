@@ -1,6 +1,6 @@
 import {CITY_ATLAS_KEY,CITY_ATLAS_FILE,needsCeruleanAtlas} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
-import {gymInteriorModel,renderGymInterior} from './gym-interior.js';
+import {gymInteriorModel,gymRouteCount,renderGymInterior} from './gym-interior.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -531,7 +531,7 @@ create(){
     capture:()=>this.grassScreen(state),
     pokemon:i=>state.team[i]&&this.showSummary(state,i),
     trainer:(i,status)=>{
-     if(status==='current')return state.trainer>=TRAINERS_PER_GYM(state.stage)-4?
+     if(status==='current')return state.trainer>=gymRouteCount(state.stage,TRAINERS_PER_GYM)?
       this.gymScreen(state):this.enterBattle(state);
      if(status==='defeated')return this.rematchScreen(state,i);
      return this.__torre2PathDetails(text,this,null);
@@ -546,7 +546,7 @@ create(){
    city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
-   battle:()=>state.stage<8&&state.trainer>=TRAINERS_PER_GYM(state.stage)-(state.stage===0?3:4)?
+   battle:()=>state.stage<8&&state.trainer>=gymRouteCount(state.stage,TRAINERS_PER_GYM)?
     this.gymScreen(state):this.enterBattle(state),
    gym:()=>this.gymScreen(state),
    training:()=>this.enterTraining(state),
