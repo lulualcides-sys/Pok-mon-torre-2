@@ -6,6 +6,7 @@ export function rematchState(state){
  r.sequence=Math.max(0,Math.floor(Number(r.sequence)||0));return r;
 }
 export function rechargeRematches(state){const r=rematchState(state);r.charge=Math.min(REMATCH_ACTIVITIES,r.charge+1);}
+const durableTicketToken=token=>Number.isSafeInteger(token)&&token>0;
 export function reserveRematch(state,index,mapStage=state.stage){
  const r=rematchState(state);
  // A valid interrupted battle keeps its durable ticket. The same
@@ -14,7 +15,8 @@ export function reserveRematch(state,index,mapStage=state.stage){
  // a new reservation after three real activities instead of deadlocking
  // the VS Seeker indefinitely on a stale pending record.
  const pending=r.pending;
- const stillValid=pending&&state.stage===(pending.progressStage??pending.stage)&&
+ const stillValid=pending&&durableTicketToken(pending.token)&&
+  state.stage===(pending.progressStage??pending.stage)&&
   state.trainer===pending.progress;
  if(stillValid||r.charge<REMATCH_ACTIVITIES)return null;
  r.charge=0;r.sequence++;
@@ -26,7 +28,8 @@ export function reserveRematch(state,index,mapStage=state.stage){
 }
 export function validRematchResult(state,ticket){
  const p=state.rematches?.pending;
- return !!p&&p.token===ticket?.token&&p.stage===ticket.stage&&p.trainer===ticket.trainer&&state.stage===(p.progressStage??p.stage)&&state.trainer===p.progress;
+ return !!p&&!!ticket&&durableTicketToken(p.token)&&
+  durableTicketToken(ticket.token)&&p.token===ticket.token&&p.stage===ticket.stage&&p.trainer===ticket.trainer&&state.stage===(p.progressStage??p.stage)&&state.trainer===p.progress;
 }
 export function consumeRematchResult(state,ticket){
  if(!validRematchResult(state,ticket))return false;
