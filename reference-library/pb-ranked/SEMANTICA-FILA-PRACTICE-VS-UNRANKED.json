@@ -1,0 +1,405 @@
+{
+  "date": "2026-10-31T21:12:42.528Z",
+  "files": [
+    {
+      "url": "https://ranked.pokemonbattlegrounds.com/app.js",
+      "size": 125328,
+      "sha256": "aa2d3f650ec72ecff47620243835a9f6b2daf11389734de14a32ffffe65d536b",
+      "patterns": {
+        "practiceBot": {
+          "count": 0,
+          "hits": []
+        },
+        "unrankedBattle": {
+          "count": 1,
+          "hits": [
+            {
+              "offset": 49789,
+              "line": 4,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            }
+          ]
+        },
+        "practiceLevels": {
+          "count": 1,
+          "hits": [
+            {
+              "offset": 58128,
+              "line": 4,
+              "nearestDecl": [
+                "hi"
+              ],
+              "varHints": [
+                "practice",
+                "queue",
+                "mode",
+                "level"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            }
+          ]
+        },
+        "serverFull": {
+          "count": 2,
+          "hits": [
+            {
+              "offset": 20740,
+              "line": 2,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            },
+            {
+              "offset": 35196,
+              "line": 4,
+              "nearestDecl": [
+                "pt"
+              ],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            }
+          ]
+        },
+        "queueBot": {
+          "count": 0,
+          "hits": []
+        },
+        "queueLabelUnranked": {
+          "count": 4,
+          "hits": [
+            {
+              "offset": 4785,
+              "line": 1,
+              "nearestDecl": [],
+              "varHints": [
+                "practice",
+                "Practice"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            },
+            {
+              "offset": 49794,
+              "line": 4,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            },
+            {
+              "offset": 70745,
+              "line": 7,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            },
+            {
+              "offset": 102150,
+              "line": 14,
+              "nearestDecl": [
+                "Fi"
+              ],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            }
+          ]
+        },
+        "queueLabelPractice": {
+          "count": 12,
+          "hits": [
+            {
+              "offset": 4795,
+              "line": 1,
+              "nearestDecl": [],
+              "varHints": [
+                "Practice"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": true,
+                "bot": false,
+                "queue": false
+              }
+            },
+            {
+              "offset": 4805,
+              "line": 1,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": true,
+                "unranked": true,
+                "bot": false,
+                "queue": false
+              }
+            },
+            {
+              "offset": 41006,
+              "line": 4,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            },
+            {
+              "offset": 58040,
+              "line": 4,
+              "nearestDecl": [
+                "hi"
+              ],
+              "varHints": [
+                "practice",
+                "queue",
+                "mode"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            },
+            {
+              "offset": 58103,
+              "line": 4,
+              "nearestDecl": [
+                "hi"
+              ],
+              "varHints": [
+                "practice",
+                "queue",
+                "mode",
+                "level"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            },
+            {
+              "offset": 58286,
+              "line": 4,
+              "nearestDecl": [],
+              "varHints": [
+                "queue",
+                "mode",
+                "practice",
+                "level"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            },
+            {
+              "offset": 58340,
+              "line": 4,
+              "nearestDecl": [],
+              "varHints": [
+                "level",
+                "practice"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            },
+            {
+              "offset": 58503,
+              "line": 4,
+              "nearestDecl": [],
+              "varHints": [
+                "practice"
+              ],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            },
+            {
+              "offset": 58556,
+              "line": 4,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": true,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            },
+            {
+              "offset": 63922,
+              "line": 7,
+              "nearestDecl": [],
+              "varHints": [],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": false
+              }
+            },
+            {
+              "offset": 73189,
+              "line": 7,
+              "nearestDecl": [],
+              "varHints": [
+                "bot",
+                "level"
+              ],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": true,
+                "queue": false
+              }
+            },
+            {
+              "offset": 122425,
+              "line": 14,
+              "nearestDecl": [],
+              "varHints": [
+                "queue",
+                "mode",
+                "level"
+              ],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": false,
+                "queue": true
+              }
+            }
+          ]
+        },
+        "playerVsBot": {
+          "count": 1,
+          "hits": [
+            {
+              "offset": 104189,
+              "line": 14,
+              "nearestDecl": [
+                "Ie"
+              ],
+              "varHints": [
+                "bot"
+              ],
+              "sameWindow": {
+                "practice": false,
+                "unranked": false,
+                "bot": true,
+                "queue": false
+              }
+            }
+          ]
+        },
+        "findMatch": {
+          "count": 0,
+          "hits": []
+        }
+      }
+    },
+    {
+      "url": "https://ranked.pokemonbattlegrounds.com/bundles/03413a73844b301c.js",
+      "size": 5967574,
+      "sha256": "03413a73844b301c16dee8bb8b68dd00df01c20d1427d03b69a8da02ebf2dce3",
+      "patterns": {
+        "practiceBot": {
+          "count": 0,
+          "hits": []
+        },
+        "unrankedBattle": {
+          "count": 0,
+          "hits": []
+        },
+        "practiceLevels": {
+          "count": 0,
+          "hits": []
+        },
+        "serverFull": {
+          "count": 0,
+          "hits": []
+        },
+        "queueBot": {
+          "count": 0,
+          "hits": []
+        },
+        "queueLabelUnranked": {
+          "count": 0,
+          "hits": []
+        },
+        "queueLabelPractice": {
+          "count": 0,
+          "hits": []
+        },
+        "playerVsBot": {
+          "count": 0,
+          "hits": []
+        },
+        "findMatch": {
+          "count": 0,
+          "hits": []
+        }
+      }
+    }
+  ],
+  "method": "Public JS string/identifier search. This index does not prove runtime routing/queue semantics.",
+  "warnings": [
+    "No game source or art is stored",
+    "Neither an unranked UI chip nor the Practice button establishes opponent type; verify battle or server-side protocol",
+    "Source snippets are deliberately omitted"
+  ]
+}
