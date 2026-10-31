@@ -1,5 +1,10 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T19 — continuação natural Misty (31/10/2026)
+- #400 MERGED `693c4e8c`, CI #41178359400 SUCCESS: dez treinadores de Cerulean, 36 vitórias, zero derrotas, save genuíno artifact #13033958812. Não repetir Brock nem dez treinadores.
+- Branch `test/t19-cerulean-misty-native-20261031`: cinco treinadores restantes e Misty com save verificado SHA-256, clique Phaser, Centro, XP, Cascata, TM03 e reload. **CI pendente; não alegar Misty vencida.** Próxima frente independente T31 #402.
+
+
 ## T19 — dez treinadores Cerulean reais, CI verde (31/10/2026)
 - PR #400 HEAD anterior `5bc77a761b`, CI natural #41174200072 SUCCESS, guardião #41174210095 e T25 #41174210051 SUCCESS. Save legítimo de Brock #41162666401, dez treinadores Cerulean, vitórias acumuladas 36, zero derrotas, XP e reload persistentes; artifact #13032891442 com save exportado. Nenhuma vitória/insígnia de Misty ou TM03 comprovada.
 - Branch sincronizada SEM FORCE com main `8a6f802fa7` (T08 #401 integrada); exigir novo CI do HEAD combinado antes de mesclar. Próxima frente T31 #402 ou T19 Misty.

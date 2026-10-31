@@ -1,5 +1,13 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## T19 — cinco treinadores e Misty (31/10/2026)
+- [x] CI #41178359400 SUCCESS, save genuíno #13033958812, #400 integrada.
+- [x] Criar teste e workflow isolados, sem manipular progresso.
+- [ ] Validar cinco treinadores, Misty, Cascata, TM03, XP, reload e hash em Chromium real; investigar logs/screenshots se falhar.
+- [ ] Exigir CI completa, revisão, merge e Pages HTTP do SHA final.
+- [ ] Próxima frente diferente: T31 #402, não T10.
+
+
 ## T19 — dez Cerulean, HEAD sincronizado (31/10/2026)
 - [x] CI natural #41174200072, visual #41174210095, T25 #41174210051 SUCCESS no HEAD antigo; artifact #13032891442.
 - [x] Sincronizar PR #400 sem force com main que contém #396 e #401.

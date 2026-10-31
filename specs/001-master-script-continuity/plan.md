@@ -1,5 +1,10 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## T19 — cinco treinadores + Misty (31/10/2026)
+- Partir da main com #400 integrado, reutilizar artifact #13033958812. Teste `tests/t19-earned-cerulean-misty-browser.cjs` e workflow dedicado com hash estrito e controles Phaser reais. Não tocar runtime, AUTO, golpes, sprites ou saves dos jogadores.
+- Verificar npm test/check/check:reuse, build, Chromium, regressão browser, guardião e Pages HTTP SHA antes de publicar. Próxima frente independente T31 #402.
+
+
 ## T19 — integração após main T08 (31/10/2026)
 - Preservar teste e workflow originais de #400; mesclar main `8a6f802fa7` sem force e sem perder docs de T08/T22. CI longa de HEAD sincronizado justificada por mudança de base e gate exato. Artifact natural #13032891442 é entrada da próxima etapa Misty. Sem alteração no runtime.
 

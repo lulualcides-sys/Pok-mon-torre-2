@@ -1,5 +1,10 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## Execução 31/10/2026 — §19/T19 Misty (branch isolada)
+- Main de partida `693c4e8c` após #400. CI #41178359400 SUCCESS, artifact natural #13033958812; dez treinadores, 36 vitórias, zero derrotas. Pages anterior #41178288040 SUCCESS, HTTP `src-6f1d462283`, **não comprova** publicação de `693c4e8c`.
+- Novo teste/workflow T19 reutiliza save sem fabricar vitórias, estágio, badges, XP, RNG ou capturas; exige cinco treinadores, Misty, Cascata/TM03 e reload. **Status: aguardando CI.** Próxima frente T31.
+
+
 ## §19/T19 — dez Cerulean com save real (31/10/2026)
 - Run #41174200072 SUCCESS no HEAD `5bc77a761b`: dez combates nativos Cerulean a partir de save Pallet→Brock exportado na #398; XP, Centro, AUTO, recarga e persistência, 36 vitórias acumuladas/0 derrotas nesta execução; artifact #13032891442. Guardião #41174210095 e T25 #41174210051 SUCCESS.
 - Branch rebaseada por merge não forçado contra main `8a6f802fa7` com código de testes/workflow preservado; CI do HEAD sincronizado ainda necessária. Misty, Cascata e TM03 NÃO comprovadas. Nenhum runtime ou save de usuário modificado.
