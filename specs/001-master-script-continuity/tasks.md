@@ -1,5 +1,12 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## T19 — 15 treinadores Cerulean + Misty: marco comprovado (31/10/2026)
+- [x] Reutilizar save natural de 10 treinadores de CI #41178359400 com hash/cadeia preservados.
+- [x] Vencer cinco treinadores restantes, Misty e obter Cascata/TM03 no cliente Phaser; CI #41194363962 SUCCESS, 42 vitórias / 0 derrotas, XP, save e reload.
+- [x] Sincronizar sem modificar gameplay para main `70fabdee` com T13/T14/T24.
+- [ ] Workflow T19 + regressões de navegador e guardião no SHA sincronizado; revisar PR #403 e integrar apenas verde.
+- [ ] Confirmar GitHub Pages do commit integrado e avançar naturalmente para Lt. Surge/Vermilion.
+
 ## T19 — dez Cerulean, HEAD sincronizado (31/10/2026)
 - [x] CI natural #41174200072, visual #41174210095, T25 #41174210051 SUCCESS no HEAD antigo; artifact #13032891442.
 - [x] Sincronizar PR #400 sem force com main que contém #396 e #401.

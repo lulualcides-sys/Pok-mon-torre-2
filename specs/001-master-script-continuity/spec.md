@@ -1,5 +1,8 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## T19 — aceite natural Misty COMPROVADO na CI original (31/10/2026)
+- Run #41194363962, job #124517430468, arquivo `t19-earned-cerulean-misty-report.json` e artefato #13041220602: 15 treinadores naturais de Cerulean, Misty, Cascata, TM03, XP e reload no Phaser, `stage=2`, `trainer=0`, `wins=42`, `losses=0`; sem alteração da seed legítima. Regressão obrigatória no código atual pós T13/T14/T24 antes de merge.
+
 ## T19 — dez treinadores Cerulean com prova nativa (31/10/2026)
 - Aceite verificado no HEAD antigo: CI #41174200072 comprovou dez treinadores reais e save exportado, sem injetar progresso, com 36 vitórias acumuladas e zero derrotas. Revalidação obrigatória após sincronizar main; Misty/Cascata/TM03 fora do escopo deste lote.
 

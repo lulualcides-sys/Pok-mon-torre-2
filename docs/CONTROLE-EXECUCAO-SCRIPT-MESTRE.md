@@ -1,5 +1,9 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## T19 — Misty natural COMPROVADA pela CI (31/10/2026)
+- PR #403, HEAD anterior `04f9e184`, workflow #41194363962 **SUCCESS** (job #124517430468): 15 treinadores de Cerulean + Misty vencidos no jogo real Phaser/WebGL, Insígnia Cascata, TM03, XP e reload; relatório exato `PASS T19 FIFTEEN CERULEAN TRAINERS + MISTY CASCATA TM03 XP RELOAD {"saveUnchanged":true,"stage":2,"trainer":0,"wins":42,"losses":0}`. Artefato #13041220602. Seed original de 10 treinadores #13033958812, checkpoint verificado e luta natural, sem injeção de recompensas.
+- Prova no HEAD antigo; sincronizado para testar com o código mais recente `70fabdee` (T13/T14/T24). **Não declarar prova pós-integração antes do workflow verde no novo SHA.**
+
 ## §19/T19 — dez Cerulean com save real (31/10/2026)
 - Run #41174200072 SUCCESS no HEAD `5bc77a761b`: dez combates nativos Cerulean a partir de save Pallet→Brock exportado na #398; XP, Centro, AUTO, recarga e persistência, 36 vitórias acumuladas/0 derrotas nesta execução; artifact #13032891442. Guardião #41174210095 e T25 #41174210051 SUCCESS.
 - Branch rebaseada por merge não forçado contra main `8a6f802fa7` com código de testes/workflow preservado; CI do HEAD sincronizado ainda necessária. Misty, Cascata e TM03 NÃO comprovadas. Nenhum runtime ou save de usuário modificado.

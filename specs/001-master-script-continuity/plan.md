@@ -1,5 +1,8 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## T19 — Misty CI real provada e sincronização (31/10/2026)
+- HEAD antigo PR #403 `04f9e184`: workflow #41194363962 SUCCESS com 15 treinadores + Misty natural, 42 vitórias / 0 derrotas, Cascata e TM03; checkpoint e save verificados. Copiar só testes/workflow e registro de prova para main `70fabdee` (T13/T14/T24), sem tocar runtime ou saves; revalidar HEAD novo no GitHub Actions antes de merge.
+
 ## T19 — integração após main T08 (31/10/2026)
 - Preservar teste e workflow originais de #400; mesclar main `8a6f802fa7` sem force e sem perder docs de T08/T22. CI longa de HEAD sincronizado justificada por mudança de base e gate exato. Artifact natural #13032891442 é entrada da próxima etapa Misty. Sem alteração no runtime.
 
