@@ -1,7 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {KANTO_DEX} from '../tools/pokearena/torre2-campaign-core.js';
+// The source campaign core imports generated Phaser-client modules, which do
+// not exist until build-preview. Extract ONLY its immutable 151-name literal
+// instead of executing the runtime import graph during plain Node npm test.
+const coreSource=readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
+const dexMatch=coreSource.match(/export const KANTO_DEX=Object\\.freeze\\('([^']+)'\\.split\\(','\\)\\)/);
+assert.ok(dexMatch,'Official 151-name Kanto Dex declaration must be present');
+const KANTO_DEX=dexMatch[1].split(',');
 import {kantoDexSpeciesId,kantoDexPageModel,pcCondition,
  pcMemberLabel,pcPageModel,PC_FILTERS} from '../tools/pokearena/torre2-collection-ui.js';
 
