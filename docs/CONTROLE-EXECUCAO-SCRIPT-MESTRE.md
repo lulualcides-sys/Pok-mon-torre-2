@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## Checkpoint 31/10/2026 — §17/T22 e §20/T20
+- PR #369 integrada na main `1fcc64eb53407b535cc8919832bacbfd492c7354`; CI natural #41153415212 `success` e evidência Pallet→Brock, 13 treinadores, insígnia Rocha e TM39 no mesmo save. Isso **não** homologa Pallet→Campeão, Android ou Pages da main atual.
+- PR #393 publicada na main anterior `963ed2cf`: Pages #41160156153 `success`, verificação HTTP e Chromium público aprovados. Não confundir esse SHA com a main mais recente.
+- Novo lote §17/T22: teste RED do código original detectou `TypeError` com resultado nulo, autorização indevida de ticket sem token e VS Seeker travado por pending legado inválido. Correção preserva tickets válidos e saves, sem tocar em VFX/combate; testes locais focados GREEN, CI/Chromium/Pages pendentes.
+- Última frente T22; próxima frente distinta T19/T21 ou T07/T08.
+
 ## CHECKPOINT ATUAL 31/10/2026 — publicado; T20 ainda em teste
 - Leia primeiro [CHECKPOINT 31/10](CHECKPOINT-SCRIPT-MESTRE-2026-10-31.md): main `994e2286` **publicada** (Pages #41153252202, HTTP `src-0dcbef4bd8`, Chromium público verde). T03 #386 e T22 #387 mescladas; não repetir. T20 #369 `6259f3be` DRAFT, novo Chromium longo #41153415212 em andamento, visual verde, Brock/Rocha/TM39 **não comprovados**. T10 #381 CI vermelha: evitar ciclos. Histórico abaixo preservado; dados anteriores de T03/Pages foram superados.
 
