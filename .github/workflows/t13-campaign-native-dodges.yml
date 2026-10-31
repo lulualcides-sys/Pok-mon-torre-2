@@ -44,6 +44,8 @@ jobs:
         run: node --test tests/t13-campaign-native-dodges-built.test.mjs
       - name: Misty, Surge, evolutions and native ESP contract
         run: node tests/misty-surge-built.test.mjs
+      - name: Kanto 151 real PMD sprites, evolution kits and native ESP
+        run: node tests/kanto-151-built.test.mjs
       - name: Real Phaser mobile ESP + native party switch
         env:
           CHROME_BIN: /usr/bin/google-chrome
