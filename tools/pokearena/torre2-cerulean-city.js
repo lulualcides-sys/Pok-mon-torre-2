@@ -2,6 +2,7 @@
  * Uses the already-cached FireRed city sheet; no generated mockup pasted in. */
 import {getSourceMainBounds} from './frlg-location.js';
 import {buildingInteractions} from './kanto-hotspots.js';
+import {addFireRedNPC} from './frlg-npc.js';
 const FONT='Pixelify Sans,monospace';
 const VIEW=Object.freeze({x:18,y:43,w:604,h:246});
 function title(scene,x,y,message,size=9,color='#e7faff',depth=22){
@@ -34,6 +35,23 @@ function originalCityArt(scene){
   .setDisplaySize(VIEW.w,VIEW.h).setData('torre2-city-real-art',true);
  return {main,crop,key,name};
 }
+// Animate a few canal highlights and reuse approved native FireRed residents.
+// This only affects the optional city scene, not combat, saves or XP.
+function enrichCerulean(scene){
+ const canal=scene.add.graphics().setDepth(8);
+ for(const [x,y] of [[42,83],[71,104],[49,133],[83,158],
+  [45,189],[78,215],[57,245]]){
+  canal.fillStyle(0xd8f9ff,.8);canal.fillRect(x,y,5,2);
+  canal.fillStyle(0x63bce5,.65);canal.fillRect(x+2,y+3,3,1);
+ }
+ scene.tweens.add({targets:canal,alpha:{from:.32,to:.86},
+  duration:1650,yoyo:true,repeat:-1});
+ for(const [kind,x,y] of [['youngster',181,220],['lass',461,218],
+  ['fisherman',112,245]]){
+  const npc=addFireRedNPC(scene,kind,x,y,{scale:1.04,depth:17});
+  if(npc)npc.setData('torre2-city-resident',kind).setAlpha(.96);
+ }
+}
 function action(scene,x,y,w,label,fn,highlight=false){
  const g=scene.add.graphics().setDepth(31);
  const paint=hover=>{
@@ -41,7 +59,7 @@ function action(scene,x,y,w,label,fn,highlight=false){
    (hover?0xffe7a0:0xe9c272):(hover?0x2e719b:0x173e62),
    highlight?0xfff4bb:0x74bddd);
  };
- title(scene,x,y,label,8,highlight?'#1b2931':'#eafbff',32).setOrigin(.5);
+ title(scene,x,y,label,highlight?10:8,highlight?'#122a3e':'#eafbff',32).setOrigin(.5);
  const z=scene.add.zone(x,y,w,32).setInteractive({useHandCursor:true})
   .setDepth(33).setData('torre2-city-action',label);
  z.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
@@ -61,6 +79,11 @@ function cityHotspot(scene,sceneView,hotspot,label,fn,locked=false){
    hover?0xffffff:locked?0x8499b2:0xffdd97);
  };
  title(scene,x,y-25,label,8,locked?'#b5c3d0':'#fff0bc',28).setOrigin(.5);
+ const marker=scene.add.graphics().setDepth(28);
+ marker.fillStyle(locked?0xa6b7c6:0xffe3a0);
+ marker.fillTriangle(x-4,y-48,x+4,y-48,x,y-42);
+ scene.tweens.add({targets:marker,alpha:{from:.42,to:1},
+  duration:1100,yoyo:true,repeat:-1});
  const z=scene.add.zone(x,y,50,31).setInteractive({useHandCursor:true})
   .setDepth(29).setData('torre2-city-landmark',label);
  z.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
@@ -95,6 +118,7 @@ export function renderCeruleanCity(scene,state,handlers={}){
  panel.fillStyle(0x081c31);panel.fillRect(0,0,640,360);
  box(panel,11,39,618,254,0x0e3c57,0x79c8ed);
  const art=originalCityArt(scene);
+ if(art)enrichCerulean(scene);
  if(!art){
   title(scene,66,170,'MAPA ORIGINAL INDISPONÍVEL',14,'#ffcebd');
  }
@@ -122,6 +146,7 @@ export function renderCeruleanCity(scene,state,handlers={}){
  title(scene,26,281,'CANAIS DE CERULEAN · OBJETIVO: MISTY',8,'#e5f8ff',23);
  panel.fillStyle(0x081e35);panel.fillRect(0,296,640,64);
  title(scene,14,306,'EQUIPE ATUAL',8,'#bbecf9');
+ title(scene,111,306,state.team.length+'/6 POKÉMON',7,'#f4dba4');
  for(let i=0;i<3;i++)teamCard(scene,panel,state.team[i],i);
  const buttons=[
   ['DESAFIOS',handlers.back],['EQUIPE',()=>handlers.pokemon?.(state.active||0)],
