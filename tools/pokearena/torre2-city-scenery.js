@@ -177,8 +177,13 @@ export function renderCityScenery(scene){
  // Tag only this city's animation: the campaign owns other legitimate
  // looping events, so their count must never be used as a leak threshold.
  timer.__torre2CityWaterTimer=true;
- // Removing map objects for a menu MUST stop the animation immediately.
- // A cleanup callback bound to the root avoids accumulating scene listeners.
- ripples.once('destroy',()=>{timer.remove(false);if(falls.active)falls.destroy()});
+ scene.__torre2CityWaterTimer=timer;
+ // Remove from the actual Phaser Clock, not only TimerEvent.remove(): the
+ // latter can leave a looping event in the clock's active queue until tick.
+ ripples.once('destroy',()=>{
+  scene.time.removeEvent(timer);
+  if(scene.__torre2CityWaterTimer===timer)scene.__torre2CityWaterTimer=null;
+  if(falls.active)falls.destroy();
+ });
  return {version:CITY_ART_VERSION,layers:6,landmarks:3};
 }

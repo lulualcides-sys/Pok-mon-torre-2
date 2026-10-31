@@ -468,6 +468,12 @@ create(){
   // The image-approved UI is a sequential battle road, not an overworld.
   // Keep all trainer/leader counters and the existing localStorage save IDs.
   // Retain older scene helpers below for PC, Center, Mart and summary only.
+  // The Phaser Scene persists across route/city/menu transitions. Stop its
+  // prior water clock event before removing visuals or drawing a new city.
+  if(this.__torre2CityWaterTimer){
+   this.time.removeEvent(this.__torre2CityWaterTimer);
+   this.__torre2CityWaterTimer=null;
+  }
   this.children.removeAll(true);
   this.__torre2CityHub=null;
   this.__torre2PathData={buscar};

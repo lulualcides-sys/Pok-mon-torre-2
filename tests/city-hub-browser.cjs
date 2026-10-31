@@ -72,7 +72,7 @@ const server=http.createServer((req,res)=>{
      throw Error('Phaser Clock event queues unavailable; cannot verify cleanup');
     const pendingRemoval=new Set(clock._pendingRemoval||[]);
     const active=[...clock._active,...clock._pendingInsertion]
-     .filter(e=>e.loop&&!pendingRemoval.has(e));
+     .filter(e=>e.loop&&!e.pendingDelete&&!pendingRemoval.has(e));
     return {allLoops:active.length,
      cityWaterLoops:active.filter(e=>e.__torre2CityWaterTimer===true).length};
    });
