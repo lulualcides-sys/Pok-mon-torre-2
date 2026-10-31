@@ -1,5 +1,12 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote T19 — Cerulean dez treinadores (31/10)
+- [x] Confirmar PR #399 mesclada em cf94d5f8 e CI #41169903523/guardião #41169907008 SUCCESS; fonte do save T20 preservada.
+- [ ] Validar no HEAD novo npm test/check/check:reuse/build e Chromium real de dez treinadores, com artifact de save SHA-256 e screenshot.
+- [ ] Conferir todas regressões e guardião, revisar diff, mesclar apenas gates verdes e Pages HTTP SHA.
+- [ ] Misty, Cascata, TM03 e campanha até Campeão continuam pendentes; próximo lote deve usar save exportado de dez treinadores, sem simular vitórias.
+- [ ] Próxima frente diferente T07/T08; não reabrir T10.
+
 ## Checkpoint T20 após integração — 31/10/2026
 - [x] Corrida real Pallet→Brock concluída: 13 treinadores, captura de Spearow/Geodude, Brock, Rocha e TM Rock Tomb (CI #41153415212).
 - [x] Guardião visual #41153419869 e testes nativos da branch concluídos com sucesso.

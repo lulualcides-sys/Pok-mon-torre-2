@@ -1,5 +1,8 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Lote T19 — continuação 5→10
+Origem main cf94d5f8; PR #399 já integrou prova real de cinco treinadores. Reutilizar seed original SHA-256 verificado (artifact #41162666401), não fabricar save de treinador 5. Novo browser test estende execução até treinador 10, exporta rawSave com hash e captura falhas; workflow isolado com npm test/check/check:reuse, build, Chromium e regressão geral. Risco: derrota legítima ou timeout; CI deve falhar, guardar screenshot e não injetar progresso. Branch isolada, não conflitar T22 #396 nem T10 #381. Merge só com gates verdes e Pages HTTP SHA.
+
 ## Plano de continuidade pós-CI verde — T20→T19 (31/10/2026)
 1. Preservar a prova completa da PR #369 (squash `1fcc64eb`): 13 treinadores genuínos, captura nativa de Spearow e Geodude, Brock, Rocha e TM Rock Tomb; CI #41153415212 e visual #41153419869 aprovados. O merge não introduziu ajustes de combate e não implica publicação HTTP automática.
 2. Revalidar testes/Pages da `main` integrada. Não confundir o resultado da branch antiga com teste da `main` nova. Sem comprovação de SHA público, registrar publicação como pendente.

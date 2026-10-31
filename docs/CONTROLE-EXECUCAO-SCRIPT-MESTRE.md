@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## Lote T19 — ampliar Cerulean 5→10 sem reiniciar Brock (31/10/2026)
+- Main de origem `cf94d5f84c86fc529c72b96c30b39380d0c94407`: PR #399 integrada; CI #41169903523 SUCCESS provou 5 treinadores reais no save original de Brock, 31 vitórias e zero derrotas, guardião #41169907008 e T25 #41169907033 verdes.
+- Novo teste isolado propõe continuar o MESMO save exportado por #398 (CI #41162666401, artifact 13028307911, SHA-256 conferido), agora por dez treinadores Cerulean consecutivos; Centro Pokémon nativo, AUTO, XP, persistência e reload; exporta bytes do save ao fim para etapas futuras.
+- Ainda NÃO VALIDADO: CI/Chromium do novo teste, vitória dos treinadores 6–10, Misty, Cascata, TM03 e Pages novo. Não há alteração de runtime, VFX, sprites, saves de usuários, IA ou cooldown.
+- Rotação: T19 agora; próxima frente independente T07/T08 (learnsets/slots), T22 #396 isolada até Pages da main anterior.
+
 ## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
 - **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.
 - **CI original da branch:** [#41153415212](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153415212) **success**: build real Phaser, testes unitários e Chromium, 13 treinadores em save único iniciado com Bulbasaur Lv5, capturas genuínas de Spearow e Geodude, quatro derrotas normais e recuperação, Brock vencido, estágio 1, insígnia **Rocha** e TM **tm-rock-tomb**. Resultado final: 37 vitórias acumuladas (inclui treino selvagem), 4 derrotas, equipe Bulbasaur Lv14 / Spearow Lv14 / Geodude Lv12. Guardião visual da branch [#41153419869](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153419869) **success**.
