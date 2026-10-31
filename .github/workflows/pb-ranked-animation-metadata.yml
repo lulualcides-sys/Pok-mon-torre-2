@@ -1,0 +1,49 @@
+name: PB Ranked — metadados de animações e arenas
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - 'tools/research/pb-ranked-animation-metadata.cjs'
+      - '.github/workflows/pb-ranked-animation-metadata.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pb-ranked-animation-metadata
+  cancel-in-progress: false
+
+jobs:
+  summarize-public-metadata:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 13
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify syntax
+        run: node --check tools/research/pb-ranked-animation-metadata.cjs
+      - name: Analyze public animation and scene metadata, not art
+        run: |
+          node tools/research/pb-ranked-animation-metadata.cjs
+          node - <<'NODE'
+          const j=require('./reference-library/pb-ranked/animacoes-marcadores-estados.json');
+          if(!j.observedSpeciesIds||!j.totalAnimationEntries)throw Error('No animations found');
+          console.log('Species',j.observedSpeciesIds,'animations',j.totalAnimationEntries);
+          NODE
+      - name: Commit only derived catalog and summaries
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reference-library/pb-ranked/animacoes-marcadores-estados.json reference-library/pb-ranked/fontes-cenarios-treinadores-resumo.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'research: index animation frame markers and scene metadata (no sprites)'
+            git pull --rebase origin research/pb-ranked-rea-20261031
+            git push origin HEAD:research/pb-ranked-rea-20261031
+          fi
