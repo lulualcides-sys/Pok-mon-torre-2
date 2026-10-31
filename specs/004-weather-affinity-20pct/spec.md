@@ -5,9 +5,9 @@ Quando um golpe de clima estiver ativo, Pokémon cujo tipo combina com esse clim
 
 ## Especificação
 - Sunny Day / SOL: beneficiados FIRE e GRASS; prejudicados WATER e ICE.
-- Rain Dance / CHUVA: beneficiados WATER e ELECTRIC; prejudicados FIRE, GROUND e ROCK.
+- Rain Dance / CHUVA: beneficiados **somente WATER**; prejudicados FIRE, GROUND e ROCK. ELECTRIC permanece neutro em bônus geral de ATK, porém Thunder conserva a precisão perfeita sob chuva. Rain Dance equipável somente para as 31 espécies aquáticas curadas do roster; FRLG TM18 pode ser mais amplo, mas essa é uma regra temática específica da campanha.
 - Sandstorm / AREIA: beneficiados ROCK, GROUND e STEEL; prejudicados GRASS, FLYING e ICE.
-- Hail / GRANIZO: beneficiados ICE e WATER; prejudicados FIRE, GRASS e DRAGON.
+- Hail / GRANIZO: beneficiados **somente ICE**; prejudicados FIRE, GRASS e DRAGON. WATER puro é neutro; WATER/ICE é favorecido pelo tipo ICE.
 - Qualquer ataque não-puro da espécie elegível ganha **um** fator 1.2 ou sofre **um** fator .8, independente do tipo do golpe.
 - Pokémon duplo tipo que reúna afinidade e oposição ao mesmo clima fica neutro (1.0); dois tipos do mesmo lado não empilham.
 - As penalidades originais de 50% por golpe Água no sol, Fogo na chuva e Solar Beam ficam preservadas. Se coincidirem com -20% por espécie, aplica-se só a penalidade maior (-50%), não ambas, evitando dano cair a 40% por dupla penalização.

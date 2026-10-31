@@ -30,10 +30,10 @@ const campaignLevel=at=>Math.min(KANTO_CAMPAIGN_MOVE_CAP,at);
 // is actually Fire-type Kanto and legally learns TM38 in FireRed/LeafGreen.
 // Other non-Fire species retain the existing real TM teaching system.
 // No renderer, original client kit, attack power, CD or save data is changed.
-// T16: Rain Dance has an already-approved pixel renderer. These 40 Kanto
-// WATER/ELECTRIC species are compatible with TM18 in the pinned FRLG table.
-// User-authorized Torre 2 house rule: a curated Lv25 level unlock; no TM
-// is consumed and no other weather move/VFX becomes equipable by this patch.
+// Rain Dance: WATER-family weather technique in the Torre 2 campaign.
+// FireRed TM18 compatibility is broader, but the campaign's curated
+// no-cost level unlock and the equipable roster now belong to Water only.
+// Keep existing approved VFX and never silently modify legacy saved moves.
 export const KANTO_RAIN_DANCE_SPECIES=Object.freeze([
  'squirtle', 'wartortle', 'blastoise', 'lapras', 'vaporeon',
  'gyarados', 'starmie', 'slowbro', 'poliwag', 'poliwhirl',
@@ -41,14 +41,12 @@ export const KANTO_RAIN_DANCE_SPECIES=Object.freeze([
  'seel', 'dewgong', 'shellder', 'cloyster', 'tentacool',
  'tentacruel', 'horsea', 'seadra', 'krabby', 'kingler',
  'goldeen', 'seaking', 'omanyte', 'omastar', 'kabuto',
- 'kabutops', 'pikachu', 'raichu', 'electabuzz', 'voltorb',
- 'electrode', 'magnemite', 'magneton', 'zapdos', 'jolteon'
-
+ 'kabutops'
 ]);
 export const KANTO_RAIN_DANCE_LEVEL=25;
 // Explicit legacy late-generation mastery gates from the Script Mestre.
 // Do not auto-grant these two status moves at Lv25.
-export const KANTO_RAIN_DANCE_LATE_LEVELS=Object.freeze({slowpoke:49,zapdos:50});
+export const KANTO_RAIN_DANCE_LATE_LEVELS=Object.freeze({slowpoke:49});
 export const KANTO_FIRE_BLAST_LEVEL=50;
 export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
  'charmander','charmeleon','charizard','vulpix','ninetales',
@@ -469,7 +467,11 @@ export function availableMoves(member){
 
  const filtered=moves.filter(m=>{
   const key=canonicalMoveKey(m.nombre);
-  // Prior approved verified-level exceptions: Slowpoke Lv49, Zapdos Lv50.
+  // Apply the Water-only thematic role before ANY native, TM, legacy,
+  // evolved-form or supplemental unlock. Existing saves remain untouched,
+  // but off-theme Rain Dance is no longer equipable or executable.
+  if(key==='rain-dance'&&!KANTO_RAIN_DANCE_SPECIES.includes(member.id))return false;
+  // Keep Slowpoke's approved late-generation level exception.
   // Their canonical/Pokedex timing must not regress during T16 expansion.
   if(key==='rain-dance'&&kantoFinish[key]?.includes(member.id)&&
      level<(KANTO_RAIN_DANCE_LATE_LEVELS[member.id]??KANTO_RAIN_DANCE_LEVEL))
@@ -635,7 +637,8 @@ export function campaignLearnset(species){
   if(canonicalMoveKey(move.nombre)!=='surf'&&
      move.forma&&!move.pendiente&&!move.torre2Unavailable&&
      !move.torre2RequiresHM&&!isPendingApprovalMove(move)&&
-     !list.has(move.id)&&frlgMachineCompatible(id,move.id))
+     !list.has(move.id)&&frlgMachineCompatible(id,move.id)&&
+     (move.id!=='rain-dance'||KANTO_RAIN_DANCE_SPECIES.includes(id)))
    list.set(move.id,Object.freeze({
     id:move.id,name:move.nombre,type:move.tipo,level:null,method:'TM'}));
  const result=Object.freeze([...list.values()].sort((a,b)=>

@@ -42,6 +42,12 @@ test('descriptor always reuses real ±20% species damage and respects neutral du
   assert.equal(weatherStatusDescriptor(w,[positive])?.kind,
     weatherSpeciesMultiplier(w,[positive])>1?'bonus':'penalty');
  }
+ setWeather(w,'rain');
+ assert.equal(weatherStatusDescriptor(w,['ELECTRIC']),null,
+  'Electric should not display a misleading ATK +20% under rain');
+ setWeather(w,'hail');
+ assert.equal(weatherStatusDescriptor(w,['WATER']),null,
+  'Pure Water should not display a hail offensive bonus');
  setWeather(w,'none');
  assert.equal(weatherStatusDescriptor(w,['FIRE']),null);
  assert.equal(WEATHER_STATUS_FLOAT_MS,1120);
