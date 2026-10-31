@@ -123,7 +123,7 @@ const server=http.createServer(async(req,res)=>{
   console.log('PASS NATIVE STARTER SELECTED AFTER REAL KO',JSON.stringify(after));
   await backToMap();
  };
- const prepareNaturalTeam=async({minimumTeam=2,strict=false}={})=>{
+ const prepareNaturalTeam=async({minimumTeam=2,strict=false,preferredCounter=null}={})=>{
   const before=await game();
   report.teamPreparation??={before,throws:[],captures:[],shop:[],retreats:[]};
   await page.evaluate(()=>{
@@ -144,7 +144,13 @@ const server=http.createServer(async(req,res)=>{
   }
   await backToMap();
   let encounters=0;
-  while((await game()).team.length<minimumTeam&&(await game()).balls>0&&encounters<24){
+  // On a difficult rival checkpoint, a real player can keep scouting grass
+  // for a better type matchup instead of filling every slot with duplicates.
+  // This uses the native wild RNG and RUN. Do NOT override encountered forms,
+  // force throws to succeed, grant free Pokéballs or inject party members.
+  const needsMore=team=>team.length<minimumTeam||
+   (preferredCounter&&!team.some(member=>member.id===preferredCounter));
+  while(needsMore((await game()).team)&&(await game()).balls>0&&encounters<32){
    encounters++;
    const old=await game();
    await page.evaluate(()=>{
@@ -176,7 +182,9 @@ const server=http.createServer(async(req,res)=>{
    saveReport();
    // Three or fewer native Poké Ball attempts on favorable opponents.
    // Preserve remaining inventory for real later encounters if RNG fails.
-   let battle=candidate.chance>=.27,attempts=0;
+   let battle=candidate.chance>=.27&&
+    (!preferredCounter||candidate.species===preferredCounter||
+     old.team.length<minimumTeam),attempts=0;
    while(battle&&(await game()).balls>0&&attempts++<3){
     const t0=await game();
     await sync();
@@ -246,6 +254,16 @@ const server=http.createServer(async(req,res)=>{
   saveReport();
   if(strict)assert.ok(report.teamPreparation.after.team.length>=minimumTeam,
    'At least two genuine RNG captures required before Rival; not enough earned resources');
+  if(preferredCounter){
+   report.teamPreparation.counterSearch={
+    species:preferredCounter,encounters,
+    acquired:report.teamPreparation.after.team.some(member=>member.id===preferredCounter)
+   };
+   saveReport();
+   assert.ok(report.teamPreparation.counterSearch.acquired,
+    'Native Route 1 RNG did not yield and capture '+preferredCounter+
+    ' after '+encounters+' real encounters; no fabricated counter');
+  }
   assert.equal(report.teamPreparation.after.trainer,before.trainer,
    'Wild captures must not skip any trainer checkpoint');
   assert.deepEqual(report.teamPreparation.after.box,expectedBox,
@@ -359,6 +377,14 @@ const server=http.createServer(async(req,res)=>{
     before=await game();
    }
    if(round===12){
+    // CI #41146832163: 12 legal wins, but Bulbasaur + two Spearow
+    // stalled for four minutes versus rival Charmander/Beedrill/Pikachu.
+    // Seek a rock-type teammate using native Route 1 grass and Pokéballs,
+    // rather than raising damage, reducing AI difficulty or forcing wins.
+    if(!before.team.some(member=>member.id==='geodude'))
+     await prepareNaturalTeam({minimumTeam:before.team.length,
+      strict:false,preferredCounter:'geodude'});
+    before=await game();
     assert.ok(before.team.length>=3,
      'Need two genuinely caught teammates before rival; no synthetic Pokémon');
     // Legitimate wild XP before the Fire rival, never altered enemy stats.
