@@ -1,0 +1,29 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31T18:00:35.993Z",
+  "counts": {
+    "scripts": 11,
+    "resources": 171,
+    "move_candidates": 123,
+    "motion_states": 189,
+    "control_terms": 143,
+    "arena_terms": 44,
+    "trainer_terms": 43,
+    "screenshots": 3
+  },
+  "coverage": "Public guest pages and scripts loaded in those pages only. No authenticated assets/flows.",
+  "notes": [
+    "REA inspect-web-page evidence success: ev_3bd2390673ff9b574048d35f8bd53a908d126842d171ad6638bd2eb368664e30",
+    "REA analyze-web-bundle evidence success: ev_9fef6ee407bc34c19fae4003bacaeecae0dc8b55240008f3b6c1540299596fc0",
+    "No demonstrated battle HUD in public guest practice; do not claim gameplay access."
+  ],
+  "output": [
+    "golpes-candidatos.json",
+    "movimentacoes-animacoes.json",
+    "arenas-e-cenarios.json",
+    "treinadores-pokebolas.json",
+    "analise-js-rea.json",
+    "recursos-publicos.json",
+    "navegacao-e-acesso.json"
+  ]
+}

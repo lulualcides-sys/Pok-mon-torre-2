@@ -1,0 +1,1390 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31T18:00:35.993Z",
+  "states": [
+    {
+      "name": "Attack",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "DOUBLES",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Double battle: two of your Pokémon fight at once. Any of your six can go in to either spot.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Hop",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "It is running.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Manual: drag on the arena to move. Your Pokémon only attacks when you press a move.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Manual: move with the left stick. Your Pokémon only attacks when you press a move.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Near the end of the clock comes sudden death: every hit grows stronger.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Sudden death! Every hit grows stronger until the clock runs out.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Walkover (did not show up)",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Walkover (left)",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "When a Pokémon faints you get a moment to pick who comes in next.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "askDodge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "beckon",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dodge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dodgeBtn",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "fainted",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "kos",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "lookopt",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "rankOf",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "rotateHint",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "rotateOk",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "running",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Shooting stars",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "White",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "c-white",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "koDone",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Doubles",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "N's Castle",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "nscastle",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Knockout artist",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "ko-",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "\"Not very effective\" moves hit twice as hard.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "A knockout raises its Attack.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "A knockout raises its Sp. Atk.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "A knockout raises its best stat.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Cannot fall asleep.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Contact lowers the attacker's Speed.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Contact may burn the attacker.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Contact may paralyse the attacker.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Contact may poison the attacker.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Contact may poison, paralyse or put the attacker to sleep.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Dark moves raise its Attack.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Each hit raises its Defense.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Fire and Water hits drastically raise its Speed.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Grass moves raise its Attack instead.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Hurts attackers that touch it.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Its Attack cannot be lowered by the opponent.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Lowers the opponent's Attack when it comes in.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "May put the attacker's move back on cooldown.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Moves of its own types hit even harder.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Physical hits lower its Defense and sharply raise its Speed.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Raises Attack or Sp. Atk when it comes in.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Raises Attack when it comes in.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Super-effective hits do 25% less.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Survives a knockout hit with 1 HP when at full HP.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Switches between Blade and Shield Forme as it attacks and defends.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Takes half damage from contact moves, double from Fire.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Water moves heal it; Fire hurts it 25% more.",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Dodge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 1",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 2",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 3",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 4",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Doubles: change which Pokémon you control",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": ".................kOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": ".........kk......kOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": ".....bckbcccbcbkbkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": ".....bk..kck.bb..kOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": ".....kgffkkkkkkkkkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": ".....vkgkOOOOOOOOkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "....bbcckccdccdcbkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "....dbccccccccccbkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "...bbcccdccdccccbkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "...bcccbdcbdcbccckOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "...bkkkkkfffkkkkkkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "...kccceecececccckOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "..bbdccecccccccddkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "..bbkGkkGGkGGkkGkkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "..bbkkkkkkkkkkkkkkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "..bcccbfbbfdbfbcckOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "..kccceeeecccecdckOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "..kkkSGGGGkSGGGGkkOok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "ATTACK FELL!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "ATTACK ROSE!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "BLOCKED!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "BRICK BREAK SMASHED THE GUARD!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Crunch",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "DOUBLE BATTLE",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Double",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Double Kick",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Double-Edge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Drill Run",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "EventSleep",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "FLAMETHROWER",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Flamethrower",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "GUARD BROKEN!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Grunt Throw",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "HURT BY RECOIL!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "HitGround",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Hurt",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "IT HURT ITSELF IN ITS CONFUSION!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Idle",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Ko",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "MAGIC GUARD!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "MUST RECHARGE",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "MUST RECHARGE!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Quick Attack",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "RearUp",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Rotate",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "SHELL GUARD!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Shell Guard",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Shoot",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Sky Attack",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Sleep",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Sleep Powder",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Slice",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "SpAttack",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Swing",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "THE GUARD SHATTERED!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "THE SUBSTITUTE BLOCKED IT!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Throat Chop",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Tri Attack",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Twirl",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Walk",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Wild Charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "Wing Attack",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "beam_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "block",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "charge2",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "d18th_boulder_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "d18th_dive_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "d18th_rod_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dash",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbj_lance_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbj_rail_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbk_inferno_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbk_inferno_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbk_rock_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbk_sun_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbv4r_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbv4r_impact",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbv4r_tw_crunch",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbv4s_sun_impact",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbv5h_orb_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbv5h_swing",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbva_lance_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbva_sleep_fall",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dbvb_dash_rev",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "double",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "dragon_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "elec_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "fell asleep!",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "fire_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "grayscale(1) sepia(1) saturate(2.6) hue-rotate(268deg) brightness(1.08)",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "hit2",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "hitE",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "hitS",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "hit_heavy",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "hit_light",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "ice_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "idle",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "invalid double notation. Value:",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "kok.kok",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "lor_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "mega_xy_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "mf4_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "mf_impact",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "og11_chop",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "og11m_rift_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "og11ma_nl_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "og11mb_hf_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "og11mb_pl_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "og11mb_rot_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "rb9_water_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "rb9_water_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "rhit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "run",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "shell_hit",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "skull_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "skull_impact",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "swing",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "throw",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "walk",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "water_charge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    },
+    {
+      "name": "wcharge",
+      "evidence": "static JS identifier/string; may not be used in battle"
+    }
+  ],
+  "animation_paths": [
+    "/baked2/0468/Attack.png",
+    "/baked2/0468/Charge.png",
+    "/baked2/0468/Double.png",
+    "/baked2/0468/Hop.png",
+    "/baked2/0468/Hurt.png",
+    "/baked2/0468/Idle.png",
+    "/baked2/0468/Rotate.png",
+    "/baked2/0468/Shoot.png",
+    "/baked2/0468/Sleep.png",
+    "/baked2/0468/Swing.png",
+    "/baked2/0468/Walk.png",
+    "/baked2/0625/Attack.png",
+    "/baked2/0625/Charge.png",
+    "/baked2/0625/Cringe.png",
+    "/baked2/0625/Double.png",
+    "/baked2/0625/EventSleep.png",
+    "/baked2/0625/Faint.png",
+    "/baked2/0625/HitGround.png",
+    "/baked2/0625/Hop.png",
+    "/baked2/0625/Hurt.png",
+    "/baked2/0625/Idle.png",
+    "/baked2/0625/RearUp.png",
+    "/baked2/0625/Rotate.png",
+    "/baked2/0625/Shoot.png",
+    "/baked2/0625/Sleep.png",
+    "/baked2/0625/Swing.png",
+    "/baked2/0625/Walk.png",
+    "/baked2/0658/Attack.png",
+    "/baked2/0658/Charge.png",
+    "/baked2/0658/Double.png",
+    "/baked2/0658/Hop.png",
+    "/baked2/0658/Hurt.png",
+    "/baked2/0658/Idle.png",
+    "/baked2/0658/RearUp.png",
+    "/baked2/0658/Rotate.png",
+    "/baked2/0658/Shoot.png",
+    "/baked2/0658/Sleep.png",
+    "/baked2/0658/Swing.png",
+    "/baked2/0658/Walk.png",
+    "/baked2/0658a/Attack.png",
+    "/baked2/0658a/Charge.png",
+    "/baked2/0658a/Double.png",
+    "/baked2/0658a/Hop.png",
+    "/baked2/0658a/Hurt.png",
+    "/baked2/0658a/Idle.png",
+    "/baked2/0658a/RearUp.png",
+    "/baked2/0658a/Rotate.png",
+    "/baked2/0658a/Shoot.png",
+    "/baked2/0658a/Sleep.png",
+    "/baked2/0658a/Swing.png",
+    "/baked2/0658a/Walk.png",
+    "/looks/broadcast.css"
+  ],
+  "controls": [
+    {
+      "name": ".moves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Every Star Road reward unlocked.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Every battle but practice counts. Wins, formats and moves are counted from 31 October.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "It is running.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Its Mega form keeps these moves.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "LOCKED_TRAINERS",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Lifetime goals: they never reset. Every level you earn moves the room closer to 100%.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Manual: drag on the arena to move. Your Pokémon only attacks when you press a move.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Manual: move with the left stick. Your Pokémon only attacks when you press a move.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Mix move types: a move your opponent resists does little.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Near the end of the clock comes sudden death: every hit grows stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Remove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Remove from team",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Speed",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Sudden death! Every hit grows stronger until the clock runs out.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Walkover (did not show up)",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Walkover (left)",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Your Pokémon fight on their own. Step in to switch, Mega Evolve or call a move.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Your opponent moved on.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Your team is locked when the tournament starts.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "askDodge",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "askMove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "clock",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dodge",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dodgeBtn",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "friendRemove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "legalMoves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "lock",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "locked",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move placeholder",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "moveButton",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "moveMeta",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "moveMon",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "moveName",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "moves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "movesWanted",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "msmove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "msmoves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "onMove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "pickedMoves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "pmove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "pointermove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "pvClock",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "removeX",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "replaySpeed",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "requestAnimationFrame",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "rpSpeed",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "running",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "sendMoves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "steering",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "touchmove",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "unlockAudio",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "unlocked",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "updateMoves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "updateMovesDbl",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Speed 60 or less",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move:",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "moveInfo",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Move types",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "\"Not very effective\" moves hit twice as hard.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Ball and bomb moves miss it.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Biting moves 50% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Bug moves 50% stronger at 1/3 HP or less.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Bug, Dark and Ghost moves raise its Speed.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Contact lowers the attacker's Speed.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Contact moves 30% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Damaging moves 20% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Dark moves raise its Attack.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Dragon moves 50% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Electric moves 30% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Electric moves heal it instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Electric moves raise its Sp. Atk instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Electric moves raise its Speed instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Fire and Water hits drastically raise its Speed.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Fire moves 50% stronger at 1/3 HP or less.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Fire moves miss it and power up its own Fire moves by 50%.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Fire moves sharply raise its Defense instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Grass moves 50% stronger at 1/3 HP or less.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Grass moves raise its Attack instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Ground moves heal it instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Ground moves miss it.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Its contact moves may poison.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "May put the attacker's move back on cooldown.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Moves half as strong at 1/2 HP or less.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Moves of 60 power or less are 50% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Moves of its own types hit even harder.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Normal moves become Electric and 20% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Normal moves become Fairy and 20% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Normal moves become Flying and 20% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Normal moves become Ice and 20% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Physical hits lower its Defense and sharply raise its Speed.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Physical moves 50% stronger while it has a status condition.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Physical moves 50% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Physical moves twice as strong.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Pulse and aura moves 50% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Punching moves 20% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Slicing moves 50% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Speed rises every 10 seconds.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Steel moves 50% stronger.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Takes half damage from Fire; its Water moves are twice as strong.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Takes half damage from Ghost moves; no status conditions.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Takes half damage from contact moves, double from Fire.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Takes half damage from physical moves.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Takes half damage from special moves.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Water moves 50% stronger at 1/3 HP or less.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Water moves heal it instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Water moves heal it; Fire hurts it 25% more.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Water moves raise its Sp. Atk instead.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Dodge",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 1",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 2",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 3",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Doubles: 2nd Pokémon, move 4",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Move 1",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Move 2",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Move 3",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Move 4",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Moves",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move1",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move2",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move3",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move4",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move5",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move6",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move7",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "move8",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "BLOCKED!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Crunch",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Drill Run",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Grunt Throw",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "SPEED ROSE!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "THE SUBSTITUTE BLOCKED IT!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Walk",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "block",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dash",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbv4p_psy_lock",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbv4r_tw_crunch",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbvb_dash_rev",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "moveTo",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "og11ma_lock",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "run",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "walk",
+      "evidence": "static code identifier/string"
+    }
+  ]
+}

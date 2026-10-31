@@ -1,0 +1,272 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31T18:00:35.993Z",
+  "trainer_identifiers": [
+    {
+      "name": "Linking to Discord didn't go through. Try again from your trainer panel.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "No friends yet. Add one by their trainer name above.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Pick your trainer name.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "The other trainer is ready.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Trainer",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Waiting for the other trainer…",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "You surrendered",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Your opponent surrendered",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "blue",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "mastered",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "profTrainers",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "red",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "trainer",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "trainerPick",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Cynthia",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "cynthia",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "t-cynthia",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "/trainers.json",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "(prefers-reduced-motion: reduce)",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Blue",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Red",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Its Attack cannot be lowered by the opponent.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Its Defense cannot be lowered by the opponent.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Its stats cannot be lowered by the opponent.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Blue Flare",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "COINS SCATTERED EVERYWHERE!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "HEX POWERED UP!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "HP RESTORED!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "POISON SPIKES WERE SCATTERED!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Sacred Sword",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "THE GUARD SHATTERED!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "THE WALL SHATTERED!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "WELCOME TO THE BATTLE TOWER   KANTO VS JOHTO   RED & BLUE VS GOLD & SILVER",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "ace_trainer_f",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "ace_trainer_m",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "ap28_cynthia",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "bluefire",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "catch",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbj_ice_shred",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbt_blue_breath",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "redirect",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "redorb",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "shred",
+      "evidence": "static code identifier/string"
+    }
+  ],
+  "resources": [
+    {
+      "path": "/assets/trainers/az_face.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/az.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/blue_face.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/blue.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/lance_face.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/lance.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/leon_face.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/leon.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/lillie_dress_face.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/lillie_dress.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/red_face.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/assets/trainers/red.png",
+      "status": 200,
+      "type": "image",
+      "mime": "image/png",
+      "size": 0
+    },
+    {
+      "path": "/trainers.json",
+      "status": 200,
+      "type": "fetch",
+      "mime": "application/json",
+      "size": 0
+    }
+  ],
+  "caveat": "Do not assume throwing animation without a recorded battle."
+}

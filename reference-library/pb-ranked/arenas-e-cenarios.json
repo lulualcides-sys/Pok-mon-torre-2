@@ -1,0 +1,184 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31T18:00:35.993Z",
+  "arena_identifiers": [
+    {
+      "name": "#battle .stagebar",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "/backdrop.js",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "ARENAS",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Long range: used from across the arena",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Manual: drag on the arena to move. Your Pokémon only attacks when you press a move.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Need 2+ players",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Only the players in a battle can make a video of it.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Random arena",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Random arenas",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "The host picks the arena",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "You are watching. The next battle starts when both players are ready.",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "arena",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "arenaName",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "arenaOptions",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "arenaPick",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "arenaPref",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "backdrop",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "cupArena",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "cupPlayers",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "cupplayer",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "random arenas",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "roomArena",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "stage",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "startBackdrop",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "floor",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Night sky",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Sky",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "VS background",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "c-sky",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "backdrop battle failed",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "backdrop off: this device draws it too slowly",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "ARENA TRAP!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "IRON WALL!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "Sky Attack",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "THE WALL SHATTERED!",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "camera",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "cameraman",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbj_fire_wall",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbk_elec_wall",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "dbt_orb_swallow",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "og11m_wall",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "sky",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "wall",
+      "evidence": "static code identifier/string"
+    },
+    {
+      "name": "wall2",
+      "evidence": "static code identifier/string"
+    }
+  ],
+  "public_resources": [],
+  "caveat": "Static mentions and resource names are NOT 3D/2D gameplay observation."
+}

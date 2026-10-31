@@ -1,0 +1,2065 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31T18:00:35.993Z",
+  "evidence": "public source AST only, needs gameplay validation",
+  "count": 123,
+  "items": [
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Flamethrower",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Flamethrower",
+        "type": "fire",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Fire Blast",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Fire Blast",
+        "type": "fire",
+        "power": "110",
+        "cooldown": "360"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Air Slash",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Air Slash",
+        "type": "flying",
+        "power": "75"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Claw",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Dragon Claw",
+        "type": "dragon",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Hydro Pump",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Hydro Pump",
+        "type": "water",
+        "power": "110",
+        "cooldown": "270"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ice Beam",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Ice Beam",
+        "type": "ice",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Rapid Spin",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Rapid Spin",
+        "type": "normal",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Skull Bash",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Skull Bash",
+        "type": "normal",
+        "power": "130",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Claw Jab",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "anim"
+      ],
+      "properties": {
+        "name": "Claw Jab",
+        "type": "normal",
+        "power": "40",
+        "anim": "Jab"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shell Shove",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "anim"
+      ],
+      "properties": {
+        "name": "Shell Shove",
+        "type": "normal",
+        "power": "40",
+        "anim": "Attack"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Tackle",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "anim"
+      ],
+      "properties": {
+        "name": "Tackle",
+        "type": "normal",
+        "power": "40"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Megahorn",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Megahorn",
+        "type": "bug",
+        "power": "120",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Drill Run",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Drill Run",
+        "type": "ground",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Earthquake",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Earthquake",
+        "type": "ground",
+        "power": "100",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Rock Slide",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Rock Slide",
+        "type": "rock",
+        "power": "75"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Psychic",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Psychic",
+        "type": "psychic",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shadow Ball",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Shadow Ball",
+        "type": "ghost",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Focus Blast",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Focus Blast",
+        "type": "fighting",
+        "power": "120",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Recover",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Recover",
+        "type": "normal",
+        "power": "0",
+        "cooldown": "900"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Aura Sphere",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Aura Sphere",
+        "type": "fighting",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dark Pulse",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Dark Pulse",
+        "type": "dark",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Water Pulse",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Water Pulse",
+        "type": "water",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Rapid Spin",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Rapid Spin",
+        "type": "normal",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shell Guard",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Shell Guard",
+        "type": "normal",
+        "power": "0"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shell Spin",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Shell Spin",
+        "type": "normal",
+        "power": "0"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Pay Day",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Pay Day",
+        "type": "normal",
+        "power": "40"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Slash",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Slash",
+        "type": "normal",
+        "power": "70"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Bite",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Bite",
+        "type": "dark",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Feint",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Feint",
+        "type": "normal",
+        "power": "30"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "X-Scissor",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "X-Scissor",
+        "type": "bug",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Wing Attack",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Wing Attack",
+        "type": "flying",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Quick Attack",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Quick Attack",
+        "type": "normal",
+        "power": "40"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Brick Break",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Brick Break",
+        "type": "fighting",
+        "power": "75",
+        "cooldown": "300"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Tri Attack",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Tri Attack",
+        "type": "normal",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Drill Peck",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Drill Peck",
+        "type": "flying",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Brave Bird",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Brave Bird",
+        "type": "flying",
+        "power": "120",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Hyper Beam",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Hyper Beam",
+        "type": "normal",
+        "power": "150",
+        "cooldown": "900"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Surf",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Surf",
+        "type": "water",
+        "power": "90",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sing",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Sing",
+        "type": "normal",
+        "power": "0",
+        "cooldown": "720"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Thunderbolt",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Thunderbolt",
+        "type": "electric",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Pin Missile",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Pin Missile",
+        "type": "bug",
+        "power": "75"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Double Kick",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Double Kick",
+        "type": "fighting",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Flare Blitz",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Flare Blitz",
+        "type": "fire",
+        "power": "120",
+        "cooldown": "480"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Thunder Punch",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Thunder Punch",
+        "type": "electric",
+        "power": "75"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Dance",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Dragon Dance",
+        "type": "dragon",
+        "power": "0",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Thunder Wave",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Thunder Wave",
+        "type": "electric",
+        "power": "0",
+        "cooldown": "480"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Power Gem",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Power Gem",
+        "type": "rock",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dragon Pulse",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Dragon Pulse",
+        "type": "dragon",
+        "power": "85"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Swift",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Swift",
+        "type": "normal",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Morning Sun",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Morning Sun",
+        "type": "normal",
+        "power": "0",
+        "cooldown": "900"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Solar Beam",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Solar Beam",
+        "type": "grass",
+        "power": "120",
+        "cooldown": "600"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Razor Leaf",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Razor Leaf",
+        "type": "grass",
+        "power": "55"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sleep Powder",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Sleep Powder",
+        "type": "grass",
+        "power": "0",
+        "cooldown": "720"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sludge Bomb",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Sludge Bomb",
+        "type": "poison",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Eruption",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Eruption",
+        "type": "fire",
+        "power": "150",
+        "cooldown": "600"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Flame Wheel",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Flame Wheel",
+        "type": "fire",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Moonblast",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Moonblast",
+        "type": "fairy",
+        "power": "95"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Future Sight",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Future Sight",
+        "type": "psychic",
+        "power": "120",
+        "cooldown": "900"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shadow Sneak",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Shadow Sneak",
+        "type": "ghost",
+        "power": "60",
+        "cooldown": "240"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Silver Wind",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Silver Wind",
+        "type": "bug",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Petal Dance",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Petal Dance",
+        "type": "grass",
+        "power": "120",
+        "cooldown": "600"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Toxic Spikes",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Toxic Spikes",
+        "type": "poison",
+        "power": "0",
+        "cooldown": "900"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dazzling Gleam",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Dazzling Gleam",
+        "type": "fairy",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sky Attack",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Sky Attack",
+        "type": "flying",
+        "power": "140",
+        "cooldown": "720"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shock Wave",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Shock Wave",
+        "type": "electric",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Fusion Flare",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Fusion Flare",
+        "type": "fire",
+        "power": "100",
+        "cooldown": "300"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Blue Flare",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Blue Flare",
+        "type": "fire",
+        "power": "130",
+        "cooldown": "480"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Extrasensory",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Extrasensory",
+        "type": "psychic",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Hex",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Hex",
+        "type": "ghost",
+        "power": "65",
+        "cooldown": "360"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Will-O-Wisp",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Will-O-Wisp",
+        "type": "fire",
+        "power": "0",
+        "cooldown": "300"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Poison Jab",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Poison Jab",
+        "type": "poison",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sucker Punch",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Sucker Punch",
+        "type": "dark",
+        "power": "70",
+        "cooldown": "180"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Drain Punch",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Drain Punch",
+        "type": "fighting",
+        "power": "75"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Mud Bomb",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Mud Bomb",
+        "type": "ground",
+        "power": "65"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Metal Burst",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Metal Burst",
+        "type": "steel",
+        "power": "60",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Wild Charge",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Wild Charge",
+        "type": "electric",
+        "power": "90",
+        "cooldown": "300"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Fusion Bolt",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Fusion Bolt",
+        "type": "electric",
+        "power": "100",
+        "cooldown": "300"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Bolt Strike",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Bolt Strike",
+        "type": "electric",
+        "power": "130",
+        "cooldown": "480"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Zen Headbutt",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Zen Headbutt",
+        "type": "psychic",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Retaliate",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Retaliate",
+        "type": "normal",
+        "power": "70"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Hammer Arm",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Hammer Arm",
+        "type": "fighting",
+        "power": "100",
+        "cooldown": "360"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Doom Desire",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Doom Desire",
+        "type": "steel",
+        "power": "140"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Spacial Rend",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Spacial Rend",
+        "type": "dragon",
+        "power": "100"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Judgment",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Judgment",
+        "type": "normal",
+        "power": "100"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Nihil Light",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Nihil Light",
+        "type": "dragon",
+        "power": "100"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Hyperspace Fury",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Hyperspace Fury",
+        "type": "dark",
+        "power": "100"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Roar of Time",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Roar of Time",
+        "type": "dragon",
+        "power": "150"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Astral Barrage",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Astral Barrage",
+        "type": "ghost",
+        "power": "120"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Prismatic Laser",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Prismatic Laser",
+        "type": "psychic",
+        "power": "160"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Psystrike",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Psystrike",
+        "type": "psychic",
+        "power": "100"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ancient Power",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Ancient Power",
+        "type": "rock",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Metronome",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Metronome",
+        "type": "normal",
+        "power": "85",
+        "cooldown": "240"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Final Clash",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Final Clash",
+        "type": "psychic",
+        "power": "1"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Dark Sphere",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Dark Sphere",
+        "type": "normal",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Aura Orb",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Aura Orb",
+        "type": "normal",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Psystrike Wave",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Psystrike Wave",
+        "type": "normal",
+        "power": "100"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ice Lance",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Ice Lance",
+        "type": "ice",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Telekinesis",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Telekinesis",
+        "type": "rock",
+        "power": "70"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Psychic Return",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Psychic Return",
+        "type": "rock",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Psychic Blow",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Psychic Blow",
+        "type": "psychic",
+        "power": "40"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Psychic Sphere",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Psychic Sphere",
+        "type": "psychic",
+        "power": "60"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Shield Ram",
+      "fields": [
+        "name",
+        "type",
+        "power"
+      ],
+      "properties": {
+        "name": "Shield Ram",
+        "type": "psychic",
+        "power": "40"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Water Spout",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Water Spout",
+        "type": "water",
+        "power": "150",
+        "cooldown": "600"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Thunder",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Thunder",
+        "type": "electric",
+        "power": "110",
+        "cooldown": "420"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Origin Pulse",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Origin Pulse",
+        "type": "water",
+        "power": "110",
+        "cooldown": "540"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Precipice Blades",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Precipice Blades",
+        "type": "ground",
+        "power": "120",
+        "cooldown": "540"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Ancient Power",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Ancient Power",
+        "type": "rock",
+        "power": "60",
+        "cooldown": "360"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Draco Meteor",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Draco Meteor",
+        "type": "dragon",
+        "power": "130",
+        "cooldown": "720"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Outrage",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Outrage",
+        "type": "dragon",
+        "power": "120",
+        "cooldown": "600"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Roost",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Roost",
+        "type": "flying",
+        "power": "0",
+        "cooldown": "900"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sandstorm",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Sandstorm",
+        "type": "rock",
+        "power": "0",
+        "cooldown": "1500"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Sucker Punch",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Sucker Punch",
+        "type": "dark",
+        "power": "70"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Throat Chop",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Throat Chop",
+        "type": "dark",
+        "power": "80"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Aqua Tail",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Aqua Tail",
+        "type": "water",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Rock Wrecker",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Rock Wrecker",
+        "type": "rock",
+        "power": "150",
+        "cooldown": "600"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Fake Out",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Fake Out",
+        "type": "normal",
+        "power": "40"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Brick Break",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Brick Break",
+        "type": "fighting",
+        "power": "75"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Double-Edge",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Double-Edge",
+        "type": "normal",
+        "power": "120"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Raging Bull",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range"
+      ],
+      "properties": {
+        "name": "Raging Bull",
+        "type": "normal",
+        "power": "90"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Frenzy Plant",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Frenzy Plant",
+        "type": "grass",
+        "power": "150",
+        "cooldown": "600"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Iron Tail",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Iron Tail",
+        "type": "steel",
+        "power": "100",
+        "cooldown": "240"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Heavy Slam",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Heavy Slam",
+        "type": "steel",
+        "power": "80",
+        "cooldown": "300"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    },
+    {
+      "source": "/bundles/03413a73844b301c.js",
+      "name": "Stone Edge",
+      "fields": [
+        "name",
+        "type",
+        "power",
+        "range",
+        "cooldown"
+      ],
+      "properties": {
+        "name": "Stone Edge",
+        "type": "rock",
+        "power": "100",
+        "cooldown": "300"
+      },
+      "evidence": "static object declaration; not verified in battle"
+    }
+  ]
+}

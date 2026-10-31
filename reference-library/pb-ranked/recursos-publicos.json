@@ -1,0 +1,1199 @@
+[
+  {
+    "path": "/",
+    "status": 200,
+    "type": "document",
+    "mime": "text/html",
+    "size": 0
+  },
+  {
+    "path": "/abilities.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/achievements.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/api/auth",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/api/usage",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/api/version",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/api/videos",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/api/yt/thumb/JEA-UnbrrxA.jpg",
+    "status": 200,
+    "type": "image",
+    "mime": "image/jpeg",
+    "size": 0
+  },
+  {
+    "path": "/app.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/assets/fonts/PressStart2P.ttf",
+    "status": 200,
+    "type": "font",
+    "mime": "font/ttf",
+    "size": 0
+  },
+  {
+    "path": "/assets/fonts/Rubik.ttf",
+    "status": 200,
+    "type": "font",
+    "mime": "font/ttf",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/og11metaA/arceus.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/og11metaA/jirachi.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/og11metaA/palkia.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/og11metaB/calyrex-shadow.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/og11metaB/dialga.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/og11metaB/hoopa-unbound.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/og11metaB/necrozma.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/fx/substitute.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/npcs/brock_surf.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0468_Determined.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0468_Normal.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0468_Pain.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0625_Determined.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0625_Normal.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0625_Pain.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0658_Determined.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0658_Normal.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0658_Pain.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/portraits/0658a_Normal.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/sprites/0051/mole_heads.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/sprites/0085/rotor_heads.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/sprites/anims.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/az_face.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/az.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/blue_face.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/blue.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/lance_face.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/lance.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/leon_face.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/leon.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/lillie_dress_face.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/lillie_dress.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/red_face.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/assets/trainers/red.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/audio.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/backdrop.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Attack.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Charge.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Double.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Hop.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Hover.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Hurt.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Idle.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/QuickStrike.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Rotate.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Shoot.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Sleep.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Swing.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0468/Walk.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Attack.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Charge.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Cringe.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/DeepBreath.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Double.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Eat.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/EventSleep.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Faint.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Float.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Head.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/HitGround.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Hop.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Hurt.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Idle.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Laying.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/LeapForth.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/LookUp.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/LostBalance.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Nod.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Pain.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Pose.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Pull.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/RearUp.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Rotate.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Shoot.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Sink.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Sit.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Sleep.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Strike.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Swing.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Trip.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Tumble.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/TumbleBack.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Wake.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0625/Walk.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Attack.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Charge.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Double.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Hop.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Hurt.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Idle.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/QuickStrike.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/RearUp.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Rotate.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Shoot.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Sleep.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Swing.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658/Walk.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Attack.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Charge.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Double.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Hop.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Hurt.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Idle.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/QuickStrike.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/RearUp.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Rotate.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Shoot.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Sleep.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Swing.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/baked2/0658a/Walk.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/branding/logo_160.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/bundles/03413a73844b301c.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/controls.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/cosmetics.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/faces/alain.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/archie.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/ash.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/az.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/blue.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/brendan.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/cynthia.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/dawn.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/diantha.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/ghetsis.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/giovanni.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/gladion.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/gold.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/iris.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/jonathan.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/lance.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/leon.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/lillie_dress.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/lillie.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/maxie.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/mustard.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/n.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/oak.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/paul.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/red.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/silver.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/steven.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/faces/wolfe.png",
+    "status": 200,
+    "type": "image",
+    "mime": "image/png",
+    "size": 0
+  },
+  {
+    "path": "/fonts/barlow-condensed-latin-700-normal.woff2",
+    "status": 200,
+    "type": "font",
+    "mime": "font/woff2",
+    "size": 0
+  },
+  {
+    "path": "/fonts/barlow-condensed-latin-800-italic.woff2",
+    "status": 200,
+    "type": "font",
+    "mime": "font/woff2",
+    "size": 0
+  },
+  {
+    "path": "/fonts/barlow-condensed-latin-800-normal.woff2",
+    "status": 200,
+    "type": "font",
+    "mime": "font/woff2",
+    "size": 0
+  },
+  {
+    "path": "/fonts/barlow-latin-400-normal.woff2",
+    "status": 200,
+    "type": "font",
+    "mime": "font/woff2",
+    "size": 0
+  },
+  {
+    "path": "/fonts/barlow-latin-600-normal.woff2",
+    "status": 200,
+    "type": "font",
+    "mime": "font/woff2",
+    "size": 0
+  },
+  {
+    "path": "/fonts/barlow-latin-700-normal.woff2",
+    "status": 200,
+    "type": "font",
+    "mime": "font/woff2",
+    "size": 0
+  },
+  {
+    "path": "/grid.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/looks/broadcast.css",
+    "status": 200,
+    "type": "stylesheet",
+    "mime": "text/css",
+    "size": 0
+  },
+  {
+    "path": "/ranks.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/roster-history.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/roster.js",
+    "status": 200,
+    "type": "script",
+    "mime": "text/javascript",
+    "size": 0
+  },
+  {
+    "path": "/roster.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  },
+  {
+    "path": "/style.css",
+    "status": 200,
+    "type": "stylesheet",
+    "mime": "text/css",
+    "size": 0
+  },
+  {
+    "path": "/trainers.json",
+    "status": 200,
+    "type": "fetch",
+    "mime": "application/json",
+    "size": 0
+  }
+]
