@@ -1,0 +1,55 @@
+name: T31 — Potion quota across native battle Bag reinstalls
+on:
+  push:
+    branches: [fix/t31-battle-bag-guard-20261031]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-battle-bag-quota:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit, syntax, build rules and approved visual guard
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-battle-bag-limits.js
+          node --check tools/pokearena/torre2-battle-bag.js
+          node --check tests/battle-bag-browser.cjs
+          node --test tests/battle-bag-limits.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+          node tools/dev/approved-visual-guard.mjs
+      - name: Build actual native Phaser client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+          test -s _site/arena2d/torre2/battle-bag-limits.js
+      - name: Real native mobile Bag clicks — three Potions, fourth blocked
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/battle-bag-browser.cjs
+      - name: Full native battle Chromium regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Archive evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t31-battle-bag-quota-mobile
+          path: test-evidence/battle-bag*.png
+          retention-days: 14
+          if-no-files-found: warn
