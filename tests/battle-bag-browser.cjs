@@ -78,6 +78,48 @@ const server=http.createServer(async(req,res)=>{
    b.paso(.16);return {before,after:b.luchadores[0].hp};
   });
   assert.equal(frozen.after,frozen.before,'Opening Bag suspends native attacks/status ticks');
+  // Real storage refusal on primary and backup must leave BOTH in-memory
+  // battle members, live HP, potion counter, and on-disk save intact.
+  await page.evaluate(()=>{
+   const core=window.__bagCore;
+   localStorage.setItem(core.SAVE_BACKUP_KEY,localStorage.getItem(core.SAVE_KEY));
+   window.__bagOriginalSet=Storage.prototype.setItem;
+   window.__bagDeny=null;
+   Storage.prototype.setItem=function(k,v){
+    if(k===window.__bagDeny)throw new DOMException('Storage refused','QuotaExceededError');
+    return window.__bagOriginalSet.call(this,k,v);
+   };
+  });
+  const beforeSave=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),core=window.__bagCore;
+   return {hp:b.luchadores[0].hp,party:b.datos.torre2.party.friend[0].hp,
+    primary:localStorage.getItem(core.SAVE_KEY),
+    backup:localStorage.getItem(core.SAVE_BACKUP_KEY),
+    count:core.readCampaign().inventory.potion};
+  });
+  for(const denied of ['primary','backup']){
+   await page.evaluate(d=>{
+    const core=window.__bagCore;
+    window.__bagDeny=d==='primary'?core.SAVE_KEY:core.SAVE_BACKUP_KEY;
+   },denied);
+   await clickData('torre2-battle-bag-item','potion');
+   const blocked=await page.evaluate(()=>{
+    const b=window.__pt2Game.scene.getScene('combate'),core=window.__bagCore;
+    return {hp:b.luchadores[0].hp,party:b.datos.torre2.party.friend[0].hp,
+     primary:localStorage.getItem(core.SAVE_KEY),
+     backup:localStorage.getItem(core.SAVE_BACKUP_KEY),
+     count:core.readCampaign().inventory.potion,
+     open:b.__torre2BattleBagOpen,error:b.__torre2BattleBagSaveError};
+   });
+   for(const key of ['hp','party','primary','backup','count'])
+    assert.equal(blocked[key],beforeSave[key],denied+' altered '+key);
+   assert.equal(blocked.open,true,'Bag stays open after denied save');
+   assert.equal(blocked.error,true,'Player must see the save failure');
+   assert.deepEqual(errors,[],'No uncaught UI handler errors');
+   await page.evaluate(()=>new Promise(done=>
+    requestAnimationFrame(()=>requestAnimationFrame(done))));
+  }
+  await page.evaluate(()=>{window.__bagDeny=null;});
   await clickData('torre2-battle-bag-item','potion');
   const healed=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
@@ -88,6 +130,7 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(healed.hp>55&&healed.hp<59,'Live 32% HP + 25% Potion');
   assert.equal(healed.count,2);
   assert.equal(healed.open,false);
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').__torre2BattleBagSaveError),false);
   await page.evaluate(async()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    b.t+=4;
