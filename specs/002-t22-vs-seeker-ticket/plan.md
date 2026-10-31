@@ -1,9 +1,12 @@
-# Plano T22
+# Plano de execução T22
 
-1. Partir de `main` SHA `be1d230c695b97500eb9e6f0c7dd6746fa7dfb75`, sem tocar nas PRs concorrentes #386 T03, #369 T20 e #381 T10.
-2. Adicionar primeiro teste em `tests/rematch-policy.test.js` cobrindo bilhete persistente, três recargas, segunda tentativa, consumo único e reserva posterior.
-3. Em `tools/pokearena/torre2-rematch-policy.js`, retornar `null` se `pending` existir, preservando valores e sem criar estado adicional.
-4. Reusar `.github/workflows/master-t22-mobile-rematch.yml`, com gatilho de PR nos arquivos afetados; contém cliente Phaser original, teste VS Seeker móvel e suíte de navegador.
-5. Conferir PR e `main`, executar gates remotos antes do merge e confirmar Pages/HTTP SHA exato após integração. Sem alegar campanha completa nem Android físico.
+**Base:** main `be1d230c695b97500eb9e6f0c7dd6746fa7dfb75`, sem alterar PR #386 T03, PR #369 T20, PR #381 T10.
 
-**Rollback:** reverter unicamente a PR T22. **Risco conhecido:** o menu existente informa a carga disponível quando uma reserva for recusada; nenhuma cópia de UI é modificada para evitar conflito com T03/T20.
+1. Adicionar testes de reserva única após três novas recargas e recuperação segura quando ticket é inválido por avanço da história.
+2. Aplicar guarda apenas ao código de reserva de ticket (`torre2-rematch-policy.js`), sem tocar no resultado, pagamentos ou código de combate.
+3. No menu de `torre2-campaign-scene.js`, refatorar a inicialização existente de revanche numa função local para reuso. Exibir `RETOMAR REVANCHE` só quando o ticket de mesmo mapa/treinador e checkpoint foi autenticado por `validRematchResult`.
+4. Expandir teste Chromium móvel existente para iniciar uma revanche nativa, interromper, reler save, provar a recusa normal, retomar a mesma luta e comparar ticket/economia; sem fabricar vitória.
+5. Executar workflow T22 existente (npm test/check/check:reuse, build Phaser, Chromium mobile e browser completo), guardião visual e revisão de diff. Não mesclar até verde.
+6. Após merge, confirmar main CI e Pages/HTTP do SHA exato.
+
+**Rollback:** reverter esta PR. **Riscos:** o controle adicional precisa caber no painel móvel sem ocultar o botão de retorno; o teste do toque real é o gate mínimo.
