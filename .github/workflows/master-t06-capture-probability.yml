@@ -2,12 +2,17 @@ name: Master T06 — capture probability audit
 on:
   push:
     branches: [test/master-t06-capture-probability-invariants-20261028]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-capture-mechanics.js'
+      - 'tests/t06-capture-probability-invariants.test.js'
+      - '.github/workflows/master-t06-capture-probability.yml'
 permissions:
   contents: read
 jobs:
   catch-probabilities:
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -18,3 +23,25 @@ jobs:
       - run: npm test
       - run: npm run check
       - run: npm run check:reuse
+      - name: Native Phaser capture browser — real client (PR only)
+        if: github.event_name == 'pull_request'
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+               && node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t06-native-rng-wild-capture-browser.cjs
+          node tests/t06-mobile-capture-browser.cjs
+      - name: Retain real-browser capture evidence
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: t06-serialized-status-browser-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14
