@@ -1,0 +1,50 @@
+name: PB Ranked — 127 Pokémon × golpes completos
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - 'tools/research/pb-ranked-precise-roster.cjs'
+      - '.github/workflows/pb-ranked-precise-roster.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pb-ranked-precise-roster
+  cancel-in-progress: false
+
+jobs:
+  index-127-species-moves:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check code
+        run: node --check tools/research/pb-ranked-precise-roster.cjs
+      - name: Verify exact default moves and each pool
+        run: |
+          node tools/research/pb-ranked-precise-roster.cjs
+          node - <<'NODE'
+          const j=require('./reference-library/pb-ranked/pokemon-movesets-completos-publicos.json');
+          if(j.stats.species!==127)throw Error('Unexpected number of species');
+          if(j.stats.defaultSlots<400)throw Error('Incomplete default moves');
+          console.log('VALID',j.stats.species,'species',j.stats.movePoolRelations,'move-pool entries');
+          NODE
+      - name: Commit metadata only
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reference-library/pb-ranked/pokemon-movesets-completos-publicos.json reference-library/pb-ranked/pokemon-movesets-estatisticas.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'research: catalog all public PB Ranked species move-pool variants and default four'
+            git pull --rebase origin research/pb-ranked-rea-20261031
+            git push origin HEAD:research/pb-ranked-rea-20261031
+          fi
