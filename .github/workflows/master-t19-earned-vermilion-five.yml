@@ -1,0 +1,59 @@
+name: Master T19 — five genuine Vermilion trainers after earned Misty
+on:
+  push:
+    branches: [test/t19-vermilion-five-earned-misty-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  earned-vermilion:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate scripts, contract, original renderer
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t19-earned-vermilion-five-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep "$((attempt * 8))"
+          done
+      - name: Download REAL native Misty save from successful CI
+        uses: actions/download-artifact@v4
+        with:
+          name: t19-earned-misty-native
+          run-id: 41194363962
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: test-evidence
+      - name: Earn first five Vermilion trainer wins with real Phaser and reload
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          set -euo pipefail
+          test -s test-evidence/t19-earned-misty-save.json
+          T19_EARNED_MISTY_SAVE=test-evidence/t19-earned-misty-save.json node tests/t19-earned-vermilion-five-browser.cjs
+      - name: Archive saved checkpoint, battle diagnostics and screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t19-earned-vermilion-five-native
+          path: |
+            test-evidence/t19-earned-vermilion-five-report.json
+            test-evidence/t19-earned-vermilion-five-save.json
+            test-evidence/t19-vermilion-five-*.png
+          retention-days: 21
+          if-no-files-found: warn
