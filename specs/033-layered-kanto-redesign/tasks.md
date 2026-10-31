@@ -1,0 +1,8 @@
+- [x] Inspect current code and PR #417 (draft f2d08891, not merged).
+- [x] Isolate work from main 105b63c924e5 and PR #418 campaign test work.
+- [ ] Model and interaction test RED/GREEN.
+- [ ] Layered Cerulean scenery and campaign integration.
+- [ ] Real desktop/touch screenshots and navigation validation.
+- [ ] Artistic quality gate against approved reference.
+- [ ] Campaign menus and remaining distinct cities.
+- [ ] Complete regression, review, integration and verified publication.
