@@ -1,0 +1,163 @@
+{
+  "date": "2026-10-31",
+  "runUrl": "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f",
+  "mode": "Practice vs Bot Easy 3v3",
+  "team": [
+    {
+      "pokemon": "Muk",
+      "moves": [
+        "Gunk Shot",
+        "Fire Punch",
+        "Thunder Punch",
+        "Ice Punch"
+      ]
+    },
+    {
+      "pokemon": "Exeggutor",
+      "moves": [
+        "Psychic",
+        "Egg Bomb",
+        "Leaf Storm",
+        "Sleep Powder"
+      ]
+    },
+    {
+      "pokemon": "Heracross",
+      "moves": [
+        "Megahorn",
+        "Close Combat",
+        "Stone Edge",
+        "Night Slash"
+      ]
+    }
+  ],
+  "arena": "not established",
+  "battleResult": "not stated",
+  "browserStepsReported": 14,
+  "reportedMoveCount": 12,
+  "knownLimitation": "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution.",
+  "results": [
+    {
+      "pokemon": "Muk",
+      "name": "Gunk Shot",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "green sludge with dark specks",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Muk",
+      "name": "Fire Punch",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "red-orange flame around fist",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Muk",
+      "name": "Thunder Punch",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "yellow crackling energy around strike",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Muk",
+      "name": "Ice Punch",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "blue frost/crystal energy",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Exeggutor",
+      "name": "Psychic",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "pink/purple wave, leaves mentioned (possible overlapping effect)",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Exeggutor",
+      "name": "Egg Bomb",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "yellow egg and orange explosion reported",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Exeggutor",
+      "name": "Leaf Storm",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "green leaf tornado reported",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Exeggutor",
+      "name": "Sleep Powder",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "green sparkling cloud reported",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Heracross",
+      "name": "Megahorn",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "horn charge, blue energy trail reported",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Heracross",
+      "name": "Close Combat",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "punches and red flash reported",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Heracross",
+      "name": "Stone Edge",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "grey rock columns reported",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    },
+    {
+      "pokemon": "Heracross",
+      "name": "Night Slash",
+      "reportSaysClicked": true,
+      "reportSaysCast": true,
+      "individualActionStepProven": false,
+      "visualFromAgentSummary": "purple crescent reported",
+      "individualFrameArtifactArchived": false,
+      "confidence": "LOW: 12 clicked casts claimed but tool reports only 14 browser action steps including menu navigation; cannot verify independently"
+    }
+  ],
+  "visualVerification": "agent description only; not frame proof",
+  "sourceArtCopied": false
+}
