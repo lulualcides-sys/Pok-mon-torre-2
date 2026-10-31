@@ -46,3 +46,21 @@ test('unfinished rematch ticket survives three fresh charges without overwrite',
  assert.equal(state.stage,3);
  assert.equal(state.trainer,5);
 });
+
+test('stale ticket from a finished story checkpoint does not strand VS Seeker',()=>{
+ const state={stage:1,trainer:3,rematches:{charge:3,sequence:0,wins:0,pending:null}};
+ const first=reserveRematch(state,1,0);
+ assert.ok(first);
+ // Story progress can change after reload through a different normal fight.
+ // The old rematch result becomes invalid; a fresh reservation may consume
+ // three newly earned charges but cannot pay out from the old ticket.
+ state.trainer=4;
+ for(let i=0;i<3;i++)rechargeRematches(state);
+ const second=reserveRematch(state,2,0);
+ assert.ok(second,'stale pending must not lock all future rematches');
+ assert.equal(second.token,first.token+1);
+ assert.equal(state.rematches.charge,0);
+ assert.equal(validRematchResult(state,first),false);
+ assert.equal(consumeRematchResult(state,first),false);
+ assert.equal(validRematchResult(state,second),true);
+});
