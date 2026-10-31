@@ -1,0 +1,49 @@
+name: PB Ranked — 127 Pokémon e biblioteca de golpes
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - 'tools/research/pb-ranked-roster-moves.cjs'
+      - '.github/workflows/pb-ranked-roster-moves.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pb-ranked-roster-moves
+  cancel-in-progress: false
+
+jobs:
+  index-public-roster:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax validation
+        run: node --check tools/research/pb-ranked-roster-moves.cjs
+      - name: Build derived species-move matrix
+        run: |
+          node tools/research/pb-ranked-roster-moves.cjs
+          node - <<'NODE'
+          const a=require('./reference-library/pb-ranked/pokemon-127-movesets-publicos.json');
+          if(a.rosterCount!==a.species.length||a.rosterCount<100)throw Error('Incomplete species inventory');
+          console.log('VALID',a.rosterCount,'species; matches',a.stats.totalKnownSpeciesMovePairs);
+          NODE
+      - name: Save structured research only
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reference-library/pb-ranked/pokemon-127-movesets-publicos.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'research: index PB Ranked 127 Pokemon public movesets (not battle implementation)'
+            git pull --rebase origin research/pb-ranked-rea-20261031
+            git push origin HEAD:research/pb-ranked-rea-20261031
+          fi
