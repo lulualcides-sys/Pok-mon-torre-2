@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "runUrl": "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248",
+  "mode": "Practice vs Bot EASY 3v3",
+  "battleStarted": true,
+  "completed": true,
+  "outcome": "WIN",
+  "team": [
+    {
+      "pokemon": "Pikachu",
+      "moves": [
+        "Thunderbolt",
+        "Quick Attack",
+        "Iron Tail",
+        "Volt Tackle"
+      ]
+    },
+    {
+      "pokemon": "Arcanine",
+      "moves": [
+        "Extreme Speed",
+        "Flare Blitz",
+        "Crunch",
+        "Wild Charge"
+      ]
+    },
+    {
+      "pokemon": "Lapras",
+      "moves": [
+        "Surf",
+        "Ice Beam",
+        "Sing",
+        "Body Slam"
+      ]
+    }
+  ],
+  "serverQueue": "Full; 18 in line, then battle started",
+  "controls": "AUTO was active (aria-pressed=false for manual switch); no explicit manual casts confirmed",
+  "recordedUses": [
+    {
+      "pokemon": "Pikachu",
+      "name": "Thunderbolt",
+      "effectiveness": "Super effective"
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Quick Attack",
+      "effectiveness": "Effective"
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Thunderbolt",
+      "effectiveness": "Effective"
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Quick Attack",
+      "effectiveness": "Effective"
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Thunderbolt",
+      "effectiveness": "Effective"
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Thunderbolt",
+      "effectiveness": "No effect"
+    },
+    {
+      "pokemon": "Arcanine",
+      "name": "Crunch",
+      "effectiveness": "Effective"
+    },
+    {
+      "pokemon": "Arcanine",
+      "name": "Flare Blitz",
+      "effectiveness": "Not very effective"
+    },
+    {
+      "pokemon": "Arcanine",
+      "name": "Crunch",
+      "effectiveness": "Effective"
+    }
+  ],
+  "uniqueUsed": [
+    "Thunderbolt",
+    "Quick Attack",
+    "Crunch",
+    "Flare Blitz"
+  ],
+  "unexecutedPlanned": [
+    {
+      "pokemon": "Pikachu",
+      "moves": [
+        "Iron Tail",
+        "Volt Tackle"
+      ]
+    },
+    {
+      "pokemon": "Arcanine",
+      "moves": [
+        "Extreme Speed",
+        "Wild Charge"
+      ]
+    },
+    {
+      "pokemon": "Lapras",
+      "moves": [
+        "Surf",
+        "Ice Beam",
+        "Sing",
+        "Body Slam"
+      ]
+    }
+  ],
+  "totalUsesReported": 9,
+  "distinctMovesReported": 4,
+  "laprasEnteredField": false,
+  "visualVfxFrameEvidenceCaptured": false,
+  "limits": [
+    "No per-move animation morphology archived",
+    "AUTO attack choice repeated a few moves; 8 of 12 distinct team moves remained unexecuted",
+    "Battle win confirmed by post-battle options, but no independent full match replay downloaded",
+    "Do not equate a visible effectiveness tag with a complete visual frame sequence"
+  ]
+}
