@@ -281,3 +281,29 @@ test('RED: preferred Lv8 ULT cannot bypass excluded Tackle, Surf HM or deferred 
  assert.equal(JSON.stringify(library),original,'approved VFX must remain unchanged');
  assert.deepEqual(member,{id:'bulbasaur',progression:{level:8}});
 });
+
+test('practice slots cap Gen III poder metadata without mutating approved renderers',()=>{
+ const library=[
+  {id:'tackle',nombre:'Tackle',forma:'approved-contact',tipo:'NORMAL',dano:7,poder:130,cd:3,coste:8},
+  {id:'ember',nombre:'Ember',forma:'approved-ember',tipo:'FIRE',dano:8,poder:150,cd:3,coste:8}
+ ];
+ const original=JSON.stringify(library);
+ const config={library,canonical:canon,levelUp:{ember:1},preferredSignature:'ember'};
+ for(const level of [5,8]){
+  const member={id:'ponyta',progression:{level}};
+  const before=JSON.stringify(member);
+  const out=resolveKantoIntro(member,{},config);
+  for(const slot of ['lmb','rmb','q']){
+   assert.ok(out[slot]?.torre2IntroPractice,slot+' is a campaign-only preview');
+   assert.ok(out[slot].dano<=KANTO_INTRO.maxStarterDamage);
+   assert.ok(out[slot].poder>=0&&out[slot].poder<=40,
+    slot+' must not retain late-game Gen III poder at Lv'+level);
+  }
+  if(level===8){
+   assert.ok(out.e?.ulti&&out.e.torre2IntroPractice);
+   assert.ok(out.e.poder>=0&&out.e.poder<=60,'Lv8 ULT power cap');
+  }else assert.equal(out.e,undefined);
+  assert.equal(JSON.stringify(member),before,'save member is read-only');
+ }
+ assert.equal(JSON.stringify(library),original,'approved source moves/VFX unchanged');
+});

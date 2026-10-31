@@ -39,6 +39,11 @@ function trainingMove(source,tag,slot,level,duplicate=false){
   pendiente:false,torre2IntroPractice:true,
   torre2IntroSource:idOf(base.nombre),
   torre2PracticePreviewLevel:level};
+ // The native Gen III damage path can read poder instead of renderer dano.
+ // Every temporary campaign preview must be weak in BOTH fields; do not
+ // mutate the approved catalog, VFX, or the authentic later unlock.
+ if(Number.isFinite(move.poder))
+  move.poder=Math.min(slot==='e'?60:40,Math.max(0,move.poder));
  // Strong multi-hit, stat drain, OHKO, heal or charged-power side effects
  // from late game are never imported: only weak early FRLG entries feed here.
  if(slot==='e'){

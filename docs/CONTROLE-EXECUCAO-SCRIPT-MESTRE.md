@@ -1,5 +1,9 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## Execução 31/10/2026 — T08 / §7–8 (branch isolada)
+Main de partida `ce38c4c2c50821723f54473a3c9e53d48a006a5e`. Reproduzido bug real no `resolveKantoIntro`: metadado `poder` de 130/150 atravessava o cap de `dano` dos golpes de treino Lv5/Lv8. RED isolado [150,130,130,150]; teste novo `83106e92`, correção `110cc7d2`; GREEN isolado [40,40,40,60], fonte não mutada. Não equivale a npm test/Chromium/CI. PR T19 #400 segue draft em CI natural; T10 não tocado. **Estado T08: aguardando gates, revisão, merge e Pages HTTP.** Próxima frente diferente: T31 ou T19.
+
+
 ## §17/T22 — defesa de save legado (31/10/2026)
 - RED comprovado em código real: pending sem token válido congela VS Seeker e pode validar ticket malformado; `validRematchResult(state,null)` lança TypeError nesse caso. Patch mínimo rejeita tokens não inteiros positivos e libera nova reserva quando pendência inválida. GREEN focado 8/8; npm/CI/Chromium/Pages ainda não verificados. T20 #369 já integrada na main; próxima frente T19.
 

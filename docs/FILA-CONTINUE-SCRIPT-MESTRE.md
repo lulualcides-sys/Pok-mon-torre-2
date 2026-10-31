@@ -1,5 +1,9 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## Frente T08 — poder Gen III de prévia Lv5/Lv8 (31/10/2026)
+Branch `fix/t08-intro-gen3-power-cap-20261031`: RED isolado em main `ce38c4c2` confirmou `poder` 130/150 preservado apesar de `dano` 7/8; teste commit `83106e92`, patch `110cc7d2` limita apenas clones de treino a 40 (slots normais) / 60 (ULT), GREEN isolado. CI, Chromium, merge e Pages pendentes. T19 PR #400 em execução independente, não duplicar. Última frente T08; próxima T31/T19.
+
+
 ## Frente T22 — ticket de revanche legado inválido (31/10/2026)
 - RED no módulo da main: pending sem token bloqueia reserva com 3 cargas, aceita resultado sem token e lança TypeError em resultado nulo. Patch de código/testes em branch isolada; GREEN focado 8/8, CI e Chromium pendentes. Nenhuma alteração em saves, recompensas ou VFX. Próxima frente diferente: T19 pós-Brock→Misty.
 
