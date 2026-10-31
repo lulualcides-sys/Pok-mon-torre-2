@@ -82,3 +82,13 @@ O próximo protótipo, se aprovado, deve ser **original em pixel art Phaser/WebG
 - [CI matriz espécie × golpe](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41237321628)
 
 **Status de implementação:** pesquisa e documentação salvas na branch isolada. **Zero alterações validadas ou publicadas no jogo por este dossiê.**
+
+## 9. Novas observações em Cerulean Cave (sessão autenticada)
+
+O navegador TinyFish [testou Cerulean Cave em Practice vs Bot](https://agent.tinyfish.ai/runs/57f88a5e-682e-4372-bcf9-6446d2899ade), 3v3 Easy, confirmando o nome pelo cabeçalho `Practice 3v3 · Cerulean Cave`. O agente relatou piso de pedra rachada, caverna escura, cristais azul/roxo, iluminação difusa e perímetro luminoso.
+
+**Resultado sobre a Pokébola:** examinou uma introdução de batalha e duas trocas manuais, **Crobat → Charizard → Snorlax**. Nessas três ocasiões **não observou** gesto de arremesso de Pokébola pelo treinador, arco de esfera, abertura ou flash de materialização. Os Pokémon pareceram entrar imediatamente. Isso **não prova** que nenhuma versão, modo ou treinador do site possua tal animação; demonstra somente que ela não foi encontrada nesse fluxo testado.
+
+[Relatório estruturado dessa evidência](CERULEAN-CAVE-TROCA-POKEBOLA-OBSERVADA.json).
+
+**Decisão técnica:** não copiar uma coreografia do PB Ranked que não foi observada. Se o objetivo do Torre 2 é um treinador arremessando Pokébola, especificar animação **original** de lançamento (preparação, arremesso, trajetória, abertura, luz, Pokémon surgindo), preservando a captura aprovada.
