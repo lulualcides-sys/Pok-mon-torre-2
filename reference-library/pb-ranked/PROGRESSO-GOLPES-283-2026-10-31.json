@@ -10,8 +10,8 @@
     "defaultAccessible": 191,
     "requiresEditing": 54,
     "protectedByPolicy": 45,
-    "reportedUsedInRecentBatchRuns": 24,
-    "rosterNamesNotYetUsedInBatchRuns": 221,
+    "reportedUsedInRecentBatchRuns": 34,
+    "rosterNamesNotYetUsedInBatchRuns": 211,
     "frameByFrameVfxCaptured": 0
   },
   "testedSources": [
@@ -712,11 +712,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Discharge",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Effective",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect actual VFX frames and determine safe original implementation or licensed material"
     },
     {
       "name": "Dizzy Punch",
@@ -894,11 +906,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Drain Punch",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Not very effective",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect actual VFX frames and determine safe original implementation or licensed material"
     },
     {
       "name": "Draining Kiss",
@@ -985,11 +1009,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Earth Power",
+        "methods": [
+          "auto reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Not very effective; stale manual button then auto cast reported",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "PRESERVE pre-approved Torre2 effect; only compare for reference"
     },
     {
       "name": "Earthquake",
@@ -1294,11 +1330,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Flash Cannon",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Effective",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "PRESERVE pre-approved Torre2 effect; only compare for reference"
     },
     {
       "name": "Flip Turn",
@@ -2082,11 +2130,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Lava Plume",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Super effective",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect actual VFX frames and determine safe original implementation or licensed material"
     },
     {
       "name": "Leaf Blade",
@@ -2199,11 +2259,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Magnet Rise",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Status; nearby effectiveness text reported but attribution unclear",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect actual VFX frames and determine safe original implementation or licensed material"
     },
     {
       "name": "Megahorn",
@@ -2497,11 +2569,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Overheat",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Super effective",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect actual VFX frames and determine safe original implementation or licensed material"
     },
     {
       "name": "Pain Split",
@@ -2626,11 +2710,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": true,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Poison Jab",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Not very effective",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "PRESERVE pre-approved Torre2 effect; only compare for reference"
     },
     {
       "name": "Pollen Puff",
@@ -3193,11 +3289,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Shell Smash",
+        "methods": [
+          "auto reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Status, one use reported",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect actual VFX frames and determine safe original implementation or licensed material"
     },
     {
       "name": "Shell Spin",
@@ -3502,11 +3610,23 @@
       "inPublicRoster": true,
       "availableAsDefault": true,
       "protectedByTorre2BaselineOrApprovedPolicy": false,
-      "browserAgentUseReported": false,
-      "browserEvidence": null,
+      "browserAgentUseReported": true,
+      "browserEvidence": {
+        "name": "Sucker Punch",
+        "methods": [
+          "manual reported"
+        ],
+        "sourceUrls": [
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
+        ],
+        "notes": [
+          "Super effective",
+          "No isolated VFX frames verified; mode=practice UI, actor and result only agent report"
+        ]
+      },
       "rawFramesCaptured": false,
-      "status": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "toDo": "test in authenticated Practice vs Bot if worth it"
+      "status": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
+      "toDo": "Inspect actual VFX frames and determine safe original implementation or licensed material"
     },
     {
       "name": "Sunny Day",
@@ -3716,10 +3836,12 @@
           "AUTO"
         ],
         "sourceUrls": [
-          "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248"
+          "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248",
+          "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
         ],
         "notes": [
-          "One of nine reported uses; repeated names deduplicated"
+          "One of nine reported uses; repeated names deduplicated",
+          "Repeated use in Cerulean Cave, no new distinct name"
         ],
         "tier": 2
       },
@@ -4012,14 +4134,16 @@
       "toDo": "test in authenticated Practice vs Bot if worth it"
     }
   ],
-  "lastRecordedRun": "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32",
+  "lastRecordedRun": "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411",
   "nextFocus": {
-    "pokemon": "Pikachu",
+    "pokemon": "Toxicroak",
     "names": [
+      "Mud Bomb"
+    ],
+    "additionalPending": [
       "Iron Tail",
       "Volt Tackle"
     ],
-    "blocker": "Bench Pokémon switch controls lack stable click-element IDs in live battle; requery fresh elements or use visual click when supported",
-    "note": "Avoid more paid attempts until interaction can reliably switch Pokemon"
+    "reason": "full 3v3 match concluded before Mud Bomb; Pikachu abilities previously unavailable due to dynamic switch buttons"
   }
 }
