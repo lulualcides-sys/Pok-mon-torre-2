@@ -1,0 +1,25 @@
+name: PB Ranked — validar plano em lotes dos 283 golpes
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - 'tools/research/pb-ranked-verify-batches.cjs'
+      - '.github/workflows/pb-ranked-verify-batches.yml'
+      - 'reference-library/pb-ranked/PLANO-LOTES-245-GOLPES.json'
+      - 'reference-library/pb-ranked/MATRIZ-EFEITOS-283-GOLPES.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  check-all-coverage:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax check
+        run: node --check tools/research/pb-ranked-verify-batches.cjs
+      - name: Check exactly-once move coverage and exact move IDs
+        run: node tools/research/pb-ranked-verify-batches.cjs
