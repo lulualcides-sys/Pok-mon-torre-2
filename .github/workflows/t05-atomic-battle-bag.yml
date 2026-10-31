@@ -1,0 +1,54 @@
+name: Master T05 - atomic battle Bag storage and recovery
+on:
+  push:
+    branches: [fix/t05-battle-bag-atomic-storage-and-retry-20261030]
+permissions:
+  contents: read
+jobs:
+  atomic-bag:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Atomic unit and full source regression
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-battle-bag.js
+          node --test tests/battle-bag-atomic.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original client with safe retry
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*6))
+          done
+      - name: Real compiled dual-key save and item validation
+        run: |
+          set -euo pipefail
+          node --test tests/battle-bag-atomic-built.test.mjs tests/battle-bag-built.test.mjs
+          node --test tests/t05-bag-use-atomic-built.test.mjs
+      - name: Mobile Chromium Bag save denial and real native battles
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/battle-bag-browser.cjs
+          node tests/t02-bag-camera-browser.cjs
+          npm run test:browser
+      - name: Attach native evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t05-atomic-bag-native-proof
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          retention-days: 14
+          if-no-files-found: warn

@@ -18,7 +18,7 @@ const catalog=new Map(MART_ITEMS.filter(i=>BATTLE_BAG_ITEMS.includes(i.id)).map(
 // this pure transaction can be tested independently of Phaser.
 export function applyBattleBagItem(state,party,itemId,target,live=null){
  const item=catalog.get(itemId),member=party?.friend?.[target],saved=state?.team?.[target];
- if(!item||!member||!saved||member.uid!==saved.uid)
+ if(!item||!member||!saved||member.uid!==saved.uid||member.id!==saved.id)
   return {ok:false,reason:'Equipe alterada. Retorne ao mapa.'};
  if(!Number.isInteger(target)||target<0||target>=6)
   return {ok:false,reason:'Escolha um Pokémon da sua equipe.'};
@@ -48,11 +48,40 @@ export function applyBattleBagItem(state,party,itemId,target,live=null){
   clearStatus:clearStatus?status.kind:null,clearConfusion,remaining:state.inventory[itemId]};
 }
 
+
+// Validate a real use against detached state and party copies FIRST.
+// The previous battle UI mutated both the party and inventory, then saved;
+// a QuotaExceededError could consume medicine in memory and leave the save
+// unchanged. Only publish in-memory effects after BOTH save writes succeed.
+// Dependencies are injected in tests; the native UI uses saveCampaign.
+export function commitBattleBagItem(state,party,itemId,target,live=null,
+ persist=saveCampaign){
+ if(!state||!Array.isArray(state.team)||!state.inventory||
+    !party||!Array.isArray(party.friend)||!Number.isInteger(target)||
+    target<0||target>=6||!state.team[target]||!party.friend[target])
+  return {ok:false,reason:'Equipe inválida. Retorne ao mapa.'};
+ const trialState={...state,
+  team:state.team.map(member=>({...member})),
+  inventory:{...state.inventory}};
+ const trialParty={...party,friend:party.friend.map(member=>({...member}))};
+ const result=applyBattleBagItem(trialState,trialParty,itemId,target,live);
+ if(!result.ok)return result;
+ // If either primary or backup save fails, this throws BEFORE mutating
+ // the real party, inventory, counters or live Phaser fighter.
+ persist(trialState);
+ Object.assign(state.inventory,trialState.inventory);
+ Object.assign(state.team[target],trialState.team[target]);
+ Object.assign(party.friend[target],trialParty.friend[target]);
+ state.lastMessage=trialState.lastMessage;
+ return result;
+}
+
 export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
  if(!scene?.add||!party||!actor)return null;
  const depth=7400;
  let opened=false,target=party.playerIndex,lastUse=-Infinity,objects=[];
- let potionUses=0;
+ let potionUses=0,committing=false;
+ scene.__torre2BattleBagSaveError=false;
  // Native Phaser can pan AND zoom while the party fights. The Bag uses
  // fixed 640x360 HUD coordinates, so both scroll and zoom must be canceled
  // for graphics, labels and INPUT hitzones together. Scale compensation is
@@ -98,6 +127,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   return null;
  };
  const close=()=>{
+  scene.__torre2BattleBagSaveError=false;
   opened=false;
   scene.__torre2BattleBagOpen=false;
   clear();
@@ -107,6 +137,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
    scene.__torre2CaptureBusy||scene.__torre2BallTransitions||
    scene.t<lastUse+3)return false;
   opened=true;target=party.playerIndex;
+  scene.__torre2BattleBagSaveError=false;
   scene.__torre2BattleBagOpen=true;draw();
   return true;
  };
@@ -146,7 +177,7 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   back?.setData('torre2-battle-bag-back',true);
  }
  function use(itemId){
-  if(!opened)return;
+  if(!opened||committing)return;
   // An encounter may have completed while input was queued. Reject stale
   // UI without consuming inventory or changing the fighter.
   if(scene.fase!=='lucha'||scene.__torre2Changing||
@@ -160,10 +191,20 @@ export function installBattleBag(scene,party,actor,redrawPartyHud,announce){
   const active=target===party.playerIndex;
   const live=active?{hp:clamp(actor.hp/Math.max(1,actor.hpMax)*100),
    status:serializeGen3Status(actor),confused:!!actor.est?.confuso}:null;
-  const result=applyBattleBagItem(save,party,itemId,target,live);
+  committing=true;
+  let result;
+  try{
+   result=commitBattleBagItem(save,party,itemId,target,live);
+  }catch(error){
+   // A refused save must not use the item or close the frozen battle UI.
+   // Make the failure visible without leaking raw browser/storage details.
+   scene.__torre2BattleBagSaveError=true;
+   draw('FALHA AO SALVAR · ITEM PRESERVADO · TENTE NOVAMENTE');
+   return;
+  }finally{committing=false}
   if(!result.ok){draw(result.reason);return}
+  scene.__torre2BattleBagSaveError=false;
   if(catalog.get(itemId)?.kind==='heal')potionUses++;
-  saveCampaign(save);
   if(active){
    actor.hp=Math.min(actor.hpMax,Math.max(1,actor.hpMax*result.toHp/100));
    if(result.clearStatus)delete actor.est?.[result.clearStatus];
