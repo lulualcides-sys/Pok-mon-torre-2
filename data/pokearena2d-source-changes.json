@@ -1,41 +1,14 @@
 {
   "schemaVersion": 1,
   "source": "https://www.pokearena2d.com/",
-  "previousVersion": "src-e33a12a75f",
-  "currentVersion": "src-a0567ffb9f",
-  "previousSiteVersion": "src-32e8c9ae9b",
-  "currentSiteVersion": "src-aea9a5348c",
+  "previousVersion": "src-a0567ffb9f",
+  "currentVersion": "src-da4c1150a5",
+  "previousSiteVersion": "src-aea9a5348c",
+  "currentSiteVersion": "src-97f03e6e1b",
   "comparison": "differential",
-  "additions": [
-    {
-      "id": "aquajet",
-      "name": "Aqua Jet",
-      "compatibleKanto": [
-        "blastoise",
-        "dewgong",
-        "dragonite",
-        "golduck",
-        "kabuto",
-        "kabutops",
-        "seel"
-      ]
-    }
-  ],
+  "additions": [],
   "removals": [],
-  "changed": [
-    {
-      "id": "extremespeed",
-      "name": "Extreme Speed"
-    },
-    {
-      "id": "shadowball",
-      "name": "Shadow Ball"
-    },
-    {
-      "id": "waterburstshuriken",
-      "name": "Waterburst Shuriken"
-    }
-  ],
+  "changed": [],
   "newSourcePokemon": [],
   "initialSnapshotCount": null,
   "action": "Cataloged for reuse; validate renderers, licensing, legal Kanto learning, approval and campaign gates before editing battle kits."
