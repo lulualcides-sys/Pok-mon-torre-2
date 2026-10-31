@@ -1,0 +1,49 @@
+name: T32 — Cerulean City visual prototype (battle HUD unchanged)
+on:
+  push:
+    branches: [feat/t32-cerulean-city-visual-prototype-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  cerulean-city:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source and approved native battle protections
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-cerulean-city.js
+          node --check tests/t32-cerulean-city-browser.cjs
+          node tests/t32-cerulean-source.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original Phaser game and existing Kanto art
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js &&
+               test -s _site/arena2d/src-*/torre2/cerulean-city.js; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: Real Chromium Cerulean prototype desktop and mobile
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/t32-cerulean-city-browser.cjs
+      - name: Save visual evidence (including failures)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t32-cerulean-city-native-desktop-mobile
+          path: test-evidence/t32-cerulean-*.png
+          retention-days: 21
+          if-no-files-found: warn
