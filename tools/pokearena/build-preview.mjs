@@ -246,6 +246,7 @@ await Promise.all([
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
  ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
  ['tools/pokearena/torre2-arena-native-dodges.js','arena-native-dodges.js'],
+ ['tools/pokearena/torre2-campaign-native-dodges.js','campaign-native-dodges.js'],
  ['tools/pokearena/torre2-auto-battle.js','auto-battle.js'],
  ['tools/pokearena/torre2-audio-settings.js','audio-settings.js'],
  ['tools/pokearena/torre2-frlg-learnsets.js','frlg-learnsets.js'],
