@@ -242,7 +242,14 @@ assert.equal(boughtBall.ok,true);
 assert.equal(marketState.inventory.pokeball,6);
 assert.equal(marketState.money,1200);
 marketState.money=3000;marketState.stage=1;
-assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,true);
+assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,false,
+ 'TM03 must stay locked before Misty is defeated, even with sufficient money');
+marketState.stage=2;marketState.badges=['Rocha'];
+assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,false,
+ 'Stage alone cannot unlock TM03 without the Cascata badge');
+marketState.badges.push('Cascata');
+assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,true,
+ 'TM03 becomes purchasable only after Misty and the Cascata badge');
 assert.equal(marketState.inventory.tms.includes('tm-water-pulse'),true);
 assert.equal(teachTM(marketState,'tm-water-pulse').ok,true);
 assert.equal(marketState.team[0].tmMoves.includes('Water Pulse'),true);

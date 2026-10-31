@@ -900,3 +900,9 @@ Main de partida `ce38c4c2c50821723f54473a3c9e53d48a006a5e`. Reproduzido bug real
 - Reutilizar o **artefato genuíno** da CI #41162666401 (ID 13028307911, SHA-256 do save `865424a80bf46f5b43605c7cb193cf316805ad6453824b3fd7b9113748e17c18`), sem refazer os 13 treinadores e Brock em toda execução.
 - Teste novo somente navegador/CI: cinco treinadores Cerulean consecutivos com clique Phaser, Centro real, XP, save, UID, badges e TM inalteradas; derrotas reais fazem a CI falhar. Sem editar runtime, RNG, HP, XP, IA, sprites ou VFX. **Não validado até CI/Chromium GREEN; Misty/Cascata/TM03 permanecem pendentes.**
 - Próxima frente diferente: T07/T08 slots/learnsets comprovadamente faltantes, sem voltar ao T10.
+
+
+## §31/T31 — REA test gate acompanha TM de Misty (31/10/2026)
+- Diagnóstico: #41175372696 falhou no assert antigo `purchaseItem('tm-water-pulse').ok === true` com `stage=1`; a política `martItemUnlocked` exige `stage>1` **e** insígnia Cascata. O jogo bloqueou corretamente compra prematura; teste era obsoleto após #384.
+- Patch isolado: `tests/solo-kanto-built.test.mjs` e workflow de regressão com npm test/check/check:reuse, build real e Chromium. RED original comprovado; GREEN/CI ainda não concluídos. Nenhum runtime, save, VFX, sprite ou RNG alterado.
+- Main publicada antes deste lote: `ce38c4c2` Pages #41175391773 SUCCESS, HTTP `src-76f46e3486` e Pokédex pública; novo merge #401 `8a6f802f` ainda exige Pages próprio. T19 #400 passou dez treinadores (CI #41174200072), mas PR segue sem merge por conflito de base; não alegar Misty.
