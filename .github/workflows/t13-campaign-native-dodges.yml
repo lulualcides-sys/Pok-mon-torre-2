@@ -42,6 +42,8 @@ jobs:
           done
       - name: All 151 campaign ESP kits from actual built module
         run: node --test tests/t13-campaign-native-dodges-built.test.mjs
+      - name: Misty, Surge, evolutions and native ESP contract
+        run: node tests/misty-surge-built.test.mjs
       - name: Real Phaser mobile ESP + native party switch
         env:
           CHROME_BIN: /usr/bin/google-chrome
