@@ -5,6 +5,17 @@
 
 **Escopo solicitado:** exclusivamente conteúdo de gameplay individual, sem PvP online, ranking ou multiplayer humano; a autenticação foi efetuada legitimamente pelo usuário no perfil privado do TinyFish para o treino contra bot. O titular do projeto informou autorização de acesso e uso **não comercial** para estudo. Não publicar arquivos brutos do jogo nem misturar ativos de terceiros no GitHub Pages sem comprovação do alcance dessa licença.
 
+## PESQUISA EM LOTES — todos os 283 nomes
+
+O catálogo possui **283 nomes** analisados estaticamente, dos quais **245 pertencem ao roster público** de 127 Pokémon. Para evitar pesquisar golpe por golpe, os 245 nomes estão organizados em **21 lotes**, cada um com três Pokémon e quatro golpes por espécie, sem repetição de cobertura planejada. Os outros 38 aparecem no AST mas não num pool público do elenco.
+
+- [Plano de 21 lotes](PLANO-EXECUCAO-EM-LOTES.md)
+- [Plano estruturado 245 golpes](PLANO-LOTES-245-GOLPES.json)
+- [Sinais de VFX de todos os 283 nomes](MATRIZ-EFEITOS-283-GOLPES.json)
+- [Log das primeiras partidas/tentativas em lotes](LOG-PARTIDAS-EM-LOTES-2026-10-31.json)
+
+**Não confundir:** a cobertura estática de todos os nomes é real; as 21 partidas são planejadas, não executadas. No primeiro combate em lote, só Petal Blizzard e Hydro Pump foram identificados como explicitamente acionados. Os demais nomes do HUD não foram considerados animações comprovadas.
+
 ## STATUS CONSOLIDADO — 31/10/2026 (substitui o histórico antigo abaixo)
 
 **Pesquisa concluída nesta rodada:** 283 nomes distintos de golpes em 610 variantes, 127 Pokémon no roster, 508 golpes iniciais mapeados, 2.252 entradas espécie × golpe, 237 IDs de sprites e 3.815 registros de animação. Há 17 arenas e 28 treinadores no catálogo público. A sessão autenticada permitiu observar golpes em combate.
