@@ -126,7 +126,7 @@ function newMember(species,level=5){
 }
 export function createCampaign(starter){
  if(!STARTERS.includes(starter))throw new Error('Choose an original Kanto starter');
- return {version:1,starter,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],dexSeen:[starter],dexCaught:[starter],
+ return {version:1,starter,stage:0,trainer:0,team:[newMember(starter),newMember('mewtwo',50)],box:[],dexSeen:[starter],dexCaught:[starter],dexShinySeen:[],dexShinyCaught:[],
   active:0,wins:0,losses:0,capturesInStage:0,pendingCapture:null,
   money:1400,inventory:{pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]},
   wildEncountersStage:0,pendingWild:null,
@@ -258,6 +258,15 @@ export function readCampaign(storage=localStorage){
    migrated=true;
   }
   if(!Array.isArray(s.dexSeen)){s.dexSeen=[...s.dexCaught];migrated=true}
+  // Additive migration for already-owned Shiny individuals. Never reroll
+  // their chance on load or drop Pokémon stored by an older build.
+  if(!Array.isArray(s.dexShinySeen)){s.dexShinySeen=[];migrated=true}
+  if(!Array.isArray(s.dexShinyCaught)){s.dexShinyCaught=[];migrated=true}
+  for(const member of [...s.team,...s.box]){
+   if(member?.shiny!==true)continue;
+   if(!s.dexShinyCaught.includes(member.id)){s.dexShinyCaught.push(member.id);migrated=true}
+   if(!s.dexShinySeen.includes(member.id)){s.dexShinySeen.push(member.id);migrated=true}
+  }
   if(!Number.isFinite(s.money)||s.money<0){s.money=1400;migrated=true}
   if(!s.inventory||typeof s.inventory!=='object'){
    s.inventory={pokeball:5,greatball:0,ultraball:0,potion:3,superpotion:0,tms:[]};migrated=true;
@@ -375,6 +384,15 @@ export function recordCaught(s,id){
  const added=recordSeen(s,id);s.dexCaught??=[];
  if(!s.dexCaught.includes(id)){s.dexCaught.push(id);return true}
  return added;
+}
+// Species-level Pokédex markers do not change the Shiny flag of an individual.
+function recordShiny(s,id,caught=false){
+ s.dexShinySeen??=[];
+ if(!s.dexShinySeen.includes(id))s.dexShinySeen.push(id);
+ if(caught){
+  s.dexShinyCaught??=[];
+  if(!s.dexShinyCaught.includes(id))s.dexShinyCaught.push(id);
+ }
 }
 // PC transfers must not change the live party until the new checkpoint is
 // persisted. A denied localStorage write (quota/private mode) otherwise leaves
@@ -508,6 +526,7 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
    // Pokédex, including intermediate forms gained in one post-battle award.
    // Use the existing idempotent recorder (also registers the form as seen).
    recordCaught(state,event.to);
+   if(member.shiny===true)recordShiny(state,event.to,true);
    evolutions.push({index,uid:member.uid,...event});
   }
  }
@@ -570,8 +589,11 @@ export function chooseEeveeEvolution(state,uid,choice){
   team:state.team.map((p,i)=>selected.location==='team'&&i===selected.index?evolved:p),
   box:(state.box||[]).map((p,i)=>selected.location==='box'&&i===selected.index?evolved:p),
   dexSeen:[...(state.dexSeen||[])],dexCaught:[...(state.dexCaught||[])],
+  dexShinySeen:[...(state.dexShinySeen||[])],
+  dexShinyCaught:[...(state.dexShinyCaught||[])],
   lastMessage:'Eevee evoluiu para '+choice.toUpperCase()+' após atingir o nível 30!'};
  recordCaught(next,choice);
+ if(member.shiny===true)recordShiny(next,choice,true);
  saveCampaign(next);
  // Preserve the original Pokémon/progression references used by UI callers.
  // Only a committed save can assign a missing legacy UID, remove the
@@ -583,6 +605,8 @@ export function chooseEeveeEvolution(state,uid,choice){
  delete member.movePlanSpecies;
  state.dexSeen=next.dexSeen;
  state.dexCaught=next.dexCaught;
+ state.dexShinySeen=next.dexShinySeen;
+ state.dexShinyCaught=next.dexShinyCaught;
  state.lastMessage=next.lastMessage;
  return {ok:true,uid,from:'eevee',to:choice,level:member.progression.level};
 }
@@ -675,7 +699,10 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
   next.pendingWild=null;
   next.team=[...s.team];next.box=[...s.box];
   next.dexSeen=[...(s.dexSeen||[])];next.dexCaught=[...(s.dexCaught||[])];
+  next.dexShinySeen=[...(s.dexShinySeen||[])];
+  next.dexShinyCaught=[...(s.dexShinyCaught||[])];
   recordCaught(next,candidate.id);
+  if(member.shiny)recordShiny(next,candidate.id,true);
   const destination=next.team.length<6?'Equipe':'PC';
   if(destination==='Equipe')next.team.push(member);else next.box.push(member);
   next.lastMessage=candidate.id+' capturado! '+destination+
@@ -689,6 +716,10 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  if(!outcome.caught)return {ok:false,reason:s.lastMessage,...outcome};
  s.pendingWild=null;
  recordCaught(s,candidate.id);
+ if(member.shiny){
+  s.dexShinySeen=next.dexShinySeen;
+  s.dexShinyCaught=next.dexShinyCaught;
+ }
  if(s.team.length<6)s.team.push(member);else s.box.push(member);
  return {ok:true,pokemon:member,...outcome};
 }
@@ -757,18 +788,25 @@ export function startWildEncounter(s,random=Math.random){
  const area=wildAvailability(s.stage);
  if(!area.available.length)return {ok:false,reason:'Pokémon desta rota ainda não integrados ao motor de batalha.'};
  const id=area.available[Math.min(area.available.length-1,Math.floor(Math.max(0,Math.min(.999999,random()))*area.available.length))];
- const wild={id,stage:s.stage,trainer:s.trainer,
+ // An independent single 1% roll belongs to this encounter, never to a
+ // Poké Ball, evolution, scene restart or a loaded checkpoint.
+ const shinyRoll=Number(random());
+ const shiny=Number.isFinite(shinyRoll)&&shinyRoll>=0&&shinyRoll<.01;
+ const wild={id,stage:s.stage,trainer:s.trainer,shiny,
   level:wildLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage)),area:area.area,hpPercent:100};
  // Stage the encounter, counter and Pokédex together. Storage denial
  // must leave the original route and RNG retry available without a phantom
  // encounter, incremented counter or newly seen species in memory.
  const dexSeen=[...(s.dexSeen||[])];
- const next={...s,pendingWild:wild,wildEncountersStage:(s.wildEncountersStage||0)+1,dexSeen};
+ const next={...s,pendingWild:wild,wildEncountersStage:(s.wildEncountersStage||0)+1,
+  dexSeen,dexShinySeen:[...(s.dexShinySeen||[])]};
  recordSeen(next,id);
+ if(shiny)recordShiny(next,id);
  saveCampaign(next);
  s.pendingWild=wild;
  s.wildEncountersStage=next.wildEncountersStage;
  s.dexSeen=dexSeen;
+ s.dexShinySeen=next.dexShinySeen;
  return {ok:true,encounter:wild};
 }
 export function startWildBattle(s){
@@ -779,6 +817,7 @@ export function startWildBattle(s){
  return {p1:s.team[s.active].id,p2:wild.id,modo:'cpu',nivel:'facil',
   arena:STAGES[s.stage].arena,mandos:['kbm','cpu'],
   torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id,
+   shiny:wild.shiny===true,
    playerLevel:s.team[s.active].progression?.level??5,
    enemyLevel:wild.level,hardCap:currentLevelCap(s.stage)}};
 }
