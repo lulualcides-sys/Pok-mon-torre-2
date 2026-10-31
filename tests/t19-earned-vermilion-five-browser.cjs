@@ -59,6 +59,11 @@ const server=http.createServer(async(req,res)=>{
     level:m.progression?.level,xp:m.progression?.experience}))};
  });
  const click=async tag=>{
+  // A newly rendered native input Zone becomes hittable only after the
+  // Phaser display/input list has advanced; immediate mouse clicks in the
+  // same JS frame can be silently ignored without a page error.
+  await page.evaluate(()=>new Promise(ok=>
+   requestAnimationFrame(()=>requestAnimationFrame(ok))));
   const point=await page.evaluate(tag=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const zone=c.children.list.find(x=>x.active&&x.input?.enabled&&x.getData?.(tag)===true);
@@ -128,9 +133,43 @@ const server=http.createServer(async(req,res)=>{
     c.centerScreen(window.kanto.readCampaign());
    });
    await click('torre2-center-heal');
-   await page.waitForFunction(()=>window.kanto.readCampaign()?.team?.every(m=>m.hp===100)&&
-    !window.__pt2Game.scene.getScene('campanha').__torre2CenterBusy,
-    null,{timeout:20000});
+   // Prove the Phaser button actually accepted a pointer event. The first
+   // click can be missed on a busy WebGL frame; a second *physical click*
+   // is allowed only if the native button remains visible and no healing
+   // began. Never call healTeam, alter HP, or force the outcome.
+   let acknowledged=await page.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.__torre2CenterBusy===true||
+     window.kanto.readCampaign()?.team?.every(m=>m.hp===100);
+   },null,{timeout:5000}).then(()=>true).catch(()=>false);
+   if(!acknowledged){
+    const retryable=await page.evaluate(()=>{
+     const c=window.__pt2Game.scene.getScene('campanha');
+     return c.scene.isActive()&&!c.__torre2CenterBusy&&
+      c.children.list.some(o=>o.active&&o.input?.enabled&&
+       o.getData?.('torre2-center-heal')===true);
+    });
+    assert.equal(retryable,true,
+     'Center cannot silently proceed after a missed Phaser pointer event');
+    await click('torre2-center-heal');
+    acknowledged=await page.waitForFunction(()=>
+     window.__pt2Game.scene.getScene('campanha').__torre2CenterBusy===true,
+     null,{timeout:5000}).then(()=>true).catch(()=>false);
+    assert.equal(acknowledged,true,'Real healing must start before checkpoint');
+   }
+   try{
+    await page.waitForFunction(()=>window.kanto.readCampaign()?.team?.every(m=>m.hp===100)&&
+     !window.__pt2Game.scene.getScene('campanha').__torre2CenterBusy,
+     null,{timeout:20000});
+   }catch(error){
+    report.centerFailure=await page.evaluate(()=>{
+     const c=window.__pt2Game.scene.getScene('campanha');
+     const s=window.kanto.readCampaign();
+     return {busy:c.__torre2CenterBusy,active:c.scene.isActive(),
+      hp:s.team.map(m=>m.hp),errors:c.children.list.filter(o=>
+       o.getData?.('torre2-center-save-error')).map(o=>o.text)};
+    });write();throw error;
+   }
    const healed=await state();
    assert.equal(healed.wins,before.wins);
    assert.equal(healed.trainer,before.trainer);
