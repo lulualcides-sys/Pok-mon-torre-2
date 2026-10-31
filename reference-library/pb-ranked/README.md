@@ -5,9 +5,19 @@
 
 **Escopo solicitado:** exclusivamente conteúdo de gameplay individual, sem PvP online, ranking ou multiplayer humano; a autenticação foi efetuada legitimamente pelo usuário no perfil privado do TinyFish para o treino contra bot. O titular do projeto informou autorização de acesso e uso **não comercial** para estudo. Não publicar arquivos brutos do jogo nem misturar ativos de terceiros no GitHub Pages sem comprovação do alcance dessa licença.
 
+## Última partida contra bot — Lapras (31/10/2026)
+
+A [sessão autenticada mais recente](https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32) observou três ações manuais de Lapras: **Ice Beam**, **Sing** e **Body Slam**. A partida ainda estava em andamento quando o agente saiu; não foi registrada vitória nem derrota. A descrição de partículas de gelo no Body Slam **não é prova do VFX desse golpe**, pois pode haver sobreposição de efeitos de ataques concorrentes.
+
+**Progresso dos lotes recentes: 24/245 nomes com uso relatado, 221 sem uso relatado, zero arquivos de VFX completos.** Faltam nesta equipe **Iron Tail** e **Volt Tackle** do Pikachu, bloqueados porque o navegador não conseguiu acionar a troca com os IDs dinâmicos do banco.
+
+- [Resultado da partida](RESULTADO-QUARTA-PARTIDA-LAPRAS-3-GOLPES.json)
+- [Matriz de progresso atualizada](PROGRESSO-GOLPES-283-2026-10-31.json)
+- [Log cumulativo](LOG-PARTIDAS-EM-LOTES-2026-10-31.json)
+
 ## Progresso real e retomar sem retrabalho — atualização final de 31/10
 
-**21 nomes de golpes tiveram uso relatado durante partidas contra bot na coleta recente.** A cobertura técnica da biblioteca é 283 nomes; 245 estão no elenco público. Esses números não equivalem a animações 1:1 copiadas nem a implementação no Torre 2.
+**24 nomes de golpes tiveram uso relatado durante partidas contra bot na coleta recente.** A cobertura técnica da biblioteca é 283 nomes; 245 estão no elenco público. Esses números não equivalem a animações 1:1 copiadas nem a implementação no Torre 2.
 
 - [Status por golpe (283 registros, com 21 usos relatados)](PROGRESSO-GOLPES-283-2026-10-31.json)
 - [Guia para sessões de navegador e correção de botões `stale`](GUIA-TESTE-LOTES-SEM-RETRABALHO.md)
@@ -17,7 +27,7 @@
 - [Plano de menor esforço de edição — 37 partidas e 54 alterações planejadas](ESTRATEGIA-LOTES-SEM-RETRABALHO.md)
 - [45 nomes com proteção documental por aprovação anterior](PRESERVAR-GOLPES-APROVADOS.md)
 
-**Faltam registros de uso para 224 nomes do elenco público nesse acompanhamento de lotes.** Nenhum vídeo quadro-a-quadro nem recurso proprietário foi copiado.
+**Faltam registros de uso para 221 nomes do elenco público nesse acompanhamento de lotes.** Nenhum vídeo quadro-a-quadro nem recurso proprietário foi copiado.
 
 ---
 
