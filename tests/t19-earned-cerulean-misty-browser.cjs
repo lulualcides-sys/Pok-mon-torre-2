@@ -2,7 +2,8 @@
 /* T19: resume the exact production save earned by T20 native Pallet→Brock.
  * The seed is exported by the original Chromium run, never synthesized.
  * Fifteen genuine Cerulean trainers and Misty, native Center, AUTO, XP and reload.
- * This is NOT a full Misty clear or proof of a physical Android device.
+ * Misty is only proven if the real battle, Cascata, TM03 and reload pass.
+ * This is NOT evidence of a physical Android device.
  */
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),fsp=require('node:fs/promises');
