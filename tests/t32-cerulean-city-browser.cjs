@@ -89,6 +89,7 @@ fs.mkdirSync(screenshot,{recursive:true});
      return {stage:x.stage,trainer:x.trainer,art:x.realArt,
       hotspots:x.hotspots.map(z=>z.id),
       views:c.children.list.filter(z=>z.getData?.('torre2-city-real-art')===true).length,
+      playerCount:c.children.list.filter(z=>z.getData?.('torre2-city-player')===true).length,
       controls:c.children.list.filter(z=>z.getData?.('torre2-city-action'))
        .map(z=>z.getData('torre2-city-action')),
       partySlots:c.children.list.filter(z=>z.getData?.('torre2-city-party-slot')!==undefined)
@@ -99,6 +100,7 @@ fs.mkdirSync(screenshot,{recursive:true});
     });
     assert.equal(ui.stage,1);assert.equal(ui.trainer,1);assert.equal(ui.art,true);
     assert.equal(ui.views,1,'Use original cached texture only once');
+    assert.equal(ui.playerCount,1,'City must render one native FireRed player sprite');
     assert.equal(ui.battleHudUnchanged,true);
     assert.deepEqual(ui.partySlots.map(z=>z.index),[0,1,2,3,4,5]);
     assert.ok(ui.partySlots[5].right+8<=ui.firstActionLeft,

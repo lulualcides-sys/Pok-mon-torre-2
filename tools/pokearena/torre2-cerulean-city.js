@@ -2,7 +2,7 @@
  * Uses the already-cached FireRed city sheet; no generated mockup pasted in. */
 import {getSourceMainBounds} from './frlg-location.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {addFireRedNPC} from './frlg-npc.js';
+import {addFireRedNPC,addRedPlayer} from './frlg-npc.js';
 const FONT='Pixelify Sans,monospace';
 const VIEW=Object.freeze({x:18,y:43,w:604,h:246});
 function title(scene,x,y,message,size=9,color='#e7faff',depth=22){
@@ -47,6 +47,17 @@ function enrichCerulean(scene){
  const canalTween=scene.tweens.add({targets:canal,alpha:{from:.32,to:.86},
   x:{from:0,to:2},duration:1650,yoyo:true,repeat:-1});
  canal.once('destroy',()=>canalTween.remove());
+ // The existing FireRed player sheet is already loaded by the campaign.
+ // A one-pixel idle bounce makes the city feel occupied without affecting movement.
+ const shadow=scene.add.graphics().setDepth(16);
+ shadow.fillStyle(0x08253b,.35);shadow.fillEllipse(315,206,16,5);
+ const player=addRedPlayer(scene,315,205,{scale:1.05,depth:19});
+ if(player){
+  player.setData('torre2-city-player',true);
+  const idle=scene.tweens.add({targets:player,y:{from:205,to:204},
+   duration:980,yoyo:true,repeat:-1});
+  player.once('destroy',()=>idle.remove());
+ }
  for(const [kind,x,y] of [['youngster',181,220],['lass',461,218],
   ['fisherman',112,245]]){
   const npc=addFireRedNPC(scene,kind,x,y,{scale:1.04,depth:17});
@@ -60,7 +71,10 @@ function action(scene,x,y,w,label,fn,highlight=false){
    (hover?0xffe7a0:0xe9c272):(hover?0x2e719b:0x173e62),
    highlight?0xfff4bb:0x74bddd);
  };
- title(scene,x,y,label,highlight?10:8,highlight?'#122a3e':'#eafbff',32).setOrigin(.5);
+ const labelText=title(scene,x,y,label,highlight?10:8,
+  highlight?'#10253b':'#eafbff',32).setOrigin(.5);
+ // Gold action buttons need crisp navy glyphs, not a navy-on-navy outline.
+ if(highlight)labelText.setStroke('#10253b',0);
  const z=scene.add.zone(x,y,w,32).setInteractive({useHandCursor:true})
   .setDepth(33).setData('torre2-city-action',label);
  z.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
