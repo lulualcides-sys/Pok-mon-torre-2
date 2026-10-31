@@ -517,11 +517,33 @@ export function awardSharedTeamExperience(state,reward,{kind='trainer'}={}){
 // After its XP is awarded, the choice remains pending in the normal save
 // until the trainer picks one; no random branch, extra item or battle flag.
 export const EEVEE_KANTO_CHOICES=Object.freeze(['vaporeon','jolteon','flareon']);
+// Legacy v1 team/PC entries can lack a UID. Expose a stable, collision-free
+// selector without mutating the live save; assign it only after a successful
+// evolution checkpoint. Other team members and all modern UIDs stay intact.
+function eeveeEntries(state){
+ const team=Array.isArray(state?.team)?state.team:[];
+ const box=Array.isArray(state?.box)?state.box:[];
+ const reserved=new Set([...team,...box].map(m=>m?.uid)
+  .filter(uid=>typeof uid==='string'&&uid.length>0));
+ const entries=[];
+ for(const [location,group] of [['team',team],['box',box]]){
+  group.forEach((member,index)=>{
+   const hasUid=typeof member?.uid==='string'&&member.uid.length>0;
+   let uid=hasUid?member.uid:'legacy-eevee:'+location+':'+index;
+   if(!hasUid){
+    while(reserved.has(uid))uid+=':recovered';
+    reserved.add(uid);
+   }
+   entries.push({member,uid,location,index});
+  });
+ }
+ return entries;
+}
 export function pendingEeveeEvolution(state){
- for(const member of [...(state?.team||[]),...(state?.box||[])]){
+ for(const {member,uid} of eeveeEntries(state)){
   if(member?.id==='eevee'&&member.progression?.species==='eevee'&&
      levelEvolutionChoices(member.progression).some(id=>EEVEE_KANTO_CHOICES.includes(id)))
-   return {uid:member.uid,level:member.progression.level,choices:EEVEE_KANTO_CHOICES.slice()};
+   return {uid,level:member.progression.level,choices:EEVEE_KANTO_CHOICES.slice()};
  }
  return null;
 }
@@ -530,7 +552,8 @@ export function chooseEeveeEvolution(state,uid,choice){
  // Eevee that has REALLY met Lv30; do not mutate on invalid requests.
  if(typeof uid!=='string'||!EEVEE_KANTO_CHOICES.includes(choice))
   return {ok:false,reason:'Evolução inválida.'};
- const member=[...(state?.team||[]),...(state?.box||[])].find(m=>m.uid===uid);
+ const selected=eeveeEntries(state).find(entry=>entry.uid===uid);
+ const member=selected?.member;
  if(!member||member.id!=='eevee'||member.progression?.species!=='eevee'||
    !levelEvolutionChoices(member.progression).includes(choice))
   return {ok:false,reason:'Eevee ainda não está pronto para evoluir.'};
@@ -541,17 +564,19 @@ export function chooseEeveeEvolution(state,uid,choice){
  const result=resolveEvolutionAfterBattle(nextProgress,'finished',choice);
  if(!result.ok||result.evolutions.length!==1||result.evolutions[0].to!==choice)
   return {ok:false,reason:'Evolução não concluída.'};
- const evolved={...member,id:nextProgress.species,progression:nextProgress,moves:[]};
+ const evolved={...member,uid,id:nextProgress.species,progression:nextProgress,moves:[]};
  delete evolved.movePlanSpecies;
  const next={...state,
-  team:state.team.map(p=>p.uid===uid?evolved:p),
-  box:(state.box||[]).map(p=>p.uid===uid?evolved:p),
+  team:state.team.map((p,i)=>selected.location==='team'&&i===selected.index?evolved:p),
+  box:(state.box||[]).map((p,i)=>selected.location==='box'&&i===selected.index?evolved:p),
   dexSeen:[...(state.dexSeen||[])],dexCaught:[...(state.dexCaught||[])],
   lastMessage:'Eevee evoluiu para '+choice.toUpperCase()+' após atingir o nível 30!'};
  recordCaught(next,choice);
  saveCampaign(next);
  // Preserve the original Pokémon/progression references used by UI callers.
- // Only a committed save can remove the pending choice or the old move kit.
+ // Only a committed save can assign a missing legacy UID, remove the
+ // pending choice or refresh the old move kit.
+ member.uid=uid;
  Object.assign(member.progression,nextProgress);
  member.id=evolved.id;
  member.moves=[];

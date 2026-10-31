@@ -1,5 +1,13 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Lote T03 — Eevee legado sem UID (30/10/2026)
+- [x] Localizar bloqueio no código da main `be1d230c` e isolar escopo sem conflito com PRs #369/#381.
+- [x] Preparar teste de regressão e correção focada para Eevee legado na equipe/PC, colisão de UID e gravação negada; **nenhuma execução ainda declarada**.
+- [ ] Executar CI do HEAD exato: npm test/check/check:reuse, build, testes compilados, Chromium real e guardião visual.
+- [ ] Revisar PR, compatibilidade com main, merge somente verde e confirmar Pages HTTP do SHA integrado.
+- [ ] Validar evolução em jornada natural, além das fixtures; T03 e 37 seções seguem parciais.
+
+
 ## Lote validado 30/10/2026 — T07/T08 integrada e T20 ainda em teste
 
 - [x] **T07/T08 PR #371 integrada:** main `23e1e698ae5e38b1b497631f53401faa4d7d1311`; CI de provas reais [#41115777531](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41115777531) e guardião [#41115785704](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41115785704) `success`. Dois testes antigos corrigidos: AUTO ON nas lutas, mudança por botão para controle manual, evolução Caterpie→Metapod correta.

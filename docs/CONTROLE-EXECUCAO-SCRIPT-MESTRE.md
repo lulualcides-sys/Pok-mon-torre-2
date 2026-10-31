@@ -1,5 +1,11 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## 30/10/2026 — §5/T03: Eevee legado sem UID, correção submetida à validação
+- **Causa no código da main `be1d230c`:** Eevee Lv30 sem UID em save v1 recebe seletor `undefined` e não pode confirmar evolução. Branch isolada `fix/t03-legacy-eevee-pc-identity-20261030` propõe token não mutante e persistência atômica na escolha, sem reescrever saves antigos.
+- **Prova pendente:** teste preparado de equipe/PC, colisão, storage negado, Shiny e TM; CI/Chromium, merge e Pages ainda **não comprovados**. Fixtures não são partidas naturais. T03, T07/T08, T20 e §§5/7/8/20/37 seguem parciais.
+- **Rotação:** frente atual T03; próxima independente T19/T22 revanches. T10 #374 não deve ser repetido sem regressão.
+
+
 ## 30/10/2026 — §§7/8/20/33/37: publicação T08 confirmada, T20 permanece parcial
 
 - **Correção pontual de §7/8 homologada:** PR #368 integrada à `main` no SHA `7f13affd0ff0afbba8f3f54c1646de10b28f6c3d`; 4 workflows relevantes verdes (#41104671463, #41104670842, #41104670806, #41104670793). Pages #41104806619 **success**, com verificação HTTP da versão `src-5f26a94885` e `PASS_PUBLIC_POKEDEX_RELEASE`. Isso comprova o bloqueio de ULT preferida excluída e a publicação, **não** todos os 151 golpes ou disparos naturais de ULT.
