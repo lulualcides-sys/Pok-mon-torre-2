@@ -1,0 +1,67 @@
+name: T12 — Gym secondary offense, native Phaser and regressions
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-trainer-strategy.js'
+      - 'tools/pokearena/torre2-party-battle.js'
+      - 'tests/t12-gym-special*'
+      - 'tests/gym-leader-challenge.test.js'
+      - '.github/workflows/t12-gym-secondary-offense.yml'
+  push:
+    branches: [feat/t12-gym-offense-secondary-casts-20261031]
+permissions:
+  contents: read
+jobs:
+  gym-offense:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Focused legal cast and trainer AI tests
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --test tests/t12-gym-special-pressure.test.js tests/gym-leader-challenge.test.js tests/trainer-strategy.test.js tests/trainer-items.test.js
+      - name: Full Node tests, syntax and approved attack provenance
+        run: |
+          set -euo pipefail
+          npm test
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-trainer-strategy.js
+          node --check tools/pokearena/torre2-party-battle.js
+      - name: Build the original Phaser client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Assert real compiled eight-gym kits and non-persistent casts
+        run: node --test tests/t12-gym-special-built.test.mjs
+      - name: Real native browser Gym and trainer regressions
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/trainer-strategy-browser.cjs
+          node tests/t19-gym-leader-challenge-browser.cjs
+          node tests/t12-trainer-native-ai-after-switch-browser.cjs
+      - name: Full Phaser browser regression
+        run: |
+          export CHROME_BIN="$(command -v google-chrome)"
+          npm run test:browser
+      - name: Preserve screenshots and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t12-gym-offense-phaser-${{ github.run_attempt }}
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
