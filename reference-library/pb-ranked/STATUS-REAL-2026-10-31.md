@@ -1,5 +1,10 @@
 # Estado verificável — pesquisa REA PB Ranked — 31/10/2026
 
+> **ATUALIZAÇÃO SUPERVENIENTE (31/10/2026): AUTENTICAÇÃO E PARTIDAS CONTRA BOT FUNCIONARAM.**
+> O bloqueio de login relatado abaixo se refere à **coleta pública inicial**, sem sessão Google.
+> Depois, o usuário autenticou o perfil privado do TinyFish e foram observadas **três sessões do modo Practice vs Bot**, incluindo ataques manuais, AUTO, DODGE e troca para Crobat. Consulte [o relatório da sessão autenticada](AUDITORIA-COMBATE-AUTENTICADO-2026-10-31.md) e [o inventário JSON](COMBATE-OBSERVADO-2026-10-31.json).
+> **Ressalva:** o REA foi executado sobre o site público e o TinyFish operou o navegador autenticado; não afirmar que o REA foi anexado ao navegador autenticado.
+
 **Resultado:** biblioteca de pesquisa criada e preservada na branch `research/pb-ranked-rea-20261031`. Nenhum código, HUD, golpe aprovado, save ou sistema do Pokémon Torre 2 em produção foi alterado. **Online/PvP está explicitamente fora do escopo.**
 
 ## Evidência concluída
