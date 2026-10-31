@@ -1,0 +1,20 @@
+{
+  "date": "2026-10-31",
+  "runUrl": "https://agent.tinyfish.ai/runs/ba062e04-aa02-447b-82f4-afb327458833",
+  "reportClaims": [
+    "Sludge Bomb",
+    "Outrage",
+    "Flamethrower",
+    "Fire Blast",
+    "Air Slash",
+    "Dragon Claw",
+    "Rapid Spin",
+    "Skull Bash"
+  ],
+  "stepCount": 17,
+  "confirmedIndividualCastCount": 0,
+  "reason": "Low tool step count compared with claimed 8 manual clicks, state-before/state-after per attack not available; later precision run showed stale UI IDs.",
+  "supersededBy": "https://agent.tinyfish.ai/runs/cbd2f33f-cd1f-4e35-9e15-a4f97ccf35b2",
+  "impactOnCurrentConfirmedUseTracker": "NO change in 62 named uses; Kanto claims not included",
+  "safeToReuseArtwork": false
+}
