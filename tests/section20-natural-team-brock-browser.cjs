@@ -621,6 +621,36 @@ const server=http.createServer(async(req,res)=>{
    }
    before=await game();
   }
+  // T19 handoff: export ONLY the actual durable save earned by the full
+  // production Pallet→Brock browser run. No fixture, mutation or fabricated
+  // trainer progress. A separate browser test consumes these exact bytes.
+  if(process.env.T19_EXPORT_EARNED_SAVE==='1'){
+   assert.equal(useProductionStart,true,'T19 seed must use the production starter');
+   const earned=await game();
+   assert.equal(earned.stage,1,'Brock must be defeated before T19 export');
+   assert.equal(earned.trainer,0,'Cerulean must begin at its first trainer');
+   assert.deepEqual(earned.badges,['Rocha']);
+   assert.ok(earned.tms.includes('tm-rock-tomb'),'TM39 must be earned');
+   assert.ok(earned.team.length>=3&&earned.team.every(m=>m.id!=='mewtwo'),
+    'No test-factory Pokémon in the natural Cerulean seed');
+   const rawSave=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
+   assert.ok(rawSave,'Native game must have persisted its Brock checkpoint');
+   const stored=JSON.parse(rawSave);
+   assert.equal(stored.stage,earned.stage);
+   assert.equal(stored.trainer,earned.trainer);
+   assert.equal(stored.wins,earned.wins);
+   assert.equal(stored.losses,earned.losses);
+   const sha256=require('node:crypto').createHash('sha256').update(rawSave).digest('hex');
+   const proof={format:'t19-earned-brock-native-save-v1',productionStarter:true,
+    provenance:'same Chromium page after T20 production Pallet-to-Brock',
+    githubSha:process.env.GITHUB_SHA||null,sha256,rawSave,
+    summary:{stage:earned.stage,trainer:earned.trainer,wins:earned.wins,
+     losses:earned.losses,badges:earned.badges,tms:earned.tms,team:earned.team}};
+   fs.writeFileSync(out+'/t19-earned-brock-save.json',JSON.stringify(proof,null,2));
+   report.t19Export={sha256,githubSha:proof.githubSha,summary:proof.summary};
+   saveReport();
+   console.log('PASS T19 EARNED SAVE EXPORTED WITHOUT MUTATION',JSON.stringify(report.t19Export));
+  }
   // Optional T03 extension: win ACTUAL native battles after Brock, with
   // absolutely no XP/level/result/HP fixture and no EVO during battle.
   if(validateNaturalIvysaur){
