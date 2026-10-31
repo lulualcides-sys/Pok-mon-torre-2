@@ -142,7 +142,7 @@ async function fillTrainer(page){
 }
 async function collect(){
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
-  headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader']});
+  headless:true,args:['--no-sandbox','--disable-dev-shm-usage','--enable-unsafe-swiftshader','--remote-debugging-port=9222','--remote-debugging-address=127.0.0.1']});
  const context=await browser.newContext({viewport:{width:1440,height:900},
    deviceScaleFactor:1,locale:'en-US',serviceWorkers:'block',acceptDownloads:false});
  const page=await context.newPage();
@@ -185,6 +185,26 @@ async function collect(){
     if(!acted)break;
   }
   const now=await state(page,'practice-final');
+  // REA attaches to the SAME temporary browser after available guest navigation.
+  // Its deadline is independent of the Acorn per-file fallback implemented here.
+  try{
+    const rows=await(await fetch('http://127.0.0.1:9222/json/list',
+       {signal:AbortSignal.timeout(2500)})).json();
+    const tab=rows.find(x=>x.type==='page'&&x.url?.startsWith(ROOT));
+    if(tab){
+      for(const command of ['inspect-web-page','analyze-web-bundle']){
+        const rea=spawnSync('rea',[command,'http://127.0.0.1:9222',
+          tab.id,...(command==='inspect-web-page'?['--observation-ms','1000']:[]),'--json'],
+          {encoding:'utf8',timeout:95000,maxBuffer:18*1024*1024});
+        if(rea.status===0){
+          try{const obj=JSON.parse(rea.stdout);
+            json(path.join(TMP,'rea-'+command+'.json'),obj);
+            extracted.notes.push('REA '+command+' evidence success: '+(obj.evidence_id||'no-id'));
+          }catch(e){pageErrors.push('REA serialization '+command+': '+bounded(e.message));}
+        }else pageErrors.push('REA '+command+': '+bounded(rea.stderr||rea.stdout||rea.error?.message));
+      }
+    }else extracted.notes.push('REA target unavailable after guest flow; Acorn static fallback used.');
+  }catch(e){pageErrors.push('REA CDP attach '+bounded(e.message));}
   const gameplayLabels=now.buttons?.filter(x=>/^(auto|dodge|mega evolve|surrender|[1234]|fight)$/i.test(x))||[];
   if(gameplayLabels.length){
     extracted.notes.push('Battle HUD control buttons visibly observed: '+gameplayLabels.join(', '));
