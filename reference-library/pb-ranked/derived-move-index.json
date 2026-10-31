@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "origin": "PB Ranked public-client-derived metadata, GitHub research branch 2026-10-31",
   "collectedAt": "2026-10-31",
-  "notice": "Static derived metadata, not source code, sprite graphics, animation frames or permission to copy. Cross-matches are against a 165-name Poké Arena 2D catalog, not all Torre 2 code.",
+  "notice": "Static derived metadata, not source code, sprite graphics, animation frames or permission to copy. Cross-matches are against a 165-name Poké Arena 2D catalog, not all Torre 2 code. Session URLs are intentionally excluded to avoid exposing authenticated navigation history.",
   "counts": {
     "names": 283,
     "roster": 245,
@@ -62,7 +62,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "acrobatics",
@@ -113,7 +114,8 @@
       "nativeSourceMoveId": "acrobatics",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "aerialace",
@@ -159,7 +161,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "agility",
@@ -198,7 +201,8 @@
       "nativeSourceMoveId": "agility",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "airslash",
@@ -249,9 +253,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "amnesia",
@@ -275,7 +278,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "ancientpower",
@@ -332,7 +336,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "aquacutter",
@@ -372,7 +377,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "aquajet",
@@ -419,7 +425,8 @@
       "nativeSourceMoveId": "aquajet",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "aquatail",
@@ -465,7 +472,8 @@
       "nativeSourceMoveId": "aquatail",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "astralbarrage",
@@ -483,7 +491,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "aurasphere",
@@ -536,9 +545,8 @@
       "nativeSourceMoveId": "aurasphere",
       "claimedExactVfx": false,
       "statusNote": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "auroraveil",
@@ -585,7 +593,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "autotomize",
@@ -632,7 +641,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "avalanche",
@@ -678,7 +688,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bide",
@@ -702,7 +713,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bite",
@@ -743,7 +755,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "blastburn",
@@ -793,7 +806,8 @@
       "nativeSourceMoveId": "blastburn",
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "blazekick",
@@ -843,7 +857,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "blizzard",
@@ -896,9 +911,8 @@
       "nativeSourceMoveId": "blizzard",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "blueflare",
@@ -950,7 +964,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bodypress",
@@ -994,7 +1009,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bodyslam",
@@ -1041,9 +1057,8 @@
       "nativeSourceMoveId": "bodyslam",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "boltstrike",
@@ -1094,7 +1109,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bonerush",
@@ -1142,7 +1158,8 @@
       "nativeSourceMoveId": "bonerush",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "boomburst",
@@ -1190,7 +1207,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bounce",
@@ -1233,9 +1251,8 @@
       "nativeSourceMoveId": "bounce",
       "claimedExactVfx": false,
       "statusNote": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bravebird",
@@ -1292,7 +1309,8 @@
       "nativeSourceMoveId": "bravebird",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "breakneckblitz",
@@ -1310,7 +1328,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "brickbreak",
@@ -1363,9 +1382,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "bulletpunch",
@@ -1411,7 +1429,8 @@
       "nativeSourceMoveId": "bulletpunch",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "calmmind",
@@ -1442,7 +1461,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "clangingscales",
@@ -1489,7 +1509,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "clangoroussoul",
@@ -1535,7 +1556,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "closecombat",
@@ -1592,9 +1614,8 @@
       "nativeSourceMoveId": "closecombat",
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "confuseray",
@@ -1621,7 +1642,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "cosmicpower",
@@ -1651,7 +1673,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "counter",
@@ -1699,7 +1722,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "crabhammer",
@@ -1746,7 +1770,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "crosspoison",
@@ -1798,7 +1823,8 @@
       "nativeSourceMoveId": "crosspoison",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "crunch",
@@ -1853,9 +1879,8 @@
       "nativeSourceMoveId": "crunch",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "crushclaw",
@@ -1905,7 +1930,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "curse",
@@ -1943,7 +1969,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "cut",
@@ -1987,7 +2014,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "darkpulse",
@@ -2041,7 +2069,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dazzlinggleam",
@@ -2094,9 +2123,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dig",
@@ -2143,9 +2171,8 @@
       "nativeSourceMoveId": "dig",
       "claimedExactVfx": false,
       "statusNote": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "discharge",
@@ -2200,9 +2227,8 @@
       "nativeSourceMoveId": "discharge",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dizzypunch",
@@ -2220,9 +2246,8 @@
       "nativeSourceMoveId": "dizzypunch",
       "claimedExactVfx": false,
       "statusNote": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "doomdesire",
@@ -2247,7 +2272,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "doublekick",
@@ -2291,7 +2317,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "doubleteam",
@@ -2333,7 +2360,8 @@
       "nativeSourceMoveId": "doubleteam",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "doubleedge",
@@ -2383,9 +2411,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dracometeor",
@@ -2437,7 +2464,8 @@
       "nativeSourceMoveId": "dracometeor",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dragonascent",
@@ -2486,7 +2514,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dragonbreath",
@@ -2535,7 +2564,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dragonclaw",
@@ -2592,9 +2622,8 @@
       "nativeSourceMoveId": "dragonclaw",
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dragondance",
@@ -2650,7 +2679,8 @@
       "nativeSourceMoveId": "dragondance",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dragondarts",
@@ -2692,7 +2722,8 @@
       "nativeSourceMoveId": "dragondarts",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dragonpulse",
@@ -2749,7 +2780,8 @@
       "nativeSourceMoveId": "dragonpulse",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dragonrush",
@@ -2793,9 +2825,8 @@
       "nativeSourceMoveId": "dragonrush",
       "claimedExactVfx": false,
       "statusNote": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "drainpunch",
@@ -2843,9 +2874,8 @@
       "nativeSourceMoveId": "drainpunch",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "drainingkiss",
@@ -2885,7 +2915,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "drillpeck",
@@ -2937,7 +2968,8 @@
       "nativeSourceMoveId": "drillpeck",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "drillrun",
@@ -2990,7 +3022,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "drumbeating",
@@ -3033,9 +3066,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dualwingbeat",
@@ -3080,7 +3112,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "dynamicpunch",
@@ -3130,7 +3163,8 @@
       "nativeSourceMoveId": "dynamicpunch",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "earthpower",
@@ -3182,9 +3216,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "earthquake",
@@ -3241,9 +3274,8 @@
       "nativeSourceMoveId": "earthquake",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "eggbomb",
@@ -3289,9 +3321,8 @@
       "nativeSourceMoveId": "eggbomb",
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "electroball",
@@ -3337,7 +3368,8 @@
       "nativeSourceMoveId": "electroball",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "endeavor",
@@ -3390,7 +3422,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "energyball",
@@ -3429,7 +3462,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "eruption",
@@ -3478,7 +3512,8 @@
       "nativeSourceMoveId": "eruption",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "extrasensory",
@@ -3525,9 +3560,8 @@
       "nativeSourceMoveId": "extrasensory",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "extremespeed",
@@ -3577,9 +3611,8 @@
       "nativeSourceMoveId": "extremespeed",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/21383781-c0bc-46e8-be68-157dcbeede01"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "facade",
@@ -3627,7 +3660,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "fakeout",
@@ -3677,7 +3711,8 @@
       "nativeSourceMoveId": "fakeout",
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "feint",
@@ -3717,7 +3752,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "fierydance",
@@ -3766,7 +3802,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "fireblast",
@@ -3820,9 +3857,8 @@
       "nativeSourceMoveId": "fireblast",
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "firefang",
@@ -3840,7 +3876,8 @@
       "nativeSourceMoveId": "firefang",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "firepunch",
@@ -3886,9 +3923,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "firstimpression",
@@ -3938,7 +3974,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "flamecharge",
@@ -3983,7 +4020,8 @@
       "nativeSourceMoveId": "flamecharge",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "flamewheel",
@@ -4028,7 +4066,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "flamethrower",
@@ -4083,9 +4122,8 @@
       "nativeSourceMoveId": "flamethrower",
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "flareblitz",
@@ -4140,9 +4178,8 @@
       "nativeSourceMoveId": "flareblitz",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "flashcannon",
@@ -4199,9 +4236,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "flipturn",
@@ -4245,7 +4281,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "floralhealing",
@@ -4286,7 +4323,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "fly",
@@ -4335,7 +4373,8 @@
       "nativeSourceMoveId": "fly",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "flyingpress",
@@ -4387,7 +4426,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "focusblast",
@@ -4444,7 +4484,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "focusenergy",
@@ -4487,7 +4528,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "followme",
@@ -4522,7 +4564,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "foulplay",
@@ -4562,7 +4605,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "freezedry",
@@ -4619,7 +4663,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "frenzyplant",
@@ -4662,7 +4707,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "furycutter",
@@ -4706,7 +4752,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "fusionbolt",
@@ -4758,7 +4805,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "fusionflare",
@@ -4809,7 +4857,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "futuresight",
@@ -4848,7 +4897,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "gmaxoneblow",
@@ -4895,7 +4945,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "gmaxrapidflow",
@@ -4936,7 +4987,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "gmaxwildfire",
@@ -4986,7 +5038,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "geargrind",
@@ -5038,7 +5091,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "gigadrain",
@@ -5079,7 +5133,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "gigaimpact",
@@ -5129,9 +5184,8 @@
       "nativeSourceMoveId": "gigaimpact",
       "claimedExactVfx": false,
       "statusNote": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "grassyglide",
@@ -5175,7 +5229,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "guillotine",
@@ -5218,7 +5273,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "gunkshot",
@@ -5263,9 +5319,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "gyroball",
@@ -5315,7 +5370,8 @@
       "nativeSourceMoveId": "gyroball",
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hail",
@@ -5361,7 +5417,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hammerarm",
@@ -5409,7 +5466,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "headsmash",
@@ -5460,7 +5518,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "heatcrash",
@@ -5508,7 +5567,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "heatwave",
@@ -5556,7 +5616,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "heavyslam",
@@ -5611,7 +5672,8 @@
       "nativeSourceMoveId": "heavyslam",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hex",
@@ -5658,7 +5720,8 @@
       "nativeSourceMoveId": "hex",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "highhorsepower",
@@ -5703,9 +5766,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "highjumpkick",
@@ -5762,9 +5824,8 @@
       "nativeSourceMoveId": "highjumpkick",
       "claimedExactVfx": false,
       "statusNote": "MANUAL_BUTTON_USE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hornthrow",
@@ -5782,7 +5843,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hurricane",
@@ -5832,7 +5894,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hydropump",
@@ -5889,9 +5952,8 @@
       "nativeSourceMoveId": "hydropump",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/360cdf8c-52a2-4dec-87de-16c21fb8d821"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hyperbeam",
@@ -5948,7 +6010,8 @@
       "nativeSourceMoveId": "hyperbeam",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hypervoice",
@@ -5998,7 +6061,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hyperspacefury",
@@ -6016,7 +6080,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "hypnosis",
@@ -6040,7 +6105,8 @@
       "nativeSourceMoveId": "hypnosis",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "icebeam",
@@ -6097,9 +6163,8 @@
       "nativeSourceMoveId": "icebeam",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "icebreath",
@@ -6149,7 +6214,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "icefang",
@@ -6202,7 +6268,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "icepunch",
@@ -6259,9 +6326,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "iceshard",
@@ -6305,7 +6371,8 @@
       "nativeSourceMoveId": "iceshard",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "icespinner",
@@ -6347,7 +6414,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "iciclecrash",
@@ -6386,7 +6454,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "icywind",
@@ -6436,7 +6505,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "ingrain",
@@ -6477,7 +6547,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "irondefense",
@@ -6521,7 +6592,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "ironhead",
@@ -6576,9 +6648,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "irontail",
@@ -6629,7 +6700,8 @@
       "nativeSourceMoveId": "irontail",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "judgment",
@@ -6665,7 +6737,8 @@
       "nativeSourceMoveId": "judgment",
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "karatechop",
@@ -6711,7 +6784,8 @@
       "nativeSourceMoveId": "karatechop",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "kingsshield",
@@ -6753,9 +6827,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "knockoff",
@@ -6801,9 +6874,8 @@
       "nativeSourceMoveId": "knockoff",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "lavaplume",
@@ -6852,9 +6924,8 @@
       "nativeSourceMoveId": "lavaplume",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "leafblade",
@@ -6896,7 +6967,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "leafstorm",
@@ -6949,9 +7021,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "leechseed",
@@ -6996,7 +7067,8 @@
       "nativeSourceMoveId": "leechseed",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "lick",
@@ -7034,7 +7106,8 @@
       "nativeSourceMoveId": "lick",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "lightofruin",
@@ -7087,7 +7160,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "liquidation",
@@ -7133,7 +7207,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "lowkick",
@@ -7178,7 +7253,8 @@
       "nativeSourceMoveId": "lowkick",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "machpunch",
@@ -7226,7 +7302,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "magnetrise",
@@ -7252,9 +7329,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "megahorn",
@@ -7308,9 +7384,8 @@
       "nativeSourceMoveId": "megahorn",
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "metalburst",
@@ -7358,7 +7433,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "metalclaw",
@@ -7400,7 +7476,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "metalsound",
@@ -7426,7 +7503,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "meteormash",
@@ -7474,7 +7552,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "metronome",
@@ -7498,7 +7577,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "mirrorcoat",
@@ -7543,7 +7623,8 @@
       "nativeSourceMoveId": "mirrorcoat",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "mirrormove",
@@ -7568,7 +7649,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "moonblast",
@@ -7625,7 +7707,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "moonlight",
@@ -7671,7 +7754,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "morningsun",
@@ -7706,7 +7790,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "mudbomb",
@@ -7752,7 +7837,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "muddywater",
@@ -7799,7 +7885,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "multiattack",
@@ -7851,7 +7938,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "mysticalfire",
@@ -7901,7 +7989,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "nastyplot",
@@ -7943,7 +8032,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "nightdaze",
@@ -7993,7 +8083,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "nightslash",
@@ -8045,10 +8136,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8",
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "nihillight",
@@ -8077,7 +8166,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "originpulse",
@@ -8124,7 +8214,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "outrage",
@@ -8175,9 +8266,8 @@
       "nativeSourceMoveId": "outrage",
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "overheat",
@@ -8232,9 +8322,8 @@
       "nativeSourceMoveId": "overheat",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "painsplit",
@@ -8278,7 +8367,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "payday",
@@ -8322,7 +8412,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "petalblizzard",
@@ -8371,9 +8462,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/360cdf8c-52a2-4dec-87de-16c21fb8d821"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "petaldance",
@@ -8416,7 +8506,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "phantomforce",
@@ -8458,7 +8549,8 @@
       "nativeSourceMoveId": "phantomforce",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "pinmissile",
@@ -8501,7 +8593,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "playrough",
@@ -8543,7 +8636,8 @@
       "nativeSourceMoveId": "playrough",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "poisonfang",
@@ -8561,7 +8655,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "poisonjab",
@@ -8611,9 +8706,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "pollenpuff",
@@ -8642,9 +8736,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "poltergeist",
@@ -8680,7 +8773,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "powergem",
@@ -8730,7 +8824,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "precipiceblades",
@@ -8776,7 +8871,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "prismaticlaser",
@@ -8794,7 +8890,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "protect",
@@ -8839,7 +8936,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "psychic",
@@ -8894,10 +8992,8 @@
       "nativeSourceMoveId": "psychic",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8",
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "psychicfangs",
@@ -8942,7 +9038,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "psychocut",
@@ -8993,7 +9090,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "psyshock",
@@ -9022,7 +9120,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "psystrike",
@@ -9072,7 +9171,8 @@
       "nativeSourceMoveId": "psystrike",
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "pumpup",
@@ -9090,7 +9190,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "pursuit",
@@ -9133,7 +9234,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "quickattack",
@@ -9176,10 +9278,8 @@
       "nativeSourceMoveId": "quickattack",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248",
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "quiverdance",
@@ -9211,7 +9311,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "ragingbull",
@@ -9259,9 +9360,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "raindance",
@@ -9287,7 +9387,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "rapidspin",
@@ -9305,9 +9406,8 @@
       "nativeSourceMoveId": "rapidspin",
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "razorleaf",
@@ -9345,7 +9445,8 @@
       "nativeSourceMoveId": "razorleaf",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "razorwind",
@@ -9387,7 +9488,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "recover",
@@ -9421,7 +9523,8 @@
       "nativeSourceMoveId": "recover",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "reflect",
@@ -9449,7 +9552,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "rest",
@@ -9492,7 +9596,8 @@
       "nativeSourceMoveId": "rest",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "retaliate",
@@ -9542,7 +9647,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "roaroftime",
@@ -9560,7 +9666,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "rockclimb",
@@ -9603,7 +9710,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "rockslide",
@@ -9650,7 +9758,8 @@
       "nativeSourceMoveId": "rockslide",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "rockwrecker",
@@ -9701,7 +9810,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "roost",
@@ -9726,7 +9836,8 @@
       "nativeSourceMoveId": "roost",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sacredsword",
@@ -9773,9 +9884,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sandstorm",
@@ -9820,7 +9930,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "scald",
@@ -9847,7 +9958,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "seedbomb",
@@ -9875,7 +9987,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "selfdestruct",
@@ -9921,7 +10034,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shadowball",
@@ -9976,7 +10090,8 @@
       "nativeSourceMoveId": "shadowball",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shadowpunch",
@@ -10015,7 +10130,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shadowsneak",
@@ -10055,9 +10171,8 @@
       "nativeSourceMoveId": "shadowsneak",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shellguard",
@@ -10075,7 +10190,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shellsmash",
@@ -10125,9 +10241,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shellspin",
@@ -10145,7 +10260,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shiftgear",
@@ -10190,7 +10306,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "shockwave",
@@ -10229,7 +10346,8 @@
       "nativeSourceMoveId": "shockwave",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "silverwind",
@@ -10255,7 +10373,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sing",
@@ -10289,9 +10408,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "skullbash",
@@ -10338,9 +10456,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "skyattack",
@@ -10390,7 +10507,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "slash",
@@ -10434,7 +10552,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sleeppowder",
@@ -10458,9 +10577,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sludgebomb",
@@ -10508,9 +10626,8 @@
       "nativeSourceMoveId": "sludgebomb",
       "claimedExactVfx": false,
       "statusNote": "KEYPRESS_BUTTON_STATE_REPORTED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/b4437ae4-5ec7-49a0-89aa-f06e5963d9bd"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sludgewave",
@@ -10562,7 +10679,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "snipeshot",
@@ -10608,7 +10726,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "solarbeam",
@@ -10665,9 +10784,8 @@
       "nativeSourceMoveId": "solarbeam",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sonicboom",
@@ -10711,7 +10829,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "spacialrend",
@@ -10735,7 +10854,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "spikes",
@@ -10779,7 +10899,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "spiritbreak",
@@ -10823,7 +10944,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "steelwing",
@@ -10866,7 +10988,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "stoneedge",
@@ -10923,9 +11046,8 @@
       "nativeSourceMoveId": "stoneedge",
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "substitute",
@@ -10973,7 +11095,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "subzeroslammer",
@@ -10993,7 +11116,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "suckerpunch",
@@ -11039,9 +11163,8 @@
       "nativeSourceMoveId": "suckerpunch",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "sunnyday",
@@ -11073,7 +11196,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "superpower",
@@ -11124,7 +11248,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "supersonic",
@@ -11165,7 +11290,8 @@
       "nativeSourceMoveId": "supersonic",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "surf",
@@ -11218,9 +11344,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/21383781-c0bc-46e8-be68-157dcbeede01"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "surgingstrikes",
@@ -11262,7 +11387,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "swift",
@@ -11285,7 +11411,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "swordsdance",
@@ -11337,7 +11464,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "synthesis",
@@ -11381,7 +11509,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "tailwind",
@@ -11416,7 +11545,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "throatchop",
@@ -11456,7 +11586,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "thunder",
@@ -11510,7 +11641,8 @@
       "nativeSourceMoveId": "thunder",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "thunderfang",
@@ -11528,7 +11660,8 @@
       "nativeSourceMoveId": "thunderfang",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "thunderpunch",
@@ -11581,9 +11714,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "AGENT_CLAIMED_USE; INDIVIDUAL_CAST_NOT_VERIFIED; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "thunderwave",
@@ -11627,7 +11759,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "thunderbolt",
@@ -11679,10 +11812,8 @@
       "nativeSourceMoveId": "thunderbolt",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248",
-        "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "toxic",
@@ -11723,7 +11854,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "toxicspikes",
@@ -11758,7 +11890,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "triattack",
@@ -11815,7 +11948,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "trickroom",
@@ -11859,7 +11993,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "tripleaxel",
@@ -11905,7 +12040,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "uturn",
@@ -11954,7 +12090,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "volttackle",
@@ -12003,7 +12140,8 @@
       "nativeSourceMoveId": "volttackle",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "watergun",
@@ -12045,7 +12183,8 @@
       "nativeSourceMoveId": "watergun",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "waterpulse",
@@ -12094,7 +12233,8 @@
       "nativeSourceMoveId": "waterpulse",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "watershuriken",
@@ -12135,9 +12275,8 @@
       "nativeSourceMoveId": "watershuriken",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/c880f688-7890-475d-bcb2-824163e9dec8"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "waterspout",
@@ -12182,7 +12321,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "waterfall",
@@ -12234,7 +12374,8 @@
       "nativeSourceMoveId": "waterfall",
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "whirlpool",
@@ -12275,7 +12416,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "wickedblow",
@@ -12320,7 +12462,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_ONLY_NOT_IN_PUBLIC_ROSTER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "wildcharge",
@@ -12377,9 +12520,8 @@
       "nativeSourceMoveId": "wildcharge",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/21383781-c0bc-46e8-be68-157dcbeede01"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "willowisp",
@@ -12423,7 +12565,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "STATIC_AND_ROSTER; BATTLE_NOT_CONFIRMED_IN_THIS_BATCH_TRACKER",
-      "sourceRunUrls": []
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "wingattack",
@@ -12469,9 +12612,8 @@
       "nativeSourceMoveId": "wingattack",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "woodhammer",
@@ -12520,9 +12662,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "xscissor",
@@ -12574,9 +12715,8 @@
       "nativeSourceMoveId": null,
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     },
     {
       "id": "zenheadbutt",
@@ -12620,9 +12760,8 @@
       "nativeSourceMoveId": "zenheadbutt",
       "claimedExactVfx": false,
       "statusNote": "USE_REPORTED_VIA_BROWSER_AGENT; VFX_FRAMES_NOT_ARCHIVED",
-      "sourceRunUrls": [
-        "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae"
-      ]
+      "sourceRunUrls": [],
+      "evidenceSource": "research/pb-ranked-rea-20261031 (non-secret catalog; authenticated session URLs intentionally omitted)"
     }
   ]
 }
