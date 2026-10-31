@@ -830,3 +830,8 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 - **Patch em branch:** [PR #345](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/345) fixa o nome do artefato por `github.run_attempt` no upload e deploy, inclui teste de contrato e CI com build Phaser/Chromium; [CI #41019213974](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41019213974) **pendente nesta anotação**. Sem merge até gate verde e sem suprimir o 503 público.
 - **T07/T08 permanecem PARCIAIS:** [PR #327](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/327) comprova Lv5→8 e save para Charmander/Squirtle, mas não uso natural da ULT; Charmander Lv5 ainda usa Struggle em dois slots. **T20 PARCIAL:** [CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) comprovou treinador 12 após vitórias e capturas reais, mas derrotas no treinador 13 impediram Brock; não falsificar vitória.
 - Nenhuma alteração nos 227 VFX aprovados, Scratch/Surf, saves, sprites, TMs, cooldowns ou mecânica de batalha. A captura diária Poké Arena 2D de 30/10 já havia sido registrada; não repetir a transferência sem nova data.
+
+## 31/10/2026 — T19 / extensão incremental pós-Brock (PR nova em validação)
+- **Frente atual:** exportação opcional do save realmente conquistado na corrida T20 e teste Chromium do primeiro treinador Cerulean, em branch isolada `test/t19-earned-brock-to-cerulean-20261031`. Ver `docs/T19-SAVE-NATURAL-BROCK-CERULEAN-2026-10-31.md`.
+- **Não é vitória comprovada:** código e workflow preparados; CI, merge e Pages ainda pendentes. Não equivale a Misty/Cascata/TM03.
+- **Próxima frente independente:** T25 PR #397 em validação; não repetir T10 #374 nem sobrepor a PR #381.

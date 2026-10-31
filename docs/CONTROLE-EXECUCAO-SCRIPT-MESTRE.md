@@ -877,3 +877,8 @@
 - **§33/§36 PARCIAIS:** [PR #345](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/345) corrige somente o nome upload/deploy para `github-pages-attempt-${{ github.run_attempt }}`, com teste de contrato e workflow isolado; [CI #41019213974](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41019213974) **pendente**. Não houve merge, nem nova publicação atribuível a esta PR. Runtime, saves, VFX, pixel art, sprites, cooldowns, TM e controles inalterados.
 - **§§7/8 PARCIAIS:** Charmander Lv5 ainda apresenta duas manobras Struggle; não confundir 150 kits compilados com três técnicas autênticas ou ULT disparada naturalmente. Scratch adiado; Surf não deve ser recriado/alterado sem autorização.
 - **§20 PARCIAL:** [CI #41010847062](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41010847062) alcançou 12 treinadores e 8 vitórias selvagens com capturas, mas sofreu derrotas reais no 13º treinador e falhou. Brock, 13 vitórias consecutivas e campanha completa **não comprovados**.
+
+## 31/10/2026 — §34 / T19, origem natural Brock→Cerulean
+- Implementado caminho de exportação **somente após** T20 real e teste de continuidade com checkpoint byte-a-byte, SHA-256, Centro nativo, batalha real, XP, UID e reload. Escopo: teste/workflow, sem alterar runtime ou saves.
+- **Estado: EM VALIDAÇÃO**; não há resultado de CI T19, merge, Pages, vitória Cerulean ou Misty a declarar neste commit. §34/§37 permanecem PARCIAIS.
+- Evidência planejada: `test-evidence/t19-earned-brock-save.json`, `t19-earned-cerulean-first-trainer.json`, screenshots e workflow `master-t19-earned-brock-cerulean.yml`.

@@ -93,3 +93,10 @@
 - **Não alterar:** Phaser, client original, 227 VFX, Surf aprovado, Scratch/Transform adiados, capturas, Pokémon, saves, TM/HM, arte, guardião visual ou PRs #329/#360/#361.
 - **Gates:** Node RED/GREEN, CI da PR, build/Chromium existentes, revisão de diff, merge apenas com checks verdes, Pages main e HTTP SHA exato. Falha persistente exige investigar asset real, não ignorar o erro.
 - **Rollback:** reverter apenas o classificador e o bloco de retry dos workflows; não há migração de dados.
+
+## T19 — plano de validação incremental (31/10/2026)
+1. Produzir uma única vez a origem legítima pelo teste T20 já integrado, com `T19_EXPORT_EARNED_SAVE=1`; exportar bytes do localStorage apenas depois de Brock, Rocha e TM39 comprovados.
+2. Verificar integridade SHA-256 e replay desses mesmos bytes no Chromium, sem fixtures de vitória, nível, XP ou equipe.
+3. Cura pelo Centro e combate real contra o primeiro treinador de Cerulean; exigir XP, avanço do índice, badge/TM invariantes e reload persistente.
+4. Em derrota ou timeout, manter resultado real e screenshot para diagnóstico, sem alterar gameplay para satisfazer o teste.
+5. Não homologar Misty ou Android até evidência própria; workflow completo e Pages somente após gates verdes. Não repetir a longa corrida em toda execução.

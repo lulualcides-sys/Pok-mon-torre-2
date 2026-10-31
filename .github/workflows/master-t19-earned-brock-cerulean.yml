@@ -1,0 +1,64 @@
+name: Master T19 — earned Brock save to native Cerulean trainer
+on:
+  push:
+    branches: [test/t19-earned-brock-to-cerulean-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  earned-save-to-cerulean:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 115
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate tests, policy and existing approved code
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/section20-natural-team-brock-browser.cjs
+          node --check tests/t19-earned-brock-to-cerulean-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture and build original Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Earn Pallet to Brock save through actual production gameplay ONCE
+        env:
+          T20_PRODUCTION_START: '1'
+          T19_EXPORT_EARNED_SAVE: '1'
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/section20-natural-team-brock-browser.cjs
+          test -s test-evidence/t19-earned-brock-save.json
+      - name: Continue same earned save in a fresh Chromium through first Cerulean trainer
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t19-earned-brock-to-cerulean-browser.cjs
+      - name: Existing native Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Archive genuine outcomes and failure screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t19-earned-brock-cerulean
+          path: |
+            test-evidence/natural-through-brock.json
+            test-evidence/t19-earned-brock-save.json
+            test-evidence/t19-earned-cerulean-first-trainer.json
+            test-evidence/t19-native-cerulean-*
+            test-evidence/natural-route1-*
+          retention-days: 21
+          if-no-files-found: warn

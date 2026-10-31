@@ -119,3 +119,10 @@ Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funci
 - [x] PR #362: CI #41075928453 **success** (classificador Node, npm test/check/check:reuse, build e Chromium público); guardião visual #41075928433 **success** (arte estática e screenshots Phaser).
 - [ ] Revisar diff, compatibilidade com HEAD e mesclar somente após todos os gates aplicáveis verdes.
 - [ ] Verificar novo Pages completo e HTTP público no SHA exato; manter T07/T08, T20 e 37 seções parciais até prova própria.
+
+## T19 — save genuíno pós-Brock → primeiro treinador Cerulean (31/10/2026)
+- [x] Implementado export opt-in dos bytes reais do save T20, SHA-256 e origem, sem mutação do save.
+- [x] Criado teste Chromium independente que consome o checkpoint ganho, cura pelo Centro nativo, enfrenta o primeiro treinador da etapa 1 e verifica XP/UID/reload.
+- [ ] Executar workflow T19 no HEAD da PR, revisar logs e artefatos; não afirmar vitória até CI verde.
+- [ ] Estender naturalmente aos demais treinadores e Misty, Cascata e TM03 no mesmo save; sem fixtures.
+- **Próxima frente distinta:** T25 PR #397 (não duplicar), depois T07/T08 lacunas comprovadas.
