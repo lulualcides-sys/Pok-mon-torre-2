@@ -1,0 +1,289 @@
+{
+  "schemaVersion": 1,
+  "researchedAt": "2026-10-31",
+  "source": "https://ranked.pokemonbattlegrounds.com/",
+  "scope": "practice-vs-bot-only",
+  "nonCommercialResearch": true,
+  "methods": {
+    "liveBrowser": "TinyFish signed-in Browser Context Profile through legitimate Google OAuth, no credentials transferred",
+    "staticCode": "REA public page/CDP and independent Acorn AST catalog on GitHub Actions",
+    "crossMethodCaveat": "REA has NOT attached to the TinyFish authenticated browser session. Live observations are browser-agent visual UI reports, not REA runtime trace."
+  },
+  "sources": [
+    {
+      "kind": "live",
+      "runId": "d17745eb-c5cc-4e4f-8236-c6d6202d325b",
+      "url": "https://agent.tinyfish.ai/runs/d17745eb-c5cc-4e4f-8236-c6d6202d325b",
+      "evidence": "authenticated solo practice entrance, 3v3 menu/HUD"
+    },
+    {
+      "kind": "live",
+      "runId": "db3725da-4a5a-4e71-a91d-23824a88cd42",
+      "url": "https://agent.tinyfish.ai/runs/db3725da-4a5a-4e71-a91d-23824a88cd42",
+      "evidence": "bot practice active, AUTO toggled, move names and hit labels; arena ambiguous"
+    },
+    {
+      "kind": "live",
+      "runId": "0b7a104a-322a-4ac8-ab26-d759b6131b0c",
+      "url": "https://agent.tinyfish.ai/runs/0b7a104a-322a-4ac8-ab26-d759b6131b0c",
+      "evidence": "manual attacks, Space dodge, switch to Crobat, Snorlax moves, N's Castle arena, loss"
+    },
+    {
+      "kind": "static",
+      "url": "https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41227227340",
+      "evidence": "REA/Acorn AST move and resource inventory"
+    }
+  ],
+  "environment": {
+    "mode": "Practice vs Bot",
+    "format": "3V3",
+    "difficulty": "1 EASY",
+    "botLevel": 1,
+    "serverQueueObserved": true,
+    "arenas": [
+      {
+        "name": "N's Castle",
+        "observed": "arena DOM label in third live run",
+        "features": [
+          "tiled room",
+          "green brick walls",
+          "circular platforms"
+        ]
+      },
+      {
+        "name": "Battle Stadium",
+        "observed": "main menu selection/first run; live battle arena not conclusively verified"
+      }
+    ],
+    "toggles": {
+      "auto": "enabled in second live run, AI actions visible",
+      "manual": "used in third run; manual attacks button-triggered",
+      "dodge": "SPACE and on-screen Dodge pressed; visual cooldown state changed"
+    }
+  },
+  "pokemon": [
+    {
+      "name": "Tyranitar",
+      "moves": [
+        {
+          "name": "Dark Pulse",
+          "powerDeclaredInUI": 80,
+          "typeLabel": "DAR",
+          "effect": "dark/smoky pulse or ring around enemy",
+          "evidence": "live manual click plus visual effect"
+        },
+        {
+          "name": "Stone Edge",
+          "powerDeclaredInUI": 100,
+          "typeLabel": "ROC",
+          "effect": "rock/stone particle eruption and hit feedback",
+          "evidence": "live manual click plus visual effect"
+        },
+        {
+          "name": "Crunch",
+          "powerDeclaredInUI": 80,
+          "typeLabel": "DAR",
+          "effect": "jaw/bite effect",
+          "evidence": "live manual click plus visual effect"
+        },
+        {
+          "name": "Earthquake",
+          "powerDeclaredInUI": 100,
+          "typeLabel": "GRO",
+          "effect": "field shake / effectiveness label; manual trigger ambiguous",
+          "evidence": "live UI + battlefield result; direct click unconfirmed"
+        }
+      ]
+    },
+    {
+      "name": "Crobat",
+      "moves": [
+        {
+          "name": "Cross Poison",
+          "effect": "click registered, No effect label against that opponent",
+          "evidence": "live manual click"
+        },
+        {
+          "name": "Air Slash",
+          "evidence": "visible selectable move; not used"
+        },
+        {
+          "name": "Toxic",
+          "usesLabel": "2 uses",
+          "evidence": "visible selectable move; not used"
+        },
+        {
+          "name": "Brave Bird",
+          "evidence": "visible selectable move; not used"
+        }
+      ]
+    },
+    {
+      "name": "Snorlax",
+      "moves": [
+        {
+          "name": "Body Slam",
+          "evidence": "visible move button"
+        },
+        {
+          "name": "Hyper Beam",
+          "powerDeclaredInUI": 150,
+          "evidence": "visible button; effectiveness message, direct trigger unconfirmed"
+        },
+        {
+          "name": "Earthquake",
+          "evidence": "visible move button"
+        },
+        {
+          "name": "Rest",
+          "evidence": "visible move button"
+        }
+      ]
+    }
+  ],
+  "actions": [
+    {
+      "id": "battle_enter",
+      "control": "Practice vs Bot > 1 EASY",
+      "tried": true,
+      "seenResult": "three separate guest/authenticated stages; third reached N's Castle"
+    },
+    {
+      "id": "auto_toggle",
+      "control": "AUTO/MANUAL",
+      "tried": true,
+      "seenResult": "toggle changed visible state; bot controls appeared to attack automatically"
+    },
+    {
+      "id": "manual_attack_dark_pulse",
+      "control": "Dark Pulse",
+      "tried": true,
+      "seenResult": "ready→called button class and dark/smoky VFX"
+    },
+    {
+      "id": "manual_attack_stone_edge",
+      "control": "Stone Edge",
+      "tried": true,
+      "seenResult": "ready→called and rock VFX"
+    },
+    {
+      "id": "manual_attack_crunch",
+      "control": "Crunch",
+      "tried": true,
+      "seenResult": "ready→called and jaw VFX"
+    },
+    {
+      "id": "manual_attack_earthquake",
+      "control": "Earthquake",
+      "tried": false,
+      "seenResult": "effectiveness labels and shake reported; source of action not certain"
+    },
+    {
+      "id": "dodge_keyboard",
+      "control": "SPACE",
+      "tried": true,
+      "seenResult": "dodge shake→dodge shake cooling indicator",
+      "limitation": "movement distance not visually established"
+    },
+    {
+      "id": "dodge_button",
+      "control": "DODGE",
+      "tried": true,
+      "seenResult": "cooldown indicator",
+      "limitation": "direction/distance not established"
+    },
+    {
+      "id": "switch_crobat",
+      "control": "Switch to Crobat",
+      "tried": true,
+      "seenResult": "active model changed Tyranitar→Crobat"
+    },
+    {
+      "id": "switch_snorlax",
+      "control": "Switch to Snorlax",
+      "tried": false,
+      "seenResult": "Snorlax later active; entry may have followed KO or AUTO",
+      "limitation": "manual switching not proven"
+    },
+    {
+      "id": "cross_poison",
+      "control": "Cross Poison",
+      "tried": true,
+      "seenResult": "attack attempted and No effect label"
+    },
+    {
+      "id": "walk",
+      "control": "WASD/arrows",
+      "tried": false,
+      "seenResult": "documented UI only",
+      "limitation": "actual displacement unmeasured"
+    },
+    {
+      "id": "ball_throw",
+      "control": "trainer Pokéball throw",
+      "tried": false,
+      "seenResult": "not documented",
+      "limitation": "no observed animation"
+    }
+  ],
+  "battleFeedback": {
+    "labels": [
+      "MISS",
+      "EFFECTIVE",
+      "SUPER EFFECTIVE",
+      "NOT VERY EFFECTIVE",
+      "No effect",
+      "YOU LOST"
+    ],
+    "damageNumbers": [
+      "163"
+    ],
+    "cooldownDomStates": [
+      "move ready",
+      "move ready called",
+      "move ready near",
+      "dodge shake",
+      "dodge shake cooling"
+    ],
+    "cooldownSeconds": "not reliably measured",
+    "hp": "some numeric labels and approximations reported; no frame-by-frame evidence in repo",
+    "resultThirdRun": "YOU LOST"
+  },
+  "observationalLimits": [
+    "Agent generated descriptive visual observations; raw screenshots are held inside the TinyFish run, not copied into this GitHub library.",
+    "First/second live reports disagree about trainer name and arena. Personal trainer identifiers omitted; N's Castle third run is grounded by visible DOM.",
+    "3v3 practice uses live server queue; it is not a local offline simulation.",
+    "No complete enumeration of every Pokémon, move animation, arena layout or online features.",
+    "Cross Poison 'No effect' is a single encounter result, not proof of universal type immunity.",
+    "Sprite/VFX source assets not duplicated or redistributed. Only cataloged metadata.",
+    "Cooldown unit/seconds, frame counts, physical hitboxes and battle rendering performance not measured.",
+    "No REA injection into authenticated TinyFish browser; it remains separate, public JS static research."
+  ],
+  "suggestedTorre2Use": [
+    {
+      "priority": 1,
+      "item": "Dodge command with visible cooldown feedback",
+      "approach": "Original Phaser/WebGL animation; avoid changing existing approved Arena HUD"
+    },
+    {
+      "priority": 2,
+      "item": "Move feedback: ready, called, cooldown near, MISS and effectiveness tags",
+      "approach": "Compare with already approved Pokémon Torre 2 VFX and UI"
+    },
+    {
+      "priority": 3,
+      "item": "Switch visuals and trainer throws",
+      "approach": "Additional direct visual evidence needed for actual ball choreography; do not replace approved capture effect"
+    },
+    {
+      "priority": 4,
+      "item": "Manual/AUTO switch",
+      "approach": "Align with existing Torre2 Auto AI while preserving current balancing"
+    },
+    {
+      "priority": 5,
+      "item": "Richer arena background",
+      "approach": "N's Castle can inspire original art but preserve approved Cerulean and Kanto"
+    }
+  ]
+}
