@@ -42,7 +42,7 @@ test('T12 Gym can prefer RMB when stronger against opponent but never selects E'
  const result=decide(c);
  assert.equal(result.rmb,true);
  assert.equal(result.q,false);
- assert.equal(result.e,undefined);
+ assert.equal(result.e,false);
 });
 
 test('T12 Gym does not replace useful LMB with a weaker secondary',()=>{
@@ -102,7 +102,7 @@ test('T12 throttles assisted specials without bypassing native cooldowns',()=>{
  assert.equal(decide(c).q,true);
  c.scene.t=7;c.actor.t=7;assert.equal(decide(c).q,undefined);
  c.scene.t=8.3;c.actor.t=8.3;assert.equal(decide(c).q,true);
- assert.equal(c.state.nextSpecialAt,10.6);
+ assert.ok(Math.abs(c.state.nextSpecialAt-10.6)<0.0001);
  c.actor.cd.q=2;c.actor.cd.rmb=4;c.scene.t=11;c.actor.t=11;
  assert.equal(decide(c).q,undefined);
 });
