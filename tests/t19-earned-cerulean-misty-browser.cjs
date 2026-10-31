@@ -31,6 +31,38 @@ assert.equal(original.losses,0);
 assert.ok(!original.badges.includes('Cascata'));
 assert.ok(!original.inventory.tms.includes('tm-water-pulse'));
 assert.equal(original.losses,proof.summary.losses);
+// Reuse only the exact SHA-256 checkpoint earned in native Chromium run
+// #41189585783. This artifact was written AFTER trainer 15 victory, before
+// the unrelated gym challenge UI timeout. Never synthesize battle progress.
+let resumed=null;
+if(process.env.T19_EARNED_CHECKPOINT){
+ resumed=JSON.parse(fs.readFileSync(process.env.T19_EARNED_CHECKPOINT,'utf8'));
+ assert.equal(resumed.format,'t19-cerulean-genuine-intermediate-save-v1');
+ assert.equal(resumed.sourceSha,'f610aca193a6cd87aefee1c0a74c5d5fe9e9db35');
+ assert.equal(resumed.parentSeedSha256,proof.sha256);
+ assert.equal(resumed.provenance,
+  'earned via actual native Phaser battle in T19 Cerulean continuation');
+ assert.equal(resumed.sha256,
+  '0774f9e4c8a7f10317a97e75086a3f7f4898b4e468da2c40866e94850255de1d');
+ assert.equal(crypto.createHash('sha256').update(resumed.rawSave).digest('hex'),
+  resumed.sha256,'Earned checkpoint bytes must match GitHub Actions evidence');
+ const earned=JSON.parse(resumed.rawSave);
+ assert.equal(earned.stage,1);assert.equal(earned.trainer,15);
+ assert.equal(earned.wins,41);assert.equal(earned.losses,0);
+ assert.deepEqual(earned.badges,['Rocha']);
+ assert.deepEqual(earned.inventory.tms,original.inventory.tms);
+ assert.deepEqual(earned.team.map(m=>m.uid),original.team.map(m=>m.uid));
+ assert.ok(earned.team.every((m,i)=>
+  m.progression.experience>=original.team[i].progression.experience));
+ assert.equal(resumed.summary.stage,earned.stage);
+ assert.equal(resumed.summary.trainer,earned.trainer);
+ assert.equal(resumed.summary.wins,earned.wins);
+ assert.equal(resumed.summary.losses,earned.losses);
+ assert.deepEqual(resumed.summary.team,earned.team.map(m=>m.uid));
+ assert.deepEqual(resumed.summary.badges,earned.badges);
+}
+const starting= resumed ? JSON.parse(resumed.rawSave) : original;
+const startingRaw= resumed ? resumed.rawSave : proof.rawSave;
 const types={'.html':'text/html','.js':'text/javascript','.json':'application/json',
  '.css':'text/css','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg',
  '.ogg':'audio/ogg','.mp3':'audio/mpeg'};
@@ -49,7 +81,9 @@ const server=http.createServer(async(req,res)=>{
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
  const report={method:'Genuine T20 exported save; fifteen native Cerulean trainers and Misty in Phaser',
-  sourceSha:proof.sourceSha,seedSha256:proof.sha256,seed:proof.summary};
+  sourceSha:proof.sourceSha,seedSha256:proof.sha256,seed:proof.summary,
+  resumedCheckpoint:resumed?{sha256:resumed.sha256,sourceSha:resumed.sourceSha,
+   stage:starting.stage,trainer:starting.trainer,wins:starting.wins}:null};
  const saveReport=()=>fs.writeFileSync(out+'/t19-earned-cerulean-misty-report.json',JSON.stringify(report,null,2));
  // Store only victory EARNED and persisted by the real native Phaser route.
  // The file survives an unrelated later timeout so the next continuation
@@ -132,7 +166,7 @@ const server=http.createServer(async(req,res)=>{
     localStorage.setItem(key,value);
     sessionStorage.setItem('t19-earned-seed-installed','1');
    }
-  },{key:'pokemon-torre-2-kanto-campaign-v1',value:proof.rawSave});
+  },{key:'pokemon-torre-2-kanto-campaign-v1',value:startingRaw});
   await page.goto('http://127.0.0.1:4325/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
   await page.evaluate(async()=>{
@@ -144,11 +178,11 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
   const before=await game();
-  assert.equal(before.stage,1);assert.equal(before.trainer,10);
-  assert.equal(before.wins,original.wins);assert.equal(before.losses,original.losses);
+  assert.equal(before.stage,1);assert.equal(before.trainer,starting.trainer);
+  assert.equal(before.wins,starting.wins);assert.equal(before.losses,starting.losses);
   assert.deepEqual(before.badges,['Rocha']);
   assert.ok(before.tms.includes('tm-rock-tomb'));
-  assert.deepEqual(before.team.map(m=>m.uid),original.team.map(m=>m.uid));
+  assert.deepEqual(before.team.map(m=>m.uid),starting.team.map(m=>m.uid));
   report.loaded=before;saveReport();
   // Use the actual Center heal control. No direct HP/EXP, item or state edits.
   await page.evaluate(()=>{
@@ -169,9 +203,13 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart({}));
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha')&&
    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,null,{timeout:45000});
+  let after;
+  const rounds=[];
+  if(before.trainer<15){
   const opponent=await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()));
   assert.ok(opponent&&!opponent.leader,'First Cerulean opponent must be an ordinary trainer');
-  assert.equal(opponent.id,'zubat','Stage 1 first route trainer must remain authentic');
+  if(before.trainer===10)
+   assert.equal(opponent.id,'zubat','Stage 1 first route trainer must remain authentic');
   report.opponent=opponent;
   await clickTag('torre2-central-cta');
   await page.waitForFunction(()=>{
@@ -194,21 +232,27 @@ const server=http.createServer(async(req,res)=>{
    return window.__pt2Game.scene.isActive('campanha')&&
     (s?.wins>wins||s?.losses>losses);
   },{wins:healed.wins,losses:healed.losses},{timeout:240000,polling:250});
-  let after=await game();
+  after=await game();
   report.result=after;saveReport();
   assert.equal(after.losses,healed.losses,'Real defeat; do not claim a victory');
   assert.equal(after.wins,healed.wins+1,'First Cerulean trainer must be defeated naturally');
-  assert.equal(after.stage,1);assert.equal(after.trainer,11);
+  assert.equal(after.stage,1);assert.equal(after.trainer,before.trainer+1);
   assert.deepEqual(after.badges,['Rocha'],'Misty badge cannot appear before Misty');
   assert.deepEqual(after.tms,healed.tms,'No TM reward before the leader');
   assert.deepEqual(after.team.map(m=>m.uid),healed.team.map(m=>m.uid));
   assert.ok(after.team.some((m,i)=>m.xp>healed.team[i].xp),
    'Real trainer victory must award actual party XP');
   await saveEarnedCheckpoint(after);
+  rounds.push({trainer:after.trainer,opponent:opponent.id,wins:after.wins});
+  }else{
+   after=await game();
+   assert.equal(after.trainer,15);
+   report.resumedAtTrainer15=true;
+   saveReport();
+  }
   // Continue beyond the already-proven first trainer using ONLY native
   // Phaser controls and the same earned durable save. No direct state edits,
   // forced KOs, invented experience, enemy manipulation or RNG overrides.
-  const rounds=[{trainer:after.trainer,opponent:opponent.id,wins:after.wins}];
   for(let next=after.trainer;next<15;next++){
    const previous=after;
    await page.evaluate(()=>{
@@ -296,6 +340,22 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(leader.name,'Misty');
   assert.equal(leader.id,'starmie');
   await clickTag('torre2-central-cta');
+  // Gym CTA opens a second native Phaser confirmation screen; the first
+  // click is NOT a battle launch. Require the real active button, then
+  // dispatch a physical mouse click, never call enterBattle() directly.
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.children.list.some(o=>
+    o.active&&o.input?.enabled&&o.x===320&&o.y===225)&&
+    c.children.list.some(o=>o.active&&
+     String(o.text||'').includes('DESAFIAR LÍDER'));
+  },null,{timeout:15000});
+  await page.screenshot({path:out+'/t19-misty-gym-challenge-native.png'});
+  const gymButton=await page.evaluate(()=>{
+   const r=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:r.x+320*r.width/640,y:r.y+225*r.height/360};
+  });
+  await page.mouse.click(gymButton.x,gymButton.y);
   await page.waitForFunction(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return b.scene.isActive()&&b.fase==='lucha'&&b.__torre2PartyInstalled&&
