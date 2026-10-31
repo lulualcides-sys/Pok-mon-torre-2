@@ -51,6 +51,35 @@ const server=http.createServer(async(req,res)=>{
  const report={method:'Genuine T20 exported save; fifteen native Cerulean trainers and Misty in Phaser',
   sourceSha:proof.sourceSha,seedSha256:proof.sha256,seed:proof.summary};
  const saveReport=()=>fs.writeFileSync(out+'/t19-earned-cerulean-misty-report.json',JSON.stringify(report,null,2));
+ // Store only victory EARNED and persisted by the real native Phaser route.
+ // The file survives an unrelated later timeout so the next continuation
+ // can verify its SHA and resume without replaying proven trainers.
+ const saveEarnedCheckpoint=async after=>{
+  assert.equal(after.stage,1);assert.ok(after.trainer>=11&&after.trainer<=15);
+  assert.equal(after.wins,36+after.trainer-10,
+   'Checkpoint must have exactly one natural victory per Cerulean trainer');
+  assert.equal(after.losses,0);assert.deepEqual(after.badges,['Rocha']);
+  assert.ok(after.tms.includes('tm-rock-tomb')&&!after.tms.includes('tm-water-pulse'));
+  const raw=await page.evaluate(()=>localStorage.getItem(window.kanto.SAVE_KEY));
+  assert.ok(raw,'Native battle must persist an actual campaign save');
+  const durable=JSON.parse(raw);
+  assert.equal(durable.stage,after.stage);
+  assert.equal(durable.trainer,after.trainer);
+  assert.equal(durable.wins,after.wins);
+  assert.equal(durable.losses,after.losses);
+  assert.deepEqual(durable.team.map(m=>m.uid),after.team.map(m=>m.uid));
+  const checkpoint={format:'t19-cerulean-genuine-intermediate-save-v1',
+   sourceSha:process.env.GITHUB_SHA||null,
+   parentSeedSha256:proof.sha256,
+   provenance:'earned via actual native Phaser battle in T19 Cerulean continuation',
+   rawSave:raw,sha256:crypto.createHash('sha256').update(raw).digest('hex'),
+   summary:{stage:after.stage,trainer:after.trainer,wins:after.wins,
+    losses:after.losses,badges:after.badges,team:after.team.map(m=>m.uid)}};
+  fs.writeFileSync(out+'/t19-native-cerulean-earned-checkpoint.json',
+   JSON.stringify(checkpoint,null,2));
+  report.lastEarnedCheckpoint={sha256:checkpoint.sha256,...checkpoint.summary};
+  saveReport();
+ };
  const game=()=>page.evaluate(()=>{
   const s=window.kanto.readCampaign();
   return {stage:s.stage,trainer:s.trainer,wins:s.wins,losses:s.losses,
@@ -175,6 +204,7 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(after.team.map(m=>m.uid),healed.team.map(m=>m.uid));
   assert.ok(after.team.some((m,i)=>m.xp>healed.team[i].xp),
    'Real trainer victory must award actual party XP');
+  await saveEarnedCheckpoint(after);
   // Continue beyond the already-proven first trainer using ONLY native
   // Phaser controls and the same earned durable save. No direct state edits,
   // forced KOs, invented experience, enemy manipulation or RNG overrides.
@@ -234,6 +264,7 @@ const server=http.createServer(async(req,res)=>{
    assert.deepEqual(after.team.map(m=>m.uid),restored.team.map(m=>m.uid));
    assert.ok(after.team.every((m,i)=>m.xp>=restored.team[i].xp),
     'No earned XP may be removed');
+   await saveEarnedCheckpoint(after);
    console.log('PASS T19 REAL CERULEAN TRAINER',JSON.stringify(rounds.at(-1)));
   }
   assert.equal(after.trainer,15,'Exactly fifteen native Cerulean trainers must be beaten');
