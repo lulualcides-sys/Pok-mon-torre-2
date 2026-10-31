@@ -1,5 +1,9 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## Lote T03 — Eevee em saves legados sem UID (30/10/2026, aguardando CI)
+**Falha no código da main `be1d230c`:** `pendingEeveeEvolution` expõe `uid:undefined` para Eevee Lv30 em saves v1 sem UID; `chooseEeveeEvolution` rejeita qualquer UID não string. A escolha fica bloqueada mesmo com nível legítimo. **Aceite:** token estável não mutante para Eevee legado na equipe/PC, proteção contra colisão com UIDs reais, escolha Lv30 somente, gravação atômica antes de atribuir identidade; Shiny, TM, HP, XP, Pokédex, outros membros e saves preservados. Testes são fixtures, não campanha natural; merge/Pages pendentes.
+
+
 ## Lote T08 — ULT preferida respeita exclusões canônicas (30/10, PR #368)
 
 **Defeito reproduzível:** `resolveKantoIntro` aceitava `preferredSignature` instalada com dano >=6 sem aplicar as exclusões do seletor canônico, permitindo ULT `Tackle`, `Surf`, `Scratch` ou `Transform` quando passada por configuração. **Aceite:** a preferência excluída deve cair no seletor legal (no fixture Bulbasaur Lv8, `Vine Whip`); a preferência temática permitida deve continuar disponível. Não mudar o efeito Surf aprovado nem liberar HM, Scratch/Transform, alterar saves ou os 227 VFX. **Escopo:** só predicado, teste e documentação; não homologa 151 espécies nem combate natural.

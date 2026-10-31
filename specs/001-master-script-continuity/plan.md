@@ -1,5 +1,12 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Lote T03 — escolha de Eevee sem UID legado (30/10/2026)
+- **Causa:** seletor de UI exige UID; saves antigos permitem membros sem UID, portanto Eevee elegível não pode escolher Vaporeon/Jolteon/Flareon.
+- **Patch mínimo:** apenas `torre2-campaign-core.js`, helper de tokens determinísticos por localização/índice e sem colisão, mapeamento por índice do membro selecionado, UID persistido somente após `saveCampaign` concluir. Sem migração em massa.
+- **RED inferido do código:** `typeof undefined!=='string'` bloqueia a escolha; regressões novas cobrem equipe/PC, colisão, storage negado, Shiny/TM. **GREEN ainda não executado**; aguardar CI real.
+- **Gates:** T03 workflow PR (Node, check, reuse, build, testes compiled, Chromium UI e suíte browser), guardião visual, revisão, merge e Pages HTTP SHA. Rollback isolado do helper e teste; nenhuma alteração em VFX, sprites, IA, clima, combate ou saves existentes.
+
+
 ## Lote T08 — gate compartilhado de ULT preferida (30/10, PR #368)
 
 - **Causa:** o seletor `chooseKantoSignatureUlt` tinha `excluded` canônico; o caminho `preferredSignature` em `resolveKantoIntro` checava apenas renderização, dano e bloqueio pontual. Corrigir compartilhando predicado exportado, sem editar catálogos, VFX, TM/HM, saves, cooldowns ou UI.
