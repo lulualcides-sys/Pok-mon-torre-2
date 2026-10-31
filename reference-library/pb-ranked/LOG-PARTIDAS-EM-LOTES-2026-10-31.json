@@ -175,6 +175,27 @@
       "castReportedUnique": 3,
       "exactAnimationVfxVerified": 0,
       "note": "Lapras Surf, Arcanine Extreme Speed and Wild Charge manual; 5 targets missed due to stale button and KO"
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32",
+      "status": "BATTLE_IN_PROGRESS_THREE_LAPRAS_MANUAL_CASTS",
+      "battleStarted": true,
+      "mode": "Practice vs Bot EASY 3v3",
+      "arena": null,
+      "outcome": "Unfinished at Sudden Death",
+      "team": [
+        "Pikachu",
+        "Arcanine",
+        "Lapras"
+      ],
+      "castReportedUnique": 3,
+      "manualClicked": 3,
+      "frameByFrameVisualsArchived": 0,
+      "pending": [
+        "Pikachu Iron Tail",
+        "Pikachu Volt Tackle"
+      ],
+      "note": "Manual Ice Beam Sing Body Slam clicks/casts; Body Slam icy visuals possibly overlap from another move and not reliable as isolated morphology"
     }
   ],
   "coverage": {
@@ -193,7 +214,7 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 21,
+    "uniqueMovesWithBrowserAgentUseReported": 24,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
     "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
@@ -209,7 +230,17 @@
       "manualCastReported": 3,
       "notCast": 5,
       "matchOutcome": "LOSS"
-    }
+    },
+    "latestBatchFour": {
+      "requested": 5,
+      "manualCastReported": 3,
+      "notCast": 2,
+      "outcome": "Unfinished; Sudden Death"
+    },
+    "pendingNext": [
+      "Pikachu Iron Tail",
+      "Pikachu Volt Tackle"
+    ]
   },
   "warnings": [
     "Do not add inferred shapes to observed visual coverage",
