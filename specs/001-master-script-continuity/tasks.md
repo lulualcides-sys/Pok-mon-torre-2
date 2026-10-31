@@ -126,3 +126,9 @@ Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funci
 - [ ] Executar workflow T19 no HEAD da PR, revisar logs e artefatos; não afirmar vitória até CI verde.
 - [ ] Estender naturalmente aos demais treinadores e Misty, Cascata e TM03 no mesmo save; sem fixtures.
 - **Próxima frente distinta:** T25 PR #397 (não duplicar), depois T07/T08 lacunas comprovadas.
+
+## T19 — cinco treinadores Cerulean sem reexecutar Brock (31/10/2026)
+- [x] Verificado #398 GREEN (#41162666401, #41162678757), main anterior Pages #41166012257 com HTTP `src-3573202d00`, e merge #398 `679df0b6d6714ed7348dd63265d906be508c4649`.
+- [x] Criado teste de cinco batalhas nativas + workflow com reutilização de artifact genuíno e SHA-256 estrito; sem gameplay editado.
+- [ ] Aguardar CI HEAD exato e guardião; examinar logs/screenshots, corrigir somente falhas comprovadas, sem aprovar antes do resultado.
+- [ ] Após prova, seguir até Misty/Cascata/TM03; não declarar rota completa nem Android físico.
