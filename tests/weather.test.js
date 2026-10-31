@@ -128,9 +128,9 @@ test('friendly and opposing climate species have ±20% for ALL four climates',()
  const w=createWeather();
  const matrix=[
   ['sun',['FIRE','GRASS'],['WATER','ICE']],
-  ['rain',['WATER','ELECTRIC'],['FIRE','GROUND','ROCK']],
+  ['rain',['WATER'],['FIRE','GROUND','ROCK']],
   ['sand',['ROCK','GROUND','STEEL'],['GRASS','FLYING','ICE']],
-  ['hail',['ICE','WATER'],['FIRE','GRASS','DRAGON']]
+  ['hail',['ICE'],['FIRE','GRASS','DRAGON']]
  ];
  for(const [kind,plus,minus] of matrix){
   setWeather(w,kind);
@@ -173,4 +173,18 @@ test('original move-specific penalties and new species penalties cannot compound
  setWeather(w,'hail');
  assert.equal(damage(w,'GRASS','Solar Beam',['GRASS']),.5);
  assert.equal(damage(w,'GRASS','Solar Beam',['ICE']),.6);
+});
+
+test('water-only rain offense, electric Thunder accuracy preserved, ice-only hail affinity',()=>{
+ const w=createWeather();
+ setWeather(w,'rain');
+ assert.equal(damage(w,'NORMAL','Tackle',['ELECTRIC']),1,
+  'Electric attacks must not gain a general 20% rain buff');
+ assert.equal(damage(w,'ELECTRIC','Thunder',['ELECTRIC']),1);
+ assert.equal(accuracy(w,'Thunder',70),100,
+  'Thunder still receives its canonical perfect accuracy in rain');
+ assert.equal(damage(w,'NORMAL','Tackle',['WATER']),1.2);
+ setWeather(w,'hail');
+ assert.equal(damage(w,'NORMAL','Tackle',['WATER']),1);
+ assert.equal(damage(w,'ICE','Ice Beam',['ICE','WATER']),1.2);
 });

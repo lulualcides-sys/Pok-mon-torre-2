@@ -1,4 +1,5 @@
-/* T16: only the original, approved Rain Dance renderer is installed.
+/* Historic T16 filename: originally 40; now 31 WATER-family recipients.
+ * Only the original, approved Rain Dance renderer is installed.
  * The other three climates remain motor states until four-source VFX approval.
  * Validate native compiled editor, FireRed compatibility and role boundaries.
  */
@@ -17,8 +18,9 @@ const [{
  load('torre2/move-pool.js'),load('torre2/frlg-learnsets.js'),load('torre2/weather.js')
 ]);
 assert.equal(KANTO_RAIN_DANCE_LEVEL,25);
-assert.equal(KANTO_RAIN_DANCE_SPECIES.length,40);
-assert.equal(new Set(KANTO_RAIN_DANCE_SPECIES).size,40);
+assert.equal(KANTO_RAIN_DANCE_SPECIES.length,31);
+assert.equal(new Set(KANTO_RAIN_DANCE_SPECIES).size,31);
+assert.deepEqual(Object.keys(KANTO_RAIN_DANCE_LATE_LEVELS),['slowpoke']);
 const installed=TEST_LIBRARY.find(m=>m.id==='rain-dance');
 assert.equal(installed?.approved,true);
 assert.equal(installed.forma,'torre2_finale_raindance');
@@ -82,8 +84,28 @@ for(const id of ['squirtle','pikachu','voltorb']){
  assert.equal(resolveLoadout(make(id,8)).e?.torre2IntroPractice,true,
   'Early meter-gated ULT was replaced for '+id);
 }
-console.log('PASS_T16_RAIN_EQUIPMENT_40_FRLG',JSON.stringify({
+const excludedElectric=['pikachu','raichu','electabuzz','voltorb','electrode',
+ 'magnemite','magneton','zapdos','jolteon'];
+for(const id of excludedElectric){
+ assert.equal(frlgMachineCompatible(id,'rain-dance'),true,
+  'FRLG TM18 compatibility remains canonical source data; role restriction is a campaign rule');
+ for(const level of [25,50,100]){
+  const member=make(id,level,['rain-dance']);
+  member.moves=['thunder-shock','rain-dance','thunder-wave','thunder'];
+  const before=JSON.stringify(member);
+  assert.equal(availableMoves(member).some(m=>m.id==='rain-dance'),false,
+   id+' received off-theme Rain Dance, even through a previously taught TM');
+  assert.equal(equipMove(member,1,'rain-dance'),false,
+   id+' could re-equip the removed Rain Dance');
+  assert.equal(resolveLoadout(member).rmb?.id==='rain-dance',false,
+   id+' old saved slot still cast Rain Dance');
+  assert.equal(JSON.stringify(member),before,
+   'No silent mutation of legacy saves: '+id);
+ }
+}
+console.log('PASS_T16_RAIN_EQUIPMENT_31_WATER',JSON.stringify({
  newPlayableWeather:['Rain Dance'],species:successes.length,
+ excludedElectric:excludedElectric.length,
  eligible:successes.map(x=>x.id),minLevel:KANTO_RAIN_DANCE_LEVEL,
  pendingVfx:['Sunny Day','Sandstorm','Hail'],
  mode:'compiled Phaser/WebGL loadout; original VFX unchanged'

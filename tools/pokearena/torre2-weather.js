@@ -17,9 +17,12 @@ export function setWeather(state,kind){
 // No effect is inferred from move type: actual active fighter types only.
 export const WEATHER_AFFINITY_TYPES=Object.freeze({
  sun:Object.freeze(['FIRE','GRASS']),
- rain:Object.freeze(['WATER','ELECTRIC']),
+ // Rain belongs to Water offense; Electric still gains Thunder accuracy,
+ // but not +20% to its entire moveset just because it is raining.
+ rain:Object.freeze(['WATER']),
  sand:Object.freeze(['ROCK','GROUND','STEEL']),
- hail:Object.freeze(['ICE','WATER'])
+ // Pure Water gets rain, Ice gets hail. Water/Ice benefits through Ice.
+ hail:Object.freeze(['ICE'])
 });
 export const WEATHER_OPPOSED_TYPES=Object.freeze({
  sun:Object.freeze(['WATER','ICE']),
