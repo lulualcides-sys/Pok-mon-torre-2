@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "runUrl": "https://agent.tinyfish.ai/runs/21383781-c0bc-46e8-be68-157dcbeede01",
+  "mode": "Practice vs Bot EASY 3v3",
+  "arena": "Mt. Silver Summit",
+  "arenaDescriptionReported": "icy cavern, blue crystals, frozen ground",
+  "outcome": "LOSS",
+  "battleStarted": true,
+  "team": [
+    "Pikachu",
+    "Arcanine",
+    "Lapras"
+  ],
+  "laprasSwitchedIntoBattle": true,
+  "manualModeEnabled": true,
+  "requestedMissingMoves": 8,
+  "actions": [
+    {
+      "pokemon": "Lapras",
+      "name": "Surf",
+      "click": "manual-confirmed",
+      "castReported": true,
+      "visualMorphology": "water wave over arena with splash",
+      "damageExact": null,
+      "reportedFeedback": "Effective label; target damage not independently measured"
+    },
+    {
+      "pokemon": "Lapras",
+      "name": "Ice Beam",
+      "click": "no-stale-button",
+      "castReported": false
+    },
+    {
+      "pokemon": "Lapras",
+      "name": "Sing",
+      "click": "no-stale-button",
+      "castReported": false
+    },
+    {
+      "pokemon": "Lapras",
+      "name": "Body Slam",
+      "click": "no-stale-button",
+      "castReported": false
+    },
+    {
+      "pokemon": "Arcanine",
+      "name": "Extreme Speed",
+      "click": "manual-confirmed",
+      "castReported": true,
+      "visualMorphology": "rapid movement/follow-up; detailed frames not captured",
+      "reportedFeedback": "No effect"
+    },
+    {
+      "pokemon": "Arcanine",
+      "name": "Wild Charge",
+      "click": "manual-confirmed",
+      "castReported": true,
+      "visualMorphology": "not captured in detail",
+      "reportedFeedback": "Effective; 19 HURT BY RECOIL reported"
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Iron Tail",
+      "click": "no-stale-button",
+      "castReported": false
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Volt Tackle",
+      "click": "no-stale-button",
+      "castReported": false
+    }
+  ],
+  "summary": {
+    "distinctManuallyClickedAndCastReported": 3,
+    "remainingNotCast": 5,
+    "exactFramesArchived": 0,
+    "reasonRemaining": "stale element IDs due to rapid battle state changes and early loss",
+    "uniqueNewResearch": [
+      "Surf",
+      "Extreme Speed",
+      "Wild Charge"
+    ]
+  },
+  "note": "These are agent-observed click/cast reports, not a complete video frame or asset capture. Reacquire move button IDs after each UI state update.",
+  "security": "No account secrets, game assets, or production code copied."
+}
