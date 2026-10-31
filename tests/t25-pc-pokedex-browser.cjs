@@ -102,6 +102,27 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(mew,true,'The final Kanto page must reach Mew');
    const after=await page.evaluate(()=>localStorage.getItem(__collectionCore.SAVE_KEY));
    assert.equal(after,before,'PC filters and Dex pages must not rewrite saved party/box/flags');
+   // Use an actual Phaser click on the second Shiny filtered row (original
+   // box index 12). The selected Pokémon must never silently become box[1].
+   await page.evaluate(()=>{
+    const c=__pt2Game.scene.getScene('campanha');
+    c.pcScreen(__collectionState,0);
+   });
+   await click('torre2-pc-filter','SHINY');
+   await click('torre2-pc-box-index',12);
+   const transferred=await page.evaluate(()=>{
+    const s=__collectionCore.readCampaign();
+    return {team:s.team.map(x=>x.uid),box:s.box.map(x=>x.uid),
+     originalBoxLength:__collectionState.box.length,selectedFilter:
+      __pt2Game.scene.getScene('campanha').pcFilter};
+   });
+   assert.equal(transferred.team.includes('t25-box-12'),true,
+    'The exact Shiny clicked must be withdrawn, not another filtered row');
+   assert.equal(transferred.team.includes('t25-box-3'),false,
+    'The other Shiny must remain in storage');
+   assert.equal(transferred.box.includes('t25-box-12'),false);
+   assert.equal(transferred.box.includes('t25-box-3'),true);
+   assert.equal(transferred.box.length,12);
    assert.deepEqual(errors,[],'No Phaser page errors');
    console.log('PASS T25 NATIVE PC/DEX',viewport.width,{
     shiny:[3,12],ko:[8,12],status:[2],canonical:'mr-mime',
