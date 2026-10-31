@@ -1,0 +1,162 @@
+{
+  "date": "2026-10-31",
+  "source": "https://ranked.pokemonbattlegrounds.com/",
+  "runUrl": "https://agent.tinyfish.ai/runs/141b0db3-dc6a-4aba-bddd-2267c46e7411",
+  "mode": "Practice vs Bot, mode=practice as observed from public UI client; 1 Easy",
+  "arena": "Cerulean Cave",
+  "queue": {
+    "positionInitially": 39,
+    "notes": "Agent reports it progressed to 0. Generic Unranked queue label is not proof human match."
+  },
+  "team": [
+    "Magnezone",
+    "Torkoal",
+    "Toxicroak"
+  ],
+  "result": {
+    "agentLabel": "VICTORY",
+    "independentlyVerified": false,
+    "contradiction": "agent also reported all 3 Pokémon on the player's team fainted; winner interpretation requires review"
+  },
+  "usedMoves": [
+    {
+      "pokemon": "Magnezone",
+      "name": "Thunderbolt",
+      "method": "manual",
+      "feedback": "Effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Magnezone",
+      "name": "Flash Cannon",
+      "method": "manual",
+      "feedback": "Effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Magnezone",
+      "name": "Discharge",
+      "method": "manual",
+      "feedback": "Effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Magnezone",
+      "name": "Magnet Rise",
+      "method": "manual",
+      "feedback": "Status; nearby effectiveness text reported but attribution unclear",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Torkoal",
+      "name": "Lava Plume",
+      "method": "manual",
+      "feedback": "Super effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Torkoal",
+      "name": "Overheat",
+      "method": "manual",
+      "feedback": "Super effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Torkoal",
+      "name": "Earth Power",
+      "method": "auto",
+      "feedback": "Not very effective; stale manual button then auto cast reported",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Torkoal",
+      "name": "Shell Smash",
+      "method": "auto",
+      "feedback": "Status, one use reported",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Toxicroak",
+      "name": "Poison Jab",
+      "method": "manual",
+      "feedback": "Not very effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Toxicroak",
+      "name": "Sucker Punch",
+      "method": "manual",
+      "feedback": "Super effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    },
+    {
+      "pokemon": "Toxicroak",
+      "name": "Drain Punch",
+      "method": "manual",
+      "feedback": "Not very effective",
+      "castReportedByAgent": true,
+      "fullVisualAnimationObserved": false,
+      "isolatedFrameSequenceArchived": false,
+      "effectivenessConfidence": "textual label attribution not independently replay-verified"
+    }
+  ],
+  "notCast": [
+    {
+      "pokemon": "Toxicroak",
+      "name": "Mud Bomb",
+      "cause": "battle ended before use"
+    }
+  ],
+  "duplicateCasts": [
+    {
+      "pokemon": "Magnezone",
+      "name": "Thunderbolt",
+      "source": "agent reported another AUTO action later, and described 'recoil'; recoil not independently established and is not treated as Thunderbolt mechanics"
+    }
+  ],
+  "counts": {
+    "reportedDistinctMoves": 11,
+    "reportedManualUses": 9,
+    "reportedAutoUses": 2,
+    "alreadyLoggedPrevious": "Thunderbolt",
+    "newDistinctVs24Prior": 10,
+    "fullFrameCaptures": 0
+  },
+  "cautions": [
+    "The displayed effectiveness labels may be from simultaneous effects or different moves.",
+    "Magnet Rise and Shell Smash are status moves: do not interpret adjacent damage labels as their direct damage.",
+    "This result is navigation-agent reported gameplay, not detailed video-frame auditing.",
+    "Player-team KO report contradicts agent's victory report; exclude outcome from win-rate stats.",
+    "Third-party art/code not copied; cannot promise exact VFX reproduction."
+  ]
+}
