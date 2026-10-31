@@ -236,6 +236,24 @@
       "autoCastsReported": 4,
       "frameByFrameVisualsArchived": 0,
       "note": "Manual eight and auto four reported. No isolated animation/hit evidence for AUTO; match still in progress"
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/3596ff5b-ce58-4981-81cb-7c0bf0cf477f",
+      "status": "TWELVE_CASTS_CLAIMED_WEAK_PER_MOVE_EVIDENCE",
+      "battleStarted": true,
+      "mode": "Practice vs Bot Easy 3v3",
+      "outcome": "not established",
+      "team": [
+        "Muk",
+        "Exeggutor",
+        "Heracross"
+      ],
+      "castReportedUnique": 12,
+      "newUniqueNamesVersusPrior": 10,
+      "manualCastsReported": 12,
+      "individualCastStepsIndependentlyCorroborated": 0,
+      "frameByFrameVisualsArchived": 0,
+      "note": "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
     }
   ],
   "coverage": {
@@ -254,7 +272,7 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 45,
+    "uniqueMovesWithBrowserAgentUseReported": 55,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
     "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
@@ -296,6 +314,12 @@
       "manual": 8,
       "auto": 4,
       "matchOutcome": "not observed"
+    },
+    "latestBatchSeven": {
+      "reportedDistinct": 12,
+      "newAgentClaimedNames": 10,
+      "confidence": "LOW due to 14 total steps",
+      "verifiedExactVisuals": 0
     }
   },
   "warnings": [
