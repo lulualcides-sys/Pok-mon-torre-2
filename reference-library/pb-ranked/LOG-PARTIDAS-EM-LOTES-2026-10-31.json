@@ -254,6 +254,23 @@
       "individualCastStepsIndependentlyCorroborated": 0,
       "frameByFrameVisualsArchived": 0,
       "note": "Twelve individual move clicks are claimed but the entire run had only 14 agent steps including builder interactions, queue and mode selection. Treat each move as aggregate agent report, not verified individual execution."
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/66616557-b9bd-497e-be13-83edcaa053bd",
+      "status": "SEVEN_MANUAL_MOVE_BUTTON_USES_REPORTED",
+      "battleStarted": true,
+      "team": [
+        "Lopunny",
+        "Garchomp",
+        "Lucario"
+      ],
+      "mode": "Practice vs Bot Easy, 3v3",
+      "outcome": "Not documented by agent",
+      "castReportedUnique": 7,
+      "newUniqueNamesVersusPrior": 7,
+      "manualCastsReported": 7,
+      "frameByFrameVisualsArchived": 0,
+      "note": "Seven button transitions; complete VFX unverified"
     }
   ],
   "coverage": {
@@ -272,7 +289,7 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 55,
+    "uniqueMovesWithBrowserAgentUseReported": 62,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
     "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
@@ -320,6 +337,15 @@
       "newAgentClaimedNames": 10,
       "confidence": "LOW due to 14 total steps",
       "verifiedExactVisuals": 0
+    },
+    "latestBatchEight": {
+      "manual": 7,
+      "newDistinct": 7,
+      "remainingInMatch": [
+        "Bone Rush",
+        "Meteor Mash"
+      ],
+      "quality": "UI states reported, frame-by-frame not archived"
     }
   },
   "warnings": [
