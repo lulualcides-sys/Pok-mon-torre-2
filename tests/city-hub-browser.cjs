@@ -31,6 +31,10 @@ const server=http.createServer((req,res)=>{
     const s=core.createPlayerCampaign('bulbasaur');s.stage=1;s.trainer=2;
     core.saveCampaign(s);window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
    });
+   // Route remains the default on entering Cerulean, even in the visual branch.
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .__torre2BattlePath?.stage===1,null,{timeout:60000});
+   await named('torre2-open-city',true);
    await city();await page.waitForTimeout(500);
    const before=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
    const report=await page.evaluate(()=>{const s=window.__pt2Game.scene.getScene('campanha');return{...s.__torre2CityHub,renderer:s.game.renderer.type,objects:s.children.length}});
@@ -53,8 +57,23 @@ const server=http.createServer((req,res)=>{
    await named('torre2-city-action','INSÍGNIAS');
    await named('torre2-badge-case-back',true);await city();
    assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before,'navigation cannot mutate save');
-   // Repeated render must not leak animated water callbacks.
-   const timers=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').time.getAllEvents().filter(e=>e.loop).length);
+   // Native route/city roundtrip must not change saves or leak water timers.
+   await named('torre2-city-action','ROTAS');
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .__torre2BattlePath?.stage===1,null,{timeout:12000});
+   await named('torre2-open-city',true);await city();
+   assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),
+    before,'route/city navigation must preserve the exact saved bytes');
+   await page.waitForTimeout(250);
+   const timers=await page.evaluate(()=>{
+    const clock=window.__pt2Game.scene.getScene('campanha').time;
+    // Phaser Clock has no getAllEvents(): inspect its real event queues.
+    if(!Array.isArray(clock._active)||!Array.isArray(clock._pendingInsertion))
+     throw Error('Phaser Clock event queues unavailable; cannot verify cleanup');
+    const pendingRemoval=new Set(clock._pendingRemoval||[]);
+    return [...clock._active,...clock._pendingInsertion]
+     .filter(e=>e.loop&&!pendingRemoval.has(e)).length;
+   });
    assert.ok(timers<=3,'bounded looping events: '+timers);
    assert.deepEqual(errors,[]);
    fs.writeFileSync('test-evidence/city-layered-'+label+'.json',JSON.stringify({...report,timers,errors,fixture:true},null,2));

@@ -8,7 +8,7 @@ Review focus: returning from menus must preserve city; repeated entry must clean
 
 1. Pure city model and interaction tests: tools/pokearena/torre2-city-layout.js; tests/city-layout.test.js. Three landmark IDs, validated route counts, independent positions, immutable input. Run node --test tests/city-layout.test.js (RED then GREEN).
 2. Original layered architecture/environment in torre2-city-scenery.js and UI in torre2-city-hub.js. Render via Phaser Graphics, shared sprites and bounded animated water layer. Test actual WebGL browser output, object cleanup and hotspot coordinates.
-3. Wire campaign-scene.js and build-preview.mjs. Reuse centerScreen, martScreen, gymScreen, bagScreen, dexScreen, badgeCaseScreen, showSummary and rematch handlers. Preserve native battle path as route selector. Default city in Cerulean; no save migration.
+3. Wire campaign-scene.js and build-preview.mjs. Reuse centerScreen, martScreen, gymScreen, bagScreen, dexScreen, badgeCaseScreen, showSummary and rematch handlers. Preserve native battle path as route selector. Cerulean city is an optional view; native trainer route stays the default for compatibility; no save migration.
 4. Validate Cerulean screenshots and functional buttons in Chromium desktop + touch. Only after this gate expand layouts and secondary-menu visual treatment. Don't substitute automatic assertions for visual quality assessment.
 5. Run npm test/check/check:reuse + applicable built/browser regressions, review diff and concurrent main before PR. Integrate only verified approved result; otherwise retain draft with exact blockers.
 Rollback: revert scoped new imports/renderer/mapping; original path and all battle logic remain available.

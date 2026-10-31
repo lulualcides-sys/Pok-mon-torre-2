@@ -473,7 +473,8 @@ create(){
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
    this.__torre2PathPage=undefined;
-   this.__torre2CityRoute=false;
+   // Preserve native route as default; layered Cerulean is an opt-in view.
+   this.__torre2CityRoute=true;
    this.__torre2PathStage=state.stage;
   }
   const movePage=delta=>{
@@ -508,6 +509,7 @@ create(){
    return city;
   }
   const path=renderBattlePath(this,state,{
+   city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),
@@ -524,9 +526,6 @@ create(){
   });
   // Expose stable index for smoke tests and safe scene re-entry; no overworld
   // map, invisible trainer zones or city navigation are created.
-  if(state.stage===1)this.button(424,131,107,23,'VER CIDADE',()=>{
-   this.__torre2CityRoute=false;this.renderCampaign(state);
-  }).setData('torre2-open-city',true);
   this.__torre2PathPage=path.offset;
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   return path;
