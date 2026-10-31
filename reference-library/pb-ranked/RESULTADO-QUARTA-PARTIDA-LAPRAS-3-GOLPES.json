@@ -1,0 +1,88 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "source": "https://ranked.pokemonbattlegrounds.com/",
+  "runUrl": "https://agent.tinyfish.ai/runs/bd5f2e7f-c581-49b4-b8a3-0cdc26eceb32",
+  "scope": "Authenticated Practice vs Bot, 3v3 EASY; bot/human distinction confirmed by mode selection",
+  "team": [
+    "Pikachu",
+    "Arcanine",
+    "Lapras"
+  ],
+  "arena": {
+    "name": "not confirmed in UI",
+    "description": "rocky terrain with blue luminous crystals",
+    "caution": "Do not infer exact arena from similar visuals"
+  },
+  "battleStateAtEnd": "IN_PROGRESS in sudden death, timer ~0:23 and displayed damage multiplier 2.9×",
+  "outcome": "not observed",
+  "serverQueue": "agent reported queue initially ~29, then actual battle",
+  "manualMode": true,
+  "used": [
+    {
+      "pokemon": "Lapras",
+      "name": "Ice Beam",
+      "buttonVisible": true,
+      "explicitManualClick": true,
+      "castConfirmedByAgent": true,
+      "reportedVisual": "bright ice particles travelling toward enemy",
+      "reportedFeedback": "effective and visible damage",
+      "evidenceSteps": "screenshots 14–16",
+      "frameByFrameVfxCaptured": false
+    },
+    {
+      "pokemon": "Lapras",
+      "name": "Sing",
+      "buttonVisible": true,
+      "explicitManualClick": true,
+      "castConfirmedByAgent": true,
+      "reportedVisual": "no visible particle morphology identified",
+      "reportedFeedback": "button switched to called/cooldown",
+      "evidenceSteps": "screenshots 16–17",
+      "frameByFrameVfxCaptured": false,
+      "limitation": "status condition on target not independently verified"
+    },
+    {
+      "pokemon": "Lapras",
+      "name": "Body Slam",
+      "buttonVisible": true,
+      "explicitManualClick": true,
+      "castConfirmedByAgent": true,
+      "reportedVisual": "agent described large snowflake/ice shards and white haze, which may be an overlapping enemy Ice effect rather than Body Slam VFX",
+      "reportedFeedback": "69 damage number reported",
+      "evidenceSteps": "screenshots 18–19",
+      "frameByFrameVfxCaptured": false,
+      "limitation": "Do NOT attribute icy projectile morphology to Body Slam without isolated before-and-after frames."
+    }
+  ],
+  "notTested": [
+    {
+      "pokemon": "Pikachu",
+      "name": "Iron Tail",
+      "reason": "Could not activate switch due to dynamic bench button identifiers"
+    },
+    {
+      "pokemon": "Pikachu",
+      "name": "Volt Tackle",
+      "reason": "Could not activate switch due to dynamic bench button identifiers"
+    }
+  ],
+  "observedContext": {
+    "swapToLapras": true,
+    "swapToPikachu": false,
+    "opponentsReported": [
+      "Magnemite",
+      "Iron Bundle",
+      "Squirtle/Wartortle"
+    ],
+    "opponentIdentities": "agent report, not independent visual verification",
+    "cooldownBehavior": "button called/cooling class changed after move use; individual cooldown durations not measured"
+  },
+  "evidenceTier": "browser-agent live cast reports; not archived video or original spritesheets",
+  "security": "No account secrets, copyrighted game assets, source code, or production code copied",
+  "summary": {
+    "newDistinctMoveNamesWithUseReported": 3,
+    "stillMissingFromPriorFive": 2,
+    "fullOriginalVfxCaptured": 0
+  }
+}
