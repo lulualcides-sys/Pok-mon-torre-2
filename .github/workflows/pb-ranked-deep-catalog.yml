@@ -47,6 +47,9 @@ jobs:
           git add reference-library/pb-ranked/*.json
           if ! git diff --cached --quiet; then
             git commit -m "research: catalog public PB Ranked moves, animation and arena metadata"
+            # New documentation can land while the external capture is running.
+            # Replay only this machine-generated JSON commit on top of latest.
+            git pull --rebase origin research/pb-ranked-rea-20261031
             git push origin HEAD:research/pb-ranked-rea-20261031
           fi
       - name: Guardar screenshots e evidências REA da sessão
