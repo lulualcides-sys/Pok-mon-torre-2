@@ -1,5 +1,9 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## T19 — integração após main T08 (31/10/2026)
+- Preservar teste e workflow originais de #400; mesclar main `8a6f802fa7` sem force e sem perder docs de T08/T22. CI longa de HEAD sincronizado justificada por mudança de base e gate exato. Artifact natural #13032891442 é entrada da próxima etapa Misty. Sem alteração no runtime.
+
+
 ## Plano T08 — poder Gen III de prévia (31/10/2026)
 Escopo restrito a `tools/pokearena/torre2-kanto-intro-moves.js` e `tests/kanto-intro-moves.test.js`. RED isolado: Lv8 Ponyta tinha `poder` [150,130,130,150] com `dano` reduzido; GREEN isolado: [40,40,40,60], catálogo original intacto. O cap é aplicado apenas aos clones de `trainingMove`, sem alterar VFX, golpes nativos, saves, Arena ou progressão FRLG. Validar npm test/check/check:reuse/build, Chromium, guardião visual, revisão e Pages HTTP SHA; rollback apenas desse cap se regressão real. T19 #400 segue independente e não deve ser reiniciado.
 

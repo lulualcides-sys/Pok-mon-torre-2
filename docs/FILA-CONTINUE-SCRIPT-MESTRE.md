@@ -1,5 +1,10 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## T19 — dez treinadores Cerulean reais, CI verde (31/10/2026)
+- PR #400 HEAD anterior `5bc77a761b`, CI natural #41174200072 SUCCESS, guardião #41174210095 e T25 #41174210051 SUCCESS. Save legítimo de Brock #41162666401, dez treinadores Cerulean, vitórias acumuladas 36, zero derrotas, XP e reload persistentes; artifact #13032891442 com save exportado. Nenhuma vitória/insígnia de Misty ou TM03 comprovada.
+- Branch sincronizada SEM FORCE com main `8a6f802fa7` (T08 #401 integrada); exigir novo CI do HEAD combinado antes de mesclar. Próxima frente T31 #402 ou T19 Misty.
+
+
 ## Frente T08 — poder Gen III de prévia Lv5/Lv8 (31/10/2026)
 Branch `fix/t08-intro-gen3-power-cap-20261031`: RED isolado em main `ce38c4c2` confirmou `poder` 130/150 preservado apesar de `dano` 7/8; teste commit `83106e92`, patch `110cc7d2` limita apenas clones de treino a 40 (slots normais) / 60 (ULT), GREEN isolado. CI, Chromium, merge e Pages pendentes. T19 PR #400 em execução independente, não duplicar. Última frente T08; próxima T31/T19.
 

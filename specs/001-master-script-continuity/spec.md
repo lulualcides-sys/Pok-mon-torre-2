@@ -1,5 +1,9 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## T19 — dez treinadores Cerulean com prova nativa (31/10/2026)
+- Aceite verificado no HEAD antigo: CI #41174200072 comprovou dez treinadores reais e save exportado, sem injetar progresso, com 36 vitórias acumuladas e zero derrotas. Revalidação obrigatória após sincronizar main; Misty/Cascata/TM03 fora do escopo deste lote.
+
+
 ## Lote T08 — limite de poder em prévias Lv5/Lv8 (31/10/2026)
 **Defeito reproduzido em execução isolada do módulo da main `ce38c4c2`:** `resolveKantoIntro` reduzia `dano` para até 9/12, mas copiava `poder` Gen III 130/150 para ataques de treino Lv5 e para ULT sem assinatura. Critério: prévias dos slots LMB/RMB/Q com `poder` 0–40; ULT Lv8 com `poder` 0–60; preservar fonte, save, renderer, nível real de desbloqueio e Arena. Teste RED no commit `83106e92`; patch mínimo `110cc7d2`. CI, Chromium e Pages ainda pendentes.
 

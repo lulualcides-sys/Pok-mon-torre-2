@@ -1,5 +1,12 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## T19 — dez Cerulean, HEAD sincronizado (31/10/2026)
+- [x] CI natural #41174200072, visual #41174210095, T25 #41174210051 SUCCESS no HEAD antigo; artifact #13032891442.
+- [x] Sincronizar PR #400 sem force com main que contém #396 e #401.
+- [ ] CI/Chromium do HEAD combinado, revisão, merge e Pages HTTP exato.
+- [ ] T19 Misty/Cascata/TM03 em save legítimo, sem fixture de vitórias.
+
+
 ## T08 — corrigir metadado de poder em golpes de treino (31/10/2026)
 - [x] Reproduzir em módulo real isolado: `dano` baixo com `poder` 130/150 nos slots Lv5 e Lv8 (RED).
 - [x] Adicionar regressão `tests/kanto-intro-moves.test.js` (`83106e92`) e corrigir apenas o clone de treino (`110cc7d2`); GREEN isolado [40,40,40,60].
