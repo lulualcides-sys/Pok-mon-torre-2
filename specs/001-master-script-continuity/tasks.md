@@ -1,11 +1,25 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
-## Lote T19 — Cerulean dez treinadores (31/10)
-- [x] Confirmar PR #399 mesclada em cf94d5f8 e CI #41169903523/guardião #41169907008 SUCCESS; fonte do save T20 preservada.
-- [ ] Validar no HEAD novo npm test/check/check:reuse/build e Chromium real de dez treinadores, com artifact de save SHA-256 e screenshot.
-- [ ] Conferir todas regressões e guardião, revisar diff, mesclar apenas gates verdes e Pages HTTP SHA.
-- [ ] Misty, Cascata, TM03 e campanha até Campeão continuam pendentes; próximo lote deve usar save exportado de dez treinadores, sem simular vitórias.
-- [ ] Próxima frente diferente T07/T08; não reabrir T10.
+## T19 — dez Cerulean, HEAD sincronizado (31/10/2026)
+- [x] CI natural #41174200072, visual #41174210095, T25 #41174210051 SUCCESS no HEAD antigo; artifact #13032891442.
+- [x] Sincronizar PR #400 sem force com main que contém #396 e #401.
+- [ ] CI/Chromium do HEAD combinado, revisão, merge e Pages HTTP exato.
+- [ ] T19 Misty/Cascata/TM03 em save legítimo, sem fixture de vitórias.
+
+
+## T08 — corrigir metadado de poder em golpes de treino (31/10/2026)
+- [x] Reproduzir em módulo real isolado: `dano` baixo com `poder` 130/150 nos slots Lv5 e Lv8 (RED).
+- [x] Adicionar regressão `tests/kanto-intro-moves.test.js` (`83106e92`) e corrigir apenas o clone de treino (`110cc7d2`); GREEN isolado [40,40,40,60].
+- [ ] Executar gates completos e Chromium no HEAD final, revisar, mesclar somente verde e comprovar Pages HTTP do SHA integrado.
+- [ ] Frente seguinte DIFERENTE: T31 diagnóstico de carregamento ou T19 Cerulean, sem reabrir T10.
+
+
+## Lote T22 — rematch legado (31/10/2026)
+- [x] Reproduzir RED: pendência sem token trava recarga, valida resultado falso e lança exceção em ticket nulo.
+- [x] Corrigir token durável e testar oito verificações focadas GREEN; preserva saves e combate.
+- [ ] CI completa no HEAD final, Chromium desktop/mobile, guardião e revisão; merge só com gates verdes.
+- [ ] Pages/HTTP SHA após merge; não declarar publicado antes.
+- [ ] Próxima frente independente T19 pós-Brock→Misty.
 
 ## Checkpoint T20 após integração — 31/10/2026
 - [x] Corrida real Pallet→Brock concluída: 13 treinadores, captura de Spearow/Geodude, Brock, Rocha e TM Rock Tomb (CI #41153415212).

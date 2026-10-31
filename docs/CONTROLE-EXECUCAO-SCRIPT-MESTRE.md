@@ -1,10 +1,16 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
-## Lote T19 — ampliar Cerulean 5→10 sem reiniciar Brock (31/10/2026)
-- Main de origem `cf94d5f84c86fc529c72b96c30b39380d0c94407`: PR #399 integrada; CI #41169903523 SUCCESS provou 5 treinadores reais no save original de Brock, 31 vitórias e zero derrotas, guardião #41169907008 e T25 #41169907033 verdes.
-- Novo teste isolado propõe continuar o MESMO save exportado por #398 (CI #41162666401, artifact 13028307911, SHA-256 conferido), agora por dez treinadores Cerulean consecutivos; Centro Pokémon nativo, AUTO, XP, persistência e reload; exporta bytes do save ao fim para etapas futuras.
-- Ainda NÃO VALIDADO: CI/Chromium do novo teste, vitória dos treinadores 6–10, Misty, Cascata, TM03 e Pages novo. Não há alteração de runtime, VFX, sprites, saves de usuários, IA ou cooldown.
-- Rotação: T19 agora; próxima frente independente T07/T08 (learnsets/slots), T22 #396 isolada até Pages da main anterior.
+## §19/T19 — dez Cerulean com save real (31/10/2026)
+- Run #41174200072 SUCCESS no HEAD `5bc77a761b`: dez combates nativos Cerulean a partir de save Pallet→Brock exportado na #398; XP, Centro, AUTO, recarga e persistência, 36 vitórias acumuladas/0 derrotas nesta execução; artifact #13032891442. Guardião #41174210095 e T25 #41174210051 SUCCESS.
+- Branch rebaseada por merge não forçado contra main `8a6f802fa7` com código de testes/workflow preservado; CI do HEAD sincronizado ainda necessária. Misty, Cascata e TM03 NÃO comprovadas. Nenhum runtime ou save de usuário modificado.
+
+
+## Execução 31/10/2026 — T08 / §7–8 (branch isolada)
+Main de partida `ce38c4c2c50821723f54473a3c9e53d48a006a5e`. Reproduzido bug real no `resolveKantoIntro`: metadado `poder` de 130/150 atravessava o cap de `dano` dos golpes de treino Lv5/Lv8. RED isolado [150,130,130,150]; teste novo `83106e92`, correção `110cc7d2`; GREEN isolado [40,40,40,60], fonte não mutada. Não equivale a npm test/Chromium/CI. PR T19 #400 segue draft em CI natural; T10 não tocado. **Estado T08: aguardando gates, revisão, merge e Pages HTTP.** Próxima frente diferente: T31 ou T19.
+
+
+## §17/T22 — defesa de save legado (31/10/2026)
+- RED comprovado em código real: pending sem token válido congela VS Seeker e pode validar ticket malformado; `validRematchResult(state,null)` lança TypeError nesse caso. Patch mínimo rejeita tokens não inteiros positivos e libera nova reserva quando pendência inválida. GREEN focado 8/8; npm/CI/Chromium/Pages ainda não verificados. T20 #369 já integrada na main; próxima frente T19.
 
 ## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
 - **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.

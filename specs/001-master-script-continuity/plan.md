@@ -1,7 +1,15 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
-## Lote T19 — continuação 5→10
-Origem main cf94d5f8; PR #399 já integrou prova real de cinco treinadores. Reutilizar seed original SHA-256 verificado (artifact #41162666401), não fabricar save de treinador 5. Novo browser test estende execução até treinador 10, exporta rawSave com hash e captura falhas; workflow isolado com npm test/check/check:reuse, build, Chromium e regressão geral. Risco: derrota legítima ou timeout; CI deve falhar, guardar screenshot e não injetar progresso. Branch isolada, não conflitar T22 #396 nem T10 #381. Merge só com gates verdes e Pages HTTP SHA.
+## T19 — integração após main T08 (31/10/2026)
+- Preservar teste e workflow originais de #400; mesclar main `8a6f802fa7` sem force e sem perder docs de T08/T22. CI longa de HEAD sincronizado justificada por mudança de base e gate exato. Artifact natural #13032891442 é entrada da próxima etapa Misty. Sem alteração no runtime.
+
+
+## Plano T08 — poder Gen III de prévia (31/10/2026)
+Escopo restrito a `tools/pokearena/torre2-kanto-intro-moves.js` e `tests/kanto-intro-moves.test.js`. RED isolado: Lv8 Ponyta tinha `poder` [150,130,130,150] com `dano` reduzido; GREEN isolado: [40,40,40,60], catálogo original intacto. O cap é aplicado apenas aos clones de `trainingMove`, sem alterar VFX, golpes nativos, saves, Arena ou progressão FRLG. Validar npm test/check/check:reuse/build, Chromium, guardião visual, revisão e Pages HTTP SHA; rollback apenas desse cap se regressão real. T19 #400 segue independente e não deve ser reiniciado.
+
+
+## Lote T22 — validação de tickets (31/10/2026)
+Arquivos: `torre2-rematch-policy.js` e `tests/rematch-policy.test.js`. RED reproduzido sobre main `1fcc64eb`, GREEN 8/8 focado no patch. Base sincronizada com main `a043032b` para preservar documentação concorrente. Exigir npm test/check/check:reuse/build, Chromium, guardião e Pages HTTP SHA antes de publicação; rollback restrito a esses arquivos.
 
 ## Plano de continuidade pós-CI verde — T20→T19 (31/10/2026)
 1. Preservar a prova completa da PR #369 (squash `1fcc64eb`): 13 treinadores genuínos, captura nativa de Spearow e Geodude, Brock, Rocha e TM Rock Tomb; CI #41153415212 e visual #41153419869 aprovados. O merge não introduziu ajustes de combate e não implica publicação HTTP automática.

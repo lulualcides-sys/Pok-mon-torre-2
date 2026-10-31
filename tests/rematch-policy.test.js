@@ -64,3 +64,33 @@ test('stale ticket from a finished story checkpoint does not strand VS Seeker',(
  assert.equal(consumeRematchResult(state,first),false);
  assert.equal(validRematchResult(state,second),true);
 });
+
+test('legacy rematch pending without a durable token cannot freeze VS Seeker',()=>{
+ const state={stage:1,trainer:3,rematches:{charge:3,sequence:0,wins:0,
+  pending:{stage:1,trainer:1,progressStage:1,progress:3}}};
+ const before=JSON.stringify(state);
+ assert.equal(validRematchResult(state,{stage:1,trainer:1}),false,
+  'missing tokens cannot authorize old or fabricated rewards');
+ assert.equal(validRematchResult(state,null),false,
+  'missing result must not throw while resuming a legacy save');
+ assert.equal(consumeRematchResult(state,null),false);
+ assert.equal(JSON.stringify(state),before,'rejected results must not mutate save');
+ const ticket=reserveRematch(state,2,0);
+ assert.ok(ticket,'invalid legacy pending must not permanently block a charged VS Seeker');
+ assert.equal(ticket.token,1);
+ assert.equal(state.rematches.charge,0);
+ assert.equal(validRematchResult(state,ticket),true);
+ assert.equal(consumeRematchResult(state,ticket),true);
+ assert.equal(consumeRematchResult(state,ticket),false);
+});
+test('rematch tickets require positive integer tokens, without rewriting old saves',()=>{
+ const state={stage:2,trainer:4,rematches:{charge:3,sequence:2,wins:1,
+  pending:{token:0,stage:2,trainer:1,progressStage:2,progress:4}}};
+ assert.equal(validRematchResult(state,{token:0,stage:2,trainer:1}),false);
+ const fresh=reserveRematch(state,1,2);
+ assert.ok(fresh);
+ assert.equal(fresh.token,3);
+ assert.equal(state.rematches.wins,1);
+ assert.equal(validRematchResult(state,{...fresh,token:'3'}),false);
+ assert.equal(validRematchResult(state,fresh),true);
+});

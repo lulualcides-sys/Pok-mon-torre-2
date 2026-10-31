@@ -1,10 +1,16 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
-## Lote T19 — ampliar Cerulean 5→10 sem reiniciar Brock (31/10/2026)
-- Main de origem `cf94d5f84c86fc529c72b96c30b39380d0c94407`: PR #399 integrada; CI #41169903523 SUCCESS provou 5 treinadores reais no save original de Brock, 31 vitórias e zero derrotas, guardião #41169907008 e T25 #41169907033 verdes.
-- Novo teste isolado propõe continuar o MESMO save exportado por #398 (CI #41162666401, artifact 13028307911, SHA-256 conferido), agora por dez treinadores Cerulean consecutivos; Centro Pokémon nativo, AUTO, XP, persistência e reload; exporta bytes do save ao fim para etapas futuras.
-- Ainda NÃO VALIDADO: CI/Chromium do novo teste, vitória dos treinadores 6–10, Misty, Cascata, TM03 e Pages novo. Não há alteração de runtime, VFX, sprites, saves de usuários, IA ou cooldown.
-- Rotação: T19 agora; próxima frente independente T07/T08 (learnsets/slots), T22 #396 isolada até Pages da main anterior.
+## T19 — dez treinadores Cerulean reais, CI verde (31/10/2026)
+- PR #400 HEAD anterior `5bc77a761b`, CI natural #41174200072 SUCCESS, guardião #41174210095 e T25 #41174210051 SUCCESS. Save legítimo de Brock #41162666401, dez treinadores Cerulean, vitórias acumuladas 36, zero derrotas, XP e reload persistentes; artifact #13032891442 com save exportado. Nenhuma vitória/insígnia de Misty ou TM03 comprovada.
+- Branch sincronizada SEM FORCE com main `8a6f802fa7` (T08 #401 integrada); exigir novo CI do HEAD combinado antes de mesclar. Próxima frente T31 #402 ou T19 Misty.
+
+
+## Frente T08 — poder Gen III de prévia Lv5/Lv8 (31/10/2026)
+Branch `fix/t08-intro-gen3-power-cap-20261031`: RED isolado em main `ce38c4c2` confirmou `poder` 130/150 preservado apesar de `dano` 7/8; teste commit `83106e92`, patch `110cc7d2` limita apenas clones de treino a 40 (slots normais) / 60 (ULT), GREEN isolado. CI, Chromium, merge e Pages pendentes. T19 PR #400 em execução independente, não duplicar. Última frente T08; próxima T31/T19.
+
+
+## Frente T22 — ticket de revanche legado inválido (31/10/2026)
+- RED no módulo da main: pending sem token bloqueia reserva com 3 cargas, aceita resultado sem token e lança TypeError em resultado nulo. Patch de código/testes em branch isolada; GREEN focado 8/8, CI e Chromium pendentes. Nenhuma alteração em saves, recompensas ou VFX. Próxima frente diferente: T19 pós-Brock→Misty.
 
 ## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
 - **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.
