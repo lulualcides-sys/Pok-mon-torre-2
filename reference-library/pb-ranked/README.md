@@ -5,7 +5,22 @@
 
 **Escopo solicitado:** exclusivamente conteúdo de gameplay individual, sem PvP online, ranking ou multiplayer humano; a autenticação foi efetuada legitimamente pelo usuário no perfil privado do TinyFish para o treino contra bot. O titular do projeto informou autorização de acesso e uso **não comercial** para estudo. Não publicar arquivos brutos do jogo nem misturar ativos de terceiros no GitHub Pages sem comprovação do alcance dessa licença.
 
-## ATUALIZAÇÃO MAIS RECENTE — lote de 45 golpes com uso relatado (31/10/2026)
+## RESULTADO DA PESQUISA ACELERADA — 31/10/2026 (leia primeiro)
+
+- **283/283 nomes** do cliente público classificados por família técnica de ataque e sinais de áudio/VFX; [biblioteca de famílias](FAMILIAS-ESTRUTURAIS-283-GOLPES.json).
+- **245 nomes** correspondem ao elenco público de 127 Pokémon; **38** só estão no JavaScript de origem.
+- **70 nomes** apresentam algum relato de uso em partidas contra bot nos testes desta pesquisa; **175 ainda não têm uso relatado**. **10 desses 70 foram incluídos apenas pelo relatório agregado de baixa confiança de Muk/Exeggutor/Heracross**. Distinguir nível de evidência individual.
+- **8 golpes de Kanto** foram disparados por teclado e mostraram alterações de recarga [na sessão testada](ATALHOS-CONFIRMADOS-KANTO-8-ATAQUES.json). **0 animações completas arquivadas quadro a quadro**.
+- **Atalhos de teclado descobertos e testados** contornaram os botões instáveis: `1–4` golpe, `Z/X/C` troca, `T` modo. [Guia para uso futuro](ATALHOS-TECLADO-E-METODO-LOTE.md).
+- Última equipe montada: **Malamar / Noivern / Pikachu**. A [sessão](ULTIMA-TENTATIVA-MALAMAR-NOIVERN-PIKACHU.json) ficou na fila #21 e terminou **sem golpes testados**.
+- TinyFish tem saldo baixo (**US$0,488** consultados no encerramento); interromper tentativas pagas para não gastar créditos em partidas que não começam. **Não foi criada recarga nem automatização paga.**
+- Todos os dados estão somente na branch de pesquisa. Nenhum VFX aprovado do Torre 2, jogo publicado ou save foi alterado. Nada de sprites/código proprietários foi copiado.
+
+**Decisão técnica:** é inviável declarar os 245 golpes visualmente confirmados dentro desta rodada. A catalogação estática dos 283 foi concluída; a verificação visual individual depende de novas partidas com atalhos e evidência melhor.
+
+---
+
+## Histórico: ATUALIZAÇÃO — lote de 45 golpes com uso relatado (31/10/2026)
 
 **Cobertura atual dos testes recentes:** **45/245 nomes de golpes** tiveram uso relatado dentro de partidas Practice vs Bot. Restam **200/245 sem uso relatado**. O cliente público contém **283 nomes**, sendo **38 fora do elenco público**; o número de VFX completos extraídos é **zero**.
 
