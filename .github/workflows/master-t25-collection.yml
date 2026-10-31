@@ -2,6 +2,8 @@ name: T25 — PC Shiny/KO/status and canonical Kanto Pokedex
 on:
   push:
     branches: [feat/t25-pc-pokedex-collection-20261031]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
