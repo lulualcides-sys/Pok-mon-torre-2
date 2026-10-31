@@ -4,7 +4,7 @@ export const CERULEAN_LANDMARKS=Object.freeze([
  Object.freeze({id:'mart',label:'POKÉ MART',x:103,y:257,doorY:230}),
  Object.freeze({id:'gym',label:'GINÁSIO DA MISTY',x:515,y:173,doorY:134})
 ]);
-const PLACES=[[193,164],[277,153],[280,200],[242,229],[132,278],
+const PLACES=[[193,164],[277,153],[280,200],[242,229],[218,205],
  [63,178],[435,202],[577,210],[606,251],[467,249],
  [216,109],[300,88],[449,104],[575,106],[365,137]];
 export function cityViewModel(state,trainerCount){

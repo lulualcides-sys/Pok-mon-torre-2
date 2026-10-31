@@ -481,6 +481,7 @@ create(){
    this.__torre2CityWaterTimer=null;
   }
   this.children.removeAll(true);
+  if(state.stage!==1&&this.textures.exists(CITY_ATLAS_KEY))this.textures.remove(CITY_ATLAS_KEY);
   this.__torre2CityHub=null;
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){

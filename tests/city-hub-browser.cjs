@@ -98,8 +98,13 @@ const server=http.createServer((req,res)=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
     const state=core.createPlayerCampaign('bulbasaur');
     state.trainer=core.TRAINERS_PER_GYM(0);core.saveCampaign(state);
-    scene.children.removeAll(true);
-    scene.textures.remove('torre2-city-atlas-v1');
+    scene.scene.restart();
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===0,null,{timeout:60000});
+   await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    if(scene.textures.exists('torre2-city-atlas-v1'))throw Error('Pewter retained city atlas');
+    const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
     scene.scene.restart({finished:true,won:true,marker:{stage:0,trainer:state.trainer}});
    });
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list
@@ -110,6 +115,17 @@ const server=http.createServer((req,res)=>{
     .filter(o=>o.getData?.('torre2-city-atlas-piece')==='gym').length),1,
     'first Brock victory must display the atlas without a second restart');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-first-arrival.png'});
+   // Current trainer 4 is near the Mart but must launch the native battle.
+   await page.evaluate(async()=>{
+    const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+    const core=await import(new URL('./torre2/campaign-core.js',main));
+    const state=core.readCampaign();state.trainer=4;core.saveCampaign(state);
+    window.__pt2Game.scene.getScene('campanha').renderCampaign(state);
+   });
+   await click(218,196);
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate'),null,{timeout:60000});
+   await page.waitForTimeout(1500);
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-battle-entry.png'});
    assert.deepEqual(errors,[]);
    fs.writeFileSync('test-evidence/city-layered-'+label+'.json',JSON.stringify({...report,timers,errors,fixture:true},null,2));
    console.log(label+' city WebGL + Center/PC/Mart/gym/summary/badges passed');
