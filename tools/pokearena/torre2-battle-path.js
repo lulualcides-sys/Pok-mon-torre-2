@@ -6,6 +6,7 @@ import {installCampaignAudioSettings,playOriginalMenuCue} from './audio-settings
  * Trainer numbers and stages map directly onto existing campaign save IDs.
  */
 import {routeNode} from './route-data.js';
+import {pathCheckpointAction} from './path-actions.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
@@ -217,12 +218,14 @@ export function renderBattlePath(scene,state,handlers){
  // retain their own pass/fail mark, and future ones remain visible.
  const hitZones=[];
  for(const p of spots){
-  const i=p.global,done=i<progress,active=i===progress;
-  const node=routeNode(stage,i,total),boss=node.type==='leader';
-  // Capture is an OPTIONAL encounter accessible at checkpoints 3 and 9;
-  // it never silently increments the original trainer save counter.
-  const capture=!boss&&(i%13===2||i%13===8);
-  const available=done||active;
+  const i=p.global;
+  const node=routeNode(stage,i,total);
+  const checkpoint=pathCheckpointAction(i,progress,total,
+   i<progress&&Boolean(rematchOpponent(state,i)));
+  const {done,active,boss,available}=checkpoint;
+  // Catching never substitutes for the next required trainer. The badge
+  // has its own small hit target above the trainer/rematch node.
+  const capture=checkpoint.optionalCapture;
   const g=scene.add.graphics().setDepth(18);
   const width=boss?82:60,top=p.y-23;
   if(active){
@@ -252,7 +255,7 @@ export function renderBattlePath(scene,state,handlers){
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
    if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
-  txt(scene,p.x,boss?p.y+11:p.y+8,boss?leader.toUpperCase():capture?'CAPTURA':
+  txt(scene,p.x,boss?p.y+11:p.y+8,boss?leader.toUpperCase():
    node.type==='rocket'?'EQUIPE ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
    boss?12:node.type==='rocket'?7:8,
    active?'#ffe29a':available?'#f1f8f3':'#afbdc8',23);
@@ -264,7 +267,9 @@ export function renderBattlePath(scene,state,handlers){
    g.lineStyle(1,done?0x76e0a6:0xb6ced9,.98);
    g.strokeCircle(p.x-10+d*10,p.y+23,2.1);
   }
-  if(done&&!capture&&rematchOpponent(state,i))txt(scene,p.x,p.y+22,(state.rematches?.charge||0)>=3?'REVANCHE':'VS '+(state.rematches?.charge||0)+'/3',6,'#f7d986',25);
+  if(checkpoint.primary==='rematch')txt(scene,p.x,p.y+22,
+   (state.rematches?.charge||0)>=3?'REVANCHE':'VS '+(state.rematches?.charge||0)+'/3',
+   6,'#f7d986',25);
   if(done){
    g.fillStyle(0x28c868);g.fillCircle(p.x+width/2-8,p.y-17,7);
    g.lineStyle(2,0xffffff);g.lineBetween(p.x+width/2-11,p.y-17,p.x+width/2-9,p.y-14);
@@ -274,7 +279,7 @@ export function renderBattlePath(scene,state,handlers){
   }
   const zone=scene.add.zone(p.x,p.y-1,width,63).setDepth(31)
    .setInteractive({useHandCursor:true}).setData('torre2-path-node',i)
-   .setData('torre2-path-type',capture?'capture':node.type);
+   .setData('torre2-path-type',node.type);
   if(checkpointZone(i))zone.setData('torre2-route-zone',checkpointZone(i));
   zone.on('pointerover',()=>{
    if(scene.__torre2RegionHover?.active)scene.__torre2RegionHover.destroy();
@@ -285,11 +290,22 @@ export function renderBattlePath(scene,state,handlers){
    if(scene.__torre2RegionHover?.active)scene.__torre2RegionHover.destroy();
   });
   zone.on('pointerdown',()=>{
-   if(capture&&available)return handlers.capture();
-   if(active)return boss?handlers.gym():handlers.battle();
-   if(done&&!capture&&rematchOpponent(state,i))return handlers.rematch?.(i);
-   if(!done)handlers.locked();
+   if(checkpoint.primary==='gym')return handlers.gym();
+   if(checkpoint.primary==='battle')return handlers.battle();
+   if(checkpoint.primary==='rematch')return handlers.rematch?.(i);
+   if(!done)return handlers.locked?.();
   });
+  // Separate touch zone over the existing green-grass ball pictogram.
+  // Higher depth than the trainer's large hitbox, lower than all modals.
+  if(capture){
+   const badge=scene.add.zone(p.x,p.y-26,22,18).setDepth(36)
+    .setInteractive({useHandCursor:true})
+    .setData('torre2-path-capture',i);
+   badge.on('pointerdown',(_p,_x,_y,event)=>{
+    event?.stopPropagation?.();
+    return available?handlers.capture?.():handlers.locked?.();
+   });
+  }
   hitZones.push(zone);
  }
  // NPCs flanking the leader are gym attendants; not extra opponents.

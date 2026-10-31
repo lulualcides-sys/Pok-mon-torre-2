@@ -206,6 +206,7 @@ await Promise.all([
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
+ ['tools/pokearena/torre2-path-actions.js','path-actions.js'],
  ['tools/pokearena/torre2-battle-report.js','battle-report.js'],
  ['tools/pokearena/torre2-hall-of-fame.js','hall-of-fame.js'],
  ['tools/pokearena/torre2-battle-bag.js','battle-bag.js'],
