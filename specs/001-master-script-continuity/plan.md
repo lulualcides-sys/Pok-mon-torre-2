@@ -1,5 +1,9 @@
 # Plano de implementação — 001 / fluxo do Script Mestre
 
+## Plano T08 — poder Gen III de prévia (31/10/2026)
+Escopo restrito a `tools/pokearena/torre2-kanto-intro-moves.js` e `tests/kanto-intro-moves.test.js`. RED isolado: Lv8 Ponyta tinha `poder` [150,130,130,150] com `dano` reduzido; GREEN isolado: [40,40,40,60], catálogo original intacto. O cap é aplicado apenas aos clones de `trainingMove`, sem alterar VFX, golpes nativos, saves, Arena ou progressão FRLG. Validar npm test/check/check:reuse/build, Chromium, guardião visual, revisão e Pages HTTP SHA; rollback apenas desse cap se regressão real. T19 #400 segue independente e não deve ser reiniciado.
+
+
 ## Lote T22 — validação de tickets (31/10/2026)
 Arquivos: `torre2-rematch-policy.js` e `tests/rematch-policy.test.js`. RED reproduzido sobre main `1fcc64eb`, GREEN 8/8 focado no patch. Base sincronizada com main `a043032b` para preservar documentação concorrente. Exigir npm test/check/check:reuse/build, Chromium, guardião e Pages HTTP SHA antes de publicação; rollback restrito a esses arquivos.
 
