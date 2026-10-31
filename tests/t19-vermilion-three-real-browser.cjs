@@ -95,8 +95,16 @@ const server=http.createServer(async(req,res)=>{
   let begun=false;
   for(let attempt=0;attempt<2&&!begun;attempt++){
    await tapTag('torre2-center-heal');
-   begun=await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2CenterBusy,
-    null,{timeout:4000}).then(()=>true).catch(()=>false);
+   // Center can finish a legitimate native heal before the browser samples
+   // its short-lived busy flag. The route plus full-HP persisted save is
+   // stronger completion evidence than observing the transient animation.
+   begun=await page.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const s=window.kanto.readCampaign();
+    return c.__torre2CenterBusy||
+     (c.scene.isActive()&&!!c.__torre2BattlePath&&
+      s.team.every(m=>m.hp===100)&&!c.__torre2CenterBusy);
+   },null,{timeout:4000}).then(()=>true).catch(()=>false);
    if(!begun)assert.ok(await page.evaluate(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return c.scene.isActive()&&!c.__torre2CenterBusy&&
@@ -104,7 +112,7 @@ const server=http.createServer(async(req,res)=>{
        o.getData?.('torre2-center-heal')===true);
    }),'Native Center click failed and no safe retry exists');
   }
-  assert.equal(begun,true,'Native Phaser healing must start');
+  assert.equal(begun,true,'Native Center must start or complete healing');
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&c.__torre2BattlePath&&
