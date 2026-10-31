@@ -1,0 +1,3611 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "approach": "default-first, edit-only-rare",
+  "origin": "Public PB Ranked roster move data",
+  "totalDistinctMoves": 245,
+  "defaultUnique": 191,
+  "rareUnique": 54,
+  "defaultStage": {
+    "speciesUsed": 87,
+    "matches": 29,
+    "slotReplacements": 0
+  },
+  "rareStage": {
+    "matches": 8,
+    "slotReplacements": 54
+  },
+  "totalMatches": 37,
+  "totals": {
+    "slotReplacements": 54,
+    "previousPlanMatches": 21,
+    "previousPlanSlotReplacements": 165
+  },
+  "warnings": [
+    "PLANNED, not executed",
+    "Batched team builder state may require removing/adding multiple pokemon",
+    "Theoretical minimum slot replacements does not count UI clicks",
+    "Raw battle animation not captured",
+    "The extra matches may cost more wall time/queueing even though fewer move edits"
+  ],
+  "battles": [
+    {
+      "seq": 1,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Venusaur",
+          "configuredMoves": [
+            {
+              "name": "Petal Blizzard",
+              "default": true
+            },
+            {
+              "name": "Sludge Bomb",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Outrage",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Petal Blizzard",
+            "Sludge Bomb",
+            "Earthquake",
+            "Outrage"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Charizard",
+          "configuredMoves": [
+            {
+              "name": "Flamethrower",
+              "default": true
+            },
+            {
+              "name": "Fire Blast",
+              "default": true
+            },
+            {
+              "name": "Air Slash",
+              "default": true
+            },
+            {
+              "name": "Dragon Claw",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Flamethrower",
+            "Fire Blast",
+            "Air Slash",
+            "Dragon Claw"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Blastoise",
+          "configuredMoves": [
+            {
+              "name": "Hydro Pump",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Rapid Spin",
+              "default": true
+            },
+            {
+              "name": "Skull Bash",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Hydro Pump",
+            "Ice Beam",
+            "Rapid Spin",
+            "Skull Bash"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "petalblizzard",
+        "sludgebomb",
+        "earthquake",
+        "outrage",
+        "flamethrower",
+        "fireblast",
+        "airslash",
+        "dragonclaw",
+        "hydropump",
+        "icebeam",
+        "rapidspin",
+        "skullbash"
+      ]
+    },
+    {
+      "seq": 2,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Pidgeot",
+          "configuredMoves": [
+            {
+              "name": "Hurricane",
+              "default": true
+            },
+            {
+              "name": "Aerial Ace",
+              "default": true
+            },
+            {
+              "name": "Quick Attack",
+              "default": true
+            },
+            {
+              "name": "Mirror Move",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Hurricane",
+            "Aerial Ace",
+            "Quick Attack",
+            "Mirror Move"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Sandslash (Alola)",
+          "configuredMoves": [
+            {
+              "name": "Icicle Crash",
+              "default": true
+            },
+            {
+              "name": "Iron Head",
+              "default": true
+            },
+            {
+              "name": "Drill Run",
+              "default": true
+            },
+            {
+              "name": "Swords Dance",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Icicle Crash",
+            "Iron Head",
+            "Drill Run",
+            "Swords Dance"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Ninetales (Alola)",
+          "configuredMoves": [
+            {
+              "name": "Blizzard",
+              "default": true
+            },
+            {
+              "name": "Moonblast",
+              "default": true
+            },
+            {
+              "name": "Extrasensory",
+              "default": true
+            },
+            {
+              "name": "Dark Pulse",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Blizzard",
+            "Moonblast",
+            "Extrasensory",
+            "Dark Pulse"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "hurricane",
+        "aerialace",
+        "quickattack",
+        "mirrormove",
+        "iciclecrash",
+        "ironhead",
+        "drillrun",
+        "swordsdance",
+        "blizzard",
+        "moonblast",
+        "extrasensory",
+        "darkpulse"
+      ]
+    },
+    {
+      "seq": 3,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Persian",
+          "configuredMoves": [
+            {
+              "name": "Body Slam",
+              "default": true
+            },
+            {
+              "name": "Play Rough",
+              "default": true
+            },
+            {
+              "name": "Power Gem",
+              "default": true
+            },
+            {
+              "name": "Shadow Ball",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Body Slam",
+            "Play Rough",
+            "Power Gem",
+            "Shadow Ball"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Arcanine",
+          "configuredMoves": [
+            {
+              "name": "Extreme Speed",
+              "default": true
+            },
+            {
+              "name": "Flare Blitz",
+              "default": true
+            },
+            {
+              "name": "Crunch",
+              "default": true
+            },
+            {
+              "name": "Wild Charge",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Extreme Speed",
+            "Flare Blitz",
+            "Crunch",
+            "Wild Charge"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Dodrio",
+          "configuredMoves": [
+            {
+              "name": "Tri Attack",
+              "default": true
+            },
+            {
+              "name": "Drill Peck",
+              "default": true
+            },
+            {
+              "name": "Brave Bird",
+              "default": true
+            },
+            {
+              "name": "Hyper Beam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Tri Attack",
+            "Drill Peck",
+            "Brave Bird",
+            "Hyper Beam"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "bodyslam",
+        "playrough",
+        "powergem",
+        "shadowball",
+        "extremespeed",
+        "flareblitz",
+        "crunch",
+        "wildcharge",
+        "triattack",
+        "drillpeck",
+        "bravebird",
+        "hyperbeam"
+      ]
+    },
+    {
+      "seq": 4,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Muk",
+          "configuredMoves": [
+            {
+              "name": "Gunk Shot",
+              "default": true
+            },
+            {
+              "name": "Fire Punch",
+              "default": true
+            },
+            {
+              "name": "Thunder Punch",
+              "default": true
+            },
+            {
+              "name": "Ice Punch",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Gunk Shot",
+            "Fire Punch",
+            "Thunder Punch",
+            "Ice Punch"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Exeggutor",
+          "configuredMoves": [
+            {
+              "name": "Psychic",
+              "default": true
+            },
+            {
+              "name": "Egg Bomb",
+              "default": true
+            },
+            {
+              "name": "Leaf Storm",
+              "default": true
+            },
+            {
+              "name": "Sleep Powder",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Psychic",
+            "Egg Bomb",
+            "Leaf Storm",
+            "Sleep Powder"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Heracross",
+          "configuredMoves": [
+            {
+              "name": "Megahorn",
+              "default": true
+            },
+            {
+              "name": "Close Combat",
+              "default": true
+            },
+            {
+              "name": "Stone Edge",
+              "default": true
+            },
+            {
+              "name": "Night Slash",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Megahorn",
+            "Close Combat",
+            "Stone Edge",
+            "Night Slash"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "gunkshot",
+        "firepunch",
+        "thunderpunch",
+        "icepunch",
+        "psychic",
+        "eggbomb",
+        "leafstorm",
+        "sleeppowder",
+        "megahorn",
+        "closecombat",
+        "stoneedge",
+        "nightslash"
+      ]
+    },
+    {
+      "seq": 5,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Torkoal",
+          "configuredMoves": [
+            {
+              "name": "Lava Plume",
+              "default": true
+            },
+            {
+              "name": "Overheat",
+              "default": true
+            },
+            {
+              "name": "Earth Power",
+              "default": true
+            },
+            {
+              "name": "Shell Smash",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Lava Plume",
+            "Overheat",
+            "Earth Power",
+            "Shell Smash"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Toxicroak",
+          "configuredMoves": [
+            {
+              "name": "Poison Jab",
+              "default": true
+            },
+            {
+              "name": "Sucker Punch",
+              "default": true
+            },
+            {
+              "name": "Drain Punch",
+              "default": true
+            },
+            {
+              "name": "Mud Bomb",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Poison Jab",
+            "Sucker Punch",
+            "Drain Punch",
+            "Mud Bomb"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Magnezone",
+          "configuredMoves": [
+            {
+              "name": "Thunderbolt",
+              "default": true
+            },
+            {
+              "name": "Flash Cannon",
+              "default": true
+            },
+            {
+              "name": "Discharge",
+              "default": true
+            },
+            {
+              "name": "Magnet Rise",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Thunderbolt",
+            "Flash Cannon",
+            "Discharge",
+            "Magnet Rise"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "lavaplume",
+        "overheat",
+        "earthpower",
+        "shellsmash",
+        "poisonjab",
+        "suckerpunch",
+        "drainpunch",
+        "mudbomb",
+        "thunderbolt",
+        "flashcannon",
+        "discharge",
+        "magnetrise"
+      ]
+    },
+    {
+      "seq": 6,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Rillaboom",
+          "configuredMoves": [
+            {
+              "name": "Drum Beating",
+              "default": true
+            },
+            {
+              "name": "Knock Off",
+              "default": true
+            },
+            {
+              "name": "High Horsepower",
+              "default": true
+            },
+            {
+              "name": "Wood Hammer",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Drum Beating",
+            "Knock Off",
+            "High Horsepower",
+            "Wood Hammer"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Scyther",
+          "configuredMoves": [
+            {
+              "name": "X-Scissor",
+              "default": true
+            },
+            {
+              "name": "Wing Attack",
+              "default": true
+            },
+            {
+              "name": "Quick Attack",
+              "default": true
+            },
+            {
+              "name": "Brick Break",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "X-Scissor",
+            "Wing Attack",
+            "Brick Break"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Tauros",
+          "configuredMoves": [
+            {
+              "name": "Double-Edge",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Zen Headbutt",
+              "default": true
+            },
+            {
+              "name": "Raging Bull",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Double-Edge",
+            "Zen Headbutt",
+            "Raging Bull"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "drumbeating",
+        "knockoff",
+        "highhorsepower",
+        "woodhammer",
+        "xscissor",
+        "wingattack",
+        "brickbreak",
+        "doubleedge",
+        "zenheadbutt",
+        "ragingbull"
+      ]
+    },
+    {
+      "seq": 7,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Gyarados",
+          "configuredMoves": [
+            {
+              "name": "Waterfall",
+              "default": true
+            },
+            {
+              "name": "Ice Fang",
+              "default": true
+            },
+            {
+              "name": "Dragon Dance",
+              "default": true
+            },
+            {
+              "name": "Hyper Beam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Waterfall",
+            "Ice Fang",
+            "Dragon Dance"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Kingdra",
+          "configuredMoves": [
+            {
+              "name": "Surf",
+              "default": true
+            },
+            {
+              "name": "Dragon Pulse",
+              "default": true
+            },
+            {
+              "name": "Rain Dance",
+              "default": true
+            },
+            {
+              "name": "Hydro Pump",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Surf",
+            "Dragon Pulse",
+            "Rain Dance"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Aggron",
+          "configuredMoves": [
+            {
+              "name": "Thunder",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Solar Beam",
+              "default": true
+            },
+            {
+              "name": "Heavy Slam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Thunder",
+            "Solar Beam",
+            "Heavy Slam"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "waterfall",
+        "icefang",
+        "dragondance",
+        "surf",
+        "dragonpulse",
+        "raindance",
+        "thunder",
+        "solarbeam",
+        "heavyslam"
+      ]
+    },
+    {
+      "seq": 8,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Lopunny",
+          "configuredMoves": [
+            {
+              "name": "High Jump Kick",
+              "default": true
+            },
+            {
+              "name": "Bounce",
+              "default": true
+            },
+            {
+              "name": "Ice Punch",
+              "default": true
+            },
+            {
+              "name": "Dizzy Punch",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "High Jump Kick",
+            "Bounce",
+            "Dizzy Punch"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Garchomp",
+          "configuredMoves": [
+            {
+              "name": "Dragon Rush",
+              "default": true
+            },
+            {
+              "name": "Dig",
+              "default": true
+            },
+            {
+              "name": "Outrage",
+              "default": true
+            },
+            {
+              "name": "Giga Impact",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Dragon Rush",
+            "Dig",
+            "Giga Impact"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Lucario",
+          "configuredMoves": [
+            {
+              "name": "Aura Sphere",
+              "default": true
+            },
+            {
+              "name": "Bone Rush",
+              "default": true
+            },
+            {
+              "name": "Extreme Speed",
+              "default": true
+            },
+            {
+              "name": "Meteor Mash",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Aura Sphere",
+            "Bone Rush",
+            "Meteor Mash"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "highjumpkick",
+        "bounce",
+        "dizzypunch",
+        "dragonrush",
+        "dig",
+        "gigaimpact",
+        "aurasphere",
+        "bonerush",
+        "meteormash"
+      ]
+    },
+    {
+      "seq": 9,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Togekiss",
+          "configuredMoves": [
+            {
+              "name": "Air Slash",
+              "default": true
+            },
+            {
+              "name": "Dazzling Gleam",
+              "default": true
+            },
+            {
+              "name": "Sky Attack",
+              "default": true
+            },
+            {
+              "name": "Shock Wave",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Dazzling Gleam",
+            "Sky Attack",
+            "Shock Wave"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Talonflame",
+          "configuredMoves": [
+            {
+              "name": "Steel Wing",
+              "default": true
+            },
+            {
+              "name": "Flame Charge",
+              "default": true
+            },
+            {
+              "name": "Brave Bird",
+              "default": true
+            },
+            {
+              "name": "Razor Wind",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Steel Wing",
+            "Flame Charge",
+            "Razor Wind"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Aegislash",
+          "configuredMoves": [
+            {
+              "name": "Sacred Sword",
+              "default": true
+            },
+            {
+              "name": "Shadow Sneak",
+              "default": true
+            },
+            {
+              "name": "Iron Head",
+              "default": true
+            },
+            {
+              "name": "King's Shield",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Sacred Sword",
+            "Shadow Sneak",
+            "King's Shield"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "dazzlinggleam",
+        "skyattack",
+        "shockwave",
+        "steelwing",
+        "flamecharge",
+        "razorwind",
+        "sacredsword",
+        "shadowsneak",
+        "kingsshield"
+      ]
+    },
+    {
+      "seq": 10,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Malamar",
+          "configuredMoves": [
+            {
+              "name": "Psycho Cut",
+              "default": true
+            },
+            {
+              "name": "Night Slash",
+              "default": true
+            },
+            {
+              "name": "Superpower",
+              "default": true
+            },
+            {
+              "name": "Hypnosis",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Psycho Cut",
+            "Superpower",
+            "Hypnosis"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Noivern",
+          "configuredMoves": [
+            {
+              "name": "Supersonic",
+              "default": true
+            },
+            {
+              "name": "Boomburst",
+              "default": true
+            },
+            {
+              "name": "Dragon Claw",
+              "default": true
+            },
+            {
+              "name": "Acrobatics",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Supersonic",
+            "Boomburst",
+            "Acrobatics"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Pikachu",
+          "configuredMoves": [
+            {
+              "name": "Thunderbolt",
+              "default": true
+            },
+            {
+              "name": "Quick Attack",
+              "default": true
+            },
+            {
+              "name": "Iron Tail",
+              "default": true
+            },
+            {
+              "name": "Volt Tackle",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Iron Tail",
+            "Volt Tackle"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "psychocut",
+        "superpower",
+        "hypnosis",
+        "supersonic",
+        "boomburst",
+        "acrobatics",
+        "irontail",
+        "volttackle"
+      ]
+    },
+    {
+      "seq": 11,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Nidoking",
+          "configuredMoves": [
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Poison Jab",
+              "default": true
+            },
+            {
+              "name": "Throat Chop",
+              "default": true
+            },
+            {
+              "name": "Aqua Tail",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Throat Chop",
+            "Aqua Tail"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Dugtrio",
+          "configuredMoves": [
+            {
+              "name": "Sandstorm",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Sucker Punch",
+              "default": true
+            },
+            {
+              "name": "Rock Slide",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Sandstorm",
+            "Rock Slide"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Alakazam",
+          "configuredMoves": [
+            {
+              "name": "Psychic",
+              "default": true
+            },
+            {
+              "name": "Shadow Ball",
+              "default": true
+            },
+            {
+              "name": "Focus Blast",
+              "default": true
+            },
+            {
+              "name": "Recover",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Focus Blast",
+            "Recover"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "throatchop",
+        "aquatail",
+        "sandstorm",
+        "rockslide",
+        "focusblast",
+        "recover"
+      ]
+    },
+    {
+      "seq": 12,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Tentacruel",
+          "configuredMoves": [
+            {
+              "name": "Sludge Wave",
+              "default": true
+            },
+            {
+              "name": "Hydro Pump",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Giga Drain",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Sludge Wave",
+            "Giga Drain"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Jolteon",
+          "configuredMoves": [
+            {
+              "name": "Thunderbolt",
+              "default": true
+            },
+            {
+              "name": "Pin Missile",
+              "default": true
+            },
+            {
+              "name": "Double Kick",
+              "default": true
+            },
+            {
+              "name": "Shadow Ball",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Pin Missile",
+            "Double Kick"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Typhlosion",
+          "configuredMoves": [
+            {
+              "name": "Flamethrower",
+              "default": true
+            },
+            {
+              "name": "Eruption",
+              "default": true
+            },
+            {
+              "name": "Flame Wheel",
+              "default": true
+            },
+            {
+              "name": "Thunder Punch",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Eruption",
+            "Flame Wheel"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "sludgewave",
+        "gigadrain",
+        "pinmissile",
+        "doublekick",
+        "eruption",
+        "flamewheel"
+      ]
+    },
+    {
+      "seq": 13,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Crobat",
+          "configuredMoves": [
+            {
+              "name": "Cross Poison",
+              "default": true
+            },
+            {
+              "name": "Air Slash",
+              "default": true
+            },
+            {
+              "name": "Toxic",
+              "default": true
+            },
+            {
+              "name": "Brave Bird",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Cross Poison",
+            "Toxic"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Espeon",
+          "configuredMoves": [
+            {
+              "name": "Psychic",
+              "default": true
+            },
+            {
+              "name": "Shadow Ball",
+              "default": true
+            },
+            {
+              "name": "Swift",
+              "default": true
+            },
+            {
+              "name": "Morning Sun",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Swift",
+            "Morning Sun"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Mightyena",
+          "configuredMoves": [
+            {
+              "name": "Crunch",
+              "default": true
+            },
+            {
+              "name": "Fire Fang",
+              "default": true
+            },
+            {
+              "name": "Thunder Fang",
+              "default": true
+            },
+            {
+              "name": "Ice Fang",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Fire Fang",
+            "Thunder Fang"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "crosspoison",
+        "toxic",
+        "swift",
+        "morningsun",
+        "firefang",
+        "thunderfang"
+      ]
+    },
+    {
+      "seq": 14,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Swellow",
+          "configuredMoves": [
+            {
+              "name": "Facade",
+              "default": true
+            },
+            {
+              "name": "Aerial Ace",
+              "default": true
+            },
+            {
+              "name": "Brave Bird",
+              "default": true
+            },
+            {
+              "name": "Double Team",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Facade",
+            "Double Team"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Sharpedo",
+          "configuredMoves": [
+            {
+              "name": "Night Slash",
+              "default": true
+            },
+            {
+              "name": "Liquidation",
+              "default": true
+            },
+            {
+              "name": "Ice Fang",
+              "default": true
+            },
+            {
+              "name": "Poison Fang",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Liquidation",
+            "Poison Fang"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Wailord",
+          "configuredMoves": [
+            {
+              "name": "Water Spout",
+              "default": true
+            },
+            {
+              "name": "Surf",
+              "default": true
+            },
+            {
+              "name": "Amnesia",
+              "default": true
+            },
+            {
+              "name": "Body Slam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Water Spout",
+            "Amnesia"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "facade",
+        "doubleteam",
+        "liquidation",
+        "poisonfang",
+        "waterspout",
+        "amnesia"
+      ]
+    },
+    {
+      "seq": 15,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Crawdaunt",
+          "configuredMoves": [
+            {
+              "name": "Crabhammer",
+              "default": true
+            },
+            {
+              "name": "Crunch",
+              "default": true
+            },
+            {
+              "name": "Aqua Jet",
+              "default": true
+            },
+            {
+              "name": "X-Scissor",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Crabhammer",
+            "Aqua Jet"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Claydol",
+          "configuredMoves": [
+            {
+              "name": "Ancient Power",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Hyper Beam",
+              "default": true
+            },
+            {
+              "name": "Self-Destruct",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Ancient Power",
+            "Self-Destruct"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Salamence",
+          "configuredMoves": [
+            {
+              "name": "Draco Meteor",
+              "default": true
+            },
+            {
+              "name": "Outrage",
+              "default": true
+            },
+            {
+              "name": "Roost",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Draco Meteor",
+            "Roost"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "crabhammer",
+        "aquajet",
+        "ancientpower",
+        "selfdestruct",
+        "dracometeor",
+        "roost"
+      ]
+    },
+    {
+      "seq": 16,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Empoleon",
+          "configuredMoves": [
+            {
+              "name": "Aqua Cutter",
+              "default": true
+            },
+            {
+              "name": "Drill Peck",
+              "default": true
+            },
+            {
+              "name": "Ice Spinner",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Aqua Cutter",
+            "Ice Spinner"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Roserade",
+          "configuredMoves": [
+            {
+              "name": "Leaf Storm",
+              "default": true
+            },
+            {
+              "name": "Sludge Bomb",
+              "default": true
+            },
+            {
+              "name": "Petal Dance",
+              "default": true
+            },
+            {
+              "name": "Toxic Spikes",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Petal Dance",
+            "Toxic Spikes"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Gastrodon",
+          "configuredMoves": [
+            {
+              "name": "Muddy Water",
+              "default": true
+            },
+            {
+              "name": "Body Slam",
+              "default": true
+            },
+            {
+              "name": "Water Pulse",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Muddy Water",
+            "Water Pulse"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "aquacutter",
+        "icespinner",
+        "petaldance",
+        "toxicspikes",
+        "muddywater",
+        "waterpulse"
+      ]
+    },
+    {
+      "seq": 17,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Weavile",
+          "configuredMoves": [
+            {
+              "name": "Dark Pulse",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Low Kick",
+              "default": true
+            },
+            {
+              "name": "Metal Claw",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Low Kick",
+            "Metal Claw"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Cofagrigus",
+          "configuredMoves": [
+            {
+              "name": "Shadow Ball",
+              "default": true
+            },
+            {
+              "name": "Psychic",
+              "default": true
+            },
+            {
+              "name": "Hex",
+              "default": true
+            },
+            {
+              "name": "Will-O-Wisp",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Hex",
+            "Will-O-Wisp"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Klinklang",
+          "configuredMoves": [
+            {
+              "name": "Flash Cannon",
+              "default": true
+            },
+            {
+              "name": "Thunderbolt",
+              "default": true
+            },
+            {
+              "name": "Gear Grind",
+              "default": true
+            },
+            {
+              "name": "Shift Gear",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Gear Grind",
+            "Shift Gear"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "lowkick",
+        "metalclaw",
+        "hex",
+        "willowisp",
+        "geargrind",
+        "shiftgear"
+      ]
+    },
+    {
+      "seq": 18,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Mienshao",
+          "configuredMoves": [
+            {
+              "name": "High Jump Kick",
+              "default": true
+            },
+            {
+              "name": "Close Combat",
+              "default": true
+            },
+            {
+              "name": "Blaze Kick",
+              "default": true
+            },
+            {
+              "name": "U-turn",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Blaze Kick",
+            "U-turn"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Golurk",
+          "configuredMoves": [
+            {
+              "name": "Shadow Punch",
+              "default": true
+            },
+            {
+              "name": "Dynamic Punch",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Heavy Slam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Shadow Punch",
+            "Dynamic Punch"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Sylveon",
+          "configuredMoves": [
+            {
+              "name": "Hyper Voice",
+              "default": true
+            },
+            {
+              "name": "Moonblast",
+              "default": true
+            },
+            {
+              "name": "Mystical Fire",
+              "default": true
+            },
+            {
+              "name": "Quick Attack",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Hyper Voice",
+            "Mystical Fire"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "blazekick",
+        "uturn",
+        "shadowpunch",
+        "dynamicpunch",
+        "hypervoice",
+        "mysticalfire"
+      ]
+    },
+    {
+      "seq": 19,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Gourgeist",
+          "configuredMoves": [
+            {
+              "name": "Phantom Force",
+              "default": true
+            },
+            {
+              "name": "Seed Bomb",
+              "default": true
+            },
+            {
+              "name": "Shadow Sneak",
+              "default": true
+            },
+            {
+              "name": "Flamethrower",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Phantom Force",
+            "Seed Bomb"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Kommo-o",
+          "configuredMoves": [
+            {
+              "name": "Clanging Scales",
+              "default": true
+            },
+            {
+              "name": "Flash Cannon",
+              "default": true
+            },
+            {
+              "name": "Aura Sphere",
+              "default": true
+            },
+            {
+              "name": "Clangorous Soul",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Clanging Scales",
+            "Clangorous Soul"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Inteleon",
+          "configuredMoves": [
+            {
+              "name": "Snipe Shot",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Hydro Pump",
+              "default": true
+            },
+            {
+              "name": "Focus Energy",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Snipe Shot",
+            "Focus Energy"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "phantomforce",
+        "seedbomb",
+        "clangingscales",
+        "clangoroussoul",
+        "snipeshot",
+        "focusenergy"
+      ]
+    },
+    {
+      "seq": 20,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Slither Wing",
+          "configuredMoves": [
+            {
+              "name": "First Impression",
+              "default": true
+            },
+            {
+              "name": "Close Combat",
+              "default": true
+            },
+            {
+              "name": "Flare Blitz",
+              "default": true
+            },
+            {
+              "name": "Dual Wingbeat",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "First Impression",
+            "Dual Wingbeat"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Iron Bundle",
+          "configuredMoves": [
+            {
+              "name": "Freeze-Dry",
+              "default": true
+            },
+            {
+              "name": "Hydro Pump",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Icy Wind",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Freeze-Dry",
+            "Icy Wind"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Lapras",
+          "configuredMoves": [
+            {
+              "name": "Surf",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Sing",
+              "default": true
+            },
+            {
+              "name": "Body Slam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Sing"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "firstimpression",
+        "dualwingbeat",
+        "freezedry",
+        "icywind",
+        "sing"
+      ]
+    },
+    {
+      "seq": 21,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Snorlax",
+          "configuredMoves": [
+            {
+              "name": "Body Slam",
+              "default": true
+            },
+            {
+              "name": "Hyper Beam",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Rest",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Rest"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Ampharos",
+          "configuredMoves": [
+            {
+              "name": "Thunderbolt",
+              "default": true
+            },
+            {
+              "name": "Thunder Wave",
+              "default": true
+            },
+            {
+              "name": "Power Gem",
+              "default": true
+            },
+            {
+              "name": "Dragon Pulse",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Thunder Wave"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Umbreon",
+          "configuredMoves": [
+            {
+              "name": "Dark Pulse",
+              "default": true
+            },
+            {
+              "name": "Iron Tail",
+              "default": true
+            },
+            {
+              "name": "Moonlight",
+              "default": true
+            },
+            {
+              "name": "Shadow Ball",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Moonlight"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "rest",
+        "thunderwave",
+        "moonlight"
+      ]
+    },
+    {
+      "seq": 22,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Sceptile",
+          "configuredMoves": [
+            {
+              "name": "Leaf Blade",
+              "default": true
+            },
+            {
+              "name": "Leaf Storm",
+              "default": true
+            },
+            {
+              "name": "Dragon Claw",
+              "default": true
+            },
+            {
+              "name": "Quick Attack",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Leaf Blade"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Gardevoir",
+          "configuredMoves": [
+            {
+              "name": "Psychic",
+              "default": true
+            },
+            {
+              "name": "Moonblast",
+              "default": true
+            },
+            {
+              "name": "Future Sight",
+              "default": true
+            },
+            {
+              "name": "Hypnosis",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Future Sight"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Manectric",
+          "configuredMoves": [
+            {
+              "name": "Thunder",
+              "default": true
+            },
+            {
+              "name": "Volt Tackle",
+              "default": true
+            },
+            {
+              "name": "Substitute",
+              "default": true
+            },
+            {
+              "name": "Flamethrower",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Substitute"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "leafblade",
+        "futuresight",
+        "substitute"
+      ]
+    },
+    {
+      "seq": 23,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Altaria",
+          "configuredMoves": [
+            {
+              "name": "Double Team",
+              "default": true
+            },
+            {
+              "name": "Dragon Breath",
+              "default": true
+            },
+            {
+              "name": "Moonblast",
+              "default": true
+            },
+            {
+              "name": "Hyper Beam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Dragon Breath"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Cradily",
+          "configuredMoves": [
+            {
+              "name": "Stone Edge",
+              "default": true
+            },
+            {
+              "name": "Energy Ball",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Sludge Bomb",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Energy Ball"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Milotic",
+          "configuredMoves": [
+            {
+              "name": "Surf",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Aqua Tail",
+              "default": true
+            },
+            {
+              "name": "Mirror Coat",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Mirror Coat"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "dragonbreath",
+        "energyball",
+        "mirrorcoat"
+      ]
+    },
+    {
+      "seq": 24,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Infernape",
+          "configuredMoves": [
+            {
+              "name": "Flare Blitz",
+              "default": true
+            },
+            {
+              "name": "Close Combat",
+              "default": true
+            },
+            {
+              "name": "Mach Punch",
+              "default": true
+            },
+            {
+              "name": "Thunder Punch",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Mach Punch"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Luxray",
+          "configuredMoves": [
+            {
+              "name": "Wild Charge",
+              "default": true
+            },
+            {
+              "name": "Crunch",
+              "default": true
+            },
+            {
+              "name": "Psychic Fangs",
+              "default": true
+            },
+            {
+              "name": "Play Rough",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Psychic Fangs"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Spiritomb",
+          "configuredMoves": [
+            {
+              "name": "Shadow Sneak",
+              "default": true
+            },
+            {
+              "name": "Dark Pulse",
+              "default": true
+            },
+            {
+              "name": "Shadow Ball",
+              "default": true
+            },
+            {
+              "name": "Silver Wind",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Silver Wind"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "machpunch",
+        "psychicfangs",
+        "silverwind"
+      ]
+    },
+    {
+      "seq": 25,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Rhyperior",
+          "configuredMoves": [
+            {
+              "name": "Megahorn",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Rock Wrecker",
+              "default": true
+            },
+            {
+              "name": "Thunder Punch",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Rock Wrecker"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Electivire",
+          "configuredMoves": [
+            {
+              "name": "Thunder",
+              "default": true
+            },
+            {
+              "name": "Brick Break",
+              "default": true
+            },
+            {
+              "name": "Thunder Punch",
+              "default": true
+            },
+            {
+              "name": "Protect",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Protect"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Mamoswine",
+          "configuredMoves": [
+            {
+              "name": "Ice Fang",
+              "default": true
+            },
+            {
+              "name": "Avalanche",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Ancient Power",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Avalanche"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "rockwrecker",
+        "protect",
+        "avalanche"
+      ]
+    },
+    {
+      "seq": 26,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Froslass",
+          "configuredMoves": [
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Shadow Ball",
+              "default": true
+            },
+            {
+              "name": "Draining Kiss",
+              "default": true
+            },
+            {
+              "name": "Thunder",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Draining Kiss"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Darmanitan",
+          "configuredMoves": [
+            {
+              "name": "Flare Blitz",
+              "default": true
+            },
+            {
+              "name": "Hammer Arm",
+              "default": true
+            },
+            {
+              "name": "Rock Slide",
+              "default": true
+            },
+            {
+              "name": "Psychic",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Hammer Arm"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Zoroark",
+          "configuredMoves": [
+            {
+              "name": "Night Slash",
+              "default": true
+            },
+            {
+              "name": "Flamethrower",
+              "default": true
+            },
+            {
+              "name": "Focus Blast",
+              "default": true
+            },
+            {
+              "name": "Retaliate",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Retaliate"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "drainingkiss",
+        "hammerarm",
+        "retaliate"
+      ]
+    },
+    {
+      "seq": 27,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Bisharp",
+          "configuredMoves": [
+            {
+              "name": "Night Slash",
+              "default": true
+            },
+            {
+              "name": "X-Scissor",
+              "default": true
+            },
+            {
+              "name": "Stone Edge",
+              "default": true
+            },
+            {
+              "name": "Metal Burst",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Metal Burst"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Greninja",
+          "configuredMoves": [
+            {
+              "name": "Water Shuriken",
+              "default": true
+            },
+            {
+              "name": "Night Slash",
+              "default": true
+            },
+            {
+              "name": "Blizzard",
+              "default": true
+            },
+            {
+              "name": "Extrasensory",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Water Shuriken"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Tyrantrum",
+          "configuredMoves": [
+            {
+              "name": "Head Smash",
+              "default": true
+            },
+            {
+              "name": "Dragon Claw",
+              "default": true
+            },
+            {
+              "name": "Hyper Beam",
+              "default": true
+            },
+            {
+              "name": "Crunch",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Head Smash"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "metalburst",
+        "watershuriken",
+        "headsmash"
+      ]
+    },
+    {
+      "seq": 28,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Hawlucha",
+          "configuredMoves": [
+            {
+              "name": "Flying Press",
+              "default": true
+            },
+            {
+              "name": "High Jump Kick",
+              "default": true
+            },
+            {
+              "name": "X-Scissor",
+              "default": true
+            },
+            {
+              "name": "Poison Jab",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Flying Press"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Ribombee",
+          "configuredMoves": [
+            {
+              "name": "Pollen Puff",
+              "default": true
+            },
+            {
+              "name": "Dazzling Gleam",
+              "default": true
+            },
+            {
+              "name": "Solar Beam",
+              "default": true
+            },
+            {
+              "name": "Psychic",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Pollen Puff"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Corviknight",
+          "configuredMoves": [
+            {
+              "name": "Iron Head",
+              "default": true
+            },
+            {
+              "name": "Brave Bird",
+              "default": true
+            },
+            {
+              "name": "Drill Peck",
+              "default": true
+            },
+            {
+              "name": "Body Press",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Body Press"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "flyingpress",
+        "pollenpuff",
+        "bodypress"
+      ]
+    },
+    {
+      "seq": 29,
+      "phase": "defaults",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Dragapult",
+          "configuredMoves": [
+            {
+              "name": "Shadow Ball",
+              "default": true
+            },
+            {
+              "name": "Flamethrower",
+              "default": true
+            },
+            {
+              "name": "Thunderbolt",
+              "default": true
+            },
+            {
+              "name": "Dragon Darts",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Dragon Darts"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Iron Moth",
+          "configuredMoves": [
+            {
+              "name": "Fiery Dance",
+              "default": true
+            },
+            {
+              "name": "Sludge Wave",
+              "default": true
+            },
+            {
+              "name": "Overheat",
+              "default": true
+            },
+            {
+              "name": "Discharge",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Fiery Dance"
+          ],
+          "changesRequired": 0
+        },
+        {
+          "pokemon": "Iron Valiant",
+          "configuredMoves": [
+            {
+              "name": "Spirit Break",
+              "default": true
+            },
+            {
+              "name": "Close Combat",
+              "default": true
+            },
+            {
+              "name": "Moonblast",
+              "default": true
+            },
+            {
+              "name": "Psycho Cut",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Spirit Break"
+          ],
+          "changesRequired": 0
+        }
+      ],
+      "coverageNew": [
+        "dragondarts",
+        "fierydance",
+        "spiritbreak"
+      ]
+    },
+    {
+      "seq": 30,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Greninja",
+          "configuredMoves": [
+            {
+              "name": "Cut",
+              "id": "greninja:Cut",
+              "default": false
+            },
+            {
+              "name": "Lick",
+              "id": "gengar:Lick",
+              "default": false
+            },
+            {
+              "name": "Spikes",
+              "id": "skarmory:Spikes",
+              "default": false
+            },
+            {
+              "name": "Water Gun",
+              "id": "buizelAP:Water Gun",
+              "default": false
+            }
+          ],
+          "newNames": [
+            "Cut",
+            "Lick",
+            "Spikes",
+            "Water Gun"
+          ],
+          "changesRequired": 4
+        },
+        {
+          "pokemon": "Lycanroc",
+          "configuredMoves": [
+            {
+              "name": "Accelerock",
+              "id": "lycanrocD:Accelerock",
+              "default": false
+            },
+            {
+              "name": "Bite",
+              "id": "persian:Bite",
+              "default": false
+            },
+            {
+              "name": "Counter",
+              "id": "lycanrocM:Counter",
+              "default": false
+            },
+            {
+              "name": "Rock Climb",
+              "id": "grotleAP:Rock Climb",
+              "default": false
+            }
+          ],
+          "newNames": [
+            "Accelerock",
+            "Bite",
+            "Counter",
+            "Rock Climb"
+          ],
+          "changesRequired": 4
+        },
+        {
+          "pokemon": "Gourgeist",
+          "configuredMoves": [
+            {
+              "name": "Confuse Ray",
+              "id": "cradily:Confuse Ray",
+              "default": false
+            },
+            {
+              "name": "Leech Seed",
+              "id": "gourgeistM8:Leech Seed",
+              "default": false
+            },
+            {
+              "name": "Pain Split",
+              "id": "spiritombM8:Pain Split",
+              "default": false
+            },
+            {
+              "name": "Poltergeist",
+              "id": "gourgeistM8:Poltergeist",
+              "default": false
+            }
+          ],
+          "newNames": [
+            "Confuse Ray",
+            "Leech Seed",
+            "Pain Split",
+            "Poltergeist"
+          ],
+          "changesRequired": 4
+        }
+      ],
+      "coverageNew": [
+        "cut",
+        "lick",
+        "spikes",
+        "watergun",
+        "accelerock",
+        "bite",
+        "counter",
+        "rockclimb",
+        "confuseray",
+        "leechseed",
+        "painsplit",
+        "poltergeist"
+      ]
+    },
+    {
+      "seq": 31,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Zoroark",
+          "configuredMoves": [
+            {
+              "name": "Agility",
+              "id": "metagrossA:Agility",
+              "default": false
+            },
+            {
+              "name": "Foul Play",
+              "id": "umbreonD:Foul Play",
+              "default": false
+            },
+            {
+              "name": "Nasty Plot",
+              "id": "hydreigonM8:Nasty Plot",
+              "default": false
+            },
+            {
+              "name": "Night Daze",
+              "id": "zoroarkG:Night Daze",
+              "default": false
+            }
+          ],
+          "newNames": [
+            "Agility",
+            "Foul Play",
+            "Nasty Plot",
+            "Night Daze"
+          ],
+          "changesRequired": 4
+        },
+        {
+          "pokemon": "Weavile",
+          "configuredMoves": [
+            {
+              "name": "Ice Shard",
+              "id": "froslassAP:Ice Shard",
+              "default": false
+            },
+            {
+              "name": "Pursuit",
+              "id": "weavileM8:Pursuit",
+              "default": false
+            },
+            {
+              "name": "Slash",
+              "id": "persian:Slash",
+              "default": false
+            },
+            {
+              "name": "Triple Axel",
+              "id": "weavileM8:Triple Axel",
+              "default": false
+            }
+          ],
+          "newNames": [
+            "Ice Shard",
+            "Pursuit",
+            "Slash",
+            "Triple Axel"
+          ],
+          "changesRequired": 4
+        },
+        {
+          "pokemon": "Lucario",
+          "configuredMoves": [
+            {
+              "name": "Bullet Punch",
+              "id": "lucarioM8:Bullet Punch",
+              "default": false
+            },
+            {
+              "name": "Calm Mind",
+              "id": "alakazamD:Calm Mind",
+              "default": false
+            },
+            {
+              "name": "Feint",
+              "id": "persian:Feint",
+              "default": false
+            },
+            {
+              "name": "Metal Sound",
+              "id": "aggronAP:Metal Sound",
+              "default": false
+            }
+          ],
+          "newNames": [
+            "Bullet Punch",
+            "Calm Mind",
+            "Feint",
+            "Metal Sound"
+          ],
+          "changesRequired": 4
+        }
+      ],
+      "coverageNew": [
+        "agility",
+        "foulplay",
+        "nastyplot",
+        "nightdaze",
+        "iceshard",
+        "pursuit",
+        "slash",
+        "tripleaxel",
+        "bulletpunch",
+        "calmmind",
+        "feint",
+        "metalsound"
+      ]
+    },
+    {
+      "seq": 32,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Exeggutor",
+          "configuredMoves": [
+            {
+              "name": "Psyshock",
+              "id": "gardevoirM8:Psyshock",
+              "default": false
+            },
+            {
+              "name": "Reflect",
+              "id": "ribombee:Reflect",
+              "default": false
+            },
+            {
+              "name": "Sunny Day",
+              "id": "exeggutorD:Sunny Day",
+              "default": false
+            },
+            {
+              "name": "Synthesis",
+              "id": "gourgeistM8:Synthesis",
+              "default": false
+            }
+          ],
+          "newNames": [
+            "Psyshock",
+            "Reflect",
+            "Sunny Day",
+            "Synthesis"
+          ],
+          "changesRequired": 4
+        },
+        {
+          "pokemon": "Clefable",
+          "configuredMoves": [
+            {
+              "name": "Cosmic Power",
+              "id": "clefable:Cosmic Power",
+              "default": false
+            },
+            {
+              "name": "Follow Me",
+              "id": "togekissD:Follow Me",
+              "default": false
+            },
+            {
+              "name": "Metronome",
+              "id": "clefable:Metronome",
+              "default": false
+            },
+            {
+              "name": "Moonblast",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Cosmic Power",
+            "Follow Me",
+            "Metronome"
+          ],
+          "changesRequired": 3
+        },
+        {
+          "pokemon": "Iron Bundle",
+          "configuredMoves": [
+            {
+              "name": "Aurora Veil",
+              "id": "aurorusM8:Aurora Veil",
+              "default": false
+            },
+            {
+              "name": "Flip Turn",
+              "id": "miloticM8:Flip Turn",
+              "default": false
+            },
+            {
+              "name": "Whirlpool",
+              "id": "laprasM8:Whirlpool",
+              "default": false
+            },
+            {
+              "name": "Freeze-Dry",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Aurora Veil",
+            "Flip Turn",
+            "Whirlpool"
+          ],
+          "changesRequired": 3
+        }
+      ],
+      "coverageNew": [
+        "psyshock",
+        "reflect",
+        "sunnyday",
+        "synthesis",
+        "cosmicpower",
+        "followme",
+        "metronome",
+        "auroraveil",
+        "flipturn",
+        "whirlpool"
+      ]
+    },
+    {
+      "seq": 33,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Torkoal",
+          "configuredMoves": [
+            {
+              "name": "Curse",
+              "id": "snorlaxM8:Curse",
+              "default": false
+            },
+            {
+              "name": "Heat Wave",
+              "id": "crobatG:Heat Wave",
+              "default": false
+            },
+            {
+              "name": "Iron Defense",
+              "id": "aggronM8:Iron Defense",
+              "default": false
+            },
+            {
+              "name": "Lava Plume",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Curse",
+            "Heat Wave",
+            "Iron Defense"
+          ],
+          "changesRequired": 3
+        },
+        {
+          "pokemon": "Magnezone",
+          "configuredMoves": [
+            {
+              "name": "Electro Ball",
+              "id": "pikachuA:Electro Ball",
+              "default": false
+            },
+            {
+              "name": "Sonic Boom",
+              "id": "buizelAP:Sonic Boom",
+              "default": false
+            },
+            {
+              "name": "Thunderbolt",
+              "default": true
+            },
+            {
+              "name": "Flash Cannon",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Electro Ball",
+            "Sonic Boom"
+          ],
+          "changesRequired": 2
+        },
+        {
+          "pokemon": "Venusaur",
+          "configuredMoves": [
+            {
+              "name": "Frenzy Plant",
+              "id": "venusaurO:Frenzy Plant",
+              "default": false
+            },
+            {
+              "name": "Razor Leaf",
+              "id": "venusaur:Razor Leaf",
+              "default": false
+            },
+            {
+              "name": "Petal Blizzard",
+              "default": true
+            },
+            {
+              "name": "Sludge Bomb",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Frenzy Plant",
+            "Razor Leaf"
+          ],
+          "changesRequired": 2
+        }
+      ],
+      "coverageNew": [
+        "curse",
+        "heatwave",
+        "irondefense",
+        "electroball",
+        "sonicboom",
+        "frenzyplant",
+        "razorleaf"
+      ]
+    },
+    {
+      "seq": 34,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Armaldo",
+          "configuredMoves": [
+            {
+              "name": "Crush Claw",
+              "id": "silvally:Crush Claw",
+              "default": false
+            },
+            {
+              "name": "Fury Cutter",
+              "id": "ninjaskAP:Fury Cutter",
+              "default": false
+            },
+            {
+              "name": "Water Pulse",
+              "default": true
+            },
+            {
+              "name": "Ancient Power",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Crush Claw",
+            "Fury Cutter"
+          ],
+          "changesRequired": 2
+        },
+        {
+          "pokemon": "Talonflame",
+          "configuredMoves": [
+            {
+              "name": "Fly",
+              "id": "salamenceM8:Fly",
+              "default": false
+            },
+            {
+              "name": "Tailwind",
+              "id": "crobatD:Tailwind",
+              "default": false
+            },
+            {
+              "name": "Steel Wing",
+              "default": true
+            },
+            {
+              "name": "Flame Charge",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Fly",
+            "Tailwind"
+          ],
+          "changesRequired": 2
+        },
+        {
+          "pokemon": "Persian",
+          "configuredMoves": [
+            {
+              "name": "Pay Day",
+              "id": "persian:Pay Day",
+              "default": false
+            },
+            {
+              "name": "Body Slam",
+              "default": true
+            },
+            {
+              "name": "Play Rough",
+              "default": true
+            },
+            {
+              "name": "Power Gem",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Pay Day"
+          ],
+          "changesRequired": 1
+        }
+      ],
+      "coverageNew": [
+        "crushclaw",
+        "furycutter",
+        "fly",
+        "tailwind",
+        "payday"
+      ]
+    },
+    {
+      "seq": 35,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Milotic",
+          "configuredMoves": [
+            {
+              "name": "Scald",
+              "id": "miloticM8:Scald",
+              "default": false
+            },
+            {
+              "name": "Surf",
+              "default": true
+            },
+            {
+              "name": "Ice Beam",
+              "default": true
+            },
+            {
+              "name": "Aqua Tail",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Scald"
+          ],
+          "changesRequired": 1
+        },
+        {
+          "pokemon": "Rhyperior",
+          "configuredMoves": [
+            {
+              "name": "Heat Crash",
+              "id": "rhyperiorL:Heat Crash",
+              "default": false
+            },
+            {
+              "name": "Megahorn",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Rock Wrecker",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Heat Crash"
+          ],
+          "changesRequired": 1
+        },
+        {
+          "pokemon": "Hawlucha",
+          "configuredMoves": [
+            {
+              "name": "Karate Chop",
+              "id": "hawluchaA:Karate Chop",
+              "default": false
+            },
+            {
+              "name": "Flying Press",
+              "default": true
+            },
+            {
+              "name": "High Jump Kick",
+              "default": true
+            },
+            {
+              "name": "X-Scissor",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Karate Chop"
+          ],
+          "changesRequired": 1
+        }
+      ],
+      "coverageNew": [
+        "scald",
+        "heatcrash",
+        "karatechop"
+      ]
+    },
+    {
+      "seq": 36,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Ribombee",
+          "configuredMoves": [
+            {
+              "name": "Quiver Dance",
+              "id": "ribombee:Quiver Dance",
+              "default": false
+            },
+            {
+              "name": "Pollen Puff",
+              "default": true
+            },
+            {
+              "name": "Dazzling Gleam",
+              "default": true
+            },
+            {
+              "name": "Solar Beam",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Quiver Dance"
+          ],
+          "changesRequired": 1
+        },
+        {
+          "pokemon": "Comfey",
+          "configuredMoves": [
+            {
+              "name": "Floral Healing",
+              "id": "comfey:Floral Healing",
+              "default": false
+            },
+            {
+              "name": "Play Rough",
+              "default": true
+            },
+            {
+              "name": "Solar Beam",
+              "default": true
+            },
+            {
+              "name": "Acrobatics",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Floral Healing"
+          ],
+          "changesRequired": 1
+        },
+        {
+          "pokemon": "Cradily",
+          "configuredMoves": [
+            {
+              "name": "Ingrain",
+              "id": "cradily:Ingrain",
+              "default": false
+            },
+            {
+              "name": "Stone Edge",
+              "default": true
+            },
+            {
+              "name": "Energy Ball",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Ingrain"
+          ],
+          "changesRequired": 1
+        }
+      ],
+      "coverageNew": [
+        "quiverdance",
+        "floralhealing",
+        "ingrain"
+      ]
+    },
+    {
+      "seq": 37,
+      "phase": "rare_pool_edits",
+      "battleMode": "Practice vs Bot EASY 3v3",
+      "status": "PLANNED_NOT_PLAYED",
+      "team": [
+        {
+          "pokemon": "Sandslash (Alola)",
+          "configuredMoves": [
+            {
+              "name": "Hail",
+              "id": "vanilluxe:Hail",
+              "default": false
+            },
+            {
+              "name": "Icicle Crash",
+              "default": true
+            },
+            {
+              "name": "Iron Head",
+              "default": true
+            },
+            {
+              "name": "Drill Run",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Hail"
+          ],
+          "changesRequired": 1
+        },
+        {
+          "pokemon": "Steelix",
+          "configuredMoves": [
+            {
+              "name": "Autotomize",
+              "id": "aggronI:Autotomize",
+              "default": false
+            },
+            {
+              "name": "Iron Tail",
+              "default": true
+            },
+            {
+              "name": "Heavy Slam",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            }
+          ],
+          "newNames": [
+            "Autotomize"
+          ],
+          "changesRequired": 1
+        },
+        {
+          "pokemon": "Venusaur",
+          "configuredMoves": [
+            {
+              "name": "Petal Blizzard",
+              "default": true
+            },
+            {
+              "name": "Sludge Bomb",
+              "default": true
+            },
+            {
+              "name": "Earthquake",
+              "default": true
+            },
+            {
+              "name": "Outrage",
+              "default": true
+            }
+          ],
+          "newNames": [],
+          "changesRequired": 0,
+          "filler": true
+        }
+      ],
+      "coverageNew": [
+        "hail",
+        "autotomize"
+      ]
+    }
+  ]
+}
