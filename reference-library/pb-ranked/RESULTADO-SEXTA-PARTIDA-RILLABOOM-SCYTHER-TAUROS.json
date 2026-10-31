@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "date": "2026-10-31",
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "runUrl": "https://agent.tinyfish.ai/runs/9bf60a68-5d7d-421e-a13a-db70be3fd5ae",
+  "mode": "Practice vs Bot EASY 3V3",
+  "team": [
+    "Rillaboom",
+    "Scyther",
+    "Tauros"
+  ],
+  "arena": "not independently identified",
+  "outcome": "unknown; combat was still in progress",
+  "usedMoves": [
+    {
+      "pokemon": "Rillaboom",
+      "name": "Drum Beating",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    },
+    {
+      "pokemon": "Rillaboom",
+      "name": "Knock Off",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    },
+    {
+      "pokemon": "Rillaboom",
+      "name": "High Horsepower",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    },
+    {
+      "pokemon": "Rillaboom",
+      "name": "Wood Hammer",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    },
+    {
+      "pokemon": "Scyther",
+      "name": "X-Scissor",
+      "inputReported": "auto",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "AUTO cast claimed in agent summary, no discrete cast snapshot or damage log for this particular move"
+    },
+    {
+      "pokemon": "Scyther",
+      "name": "Wing Attack",
+      "inputReported": "auto",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "AUTO cast claimed in agent summary, no discrete cast snapshot or damage log for this particular move"
+    },
+    {
+      "pokemon": "Scyther",
+      "name": "Quick Attack",
+      "inputReported": "auto",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "AUTO cast claimed in agent summary, no discrete cast snapshot or damage log for this particular move"
+    },
+    {
+      "pokemon": "Scyther",
+      "name": "Brick Break",
+      "inputReported": "auto",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "AUTO cast claimed in agent summary, no discrete cast snapshot or damage log for this particular move"
+    },
+    {
+      "pokemon": "Tauros",
+      "name": "Double-Edge",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    },
+    {
+      "pokemon": "Tauros",
+      "name": "Earthquake",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    },
+    {
+      "pokemon": "Tauros",
+      "name": "Zen Headbutt",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    },
+    {
+      "pokemon": "Tauros",
+      "name": "Raging Bull",
+      "inputReported": "manual",
+      "castReportedByAgent": true,
+      "individualHitFeedback": null,
+      "animationMorphology": "not documented reliably",
+      "attackVfxFramesArchived": false,
+      "confidence": "manual click plus cast reported by TinyFish; no isolated frame verification"
+    }
+  ],
+  "usedCount": 12,
+  "manualReported": 8,
+  "autoReported": 4,
+  "alreadyReportedInEarlierBatch": [
+    "Quick Attack"
+  ],
+  "newDistinctVersusPrevious": 11,
+  "fullyCapturedOriginalVfx": 0,
+  "limits": [
+    "Metadata such as type/power from HUD is not an animation description",
+    "The agent says all 12 moves were cast but does not provide isolated VFX/damage evidence per move",
+    "AUTO casts were reported without step-specific validation; treat as lower-confidence observations",
+    "No replay/sprite asset captured, source or user credentials copied",
+    "The game version and external sources may change; data is observation as of this date"
+  ]
+}
