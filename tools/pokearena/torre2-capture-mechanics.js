@@ -9,9 +9,14 @@ export function catchRate(species){
  return CATCH_RATES[id]??0;
 }
 export function normalizedCaptureStatus(status){
- const s=String(status||'').toLowerCase();
+ // Saved Gen III statuses are objects ({kind:'dormido'|'veneno'|...});
+ // native combat usually supplies a text label. Both must yield exactly
+ // the same FireRed catch bonus, without treating arbitrary objects as one.
+ const raw=status&&typeof status==='object'?
+  status.kind??status.nombre??status.name??status.status??status.estado:status;
+ const s=typeof raw==='string'?raw.toLowerCase():'';
  if(/sleep|asleep|dorm|sono|freeze|frozen|congel|slp|frz/.test(s))return 'sleep';
- if(/para|poison|venen|burn|queima|toxic|psn|brn/.test(s))return 'paralyzed';
+ if(/para|poison|venen|burn|queima|quemad|toxic|psn|brn/.test(s))return 'paralyzed';
  return 'none';
 }
 export function captureThreshold(candidate,ball='pokeball'){
