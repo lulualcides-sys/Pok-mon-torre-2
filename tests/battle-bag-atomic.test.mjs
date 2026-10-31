@@ -1,7 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {applyBattleBagItem,commitBattleBagItem} from
- '../tools/pokearena/torre2-battle-bag.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
+const version=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
+const {applyBattleBagItem,commitBattleBagItem}=await import(pathToFileURL(
+ path.join(root,version,'torre2/battle-bag.js')).href);
 const make=()=>{
  const starter={id:'squirtle',uid:'safe-1',hp:90,status:null};
  const state={team:[{...starter}],inventory:{

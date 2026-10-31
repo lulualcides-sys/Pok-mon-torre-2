@@ -18,7 +18,6 @@ jobs:
           set -euo pipefail
           npm install --no-audit --no-fund
           node --check tools/pokearena/torre2-battle-bag.js
-          node --test tests/battle-bag-atomic.test.js
           npm test
           npm run check
           npm run check:reuse
@@ -33,7 +32,7 @@ jobs:
       - name: Real compiled dual-key save and item validation
         run: |
           set -euo pipefail
-          node --test tests/battle-bag-atomic-built.test.mjs tests/battle-bag-built.test.mjs
+          node --test tests/battle-bag-atomic.test.mjs tests/battle-bag-atomic-built.test.mjs tests/battle-bag-built.test.mjs
           node --test tests/t05-bag-use-atomic-built.test.mjs
       - name: Mobile Chromium Bag save denial and real native battles
         run: |
