@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-31",
+  "game": "Pokémon Battlegrounds Ranked",
+  "runUrl": "https://agent.tinyfish.ai/runs/cbd2f33f-cd1f-4e35-9e15-a4f97ccf35b2",
+  "mode": "Practice vs Bot 1 EASY 3v3",
+  "team": [
+    "Venusaur",
+    "Charizard",
+    "Blastoise"
+  ],
+  "individualValidation": [
+    {
+      "name": "Flamethrower",
+      "pokemon": "Charizard",
+      "status": "CLICK_ACCEPTED_BUT_CAST_NOT_INDEPENDENTLY_VERIFIED",
+      "evidence": "button marked READY then disappeared/ID stale immediately after click",
+      "effect": "UNVERIFIED",
+      "countAsConfirmedCast": false
+    },
+    {
+      "name": "Fire Blast",
+      "pokemon": "Charizard",
+      "status": "CLICK_FAILED_STALE_ELEMENT",
+      "evidence": "button ID stale before invocation",
+      "effect": "UNVERIFIED",
+      "countAsConfirmedCast": false
+    },
+    {
+      "name": "Air Slash",
+      "pokemon": "Charizard",
+      "status": "NO_CLICK",
+      "evidence": "element references changed before interaction",
+      "effect": "UNVERIFIED",
+      "countAsConfirmedCast": false
+    },
+    {
+      "name": "Dragon Claw",
+      "pokemon": "Charizard",
+      "status": "NO_CLICK",
+      "evidence": "element references changed before interaction",
+      "effect": "UNVERIFIED",
+      "countAsConfirmedCast": false
+    }
+  ],
+  "outcome": "Game returned Play Again Same Team screen, win/loss unknown",
+  "steps": 45,
+  "discrepancy": {
+    "earlierRun": "https://agent.tinyfish.ai/runs/ba062e04-aa02-447b-82f4-afb327458833",
+    "previousReport": "Eight Kanto move buttons reportedly clicked by agent in just 17 total browser steps including team preparation and queue.",
+    "currentValidation": "One click responded but effect unverified; 3 other tested attacks not successfully clicked; therefore previous 8 should not be promoted as individually observed attacks.",
+    "countFromEarlierRun": 0
+  },
+  "recommendation": "Do not launch more metered TinyFish sessions for frame-level move testing until browser can target stable move labels and capture screenshot-before/click/screenshot-after at individual step granularity.",
+  "researchStatus": "NOT implemented in Pokémon Torre 2. No source graphic or code copying."
+}
