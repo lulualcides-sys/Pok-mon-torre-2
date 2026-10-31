@@ -5,9 +5,13 @@ import {readFileSync} from 'node:fs';
 // not exist until build-preview. Extract ONLY its immutable 151-name literal
 // instead of executing the runtime import graph during plain Node npm test.
 const coreSource=readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
-const dexMatch=coreSource.match(/export const KANTO_DEX=Object\\.freeze\\('([^']+)'\\.split\\(','\\)\\)/);
-assert.ok(dexMatch,'Official 151-name Kanto Dex declaration must be present');
-const KANTO_DEX=dexMatch[1].split(',');
+const dexMarker="export const KANTO_DEX=Object.freeze('";
+const dexStart=coreSource.indexOf(dexMarker);
+assert.ok(dexStart>=0,'Official 151-name Kanto Dex declaration must be present');
+const dexTail=coreSource.slice(dexStart+dexMarker.length);
+const dexEnd=dexTail.indexOf("'.split(',')");
+assert.ok(dexEnd>0,'Kanto Dex source must retain its 151-name literal');
+const KANTO_DEX=dexTail.slice(0,dexEnd).split(',');
 import {kantoDexSpeciesId,kantoDexPageModel,pcCondition,
  pcMemberLabel,pcPageModel,PC_FILTERS} from '../tools/pokearena/torre2-collection-ui.js';
 
