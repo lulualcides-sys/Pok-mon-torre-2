@@ -56,6 +56,7 @@ fs.mkdirSync(screenshot,{recursive:true});
      const main=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
      const core=await import(new URL('./torre2/campaign-core.js',main));
      const s=core.createCampaign('bulbasaur');
+     core.storePokemon(s,1); // Mewtwo lab tester belongs in PC, not the visual fixture.
      s.stage=1;s.trainer=1; // VISUAL FIXTURE only: no earned progress claimed.
      core.saveCampaign(s);
      window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
@@ -102,8 +103,12 @@ fs.mkdirSync(screenshot,{recursive:true});
      localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before,
      'Exploring the city must not create wins, badges, experience or save edits');
     await tap(open[0],open[1]);
-    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-     .__torre2CeruleanCity?.realArt===true,null,{timeout:16000});
+    await page.waitForFunction(()=>{
+     const c=window.__pt2Game.scene.getScene('campanha');
+     return c.__torre2BattlePath===null&&c.__torre2CeruleanCity?.realArt===true&&
+      c.children.list.some(x=>x.input?.enabled&&
+       x.getData?.('torre2-city-landmark')==='CENTRO');
+    },null,{timeout:16000});
     await named('torre2-city-landmark','CENTRO');
     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
      .children.list.some(x=>typeof x.text==='string'&&
