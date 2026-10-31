@@ -1,0 +1,6829 @@
+{
+  "date": "2026-10-31",
+  "source": "Public client AST metadata",
+  "total": 283,
+  "namesWithRosterMoves": 245,
+  "items": [
+    {
+      "name": "Accelerock",
+      "kind": "phys",
+      "type": "rock",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "lg13r3b_claw_rake",
+        "lm17_rock_dash",
+        "lm17_rock_hit",
+        "og11_rock_smash",
+        "rock"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Acrobatics",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "lg13l_quick_hit",
+        "wind"
+      ],
+      "rosterPokemon": 10,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Aerial Ace",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "sureHit"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "aceHit",
+        "dash",
+        "wind"
+      ],
+      "rosterPokemon": 56,
+      "assignedBatch": 21,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Agility",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "dash"
+      ],
+      "rosterPokemon": 25,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Air Slash",
+      "kind": "spec",
+      "type": "flying",
+      "variants": 5,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "projectile",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbj_wind_gust",
+        "hit_light",
+        "pxball",
+        "shell_hit",
+        "wind"
+      ],
+      "rosterPokemon": 24,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Amnesia",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 5,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ancient Power",
+      "kind": "spec",
+      "type": "rock",
+      "variants": 8,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "claw",
+        "d18e_rock_tear",
+        "dash",
+        "dbmd_aura_charge",
+        "dbv4p_rock_final",
+        "dbv4p_rock_tear",
+        "fire_charge",
+        "fireball_launch",
+        "hit_heavy",
+        "ice_charge",
+        "mf4_rock_break",
+        "og11_rock_smash",
+        "pxball",
+        "rock",
+        "water_charge"
+      ],
+      "rosterPokemon": 23,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Aqua Cutter",
+      "kind": "phys",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "water",
+        "water_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Aqua Jet",
+      "kind": "phys",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "rb9_water_hit",
+        "water",
+        "water_charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Aqua Tail",
+      "kind": "phys",
+      "type": "water",
+      "variants": 2,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "rb9_water_charge",
+        "rb9_water_crash",
+        "rb9_water_whoomp",
+        "water",
+        "water_charge"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Astral Barrage",
+      "kind": "spec",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Aura Sphere",
+      "kind": "spec",
+      "type": "fighting",
+      "variants": 8,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "projectile",
+        "sureHit"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "fireball_launch",
+        "hit_heavy",
+        "lg13r3b_aura_fire",
+        "lor_charge",
+        "pxball"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Aurora Veil",
+      "kind": "status",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "ice_charge",
+        "m8b_veil_wind"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Autotomize",
+      "kind": "status",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "og11_rock_smash"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Avalanche",
+      "kind": "phys",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "IT HIT BACK HARDER!",
+        "ice",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Bide",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "e.play",
+        "finisher",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Bite",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 33,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Blast Burn",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "finisher",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "bluefire",
+        "charge",
+        "fire",
+        "fire_charge",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Blaze Kick",
+      "kind": "phys",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dbk_fire_burst",
+        "fire",
+        "fire_charge",
+        "lg13r3d_fire_hit",
+        "lm17_kick_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Blizzard",
+      "kind": "spec",
+      "type": "ice",
+      "variants": 3,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "freezes"
+      ],
+      "effectIdentifierHints": [
+        "beam",
+        "ice",
+        "ice_charge",
+        "ice_loop"
+      ],
+      "rosterPokemon": 36,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Blue Flare",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "bluefire",
+        "fire_charge",
+        "fireball_launch",
+        "pxball"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Body Press",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "pxball"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Body Slam",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "m8x_lax_wave_hit",
+        "rock"
+      ],
+      "rosterPokemon": 91,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Bolt Strike",
+      "kind": "phys",
+      "type": "electric",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "elec_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Bone Rush",
+      "kind": "phys",
+      "type": "ground",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Boomburst",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "wind"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Bounce",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "wind"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Brave Bird",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dbme_brave_hit",
+        "fire_charge",
+        "hit_light",
+        "rock",
+        "wind"
+      ],
+      "rosterPokemon": 11,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Breakneck Blitz",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "sureHit"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Brick Break",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Slice",
+        "dash",
+        "fire_charge",
+        "hit_heavy",
+        "og11_rock_smash",
+        "pxball",
+        "skull_charge"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Bullet Punch",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "contact",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_light",
+        "m8ti_mach_hit"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Calm Mind",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbv4e_calm_pulse"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Clanging Scales",
+      "kind": "spec",
+      "type": "dragon",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "beam",
+        "lm17_dart_hit",
+        "lm17_rock_hit",
+        "pxball"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Clangorous Soul",
+      "kind": "status",
+      "type": "dragon",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 1,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Close Combat",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 9,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "Slice",
+        "dash",
+        "fire",
+        "hit_heavy",
+        "hit_light",
+        "lg13r3d_dark_hit",
+        "lm17_kick_hit",
+        "lm17_water_fist",
+        "lm17_water_swirl",
+        "m8ti_ape_dash",
+        "m8ti_cc_wind",
+        "st27pa_leg_hit",
+        "st27pc_palm_hit",
+        "st27pc_vent_blast",
+        "st27pd_blade_hit",
+        "water"
+      ],
+      "rosterPokemon": 24,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Confuse Ray",
+      "kind": "status",
+      "type": "ghost",
+      "variants": 2,
+      "hints": [
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "pxball"
+      ],
+      "rosterPokemon": 11,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Cosmic Power",
+      "kind": "stat",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Counter",
+      "kind": "status",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "claw",
+        "hit_heavy",
+        "lg13z_charge",
+        "og11_rock_smash"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Crabhammer",
+      "kind": "phys",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "dbmc_water_slam",
+        "water",
+        "water_charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Cross Poison",
+      "kind": "phys",
+      "type": "poison",
+      "variants": 4,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "claw",
+        "dash",
+        "hit_heavy",
+        "lor_charge",
+        "poison",
+        "wind"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Crunch",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 12,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "claw",
+        "dash",
+        "hit_heavy",
+        "lg13r3d_rock_slam",
+        "og11_rock_smash",
+        "wind"
+      ],
+      "rosterPokemon": 41,
+      "assignedBatch": 21,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Crush Claw",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "hit_heavy",
+        "lg13r3b_claw_gouge",
+        "lg13r3b_claw_rake",
+        "lg13r3b_ma_charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Curse",
+      "kind": "status",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 10,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Cut",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "aa12a_cut_slice",
+        "cutHit",
+        "dash",
+        "slice"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dark Pulse",
+      "kind": "spec",
+      "type": "dark",
+      "variants": 9,
+      "hints": [
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "projectile",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "DARK PULSE!",
+        "beam_charge",
+        "hit_heavy",
+        "lg13r3f_beam_hit",
+        "pxball",
+        "st27pb_shadow_burst"
+      ],
+      "rosterPokemon": 12,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dazzling Gleam",
+      "kind": "spec",
+      "type": "fairy",
+      "variants": 3,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "dbv4e_gleam_blast",
+        "dbv4e_gleam_charge",
+        "dbv4e_gleam_hit",
+        "hit_heavy",
+        "hit_light"
+      ],
+      "rosterPokemon": 9,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dig",
+      "kind": "phys",
+      "type": "ground",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "rock"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Discharge",
+      "kind": "spec",
+      "type": "electric",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "blast",
+        "charge",
+        "elec_charge",
+        "st27pb_discharge",
+        "st27pc_arc_hit",
+        "st27pc_discharge",
+        "st27pc_moth_charge"
+      ],
+      "rosterPokemon": 11,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dizzy Punch",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 1,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Doom Desire",
+      "kind": "spec",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Double Kick",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Double Team",
+      "kind": "status",
+      "type": "normal",
+      "variants": 3,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash"
+      ],
+      "rosterPokemon": 15,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Double-Edge",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 15,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Draco Meteor",
+      "kind": "spec",
+      "type": "dragon",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "d18e_rock_tear",
+        "dragon_charge",
+        "fire",
+        "fireball_launch",
+        "rock"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dragon Ascent",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "dragon_charge",
+        "hit_heavy",
+        "og11_wind_bed",
+        "pxball",
+        "rock",
+        "s19r_ascent_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dragon Breath",
+      "kind": "spec",
+      "type": "dragon",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "dragon_charge",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 12,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dragon Claw",
+      "kind": "phys",
+      "type": "dragon",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "claw",
+        "dash",
+        "dragon_charge",
+        "elec_charge",
+        "hit_heavy",
+        "m8_claw_charge",
+        "m8_claw_dash",
+        "m8_claw_hit",
+        "m8_claw_rake1",
+        "m8_claw_rake2",
+        "rock"
+      ],
+      "rosterPokemon": 21,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dragon Dance",
+      "kind": "status",
+      "type": "dragon",
+      "variants": 4,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dragon_charge",
+        "fire_charge",
+        "m8ti_rock_land",
+        "pxball",
+        "rock"
+      ],
+      "rosterPokemon": 11,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dragon Darts",
+      "kind": "phys",
+      "type": "dragon",
+      "variants": 2,
+      "hints": [
+        "a.hit",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dragon_charge",
+        "lm17_dart_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dragon Pulse",
+      "kind": "spec",
+      "type": "dragon",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.afterimage",
+        "e.play",
+        "projectile"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "beam_charge",
+        "charge",
+        "dbmb_dragon_charge",
+        "dbmb_dragon_fire",
+        "dragon_charge",
+        "fireball_launch",
+        "m8sc_drag_charge",
+        "m8sc_drag_fire",
+        "m8sc_drag_hit",
+        "rock"
+      ],
+      "rosterPokemon": 34,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dragon Rush",
+      "kind": "phys",
+      "type": "dragon",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dragon_charge"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Drain Punch",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "st27pc_palm_hit",
+        "st27pc_vent_blast"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Draining Kiss",
+      "kind": "spec",
+      "type": "fairy",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "lg13r3e_charge"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Drill Peck",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "rock",
+        "skull_charge",
+        "wind"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Drill Run",
+      "kind": "phys",
+      "type": "ground",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Drum Beating",
+      "kind": "phys",
+      "type": "grass",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "lm17_drum_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dual Wingbeat",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "m8_wing_hit1",
+        "m8_wing_hit2"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Dynamic Punch",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "fire_charge",
+        "skull_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Earth Power",
+      "kind": "spec",
+      "type": "ground",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "hit_heavy",
+        "og11_rock_smash",
+        "rock",
+        "skull_charge"
+      ],
+      "rosterPokemon": 8,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Earthquake",
+      "kind": "phys",
+      "type": "ground",
+      "variants": 19,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "m8_quake_hit",
+        "m8ti_quake_hit",
+        "m8x_lax_wave_hit",
+        "mf4_rock_break",
+        "og11_rock_smash",
+        "pxball",
+        "rock"
+      ],
+      "rosterPokemon": 60,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Egg Bomb",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "claw",
+        "fire",
+        "fireball_launch"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Electro Ball",
+      "kind": "spec",
+      "type": "electric",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "projectile"
+      ],
+      "effectIdentifierHints": [
+        "elec_charge",
+        "electroBallBurst"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Endeavor",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.glint",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "elec_charge",
+        "fire_charge",
+        "hit_heavy",
+        "hit_light",
+        "pxball",
+        "rock",
+        "skull_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Energy Ball",
+      "kind": "spec",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "projectile"
+      ],
+      "effectIdentifierHints": [
+        "ap28mb_eb_fire",
+        "ap28mb_eb_hit"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Eruption",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "fire",
+        "fire_charge",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Extrasensory",
+      "kind": "spec",
+      "type": "psychic",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "fire_charge",
+        "lg13r3f_beam_hit"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Extreme Speed",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 3,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "fire_charge",
+        "hit_heavy",
+        "s19r_espeed_dash"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Facade",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "fire",
+        "fire_charge",
+        "poison"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fake Out",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 3,
+      "hints": [
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "finisher",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_light",
+        "rock",
+        "shell_hit"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Feint",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash"
+      ],
+      "rosterPokemon": 11,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fiery Dance",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "dbk_fire_burst",
+        "fire",
+        "fire_charge",
+        "fireball_launch"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fire Blast",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "blast",
+        "dbk_fire_vortex",
+        "dbv4d_fb_fire",
+        "fire",
+        "fire_charge",
+        "fireball_launch",
+        "pxball",
+        "shell_hit"
+      ],
+      "rosterPokemon": 35,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fire Fang",
+      "kind": "phys",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "contact"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 14,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fire Punch",
+      "kind": "phys",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.hit",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "fire",
+        "fire_charge",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "First Impression",
+      "kind": "phys",
+      "type": "bug",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "fire_charge",
+        "st27m_bug_charge",
+        "st27m_bug_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Flame Charge",
+      "kind": "phys",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "fire",
+        "fire_charge",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Flame Wheel",
+      "kind": "phys",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "fire"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Flamethrower",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 10,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "bluefire",
+        "dbk_fire_vortex",
+        "dbk_inferno_fire",
+        "fire",
+        "fire_charge",
+        "lg13r3d_fire_hit",
+        "lg13r3d_fire_roar",
+        "og11_beam_roar",
+        "pxball"
+      ],
+      "rosterPokemon": 43,
+      "assignedBatch": 21,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Flare Blitz",
+      "kind": "phys",
+      "type": "fire",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "fire",
+        "fire_charge",
+        "fireball_launch",
+        "st27pa_blitz_hit"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Flash Cannon",
+      "kind": "spec",
+      "type": "steel",
+      "variants": 6,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "beam_charge",
+        "fireball_launch",
+        "hit_heavy",
+        "lg13r3b_cannon_blast",
+        "lg13r3b_steel_charge",
+        "lg13r3b_steel_hit",
+        "lm17_rock_hit",
+        "lm17pa_cannon_fire",
+        "lor_blast"
+      ],
+      "rosterPokemon": 10,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Flip Turn",
+      "kind": "phys",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "m8b_flip_dash",
+        "m8b_flip_hit",
+        "water"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Floral Healing",
+      "kind": "stat",
+      "type": "fairy",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "pxball"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fly",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "HitGround",
+        "dash",
+        "rock",
+        "wind"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Flying Press",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "ice",
+        "iceShatter"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Focus Blast",
+      "kind": "spec",
+      "type": "fighting",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "projectile"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "dash",
+        "dbv4d_fb_charge",
+        "dbv4d_fb_fire",
+        "fire_charge",
+        "fireball_launch",
+        "hit_heavy",
+        "m8sc_focus_charge",
+        "m8sc_focus_hit",
+        "og11_boulder_fire",
+        "rock"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Focus Energy",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 13,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Follow Me",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 2,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Foul Play",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbmd_foul_hit",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Freeze-Dry",
+      "kind": "spec",
+      "type": "ice",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "freezes",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "ice",
+        "ice_charge",
+        "m8_ice_crust",
+        "m8_ice_lance",
+        "st27m_jet_charge"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Frenzy Plant",
+      "kind": "spec",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "hit_heavy",
+        "pxball"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fury Cutter",
+      "kind": "phys",
+      "type": "bug",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "dash"
+      ],
+      "rosterPokemon": 9,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fusion Bolt",
+      "kind": "phys",
+      "type": "electric",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "elec_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Fusion Flare",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "fire",
+        "fire_charge",
+        "fireball_launch",
+        "pxball"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Future Sight",
+      "kind": "spec",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "G-Max One Blow",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "lg13r3d_dark_hit",
+        "pxball"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "G-Max Rapid Flow",
+      "kind": "phys",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "lm17_water_fist",
+        "lm17_water_swirl",
+        "water"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "G-Max Wildfire",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "beam_charge",
+        "dbk_inferno_fire",
+        "fire"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Gear Grind",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "beam_charge",
+        "dash",
+        "hit_heavy",
+        "rock",
+        "shell_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Giga Drain",
+      "kind": "spec",
+      "type": "grass",
+      "variants": 3,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "hit_light"
+      ],
+      "rosterPokemon": 8,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Giga Impact",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "Rocket",
+        "beam_charge",
+        "dash"
+      ],
+      "rosterPokemon": 124,
+      "assignedBatch": 21,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Grassy Glide",
+      "kind": "phys",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "lm17_drum_hit"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Guillotine",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "finisher",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "ONE-HIT K.O.!",
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Gunk Shot",
+      "kind": "phys",
+      "type": "poison",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "hit_heavy",
+        "poison"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Gyro Ball",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "pxball",
+        "rock",
+        "shell_hit",
+        "skull_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hail",
+      "kind": "status",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "ice_charge",
+        "rock"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hammer Arm",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "fire_charge",
+        "rock",
+        "skull_charge"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Head Smash",
+      "kind": "phys",
+      "type": "rock",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "rock",
+        "skull_charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Heat Crash",
+      "kind": "phys",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "fire",
+        "fire_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Heat Wave",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbk_fire_burst",
+        "dbvc_fire_wave",
+        "fire",
+        "fire_charge",
+        "lg13r3d_fire_hit"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Heavy Slam",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "og11_rock_smash",
+        "rock",
+        "shell_hit",
+        "skull_charge",
+        "st27pc_vent_blast"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hex",
+      "kind": "spec",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "hit_light",
+        "rock"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "High Horsepower",
+      "kind": "phys",
+      "type": "ground",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "og11_rock_smash",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "High Jump Kick",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "fire_charge",
+        "hit_heavy",
+        "hit_light",
+        "lm17_kick_hit",
+        "pxball",
+        "skull_charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Horn Throw",
+      "kind": "status",
+      "type": "dragon",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hurricane",
+      "kind": "spec",
+      "type": "flying",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "rock",
+        "wind"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hydro Pump",
+      "kind": "spec",
+      "type": "water",
+      "variants": 7,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "blast",
+        "dbv4b_hp_blast",
+        "hit_heavy",
+        "m8_pump_charge",
+        "pxball",
+        "rb9_hydro_blast",
+        "rb9_water_charge",
+        "rb9_water_crash",
+        "rb9_water_hit",
+        "rb9_water_whoomp",
+        "st27pc_pump_charge",
+        "st27pc_pump_fire",
+        "water",
+        "water_charge",
+        "water_loop"
+      ],
+      "rosterPokemon": 12,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hyper Beam",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "MUST RECHARGE",
+        "beam",
+        "beam_charge",
+        "dragon_charge",
+        "fire",
+        "hit_heavy",
+        "og11_beam_roar",
+        "pxball",
+        "rock",
+        "s19r_beam_charge",
+        "s19r_beam_fire"
+      ],
+      "rosterPokemon": 124,
+      "assignedBatch": 21,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hyper Voice",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "lg13l_voice",
+        "lg13r3e_charge",
+        "pxball",
+        "st27pa_voice_slam",
+        "st27pa_voice_thump"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hyperspace Fury",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Hypnosis",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 9,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ice Beam",
+      "kind": "spec",
+      "type": "ice",
+      "variants": 8,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play",
+        "freezes",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "aa12a_ice_beam",
+        "beam",
+        "beam_charge",
+        "d18e_ice_beam",
+        "dbk_ice_form",
+        "dbk_ice_shatter",
+        "dbk_ice_thrust",
+        "dbv4g_ice_snap",
+        "hit_light",
+        "ice",
+        "ice_charge",
+        "ice_loop",
+        "kyogreIce",
+        "lg13r3f_aurora_beam",
+        "m8_ice_crust",
+        "m8_ice_lance",
+        "og11_beam_roar",
+        "pxball",
+        "st27pc_ice_charge",
+        "st27pc_ice_lance",
+        "st27pc_ice_set"
+      ],
+      "rosterPokemon": 40,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ice Breath",
+      "kind": "spec",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "hit_heavy",
+        "ice",
+        "ice_charge",
+        "ice_loop"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ice Fang",
+      "kind": "phys",
+      "type": "ice",
+      "variants": 5,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "claw",
+        "dash",
+        "dbv4g_ice_form",
+        "dbv4g_ice_snap",
+        "hit_heavy",
+        "ice",
+        "ice_charge",
+        "pxball"
+      ],
+      "rosterPokemon": 13,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ice Punch",
+      "kind": "phys",
+      "type": "ice",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dbk_ice_shatter",
+        "dbmc_ice_punch",
+        "hit_heavy",
+        "ice",
+        "ice_charge",
+        "st27pd_ice_build",
+        "st27pd_ice_hit",
+        "st27pd_ice_swing"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ice Shard",
+      "kind": "phys",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "projectile",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "ap28mc_shard_hit",
+        "dbv4g_ice_form",
+        "ice"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ice Spinner",
+      "kind": "phys",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "ice",
+        "ice_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Icicle Crash",
+      "kind": "phys",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbk_ice_form",
+        "dbk_ice_shatter",
+        "ice",
+        "lg13r3c_ice_form"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Icy Wind",
+      "kind": "spec",
+      "type": "ice",
+      "variants": 2,
+      "hints": [
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "dbv4w_chill_hit",
+        "dbv4w_icy_blast",
+        "ice",
+        "ice_charge",
+        "st27pc_chill_hit",
+        "st27pc_wind_draw"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Ingrain",
+      "kind": "status",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Iron Defense",
+      "kind": "status",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "m8ti_stone_hit"
+      ],
+      "rosterPokemon": 13,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Iron Head",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 6,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dbk_ice_form",
+        "hit_heavy",
+        "ice",
+        "lg13r3f_charge_scrape",
+        "pxball",
+        "shell_hit",
+        "skull_charge"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Iron Tail",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "pxball",
+        "rock",
+        "shell_hit"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Judgment",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "fireball_launch"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Karate Chop",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "fire_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "King's Shield",
+      "kind": "status",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "shell_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Knock Off",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 3,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "m8ti_knock_hit"
+      ],
+      "rosterPokemon": 8,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Lava Plume",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "fire",
+        "fire_charge",
+        "fireball_launch",
+        "hit_heavy",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Leaf Blade",
+      "kind": "phys",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "claw",
+        "dash"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Leaf Storm",
+      "kind": "spec",
+      "type": "grass",
+      "variants": 4,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "dash",
+        "fireball_launch"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Leech Seed",
+      "kind": "status",
+      "type": "grass",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 7,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Lick",
+      "kind": "phys",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Light of Ruin",
+      "kind": "spec",
+      "type": "fairy",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.glint",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play",
+        "finisher"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "beam_charge",
+        "lor_beam_loop",
+        "lor_blast",
+        "lor_charge",
+        "lor_charge_m",
+        "lor_pulse"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Liquidation",
+      "kind": "phys",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "rb9_water_crash",
+        "water",
+        "water_charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Low Kick",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "m8ti_ape_dash",
+        "m8ti_knock_hit",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Mach Punch",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "fire",
+        "hit_heavy",
+        "hit_light",
+        "m8ti_mach_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Magnet Rise",
+      "kind": "status",
+      "type": "electric",
+      "variants": 1,
+      "hints": [
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Megahorn",
+      "kind": "phys",
+      "type": "bug",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "beam_charge",
+        "charge",
+        "dash",
+        "hit_heavy",
+        "og11_rock_smash",
+        "pxball",
+        "rock",
+        "skull_charge"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Metal Burst",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "hit_heavy",
+        "rock",
+        "shell_hit"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Metal Claw",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 12,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Metal Sound",
+      "kind": "status",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 10,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Meteor Mash",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 2,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "dash",
+        "hit_heavy",
+        "shell_hit"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Metronome",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 2,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 3,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Mirror Coat",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Mirror Move",
+      "kind": "spec",
+      "type": "flying",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Moonblast",
+      "kind": "spec",
+      "type": "fairy",
+      "variants": 6,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "Slice",
+        "beam_charge",
+        "dbk_ice_form",
+        "hit_heavy",
+        "ice",
+        "lg13r3e_charge",
+        "lg13r3f_aurora_beam",
+        "lg13r3f_beam_hit",
+        "st27pb_moon_fire",
+        "st27pb_moon_hit",
+        "st27pd_moon_fire",
+        "st27pd_moon_hit"
+      ],
+      "rosterPokemon": 9,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Moonlight",
+      "kind": "stat",
+      "type": "fairy",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Morning Sun",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Mud Bomb",
+      "kind": "spec",
+      "type": "ground",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "fireball_launch",
+        "hit_heavy",
+        "pxball",
+        "rock"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Muddy Water",
+      "kind": "spec",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "hit_heavy",
+        "pxball",
+        "water",
+        "water_charge",
+        "water_loop"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Multi-Attack",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "lg13r3b_aura_fire",
+        "lg13r3b_ma_charge",
+        "lor_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Mystical Fire",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbk_fire_vortex",
+        "fire",
+        "fire_charge",
+        "lg13r3e_charge",
+        "pxball"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Nasty Plot",
+      "kind": "status",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 10,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Night Daze",
+      "kind": "spec",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "lg13r3d_dark_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Night Slash",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "lg13r3b_claw_rake",
+        "pxball"
+      ],
+      "rosterPokemon": 19,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Nihil Light",
+      "kind": "spec",
+      "type": "dragon",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "og11m_hex_beam",
+        "og11ma_nl_charge",
+        "og11ma_nl_fire"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Origin Pulse",
+      "kind": "spec",
+      "type": "water",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "beam",
+        "beam_charge",
+        "pulse",
+        "water",
+        "water_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Outrage",
+      "kind": "phys",
+      "type": "dragon",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "Slice",
+        "claw",
+        "dash",
+        "fire",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 36,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Overheat",
+      "kind": "spec",
+      "type": "fire",
+      "variants": 4,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "sureHit"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "dbk_fire_burst",
+        "fire",
+        "fire_charge",
+        "fireball_launch",
+        "hit_heavy",
+        "m8sc_over_hit",
+        "m8ti_overheat_blast"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Pain Split",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Pay Day",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Petal Blizzard",
+      "kind": "phys",
+      "type": "grass",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "lg13r3c_petal_slice"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Petal Dance",
+      "kind": "spec",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Phantom Force",
+      "kind": "phys",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Pin Missile",
+      "kind": "phys",
+      "type": "bug",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "elec_charge"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Play Rough",
+      "kind": "phys",
+      "type": "fairy",
+      "variants": 4,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dbvb_dash_rev",
+        "lg13r3b_claw_rake",
+        "lm17_rock_dash",
+        "lm17_rock_hit",
+        "pxball"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Poison Fang",
+      "kind": "phys",
+      "type": "poison",
+      "variants": 1,
+      "hints": [
+        "contact"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 3,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Poison Jab",
+      "kind": "phys",
+      "type": "poison",
+      "variants": 4,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "poison",
+        "pxball"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Pollen Puff",
+      "kind": "spec",
+      "type": "bug",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Poltergeist",
+      "kind": "phys",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "m8b_polt_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Power Gem",
+      "kind": "spec",
+      "type": "rock",
+      "variants": 4,
+      "hints": [
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "hit_heavy",
+        "ice_charge",
+        "og11_rock_smash",
+        "pxball",
+        "rock"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Precipice Blades",
+      "kind": "phys",
+      "type": "ground",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "fire_charge",
+        "rock"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Prismatic Laser",
+      "kind": "spec",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Protect",
+      "kind": "status",
+      "type": "normal",
+      "variants": 4,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "shell_hit"
+      ],
+      "rosterPokemon": 13,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Psychic",
+      "kind": "spec",
+      "type": "psychic",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "hit_light",
+        "rock",
+        "rocks"
+      ],
+      "rosterPokemon": 31,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Psychic Fangs",
+      "kind": "phys",
+      "type": "psychic",
+      "variants": 3,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "wind"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Psycho Cut",
+      "kind": "phys",
+      "type": "psychic",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.glint",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "Slice",
+        "hit_heavy",
+        "hit_light"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Psyshock",
+      "kind": "spec",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "m8b_psy_hit"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Psystrike",
+      "kind": "spec",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "sureHit"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "fireball_launch",
+        "hit_light"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Pump Up",
+      "kind": "status",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Pursuit",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "m8ti_knock_hit"
+      ],
+      "rosterPokemon": 12,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Quick Attack",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 3,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit",
+        "hit_light"
+      ],
+      "rosterPokemon": 25,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Quiver Dance",
+      "kind": "stat",
+      "type": "bug",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "pxball"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Raging Bull",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Rain Dance",
+      "kind": "status",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 9,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Rapid Spin",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 4,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Razor Leaf",
+      "kind": "phys",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 5,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Razor Wind",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "og11_wind_bed",
+        "wind"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Recover",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Reflect",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "shell_hit"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Rest",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 5,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Retaliate",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "claw",
+        "dash",
+        "fire_charge",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Roar of Time",
+      "kind": "spec",
+      "type": "dragon",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Rock Climb",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "contact",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "og11_rock_smash",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Rock Slide",
+      "kind": "phys",
+      "type": "rock",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "hit_heavy",
+        "og11_rock_smash",
+        "rock"
+      ],
+      "rosterPokemon": 14,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Rock Wrecker",
+      "kind": "phys",
+      "type": "rock",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "mf4_rock_break",
+        "og11_boulder_fire",
+        "og11_rock_smash",
+        "pxball",
+        "rock",
+        "skull_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 2,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Roost",
+      "kind": "status",
+      "type": "flying",
+      "variants": 2,
+      "hints": [
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 9,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sacred Sword",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "dash",
+        "hit_heavy",
+        "rock",
+        "shell_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sandstorm",
+      "kind": "status",
+      "type": "rock",
+      "variants": 1,
+      "hints": [
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "og11_rock_smash",
+        "og11_wind_bed"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Scald",
+      "kind": "spec",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "m8b_scald_hit",
+        "water"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Seed Bomb",
+      "kind": "phys",
+      "type": "grass",
+      "variants": 2,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Self-Destruct",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "elec_charge",
+        "fire"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shadow Ball",
+      "kind": "spec",
+      "type": "ghost",
+      "variants": 8,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "projectile"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "ball",
+        "beam_charge",
+        "fireball_launch",
+        "hit",
+        "hit_heavy",
+        "hit_light",
+        "og11_rock_smash",
+        "pxball",
+        "st27pb_shadow_burst"
+      ],
+      "rosterPokemon": 41,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shadow Punch",
+      "kind": "phys",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "sureHit"
+      ],
+      "effectIdentifierHints": [
+        "hit_heavy",
+        "shadow"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shadow Sneak",
+      "kind": "phys",
+      "type": "ghost",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shell Guard",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shell Smash",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "fire_charge",
+        "hit_heavy",
+        "rock",
+        "shell_hit",
+        "skull_charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shell Spin",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shift Gear",
+      "kind": "status",
+      "type": "steel",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "elec_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 3,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Shock Wave",
+      "kind": "spec",
+      "type": "electric",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.sfx",
+        "e.play",
+        "sureHit"
+      ],
+      "effectIdentifierHints": [
+        "elec_charge"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Silver Wind",
+      "kind": "spec",
+      "type": "bug",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 2,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sing",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 4,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Skull Bash",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "charge",
+        "dash",
+        "pxball",
+        "skull_charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sky Attack",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 2,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "dash",
+        "hit_heavy",
+        "wind"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Slash",
+      "kind": "phys",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "claw",
+        "dash"
+      ],
+      "rosterPokemon": 18,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sleep Powder",
+      "kind": "status",
+      "type": "grass",
+      "variants": 2,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 2,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sludge Bomb",
+      "kind": "spec",
+      "type": "poison",
+      "variants": 4,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "projectile",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "fireball_launch",
+        "hit_heavy",
+        "poison",
+        "pxball"
+      ],
+      "rosterPokemon": 22,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sludge Wave",
+      "kind": "spec",
+      "type": "poison",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "hit_heavy",
+        "poison",
+        "st27pc_sludge_hit",
+        "water_loop"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 5,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Snipe Shot",
+      "kind": "spec",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play",
+        "sureHit",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "beam",
+        "m8_slug_hit",
+        "pxball",
+        "water_charge"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Solar Beam",
+      "kind": "spec",
+      "type": "grass",
+      "variants": 8,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "beam",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "beam_charge",
+        "dbk_sun_charge",
+        "dbk_sun_fire",
+        "dbv4s_beam_fire",
+        "dbva_sun_hit",
+        "fire",
+        "hit_heavy",
+        "lor_blast",
+        "m8sc_solar_charge",
+        "m8sc_solar_fire",
+        "m8sc_solar_hit",
+        "mf4_beam_fire",
+        "mf4_beam_loop",
+        "og11_beam_roar"
+      ],
+      "rosterPokemon": 36,
+      "assignedBatch": 13,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sonic Boom",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "wind"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Spacial Rend",
+      "kind": "spec",
+      "type": "dragon",
+      "variants": 1,
+      "hints": [
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "og11m_rift_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Spikes",
+      "kind": "status",
+      "type": "ground",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "claw",
+        "hit_light",
+        "shell_hit"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Spirit Break",
+      "kind": "phys",
+      "type": "fairy",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Slice",
+        "dash"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Steel Wing",
+      "kind": "phys",
+      "type": "steel",
+      "variants": 3,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "shell_hit"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 9,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Stone Edge",
+      "kind": "phys",
+      "type": "rock",
+      "variants": 13,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "d18e_rock_tear",
+        "d18th_rock_rise",
+        "dash",
+        "dbv4p_rock_final",
+        "dbv4p_rock_slam",
+        "fire_charge",
+        "hit_heavy",
+        "lg13r3d_rock_erupt",
+        "lg13r3d_rock_slam",
+        "lm17_rock_dash",
+        "lm17_rock_hit",
+        "m8_stone_hit",
+        "m8ti_rock_haul",
+        "m8ti_rock_land",
+        "m8ti_rock_raise",
+        "m8ti_rock_smash",
+        "m8ti_rock_throw",
+        "m8ti_rock_up",
+        "m8ti_stone_hit",
+        "mf4_rock_break"
+      ],
+      "rosterPokemon": 40,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Substitute",
+      "kind": "status",
+      "type": "normal",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "elec_charge",
+        "pxball",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Subzero Slammer",
+      "kind": "spec",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "sureHit"
+      ],
+      "effectIdentifierHints": [
+        "ice"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sucker Punch",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "utility",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 9,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Sunny Day",
+      "kind": "status",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbk_sun_charge"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Superpower",
+      "kind": "phys",
+      "type": "fighting",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "fire_charge",
+        "hit_heavy",
+        "rock",
+        "skull_charge"
+      ],
+      "rosterPokemon": 5,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Supersonic",
+      "kind": "status",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 6,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Surf",
+      "kind": "spec",
+      "type": "water",
+      "variants": 5,
+      "hints": [
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam",
+        "dbmc_water_slam",
+        "hit_heavy",
+        "pxball",
+        "rb9_water_crash",
+        "rb9_water_whoomp",
+        "water",
+        "water_charge",
+        "water_loop"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Surging Strikes",
+      "kind": "phys",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "lm17_water_fist",
+        "lm17_water_swirl",
+        "water"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Swift",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 1,
+      "hints": [
+        "a.hit",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "sureHit"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 13,
+      "assignedBatch": 10,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Swords Dance",
+      "kind": "status",
+      "type": "normal",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dbk_ice_form"
+      ],
+      "rosterPokemon": 15,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Synthesis",
+      "kind": "status",
+      "type": "grass",
+      "variants": 1,
+      "hints": [
+        "a.decals.crack",
+        "a.fx.add",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "m8ti_stone_hit"
+      ],
+      "rosterPokemon": 10,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Tailwind",
+      "kind": "status",
+      "type": "flying",
+      "variants": 1,
+      "hints": [
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dbmD_wind",
+        "og11_wind_bed",
+        "pxball"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 18,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Throat Chop",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "hit_heavy",
+        "pxball"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Thunder",
+      "kind": "spec",
+      "type": "electric",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "discharge",
+        "elec_charge"
+      ],
+      "rosterPokemon": 34,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Thunder Fang",
+      "kind": "phys",
+      "type": "electric",
+      "variants": 1,
+      "hints": [
+        "contact"
+      ],
+      "effectIdentifierHints": [],
+      "rosterPokemon": 12,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Thunder Punch",
+      "kind": "phys",
+      "type": "electric",
+      "variants": 5,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "elec_charge",
+        "hit_heavy"
+      ],
+      "rosterPokemon": 10,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Thunder Wave",
+      "kind": "status",
+      "type": "electric",
+      "variants": 2,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "finisher",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "elec_charge"
+      ],
+      "rosterPokemon": 11,
+      "assignedBatch": 17,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Thunderbolt",
+      "kind": "spec",
+      "type": "electric",
+      "variants": 7,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "beam",
+        "elec_charge",
+        "st27pb_bolt_fire"
+      ],
+      "rosterPokemon": 38,
+      "assignedBatch": 20,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Toxic",
+      "kind": "status",
+      "type": "poison",
+      "variants": 1,
+      "hints": [
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "poison",
+        "pxball"
+      ],
+      "rosterPokemon": 8,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Toxic Spikes",
+      "kind": "status",
+      "type": "poison",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "POISON SPIKES WERE SCATTERED!",
+        "claw",
+        "hit_light"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Tri Attack",
+      "kind": "spec",
+      "type": "normal",
+      "variants": 2,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "elec_charge",
+        "fire_charge",
+        "fireball_launch",
+        "ice",
+        "ice_charge",
+        "st27pd_tri_fire",
+        "st27pd_tri_fire_all",
+        "st27pd_tri_ice"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Trick Room",
+      "kind": "status",
+      "type": "psychic",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Triple Axel",
+      "kind": "phys",
+      "type": "ice",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "ice",
+        "ice_charge",
+        "m8_ice_crust",
+        "m8ti_mach_hit"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 7,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "U-turn",
+      "kind": "phys",
+      "type": "bug",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "dbmd_uturn_hit",
+        "m8ti_uturn_dash",
+        "m8ti_uturn_hit"
+      ],
+      "rosterPokemon": 8,
+      "assignedBatch": 6,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Volt Tackle",
+      "kind": "phys",
+      "type": "electric",
+      "variants": 2,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "elec_charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Water Gun",
+      "kind": "spec",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.sfx",
+        "a.visual",
+        "beam",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "ap28ma_wg_fire",
+        "ap28ma_wg_hit",
+        "beam",
+        "water"
+      ],
+      "rosterPokemon": 15,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Water Pulse",
+      "kind": "spec",
+      "type": "water",
+      "variants": 2,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "hit_heavy",
+        "pulse",
+        "rb9_water_charge",
+        "rb9_water_crash",
+        "rb9_water_whoomp",
+        "water",
+        "water_charge"
+      ],
+      "rosterPokemon": 11,
+      "assignedBatch": 16,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Water Shuriken",
+      "kind": "spec",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.play",
+        "projectile"
+      ],
+      "effectIdentifierHints": [
+        "rb9_water_charge",
+        "water"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 1,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Water Spout",
+      "kind": "spec",
+      "type": "water",
+      "variants": 2,
+      "hints": [
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "water",
+        "water_charge",
+        "water_loop"
+      ],
+      "rosterPokemon": 1,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Waterfall",
+      "kind": "phys",
+      "type": "water",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "dbmc_water_slam",
+        "pxball",
+        "rb9_water_whoomp",
+        "water",
+        "water_charge",
+        "water_loop"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 15,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Whirlpool",
+      "kind": "spec",
+      "type": "water",
+      "variants": 1,
+      "hints": [
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "water"
+      ],
+      "rosterPokemon": 6,
+      "assignedBatch": 8,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Wicked Blow",
+      "kind": "phys",
+      "type": "dark",
+      "variants": 1,
+      "hints": [
+        "a.decals.crater",
+        "a.flash",
+        "a.fx.add",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "dash",
+        "pxball"
+      ],
+      "rosterPokemon": 0,
+      "assignedBatch": null,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Wild Charge",
+      "kind": "phys",
+      "type": "electric",
+      "variants": 4,
+      "hints": [
+        "a.decals.crack",
+        "a.flash",
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "beam_charge",
+        "dash",
+        "elec_charge",
+        "hit_heavy",
+        "wcharge",
+        "wind"
+      ],
+      "rosterPokemon": 7,
+      "assignedBatch": 12,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Will-O-Wisp",
+      "kind": "status",
+      "type": "fire",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "e.play",
+        "utility"
+      ],
+      "effectIdentifierHints": [
+        "Charge"
+      ],
+      "rosterPokemon": 2,
+      "assignedBatch": 14,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Wing Attack",
+      "kind": "phys",
+      "type": "flying",
+      "variants": 1,
+      "hints": [
+        "a.flash",
+        "a.glint",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "wind"
+      ],
+      "rosterPokemon": 13,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Wood Hammer",
+      "kind": "phys",
+      "type": "grass",
+      "variants": 3,
+      "hints": [
+        "a.decals.crack",
+        "a.decals.crater",
+        "a.flash",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.play",
+        "melee"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash",
+        "hit_heavy",
+        "lm17_drum_hit",
+        "rock"
+      ],
+      "rosterPokemon": 3,
+      "assignedBatch": 4,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "X-Scissor",
+      "kind": "phys",
+      "type": "bug",
+      "variants": 5,
+      "hints": [
+        "a.fx.add",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.shakeAdd",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "Slice",
+        "claw",
+        "dash",
+        "lg13r3b_claw_rake"
+      ],
+      "rosterPokemon": 19,
+      "assignedBatch": 19,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    },
+    {
+      "name": "Zen Headbutt",
+      "kind": "phys",
+      "type": "psychic",
+      "variants": 2,
+      "hints": [
+        "a.flash",
+        "a.glint",
+        "a.hit",
+        "a.miss",
+        "a.sfx",
+        "a.visual",
+        "contact",
+        "e.afterimage",
+        "e.play",
+        "windup"
+      ],
+      "effectIdentifierHints": [
+        "Charge",
+        "dash"
+      ],
+      "rosterPokemon": 4,
+      "assignedBatch": 11,
+      "status": "STATIC_RESEARCH_NOT_VISUALLY_CONFIRMED_BY_THIS_PLAN"
+    }
+  ],
+  "warning": "Visual effect identifiers extracted in bulk; NOT proof that every frame was observed."
+}
