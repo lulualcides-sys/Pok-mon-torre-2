@@ -1,0 +1,149 @@
+{
+  "source": "https://ranked.pokemonbattlegrounds.com",
+  "date": "2026-10-31",
+  "researchMethod": "TinyFish authenticated browser session in Practice vs Bot, separated from REA public AST catalog",
+  "sessions": [
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/003d9c19-9810-407f-8911-3b06815d9711",
+      "status": "BUILDER_ONLY",
+      "battleStarted": false,
+      "visualCastsConfirmed": 0,
+      "observed": "Venusaur and Blastoise default moves shown; Gengar not successfully added due to full team"
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/360cdf8c-52a2-4dec-87de-16c21fb8d821",
+      "status": "MATCH_COMPLETE",
+      "battleStarted": true,
+      "mode": "Practice vs Bot Easy 3v3",
+      "arena": "Mt. Silver",
+      "outcome": "Lost",
+      "team": [
+        {
+          "pokemon": "Venusaur",
+          "moves": [
+            {
+              "name": "Petal Blizzard",
+              "buttonVisible": true,
+              "explicitClick": true,
+              "castReported": true,
+              "visualReported": "green swirling petals",
+              "visualConfidence": "agent report only"
+            },
+            {
+              "name": "Sludge Bomb",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            },
+            {
+              "name": "Earthquake",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            },
+            {
+              "name": "Outrage",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            }
+          ]
+        },
+        {
+          "pokemon": "Blastoise",
+          "moves": [
+            {
+              "name": "Hydro Pump",
+              "buttonVisible": true,
+              "explicitClick": true,
+              "castReported": true,
+              "visualReported": "blue water blast; super effective on Camerupt",
+              "visualConfidence": "agent report only"
+            },
+            {
+              "name": "Ice Beam",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            },
+            {
+              "name": "Rapid Spin",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            },
+            {
+              "name": "Skull Bash",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            }
+          ]
+        },
+        {
+          "pokemon": "Gliscor",
+          "moves": [
+            {
+              "name": "Stone Edge",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            },
+            {
+              "name": "Fire Fang",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            },
+            {
+              "name": "Giga Impact",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            },
+            {
+              "name": "X-Scissor",
+              "buttonVisible": true,
+              "explicitClick": false,
+              "castReported": false,
+              "visualReported": null
+            }
+          ]
+        }
+      ],
+      "note": "The tool report describes visual shapes for many visible-only buttons. Those descriptions are NOT accepted as evidence of their casts; only Petal Blizzard and Hydro Pump are explicit clicked and cast."
+    }
+  ],
+  "coverage": {
+    "builderVisibleUnique": 12,
+    "confirmedClickAndCastUnique": 2,
+    "allUnverifiedMustRemainUnverified": true,
+    "notExecutedDespiteBatchGoal": [
+      "Sludge Bomb",
+      "Earthquake",
+      "Outrage",
+      "Ice Beam",
+      "Rapid Spin",
+      "Skull Bash",
+      "Stone Edge",
+      "Fire Fang",
+      "Giga Impact",
+      "X-Scissor"
+    ]
+  },
+  "warnings": [
+    "Do not add inferred shapes to observed visual coverage",
+    "No source assets downloaded",
+    "Raw frames are in TinyFish run interface, not stored in GitHub",
+    "The 21-batch roster plan is theoretical and may need more matches after knockouts/server waits"
+  ]
+}
