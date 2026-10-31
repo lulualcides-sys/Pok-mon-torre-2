@@ -1,0 +1,59 @@
+name: REA catálogo profundo — PB Ranked (treino público)
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - 'tools/research/pb-ranked-deep-catalog.cjs'
+      - '.github/workflows/pb-ranked-deep-catalog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pb-ranked-deep-catalog
+  cancel-in-progress: false
+
+jobs:
+  public-practice-and-static-index:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 19
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Dependências auditáveis
+        run: |
+          set -euo pipefail
+          node --check tools/research/pb-ranked-deep-catalog.cjs
+          npm install --no-audit --no-fund
+          npm install --no-save --no-audit --no-fund acorn acorn-walk
+          npm install --global --no-audit --no-fund rea-agents@latest
+          command -v rea
+          command -v google-chrome
+      - name: Observar treino público e catalogar arquivos recebidos
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tools/research/pb-ranked-deep-catalog.cjs
+          node -e "const c=require('./reference-library/pb-ranked/catalogo-geral.json'); if(!c.counts.scripts){throw Error('Nenhum script analisado')};console.log('Catalogados: '+JSON.stringify(c.counts))"
+      - name: Publicar apenas metadados de pesquisa, sem código/arte de terceiros
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reference-library/pb-ranked/*.json
+          if ! git diff --cached --quiet; then
+            git commit -m "research: catalog public PB Ranked moves, animation and arena metadata"
+            git push origin HEAD:research/pb-ranked-rea-20261031
+          fi
+      - name: Guardar screenshots e evidências REA da sessão
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pb-ranked-deep-public-evidence
+          path: test-evidence/pb-ranked-deep/
+          if-no-files-found: warn
+          retention-days: 14
