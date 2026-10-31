@@ -14,6 +14,21 @@
         "Charizard"
       ],
       "provenance": "TinyFish visual browser-agent report (not direct REA authenticated trace)"
+    },
+    {
+      "runId": "30ec1c74-b613-41a6-b6ab-058554931765",
+      "url": "https://agent.tinyfish.ai/runs/30ec1c74-b613-41a6-b6ab-058554931765",
+      "mode": "Practice vs Bot Easy attempted",
+      "arena": null,
+      "verifiedMatchStarted": false,
+      "blocker": "Server displayed 'A quick update is coming: battles start again in a minute or two'; no battle began and Charizard remained benched",
+      "team": [
+        "Crobat",
+        "Snorlax",
+        "Charizard"
+      ],
+      "lead": "Crobat",
+      "provenance": "TinyFish live browser report: builder and unavailable server; NO move animations observed"
     }
   ],
   "observations": [
@@ -102,6 +117,181 @@
     "Team builder supports editing move selection and choosing three for 3v3, but does not mean all Pokémon are available/unlocked.",
     "Charizard was benched during this specific match; no actual Fire or Dragon visual evidence.",
     "Raw screenshot images were not independently preserved in this file; confidence restricted to agent's live report.",
-    "All copied observations are research metadata only; no original source art or third-party source code is included."
+    "All copied observations are research metadata only; no original source art or third-party source code is included.",
+    "Second attempt to force Charizard active failed: game server was in a brief update and no practice battle started. Do not label Charizard's Flamethrower, Fire Blast, Dragon Claw animations as observed.",
+    "The catalog now contains 119 distinct static move names; source declaration alone does not license copying third-party art, prove runtime animation, or establish units of 'cooldown'."
+  ],
+  "priorityTestCandidates": [
+    {
+      "name": "Flamethrower",
+      "tier": "Kanto existing visual benchmark",
+      "why": "Charizard move present in builder, NO live animation tested",
+      "staticDeclaration": {
+        "name": "Flamethrower",
+        "type": "fire",
+        "power": "90"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Fire Blast",
+      "tier": "Kanto existing visual benchmark",
+      "why": "High-intensity VFX potentially useful to compare, avoid overwriting approved",
+      "staticDeclaration": {
+        "name": "Fire Blast",
+        "type": "fire",
+        "power": "110",
+        "cooldown": "360"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Dragon Claw",
+      "tier": "Kanto existing visual benchmark",
+      "why": "Contact animation unobserved",
+      "staticDeclaration": {
+        "name": "Dragon Claw",
+        "type": "dragon",
+        "power": "80"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Hydro Pump",
+      "tier": "Kanto existing visual benchmark",
+      "why": "Water trajectory and impact, visual unobserved",
+      "staticDeclaration": {
+        "name": "Hydro Pump",
+        "type": "water",
+        "power": "110",
+        "cooldown": "270"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Ice Beam",
+      "tier": "Kanto existing visual benchmark",
+      "why": "Beam and freeze visual; unobserved",
+      "staticDeclaration": {
+        "name": "Ice Beam",
+        "type": "ice",
+        "power": "90"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Shadow Ball",
+      "tier": "Kanto existing visual benchmark",
+      "why": "Projectile and shadow impact; unobserved",
+      "staticDeclaration": {
+        "name": "Shadow Ball",
+        "type": "ghost",
+        "power": "80"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Thunderbolt",
+      "tier": "Kanto existing visual benchmark",
+      "why": "Electric attack range and strike shape; unobserved",
+      "staticDeclaration": {
+        "name": "Thunderbolt",
+        "type": "electric",
+        "power": "90"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Surf",
+      "tier": "Kanto existing visual benchmark",
+      "why": "Terrain/wave animation; unobserved",
+      "staticDeclaration": {
+        "name": "Surf",
+        "type": "water",
+        "power": "90",
+        "cooldown": "420"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Precipice Blades",
+      "tier": "Future/signature",
+      "why": "Potential strong terrain attack; only public static declaration",
+      "staticDeclaration": {
+        "name": "Precipice Blades",
+        "type": "ground",
+        "power": "120",
+        "cooldown": "540"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Prismatic Laser",
+      "tier": "Future/signature",
+      "why": "Potential signature beam; only public static declaration",
+      "staticDeclaration": {
+        "name": "Prismatic Laser",
+        "type": "psychic",
+        "power": "160"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Origin Pulse",
+      "tier": "Future/signature",
+      "why": "Potential multi-pulse water attack; only public static declaration",
+      "staticDeclaration": {
+        "name": "Origin Pulse",
+        "type": "water",
+        "power": "110",
+        "cooldown": "540"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Roar of Time",
+      "tier": "Future/signature",
+      "why": "Potential cinematic finisher; only public static declaration",
+      "staticDeclaration": {
+        "name": "Roar of Time",
+        "type": "dragon",
+        "power": "150"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Spacial Rend",
+      "tier": "Future/signature",
+      "why": "Potential spatial impact; only public static declaration",
+      "staticDeclaration": {
+        "name": "Spacial Rend",
+        "type": "dragon",
+        "power": "100"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Astral Barrage",
+      "tier": "Future/signature",
+      "why": "Potential unique ghost projectile; only public static declaration",
+      "staticDeclaration": {
+        "name": "Astral Barrage",
+        "type": "ghost",
+        "power": "120"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    },
+    {
+      "name": "Sandstorm",
+      "tier": "Mechanics/weather",
+      "why": "Weather state, not an attack VFX; only public static declaration",
+      "staticDeclaration": {
+        "name": "Sandstorm",
+        "type": "rock",
+        "power": "0",
+        "cooldown": "1500"
+      },
+      "evidenceLevel": "public-JS-only for VFX unless separately indicated"
+    }
   ]
 }
