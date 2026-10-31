@@ -1,0 +1,182 @@
+/* T32: first real Cerulean campaign city. Native Phaser, no battle HUD changes.
+ * Uses the already-cached FireRed city sheet; no generated mockup pasted in. */
+import {getSourceMainBounds} from './frlg-location.js';
+import {buildingInteractions} from './kanto-hotspots.js';
+import {addFireRedNPC,addRedPlayer} from './frlg-npc.js';
+const FONT='Pixelify Sans,monospace';
+const VIEW=Object.freeze({x:18,y:43,w:604,h:246});
+function title(scene,x,y,message,size=9,color='#e7faff',depth=22){
+ return scene.add.text(x,y,String(message),{fontFamily:FONT,fontStyle:'bold',
+  fontSize:size+'px',color,stroke:'#08182b',strokeThickness:2})
+  .setDepth(depth).setOrigin(0,.5);
+}
+function box(g,x,y,w,h,color,border){
+ g.fillStyle(color,1);g.fillRoundedRect(x,y,w,h,4);
+ g.lineStyle(1,border,1);g.strokeRoundedRect(x+.5,y+.5,w-1,h-1,4);
+}
+export function ceruleanCityProjection(main){
+ const w=Math.min(VIEW.w,Math.max(1,main.w));
+ const h=Math.min(VIEW.h,Math.max(1,main.h));
+ return {x:main.x+Math.round(Math.max(0,main.w-w)*.48),
+  y:main.y+Math.round(Math.max(0,main.h-h)*.60),w,h};
+}
+function originalCityArt(scene){
+ const key='frlg-location-cerulean';
+ if(!scene.textures.exists(key))return null;
+ const texture=scene.textures.get(key),src=texture.source?.[0];
+ if(!src)return null;
+ const main=getSourceMainBounds('cerulean',src.width,src.height);
+ if(main.w<250||main.h<240)return null;
+ const crop=ceruleanCityProjection(main);
+ const name='torre2-t32-cerulean-'+[crop.x,crop.y,crop.w,crop.h].join('-');
+ if(!texture.has(name))texture.add(name,0,crop.x,crop.y,crop.w,crop.h);
+ if(typeof Phaser!=='undefined')texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ scene.add.image(VIEW.x,VIEW.y,key,name).setOrigin(0,0).setDepth(4)
+  .setDisplaySize(VIEW.w,VIEW.h).setData('torre2-city-real-art',true);
+ return {main,crop,key,name};
+}
+// Animate a few canal highlights and reuse approved native FireRed residents.
+// This only affects the optional city scene, not combat, saves or XP.
+function enrichCerulean(scene){
+ const canal=scene.add.graphics().setDepth(8);
+ // Keep shimmer strictly inside the narrow left-hand water canal.
+ // The previous offsets accidentally put some glints on grass and roads.
+ for(const [x,y] of [[36,83],[47,104],[40,133],[53,158],
+  [43,189],[51,215],[38,245]]){
+  canal.fillStyle(0xd8f9ff,.8);canal.fillRect(x,y,5,2);
+  canal.fillStyle(0x63bce5,.65);canal.fillRect(x+2,y+3,3,1);
+ }
+ const canalTween=scene.tweens.add({targets:canal,alpha:{from:.32,to:.86},
+  x:{from:0,to:2},duration:1650,yoyo:true,repeat:-1});
+ canal.once('destroy',()=>canalTween.remove());
+ // The existing FireRed player sheet is already loaded by the campaign.
+ // A one-pixel idle bounce makes the city feel occupied without affecting movement.
+ const shadow=scene.add.graphics().setDepth(16);
+ shadow.fillStyle(0x08253b,.35);shadow.fillEllipse(315,206,16,5);
+ const player=addRedPlayer(scene,315,205,{scale:1.05,depth:19});
+ if(player){
+  player.setData('torre2-city-player',true);
+  const idle=scene.tweens.add({targets:player,y:{from:205,to:204},
+   duration:980,yoyo:true,repeat:-1});
+  player.once('destroy',()=>idle.remove());
+ }
+ for(const [kind,x,y] of [['youngster',181,220],['lass',461,218],
+  ['fisherman',112,245]]){
+  const npc=addFireRedNPC(scene,kind,x,y,{scale:1.04,depth:17});
+  if(npc)npc.setData('torre2-city-resident',kind).setAlpha(.96);
+ }
+}
+function action(scene,x,y,w,label,fn,highlight=false){
+ const g=scene.add.graphics().setDepth(31);
+ const paint=hover=>{
+  g.clear();box(g,x-w/2,y-15,w,30,highlight?
+   (hover?0xffe7a0:0xe9c272):(hover?0x2e719b:0x173e62),
+   highlight?0xfff4bb:0x74bddd);
+ };
+ const labelText=title(scene,x,y,label,highlight?10:8,
+  highlight?'#10253b':'#eafbff',32).setOrigin(.5);
+ // Gold action buttons need crisp navy glyphs, not a navy-on-navy outline.
+ if(highlight)labelText.setStroke('#10253b',0);
+ const z=scene.add.zone(x,y,w,32).setInteractive({useHandCursor:true})
+  .setDepth(33).setData('torre2-city-action',label);
+ z.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
+ // A single native activation per press: Phaser pointerdown is the same
+ // interaction used by the existing campaign route. No synthetic callbacks.
+ z.on('pointerdown',(_p,_lx,_ly,e)=>{e?.stopPropagation?.();fn?.()});
+ paint(false);return z;
+}
+function cityHotspot(scene,sceneView,hotspot,label,fn,locked=false){
+ const {main,crop}=sceneView;
+ const mx=main.x+main.w*hotspot.cx,my=main.y+main.h*hotspot.cy;
+ const x=VIEW.x+(mx-crop.x)*VIEW.w/crop.w;
+ const y=VIEW.y+(my-crop.y)*VIEW.h/crop.h;
+ if(x<VIEW.x+30||x>VIEW.x+VIEW.w-30||
+    y<VIEW.y+34||y>VIEW.y+VIEW.h-8)return null;
+ const g=scene.add.graphics().setDepth(27);
+ const paint=hover=>{
+  g.clear();box(g,x-35,y-34,70,17,0x092a42,
+   hover?0xffffff:locked?0x8499b2:0xffdd97);
+ };
+ title(scene,x,y-25,label,8,locked?'#b5c3d0':'#fff0bc',28).setOrigin(.5);
+ const marker=scene.add.graphics().setDepth(28);
+ marker.fillStyle(locked?0xa6b7c6:0xffe3a0);
+ marker.fillTriangle(x-4,y-48,x+4,y-48,x,y-42);
+ const markerTween=scene.tweens.add({targets:marker,alpha:{from:.42,to:1},
+  duration:1100,yoyo:true,repeat:-1});
+ marker.once('destroy',()=>markerTween.remove());
+ const z=scene.add.zone(x,y,50,31).setInteractive({useHandCursor:true})
+  .setDepth(29).setData('torre2-city-landmark',label);
+ z.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
+ z.on('pointerdown',(_p,_lx,_ly,e)=>{e?.stopPropagation?.();fn?.()});
+ paint(false);
+ return {id:hotspot.id,x:Math.round(x),y:Math.round(y)};
+}
+// Six compact, non-interactive party slots: never overlap the route controls.
+function teamCard(scene,g,m,i,active){
+ const x=14+i*48,y=313;
+ box(g,x,y,46,37,0x15384c,i===active?0xf2d68f:0x477c9f);
+ scene.add.zone(x+23,y+18,46,37).setDepth(21)
+  .setData('torre2-city-party-slot',i);
+ if(!m)return;
+ let dex=null;
+ try{
+  const v=scene.__torre2PathData?.buscar?.(m.id);
+  const d=v?.etapa>0?v?.def?.evoluciones?.[v.etapa-1]?.dex:v?.def?.dex;
+  if(d!==undefined&&d!==null)dex=String(d).padStart(4,'0');
+ }catch{}
+ const key='torre2-portrait-'+dex;
+ if(dex&&scene.textures.exists(key))
+  scene.add.image(x+12,y+23,key).setDisplaySize(21,21).setDepth(22);
+ else title(scene,x+5,y+23,'◉',12,'#ffe7a0');
+ title(scene,x+3,y+8,m.id.toUpperCase().slice(0,7),5,'#fff7e9');
+ title(scene,x+25,y+22,'NV'+(m.progression?.level||5),6,'#b2dcf4');
+ const hp=Math.min(100,Math.max(0,Number(m.hp)||0));
+ g.fillStyle(0x071728);g.fillRect(x+25,y+31,17,3);
+ g.fillStyle(hp>50?0x65dda0:hp>25?0xf0c96a:0xe87776);
+ g.fillRect(x+25,y+31,Math.round(hp*17/100),3);
+}
+export function renderCeruleanCity(scene,state,handlers={}){
+ const panel=scene.add.graphics().setDepth(1)
+  .setData('torre2-cerulean-prototype',true);
+ panel.fillStyle(0x081c31);panel.fillRect(0,0,640,360);
+ box(panel,11,39,618,254,0x0e3c57,0x79c8ed);
+ const art=originalCityArt(scene);
+ if(art)enrichCerulean(scene);
+ if(!art){
+  title(scene,66,170,'MAPA ORIGINAL INDISPONÍVEL',14,'#ffcebd');
+ }
+ panel.fillStyle(0x0d2844);panel.fillRect(0,0,640,39);
+ panel.fillStyle(0x76c8e9);panel.fillRect(0,37,640,2);
+ title(scene,18,13,'CERULEAN CITY',17,'#f1fcff');
+ title(scene,19,30,'CIDADE DAS ÁGUAS · KANTO',8,'#9cddfa');
+ const done=Math.min(15,Math.max(0,state.trainer||0));
+ title(scene,293,13,'TREINADORES',8,'#b2e0f2');
+ title(scene,304,29,done+' / 15',14,'#ffe1a0');
+ action(scene,530,20,185,done>=15?'DESAFIAR MISTY':'PRÓXIMO DESAFIO',
+  ()=>done>=15?handlers.gym?.():handlers.battle?.(),true);
+ const links={center:handlers.center,mart:handlers.mart,
+  gym:handlers.gym,bike:handlers.info};
+ const captions={center:'CENTRO',mart:'LOJA',
+  gym:'GINÁSIO',bike:'BICICLETAS'};
+ const hotspots=[];
+ if(art)for(const h of buildingInteractions('cerulean')){
+  const point=cityHotspot(scene,art,h,captions[h.id],links[h.id],
+   h.id==='gym'&&done<15);
+  if(point)hotspots.push(point);
+ }
+ const trim=scene.add.graphics().setDepth(11);
+ trim.fillStyle(0x082c47,.92);trim.fillRoundedRect(22,274,252,14,3);
+ title(scene,26,281,'CANAIS DE CERULEAN · OBJETIVO: MISTY',8,'#e5f8ff',23);
+ panel.fillStyle(0x081e35);panel.fillRect(0,296,640,64);
+ title(scene,14,306,'EQUIPE ATUAL',8,'#bbecf9');
+ title(scene,111,306,state.team.length+'/6 POKÉMON',7,'#f4dba4');
+ for(let i=0;i<6;i++)teamCard(scene,panel,state.team[i],i,state.active||0);
+ const buttons=[
+  ['DESAFIOS',handlers.back],['EQUIPE',()=>handlers.pokemon?.(state.active||0)],
+  ['BOLSA',handlers.bag],['CAPTURA',handlers.capture],['CENTRO',handlers.center]
+ ];
+ buttons.forEach(([label,callback],i)=>action(scene,344+61*i,331,56,label,callback));
+ scene.__torre2CeruleanCity={stage:state.stage,trainer:state.trainer,
+  realArt:!!art,hotspots,battleHudUnchanged:true};
+ return scene.__torre2CeruleanCity;
+}

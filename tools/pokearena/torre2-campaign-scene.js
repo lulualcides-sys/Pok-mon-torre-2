@@ -1,4 +1,5 @@
 import {statusLabel} from './gen3-status.js';
+import {renderCeruleanCity} from './cerulean-city.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
 import {WEATHER_NAMES} from './weather.js';
@@ -182,6 +183,7 @@ class Campanha extends Phaser.Scene{
 create(){
   // Phaser reuses this Scene instance on restart; remove stale treatment locks.
   this.__torre2CenterBusy=false;
+  this.__torre2CeruleanOpen=false;
   // Restore the native Poké Arena 2D camera/viewport; no injected map zoom.
   if(consumeCampaignResetLink())this.result=null;
   this.cameras.main.setBackgroundColor(C.ink);
@@ -468,6 +470,8 @@ create(){
   // Keep all trainer/leader counters and the existing localStorage save IDs.
   // Retain older scene helpers below for PC, Center, Mart and summary only.
   this.children.removeAll(true);
+  // Prevent stale city metadata from outliving its Phaser objects on return.
+  this.__torre2CeruleanCity=null;
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
    this.__torre2PathPage=undefined;
@@ -484,7 +488,23 @@ create(){
    if(foe.leader)return this.gymScreen(state);
    this.__torre2PathDetails(text,this,foe);
   };
+  if(this.__torre2CeruleanOpen&&state.stage===1){
+   // The battle road remains intact; Cerulean is an optional campaign view.
+   this.__torre2BattlePath=null;
+   return renderCeruleanCity(this,state,{
+    back:()=>{this.__torre2CeruleanOpen=false;this.renderCampaign(state)},
+    battle:()=>this.enterBattle(state),
+    gym:()=>this.gymScreen(state),
+    center:()=>this.centerScreen(state),
+    mart:()=>this.martScreen(state),
+    capture:()=>this.grassScreen(state),
+    bag:()=>this.bagScreen(state),
+    pokemon:i=>state.team[i]&&this.showSummary(state,i),
+    info:()=>this.__torre2PathDetails(text,this,null)
+   });
+  }
   const path=renderBattlePath(this,state,{
+   city:()=>{this.__torre2CeruleanOpen=true;this.renderCampaign(state)},
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),
