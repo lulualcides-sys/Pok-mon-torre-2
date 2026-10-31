@@ -8,6 +8,7 @@ const unique=value=>Array.isArray(value)?[...new Set(value)]:[];
 const display=id=>String(id||'').replace(/[-_]+/g,' ').toUpperCase();
 const delta=(before,after)=>unique(after).filter(x=>!unique(before).includes(x));
 const uid=(member,index)=>member?.uid||'index:'+index;
+const hasUid=member=>typeof member?.uid==='string'&&member.uid.trim().length>0;
 const safeList=(member,listMoves)=>{
  if(typeof listMoves!=='function'||!member)return [];
  try{
@@ -33,15 +34,22 @@ export function makeBattleReport(before,after,outcome,{
  if(!before||!after||!outcome||typeof outcome.won!=='boolean')return null;
  const previous=Array.isArray(before.team)?before.team:[];
  const now=Array.isArray(after.team)?after.team:[];
- const beforeByUid=new Map(previous.map((m,i)=>[uid(m,i),m]));
- const gains=outcome.sharedExp||outcome.shared?.gains||[];
- const byUid=new Map(gains.map(g=>[g.uid,g]));
+ // Index is not identity: replacements and captures may reorder the party.
+ // A legacy member without UID can still be matched by unchanged species at
+ // the same index, but must never be misreported as somebody else's evolution.
+ const beforeByUid=new Map(previous.filter(hasUid).map(m=>[m.uid,m]));
+ const gains=Array.isArray(outcome.sharedExp)?outcome.sharedExp:
+  Array.isArray(outcome.shared?.gains)?outcome.shared.gains:[];
+ const byUid=new Map(gains.filter(g=>g&&g.uid!=null).map(g=>[g.uid,g]));
  const evolutions=[],moves=[],team=[];
  now.forEach((member,index)=>{
-  const old=beforeByUid.get(uid(member,index))||previous[index];
+  const candidate=previous[index];
+  const old=(hasUid(member)?beforeByUid.get(member.uid):null)||
+   (candidate?.id===member.id&&(!hasUid(candidate)||!hasUid(member))?
+    candidate:null);
   if(!old)return;
   const levelBefore=num(old.progression?.level),levelAfter=num(member.progression?.level);
-  const gain=byUid.get(uid(member,index))||gains.find(g=>g.index===index);
+  const gain=byUid.get(uid(member,index))||gains.find(g=>g?.index===index);
   const experience=Math.max(0,num(gain?.reward));
   team.push({id:member.id,from:old.id,levelBefore,levelAfter,
    experience,tester:Boolean(gain?.tester)});
