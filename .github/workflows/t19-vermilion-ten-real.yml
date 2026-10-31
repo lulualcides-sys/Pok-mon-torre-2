@@ -36,15 +36,15 @@ jobs:
       - name: Download exact earned wild-XP checkpoint from green run
         uses: actions/download-artifact@v4
         with:
-          name: t19-earned-vermilion-grind-capture
-          run-id: 41199702713
+          name: t19-vermilion-ten-earned-native
+          run-id: 41200664360
           repository: ${{ github.repository }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
           path: test-evidence
       - name: Native five trainers with heal/XP/catch recovery if genuinely defeated
         env:
           CHROME_BIN: /usr/bin/google-chrome
-          T19_EARNED_GRIND_SAVE: test-evidence/t19-vermilion-earned-grind-save.json
+          T19_EARNED_GRIND_SAVE: test-evidence/t19-vermilion-ten-checkpoint.json
         run: |
           set -euo pipefail
           node tests/t19-vermilion-ten-real-browser.cjs

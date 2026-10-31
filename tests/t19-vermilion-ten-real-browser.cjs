@@ -1,5 +1,5 @@
 'use strict';
-/* T19 — trainer 5→10 of Vermilion, from authentic post-wild-exp checkpoint.
+/* T19 — trainer 8→10 of Vermilion, resuming the EXACT earned trainer-8 save.
  * Real Phaser UI; when an actual defeat occurs heal, earn wild EXP, and retry.
  * No forced KO, XP, levels, victory, RNG, wild species, or trainer advances.
  */
@@ -10,14 +10,16 @@ const {chromium}=require('playwright-core');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dir='test-evidence';fs.mkdirSync(dir,{recursive:true});
 const proof=JSON.parse(fs.readFileSync(process.env.T19_EARNED_GRIND_SAVE||
-  path.join(dir,'t19-vermilion-earned-grind-save.json'),'utf8'));
-assert.equal(proof.format,'t19-vermilion-grind-native-save-v1');
-assert.equal(proof.sourceSha,'b6f0f9af6c80db2221897238a0f9d235f2291237');
-assert.equal(proof.provenance,'two actual wild victories after 5 natural Vermilion trainers');
+  path.join(dir,'t19-vermilion-ten-checkpoint.json'),'utf8'));
+assert.equal(proof.format,'t19-vermilion-ten-earned-native-save-v1');
+assert.equal(proof.sourceSha,'3e3cc609083ce98d96f903d1592d0c1a71c436ff');
+assert.equal(proof.sha256,'ffca0d7dfe1d8f6a285d380c3aa5f30ac6eb71815a5a809cf4641815e47be7ac');
+assert.equal(proof.provenance,
+ 'real native trainers 5-10 with recovery from actual wild XP if needed');
 assert.equal(crypto.createHash('sha256').update(proof.rawSave).digest('hex'),proof.sha256);
 const origin=JSON.parse(proof.rawSave);
-assert.equal(origin.stage,2);assert.equal(origin.trainer,5);
-assert.equal(origin.wins,49);assert.equal(origin.losses,0);
+assert.equal(origin.stage,2);assert.equal(origin.trainer,8);
+assert.equal(origin.wins,52);assert.equal(origin.losses,0);
 assert.deepEqual(origin.badges,['Rocha','Cascata']);
 assert.ok(origin.inventory.tms.includes('tm-rock-tomb')&&
  origin.inventory.tms.includes('tm-water-pulse'));
@@ -41,8 +43,9 @@ const server=http.createServer(async(req,res)=>{
    '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[];page.on('pageerror',e=>errors.push(String(e)));
- const report={source:'real after-Misty five Vermilion wins + 2 real wild exp wins',
-  checkpointSha256:proof.sha256,seed:{stage:2,trainer:5,wins:49,losses:0},
+ const report={source:'real stage2 trainer8 checkpoint exported after three native trainer victories',
+  checkpointSha256:proof.sha256,seed:{stage:2,trainer:8,wins:52,losses:0},
+  warmupWild:[],stalls:[],
   method:'Original Phaser UI, native AUTO, actual Center, real wild XP on defeat',
   rounds:[],recovery:[],caught:[],limits:{recoveryCyclesPerTrainer:2,grindWinsPerCycle:2}};
  const write=()=>fs.writeFileSync(dir+'/t19-vermilion-ten-report.json',
@@ -123,7 +126,47 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(wild,'Native encounter must be durable');
   return {before,wild};
  };
- const outcome=async(before,timeoutMs=230000)=>{
+ const outcome=async(before,timeoutMs=360000)=>{
+  // First window lets native AUTO fight. If still active after 145 seconds,
+  // use ONLY a real sidebar switch via Phaser mouse. This is not a win,
+  // defeat, direct input injection, HP edit, XP edit or battle reset.
+  const finished=()=>page.waitForFunction(({wins,losses})=>{
+   const s=window.kanto.readCampaign();
+   return window.__pt2Game.scene.isActive('campanha')&&
+    (s.wins>wins||s.losses>losses);
+  },{wins:before.wins,losses:before.losses},
+  {timeout:145000,polling:200}).then(()=>true).catch(()=>false);
+  if(await finished())return now();
+  const battle=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   const party=b.datos?.torre2?.party;
+   const slots=b.__torre2SideParty?.slots||[];
+   const actors=b.luchadores||[];
+   const target=party&&party.friend.findIndex((m,i)=>
+    i!==party.playerIndex&&m.hp>0&&i===1);
+   const next=target>=0?target:party?.friend.findIndex((m,i)=>
+    i!==party.playerIndex&&m.hp>0)??-1;
+   const zone=next>=0?slots[next]:null;
+   return {scene:b.scene.isActive(),phase:b.fase,auto:b.__torre2AutoMode?.enabled,
+    active:party?.playerIndex,next,canSwitch:!!(zone?.active&&zone?.input?.enabled),
+    zone:zone?{x:zone.x,y:zone.y}:null,
+    changes:b.__torre2PlayerSwitches??0,
+    player:actors[0]?{hp:actors[0].hp,max:actors[0].hpMax}:null,
+    enemy:actors[1]?{hp:actors[1].hp,max:actors[1].hpMax,id:b.datos.p2}:null};
+  });
+  report.stalls.push(battle);write();
+  if(battle.scene&&battle.phase==='lucha'&&battle.canSwitch&&
+     battle.changes<3&&battle.zone){
+   await tapXY(battle.zone.x,battle.zone.y);
+   // The actual native party index must change; a missed hit is not a swap.
+   const swapped=await page.waitForFunction(next=>{
+    const b=window.__pt2Game.scene.getScene('combate');
+    return b.scene.isActive()&&b.datos?.torre2?.party?.playerIndex===next;
+   },battle.next,{timeout:18000}).then(()=>true).catch(()=>false);
+   report.stalls.at(-1).nativeSwitchAcknowledged=swapped;write();
+  }
+  // Keep playing the same original fight after the genuinely selected
+  // teammate arrives. Failure leaves the honest checkpoint and screenshot.
   await page.waitForFunction(({wins,losses})=>{
    const s=window.kanto.readCampaign();
    return window.__pt2Game.scene.isActive('campanha')&&
@@ -141,7 +184,7 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(s.team.map(m=>m.uid),state.team.map(m=>m.uid));
   const saved={format:'t19-vermilion-ten-earned-native-save-v1',
    sourceSha:process.env.GITHUB_SHA||null,parentSeedSha256:proof.sha256,
-   provenance:'real native trainers 5-10 with recovery from actual wild XP if needed',
+   provenance:'real native trainers 8-10 from authenticated trainer8 checkpoint',
    rawSave:raw,sha256:crypto.createHash('sha256').update(raw).digest('hex'),
    summary:{stage:s.stage,trainer:s.trainer,wins:s.wins,losses:s.losses,
     badges:s.badges,tms:s.inventory.tms,team:s.team.map(m=>
@@ -228,12 +271,30 @@ const server=http.createServer(async(req,res)=>{
    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,
    null,{timeout:60000});
   let s=await now();
-  assert.equal(s.stage,2);assert.equal(s.trainer,5);
-  assert.equal(s.wins,49);assert.equal(s.losses,0);assert.equal(s.cap,24);
+  assert.equal(s.stage,2);assert.equal(s.trainer,8);
+  assert.equal(s.wins,52);assert.equal(s.losses,0);assert.equal(s.cap,24);
   assert.deepEqual(s.badges,['Rocha','Cascata']);
   assert.deepEqual(s.team.map(m=>m.uid),origin.team.map(m=>m.uid));
   report.initial=s;write();
-  for(let trainer=5;trainer<10;trainer++){
+  // Prevent wasting another 230-second stationary fight against a grass
+  // opponent. Earn genuine shared XP before the next trainer. No bonus levels,
+  // encounter RNG override, fabricated captures, or artificially weakened foes.
+  for(let i=0;i<3;i++){
+   await center();
+   const start=await startWild();
+   const end=await outcome(start.before,200000);
+   const event={index:i+1,species:start.wild,won:end.wins>start.before.wins,
+    wins:end.wins,losses:end.losses,levels:end.team.map(m=>m.lvl)};
+   report.warmupWild.push(event);write();
+   assert.equal(end.stage,2);assert.equal(end.trainer,8);
+   assert.equal(end.losses,start.before.losses,'Real wild loss means no proven pre-grind');
+   assert.equal(end.wins,start.before.wins+1);
+   assert.ok(end.team.some((m,j)=>m.xp>start.before.team[j].xp),
+    'Wild training must earn XP through the real engine');
+   await checkpoint(end,'trainer8 natural warmup XP '+(i+1));
+   console.log('PASS T19 VERMILION GENUINE PRE-GRIND',JSON.stringify(event));
+  }
+  for(let trainer=8;trainer<10;trainer++){
    let won=false;
    for(let attempt=0;attempt<=2&&!won;attempt++){
     await center();
@@ -279,7 +340,7 @@ const server=http.createServer(async(req,res)=>{
   }
   const final=await now();
   assert.equal(final.stage,2);assert.equal(final.trainer,10);
-  assert.ok(final.wins>=54,'Five real trainer wins plus any wild wins');
+  assert.ok(final.wins>=57,'Two further trainer wins plus three natural wild XP wins');
   assert.deepEqual(final.badges,['Rocha','Cascata']);
   assert.deepEqual(final.tms,['tm-rock-tomb','tm-water-pulse']);
   await page.screenshot({path:dir+'/t19-vermilion-ten-real-result.png'});
