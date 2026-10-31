@@ -1,5 +1,6 @@
 import {CITY_ATLAS_KEY,CITY_ATLAS_FILE,needsCeruleanAtlas} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
+import {gymInteriorModel,renderGymInterior} from './gym-interior.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -30,7 +31,7 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -167,6 +168,7 @@ class Campanha extends Phaser.Scene{
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  if(stage<8){const dex=grassPortraitDex(GYMS[stage].boss);if(dex)toLoad.add(dex);}
   // Only this region's twelve unique wild entries; reuse existing small PMD
   // portraits, not twelve full animation sheets (mobile GPU memory).
   for(const id of [...new Set(wildAvailability(stage).wild)].slice(0,12)){
@@ -377,6 +379,24 @@ create(){
   this.button(522,333,198,30,'◀ VOLTAR À ROTA',()=>this.scene.restart());
  }
  gymScreen(state){
+  if(state.stage<8){
+   const m=gymInteriorModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
+   this.children.removeAll(true);
+   renderGymInterior(this,m,{addNpc:addFireRedNPC,
+    aceTexture:'torre2-portrait-'+grassPortraitDex(m.ace),
+    onTrainer:index=>{if(index===state.trainer)this.enterBattle(state);},
+    onLeader:()=>{if(m.leaderReady)this.enterBattle(state);}
+   });
+   const inGym=state.trainer>=m.routeCount;
+   this.button(290,317,226,35,m.leaderReady?'▶ DESAFIAR LÍDER':
+    inGym?'▶ PRÓXIMO ADVERSÁRIO':'◀ TREINADORES DA ROTA',()=>{
+    if(inGym)this.enterBattle(state);
+    else {this.__torre2CityRoute=true;this.scene.restart();}
+   },inGym,11).setData('torre2-gym-primary',true);
+   this.button(529,336,190,28,'◀ VOLTAR AO MAPA',()=>this.scene.restart(),false,9)
+    .setData('torre2-gym-back',true);
+   return;
+  }
   const limit=TRAINERS_PER_GYM(state.stage);
   const remaining=Math.max(0,limit-state.trainer);
   const ready=!state.champion&&remaining===0;
@@ -511,7 +531,8 @@ create(){
     capture:()=>this.grassScreen(state),
     pokemon:i=>state.team[i]&&this.showSummary(state,i),
     trainer:(i,status)=>{
-     if(status==='current')return this.enterBattle(state);
+     if(status==='current')return state.trainer>=TRAINERS_PER_GYM(state.stage)-4?
+      this.gymScreen(state):this.enterBattle(state);
      if(status==='defeated')return this.rematchScreen(state,i);
      return this.__torre2PathDetails(text,this,null);
     },
@@ -525,7 +546,8 @@ create(){
    city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
-   battle:()=>this.enterBattle(state),
+   battle:()=>state.stage<8&&state.trainer>=TRAINERS_PER_GYM(state.stage)-(state.stage===0?3:4)?
+    this.gymScreen(state):this.enterBattle(state),
    gym:()=>this.gymScreen(state),
    training:()=>this.enterTraining(state),
    capture:()=>this.grassScreen(state),
