@@ -19,6 +19,7 @@ import {drawCaptureBall} from './capture-arena.js';
 import {originalBallSprite} from './ball-sprites.js';
 import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
+import {installShinyEntrance} from './shiny-fx.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
@@ -28,7 +29,7 @@ const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
 };
 export function createPartyMatch(state,opponent,wild=false){
  const friend=state.team.slice(0,6).map(m=>({
-  id:m.id,uid:m.uid,level:m.progression?.level||5,
+  id:m.id,uid:m.uid,shiny:m.shiny===true,level:m.progression?.level||5,
   hp:clamp(m.hp??100),status:m.status??null,loadout:resolveLoadout(m)
  }));
  const gym=STAGES[state.stage];
@@ -67,7 +68,7 @@ export function createPartyMatch(state,opponent,wild=false){
     types:etapaDe(buscar(id).def,buscar(id).etapa).tipos||[],
     available:availableMoves({id,progression:{species:id,level}}),
     slotReason:campaignMoveSlotReason}):loadout;
-  return {id,level,hp:100,loadout:finalLoadout};
+  return {id,level,hp:100,shiny:wild&&state.pendingWild?.shiny===true,loadout:finalLoadout};
  });
  let playerIndex=Number.isInteger(state.active)?state.active:0;
  if(!(friend[playerIndex]?.hp>0))
@@ -140,6 +141,12 @@ export function installPartyBattle(scene){
  // from the PREVIOUS Pokémon or the next KO becomes permanently frozen.
  scene.__torre2Changing=false;
  const actors=scene.luchadores;
+ // Cosmetic Shiny entrance is isolated from hitboxes and attack VFX.
+ // Do not render before the Poké Ball releases an invisible PMD actor.
+ const shine=(side,member)=>{
+  if(member?.shiny!==true||!scene.scene.isActive())return;
+  installShinyEntrance(scene,actors[side],side);
+ };
  const weather=scene.__torre2Weather=createWeather();
  setWeather(weather,payload.weather||'none');
  // Original pixel-weather overlay is separate from every approved attack VFX.
@@ -204,8 +211,10 @@ export function installPartyBattle(scene){
   let remaining=sides.length;
   for(const side of sides)animateBallActor(scene,actors[side],{
    side,from:{x:side===0?52:590,y:side===0?281:126},drawBall:drawCaptureBall,
-   onComplete:()=>{if(--remaining===0)scene.fase=entryPhase==='intro'?'intro':'lucha'}
+   onComplete:()=>{shine(side,side===0?party.friend[party.playerIndex]:party.foes[party.enemyIndex]);
+    if(--remaining===0)scene.fase=entryPhase==='intro'?'intro':'lucha'}
   });
+  if(payload.kind==='wild')shine(1,party.foes[party.enemyIndex]);
  }
  // Keep only individual pixel Pokéballs below each original HP bar.
  // No large black scoreboard tables or top-center text swap selector.
@@ -461,6 +470,7 @@ export function installPartyBattle(scene){
      peer.hp=Math.max(0,Math.min(peer.hpMax,peerHpRatio*peer.hpMax));
     }
     scene.__torre2Changing=false;scene.fase='lucha';
+    shine(side,member);
    }});
    redrawPartyHud();
   };

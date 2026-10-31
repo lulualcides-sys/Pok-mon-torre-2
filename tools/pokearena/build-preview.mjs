@@ -186,6 +186,7 @@ await Promise.all([
  ['tools/pokearena/torre2-ball-sprites.js','ball-sprites.js'],
  ['tools/pokearena/torre2-ball-choreography.js','ball-choreography.js'],
  ['tools/pokearena/torre2-party-battle.js','party-battle.js'],
+ ['tools/pokearena/torre2-shiny-fx.js','shiny-fx.js'],
  ['tools/pokearena/torre2-combat-boundary.js','combat-boundary.js'],
  ['tools/pokearena/torre2-gen3-types.js','gen3-types.js'],
  ['tools/pokearena/torre2-gen3-status.js','gen3-status.js'],
