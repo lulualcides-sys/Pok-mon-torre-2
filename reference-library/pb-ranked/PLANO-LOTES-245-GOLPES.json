@@ -1,0 +1,2200 @@
+{
+  "source": "PB Ranked public roster and public JS AST",
+  "date": "2026-10-31",
+  "declaredMoves": 283,
+  "rosterAccessibleCandidates": 245,
+  "staticOnlyMoves": 38,
+  "notInRoster": [
+    "Astral Barrage",
+    "Bide",
+    "Blast Burn",
+    "Blue Flare",
+    "Bolt Strike",
+    "Breakneck Blitz",
+    "Doom Desire",
+    "Dragon Ascent",
+    "Endeavor",
+    "Fake Out",
+    "Fusion Bolt",
+    "Fusion Flare",
+    "G-Max One Blow",
+    "G-Max Rapid Flow",
+    "G-Max Wildfire",
+    "Grassy Glide",
+    "Guillotine",
+    "Gyro Ball",
+    "Horn Throw",
+    "Hyperspace Fury",
+    "Ice Breath",
+    "Judgment",
+    "Light of Ruin",
+    "Multi-Attack",
+    "Nihil Light",
+    "Origin Pulse",
+    "Precipice Blades",
+    "Prismatic Laser",
+    "Psystrike",
+    "Pump Up",
+    "Roar of Time",
+    "Shell Guard",
+    "Shell Spin",
+    "Spacial Rend",
+    "Subzero Slammer",
+    "Surging Strikes",
+    "Trick Room",
+    "Wicked Blow"
+  ],
+  "totalBatches": 21,
+  "distinctPlanned": 245,
+  "scope": "Plan; NOT evidence of gameplay execution",
+  "warnings": [
+    "Move edit options require UI validation; moves declared by roster are not necessarily all unlocked",
+    "No multi-match action is claimed by this plan",
+    "RAW cooldown in source not verified as seconds",
+    "No copied 3rd-party graphical assets"
+  ],
+  "batches": [
+    {
+      "batch": 1,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Greninja",
+          "moves": [
+            {
+              "name": "Cut",
+              "moveId": "greninja:Cut",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Water Shuriken",
+              "moveId": "greninja:Water Shuriken",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Spikes",
+              "moveId": "skarmory:Spikes",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Lick",
+              "moveId": "gengar:Lick",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Aegislash",
+          "moves": [
+            {
+              "name": "King's Shield",
+              "moveId": "aegislash:King's Shield",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Sacred Sword",
+              "moveId": "aegislash:Sacred Sword",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Head Smash",
+              "moveId": "tyrantrum:Head Smash",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Retaliate",
+              "moveId": "zoroark:Retaliate",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Ribombee",
+          "moves": [
+            {
+              "name": "Pollen Puff",
+              "moveId": "ribombee:Pollen Puff",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Quiver Dance",
+              "moveId": "ribombee:Quiver Dance",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Silver Wind",
+              "moveId": "spiritomb:Silver Wind",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Draining Kiss",
+              "moveId": "comfey:Draining Kiss",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 2,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Rhyperior",
+          "moves": [
+            {
+              "name": "Heat Crash",
+              "moveId": "rhyperiorL:Heat Crash",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Rock Wrecker",
+              "moveId": "rhyperior:Rock Wrecker",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Drill Run",
+              "moveId": "rhydon:Drill Run",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Megahorn",
+              "moveId": "rhyperior:Megahorn",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Empoleon",
+          "moves": [
+            {
+              "name": "Aqua Cutter",
+              "moveId": "empoleon:Aqua Cutter",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Ice Spinner",
+              "moveId": "empoleon:Ice Spinner",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Aqua Jet",
+              "moveId": "crawdauntH:Aqua Jet",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Drill Peck",
+              "moveId": "empoleon:Drill Peck",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Hawlucha",
+          "moves": [
+            {
+              "name": "Flying Press",
+              "moveId": "hawlucha:Flying Press",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Karate Chop",
+              "moveId": "hawluchaA:Karate Chop",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "High Jump Kick",
+              "moveId": "hawlucha:High Jump Kick",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Bounce",
+              "moveId": "lopunny:Bounce",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 3,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Kommo-o",
+          "moves": [
+            {
+              "name": "Clanging Scales",
+              "moveId": "kommooM:Clanging Scales",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Clangorous Soul",
+              "moveId": "kommooM:Clangorous Soul",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Boomburst",
+              "moveId": "noivern:Boomburst",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Aura Sphere",
+              "moveId": "kommooM:Aura Sphere",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Klinklang",
+          "moves": [
+            {
+              "name": "Gear Grind",
+              "moveId": "klinklang:Gear Grind",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Shift Gear",
+              "moveId": "klinklang:Shift Gear",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Autotomize",
+              "moveId": "aggronI:Autotomize",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Flash Cannon",
+              "moveId": "vanilluxe:Flash Cannon",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Lucario",
+          "moves": [
+            {
+              "name": "Bone Rush",
+              "moveId": "lucario:Bone Rush",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Bullet Punch",
+              "moveId": "lucarioM8:Bullet Punch",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Counter",
+              "moveId": "lycanrocM:Counter",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Meteor Mash",
+              "moveId": "lucario:Meteor Mash",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 4,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Exeggutor",
+          "moves": [
+            {
+              "name": "Egg Bomb",
+              "moveId": "exeggutor:Egg Bomb",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Sleep Powder",
+              "moveId": "exeggutor:Sleep Powder",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Wood Hammer",
+              "moveId": "torterra:Wood Hammer",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Extrasensory",
+              "moveId": "reshiram:Extrasensory",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Golurk",
+          "moves": [
+            {
+              "name": "Dynamic Punch",
+              "moveId": "golurk:Dynamic Punch",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Shadow Punch",
+              "moveId": "golurk:Shadow Punch",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "High Horsepower",
+              "moveId": "rillaboomL:High Horsepower",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Phantom Force",
+              "moveId": "gourgeist:Phantom Force",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Iron Valiant",
+          "moves": [
+            {
+              "name": "Spirit Break",
+              "moveId": "ironValiant:Spirit Break",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Leaf Blade",
+              "moveId": "sceptile:Leaf Blade",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Psycho Cut",
+              "moveId": "ironValiant:Psycho Cut",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Future Sight",
+              "moveId": "gardevoir:Future Sight",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 5,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Milotic",
+          "moves": [
+            {
+              "name": "Scald",
+              "moveId": "miloticM8:Scald",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Flip Turn",
+              "moveId": "miloticM8:Flip Turn",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Recover",
+              "moveId": "alakazam:Recover",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Mirror Coat",
+              "moveId": "milotic:Mirror Coat",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Slither Wing",
+          "moves": [
+            {
+              "name": "First Impression",
+              "moveId": "slitherWing:First Impression",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Dual Wingbeat",
+              "moveId": "slitherWing:Dual Wingbeat",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Flame Charge",
+              "moveId": "talonflame:Flame Charge",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Morning Sun",
+              "moveId": "espeon:Morning Sun",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Muk",
+          "moves": [
+            {
+              "name": "Gunk Shot",
+              "moveId": "mukH:Gunk Shot",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Sludge Wave",
+              "moveId": "tentacruelH:Sludge Wave",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Ice Punch",
+              "moveId": "mukH:Ice Punch",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Mud Bomb",
+              "moveId": "toxicroak:Mud Bomb",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 6,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Gourgeist",
+          "moves": [
+            {
+              "name": "Poltergeist",
+              "moveId": "gourgeistM8:Poltergeist",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Pain Split",
+              "moveId": "spiritombM8:Pain Split",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Seed Bomb",
+              "moveId": "gourgeist:Seed Bomb",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Razor Leaf",
+              "moveId": "venusaur:Razor Leaf",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Magnezone",
+          "moves": [
+            {
+              "name": "Sonic Boom",
+              "moveId": "buizelAP:Sonic Boom",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Magnet Rise",
+              "moveId": "magnezoneD:Magnet Rise",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Electro Ball",
+              "moveId": "pikachuA:Electro Ball",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Supersonic",
+              "moveId": "noivern:Supersonic",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Inteleon",
+          "moves": [
+            {
+              "name": "Snipe Shot",
+              "moveId": "inteleonM8:Snipe Shot",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Liquidation",
+              "moveId": "sharpedoH:Liquidation",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "U-turn",
+              "moveId": "crobatD:U-turn",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Rain Dance",
+              "moveId": "goodraA:Rain Dance",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 7,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Lycanroc",
+          "moves": [
+            {
+              "name": "Accelerock",
+              "moveId": "lycanrocD:Accelerock",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Rock Climb",
+              "moveId": "grotleAP:Rock Climb",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Psychic Fangs",
+              "moveId": "lycanrocM:Psychic Fangs",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Play Rough",
+              "moveId": "lycanrocD:Play Rough",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Infernape",
+          "moves": [
+            {
+              "name": "Mach Punch",
+              "moveId": "infernape:Mach Punch",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Facade",
+              "moveId": "swellow:Facade",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Flame Wheel",
+              "moveId": "typhlosion:Flame Wheel",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Calm Mind",
+              "moveId": "alakazamD:Calm Mind",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Weavile",
+          "moves": [
+            {
+              "name": "Triple Axel",
+              "moveId": "weavileM8:Triple Axel",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Low Kick",
+              "moveId": "weavileM8:Low Kick",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Ice Shard",
+              "moveId": "froslassAP:Ice Shard",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Icy Wind",
+              "moveId": "weavileD:Icy Wind",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 8,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Venusaur",
+          "moves": [
+            {
+              "name": "Frenzy Plant",
+              "moveId": "venusaurO:Frenzy Plant",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Petal Blizzard",
+              "moveId": "floette:Petal Blizzard",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Petal Dance",
+              "moveId": "roserade:Petal Dance",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Leaf Storm",
+              "moveId": "sceptile:Leaf Storm",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Zoroark",
+          "moves": [
+            {
+              "name": "Night Daze",
+              "moveId": "zoroarkG:Night Daze",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Foul Play",
+              "moveId": "umbreonD:Foul Play",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Focus Blast",
+              "moveId": "zoroark:Focus Blast",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Knock Off",
+              "moveId": "rillaboomL:Knock Off",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Wailord",
+          "moves": [
+            {
+              "name": "Water Spout",
+              "moveId": "kyogre:Water Spout",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Amnesia",
+              "moveId": "wailord:Amnesia",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Rest",
+              "moveId": "snorlax:Rest",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Whirlpool",
+              "moveId": "laprasM8:Whirlpool",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 9,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Corviknight",
+          "moves": [
+            {
+              "name": "Body Press",
+              "moveId": "corviknightM:Body Press",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Steel Wing",
+              "moveId": "skarmory:Steel Wing",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Iron Head",
+              "moveId": "corviknightM:Iron Head",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Roost",
+              "moveId": "salamence:Roost",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Clefable",
+          "moves": [
+            {
+              "name": "Follow Me",
+              "moveId": "togekissD:Follow Me",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Cosmic Power",
+              "moveId": "clefable:Cosmic Power",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Metronome",
+              "moveId": "clefable:Metronome",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Moonlight",
+              "moveId": "umbreon:Moonlight",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Iron Moth",
+          "moves": [
+            {
+              "name": "Fiery Dance",
+              "moveId": "ironMoth:Fiery Dance",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Hurricane",
+              "moveId": "pidgeot:Hurricane",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Overheat",
+              "moveId": "ironMoth:Overheat",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Metal Sound",
+              "moveId": "aggronAP:Metal Sound",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 10,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Persian",
+          "moves": [
+            {
+              "name": "Pay Day",
+              "moveId": "persian:Pay Day",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Power Gem",
+              "moveId": "persianG:Power Gem",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Hypnosis",
+              "moveId": "gengar:Hypnosis",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Nasty Plot",
+              "moveId": "hydreigonM8:Nasty Plot",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Dragapult",
+          "moves": [
+            {
+              "name": "Dragon Darts",
+              "moveId": "dragapultL:Dragon Darts",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Dragon Rush",
+              "moveId": "garchomp:Dragon Rush",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Hex",
+              "moveId": "cofagrigus:Hex",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Sucker Punch",
+              "moveId": "toxicroak:Sucker Punch",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Mienshao",
+          "moves": [
+            {
+              "name": "Blaze Kick",
+              "moveId": "mienshaoM:Blaze Kick",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Drain Punch",
+              "moveId": "toxicroak:Drain Punch",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Swift",
+              "moveId": "espeon:Swift",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Close Combat",
+              "moveId": "mienshaoM:Close Combat",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 11,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Torkoal",
+          "moves": [
+            {
+              "name": "Shell Smash",
+              "moveId": "torkoal:Shell Smash",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Eruption",
+              "moveId": "typhlosion:Eruption",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Lava Plume",
+              "moveId": "torkoal:Lava Plume",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Rapid Spin",
+              "moveId": "blastoise:Rapid Spin",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Lopunny",
+          "moves": [
+            {
+              "name": "Dizzy Punch",
+              "moveId": "lopunny:Dizzy Punch",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Double Kick",
+              "moveId": "jolteon:Double Kick",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Agility",
+              "moveId": "metagrossA:Agility",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Quick Attack",
+              "moveId": "sceptile:Quick Attack",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Tauros",
+          "moves": [
+            {
+              "name": "Raging Bull",
+              "moveId": "tauros:Raging Bull",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Zen Headbutt",
+              "moveId": "tauros:Zen Headbutt",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Pursuit",
+              "moveId": "weavileM8:Pursuit",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Double-Edge",
+              "moveId": "tauros:Double-Edge",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 12,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Comfey",
+          "moves": [
+            {
+              "name": "Floral Healing",
+              "moveId": "comfey:Floral Healing",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Leech Seed",
+              "moveId": "cradilyM8:Leech Seed",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Acrobatics",
+              "moveId": "comfey:Acrobatics",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Synthesis",
+              "moveId": "gourgeistM8:Synthesis",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Drapion",
+          "moves": [
+            {
+              "name": "Cross Poison",
+              "moveId": "crobat:Cross Poison",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Poison Fang",
+              "moveId": "sharpedoH:Poison Fang",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Pin Missile",
+              "moveId": "jolteon:Pin Missile",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Toxic Spikes",
+              "moveId": "roserade:Toxic Spikes",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Manectric",
+          "moves": [
+            {
+              "name": "Volt Tackle",
+              "moveId": "manectric:Volt Tackle",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Shock Wave",
+              "moveId": "togekiss:Shock Wave",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Substitute",
+              "moveId": "manectric:Substitute",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Wild Charge",
+              "moveId": "eelektross:Wild Charge",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 13,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Vanilluxe",
+          "moves": [
+            {
+              "name": "Icicle Crash",
+              "moveId": "sandslashA:Icicle Crash",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Avalanche",
+              "moveId": "mamoswine:Avalanche",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Freeze-Dry",
+              "moveId": "aurorusM8:Freeze-Dry",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Hail",
+              "moveId": "vanilluxe:Hail",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Dragonite",
+          "moves": [
+            {
+              "name": "Draco Meteor",
+              "moveId": "salamenceL:Draco Meteor",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Extreme Speed",
+              "moveId": "dragoniteL:Extreme Speed",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Fire Punch",
+              "moveId": "druddigonI:Fire Punch",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Aqua Tail",
+              "moveId": "milotic:Aqua Tail",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Rillaboom",
+          "moves": [
+            {
+              "name": "Drum Beating",
+              "moveId": "rillaboomL:Drum Beating",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Solar Beam",
+              "moveId": "groudon:Solar Beam",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Earthquake",
+              "moveId": "groudon:Earthquake",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Body Slam",
+              "moveId": "wailord:Body Slam",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 14,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Froslass",
+          "moves": [
+            {
+              "name": "Will-O-Wisp",
+              "moveId": "cofagrigus:Will-O-Wisp",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Aurora Veil",
+              "moveId": "aurorusM8:Aurora Veil",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Confuse Ray",
+              "moveId": "cradily:Confuse Ray",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Ice Fang",
+              "moveId": "gyarados:Ice Fang",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Roaring Moon",
+          "moves": [
+            {
+              "name": "Fly",
+              "moveId": "salamenceM8:Fly",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Throat Chop",
+              "moveId": "nidoking:Throat Chop",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Sunny Day",
+              "moveId": "exeggutorD:Sunny Day",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Dragon Dance",
+              "moveId": "gyaradosL:Dragon Dance",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Gardevoir",
+          "moves": [
+            {
+              "name": "Mystical Fire",
+              "moveId": "sylveon:Mystical Fire",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Psyshock",
+              "moveId": "gardevoirM8:Psyshock",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Hyper Voice",
+              "moveId": "gardevoirD:Hyper Voice",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Dazzling Gleam",
+              "moveId": "togekiss:Dazzling Gleam",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 15,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Altaria",
+          "moves": [
+            {
+              "name": "Mirror Move",
+              "moveId": "pidgeot:Mirror Move",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Sing",
+              "moveId": "lapras:Sing",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Sky Attack",
+              "moveId": "togekiss:Sky Attack",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Moonblast",
+              "moveId": "altariaL:Moonblast",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Weezing",
+          "moves": [
+            {
+              "name": "Self-Destruct",
+              "moveId": "claydol:Self-Destruct",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Heat Wave",
+              "moveId": "crobatG:Heat Wave",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Toxic",
+              "moveId": "crobat:Toxic",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Sludge Bomb",
+              "moveId": "weezingH:Sludge Bomb",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Feraligatr",
+          "moves": [
+            {
+              "name": "Waterfall",
+              "moveId": "feraligatrD:Waterfall",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Superpower",
+              "moveId": "malamar:Superpower",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Hydro Pump",
+              "moveId": "kyogre:Hydro Pump",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Water Gun",
+              "moveId": "buizelAP:Water Gun",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 16,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Gliscor",
+          "moves": [
+            {
+              "name": "Crabhammer",
+              "moveId": "crawdauntH:Crabhammer",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Poison Jab",
+              "moveId": "toxicroak:Poison Jab",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Fury Cutter",
+              "moveId": "ninjaskAP:Fury Cutter",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Thunder Fang",
+              "moveId": "mightyenaH:Thunder Fang",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Cradily",
+          "moves": [
+            {
+              "name": "Energy Ball",
+              "moveId": "grotleAP:Energy Ball",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Ingrain",
+              "moveId": "cradily:Ingrain",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Giga Drain",
+              "moveId": "cradily:Giga Drain",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Ancient Power",
+              "moveId": "claydol:Ancient Power",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Blastoise",
+          "moves": [
+            {
+              "name": "Skull Bash",
+              "moveId": "blastoise:Skull Bash",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Surf",
+              "moveId": "blastoiseD:Surf",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Water Pulse",
+              "moveId": "blastoiseB:Water Pulse",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Dark Pulse",
+              "moveId": "blastoiseB:Dark Pulse",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 17,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Goodra",
+          "moves": [
+            {
+              "name": "Muddy Water",
+              "moveId": "goodra:Muddy Water",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Curse",
+              "moveId": "snorlaxM8:Curse",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Feint",
+              "moveId": "persian:Feint",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Dragon Breath",
+              "moveId": "altariaL:Dragon Breath",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Aggron",
+          "moves": [
+            {
+              "name": "Metal Burst",
+              "moveId": "bisharp:Metal Burst",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Iron Tail",
+              "moveId": "pikachu:Iron Tail",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Heavy Slam",
+              "moveId": "aggron:Heavy Slam",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Metal Claw",
+              "moveId": "metagrossA:Metal Claw",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Eelektross",
+          "moves": [
+            {
+              "name": "Crush Claw",
+              "moveId": "silvally:Crush Claw",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Discharge",
+              "moveId": "magnezoneD:Discharge",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Thunder Wave",
+              "moveId": "ampharos:Thunder Wave",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Dragon Claw",
+              "moveId": "sceptile:Dragon Claw",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 18,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Talonflame",
+          "moves": [
+            {
+              "name": "Razor Wind",
+              "moveId": "talonflame:Razor Wind",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Flare Blitz",
+              "moveId": "infernape:Flare Blitz",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Tailwind",
+              "moveId": "crobatD:Tailwind",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Brave Bird",
+              "moveId": "talonflame:Brave Bird",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Garchomp",
+          "moves": [
+            {
+              "name": "Brick Break",
+              "moveId": "garchompG:Brick Break",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Dig",
+              "moveId": "garchomp:Dig",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Sandstorm",
+              "moveId": "dugtrio:Sandstorm",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Fire Fang",
+              "moveId": "mightyenaH:Fire Fang",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Aegislash",
+          "moves": [
+            {
+              "name": "Shadow Sneak",
+              "moveId": "spiritomb:Shadow Sneak",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Iron Defense",
+              "moveId": "aggronM8:Iron Defense",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Swords Dance",
+              "moveId": "lycanrocM:Swords Dance",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Slash",
+              "moveId": "persian:Slash",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 19,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Dugtrio",
+          "moves": [
+            {
+              "name": "Tri Attack",
+              "moveId": "dodrio:Tri Attack",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Earth Power",
+              "moveId": "torkoal:Earth Power",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Rock Slide",
+              "moveId": "dugtrio:Rock Slide",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Night Slash",
+              "moveId": "heracross:Night Slash",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Rhyperior",
+          "moves": [
+            {
+              "name": "Hammer Arm",
+              "moveId": "darmanitan:Hammer Arm",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Thunder Punch",
+              "moveId": "rhyperior:Thunder Punch",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Dragon Pulse",
+              "moveId": "ampharos:Dragon Pulse",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Thunder",
+              "moveId": "kyogreP:Thunder",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Scyther",
+          "moves": [
+            {
+              "name": "Focus Energy",
+              "moveId": "inteleonM8:Focus Energy",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Wing Attack",
+              "moveId": "scyther:Wing Attack",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Double Team",
+              "moveId": "swellow:Double Team",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "X-Scissor",
+              "moveId": "scyther:X-Scissor",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 20,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 12,
+      "team": [
+        {
+          "pokemon": "Sigilyph",
+          "moves": [
+            {
+              "name": "Reflect",
+              "moveId": "ribombee:Reflect",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Air Slash",
+              "moveId": "crobat:Air Slash",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Psychic",
+              "moveId": "espeon:Psychic",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Ice Beam",
+              "moveId": "sigilyph:Ice Beam",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Salamence",
+          "moves": [
+            {
+              "name": "Protect",
+              "moveId": "weavile:Protect",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Bite",
+              "moveId": "persian:Bite",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Fire Blast",
+              "moveId": "hydreigon:Fire Blast",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Outrage",
+              "moveId": "garchomp:Outrage",
+              "default": true,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Nidoking",
+          "moves": [
+            {
+              "name": "Blizzard",
+              "moveId": "vanilluxe:Blizzard",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Thunderbolt",
+              "moveId": "ampharos:Thunderbolt",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Stone Edge",
+              "moveId": "heracross:Stone Edge",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Shadow Ball",
+              "moveId": "espeon:Shadow Ball",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    },
+    {
+      "batch": 21,
+      "mode": "Practice vs Bot EASY 3v3",
+      "status": "NOT_EXECUTED",
+      "distinctNewMoves": 5,
+      "team": [
+        {
+          "pokemon": "Charizard",
+          "moves": [
+            {
+              "name": "Crunch",
+              "moveId": "archeops:Crunch",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Flamethrower",
+              "moveId": "typhlosion:Flamethrower",
+              "default": true,
+              "newResearch": true
+            },
+            {
+              "name": "Aerial Ace",
+              "moveId": "staraptor:Aerial Ace",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Giga Impact",
+              "moveId": "garchomp:Giga Impact",
+              "default": false,
+              "newResearch": true
+            }
+          ],
+          "newMoves": 4,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Venusaur",
+          "moves": [
+            {
+              "name": "Hyper Beam",
+              "moveId": "gyarados:Hyper Beam",
+              "default": false,
+              "newResearch": true
+            },
+            {
+              "name": "Earthquake",
+              "moveId": "venusaurO:Earthquake",
+              "default": true,
+              "newResearch": false
+            },
+            {
+              "name": "Outrage",
+              "moveId": "salamenceL:Outrage",
+              "default": true,
+              "newResearch": false
+            },
+            {
+              "name": "Petal Blizzard",
+              "moveId": "floette:Petal Blizzard",
+              "default": true,
+              "newResearch": false
+            }
+          ],
+          "newMoves": 1,
+          "requiresMoveEdit": true
+        },
+        {
+          "pokemon": "Blastoise",
+          "moves": [
+            {
+              "name": "Hydro Pump",
+              "moveId": "kyogre:Hydro Pump",
+              "default": true,
+              "newResearch": false
+            },
+            {
+              "name": "Ice Beam",
+              "moveId": "kyogre:Ice Beam",
+              "default": true,
+              "newResearch": false
+            },
+            {
+              "name": "Rapid Spin",
+              "moveId": "blastoise:Rapid Spin",
+              "default": true,
+              "newResearch": false
+            },
+            {
+              "name": "Skull Bash",
+              "moveId": "blastoise:Skull Bash",
+              "default": true,
+              "newResearch": false
+            }
+          ],
+          "newMoves": 0,
+          "filler": true
+        }
+      ],
+      "notes": "UI team builder edit moves by moveId; use 3 species and attempt 4 moves each; status remains unobserved until authenticated match."
+    }
+  ]
+}
