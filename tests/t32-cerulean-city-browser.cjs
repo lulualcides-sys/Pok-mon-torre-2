@@ -35,7 +35,12 @@ fs.mkdirSync(screenshot,{recursive:true});
      return {x:r.x+x*r.width/640,y:r.y+y*r.height/360};
     },[x,y]);
     if(label==='mobile')await page.touchscreen.tap(position.x,position.y);
-    else await page.mouse.click(position.x,position.y);
+    else{
+     // Phaser's pointer manager samples mouse.down on a game frame.
+     // Zero-duration Playwright click can entirely miss native pointerdown.
+     await page.mouse.move(position.x,position.y);
+     await page.mouse.down();await page.waitForTimeout(110);await page.mouse.up();
+    }
    }
    async function named(tag,label){
     const xy=await page.evaluate(({tag,label})=>{
@@ -110,9 +115,26 @@ fs.mkdirSync(screenshot,{recursive:true});
        x.getData?.('torre2-city-landmark')==='CENTRO');
     },null,{timeout:16000});
     await named('torre2-city-landmark','CENTRO');
-    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-     .children.list.some(x=>typeof x.text==='string'&&
-      x.text.includes('CENTRO POKÉMON')),null,{timeout:14000});
+    // A missed native mouse press can be retried only while the actual city
+    // interaction zone still exists; never call Center's handler directly.
+    let centerOpened=await page.waitForFunction(()=>
+     window.__pt2Game.scene.getScene('campanha').children.list.some(x=>
+      typeof x.text==='string'&&x.text.includes('CENTRO POKÉMON')),
+     null,{timeout:4500}).then(()=>true).catch(()=>false);
+    if(!centerOpened){
+     const stillCity=await page.evaluate(()=>{
+      const c=window.__pt2Game.scene.getScene('campanha');
+      return c.children.list.some(x=>x.active&&x.input?.enabled&&
+       x.getData?.('torre2-city-landmark')==='CENTRO');
+     });
+     assert.ok(stillCity,'No native center hotspot remains after missed click');
+     await named('torre2-city-landmark','CENTRO');
+     centerOpened=await page.waitForFunction(()=>
+      window.__pt2Game.scene.getScene('campanha').children.list.some(x=>
+       typeof x.text==='string'&&x.text.includes('CENTRO POKÉMON')),
+      null,{timeout:8000}).then(()=>true).catch(()=>false);
+    }
+    assert.ok(centerOpened,'Clicking building did not open the native Center');
     assert.equal(await page.evaluate(()=>
      localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before,
      'Entering Center display without healing must not modify saves');
