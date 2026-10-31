@@ -108,3 +108,8 @@ Arquivos: `torre2-rematch-policy.js` e `tests/rematch-policy.test.js`. RED repro
 - Branch isolada da main `679df0b6d6714ed7348dd63265d906be508c4649`, não reexecutar o roteiro T20 de ~30–53 min: usar artifact ID 13028307911 da CI verde #41162666401, com SHA-256 e provenance verificados no teste.
 - Teste incremental `tests/t19-earned-brock-five-cerulean-browser.cjs` só altera o harness; workflow `master-t19-five-earned-cerulean.yml` exige Node, npm test/check/check:reuse, build Phaser, cinco lutas Chromium, suíte browser completa e guardião PR. Falha real continua vermelha e screenshot preservada.
 - Rollback: remover workflow/teste, nenhum save/runtime alterado. Artefato expira em 21 dias; uma execução futura precisa gerar nova origem natural verificada, não inventar save.
+
+
+## T31 — plano REA TM03 (31/10/2026)
+- Causa: asserção obsoleta em `tests/solo-kanto-built.test.mjs:245` após #384; política atual de `martItemUnlocked` está correta. Alterar somente o teste e criar workflow isolado; não afrouxar unlock.
+- Verificação: npm test, check, check:reuse, capture-client, build-preview, teste built-client, Chromium completo, visual/CI da PR; rollback dos dois arquivos se regressão comprovada. Sem fonte nova de golpes.

@@ -139,3 +139,10 @@ Critério para `[x]`: arquivo/ação verificado neste PR. **Nenhuma tarefa funci
 - [x] Criado teste de cinco batalhas nativas + workflow com reutilização de artifact genuíno e SHA-256 estrito; sem gameplay editado.
 - [ ] Aguardar CI HEAD exato e guardião; examinar logs/screenshots, corrigir somente falhas comprovadas, sem aprovar antes do resultado.
 - [ ] Após prova, seguir até Misty/Cascata/TM03; não declarar rota completa nem Android físico.
+
+
+## T31 — REA TM03 gate (31/10/2026)
+- [x] Diagnosticar falha real do run #41175372696 e confrontar com política de insígnia da PR #384.
+- [x] Atualizar asserções negativas/positivas no teste existente sem alterar runtime; adicionar workflow focado.
+- [ ] Exigir CI GREEN do HEAD, Chromium, guardião, revisão, merge e Pages HTTP do SHA novo.
+- [ ] Frente seguinte DIFERENTE: T19 Misty/Cascata/TM03 por save natural, sem fixture de vitória.
