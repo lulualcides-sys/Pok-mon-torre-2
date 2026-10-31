@@ -1,5 +1,9 @@
 # Especificação — Continuidade segura do Script Mestre com Superpowers e Spec Kit
 
+## Lote T08 — limite de poder em prévias Lv5/Lv8 (31/10/2026)
+**Defeito reproduzido em execução isolada do módulo da main `ce38c4c2`:** `resolveKantoIntro` reduzia `dano` para até 9/12, mas copiava `poder` Gen III 130/150 para ataques de treino Lv5 e para ULT sem assinatura. Critério: prévias dos slots LMB/RMB/Q com `poder` 0–40; ULT Lv8 com `poder` 0–60; preservar fonte, save, renderer, nível real de desbloqueio e Arena. Teste RED no commit `83106e92`; patch mínimo `110cc7d2`. CI, Chromium e Pages ainda pendentes.
+
+
 ## Lote T22 — ticket legado sem token (31/10/2026)
 Aceite: pendência sem token positivo seguro não bloqueia o VS Seeker carregado nem concede prêmio; resultado ausente retorna falso sem lançar erro; ticket válido permanece consumível uma única vez. Sem reescrever saves, XP, TM, VFX ou gameplay.
 
