@@ -1,5 +1,14 @@
 # Tarefas — 001 / Superpowers + Spec Kit
 
+## Checkpoint T20 após integração — 31/10/2026
+- [x] Corrida real Pallet→Brock concluída: 13 treinadores, captura de Spearow/Geodude, Brock, Rocha e TM Rock Tomb (CI #41153415212).
+- [x] Guardião visual #41153419869 e testes nativos da branch concluídos com sucesso.
+- [x] PR #369 incorporada à main em `1fcc64eb53407b535cc8919832bacbfd492c7354`.
+- [ ] Verificar CI pós-merge e Pages HTTP do SHA correspondente na main; sem isso não afirmar nova publicação.
+- [ ] Continuar T19 de Rocha até Misty com progressão natural no mesmo save, registrar Cascata/TM e cobertura de navegação/evolução/capturas/PC.
+- [ ] Completar Pallet→Campeão em um save real; não marcar as 37 seções como concluídas.
+
+
 ## Lote T03 — Eevee legado sem UID (30/10/2026)
 - [x] Localizar bloqueio no código da main `be1d230c` e isolar escopo sem conflito com PRs #369/#381.
 - [x] Preparar teste de regressão e correção focada para Eevee legado na equipe/PC, colisão de UID e gravação negada; **nenhuma execução ainda declarada**.
