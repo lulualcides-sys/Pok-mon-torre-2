@@ -26,8 +26,10 @@ for(const deny of [core.SAVE_KEY,core.SAVE_BACKUP_KEY])
  test('compiled Phaser battle Bag save is atomic when '+deny+' rejects',()=>{
   const {s,party,storage,failed}=make();
   const before=structuredClone(s),battle=structuredClone(party);
-  const first=storage.getItem(core.SAVE_KEY),backup=storage.getItem(core.SAVE_BACKUP_KEY);
+  // readCampaign legitimately migrates legacy inventory defaults and may
+  // rewrite the primary checkpoint. Capture the baseline AFTER migration.
   const loadedBefore=core.readCampaign(storage);
+  const first=storage.getItem(core.SAVE_KEY),backup=storage.getItem(core.SAVE_BACKUP_KEY);
   const ref=s.team[0],friend=party.friend[0],inv=s.inventory;
   failed.key=deny;
   assert.throws(()=>commitBattleBagItem(s,party,'potion',0,{hp:27},
