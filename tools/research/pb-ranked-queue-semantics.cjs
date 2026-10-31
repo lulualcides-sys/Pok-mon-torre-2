@@ -15,6 +15,7 @@ const patterns=[
 ['findMatch',/findMatch|startMatch|joinMatch|queueMatch|startPractice|beginPractice|joinQueue|queueForMatch/ig]
 ];
 const output={date:new Date().toISOString(),files:[],method:'Public JS string/identifier search. This index does not prove runtime routing/queue semantics.',warnings:['No game source or art is stored','Neither an unranked UI chip nor the Practice button establishes opponent type; verify battle or server-side protocol','Source snippets are deliberately omitted']};
+async function main(){
 for(const path of urls){
  const response=await fetch(ROOT+path,{signal:AbortSignal.timeout(50000)});
  if(!response.ok)throw Error(path+': '+response.status);
@@ -36,3 +37,5 @@ for(const path of urls){
 fs.mkdirSync('reference-library/pb-ranked',{recursive:true});
 fs.writeFileSync('reference-library/pb-ranked/SEMANTICA-FILA-PRACTICE-VS-UNRANKED.json',JSON.stringify(output,null,2)+'\n');
 console.log('Saved metadata, no JS source included');
+}
+main().catch(e=>{console.error(e.stack||e);process.exitCode=1;});
