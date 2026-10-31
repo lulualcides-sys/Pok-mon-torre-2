@@ -1,0 +1,107 @@
+{
+  "date": "2026-10-31",
+  "scope": "Pesquisa incremental de golpes no modo Practice vs Bot. Repositório e jogo publicado inalterados.",
+  "source": "https://ranked.pokemonbattlegrounds.com/",
+  "runs": [
+    {
+      "runId": "42da9b5a-b1ae-44a0-9e06-a41c058eaa69",
+      "url": "https://agent.tinyfish.ai/runs/42da9b5a-b1ae-44a0-9e06-a41c058eaa69",
+      "arena": "Mt. Silver",
+      "mode": "Practice vs Bot EASY 3v3",
+      "reportedBattleTeam": [
+        "Crobat",
+        "Snorlax",
+        "Charizard"
+      ],
+      "provenance": "TinyFish visual browser-agent report (not direct REA authenticated trace)"
+    }
+  ],
+  "observations": [
+    {
+      "pokemon": "Crobat",
+      "name": "Cross Poison",
+      "action": "reported used in battle",
+      "reportedEffect": "luminous green strike/poison-like particles",
+      "powerLabel": "70",
+      "confidence": "agent-reported live; raw frames not independently validated"
+    },
+    {
+      "pokemon": "Crobat",
+      "name": "Air Slash",
+      "action": "reported used in battle",
+      "reportedEffect": "blue sharp gust with wind trail",
+      "powerLabel": "75",
+      "confidence": "agent-reported live; raw frames not independently validated"
+    },
+    {
+      "pokemon": "Crobat",
+      "name": "Toxic",
+      "action": "reported used in battle",
+      "reportedEffect": "dark-green gas and poison-like effect",
+      "confidence": "agent-reported live; exact opponent status not validated"
+    },
+    {
+      "pokemon": "Crobat",
+      "name": "Brave Bird",
+      "action": "reported used in battle",
+      "reportedEffect": "red energetic motion and large impact burst",
+      "powerLabel": "120",
+      "confidence": "agent-reported live; raw frames not independently validated"
+    },
+    {
+      "pokemon": "Charizard",
+      "name": "Flamethrower",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    },
+    {
+      "pokemon": "Charizard",
+      "name": "Fire Blast",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    },
+    {
+      "pokemon": "Charizard",
+      "name": "Dragon Claw",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    },
+    {
+      "pokemon": "Charizard",
+      "name": "Air Slash",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    },
+    {
+      "pokemon": "Snorlax",
+      "name": "Body Slam",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    },
+    {
+      "pokemon": "Snorlax",
+      "name": "Hyper Beam",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    },
+    {
+      "pokemon": "Snorlax",
+      "name": "Earthquake",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    },
+    {
+      "pokemon": "Snorlax",
+      "name": "Rest",
+      "action": "menu only",
+      "confidence": "not visually confirmed"
+    }
+  ],
+  "issues": [
+    "Numeric labels near move buttons are most likely base move power and are NOT confirmed cooldown seconds; first TinyFish report conflated them.",
+    "Team builder supports editing move selection and choosing three for 3v3, but does not mean all Pokémon are available/unlocked.",
+    "Charizard was benched during this specific match; no actual Fire or Dragon visual evidence.",
+    "Raw screenshot images were not independently preserved in this file; confidence restricted to agent's live report.",
+    "All copied observations are research metadata only; no original source art or third-party source code is included."
+  ]
+}
