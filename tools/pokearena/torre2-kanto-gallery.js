@@ -195,6 +195,11 @@ export function drawKantoPreview(scene,id,onNavigate){
  const r=getRegion(id);if(!r)throw Error('Unknown Kanto preview: '+id);
  if(typeof onNavigate!=='function')throw Error('Native preview navigation callback required');
  scene.children.removeAll(true);
+ // Original Poké Arena Phaser runs at 1280×720 logical pixels. Preview
+ // geometry is authored at 640×360; scale its own isolated camera, not HUD.
+ const zoom=Math.min(scene.scale.gameSize.width/640,scene.scale.gameSize.height/360);
+ scene.cameras.main.setZoom(zoom).centerOn(320,180);
+ scene.cameras.main.setBackgroundColor(0x132b32);
  const g=scene.add.graphics().setDepth(0);
  terrain(g,r);
  if(r.kind==='city')cityObjects(g,r);
