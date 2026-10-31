@@ -780,9 +780,10 @@ create(){
    ' · EQUIPE Nv.'+foe.level+' · VS '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
   text(this,320,151,'Recarrega ao vencer 3 outras batalhas.',statusStyle).setOrigin(.5);
   text(this,320,178,'Não concede insígnias, TMs ou progresso da história.',statusStyle).setOrigin(.5);
-  this.button(320,235,240,40,'REVANCHE',()=>{
-   const result=startRematch(state,index,mapStage);
-   if(!result.ok){text(this,320,278,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5);return;}
+  // One durable ticket per fight: an interrupted rematch may be resumed
+  // explicitly after reload without buying a second VS Seeker charge.
+  // Keep the existing REVANCHE button's denial for insufficient charge.
+  const launchReserved=result=>{
    // Temporary opponent uses the selected map; story stage and trainer stay fixed.
    const party=createPartyMatch({...state,stage:mapStage,trainer:index},
     currentOpponent({...state,stage:mapStage,trainer:index,champion:false}),false);
@@ -800,7 +801,22 @@ create(){
     kind:routeNode(mapStage,index,TRAINERS_PER_GYM(mapStage)).type,
     name:foe.name,city:STAGES[mapStage]?.city,rematch:true}),
    playerLevel:p.level,enemyLevel:e.level,hardCap:currentLevelCap(state.stage)},torre2Loadout:p.loadout,torre2OpponentLoadout:e.loadout},false);
+  };
+  this.button(320,235,240,40,'REVANCHE',()=>{
+   const result=startRematch(state,index,mapStage);
+   if(!result.ok){
+    text(this,320,265,result.reason,{fontSize:'10px',color:C.gold}).setOrigin(.5);
+    return;
+   }
+   launchReserved(result);
   },true);
+  const pending=state.rematches?.pending;
+  if(pending?.stage===mapStage&&pending?.trainer===index&&
+     validRematchResult(state,pending)){
+   this.button(320,286,240,28,'RETOMAR REVANCHE',()=>launchReserved({
+    ok:true,opponent:foe,ticket:{...pending}
+   }),true).setData('torre2-rematch-resume',true);
+  }
   this.button(320,320,230,32,'◀ REVANCHES',()=>this.rematchAtlasScreen(state,mapStage));
  }
  enterTraining(state){
