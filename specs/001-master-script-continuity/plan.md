@@ -100,3 +100,8 @@
 3. Cura pelo Centro e combate real contra o primeiro treinador de Cerulean; exigir XP, avanço do índice, badge/TM invariantes e reload persistente.
 4. Em derrota ou timeout, manter resultado real e screenshot para diagnóstico, sem alterar gameplay para satisfazer o teste.
 5. Não homologar Misty ou Android até evidência própria; workflow completo e Pages somente após gates verdes. Não repetir a longa corrida em toda execução.
+
+## T19 — execução econômica pós-Brock (31/10/2026)
+- Branch isolada da main `679df0b6d6714ed7348dd63265d906be508c4649`, não reexecutar o roteiro T20 de ~30–53 min: usar artifact ID 13028307911 da CI verde #41162666401, com SHA-256 e provenance verificados no teste.
+- Teste incremental `tests/t19-earned-brock-five-cerulean-browser.cjs` só altera o harness; workflow `master-t19-five-earned-cerulean.yml` exige Node, npm test/check/check:reuse, build Phaser, cinco lutas Chromium, suíte browser completa e guardião PR. Falha real continua vermelha e screenshot preservada.
+- Rollback: remover workflow/teste, nenhum save/runtime alterado. Artefato expira em 21 dias; uma execução futura precisa gerar nova origem natural verificada, não inventar save.

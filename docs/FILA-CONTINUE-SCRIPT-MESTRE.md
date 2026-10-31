@@ -835,3 +835,9 @@ A coluna "fechar quando" é o critério objetivo. Os números são fixos para ma
 - **Frente atual:** exportação opcional do save realmente conquistado na corrida T20 e teste Chromium do primeiro treinador Cerulean, em branch isolada `test/t19-earned-brock-to-cerulean-20261031`. Ver `docs/T19-SAVE-NATURAL-BROCK-CERULEAN-2026-10-31.md`.
 - **Não é vitória comprovada:** código e workflow preparados; CI, merge e Pages ainda pendentes. Não equivale a Misty/Cascata/TM03.
 - **Próxima frente independente:** T25 PR #397 em validação; não repetir T10 #374 nem sobrepor a PR #381.
+
+## 31/10/2026 — T19 Cerulean 5 treinadores (lote incremental)
+- Main de origem: `679df0b6d6714ed7348dd63265d906be508c4649`, PR #398 integrada, Pages da main anterior #41166012257 success e HTTP `src-3573202d00`; Pages desta nova main ainda sem confirmação.
+- Reutilizar o **artefato genuíno** da CI #41162666401 (ID 13028307911, SHA-256 do save `865424a80bf46f5b43605c7cb193cf316805ad6453824b3fd7b9113748e17c18`), sem refazer os 13 treinadores e Brock em toda execução.
+- Teste novo somente navegador/CI: cinco treinadores Cerulean consecutivos com clique Phaser, Centro real, XP, save, UID, badges e TM inalteradas; derrotas reais fazem a CI falhar. Sem editar runtime, RNG, HP, XP, IA, sprites ou VFX. **Não validado até CI/Chromium GREEN; Misty/Cascata/TM03 permanecem pendentes.**
+- Próxima frente diferente: T07/T08 slots/learnsets comprovadamente faltantes, sem voltar ao T10.
