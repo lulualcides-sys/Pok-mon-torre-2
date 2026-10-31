@@ -1,5 +1,13 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## CONTINUIDADE VERIFICADA 31/10/2026 — PR #369 T20 integrada; Pallet→Brock comprovado
+- **Código de teste integrado:** PR [#369](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/369), squash `1fcc64eb53407b535cc8919832bacbfd492c7354`. Não duplicar #369 nem reabrir o antigo bloqueio do 13º rival.
+- **CI original da branch:** [#41153415212](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153415212) **success**: build real Phaser, testes unitários e Chromium, 13 treinadores em save único iniciado com Bulbasaur Lv5, capturas genuínas de Spearow e Geodude, quatro derrotas normais e recuperação, Brock vencido, estágio 1, insígnia **Rocha** e TM **tm-rock-tomb**. Resultado final: 37 vitórias acumuladas (inclui treino selvagem), 4 derrotas, equipe Bulbasaur Lv14 / Spearow Lv14 / Geodude Lv12. Guardião visual da branch [#41153419869](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41153419869) **success**.
+- **Limites essenciais:** as 13 vitórias e Brock são execução real de combate automatizado com encontros/capturas sem forçar HP/vitória; não provam controle Android físico, jornada natural Brock→Campeão, nem Pages público no novo SHA. O teste original rodou sobre a branch da PR anterior ao merge; verificar CI da main e Pages HTTP para marcar publicação. A implementação de #369 altera somente teste/workflow, não balanceamento ou golpes.
+- **Próxima frente independente:** T19 continuação pós-Brock → Cerulean/Misty, verificando no mesmo save XP, capturas, evolução, equipe, insígnias/TMs sem fixtures de nível/progresso, antes de afirmar campanha integral. T07/T08 permanecem parciais; T10 #381 permanece isolada por CI vermelha.
+- **Golpe pedido no chat:** Egg Bomb na campanha `cd:2.3` já integrado pela PR [#394](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/394) em `5323ac25cce7cda03ed16a221c64fca7f1be6918`; Arena/VS e VFX mantidos.
+
+
 ## CHECKPOINT ATUAL 31/10/2026 — publicado; T20 ainda em teste
 - Leia primeiro [CHECKPOINT 31/10](CHECKPOINT-SCRIPT-MESTRE-2026-10-31.md): main `994e2286` **publicada** (Pages #41153252202, HTTP `src-0dcbef4bd8`, Chromium público verde). T03 #386 e T22 #387 mescladas; não repetir. T20 #369 `6259f3be` DRAFT, novo Chromium longo #41153415212 em andamento, visual verde, Brock/Rocha/TM39 **não comprovados**. T10 #381 CI vermelha: evitar ciclos. Histórico abaixo preservado; dados anteriores de T03/Pages foram superados.
 
