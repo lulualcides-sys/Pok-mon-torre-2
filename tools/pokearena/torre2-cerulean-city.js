@@ -44,8 +44,9 @@ function enrichCerulean(scene){
   canal.fillStyle(0xd8f9ff,.8);canal.fillRect(x,y,5,2);
   canal.fillStyle(0x63bce5,.65);canal.fillRect(x+2,y+3,3,1);
  }
- scene.tweens.add({targets:canal,alpha:{from:.32,to:.86},
+ const canalTween=scene.tweens.add({targets:canal,alpha:{from:.32,to:.86},
   duration:1650,yoyo:true,repeat:-1});
+ canal.once('destroy',()=>canalTween.remove());
  for(const [kind,x,y] of [['youngster',181,220],['lass',461,218],
   ['fisherman',112,245]]){
   const npc=addFireRedNPC(scene,kind,x,y,{scale:1.04,depth:17});
@@ -82,8 +83,9 @@ function cityHotspot(scene,sceneView,hotspot,label,fn,locked=false){
  const marker=scene.add.graphics().setDepth(28);
  marker.fillStyle(locked?0xa6b7c6:0xffe3a0);
  marker.fillTriangle(x-4,y-48,x+4,y-48,x,y-42);
- scene.tweens.add({targets:marker,alpha:{from:.42,to:1},
+ const markerTween=scene.tweens.add({targets:marker,alpha:{from:.42,to:1},
   duration:1100,yoyo:true,repeat:-1});
+ marker.once('destroy',()=>markerTween.remove());
  const z=scene.add.zone(x,y,50,31).setInteractive({useHandCursor:true})
   .setDepth(29).setData('torre2-city-landmark',label);
  z.on('pointerover',()=>paint(true)).on('pointerout',()=>paint(false));
