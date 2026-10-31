@@ -159,6 +159,22 @@
       "usesReported": 9,
       "exactAnimationVfxVerified": 0,
       "note": "AUTO repeated Thunderbolt/Quick Attack/Crunch. Lapras remained on bench."
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/21383781-c0bc-46e8-be68-157dcbeede01",
+      "status": "MATCH_LOST_THREE_MANUAL_CASTS",
+      "mode": "Practice vs Bot EASY 3v3",
+      "battleStarted": true,
+      "arena": "Mt. Silver Summit",
+      "outcome": "LOSS",
+      "team": [
+        "Pikachu",
+        "Arcanine",
+        "Lapras"
+      ],
+      "castReportedUnique": 3,
+      "exactAnimationVfxVerified": 0,
+      "note": "Lapras Surf, Arcanine Extreme Speed and Wild Charge manual; 5 targets missed due to stale button and KO"
     }
   ],
   "coverage": {
@@ -177,7 +193,7 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 18,
+    "uniqueMovesWithBrowserAgentUseReported": 21,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
     "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
@@ -187,6 +203,12 @@
       "uses": 9,
       "missing": 8,
       "matchResult": "WIN"
+    },
+    "latestBatchThree": {
+      "requested": 8,
+      "manualCastReported": 3,
+      "notCast": 5,
+      "matchOutcome": "LOSS"
     }
   },
   "warnings": [
