@@ -143,6 +143,22 @@
       "castReportedUnique": 12,
       "exactAnimationVfxVerified": 0,
       "note": "12 move uses reported via browser agent; manual/auto separated, but frame-by-frame VFX not captured in repository."
+    },
+    {
+      "runUrl": "https://agent.tinyfish.ai/runs/08fcdaef-5271-492d-8e75-af306df4c248",
+      "status": "BATTLE_WON_WITH_FOUR_DISTINCT_MOVES_REPORTED",
+      "battleStarted": true,
+      "mode": "Practice vs Bot EASY 3v3",
+      "outcome": "WIN",
+      "team": [
+        "Pikachu",
+        "Arcanine",
+        "Lapras"
+      ],
+      "castReportedUnique": 4,
+      "usesReported": 9,
+      "exactAnimationVfxVerified": 0,
+      "note": "AUTO repeated Thunderbolt/Quick Attack/Crunch. Lapras remained on bench."
     }
   ],
   "coverage": {
@@ -161,10 +177,17 @@
       "Giga Impact",
       "X-Scissor"
     ],
-    "uniqueMovesWithBrowserAgentUseReported": 14,
+    "uniqueMovesWithBrowserAgentUseReported": 18,
     "uniqueMovesWithExactAnimationFramesArchived": 0,
     "latestMatchReportedUsed12": true,
-    "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence."
+    "note": "Prior 2 manual explicit hits Petal Blizzard and Hydro Pump plus 12 new named uses across 3 species. 'Agent use reported' is not frame-level animation evidence.",
+    "latestBatchTwo": {
+      "plannedDistinct": 12,
+      "reportedDistinct": 4,
+      "uses": 9,
+      "missing": 8,
+      "matchResult": "WIN"
+    }
   },
   "warnings": [
     "Do not add inferred shapes to observed visual coverage",
