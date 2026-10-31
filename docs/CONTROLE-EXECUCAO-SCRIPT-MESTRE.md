@@ -1,5 +1,9 @@
 # Controle de execução — Script Mestre Definitivo (Pokémon Torre 2)
 
+## CHECKPOINT ATUAL 31/10/2026 — publicado; T20 ainda em teste
+- Leia primeiro [CHECKPOINT 31/10](CHECKPOINT-SCRIPT-MESTRE-2026-10-31.md): main `994e2286` **publicada** (Pages #41153252202, HTTP `src-0dcbef4bd8`, Chromium público verde). T03 #386 e T22 #387 mescladas; não repetir. T20 #369 `6259f3be` DRAFT, novo Chromium longo #41153415212 em andamento, visual verde, Brock/Rocha/TM39 **não comprovados**. T10 #381 CI vermelha: evitar ciclos. Histórico abaixo preservado; dados anteriores de T03/Pages foram superados.
+
+
 ## 30/10/2026 — §5/T03: Eevee legado sem UID, correção submetida à validação
 - **Causa no código da main `be1d230c`:** Eevee Lv30 sem UID em save v1 recebe seletor `undefined` e não pode confirmar evolução. Branch isolada `fix/t03-legacy-eevee-pc-identity-20261030` propõe token não mutante e persistência atômica na escolha, sem reescrever saves antigos.
 - **Prova pendente:** teste preparado de equipe/PC, colisão, storage negado, Shiny e TM; CI/Chromium, merge e Pages ainda **não comprovados**. Fixtures não são partidas naturais. T03, T07/T08, T20 e §§5/7/8/20/37 seguem parciais.
