@@ -1,0 +1,551 @@
+{
+  "researchedAt": "2026-10-31T20:03:19.849Z",
+  "host": "https://ranked.pokemonbattlegrounds.com",
+  "source": "public metadata files",
+  "files": [
+    {
+      "source": "/assets/sprites/anims.json",
+      "label": "pokemon_animations",
+      "structure": {
+        "type": "object",
+        "length": 237,
+        "examples": [
+          {
+            "key": "1005",
+            "type": "object",
+            "keys": [
+              "shadowSize",
+              "anims"
+            ]
+          },
+          {
+            "key": "1006",
+            "type": "object",
+            "keys": [
+              "shadowSize",
+              "anims"
+            ]
+          },
+          {
+            "key": "0003",
+            "type": "object",
+            "keys": [
+              "shadowSize",
+              "anims"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source": "/trainers.json",
+      "label": "trainers",
+      "structure": {
+        "type": "array",
+        "length": 28,
+        "examples": [
+          {
+            "key": "0",
+            "type": "object",
+            "keys": [
+              "key",
+              "name"
+            ]
+          },
+          {
+            "key": "1",
+            "type": "object",
+            "keys": [
+              "key",
+              "name"
+            ]
+          },
+          {
+            "key": "2",
+            "type": "object",
+            "keys": [
+              "key",
+              "name"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source": "/roster.json",
+      "label": "roster",
+      "structure": {
+        "type": "array",
+        "length": 127,
+        "examples": [
+          {
+            "key": "0",
+            "type": "object",
+            "keys": [
+              "key",
+              "name",
+              "num",
+              "gen",
+              "dex",
+              "types",
+              "mega",
+              "defaults",
+              "stats",
+              "idleH",
+              "faces",
+              "ability",
+              "abilityDesc",
+              "megaAbility",
+              "megaAbilityDesc",
+              "icon",
+              "megaDex",
+              "megaIdleH",
+              "megaFaces",
+              "pool"
+            ]
+          },
+          {
+            "key": "1",
+            "type": "object",
+            "keys": [
+              "key",
+              "name",
+              "num",
+              "gen",
+              "dex",
+              "types",
+              "mega",
+              "defaults",
+              "stats",
+              "idleH",
+              "faces",
+              "ability",
+              "abilityDesc",
+              "megaAbility",
+              "megaAbilityDesc",
+              "icon",
+              "megaDex",
+              "megaIdleH",
+              "megaFaces",
+              "pool"
+            ]
+          },
+          {
+            "key": "2",
+            "type": "object",
+            "keys": [
+              "key",
+              "name",
+              "num",
+              "gen",
+              "dex",
+              "types",
+              "mega",
+              "defaults",
+              "stats",
+              "idleH",
+              "faces",
+              "ability",
+              "abilityDesc",
+              "megaAbility",
+              "megaAbilityDesc",
+              "icon",
+              "megaDex",
+              "megaIdleH",
+              "megaFaces",
+              "pool"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "source": "/assets/arena/meteorfalls_tiles.json",
+      "label": "arena_meteorfalls_tiles",
+      "structure": {
+        "type": "object",
+        "length": 3,
+        "examples": [
+          {
+            "key": "step",
+            "type": "number",
+            "keys": []
+          },
+          {
+            "key": "size",
+            "type": "number",
+            "keys": []
+          },
+          {
+            "key": "ids",
+            "type": "array",
+            "keys": [
+              "0",
+              "1",
+              "2",
+              "3",
+              "4",
+              "5",
+              "6",
+              "7",
+              "8",
+              "9",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "errors": [],
+  "warnings": [
+    "Not a cache or redistribution of source JSON and artwork",
+    "Durations are ticks/frames from source metadata; not measured seconds",
+    "IDs and state names are declarations, not proof of battle use"
+  ],
+  "trainerSummary": {
+    "rootKeys": {
+      "type": "array",
+      "length": 28,
+      "examples": [
+        {
+          "key": "0",
+          "type": "object",
+          "keys": [
+            "key",
+            "name"
+          ]
+        },
+        {
+          "key": "1",
+          "type": "object",
+          "keys": [
+            "key",
+            "name"
+          ]
+        },
+        {
+          "key": "2",
+          "type": "object",
+          "keys": [
+            "key",
+            "name"
+          ]
+        }
+      ]
+    },
+    "trainerNames": [
+      "Alain",
+      "Archie",
+      "Ash",
+      "AZ",
+      "Blue",
+      "Brendan",
+      "Cynthia",
+      "Dawn",
+      "Diantha",
+      "Ethan",
+      "Ghetsis",
+      "Giovanni",
+      "Gladion",
+      "Iris",
+      "Jonathan",
+      "Lance",
+      "Leon",
+      "Lillie",
+      "Lillie (dress)",
+      "Maxie",
+      "Mustard",
+      "N",
+      "Paul",
+      "Prof. Oak",
+      "Red",
+      "Silver",
+      "Steven",
+      "Wolfe"
+    ],
+    "note": "Name keys only; no trainer sprites captured and no Pokeball throw frames proven"
+  },
+  "rosterSummary": {
+    "root": {
+      "type": "array",
+      "length": 127,
+      "examples": [
+        {
+          "key": "0",
+          "type": "object",
+          "keys": [
+            "key",
+            "name",
+            "num",
+            "gen",
+            "dex",
+            "types",
+            "mega",
+            "defaults",
+            "stats",
+            "idleH",
+            "faces",
+            "ability",
+            "abilityDesc",
+            "megaAbility",
+            "megaAbilityDesc",
+            "icon",
+            "megaDex",
+            "megaIdleH",
+            "megaFaces",
+            "pool"
+          ]
+        },
+        {
+          "key": "1",
+          "type": "object",
+          "keys": [
+            "key",
+            "name",
+            "num",
+            "gen",
+            "dex",
+            "types",
+            "mega",
+            "defaults",
+            "stats",
+            "idleH",
+            "faces",
+            "ability",
+            "abilityDesc",
+            "megaAbility",
+            "megaAbilityDesc",
+            "icon",
+            "megaDex",
+            "megaIdleH",
+            "megaFaces",
+            "pool"
+          ]
+        },
+        {
+          "key": "2",
+          "type": "object",
+          "keys": [
+            "key",
+            "name",
+            "num",
+            "gen",
+            "dex",
+            "types",
+            "mega",
+            "defaults",
+            "stats",
+            "idleH",
+            "faces",
+            "ability",
+            "abilityDesc",
+            "megaAbility",
+            "megaAbilityDesc",
+            "icon",
+            "megaDex",
+            "megaIdleH",
+            "megaFaces",
+            "pool"
+          ]
+        }
+      ]
+    },
+    "candidateSpeciesNames": [
+      "Venusaur",
+      "Charizard",
+      "Blastoise",
+      "Pidgeot",
+      "Pikachu",
+      "Sandslash (Alola)",
+      "Nidoking",
+      "Clefable",
+      "Ninetales (Alola)",
+      "Dugtrio",
+      "Persian",
+      "Arcanine",
+      "Alakazam",
+      "Tentacruel",
+      "Dodrio",
+      "Muk",
+      "Gengar",
+      "Exeggutor",
+      "Weezing",
+      "Rhydon",
+      "Scyther",
+      "Tauros",
+      "Gyarados",
+      "Lapras",
+      "Jolteon",
+      "Aerodactyl",
+      "Snorlax",
+      "Dragonite",
+      "Typhlosion",
+      "Feraligatr",
+      "Crobat",
+      "Ampharos",
+      "Espeon",
+      "Umbreon",
+      "Steelix",
+      "Heracross",
+      "Skarmory",
+      "Kingdra",
+      "Tyranitar",
+      "Sceptile",
+      "Mightyena",
+      "Swellow",
+      "Gardevoir",
+      "Ninjask",
+      "Aggron",
+      "Manectric",
+      "Sharpedo",
+      "Wailord",
+      "Camerupt",
+      "Torkoal",
+      "Altaria",
+      "Crawdaunt",
+      "Claydol",
+      "Cradily",
+      "Armaldo",
+      "Milotic",
+      "Walrein",
+      "Salamence",
+      "Metagross",
+      "Torterra",
+      "Infernape",
+      "Empoleon",
+      "Staraptor",
+      "Luxray",
+      "Roserade",
+      "Gastrodon",
+      "Lopunny",
+      "Spiritomb",
+      "Garchomp",
+      "Lucario",
+      "Drapion",
+      "Toxicroak",
+      "Weavile",
+      "Magnezone",
+      "Rhyperior",
+      "Electivire",
+      "Togekiss",
+      "Gliscor",
+      "Mamoswine",
+      "Froslass",
+      "Unfezant",
+      "Darmanitan",
+      "Sigilyph",
+      "Cofagrigus",
+      "Archeops",
+      "Zoroark",
+      "Vanilluxe",
+      "Klinklang",
+      "Eelektross",
+      "Haxorus",
+      "Mienshao",
+      "Druddigon",
+      "Golurk",
+      "Bisharp",
+      "Hydreigon",
+      "Greninja",
+      "Talonflame",
+      "Floette (Eternal)",
+      "Aegislash",
+      "Malamar",
+      "Tyrantrum",
+      "Aurorus",
+      "Sylveon",
+      "Hawlucha",
+      "Goodra",
+      "Gourgeist",
+      "Noivern",
+      "Ribombee",
+      "Lycanroc",
+      "Comfey",
+      "Kommo-o",
+      "Rillaboom",
+      "Inteleon",
+      "Corviknight",
+      "Dragapult",
+      "Scream Tail",
+      "Brute Bonnet",
+      "Flutter Mane",
+      "Slither Wing",
+      "Sandy Shocks",
+      "Iron Bundle",
+      "Iron Hands",
+      "Iron Jugulis",
+      "Iron Moth",
+      "Iron Thorns",
+      "Roaring Moon",
+      "Iron Valiant"
+    ]
+  },
+  "arenaTileSchema": {
+    "root": {
+      "type": "object",
+      "length": 3,
+      "examples": [
+        {
+          "key": "step",
+          "type": "number",
+          "keys": []
+        },
+        {
+          "key": "size",
+          "type": "number",
+          "keys": []
+        },
+        {
+          "key": "ids",
+          "type": "array",
+          "keys": [
+            "0",
+            "1",
+            "2",
+            "3",
+            "4",
+            "5",
+            "6",
+            "7",
+            "8",
+            "9",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23"
+          ]
+        }
+      ]
+    },
+    "keys": [
+      "step",
+      "size",
+      "ids"
+    ],
+    "groundedArena": "Meteor Falls only; other stage layouts not extracted"
+  }
+}
