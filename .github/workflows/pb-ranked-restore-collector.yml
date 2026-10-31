@@ -1,0 +1,32 @@
+name: Restaurar coletor REA PB Ranked validado
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - '.github/workflows/pb-ranked-restore-collector.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  restore:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Recuperar versão íntegra já aprovada pelo Actions
+        run: |
+          set -euo pipefail
+          git show 8e6fd65e5d98a548f1380e1f613bef9191c984b5:tools/research/pb-ranked-deep-catalog.cjs > tools/research/pb-ranked-deep-catalog.cjs
+          node --check tools/research/pb-ranked-deep-catalog.cjs
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add tools/research/pb-ranked-deep-catalog.cjs
+          if ! git diff --cached --quiet; then
+            git commit -m 'fix: restore PB Ranked collector validated by CI'
+            git pull --rebase origin research/pb-ranked-rea-20261031
+            git push origin HEAD:research/pb-ranked-rea-20261031
+          fi
