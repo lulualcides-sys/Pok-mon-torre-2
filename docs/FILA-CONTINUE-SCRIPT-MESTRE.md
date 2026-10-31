@@ -1,5 +1,10 @@
 # FILA DE CONTINUIDADE — Pokémon Torre 2
 
+## Checkpoint 31/10/2026 — T20 integrada; frente independente T22 em teste
+- Main conferida: `1fcc64eb53407b535cc8919832bacbfd492c7354`; PR #369 **merged** (apenas teste Chromium e workflow), CI natural #41153415212 `success` (13 treinadores, Brock, Rocha e TM39 no mesmo save). Pages da main nova **ainda não comprovado**; não declarar release T20 publicado.
+- Pages da main anterior `963ed2cf` #41160156153 `success`, incluindo HTTP público e Pokédex Chromium; T07/T08 #41160101717 e auditoria Pokédex #41160101722 `success`.
+- Frente atual: T22, rejeitar ticket de revanche legado sem token durável e impedir trava do VS Seeker; teste RED e patch em branch isolada, CI/Chromium pendentes. Próxima frente diferente: T19/T21 progressão dos líderes ou T07/T08 lacunas reais.
+
 ## CHECKPOINT ATUAL 31/10/2026 — publicado; T20 ainda em teste
 - Leia primeiro [CHECKPOINT 31/10](CHECKPOINT-SCRIPT-MESTRE-2026-10-31.md): main `994e2286` **publicada** (Pages #41153252202, HTTP `src-0dcbef4bd8`, Chromium público verde). T03 #386 e T22 #387 mescladas; não repetir. T20 #369 `6259f3be` DRAFT, novo Chromium longo #41153415212 em andamento, visual verde, Brock/Rocha/TM39 **não comprovados**. T10 #381 CI vermelha: evitar ciclos. Histórico abaixo preservado; dados anteriores de T03/Pages foram superados.
 
