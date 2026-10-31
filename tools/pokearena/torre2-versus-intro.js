@@ -4,6 +4,7 @@
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {spriteIdForTrainer,addRedPlayer,addFireRedNPC} from './frlg-npc.js';
 import {originalBallSprite} from './ball-sprites.js';
+import {scheduleVsEntry} from './versus-transition.js';
 
 const LEADERS=Object.freeze([
  'brock','misty','surge','erika','koga','sabrina','blaine',
@@ -118,11 +119,12 @@ export function playVersusIntro(scene,match,onComplete){
  // again while the presentation is on screen.
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  overlay.add(shield);
- let done=false,timer=null;
+ let done=false,transition=null;
  const cleanup=()=>{
   if(done)return false;
   done=true;
-  if(timer)timer.remove(false);
+  // Both the Phaser timer and the fallback are owned by one cancellation.
+  transition?.cancel();
   scene.events.off('shutdown',cleanup);
   if(overlay.active)overlay.destroy(true);
   return true;
@@ -141,6 +143,6 @@ export function playVersusIntro(scene,match,onComplete){
  scene.tweens.add({targets:flash,alpha:{from:0,to:.40},
   duration:65,yoyo:true,delay:410});
  scene.tweens.add({targets:overlay,alpha:0,duration:180,delay:VERSUS_DURATION_MS-210});
- timer=scene.time.delayedCall(VERSUS_DURATION_MS,advance);
+ transition=scheduleVsEntry(scene,advance,VERSUS_DURATION_MS);
  return true;
 }

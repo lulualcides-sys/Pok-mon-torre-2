@@ -1,0 +1,47 @@
+name: T14 — VS cinematic watchdog and native battle entry
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-versus-intro.js'
+      - 'tools/pokearena/torre2-versus-transition.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/t14-versus-entry-watchdog.test.js'
+      - '.github/workflows/t14-versus-entry-watchdog.yml'
+permissions:
+  contents: read
+jobs:
+  versus-entry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: No double combat, no transition after scene shutdown
+        run: |
+          set -euo pipefail
+          node --test tests/t14-versus-entry-watchdog.test.js
+          npm install --no-audit --no-fund
+          node --test tests/versus-intro-contract.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-versus-intro.js
+      - name: Build native Phaser/WebGL game
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+          node --test tests/versus-intro-built.test.mjs
+      - name: Real Chromium intro + ball choreography on repeated battle entry
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/versus-intro-browser.cjs
+          node tests/ball-choreography-browser.cjs
