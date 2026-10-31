@@ -25,7 +25,7 @@ test('campaign templates reuse only P2 native dash/flight, not fake, pending or 
 test('species-specific native techniques occupy ESP instead of generic Dodge',()=>{
  const map=templates();
  for(const [id,expected] of [['abra','Teleport'],['geodude','Rollout'],
-  ['diglett','Dig'],['butterfree','Acrobatics'],['psyduck','Dive'],
+  ['diglett','Dig'],['butterfree','Fly'],['psyduck','Dive'],
   ['arcanine','Flame Charge'],['staryu','Rapid Spin']]){
   const picked=campaignNativeDodge(id,{lmb:{nombre:'Tackle'}},map);
   assert.equal(picked.nombre,expected,id);
