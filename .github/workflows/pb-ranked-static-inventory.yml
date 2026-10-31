@@ -1,0 +1,45 @@
+name: PB Ranked - inventário estático de animações e artes
+
+on:
+  push:
+    branches: [research/pb-ranked-rea-20261031]
+    paths:
+      - tools/research/pb-ranked-static-inventory.cjs
+      - .github/workflows/pb-ranked-static-inventory.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  inventory:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify inventory code and dependencies
+        run: |
+          set -euo pipefail
+          node --check tools/research/pb-ranked-static-inventory.cjs
+          npm install --no-save --no-audit --no-fund acorn acorn-walk
+      - name: Index public client assets and gameplay symbols
+        run: |
+          set -euo pipefail
+          node tools/research/pb-ranked-static-inventory.cjs
+          node -e "const r=require('./reference-library/pb-ranked/RELATORIO-EXTRACAO-ESTATICA.json');if(!r.publicScripts.length)throw Error('No public scripts scanned')"
+      - name: Commit only derived research JSON
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add reference-library/pb-ranked/REFERENCIAS-ARTES-ESTATICAS.json reference-library/pb-ranked/SIMBOLOS-DE-MECANICAS.json reference-library/pb-ranked/RELATORIO-EXTRACAO-ESTATICA.json
+          if ! git diff --cached --quiet; then
+            git commit -m 'research: archive categorized public gameplay symbols and asset references'
+            git pull --rebase origin research/pb-ranked-rea-20261031
+            git push origin HEAD:research/pb-ranked-rea-20261031
+          fi
