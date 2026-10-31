@@ -626,11 +626,15 @@ export function campaignLearnset(species){
     practice:move.torre2IntroPractice===true,
     slot:move.torre2IntroSlot||null}));
  }
- // Surf's legacy renderer remains installed, but campaignLearnset feeds
- // the Pokédex/editor index: do not advertise a rejected HM as teachable.
- // The actual battle resolver already blocks Surf, including imported saves.
+ // TM compatibility is metadata, not proof that an attack can render
+ // or be equipped. Never advertise a missing, pending, unapproved or
+ // unavailable VFX as a teachable move in the Pokédex. This does not
+ // change FRLG compatibility, the TM inventory or installed renderers.
+ // Surf's approved VFX is deliberately not unlocked as an HM here.
  for(const move of TEST_LIBRARY)
   if(canonicalMoveKey(move.nombre)!=='surf'&&
+     move.forma&&!move.pendiente&&!move.torre2Unavailable&&
+     !move.torre2RequiresHM&&!isPendingApprovalMove(move)&&
      !list.has(move.id)&&frlgMachineCompatible(id,move.id))
    list.set(move.id,Object.freeze({
     id:move.id,name:move.nombre,type:move.tipo,level:null,method:'TM'}));

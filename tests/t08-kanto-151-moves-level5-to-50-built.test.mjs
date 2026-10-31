@@ -12,7 +12,7 @@ const modules=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8'))
 const load=name=>import(pathToFileURL(path.join(root,modules,name)).href);
 const [{KANTO_151},{
  availableMoves,selectedMoves,defaultLoadout,resolveLoadout,campaignLearnset,
- moveUnlockLevel,equipMove,TEST_LIBRARY,KANTO_CAMPAIGN_MOVE_CAP
+ moveUnlockLevel,equipMove,TEST_LIBRARY,isPendingApprovalMove,KANTO_CAMPAIGN_MOVE_CAP
 },{frlgUnlockLevel,frlgMachineCompatible},{KANTO_INTRO}]=await Promise.all([
  load('torre2/all-kanto-species.js'),load('torre2/move-pool.js'),
  load('torre2/frlg-learnsets.js'),load('torre2/kanto-intro-moves.js')
@@ -21,7 +21,7 @@ assert.equal(KANTO_151.length,151);
 assert.equal(KANTO_CAMPAIGN_MOVE_CAP,50);
 const make=(id,level)=>({id,progression:{species:id,level},tmMoves:[]});
 const attackSlots=['lmb','rmb','q'];
-let reviewed=0,optionsAt50=0;
+let reviewed=0,optionsAt50=0,tmRowsChecked=0,blockedTMChecks=0;
 const samples={};
 for(const {id} of KANTO_151){
  if(id==='mewtwo')continue; // pre-existing unrestricted Lv50 test character.
@@ -101,6 +101,29 @@ for(const {id} of KANTO_151){
   id+' Pokédex omits Lv8 ultimate');
  assert.ok(levelRows.every(m=>m.method==='TM'||m.level<=50),
   id+' has a campaign level gate after Lv50');
+ // A legal FireRed TM does not imply that the renderer is available or
+ // approved. The Pokédex must never promise a teachable unusable effect.
+ const tmRows=levelRows.filter(m=>m.method==='TM');
+ for(const row of tmRows){
+  const source=TEST_LIBRARY.find(move=>move.id===row.id);
+  assert.ok(source?.forma&&!source.pendiente&&
+   !source.torre2Unavailable&&!source.torre2RequiresHM&&
+   !isPendingApprovalMove(source),
+   id+' Pokédex advertises an unavailable/unapproved TM '+row.id);
+  assert.ok(frlgMachineCompatible(id,row.id),
+   id+' Pokédex advertises an incompatible TM '+row.id);
+  tmRowsChecked++;
+ }
+ assert.ok(!tmRows.some(row=>row.id==='surf'),
+  id+' must not advertise HM Surf as a TM unlock');
+ for(const source of TEST_LIBRARY){
+  if(!frlgMachineCompatible(id,source.id)||source.forma&&
+     !source.pendiente&&!source.torre2Unavailable&&
+     !source.torre2RequiresHM&&!isPendingApprovalMove(source))continue;
+  assert.ok(!tmRows.some(row=>row.id===source.id),
+   id+' pending or unrenderable TM leaked '+source.id);
+  blockedTMChecks++;
+ }
  assert.deepEqual(
   levelRows.filter(m=>m.method==='LEVEL').map(m=>m.id).sort(),
   at50.map(m=>m.id).sort(),
@@ -184,5 +207,6 @@ assert.equal(resolveLoadout(bulba).rmb?.id,'vine-whip',
  'The native battle must respect the real level-10 move selected by the player');
 console.log('T08 KANTO FULL CAMPAIGN PROGRESSION PASS',JSON.stringify({
  species:reviewed,starterMoves:reviewed*3,ultimatesAt8:reviewed,
- optionCountAt50:optionsAt50,examples:samples
+ optionCountAt50:optionsAt50,teachableTMRows:tmRowsChecked,
+ blockedTMCandidatesChecked:blockedTMChecks,examples:samples
 }));
