@@ -68,7 +68,8 @@ async function main(){
       const leader=c.children.list.find(o=>o.getData?.('torre2-gym-leader')===m.leader);
       const zones=c.children.list.filter(o=>o.input?.enabled&&o.getData?.('torre2-gym-trainer-action')!==undefined);
       return{renderer:c.game.renderer.type,stage:m.stage,ace:m.ace,
-       aceRendered:m.aceRendered,leaderRendered:m.leaderRendered,aceTexture:ace?.texture?.key,
+       aceRendered:m.aceRendered,leaderRendered:m.leaderRendered,aceSource:m.aceSource,
+        aceTexture:ace?.texture?.key,aceAnimation:ace?.anims?.currentAnim?.key,
        aceBounds:ace?.getBounds?.().toJSON?.(),shadow:!!shadow,leader:!!leader,
        gymCount:m.gymCount,routeCount:m.routeCount,trainerIndices:m.trainers.map(t=>t.index),
        rivalIdentities:m.trainers.filter(t=>t.kind==='rival').map(t=>t.identity),
@@ -79,7 +80,12 @@ async function main(){
      assert.equal(report.leaderRendered,true,'leader sprite missing');
      assert.equal(report.shadow,true,'ace shadow missing');
      assert.equal(report.leader,true,'leader missing');
-     assert.equal(report.aceTexture?.startsWith('torre2-portrait-'),true);
+     assert.equal(report.aceSource,'native-idle',
+       'opaque PMD portrait must not be approved as gym decoration');
+      assert.equal(report.aceTexture?.startsWith('pmd-'),true,
+       'ace must use transparent native PMD Idle atlas');
+      assert.ok(report.aceAnimation?.includes('-Idle-'),
+       'ace must play its original native idle animation');
      assert.equal(report.gymCount,stage===0?3:4);
      assert.equal(report.routeCount,routeCount);
      assert.deepEqual(report.rivalIdentities,[],
