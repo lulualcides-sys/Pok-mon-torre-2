@@ -95,3 +95,18 @@ test('Atlas: native Graphics draws rooms, shop, badges and summary without input
  atlasPanel(gfx,15,15,200,120);
  assert.ok(drawn.length>1200);
 });
+
+test('Atlas: League identities have distinct ROOM geometry, not palette-only recolors',()=>{
+ const signatures=new Set();
+ for(let stage=8;stage<=12;stage++){
+  const shapes=[];
+  const g={fillStyle(){return this},fillRect(x,y,w,h){shapes.push([x,y,w,h].join(','));return this}};
+  const scene={add:{graphics(){return{...g,setDepth(){return this}}}}};
+  const model=atlasGymModel({stage,trainer:0},STAGES,TRAINERS_PER_GYM(stage));
+  atlasGymBackdrop(scene,model);
+  const fingerprint=shapes.join('|');
+  assert.ok(!signatures.has(fingerprint),'League rooms cannot be the same layout');
+  signatures.add(fingerprint);
+ }
+ assert.equal(signatures.size,5);
+});
