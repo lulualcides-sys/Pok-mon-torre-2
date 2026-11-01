@@ -202,6 +202,7 @@ await Promise.all([
  ['tools/pokearena/torre2-training-input.js','training-input.js'],
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
+ ['tools/pokearena/torre2-atlas-screen-style.js','atlas-screen-style.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
