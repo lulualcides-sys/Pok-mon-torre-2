@@ -14,7 +14,17 @@ const excluded=new Set([
  'focus-punch','solar-blade'
 ]);
 // Share canonical exclusions with the explicit preferredSignature path.
-export const isKantoSignatureUltNameAllowed=name=>!excluded.has(canonical(name));
+// Punch, Flamethrower, Thunderbolt and Gust are normal HAB 2/3
+// techniques, never charged ULTs (including native E and Lv8 previews).
+// Thunder is explicitly not in this list: it remains E-only.
+export const isKantoNormalAbilityName=name=>{
+ const key=canonical(name);
+ return ['flamethrower','thunderbolt','gust'].includes(key)||key.endsWith('punch');
+};
+export const isKantoSignatureUltNameAllowed=name=>{
+ const key=canonical(name);
+ return !excluded.has(key)&&!isKantoNormalAbilityName(key);
+};
 export function verifiedLevelUpNames(species,{
  levelUp={},earlyLevels={},verifiedTables=[],verifiedParents={}
 }={}){

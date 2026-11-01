@@ -122,6 +122,9 @@ const server=http.createServer((req,res)=>{
     const state=core.readCampaign();state.trainer=4;core.saveCampaign(state);
     window.__pt2Game.scene.getScene('campanha').renderCampaign(state);
    });
+   // renderCampaign queues new interactive objects until the next Phaser step.
+   await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',
+    ()=>window.__pt2Game.events.once('poststep',resolve))));
    await click(218,196);
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate'),null,{timeout:60000});
    await page.waitForTimeout(1500);
@@ -131,7 +134,8 @@ const server=http.createServer((req,res)=>{
    console.log(label+' city WebGL + Center/PC/Mart/gym/summary/badges passed');
    }catch(error){
     await page.screenshot({path:'test-evidence/city-layered-'+label+'-failure.png'});
-    fs.writeFileSync('test-evidence/city-layered-'+label+'-failure.json',JSON.stringify({error:String(error),errors},null,2));
+    const scene=await page.evaluate(()=>{const s=window.__pt2Game.scene.getScene('campanha');return {active:s.scene.isActive(),path:s.__torre2BattlePath,city:s.__torre2CityHub,interactive:s.children.list.filter(o=>o.input?.enabled).map(o=>({x:o.x,y:o.y,w:o.width,h:o.height,depth:o.depth,data:o.data?.values}))}});
+    fs.writeFileSync('test-evidence/city-layered-'+label+'-failure.json',JSON.stringify({error:String(error),errors,scene},null,2));
     throw error;
    }finally{await page.close();}
   }

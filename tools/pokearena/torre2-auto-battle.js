@@ -110,6 +110,9 @@ export function pressureCampaignAutoInput(scene,actor,input,brain=null){
  // added LMB; never override a native skill, dash, dodge or manual controls.
  return {...output,lmb:true,ax:foe.x,ay:foe.y};
 }
+// Filter ALL native weather requests, not just our own suggestions.
+// Otherwise the source IA can choose Rain Dance every time RMB/Q is ready,
+// even when rain is active, and starve the battle of damaging attacks.
 export function chooseCampaignAutoWeatherInput(scene,actor,input){
  if(!scene?.datos?.torre2||scene.fase!=='lucha'||scene.pausado||
    scene.__torre2Changing||scene.__torre2BattleBagOpen||
@@ -119,12 +122,15 @@ export function chooseCampaignAutoWeatherInput(scene,actor,input){
    actor.hp/actor.hpMax<.35||actor.dash||
    actor.accion?.bloquea||actor.est?.aturdido||
    actor.est?.dormido||actor.est?.congelado||actor.est?.recarga||
-   input.esp||input.mega||input.rmb||input.q||input.e)return input;
+   input.esp||input.mega)return input;
  const foe=livingCampaignOpponent(scene,actor);
  if(!foe||!Array.isArray(actor.tipos)||!actor.tipos.length||
    !Array.isArray(foe.tipos)||!foe.tipos.length)return input;
  const weather=scene.__torre2Weather;
  if(!weather||typeof weather.kind!=='string')return input;
+ const weatherSlots=['rmb','q','e'].filter(slot=>
+  Boolean(WEATHER_MOVES[actor.kit?.[slot]?.nombre]));
+ if(!weatherSlots.length)return input;
  const score=kind=>{
   if(!kind||kind==='none')return 0;
   const status={kind,remaining:20};
@@ -132,31 +138,101 @@ export function chooseCampaignAutoWeatherInput(scene,actor,input){
   const rival=weatherSpeciesMultiplier(status,foe.tipos);
   return (own-1)+(1-rival)*.75;
  };
- const existing=weather.remaining>0?weather.kind:'none';
+ const existing=Number(weather.remaining)>0?weather.kind:'none';
  const baseline=score(existing);
- // Campaign's ordinary abilities are RMB and Q; E is an exclusive ULT.
- // Never equip a new move here: the Pokémon must already own this kit.
- for(const slot of ['rmb','q']){
+ const foeHealth=Number(foe.hpMax)>0?foe.hp/foe.hpMax:1;
+ const danger=()=>Array.isArray(scene.efectos)&&scene.efectos.some(effect=>
+  effect?.vivo&&effect?.dueno&&effect.dueno!==actor&&
+  Number.isFinite(effect.x)&&Number.isFinite(effect.y)&&
+  Math.hypot(effect.x-actor.x,effect.y-actor.y)<95);
+ const canCast=slot=>{
+  // Weather is a setup action, never a charged finisher (E).
+  if(slot==='e'||foeHealth<=.40)return false;
   const move=actor.kit?.[slot],kind=WEATHER_MOVES[move?.nombre];
-  if(!kind||!move.forma||move.pendiente||move.torre2Unavailable)continue;
-  const remaining=Number(weather.remaining)||0;
-  if(existing===kind&&remaining>3.5)continue;
-  const advantage=score(kind),gain=advantage-
-   (existing===kind?0:baseline);
-  // Avoid a neutral/negative spell unless it dispels a hostile climate.
+  if(!kind||!move.forma||move.pendiente||move.torre2Unavailable||
+     existing===kind)return false;
+  const advantage=score(kind),gain=advantage-baseline;
+  // Only cast if the net type matchup improves. Do not refresh an active
+  // weather in its last seconds; attack until it naturally expires.
   if((advantage<.12&&!(baseline<-.15&&advantage>=0))||
-     gain<.12)continue;
+     gain<.12)return false;
   if(!Number.isFinite(actor.cd?.[slot])||actor.cd[slot]>0||
      !Number.isFinite(actor.energia)||actor.energia<Number(move.coste||0)||
-     Number(actor.calor??0)>=80)continue;
-  const danger=Array.isArray(scene.efectos)&&scene.efectos.some(effect=>
-   effect?.vivo&&effect?.dueno&&effect.dueno!==actor&&
-   Number.isFinite(effect.x)&&Number.isFinite(effect.y)&&
-   Math.hypot(effect.x-actor.x,effect.y-actor.y)<95);
-  if(danger)return input;
-  return {...input,lmb:false,rmb:slot==='rmb',q:slot==='q',e:false,mega:false};
+     Number(actor.calor??0)>=80||danger())return false;
+  return true;
+ };
+ const nativeWeather=weatherSlots.filter(slot=>Boolean(input[slot]));
+ const nativeOffense=['rmb','q','e'].some(slot=>
+  input[slot]&&!weatherSlots.includes(slot));
+ if(nativeWeather.length){
+  // An actual damaging skill or charged finisher always wins over weather.
+  const selected=!nativeOffense&&nativeWeather.find(canCast);
+  if(selected){
+   // Preserve an already legal single native weather decision verbatim.
+   if(nativeWeather.length===1&&!input.lmb)return input;
+   return {...input,lmb:false,rmb:selected==='rmb',
+    q:selected==='q',e:false,mega:false};
+  }
+  const filtered={...input};
+  for(const slot of nativeWeather)filtered[slot]=false;
+  // Do not re-select another weather after rejecting the native IA's
+  // request. The next stage can now use a real ready offensive skill.
+  return filtered;
+ }
+ if(nativeOffense||input.rmb||input.q||input.e)return input;
+ // A native basic already in actual range is more useful than setup.
+ const basic=actor.kit?.lmb;
+ const basicRange=Number(basic?.alcance??basic?.largo??0);
+ const distance=Math.hypot(Number(foe.x)-Number(actor.x),
+  Number(foe.y)-Number(actor.y));
+ if(input.lmb&&Number.isFinite(distance)&&basicRange>0&&
+    distance<=basicRange*.85)return input;
+ // No automatic weather on a nearly defeated target or during danger.
+ for(const slot of ['rmb','q']){
+  if(canCast(slot))return {...input,lmb:false,rmb:slot==='rmb',
+   q:slot==='q',e:false,mega:false};
  }
  return input;
+}
+// Prefer REAL equipped damage skills whenever the native IA would idle,
+// attack beyond LMB reach or waste a frame trying to repeat climate.
+// Native energy, cooldowns, action locks, range and approved VFX remain
+// authoritative. Never fabricate an attack, equip a move or use ULT here.
+export function pressureCampaignAutoSkillInput(scene,actor,input,brain=null){
+ if(!scene?.datos?.torre2||scene.fase!=='lucha'||scene.pausado||
+   scene.__torre2Changing||scene.__torre2BattleBagOpen||
+   scene.__torre2BallTransitions||scene.__torre2CaptureBusy||
+   !actor||!input||typeof input!=='object'||input.esp||input.mega||
+   input.rmb||input.q||input.e||actor.ko||actor.dash||
+   actor.accion?.bloquea||actor.est?.aturdido||
+   actor.est?.dormido||actor.est?.congelado||actor.est?.recarga||
+   !(Number(actor.hp)>0)||!(Number(actor.hpMax)>0)||
+   actor.hp/actor.hpMax<.38||
+   !Number.isFinite(actor.energia)||
+   Number(actor.calor??0)>=(brain?.c?.calorTope??80))return input;
+ const foe=livingCampaignOpponent(scene,actor);
+ if(!foe||!Number.isFinite(foe.x)||!Number.isFinite(foe.y)||
+   !Number.isFinite(actor.x)||!Number.isFinite(actor.y)||
+   foe.est?.contra||foe.est?.disfraz||
+   (foe.est?.invul?.hasta??0)>(actor.t??0)||
+   (foe.est?.vuelo?.hasta??0)>(actor.t??0))return input;
+ const distance=Math.hypot(foe.x-actor.x,foe.y-actor.y);
+ const basic=actor.kit?.lmb;
+ const basicRange=Number(basic?.alcance??basic?.largo??0);
+ if(input.lmb&&basicRange>0&&distance<=basicRange*.85)return input;
+ const skills=['rmb','q'].map(slot=>({slot,move:actor.kit?.[slot]}))
+  .filter(({slot,move})=>{
+   if(!move||!move.forma||move.pendiente||move.torre2Unavailable||
+      WEATHER_MOVES[move.nombre]||move.ulti||!(Number(move.dano)>0)||
+      !Number.isFinite(actor.cd?.[slot])||actor.cd[slot]>0||
+      actor.energia<Number(move.coste||0))return false;
+   const range=Number(move.alcance??move.largo??165);
+   return Number.isFinite(range)&&range>0&&distance<=range*.85;
+  }).sort((a,b)=>Number(b.move.dano)-Number(a.move.dano));
+ if(!skills.length)return input;
+ const chosen=skills[0].slot;
+ return {...input,lmb:false,rmb:chosen==='rmb',q:chosen==='q',
+  ax:foe.x,ay:foe.y};
 }
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
@@ -190,7 +266,8 @@ export function installAutoBattle(scene,makeNativeAI){
   autoOpponent:livingCampaignOpponent(scene,original.l),
   autoOpponentSpecies:fighterSpecies(livingCampaignOpponent(scene,original.l)),
   diagnostics:{reads:0,playerRebinds:0,foeRebinds:0,
-   nativeNoInput:0,assistedBasicFrames:0,assistedChaseFrames:0},
+   nativeNoInput:0,assistedBasicFrames:0,assistedChaseFrames:0,
+   assistedSkillFrames:0,suppressedWeatherFrames:0},
   button:null, label:null, zone:null,cleaned:false};
  if(typeof state.ai?.leer!=='function')throw Error('Native Poké Arena IA missing');
  const safeRead=function(dt,...args){
@@ -234,10 +311,16 @@ export function installAutoBattle(scene,makeNativeAI){
     ay:foe?.y??fighter?.y??0,lmb:false,rmb:false,q:false,
     e:false,esp:false,mega:false};
   }
-  const pressured=pressureCampaignAutoInput(scene,fighter,it,state.ai);
+  const weatherAware=chooseCampaignAutoWeatherInput(scene,fighter,it);
+  const skilled=pressureCampaignAutoSkillInput(scene,fighter,weatherAware,state.ai);
+  const pressured=pressureCampaignAutoInput(scene,fighter,skilled,state.ai);
   if(!it.lmb&&pressured.lmb)stats.assistedBasicFrames++;
   if(pressured.mx!==it.mx||pressured.my!==it.my)stats.assistedChaseFrames++;
-  return {...chooseCampaignAutoWeatherInput(scene,fighter,pressured),mega:false};
+  if((!it.q&&pressured.q)||(!it.rmb&&pressured.rmb))stats.assistedSkillFrames++;
+  if(['rmb','q','e'].some(slot=>it[slot]&&
+    WEATHER_MOVES[fighter.kit?.[slot]?.nombre]&&!pressured[slot]))
+   stats.suppressedWeatherFrames++;
+  return {...pressured,mega:false};
  };
  original.leer=safeRead;
  scene.__torre2AutoMode=state;

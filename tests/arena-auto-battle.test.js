@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
  CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput,tuneCampaignAutoBrain,
- chooseCampaignAutoWeatherInput,livingCampaignOpponent}
+ chooseCampaignAutoWeatherInput,pressureCampaignAutoSkillInput,livingCampaignOpponent}
  from '../tools/pokearena/torre2-auto-battle.js';
 const makeObject=()=>{
  const handlers=new Map;
@@ -394,8 +394,8 @@ test('Campaign AUTO tactically uses ready approved Rain Dance only in a legal no
  assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
   'No redundant early recast under live Rain Dance');
  rain.remaining=3;
- assert.equal(chooseCampaignAutoWeatherInput(s,actor,native).rmb,true,
-  'May refresh only as weather expires, if native CD allows');
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'AUTO must attack rather than recast an existing weather near expiry');
  actor.cd.rmb=4;
  assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
   'Native cooldown is mandatory for refreshes');
@@ -411,6 +411,86 @@ test('Campaign AUTO tactically uses ready approved Rain Dance only in a legal no
  foe.tipos=['FIRE'];actor.tipos=['FIRE'];
  assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
   'Do not choose a harmful weather for the user');
+});
+test('Campaign AUTO suppresses repeated native climate and promotes ready damaging skills',()=>{
+ const actor={lado:0,x:0,y:0,hp:95,hpMax:100,energia:100,calor:0,
+  tipos:['WATER'],kit:{
+   lmb:{nombre:'Tackle',forma:'Swing',alcance:80,dano:4,coste:0},
+   rmb:{nombre:'Water Pulse',forma:'Shoot',alcance:230,dano:13,coste:22},
+   q:{nombre:'Rain Dance',forma:'torre2_finale_raindance',coste:35}
+  },cd:{lmb:0,rmb:0,q:0},est:{}};
+ const foe={lado:1,x:140,y:0,hp:100,hpMax:100,tipos:['FIRE'],est:{}};
+ actor.rival=foe;
+ const s={datos:{torre2:{kind:'trainer'}},fase:'lucha',
+  __torre2Weather:{kind:'rain',remaining:18},luchadores:[actor,foe]};
+ const native={mx:0,my:0,ax:140,ay:0,lmb:false,rmb:false,q:true,e:false,esp:false};
+ const filtered=chooseCampaignAutoWeatherInput(s,actor,native);
+ assert.equal(filtered.q,false,'Repeated weather request from native IA must be suppressed');
+ assert.equal(native.q,true,'Do not mutate the original native decision');
+ const skilled=pressureCampaignAutoSkillInput(s,actor,filtered);
+ assert.equal(skilled.rmb,true,'Real ready Water Pulse should take priority');
+ assert.equal(skilled.q,false);
+ assert.equal(skilled.ax,foe.x);
+ // A ready offensive skill from the source IA must never be overwritten.
+ const originalSkill={...native,rmb:true,q:false};
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,originalSkill),originalSkill);
+ assert.strictEqual(pressureCampaignAutoSkillInput(s,actor,originalSkill),originalSkill);
+ // When Water Pulse is cooling down, use basic in range; never bypass CD.
+ actor.cd.rmb=5;foe.x=65;
+ const noSkill=pressureCampaignAutoSkillInput(s,actor,filtered);
+ assert.strictEqual(noSkill,filtered);
+ const basic=pressureCampaignAutoInput(s,actor,noSkill);
+ assert.equal(basic.lmb,true,'Use native-ready LMB instead of spamming weather');
+ assert.equal(actor.cd.rmb,5,'Never change cooldowns');
+ // No skill should be forced while out of range or without energy.
+ actor.cd.rmb=0;actor.energia=4;foe.x=140;
+ assert.strictEqual(pressureCampaignAutoSkillInput(s,actor,filtered),filtered);
+ actor.energia=100;foe.x=450;
+ assert.strictEqual(pressureCampaignAutoSkillInput(s,actor,filtered),filtered);
+});
+test('Campaign AUTO cannot spam unfavorable native weather or steal an offensive ULT',()=>{
+ const actor={lado:0,x:0,y:0,hp:90,hpMax:100,energia:100,calor:0,
+  tipos:['WATER'],kit:{q:{nombre:'Rain Dance',forma:'rain',coste:20}},
+  cd:{q:0},est:{}};
+ const foe={lado:1,x:130,y:0,hp:20,hpMax:100,tipos:['FIRE']};
+ const s={datos:{torre2:{}},fase:'lucha',luchadores:[actor,foe],
+  __torre2Weather:{kind:'none',remaining:0}};
+ const climate={q:true,rmb:false,e:false,lmb:false};
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,false,
+  'A nearly fainted enemy needs a finisher, not weather setup');
+ foe.hp=100;foe.tipos=['WATER'];
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,false,
+  'Do not cast weather when it equally benefits the opponent');
+ foe.tipos=['FIRE'];
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,true,
+  'Helpful weather is allowed once when it is not active');
+ s.__torre2Weather.kind='rain';s.__torre2Weather.remaining=1;
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,false,
+  'Do not refresh rain even in its last second');
+ const ult={...climate,e:true};
+ const out=chooseCampaignAutoWeatherInput(s,actor,ult);
+ assert.equal(out.e,true,'Never suppress real offensive ULT');
+ assert.equal(out.q,false,'Native climate cannot execute beside an ULT');
+ assert.strictEqual(chooseCampaignAutoWeatherInput({...s,datos:{modo:'arena'}},actor,climate),climate,
+  'Arena native input must remain unmodified');
+});
+test('Campaign AUTO installed reader replaces climate-only native IA with actual attack',()=>{
+ const s=scene({torre2:{kind:'trainer'}}),player=s.controles[0].l,foe=s.luchadores[1];
+ player.lado=0;player.x=0;player.y=0;player.hp=90;player.hpMax=100;
+ player.energia=100;player.calor=0;player.tipos=['WATER'];player.est={};
+ player.kit={lmb:{nombre:'Tackle',alcance:75,dano:3,coste:0},
+  rmb:{nombre:'Water Pulse',forma:'Shoot',alcance:230,dano:12,coste:20},
+  q:{nombre:'Rain Dance',forma:'rain',coste:28}};
+ player.cd={lmb:0,rmb:0,q:0};
+ foe.lado=1;foe.x=120;foe.y=0;foe.hp=95;foe.hpMax=100;foe.tipos=['FIRE'];
+ s.__torre2Weather={kind:'rain',remaining:16};
+ const mode=installAutoBattle(s,()=>({leer:()=>({mx:0,my:0,q:true,lmb:false,
+  rmb:false,e:false,ax:foe.x,ay:foe.y})}));
+ const input=s.controles[0].leer(.016);
+ assert.equal(input.q,false);assert.equal(input.rmb,true);
+ assert.equal(mode.diagnostics.suppressedWeatherFrames,1);
+ assert.equal(mode.diagnostics.assistedSkillFrames,1);
+ s.handlers.get('shutdown')();
 });
 test('Campaign weather AUTO respects dodge, teammate changes, manual/Arena and unapproved slots',()=>{
  const actor={x:0,y:0,hp:90,hpMax:100,tipos:['ELECTRIC'],

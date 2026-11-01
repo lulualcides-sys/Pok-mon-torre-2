@@ -18,6 +18,7 @@ import {KANTO_STAB_TM_MASTERY_LEVELS,kantoStabTmMasteryLevel}
  from './stab-tm-mastery.js';
 import {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
+import {isKantoNormalAbilityName} from './kanto-ultimate-policy.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -743,6 +744,11 @@ export function moveUnlockLevel(member,moveName){
 // skills, E the full-meter finisher. Never change original Arena/VS kits.
 export function isCampaignUltimateOnlyMove(move){
  if(!move)return false;
+ // Thunder is always a charged ULT, even when source metadata lacks power.
+ // Thunderbolt, Gust, Punch and Flamethrower always belong in HAB2/3.
+ const key=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ if(key==='thunder')return true;
+ if(isKantoNormalAbilityName(key))return false;
  if(move.torre2IntroSlot==='e')return true;
  if(move.torre2IntroPractice)return false;
  // Some original Poké Arena abilities omit Gen3 power metadata even though
@@ -759,7 +765,14 @@ export function isCampaignUltimateOnlyMove(move){
 export function campaignMoveSlotReason(member,slot,move){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return 'SLOT INVÁLIDO';
  if(!move?.forma)return 'SEM EFEITO';
- if(member?.id==='mewtwo')return null; // debug-only unrestricted lab
+ // Hard role boundaries apply even to native E flags and legacy saves.
+ const moveKey=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ if(slot===3&&isKantoNormalAbilityName(moveKey))
+  return 'GOLPE NORMAL: HAB 2 OU HAB 3';
+ if(moveKey==='thunder'&&slot!==3)return 'THUNDER: SÓ ULT (E)';
+ if(member?.id==='mewtwo')return null; // otherwise unrestricted debug lab
+ if(slot===0&&['thunderbolt','gust'].includes(moveKey))
+  return 'SÓ HAB 2 OU HAB 3';
  if(isPendingApprovalMove(move))return 'EFEITO EM REVISÃO';
  const level=member?.progression?.level??5;
  if(slot===3&&level<KANTO_INTRO.ultAt)return 'ULT NO NV. 8';
@@ -1134,13 +1147,19 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'charge-beam':1.5,
  supersonic:1.5,
  'seismic-toss':1.8,
- 'egg-bomb':2.3
+ 'egg-bomb':2.3,
+ hex:3,
+ thunderbolt:2,
+ gust:1.3
 });
 export function balanceCampaignQuickCooldown(move){
- // Lv8 practice ULTs have their own minimum cooldown (>= 8s), even if
- // they borrow the visual effect of Charge Beam or Supersonic.
- if(!move||move.torre2IntroPractice)return move;
+ // Lv8 practice ULTs keep their >=8s cooldown. Only Gust/Thunderbolt
+ // normal HAB previews share their campaign cooldown with real moves.
+ if(!move)return move;
  const name=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ if(move.torre2IntroPractice&&
+   (move.torre2IntroSlot==='e'||!['gust','thunderbolt'].includes(name)))
+  return move;
  const cd=KANTO_CAMPAIGN_QUICK_COOLDOWNS[name];
  return Number.isFinite(cd)?{...move,cd}:move;
 }
@@ -1173,8 +1192,15 @@ export function resolveLoadout(member){
  const customFireBlast=plannedE==='fire-blast'&&fireBlastAtLevel(member.id)!==null;
  const explicitE=member.movePlanSpecies===member.id&&
   member.moves?.[3]===out.e?.id;
+ // TM38 Fire Blast is a Lv50 campaign unlock, not an early ULT.
+ // Excluding Flamethrower from E must not expose Arcanine's (or another
+ // evolved species') future Fire Blast as an unearned Lv8 practice.
+ // Keep Vulpix's specifically approved Lv8 preview as the sole exception.
+ const prematureFireBlast=customFireBlast&&plannedE==='fire-blast'&&
+  thematicPreview(member.id)!=='fire-blast'&&!dict.has(plannedE);
  const blockedSignature=(member.progression?.level??5)>=KANTO_INTRO.tutorialUntil&&
-  plannedE&&!dict.has(plannedE)&&!earnedSignature&&!customFireBlast&&!explicitE?
+  plannedE&&!dict.has(plannedE)&&
+  ((!earnedSignature&&!customFireBlast)||prematureFireBlast)&&!explicitE?
   plannedE:null;
  const battle=resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],

@@ -1,0 +1,61 @@
+name: T19 — natural Vermilion trainer 14 to 17 with bounded recovery
+on:
+  push:
+    branches: [test/t19-vermilion-three-after-fourteen-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  native-vermilion-four:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate source and native battle contracts
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t19-vermilion-three-real-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build native Phaser original source without editing approved sprites
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: Restore authentic trainer14 save from successful CI
+        uses: actions/download-artifact@v4
+        with:
+          name: t19-vermilion-four-earned-native
+          run-id: 41203366086
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: test-evidence
+      - name: Earn the next three trainer wins in original Phaser with recovery
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          T19_EARNED_GRIND_SAVE: test-evidence/t19-vermilion-four-checkpoint.json
+        run: |
+          set -euo pipefail
+          node tests/t19-vermilion-three-real-browser.cjs
+      - name: Preserve battle report, checkpoint and failure screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t19-vermilion-three-earned-native
+          path: |
+            test-evidence/t19-vermilion-three-report.json
+            test-evidence/t19-vermilion-three-checkpoint.json
+            test-evidence/t19-vermilion-three-*.png
+          retention-days: 21
+          if-no-files-found: warn

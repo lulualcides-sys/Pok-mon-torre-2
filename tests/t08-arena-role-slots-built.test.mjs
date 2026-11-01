@@ -104,6 +104,85 @@ const fPool=availableMoves(female);
 const fUlt=fPool.find(m=>m.torre2IntroSlot==='e');
 assert.ok(fUlt,'Nidoran♀ has no meter-gated E');
 assert.equal(equipMove(female,3,fUlt.id),true,'Nidoran♀ E cannot be equipped');
+// User role policy: no native E metadata, high damage or stale save may
+// turn any Punch or Flamethrower into a campaign charged ULT.
+const normalAbility=m=>/punch$|^(flamethrower|thunderbolt|gust)$/i.test(
+ String(m?.torre2IntroSource||m?.nombre||'').replace(/^ULT · /,'')
+  .toLowerCase().replace(/[^a-z0-9]+/g,''));
+const nativeNormal=TEST_LIBRARY.filter(normalAbility);
+assert.ok(nativeNormal.some(m=>/fire.punch/i.test(m.nombre)),
+ 'Fire Punch renderer is missing');
+assert.ok(nativeNormal.some(m=>/ice.punch/i.test(m.nombre)),
+ 'Ice Punch renderer is missing');
+assert.ok(nativeNormal.some(m=>/flamethrower/i.test(m.nombre)),
+ 'Flamethrower renderer is missing');
+assert.ok(nativeNormal.some(m=>/thunderbolt/i.test(m.nombre)),
+ 'Thunderbolt renderer is missing');
+assert.ok(nativeNormal.some(m=>/^gust$/i.test(m.nombre)),
+ 'Gust renderer is missing');
+for(const move of nativeNormal){
+ assert.equal(isCampaignUltimateOnlyMove({...move,ulti:true}),false,
+  move.nombre+' must remain HAB2/3 despite native E/ulti metadata');
+ const m=make('charizard',50);
+ assert.ok(campaignMoveSlotReason(m,3,move),
+  move.nombre+' is forbidden as ULT E');
+ assert.equal(campaignMoveSlotReason(m,1,move),null,
+  move.nombre+' must be permitted in HAB2');
+ assert.equal(campaignMoveSlotReason(m,2,move),null,
+  move.nombre+' must be permitted in HAB3');
+ if(['gust','thunderbolt'].includes(canonicalMoveKey(move.nombre)))
+  assert.ok(campaignMoveSlotReason(m,0,move),
+   move.nombre+' must not be selectable as basic ATK');
+}
+for(const {id} of KANTO_151){
+ if(id==='mewtwo')continue;
+ for(const level of [8,13,26,40,50]){
+  const member=make(id,level),kit=resolveLoadout(member);
+  assert.ok(!normalAbility(kit.e),
+   id+' Nv'+level+' illegally generated normal Punch/Flamethrower ULT');
+  if(level<13)continue;
+  for(const move of availableMoves(member).filter(m=>
+   !m.torre2IntroPractice&&normalAbility(m))){
+   assert.ok(campaignMoveSlotReason(member,3,move),
+    id+' illegally permits '+move.nombre+' in ULT');
+   assert.equal(campaignMoveSlotReason(member,1,move),null,
+    id+' cannot equip '+move.nombre+' as HAB2');
+   assert.equal(campaignMoveSlotReason(member,2,move),null,
+    id+' cannot equip '+move.nombre+' as HAB3');
+  }
+ }
+}
+// Thunder is reserved for the E ULT, even if imported native metadata
+// describes it as a non-ULT or a low-damage attack.
+const thunder=TEST_LIBRARY.find(m=>canonicalMoveKey(m.nombre)==='thunder');
+assert.ok(thunder?.forma,'Installed Thunder renderer must exist');
+assert.equal(isCampaignUltimateOnlyMove({...thunder,ulti:false,dano:2,poder:0}),true,
+ 'Thunder remains E-only regardless of imported metadata');
+const electric=make('zapdos',50);
+assert.ok(campaignMoveSlotReason(electric,0,thunder));
+assert.ok(campaignMoveSlotReason(electric,1,thunder));
+assert.ok(campaignMoveSlotReason(electric,2,thunder));
+assert.equal(campaignMoveSlotReason(electric,3,thunder),null);
+const lightning=availableMoves(electric).find(m=>canonicalMoveKey(m.nombre)==='thunder');
+if(lightning){
+ assert.equal(equipMove(electric,1,lightning.id),false,
+  'No Thunder may be manually assigned to HAB2');
+ assert.equal(equipMove(electric,2,lightning.id),false,
+  'No Thunder may be manually assigned to HAB3');
+}
+// Read-only cleanup: old saves with E=Flamethrower are NOT erased, but the
+// live battle refuses that E, choosing another legal ULT where available.
+const oldFlame=make('charizard',50);
+const learnedFlame=availableMoves(oldFlame).find(normalAbility);
+assert.ok(learnedFlame,'Charizard did not learn its regular flamethrower/punch');
+oldFlame.moves=[...defaultLoadout(oldFlame)];
+oldFlame.moves[3]='flamethrower';
+oldFlame.movePlanSpecies='charizard';
+const oldFlameSnapshot=JSON.stringify(oldFlame);
+assert.notEqual(selectedMoves(oldFlame)[3],'flamethrower',
+ 'Old E Flamethrower must not be used in the live campaign');
+assert.equal(JSON.stringify(oldFlame),oldFlameSnapshot,
+ 'Loading a legacy E should not rewrite player save choices');
 const legacy=make('ivysaur',30);
 legacy.moves=['solar-beam','seed-bomb','vine-whip','sleep-powder'];
 legacy.movePlanSpecies='ivysaur';
