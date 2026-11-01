@@ -8,6 +8,8 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
 import {recoverCriticalCapture,unresolvedImportedModules} from './capture-client-critical.mjs';
+import {selectCaptureSource} from './capture-source-selection.mjs';
+import {loadClientSnapshot} from './capture-source-snapshot.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -75,12 +77,23 @@ async function main() {
  }
  if(!catalog)throw Error('Source inventory unavailable via raw and GitHub API: '+inventoryError);
  const homepage=await get(ORIGIN+'/',3*MB);
- const html=homepage.data.toString('utf8');
- const sourceVersions=[...new Set([...html.matchAll(/src-[0-9a-f]{10}/g)].map(m=>m[0]))];
  const reExisting=(catalog.scripts||[]).map(s=>s.file.match(/^(src-[0-9a-f]{10})\//)?.[1]).find(Boolean);
- const actual=sourceVersions[0]||reExisting;
- details.sourceVersions={discovered:sourceVersions,inventory:reExisting,selected:actual};
+ const selected=selectCaptureSource(homepage.data.toString('utf8'),reExisting,
+  process.env.POKEARENA_SOURCE_VERSION||undefined);
+ const {html,selected:actual,...selection}=selected;
+ const snapshot=await loadClientSnapshot(actual);
+ const captureHtml=snapshot?.files['index.html'].text||html;
+ details.sourceVersions={...selection,selected:actual};
+ details.originalHomepageSha256=sha256(homepage.data);
+ details.sourceSnapshot=snapshot?{version:snapshot.version,capturedAt:snapshot.capturedAt,
+  archiveSha256:snapshot.archiveSha256,files:Object.keys(snapshot.files).length}:null;
+ homepage.data=Buffer.from(captureHtml);
+ const fetchResource=async p=>snapshot?.files[p]?
+  {data:Buffer.from(snapshot.files[p].text),contentType:p.endsWith('.js')?'text/javascript':'text/html',url:ORIGIN+'/'+p}:
+  get(ORIGIN+'/'+p);
  const tasks=new Map([['index.html',{source:'homepage'}]]);
+ if(snapshot)for(const file of Object.keys(snapshot.files))
+  if(file!=='index.html')tasks.set(file,{source:'verified captured module snapshot'});
  for(const s of catalog.scripts||[]) {
   const old=s.file||'';
   const actualPath=actual&&reExisting?old.replace(reExisting,actual):old;
@@ -97,7 +110,7 @@ async function main() {
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'REA named asset'});
  }
  for(const extra of ['safari.js','manifest.webmanifest','favicon.png','iconos/icono-192.png']) {const p=sanitize(extra);if(p)tasks.set(p,{source:'HTML accessory'});}
- for(const value of html.matchAll(/(?:src|href)\s*=\s*["']([^"'#?]+)["']/gi)){
+ for(const value of captureHtml.matchAll(/(?:src|href)\s*=\s*["']([^"'#?]+)["']/gi)){
   const normalized=sanitize(value[1]);
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'HTML direct'});
  }
@@ -116,7 +129,7 @@ async function main() {
    }
    if(details.totalBytes>MAX_TOTAL){details.skipped.push({path:p,reason:'total cap'});continue;}
    try{
-    const {data,contentType}=await get(ORIGIN+'/'+p);
+    const {data,contentType}=await fetchResource(p);
     if(details.totalBytes+data.length>MAX_TOTAL){details.skipped.push({path:p,reason:'total cap'});continue;}
     const dest=path.resolve(DIR,p);
     if(!dest.startsWith(DIR+path.sep))throw Error('Invalid destination');
@@ -124,7 +137,8 @@ async function main() {
     await fs.writeFile(dest,data);
     details.totalBytes+=data.length;
     const digest=sha256(data);
-    const item={path:p,bytes:data.length,sha256:digest,contentType,source:meta.source};
+    const item={path:p,bytes:data.length,sha256:digest,contentType,
+     source:snapshot?.files[p]?'verified captured module snapshot':meta.source};
     details.retrieved.push(item);
     if(meta.expectedHash&&meta.expectedHash!==digest)
       details.changedHashes.push({path:p,expected:meta.expectedHash,actual:digest});
@@ -140,7 +154,7 @@ async function main() {
  const capturedCritical=new Set(details.retrieved.filter(item=>item.bytes>0).map(item=>item.path));
  const criticalRecovered=await recoverCriticalCapture({
   version:actual,captured:capturedCritical,maxAttempts:3,
-  fetchFile:async p=>{details.requestCount++;return get(ORIGIN+'/'+p)},
+  fetchFile:async p=>{details.requestCount++;return fetchResource(p)},
   saveFile:async(p,{data,contentType})=>{
    if(details.totalBytes+data.length>MAX_TOTAL)throw Error('Total capture cap exceeded');
    const dest=path.resolve(DIR,p);
@@ -172,7 +186,7 @@ async function main() {
     // leave a broken module graph after capture.
     let response,lastError;
     for(let attempt=1;attempt<=(found.endsWith('.js')?3:1);attempt++){
-     try{response=await get(ORIGIN+'/'+found);break}
+     try{response=await fetchResource(found);break}
      catch(error){lastError=error;if(attempt<3&&found.endsWith('.js'))
       await new Promise(resolve=>setTimeout(resolve,attempt*1000))}
     }
