@@ -36,7 +36,7 @@ const server=http.createServer((req,res)=>{
       window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
      },{stage,progress});
      await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
-     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.routeCount===progress,progress,{timeout:10000});
+     await page.waitForFunction(p=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.routeCount===p,progress,{timeout:10000});
      const before=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
      const routeInfo=await page.evaluate(()=>{
       const s=window.__pt2Game.scene.getScene('campanha');
