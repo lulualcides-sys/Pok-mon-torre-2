@@ -52,16 +52,46 @@ export function canRenderInterior(scene,location,kind){
  const t=scene.textures.get(key),s=t.source?.[0];
  return !!(s&&rect[0]+rect[2]<=s.width&&rect[1]+rect[3]<=s.height);
 }
-export function renderInteriorScene(scene,location,kind){
+export function renderInteriorScene(scene,location,kind,{
+ centerX=227,centerY=179,maxWidth=330,maxHeight=200,depth=5
+}={}){
  if(!canRenderInterior(scene,location,kind))return false;
  const rect=ROOM_CROPS[location][kind],key='frlg-location-'+location,
   source=scene.textures.get(key),name='frlg_room_'+kind;
  if(!source.has(name))source.add(name,0,...rect);
  if(typeof Phaser!=='undefined')
   source.setFilter(Phaser.Textures.FilterMode.NEAREST);
- const maxWidth=330,maxHeight=200;
  const scale=Math.min(maxWidth/rect[2],maxHeight/rect[3],2);
- scene.add.image(227,179,key,name).setOrigin(.5,.5)
-  .setDisplaySize(rect[2]*scale,rect[3]*scale).setDepth(5);
+ scene.add.image(centerX,centerY,key,name).setOrigin(.5,.5)
+  .setDisplaySize(rect[2]*scale,rect[3]*scale).setDepth(depth);
  return true;
+}
+
+/* Repeating a genuine 16px floor tile from the SAME FireRed room avoids
+ * giant blank flat-color panels around the boss platform. No pasted
+ * screenshot, CSS background, extra texture download or battle change. */
+export function addGymInteriorFloor(scene,location,{
+ x=83,y=82,width=474,height=128,depth=4.2
+}={}){
+ if(!canRenderInterior(scene,location,'gym'))return null;
+ const key='frlg-location-'+location,texture=scene.textures.get(key);
+ const room=ROOM_CROPS[location].gym;
+ // Pick clean room-floor pixels, away from wall/roof and entrance signs.
+ const ox=location==='cerulean'?72:24;
+ const oy=location==='cerulean'?170:Math.max(30,room[3]-64);
+ const name='torre2-gym-floor-'+location;
+ if(!texture.has(name))texture.add(name,0,room[0]+ox,room[1]+oy,16,16);
+ if(typeof Phaser!=='undefined')
+  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ // Never use TileSprite with a cropped frame of this SAME texture:
+ // the original Kanto map hit a real Android/WebGL UV corruption that way.
+ // Sixty small Phaser Images share one atlas and batch safely instead.
+ let first=null;
+ for(let yy=0;yy<height;yy+=32)for(let xx=0;xx<width;xx+=32){
+  const tile=scene.add.image(x+xx,y+yy,key,name).setOrigin(0)
+   .setDisplaySize(Math.min(32,width-xx),Math.min(32,height-yy))
+   .setDepth(depth).setData('torre2-gym-floor',location);
+  if(!first)first=tile;
+ }
+ return first;
 }
