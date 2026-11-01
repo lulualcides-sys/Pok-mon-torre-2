@@ -82,6 +82,9 @@ async function main(){
      assert.equal(report.aceTexture?.startsWith('torre2-portrait-'),true);
      assert.equal(report.gymCount,stage===0?3:4);
      assert.equal(report.routeCount,routeCount);
+     assert.deepEqual(report.rivalIdentities,[],
+      'Rival must be outside the gym in real Phaser/WebGL screenshots');
+     assert.equal(report.trainerIndices.length,report.gymCount);
      assert.equal(report.trainerTouchZones,1,'exactly current trainer must be touchable');
      assert.equal(report.leaderReady,false,'leader must remain locked');
      assert.deepEqual(errors,[]);
