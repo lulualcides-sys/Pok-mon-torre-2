@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {stripUnusedUiBallsPreload,findNativeUiBallsConsumers} from './optional-ui-balls.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -570,6 +571,15 @@ for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
+  // The upstream client changes optional frame dimensions without changing
+  // gameplay. Remove this obsolete 404 preload ONLY if no native module uses
+  // the key; never bypass the compatibility guard for any other patch.
+  if(filename==='escenas/carga.js'&&
+     from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
+    const consumers=await findNativeUiBallsConsumers(path.join(dest,clientSource));
+    body=stripUnusedUiBallsPreload(body,consumers);
+    continue;
+  }
   if(!body.includes(from)){
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
