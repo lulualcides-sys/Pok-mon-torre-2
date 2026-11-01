@@ -23,14 +23,14 @@ export function gymAcePlan(gyms,stage,manifest){
 }
 export function gymAcePlacement(plan){
  const big=plan?.species==='onix'||plan?.species==='arcanine';
- return Object.freeze({leaderX:293,aceX:351,baseline:190,
-  maxWidth:big?74:62,maxHeight:big?78:65});
+ return Object.freeze({leaderX:287,aceX:357,baseline:190,
+  maxWidth:big?96:72,maxHeight:big?104:76});
 }
 export function drawGymAce(scene,plan,addLeader,{token=null}={}){
  if(!plan)return null;
  const p=gymAcePlacement(plan);
  scene.add.ellipse(p.leaderX,p.baseline,26,6,0x11243c,.48).setDepth(12);
- const leader=addLeader(scene,plan.leaderSprite,p.leaderX,p.baseline,{scale:1.35,depth:16});
+ const leader=addLeader(scene,plan.leaderSprite,p.leaderX,p.baseline,{scale:1.55,depth:16});
  if(leader)leader.setData('torre2-gym-leader',plan.leader);
  const report={stage:plan.stage,leader:plan.leader,species:plan.species,dex:plan.dex,
   textureKey:plan.textureKey,version:GYM_ACE_VERSION,decorative:true,ready:false,
@@ -45,7 +45,7 @@ export function drawGymAce(scene,plan,addLeader,{token=null}={}){
   const texture=scene.textures.get(plan.textureKey);
   if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  const scale=Math.min(1.8,p.maxWidth/plan.frameWidth,p.maxHeight/plan.frameHeight);
+  const scale=Math.min(2.25,p.maxWidth/plan.frameWidth,p.maxHeight/plan.frameHeight);
   const aceShadow=scene.add.ellipse(p.aceX,p.baseline,Math.min(65,plan.frameWidth*scale*.8),8,0x11243c,.48).setDepth(12);
   const sprite=scene.add.sprite(p.aceX,p.baseline-3,plan.textureKey,0)
    .setOrigin(.5,1).setScale(scale).setDepth(17).setData('torre2-gym-ace',plan.species);
