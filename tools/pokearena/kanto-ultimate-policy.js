@@ -18,7 +18,7 @@ const excluded=new Set([
 // never a charged E ultimate (including Lv8 signature previews).
 export const isKantoNormalAbilityName=name=>{
  const key=canonical(name);
- return key==='flamethrower'||key.endsWith('-punch');
+ return key==='flamethrower'||key.endsWith('punch');
 };
 export const isKantoSignatureUltNameAllowed=name=>{
  const key=canonical(name);
