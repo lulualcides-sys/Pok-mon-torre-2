@@ -508,6 +508,8 @@ create(){
    this.__torre2CityWaterTimer=null;
   }
   this.children.removeAll(true);
+  // Release the gym's destroyed PMD sprite reference on route/city return.
+  this.__torre2GymAce=null;
   if(state.stage!==1)for(const [key] of CITY_TEXTURES)
    if(this.textures.exists(key))this.textures.remove(key);
   releaseCollectionPortraits(this);
