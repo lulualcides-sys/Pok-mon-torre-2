@@ -7,7 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
-import {stripUnusedUiBallsPreload,findNativeUiBallsConsumers} from './optional-ui-balls.mjs';
+import {preserveActiveUiBallsOrStripUnused,findNativeUiBallsConsumers} from './optional-ui-balls.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -577,7 +577,10 @@ for(const [filename,changes] of patches){
   if(filename==='escenas/carga.js'&&
      from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
     const consumers=await findNativeUiBallsConsumers(path.join(dest,clientSource));
-    body=stripUnusedUiBallsPreload(body,consumers);
+    const balls10File=path.join(dest,'assets/ui/balls10.png');
+    const balls10Available=await fs.stat(balls10File)
+     .then(stat=>stat.isFile()&&stat.size>32).catch(()=>false);
+    body=preserveActiveUiBallsOrStripUnused(body,{balls10Available,consumers});
     continue;
   }
 
