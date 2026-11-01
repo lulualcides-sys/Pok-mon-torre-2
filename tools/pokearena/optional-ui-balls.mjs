@@ -42,3 +42,26 @@ export async function findNativeUiBallsConsumers(clientRoot){
  }
  return consumers;
 }
+
+/* New native builds may use the ACTIVE balls10.png source; preserve it.
+ * Never reinterpret the valid 10px icon sheet as the obsolete 20px asset.
+ */
+export function preserveActiveUiBallsOrStripUnused(source,{
+ balls10Available=false,consumers=[]
+}={}){
+ const active=/this\.load\.spritesheet\(\s*(["'])ui-balls\1\s*,\s*(["'])assets\/ui\/balls10\.png\2\s*,\s*(\{[^{}]{1,240}\})\s*\)\s*;?/g;
+ const matches=[...String(source||'').matchAll(active)];
+ if(matches.length){
+  if(matches.length!==1)throw Error('Ambiguous active ui-balls preload');
+  const config=matches[0][3];
+  if(!/\bframeWidth\s*:\s*[1-9]\d*\b/.test(config)||
+     !/\bframeHeight\s*:\s*[1-9]\d*\b/.test(config))
+   throw Error('Active ui-balls metadata not recognized');
+  if(!balls10Available)throw Error('Active balls10.png referenced but file missing');
+  // Accept the exact original active statement byte-for-byte. Never remove.
+  if(source.includes('balls20.png'))
+   throw Error('Unexpected duplicate native ui-balls resources');
+  return source;
+ }
+ return stripUnusedUiBallsPreload(source,consumers);
+}
