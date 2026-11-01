@@ -92,10 +92,33 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/center-heal-'+label+'-start.png',fullPage:true});
    // The confirmation zone exists only for 450ms. Screenshots/Chrome capture
    // may miss that narrow window. Inspect the durable save, not a transient UI.
-   await page.waitForFunction(()=>{
-    const s=window.core.readCampaign();
-    return s?.team?.every(m=>m.hp===100&&m.status===null&&!m.confusion);
-   },null,{timeout:12000});
+   try{
+    await page.waitForFunction(()=>{
+     const s=window.core.readCampaign();
+     return s?.team?.every(m=>m.hp===100&&m.status===null&&!m.confusion);
+    },null,{timeout:12000});
+   }catch(error){
+    // A real CI timeout is not a pass. Preserve the failure and record the
+    // Phaser clock, save and visible Center state for a targeted repair.
+    const diagnostic=await page.evaluate(()=>{
+     const c=window.__pt2Game?.scene.getScene('campanha');
+     const s=window.core?.readCampaign();
+     const messages=c?.children.list.filter(o=>typeof o.text==='string')
+      .map(o=>o.text).filter(t=>/CURA|RECUPER|ARMAZENAMENTO|STATUS/i.test(t));
+     return {sceneActive:c?.scene.isActive(),centerBusy:c?.__torre2CenterBusy,
+      sceneTime:c?.time?.now,gameLoopActive:c?.game?.loop?.running,
+      pendingTimers:c?.time?.getPendingEvents?.().map(e=>({delay:e.delay,
+       elapsed:e.elapsed,paused:e.paused,hasDispatched:e.hasDispatched})),
+      save:s&&{stage:s.stage,trainer:s.trainer,
+       team:s.team.map(m=>({id:m.id,hp:m.hp,status:m.status,confusion:m.confusion})),
+       lastMessage:s.lastMessage},
+      saveError:!!c?.children.list.find(o=>o.getData?.('torre2-center-save-error')===true),
+      messages};
+    });
+    console.error('CENTER_HEAL_TIMEOUT_DIAGNOSTIC',label,JSON.stringify(diagnostic));
+    await page.screenshot({path:'test-evidence/center-heal-'+label+'-timeout.png',fullPage:true});
+    throw error;
+   }
    const healed=await page.evaluate(()=>{
     const s=core.readCampaign();
     return {hp:s.team.map(p=>p.hp),status:s.team.map(p=>p.status),
