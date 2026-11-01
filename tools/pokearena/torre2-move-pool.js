@@ -771,6 +771,8 @@ export function campaignMoveSlotReason(member,slot,move){
   return 'GOLPE NORMAL: HAB 2 OU HAB 3';
  if(moveKey==='thunder'&&slot!==3)return 'THUNDER: SÓ ULT (E)';
  if(member?.id==='mewtwo')return null; // otherwise unrestricted debug lab
+ if(slot===0&&['thunderbolt','gust'].includes(moveKey))
+  return 'SÓ HAB 2 OU HAB 3';
  if(isPendingApprovalMove(move))return 'EFEITO EM REVISÃO';
  const level=member?.progression?.level??5;
  if(slot===3&&level<KANTO_INTRO.ultAt)return 'ULT NO NV. 8';
