@@ -151,7 +151,17 @@ const server=http.createServer((req,res)=>{
     .filter(o=>o.getData?.('torre2-city-atlas-piece')==='gym').length),1,
     'first Brock victory must display the atlas without a second restart');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-first-arrival.png'});
-   // Current trainer 4 is near the Mart but must launch the native battle.
+   // The city has no combatants, leader or trainer hit areas. Its route
+   // button must still lead to the same native trainer index and battle.
+   const cityActors=await page.evaluate(()=>{
+    const s=window.__pt2Game.scene.getScene('campanha');
+    return {trainerZones:s.children.list.filter(o=>o.getData?.('torre2-city-trainer')!==undefined).length,
+     civilians:s.children.list.filter(o=>o.getData?.('torre2-city-civilian')===true).length,
+     progress:s.__torre2CityHub};
+   });
+   assert.equal(cityActors.trainerZones,0,'no trainers may be interactive in Cerulean');
+   assert.equal(cityActors.civilians,2,'only two non-interactive pedestrians');
+   assert.deepEqual([cityActors.progress.routeCount,cityActors.progress.gymCount],[11,4]);
    await page.evaluate(async()=>{
     const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
     const core=await import(new URL('./torre2/campaign-core.js',main));
@@ -161,7 +171,10 @@ const server=http.createServer((req,res)=>{
    // renderCampaign queues new interactive objects until the next Phaser step.
    await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',
     ()=>window.__pt2Game.events.once('poststep',resolve))));
-   await click(218,196);
+   await named('torre2-city-action','ROTAS');
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .__torre2BattlePath?.stage===1,null,{timeout:12000});
+   await named('torre2-central-cta',true);
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate'),null,{timeout:60000});
    await page.waitForTimeout(1500);
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-battle-entry.png'});
