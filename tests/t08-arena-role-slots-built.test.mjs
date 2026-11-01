@@ -130,6 +130,9 @@ for(const move of nativeNormal){
   move.nombre+' must be permitted in HAB2');
  assert.equal(campaignMoveSlotReason(m,2,move),null,
   move.nombre+' must be permitted in HAB3');
+ if(['gust','thunderbolt'].includes(canonicalMoveKey(move.nombre)))
+  assert.ok(campaignMoveSlotReason(m,0,move),
+   move.nombre+' must not be selectable as basic ATK');
 }
 for(const {id} of KANTO_151){
  if(id==='mewtwo')continue;
