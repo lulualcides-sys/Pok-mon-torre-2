@@ -9,7 +9,7 @@ const gymsLiteral=coreSource.match(/export const GYMS=Object\.freeze\((\[[\s\S]*
 assert.ok(gymsLiteral,'canonical GYMS source must be readable');
 const GYMS=JSON.parse(JSON.stringify(vm.runInNewContext('('+gymsLiteral[1]+')',Object.create(null),{timeout:1000})));
 assert.match(coreSource,/export const TRAINERS_PER_GYM=stage=>stage<8\?13\+stage\*2/);
-import {GYM_ACE_VERSION,gymAcePlan,gymAcePlacement,drawGymAce} from '../tools/pokearena/torre2-gym-ace.js';
+import {GYM_ACE_VERSION,gymAcePlan,gymAcePlacement,gymAceVisibleBottomPadding,drawGymAce} from '../tools/pokearena/torre2-gym-ace.js';
 
 const expected=['onix','starmie','raichu','vileplume','weezing','alakazam','arcanine','rhyhorn'];
 const dex=['0095','0121','0026','0045','0110','0065','0059','0111'];
@@ -41,11 +41,23 @@ test('T35 rejects missing or malformed authentic Idle assets instead of using ic
 test('T35 gym layout keeps leader, ace and touch buttons spatially separate',()=>{
  for(let stage=0;stage<8;stage++){
   const p=gymAcePlacement(gymAcePlan(GYMS,stage,manifest));
-  assert.ok(p.aceX-p.leaderX>=50);
-  assert.ok(p.aceX+p.maxWidth/2<415);
-  assert.ok(p.leaderX-14>250);
+  assert.ok(p.aceX-p.leaderX>=p.maxWidth/2+18,'leader and ace must not overlap');
+  assert.ok(p.aceX+p.maxWidth/2<=373,'ace must remain inside gym backdrop');
+  assert.ok(p.leaderX-14>=267,'leader must remain inside gym backdrop');
+  assert.ok(p.maxHeight<=72,'ace cannot tower over the gym interior');
   assert.ok(p.baseline<215,'must not overlap battle CTA y231');
  }
+});
+test('T35 transparent PMD padding is removed so visible feet touch the shadow',()=>{
+ const w=4,h=5,bytes=new Uint8ClampedArray(w*h*4);
+ for(let y=0;y<3;y++)for(let x=0;x<w;x++)bytes[(y*w+x)*4+3]=255;
+ const ctx={drawImage(){},getImageData(){return{data:bytes}}};
+ const documentRef={createElement:()=>({getContext:()=>ctx})};
+ const frame={cutX:0,cutY:0,cutWidth:w,cutHeight:h,source:{image:{}}};
+ assert.equal(gymAceVisibleBottomPadding({get:()=>frame},documentRef),2);
+ assert.equal(gymAceVisibleBottomPadding({get:()=>frame},null),0,'no DOM fallback');
+ assert.equal(gymAceVisibleBottomPadding({get:()=>({...frame,cutWidth:999})},documentRef),0,'bounded scan');
+ assert.equal(gymAceVisibleBottomPadding({get:()=>frame},{createElement:()=>({getContext:()=>{throw Error('tainted')}})}),0);
 });
 test('T35 native idle sheet renders one sprite, one shadow and no gameplay writes',()=>{
  const objects=[],animations=[];
