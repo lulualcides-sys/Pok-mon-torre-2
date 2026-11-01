@@ -4,7 +4,7 @@
  * Real FRLG unlocks/TM learnability and all original Arena 2D kits are intact.
  */
 
-import {chooseKantoSignatureUlt,isKantoSignatureUltNameAllowed} from './kanto-ultimate-policy.js';
+import {chooseKantoSignatureUlt,isKantoSignatureUltNameAllowed,isKantoNormalAbilityName} from './kanto-ultimate-policy.js';
 
 export const KANTO_INTRO=Object.freeze({
   start:5, ultAt:8, tutorialUntil:13, maxPreviewLearnLevel:16,
@@ -12,6 +12,13 @@ export const KANTO_INTRO=Object.freeze({
 });
 const ATTACK_SLOTS=['lmb','rmb','q'];
 const idOf=name=>String(name||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+// Tutorial cannot bypass the same roles as the later editor and battle:
+// Gust/Thunderbolt/Punch/Flamethrower are HAB-only; Thunder is E-only.
+const legalIntroAttackSlot=(slot,move)=>{
+ const name=move?.torre2IntroSource||move?.nombre;
+ if(idOf(name)==='thunder')return false;
+ return slot!=='lmb'||!isKantoNormalAbilityName(name);
+};
 // A renderer that exists but is pending, unavailable or HM/TM-gated is
 // NOT an installed, usable Lv5 preview. Do not clear its lock via trainingMove.
 const introRenderable=move=>Boolean(move?.forma)&&!move.pendiente&&
@@ -171,7 +178,7 @@ export function resolveKantoIntro(member,installed,{
  const occupied=new Set();
  for(const slot of ATTACK_SLOTS){
   const actual=result[slot];
-  if(actual?.forma&&!actual.pendiente&&
+  if(actual?.forma&&!actual.pendiente&&legalIntroAttackSlot(slot,actual)&&
     (!starterWindow||actual.torre2IntroPractice||level>KANTO_INTRO.ultAt)){
    occupied.add(idOf(actual.torre2IntroSource||actual.nombre));
   }
@@ -181,12 +188,13 @@ export function resolveKantoIntro(member,installed,{
   const slot=ATTACK_SLOTS[i],actual=result[slot];
   // Player-equipped, power-capped practice is a real campaign option now:
   // don't replace it by an invisible, non-selectable tutorial projection.
-  if(actual?.forma&&!actual.pendiente&&
+  if(actual?.forma&&!actual.pendiente&&legalIntroAttackSlot(slot,actual)&&
      (!starterWindow||actual.torre2IntroPractice||level>KANTO_INTRO.ultAt)){
    selected.push(actual);
    continue;
   }
-  const candidate=picked.find(c=>!occupied.has(idOf(c.move.nombre)));
+  const candidate=picked.find(c=>legalIntroAttackSlot(slot,c.move)&&
+   !occupied.has(idOf(c.move.nombre)));
   if(candidate){
    selected.push(trainingMove(candidate.move,candidate.key,slot,candidate.learned));
    occupied.add(idOf(candidate.move.nombre));
