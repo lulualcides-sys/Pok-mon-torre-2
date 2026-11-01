@@ -1,7 +1,7 @@
 name: T35 — native PMD ace sprites in gym interiors (DRAFT)
 on:
   push:
-    branches: [feat/t35-gym-ace-native-sprites-20261101, fix/t35-gym-ace-loader-race-20261101]
+    branches: [feat/t35-gym-ace-native-sprites-20261101, fix/t35-gym-ace-loader-race-20261101, fix/t31-client-snapshot-recovery-20261101]
   workflow_dispatch:
 permissions:
   contents: read
