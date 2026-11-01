@@ -43,6 +43,13 @@ const server=http.createServer((req,res)=>{
    const report=await page.evaluate(()=>{const s=window.__pt2Game.scene.getScene('campanha');return{...s.__torre2CityHub,renderer:s.game.renderer.type,objects:s.children.length}});
    assert.equal(report.renderer,2,'actual WebGL renderer');assert.equal(report.walking,false);
    assert.deepEqual(report.hotspots.map(x=>x.id),['center','mart','gym']);
+   const actors=await page.evaluate(()=>{
+    const objects=window.__pt2Game.scene.getScene('campanha').children.list;
+    return {trainerHitboxes:objects.filter(o=>o.getData?.('torre2-city-trainer')!==undefined).length,
+     civilians:objects.filter(o=>o.getData?.('torre2-city-civilian')!==undefined).length};
+   });
+   assert.equal(actors.trainerHitboxes,0,'mandatory trainers must stay in route/gym');
+   assert.equal(actors.civilians,2,'Cerulean should show two decorative civilians');
    const pieces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.getData?.('torre2-city-atlas-piece')).map(o=>o.getData('torre2-city-atlas-piece')));
    for(const name of ['center','gym','mart','house','tree','planter'])assert.ok(pieces.includes(name),'Missing cropped atlas piece '+name);
@@ -151,7 +158,7 @@ const server=http.createServer((req,res)=>{
     .filter(o=>o.getData?.('torre2-city-atlas-piece')==='gym').length),1,
     'first Brock victory must display the atlas without a second restart');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-first-arrival.png'});
-   // Current trainer 4 is near the Mart but must launch the native battle.
+   // Current trainer 4 must be fought on the original route, never inside the city.
    await page.evaluate(async()=>{
     const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
     const core=await import(new URL('./torre2/campaign-core.js',main));
@@ -161,7 +168,9 @@ const server=http.createServer((req,res)=>{
    // renderCampaign queues new interactive objects until the next Phaser step.
    await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',
     ()=>window.__pt2Game.events.once('poststep',resolve))));
-   await click(218,196);
+   await named('torre2-city-action','ROTAS');
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===1,null,{timeout:60000});
+   await named('torre2-central-cta',true);
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate'),null,{timeout:60000});
    await page.waitForTimeout(1500);
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-battle-entry.png'});

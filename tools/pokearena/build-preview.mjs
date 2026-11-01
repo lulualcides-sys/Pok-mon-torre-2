@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {stripOptionalUiBallsPreload} from './optional-native-ui-balls.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -579,6 +580,18 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // The native optional balls20.png preload can change frame metadata.
+   // Remove ONLY this known unavailable asset request, and only when the
+   // current client has no other references to the texture key. Fail closed
+   // on ambiguous upstream edits rather than rewriting native sprite code.
+   if(filename==='escenas/carga.js'&&
+      from.startsWith('this.load.spritesheet("ui-balls","assets/ui/balls20.png",')&&to===''){
+    const result=stripOptionalUiBallsPreload(body);
+    if(result.removed)console.log('Removed unavailable legacy ui-balls preload');
+    else console.log('Native ui-balls preload already absent; preserving client');
+    body=result.body;
+    continue;
+   }
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
    if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){

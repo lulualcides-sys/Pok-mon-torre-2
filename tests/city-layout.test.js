@@ -9,8 +9,7 @@ test('city progress reads real trainer limit without writing the save',()=>{
  const state={stage:1,trainer:7,badges:['Rocha'],team:[{id:'ivysaur',hp:71}],active:0};
  const before=JSON.stringify(state),v=cityViewModel(state,15);
  assert.equal(v.done,7);assert.equal(v.remaining,8);assert.equal(v.gymReady,false);
- assert.equal(v.trainers.filter(t=>t.status==='current').length,1);
- assert.equal(v.trainers[7].status,'current');assert.equal(v.trainers[8].status,'locked');
+ assert.deepEqual(v.trainers,[],'no mandatory trainers belong to the city');
  assert.equal(JSON.stringify(state),before);
 });
 test('gym only becomes ready after the actual route count',()=>{
@@ -19,13 +18,13 @@ test('gym only becomes ready after the actual route count',()=>{
  assert.equal(cityViewModel({trainer:17,champion:true},17).gymReady,false);
 });
 
-test('trainer hit areas never overlap higher-depth building entrances',()=>{
- for(const t of cityViewModel({trainer:0},15).trainers){
-  const a={left:t.x-12,right:t.x+12,top:t.y-23,bottom:t.y+5};
-  for(const p of CERULEAN_LANDMARKS){
-   const b={left:p.x-41,right:p.x+41,top:p.doorY-12,bottom:p.y+15};
-   assert.ok(a.right<=b.left||a.left>=b.right||a.bottom<=b.top||a.top>=b.bottom,
-    `trainer ${t.index} is blocked by ${p.id}`);
-  }
+test('all 15 Misty encounters remain progress counters, never city actors',()=>{
+ for(const trainer of [0,1,7,14,15]){
+  const state={stage:1,trainer};
+  const before=JSON.stringify(state),view=cityViewModel(state,15);
+  assert.equal(view.count,15);
+  assert.equal(view.done,trainer);
+  assert.deepEqual(view.trainers,[]);
+  assert.equal(JSON.stringify(state),before);
  }
 });
