@@ -1,7 +1,7 @@
 name: T35 — native PMD gym ace pixel-art WebGL gate
 on:
   push:
-    branches: [test/t35-native-ace-idle-gate-20261101]
+    branches: [test/t35-native-ace-idle-gate-20261101, feat/t35-onix-scale-geometry-20261101]
   workflow_dispatch:
 permissions:
   contents: read

@@ -67,10 +67,12 @@ async function main(){
       const shadow=c.children.list.find(o=>o.getData?.('torre2-gym-ace-shadow')===m.ace);
       const leader=c.children.list.find(o=>o.getData?.('torre2-gym-leader')===m.leader);
       const zones=c.children.list.filter(o=>o.input?.enabled&&o.getData?.('torre2-gym-trainer-action')!==undefined);
+      const bounds=o=>{const b=o?.getBounds?.();return b&&{x:b.x,y:b.y,width:b.width,height:b.height};};
       return{renderer:c.game.renderer.type,stage:m.stage,ace:m.ace,
        aceRendered:m.aceRendered,leaderRendered:m.leaderRendered,aceSource:m.aceSource,
         aceTexture:ace?.texture?.key,aceAnimation:ace?.anims?.currentAnim?.key,
-       aceBounds:ace?.getBounds?.().toJSON?.(),shadow:!!shadow,leader:!!leader,
+       aceBounds:bounds(ace),leaderBounds:bounds(leader),trainerBounds:zones.map(bounds),
+       shadow:!!shadow,leader:!!leader,
        gymCount:m.gymCount,routeCount:m.routeCount,trainerIndices:m.trainers.map(t=>t.index),
        rivalIdentities:m.trainers.filter(t=>t.kind==='rival').map(t=>t.identity),
        trainerTouchZones:zones.length,leaderReady:m.leaderReady};
@@ -92,6 +94,17 @@ async function main(){
       'Rival must be outside the gym in real Phaser/WebGL screenshots');
      assert.equal(report.trainerIndices.length,report.gymCount);
      assert.equal(report.trainerTouchZones,1,'exactly current trainer must be touchable');
+     const a=report.aceBounds,b=report.leaderBounds;
+     assert.ok(a&&b,'native ace and leader must have actual Phaser bounds');
+     const overlaps=(u,v)=>u&&v&&u.x<v.x+v.width&&u.x+u.width>v.x&&
+      u.y<v.y+v.height&&u.y+u.height>v.y;
+     assert.equal(overlaps(a,b),false,'ace must never obscure leader');
+     assert.equal(report.trainerBounds.some(z=>overlaps(a,z)),false,
+      'ace must never obscure a gym trainer touch target');
+     assert.ok(a.x>=215&&a.x+a.width<=425&&a.y>=35&&a.y+a.height<=134,
+      'ace must stay on the final gym platform');
+     if(stage===0)assert.ok(a.height>=85,
+      'Onix must look substantially larger than a trainer, not like a tiny icon');
      assert.equal(report.leaderReady,false,'leader must remain locked');
      assert.deepEqual(errors,[]);
      await page.screenshot({path:'test-evidence/'+name+'.png'});

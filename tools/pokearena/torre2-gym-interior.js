@@ -39,8 +39,11 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAni
  platform(g,215,40,210,94,p);platform(g,286,125,68,158,p);
  for(const [x,y] of POS)platform(g,x-47,y-39,94,64,p);
  for(let y=129;y<270;y+=12)box(g,307,y,26,3,p[3]);
+ // Onix is a tall Rock-type ace: use a larger native Idle sprite, shifted
+ // down within the boss platform. The other seven aces keep their anchors.
+ const aceY=ACE_ANCHORS.ace[1]+(m.stage===0?21:0);
  const shadow=scene.add.graphics().setDepth(5);
- shadow.fillStyle(0x061a2c,.5).fillEllipse(ACE_ANCHORS.ace[0],ACE_ANCHORS.ace[1]+2,45,10);
+ shadow.fillStyle(0x061a2c,.5).fillEllipse(ACE_ANCHORS.ace[0],aceY+2,m.stage===0?58:45,10);
  shadow.setData('torre2-gym-ace-shadow',m.ace);
  const kind=m.leader.toLowerCase().replace('lt. ','');
  const leader=addNpc?.(scene,kind,...ACE_ANCHORS.leader,{scale:1.5,depth:7});
@@ -50,9 +53,9 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAni
  if(hasNative){
   // The captured PMD Idle frames contain alpha; portraits have opaque square
   // backdrops and must not be used as the preferred overworld decoration.
-  ace=scene.add.sprite(...ACE_ANCHORS.ace,aceSpriteKey).setOrigin(.5,1)
+  ace=scene.add.sprite(ACE_ANCHORS.ace[0],aceY,aceSpriteKey).setOrigin(.5,1)
    .setDepth(7).setData('torre2-gym-ace',m.ace);
-  const maxSize=m.stage===0?64:54;
+  const maxSize=m.stage===0?90:54;
   ace.setScale(maxSize/Math.max(1,ace.width,ace.height));
   if(aceAnimationKey&&scene.anims.exists(aceAnimationKey))ace.play(aceAnimationKey);
   aceSource='native-idle';
