@@ -78,7 +78,12 @@ const server=http.createServer((req,res)=>{
      else await page.mouse.click(back.x,back.y,{delay:100});
      await page.waitForFunction(stage=>{
       const s=window.__pt2Game.scene.getScene('campanha');
-      return s?.scene.isActive()&&(s.__torre2BattlePath?.stage===stage||s.__torre2CityHub?.stage===stage);
+      // Old route metadata can match BEFORE scene.restart() finishes.
+      // Wait for the actual gym objects to disappear, not just the stage ID.
+      const aceCount=s?.children.list.filter(o=>o.getData?.('torre2-gym-ace')).length??1;
+      const floorCount=s?.children.list.filter(o=>o.getData?.('torre2-gym-floor')).length??1;
+      return s?.scene.isActive()&&aceCount===0&&floorCount===0&&
+       (s.__torre2BattlePath?.stage===stage||s.__torre2CityHub?.stage===stage);
      },stage,{timeout:15000});
      assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
       .filter(o=>o.getData?.('torre2-gym-ace')).length),0,'ace must not leak into city or route');
