@@ -32,7 +32,7 @@ import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
-import {renderInteriorScene} from './frlg-interiors.js';
+import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -396,6 +396,7 @@ create(){
    g.fillStyle(water?0xa7e4e9:0xd8c49d).fillRect(257,166,126,5);
    const location=['pewter','cerulean','vermilion','celadon',
     'fuchsia','saffron','cinnabar','viridian'][state.stage];
+   addGymInteriorFloor(this,location);
    renderInteriorScene(this,location,'gym',{
     centerX:320,centerY:150,maxWidth:430,maxHeight:136,depth:5});
    // Token is destroyed with this screen; a delayed PMD download must
