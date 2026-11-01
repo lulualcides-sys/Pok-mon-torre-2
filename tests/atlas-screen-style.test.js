@@ -1,6 +1,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {GYMS,STAGES,TRAINERS_PER_GYM} from '../tools/pokearena/torre2-campaign-core.js';
+import {readFileSync} from 'node:fs';
+// Campaign core's imports are renamed only in the Phaser build; extract
+// its exported immutable data definitions without invoking missing build-only imports.
+const rawCore=readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
+const begin=rawCore.indexOf('export const GYMS=Object.freeze([');
+const marker='export const STAGES=Object.freeze([...GYMS,...ELITE]);';
+const end=rawCore.indexOf(marker,begin);
+assert.ok(begin>=0&&end>begin,'real Kanto GYMS/ELITE stage definitions must exist');
+const policy=rawCore.slice(begin,end+marker.length);
+const {GYMS,STAGES}=await import('data:text/javascript,'+encodeURIComponent(policy));
+const count=rawCore.match(/export const TRAINERS_PER_GYM=stage=>([^;]+);/);
+assert.ok(count,'actual trainer-count policy present');
+const TRAINERS_PER_GYM=stage=>stage<8?13+stage*2:stage===8?17:0;
+assert.equal(count[1], 'stage<8?13+stage*2:stage===8?17:0'.replace(/^stage=>/,''));
 import {
  ATLAS_UI_VERSION,ATLAS_GYM_THEMES,ATLAS_LEAGUE_BIOMES,
  atlasGymModel,atlasBadgeModel,atlasShopModel,atlasPanel,atlasGymBackdrop,
