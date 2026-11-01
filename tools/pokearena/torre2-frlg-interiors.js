@@ -66,3 +66,24 @@ export function renderInteriorScene(scene,location,kind,{
   .setDisplaySize(rect[2]*scale,rect[3]*scale).setDepth(depth);
  return true;
 }
+
+/* Repeating a genuine 16px floor tile from the SAME FireRed room avoids
+ * giant blank flat-color panels around the boss platform. No pasted
+ * screenshot, CSS background, extra texture download or battle change. */
+export function addGymInteriorFloor(scene,location,{
+ x=83,y=82,width=474,height=128,depth=4.2
+}={}){
+ if(!canRenderInterior(scene,location,'gym'))return null;
+ const key='frlg-location-'+location,texture=scene.textures.get(key);
+ const room=ROOM_CROPS[location].gym;
+ // Pick clean room-floor pixels, away from wall/roof and entrance signs.
+ const ox=location==='cerulean'?72:24;
+ const oy=location==='cerulean'?170:Math.max(30,room[3]-64);
+ const name='torre2-gym-floor-'+location;
+ if(!texture.has(name))texture.add(name,0,room[0]+ox,room[1]+oy,16,16);
+ if(typeof Phaser!=='undefined')
+  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ return scene.add.tileSprite(x,y,width,height,key,name)
+  .setOrigin(0).setTileScale(1.5).setDepth(depth)
+  .setData('torre2-gym-floor',location);
+}
