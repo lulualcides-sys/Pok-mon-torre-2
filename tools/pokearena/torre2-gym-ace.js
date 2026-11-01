@@ -23,8 +23,30 @@ export function gymAcePlan(gyms,stage,manifest){
 }
 export function gymAcePlacement(plan){
  const big=plan?.species==='onix'||plan?.species==='arcanine';
- return Object.freeze({leaderX:287,aceX:357,baseline:190,
-  maxWidth:big?96:72,maxHeight:big?104:76});
+ // The native gym backdrop is only ~106 logical pixels wide (x267..373).
+ // Keep both figures centered on its final platform, not over side walls.
+ return Object.freeze({leaderX:294,aceX:342,baseline:190,
+  maxWidth:big?58:52,maxHeight:big?72:60});
+}
+// PMD Idle sheets can have transparent rows below the feet. Anchoring the
+// entire frame at the floor makes the visible Pokémon float above its shadow.
+// Read at most one 256x256 frame once per gym; failures fall back safely.
+export function gymAceVisibleBottomPadding(texture,documentRef=globalThis.document){
+ try{
+  const frame=texture?.get?.(0),img=frame?.source?.image;
+  const w=frame?.cutWidth,h=frame?.cutHeight;
+  if(!documentRef?.createElement||!img||!Number.isInteger(w)||!Number.isInteger(h)||
+   w<1||h<1||w>256||h>256)return 0;
+  const canvas=documentRef.createElement('canvas');canvas.width=w;canvas.height=h;
+  const ctx=canvas.getContext('2d',{willReadFrequently:true});
+  if(!ctx)return 0;
+  ctx.drawImage(img,frame.cutX,frame.cutY,w,h,0,0,w,h);
+  const pixels=ctx.getImageData(0,0,w,h).data;
+  for(let y=h-1;y>=0;y--){
+   for(let x=0;x<w;x++)if(pixels[(y*w+x)*4+3]>8)return h-1-y;
+  }
+ }catch{ /* Missing or tainted canvas must not block gym navigation. */ }
+ return 0;
 }
 export function drawGymAce(scene,plan,addLeader,{token=null}={}){
  if(!plan)return null;
@@ -47,7 +69,8 @@ export function drawGymAce(scene,plan,addLeader,{token=null}={}){
    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
   const scale=Math.min(2.25,p.maxWidth/plan.frameWidth,p.maxHeight/plan.frameHeight);
   const aceShadow=scene.add.ellipse(p.aceX,p.baseline,Math.min(65,plan.frameWidth*scale*.8),8,0x11243c,.48).setDepth(12);
-  const sprite=scene.add.sprite(p.aceX,p.baseline-3,plan.textureKey,0)
+  const bottomPadding=gymAceVisibleBottomPadding(texture);
+  const sprite=scene.add.sprite(p.aceX,p.baseline-3+bottomPadding*scale,plan.textureKey,0)
    .setOrigin(.5,1).setScale(scale).setDepth(17).setData('torre2-gym-ace',plan.species);
   const count=Math.min(plan.durations.length,texture.frameTotal||1);
   if(count>1){
