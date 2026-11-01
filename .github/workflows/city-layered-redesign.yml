@@ -26,6 +26,10 @@ jobs:
           node --check tools/pokearena/torre2-city-scenery.js
           node --check tools/pokearena/torre2-city-hub.js
       - name: Build real client
+        env:
+          # Immutable upstream client previously validated in real Phaser/WebGL.
+          # Latest upstream is audited separately, never silently deployed.
+          POKEARENA_SOURCE_VERSION: src-97f03e6e1b
         run: |
           set -euo pipefail
           for i in 1 2 3; do
