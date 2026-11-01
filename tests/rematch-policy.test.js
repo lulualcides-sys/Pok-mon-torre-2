@@ -94,3 +94,23 @@ test('rematch tickets require positive integer tokens, without rewriting old sav
  assert.equal(validRematchResult(state,{...fresh,token:'3'}),false);
  assert.equal(validRematchResult(state,fresh),true);
 });
+
+test('malformed legacy VS Seeker metadata recovers without losing story progress',()=>{
+ for(const malformed of ['corrupt',42,true,[],{length:2}]){
+  const state={stage:3,trainer:7,rematches:malformed};
+  for(let i=0;i<3;i++)rechargeRematches(state);
+  assert.equal(Array.isArray(state.rematches),false,'metadata must be a JSON object');
+  assert.equal(typeof state.rematches,'object');
+  assert.equal(state.rematches.charge,3);
+  const ticket=reserveRematch(state,2,1);
+  assert.ok(ticket,'recovered VS Seeker should issue a normal ticket');
+  assert.equal(ticket.token,1);
+  assert.equal(validRematchResult(state,ticket),true);
+  assert.equal(consumeRematchResult(state,ticket),true);
+  assert.equal(consumeRematchResult(state,ticket),false);
+  assert.equal(state.stage,3);
+  assert.equal(state.trainer,7);
+  assert.equal(JSON.parse(JSON.stringify(state)).rematches.charge,0,
+   'charge must survive an ordinary save/reload JSON roundtrip');
+ }
+});
