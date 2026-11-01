@@ -1182,8 +1182,15 @@ export function resolveLoadout(member){
  const customFireBlast=plannedE==='fire-blast'&&fireBlastAtLevel(member.id)!==null;
  const explicitE=member.movePlanSpecies===member.id&&
   member.moves?.[3]===out.e?.id;
+ // TM38 Fire Blast is a Lv50 campaign unlock, not an early ULT.
+ // Excluding Flamethrower from E must not expose Arcanine's (or another
+ // evolved species') future Fire Blast as an unearned Lv8 practice.
+ // Keep Vulpix's specifically approved Lv8 preview as the sole exception.
+ const prematureFireBlast=customFireBlast&&plannedE==='fire-blast'&&
+  thematicPreview(member.id)!=='fire-blast'&&!dict.has(plannedE);
  const blockedSignature=(member.progression?.level??5)>=KANTO_INTRO.tutorialUntil&&
-  plannedE&&!dict.has(plannedE)&&!earnedSignature&&!customFireBlast&&!explicitE?
+  plannedE&&!dict.has(plannedE)&&
+  ((!earnedSignature&&!customFireBlast)||prematureFireBlast)&&!explicitE?
   plannedE:null;
  const battle=resolveKantoIntro(member,out,{library:TEST_LIBRARY,canonical:canonicalMoveKey,
   earlyLevels:EARLY_KANTO_LEARNSETS[member.id],
