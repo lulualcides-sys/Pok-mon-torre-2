@@ -74,8 +74,10 @@ const server=http.createServer((req,res)=>{
      });
      if(device==='mobile')await page.touchscreen.tap(back.x,back.y);
      else await page.mouse.click(back.x,back.y,{delay:100});
-     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===0||
-      window.__pt2Game.scene.getScene('campanha').__torre2CityHub?.stage===1,null,{timeout:15000});
+     await page.waitForFunction(stage=>{
+      const s=window.__pt2Game.scene.getScene('campanha');
+      return s?.scene.isActive()&&(s.__torre2BattlePath?.stage===stage||s.__torre2CityHub?.stage===stage);
+     },stage,{timeout:15000});
      assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
       .filter(o=>o.getData?.('torre2-gym-ace')).length),0,'ace must not leak into city or route');
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),saveBefore,'return must preserve save');
