@@ -17,6 +17,6 @@ test('T35 genuine FireRed floor frame stays inside each existing gym interior cr
   assert.ok(frame.x>=rect[0]&&frame.y>=rect[1]);
   assert.ok(frame.x+16<=rect[0]+rect[2]&&frame.y+16<=rect[1]+rect[3]);
   assert.equal(renderInteriorScene(scene,location,'gym',{centerX:320,centerY:150,maxHeight:136}),true);
-  assert.equal(created.length,2);
+  assert.equal(created.length,61,'60 independent batched Images + one interior, never TileSprite');
  }
 });
