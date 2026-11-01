@@ -13,8 +13,11 @@
 - First Brock result anticipates city preload; leaving Cerulean evicts atlas after resolving progress.
 - All six party cards accessible; doors aligned to art; NPC hitboxes checked against building zones.
 - Main through 634bbc4 merged; AUTO, move-role and VS Seeker fixes preserved.
-- Local unit suite: 376 passed after collection portrait coverage; syntax/reuse checks passed. Legacy Steel certification remains outside this work.
+- Local unit suite: 377 passed after collection portrait and capture-source coverage; syntax/reuse checks passed. Legacy Steel certification remains outside this work.
 - Browser failure b2ae2da resolved: test awaited two Phaser poststep events to register newly rebuilt input zones. Actions 41261246927 passed desktop/touch navigation, first-arrival and native battle entry on 5a68d43. Final vegetation adjustment passed in Actions 41261379057.
 - Original surface atlas added: 512×512, four cropped 256px tiles, 173352 bytes. Animated water, pale paving, grass and masonry verified in actual WebGL; shared timer and both-atlas eviction tested. Cais/boat and gardens refined.
-- Pokédex portrait cards and Bag inventory icons implemented. Collection loader has tests for partial completion, fast pagination, shutdown and unrelated texture preservation. Final browser verification pending.
+- Pokédex portrait cards and Bag inventory icons implemented. Collection loader has tests for partial completion, fast pagination, shutdown and unrelated texture preservation. Browser verification passed in Actions 41299829399 on 9212ac6: 22 Pokédex portraits, 5 Bag icons, exact saved-byte preservation, texture cleanup, desktop/touch navigation and native battle entry. Captures inspected.
 - Artistic gate remains OPEN: composition, bridge/street-furniture detail and other cities still need work. Secondary-menu redesign is partial, not complete.
+
+## Upstream compatibility boundary
+The external client changed to `src-2755ffa8ef` during verification and failed the existing `ui-balls` patch guard before browser tests. The capture now defaults to `src-97f03e6e1b`, the module version verified in Actions 41263204733 and 41299829399. `POKEARENA_SOURCE_VERSION=latest` explicitly enables upstream compatibility audits; normal builds do not silently adopt new modules. Reports retain discovered/selected versions and the original homepage hash. Shared unversioned assets are still fetched and checked; this is not a complete immutable source archive. Full regression is rerun after this default change.

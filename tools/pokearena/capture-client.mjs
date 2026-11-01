@@ -78,7 +78,7 @@ async function main() {
  const homepage=await get(ORIGIN+'/',3*MB);
  const reExisting=(catalog.scripts||[]).map(s=>s.file.match(/^(src-[0-9a-f]{10})\//)?.[1]).find(Boolean);
  const selected=selectCaptureSource(homepage.data.toString('utf8'),reExisting,
-  process.env.POKEARENA_SOURCE_VERSION||'');
+  process.env.POKEARENA_SOURCE_VERSION||undefined);
  const {html,selected:actual,...selection}=selected;
  details.sourceVersions={...selection,selected:actual};
  details.originalHomepageSha256=sha256(homepage.data);
