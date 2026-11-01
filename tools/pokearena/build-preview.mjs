@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {stripOptionalUiBallsPreload} from './optional-native-ui-balls.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -584,13 +585,10 @@ for(const [filename,changes] of patches){
    // on ambiguous upstream edits rather than rewriting native sprite code.
    if(filename==='escenas/carga.js'&&
       from.startsWith('this.load.spritesheet("ui-balls","assets/ui/balls20.png",')&&to===''){
-    const obsolete=/this\.load\.spritesheet\(\s*["']ui-balls["']\s*,\s*["']assets\/ui\/balls20\.png["']\s*,\s*\{[^{};]{0,180}\}\s*\)\s*;/g;
-    const matches=[...body.matchAll(obsolete)];
-    if(matches.length!==1)throw Error('Optional native ui-balls preload changed ambiguously: '+matches.length);
-    const remaining=body.replace(matches[0][0],'');
-    if(/["']ui-balls["']/.test(remaining))
-     throw Error('Native client still uses ui-balls; cannot remove preload safely');
-    body=remaining;
+    const result=stripOptionalUiBallsPreload(body);
+    if(result.removed)console.log('Removed unavailable legacy ui-balls preload');
+    else console.log('Native ui-balls preload already absent; preserving client');
+    body=result.body;
     continue;
    }
    // The native client sometimes reorders imported data symbols.
