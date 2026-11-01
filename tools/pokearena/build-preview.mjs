@@ -216,6 +216,7 @@ await Promise.all([
  ['tools/pokearena/torre2-city-hub.js','city-hub.js'],
  ['tools/pokearena/torre2-encounter-layout.js','encounter-layout.js'],
  ['tools/pokearena/torre2-gym-interior.js','gym-interior.js'],
+ ['tools/pokearena/torre2-gym-stage-art.js','gym-stage-art.js'],
  ['tools/pokearena/torre2-path-actions.js','path-actions.js'],
  ['tools/pokearena/torre2-battle-report.js','battle-report.js'],
  ['tools/pokearena/torre2-hall-of-fame.js','hall-of-fame.js'],
