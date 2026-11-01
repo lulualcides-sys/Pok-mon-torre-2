@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
-import {CITY_ATLAS_FRAMES,CITY_ATLAS_SIZE,citySpriteRect,needsCeruleanAtlas} from '../tools/pokearena/torre2-city-atlas.js';
+import {CITY_ATLAS_FRAMES,CITY_ATLAS_SIZE,citySpriteRect,needsCeruleanAtlas,CITY_SURFACES_FRAMES,CITY_TEXTURES} from '../tools/pokearena/torre2-city-atlas.js';
 test('each reusable city asset is a bounded isolated atlas frame',()=>{
  assert.deepEqual(Object.keys(CITY_ATLAS_FRAMES),['center','gym','mart','house','tree','planter']);
  const [w,h]=CITY_ATLAS_SIZE;
@@ -35,4 +35,16 @@ test('first Brock victory preloads Cerulean without changing progress',()=>{
   assert.equal(needsCeruleanAtlas(state,{...result,marker},15),false);
  assert.equal(needsCeruleanAtlas({stage:1},null,15),true);
  assert.equal(needsCeruleanAtlas({stage:2},null,15),false);
+});
+
+test('surface frames are four bounded power-of-two tiles in one small atlas',()=>{
+ assert.deepEqual(Object.keys(CITY_SURFACES_FRAMES),['water','paving','grass','stone']);
+ const locations=new Set();
+ for(const [x,y,w,h]of Object.values(CITY_SURFACES_FRAMES)){
+  assert.equal(w,256);assert.equal(h,256);assert.ok(x+w<=512&&y+h<=512);
+  locations.add(x+','+y);
+ }
+ assert.equal(locations.size,4);assert.equal(CITY_TEXTURES.length,2);
+ const bytes=fs.readFileSync('reference-assets/kanto/city-original/cerulean-surfaces-v1.webp');
+ assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes.length<200000);
 });

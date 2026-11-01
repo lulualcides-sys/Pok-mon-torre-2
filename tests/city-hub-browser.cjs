@@ -46,6 +46,13 @@ const server=http.createServer((req,res)=>{
    const pieces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.getData?.('torre2-city-atlas-piece')).map(o=>o.getData('torre2-city-atlas-piece')));
    for(const name of ['center','gym','mart','house','tree','planter'])assert.ok(pieces.includes(name),'Missing cropped atlas piece '+name);
+   const surfaces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(o=>o.getData?.('torre2-city-surface')).map(o=>o.getData('torre2-city-surface')));
+   for(const name of ['water','paving','grass','stone'])assert.ok(surfaces.includes(name),'Missing surface '+name);
+   const waterOffset=()=>page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .find(o=>o.getData?.('torre2-city-surface')==='water').tilePositionY);
+   const offsetBefore=await waterOffset();await page.waitForTimeout(300);
+   assert.notEqual(await waterOffset(),offsetBefore,'river texture must animate');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'.png'});
    await click(123,128); // Actual atlas door, independent of the label zone.
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-center-pc')));
@@ -103,7 +110,8 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===0,null,{timeout:60000});
    await page.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
-    if(scene.textures.exists('torre2-city-atlas-v1'))throw Error('Pewter retained city atlas');
+    for(const key of ['torre2-city-atlas-v1','torre2-city-surfaces-v1'])
+     if(scene.textures.exists(key))throw Error('Pewter retained '+key);
     const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
     scene.scene.restart({finished:true,won:true,marker:{stage:0,trainer:state.trainer}});
    });

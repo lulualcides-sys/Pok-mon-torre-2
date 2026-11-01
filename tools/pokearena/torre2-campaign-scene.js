@@ -1,4 +1,4 @@
-import {CITY_ATLAS_KEY,CITY_ATLAS_FILE,needsCeruleanAtlas} from './city-atlas.js';
+import {CITY_TEXTURES,needsCeruleanAtlas} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -124,10 +124,10 @@ class Campanha extends Phaser.Scene{
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
   const needsAtlas=needsCeruleanAtlas(state,this.result,TRAINERS_PER_GYM(stage));
-  if(needsAtlas&&!this.textures.exists(CITY_ATLAS_KEY))
-   this.load.image(CITY_ATLAS_KEY,CITY_ATLAS_FILE);
-  if(!needsAtlas&&this.textures.exists(CITY_ATLAS_KEY))
-   this.textures.remove(CITY_ATLAS_KEY);
+  for(const [key,file] of CITY_TEXTURES){
+   if(needsAtlas&&!this.textures.exists(key))this.load.image(key,file);
+   if(!needsAtlas&&this.textures.exists(key))this.textures.remove(key);
+  }
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
   if(AVAILABLE_FRLG.includes(world)){
@@ -481,7 +481,8 @@ create(){
    this.__torre2CityWaterTimer=null;
   }
   this.children.removeAll(true);
-  if(state.stage!==1&&this.textures.exists(CITY_ATLAS_KEY))this.textures.remove(CITY_ATLAS_KEY);
+  if(state.stage!==1)for(const [key] of CITY_TEXTURES)
+   if(this.textures.exists(key))this.textures.remove(key);
   this.__torre2CityHub=null;
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
