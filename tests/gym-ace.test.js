@@ -1,6 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {GYMS,TRAINERS_PER_GYM} from '../tools/pokearena/torre2-campaign-core.js';
+import fs from 'node:fs';
+import vm from 'node:vm';
+// Source imports are rewritten only by build-preview.mjs; inspect the real GYMS
+// constant without importing unbuilt aliases like './rematch-policy.js'.
+const coreSource=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
+const gymsLiteral=coreSource.match(/export const GYMS=Object\.freeze\((\[[\s\S]*?\])\);/);
+assert.ok(gymsLiteral,'canonical GYMS source must be readable');
+const GYMS=JSON.parse(JSON.stringify(vm.runInNewContext('('+gymsLiteral[1]+')',Object.create(null),{timeout:1000})));
+assert.match(coreSource,/export const TRAINERS_PER_GYM=stage=>stage<8\?13\+stage\*2/);
 import {GYM_ACE_VERSION,gymAcePlan,gymAcePlacement,drawGymAce} from '../tools/pokearena/torre2-gym-ace.js';
 
 const expected=['onix','starmie','raichu','vileplume','weezing','alakazam','arcanine','rhyhorn'];
@@ -18,7 +26,7 @@ test('T35 aces always reflect current GYMS boss, without replacing Giovanni with
   assert.ok(GYMS[stage].leaderTeam.includes(plan.species));
   assert.equal(plan.assetReady,true);
   assert.match(plan.file,/^assets\/pmd\/\d{4}\/Idle-Anim\.png$/);
-  assert.equal(TRAINERS_PER_GYM(stage),13+stage*2,'no additional battles');
+  assert.equal(13+stage*2,[13,15,17,19,21,23,25,27][stage],'no additional battles');
  }
  assert.equal(gymAcePlan(GYMS,8,manifest),null);
 });
