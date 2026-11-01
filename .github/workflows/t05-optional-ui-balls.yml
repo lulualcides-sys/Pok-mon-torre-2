@@ -1,0 +1,28 @@
+name: T05 — optional ui-balls source compatibility
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/optional-ui-balls.mjs'
+      - 'tests/optional-ui-balls.test.js'
+      - '.github/workflows/t05-optional-ui-balls.yml'
+  workflow_dispatch:
+jobs:
+  focused:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify native optional asset guard and syntax
+        run: |
+          node --check tools/pokearena/build-preview.mjs
+          node --check tools/pokearena/optional-ui-balls.mjs
+          node --test tests/optional-ui-balls.test.js
+      - name: Existing unit and reuse regression
+        run: |
+          npm test
+          npm run check
+          npm run check:reuse
