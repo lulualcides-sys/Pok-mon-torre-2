@@ -181,19 +181,33 @@ export function renderCityScenery(scene){
    px(quay,x-2,y-4,6,2,0xf0cd93);px(quay,x,y,1,1,0x464c50);
   }
  }
- // Small moored boat: separate hull, gunwale, wooden deck and glass cabin.
- ellipse(quay,454,293,29,43,0x145c7c,.5);
- const hull=[[452,271],[461,276],[466,290],[461,307],[447,309],[440,298],[440,284],[445,275]];
- poly(quay,hull,0x284b67);
- poly(quay,[[452,273],[459,278],[463,290],[458,305],[448,306],[443,297],[443,285],[447,278]],0xf3eacb);
- poly(quay,[[452,277],[457,281],[460,291],[456,302],[449,303],[446,295],[446,285]],0xb18b5f);
- for(let y=283;y<303;y+=4)px(quay,448,y,10,1,0xd9b77e);
- px(quay,446,282,14,13,0x577b8d);px(quay,447,281,12,3,0xe9e6cf);
- px(quay,448,285,10,7,0x408fa8);px(quay,449,286,3,4,0x91e0df);px(quay,454,285,1,7,0xd9f0e4);
- px(quay,446,294,14,2,0xf3e8cd);px(quay,449,299,9,2,0xe5d5ad);
- px(quay,449,274,2,3,0xd9ecdd);
- // Mooring line and a ring on the pier (decorative, no extra menu).
- quay.lineStyle(1,0xd3c7a1).lineBetween(463,288,493,284);
+ // Top-down Kanto rowboat: stepped timber hull, planked open deck,
+ // two cross-benches and one oar. No oversized white capsule or cabin.
+ // Decorative only: never creates an input zone or a campaign transition.
+ ellipse(quay,454,294,32,45,0x0b526d,.52);
+ const hull=[[454,269],[461,274],[468,285],[468,298],[463,307],
+  [459,311],[447,311],[443,307],[439,298],[439,285],[446,274]];
+ poly(quay,hull,0x352c2a);
+ poly(quay,[[454,273],[460,278],[464,286],[464,298],[459,306],
+  [448,306],[443,298],[443,286],[448,278]],0x94643f);
+ // Distinct port/starboard gunwales, one-pixel specular highlights.
+ poly(quay,[[454,271],[447,275],[441,285],[441,299],[447,308],
+  [449,305],[445,297],[445,286],[450,278]],0xc18a51);
+ poly(quay,[[454,271],[461,275],[467,285],[467,299],[461,308],
+  [459,305],[463,297],[463,286],[458,278]],0xaf7848);
+ px(quay,448,281,13,22,0x5c402f);
+ for(let y=283;y<=302;y+=4){
+  px(quay,448,y,13,1,0x9f734b);
+  px(quay,449,y+2,11,1,0x745036);
+ }
+ // Two wooden benches make the silhouette read as a rowboat at mobile size.
+ px(quay,444,284,20,3,0xd4a56c);px(quay,446,285,16,1,0xf0c58a);
+ px(quay,444,297,20,3,0xc89760);px(quay,446,298,16,1,0xe8b779);
+ px(quay,452,274,4,2,0xf2d19b);px(quay,451,305,6,2,0x6d4931);
+ // Oar, mooring rope and iron ring on the pier; no gameplay collision.
+ quay.lineStyle(2,0x6f5035).lineBetween(464,294,482,287);
+ px(quay,480,282,3,10,0xc89c68);
+ quay.lineStyle(1,0xd3c7a1).lineBetween(465,287,493,284);
  quay.lineStyle(2,0xf4ecda).strokeCircle(550,295,4);
  px(quay,547,292,2,2,0xca5550);px(quay,551,297,2,2,0xca5550);
  const treeKey=scene.textures.exists(CITY_ATLAS_KEY)?null:treeTexture(scene),positions=[
