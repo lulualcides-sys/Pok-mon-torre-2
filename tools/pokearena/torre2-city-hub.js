@@ -1,7 +1,6 @@
 import {renderCityScenery} from './city-scenery.js';
 import {cityViewModel,CERULEAN_LANDMARKS} from './city-layout.js';
 import {addFireRedNPC} from './frlg-npc.js';
-import {drawTrainer} from './campaign-sprites.js';
 import {drawBadgeIcon} from './campaign-art.js';
 const FONT='Pixelify Sans,monospace';
 const ink=0x0a2034;
@@ -64,21 +63,13 @@ export function renderCityHub(scene,state,{trainerCount,badgeDefinitions=[],...h
  scene.add.zone(516,22,218,34).setDepth(105).setInteractive({useHandCursor:true})
   .setData('torre2-city-action','INSÍGNIAS').on('pointerdown',handlers.badges);
  for(const p of CERULEAN_LANDMARKS)landmark(scene,p,handlers[p.id]);
- for(const t of model.trainers){
-  const types=['lass','youngster','ace','hiker','bugcatcher'];
-  const kind=types[t.index%types.length];
-  const sprite=addFireRedNPC(scene,kind,t.x,t.y,{scale:.7,depth:30+t.y/1000});
-  if(!sprite){const g=scene.add.graphics().setDepth(30+t.y/1000);drawTrainer(g,t.x,t.y-12,kind,.7)}
-  if(t.status==='current'){
-   text(scene,t.x,t.y-27,'!',13,'#ffe39a',65).setOrigin(.5);
-   const ring=scene.add.graphics().setDepth(28);ring.lineStyle(1,0xffe1a1).strokeEllipse(t.x,t.y,18,6);
-  }
-  if(t.status==='defeated')text(scene,t.x+7,t.y-12,'✓',9,'#94e6a2',65);
-  const zone=scene.add.zone(t.x,t.y-9,24,28).setDepth(69).setInteractive({useHandCursor:true})
-   .setData('torre2-city-trainer',t.index);
-  zone.on('pointerdown',()=>handlers.trainer(t.index,t.status));
+ // Cerulean is a civilian hub: mandatory fights remain in the existing
+ // native route/gym systems, with the same trainer IDs and checkpoints.
+ // Decorative overworld NPCs have no battle hitbox or save side effects.
+ for(const [kind,x,y] of [['youngster',285,181],['lass',464,236]]){
+  const sprite=addFireRedNPC(scene,kind,x,y,{scale:.8,depth:30+y/1000});
+  if(sprite)sprite.setData('torre2-city-civilian',kind);
  }
- addFireRedNPC(scene,'misty',545,190,{scale:.8,depth:31});
  // All six party members remain available; overflow does not disappear.
  panel(frame,6,308,628,46);
  const members=(state.team||[]).slice(0,6),visible=members.length>3?3:members.length;
