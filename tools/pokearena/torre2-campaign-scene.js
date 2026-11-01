@@ -31,7 +31,7 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
 import {locationForCampaign} from './frlg-location.js';
