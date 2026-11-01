@@ -1,7 +1,7 @@
 name: T19 — Existing gym intermediates without new battles (DRAFT)
 on:
   push:
-    branches: [feat/t19-gym-intermediates-20261101]
+    branches: [feat/t19-gym-intermediates-20261101, fix/t19-gym-route-gate-20261101]
   workflow_dispatch:
 permissions:
   contents: read
@@ -20,9 +20,11 @@ jobs:
         run: |
           node --check tools/pokearena/torre2-gym-intermediates.js
           node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/torre2-battle-path.js
+          node --check tests/gym-route-gate.test.js
           node --check tests/gym-intermediates-browser.cjs
       - name: Focused gym roster tests
-        run: node --test tests/gym-intermediates.test.js
+        run: node --test tests/gym-intermediates.test.js tests/gym-route-gate.test.js
       - name: Full repository tests
         run: npm test
       - name: Repository checks and reuse

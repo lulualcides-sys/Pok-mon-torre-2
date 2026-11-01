@@ -340,12 +340,14 @@ create(){
   else if(type==='mart'||type==='department')
    this.button(260,300,225,34,'ABRIR A LOJA',
     ()=>this.martScreen(state),true);
-  else if(type==='gym'&&isCurrentGym)
+  else if(type==='gym'&&isCurrentGym){
+   const roster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
+   const accessible=!!roster&&(roster.inGym||roster.leaderReady);
    this.button(260,300,225,34,
-    state.trainer>=TRAINERS_PER_GYM(state.stage)?
-     'DESAFIAR O LÍDER':'LÍDER BLOQUEADO',
-    ()=>this.gymScreen(state),
-    state.trainer>=TRAINERS_PER_GYM(state.stage));
+    roster?.leaderReady?'DESAFIAR O LÍDER':
+     accessible?'ENTRAR NO GINÁSIO':'LÍDER BLOQUEADO',
+    ()=>this.gymScreen(state),accessible);
+  }
   else if(type==='safari'&&state.stage===4)
    this.button(260,300,225,34,'EXPLORAR GRAMA ALTA',
     ()=>this.grassScreen(state),true);
@@ -550,7 +552,11 @@ create(){
     capture:()=>this.grassScreen(state),
     pokemon:i=>state.team[i]&&this.showSummary(state,i),
     trainer:(i,status)=>{
-     if(status==='current')return this.enterBattle(state);
+     if(status==='current'){
+      const roster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
+      return roster&&(roster.inGym||roster.leaderReady)?
+       this.gymScreen(state):this.enterBattle(state);
+     }
      if(status==='defeated')return this.rematchScreen(state,i);
      return this.__torre2PathDetails(text,this,null);
     },
@@ -564,7 +570,11 @@ create(){
    city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
-   battle:()=>this.enterBattle(state),
+   battle:()=>{
+    const roster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
+    return roster&&(roster.inGym||roster.leaderReady)?
+     this.gymScreen(state):this.enterBattle(state);
+   },
    gym:()=>this.gymScreen(state),
    training:()=>this.enterTraining(state),
    capture:()=>this.grassScreen(state),
