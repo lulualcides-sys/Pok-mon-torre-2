@@ -1,39 +1,66 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {gymInteriorModel,gymRouteCount,ACE_ANCHORS} from '../tools/pokearena/torre2-gym-interior.js';
+import {routeNode} from '../tools/pokearena/torre2-route-data.js';
+
 const aces=['onix','starmie','raichu','vileplume','weezing','alakazam','arcanine','rhyhorn'];
 const gyms=aces.map((boss,i)=>({city:i?'Cerulean':'Pewter',leader:i?'Misty':'Brock',boss,leaderTeam:[boss]}));
 const limit=s=>13+2*s;
-const route=(s,i,n)=>({type:i>0&&i%9===3?'rival':i>0&&i%7===5?'rocket':'trainer',
- name:i>0&&i%9===3?'RIVAL':i>0&&i%7===5?'ROCKET':'TREINADOR'});
-test('Brock: ten routes + three original gym encounters, rival identity intact',()=>{
- const s={stage:0,trainer:10},before=JSON.stringify(s),m=gymInteriorModel(s,gyms,limit,route);
- assert.equal(m.routeCount,10);assert.deepEqual(m.trainers.map(x=>x.index),[10,11,12]);
- assert.equal(m.trainers[2].identity,'RIVAL');assert.equal(JSON.stringify(s),before);
+const classicType=i=>i>0&&i%9===3?'rival':i>0&&i%7===5?'rocket':'trainer';
+
+test('Brock: ten route encounters, three genuine gym trainers, no rival at the leader',()=>{
+ const s={stage:0,trainer:10},before=JSON.stringify(s);
+ const m=gymInteriorModel(s,gyms,limit,routeNode);
+ assert.equal(m.routeCount,10);
+ assert.deepEqual(m.trainers.map(x=>x.index),[10,11,12]);
+ assert.ok(m.trainers.every(x=>x.kind==='trainer'),'No rival belongs to Brock gym');
+ assert.equal(routeNode(0,9,limit(0)).type,'rival','Rival belongs on Route before the gym');
+ assert.equal(routeNode(0,12,limit(0)).type,'trainer','Rival position replaced by gym trainer');
+ assert.equal(JSON.stringify(s),before);
 });
-test('Misty: eleven routes + four original gym encounters; leader gated',()=>{
- const m=gymInteriorModel({stage:1,trainer:11},gyms,limit,route);
- assert.equal(m.routeCount,11);assert.deepEqual(m.trainers.map(x=>x.index),[11,12,13,14]);
- assert.equal(m.trainers[1].kind,'rival');assert.equal(m.leaderReady,false);
- assert.equal(gymInteriorModel({stage:1,trainer:15},gyms,limit,route).leaderReady,true);
+test('Misty: eleven route encounters, four gym trainers, and locked leader',()=>{
+ const m=gymInteriorModel({stage:1,trainer:11},gyms,limit,routeNode);
+ assert.equal(m.routeCount,11);
+ assert.deepEqual(m.trainers.map(x=>x.index),[11,12,13,14]);
+ assert.ok(m.trainers.every(x=>x.kind==='trainer'),'No rival belongs to Misty gym');
+ assert.equal(routeNode(1,10,limit(1)).type,'rival');
+ assert.equal(routeNode(1,12,limit(1)).type,'trainer');
+ assert.equal(m.leaderReady,false);
+ assert.equal(gymInteriorModel({stage:1,trainer:15},gyms,limit,routeNode).leaderReady,true);
 });
-test('all eight boss species match the existing gym team without state changes',()=>{
+test('every Kanto gym keeps original encounter count and rival battles on route only',()=>{
  aces.forEach((ace,stage)=>{
-  const s={stage,trainer:limit(stage),team:[],badges:[]},before=JSON.stringify(s);
-  const m=gymInteriorModel(s,gyms,limit,route);
+  const state={stage,trainer:limit(stage),team:[],badges:[]},before=JSON.stringify(state);
+  const m=gymInteriorModel(state,gyms,limit,routeNode);
   assert.equal(m.ace,ace);assert.equal(m.aceInTeam,true);
-  assert.equal(m.gymCount,stage===0?3:4);assert.equal(JSON.stringify(s),before);
+  assert.equal(m.gymCount,stage===0?3:4);
+  assert.equal(JSON.stringify(state),before,'Pure model cannot mutate saved data');
+  assert.equal(m.trainers.length,m.gymCount);
+  assert.ok(m.trainers.every(t=>t.kind!=='rival'),
+   'No Rival may appear inside stage '+stage+' gym');
+  assert.ok(m.trainers.every(t=>t.index>=m.routeCount&&t.index<limit(stage)));
+  const all=Array.from({length:limit(stage)},(_,i)=>routeNode(stage,i,limit(stage)).type);
+  const original=Array.from({length:limit(stage)},(_,i)=>classicType(i));
+  assert.equal(all.length,original.length,'Encounter count must remain exact');
+  assert.equal(all.filter(x=>x==='rival').length,original.filter(x=>x==='rival').length,
+   'Rival encounter count must remain exact at stage '+stage);
+  assert.equal(all.filter(x=>x==='rocket').length,original.filter(x=>x==='rocket').length,
+   'Rocket encounter count must remain exact at stage '+stage);
+  assert.ok(all.slice(m.routeCount).every(x=>x!=='rival'));
+  assert.equal(all.at(-1),'trainer','The last gym battle cannot be Rival');
  });
  assert.ok(ACE_ANCHORS.ace[0]-ACE_ANCHORS.leader[0]>80);
- assert.equal(gymInteriorModel({stage:8},gyms,limit,route),null);
+ assert.equal(gymInteriorModel({stage:8},gyms,limit,routeNode),null);
 });
-
-test('route CTA never diverts Brock trainer 9 to the gym before route trainer 10',()=>{
- assert.equal(gymRouteCount(0,limit),10);
- assert.equal(9>=gymRouteCount(0,limit),false);
- assert.equal(10>=gymRouteCount(0,limit),true);
- assert.equal(gymRouteCount(1,limit),11);
- assert.equal(10>=gymRouteCount(1,limit),false);
- assert.equal(11>=gymRouteCount(1,limit),true);
+test('route CTA never diverts a route Rival to the gym',()=>{
+ for(const stage of [0,1,5,6]){
+  const count=gymRouteCount(stage,limit);
+  assert.ok(count>0);
+  assert.equal(routeNode(stage,count-1,limit(stage)).type,'rival',
+   'Final route Rival is outside gym stage '+stage);
+  assert.notEqual(routeNode(stage,count,limit(stage)).type,'rival');
+  assert.equal(count-1>=gymRouteCount(stage,limit),false);
+  assert.equal(count>=gymRouteCount(stage,limit),true);
+ }
  assert.equal(gymRouteCount(8,limit),null);
 });
