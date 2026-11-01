@@ -8,6 +8,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
 import {recoverCriticalCapture,unresolvedImportedModules} from './capture-client-critical.mjs';
+import {selectCaptureSource} from './capture-source-selection.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -75,11 +76,13 @@ async function main() {
  }
  if(!catalog)throw Error('Source inventory unavailable via raw and GitHub API: '+inventoryError);
  const homepage=await get(ORIGIN+'/',3*MB);
- const html=homepage.data.toString('utf8');
- const sourceVersions=[...new Set([...html.matchAll(/src-[0-9a-f]{10}/g)].map(m=>m[0]))];
  const reExisting=(catalog.scripts||[]).map(s=>s.file.match(/^(src-[0-9a-f]{10})\//)?.[1]).find(Boolean);
- const actual=sourceVersions[0]||reExisting;
- details.sourceVersions={discovered:sourceVersions,inventory:reExisting,selected:actual};
+ const selected=selectCaptureSource(homepage.data.toString('utf8'),reExisting,
+  process.env.POKEARENA_SOURCE_VERSION||'');
+ const {html,selected:actual,...selection}=selected;
+ details.sourceVersions={...selection,selected:actual};
+ details.originalHomepageSha256=sha256(homepage.data);
+ homepage.data=Buffer.from(html);
  const tasks=new Map([['index.html',{source:'homepage'}]]);
  for(const s of catalog.scripts||[]) {
   const old=s.file||'';

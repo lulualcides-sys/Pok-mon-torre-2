@@ -1198,10 +1198,15 @@ create(){
   const target=Math.max(0,Math.min(state.team.length-1,
    Number.isInteger(this.bagMemberIndex)?this.bagMemberIndex:state.active));
   this.bagMemberIndex=target;
-  text(this,320,63,'PB '+(inv.pokeball||0)+' · GB '+(inv.greatball||0)+
-   ' · UB '+(inv.ultraball||0)+' · POÇÃO '+(inv.potion||0)+
-   ' · SUPER '+(inv.superpotion||0),{
-   fontSize:'11px',color:C.gold}).setOrigin(.5);
+  // Read-only inventory cards reuse the original Mart icons already cached.
+  ['pokeball','greatball','ultraball','potion','superpotion'].forEach((id,i)=>{
+   const item=MART_ITEMS.find(entry=>entry.id===id),x=16+i*123;
+   this.add.rectangle(x,51,116,31,0x193448).setOrigin(0).setStrokeStyle(1,0x537b8d);
+   const art=this.add.image(x+15,66,shopItemSprite(this,item));
+   art.setDisplaySize(22,22).setDepth(5).setData('torre2-bag-item-sprite',id);
+   text(this,x+31,55,item.name,{fontSize:'9px',color:C.white});
+   text(this,x+31,68,'× '+(inv[id]||0),{fontSize:'10px',color:C.gold});
+  });
   text(this,320,92,'ESCOLHA QUEM RECEBE O ITEM:',{
    fontSize:'11px',color:C.blue}).setOrigin(.5);
   state.team.slice(0,6).forEach((member,i)=>{

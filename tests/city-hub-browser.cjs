@@ -82,6 +82,8 @@ const server=http.createServer((req,res)=>{
    await named('torre2-summary-back',true);await city();
    await named('torre2-city-action','BOLSA');
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-bag-use')==='potion'));
+   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(o=>o.getData?.('torre2-bag-item-sprite')).length),5);
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-bag.png'});
    await click(320,343);await city();
    await named('torre2-city-action','POKÉDEX');
