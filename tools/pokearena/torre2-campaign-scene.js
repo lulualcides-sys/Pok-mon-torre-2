@@ -33,6 +33,7 @@ import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-av
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
+import {gymAcePlan,drawGymAce} from './gym-ace.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
@@ -382,20 +383,44 @@ create(){
   const remaining=Math.max(0,limit-state.trainer);
   const ready=!state.champion&&remaining===0;
   this.children.removeAll(true);this.backdrop();
-  text(this,320,47,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
-   ...titleStyle,fontSize:'22px'}).setOrigin(.5);
-  text(this,320,104,ready?'LÍDER DISPONÍVEL PARA BATALHA':
+  this.__torre2GymAce=null;
+  const gym=GYMS[state.stage];
+  if(gym){
+   // Separate interior view: the city's gym building is NOT the boss stage.
+   // The original FireRed room remains independent of all battle/HUD scenes.
+   const g=this.add.graphics().setDepth(4);
+   const water=state.stage===1;
+   g.fillStyle(water?0x143f60:0x5b4b3e,.92).fillRect(83,82,474,128);
+   g.lineStyle(2,water?0x80dbe8:0xc7ae86).strokeRect(83,82,474,128);
+   g.fillStyle(water?0x307fa5:0x9d866a).fillRect(255,168,130,33);
+   g.fillStyle(water?0xa7e4e9:0xd8c49d).fillRect(257,166,126,5);
+   const location=['pewter','cerulean','vermilion','celadon',
+    'fuchsia','saffron','cinnabar','viridian'][state.stage];
+   renderInteriorScene(this,location,'gym',{
+    centerX:320,centerY:150,maxWidth:430,maxHeight:136,depth:5});
+   // Token is destroyed with this screen; a delayed PMD download must
+   // NEVER place a Pokémon on the city, PC, route or battle afterward.
+   const token=this.add.zone(0,0,1,1).setVisible(false)
+    .setData('torre2-gym-view-token',state.stage);
+   const plan=gymAcePlan(GYMS,state.stage,this.registry.get('manifiesto'));
+   drawGymAce(this,plan,(...args)=>addFireRedNPC(...args),{token});
+   text(this,320,205,gym.leader.toUpperCase()+'  +  '+gym.boss.toUpperCase(),{
+    fontSize:'10px',color:C.gold}).setOrigin(.5).setDepth(19);
+  }
+  text(this,320,32,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
+   ...titleStyle,fontSize:'20px'}).setOrigin(.5).setDepth(20);
+  text(this,320,64,ready?'LÍDER DISPONÍVEL PARA BATALHA':
    'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
-    fontSize:'15px',color:ready?'#a9f4bd':'#f5dda0'
-   }).setOrigin(.5);
-  text(this,320,162,ready?'VOCÊ PODE ENTRAR AGORA.':
+    fontSize:'13px',color:ready?'#a9f4bd':'#f5dda0'
+   }).setOrigin(.5).setDepth(20);
+  text(this,320,265,ready?'VOCÊ PODE ENTRAR AGORA.':
    'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
-    fontSize:'12px',color:C.white
-   }).setOrigin(.5);
-  this.button(320,225,278,47,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
+    fontSize:'11px',color:C.white
+   }).setOrigin(.5).setDepth(20);
+  this.button(320,231,278,39,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
    if(ready)this.enterBattle(state);
    else {this.__torre2CityRoute=true;this.scene.restart();}
-  },ready,13);
+  },ready,21);
   this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  card(x,y,w,h,accent=0x4b789b){
