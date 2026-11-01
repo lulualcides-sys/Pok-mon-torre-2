@@ -3,7 +3,13 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 import {gymIntermediateModel,drawGymIntermediates} from '../tools/pokearena/torre2-gym-intermediates.js';
-import {routeNode} from '../tools/pokearena/torre2-route-data.js';
+// The source uses build-time import aliases. Read the exact production
+// routeNode implementation without importing unbuilt './frlg-learnsets.js'.
+const routeSource=fs.readFileSync(new URL('../tools/pokearena/torre2-route-data.js',import.meta.url),'utf8');
+const routeLiteral=routeSource.match(/export function routeNode\(stage,index,max\)\{[\s\S]*?\n\}/);
+assert.ok(routeLiteral,'production routeNode function must be present');
+const routeNode=vm.runInNewContext('('+routeLiteral[0].replace(/^export /,'')+')',
+ Object.create(null),{timeout:1000});
 
 // Read the actual GYMS roster without importing the client-only Phaser graph.
 const core=fs.readFileSync(new URL('../tools/pokearena/torre2-campaign-core.js',import.meta.url),'utf8');
