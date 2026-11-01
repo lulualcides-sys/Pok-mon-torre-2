@@ -167,8 +167,12 @@ export function chooseCampaignAutoWeatherInput(scene,actor,input){
  if(nativeWeather.length){
   // An actual damaging skill or charged finisher always wins over weather.
   const selected=!nativeOffense&&nativeWeather.find(canCast);
-  if(selected)return {...input,lmb:false,rmb:selected==='rmb',
-   q:selected==='q',e:false,mega:false};
+  if(selected){
+   // Preserve an already legal single native weather decision verbatim.
+   if(nativeWeather.length===1&&!input.lmb)return input;
+   return {...input,lmb:false,rmb:selected==='rmb',
+    q:selected==='q',e:false,mega:false};
+  }
   const filtered={...input};
   for(const slot of nativeWeather)filtered[slot]=false;
   // Do not re-select another weather after rejecting the native IA's
