@@ -54,3 +54,22 @@ test('render is visual only: no hit zones, collision, state writes or oversized 
  rendered.dispose();assert.ok(calls.includes('destroySprite'));
  assert.ok(calls.includes('destroyShadow'));assert.ok(calls.includes('stop'));
 });
+
+test('large portraits stay strictly inside their allocated platform rectangle',()=>{
+ const sizes=[],scene={
+  textures:{exists:()=>true,get:()=>({getSourceImage:()=>({width:1000,height:800})})},
+  add:{image:()=>({setOrigin(){return this},setScale(v){sizes.push(v);return this},
+    setDepth(){return this},setData(){return this},destroy(){}}),
+   ellipse:()=>({setDepth(){return this},destroy(){}})},
+  tweens:{add:()=>({stop(){}})}
+ };
+ const a=renderGymAce(scene,1,GYMS,KANTO_DEX,{x:450,y:150,maxWidth:36,maxHeight:42});
+ assert.ok(a,'valid Starmie portrait should render');
+ assert.equal(sizes.length,1);
+ assert.ok(sizes[0]*1000<=36+1e-8,'width must fit without a 10% minimum');
+ assert.ok(sizes[0]*800<=42+1e-8,'height must fit');
+ a.dispose();
+ assert.equal(renderGymAce(scene,1,GYMS,KANTO_DEX,{x:450,y:150,maxWidth:0,maxHeight:42}),null);
+ assert.equal(renderGymAce(scene,1,GYMS,KANTO_DEX,{x:450,y:150,maxWidth:NaN,maxHeight:42}),null);
+ assert.equal(renderGymAce(scene,1,GYMS,KANTO_DEX,{x:450,y:150,maxWidth:36,maxHeight:-1}),null);
+});

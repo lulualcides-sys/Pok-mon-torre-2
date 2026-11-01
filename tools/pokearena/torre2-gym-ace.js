@@ -40,14 +40,18 @@ export function preloadGymAce(scene,stage,gyms,kantoDex){
 // gameplay event, persistent state, battle sprite or input handler is created.
 export function renderGymAce(scene,stage,gyms,kantoDex,{x,y,maxWidth=48,maxHeight=48,depth=30}={}){
  const spec=gymAceSpec(stage,gyms,kantoDex);
- if(!spec||!Number.isFinite(x)||!Number.isFinite(y))return null;
+ if(!spec||![x,y,maxWidth,maxHeight,depth].every(Number.isFinite)||
+    maxWidth<=0||maxHeight<=0)return null;
  if(!scene.textures.exists(spec.textureKey))return null;
  const tex=scene.textures.get(spec.textureKey);
  const source=tex.getSourceImage?.();
  const w=source?.width||tex.source?.[0]?.width||0;
  const h=source?.height||tex.source?.[0]?.height||0;
  if(w<=0||h<=0)return null;
- const scale=Math.min(1.5,Math.max(0.1,maxWidth/w),Math.max(0.1,maxHeight/h));
+ // Strict containment: never let a large portrait spill over the leader,
+ // adjacent trainers or touch zones. A minimum scale would violate the bounds.
+ const scale=Math.min(1.5,maxWidth/w,maxHeight/h);
+ if(!Number.isFinite(scale)||scale<=0)return null;
  const sprite=scene.add.image(x,y,spec.textureKey)
   .setOrigin(.5,1).setScale(scale).setDepth(depth+1)
   .setData('torre2-gym-ace',spec.species);
