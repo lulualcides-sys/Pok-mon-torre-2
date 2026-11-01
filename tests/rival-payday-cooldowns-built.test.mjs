@@ -62,9 +62,9 @@ test('Author-defined leaders and wild captures retain their exact species and te
  assert.deepEqual(wild.foes.map(x=>x.id),['zubat']);
 });
 
-test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg Bomb 2.3s, Hex 3s',()=>{
- assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8,'egg-bomb':2.3,hex:3});
- for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',1.8],['Egg Bomb',2.3],['Hex',3]]){
+test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg Bomb 2.3s, Hex 3s, Thunderbolt 2s, Gust 1.3s',()=>{
+ assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8,'egg-bomb':2.3,hex:3,thunderbolt:2,gust:1.3});
+ for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',1.8],['Egg Bomb',2.3],['Hex',3],['Thunderbolt',2],['Gust',1.3]]){
   const native={nombre:label,cd:label==='Egg Bomb'?1.2:5.8,forma:'proyectil',dano:4};
   const copy=moves.balanceCampaignQuickCooldown(native);
   assert.equal(copy.cd,expected,label);
@@ -73,6 +73,14 @@ test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg 
  }
  const practice={nombre:'ULT · Supersonic',torre2IntroSource:'supersonic',torre2IntroPractice:true,cd:8};
  assert.strictEqual(moves.balanceCampaignQuickCooldown(practice),practice,'Lv8 practice ULT must stay capped');
+ const gustPractice={nombre:'Gust',torre2IntroSource:'gust',
+  torre2IntroPractice:true,torre2IntroSlot:'rmb',cd:4.2};
+ const preview=moves.balanceCampaignQuickCooldown(gustPractice);
+ assert.equal(preview.cd,1.3,'Gust normal HAB preview should use 1.3s');
+ assert.equal(gustPractice.cd,4.2,'Do not mutate approved native/practice data');
+ const sourceThunder={nombre:'Thunder',cd:14,ulti:true};
+ assert.strictEqual(moves.balanceCampaignQuickCooldown(sourceThunder),sourceThunder,
+  'Thunder ULT cooldown must not be changed by normal HAB overrides');
  const originalHex={nombre:'Hex',cd:6};
  const campaignHex=moves.balanceCampaignQuickCooldown(originalHex);
  assert.equal(campaignHex.cd,3,'Hex must use 3s only in campaign');
