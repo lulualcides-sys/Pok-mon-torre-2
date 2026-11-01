@@ -36,8 +36,8 @@ test('every Kanto gym keeps original encounter count and rival battles on route 
   assert.equal(m.gymCount,stage===0?3:4);
   assert.equal(JSON.stringify(state),before,'Pure model cannot mutate saved data');
   assert.equal(m.trainers.length,m.gymCount);
-  assert.ok(m.trainers.every(t=>t.kind!=='rival'),
-   'No Rival may appear inside stage '+stage+' gym');
+  assert.ok(m.trainers.every(t=>t.kind==='trainer'),
+   'Only specialist trainers may appear inside stage '+stage+' gym');
   assert.ok(m.trainers.every(t=>t.index>=m.routeCount&&t.index<limit(stage)));
   const all=Array.from({length:limit(stage)},(_,i)=>routeNode(stage,i,limit(stage)).type);
   const original=Array.from({length:limit(stage)},(_,i)=>classicType(i));
@@ -46,7 +46,8 @@ test('every Kanto gym keeps original encounter count and rival battles on route 
    'Rival encounter count must remain exact at stage '+stage);
   assert.equal(all.filter(x=>x==='rocket').length,original.filter(x=>x==='rocket').length,
    'Rocket encounter count must remain exact at stage '+stage);
-  assert.ok(all.slice(m.routeCount).every(x=>x!=='rival'));
+  assert.ok(all.slice(m.routeCount).every(x=>x==='trainer'),
+   'Neither Rival nor Rocket should appear inside any gym');
   assert.equal(all.at(-1),'trainer','The last gym battle cannot be Rival');
  });
  assert.ok(ACE_ANCHORS.ace[0]-ACE_ANCHORS.leader[0]>80);
@@ -63,4 +64,15 @@ test('route CTA never diverts a route Rival to the gym',()=>{
   assert.equal(count>=gymRouteCount(stage,limit),true);
  }
  assert.equal(gymRouteCount(8,limit),null);
+});
+
+test('Rocket encounters remain on routes before Erika, Sabrina and Giovanni',()=>{
+ for(const stage of [4,5,7]){
+  const routeCount=gymRouteCount(stage,limit);
+  const routeRoles=Array.from({length:routeCount},(_,i)=>routeNode(stage,i,limit(stage)).type);
+  const gymRoles=Array.from({length:limit(stage)-routeCount},(_,i)=>
+   routeNode(stage,routeCount+i,limit(stage)).type);
+  assert.ok(routeRoles.includes('rocket'),'Rocket stays on route at stage '+stage);
+  assert.ok(gymRoles.every(x=>x==='trainer'),'No Rocket in gym at stage '+stage);
+ }
 });
