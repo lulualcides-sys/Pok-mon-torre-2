@@ -1,0 +1,46 @@
+name: T35 — gym return actual scene gate (DRAFT)
+on:
+  push:
+    branches: [fix/t35-gym-return-actual-scene-gate-20261101]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gym-return:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Focused and regression checks
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/gym-ace-browser.cjs
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --test tests/gym-ace.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Native Phaser build
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: Native Chromium gym screenshots and return to map
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/gym-ace-browser.cjs
+      - name: Upload screenshots and failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t35-gym-return-actual-scene-proof
+          path: test-evidence/gym-ace/
+          retention-days: 21
+          if-no-files-found: warn
