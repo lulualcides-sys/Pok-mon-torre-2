@@ -12,7 +12,8 @@ import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {ROOM_CROPS} from './frlg-interiors.js';
 import {ball} from './campaign-art.js';
-import {TRAINERS_PER_GYM,STAGES,currentOpponent} from './campaign-core.js';
+import {TRAINERS_PER_GYM,STAGES,GYMS,currentOpponent} from './campaign-core.js';
+import {gymIntermediateModel} from './gym-intermediates.js';
 
 export const BATTLE_PATH_BACKDROP=Object.freeze([
  'pewter','cerulean','vermilion','celadon','fuchsia',
@@ -144,6 +145,11 @@ export function renderBattlePath(scene,state,handlers){
   progress=Math.min(total,Math.max(0,state.trainer||0)),
   leader=STAGES[stage]?.leader||'CAMPEÃO',
   city=STAGES[stage]?.city||'KANTO';
+ // Last 3–4 existing encounters live only in the gym interior.
+ // This changes the route's PRESENTATION, never trainer IDs or save progress.
+ const gymRoster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
+ const routeCount=gymRoster?.routeCount??total;
+ const routeProgress=Math.min(progress,routeCount);
  const sc=scene.add.graphics().setDepth(1);
  sc.fillStyle(COLORS.ink);sc.fillRect(0,0,640,360);
  sc.fillStyle(0x071d34);sc.fillRect(0,0,640,51);
@@ -188,19 +194,19 @@ export function renderBattlePath(scene,state,handlers){
  const previousStage=scene.__torre2RenderedPathStage;
  const requested=scene.__torre2PathPage;
  const progressed=previousStage===stage&&
-  Number.isInteger(previousProgress)&&previousProgress!==progress;
+  Number.isInteger(previousProgress)&&previousProgress!==routeProgress;
  const oldPage=Math.max(0,Math.floor((requested??0)/13)*13);
- const outOfView=progress<oldPage||progress>oldPage+13;
- const pageForProgress=Math.max(0,Math.floor(Math.max(0,progress-1)/13)*13);
- const page=progressed&&outOfView?pageForProgress:(requested??progress);
- const offset=Math.max(0,Math.min(total,Math.floor(page/13)*13));
- scene.__torre2RenderedPathProgress=progress;
+ const outOfView=routeProgress<oldPage||routeProgress>oldPage+13;
+ const pageForProgress=Math.max(0,Math.floor(Math.max(0,routeProgress-1)/13)*13);
+ const page=progressed&&outOfView?pageForProgress:(requested??routeProgress);
+ const offset=Math.max(0,Math.min(routeCount,Math.floor(page/13)*13));
+ scene.__torre2RenderedPathProgress=routeProgress;
  scene.__torre2RenderedPathStage=stage;
- const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
+ const length=finished?0:Math.min(14,Math.max(0,routeCount+1-offset));
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
-  const boss=offset+i===total;
+  const boss=offset+i===routeCount;
   const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
   const y=boss?178:[275,211,147][Math.min(row,2)];
   spots.push({x:px,y,global:offset+i});
@@ -223,8 +229,13 @@ export function renderBattlePath(scene,state,handlers){
  const hitZones=[];
  for(const p of spots){
   const i=p.global;
-  const node=routeNode(stage,i,total);
-  const checkpoint=pathCheckpointAction(i,progress,total,
+  const gymPortal=!!gymRoster&&i===routeCount;
+  const node=gymPortal?{type:'gym',index:i}:routeNode(stage,i,total);
+  const checkpoint=gymPortal?{
+   done:false,active:progress>=routeCount,boss:true,
+   available:progress>=routeCount,
+   primary:progress>=routeCount?'gym':'locked',optionalCapture:false
+  }:pathCheckpointAction(i,progress,total,
    i<progress&&Boolean(rematchOpponent(state,i)));
   const {done,active,boss,available}=checkpoint;
   // Catching never substitutes for the next required trainer. The badge
@@ -248,7 +259,12 @@ export function renderBattlePath(scene,state,handlers){
    g.fillStyle(0x93713b,.9);g.fillRoundedRect(p.x-34,top-5,68,15,3);
    g.lineStyle(1,0xffedb5,1);g.strokeRoundedRect(p.x-34,top-5,68,15,3);
   }
-  if(capture){
+  if(gymPortal){
+   // Building marker, not a duplicated trainer or a leader on the route.
+   g.fillStyle(0xd4c7aa);g.fillRoundedRect(p.x-14,top-2,28,21,2);
+   g.fillStyle(0x526f93);g.fillTriangle(p.x-19,top,p.x,top-13,p.x+19,top);
+   g.fillStyle(0x27435d);g.fillRect(p.x-4,top+7,8,12);
+  }else if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
    g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
    g.fillTriangle(p.x,top+1,p.x+6,top-14,p.x+14,top+1);
@@ -259,7 +275,7 @@ export function renderBattlePath(scene,state,handlers){
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
    if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
-  txt(scene,p.x,boss?p.y+11:p.y+8,boss?leader.toUpperCase():
+  txt(scene,p.x,boss?p.y+11:p.y+8,gymPortal?'GINÁSIO':boss?leader.toUpperCase():
    node.type==='rocket'?'EQUIPE ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
    boss?12:node.type==='rocket'?7:8,
    active?'#ffe29a':available?'#f1f8f3':'#afbdc8',23);
@@ -284,10 +300,11 @@ export function renderBattlePath(scene,state,handlers){
   const zone=scene.add.zone(p.x,p.y-1,width,63).setDepth(31)
    .setInteractive({useHandCursor:true}).setData('torre2-path-node',i)
    .setData('torre2-path-type',node.type);
-  if(checkpointZone(i))zone.setData('torre2-route-zone',checkpointZone(i));
+  if(gymPortal)zone.setData('torre2-route-zone','GINÁSIO');
+  else if(checkpointZone(i))zone.setData('torre2-route-zone',checkpointZone(i));
   zone.on('pointerover',()=>{
    if(scene.__torre2RegionHover?.active)scene.__torre2RegionHover.destroy();
-   const region=checkpointZone(i);
+   const region=gymPortal?'GINÁSIO':checkpointZone(i);
    if(region)scene.__torre2RegionHover=txt(scene,325,69,region,9,'#b3f4e8',56);
   });
   zone.on('pointerout',()=>{
@@ -321,7 +338,7 @@ export function renderBattlePath(scene,state,handlers){
  }
  // Stable page navigation for Misty and later routes with >13 battles.
  if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
- if(!finished&&offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ if(!finished&&offset+length<routeCount+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
  // After the final Champion KO, never redraw a fake 14th boss that can
  // reopen the gym. This honors the earned victory with native Phaser pixels.
  if(finished){
@@ -370,13 +387,15 @@ export function renderBattlePath(scene,state,handlers){
  // Bottom action bar: the only primary gameplay action, directly starts battle.
  const current=finished?null:currentOpponent(state);
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
- txt(scene,24,342,finished?'CAMPEÃO DE KANTO':current?.name||leader,
+ txt(scene,24,342,finished?'CAMPEÃO DE KANTO':
+  gymRoster&&progress>=routeCount?'INTERIOR DO GINÁSIO':current?.name||leader,
   12,'#fff2d2',30).setOrigin(0,.5);
  const label=finished?'★ SALÃO DA FAMA':progress>=total?
-  'ENFRENTAR '+leader.toUpperCase():'ENTRAR NA BATALHA';
+  'ENFRENTAR '+leader.toUpperCase():gymRoster&&progress>=routeCount?
+  'ENTRAR NO GINÁSIO':'ENTRAR NA BATALHA';
  const cta=button(scene,359,335,217,32,label,()=>{
   if(finished)return handlers.hall?.();
-  if(progress>=total)return handlers.gym();
+  if(progress>=total||gymRoster&&progress>=routeCount)return handlers.gym();
   handlers.battle();
  },{gold:true,enabled:true,depth:70});
  cta.setData('torre2-central-cta',true);
@@ -384,7 +403,7 @@ export function renderBattlePath(scene,state,handlers){
   .setData('torre2-reset-journey',true);
  // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
  installCampaignAudioSettings(scene);
- scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
+ scene.__torre2BattlePath={stage,total,routeCount,progress,offset,locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
    stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
   nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
