@@ -83,7 +83,15 @@ export function addGymInteriorFloor(scene,location,{
  if(!texture.has(name))texture.add(name,0,room[0]+ox,room[1]+oy,16,16);
  if(typeof Phaser!=='undefined')
   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
- return scene.add.tileSprite(x,y,width,height,key,name)
-  .setOrigin(0).setTileScale(1.5).setDepth(depth)
-  .setData('torre2-gym-floor',location);
+ // Never use TileSprite with a cropped frame of this SAME texture:
+ // the original Kanto map hit a real Android/WebGL UV corruption that way.
+ // Sixty small Phaser Images share one atlas and batch safely instead.
+ let first=null;
+ for(let yy=0;yy<height;yy+=32)for(let xx=0;xx<width;xx+=32){
+  const tile=scene.add.image(x+xx,y+yy,key,name).setOrigin(0)
+   .setDisplaySize(Math.min(32,width-xx),Math.min(32,height-yy))
+   .setDepth(depth).setData('torre2-gym-floor',location);
+  if(!first)first=tile;
+ }
+ return first;
 }
