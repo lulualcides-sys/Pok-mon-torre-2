@@ -7,7 +7,8 @@ export const CERULEAN_LANDMARKS=Object.freeze([
 // Cerulean is a civilian hub: the existing 11 route encounters and 4 gym
 // intermediates are displayed in their own scenes, never duplicated here.
 export const CERULEAN_CIVILIANS=Object.freeze([
- Object.freeze({kind:'lass',x:166,y:238}),
+ // Keep the Lass on the paved east bank of the west canal, not in water.
+ Object.freeze({kind:'lass',x:218,y:205}),
  Object.freeze({kind:'youngster',x:485,y:258})
 ]);
 const GYM_INTERMEDIATES=4;
