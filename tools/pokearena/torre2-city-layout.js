@@ -4,14 +4,20 @@ export const CERULEAN_LANDMARKS=Object.freeze([
  Object.freeze({id:'mart',label:'POKÉ MART',x:103,y:257,doorY:230}),
  Object.freeze({id:'gym',label:'GINÁSIO DA MISTY',x:515,y:173,doorY:134})
 ]);
-const PLACES=[[193,164],[277,153],[280,200],[242,229],[218,205],
- [63,178],[435,202],[577,210],[606,251],[467,249],
- [216,109],[300,88],[449,104],[575,106],[365,137]];
+// Cerulean is a civilian hub: the existing 11 route encounters and 4 gym
+// intermediates are displayed in their own scenes, never duplicated here.
+export const CERULEAN_CIVILIANS=Object.freeze([
+ Object.freeze({kind:'lass',x:166,y:238}),
+ Object.freeze({kind:'youngster',x:485,y:258})
+]);
+const GYM_INTERMEDIATES=4;
 export function cityViewModel(state,trainerCount){
  const count=Math.max(0,Math.floor(Number(trainerCount)||0));
  const done=Math.max(0,Math.min(count,Math.floor(Number(state.trainer)||0)));
+ const routeCount=Math.max(0,count-GYM_INTERMEDIATES);
+ const routeDone=Math.min(done,routeCount),gymDone=done-routeDone;
  return {done,count,remaining:count-done,gymReady:done===count&&!state.champion,
-  trainers:Array.from({length:count},(_,i)=>({index:i,
-   x:PLACES[i%PLACES.length][0],y:PLACES[i%PLACES.length][1],
-   status:i<done?'defeated':i===done?'current':'locked'}))};
+  routeCount,routeDone,routeRemaining:routeCount-routeDone,
+  gymCount:count-routeCount,gymDone,gymRemaining:count-routeCount-gymDone,
+  trainers:[]};
 }
