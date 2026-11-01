@@ -113,6 +113,54 @@ export function atlasGymBackdrop(scene,model){
    pixel(g,x,y,19,1,c.details,.14);
   }
  }
+ // Distinct architectural silhouette per Indigo League room. A palette swap
+ // alone is explicitly REJECTED by the user (Opção C regional identity).
+ if(model.theme==='ice'){
+  // Frozen central approach, corner ice ponds and staggered crystals.
+  for(const x of [54,82,310,336]){
+   pixel(g,x,172,21,92,0x1f79af,.77);
+   for(let yy=176;yy<263;yy+=15)pixel(g,x+5,yy,14,3,0xc1f7ff,.74);
+  }
+  for(const [x,y] of [[54,151],[90,242],[323,151],[338,255]])
+   for(let i=0;i<3;i++)pixel(g,x+i*4,y-8-i*6,5,16+i*6,0xc1f5ff,.86);
+  pixel(g,153,103,92,10,0xdbf8ff,.85);
+ }else if(model.theme==='rock'){
+  // Two-offset rocky chambers with boulders flanking a rugged staircase.
+  for(const [x,y,w,h] of [[59,96,56,62],[290,108,56,49],[49,216,67,34],[283,225,73,34]]){
+   pixel(g,x,y,w,h,0x4e443c,.8);pixel(g,x+4,y-4,w-8,h-4,0xa28b6f,.9);
+   pixel(g,x+7,y-6,w-14,3,0xd5be98);
+  }
+  for(let i=0;i<4;i++)pixel(g,149,157+i*14,106-i*5,5,0xd3bc8d,.64);
+ }else if(model.theme==='ghost'){
+  // Asymmetric tombstones and purple flame columns framing haunted passage.
+  for(const [x,y] of [[70,174],[95,208],[312,181],[330,226],[53,258]]){
+   pixel(g,x,y,20,29,0x292742);pixel(g,x+3,y-4,15,8,0x9085ad,.9);
+   pixel(g,x+5,y+10,11,3,0xc4afed,.7);
+  }
+  for(const [x,y] of [[71,110],[333,134],[99,260]]){
+   pixel(g,x,y,8,24,0x28233a);pixel(g,x+2,y-9,5,13,0x8546cd);
+   pixel(g,x+3,y-16,3,9,0xd5a4ff,.9);
+  }
+ }else if(model.theme==='dragon'){
+  // Broad red championship carpet with banners and armored plinths.
+  pixel(g,151,153,100,134,0x9f3545,.68);
+  for(let y=159;y<279;y+=20){pixel(g,152,y,100,3,0xe4a05f,.72);pixel(g,155,y+3,3,15,0xf5dba6,.68);}
+  for(const x of [64,314]){
+   pixel(g,x,76,29,74,0x923c43);pixel(g,x+3,78,23,4,0xefbc60);
+   pixel(g,x+12,99,5,22,0xf0ac65);
+  }
+ }else if(model.theme==='champion'){
+  // Wide clean blue league court, symmetrical trees and final central emblem.
+  pixel(g,92,91,220,193,0x4e91c7,.68);
+  pixel(g,113,112,178,150,0x8bbfe2,.55);
+  pixel(g,137,169,130,2,0xe9f2e6,.8);
+  pixel(g,201,127,2,140,0xe9f2e6,.8);
+  for(const x of [63,321]){
+   pixel(g,x-13,107,27,19,0xc4c4a0,.9);
+   pixel(g,x-10,97,21,15,0x32683d,.9);
+   pixel(g,x-6,89,15,13,0x76aa64,.9);
+  }
+ }
  // Strong foreground foreground pillars, floor threshold, subtle torches/crystals.
  for(const x of [30,360]){
   pixel(g,x-7,83,16,174,0x213044);
