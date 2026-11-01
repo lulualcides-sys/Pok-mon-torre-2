@@ -29,7 +29,7 @@ function platform(g,x,y,w,h,p){
  box(g,x+4,y+5,w,h,0x142332);box(g,x,y,w,h,p[2]);
  box(g,x+3,y+3,w-6,h-6,p[1]);box(g,x+3,y+3,w-6,4,p[3]);
 }
-export function renderGymInterior(scene,m,{addNpc,aceTexture,onTrainer,onLeader}={}){
+export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAnimationKey,onTrainer,onLeader}={}){
  if(!m)return null;const p=COLORS[m.stage],g=scene.add.graphics().setDepth(0)
   .setData('torre2-gym-layer','terrain');
  box(g,0,0,640,360,0x102436);box(g,12,10,616,340,p[1]);
@@ -45,13 +45,29 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,onTrainer,onLeader}
  const kind=m.leader.toLowerCase().replace('lt. ','');
  const leader=addNpc?.(scene,kind,...ACE_ANCHORS.leader,{scale:1.5,depth:7});
  leader?.setData('torre2-gym-leader',m.leader);
- let ace=null;
- if(aceTexture&&scene.textures.exists(aceTexture)){
+ let ace=null,aceSource=null;
+ const hasNative=!!(aceSpriteKey&&scene.textures.exists(aceSpriteKey));
+ if(hasNative){
+  // The captured PMD Idle frames contain alpha; portraits have opaque square
+  // backdrops and must not be used as the preferred overworld decoration.
+  ace=scene.add.sprite(...ACE_ANCHORS.ace,aceSpriteKey).setOrigin(.5,1)
+   .setDepth(7).setData('torre2-gym-ace',m.ace);
+  const maxSize=m.stage===0?64:54;
+  ace.setScale(maxSize/Math.max(1,ace.width,ace.height));
+  if(aceAnimationKey&&scene.anims.exists(aceAnimationKey))ace.play(aceAnimationKey);
+  aceSource='native-idle';
+ }else if(aceTexture&&scene.textures.exists(aceTexture)){
+  // Fallback keeps the scene usable if an upstream PMD manifest omits Idle.
+  // Browser visual gates require native-idle before the art can be approved.
   const size=m.stage===0?61:52;
   ace=scene.add.image(...ACE_ANCHORS.ace,aceTexture).setOrigin(.5,1)
    .setDisplaySize(size,size).setDepth(7).setData('torre2-gym-ace',m.ace);
-  if(typeof Phaser!=='undefined')
-   scene.textures.get(aceTexture).setFilter(Phaser.Textures.FilterMode.NEAREST);
+  aceSource='opaque-portrait-fallback';
+ }
+ if(ace){
+  const key=ace.texture?.key;
+  if(key&&typeof Phaser!=='undefined')
+   scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
   if(scene.tweens?.add){
    scene.tweens.add({targets:ace,y:ace.y-2,duration:1300,yoyo:true,repeat:-1});
    ace.once('destroy',()=>scene.tweens.killTweensOf(ace));
@@ -78,6 +94,6 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,onTrainer,onLeader}
   scene.add.zone(ACE_ANCHORS.leader[0],ACE_ANCHORS.leader[1]-13,54,48)
    .setDepth(13).setInteractive({useHandCursor:true})
    .setData('torre2-gym-leader-action',m.stage).on('pointerdown',()=>onLeader?.());
- scene.__torre2GymInterior={...m,aceRendered:!!ace,leaderRendered:!!leader};
+ scene.__torre2GymInterior={...m,aceRendered:!!ace,aceSource,leaderRendered:!!leader};
  return scene.__torre2GymInterior;
 }
