@@ -1,4 +1,5 @@
 import {FRLG_MACHINES} from './frlg-learnsets.js';
+import {encounterRole} from './torre2-encounter-layout.js';
 /* Route-like Kanto campaign map. FireRed-inspired locations and encounter
  * species, with FireRed/LeafGreen version differences shown as references.
  * The caller MUST filter by actually integrated battle species.
@@ -37,33 +38,10 @@ export const ROUTE_STOP_TYPES=Object.freeze(['grass','center','mart']);
 export function routeEncounterTable(stage){
  return KANTO_ROUTES[Math.min(KANTO_ROUTES.length-1,Math.max(0,stage))]||KANTO_ROUTES[0];
 }
-// Gym and route use the SAME encounter boundary. This is pure progression
-// data, not a sprite-placement rule, and keeps old save indices intact.
-export function gymRouteCount(stage,trainerLimit){
- if(!Number.isInteger(stage)||stage<0||stage>=8)return null;
- return Math.max(0,trainerLimit(stage)-(stage===0?3:4));
-}
 export function routeNode(stage,index,max){
- if(index>=max)return {type:'leader',name:'GINÁSIO',index};
- // Story battles (Rival and Rocket) belong on the ROUTE, not on any
- // gym's 3/4 specialist platforms. Relocate only special encounters that
- // would overlap a gym; swap each with a normal route trainer. Preserve
- // encounter count, original indices, role counts and the save format.
- const originalType=i=>i>0&&i%9===3?'rival':
-  i>0&&i%7===5?'rocket':'trainer';
- const boundary=gymRouteCount(stage,()=>max);
- const specials=[];
- if(boundary!==null)for(let i=boundary;i<max;i++)
-  if(originalType(i)!=='trainer')specials.push(i);
- const routeSlots=[];
- if(boundary!==null)for(let i=boundary-1;i>=0&&routeSlots.length<specials.length;i--)
-  if(originalType(i)==='trainer')routeSlots.unshift(i);
- let type=originalType(index);
- for(let i=0;i<specials.length;i++){
-  if(index===specials[i])type='trainer';
-  else if(index===routeSlots[i])type=originalType(specials[i]);
- }
- return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
+ const type=encounterRole(stage,index,max);
+ return {type,name:type==='leader'?'GINÁSIO':
+  type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
 // Gym rewards only refer to installed moves. Toxic awaits its own implementation.
 export const GYM_TM_REWARDS=Object.freeze(['tm-rock-tomb','tm-water-pulse',
