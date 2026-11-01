@@ -744,9 +744,11 @@ export function moveUnlockLevel(member,moveName){
 // skills, E the full-meter finisher. Never change original Arena/VS kits.
 export function isCampaignUltimateOnlyMove(move){
  if(!move)return false;
- // Fire/Ice/Thunder/etc. Punch and Flamethrower ALWAYS belong in HAB2/3,
- // regardless of native E/ulti metadata, damage or the source tutorial slot.
- if(isKantoNormalAbilityName(move.torre2IntroSource||move.nombre))return false;
+ // Thunder is always a charged ULT, even when source metadata lacks power.
+ // Thunderbolt, Gust, Punch and Flamethrower always belong in HAB2/3.
+ const key=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ if(key==='thunder')return true;
+ if(isKantoNormalAbilityName(key))return false;
  if(move.torre2IntroSlot==='e')return true;
  if(move.torre2IntroPractice)return false;
  // Some original Poké Arena abilities omit Gen3 power metadata even though
@@ -763,10 +765,11 @@ export function isCampaignUltimateOnlyMove(move){
 export function campaignMoveSlotReason(member,slot,move){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return 'SLOT INVÁLIDO';
  if(!move?.forma)return 'SEM EFEITO';
- // This override is campaign-wide, even for legacy E equips and Mewtwo:
- // no elemental Punch or Flamethrower may be an E-slot ultimate.
- if(slot===3&&isKantoNormalAbilityName(move.torre2IntroSource||move.nombre))
+ // Hard role boundaries apply even to native E flags and legacy saves.
+ const moveKey=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ if(slot===3&&isKantoNormalAbilityName(moveKey))
   return 'GOLPE NORMAL: HAB 2 OU HAB 3';
+ if(moveKey==='thunder'&&slot!==3)return 'THUNDER: SÓ ULT (E)';
  if(member?.id==='mewtwo')return null; // otherwise unrestricted debug lab
  if(isPendingApprovalMove(move))return 'EFEITO EM REVISÃO';
  const level=member?.progression?.level??5;
@@ -1143,13 +1146,18 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  supersonic:1.5,
  'seismic-toss':1.8,
  'egg-bomb':2.3,
- hex:3
+ hex:3,
+ thunderbolt:2,
+ gust:1.3
 });
 export function balanceCampaignQuickCooldown(move){
- // Lv8 practice ULTs have their own minimum cooldown (>= 8s), even if
- // they borrow the visual effect of Charge Beam or Supersonic.
- if(!move||move.torre2IntroPractice)return move;
+ // Lv8 practice ULTs keep their >=8s cooldown. Only Gust/Thunderbolt
+ // normal HAB previews share their campaign cooldown with real moves.
+ if(!move)return move;
  const name=canonicalMoveKey(move.torre2IntroSource||move.nombre);
+ if(move.torre2IntroPractice&&
+   (move.torre2IntroSlot==='e'||!['gust','thunderbolt'].includes(name)))
+  return move;
  const cd=KANTO_CAMPAIGN_QUICK_COOLDOWNS[name];
  return Number.isFinite(cd)?{...move,cd}:move;
 }
