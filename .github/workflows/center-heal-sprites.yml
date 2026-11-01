@@ -51,7 +51,7 @@ jobs:
            const f=path.join(root,dir,'escenas/carga.js');
            if(!fs.existsSync(f))continue;
            const s=fs.readFileSync(f,'utf8');
-           const hits=[...s.matchAll(/ui-balls|balls20\\.png/g)];
+           const hits=[...s.matchAll(/ui-balls|balls20\.png/g)];
            console.log('NATIVE_PRELOAD_DIAGNOSTIC',JSON.stringify({
             dir,sha256:crypto.createHash('sha256').update(s).digest('hex'),
             occurrences:hits.length,contexts:hits.slice(0,8).map(m=>s.slice(Math.max(0,m.index-100),m.index+160))
