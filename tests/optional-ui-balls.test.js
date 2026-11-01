@@ -30,7 +30,7 @@ test('preserves active balls10.png original bytes only when locally present',()=
 });
 test('legacy unused balls20 may be dropped, but no other active key',()=>{
  assert.equal(preserveActiveUiBallsOrStripUnused(old,{balls10Available:false}), '');
- assert.throws(()=>preserveActiveUiBallsOrStripUnused(old,[{path:'other.js'}]),/referenced/);
+ assert.throws(()=>preserveActiveUiBallsOrStripUnused(old,{consumers:[{path:'other.js'}]}),/referenced/);
  const changed='this.load.spritesheet("ui-balls","assets/ui/balls11.png",{frameWidth:20,frameHeight:20});';
  assert.throws(()=>preserveActiveUiBallsOrStripUnused(changed,{balls10Available:true}),/Unknown/);
 });
