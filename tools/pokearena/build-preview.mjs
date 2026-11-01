@@ -578,6 +578,21 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // The native optional balls20.png preload can change frame metadata.
+   // Remove ONLY this known unavailable asset request, and only when the
+   // current client has no other references to the texture key. Fail closed
+   // on ambiguous upstream edits rather than rewriting native sprite code.
+   if(filename==='escenas/carga.js'&&
+      from.startsWith('this.load.spritesheet("ui-balls","assets/ui/balls20.png",')&&to===''){
+    const obsolete=/this\\.load\\.spritesheet\\(\\s*["']ui-balls["']\\s*,\\s*["']assets\\/ui\\/balls20\\.png["']\\s*,\\s*\\{[^{};]{0,180}\\}\\s*\\)\\s*;/g;
+    const matches=[...body.matchAll(obsolete)];
+    if(matches.length!==1)throw Error('Optional native ui-balls preload changed ambiguously: '+matches.length);
+    const remaining=body.replace(matches[0][0],'');
+    if(/["']ui-balls["']/.test(remaining))
+     throw Error('Native client still uses ui-balls; cannot remove preload safely');
+    body=remaining;
+    continue;
+   }
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
    if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){
