@@ -45,19 +45,24 @@ export function gymRouteCount(stage,trainerLimit){
 }
 export function routeNode(stage,index,max){
  if(index>=max)return {type:'leader',name:'GINÁSIO',index};
- // Rival fights belong on the ROUTE, never inside a gym or just before its
- // leader. Keep the exact number of encounters and original trainer indices.
- // For the four affected stages (Brock, Misty, Sabrina, Blaine), move the
- // final rival to the final ROUTE position and put its ordinary route NPC
- // into the vacated gym position. No extra battles or save-schema changes.
+ // Story battles (Rival and Rocket) belong on the ROUTE, not on any
+ // gym's 3/4 specialist platforms. Relocate only special encounters that
+ // would overlap a gym; swap each with a normal route trainer. Preserve
+ // encounter count, original indices, role counts and the save format.
+ const originalType=i=>i>0&&i%9===3?'rival':
+  i>0&&i%7===5?'rocket':'trainer';
  const boundary=gymRouteCount(stage,()=>max);
- const isRival=i=>i>0&&i%9===3;
- let rivalFrom=-1;
- if(boundary!==null)
-  for(let i=boundary;i<max;i++)if(isRival(i)){rivalFrom=i;break;}
- const rivalTo=rivalFrom>=0?boundary-1:-1;
- const type=index===rivalTo?'rival':index===rivalFrom?'trainer':
-  isRival(index)?'rival':index>0&&index%7===5?'rocket':'trainer';
+ const specials=[];
+ if(boundary!==null)for(let i=boundary;i<max;i++)
+  if(originalType(i)!=='trainer')specials.push(i);
+ const routeSlots=[];
+ if(boundary!==null)for(let i=boundary-1;i>=0&&routeSlots.length<specials.length;i--)
+  if(originalType(i)==='trainer')routeSlots.unshift(i);
+ let type=originalType(index);
+ for(let i=0;i<specials.length;i++){
+  if(index===specials[i])type='trainer';
+  else if(index===routeSlots[i])type=originalType(specials[i]);
+ }
  return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
 // Gym rewards only refer to installed moves. Toxic awaits its own implementation.
