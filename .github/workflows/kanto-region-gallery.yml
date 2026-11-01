@@ -1,0 +1,47 @@
+name: T34 — eight Kanto Phaser preview scenes (isolated, no production deploy)
+on:
+  push:
+    branches: [feat/kanto-region-gallery-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  gallery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Focused gallery tests and source checks
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-kanto-gallery.js
+          node --check tests/kanto-gallery-browser.cjs
+          node --test tests/kanto-gallery.test.js
+          npm run check
+      - name: Build original native Phaser without touching production code
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+          source_dir=$(find _site/arena2d -maxdepth 1 -type d -name 'src-*' | head -1)
+          test -n "$source_dir"
+          cp tools/pokearena/torre2-kanto-gallery.js "$source_dir/torre2/kanto-gallery.js"
+      - name: Capture eight REAL Phaser maps desktop and mobile
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/kanto-gallery-browser.cjs
+      - name: Upload screenshot gallery even on failed browser gate
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-eight-real-phaser-previews
+          path: test-evidence/kanto-gallery/
+          retention-days: 21
+          if-no-files-found: warn
