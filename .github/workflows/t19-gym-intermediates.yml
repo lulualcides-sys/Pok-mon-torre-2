@@ -14,15 +14,19 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Focused tests and full regressions
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax checks
         run: |
-          set -euo pipefail
-          npm install --no-audit --no-fund
           node --check tools/pokearena/torre2-gym-intermediates.js
           node --check tools/pokearena/torre2-campaign-scene.js
           node --check tests/gym-intermediates-browser.cjs
-          node --test tests/gym-intermediates.test.js
-          npm test
+      - name: Focused gym roster tests
+        run: node --test tests/gym-intermediates.test.js
+      - name: Full repository tests
+        run: npm test
+      - name: Repository checks and reuse
+        run: |
           npm run check
           npm run check:reuse
       - name: Build real original Phaser client
