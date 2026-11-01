@@ -37,11 +37,27 @@ export const ROUTE_STOP_TYPES=Object.freeze(['grass','center','mart']);
 export function routeEncounterTable(stage){
  return KANTO_ROUTES[Math.min(KANTO_ROUTES.length-1,Math.max(0,stage))]||KANTO_ROUTES[0];
 }
+// Gym and route use the SAME encounter boundary. This is pure progression
+// data, not a sprite-placement rule, and keeps old save indices intact.
+export function gymRouteCount(stage,trainerLimit){
+ if(!Number.isInteger(stage)||stage<0||stage>=8)return null;
+ return Math.max(0,trainerLimit(stage)-(stage===0?3:4));
+}
 export function routeNode(stage,index,max){
  if(index>=max)return {type:'leader',name:'GINÁSIO',index};
- // Insert rivals/Rocket IN the trainer ladder without adding extra
- // compulsory battles. Boss and existing 13+ progression remain unchanged.
- const type=index>0&&index%9===3?'rival':index>0&&index%7===5?'rocket':'trainer';
+ // Rival fights belong on the ROUTE, never inside a gym or just before its
+ // leader. Keep the exact number of encounters and original trainer indices.
+ // For the four affected stages (Brock, Misty, Sabrina, Blaine), move the
+ // final rival to the final ROUTE position and put its ordinary route NPC
+ // into the vacated gym position. No extra battles or save-schema changes.
+ const boundary=gymRouteCount(stage,()=>max);
+ const isRival=i=>i>0&&i%9===3;
+ let rivalFrom=-1;
+ if(boundary!==null)
+  for(let i=boundary;i<max;i++)if(isRival(i)){rivalFrom=i;break;}
+ const rivalTo=rivalFrom>=0?boundary-1:-1;
+ const type=index===rivalTo?'rival':index===rivalFrom?'trainer':
+  isRival(index)?'rival':index>0&&index%7===5?'rocket':'trainer';
  return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
 // Gym rewards only refer to installed moves. Toxic awaits its own implementation.
