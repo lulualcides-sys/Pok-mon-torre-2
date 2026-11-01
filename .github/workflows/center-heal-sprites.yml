@@ -40,6 +40,24 @@ jobs:
             sleep $((attempt * 6))
           done
           node tests/center-revive-built.test.mjs
+      - name: Diagnosticar preload opcional nativo quando o build falhar
+        if: failure()
+        run: |
+          node --input-type=commonjs <<'NODE'
+          const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
+          const root='_site/arena2d';
+          if(!fs.existsSync(root)){console.log('Native client was not copied');process.exit(0)}
+          for(const dir of fs.readdirSync(root).filter(n=>n.startsWith('src-'))){
+           const f=path.join(root,dir,'escenas/carga.js');
+           if(!fs.existsSync(f))continue;
+           const s=fs.readFileSync(f,'utf8');
+           const hits=[...s.matchAll(/ui-balls|balls20\\.png/g)];
+           console.log('NATIVE_PRELOAD_DIAGNOSTIC',JSON.stringify({
+            dir,sha256:crypto.createHash('sha256').update(s).digest('hex'),
+            occurrences:hits.length,contexts:hits.slice(0,8).map(m=>s.slice(Math.max(0,m.index-100),m.index+160))
+           }));
+          }
+          NODE
       - name: Validar Centro visual, pulso e cura desktop/mobile no Chromium
         run: |
           set -euo pipefail
