@@ -52,16 +52,17 @@ export function canRenderInterior(scene,location,kind){
  const t=scene.textures.get(key),s=t.source?.[0];
  return !!(s&&rect[0]+rect[2]<=s.width&&rect[1]+rect[3]<=s.height);
 }
-export function renderInteriorScene(scene,location,kind){
+export function renderInteriorScene(scene,location,kind,{
+ centerX=227,centerY=179,maxWidth=330,maxHeight=200,depth=5
+}={}){
  if(!canRenderInterior(scene,location,kind))return false;
  const rect=ROOM_CROPS[location][kind],key='frlg-location-'+location,
   source=scene.textures.get(key),name='frlg_room_'+kind;
  if(!source.has(name))source.add(name,0,...rect);
  if(typeof Phaser!=='undefined')
   source.setFilter(Phaser.Textures.FilterMode.NEAREST);
- const maxWidth=330,maxHeight=200;
  const scale=Math.min(maxWidth/rect[2],maxHeight/rect[3],2);
- scene.add.image(227,179,key,name).setOrigin(.5,.5)
-  .setDisplaySize(rect[2]*scale,rect[3]*scale).setDepth(5);
+ scene.add.image(centerX,centerY,key,name).setOrigin(.5,.5)
+  .setDisplaySize(rect[2]*scale,rect[3]*scale).setDepth(depth);
  return true;
 }
