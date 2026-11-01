@@ -40,6 +40,8 @@ const ids=['pallet','route1','viridian','forest2','pewter','route3','moon','rout
     const state=await page.evaluate(()=>window.__pt2Game.scene.getScene('kanto-gallery').__kantoPreview);
     assert.equal(state.id,id);assert.equal(state.renderer,2,'must render native WebGL');
     assert.equal(state.implemented,false,'visual-only: do not imply campaign integrated');
+    if(id==='route1')assert.equal(state.optionCArt,'option-c-route1-v1','native Option C Route 1 must render');
+    else assert.equal(state.optionCArt,null,'other biomes retain separate identity');
     if(state.kind==='city')assert.equal(state.trainers,0);
     if(id==='pallet')assert.deepEqual(state.buildings,['Casa do Red','Casa do Rival','Laboratório Oak']);
     const name='kanto-gallery-'+id+'-'+device+'.png';

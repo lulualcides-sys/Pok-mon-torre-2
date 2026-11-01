@@ -1,3 +1,4 @@
+import {drawOptionCRoute1,ROUTE1_ART_VERSION} from './torre2-option-c-route1.js';
 /* T34: eight isolated Kanto visual previews rendered by native Phaser/WebGL.
  * PREVIEW ONLY. No campaign stage, trainer, battle HUD, RNG or save writes.
  * All terrain and objects are original procedural graphics, not screenshots.
@@ -201,12 +202,18 @@ export function drawKantoPreview(scene,id,onNavigate){
  scene.cameras.main.setZoom(zoom).centerOn(320,180);
  scene.cameras.main.setBackgroundColor(0x132b32);
  const g=scene.add.graphics().setDepth(0);
- terrain(g,r);
- if(r.kind==='city')cityObjects(g,r);
- else if(r.kind==='route')routeObjects(g,r);
- else caveObjects(g);
+ if(r.id==='route1'){
+  // Approved Option C: original procedural pixel layers, no battle/save changes.
+  drawOptionCRoute1(scene,g);
+ }else{
+  terrain(g,r);
+  if(r.kind==='city')cityObjects(g,r);
+  else if(r.kind==='route')routeObjects(g,r);
+  else caveObjects(g);
+ }
  header(scene,g,r);footer(scene,g,r,onNavigate);
  scene.__kantoPreview={id:r.id,kind:r.kind,buildings:[...r.buildings],
-  trainers:r.trainers,renderer:scene.game.renderer.type,implemented:false};
+  trainers:r.trainers,renderer:scene.game.renderer.type,implemented:false,
+  optionCArt:r.id==='route1'?ROUTE1_ART_VERSION:null};
  return scene.__kantoPreview;
 }
