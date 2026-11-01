@@ -85,8 +85,9 @@ test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg 
  const campaignHex=moves.balanceCampaignQuickCooldown(originalHex);
  assert.equal(campaignHex.cd,3,'Hex must use 3s only in campaign');
  assert.equal(originalHex.cd,6,'Arena/VS native Hex cooldown must not mutate');
- const other={nombre:'Thunderbolt',cd:7.1};
- assert.strictEqual(moves.balanceCampaignQuickCooldown(other),other);
+ const other={nombre:'Psybeam',cd:7.1};
+ assert.strictEqual(moves.balanceCampaignQuickCooldown(other),other,
+  'Unrelated moves must preserve their native cooldown');
  const source=fs.readFileSync(new URL('../tools/pokearena/torre2-move-pool.js',import.meta.url),'utf8');
  assert.match(source,/balanceCampaignQuickCooldown\(balanceCampaignLeechSeed\(battle\[slot\]\)\)/);
 });
