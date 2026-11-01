@@ -1,0 +1,52 @@
+name: T34 — Option C Route 1 native Phaser desktop/mobile proof (DRAFT)
+on:
+  push:
+    branches: [feat/t34-option-c-route1-20261101]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  route1:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: RED/GREEN focused contract and repository regressions
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-option-c-route1.js
+          node --check tools/pokearena/torre2-kanto-gallery.js
+          node --check tests/kanto-gallery-browser.cjs
+          node --test tests/option-c-route1.test.js tests/kanto-gallery.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build isolated native original Phaser WebGL preview
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+          source_dir=$(find _site/arena2d -maxdepth 1 -type d -name 'src-*' | head -1)
+          test -n "$source_dir"
+          mkdir -p "$source_dir/torre2"
+          cp tools/pokearena/torre2-kanto-gallery.js "$source_dir/torre2/kanto-gallery.js"
+          cp tools/pokearena/torre2-option-c-route1.js "$source_dir/torre2/torre2-option-c-route1.js"
+      - name: Capture REAL Phaser/WebGL screenshots of Route 1 and unchanged other previews
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/kanto-gallery-browser.cjs
+      - name: Upload images even if browser checks fail
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-option-c-route1-real-phaser
+          path: test-evidence/kanto-gallery/
+          retention-days: 21
+          if-no-files-found: warn
