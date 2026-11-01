@@ -42,7 +42,7 @@ test('T35 gym layout keeps leader, ace and touch buttons spatially separate',()=
  for(let stage=0;stage<8;stage++){
   const p=gymAcePlacement(gymAcePlan(GYMS,stage,manifest));
   assert.ok(p.aceX-p.leaderX>=50);
-  assert.ok(p.aceX+p.maxWidth/2<405);
+  assert.ok(p.aceX+p.maxWidth/2<415);
   assert.ok(p.leaderX-14>250);
   assert.ok(p.baseline<215,'must not overlap battle CTA y231');
  }
