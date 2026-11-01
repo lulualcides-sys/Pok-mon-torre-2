@@ -26,12 +26,12 @@ test('Brock: original 13 indices split 10 route + 3 inside, no new battle',()=>{
  assert.equal(m.leaderReady,false);
  assert.equal(JSON.stringify(s),before);
 });
-test('Misty: original 15 indices split 11 route + 4 inside; preserve Rocket and rival',()=>{
+test('Misty: original 15 indices split 11 route + 4 inside; preserve actual routeNode rival',()=>{
  const m=model(1,11);
  assert.equal(m.routeCount,11);
  assert.deepEqual(m.slots.map(t=>t.index),[11,12,13,14]);
- assert.deepEqual(m.slots.map(t=>t.kind),['trainer','rival','trainer','rocket']);
- assert.deepEqual(m.slots.map(t=>t.title),['TREINADOR 1','RIVAL','TREINADOR 3','ROCKET']);
+ assert.deepEqual(m.slots.map(t=>t.kind),['trainer','rival','trainer','trainer']);
+ assert.deepEqual(m.slots.map(t=>t.title),['TREINADOR 1','RIVAL','TREINADOR 3','TREINADOR 4']);
  assert.equal(model(1,14).slots[3].status,'current');
  assert.equal(model(1,15).leaderReady,true);
  assert.equal(model(1,10).inGym,false);
