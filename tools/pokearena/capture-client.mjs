@@ -8,7 +8,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
 import {recoverCriticalCapture,unresolvedImportedModules} from './capture-client-critical.mjs';
-import {selectCaptureSource} from './capture-source-selection.mjs';
+import {selectCaptureSource,preflightPinnedSource} from './capture-source-selection.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -81,6 +81,13 @@ async function main() {
   process.env.POKEARENA_SOURCE_VERSION||undefined);
  const {html,selected:actual,...selection}=selected;
  details.sourceVersions={...selection,selected:actual};
+ // An upstream deploy can remove the approved hashed client between CI runs.
+ // Fail in seconds rather than downloading 1,500+ unrelated assets three times.
+ // The verified bytes are reused below; never silently upgrade the source.
+ const preflight=await preflightPinnedSource(actual,async p=>{
+  details.requestCount++;return get(ORIGIN+'/'+p);
+ });
+ details.sourcePreflight={path:preflight.path,verified:true};
  details.originalHomepageSha256=sha256(homepage.data);
  homepage.data=Buffer.from(html);
  const tasks=new Map([['index.html',{source:'homepage'}]]);
@@ -110,7 +117,7 @@ async function main() {
  async function worker(){
   while(index<queue.length){
    const [p,meta]=queue[index++];
-   details.requestCount++;
+   if(p!==preflight.path)details.requestCount++;
    if(p==='index.html') {
     await fs.writeFile(path.join(DIR,p),homepage.data);
     details.totalBytes+=homepage.data.length;
@@ -119,7 +126,7 @@ async function main() {
    }
    if(details.totalBytes>MAX_TOTAL){details.skipped.push({path:p,reason:'total cap'});continue;}
    try{
-    const {data,contentType}=await get(ORIGIN+'/'+p);
+    const {data,contentType}=p===preflight.path?preflight.response:await get(ORIGIN+'/'+p);
     if(details.totalBytes+data.length>MAX_TOTAL){details.skipped.push({path:p,reason:'total cap'});continue;}
     const dest=path.resolve(DIR,p);
     if(!dest.startsWith(DIR+path.sep))throw Error('Invalid destination');
