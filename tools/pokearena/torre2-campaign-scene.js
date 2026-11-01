@@ -1,4 +1,4 @@
-import {atlasGymModel,atlasBadgeModel,atlasGymBackdrop,atlasBadgeBackdrop,atlasMartBackdrop,atlasSummaryBackdrop,ATLAS_UI_VERSION} from './atlas-screen-style.js';
+import {atlasGymModel,atlasBadgeModel,atlasGymBackdrop,atlasBadgeBackdrop,atlasMartBackdrop,atlasSummaryBackdrop,atlasPanel,ATLAS_UI_VERSION} from './atlas-screen-style.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -1364,6 +1364,74 @@ create(){
   this.button(175,330,260,32,'◀ VOLTAR À BOLSA',()=>this.bagScreen(state)).setData('torre2-status-medicine-back',true);
   this.button(465,330,260,32,'POKÉ MART',()=>this.martScreen(state));
  }
+ atlasDossierScreen(state,index){
+  const member=state.team[index];
+  if(!member)return this.renderCampaign(state);
+  const stats=pokemonStats(member),{def,etapa}=buscar(member.id);
+  this.children.removeAll(true);
+  this.cameras.main.setBackgroundColor(C.ink);
+  this.backdrop();atlasSummaryBackdrop(this);
+  this.scene.bringToTop();
+  this.scene.stop('titulo');
+  this.input.setTopOnly(true);
+  this.add.zone(320,180,640,360).setDepth(2).setInteractive()
+   .setData('torre2-atlas-dossier-shield',true);
+  const g=this.add.graphics().setDepth(3);
+  for(const [x,y,w,h] of [[10,8,620,40],[12,55,253,246],
+   [272,55,356,140],[272,203,356,98]]){
+   atlasPanel(g,x,y,w,h,{accent:0x82c9f0,fill:0x102d50});
+  }
+  const label=(x,y,value,size=11,color=C.white)=>{
+   return text(this,x,y,String(value),{
+    fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',
+    fontStyle:'bold',color,stroke:'#061323',strokeThickness:2
+   }).setDepth(12);
+  };
+  label(23,17,'SUMÁRIO POKÉMON',17,'#fff1c4');
+  label(388,22,'POKÉMON TORRE 2',12,'#b4e6fc');
+  label(24,67,stats.name.toUpperCase().slice(0,18),16,'#ffe09a');
+  label(25,89,'NÍVEL '+stats.level+' · '+stats.types.join(' / '),10,'#c5effc');
+  // Authentic PMD portrait already cached by campaign preload.
+  this.drawPortrait(member,139,167,120,6);
+  label(29,241,'HP: '+Math.round(Math.max(0,Math.min(100,Number(member.hp)||0)))+'%',12,'#b5f1c5');
+  label(29,263,member.shiny?'✦ SHINY':'ESPÉCIE: '+member.id.toUpperCase(),10,
+   member.shiny?'#ffe58d':'#b5d0e5');
+  label(284,64,'ATRIBUTOS ATUAIS',14,'#ffdf93');
+  const statRows=[['HP',stats.hp,220],['ATK',stats.attack,190],
+   ['DEF',stats.defense,190],['VEL',stats.speed,200]];
+  statRows.forEach(([key,value,max],i)=>{
+   const y=92+i*22,width=Math.max(3,Math.min(148,148*(value/Math.max(1,max))));
+   label(286,y,key,10,'#d7e7f2');label(603,y,String(value),10,'#fff0c9').setOrigin(1,0);
+   g.fillStyle(0x09182e).fillRect(332,y+5,154,9);
+   g.fillStyle(i===0?0x65d69b:i===1?0xf2a15b:i===2?0x73aeef:0x9bd7d0)
+    .fillRect(335,y+7,width,5);
+  });
+  label(283,211,'GOLPES DISPONÍVEIS',12,'#ffe49a');
+  const kit=resolveLoadout(member);
+  const names=['lmb','rmb','q','e'].map(slot=>{
+   const move=kit[slot];
+   return String(move?.nombre||move?.name||'VAZIO').toUpperCase();
+  });
+  names.forEach((name,i)=>{
+   const x=285+(i%2)*162,y=234+Math.floor(i/2)*20;
+   label(x,y,(i===3?'ULT ':String(i+1)+'. ')+name.slice(0,16),9,
+    i===3?'#ffe29a':'#d4e9ef');
+  });
+  const evolutions=[def.nombre,...(def.evoluciones||[]).map(e=>e.nombre)].filter(Boolean);
+  label(283,284,'EVOLUÇÕES: '+(evolutions.join(' → ')||stats.name).slice(0,47),8,'#b9d9ec');
+  this.button(80,331,119,28,'◀ VOLTAR',()=>this.showSummary(state,index))
+   .setData('torre2-atlas-dossier-back',true);
+  this.button(207,331,123,28,'GOLPES',()=>this.showSummary(state,index))
+   .setData('torre2-atlas-dossier-moves',true);
+  this.button(334,331,123,28,'BOLSA / TM',()=>this.bagScreen(state))
+   .setData('torre2-atlas-dossier-tm',true);
+  this.button(463,331,125,28,'POKÉDEX',()=>this.dexScreen(state))
+   .setData('torre2-atlas-dossier-dex',true);
+  this.button(580,331,101,28,'MAPA',()=>this.renderCampaign(state))
+   .setData('torre2-atlas-dossier-map',true);
+  this.__torre2AtlasDossier={artVersion:ATLAS_UI_VERSION,
+   species:member.id,level:stats.level,teamIndex:index};
+ }
  showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
   // touch targets, instant type filtering and search for Mewtwo's large pool.
@@ -1435,6 +1503,8 @@ create(){
    // No scene.restart: retain browser fullscreen and native Phaser canvas.
    this.renderCampaign(state);
   }).setData('torre2-summary-back',true);
+  button(392,13,87,27,'FICHA',()=>this.atlasDossierScreen(state,index))
+   .setData('torre2-atlas-dossier-open',true);
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);
