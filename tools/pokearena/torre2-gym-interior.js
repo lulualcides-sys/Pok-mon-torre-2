@@ -1,5 +1,6 @@
 /* Gym-only presentation. Never mutate stage/trainer, save, team or RNG. */
 import {gymRouteCount} from './torre2-encounter-layout.js';
+import {renderGymStageArt} from './torre2-gym-stage-art.js';
 export {gymRouteCount};
 export const ACE_ANCHORS={leader:[274,109],ace:[369,109]};
 const POS=[[166,186],[474,186],[166,252],[474,252]];
@@ -39,6 +40,8 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAni
  platform(g,215,40,210,94,p);platform(g,286,125,68,158,p);
  for(const [x,y] of POS)platform(g,x-47,y-39,94,64,p);
  for(let y=129;y<270;y+=12)box(g,307,y,26,3,p[3]);
+ // Decorative terrain is behind sprites/zones and never changes battle state.
+ renderGymStageArt(scene,m.stage);
  // Onix is a tall Rock-type ace: use a larger native Idle sprite, shifted
  // down within the boss platform. The other seven aces keep their anchors.
  const aceY=ACE_ANCHORS.ace[1]+(m.stage===0?21:0);
