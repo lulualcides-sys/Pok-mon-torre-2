@@ -68,7 +68,22 @@ export function drawGymAce(scene,plan,addLeader,{token=null}={}){
  };
  if(!plan.assetReady){report.reason='Authentic PMD Idle manifest missing';return report;}
  if(scene.textures.exists(plan.textureKey)){mount();return report;}
- scene.load.once('complete',mount);
+ // Phaser can complete an unrelated loader batch before this sheet is ready.
+ // Listen for THIS spritesheet, not the global 'complete' event: otherwise
+ // the ace silently disappears from a gym during concurrent preload.
+ const event='filecomplete-spritesheet-'+plan.textureKey;
+ const cleanup=()=>{
+  scene.load.off(event,onReady);
+  scene.load.off('loaderror',onError);
+ };
+ const onReady=()=>{cleanup();mount()};
+ const onError=file=>{
+  if(file?.key!==plan.textureKey)return;
+  cleanup();report.reason='Authentic PMD Idle sheet failed to load';
+ };
+ scene.load.once(event,onReady);
+ scene.load.on('loaderror',onError);
+ token?.once?.('destroy',cleanup);
  scene.load.spritesheet(plan.textureKey,plan.file,{frameWidth:plan.frameWidth,frameHeight:plan.frameHeight});
  if(!scene.load.isLoading())scene.load.start();
  return report;

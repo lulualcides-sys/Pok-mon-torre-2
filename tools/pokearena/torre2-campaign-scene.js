@@ -520,6 +520,8 @@ create(){
    this.__torre2CityWaterTimer=null;
   }
   this.children.removeAll(true);
+  // Drop stale PMD report after gym teardown; the real sprite was destroyed.
+  this.__torre2GymAce=null;
   if(state.stage!==1)for(const [key] of CITY_TEXTURES)
    if(this.textures.exists(key))this.textures.remove(key);
   releaseCollectionPortraits(this);
