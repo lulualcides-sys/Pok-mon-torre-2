@@ -1,5 +1,5 @@
 /* Gym-only presentation. Never mutate stage/trainer, save, team or RNG. */
-import {gymRouteCount} from './route-data.js';
+import {gymRouteCount} from './torre2-route-data.js';
 export {gymRouteCount};
 export const ACE_ANCHORS={leader:[274,109],ace:[369,109]};
 const POS=[[166,186],[474,186],[166,252],[474,252]];
