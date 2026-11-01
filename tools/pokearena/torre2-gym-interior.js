@@ -41,7 +41,7 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAni
  for(let y=129;y<270;y+=12)box(g,307,y,26,3,p[3]);
  // Onix is a tall Rock-type ace: use a larger native Idle sprite, shifted
  // down within the boss platform. The other seven aces keep their anchors.
- const aceY=ACE_ANCHORS.ace[1]+(m.stage===0?17:0);
+ const aceY=ACE_ANCHORS.ace[1]+(m.stage===0?21:0);
  const shadow=scene.add.graphics().setDepth(5);
  shadow.fillStyle(0x061a2c,.5).fillEllipse(ACE_ANCHORS.ace[0],aceY+2,m.stage===0?58:45,10);
  shadow.setData('torre2-gym-ace-shadow',m.ace);
