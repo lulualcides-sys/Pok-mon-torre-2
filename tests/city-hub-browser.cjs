@@ -51,26 +51,47 @@ const server=http.createServer((req,res)=>{
    for(const name of ['water','paving','grass','stone'])assert.ok(surfaces.includes(name),'Missing surface '+name);
    const waterOffset=()=>page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .find(o=>o.getData?.('torre2-city-surface')==='water').tilePositionY);
-   const offsetBefore=await waterOffset();await page.waitForTimeout(300);
+   const offsetBefore=await waterOffset();
+   // Software WebGL may take more than 300ms to render a frame during upload.
+   // Require an observed change, not a wall-clock assumption about FPS.
+   await page.waitForFunction(before=>window.__pt2Game.scene.getScene('campanha').children.list
+    .find(o=>o.getData?.('torre2-city-surface')==='water')?.tilePositionY!==before,
+    offsetBefore,{timeout:10000});
    assert.notEqual(await waterOffset(),offsetBefore,'river texture must animate');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'.png'});
    await click(123,128); // Actual atlas door, independent of the label zone.
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-center-pc')));
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-center.png'});
    await named('torre2-center-pc',true);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-pc-team-index')===0));
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-pc.png'});
    await click(549,21);await city();
    await click(103,230);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-mart-buy')==='pokeball'));
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-mart.png'});
    await click(120,315);await city();
    await click(515,134);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.text?.includes('FALTAM 13')));
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-gym.png'});
    await click(320,306);await city();
    await named('torre2-city-action','EQUIPE');
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-summary.png'});
    await named('torre2-summary-back',true);await city();
    await named('torre2-city-action','MAIS EQUIPE');
    await named('torre2-city-member',5);
    await named('torre2-summary-back',true);await city();
+   await named('torre2-city-action','BOLSA');
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-bag-use')==='potion'));
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-bag.png'});
+   await click(320,343);await city();
+   await named('torre2-city-action','POKÉDEX');
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-dex-next')));
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-dex.png'});
+   await named('torre2-dex-next',true);
+   await named('torre2-dex-prev',true);
+   await click(82,329);await city();
    await named('torre2-city-action','INSÍGNIAS');
+   await page.screenshot({path:'test-evidence/city-layered-'+label+'-badges.png'});
    await named('torre2-badge-case-back',true);await city();
    assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before,'navigation cannot mutate save');
    // Native route/city roundtrip must not change saves or leak water timers.
