@@ -56,8 +56,10 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-mart-buy')==='pokeball'));
    await click(120,315);await city();
    await click(515,134);
-   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.text?.includes('FALTAM 13')));
-   await click(320,306);await city();
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2GymInterior?.stage===1);
+   const gymPreview=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').__torre2GymInterior);
+   assert.equal(gymPreview.ace,'starmie');assert.equal(gymPreview.aceRendered,true);
+   await named('torre2-gym-back',true);await city();
    await named('torre2-city-action','EQUIPE');
    await named('torre2-summary-back',true);await city();
    await named('torre2-city-action','MAIS EQUIPE');
@@ -115,14 +117,22 @@ const server=http.createServer((req,res)=>{
     .filter(o=>o.getData?.('torre2-city-atlas-piece')==='gym').length),1,
     'first Brock victory must display the atlas without a second restart');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-first-arrival.png'});
-   // Current trainer 4 is near the Mart but must launch the native battle.
+   // The trainer battle belongs to the native ROUTE, not a city NPC.
+   // Avoid an obsolete fixed coordinate that could collide with richer scenery.
    await page.evaluate(async()=>{
     const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
     const core=await import(new URL('./torre2/campaign-core.js',main));
     const state=core.readCampaign();state.trainer=4;core.saveCampaign(state);
     window.__pt2Game.scene.getScene('campanha').renderCampaign(state);
    });
-   await click(218,196);
+   await city();
+   await named('torre2-city-action','ROTAS');
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .__torre2BattlePath?.stage===1,null,{timeout:12000});
+   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem(
+    'pokemon-torre-2-kanto-campaign-v1')).trainer),4,
+    'city-to-route navigation must preserve the current trainer index');
+   await named('torre2-central-cta',true);
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate'),null,{timeout:60000});
    await page.waitForTimeout(1500);
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-battle-entry.png'});

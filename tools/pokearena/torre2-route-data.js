@@ -1,4 +1,5 @@
 import {FRLG_MACHINES} from './frlg-learnsets.js';
+import {encounterRole} from './torre2-encounter-layout.js';
 /* Route-like Kanto campaign map. FireRed-inspired locations and encounter
  * species, with FireRed/LeafGreen version differences shown as references.
  * The caller MUST filter by actually integrated battle species.
@@ -38,11 +39,9 @@ export function routeEncounterTable(stage){
  return KANTO_ROUTES[Math.min(KANTO_ROUTES.length-1,Math.max(0,stage))]||KANTO_ROUTES[0];
 }
 export function routeNode(stage,index,max){
- if(index>=max)return {type:'leader',name:'GINÁSIO',index};
- // Insert rivals/Rocket IN the trainer ladder without adding extra
- // compulsory battles. Boss and existing 13+ progression remain unchanged.
- const type=index>0&&index%9===3?'rival':index>0&&index%7===5?'rocket':'trainer';
- return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
+ const type=encounterRole(stage,index,max);
+ return {type,name:type==='leader'?'GINÁSIO':
+  type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
 // Gym rewards only refer to installed moves. Toxic awaits its own implementation.
 export const GYM_TM_REWARDS=Object.freeze(['tm-rock-tomb','tm-water-pulse',

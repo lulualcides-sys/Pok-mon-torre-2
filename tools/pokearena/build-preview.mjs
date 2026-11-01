@@ -214,6 +214,7 @@ await Promise.all([
  ['tools/pokearena/torre2-city-atlas.js','city-atlas.js'],
  ['tools/pokearena/torre2-city-scenery.js','city-scenery.js'],
  ['tools/pokearena/torre2-city-hub.js','city-hub.js'],
+ ['tools/pokearena/torre2-encounter-layout.js','encounter-layout.js'],
  ['tools/pokearena/torre2-gym-interior.js','gym-interior.js'],
  ['tools/pokearena/torre2-path-actions.js','path-actions.js'],
  ['tools/pokearena/torre2-battle-report.js','battle-report.js'],
@@ -268,6 +269,16 @@ await Promise.all([
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
+// Source modules use their original prefixed filenames for Node tests;
+// browser Phaser copies use stable unprefixed names. Rewrite ONLY these
+// two new dependency imports in copied files; never mutate source files.
+for(const name of ['route-data.js','gym-interior.js']){
+ const output=path.join(dest,clientSource,'torre2',name);
+ const code=await fs.readFile(output,'utf8');
+ const original="from './torre2-encounter-layout.js'";
+ if(!code.includes(original))throw Error('Missing encounter-layout import in '+name);
+ await fs.writeFile(output,code.replace(original,"from './encounter-layout.js'"));
+}
 await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
 await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
 patches.push(

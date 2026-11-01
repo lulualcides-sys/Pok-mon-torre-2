@@ -1,4 +1,6 @@
 /* Gym-only presentation. Never mutate stage/trainer, save, team or RNG. */
+import {gymRouteCount} from './torre2-encounter-layout.js';
+export {gymRouteCount};
 export const ACE_ANCHORS={leader:[274,109],ace:[369,109]};
 const POS=[[166,186],[474,186],[166,252],[474,252]];
 const COLORS=[[0x6c5848,0xc1aa88,0x88745b,0xe9d19c],
@@ -11,7 +13,7 @@ const COLORS=[[0x6c5848,0xc1aa88,0x88745b,0xe9d19c],
  [0x60594b,0xbab09b,0x81745f,0xf2ddae]];
 export function gymInteriorModel(s,gyms,trainerLimit,routeNode){
  const stage=s?.stage;if(!Number.isInteger(stage)||stage<0||stage>=8||!gyms[stage])return null;
- const limit=trainerLimit(stage),count=stage===0?3:4,routeCount=limit-count;
+ const limit=trainerLimit(stage),count=stage===0?3:4,routeCount=gymRouteCount(stage,trainerLimit);
  const progress=Math.max(0,Math.min(limit,Math.floor(Number(s.trainer)||0))),g=gyms[stage];
  return {stage,city:g.city,leader:g.leader,ace:g.boss,aceInTeam:g.leaderTeam.includes(g.boss),
   limit,routeCount,gymCount:count,progress,routeComplete:progress>=routeCount,
@@ -39,6 +41,7 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,onTrainer,onLeader}
  for(let y=129;y<270;y+=12)box(g,307,y,26,3,p[3]);
  const shadow=scene.add.graphics().setDepth(5);
  shadow.fillStyle(0x061a2c,.5).fillEllipse(ACE_ANCHORS.ace[0],ACE_ANCHORS.ace[1]+2,45,10);
+ shadow.setData('torre2-gym-ace-shadow',m.ace);
  const kind=m.leader.toLowerCase().replace('lt. ','');
  const leader=addNpc?.(scene,kind,...ACE_ANCHORS.leader,{scale:1.5,depth:7});
  leader?.setData('torre2-gym-leader',m.leader);
