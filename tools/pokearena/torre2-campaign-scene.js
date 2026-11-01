@@ -13,7 +13,7 @@ import {UI as MENU_UI} from '../ui.js';
 import {header,backdrop as richBackdrop,buttonFrame,team as richTeam,
  ball,progress,drawBadgeIcon} from './campaign-art.js';
 import {ROSTER,buscar} from '../datos.js';
-import {cargarPMD,soloFormas} from '../sprites.js';
+import {cargarPMD,crearAnimsPMD,soloFormas} from '../sprites.js';
 import {availableMoves,selectedMoves,resolveLoadout,pokemonStats,isPendingApprovalMove,filterMoveLibrary,canonicalMoveKey,campaignMoveSlotReason,suggestedCampaignMoveSlot,upcomingCampaignMoves} from './move-pool.js';
 import {earlyKantoSlotPlan,nativeKantoEvolutionPlan,EARLY_KANTO_LEARNSETS} from './early-kanto-species.js';
 import {readCampaign,createPlayerCampaign,saveCampaign,resetCampaign,
@@ -187,6 +187,16 @@ class Campanha extends Phaser.Scene{
    const key='torre2-portrait-'+dex;
    if(!this.textures.exists(key))this.load.image(key,'assets/pmd/'+dex+'/portrait.png');
   }
+  // Use the ORIGINAL transparent PMD Idle sprite for the decorative gym ace.
+  // One species per stage: never preload all 151 full animation atlases on mobile.
+  this.__torre2GymAceForms=null;
+  if(state&&stage<8){
+   const dex=grassPortraitDex(GYMS[stage].boss),manifest=this.registry.get('manifiesto');
+   if(dex&&manifest){
+    this.__torre2GymAceForms=soloFormas(manifest,[dex]);
+    cargarPMD(this,this.__torre2GymAceForms,['Idle']);
+   }
+  }
  }
 create(){
   // Phaser reuses this Scene instance on restart; remove stale treatment locks.
@@ -252,6 +262,9 @@ create(){
    }
   }
   if(!state)return this.starterSelection();
+  // The native PMD atlas is already preloaded; register only its Idle frames.
+  if(this.__torre2GymAceForms)
+   crearAnimsPMD(this,this.__torre2GymAceForms,['Idle']);
   this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
@@ -384,6 +397,8 @@ create(){
    this.children.removeAll(true);
    renderGymInterior(this,m,{addNpc:addFireRedNPC,
     aceTexture:'torre2-portrait-'+grassPortraitDex(m.ace),
+    aceSpriteKey:'pmd-'+grassPortraitDex(m.ace)+'-Idle',
+    aceAnimationKey:grassPortraitDex(m.ace)+'-Idle-0',
     onTrainer:index=>{if(index===state.trainer)this.enterBattle(state);},
     onLeader:()=>{if(m.leaderReady)this.enterBattle(state);}
    });
