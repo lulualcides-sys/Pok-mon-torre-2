@@ -1,3 +1,4 @@
+import {atlasGymModel,atlasBadgeModel,atlasGymBackdrop,atlasBadgeBackdrop,atlasMartBackdrop,atlasSummaryBackdrop,atlasPanel,ATLAS_UI_VERSION} from './atlas-screen-style.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -29,7 +30,7 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -161,6 +162,10 @@ class Campanha extends Phaser.Scene{
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  // Atlas gym intro shows the REAL ace in the currently available leader team.
+  // Only one tiny PMD portrait for this stage; never preload all Kanto at boot.
+  const atlasBossDex=grassPortraitDex(STAGES[stage]?.boss);
+  if(atlasBossDex)toLoad.add(atlasBossDex);
   // Only this region's twelve unique wild entries; reuse existing small PMD
   // portraits, not twelve full animation sheets (mobile GPU memory).
   for(const id of [...new Set(wildAvailability(stage).wild)].slice(0,12)){
@@ -372,25 +377,60 @@ create(){
  }
  gymScreen(state){
   const limit=TRAINERS_PER_GYM(state.stage);
-  const remaining=Math.max(0,limit-state.trainer);
-  const ready=!state.champion&&remaining===0;
-  this.children.removeAll(true);this.backdrop();
-  text(this,320,47,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
-   ...titleStyle,fontSize:'22px'}).setOrigin(.5);
-  text(this,320,104,ready?'LÍDER DISPONÍVEL PARA BATALHA':
-   'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
-    fontSize:'15px',color:ready?'#a9f4bd':'#f5dda0'
-   }).setOrigin(.5);
-  text(this,320,162,ready?'VOCÊ PODE ENTRAR AGORA.':
-   'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
-    fontSize:'12px',color:C.white
-   }).setOrigin(.5);
-  this.button(320,225,278,47,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
-   if(ready)this.enterBattle(state);
-   else {this.__torre2CityRoute=true;this.scene.restart();}
-  },ready,13);
-  this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  const model=atlasGymModel(state,STAGES,limit);
+  if(!model)return this.renderCampaign(state);
+  this.children.removeAll(true);
+  this.cameras.main.setBackgroundColor(C.ink);
+  atlasGymBackdrop(this,model);
+  // Original FRLG room and trainers; all graphical, never input overlays.
+  if(state.stage<8)renderInteriorScene(this,model.city.toLowerCase(),'gym');
+  const leaderKey=['brock','misty','surge','erika','koga','sabrina',
+   'blaine','giovanni','lorelei','bruno','agatha','lance','rival'][state.stage];
+  const npc=addFireRedNPC(this,leaderKey,139,252,{scale:2.55,depth:9});
+  if(npc)npc.setData('torre2-atlas-leader-sprite',model.leader);
+  const aceDex=grassPortraitDex(model.boss),aceKey=aceDex&&'torre2-portrait-'+aceDex;
+  if(aceKey&&this.textures.exists(aceKey)){
+   const ace=this.add.image(271,198,aceKey).setDisplaySize(model.boss==='onix'?126:108,
+    model.boss==='onix'?126:108).setDepth(8)
+    .setData('torre2-atlas-ace',model.boss);
+   if(typeof Phaser!=='undefined')
+    this.textures.get(aceKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }
+  const label=(x,y,value,size=11,color=C.white,center=false)=>{
+   const item=text(this,x,y,value,{
+    fontSize:size+'px',fontFamily:'Pixelify Sans, monospace',
+    fontStyle:'bold',color,stroke:'#071321',strokeThickness:2,
+    wordWrap:{width:center?192:202}});
+   item.setDepth(12);
+   if(center)item.setOrigin(.5,0);
+   return item;
+  };
+  label(18,17,model.isLeague?'LIGA POKÉMON · PLATÔ ÍNDIGO':
+   'GINÁSIO DE '+model.city.toUpperCase(),17,'#d8f3ff');
+  label(414,52,model.isLeague?'ELITE / CAMPEÃO':'LÍDER DE GINÁSIO',10,'#95d7f8');
+  label(414,96,model.leader.toUpperCase(),20,'#ffffff');
+  label(414,125,'POKÉMON ACE: '+model.boss.toUpperCase(),9,'#ffe3a0');
+  label(414,160,model.rewardTitle,11,'#ffe5ad');
+  label(414,181,model.isLeague?'BATALHA OFICIAL DA LIGA':
+   'EQUIPE ATUAL: '+model.team.length+' POKÉMON',10,'#bce6ed');
+  label(414,216,model.ready?'DESAFIO DESBLOQUEADO':
+   'FALTAM '+model.remaining+' CONFRONTOS',11,
+   model.ready?'#a7ffd0':'#ffdc93');
+  label(414,240,model.ready?'A batalha utiliza seu save real.':
+   'Conclua a rota antes do líder.',9,'#d4ebf4');
+  label(29,312,model.isLeague?'SALA DA LIGA · ARTE DIFERENCIADA':
+   'INTERIOR PRÓPRIO · PROGRESSO REAL',9,'#b1d7ed');
+  this.button(194,327,193,28,'◀ VOLTAR AO MAPA',()=>{
+   if(!model.ready)this.__torre2CityRoute=true;
+   this.renderCampaign(state);
+  }).setData('torre2-atlas-gym-back',true);
+  this.button(515,324,202,33,model.ready?'▶ INICIAR BATALHA':'ROTA BLOQUEADA',()=>{
+   if(model.ready)this.enterBattle(state);
+  },model.ready,12).setData('torre2-atlas-gym-challenge',true);
+  this.__torre2AtlasGym={...model,artVersion:ATLAS_UI_VERSION,
+   aceTexture:aceKey&&this.textures.exists(aceKey)?aceKey:null};
  }
+
  card(x,y,w,h,accent=0x4b789b){
   const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
   const line=this.add.rectangle(x+2,y+2,4,h-4,accent,.9).setOrigin(0,0);
@@ -596,32 +636,51 @@ create(){
   return true;
  }
  badgeCaseScreen(state,selected=0){
-  this.children.removeAll(true);this.backdrop();
+  this.children.removeAll(true);
+  this.cameras.main.setBackgroundColor(C.ink);
   const index=Math.max(0,Math.min(7,selected));
-  text(this,320,28,'ESTOJO DE INSÍGNIAS',titleStyle).setOrigin(.5);
-  text(this,320,52,'KANTO  ·  '+GYMS.filter(g=>state.badges.includes(g.badge)).length+' / 8',statusStyle).setOrigin(.5);
-  const cards=this.add.graphics().setDepth(2);
-  GYMS.forEach((gym,i)=>{
-   const x=110+(i%4)*140,y=107+Math.floor(i/4)*89,earned=state.badges.includes(gym.badge);
-   cards.fillStyle(i===index?0x29485c:0x0a2135);cards.fillRect(x-61,y-37,122,76);
-   cards.lineStyle(i===index?2:1,i===index?0xf5cf76:0x436480);cards.strokeRect(x-61,y-37,122,76);
-   drawBadgeIcon(this,i,x,y-9,earned,2);
-   text(this,x,y+14,gym.badge.toUpperCase(),{fontSize:'10px',color:earned?C.white:C.muted}).setOrigin(.5).setDepth(4);
-   text(this,x,y+29,earned?'CONQUISTADA':'NÃO CONQUISTADA',{fontSize:'8px',color:earned?'#8be2b3':'#71899e'}).setOrigin(.5).setDepth(4);
-   this.add.zone(x,y,122,76).setDepth(8).setInteractive({useHandCursor:true})
-    .setData('torre2-badge-index',i).on('pointerdown',()=>this.badgeCaseScreen(state,i));
+  const models=atlasBadgeModel(state,GYMS);
+  atlasBadgeBackdrop(this,index);
+  const label=(x,y,caption,size=11,color=C.white)=>{
+   return text(this,x,y,caption,{fontFamily:'Pixelify Sans, monospace',
+    fontSize:size+'px',fontStyle:'bold',color,
+    stroke:'#09192e',strokeThickness:2}).setDepth(11);
+  };
+  label(28,23,'INSÍGNIAS DE KANTO',19,'#f5f9ff');
+  label(418,24,models.filter(x=>x.earned).length+' / 8 CONQUISTADAS',12,'#ffdc88');
+  models.forEach((badge,i)=>{
+   const x=24+(i%4)*91,y=91+Math.floor(i/4)*102;
+   drawBadgeIcon(this,i,x+41,y+32,badge.earned,2);
+   label(x+41,y+59,badge.badge.toUpperCase().slice(0,12),9,
+    badge.earned?'#f7faff':'#97a9bf').setOrigin(.5,0);
+   label(x+41,y+76,badge.earned?'CONQUISTADA':'BLOQUEADA',8,
+    badge.earned?'#a0f0ca':'#8294aa').setOrigin(.5,0);
+   this.add.zone(x+41,y+45,82,91).setDepth(20).setInteractive({useHandCursor:true})
+    .setData('torre2-badge-index',i)
+    .on('pointerdown',()=>this.badgeCaseScreen(state,i));
   });
-  const gym=GYMS[index],earned=state.badges.includes(gym.badge),reward=GYM_TM_REWARDS[index];
-  const item=MART_ITEMS.find(i=>i.id===reward),claimed=earned&&!!reward&&state.gymTMClaims?.includes(reward);
-  text(this,320,253,gym.leader+'  ·  GINÁSIO DE '+gym.city.toUpperCase(),{fontSize:'14px',color:C.gold}).setOrigin(.5);
-  const rewardText=item?item.name+'  ·  '+(claimed?'RECEBIDA':earned?'A RECEBER':'RECOMPENSA DO GINÁSIO'):
+  const current=models[index],reward=GYM_TM_REWARDS[index];
+  const item=MART_ITEMS.find(i=>i.id===reward);
+  const claimed=current.earned&&!!reward&&state.gymTMClaims?.includes(reward);
+  label(417,76,'DETALHES DA INSÍGNIA',11,'#ffdb92');
+  drawBadgeIcon(this,index,518,120,current.earned,2.35);
+  label(517,158,current.badge.toUpperCase(),12,'#ffe49e').setOrigin(.5);
+  label(417,184,'LÍDER: '+current.leader.toUpperCase(),11);
+  label(417,207,'CIDADE: '+current.city.toUpperCase(),10,'#b6e2f4');
+  const rewardText=item?item.name.toUpperCase()+
+   ' · '+(claimed?'RECEBIDA':current.earned?'A RECEBER':'RECOMPENSA DO GINÁSIO'):
    'TM06 TOXIC  ·  INDISPONÍVEL NESTA VERSÃO';
-  text(this,320,278,rewardText,{fontSize:'11px',color:C.white}).setOrigin(.5);
-  text(this,320,297,'Selecione uma insígnia para consultar o ginásio e a recompensa.',{fontSize:'9px',color:C.muted}).setOrigin(.5);
-  this.button(320,332,230,29,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
+  label(417,239,rewardText,9,'#ffe5ac').setWordWrapWidth(194);
+  label(417,278,current.earned?'CONQUISTADA ✓':'AINDA NÃO CONQUISTADA',9,
+   current.earned?'#96f9c3':'#c3d5e8');
+  this.button(169,332,280,29,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
    .setData('torre2-badge-case-back',true);
-  this.__torre2BadgeCase={selected:index,earned,claimed,reward:reward||null};
+  this.button(498,332,238,29,'POKÉ MART / LOJA',()=>this.martScreen(state))
+   .setData('torre2-atlas-badge-shop',true);
+  this.__torre2BadgeCase={selected:index,earned:current.earned,
+   claimed,reward:reward||null,artVersion:ATLAS_UI_VERSION};
  }
+
  // Reset is intentionally a two-step action; a single stray tap may
  // never erase the campaign, team, PC, badges or saved inventory.
  confirmResetJourney(){
@@ -1141,45 +1200,54 @@ create(){
    .setData('torre2-center-back',true);
  }
  martScreen(state,page=0,errorText=''){
-  this.children.removeAll(true);this.backdrop();
-  text(this,320,23,'POKÉ MART · $'+state.money,{
-   ...titleStyle,fontSize:'19px'}).setOrigin(.5);
-  const items=MART_ITEMS.filter(i=>martItemUnlocked(state,i));
-  const count=Math.max(1,Math.ceil(items.length/6));
+  this.children.removeAll(true);
+  this.cameras.main.setBackgroundColor(C.ink);
+  atlasMartBackdrop(this,state.stage);
+  const label=(x,y,caption,size=11,color=C.white)=>{
+   return text(this,x,y,caption,{fontFamily:'Pixelify Sans, monospace',
+    fontSize:size+'px',fontStyle:'bold',color,
+    stroke:'#071728',strokeThickness:2}).setDepth(11);
+  };
+  label(22,20,'POKÉ MART  ·  LOJA',18,'#f2f8ff');
+  label(390,22,'SALDO: ₽ '+state.money,16,'#ffdf82');
+  const unlocked=MART_ITEMS.filter(i=>martItemUnlocked(state,i));
+  const count=Math.max(1,Math.ceil(unlocked.length/6));
   const pageNum=Math.min(count-1,Math.max(0,page));
-  items.slice(pageNum*6,(pageNum+1)*6).forEach((item,i)=>{
-   const x=168+(i%2)*301,y=95+Math.floor(i/2)*66;
-   this.card(x-141,y-20,283,57,state.money>=item.price?0x568fbb:0x6b5669);
-   const art=this.add.image(x-118,y+6,shopItemSprite(this,item));
-   // Original FRLG indexed icon at its native pixel resolution (no serrated
-   // fractional upscaling), with GBA palette-zero transparency preserved.
+  label(27,66,'BEM-VINDO AO POKÉ MART!',11,'#c5edfc');
+  label(28,274,'Itens e preços do seu progresso.',9,'#b4d5eb');
+  const rows=unlocked.slice(pageNum*6,(pageNum+1)*6);
+  rows.forEach((item,i)=>{
+   const y=94+i*34;
+   const art=this.add.image(307,y,shopItemSprite(this,item));
    const w=art.frame?.width||24,h=art.frame?.height||24;
-   art.setDisplaySize(Math.min(28,w),Math.min(28,h)).setDepth(5)
+   art.setDisplaySize(Math.min(22,w),Math.min(22,h)).setDepth(9)
     .setData('torre2-mart-item-sprite',item.id);
-   text(this,x-98,y-9,item.name,{fontSize:'11px',color:C.white});
-   text(this,x-98,y+9,'$'+item.price+(item.kind==='tm'?' · TM':' · '+item.kind.toUpperCase()),{
-    fontSize:'10px',color:C.muted});
-   this.button(x+100,y+6,70,30,'COMPRAR',()=>{
-    try{
-     purchaseItem(state,item.id);
-     this.martScreen(state,pageNum);
-    }catch(error){
-     // A storage-denied purchase is NOT completed. Keep the previous
-     // wallet and items, show an actionable message and allow retry.
+   label(326,y-11,item.name.toUpperCase().slice(0,22),10,
+    state.money>=item.price?'#f1f8ff':'#b5bbc8');
+   label(326,y+4,'₽ '+item.price.toLocaleString('pt-BR'),9,'#a8d2e8');
+   this.button(571,y,85,25,'COMPRAR',()=>{
+    try{purchaseItem(state,item.id);this.martScreen(state,pageNum);}
+    catch(error){
      console.warn('Torre 2: Mart purchase not saved',error);
      this.martScreen(state,pageNum,
       'COMPRA NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
     }
-   },state.money>=item.price).setData('torre2-mart-buy',item.id);
+   },state.money>=item.price,8).setData('torre2-mart-buy',item.id);
   });
-  this.button(140,315,177,33,'◀ MAPA',()=>this.scene.restart());
-  this.button(346,315,205,33,'ITENS '+(pageNum+1)+'/'+count,()=>this.martScreen(state,(pageNum+1)%count),true);
-  this.button(543,315,176,33,'BOLSA / TM',()=>this.bagScreen(state)).setData('torre2-mart-bag',true);
-  const notice=text(this,320,281,errorText||state.lastMessage||'Compre Pokébolas, poções e TM',{
-   fontSize:'10px',color:errorText?'#ff9d9d':C.gold,
-   wordWrap:{width:560}}).setOrigin(.5);
+  const notice=label(24,309,errorText||
+   state.lastMessage||'Compre Pokébolas, poções e TMs',9,errorText?'#ffaeaa':'#bee5ee')
+   .setWordWrapWidth(595);
   if(errorText)notice.setData('torre2-mart-save-error',true);
+  this.button(111,334,176,28,'◀ MAPA',()=>this.renderCampaign(state));
+  this.button(328,334,204,28,'ITENS '+(pageNum+1)+'/'+count,
+   ()=>this.martScreen(state,(pageNum+1)%count),true)
+   .setData('torre2-atlas-mart-page',pageNum);
+  this.button(535,334,172,28,'BOLSA / TM',()=>this.bagScreen(state))
+   .setData('torre2-mart-bag',true);
+  this.__torre2AtlasMart={artVersion:ATLAS_UI_VERSION,page:pageNum,
+   rows:rows.map(item=>item.id),money:state.money};
  }
+
  bagScreen(state,errorText=''){
   this.children.removeAll(true);this.backdrop();
   text(this,320,27,'BOLSA · POKÉDÓLARES '+state.money,{
@@ -1296,12 +1364,81 @@ create(){
   this.button(175,330,260,32,'◀ VOLTAR À BOLSA',()=>this.bagScreen(state)).setData('torre2-status-medicine-back',true);
   this.button(465,330,260,32,'POKÉ MART',()=>this.martScreen(state));
  }
+ atlasDossierScreen(state,index){
+  const member=state.team[index];
+  if(!member)return this.renderCampaign(state);
+  const stats=pokemonStats(member),{def,etapa}=buscar(member.id);
+  this.children.removeAll(true);
+  this.cameras.main.setBackgroundColor(C.ink);
+  this.backdrop();atlasSummaryBackdrop(this);
+  this.scene.bringToTop();
+  this.scene.stop('titulo');
+  this.input.setTopOnly(true);
+  this.add.zone(320,180,640,360).setDepth(2).setInteractive()
+   .setData('torre2-atlas-dossier-shield',true);
+  const g=this.add.graphics().setDepth(3);
+  for(const [x,y,w,h] of [[10,8,620,40],[12,55,253,246],
+   [272,55,356,140],[272,203,356,98]]){
+   atlasPanel(g,x,y,w,h,{accent:0x82c9f0,fill:0x102d50});
+  }
+  const label=(x,y,value,size=11,color=C.white)=>{
+   return text(this,x,y,String(value),{
+    fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',
+    fontStyle:'bold',color,stroke:'#061323',strokeThickness:2
+   }).setDepth(12);
+  };
+  label(23,17,'SUMÁRIO POKÉMON',17,'#fff1c4');
+  label(388,22,'POKÉMON TORRE 2',12,'#b4e6fc');
+  label(24,67,stats.name.toUpperCase().slice(0,18),16,'#ffe09a');
+  label(25,89,'NÍVEL '+stats.level+' · '+stats.types.join(' / '),10,'#c5effc');
+  // Authentic PMD portrait already cached by campaign preload.
+  this.drawPortrait(member,139,167,120,6);
+  label(29,241,'HP: '+Math.round(Math.max(0,Math.min(100,Number(member.hp)||0)))+'%',12,'#b5f1c5');
+  label(29,263,member.shiny?'✦ SHINY':'ESPÉCIE: '+member.id.toUpperCase(),10,
+   member.shiny?'#ffe58d':'#b5d0e5');
+  label(284,64,'ATRIBUTOS ATUAIS',14,'#ffdf93');
+  const statRows=[['HP',stats.hp,220],['ATK',stats.attack,190],
+   ['DEF',stats.defense,190],['VEL',stats.speed,200]];
+  statRows.forEach(([key,value,max],i)=>{
+   const y=92+i*22,width=Math.max(3,Math.min(148,148*(value/Math.max(1,max))));
+   label(286,y,key,10,'#d7e7f2');label(603,y,String(value),10,'#fff0c9').setOrigin(1,0);
+   g.fillStyle(0x09182e).fillRect(332,y+5,154,9);
+   g.fillStyle(i===0?0x65d69b:i===1?0xf2a15b:i===2?0x73aeef:0x9bd7d0)
+    .fillRect(335,y+7,width,5);
+  });
+  label(283,211,'GOLPES DISPONÍVEIS',12,'#ffe49a');
+  const kit=resolveLoadout(member);
+  const names=['lmb','rmb','q','e'].map(slot=>{
+   const move=kit[slot];
+   return String(move?.nombre||move?.name||'VAZIO').toUpperCase();
+  });
+  names.forEach((name,i)=>{
+   const x=285+(i%2)*162,y=234+Math.floor(i/2)*20;
+   label(x,y,(i===3?'ULT ':String(i+1)+'. ')+name.slice(0,16),9,
+    i===3?'#ffe29a':'#d4e9ef');
+  });
+  const evolutions=[def.nombre,...(def.evoluciones||[]).map(e=>e.nombre)].filter(Boolean);
+  label(283,284,'EVOLUÇÕES: '+(evolutions.join(' → ')||stats.name).slice(0,47),8,'#b9d9ec');
+  this.button(80,331,119,28,'◀ VOLTAR',()=>this.showSummary(state,index))
+   .setData('torre2-atlas-dossier-back',true);
+  this.button(207,331,123,28,'GOLPES',()=>this.showSummary(state,index))
+   .setData('torre2-atlas-dossier-moves',true);
+  this.button(334,331,123,28,'BOLSA / TM',()=>this.bagScreen(state))
+   .setData('torre2-atlas-dossier-tm',true);
+  this.button(463,331,125,28,'POKÉDEX',()=>this.dexScreen(state))
+   .setData('torre2-atlas-dossier-dex',true);
+  this.button(580,331,101,28,'MAPA',()=>this.renderCampaign(state))
+   .setData('torre2-atlas-dossier-map',true);
+  this.__torre2AtlasDossier={artVersion:ATLAS_UI_VERSION,
+   species:member.id,level:stats.level,teamIndex:index};
+ }
  showSummary(state,index,slot=0,page=0){
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
   // touch targets, instant type filtering and search for Mewtwo's large pool.
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  atlasSummaryBackdrop(this);
   // Exclusive mobile screen: prevent touches on Back and attack rows from
   // passing to other scene hotspots (notably original fullscreen behind it).
   this.scene.bringToTop();
@@ -1338,7 +1475,8 @@ create(){
   const hex=(type)=>'#'+(types[type]??0x9db1c7).toString(16).padStart(6,'0');
   const ncol=type=>types[type]??0x9db1c7;
   const box=(x,y,w,h,fill=0x14243b,stroke=0x375371)=>{
-   const rect=this.add.rectangle(x+w/2,y+h/2,w,h,fill,.98).setStrokeStyle(1,stroke);
+   const rect=this.add.rectangle(x+w/2,y+h/2,w,h,fill,.98)
+    .setStrokeStyle(1,stroke).setDepth(3);
    return rect;
   };
   const label=(x,y,caption,color='#dceaff',size=11)=>text(this,x,y,caption,{
@@ -1365,6 +1503,8 @@ create(){
    // No scene.restart: retain browser fullscreen and native Phaser canvas.
    this.renderCampaign(state);
   }).setData('torre2-summary-back',true);
+  button(392,13,87,27,'FICHA',()=>this.atlasDossierScreen(state,index))
+   .setData('torre2-atlas-dossier-open',true);
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);

@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {preserveActiveUiBallsOrStripUnused,findNativeUiBallsConsumers} from './optional-ui-balls.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -202,6 +203,7 @@ await Promise.all([
  ['tools/pokearena/torre2-training-input.js','training-input.js'],
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
+ ['tools/pokearena/torre2-atlas-screen-style.js','atlas-screen-style.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
@@ -570,6 +572,18 @@ for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
+  // Port tested PR #436 compatibility: only the MISSING unused optional
+  // preload in our build copy, never delete a native resource or skip other guards.
+  if(filename==='escenas/carga.js'&&
+     from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
+    const consumers=await findNativeUiBallsConsumers(path.join(dest,clientSource));
+    const balls10File=path.join(dest,'assets/ui/balls10.png');
+    const balls10Available=await fs.stat(balls10File)
+     .then(stat=>stat.isFile()&&stat.size>32).catch(()=>false);
+    body=preserveActiveUiBallsOrStripUnused(body,{balls10Available,consumers});
+    continue;
+  }
+
   if(!body.includes(from)){
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.

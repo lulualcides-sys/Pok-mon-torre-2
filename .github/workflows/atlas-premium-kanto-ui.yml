@@ -1,0 +1,51 @@
+name: Atlas premium UI — original Phaser, badges, mart, gym, league
+on:
+  push:
+    branches: [feat/atlas-premium-kanto-ui-20261101]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  atlas-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Local logic, source syntax and regression tests
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-atlas-screen-style.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/atlas-premium-browser.cjs
+          node --test tests/atlas-screen-style.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original Phaser client (no deploy)
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: REAL Chromium/WebGL screens (not conceptual renders)
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/badge-case-browser.cjs
+          node tests/atlas-premium-browser.cjs
+      - name: Upload visual evidence even after a failed browser check
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: atlas-premium-phaser-real-evidence
+          path: |
+            test-evidence/atlas-premium/
+            test-evidence/badge-case-*.png
+          retention-days: 21
+          if-no-files-found: warn
