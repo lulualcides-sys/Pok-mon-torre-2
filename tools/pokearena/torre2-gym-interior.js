@@ -1,4 +1,6 @@
 /* Gym-only presentation. Never mutate stage/trainer, save, team or RNG. */
+import {gymRouteCount} from './route-data.js';
+export {gymRouteCount};
 export const ACE_ANCHORS={leader:[274,109],ace:[369,109]};
 const POS=[[166,186],[474,186],[166,252],[474,252]];
 const COLORS=[[0x6c5848,0xc1aa88,0x88745b,0xe9d19c],
@@ -9,10 +11,6 @@ const COLORS=[[0x6c5848,0xc1aa88,0x88745b,0xe9d19c],
  [0x4a477e,0xaaa5c4,0x8176ad,0xe5dfff],
  [0xa74d33,0xc9a089,0xb07553,0xffd99a],
  [0x60594b,0xbab09b,0x81745f,0xf2ddae]];
-export function gymRouteCount(stage,trainerLimit){
- if(!Number.isInteger(stage)||stage<0||stage>=8)return null;
- return Math.max(0,trainerLimit(stage)-(stage===0?3:4));
-}
 export function gymInteriorModel(s,gyms,trainerLimit,routeNode){
  const stage=s?.stage;if(!Number.isInteger(stage)||stage<0||stage>=8||!gyms[stage])return null;
  const limit=trainerLimit(stage),count=stage===0?3:4,routeCount=gymRouteCount(stage,trainerLimit);
