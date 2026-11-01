@@ -36,11 +36,22 @@ const server=http.createServer((req,res)=>{
       window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
      },{stage,progress});
      await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
+     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.routeCount===progress,progress,{timeout:10000});
      const before=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
-     await page.evaluate(async()=>{
-      const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
-      const core=await import(new URL('./torre2/campaign-core.js',main));
-      window.__pt2Game.scene.getScene('campanha').gymScreen(core.readCampaign());
+     const routeInfo=await page.evaluate(()=>{
+      const s=window.__pt2Game.scene.getScene('campanha');
+      const path=s.__torre2BattlePath;
+      const nodes=path.nodes.map(n=>({index:n.getData('torre2-path-node'),type:n.getData('torre2-path-type')}));
+      return {routeCount:path.routeCount,total:path.total,nodes};
+     });
+     assert.equal(routeInfo.routeCount,progress,'route ends at gym entrance');
+     assert.equal(routeInfo.nodes.at(-1)?.type,'gym','final route node is a gym building');
+     assert.equal(routeInfo.nodes.at(-1)?.index,progress);
+     assert.ok(routeInfo.nodes.every(n=>n.index<=progress),'no intermediate trainer duplicated on route');
+     // Trigger the actual Phaser interactive portal; do not call gymScreen directly.
+     await page.evaluate(()=>{
+      const s=window.__pt2Game.scene.getScene('campanha');
+      s.__torre2BattlePath.nodes.at(-1).emit('pointerdown');
      });
      await page.waitForFunction(()=>!!window.__pt2Game.scene.getScene('campanha')?.__torre2GymRoster,null,{timeout:10000});
      await page.waitForTimeout(400);
