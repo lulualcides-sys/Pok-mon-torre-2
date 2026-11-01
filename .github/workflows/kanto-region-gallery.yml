@@ -2,6 +2,8 @@ name: T34 — eight Kanto Phaser preview scenes (isolated, no production deploy)
 on:
   push:
     branches: [feat/kanto-region-gallery-20261031]
+  pull_request:
+    branches: [feat/kanto-region-gallery-20261031]
   workflow_dispatch:
 permissions:
   contents: read
