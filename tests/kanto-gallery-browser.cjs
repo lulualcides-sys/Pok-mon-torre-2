@@ -40,6 +40,8 @@ const ids=['pallet','route1','viridian','forest2','pewter','route3','moon','rout
     const state=await page.evaluate(()=>window.__pt2Game.scene.getScene('kanto-gallery').__kantoPreview);
     assert.equal(state.id,id);assert.equal(state.renderer,2,'must render native WebGL');
     assert.equal(state.implemented,false,'visual-only: do not imply campaign integrated');
+    assert.equal(state.artStandard,'option-c-approved-2026-11-01','approved visual standard must be present');
+    assert.ok(state.biome&&typeof state.biome==='string','each region must declare a distinct biome');
     if(state.kind==='city')assert.equal(state.trainers,0);
     if(id==='pallet')assert.deepEqual(state.buildings,['Casa do Red','Casa do Rival','Laboratório Oak']);
     const name='kanto-gallery-'+id+'-'+device+'.png';
