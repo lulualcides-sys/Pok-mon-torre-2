@@ -18,6 +18,7 @@ import {KANTO_STAB_TM_MASTERY_LEVELS,kantoStabTmMasteryLevel}
  from './stab-tm-mastery.js';
 import {FRLG_LEVEL_UP,KANTO_LEVEL_EVOLUTIONS,frlgKnownMoves,frlgUnlockLevel,frlgEvolutionLevel,frlgMachineCompatible}
  from './frlg-learnsets.js';
+import {isKantoNormalAbilityName} from './kanto-ultimate-policy.js';
 
 const norm=s=>String(s||'').normalize('NFKD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 const SLOTS=['lmb','rmb','q','e'];
@@ -743,6 +744,9 @@ export function moveUnlockLevel(member,moveName){
 // skills, E the full-meter finisher. Never change original Arena/VS kits.
 export function isCampaignUltimateOnlyMove(move){
  if(!move)return false;
+ // Fire/Ice/Thunder/etc. Punch and Flamethrower ALWAYS belong in HAB2/3,
+ // regardless of native E/ulti metadata, damage or the source tutorial slot.
+ if(isKantoNormalAbilityName(move.torre2IntroSource||move.nombre))return false;
  if(move.torre2IntroSlot==='e')return true;
  if(move.torre2IntroPractice)return false;
  // Some original Poké Arena abilities omit Gen3 power metadata even though
@@ -759,7 +763,11 @@ export function isCampaignUltimateOnlyMove(move){
 export function campaignMoveSlotReason(member,slot,move){
  if(!Number.isInteger(slot)||slot<0||slot>=4)return 'SLOT INVÁLIDO';
  if(!move?.forma)return 'SEM EFEITO';
- if(member?.id==='mewtwo')return null; // debug-only unrestricted lab
+ // This override is campaign-wide, even for legacy E equips and Mewtwo:
+ // no elemental Punch or Flamethrower may be an E-slot ultimate.
+ if(slot===3&&isKantoNormalAbilityName(move.torre2IntroSource||move.nombre))
+  return 'GOLPE NORMAL: HAB 2 OU HAB 3';
+ if(member?.id==='mewtwo')return null; // otherwise unrestricted debug lab
  if(isPendingApprovalMove(move))return 'EFEITO EM REVISÃO';
  const level=member?.progression?.level??5;
  if(slot===3&&level<KANTO_INTRO.ultAt)return 'ULT NO NV. 8';
