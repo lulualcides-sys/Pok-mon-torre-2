@@ -56,14 +56,10 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAni
   ace.setScale(maxSize/Math.max(1,ace.width,ace.height));
   if(aceAnimationKey&&scene.anims.exists(aceAnimationKey))ace.play(aceAnimationKey);
   aceSource='native-idle';
- }else if(aceTexture&&scene.textures.exists(aceTexture)){
-  // Fallback keeps the scene usable if an upstream PMD manifest omits Idle.
-  // Browser visual gates require native-idle before the art can be approved.
-  const size=m.stage===0?61:52;
-  ace=scene.add.image(...ACE_ANCHORS.ace,aceTexture).setOrigin(.5,1)
-   .setDisplaySize(size,size).setDepth(7).setData('torre2-gym-ace',m.ace);
-  aceSource='opaque-portrait-fallback';
  }
+ // Pixel-art only: never replace a missing PMD Idle sprite with an opaque
+ // portrait/icon. Missing atlas is an explicit visual-gate failure, not an
+ // apparently successful gym decoration. Gameplay and input remain intact.
  if(ace){
   const key=ace.texture?.key;
   if(key&&typeof Phaser!=='undefined')
