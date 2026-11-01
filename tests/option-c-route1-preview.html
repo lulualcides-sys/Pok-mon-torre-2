@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pokémon Torre 2 — Rota 1 Opção C (prévia Phaser independente)</title>
+<style>
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#142a32}
+#game{width:100vw;height:100vh}
+canvas{display:block;image-rendering:pixelated}
+</style>
+</head>
+<body>
+<div id="game"></div>
+<script src="/node_modules/phaser/dist/phaser.min.js"></script>
+<script type="module">
+import {drawOptionCRoute1,ROUTE1_ART_VERSION} from '/tools/pokearena/torre2-option-c-route1.js';
+const Phaser=window.Phaser;
+if(!Phaser?.Scene)throw Error('Phaser runtime unavailable');
+class Route1OptionC extends Phaser.Scene{
+ constructor(){super({key:'option-c-route1'})}
+ create(){
+  const g=this.add.graphics().setDepth(0);
+  const meta=drawOptionCRoute1(this,g);
+  // The preview header/footer are UI only; not imported campaign HUD.
+  this.add.rectangle(320,17,640,35,0x142a36).setDepth(45);
+  this.add.rectangle(320,34,640,2,0x7da7a0).setDepth(46);
+  this.add.text(14,9,'ROTA 1  |  PALLET → VIRIDIAN',
+   {fontFamily:'monospace',fontSize:'14px',fontStyle:'bold',color:'#f1ebd2'}).setDepth(47);
+  this.add.text(630,11,'OPÇÃO C  ·  PRÉVIA PHASER',
+   {fontFamily:'monospace',fontSize:'9px',color:'#c6dcce'}).setOrigin(1,0).setDepth(47);
+  this.add.rectangle(320,340,640,42,0x142a36).setDepth(45);
+  this.add.rectangle(320,319,640,2,0x7da7a0).setDepth(46);
+  this.add.text(12,330,'NÃO INTEGRADA À CAMPANHA',
+   {fontFamily:'monospace',fontSize:'12px',fontStyle:'bold',color:'#f1ebd2'}).setDepth(47);
+  this.add.text(629,330,'Somente a arte / sem combates ou saves',
+   {fontFamily:'monospace',fontSize:'10px',color:'#c6dcce'}).setOrigin(1,0).setDepth(47);
+  // Minimal decorative player silhouette ONLY to indicate path clearance.
+  const p=this.add.graphics().setDepth(10);
+  p.fillStyle(0x263449).fillRect(316,177,12,15);
+  p.fillStyle(0xf0ca9f).fillRect(317,173,10,6);
+  p.fillStyle(0xc94744).fillRect(315,170,14,5);
+  p.fillStyle(0xffffff).fillRect(319,170,6,3);
+  p.fillStyle(0x30496c).fillRect(318,192,3,5).fillRect(324,192,3,5);
+  window.__optionCScene={artVersion:ROUTE1_ART_VERSION,meta,renderer:this.game.renderer.type};
+ }
+}
+const config={
+ type:Phaser.WEBGL,parent:'game',width:640,height:360,
+ transparent:false,backgroundColor:'#142a32',pixelArt:true,
+ render:{pixelArt:true,antialias:false,roundPixels:true},
+ scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH,width:640,height:360},
+ scene:[Route1OptionC]
+};
+window.__optionCGame=new Phaser.Game(config);
+</script>
+</body></html>
