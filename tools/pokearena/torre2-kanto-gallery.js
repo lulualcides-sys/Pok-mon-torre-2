@@ -1,3 +1,4 @@
+import {getOptionCArt,paintOptionCRoute,paintOptionCAccents} from './torre2-option-c-art-direction.js';
 /* T34: eight isolated Kanto visual previews rendered by native Phaser/WebGL.
  * PREVIEW ONLY. No campaign stage, trainer, battle HUD, RNG or save writes.
  * All terrain and objects are original procedural graphics, not screenshots.
@@ -29,7 +30,8 @@ function label(scene,x,y,value,size=10,color='#f6f0d9',center=false){
 }
 function terrain(g,r){
  const cave=r.kind==='cave',forest=r.id==='forest2',city=r.kind==='city';
- rect(g,0,35,640,284,cave?0x343b4d:forest?0x29543b:r.id==='pewter'?0x82966a:r.accent);
+ const art=getOptionCArt(r.id);
+ rect(g,0,35,640,284,art?.ground??r.accent);
  const rand=seedRng(r.id.split('').reduce((a,c)=>a*31+c.charCodeAt(0),7));
  for(let i=0;i<1000;i++){
   const x=rand()*640,y=40+rand()*275;
@@ -46,20 +48,22 @@ function terrain(g,r){
   rect(g,282,42,76,277,0x817e8b);
   for(let y=44;y<318;y+=17)rect(g,286,y,67,2,0xa5a0a0);
  }else{
-  // A north/south traversable corridor. Trees never occupy it.
-  rect(g,256,42,128,277,forest?0x6d7956:0x8d9969);
-  rect(g,269,42,102,277,forest?0xa5a779:0xc5b28b);
-  for(let y=44;y<317;y+=14)rect(g,273,y,95,1,forest?0x9b9e74:0xd9c5a1);
+  // User-approved Option C: varied natural routes, consistent clear center.
+  paintOptionCRoute(g,r.id);
  }
 }
 function tree(g,x,y,scale=1,autumn=false){
  const p=(a,b,c,d,e)=>rect(g,x+a*scale,y+b*scale,c*scale,d*scale,e);
+ // Three canopy silhouettes within the same pixel scale, never clone rows.
+ const canopyVariant=Math.abs(Math.round(x*3+y*5))%3;
  p(-3,1,7,18,0x594735);p(-1,2,3,16,0x96704c);
  p(-19,-24,38,25,0x183f35);p(-23,-17,46,17,0x1b5940);
  p(-16,-31,32,23,autumn?0x829c52:0x287647);
  p(-23,-20,19,14,autumn?0xa6b66b:0x348a50);
  p(3,-28,19,18,autumn?0x9ba966:0x429f55);
  p(-9,-35,19,12,autumn?0xc1bd7c:0x66b761);
+ if(canopyVariant===1){p(-20,-30,13,12,autumn?0x9eaf6c:0x368b50);p(10,-33,10,10,0x60a65d)}
+ if(canopyVariant===2){p(-10,-40,20,8,autumn?0xb2b87c:0x72b963);p(-26,-18,9,11,0x256f49)}
  p(-14,-22,8,3,0x9dcb78);p(7,-24,6,3,0x96c56c);
  p(-20,-12,7,3,0x307548);p(10,-14,8,2,0x2a6241);
 }
@@ -131,6 +135,8 @@ function routeObjects(g,r){
    rect(g,x-6,y-13,17,6,0xc6b9a0);rect(g,x-13,y+8,31,3,0x596e67);
   }
  }
+ // Small deterministic, biome-specific props behind tree canopies.
+ paintOptionCAccents(g,r.id);
  for(let i=0;i<17;i++){
   const x=i%2?60+(i*47%170):410+(i*53%170);
   const y=54+(i*37%245);
@@ -176,7 +182,7 @@ function caveObjects(g){
 function header(scene,g,r){
  rect(g,0,0,640,35,0x142c36);rect(g,0,33,640,2,0x83b3ad);
  label(scene,15,17,r.name,16);
- label(scene,625,18,'PRÉVIA PHASER · NÃO INTEGRADA',9,'#c5d4cf',true).setOrigin(1,.5);
+ label(scene,625,18,'OPÇÃO C · PHASER · NÃO INTEGRADA',9,'#c5d4cf',true).setOrigin(1,.5);
 }
 function footer(scene,g,r,onNavigate){
  rect(g,0,319,640,41,0x132a35);rect(g,0,319,640,2,0x93b1a0);
@@ -207,6 +213,7 @@ export function drawKantoPreview(scene,id,onNavigate){
  else caveObjects(g);
  header(scene,g,r);footer(scene,g,r,onNavigate);
  scene.__kantoPreview={id:r.id,kind:r.kind,buildings:[...r.buildings],
-  trainers:r.trainers,renderer:scene.game.renderer.type,implemented:false};
+  trainers:r.trainers,renderer:scene.game.renderer.type,implemented:false,
+  artStandard:'option-c-approved-2026-11-01',biome:getOptionCArt(r.id)?.biome};
  return scene.__kantoPreview;
 }

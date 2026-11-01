@@ -2,6 +2,8 @@ name: T34 — eight Kanto Phaser preview scenes (isolated, no production deploy)
 on:
   push:
     branches: [feat/kanto-region-gallery-20261031]
+  pull_request:
+    branches: [feat/kanto-region-gallery-20261031]
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,8 +21,9 @@ jobs:
           set -euo pipefail
           npm install --no-audit --no-fund
           node --check tools/pokearena/torre2-kanto-gallery.js
+          node --check tools/pokearena/torre2-option-c-art-direction.js
           node --check tests/kanto-gallery-browser.cjs
-          node --test tests/kanto-gallery.test.js
+          node --test tests/kanto-gallery.test.js tests/option-c-art-direction.test.js
           npm run check
       - name: Build original native Phaser without touching production code
         run: |
@@ -33,6 +36,7 @@ jobs:
           source_dir=$(find _site/arena2d -maxdepth 1 -type d -name 'src-*' | head -1)
           test -n "$source_dir"
           cp tools/pokearena/torre2-kanto-gallery.js "$source_dir/torre2/kanto-gallery.js"
+          cp tools/pokearena/torre2-option-c-art-direction.js "$source_dir/torre2/torre2-option-c-art-direction.js"
       - name: Capture eight REAL Phaser maps desktop and mobile
         env:
           CHROME_BIN: /usr/bin/google-chrome
