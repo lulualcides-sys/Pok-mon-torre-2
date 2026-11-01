@@ -1,0 +1,33 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {isKantoNormalAbilityName,isKantoSignatureUltNameAllowed,
+ chooseKantoSignatureUlt} from '../tools/pokearena/kanto-ultimate-policy.js';
+
+const ordinary=['Fire Punch','Ice Punch','Thunder Punch','Poison Punch',
+ 'Mega Punch','Mach Punch','Focus Punch','Dynamic Punch',
+ 'Power-Up Punch','ThunderPunch','Flamethrower'];
+test('Every Punch and Flamethrower is a normal HAB, not an ULT signature',()=>{
+ for(const name of ordinary){
+  assert.equal(isKantoNormalAbilityName(name),true,name);
+  assert.equal(isKantoSignatureUltNameAllowed(name),false,name);
+ }
+ for(const name of ['Fire Blast','Hydro Pump','Solar Beam','Shadow Ball']){
+  assert.equal(isKantoNormalAbilityName(name),false,name);
+  assert.equal(isKantoSignatureUltNameAllowed(name),true,name);
+ }
+});
+test('Species ULT selector skips powerful Punch and Flamethrower',()=>{
+ const library=[
+  {nombre:'Fire Punch',id:'fire-punch',forma:'native',tipo:'FIRE',dano:29},
+  {nombre:'Flamethrower',id:'flamethrower',forma:'native',tipo:'FIRE',dano:26},
+  {nombre:'Fire Blast',id:'fire-blast',forma:'native',tipo:'FIRE',dano:15}
+ ];
+ const selected=chooseKantoSignatureUlt('magmar',library,{
+  speciesTypes:['FIRE'],levelUp:{'fire-punch':25,flamethrower:30,'fire-blast':50}
+ });
+ assert.equal(selected?.id,'fire-blast',
+  'The stronger ordinary HAB cannot steal the charged ULT');
+ assert.equal(chooseKantoSignatureUlt('magmar',library.slice(0,2),{
+  speciesTypes:['FIRE'],levelUp:{'fire-punch':25,flamethrower:30}
+ }),null,'Never create a fake ultimate just to fill E');
+});
