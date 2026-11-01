@@ -1,7 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {gymInteriorModel,gymRouteCount,ACE_ANCHORS} from '../tools/pokearena/torre2-gym-interior.js';
-import {routeNode} from '../tools/pokearena/torre2-route-data.js';
+import {encounterRole} from '../tools/pokearena/torre2-encounter-layout.js';
+// Shares the actual pure role selector consumed by routeNode in the game.
+const routeNode=(stage,index,max)=>({type:encounterRole(stage,index,max)});
+
 
 const aces=['onix','starmie','raichu','vileplume','weezing','alakazam','arcanine','rhyhorn'];
 const gyms=aces.map((boss,i)=>({city:i?'Cerulean':'Pewter',leader:i?'Misty':'Brock',boss,leaderTeam:[boss]}));
