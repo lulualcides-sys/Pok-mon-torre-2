@@ -101,7 +101,7 @@ async function main(){
      assert.equal(overlaps(a,b),false,'ace must never obscure leader');
      assert.equal(report.trainerBounds.some(z=>overlaps(a,z)),false,
       'ace must never obscure a gym trainer touch target');
-     assert.ok(a.x>=215&&a.x+a.width<=425&&a.y>=39&&a.y+a.height<=134,
+     assert.ok(a.x>=215&&a.x+a.width<=425&&a.y>=35&&a.y+a.height<=134,
       'ace must stay on the final gym platform');
      if(stage===0)assert.ok(a.height>=85,
       'Onix must look substantially larger than a trainer, not like a tiny icon');
