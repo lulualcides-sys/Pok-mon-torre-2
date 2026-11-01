@@ -584,7 +584,7 @@ for(const [filename,changes] of patches){
    // on ambiguous upstream edits rather than rewriting native sprite code.
    if(filename==='escenas/carga.js'&&
       from.startsWith('this.load.spritesheet("ui-balls","assets/ui/balls20.png",')&&to===''){
-    const obsolete=/this\\.load\\.spritesheet\\(\\s*["']ui-balls["']\\s*,\\s*["']assets\\/ui\\/balls20\\.png["']\\s*,\\s*\\{[^{};]{0,180}\\}\\s*\\)\\s*;/g;
+    const obsolete=/this\.load\.spritesheet\(\s*["']ui-balls["']\s*,\s*["']assets\/ui\/balls20\.png["']\s*,\s*\{[^{};]{0,180}\}\s*\)\s*;/g;
     const matches=[...body.matchAll(obsolete)];
     if(matches.length!==1)throw Error('Optional native ui-balls preload changed ambiguously: '+matches.length);
     const remaining=body.replace(matches[0][0],'');
