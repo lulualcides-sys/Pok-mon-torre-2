@@ -198,8 +198,11 @@ export function resolveKantoIntro(member,installed,{
   result[slot]=selected.at(-1);
  }
  if(level>=KANTO_INTRO.ultAt){
-  const ultCandidate=candidates.find(c=>!selected.some(x=>idOf(x.torre2IntroSource)===c.key)&&c.move.dano>0)
-    ||candidates.find(c=>c.move.dano>0);
+  const eligibleUlt=c=>c.move.dano>0&&
+    isKantoSignatureUltNameAllowed(c.move.nombre);
+  const ultCandidate=candidates.find(c=>eligibleUlt(c)&&
+    !selected.some(x=>idOf(x.torre2IntroSource)===c.key))||
+    candidates.find(eligibleUlt);
   // Each species previews its OWN verified, approved late-game technique.
   // Only this energy-gated campaign action has capped damage: its authentic
   // normal move remains locked until its official/campaign learn level.
@@ -220,6 +223,7 @@ export function resolveKantoIntro(member,installed,{
     levelUp,earlyLevels,verifiedTables,verifiedParents,speciesTypes,
     blockedName:blockedSignature
    });
+  // Never turn a Punch or Flamethrower into a tutorial ULT by fallback.
   const base=signature||ultCandidate?.move||fallback;
   const finisher=trainingMove(base,idOf(base.nombre),'e',signature?8:ultCandidate?.learned??level,true);
   if(signature){
