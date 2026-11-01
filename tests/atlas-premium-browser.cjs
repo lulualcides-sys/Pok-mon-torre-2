@@ -83,6 +83,18 @@ async function frame(page){await page.evaluate(()=>new Promise(r=>requestAnimati
    });
    assert.ok(summary.shield&&summary.back);
    await screenshot('summary');
+   await activate('atlasDossierScreen',[0]);
+   const dossier=await page.evaluate(()=>{
+    const s=window.__pt2Game.scene.getScene('campanha');
+    return {data:s.__torre2AtlasDossier,
+     back:s.children.list.some(o=>o.getData?.('torre2-atlas-dossier-back')===true),
+     moves:s.children.list.some(o=>o.getData?.('torre2-atlas-dossier-moves')===true)};
+   });
+   assert.equal(dossier.data.species,'bulbasaur');
+   assert.equal(dossier.data.level,5);
+   assert.ok(dossier.back&&dossier.moves);
+   await screenshot('dossier');
+
    await activate('gymScreen');
    const gym=await page.evaluate(()=>{
     const s=window.__pt2Game.scene.getScene('campanha');
