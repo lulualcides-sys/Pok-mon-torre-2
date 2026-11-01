@@ -1,7 +1,12 @@
 // VS Seeker adaptation: three completed non-rematch victories per charge.
 export const REMATCH_ACTIVITIES=3;
 export function rematchState(state){
- const r=state.rematches??={charge:0,sequence:0,wins:0,pending:null};
+ // Legacy saves can contain a primitive or an array in this optional slot.
+ // Neither can persist ticket fields reliably; recover only the VS Seeker
+ // metadata without touching trainer progress, inventory or battle results.
+ const current=state.rematches;
+ const r=current&&typeof current==='object'&&!Array.isArray(current)?
+  current:(state.rematches={charge:0,sequence:0,wins:0,pending:null});
  r.charge=Math.max(0,Math.min(3,Math.floor(Number(r.charge)||0)));
  r.sequence=Math.max(0,Math.floor(Number(r.sequence)||0));return r;
 }
