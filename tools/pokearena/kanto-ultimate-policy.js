@@ -14,11 +14,12 @@ const excluded=new Set([
  'focus-punch','solar-blade'
 ]);
 // Share canonical exclusions with the explicit preferredSignature path.
-// Elemental/physical Punch moves and Flamethrower are HAB2/HAB3 techniques,
-// never a charged E ultimate (including Lv8 signature previews).
+// Punch, Flamethrower, Thunderbolt and Gust are normal HAB 2/3
+// techniques, never charged ULTs (including native E and Lv8 previews).
+// Thunder is explicitly not in this list: it remains E-only.
 export const isKantoNormalAbilityName=name=>{
  const key=canonical(name);
- return key==='flamethrower'||key.endsWith('punch');
+ return ['flamethrower','thunderbolt','gust'].includes(key)||key.endsWith('punch');
 };
 export const isKantoSignatureUltNameAllowed=name=>{
  const key=canonical(name);
