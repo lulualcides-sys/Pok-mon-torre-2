@@ -51,12 +51,14 @@ const server=http.createServer((req,res)=>{
        spriteBounds:spriteBounds?{x:spriteBounds.x,y:spriteBounds.y,right:spriteBounds.right,bottom:spriteBounds.bottom}:null,
        buttonBounds:btnBounds?{x:btnBounds.x,y:btnBounds.y,right:btnBounds.right,top:btnBounds.top}:null,
        fps:scene.game.loop.actualFps,hasGymInterior:scene.children.list.some(o=>o.texture?.key==='frlg-location-'+(a.stage?'cerulean':'pewter')),
+       hasGymFloor:scene.children.list.some(o=>o.getData?.('torre2-gym-floor')===(a.stage?'cerulean':'pewter')),
        visualFixture:true};
      });
      assert.equal(info.renderer,2,'must use real Phaser/WebGL');
      assert.equal(info.species,ace);assert.equal(info.leader,leader);assert.equal(info.hasLeader,true);
      assert.equal(info.spriteKey,'torre2-gym-ace-'+(stage?'0121':'0095'));
      assert.equal(info.hasGymInterior,true,'original FireRed gym interior required');
+     assert.equal(info.hasGymFloor,true,'authentic tiled FireRed floor required');
      assert.ok(info.spriteBounds&&info.buttonBounds,'native sprite and button must exist');
      assert.ok(info.spriteBounds.bottom<info.buttonBounds.top,'ace must not block challenge button');
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),saveBefore,'gym decorations must never mutate save');
