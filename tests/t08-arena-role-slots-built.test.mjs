@@ -106,7 +106,7 @@ assert.ok(fUlt,'Nidoran♀ has no meter-gated E');
 assert.equal(equipMove(female,3,fUlt.id),true,'Nidoran♀ E cannot be equipped');
 // User role policy: no native E metadata, high damage or stale save may
 // turn any Punch or Flamethrower into a campaign charged ULT.
-const normalAbility=m=>/punch$|^flamethrower$/i.test(
+const normalAbility=m=>/punch$|^(flamethrower|thunderbolt|gust)$/i.test(
  String(m?.torre2IntroSource||m?.nombre||'').replace(/^ULT · /,'')
   .toLowerCase().replace(/[^a-z0-9]+/g,''));
 const nativeNormal=TEST_LIBRARY.filter(normalAbility);
@@ -116,6 +116,10 @@ assert.ok(nativeNormal.some(m=>/ice.punch/i.test(m.nombre)),
  'Ice Punch renderer is missing');
 assert.ok(nativeNormal.some(m=>/flamethrower/i.test(m.nombre)),
  'Flamethrower renderer is missing');
+assert.ok(nativeNormal.some(m=>/thunderbolt/i.test(m.nombre)),
+ 'Thunderbolt renderer is missing');
+assert.ok(nativeNormal.some(m=>/^gust$/i.test(m.nombre)),
+ 'Gust renderer is missing');
 for(const move of nativeNormal){
  assert.equal(isCampaignUltimateOnlyMove({...move,ulti:true}),false,
   move.nombre+' must remain HAB2/3 despite native E/ulti metadata');
@@ -144,6 +148,24 @@ for(const {id} of KANTO_151){
     id+' cannot equip '+move.nombre+' as HAB3');
   }
  }
+}
+// Thunder is reserved for the E ULT, even if imported native metadata
+// describes it as a non-ULT or a low-damage attack.
+const thunder=TEST_LIBRARY.find(m=>canonicalMoveKey(m.nombre)==='thunder');
+assert.ok(thunder?.forma,'Installed Thunder renderer must exist');
+assert.equal(isCampaignUltimateOnlyMove({...thunder,ulti:false,dano:2,poder:0}),true,
+ 'Thunder remains E-only regardless of imported metadata');
+const electric=make('zapdos',50);
+assert.ok(campaignMoveSlotReason(electric,0,thunder));
+assert.ok(campaignMoveSlotReason(electric,1,thunder));
+assert.ok(campaignMoveSlotReason(electric,2,thunder));
+assert.equal(campaignMoveSlotReason(electric,3,thunder),null);
+const lightning=availableMoves(electric).find(m=>canonicalMoveKey(m.nombre)==='thunder');
+if(lightning){
+ assert.equal(equipMove(electric,1,lightning.id),false,
+  'No Thunder may be manually assigned to HAB2');
+ assert.equal(equipMove(electric,2,lightning.id),false,
+  'No Thunder may be manually assigned to HAB3');
 }
 // Read-only cleanup: old saves with E=Flamethrower are NOT erased, but the
 // live battle refuses that E, choosing another legal ULT where available.
