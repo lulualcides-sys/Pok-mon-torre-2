@@ -9,3 +9,7 @@
 **Requisitos visuais:** ginásio próprio, NPCs laterais com sprites FireRed, sombras e labels curtos, plataforma central de líder + ace livre, CTA e retorno acessíveis em mobile; sem uso de imagens conceituais como screenshot real.
 
 **Critérios:** testes Node de identidade e soma, build cliente Phaser, Chromium WebGL desktop/mobile screenshots de Brock/Misty, CI verde e inspeção antes do merge. PR em draft até esses gates.
+
+## Complemento: rota → ginásio (01/11)
+
+O mapa de rotas deve apresentar apenas os índices anteriores ao limite de entrada: Brock 0–9 e Misty 0–10. O próximo nó visual é **ENTRADA DO GINÁSIO**, sem NPC de treinador/líder duplicado. Os índices 10–12 de Brock e 11–14 de Misty aparecem exclusivamente no interior, preservando identidades originais e progresso. A porta do ginásio na cidade deve ficar acessível a partir desse limite; a luta contra o líder continua bloqueada até a conclusão dos intermediários. Botões de rota/cidade não podem chamar `enterBattle` diretamente quando o índice atual pertence ao interior. Nenhuma alteração de save schema, confrontos, recompensas ou combate.
