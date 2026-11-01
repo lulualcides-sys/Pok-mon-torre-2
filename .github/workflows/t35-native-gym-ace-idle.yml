@@ -1,0 +1,54 @@
+name: T35 — native PMD gym ace pixel-art WebGL gate
+on:
+  push:
+    branches: [test/t35-native-ace-idle-gate-20261101]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: t35-native-gym-ace-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  native-ace:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source, encounter identity and VFX regressions
+        run: |
+          npm install --no-audit --no-fund
+          npm test
+          npm run check
+          npm run check:reuse
+          node --check tests/gym-ace-browser.cjs
+      - name: Build original Phaser WebGL client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$i" = 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: Real native PMD Idle Brock and Misty desktop/mobile
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/gym-ace-browser.cjs
+      - name: Cerulean route and city transition regression
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/city-hub-browser.cjs
+      - name: Preserve actual WebGL screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t35-native-ace-real-webgl
+          path: |
+            test-evidence/gym-ace-*
+            test-evidence/city-layered-*
+          retention-days: 21
+          if-no-files-found: warn
