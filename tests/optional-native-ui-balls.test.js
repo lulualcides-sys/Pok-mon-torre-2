@@ -29,3 +29,18 @@ test('fail closed if upstream changes the preload to an unknown form',()=>{
 test('fail closed if asset filename changes key',()=>{
  assert.throws(()=>stripOptionalUiBallsPreload('this.load.image("other","assets/ui/balls20.png");'),/ambiguously: 0/);
 });
+
+const native10='this.load.spritesheet("ui-balls","assets/ui/balls10.png",{frameWidth:20,frameHeight:20});';
+test('preserve current original balls10 pixel-art texture and all its consumers',()=>{
+ const input='preload(){'+native10+'}create(){this.add.image(0,0,"ui-balls");}';
+ assert.deepEqual(stripOptionalUiBallsPreload(input),{body:input,removed:false});
+});
+test('reject duplicate current native preloads rather than changing artwork',()=>{
+ assert.throws(()=>stripOptionalUiBallsPreload(native10+native10),/mixed or duplicated: 2/);
+});
+test('reject mixed current and unavailable legacy assets',()=>{
+ assert.throws(()=>stripOptionalUiBallsPreload(native10+canonical),/mixed or duplicated: 1/);
+});
+test('reject unrecognized balls10 loader format',()=>{
+ assert.throws(()=>stripOptionalUiBallsPreload('this.load.image("ui-balls","assets/ui/balls10.png");'),/ambiguously: 0/);
+});
