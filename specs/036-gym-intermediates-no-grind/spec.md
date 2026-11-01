@@ -4,7 +4,7 @@
 
 **Escopo autorizado:** apresentação em Phaser, sem novas batalhas, sem alteração de save schema, routeNode, índices, boss, níveis, XP, IA, RNG, VFX ou Arena. Brock: 10 rota + 3 ginásio; Misty: 11 rota + 4 ginásio. Cada intermediário recebe exatamente o índice já existente na escada; só o atual é clicável.
 
-**Conflito explícito de conteúdo:** routeNode classifica Brock índice 12 como RIVAL; Misty índices 12 e 14 como RIVAL e ROCKET. Não são subchefes canônicos. A interface preserva esses nomes/identidades em vez de falsificá-los. Exigir 3–4 subchefes *puros* requer autorização separada para reordenar índices/encontros ou criar lutas, ambas proibidas neste patch. Por isso são **3–4 encontros intermediários existentes**, incluindo visitas de rival/Rocket quando assim definido no motor.
+**Conflito explícito de conteúdo:** routeNode classifica Brock índice 12 e Misty índice 12 como RIVAL; o índice 14 de Misty é TREINADOR (não Rocket). Encontros Rocket aparecem em outros índices/estágios e mantêm a identidade original. Não são subchefes canônicos. A interface preserva esses nomes/identidades em vez de falsificá-los. Exigir 3–4 subchefes *puros* requer autorização separada para reordenar índices/encontros ou criar lutas, ambas proibidas neste patch. Por isso são **3–4 encontros intermediários existentes**, incluindo visitas de rival/Rocket quando assim definido no motor.
 
 **Requisitos visuais:** ginásio próprio, NPCs laterais com sprites FireRed, sombras e labels curtos, plataforma central de líder + ace livre, CTA e retorno acessíveis em mobile; sem uso de imagens conceituais como screenshot real.
 
