@@ -30,6 +30,13 @@ function platform(g,x,y,w,h,p){
  box(g,x+4,y+5,w,h,0x142332);box(g,x,y,w,h,p[2]);
  box(g,x+3,y+3,w-6,h-6,p[1]);box(g,x+3,y+3,w-6,4,p[3]);
 }
+export function gymInteriorHeading(m){
+ if(!m)return null;
+ // All identity text stays in the top banner, outside the boss bridge and
+ // interactive trainer/leader platforms. The ace remains decorative only.
+ return {x:320,y:18,size:13,text:m.city.toUpperCase()+' · GINÁSIO · '+
+  m.leader.toUpperCase()+' + '+m.ace.toUpperCase()};
+}
 export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAnimationKey,onTrainer,onLeader}={}){
  if(!m)return null;const p=COLORS[m.stage],g=scene.add.graphics().setDepth(0)
   .setData('torre2-gym-layer','terrain');
@@ -78,8 +85,8 @@ export function renderGymInterior(scene,m,{addNpc,aceTexture,aceSpriteKey,aceAni
  const label=(x,y,t,size=10)=>scene.add.text(x,y,t,{
   fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',color:'#fff4df',
   stroke:'#142538',strokeThickness:3}).setOrigin(.5).setDepth(12);
- label(320,18,m.city.toUpperCase()+' · GINÁSIO',16);
- label(320,142,m.leader.toUpperCase()+' · '+m.ace.toUpperCase(),11);
+ const heading=gymInteriorHeading(m);
+ label(heading.x,heading.y,heading.text,heading.size);
  m.trainers.forEach(t=>{
   const kind=t.kind==='rival'?'rival':t.kind==='rocket'?'rocket':
    m.stage===0?'hiker':'lass';

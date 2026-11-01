@@ -1,0 +1,26 @@
+name: T35 — Gym boss labels clear the bridge
+on:
+  push:
+    branches: [fix/t35-gym-heading-clear-path-20261101]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  header-and-gym-contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Validate gym heading and native gym contracts
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-gym-interior.js
+          node --test tests/gym-heading-layout.test.js tests/gym-interior.test.js tests/gym-stage-art.test.js
+          npm test
+          npm run check
+          npm run check:reuse
