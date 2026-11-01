@@ -36,3 +36,20 @@ test('all 15 Misty encounters retain their original indices outside city',()=>{
  assert.equal(v.remaining,3);assert.equal(v.gymReady,false);
  assert.equal(cityViewModel({stage:1,trainer:15},15).gymReady,true);
 });
+
+test('both civilians keep their feet off Cerulean water channels',()=>{
+ // Same native 640x360 geometry as renderCityScenery. Include sprite-foot
+ // width and a safety margin so idle artwork cannot clip into water.
+ const channels=[
+  {left:154,right:198,top:196,bottom:276}, // west canal near the Mart
+  {left:335,right:402,top:0,bottom:360} // main river, except bridge
+ ];
+ for(const npc of CERULEAN_CIVILIANS){
+  const foot={left:npc.x-7,right:npc.x+7,top:npc.y-8,bottom:npc.y+3};
+  for(const channel of channels){
+   const clear=foot.right<=channel.left-6||foot.left>=channel.right+6||
+    foot.bottom<=channel.top-6||foot.top>=channel.bottom+6;
+   assert.ok(clear,`civilian ${npc.kind} at ${npc.x},${npc.y} stands in water`);
+  }
+ }
+});
