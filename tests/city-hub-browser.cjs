@@ -86,10 +86,15 @@ const server=http.createServer((req,res)=>{
    await click(320,343);await city();
    await named('torre2-city-action','POKÉDEX');
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-dex-next')));
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(o=>o.getData?.('torre2-dex-portrait')).length===22,null,{timeout:30000});
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-dex.png'});
    await named('torre2-dex-next',true);
    await named('torre2-dex-prev',true);
    await click(82,329);await city();
+   assert.equal(await page.evaluate(()=>window.__pt2Game.textures.getTextureKeys()
+    .filter(key=>key.startsWith('torre2-collection-portrait-')).length),0,
+    'collection portraits must be released on return to city');
    await named('torre2-city-action','INSÍGNIAS');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-badges.png'});
    await named('torre2-badge-case-back',true);await city();

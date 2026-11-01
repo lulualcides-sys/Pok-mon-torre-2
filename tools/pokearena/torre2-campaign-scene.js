@@ -1,3 +1,4 @@
+import {paintCollectionPortraits,releaseCollectionPortraits} from './collection-portraits.js';
 import {CITY_TEXTURES,needsCeruleanAtlas} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
@@ -483,6 +484,7 @@ create(){
   this.children.removeAll(true);
   if(state.stage!==1)for(const [key] of CITY_TEXTURES)
    if(this.textures.exists(key))this.textures.remove(key);
+  releaseCollectionPortraits(this);
   this.__torre2CityHub=null;
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
@@ -1729,24 +1731,34 @@ create(){
    ...(p.evoluciones||[]).map(x=>x.nombre)]);
   const view=kantoDexPageModel(state,KANTO_DEX,supported,this.dexPage||0);
   this.dexPage=view.page;
+  const chrome=this.add.graphics();
+  chrome.fillStyle(0x1b3a4a).fillRect(8,7,624,57);
+  chrome.lineStyle(1,0x6b9da9).strokeRect(8,7,624,57);
+  chrome.fillStyle(0x0b2134).fillRect(12,11,616,49);
   text(this,ANCHO/2,18,'POKÉDEX DE KANTO · '+view.totals.all+' ESPÉCIES',
    {...titleStyle,fontSize:'18px'}).setOrigin(.5,0);
   text(this,ANCHO/2,47,'VISTOS '+view.totals.seen+
    ' · CAPTURADOS '+view.totals.caught+
-   ' · Somente espécies integradas entram em batalha.',statusStyle).setOrigin(.5);
+   ' · REGISTRO DA JORNADA',statusStyle).setOrigin(.5);
   if(view.totals.shinySeen)
    text(this,ANCHO/2,61,'✦ SHINY AVISTADOS '+view.totals.shinySeen+
     ' · CAPTURADOS '+view.totals.shinyCaught,{
     ...statusStyle,color:'#f0d789',fontSize:'9px'}).setOrigin(.5);
+  const portraitCards=[];
   view.rows.forEach((row,i)=>{
-   const x=35+(i>=11?295:0),y=75+(i%11)*21;
+   const x=18+(i>=11?307:0),y=77+(i%11)*21;
+   const anchor=this.add.rectangle(x,y,297,19,row.caught?0x1e3d3e:0x132a3d)
+    .setOrigin(0).setDepth(1).setStrokeStyle(1,row.caught?0x639981:0x315166);
+   this.add.rectangle(x+12,y+9,18,17,0x244251).setDepth(2);
    const marker=row.shinyCaught?' ✦ SHINY':row.shinySeen?' ✦':
     row.caught?' ★':row.seen?' ◦':row.ready?' ✓':'';
-   text(this,x,y,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
+   text(this,x+27,y+3,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
     fontSize:'11px',color:row.shinyCaught?'#f5db86':
-     row.caught?C.gold:row.seen?C.blue:C.muted
-   }).setData('torre2-dex-id',row.id);
+     row.caught?'#ade3bd':row.seen?C.blue:C.muted
+   }).setDepth(3).setData('torre2-dex-id',row.id);
+   portraitCards.push({...row,anchor,x:x+12,y:y+9});
   });
+  paintCollectionPortraits(this,portraitCards);
   this.button(82,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
   this.button(236,329,133,31,'◀ ANTERIOR',()=>{
    this.dexPage=(view.page-1+view.pages)%view.pages;this.dexScreen(state);
