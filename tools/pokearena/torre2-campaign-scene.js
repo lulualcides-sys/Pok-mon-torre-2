@@ -34,6 +34,7 @@ import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
+import {gymIntermediateModel,drawGymIntermediates} from './gym-intermediates.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
@@ -384,6 +385,8 @@ create(){
   const ready=!state.champion&&remaining===0;
   this.children.removeAll(true);this.backdrop();
   this.__torre2GymAce=null;
+  this.__torre2GymRoster=null;
+  const roster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
   const gym=GYMS[state.stage];
   if(gym){
    // Separate interior view: the city's gym building is NOT the boss stage.
@@ -405,23 +408,30 @@ create(){
     .setData('torre2-gym-view-token',state.stage);
    const plan=gymAcePlan(GYMS,state.stage,this.registry.get('manifiesto'));
    drawGymAce(this,plan,(...args)=>addFireRedNPC(...args),{token});
+   drawGymIntermediates(this,roster,addFireRedNPC,index=>{
+    // Existing ladder index only; never generate or skip an encounter.
+    if(index===state.trainer)this.enterBattle(state);
+   });
    text(this,320,205,gym.leader.toUpperCase()+'  +  '+gym.boss.toUpperCase(),{
     fontSize:'10px',color:C.gold}).setOrigin(.5).setDepth(19);
   }
   text(this,320,32,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
    ...titleStyle,fontSize:'20px'}).setOrigin(.5).setDepth(20);
   text(this,320,64,ready?'LÍDER DISPONÍVEL PARA BATALHA':
+   roster?.inGym?'DESAFIE O INTERMEDIÁRIO ATUAL NO GINÁSIO.':
    'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
     fontSize:'13px',color:ready?'#a9f4bd':'#f5dda0'
    }).setOrigin(.5).setDepth(20);
   text(this,320,265,ready?'VOCÊ PODE ENTRAR AGORA.':
+   roster?.inGym?'RESTANTES NO GINÁSIO: '+remaining+' · SEM BATALHAS EXTRAS.':
    'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
     fontSize:'11px',color:C.white
    }).setOrigin(.5).setDepth(20);
-  this.button(320,231,278,39,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
-   if(ready)this.enterBattle(state);
+  this.button(320,231,278,39,ready?'▶ DESAFIAR LÍDER':
+   roster?.inGym?'▶ DESAFIAR INTERMEDIÁRIO':'CONTINUAR A ROTA',()=>{
+   if(ready||roster?.inGym)this.enterBattle(state);
    else {this.__torre2CityRoute=true;this.scene.restart();}
-  },ready,21);
+  },ready||!!roster?.inGym,21);
   this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  card(x,y,w,h,accent=0x4b789b){
