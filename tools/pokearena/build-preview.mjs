@@ -753,6 +753,10 @@ for(const [filename,changes] of patches){
     if(candidates.length===1){
      body=body.replace(candidates[0],'');
      console.warn('Compatibility: removed one unused legacy balls20 preload');
+    }else if(body.includes('this.load.spritesheet("ui-balls","assets/ui/balls10.png",{frameWidth:20,frameHeight:20});')&&!body.includes('balls20.png')){
+     // Live upstream replaced missing balls20 with a new balls10 file.
+     // Preserve the active replacement; do not strip or rewrite native UI sprites.
+     console.warn('Native balls10 preload replaces old balls20; preserved');
     }else if(body.includes('ui-balls')||body.includes('balls20.png')){
      throw Error('Unrecognized native ui-balls request; manual review needed: '+body.slice(Math.max(0,body.indexOf('ui-balls')-100),body.indexOf('ui-balls')+200));
     }else console.warn('Unused ui-balls preload already absent upstream');
