@@ -19,6 +19,8 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 30
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
@@ -31,5 +33,8 @@ jobs:
         run: node tools/pokearena/build-vector-reference.mjs --check
       - name: Verify no runtime game changes relative to stacked asset PR
         run: |
-          git diff --name-only HEAD~1 HEAD
+          git cat-file -e 11dc781bf1bc160224e5734a8a9535d4a3b30814^{commit}
+          UNEXPECTED=$(git diff --name-only 11dc781bf1bc160224e5734a8a9535d4a3b30814 HEAD | grep -Ev '^((tools/pokearena/(torre2-vector-reference|build-vector-reference)\\.mjs)|(tests/kanto-vector-reference\\.test\\.js)|(reference-assets/kanto/vector-reference-v1/.*)|(\\.github/workflows/kanto-vector-reference\\.yml))
+ || true)
+          if [ -n "$UNEXPECTED" ]; then echo "Runtime or unrelated files changed: $UNEXPECTED"; exit 1; fi
           test -s reference-assets/kanto/vector-reference-v1/generated-manifest.json
