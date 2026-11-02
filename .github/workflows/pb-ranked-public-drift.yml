@@ -1,4 +1,4 @@
-name: PB Ranked — audit public gameplay catalogs without copying assets
+name: PB Ranked — verify full research and public catalog drift
 
 on:
   push:
@@ -7,7 +7,10 @@ on:
       - 'tools/research/pb-ranked-public-drift.cjs'
       - 'tests/pb-ranked-public-drift.test.cjs'
       - 'tests/pb-ranked-public-contracts.test.cjs'
+      - 'tests/pb-ranked-current-overlay.test.cjs'
+      - 'tests/pb-ranked-incremental-plan.test.cjs'
       - 'reference-library/pb-ranked/CONTRATOS-PUBLICOS-COMBATE-2026-11-01.json'
+      - 'reference-library/pb-ranked/DELTA-REAL-2026-11-01.json'
       - '.github/workflows/pb-ranked-public-drift.yml'
   workflow_dispatch:
 
@@ -15,7 +18,20 @@ permissions:
   contents: read
 
 jobs:
-  public-drift:
+  offline-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify syntax and all research invariants without network
+        run: |
+          node --check tools/research/pb-ranked-public-drift.cjs
+          node --test tests/pb-ranked-public-drift.test.cjs tests/pb-ranked-public-contracts.test.cjs tests/pb-ranked-current-overlay.test.cjs tests/pb-ranked-incremental-plan.test.cjs
+
+  public-source-availability:
     runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
@@ -23,14 +39,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '24'
-      - name: Syntax and isolated drift tests
-        run: |
-          node --check tools/research/pb-ranked-public-drift.cjs
-          node --check tests/pb-ranked-public-drift.test.cjs
-          node --test tests/pb-ranked-public-drift.test.cjs tests/pb-ranked-public-contracts.test.cjs
-      - name: Read current public metadata and compare to research snapshot
+      - name: Inspect live endpoints with bounded retries; fail only this job on outage
         run: node tools/research/pb-ranked-public-drift.cjs
-      - name: Preserve only the derived comparison report
+      - name: Retain derived report including outages
         if: always()
         uses: actions/upload-artifact@v4
         with:
