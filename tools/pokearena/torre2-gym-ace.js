@@ -27,7 +27,10 @@ export function gymAcePlacement(plan){
  // with both figures on the rear island, never floating over a tiny crop.
  if(plan?.stage===0||plan?.stage===1)
   return Object.freeze({leaderX:290,aceX:342,baseline:126,
-   maxWidth:big?58:52,maxHeight:big?48:45});
+   maxWidth:big?58:52,
+   // Final dais starts at y=87. Visible feet sit at baseline-3 and idle
+   // lifts 2px: 126-3-87-2 = 34px of guaranteed vertical clearance.
+   maxHeight:34});
  // Other gyms retain their original, validated camera and placement.
  return Object.freeze({leaderX:294,aceX:342,baseline:190,
   maxWidth:big?58:52,maxHeight:big?72:60});
