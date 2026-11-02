@@ -23,9 +23,14 @@ const server=http.createServer((req,res)=>{
  const folder='test-evidence/elite-chambers';fs.mkdirSync(folder,{recursive:true});
  const reports=[];
  try{
-  for(const [device,viewport] of [['desktop',{width:1280,height:720}],['mobile',{width:854,height:480}]]){
+  // Landscape-only captures cannot verify portrait touch access.
+  for(const [device,viewport,touch] of [
+   ['desktop',{width:1280,height:720},false],
+   ['mobile-landscape',{width:854,height:480},true],
+   ['mobile-portrait',{width:390,height:844},true]
+  ]){
    for(const [stage,leader] of [[8,'Lorelei'],[9,'Bruno'],[10,'Agatha'],[11,'Lance'],[12,'Rival']]){
-    const page=await browser.newPage({viewport,hasTouch:device==='mobile'});
+    const page=await browser.newPage({viewport,hasTouch:touch,isMobile:touch,deviceScaleFactor:1});
     const errors=[];page.on('pageerror',e=>errors.push(String(e)));
     try{
      await page.goto('http://127.0.0.1:4499/arena2d/?original=1',{waitUntil:'domcontentloaded'});
@@ -42,11 +47,22 @@ const server=http.createServer((req,res)=>{
      await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
      await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.nodes?.length>0,null,{timeout:10000});
      const before=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
-     // Use the native route portal, not an internal call to gymScreen().
-     await page.evaluate(()=>{
+     // Real browser pointer on the native route portal; synthetic emit() cannot
+     // reveal occlusion or broken canvas scaling on mobile portrait.
+     const portal=await page.evaluate(()=>{
       const scene=window.__pt2Game.scene.getScene('campanha');
-      scene.__torre2BattlePath.nodes.at(-1).emit('pointerdown');
+      const node=scene.__torre2BattlePath.nodes.at(-1);
+      const b=node.getBounds(),canvas=scene.game.canvas.getBoundingClientRect();
+      const size=scene.game.scale.gameSize;
+      return {x:canvas.left+b.centerX*canvas.width/size.width,
+       y:canvas.top+b.centerY*canvas.height/size.height,
+       w:canvas.width,h:canvas.height};
      });
+     assert.ok(Number.isFinite(portal.x)&&Number.isFinite(portal.y));
+     assert.ok(portal.x>=0&&portal.x<viewport.width,device+' portal x offscreen');
+     assert.ok(portal.y>=0&&portal.y<viewport.height,device+' portal y offscreen');
+     if(touch)await page.touchscreen.tap(portal.x,portal.y);
+     else await page.mouse.click(portal.x,portal.y);
      await page.waitForFunction(()=>!!window.__pt2Game.scene.getScene('campanha')?.__torre2EliteChamber,null,{timeout:12000});
      await page.waitForTimeout(350);
      const info=await page.evaluate(()=>{
@@ -71,7 +87,7 @@ const server=http.createServer((req,res)=>{
      assert.deepEqual(errors,[]);
      const file='elite-'+leader.toLowerCase()+'-'+device+'.png';
      await page.screenshot({path:folder+'/'+file});
-     reports.push({...info,device,file});
+     reports.push({...info,device,viewport,portal,file,nativePointer:true});
     }catch(error){
      await page.screenshot({path:folder+'/failure-'+leader.toLowerCase()+'-'+device+'.png'}).catch(()=>{});
      fs.writeFileSync(folder+'/failure-'+leader.toLowerCase()+'-'+device+'.json',
@@ -81,6 +97,6 @@ const server=http.createServer((req,res)=>{
    }
   }
   fs.writeFileSync(folder+'/report.json',JSON.stringify(reports,null,2));
-  console.log('PASS T38 10 real Phaser/WebGL League room captures, save unchanged');
+  console.log('PASS T38 15 real Phaser/WebGL League room captures (desktop + mobile landscape/portrait), native pointer and save unchanged');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
