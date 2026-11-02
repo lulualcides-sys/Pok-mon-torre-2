@@ -1,0 +1,34 @@
+name: T40 — approved map overlay AABB and five-way navigation (DRAFT)
+on:
+  push:
+    branches: [fix/t40-approved-map-overlay-preflight-20261102]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-approved-map-renderer.js'
+      - 'tools/pokearena/torre2-approved-maps-atlas.js'
+      - 'tests/approved-map-renderer.test.mjs'
+      - 'tests/approved-maps-atlas.test.mjs'
+      - '.github/workflows/t40-approved-map-overlay.yml'
+permissions:
+  contents: read
+jobs:
+  overlay-preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing dependencies
+        run: npm install --no-audit --no-fund
+      - name: RED regressions and GREEN overlay geometry
+        run: |
+          node --check tools/pokearena/torre2-approved-map-renderer.js
+          node --check tools/pokearena/torre2-approved-maps-atlas.js
+          node --test tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs
+      - name: Full non-visual repository regressions
+        run: |
+          npm test
+          npm run check
+          npm run check:reuse
