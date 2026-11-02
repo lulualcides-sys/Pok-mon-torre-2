@@ -44,10 +44,13 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in 1 2 3; do
-            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if node tools/pokearena/capture-client.mjs; then break; fi
             if [ "$attempt" = 3 ]; then exit 1; fi
             sleep "$((attempt*5))"
           done
+          # A deterministic source-patch mismatch must fail immediately;
+          # re-downloading 1600 files cannot fix a failed local compilation.
+          node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/version.json
           find _site/arena2d -path '*/torre2/rea-vector-preview.js' -type f | grep .
           find _site/arena2d -path '*/torre2/rea-vector-math.js' -type f | grep .
