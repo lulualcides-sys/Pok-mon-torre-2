@@ -762,6 +762,16 @@ for(const [filename,changes] of patches){
     }else console.warn('Unused ui-balls preload already absent upstream');
     continue;
    }
+   // Visual title sprite guards were written for an older upstream source.
+   // If its literal changes, preserve the live title animation rather than
+   // guessing which texture or avatar it should load; battle scenes untouched.
+   if(filename==='escenas/titulo.js'&&
+      (from.startsWith('return m&&(m.feet??5)-')||
+       from.startsWith('if(!m||(m.feet??5)-'))&&
+      (to.includes('this.anims.exists('))){
+    console.warn('Changed title sprite guard kept native; no speculative texture rewrite');
+    continue;
+   }
    // The original team-selection renderer changed its metadata field
    // names. Retain its updated built-in role/kit fallbacks; only fix the
    // previous exact unguarded expression if it still exists.
