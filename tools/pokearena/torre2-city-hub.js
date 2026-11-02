@@ -1,3 +1,4 @@
+import {cityProfile,renderRegionalScenery} from './city-regions.js';
 import {renderCityScenery} from './city-scenery.js';
 import {cityViewModel,CERULEAN_LANDMARKS} from './city-layout.js';
 import {addFireRedNPC} from './frlg-npc.js';
@@ -50,12 +51,13 @@ function memberCard(scene,g,state,m,i,x,y,w,handler){
   .setData('torre2-city-member',i).on('pointerdown',()=>handler(i));
 }
 export function renderCityHub(scene,state,{trainerCount,badgeDefinitions=[],...handlers}){
- const model=cityViewModel(state,trainerCount),art=renderCityScenery(scene);
+ const model=cityViewModel(state,trainerCount),profile=cityProfile(state.stage),
+ art=state.stage===1?renderCityScenery(scene):renderRegionalScenery(scene,profile);
  const frame=scene.add.graphics().setDepth(99);
  panel(frame,6,5,318,36);panel(frame,405,5,229,36);
- text(scene,17,18,'CERULEAN CITY',18);
+ text(scene,17,18,profile.name,18);
  text(scene,18,33,'TREINADORES '+model.done+'/'+model.count+'  ·  '+
-  (model.gymReady?'OBJETIVO: MISTY':'PRÓXIMO: TREINADOR '+(model.done+1)),8,'#c6e4df');
+  (model.gymReady?'OBJETIVO: '+profile.leader:'PRÓXIMO: TREINADOR '+(model.done+1)),8,'#c6e4df');
  badgeDefinitions.slice(0,8).forEach((b,i)=>{
   const earned=(state.badges||[]).includes(b.badge);
   drawBadgeIcon(scene,i,418+i*23,22,earned,1).setDepth(101);
@@ -63,22 +65,13 @@ export function renderCityHub(scene,state,{trainerCount,badgeDefinitions=[],...h
  // Native badge-case action overlays only the compact badge strip.
  scene.add.zone(516,22,218,34).setDepth(105).setInteractive({useHandCursor:true})
   .setData('torre2-city-action','INSÍGNIAS').on('pointerdown',handlers.badges);
- for(const p of CERULEAN_LANDMARKS)landmark(scene,p,handlers[p.id]);
- for(const t of model.trainers){
-  const types=['lass','youngster','ace','hiker','bugcatcher'];
-  const kind=types[t.index%types.length];
-  const sprite=addFireRedNPC(scene,kind,t.x,t.y,{scale:.7,depth:30+t.y/1000});
-  if(!sprite){const g=scene.add.graphics().setDepth(30+t.y/1000);drawTrainer(g,t.x,t.y-12,kind,.7)}
-  if(t.status==='current'){
-   text(scene,t.x,t.y-27,'!',13,'#ffe39a',65).setOrigin(.5);
-   const ring=scene.add.graphics().setDepth(28);ring.lineStyle(1,0xffe1a1).strokeEllipse(t.x,t.y,18,6);
-  }
-  if(t.status==='defeated')text(scene,t.x+7,t.y-12,'✓',9,'#94e6a2',65);
-  const zone=scene.add.zone(t.x,t.y-9,24,28).setDepth(69).setInteractive({useHandCursor:true})
-   .setData('torre2-city-trainer',t.index);
-  zone.on('pointerdown',()=>handlers.trainer(t.index,t.status));
+ for(const p of profile.landmarks)landmark(scene,p,handlers[p.id]);
+ // Residents are decorative. Battles remain on routes and inside the gym.
+ for(const [i,p] of profile.landmarks.entries()){
+  const x=p.x+38,y=p.y+29,kind=['lass','youngster','ace'][i];
+  const sprite=addFireRedNPC(scene,kind,x,y,{scale:.7,depth:30+y/1000});
+  if(!sprite){const g=scene.add.graphics().setDepth(30+y/1000);drawTrainer(g,x,y-12,kind,.7)}
  }
- addFireRedNPC(scene,'misty',545,190,{scale:.8,depth:31});
  // All six party members remain available; overflow does not disappear.
  panel(frame,6,308,628,46);
  const members=(state.team||[]).slice(0,6),visible=members.length>3?3:members.length;
@@ -89,7 +82,7 @@ export function renderCityHub(scene,state,{trainerCount,badgeDefinitions=[],...h
  },{key:'MAIS EQUIPE'});
  const actions=[['EQUIPE',()=>handlers.pokemon(state.active||0)],['BOLSA',handlers.bag],['POKÉDEX',handlers.dex],['ROTAS',handlers.route],['CAPTURA',handlers.capture]];
  actions.forEach(([label,fn],i)=>button(scene,347+i*62,332,59,32,label,fn));
- const meta={...art,stage:state.stage,trainer:state.trainer,hotspots:CERULEAN_LANDMARKS.map(p=>({...p})),
+ const meta={...art,stage:state.stage,trainer:state.trainer,hotspots:profile.landmarks.map(p=>({...p})),
   trainerCount:model.count,walking:false};
  scene.__torre2CityHub=meta;
  return meta;

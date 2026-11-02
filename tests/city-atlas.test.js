@@ -44,7 +44,7 @@ test('surface frames are four bounded power-of-two tiles in one small atlas',()=
   assert.equal(w,256);assert.equal(h,256);assert.ok(x+w<=512&&y+h<=512);
   locations.add(x+','+y);
  }
- assert.equal(locations.size,4);assert.equal(CITY_TEXTURES.length,2);
+ assert.equal(locations.size,4);assert.equal(CITY_TEXTURES.length,4);
  const bytes=fs.readFileSync('reference-assets/kanto/city-original/cerulean-surfaces-v1.webp');
  assert.equal(bytes.toString('ascii',8,12),'WEBP');assert.ok(bytes.length<200000);
 });

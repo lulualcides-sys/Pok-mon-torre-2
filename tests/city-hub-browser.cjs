@@ -125,6 +125,41 @@ const server=http.createServer((req,res)=>{
    // must be exactly one, regardless of unrelated engine/game events.
    assert.equal(timers.cityWaterLoops,1,
     'route/city roundtrip leaked native water timers: '+JSON.stringify(timers));
+   // Each region uses its own layout and original cropped gym sprite.
+   for(const stage of [0,2,3,4,5,6,7,8,9,10,11,12]){
+    await page.evaluate(async stage=>{
+     const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+     const core=await import(new URL('./torre2/campaign-core.js',main));
+     const state=core.readCampaign();state.stage=stage;state.trainer=0;core.saveCampaign(state);
+     window.__pt2Game.scene.getScene('campanha').renderCampaign(state);
+    },stage);
+    await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',resolve)));
+    await named('torre2-open-city',true);await city();
+    await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',resolve)));
+    const actual=await page.evaluate(()=>{
+     const s=window.__pt2Game.scene.getScene('campanha');
+     return {stage:s.__torre2CityHub.stage,landmarks:s.children.list.filter(o=>o.getData?.('torre2-city-landmark')).length,
+      gyms:s.children.list.filter(o=>o.getData?.('torre2-city-regional-gym')).length,
+      combatZones:s.children.list.filter(o=>o.getData?.('torre2-city-trainer')!==undefined).length};
+    });
+    assert.equal(actual.stage,stage);assert.equal(actual.landmarks,3);assert.equal(actual.gyms,1);assert.equal(actual.combatZones,0);
+    const saved=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
+    await page.screenshot({path:'test-evidence/city-region-'+stage+'-'+label+'.png'});
+    await named('torre2-city-landmark','center');
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-center-pc')));
+    await named('torre2-center-back',true);await city();
+    await named('torre2-city-landmark','mart');
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-mart-buy')==='pokeball'));
+    await click(120,315);await city();
+    const door=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').__torre2CityHub.hotspots.find(p=>p.id==='gym'));
+    await click(door.x,door.doorY);
+    await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-city-layer')==='terrain'));
+    await page.evaluate(async()=>{const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;const core=await import(new URL('./torre2/campaign-core.js',main));window.__pt2Game.scene.getScene('campanha').renderCampaign(core.readCampaign())});
+    await city();
+    await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',resolve)));
+    await named('torre2-city-action','ROTAS');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),saved);
+   }
    // Exercise the real result-consumption lifecycle, with no cached atlas.
    // Only the battle outcome is a fixture; create() must earn stage 1 itself.
    await page.evaluate(async()=>{
@@ -138,8 +173,6 @@ const server=http.createServer((req,res)=>{
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===0,null,{timeout:60000});
    await page.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
-    for(const key of ['torre2-city-atlas-v1','torre2-city-surfaces-v1'])
-     if(scene.textures.exists(key))throw Error('Pewter retained '+key);
     const state=JSON.parse(localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
     scene.scene.restart({finished:true,won:true,marker:{stage:0,trainer:state.trainer}});
    });
@@ -161,7 +194,8 @@ const server=http.createServer((req,res)=>{
    // renderCampaign queues new interactive objects until the next Phaser step.
    await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',
     ()=>window.__pt2Game.events.once('poststep',resolve))));
-   await click(218,196);
+   await named('torre2-city-action','ROTAS');
+   await named('torre2-central-cta',true);
    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate'),null,{timeout:60000});
    await page.waitForTimeout(1500);
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-battle-entry.png'});

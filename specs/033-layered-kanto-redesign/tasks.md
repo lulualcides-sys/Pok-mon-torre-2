@@ -21,3 +21,10 @@
 
 ## Upstream compatibility boundary
 The external client changed to `src-2755ffa8ef` during verification and failed the existing `ui-balls` patch guard before browser tests. The capture now defaults to `src-97f03e6e1b`, the module version verified in Actions 41263204733 and 41299829399. `POKEARENA_SOURCE_VERSION=latest` explicitly enables upstream compatibility audits; normal builds do not silently adopt new modules. Reports retain discovered/selected versions and the original homepage hash. Shared unversioned assets are still fetched and checked; this is not a complete immutable source archive. Full regression is rerun after this default change.
+
+## Regional expansion — 2026-11-01
+- Added original cropped regional gym atlas and replacement boat; shared Kanto texture cache.
+- Added distinct Pewter, Vermilion, Celadon, Fuchsia, Saffron, Cinnabar, Viridian and Indigo scenery. Elite checkpoints share the League palace. Native routes/caves remain separate.
+- City residents are decorative; three service entrances retain native Center/PC, Mart and gym actions. No walking or arena changes.
+- Extended WebGL desktop/touch fixtures to all regional stages, exact save preservation and visible gym-door clicks. Local 381 tests, syntax, reuse and preview build passed before final door alignment change; rerun and CI evidence required.
+- Remaining: review actual regional captures and polish art; full gym interior/subboss work and remaining secondary menu art are not claimed complete. No publication.

@@ -43,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: layered-city-webgl
-          path: test-evidence/city-layered-*
+          path: test-evidence/city-*
           retention-days: 14

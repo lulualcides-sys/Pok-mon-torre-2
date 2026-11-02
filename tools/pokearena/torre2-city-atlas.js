@@ -47,7 +47,9 @@ export const CITY_SURFACES_FRAMES=Object.freeze({
 });
 export const CITY_TEXTURES=Object.freeze([
  Object.freeze([CITY_ATLAS_KEY,CITY_ATLAS_FILE]),
- Object.freeze([CITY_SURFACES_KEY,CITY_SURFACES_FILE])
+ Object.freeze([CITY_SURFACES_KEY,CITY_SURFACES_FILE]),
+ Object.freeze(['torre2-regional-gyms-v1','assets/ui/city-original/regional-gyms-v1.webp']),
+ Object.freeze(['torre2-city-boat-v2','assets/ui/city-original/boat-v2.webp'])
 ]);
 export function addCitySurface(scene,name,x,y,width,height,depth,scale=.25){
  if(!scene.textures.exists(CITY_SURFACES_KEY))return null;
@@ -58,4 +60,22 @@ export function addCitySurface(scene,name,x,y,width,height,depth,scale=.25){
  return scene.add.tileSprite(x,y,width,height,CITY_SURFACES_KEY,name)
   .setOrigin(0).setDepth(depth).setTileScale(scale)
   .setData('torre2-city-surface',name);
+}
+
+export function hasCampaignCity(stage){return Number.isInteger(stage)&&stage>=0&&stage<=12}
+export function addRegionalGym(scene,name,x,y,height){
+ const names=['stone','electric','garden','poison','psychic','volcano','forest','league'];
+ const i=names.indexOf(name),key='torre2-regional-gyms-v1';
+ if(i<0||!scene.textures.exists(key))return null;
+ const texture=scene.textures.get(key);
+ if(!texture.has(name))texture.add(name,0,(i%4)*320,Math.floor(i/4)*320,320,320);
+ texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+ return scene.add.image(x,y,key,name).setOrigin(.5,1).setDisplaySize(height,height)
+  .setDepth(20+y/1000).setData('torre2-city-regional-gym',name);
+}
+export function addCityBoat(scene,x,y,height=60){
+ const key='torre2-city-boat-v2';if(!scene.textures.exists(key))return null;
+ const source=scene.textures.get(key).getSourceImage();
+ return scene.add.image(x,y,key).setOrigin(.5,1).setDisplaySize(height*source.width/source.height,height)
+  .setDepth(22).setData('torre2-city-boat','v2');
 }

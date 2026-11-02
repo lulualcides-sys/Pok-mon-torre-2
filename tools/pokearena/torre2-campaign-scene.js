@@ -1,5 +1,5 @@
 import {paintCollectionPortraits,releaseCollectionPortraits} from './collection-portraits.js';
-import {CITY_TEXTURES,needsCeruleanAtlas} from './city-atlas.js';
+import {CITY_TEXTURES,hasCampaignCity} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -124,7 +124,7 @@ class Campanha extends Phaser.Scene{
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
-  const needsAtlas=needsCeruleanAtlas(state,this.result,TRAINERS_PER_GYM(stage));
+  const needsAtlas=hasCampaignCity(stage);
   for(const [key,file] of CITY_TEXTURES){
    if(needsAtlas&&!this.textures.exists(key))this.load.image(key,file);
    if(!needsAtlas&&this.textures.exists(key))this.textures.remove(key);
@@ -482,7 +482,7 @@ create(){
    this.__torre2CityWaterTimer=null;
   }
   this.children.removeAll(true);
-  if(state.stage!==1)for(const [key] of CITY_TEXTURES)
+  if(!hasCampaignCity(state.stage))for(const [key] of CITY_TEXTURES)
    if(this.textures.exists(key))this.textures.remove(key);
   releaseCollectionPortraits(this);
   this.__torre2CityHub=null;
@@ -504,7 +504,7 @@ create(){
    if(foe.leader)return this.gymScreen(state);
    this.__torre2PathDetails(text,this,foe);
   };
-  if(state.stage===1&&!this.__torre2CityRoute){
+  if(hasCampaignCity(state.stage)&&!this.__torre2CityRoute){
    this.__torre2BattlePath=null;
    const city=renderCityHub(this,state,{
     trainerCount:TRAINERS_PER_GYM(state.stage),badgeDefinitions:GYMS,

@@ -1,4 +1,4 @@
-import {addCitySprite,addCitySurface,CITY_ATLAS_KEY,CITY_SURFACES_KEY} from './city-atlas.js';
+import {addCityBoat,addCitySprite,addCitySurface,CITY_ATLAS_KEY,CITY_SURFACES_KEY} from './city-atlas.js';
 /* Original modular pixel architecture, rendered by Phaser/WebGL.
  * No map screenshot, no uploaded sheet with uncertain redistribution rights.
  * Geometry is local to each building; vegetation uses shared original textures.
@@ -181,17 +181,7 @@ export function renderCityScenery(scene){
    px(quay,x-2,y-4,6,2,0xf0cd93);px(quay,x,y,1,1,0x464c50);
   }
  }
- // Small moored boat: separate hull, gunwale, wooden deck and glass cabin.
- ellipse(quay,454,293,29,43,0x145c7c,.5);
- const hull=[[452,271],[461,276],[466,290],[461,307],[447,309],[440,298],[440,284],[445,275]];
- poly(quay,hull,0x284b67);
- poly(quay,[[452,273],[459,278],[463,290],[458,305],[448,306],[443,297],[443,285],[447,278]],0xf3eacb);
- poly(quay,[[452,277],[457,281],[460,291],[456,302],[449,303],[446,295],[446,285]],0xb18b5f);
- for(let y=283;y<303;y+=4)px(quay,448,y,10,1,0xd9b77e);
- px(quay,446,282,14,13,0x577b8d);px(quay,447,281,12,3,0xe9e6cf);
- px(quay,448,285,10,7,0x408fa8);px(quay,449,286,3,4,0x91e0df);px(quay,454,285,1,7,0xd9f0e4);
- px(quay,446,294,14,2,0xf3e8cd);px(quay,449,299,9,2,0xe5d5ad);
- px(quay,449,274,2,3,0xd9ecdd);
+ addCityBoat(scene,454,307,61);
  // Mooring line and a ring on the pier (decorative, no extra menu).
  quay.lineStyle(1,0xd3c7a1).lineBetween(463,288,493,284);
  quay.lineStyle(2,0xf4ecda).strokeCircle(550,295,4);
