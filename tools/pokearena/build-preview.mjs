@@ -902,6 +902,20 @@ for(const [filename,changes] of patches){
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
    }
+   // The native roster filter may evolve without changing the TODOS source.
+   // Insert Kanto species BEFORE the current native ROSTER declaration.
+   if(filename==='datos.js'&&
+      from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'&&
+      to.includes('upgradeKantoEvolutionBattleKits')){
+    const declarations=body.match(/(?:export\s+)?const\s+ROSTER\s*=\s*[^;]{1,220};/g)||[];
+    if(declarations.length!==1||!declarations[0].includes('TODOS'))
+     throw Error('Unknown native ROSTER declaration; not injecting species');
+    const setup='TODOS.push(...addEarlyKantoSpecies(TODOS));'+
+     'TODOS.push(...addAllKantoSpecies(TODOS));'+
+     'upgradeKantoEvolutionBattleKits(TODOS);';
+    body=body.replace(declarations[0],setup+declarations[0]);
+    continue;
+   }
    // Native title sprite-size/Idle-2 heuristics changed upstream.
    // The old literal no longer exists: preserve the new original visual
    // chain instead of guessing new coordinates or disabling title animation.
