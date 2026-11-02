@@ -902,6 +902,15 @@ for(const [filename,changes] of patches){
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
    }
+   // Native title sprite-size/Idle-2 heuristics changed upstream.
+   // The old literal no longer exists: preserve the new original visual
+   // chain instead of guessing new coordinates or disabling title animation.
+   // Browser smoke tests remain the publication gate for this compatibility.
+   if(filename==='escenas/titulo.js'&&to.includes('this.anims.exists')&&
+      (from.startsWith('return m&&')||from.startsWith('if(!m||'))){
+    console.warn('Changed upstream title Idle-2 conditions preserved unchanged');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
