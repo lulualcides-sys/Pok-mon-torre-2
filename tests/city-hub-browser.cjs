@@ -49,8 +49,13 @@ const server=http.createServer((req,res)=>{
    const foliage=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.active&&o.getData?.('torre2-cerulean-foliage'))
     .map(o=>o.getData('torre2-cerulean-foliage')));
-   assert.equal(foliage.length,21,'Cerulean must use the organic user-approved foliage in all 21 placements');
-   assert.ok(new Set(foliage).size>=5,'Trees must visibly vary: no identical stamp across Kanto');
+   assert.equal(foliage.length,17,'Cerulean has seventeen native trees on garden strips, not obstructing paved circulation');
+   assert.ok(new Set(foliage).size>=6,'Trees must visibly vary: no identical stamp across Kanto');
+   const foliageQuality=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(o=>o.active&&o.getData?.('torre2-cerulean-foliage'))
+    .map(o=>o.getData('torre2-cerulean-foliage-quality')));
+   assert.equal(foliageQuality.length,17);
+   assert.ok(foliageQuality.every(x=>x==='native-v2'),'HD native textures must load; reject blurry fallback in visual CI');
    assert.ok(!pieces.includes('tree'),'Old identical atlas tree must not be used when the approved art loads');
    const surfaces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.getData?.('torre2-city-surface')).map(o=>o.getData('torre2-city-surface')));

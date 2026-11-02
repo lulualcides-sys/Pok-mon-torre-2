@@ -23,6 +23,9 @@ await fs.copyFile('reference-assets/kanto/city-original/cerulean-surfaces-v1.web
 // The compact user-approved concept preview is a source for isolated trees.
 await fs.copyFile('reference-assets/kanto/concept-previews/vegetation_forest.webp',
  path.join(dest,'assets/ui/city-original/cerulean-organic-reference-v1.webp'));
+// Higher-resolution transparent tree atlas extracted from original concept art.
+await fs.copyFile('reference-assets/kanto/city-original/cerulean-native-trees-v2.png',
+ path.join(dest,'assets/ui/city-original/cerulean-native-trees-v2.png'));
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
 // be verified. Never silently substitute another hand-drawn fake sprite.

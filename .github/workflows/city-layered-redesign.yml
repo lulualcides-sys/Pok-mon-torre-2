@@ -1,7 +1,7 @@
 name: Layered Kanto city — WebGL navigation and visual evidence
 on:
   push:
-    branches: [feat/cerulean-layered-redesign-20261031, feat/cerulean-art-atlas-20261031, feat/kanto-regional-identities-20261101, feat/cerulean-reference-art-in-game-20261101]
+    branches: [feat/cerulean-layered-redesign-20261031, feat/cerulean-art-atlas-20261031, feat/kanto-regional-identities-20261101, feat/cerulean-reference-art-in-game-20261101, feat/cerulean-native-foliage-hd-v2-20261102]
   workflow_dispatch:
 permissions:
   contents: read
