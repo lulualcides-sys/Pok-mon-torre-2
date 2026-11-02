@@ -1,41 +1,58 @@
-# Pokémon Torre 2 — auditoria de desempenho (02/11/2026)
+# Laboratório REA — auditoria de desempenho e integridade (02/11/2026)
 
-## Objetivo e critérios
+## Contratos e escopo
 
-**Alvo de produto:** 60 FPS (16,67 ms por quadro) em hardware compatível; em celulares mais fracos, manter 30 FPS estáveis (33,33 ms por quadro) sem travamentos de entrada em batalha. Esses números são metas, **não resultados atuais comprovados**. Não reduzir resolução nativa ou remover efeitos e sprites aprovados sem prova de gargalo e regressões.
+O protótipo experimental permanece **somente no Laboratório** da PR [#459](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/459), sem merge ou publicação na `main`. Não modificar golpes, VFX aprovados, física/dano, IA, climas, captura, inventário ou saves.
 
-## Gargalo identificado e correção
+**Metas de produto, não resultados:** 60 FPS (16,67 ms por quadro) em hardware capaz; 30 FPS estáveis (33,33 ms) em dispositivos mais fracos. Os testes abaixo usam Chromium headless 1280×720 com GPU emulada por **SwiftShader** (software, CPU), não medem o telefone do usuário.
 
-No Laboratório REA, o mesmo `Phaser.Graphics` desenhava a cada `update` todas as montanhas, chão, borda, linhas, vegetação, pedras e detalhes de fundo, e chamava `Phaser.Text.setText` a cada `update`. Nenhum desses elementos estáticos precisa ser recalculado.
+## Histórico verificável por SHA
 
-A alteração está em `tools/pokearena/torre2-rea-vector-preview.js`:
+| SHA da branch | Mudança específica | GitHub Actions REA |
+| --- | --- | --- |
+| `9434f0dd86ed` | Separar fundo estático, limitar `setText` a transições | [#41421905558 — success](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41421905558) |
+| `9d86f1096533` | Verificação geométrica curva, sete janelas de FPS OFF/ON e testes de navegador | [#41429521468 — success](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41429521468) |
+| `4a431185b081` | Cache de alvo estático e rastros só ao mudar o modo | [#41445702510 — success](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41445702510) |
+| `297e62f37bb2` | **RenderTexture nativo** para fundo estático, mantendo fallback Graphics | [#41446938361 — success](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41446938361) |
 
-1. Fundo de pixel art criado **uma única vez por instância de cena**, em um `Phaser.Graphics` separado que não recebe `clear` ou novas instruções de preenchimento durante a atualização.
-2. Apenas os objetos móveis, alvo com impacto e partículas de contato usam o `Phaser.Graphics` dinâmico, que é limpo/redesenhado na atualização.
-3. Texto principal atualizado **apenas quando muda o movimento ou o efeito de impacto**; metadados REA atualizados somente quando muda o modo. Sem atualização de textura de texto em todos os quadros.
-4. O painel continua opcional e restrito ao Laboratório. A campanha original, IA, golpe, hitbox, dano, clima, inventário e saves não são modificados.
-5. Teste de isolamento verifica **dois objetos Graphics** (um estático/um dinâmico), fundo com mais de 100 retângulos de pixel art, zero redesenho de fundo em 370 quadros e reaberturas, no máximo 15 atualizações do rótulo e 5 dos detalhes no período. Os testes matemáticos e de encerramento continuam aprovados.
+O efeito de colisão continua matematicamente isolado da mecânica de ataques reais. A nova textura usa 640×360 pixels lógicos, origem (0,0), uma chamada `draw`, seguida de descarte do `Graphics` temporário; `destroy` da cena libera a textura. Não há arte proprietária do PB Ranked incorporada.
 
-## Medições reais de navegador, com limites
+## Medições reproduzidas do mesmo protocolo
 
-[Execução #41421905558](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41421905558) — Chromium headless, WebGL através de **SwiftShader**, 1280×720, **a mesma batalha** em três intervalos de ~2,6 segundos (não três dispositivos nem A/B com binários distintos):
+**Protocolo:** mesma batalha (Bulbasaur vs Onix), navegador Chromium headless com SwiftShader, 1280×720, **sete amostras sequenciais curtas (~2,6 s cada)**, intercalando painel OFF/ON/OFF/ON/OFF/ON/OFF. Isso reduz um tipo de viés, mas ainda há aquecimento, cachê, ordem e ruído do runner; comparar SHAs **não é experimento controlado de GPU real**.
 
-| Intervalo | Quadros observados | FPS medido | Intervalo mediano | p95 |
-|---|---:|---:|---:|---:|
-| Laboratório sem overlay REA | 25 | 9,55 | 100 ms | 183,3 ms |
-| Mesmo combate com overlay REA ligado | 27 | 10,32 | 100 ms | 150 ms |
-| Mesmo combate após fechar overlay | 36 | 13,85 | 66,7 ms | 100 ms |
+| SHA e condição | Amostras | FPS mediano | p95 de duração de quadros (mediana) |
+| --- | ---: | ---: | ---: |
+| `9d86f10` — OFF | 4 | 17,36 | 91,7 ms |
+| `9d86f10` — ON | 3 | 12,67 | 116,6 ms |
+| `4a43118` — OFF | 4 | 19,38 | 83,3 ms |
+| `4a43118` — ON | 3 | 13,96 | 83,4 ms |
+| `297e62f` — OFF | 4 | 24,84 | 58,4 ms |
+| `297e62f` — ON | 3 | 19,49 | 66,7 ms |
 
-A amostra com overlay foi aproximadamente 8% mais rápida do que a inicial, mas **não atribuir ganho causal**: os intervalos são curtos, sequenciais e o software renderer muda com aquecimento/caching. Isso **não prova ganho de 8% em produção**, nem comprova 30/60 FPS reais.
+Diferença descritiva de FPS OFF→ON: `−27,00%` em `9d86f10`, `−27,94%` em `4a43118` e `−21,54%` em `297e62f`. A variação de OFF de 19,38 para 24,84 FPS entre os dois últimos SHAs evidencia ruído e/ou mudança de custo global do renderizador; **não atribuir todo ganho ao RenderTexture**, não extrapolar para Android e não concluir que o alvo de 30/60 FPS foi alcançado.
 
-A execução confirma funcionalidade do painel, compilação, 3 impactos, 10 reaberturas em teste, proteção da interface, saída para a campanha e saves intocados. O resultado é compatível com o maior gargalo estar **fora do painel REA** neste ambiente, e não significa que o jogo público esteja em 9 FPS.
+### Comparação visual independente
 
-## Próximas gates antes da publicação
+Capturas do modo dash nas execuções `4a43118` e `297e62f` comparadas byte a byte **somente após decodificação em RGB nos mesmos retângulos** (imagem 1280×720):
 
-- Repetir medições A/B em **Chromium com GPU real** e preferencialmente Android real, usando a **mesma luta**, resolução e efeitos; coletar média, p50, p95 e travamentos de frame e entrada em batalha.
-- Perfil CPU/GPU por subsistema no combate convencional e no mapa (clima/VFX/HUD/animação/troca/entrada); não aplicar desativação de golpes ou cortes visuais sem saber o custo.
-- Aplicar as otimizações de **baixo risco**, como cache de elementos estáticos, invalidação por eventos e redução de alocações evitáveis, somente após confirmar o caminho quente.
-- Reexecutar bateria de regressão de campanha, Arena, clima, capturas, saves, VS e controles mobile antes de mesclar.
-- A PR [#459](https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/459) é **draft**. Nenhuma alteração foi mesclada/publicada na `main`.
+- Cenário estático: retângulo `(46,277)-(715,342)` → 0 de 43.485 pixels distintos.
+- Montanhas/arte: `(120,400)-(440,449)` → 0 de 15.680.
+- Piso e vegetação: `(60,465)-(675,485)` → 0 de 12.300.
+- Cabeçalho do laboratório: `(55,230)-(687,259)` → 0 de 18.328.
 
-Não extrapolar o resultado do Laboratório para a campanha inteira.
+**Limitação:** os retângulos selecionados testam áreas específicas, não garantem equivalência total em cada instante animado. Fora do painel a batalha continua variando no tempo, portanto pixels externos não são comparáveis.
+
+## Regressões realmente comprovadas no último SHA
+
+O [CI #41446938361](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41446938361) concluiu `math-and-isolation` e `phaser-browser` com **success**. Prova de Chromium inclui 1 colisão por modo (beam/dash/arc), reabertura, sobreposição de controle, viewport 960×540, saída para campanha, limpeza sem erro JavaScript, zero erros de fotograma reportados e **save byte a byte idêntico**.
+
+Capturas reais e métricas: [artefato #13143126713](https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41446938361/artifacts/13143126713). O teste também exige `usesCachedBackdrop=true`, evitando declarar sucesso se o cliente novo não usar a textura.
+
+## Bloqueios de publicação e próximo trabalho
+
+1. **Desempenho**: o painel ainda mostra diferença descritiva de ~21,5% de FPS ON/OFF em SwiftShader. Fazer perfil GPU/CPU em dispositivo real antes de alterar demais o combate. Evitar congelar a IA ou renderização do jogo atrás do painel sem prova e autorização; isso afetaria o comportamento.
+2. **Falhas não relacionadas ao novo cache no CI da branch:** Guardião Visual encontra item nativo `personalizar` inesperado no baseline de menu; varredura de 151 Pokémon aborta pela duplicação `Twister` nativo/custom. Não desativar esses testes, remover VFX aprovado ou atualizar baseline cegamente. Corrigir em escopo separado com política de golpes e prova de cliente upstream.
+3. **Porta de publicação:** regressões integrais em campanha, Arena, captura, clima, HUD, saves, VS, controles mobile e screenshot aprovada por usuário; confirmar `main`/Pages no SHA correto apenas se autorizado e validado.
+
+**Estado:** código isolado e navegador aprovados; benchmark e revisão visual documentados; publicação **não autorizada pelo resultado atual**.
