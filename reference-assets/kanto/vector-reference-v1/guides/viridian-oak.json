@@ -1,0 +1,98 @@
+{
+  "schema": "kanto-reference-v1",
+  "name": "viridian-oak",
+  "size": 32,
+  "kind": "prop",
+  "tileable": false,
+  "background": "transparent",
+  "palette": {
+    "trunk": "#5d4938",
+    "bark": "#9f7851",
+    "leaf_shadow": "#1b5d42",
+    "leaf_mid": "#318751",
+    "leaf_light": "#70b65b",
+    "highlight": "#aed36c"
+  },
+  "shapes": [
+    {
+      "type": "rect",
+      "x": 0.44,
+      "y": 0.56,
+      "w": 0.16,
+      "h": 0.38,
+      "color": "trunk"
+    },
+    {
+      "type": "rect",
+      "x": 0.49,
+      "y": 0.58,
+      "w": 0.035,
+      "h": 0.32,
+      "color": "bark"
+    },
+    {
+      "type": "ellipse",
+      "cx": 0.33,
+      "cy": 0.49,
+      "rx": 0.23,
+      "ry": 0.23,
+      "color": "leaf_shadow"
+    },
+    {
+      "type": "ellipse",
+      "cx": 0.65,
+      "cy": 0.45,
+      "rx": 0.26,
+      "ry": 0.24,
+      "color": "leaf_shadow"
+    },
+    {
+      "type": "ellipse",
+      "cx": 0.49,
+      "cy": 0.31,
+      "rx": 0.31,
+      "ry": 0.28,
+      "color": "leaf_mid"
+    },
+    {
+      "type": "ellipse",
+      "cx": 0.32,
+      "cy": 0.42,
+      "rx": 0.2,
+      "ry": 0.21,
+      "color": "leaf_mid"
+    },
+    {
+      "type": "ellipse",
+      "cx": 0.57,
+      "cy": 0.32,
+      "rx": 0.23,
+      "ry": 0.21,
+      "color": "leaf_light"
+    },
+    {
+      "type": "ellipse",
+      "cx": 0.37,
+      "cy": 0.23,
+      "rx": 0.14,
+      "ry": 0.1,
+      "color": "highlight"
+    },
+    {
+      "type": "ellipse",
+      "cx": 0.59,
+      "cy": 0.2,
+      "rx": 0.13,
+      "ry": 0.08,
+      "color": "highlight"
+    },
+    {
+      "type": "rect",
+      "x": 0.29,
+      "y": 0.61,
+      "w": 0.09,
+      "h": 0.05,
+      "color": "leaf_light"
+    }
+  ]
+}
