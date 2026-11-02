@@ -190,90 +190,70 @@ export function renderBattlePath(scene,state,handlers){
  scene.__torre2RenderedPathStage=stage;
  const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
  const spots=routeRailSpots(offset,length,total);
- // Map region labels reference existing FireRed town/mountain sheets.
- // One connected zigzag and the leader at its end; no extra pages/maps.
+ // Show real trainer sprites on terrain, not a wall of 14 menu cards.
+ // Every original challenge remains independently accessible in the rail.
+ const visible=routeVisualCast(progress,total,finished);
+ const shadows=scene.add.graphics().setDepth(16);
+ if(visible.player){
+  shadows.fillStyle(0x162e31,.65).fillEllipse(222,222,25,8);
+  const red=addFireRedNPC(scene,'red_normal',222,215,{scale:1.12,depth:19});
+  if(!red)drawTrainer(shadows,222,204,'red_normal',1);
+ }
+ if(visible.trainer){
+  const foe=routeNode(stage,progress,total),kind=trainerKind(stage,foe);
+  shadows.fillStyle(0x112e30,.62).fillEllipse(289,203,27,9);
+  const npc=addFireRedNPC(scene,kind,289,197,{scale:1.16,depth:20});
+  if(!npc)drawTrainer(shadows,289,185,kind,1.02);
+  const sign=scene.add.graphics().setDepth(24);
+  sign.fillStyle(0x082739,.9).fillRoundedRect(239,225,101,20,3);
+  sign.lineStyle(1,0xb8cbb3).strokeRoundedRect(239,225,101,20,3);
+  txt(scene,289,235,titleFor(stage,progress,total),9,'#fff2c5',25);
+ }
+ scene.__torre2RouteActors={player:visible.player,
+  trainer:visible.trainer,stage,index:progress,source:'native-frlg'};
  const checkpointZone=(n)=>{
   if(stage===1)return n<4?'ROTA 3':n<9?'MT. MOON':n<13?'ROTA 4':'CERULEAN';
   if(stage===2)return n<4?'ROTAS 24/25':n<9?'ROTAS 5/6':
    n<13?'S.S. ANNE':'VERMILION';
   return null;
  };
- const pathGraphics=scene.add.graphics().setDepth(14);
- for(let i=1;i<spots.length;i++){
-  const a=spots[i-1],b=spots[i];
-  connector(pathGraphics,a.x,a.y,b.x,b.y,a.global<progress);
- }
- // The next checkpoint receives the gold border. Completed checkpoints
- // retain their own pass/fail mark, and future ones remain visible.
+ // The lower 33px of the outdoor panel hold small original stage
+ // checkpoint controls; visitors see the MAP, not a grid of rectangles.
+ const rail=scene.add.graphics().setDepth(17);
+ rail.fillStyle(0x091e2d,.92).fillRoundedRect(21,270,458,33,5);
+ rail.lineStyle(1,0xb1c1ae).strokeRoundedRect(21,270,458,33,5);
  const hitZones=[];
  for(const p of spots){
-  const i=p.global;
-  const node=routeNode(stage,i,total);
+  const i=p.global,node=routeNode(stage,i,total);
   const checkpoint=pathCheckpointAction(i,progress,total,
    i<progress&&Boolean(rematchOpponent(state,i)));
   const {done,active,boss,available}=checkpoint;
-  // Catching never substitutes for the next required trainer. The badge
-  // has its own small hit target above the trainer/rematch node.
-  const capture=checkpoint.optionalCapture;
+  // Keep optional capture for the present encounter only; prevents
+  // repeated Pokéball icons from burying the pixel art landscape.
+  const capture=checkpoint.optionalCapture&&active;
   const g=scene.add.graphics().setDepth(18);
-  const width=boss?82:60,top=p.y-23;
   if(active){
-   g.fillStyle(0xffd374,.17);g.fillCircle(p.x,p.y-5,boss?36:29);
+   g.fillStyle(0xffd879,.28).fillCircle(p.x,p.y,14);
+   g.lineStyle(2,0xffe29a).strokeCircle(p.x,p.y,12);
   }
-  g.fillStyle(0x061a2e,.88);g.fillRoundedRect(p.x-width/2,top+10,width,37,5);
-  g.lineStyle(active?2:1,active?0xffd15f:done?0x54d99a:0x768a95,1);
-  g.strokeRoundedRect(p.x-width/2,top+10,width,37,5);
-  g.fillStyle(active?0x7c5521:done?0x255b4b:0x304755,.95);
-  g.fillEllipse(p.x,top+8,boss?50:42,18);
-  g.lineStyle(2,active?0xffe9aa:done?0x66d5a6:0x778f9c);
-  g.strokeEllipse(p.x,top+8,boss?50:42,18);
-  if(boss){
-   g.fillStyle(0xffe0a0,.18);g.fillEllipse(p.x,p.y+9,90,50);
-   g.lineStyle(3,0xffda77,1);g.strokeEllipse(p.x,p.y+9,80,38);
-   g.fillStyle(0x93713b,.9);g.fillRoundedRect(p.x-34,top-5,68,15,3);
-   g.lineStyle(1,0xffedb5,1);g.strokeRoundedRect(p.x-34,top-5,68,15,3);
-  }
+  g.fillStyle(active?0xf6d58b:done?0x66cb9c:0x587989,.97);
+  g.fillCircle(p.x,p.y,10);
+  g.lineStyle(1,active?0xffeec8:done?0x235e49:0x2f4b61);
+  g.strokeCircle(p.x,p.y,10);
+  txt(scene,p.x,p.y,boss?'G':String(i+1),8,
+   active?'#3b2c18':done?'#103f31':'#eaf0ed',24);
   if(capture){
-   // A real ball icon in grass, with a direct encounter interaction.
-   g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
-   g.fillTriangle(p.x,top+1,p.x+6,top-14,p.x+14,top+1);
-   ball(g,p.x,top-2,9);
-  }else{
-   const kind=trainerKind(stage,node);
-   const npc=addFireRedNPC(scene,kind,p.x,top+12,{scale:boss?1.68:1.20,depth:21});
-   if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
-   if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
+   g.fillStyle(0x4b925c).fillTriangle(p.x-9,p.y-17,p.x,p.y-30,p.x+9,p.y-17);
+   ball(g,p.x,p.y-21,8);
   }
-  txt(scene,p.x,boss?p.y+11:p.y+8,boss?leader.toUpperCase():
-   node.type==='rocket'?'EQUIPE ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
-   boss?12:node.type==='rocket'?7:8,
-   active?'#ffe29a':available?'#f1f8f3':'#afbdc8',23);
-  g.fillStyle(active?0xf5c75d:done?0x56be86:0x40647e);
-  g.fillRoundedRect(p.x-width/2+2,p.y-17,15,17,3);
-  txt(scene,p.x-width/2+9.5,p.y-8,String(i+1),8,
-   active?'#30220f':'#fff7d4',24);
-  for(let d=0;d<3;d++){
-   g.lineStyle(1,done?0x76e0a6:0xb6ced9,.98);
-   g.strokeCircle(p.x-10+d*10,p.y+23,2.1);
-  }
-  if(checkpoint.primary==='rematch')txt(scene,p.x,p.y+22,
-   (state.rematches?.charge||0)>=3?'REVANCHE':'VS '+(state.rematches?.charge||0)+'/3',
-   6,'#f7d986',25);
-  if(done){
-   g.fillStyle(0x28c868);g.fillCircle(p.x+width/2-8,p.y-17,7);
-   g.lineStyle(2,0xffffff);g.lineBetween(p.x+width/2-11,p.y-17,p.x+width/2-9,p.y-14);
-   g.lineBetween(p.x+width/2-9,p.y-14,p.x+width/2-5,p.y-21);
-  }else if(active){
-   g.fillStyle(0xffdd85);g.fillTriangle(p.x-4,top-17,p.x+4,top-17,p.x,top-8);
-  }
-  const zone=scene.add.zone(p.x,p.y-1,width,63).setDepth(31)
+  const zone=scene.add.zone(p.x,p.y,28,32).setDepth(31)
    .setInteractive({useHandCursor:true}).setData('torre2-path-node',i)
    .setData('torre2-path-type',node.type);
-  if(checkpointZone(i))zone.setData('torre2-route-zone',checkpointZone(i));
+  const region=checkpointZone(i);
+  if(region)zone.setData('torre2-route-zone',region);
   zone.on('pointerover',()=>{
    if(scene.__torre2RegionHover?.active)scene.__torre2RegionHover.destroy();
-   const region=checkpointZone(i);
-   if(region)scene.__torre2RegionHover=txt(scene,325,69,region,9,'#b3f4e8',56);
+   if(region)scene.__torre2RegionHover=txt(scene,316,69,region,9,'#b3f4e8',56);
   });
   zone.on('pointerout',()=>{
    if(scene.__torre2RegionHover?.active)scene.__torre2RegionHover.destroy();
@@ -284,10 +264,8 @@ export function renderBattlePath(scene,state,handlers){
    if(checkpoint.primary==='rematch')return handlers.rematch?.(i);
    if(!done)return handlers.locked?.();
   });
-  // Separate touch zone over the existing green-grass ball pictogram.
-  // Higher depth than the trainer's large hitbox, lower than all modals.
   if(capture){
-   const badge=scene.add.zone(p.x,p.y-26,22,18).setDepth(36)
+   const badge=scene.add.zone(p.x,p.y-24,22,18).setDepth(36)
     .setInteractive({useHandCursor:true})
     .setData('torre2-path-capture',i);
    badge.on('pointerdown',(_p,_x,_y,event)=>{
@@ -296,13 +274,6 @@ export function renderBattlePath(scene,state,handlers){
    });
   }
   hitZones.push(zone);
- }
- // NPCs flanking the leader are gym attendants; not extra opponents.
- if(spots.some(p=>p.global===total)&&stage<8&&scene.__torre2GymBackdrop?.realGym){
-  for(const [kind,x] of [['hiker',359],['youngster',469]]){
-   const sideTrainer=addFireRedNPC(scene,kind,x,220,{scale:1.07,depth:20});
-   if(sideTrainer)sideTrainer.setAlpha(.93);
-  }
  }
  // Stable page navigation for Misty and later routes with >13 battles.
  if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
