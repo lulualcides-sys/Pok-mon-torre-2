@@ -93,10 +93,21 @@ export function drawGymWideRoom(scene,stage){
  const shadow=water?0x255575:0x61503d;
  const trim=water?0x8bb6bd:0x88745a;
  const deck=(x,y,w,h)=>{
-  block(x+2,y+3,w,h,shadow,.9);
+  // Facade and paving details are derived INSIDE the checked vector
+  // rectangle, not separate freehand obstacles over a movement corridor.
+  block(x+3,y+5,w,h-3,shadow,.72);
   block(x,y,w,h,walkway);
   outline(x,y,w,h,trim);
-  block(x+3,y+3,w-6,3,water?0xfff4d1:0xe8cd9e,.7);
+  block(x+3,y+3,w-6,3,water?0xfff4d1:0xe8cd9e,.72);
+  block(x+3,y+h-5,w-6,3,water?0xb19c80:0x937554,.64);
+  for(let yy=y+11;yy<y+h-7;yy+=12)
+   for(let xx=x+8;xx<x+w-9;xx+=17){
+    const dx=(Math.floor((yy-y)/12)%2)*5;
+    if(xx+dx+7<x+w-6){
+     block(xx+dx,yy,7,2,water?0xcdbb9a:0xb69b75,.48);
+     block(xx+dx+2,yy+3,4,1,water?0xfff4db:0xe7cda0,.58);
+    }
+   }
  };
  // Vector model was validated before creating any Phaser display objects.
  // All bridges are computed to overlap both the spine and trainer platforms.
@@ -135,13 +146,8 @@ export function drawGymWideRoom(scene,stage){
   }
  }
  // Already-approved room architecture remains behind the upper wall.
- // Fine-grained rail posts, accenting bridges without covering crossings.
- for(const x of [189,294,336,447]){
-  for(const y of [143,198]){
-   block(x,y-5,6,9,water?0xdfedf0:0x9b8970);
-   block(x+1,y-5,4,2,water?0xffffff:0xd8c5a2);
-  }
- }
+ // No arbitrarily placed posts on bridges: every outdoor prop and
+ // decorative cluster must pass the geometry clearance audit first.
  // The threshold is part of the verified entrance→boss traversal graph.
  deck(geom.entry.x,geom.entry.y,geom.entry.w,geom.entry.h);
  block(geom.entry.x+14,geom.entry.y+10,24,4,water?0x5c94be:0x7f674d);
