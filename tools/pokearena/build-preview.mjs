@@ -13,6 +13,10 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dest=path.join(root,'arena2d');
 await fs.mkdir(root,{recursive:true});
 await fs.cp(source,dest,{recursive:true,force:true});
+const {installGymBackgrounds}=await import('./install-gym-backgrounds.mjs');
+const gymScenes=await installGymBackgrounds(dest);
+console.log('Verified opt-in gym interior backdrops',gymScenes.scenes.map(x=>x.slug));
+
 // One small original atlas; cropped into independent environment sprites.
 await fs.mkdir(path.join(dest,'assets/ui/city-original'),{recursive:true});
 await fs.copyFile('reference-assets/kanto/city-original/cerulean-atlas-v1.webp',
@@ -233,6 +237,7 @@ await Promise.all([
  ['tools/pokearena/torre2-gym-intermediates.js','gym-intermediates.js'],
  ['tools/pokearena/torre2-gym-wide-layout.js','torre2-gym-wide-layout.js'],
  ['tools/pokearena/torre2-gym-vector.js','torre2-gym-vector.js'],
+ ['tools/pokearena/torre2-gym-image-background.js','gym-image-background.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
  ['tools/pokearena/torre2-collection-ui.js','collection-ui.js'],
  ['tools/pokearena/torre2-collection-portraits.js','collection-portraits.js'],

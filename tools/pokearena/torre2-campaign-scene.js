@@ -34,8 +34,11 @@ import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
-import {gymIntermediateModel,drawGymIntermediates} from './gym-intermediates.js';
+import {gymIntermediateModel,drawGymIntermediates,gymNpcVisualKinds} from './gym-intermediates.js';
 import {gymWideLayout,drawGymWideRoom} from './torre2-gym-wide-layout.js';
+import {GYM_IMAGE_MANIFEST_KEY,approvedGymImage,drawGymImageBackground,
+ requestGymImageBackground,rosterForGymImage,acePlacementForGymImage}
+ from './gym-image-background.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
@@ -114,6 +117,10 @@ class Campanha extends Phaser.Scene{
   this.result=input?.finished&&input!==this.__torre2ConsumedFinished?input:null;
  }
  preload(){
+  // Manifest is ALWAYS emitted at build time, even when no finished artwork
+  // has been submitted. No missing PNG requests or baked-in fake sprites.
+  if(!this.cache.json.exists(GYM_IMAGE_MANIFEST_KEY))
+   this.load.json(GYM_IMAGE_MANIFEST_KEY,'assets/ui/gym-interiors/manifest.json');
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
   const state=readCampaign();
   // Nine tiny original GBA item icons shared by every Mart page.
@@ -127,6 +134,14 @@ class Campanha extends Phaser.Scene{
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
+  const gymManifest=this.cache.json.get(GYM_IMAGE_MANIFEST_KEY);
+  const imageSpec=approvedGymImage(gymManifest,stage);
+  // Only the current stage's single background is resident on the GPU.
+  for(const key of this.textures.getTextureKeys())
+   if(key.startsWith('torre2-gym-scene-')&&key!==imageSpec?.key)
+    this.textures.remove(key);
+  if(imageSpec&&!this.textures.exists(imageSpec.key))
+   this.load.image(imageSpec.key,imageSpec.path);
   const needsAtlas=needsCeruleanAtlas(state,this.result,TRAINERS_PER_GYM(stage));
   for(const [key,file] of CITY_TEXTURES){
    if(needsAtlas&&!this.textures.exists(key))this.load.image(key,file);
@@ -147,10 +162,14 @@ class Campanha extends Phaser.Scene{
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket',
     ...(stage===1?['swimmer']:[])];
+  // Reuse only the current gym's authentic FireRed trainer classes, not
+  // dozens of unused character atlases on Android.
+  const gymVisuals=gymNpcVisualKinds(stage);
   const needed=new Set(['red_normal',spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
-   ...archetypes.map(spriteIdForTrainer)]);
+   ...archetypes.map(spriteIdForTrainer),
+   ...gymVisuals.map(spriteIdForTrainer)]);
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
   const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld]);
@@ -390,13 +409,20 @@ create(){
   this.children.removeAll(true);this.backdrop();
   this.__torre2GymAce=null;
   this.__torre2GymRoster=null;
+  this.__torre2GymImage=null;
   const roster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
+  const gymManifest=this.cache.json.get(GYM_IMAGE_MANIFEST_KEY);
   const gym=GYMS[state.stage];
   if(gym){
    // Separate interior view: the city's gym building is NOT the boss stage.
    // The original FireRed room remains independent of all battle/HUD scenes.
+   const imageBg=drawGymImageBackground(this,state.stage,gymManifest);
    const wide=gymWideLayout(state.stage);
-   if(wide){
+   if(imageBg){
+    // A single full-frame illustrated gym interior is behind native Phaser
+    // overlays: the player can still challenge real trainers and gym leader.
+    // No baked-in sprites, vector scenery, or altered battle mechanics.
+   }else if(wide){
     // The approved reference shows the WHOLE room and four/three opponents,
     // not a zoomed-in FireRed crop; keep the original camera zoom at 1.
     drawGymWideRoom(this,state.stage);
@@ -430,16 +456,26 @@ create(){
    // NEVER place a Pokémon on the city, PC, route or battle afterward.
    const token=this.add.zone(0,0,1,1).setVisible(false)
     .setData('torre2-gym-view-token',state.stage);
+   if(!imageBg){
+    requestGymImageBackground(this,state.stage,gymManifest,{token,onReady:()=>{
+     const latest=readCampaign();
+     if(latest?.stage===state.stage&&this.scene.isActive())
+      this.gymScreen(latest);
+    }});
+   }
+   const imageRoster=imageBg?rosterForGymImage(roster,state.stage):roster;
    const plan=gymAcePlan(GYMS,state.stage,this.registry.get('manifiesto'));
-   drawGymAce(this,plan,(...args)=>addFireRedNPC(...args),{token});
-   drawGymIntermediates(this,roster,addFireRedNPC,index=>{
+   drawGymAce(this,plan,(...args)=>addFireRedNPC(...args),{
+    token,placement:imageBg?acePlacementForGymImage(state.stage,plan?.species):null
+   });
+   drawGymIntermediates(this,imageRoster,addFireRedNPC,index=>{
     // Existing ladder index only; never generate or skip an encounter.
     if(index===state.trainer)this.enterBattle(state);
    });
    // Leader and authentic ace are already visible on the final platform.
    // Do not print their names over their feet or the challenge CTA below.
   }
-  const wide=!!gymWideLayout(state.stage);
+  const wide=!!gymWideLayout(state.stage)||!!this.__torre2GymImage;
   text(this,320,wide?19:32,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
    ...titleStyle,fontSize:wide?'16px':'20px'}).setOrigin(.5).setDepth(20);
   text(this,320,wide?46:64,ready?'LÍDER DISPONÍVEL PARA BATALHA':
@@ -547,6 +583,7 @@ create(){
   this.children.removeAll(true);
   // Drop stale PMD report after gym teardown; the real sprite was destroyed.
   this.__torre2GymAce=null;
+  this.__torre2GymImage=null;
   if(state.stage!==1)for(const [key] of CITY_TEXTURES)
    if(this.textures.exists(key))this.textures.remove(key);
   releaseCollectionPortraits(this);

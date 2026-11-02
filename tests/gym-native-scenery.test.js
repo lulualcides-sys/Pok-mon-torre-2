@@ -37,7 +37,7 @@ test('T36 Cerulean water surface uses existing local approved texture under path
  const npc=fs.readFileSync('tools/pokearena/torre2-gym-intermediates.js','utf8');
  assert.match(scene,/addGymInteriorFloor\(this,room,/);
  assert.match(scene,/addCitySurface\(this,'water',70,89,500,175,4\.27/);
- assert.match(npc,/const mistySprites=\['swimmer','lass','swimmer','ace'\]/);
- assert.match(npc,/const brockSprites=\['hiker','youngster','hiker'\]/);
+ assert.ok(npc.includes("Object.freeze(['swimmer','lass','swimmer','ace'])"));
+ assert.ok(npc.includes("Object.freeze(['hiker','youngster','hiker'])"));
  assert.doesNotMatch(npc,/scene\.add\.graphics\(\).*setDepth\(18\)/);
 });

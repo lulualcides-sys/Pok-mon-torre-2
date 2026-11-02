@@ -52,9 +52,9 @@ export function gymAceVisibleBottomPadding(texture,documentRef=globalThis.docume
  }catch{ /* Missing or tainted canvas must not block gym navigation. */ }
  return 0;
 }
-export function drawGymAce(scene,plan,addLeader,{token=null}={}){
+export function drawGymAce(scene,plan,addLeader,{token=null,placement=null}={}){
  if(!plan)return null;
- const p=gymAcePlacement(plan);
+ const p=placement||gymAcePlacement(plan);
  scene.add.ellipse(p.leaderX,p.baseline,26,6,0x11243c,.48).setDepth(12);
  const leader=addLeader(scene,plan.leaderSprite,p.leaderX,p.baseline,{scale:1.55,depth:16});
  if(leader)leader.setData('torre2-gym-leader',plan.leader);

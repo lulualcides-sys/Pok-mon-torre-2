@@ -30,6 +30,7 @@ const server=http.createServer((req,res)=>{
      await page.evaluate(async({stage,progress})=>{
       const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
       const core=await import(new URL('./torre2/campaign-core.js',main));
+      window.__t38Core=core;
       const fixture=core.createPlayerCampaign('bulbasaur');
       fixture.stage=stage;fixture.trainer=progress;
       core.saveCampaign(fixture);
@@ -81,6 +82,56 @@ const server=http.createServer((req,res)=>{
      const file='gym-'+leader+'-intermediates-'+device+'.png';
      await page.screenshot({path:folder+'/'+file});
      reports.push({...info,device,file});
+     // Inject a synthetic canvas TEXTURE as an explicit browser TEST FIXTURE.
+     // It is not and must never be presented as finished artistic gym content.
+     // The same original Phaser scene must draw NPCs, ace and buttons above it.
+     const imageProof=await page.evaluate(({stage,leader})=>{
+      const c=window.__pt2Game.scene.getScene('campanha');
+      const key='torre2-gym-scene-'+leader;
+      const canvas=document.createElement('canvas');
+      canvas.width=640;canvas.height=360;
+      const ctx=canvas.getContext('2d');
+      ctx.fillStyle=stage===0?'#62523c':'#175e83';ctx.fillRect(0,0,640,360);
+      ctx.fillStyle=stage===0?'#b99e78':'#55b6c3';ctx.fillRect(66,68,508,200);
+      ctx.fillStyle=stage===0?'#e5cf9f':'#e5e0c1';ctx.fillRect(244,87,152,55);
+      c.textures.addCanvas(key,canvas);
+      c.cache.json.remove('torre2-approved-gym-scenes-v1');
+      c.cache.json.add('torre2-approved-gym-scenes-v1',{version:1,scenes:[{
+       stage,slug:leader,key,path:'assets/ui/gym-interiors/'+leader+'-interior.png',
+       width:640,height:360,sha256:'a'.repeat(64)
+      }]});
+      c.gymScreen(window.__t38Core.readCampaign());
+      const bg=c.__torre2GymImage;
+      const npc=c.children.list.filter(o=>o.getData?.('torre2-gym-intermediate')!==undefined);
+      const zones=c.children.list.filter(o=>o.getData?.('torre2-gym-intermediate-action')!==undefined);
+      const ctrls=c.children.list.filter(o=>o.input?.enabled&&o.width>=180&&o.y>=290);
+      return {rendered:!!bg,source:bg?.slug,depth:bg?.image?.depth,
+       backgroundCount:c.children.list.filter(o=>
+        o.getData?.('torre2-gym-image-background')!==undefined).length,
+       npcCount:npc.length,zoneCount:zones.length,
+       leader:!!c.__torre2GymAce?.leaderSprite,
+       aceSpecies:c.__torre2GymAce?.species,ctaCount:ctrls.length,
+       status:c.__torre2GymRoster?.imageOverlay,
+       renderer:c.game.renderer.type};
+     },{stage,leader});
+     assert.equal(imageProof.rendered,true,'one-image gym mode must be active');
+     assert.equal(imageProof.source,leader);
+     assert.equal(imageProof.depth,2.4,'background behind native buttons');
+     assert.equal(imageProof.backgroundCount,1,'one image, no polygon room');
+     assert.equal(imageProof.npcCount,expected);
+     assert.equal(imageProof.zoneCount,1);
+     assert.equal(imageProof.leader,true);
+     assert.equal(imageProof.aceSpecies,leader==='brock'?'onix':'starmie');
+     assert.equal(imageProof.status,true);
+     assert.equal(imageProof.renderer,2);
+     assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before,
+      'switching to one raster backdrop must not modify save');
+     assert.deepEqual(errors,[],'image mode must not generate Phaser runtime errors');
+     const fixtureFile='TEST-FIXTURE-only-gym-image-'+leader+'-'+device+'.png';
+     await page.screenshot({path:folder+'/'+fixtureFile});
+     reports.push({stage,leader,device,fixtureOnly:true,
+      imageProof,fixtureFile});
+
     }catch(error){
      await page.screenshot({path:folder+'/failure-'+leader+'-'+device+'.png'}).catch(()=>{});
      fs.writeFileSync(folder+'/failure-'+leader+'-'+device+'.json',JSON.stringify({error:String(error),errors},null,2));
