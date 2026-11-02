@@ -43,6 +43,37 @@ export function sweptVectorHit(a0,a1,aRadius,b0,b1,bRadius){
  const enter=(-b-Math.sqrt(disc))/(2*a);
  return {hit:true,firstFraction:u01(enter),closestFraction:nearest};
 }
+
+/** Approximates swept contact along two potentially CURVED parametric paths.
+ * The swept-disc test is exact on each straight sub-segment; the full curve
+ * is approximated with bounded subdivision, never claimed to be exact.
+ * firstFraction is a parameter of the original path in [start,end].
+ * This is an original lab-only geometric tool, NOT PB Ranked gameplay data.
+ */
+export function sweptVectorCurveHit(projectileAt,projectileRadius,targetAt,targetRadius,start,end,segments=8){
+ if(typeof projectileAt!=='function'||typeof targetAt!=='function'||
+    ![projectileRadius,targetRadius].every(v=>Number.isFinite(v)&&v>=0))
+  throw new TypeError('Invalid parametric hitboxes');
+ if(!Number.isFinite(start)||!Number.isFinite(end)||start<0||end>1||end<start)
+  throw new RangeError('Invalid curve interval');
+ if(!Number.isInteger(segments)||segments<1||segments>256)
+  throw new RangeError('Invalid curve segments');
+ let pa=projectileAt(start),pb=targetAt(start);
+ // Degenerate interval remains meaningful: instantaneous overlap at start.
+ if(start===end){
+  const hit=sweptVectorHit(pa,pa,projectileRadius,pb,pb,targetRadius);
+  return {hit:hit.hit,firstFraction:hit.hit?start:null,segment:hit.hit?0:null};
+ }
+ for(let i=1;i<=segments;i++){
+  const next=start+(end-start)*i/segments;
+  const qa=projectileAt(next),qb=targetAt(next);
+  const hit=sweptVectorHit(pa,qa,projectileRadius,pb,qb,targetRadius);
+  if(hit.hit)return {hit:true,firstFraction:start+(end-start)*(i-1+hit.firstFraction)/segments,segment:i};
+  pa=qa;pb=qb;
+ }
+ return {hit:false,firstFraction:null,segment:null};
+}
+
 export const frameOrdinal=(hitIndex,totalFrames)=>Number.isInteger(hitIndex)&&Number.isInteger(totalFrames)&&
  totalFrames>0&&hitIndex>=0&&hitIndex<totalFrames?
  totalFrames===1?0:hitIndex/(totalFrames-1):null;

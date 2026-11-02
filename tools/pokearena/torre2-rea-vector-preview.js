@@ -2,7 +2,7 @@
  * Does not call attack, cast, damage, inventory or save functions.
  * Everything is original Phaser pixel-cell graphics; no PB Ranked assets.
  */
-import {REA_FRAME_REFERENCES,movePrototypePoint,sweptVectorHit,u01} from './rea-vector-math.js';
+import {REA_FRAME_REFERENCES,movePrototypePoint,sweptVectorCurveHit,u01} from './rea-vector-math.js';
 const MODES=Object.freeze(['beam','dash','arc']);
 const PALETTES=Object.freeze({
  beam:[0x17464e,0x3db59b,0xa7ffe4,0xffffff],
@@ -77,7 +77,7 @@ export function createReaVectorPreview(scene){
  // HUD buttons through the demonstration. It never handles battle actions.
  const inputShield=scene.add.zone(320,191,608,173).setDepth(90002).setInteractive();
  inputShield.input.enabled=false;
- let active=false,destroyed=false,clock=0,mode=null,previous=null,impactTick=-Infinity,hitCount=0;
+ let active=false,destroyed=false,clock=0,mode=null,previousRatio=null,impactTick=-Infinity,hitCount=0;
  let lastLabel='',lastDetailMode=null;
  const debug={active:false,mode:null,hitCount:0,lastHitPosition:null,
   byMode:{beam:0,dash:0,arc:0},lastHitMode:null,
@@ -88,20 +88,22 @@ export function createReaVectorPreview(scene){
   const step=Math.max(0,Math.min(64,Number(deltaMs)||16.667));
   clock+=step;const index=Math.floor(clock/1800)%MODES.length;
   const current=MODES[index],local=clock%1800,ratio=local/1800;
-  if(mode!==current){mode=current;previous=null;impactTick=-Infinity;}
+  if(mode!==current){mode=current;previousRatio=null;impactTick=-Infinity;}
   const point=movePrototypePoint(mode,ratio),palette=PALETTES[mode];
   let collided=false;
-  if(previous){
-   const hit=sweptVectorHit(previous,point,7,TGT,TGT,12);
+  if(previousRatio!==null){
+   // Check the actual sampled curved path, not just its endpoint chord.
+   // Eight bounded segments keep the prototype predictable at low frame rates.
+   const hit=sweptVectorCurveHit(t=>movePrototypePoint(mode,t),7,()=>TGT,12,previousRatio,ratio,8);
    collided=hit.hit;
    if(collided&&impactTick<0){
     impactTick=clock;hitCount++;
     debug.byMode[mode]++;debug.lastHitMode=mode;
-    debug.lastHitPosition={x:Math.round(previous.x+(point.x-previous.x)*hit.firstFraction),
-     y:Math.round(previous.y+(point.y-previous.y)*hit.firstFraction)};
+    const contact=movePrototypePoint(mode,hit.firstFraction);
+    debug.lastHitPosition={x:Math.round(contact.x),y:Math.round(contact.y)};
    }
   }
-  previous=point;debug.mode=mode;debug.hitCount=hitCount;
+  previousRatio=ratio;debug.mode=mode;debug.hitCount=hitCount;
   const flash=clock-impactTick<225,view=['PROJETIL CURVO','ESQUIVA / DASH','ARCO DE POKEBOLA'][index];
   const ref=[REA_FRAME_REFERENCES.Shoot,REA_FRAME_REFERENCES.Swing,REA_FRAME_REFERENCES.Attack][index];
   g.clear();
@@ -159,7 +161,7 @@ export function createReaVectorPreview(scene){
   inputShield.input.enabled=active;
   backdrop.setVisible(active);g.setVisible(active);label.setVisible(active);detail.setVisible(active);
   if(active){
-   clock=0;mode=null;previous=null;impactTick=-Infinity;hitCount=0;
+   clock=0;mode=null;previousRatio=null;impactTick=-Infinity;hitCount=0;
    lastLabel='';lastDetailMode=null;
    debug.hitCount=0;debug.lastHitPosition=null;debug.lastHitMode=null;
    debug.byMode={beam:0,dash:0,arc:0};

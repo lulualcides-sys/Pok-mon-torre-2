@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {EventEmitter} from 'node:events';
 import {REA_FRAME_REFERENCES,frameOrdinal,vectorSmoothstep,vectorBezier,
- vectorLerp,movePrototypePoint,sweptVectorHit} from '../tools/pokearena/torre2-rea-vector-math.js';
+ vectorLerp,movePrototypePoint,sweptVectorHit,sweptVectorCurveHit} from '../tools/pokearena/torre2-rea-vector-math.js';
 import {createReaVectorPreview} from '../tools/pokearena/torre2-rea-vector-preview.js';
 
 const near=(x,y,eps=1e-4)=>assert.ok(Math.abs(x-y)<=eps,`${x} not near ${y}`);
@@ -172,4 +172,25 @@ test('performance invariants: static scene draws exactly once, text not reraster
  events.emit('shutdown');
  assert.equal(background.destroyed,true);
  assert.equal(dynamic.destroyed,true);
+});
+
+test('curved swept geometry rejects chord-only false hits and detects true arc contacts',()=>{
+ const arc=t=>({x:10*t,y:40*t*(1-t)});
+ const stationary=(x,y)=>()=>({x,y});
+ assert.equal(sweptVectorHit(arc(0),arc(1),.5,{x:5,y:0},{x:5,y:0},.5).hit,true,
+  'straight chord alone would claim an incorrect hit');
+ const noContact=sweptVectorCurveHit(arc,.5,stationary(5,0),.5,0,1,32);
+ assert.deepEqual(noContact,{hit:false,firstFraction:null,segment:null});
+ const contact=sweptVectorCurveHit(arc,.5,stationary(5,10),.5,0,1,32);
+ assert.equal(contact.hit,true);
+ assert.ok(contact.firstFraction>.35&&contact.firstFraction<.5);
+ // Resuming two consecutive sampled intervals must preserve a global contact ratio.
+ const first=sweptVectorCurveHit(arc,.5,stationary(5,10),.5,0,.5,16);
+ near(first.firstFraction,contact.firstFraction,.0005);
+ const degenerate=sweptVectorCurveHit(arc,1,stationary(5,10),1,.5,.5);
+ assert.equal(degenerate.hit,true);near(degenerate.firstFraction,.5);
+ assert.equal(sweptVectorCurveHit(arc,1,stationary(5,0),1,.5,.5).hit,false);
+ assert.throws(()=>sweptVectorCurveHit(arc,1,stationary(5,10),1,0,1,0),/segments/);
+ assert.throws(()=>sweptVectorCurveHit(arc,1,stationary(5,10),1,.8,.2),/interval/);
+ assert.throws(()=>sweptVectorCurveHit(arc,-1,stationary(5,10),1,0,1),/hitboxes/);
 });
