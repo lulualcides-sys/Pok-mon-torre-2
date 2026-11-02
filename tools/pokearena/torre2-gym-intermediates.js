@@ -1,5 +1,5 @@
-/* T19 — gym intermediates are existing trainer indices, never new battles.
- * Presentation only. Preserve routeNode identities, saves and boss gating.
+/* T19 — existing genuine trainer indices in gyms, Rival/Rocket on routes.
+ * Presentation only: preserve routeNode identities, saves and boss gating.
  */
 export const GYM_INTERMEDIATE_VERSION='t19-gym-roster-v1';
 const POSITIONS=Object.freeze([
@@ -12,22 +12,32 @@ export function gymIntermediateModel(state,gyms,trainersPerGym,routeNode){
  const limit=trainersPerGym(stage);
  if(!Number.isInteger(limit)||limit<4)throw Error('Invalid trainer ladder');
  const gymCount=stage===0?3:4;
- const routeCount=limit-gymCount;
+ // Keep every rival/Rocket at its ORIGINAL ladder index on the route.
+ // Select the last genuine trainer encounters for the interior, even if
+ // they interleave with a later route encounter. No save migration, RNG or
+ // opponent identity changes; the route stays accessible between gym fights.
+ const gymIndices=[];
+ for(let index=limit-1;index>=0&&gymIndices.length<gymCount;index--){
+  if(routeNode(stage,index,limit)?.type==='trainer')gymIndices.push(index);
+ }
+ if(gymIndices.length!==gymCount)throw Error('Insufficient genuine gym trainers');
+ gymIndices.reverse();
+ const gymSet=new Set(gymIndices);
+ const routeIndices=Array.from({length:limit},(_,i)=>i).filter(i=>!gymSet.has(i));
+ const routeCount=routeIndices.length;
  const progress=Math.max(0,Math.min(limit,Math.trunc(Number(state.trainer)||0)));
- const slots=Array.from({length:gymCount},(_,i)=>{
-  const index=routeCount+i;
+ const slots=gymIndices.map((index,i)=>{
   const node=routeNode(stage,index,limit);
-  if(!['trainer','rival','rocket'].includes(node?.type))
-   throw Error('Unknown original route encounter identity '+index);
-  const role=node.type==='trainer'?'gym-trainer':node.type==='rival'?'rival':'rocket';
-  const title=node.type==='trainer'?'TREINADOR '+(i+1):node.type==='rival'?'RIVAL':'ROCKET';
   return Object.freeze({index,slot:i,x:POSITIONS[i].x,y:POSITIONS[i].y,
-   role,kind:node.type,title,originalName:node.name,
+   role:'gym-trainer',kind:'trainer',title:'TREINADOR '+(i+1),originalName:node.name,
    status:index<progress?'defeated':index===progress?'current':'locked'});
  });
  return Object.freeze({version:GYM_INTERMEDIATE_VERSION,stage,leader:gyms[stage].leader,
-  limit,routeCount,gymCount,progress,inGym:progress>=routeCount&&progress<limit,
-  leaderReady:progress>=limit&&!state.champion,slots:Object.freeze(slots)});
+  limit,routeCount,gymCount,progress,
+  routeIndices:Object.freeze(routeIndices),gymIndices:Object.freeze(gymIndices),
+  routeProgress:routeIndices.filter(i=>i<progress).length,
+  inGym:gymSet.has(progress),leaderReady:progress>=limit&&!state.champion,
+  slots:Object.freeze(slots)});
 }
 export function drawGymIntermediates(scene,model,addNpc,onBattle){
  if(!model)return null;
