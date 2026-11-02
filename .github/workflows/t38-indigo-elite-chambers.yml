@@ -1,0 +1,54 @@
+name: T38 — Indigo League five real Phaser rooms (DRAFT)
+on:
+  push:
+    branches: [feat/t38-indigo-elite-rooms-20261102]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  elite-chambers:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax and focused stage isolation
+        run: |
+          node --check tools/pokearena/torre2-elite-chambers.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/elite-chambers-browser.cjs
+          node --test tests/elite-chambers.test.js
+      - name: Full repository tests and checks
+        run: |
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build real original Phaser client
+        env:
+          POKEARENA_SOURCE_VERSION: src-97f03e6e1b
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+          source_dir=$(find _site/arena2d -maxdepth 1 -type d -name 'src-*' | head -1)
+          test -n "$source_dir"
+          test -f "$source_dir/torre2/torre2-elite-chambers.js"
+      - name: Five real Elite Four and Champion rooms — desktop/mobile
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/elite-chambers-browser.cjs
+      - name: Upload 10 real Phaser screenshots or failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t38-indigo-league-real-phaser-${{ github.sha }}
+          path: test-evidence/elite-chambers/
+          retention-days: 21
+          if-no-files-found: warn
