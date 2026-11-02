@@ -3,6 +3,20 @@ import {gymWideLayout} from './torre2-gym-wide-layout.js';
  * Presentation only: preserve routeNode identities, saves and boss gating.
  */
 export const GYM_INTERMEDIATE_VERSION='t19-gym-roster-v1';
+ // Only visual classes selected from existing original FRLG overworld sprites.
+ // The actual opponent's original name, kind, index and battle team stay intact.
+ export const GYM_NPC_VISUALS=Object.freeze([
+  Object.freeze(['hiker','youngster','hiker']),
+  Object.freeze(['swimmer','lass','swimmer','ace']),
+  Object.freeze(['sailor','gentleman','rocker','ace']),
+  Object.freeze(['lass','picnicker','lass','ace']),
+  Object.freeze(['biker','rocket','ace','biker']),
+  Object.freeze(['psychic','scientist','ace','channeler']),
+  Object.freeze(['scientist','ace','gentleman','scientist']),
+  Object.freeze(['rocket','rocker','ace','rocket'])
+ ]);
+ export function gymNpcVisualKinds(stage){return GYM_NPC_VISUALS[stage]||Object.freeze([])}
+
 const POSITIONS=Object.freeze([
  Object.freeze({x:157,y:139}),Object.freeze({x:483,y:139}),
  Object.freeze({x:157,y:192}),Object.freeze({x:483,y:192})
@@ -50,10 +64,8 @@ export function drawGymIntermediates(scene,model,addNpc,onBattle){
   scene.add.ellipse(t.x,t.y+1,24,6,0x101c30,.36).setDepth(13);
   // Existing authentic FRLG overworld sprites, not newly fabricated art.
   // Class affects appearance only: battle opponent IDs/names remain intact.
-  const brockSprites=['hiker','youngster','hiker'];
-  const mistySprites=['swimmer','lass','swimmer','ace'];
   const npcKind=t.kind==='rival'?'rival':t.kind==='rocket'?'rocket':
-   model.stage===0?brockSprites[t.slot]:model.stage===1?mistySprites[t.slot]:'ace';
+   gymNpcVisualKinds(model.stage)[t.slot]||'ace';
   const npc=addNpc(scene,npcKind,t.x,t.y,{scale:1.05,depth:16})||
    (npcKind==='swimmer'?addNpc(scene,'ace',t.x,t.y,{scale:1.05,depth:16}):null);
   npc?.setData('torre2-gym-intermediate',t.index);
