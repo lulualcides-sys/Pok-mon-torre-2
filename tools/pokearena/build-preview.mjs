@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {stripUnavailableBallPreload} from './torre2-native-ball-preload-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -570,6 +571,13 @@ for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
+  // The upstream source reformatted the missing optional balls20.png preload.
+  // Remove only that verified request; reject duplicate/active references.
+  if(filename==='escenas/carga.js' &&
+     from.startsWith('this.load.spritesheet("ui-balls"') && to===''){
+    body=stripUnavailableBallPreload(body);
+    continue;
+  }
   if(!body.includes(from)){
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
