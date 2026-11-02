@@ -159,7 +159,7 @@ export function renderGymStage(scene,location){
    g.fillStyle(light,.7).fillRect(x,y,6,3);
   }
  }
- const report=Object.freeze({location,mode:'full-width',zoom:1,
+ const report=Object.freeze({location,mode:'full-width',extraZoom:0,
   bounds:GYM_STAGE_BOUNDS,trainerColumns:Object.freeze([157,483]),
   leaderPlatform:Object.freeze({x:258,y:151,width:124,height:51}),
   staticDraw:true});
