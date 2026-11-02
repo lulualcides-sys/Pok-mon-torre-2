@@ -1,7 +1,7 @@
 name: Layered Kanto city — WebGL navigation and visual evidence
 on:
   push:
-    branches: [feat/cerulean-layered-redesign-20261031]
+    branches: [feat/cerulean-layered-redesign-20261031, feat/cerulean-art-atlas-20261031]
   workflow_dispatch:
 permissions:
   contents: read
@@ -26,6 +26,10 @@ jobs:
           node --check tools/pokearena/torre2-city-scenery.js
           node --check tools/pokearena/torre2-city-hub.js
       - name: Build real client
+        env:
+          # Same native client verified by Actions 41263204733. A later
+          # upstream release changed ui-balls; do not alter the arena here.
+          POKEARENA_SOURCE_VERSION: src-97f03e6e1b
         run: |
           set -euo pipefail
           for i in 1 2 3; do
@@ -39,5 +43,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: layered-city-webgl
-          path: test-evidence/city-layered-*
+          path: test-evidence/city-*
           retention-days: 14

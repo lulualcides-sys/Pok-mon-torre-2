@@ -18,3 +18,14 @@ test('gym only becomes ready after the actual route count',()=>{
  assert.equal(cityViewModel({trainer:15},17).gymReady,false);
  assert.equal(cityViewModel({trainer:17,champion:true},17).gymReady,false);
 });
+
+test('trainer hit areas never overlap higher-depth building entrances',()=>{
+ for(const t of cityViewModel({trainer:0},15).trainers){
+  const a={left:t.x-12,right:t.x+12,top:t.y-23,bottom:t.y+5};
+  for(const p of CERULEAN_LANDMARKS){
+   const b={left:p.x-41,right:p.x+41,top:p.doorY-12,bottom:p.y+15};
+   assert.ok(a.right<=b.left||a.left>=b.right||a.bottom<=b.top||a.top>=b.bottom,
+    `trainer ${t.index} is blocked by ${p.id}`);
+  }
+ }
+});

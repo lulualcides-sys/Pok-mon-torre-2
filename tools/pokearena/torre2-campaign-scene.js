@@ -1,3 +1,5 @@
+import {paintCollectionPortraits,releaseCollectionPortraits} from './collection-portraits.js';
+import {CITY_TEXTURES,hasCampaignCity} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -122,6 +124,11 @@ class Campanha extends Phaser.Scene{
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
+  const needsAtlas=hasCampaignCity(stage);
+  for(const [key,file] of CITY_TEXTURES){
+   if(needsAtlas&&!this.textures.exists(key))this.load.image(key,file);
+   if(!needsAtlas&&this.textures.exists(key))this.textures.remove(key);
+  }
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
   if(AVAILABLE_FRLG.includes(world)){
@@ -475,6 +482,9 @@ create(){
    this.__torre2CityWaterTimer=null;
   }
   this.children.removeAll(true);
+  if(!hasCampaignCity(state.stage))for(const [key] of CITY_TEXTURES)
+   if(this.textures.exists(key))this.textures.remove(key);
+  releaseCollectionPortraits(this);
   this.__torre2CityHub=null;
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
@@ -494,7 +504,7 @@ create(){
    if(foe.leader)return this.gymScreen(state);
    this.__torre2PathDetails(text,this,foe);
   };
-  if(state.stage===1&&!this.__torre2CityRoute){
+  if(hasCampaignCity(state.stage)&&!this.__torre2CityRoute){
    this.__torre2BattlePath=null;
    const city=renderCityHub(this,state,{
     trainerCount:TRAINERS_PER_GYM(state.stage),badgeDefinitions:GYMS,
@@ -1188,10 +1198,15 @@ create(){
   const target=Math.max(0,Math.min(state.team.length-1,
    Number.isInteger(this.bagMemberIndex)?this.bagMemberIndex:state.active));
   this.bagMemberIndex=target;
-  text(this,320,63,'PB '+(inv.pokeball||0)+' · GB '+(inv.greatball||0)+
-   ' · UB '+(inv.ultraball||0)+' · POÇÃO '+(inv.potion||0)+
-   ' · SUPER '+(inv.superpotion||0),{
-   fontSize:'11px',color:C.gold}).setOrigin(.5);
+  // Read-only inventory cards reuse the original Mart icons already cached.
+  ['pokeball','greatball','ultraball','potion','superpotion'].forEach((id,i)=>{
+   const item=MART_ITEMS.find(entry=>entry.id===id),x=16+i*123;
+   this.add.rectangle(x,51,116,31,0x193448).setOrigin(0).setStrokeStyle(1,0x537b8d);
+   const art=this.add.image(x+15,66,shopItemSprite(this,item));
+   art.setDisplaySize(22,22).setDepth(5).setData('torre2-bag-item-sprite',id);
+   text(this,x+31,55,item.name,{fontSize:'9px',color:C.white});
+   text(this,x+31,68,'× '+(inv[id]||0),{fontSize:'10px',color:C.gold});
+  });
   text(this,320,92,'ESCOLHA QUEM RECEBE O ITEM:',{
    fontSize:'11px',color:C.blue}).setOrigin(.5);
   state.team.slice(0,6).forEach((member,i)=>{
@@ -1721,24 +1736,34 @@ create(){
    ...(p.evoluciones||[]).map(x=>x.nombre)]);
   const view=kantoDexPageModel(state,KANTO_DEX,supported,this.dexPage||0);
   this.dexPage=view.page;
+  const chrome=this.add.graphics();
+  chrome.fillStyle(0x1b3a4a).fillRect(8,7,624,57);
+  chrome.lineStyle(1,0x6b9da9).strokeRect(8,7,624,57);
+  chrome.fillStyle(0x0b2134).fillRect(12,11,616,49);
   text(this,ANCHO/2,18,'POKÉDEX DE KANTO · '+view.totals.all+' ESPÉCIES',
    {...titleStyle,fontSize:'18px'}).setOrigin(.5,0);
   text(this,ANCHO/2,47,'VISTOS '+view.totals.seen+
    ' · CAPTURADOS '+view.totals.caught+
-   ' · Somente espécies integradas entram em batalha.',statusStyle).setOrigin(.5);
+   ' · REGISTRO DA JORNADA',statusStyle).setOrigin(.5);
   if(view.totals.shinySeen)
    text(this,ANCHO/2,61,'✦ SHINY AVISTADOS '+view.totals.shinySeen+
     ' · CAPTURADOS '+view.totals.shinyCaught,{
     ...statusStyle,color:'#f0d789',fontSize:'9px'}).setOrigin(.5);
+  const portraitCards=[];
   view.rows.forEach((row,i)=>{
-   const x=35+(i>=11?295:0),y=75+(i%11)*21;
+   const x=18+(i>=11?307:0),y=77+(i%11)*21;
+   const anchor=this.add.rectangle(x,y,297,19,row.caught?0x1e3d3e:0x132a3d)
+    .setOrigin(0).setDepth(1).setStrokeStyle(1,row.caught?0x639981:0x315166);
+   this.add.rectangle(x+12,y+9,18,17,0x244251).setDepth(2);
    const marker=row.shinyCaught?' ✦ SHINY':row.shinySeen?' ✦':
     row.caught?' ★':row.seen?' ◦':row.ready?' ✓':'';
-   text(this,x,y,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
+   text(this,x+27,y+3,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
     fontSize:'11px',color:row.shinyCaught?'#f5db86':
-     row.caught?C.gold:row.seen?C.blue:C.muted
-   }).setData('torre2-dex-id',row.id);
+     row.caught?'#ade3bd':row.seen?C.blue:C.muted
+   }).setDepth(3).setData('torre2-dex-id',row.id);
+   portraitCards.push({...row,anchor,x:x+12,y:y+9});
   });
+  paintCollectionPortraits(this,portraitCards);
   this.button(82,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
   this.button(236,329,133,31,'◀ ANTERIOR',()=>{
    this.dexPage=(view.page-1+view.pages)%view.pages;this.dexScreen(state);

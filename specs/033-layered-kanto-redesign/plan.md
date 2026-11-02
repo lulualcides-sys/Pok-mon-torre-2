@@ -12,3 +12,6 @@ Review focus: returning from menus must preserve city; repeated entry must clean
 4. Validate Cerulean screenshots and functional buttons in Chromium desktop + touch. Only after this gate expand layouts and secondary-menu visual treatment. Don't substitute automatic assertions for visual quality assessment.
 5. Run npm test/check/check:reuse + applicable built/browser regressions, review diff and concurrent main before PR. Integrate only verified approved result; otherwise retain draft with exact blockers.
 Rollback: revert scoped new imports/renderer/mapping; original path and all battle logic remain available.
+
+## Continuação de 31/10 — atlas original
+A PR #419 foi integrada externamente em 827e3f3, incluindo as correções de botão/Clock. Preservar essas correções, rota padrão e navegação opcional. Substituir somente geometria visual básica por seis frames do atlas original gerado (552 KiB WebP), mantendo terreno/água/ponte em camadas. Nova branch `feat/cerulean-art-atlas-20261031`. Testar limites dos recortes, proporção, cache por estágio e presença real das seis peças no navegador; ampliar cobertura para seis membros. Não marcar acabamento artístico como concluído sem capturas verificadas.
