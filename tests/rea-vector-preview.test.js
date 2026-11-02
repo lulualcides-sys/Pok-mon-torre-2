@@ -52,36 +52,79 @@ function stubScene(laboratory=true){
    destroy(){draw.destroyed=true}
   };
  }
- const textNodes=[];
+ const textNodes=[],zones=[];
  const scene={datos:{torre2:{laboratory}},events,
-  add:{graphics:shape,text:(_x,_y,_s,_opts)=>{
+  add:{graphics:shape,zone:(_x,_y,_w,_h)=>{
+   const zone={input:{enabled:false},destroyed:false,setDepth(){return this},
+    setInteractive(){return this},destroy(){this.destroyed=true}};
+   zones.push(zone);return zone;
+  },text:(_x,_y,_s,_opts)=>{
    const o={text:'',destroyed:false,setDepth(){return this},setVisible(){return this},
     setText(s){this.text=s;return this},destroy(){this.destroyed=true}};
    textNodes.push(o);return o;
   }}};
- return {scene,events,draw,textNodes};
+ return {scene,events,draw,textNodes,zones};
 }
 test('preview is opt-in, lab-only, visual-only, stops and cleans up on shutdown',()=>{
- const {scene,events,draw,textNodes}=stubScene(true);
+ const {scene,events,draw,textNodes,zones}=stubScene(true);
  assert.throws(()=>createReaVectorPreview(stubScene(false).scene),/requires laboratory/);
  const preview=createReaVectorPreview(scene);
  assert.equal(preview.debug.active,false);assert.equal(draw.calls,0);
+ assert.equal(zones.length,1);assert.equal(zones[0].input.enabled,false);
  const save={hp:47,bags:3},before=JSON.stringify(save);
- assert.equal(preview.toggle(),true);
- for(let i=0;i<300;i++)events.emit('update',i*16.66,16.66);
+ assert.equal(preview.toggle(),true);assert.equal(zones[0].input.enabled,true);
+ for(let i=0;i<350;i++)events.emit('update',i*16.66,16.66);
  assert.ok(draw.calls>200);
- assert.ok(preview.debug.hitCount>=1,'must demonstrate at least one real swept contact');
+ assert.ok(preview.debug.hitCount>=3,'must hit at least once in each demonstration mode');
+ assert.ok(Object.values(preview.debug.byMode).every(n=>n>=1),JSON.stringify(preview.debug.byMode));
  assert.deepEqual(['beam','dash','arc'].includes(preview.debug.mode),true);
  assert.equal(preview.debug.isolation,'LAB_VISUAL_ONLY');
  assert.equal(preview.debug.containsThirdPartyAssets,false);
  assert.equal(preview.debug.doesNotChangeDamage,true);
  assert.equal(JSON.stringify(save),before);
  assert.match(textNodes[1].text,/SEM DANO/);
+ assert.equal(preview.toggle(),false);assert.equal(zones[0].input.enabled,false);
+ assert.equal(preview.toggle(),true);assert.equal(preview.debug.hitCount,0);
+ assert.deepEqual(preview.debug.byMode,{beam:0,dash:0,arc:0});
  assert.equal(preview.toggle(),false);
  const count=draw.calls;events.emit('update',100000,16);assert.equal(draw.calls,count);
  events.emit('shutdown');
- assert.equal(draw.destroyed,true);
+ assert.equal(draw.destroyed,true);assert.equal(zones[0].destroyed,true);
  assert.ok(textNodes.every(n=>n.destroyed));
  assert.equal(scene.__torre2ReaMathPreview,undefined);
  assert.equal(preview.toggle(),false);
+});
+
+test('deterministic continuous contact: tangent, opposite moving target, near miss and scaling',()=>{
+ const o={x:0,y:0};
+ const tangent=sweptVectorHit({x:-10,y:3},{x:10,y:3},1,o,o,2);
+ assert.equal(tangent.hit,true);near(tangent.firstFraction,.5);
+ const miss=sweptVectorHit({x:-10,y:3.02},{x:10,y:3.02},1,o,o,2);
+ assert.equal(miss.hit,false);assert.equal(miss.firstFraction,null);
+ const same=sweptVectorHit({x:0,y:0},{x:0,y:0},0,{x:4,y:0},{x:0,y:0},0);
+ assert.equal(same.hit,true);near(same.firstFraction,1);
+ const crossing=sweptVectorHit({x:-10,y:0},{x:10,y:0},2,{x:10,y:0},{x:-10,y:0},2);
+ near(crossing.firstFraction,.4);
+ const k=37,p=x=>({x:x.x*k,y:x.y*k});
+ const scaled=sweptVectorHit(p({x:-10,y:0}),p({x:10,y:0}),2*k,p({x:10,y:0}),p({x:-10,y:0}),2*k);
+ assert.equal(scaled.hit,true);near(scaled.firstFraction,crossing.firstFraction);
+});
+test('bounded delta and repeated preview re-open never accumulate multiple impacts or listeners',()=>{
+ const {scene,events,zones}=stubScene(true);
+ const baseline=events.listenerCount('update');
+ const preview=createReaVectorPreview(scene);
+ assert.equal(events.listenerCount('update'),baseline+1);
+ for(let loop=0;loop<10;loop++){
+  assert.equal(preview.toggle(),true);
+  assert.equal(zones[0].input.enabled,true);
+  for(let i=0;i<350;i++)events.emit('update',i*16.67,16.67);
+  assert.equal(preview.debug.hitCount,3,'one impact per each of the three modes in a full cycle');
+  assert.deepEqual(preview.debug.byMode,{beam:1,dash:1,arc:1});
+  assert.equal(preview.toggle(),false);
+  assert.equal(zones[0].input.enabled,false);
+  assert.equal(events.listenerCount('update'),baseline+1);
+ }
+ events.emit('shutdown');
+ assert.equal(events.listenerCount('update'),baseline);
+ assert.equal(zones[0].destroyed,true);
 });
