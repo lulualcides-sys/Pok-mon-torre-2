@@ -131,7 +131,13 @@ export function restoreBody(body){
 // the native renderer has positioned its sprites, before WebGL draws them.
 export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0,maxFrameMs=64,wallClockCatchup=false}){
  actor.actualizarGraficos?.(0);
- const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
+ const body=snapshotBody(actor);
+ // The initial release beam runs between fixed endpoints. Build the
+ // ORIGINAL pixel rectangles once, then animate only overall opacity.
+ // Recall still draws a moving beam every frame, unchanged.
+ const releaseBeam=mode==='release'?
+  scene.add.graphics().setDepth(2305).setVisible(false):null;
+ const g=scene.add.graphics().setDepth(2305);
  const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
   drawBall.originalBallSprite(scene,body.center.x,body.center.y,'pokeball',16,2306).setVisible(false):null;
  const showBall=(x,y,angle=0,opened=false)=>{
@@ -153,6 +159,7 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  }
  const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
  const origin=mode==='recall'?from:landing;
+ if(releaseBeam)drawRedBeam(releaseBeam,origin,body.center,1,body.width);
  let elapsed=0,done=false;
  // Phaser normalizes frame delta after slow renders. For the first Kanto
  // sendout only, compare that value with monotonic wall time to prevent a
@@ -167,7 +174,7 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  const clean=()=>{if(done)return;done=true;
   scene.__torre2BallTransitions=Math.max(0,(scene.__torre2BallTransitions||1)-1);
   scene.game.events.off('poststep',step);scene.events.off('preupdate',hold);
-  scene.events.off('shutdown',clean);g.destroy();nativeBall?.destroy();};
+  scene.events.off('shutdown',clean);releaseBeam?.destroy();g.destroy();nativeBall?.destroy();};
  const step=(_time,delta)=>{
   if(done||!scene.scene.isActive())return clean();
   let elapsedDelta=delta;
@@ -190,7 +197,9 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
     const u=t*t;center={x:body.center.x+(origin.x-body.center.x)*u,y:body.center.y+(origin.y-body.center.y)*u};
     poseBody(body,center,1-.98*t,1-t);
    }else poseBody(body,center,.04+.96*t,t);
-   drawRedBeam(g,origin,center,Math.min(1,(1-t)*4),body.width);
+   if(releaseBeam){
+    releaseBeam.setVisible(true).setAlpha(Math.min(1,(1-t)*4));
+   }else drawRedBeam(g,origin,center,Math.min(1,(1-t)*4),body.width);
    drawReleaseBurst(g,center.x,center.y,t);
    showBall(origin.x,origin.y,0,true);
    if(t>=1){
