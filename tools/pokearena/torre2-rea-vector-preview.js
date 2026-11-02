@@ -27,15 +27,20 @@ function drawGlyph(g,x,y,palette,phase){
 export function createReaVectorPreview(scene){
  if(!scene?.datos?.torre2?.laboratory)throw new Error('REA preview requires laboratory');
  if(!scene.add?.graphics||!scene.add?.text||!scene.events?.on)throw new Error('Phaser scene missing');
- const g=scene.add.graphics().setDepth(6500).setVisible(false);
+ const g=scene.add.graphics().setDepth(90000).setVisible(false);
  const label=scene.add.text(38,117,'',{fontFamily:'Pixelify Sans,monospace',
   fontSize:'11px',fontStyle:'bold',color:'#fff2d8',
-  stroke:'#071727',strokeThickness:2}).setDepth(6501).setVisible(false);
+  stroke:'#071727',strokeThickness:2}).setDepth(90001).setVisible(false);
  const detail=scene.add.text(38,256,'',{fontFamily:'Pixelify Sans,monospace',
   fontSize:'9px',color:'#c5deed',stroke:'#071727',strokeThickness:1})
-  .setDepth(6501).setVisible(false);
+  .setDepth(90001).setVisible(false);
+ // An invisible high-priority hit area prevents clicking underlying AUTO/skill
+ // HUD buttons through the demonstration. It never handles battle actions.
+ const inputShield=scene.add.zone(320,191,608,173).setDepth(90002).setInteractive();
+ inputShield.input.enabled=false;
  let active=false,destroyed=false,clock=0,mode=null,previous=null,impactTick=-Infinity,hitCount=0;
  const debug={active:false,mode:null,hitCount:0,lastHitPosition:null,
+  byMode:{beam:0,dash:0,arc:0},lastHitMode:null,
   isolation:'LAB_VISUAL_ONLY',containsThirdPartyAssets:false,doesNotChangeDamage:true};
  scene.__torre2ReaMathPreview=debug;
  const render=(deltaMs=16.667)=>{
@@ -51,6 +56,7 @@ export function createReaVectorPreview(scene){
    collided=hit.hit;
    if(collided&&impactTick<0){
     impactTick=clock;hitCount++;
+    debug.byMode[mode]++;debug.lastHitMode=mode;
     debug.lastHitPosition={x:Math.round(previous.x+(point.x-previous.x)*hit.firstFraction),
      y:Math.round(previous.y+(point.y-previous.y)*hit.firstFraction)};
    }
@@ -137,15 +143,21 @@ export function createReaVectorPreview(scene){
  const toggle=()=>{
   if(destroyed)return false;
   active=!active;debug.active=active;
+  inputShield.input.enabled=active;
   g.setVisible(active);label.setVisible(active);detail.setVisible(active);
-  if(active){clock=0;mode=null;previous=null;impactTick=-Infinity;render(0);}
-  else{g.clear();debug.mode=null;}
+  if(active){
+   clock=0;mode=null;previous=null;impactTick=-Infinity;hitCount=0;
+   debug.hitCount=0;debug.lastHitPosition=null;debug.lastHitMode=null;
+   debug.byMode={beam:0,dash:0,arc:0};
+   render(0);
+  }else{g.clear();debug.mode=null;}
   return active;
  };
  const destroy=()=>{
   if(destroyed)return;destroyed=true;active=false;
   scene.events.off('update',tick);scene.events.off('shutdown',destroy);
-  g.destroy();label.destroy();detail.destroy();
+  inputShield.input.enabled=false;
+  inputShield.destroy();g.destroy();label.destroy();detail.destroy();
   if(scene.__torre2ReaMathPreview===debug)delete scene.__torre2ReaMathPreview;
  };
  scene.events.on('update',tick);
