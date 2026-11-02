@@ -44,6 +44,51 @@ export function drawGymWideRoom(scene,stage){
  background(70,72,500,15,water?0xb7d9e4:0x877664);
  // The authentic FRLG room-floor sprite batch is inserted at depth 4.2
  // between this background and the raised bridges; no enlarged screenshot.
+ // Shaded architectural masonry borrows the 16px geometry of the native
+ // FireRed interior, not a vector wall or a scaled screenshot.
+ for(let x=74;x<561;x+=24){
+  block(x,73,21,12,water?0x285778:0x746250);
+  block(x+2,74,17,3,water?0x89c7dd:0xc0a789);
+  block(x+2,80,17,2,water?0x25517b:0x473d36);
+  if((x-74)%72===0){
+   block(x+7,88,8,12,water?0x7eafc1:0x95836b);
+   block(x+9,88,4,10,water?0xd3e6e2:0xddc29b);
+   block(x+5,99,12,3,water?0x235b81:0x695742);
+  }
+ }
+ for(const x of [69,558])for(let y=100;y<258;y+=24){
+  block(x,y,12,21,water?0x234e71:0x766450);
+  block(x+1,y+1,8,3,water?0xabcbd5:0xc9b195);
+  block(x+9,y+3,2,17,water?0x092e56:0x483a30);
+ }
+ if(water){
+  // Layered shore and ripple highlights; original city water texture is
+  // composited BELOW the bridges in the actual Phaser scene.
+  for(let y=103;y<251;y+=25)for(let x=88;x<553;x+=31){
+   const phase=(x*7+y*3)%13;
+   block(x+phase%5,y,10,2,0x70d1ed,.28);
+   block(x+2+phase%3,y+4,6,1,0xd8f7f2,.55);
+  }
+  for(const [x,y] of [[96,125],[529,136],[102,214],[527,235]]){
+   block(x,y,21,3,0x8ae9ea,.88);
+   block(x+5,y+3,14,2,0xd0fcf2,.72);
+   block(x+8,y+5,8,1,0x2c8fbd);
+  }
+ }else{
+  // Geological strata and lit stones distinguish the Pewter hall from
+  // the water platforms without crossing the navigation aisle.
+  for(const [x,y,w] of [[85,114,35],[507,115,39],[86,226,32],
+   [522,230,28],[209,111,23],[411,116,25]]){
+   block(x,y,w,10,0x75644f);
+   block(x+3,y-4,w-7,8,0xa48c6d);
+   block(x+6,y-6,w-13,3,0xe3c59a);
+   block(x+5,y+7,w-10,3,0x514537);
+  }
+  for(let x=82;x<562;x+=53)for(const y of [102,243]){
+   block(x,y,12,3,0x7c6b56,.9);
+   block(x+4,y-2,5,2,0xd6c09a,.8);
+  }
+ }
  // GBA-like 16 px tiling rendered in a single Phaser Graphics batch.
  for(let yy=90;yy<264;yy+=16)for(let xx=74;xx<568;xx+=16){
   if(water){
