@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -610,6 +611,14 @@ for(const [filename,changes] of patches){
       from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
     const {stripUnavailableUiBallsPreload}=await import('./torre2-native-asset-compat.mjs');
     body=stripUnavailableUiBallsPreload(body);
+    continue;
+   }
+   // The original abilities module may reorder/extend its config imports.
+   // Append only the Kanto weather hook; fail closed on ambiguous provenance.
+   if(filename==='habilidades.js'&&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
+      to.includes('weatherFromMove')){
+    body=ensureNativeWeatherFromMoveImport(body);
     continue;
    }
    // The native client sometimes reorders imported data symbols.
