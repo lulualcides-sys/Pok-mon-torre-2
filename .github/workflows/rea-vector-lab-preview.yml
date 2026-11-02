@@ -4,6 +4,7 @@ on:
     branches: [feat/rea-vector-lab-preview-20261101]
     paths:
       - 'tools/pokearena/torre2-rea-vector-math.js'
+      - 'tools/pokearena/rea-vector-math.js'
       - 'tools/pokearena/torre2-rea-vector-preview.js'
       - 'tools/pokearena/torre2-laboratory.js'
       - 'tools/pokearena/build-preview.mjs'
