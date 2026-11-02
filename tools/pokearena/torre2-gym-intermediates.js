@@ -1,4 +1,4 @@
-import {gymWideLayout} from './gym-wide-layout.js';
+import {gymWideLayout} from './torre2-gym-wide-layout.js';
 /* T19 — existing genuine trainer indices in gyms, Rival/Rocket on routes.
  * Presentation only: preserve routeNode identities, saves and boss gating.
  */
