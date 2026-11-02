@@ -54,7 +54,7 @@ test('T36 connected geometric walk from entrance through all platforms to ace',(
   assert.ok(intersects(g.final,g.spine));
   assert.ok(contains(g.final,p.leader));
   assert.ok(contains(g.final,p.ace));
- });
+ }
 });
 test('T36 decorations have measurable safety clearance to paths, users and controls',()=>{
  for(const c of cases){
