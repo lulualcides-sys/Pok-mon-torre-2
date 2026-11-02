@@ -42,8 +42,8 @@ test('T41 catalog is read only; original sixty approved art entries remain uncha
   assert.equal(approvedMap(id).hotspots.length,0);
   assert.notEqual(firstApprovedHotspots(approvedMap(id)),approvedMap(id).hotspots);
  }
- assert.equal(hasFirstApprovedHotspots('ss-anne'),false);
- assert.equal(firstApprovedHotspots(approvedMap('ss-anne')),approvedMap('ss-anne').hotspots);
+ assert.equal(hasFirstApprovedHotspots('ss-anne'),true);
+ assert.notEqual(firstApprovedHotspots(approvedMap('ss-anne')),approvedMap('ss-anne').hotspots);
 });
 
 function fakeScene(){
@@ -198,4 +198,31 @@ test('T45 actual interactive zones route a click to every Vermilion door and Sur
   assert.deepEqual(events,expected.map(x=>id+':'+x));
   assert.equal(zones.filter(x=>x.data?.key==='torre2-approved-route').length,0);
  }
+});
+
+test('T46 S.S. Anne exits through the original Vermilion City artwork without an HM requirement',()=>{
+ const id='ss-anne',entry=approvedMap(id);
+ const spots=firstApprovedHotspots(entry);
+ assert.deepEqual(spots.map(s=>s.id),['exit']);
+ assert.equal(firstApprovedDestination(id,'exit'),'vermilion-city');
+ assert.equal(firstApprovedDestination(id,'captain'),null);
+ assert.ok(approvedMapNeighbours(id).includes('vermilion-city'));
+ assert.equal(entry.image,'assets/ui/kanto-approved-maps/kanto/ss-anne.webp');
+ // Actual approved 1280x720 image has VERMILION CITY bottom-center.
+ assert.deepEqual(spots.map(s=>[s.cx,s.cy,s.w,s.h]),[[.48,.91,.22,.12]]);
+ const plan=planApprovedMapOverlays({...entry,hotspots:spots},rect,[]);
+ assert.equal(plan.ok,true);
+ assert.equal(plan.hotspots.length,1);
+ assert.equal(plan.navTargets.length,0);
+ const {scene,zones}=fakeScene(),events=[];
+ const view=renderApprovedMap(scene,id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,onHotspot:(map,spot)=>events.push([map,spot])
+ });
+ assert.equal(view.ok,true);
+ const exit=zones.find(z=>z.data?.value==='ss-anne:exit');
+ assert.ok(exit,'Missing clickable ship exit');
+ exit.pointerdown(null,0,0,{stopPropagation(){}});
+ assert.deepEqual(events,[['ss-anne','exit']]);
+ assert.equal(zones.some(z=>z.data?.value==='ss-anne:captain'),false);
 });
