@@ -73,10 +73,25 @@ function compareTrainers(saved,current){
   warning:'Visible trainer identifiers, not ball-throw animation evidence'};
 }
 async function fetchText(relative){
- const r=await fetch(HOST+relative,{signal:AbortSignal.timeout(45000),headers:{'accept':'application/json,text/plain,*/*','user-agent':'PokemonTorre2PublicMetadataAudit/1.0'}});
- if(!r.ok)throw Error('HTTP '+r.status+' '+relative);
- const body=await r.text();if(body.length>20000000)throw Error('oversized public response');
- return body;
+ let last;
+ for(let attempt=0;attempt<3;attempt++){
+  try{
+   const r=await fetch(HOST+relative,{signal:AbortSignal.timeout(30000),headers:{'accept':'application/json,text/plain,*/*','user-agent':'PokemonTorre2PublicMetadataAudit/1.0'}});
+   if(!r.ok){
+    const e=new Error('HTTP '+r.status+' '+relative);
+    if(![429,500,502,503,504].includes(r.status))throw Object.assign(e,{nonRetryable:true});
+    throw e;
+   }
+   const body=await r.text();
+   if(body.length>20000000)throw Object.assign(new Error('oversized public response'),{nonRetryable:true});
+   return body;
+  }catch(e){
+   last=e;
+   if(e.nonRetryable||attempt===2)break;
+   await new Promise(done=>setTimeout(done,800*(attempt+1)));
+  }
+ }
+ throw last;
 }
 const safeErr=e=>String(e?.message||e).slice(0,160);
 async function run(){
@@ -98,10 +113,11 @@ async function run(){
       warning:'Hash only, not a claim of all moves unchanged or gameplay verified'};
    }]
  ];
- await Promise.all(jobs.map(async ([name,url,inspect])=>{
+ // Sequential bounded requests prevent hammering the origin if its CDN is unstable.
+ for(const [name,url,inspect] of jobs){
   try{const value=await fetchText(url);report.results[name]=inspect(value)}
   catch(e){report.errors.push({source:url,reason:safeErr(e)});report.results[name]={status:'unavailable'}}
- }));
+ }
  fs.mkdirSync(path.dirname(output),{recursive:true});
  fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({at:report.observedAt,compared:Object.keys(report.results).filter(k=>report.results[k].status==='compared'),
