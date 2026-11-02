@@ -59,10 +59,20 @@ export function renderApprovedMap(scene,id,{
   // Buttons outside art landmarks deliberately require a campaign lock check.
   const neighbors=approvedMapNeighbours(id).filter(target=>isUnlocked(id,target));
   const footer=scene.add.rectangle(320,347,636,25,0x061b2e,.90).setDepth(47);
-  const navLabel=neighbors.length?neighbors.map(n=>approvedMap(n)?.name||n).join(' · ').slice(0,78):
-   'CONEXÕES BLOQUEADAS PELA PROGRESSÃO';
-  const text=scene.add.text(20,343,navLabel,{fontFamily:'Pixelify Sans,monospace',fontSize:'8px',color:'#fff1cf'})
-   .setDepth(48);
+  if(!neighbors.length)scene.add.text(17,345,'CONEXÕES BLOQUEADAS PELA PROGRESSÃO',
+    {fontFamily:'Pixelify Sans,monospace',fontSize:'9px',color:'#ffde9b'}).setDepth(48);
+  const navTargets=neighbors.slice(0,4);
+  navTargets.forEach((target,i)=>{
+    const cx=75+i*140;
+    const neighbor=approvedMap(target);
+    scene.add.text(cx,347,(neighbor?.name||target).slice(0,17).toUpperCase(),{
+      fontFamily:'Pixelify Sans,monospace',fontSize:'8px',color:'#dcf7f0',
+      backgroundColor:'#174768',padding:{x:4,y:4}}).setDepth(48).setOrigin(.5);
+    scene.add.zone(cx,347,136,25).setDepth(49).setInteractive({useHandCursor:true})
+      .setData('torre2-approved-route',target)
+      .on('pointerdown',()=>onNavigate(id,target));
+  });
+  const text=null;
   const back=scene.add.zone(601,20,74,33).setDepth(50)
    .setInteractive({useHandCursor:true}).setData('torre2-approved-exit',true)
    .on('pointerdown',onExit);
