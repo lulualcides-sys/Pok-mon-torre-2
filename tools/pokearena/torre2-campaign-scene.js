@@ -1,6 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey} from './torre2-approved-map-renderer.js';
 import {approvedMap} from './torre2-approved-maps-atlas.js';
+import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -502,6 +503,25 @@ create(){
     const fresh=readCampaign()||state;
     if(kind==='center')return this.centerScreen(fresh);
     if(kind==='mart')return this.martScreen(fresh);
+    // The approved artwork itself is clickable. All route destinations still
+    // go through the existing stage lock; clicking a sign grants no progress.
+    const firstTarget=firstApprovedDestination(id,kind);
+    if(firstTarget){
+     if(canTravel(id,firstTarget))return open(firstTarget);
+     this.add.text(320,320,'CAMINHO BLOQUEADO PELA PROGRESSÃO',{
+      fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
+      backgroundColor:'#0b293d',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
+     return;
+    }
+    if(kind==='challenge'){
+     const current=(id==='gym-brock'&&fresh.stage===0)||
+      (id==='gym-misty'&&fresh.stage===1);
+     if(current)return this.gymScreen(fresh);
+     this.add.text(320,320,'GINÁSIO FORA DA ETAPA ATUAL',{
+      fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
+      backgroundColor:'#0b293d',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
+     return;
+    }
     if(kind==='gym'&&APPROVED_GYMS[id])return open(APPROVED_GYMS[id]);
     const portals={
      'fuchsia-city':{safari:'safari-zone'},
@@ -515,7 +535,9 @@ create(){
     this.add.text(320,316,'EVENTO '+kind.toUpperCase()+' · EM INTEGRAÇÃO',{
      fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#fff2bd',
      backgroundColor:'#102e43',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
-   }
+   },
+   resolveHotspots:firstApprovedHotspots,
+   artNavigation:hasFirstApprovedHotspots(id)
   });
   if(!result.ok)return this.renderCampaign(readCampaign()||state);
   this.__torre2ApprovedMapView=result;
