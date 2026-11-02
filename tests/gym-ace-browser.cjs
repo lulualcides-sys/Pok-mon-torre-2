@@ -42,7 +42,7 @@ const server=http.createServer((req,res)=>{
      await page.waitForTimeout(800);
      const info=await page.evaluate(async()=>{
       const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
-      const {gymAceVisibleBottomPadding}=await import(new URL('./torre2/gym-ace.js',main));
+      const {gymAceVisibleBottomPadding,gymAceVisibleBounds}=await import(new URL('./torre2/gym-ace.js',main));
       const scene=window.__pt2Game.scene.getScene('campanha');
       const a=scene.__torre2GymAce,object=scene.children.list.find(o=>o.getData?.('torre2-gym-ace')===a.species);
       const leader=scene.children.list.find(o=>o.getData?.('torre2-gym-leader')===a.leader);
@@ -54,10 +54,12 @@ const server=http.createServer((req,res)=>{
       // portion of the spritesheet frame (which caused a false CI failure).
       const transparentBottom=object?gymAceVisibleBottomPadding(object.texture):0;
       const visibleBottom=spriteBounds?spriteBounds.bottom-transparentBottom*Math.abs(object.scaleY):null;
+      const alphaBounds=object?gymAceVisibleBounds(object.texture):null;
+      const visibleTop=spriteBounds?spriteBounds.top+(alphaBounds?.top||0)*Math.abs(object.scaleY):null;
       return {stage:a.stage,species:a.species,leader:a.leader,ready:a.ready,renderer:scene.game.renderer.type,
        spriteKey:object?.texture?.key,hasLeader:!!leader,frame:object?.frame?.name,
        spriteBounds:spriteBounds?{x:spriteBounds.x,y:spriteBounds.y,right:spriteBounds.right,bottom:spriteBounds.bottom}:null,
-       transparentBottom,visibleBottom,aceInteractive:!!object?.input?.enabled,
+       transparentBottom,visibleBottom,visibleTop,aceInteractive:!!object?.input?.enabled,
        buttonBounds:btnBounds?{x:btnBounds.x,y:btnBounds.y,right:btnBounds.right,top:btnBounds.top}:null,
        fps:scene.game.loop.actualFps,hasGymInterior:scene.children.list.some(o=>o.texture?.key==='frlg-location-'+(a.stage?'cerulean':'pewter')),
        hasGymFloor:scene.children.list.some(o=>o.getData?.('torre2-gym-floor')===(a.stage?'cerulean':'pewter')),
@@ -74,7 +76,7 @@ const server=http.createServer((req,res)=>{
      assert.equal(info.aceInteractive,false,'decorative ace must not intercept touches');
      assert.equal(info.platformCaptionOverlap,0,
       'leader+ace caption must not cover the final platform or challenge CTA');
-     assert.ok(info.spriteBounds.y>=70,'boss must stay below upper wall');
+     assert.ok(info.visibleTop>=85,'opaque boss pixels and idle must stay on the final dais');
      assert.ok(info.visibleBottom<info.buttonBounds.top-4,
       'opaque ace pixels must not overlap challenge button: '+JSON.stringify(info));
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),saveBefore,'gym decorations must never mutate save');
