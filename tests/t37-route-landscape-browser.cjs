@@ -94,10 +94,34 @@ const views=[
      await page.screenshot({path:path.join(dest,name),fullPage:true});
      report.views.push({...view,device,file:name,...info});
     }
+    // Emulate ONLY a saved trainer-index change, without awarding victory.
+    // The native scene must fetch Viridian's real terrain without requiring
+    // the user to restart the campaign or discard its current save.
+    await page.evaluate(()=>{
+     const core=window.t37Core,c=window.__pt2Game.scene.getScene('campanha');
+     const s=core.createCampaign('bulbasaur');s.stage=0;s.trainer=0;
+     core.saveCampaign(s);c.scene.restart();
+    });
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+     .__torre2BattlePath?.stage===0,null,{timeout:60000});
+    await page.evaluate(()=>{
+     const core=window.t37Core,c=window.__pt2Game.scene.getScene('campanha');
+     const s=core.readCampaign();s.trainer=7;core.saveCampaign(s);
+     c.renderCampaign(core.readCampaign());
+    });
+    await page.waitForFunction(()=>{
+     const c=window.__pt2Game.scene.getScene('campanha'),p=c.__torre2BattlePath;
+     return p?.stage===0&&p.progress===7&&p.gym?.locale==='viridian'
+      &&p.gym?.realExterior===true;
+    },null,{timeout:60000});
+    const file='viridian-after-progress-'+device+'.png';
+    await page.screenshot({path:path.join(dest,file),fullPage:true});
+    report.views.push({id:'viridian-after-progress',device,file,
+     stage:0,trainer:7,fixtureOnly:true,dynamicTerrainLoaded:true});
    }finally{await page.close()}
   }
   assert.deepEqual(report.errors,[],'unexpected Phaser runtime exception');
-  assert.equal(report.views.length,12);
+  assert.equal(report.views.length,14);
   fs.writeFileSync(path.join(dest,'report.json'),JSON.stringify(report,null,2));
   console.log('PASS T37 ROUTE LANDSCAPE REAL WEBGL '+JSON.stringify({
    views:report.views.length,locales:[...new Set(report.views.map(v=>v.locale))],
