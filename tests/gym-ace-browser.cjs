@@ -40,15 +40,23 @@ const server=http.createServer((req,res)=>{
      });
      await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')?.__torre2GymAce?.ready===true,null,{timeout:60000});
      await page.waitForTimeout(800);
-     const info=await page.evaluate(()=>{
+     const info=await page.evaluate(async()=>{
+      const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
+      const {gymAceVisibleBottomPadding}=await import(new URL('./torre2/gym-ace.js',main));
       const scene=window.__pt2Game.scene.getScene('campanha');
       const a=scene.__torre2GymAce,object=scene.children.list.find(o=>o.getData?.('torre2-gym-ace')===a.species);
       const leader=scene.children.list.find(o=>o.getData?.('torre2-gym-leader')===a.leader);
       const btn=scene.children.list.find(o=>o.input?.enabled&&o.x===320&&o.y===231);
       const spriteBounds=object?.getBounds?.(),btnBounds=btn?.getBounds?.();
+      // Phaser getBounds includes transparent PMD Idle rows below the feet.
+      // Test the actual opaque pixels and the native touch zone, not an empty
+      // portion of the spritesheet frame (which caused a false CI failure).
+      const transparentBottom=object?gymAceVisibleBottomPadding(object.texture):0;
+      const visibleBottom=spriteBounds?spriteBounds.bottom-transparentBottom*Math.abs(object.scaleY):null;
       return {stage:a.stage,species:a.species,leader:a.leader,ready:a.ready,renderer:scene.game.renderer.type,
        spriteKey:object?.texture?.key,hasLeader:!!leader,frame:object?.frame?.name,
        spriteBounds:spriteBounds?{x:spriteBounds.x,y:spriteBounds.y,right:spriteBounds.right,bottom:spriteBounds.bottom}:null,
+       transparentBottom,visibleBottom,aceInteractive:!!object?.input?.enabled,
        buttonBounds:btnBounds?{x:btnBounds.x,y:btnBounds.y,right:btnBounds.right,top:btnBounds.top}:null,
        fps:scene.game.loop.actualFps,hasGymInterior:scene.children.list.some(o=>o.texture?.key==='frlg-location-'+(a.stage?'cerulean':'pewter')),
        hasGymFloor:scene.children.list.some(o=>o.getData?.('torre2-gym-floor')===(a.stage?'cerulean':'pewter')),
@@ -60,7 +68,9 @@ const server=http.createServer((req,res)=>{
      assert.equal(info.hasGymInterior,true,'original FireRed gym interior required');
      assert.equal(info.hasGymFloor,true,'authentic tiled FireRed floor required');
      assert.ok(info.spriteBounds&&info.buttonBounds,'native sprite and button must exist');
-     assert.ok(info.spriteBounds.bottom<info.buttonBounds.top,'ace must not block challenge button');
+     assert.equal(info.aceInteractive,false,'decorative ace must not intercept touches');
+     assert.ok(info.visibleBottom<info.buttonBounds.top-4,
+      'opaque ace pixels must not overlap challenge button: '+JSON.stringify(info));
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),saveBefore,'gym decorations must never mutate save');
      assert.deepEqual(errors,[]);assert.deepEqual(failedRequests.filter(x=>x.includes('/assets/pmd/')),[]);
      const name='gym-'+leader.toLowerCase()+'-'+ace+'-'+device+'.png';
