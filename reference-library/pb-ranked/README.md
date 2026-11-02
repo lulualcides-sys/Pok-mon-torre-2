@@ -5,6 +5,15 @@
 
 **Escopo solicitado:** exclusivamente conteúdo de gameplay individual, sem PvP online, ranking ou multiplayer humano; a autenticação foi efetuada legitimamente pelo usuário no perfil privado do TinyFish para o treino contra bot. O titular do projeto informou autorização de acesso e uso **não comercial** para estudo. Não publicar arquivos brutos do jogo nem misturar ativos de terceiros no GitHub Pages sem comprovação do alcance dessa licença.
 
+## Atlas matemático das referências — 01/11/2026
+
+**Gerado e testado:** 3.815 entradas de estados animados de 237 IDs, 283 golpes, 246 no elenco público e 176 sem uso de batalha relatado. Os índices de impacto são percentuais **ordinais dos quadros**, não velocidades ou segundos. Nenhum frame original foi extraído.
+
+- [Atlas completo por sprite/estado e golpe — 1,8 MB](ATLAS-MATEMATICO-REA-2026-11-01.json)
+- [Resumo matemático — 14 KB](ATLAS-MATEMATICO-RESUMO-2026-11-01.json)
+- [Fórmulas, interpretação e limites](GUIA-ATLAS-MATEMATICO-2026-11-01.md)
+- [Gerador de trajetória, Bézier e colisão contínua](../../tools/research/pb-ranked-math-atlas.cjs)
+
 ## Novidade verificada — 01/11/2026
 
 A auditoria de metadados públicos encontrou **Grassy Glide** no elenco atual, antes presente apenas no AST. A cobertura passa a **246 movimentos disponíveis / 176 ainda sem uso relatado**, de um universo de 283 nomes estáticos. Greninja teve alteração de golpes padrão, ainda sem IDs revalidados. Nenhuma animação quadro a quadro foi arquivada.
