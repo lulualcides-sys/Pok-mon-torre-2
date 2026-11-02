@@ -600,6 +600,7 @@ patches.push(['escenas/seleccion.js',[
  ['const R=ROLES[r];','const R=ROLES[r]??ROLES.MIXTO;'],
  ['const h=p.kit[slot];const ky=','const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=']
 ]]);
+const upstreamUnmatched=[];
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
@@ -617,6 +618,12 @@ for(const [filename,changes] of patches){
     }
     if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
      console.warn('Native title no longer exposes PROFILE in settings; no change');
+     continue;
+    }
+    if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
+     upstreamUnmatched.push({filename,issue:'profile menu changed',
+      current:body.slice(Math.max(0,body.indexOf('ajustes:')-40),
+        body.indexOf('ajustes:')+420)});
      continue;
     }
     throw Error('Unknown native account profile menu; refusing guessed removal');
@@ -977,12 +984,20 @@ for(const [filename,changes] of patches){
     console.warn('Changed upstream title Idle-2 conditions preserved unchanged');
     continue;
    }
+   if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
+    upstreamUnmatched.push({filename,missing:from.slice(0,120),
+     target:to.slice(0,100)});
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
 }
+
+if(upstreamUnmatched.length)
+ throw Error('UPSTREAM AUDIT: '+JSON.stringify(upstreamUnmatched));
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.

@@ -31,5 +31,5 @@ jobs:
       - name: Assemble original Phaser client for real compatibility gate
         run: |
           node tools/pokearena/capture-client.mjs
-          node tools/pokearena/build-preview.mjs
+          TORRE2_UPSTREAM_AUDIT=1 node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/index.html
