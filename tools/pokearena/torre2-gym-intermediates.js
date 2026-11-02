@@ -6,6 +6,22 @@ const POSITIONS=Object.freeze([
  Object.freeze({x:157,y:139}),Object.freeze({x:483,y:139}),
  Object.freeze({x:157,y:192}),Object.freeze({x:483,y:192})
 ]);
+// All figures are ORIGINAL FireRed overworld sprites already installed by
+// install-frlg-npcs.mjs. These are visual archetypes, NOT new opponents or
+// rewritten routeNode identities. Avoid duplicate 'ace' silhouettes.
+export const GYM_TRAINER_SPRITES=Object.freeze([
+ Object.freeze(['hiker','camper','youngster']),
+ Object.freeze(['swimmer','picnicker','lass','ace']),
+ Object.freeze(['sailor','gentleman','biker','scientist']),
+ Object.freeze(['lass','picnicker','ace','camper']),
+ Object.freeze(['biker','scientist','hiker','ace']),
+ Object.freeze(['channeler','scientist','lass','ace']),
+ Object.freeze(['scientist','gentleman','hiker','ace']),
+ Object.freeze(['hiker','scientist','gentleman','ace'])
+]);
+export function gymTrainerSpriteKinds(stage){
+ return GYM_TRAINER_SPRITES[stage]||[];
+}
 export function gymIntermediateModel(state,gyms,trainersPerGym,routeNode){
  const stage=state?.stage;
  if(!Number.isInteger(stage)||stage<0||stage>=8||!gyms?.[stage])return null;
@@ -29,7 +45,8 @@ export function gymIntermediateModel(state,gyms,trainersPerGym,routeNode){
  const slots=gymIndices.map((index,i)=>{
   const node=routeNode(stage,index,limit);
   return Object.freeze({index,slot:i,x:POSITIONS[i].x,y:POSITIONS[i].y,
-   role:'gym-trainer',kind:'trainer',title:'TREINADOR '+(i+1),originalName:node.name,
+   role:'gym-trainer',kind:'trainer',spriteKind:gymTrainerSpriteKinds(stage)[i],
+   title:'TREINADOR '+(i+1),originalName:node.name,
    status:index<progress?'defeated':index===progress?'current':'locked'});
  });
  return Object.freeze({version:GYM_INTERMEDIATE_VERSION,stage,leader:gyms[stage].leader,
@@ -46,8 +63,7 @@ export function drawGymIntermediates(scene,model,addNpc,onBattle){
  for(const t of model.slots){
   // No character or hitbox in the central bridge, ace, leader or CTA.
   scene.add.ellipse(t.x,t.y+1,24,6,0x101c30,.36).setDepth(13);
-  const npcKind=t.kind==='rival'?'rival':t.kind==='rocket'?'rocket':
-   model.stage===0?'hiker':'ace';
+  const npcKind=t.spriteKind;
   addNpc(scene,npcKind,t.x,t.y,{scale:1.05,depth:16})
    ?.setData('torre2-gym-intermediate',t.index);
   scene.add.text(t.x,t.y+6,t.title+(t.status==='defeated'?' ✓':''),{
