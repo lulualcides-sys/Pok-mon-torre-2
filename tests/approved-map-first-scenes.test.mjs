@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
 import {planApprovedMapOverlays,renderApprovedMap} from '../tools/pokearena/torre2-approved-map-renderer.js';
-import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
+import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
 
 const firstMaps=['pewter-city','gym-brock','cerulean-city','gym-misty'];
 const rect={x:0,y:0,width:640,height:360};
@@ -83,4 +83,28 @@ test('T41 preflight rejects an unreviewed hotspot before drawing any pixels',()=
  const layout=planApprovedMapOverlays(entry,rect,[]);
  assert.equal(layout.ok,false);
  assert.equal(layout.reason,'hotspot-out-of-bounds');
+});
+
+test('T43 first two approved gyms overlay a native leader, ace, and four saved trainer indices',()=>{
+ const expected=[['gym-brock',0],['gym-misty',1]];
+ for(const [id,stage] of expected){
+  const layout=firstApprovedGymActors(id,13);
+  assert.equal(layout.stage,stage);
+  assert.equal(layout.trainers.length,4);
+  assert.deepEqual(layout.trainers.map(t=>t.index),[9,10,11,12]);
+  for(const actor of [layout.leader,layout.ace,...layout.trainers]){
+   assert.ok(actor.cx>0&&actor.cx<1&&actor.cy>0&&actor.cy<1);
+  }
+  // Four trainers must not steal the clickable door/challenge hitbox.
+  const h=firstApprovedHotspots(approvedMap(id));
+  for(const npc of layout.trainers){
+   for(const hotspot of h){
+    const overlap=Math.abs(npc.cx-hotspot.cx)<(hotspot.w+.045)/2&&
+     Math.abs(npc.cy-hotspot.cy)<(hotspot.h+.08)/2;
+    assert.equal(overlap,false,id+': '+hotspot.id);
+   }
+  }
+ }
+ assert.equal(firstApprovedGymActors('ss-anne',13),null);
+ assert.throws(()=>firstApprovedGymActors('gym-brock',2),RangeError);
 });
