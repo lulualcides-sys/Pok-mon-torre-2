@@ -49,7 +49,7 @@ const server=http.createServer((req,res)=>{
    const foliage=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.active&&o.getData?.('torre2-cerulean-foliage'))
     .map(o=>o.getData('torre2-cerulean-foliage')));
-   assert.equal(foliage.length,21,'Cerulean must use the organic user-approved foliage in all 21 placements');
+   assert.equal(foliage.length,17,'Cerulean has seventeen native trees on garden strips, not obstructing paved circulation');
    assert.ok(new Set(foliage).size>=6,'Trees must visibly vary: no identical stamp across Kanto');
    const foliageQuality=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.active&&o.getData?.('torre2-cerulean-foliage'))
