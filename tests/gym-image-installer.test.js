@@ -146,6 +146,6 @@ test('T38 rejects CRC-valid unknown critical chunks and misplaced PNG palettes',
    'assets/ui/gym-interiors/brock-interior.png')),{code:'ENOENT'});
  }
  // A normal optional ancillary text chunk remains compatible.
- await fs.writeFile(file,wrap([chunk('tEXt',Buffer.from('Source\\0approved')),idat]));
+ await fs.writeFile(file,wrap([chunk('tEXt',Buffer.from([83,111,117,114,99,101,0,97,112,112,114,111,118,101,100])),idat]));
  assert.equal((await installGymBackgrounds(dest,{source})).scenes.length,1);
 });
