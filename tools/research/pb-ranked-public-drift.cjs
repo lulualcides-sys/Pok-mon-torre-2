@@ -104,7 +104,9 @@ async function run(){
  fs.writeFileSync(output,JSON.stringify(report,null,2)+'\n');
  console.log(JSON.stringify({at:report.observedAt,compared:Object.keys(report.results).filter(k=>report.results[k].status==='compared'),
   errors:report.errors,roster:report.results.roster&&{live:report.results.roster.liveSpecies,baseline:report.results.roster.baselineSpecies,
-   newSpecies:report.results.roster.speciesDiff?.addedCount,newMoves:report.results.roster.moveNameDiff?.addedCount},
+   newSpecies:report.results.roster.speciesDiff?.addedCount,newMoves:report.results.roster.moveNameDiff?.addedCount,
+   newMoveNames:report.results.roster.moveNameDiff?.added,removedMoveNames:report.results.roster.moveNameDiff?.removed,
+   changedDefaultSpecies:report.results.roster.defaultSlotsChanged?.map(x=>x.species).slice(0,30)},
   animations:report.results.animations&&{live:report.results.animations.liveAnimationEntries,
    baseline:report.results.animations.baselineAnimationEntries},
   trainers:report.results.trainers&&{live:report.results.trainers.liveTrainerCount},
