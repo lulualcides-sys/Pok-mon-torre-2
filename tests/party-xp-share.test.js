@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {planBattlePathGeometry,rectsOverlap} from '../tools/pokearena/torre2-battle-path-geometry.js';
 
 // Direct imported sources live in the captured client at build time.
 // In this pre-build suite, verify integration points; the staged Phaser suite
@@ -24,10 +25,20 @@ test('trainer and wild wins call one whole-party EXP Share, not active-only',()=
  assert.ok(src.includes('saveCampaign(next);')&&src.includes('Object.assign(state,next);'),
   'Commit battle rewards only after a successful checkpoint write');
 });
-test('Brock stands in gym center and common trainers stay outside',()=>{
- assert.ok(hub.includes('const px=boss?414:('));
- assert.ok(hub.includes("['hiker',359],['youngster',469]"));
- assert.ok(hub.includes("const width=boss?82:60"));
+test('Brock route portal remains separate from regular trainer hitboxes',()=>{
+ const plan=planBattlePathGeometry({total:13,offset:0});
+ const boss=plan.spots.find(p=>p.boss);
+ assert.ok(boss,'the existing 13 trainers must lead to one boss portal');
+ assert.equal(boss.global,13);
+ assert.equal(boss.x,414);
+ assert.equal(plan.spots.filter(p=>!p.boss).length,13);
+ for(const trainer of plan.spots.filter(p=>!p.boss)){
+  assert.equal(rectsOverlap(trainer.hitbox,boss.hitbox),false,
+   'the gym portal must not steal a route trainer tap');
+ }
+ assert.ok(hub.includes('planBattlePathGeometry({total,offset,finished})'));
+ assert.ok(hub.includes("if(checkpoint.primary==='gym')return handlers.gym();"),
+  'boss checkpoint must open the separate gym interior');
 });
 test('reset requires deliberate confirmation before erasing the save',()=>{
  assert.ok(hub.includes("handlers.reset"));

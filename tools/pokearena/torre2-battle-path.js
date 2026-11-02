@@ -12,6 +12,7 @@ import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {ROOM_CROPS} from './frlg-interiors.js';
 import {routeBackdropForCampaign} from './frlg-location.js';
+import {planBattlePathGeometry} from './battle-path-geometry.js';
 import {ball} from './campaign-art.js';
 import {TRAINERS_PER_GYM,STAGES,currentOpponent} from './campaign-core.js';
 
@@ -22,12 +23,6 @@ export const BATTLE_PATH_BACKDROP=Object.freeze([
 ]);
 const COLORS={ink:0x071729,navy:0x0a223a,edge:0x508cb4,gold:0xffd573,
  green:0x43d881,blue:0x5ba9dc,muted:0x768ca0};
-const ROWS=Object.freeze([
- // Normal trainers stay outside the gym; Brock owns the central platform.
- [53,116,179,242,305],
- [305,242,179,116,53],
- [70,148,226,304]
-]);
 const TX={fontFamily:'Pixelify Sans,monospace',fontStyle:'bold'};
 function txt(scene,x,y,value,size=10,color='#f5f8fc',depth=26){
  return scene.add.text(x,y,String(value),{...TX,fontSize:size+'px',
@@ -203,15 +198,7 @@ export function renderBattlePath(scene,state,handlers){
  const offset=Math.max(0,Math.min(total,Math.floor(page/13)*13));
  scene.__torre2RenderedPathProgress=progress;
  scene.__torre2RenderedPathStage=stage;
- const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
- const spots=[];
- for(let i=0;i<length;i++){
-  const row=Math.floor(i/5),column=i%5;
-  const boss=offset+i===total;
-  const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
-  const y=boss?178:[275,211,147][Math.min(row,2)];
-  spots.push({x:px,y,global:offset+i});
- }
+ const {spots,navigation,length}=planBattlePathGeometry({total,offset,finished});
  // Map region labels reference existing FireRed town/mountain sheets.
  // One connected zigzag and the leader at its end; no extra pages/maps.
  const checkpointZone=(n)=>{
@@ -309,7 +296,7 @@ export function renderBattlePath(scene,state,handlers){
   // Separate touch zone over the existing green-grass ball pictogram.
   // Higher depth than the trainer's large hitbox, lower than all modals.
   if(capture){
-   const badge=scene.add.zone(p.x,p.y-26,22,18).setDepth(36)
+   const badge=scene.add.zone(p.x,p.y-26,22,12).setDepth(36)
     .setInteractive({useHandCursor:true})
     .setData('torre2-path-capture',i);
    badge.on('pointerdown',(_p,_x,_y,event)=>{
@@ -327,8 +314,8 @@ export function renderBattlePath(scene,state,handlers){
   }
  }
  // Stable page navigation for Misty and later routes with >13 battles.
- if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
- if(!finished&&offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ if(navigation.previous)button(scene,navigation.previous.x,navigation.previous.y,43,18,'◀',()=>handlers.page(-1),{small:true});
+ if(navigation.next)button(scene,navigation.next.x,navigation.next.y,43,18,'▶',()=>handlers.page(1),{small:true});
  // After the final Champion KO, never redraw a fake 14th boss that can
  // reopen the gym. This honors the earned victory with native Phaser pixels.
  if(finished){
