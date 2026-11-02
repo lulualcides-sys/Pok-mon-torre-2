@@ -17,7 +17,7 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  ]),
  'cerulean-city':Object.freeze([
   v('center',.290,.369,.11,.14),
-  v('mart',.556,.359,.10,.13),
+  v('mart',.495,.359,.10,.13),
   v('gym',.705,.355,.14,.16),
   v('route4',.057,.693,.10,.13),
   v('route24',.476,.072,.12,.12),
@@ -52,22 +52,22 @@ export function firstApprovedDestination(mapId,hotspotId){
  */
 export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
  'gym-brock':Object.freeze({
-  stage:0,leader:Object.freeze({kind:'brock',cx:.50,cy:.315}),
-  ace:Object.freeze({dex:'0095',cx:.575,cy:.285}),
+  stage:0,leader:Object.freeze({kind:'brock',cx:.480,cy:.240}),
+  ace:Object.freeze({dex:'0095',cx:.570,cy:.235}),
   trainers:Object.freeze([
    Object.freeze({kind:'hiker',cx:.27,cy:.54}),
    Object.freeze({kind:'youngster',cx:.73,cy:.54}),
-   Object.freeze({kind:'hiker',cx:.29,cy:.78})
+   Object.freeze({kind:'hiker',cx:.50,cy:.72})
   ])
  }),
  'gym-misty':Object.freeze({
-  stage:1,leader:Object.freeze({kind:'misty',cx:.50,cy:.305}),
-  ace:Object.freeze({dex:'0121',cx:.575,cy:.272}),
+  stage:1,leader:Object.freeze({kind:'misty',cx:.470,cy:.230}),
+  ace:Object.freeze({dex:'0121',cx:.570,cy:.225}),
   trainers:Object.freeze([
-   Object.freeze({kind:'swimmer',cx:.27,cy:.53}),
-   Object.freeze({kind:'lass',cx:.73,cy:.53}),
-   Object.freeze({kind:'swimmer',cx:.27,cy:.75}),
-   Object.freeze({kind:'lass',cx:.73,cy:.75})
+   Object.freeze({kind:'swimmer',cx:.27,cy:.465}),
+   Object.freeze({kind:'lass',cx:.73,cy:.465}),
+   Object.freeze({kind:'swimmer',cx:.27,cy:.695}),
+   Object.freeze({kind:'lass',cx:.73,cy:.695})
   ])
  })
 });
