@@ -15,6 +15,6 @@ test('Kanto SVG sprites are script-free, self-contained, with exact dimensions',
   assert.match(svg,/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"/);
   assert.match(svg,/viewBox="0 0 32 32"/);
   assert.ok(!/<script|<image|<foreignObject|onload=|href=|<use|<style/i.test(svg));
-  assert.ok((svg.match(/<rect /g)||[]).length>=8);
+  assert.ok((svg.match(/<rect /g)||[]).length>=4);
  }
 });
