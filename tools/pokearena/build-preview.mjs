@@ -571,6 +571,14 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Optional upstream spritesheet is gone/reshaped; it is not used by
+   // the native capture pipeline. Handle only this exact known dependency.
+   if(filename==='escenas/carga.js'&&
+      from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
+    const {stripUnavailableUiBallsPreload}=await import('./torre2-native-asset-compat.mjs');
+    body=stripUnavailableUiBallsPreload(body);
+    continue;
+   }
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
    if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){
