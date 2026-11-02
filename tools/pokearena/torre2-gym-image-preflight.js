@@ -46,7 +46,8 @@ export function preflightGymImageOverlay(layout,{screens=DEFAULT_SCREENS}={}){
  assertSeparated(leader,ace,margin,'leader / ace');
  assertSeparated(leader,corridor,margin,'leader / corridor');
  assertSeparated(ace,corridor,margin,'ace / corridor');
- const hotspots=layout.slots.map((point,i)=>{
+ const hotspots=[];
+ for(const [i,point] of layout.slots.entries()){
   if(!Number.isFinite(point?.x)||!Number.isFinite(point?.y))
    throw Error('T38 invalid trainer anchor: '+i);
   // Exact native Phaser zone is 53x40, centred at (x,y-17).
@@ -58,8 +59,8 @@ export function preflightGymImageOverlay(layout,{screens=DEFAULT_SCREENS}={}){
    assertSeparated(box,avoid,margin,'trainer '+i+' / '+name);
   for(let j=0;j<i;j++)assertSeparated(box,hotspots[j],margin,
    'trainer '+i+' / trainer '+j);
-  return box;
- });
+  hotspots.push(box);
+ }
  if(!Array.isArray(screens)||!screens.length)throw Error('T38 no viewports');
  const responsive=screens.map(({width,height})=>{
   if(!Number.isFinite(width)||!Number.isFinite(height)||width<=0||height<=0)
