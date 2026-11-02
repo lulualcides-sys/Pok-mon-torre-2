@@ -118,11 +118,14 @@ function stagePlan(stage){
   audit
  });
 }
+const PLAN_CACHE=new Map();
 export function calculateGymVector(stage){
  if(stage!==0&&stage!==1)return null;
+ if(PLAN_CACHE.has(stage))return PLAN_CACHE.get(stage);
  const plan=stagePlan(stage);
  // Fail closed BEFORE a single image/graphics/touch zone is placed.
  if(!plan.audit.valid)throw new Error('Unsafe gym vector geometry: '+
   Object.keys(plan.audit).filter(k=>plan.audit[k]===false).join(','));
+ PLAN_CACHE.set(stage,plan);
  return plan;
 }
