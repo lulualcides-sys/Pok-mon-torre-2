@@ -1,3 +1,4 @@
+import {gymWideLayout} from './gym-wide-layout.js';
 /* T19 — existing genuine trainer indices in gyms, Rival/Rocket on routes.
  * Presentation only: preserve routeNode identities, saves and boss gating.
  */
@@ -28,7 +29,8 @@ export function gymIntermediateModel(state,gyms,trainersPerGym,routeNode){
  const progress=Math.max(0,Math.min(limit,Math.trunc(Number(state.trainer)||0)));
  const slots=gymIndices.map((index,i)=>{
   const node=routeNode(stage,index,limit);
-  return Object.freeze({index,slot:i,x:POSITIONS[i].x,y:POSITIONS[i].y,
+  const p=gymWideLayout(stage)?.slots[i]||POSITIONS[i];
+  return Object.freeze({index,slot:i,x:p.x,y:p.y,
    role:'gym-trainer',kind:'trainer',title:'TREINADOR '+(i+1),originalName:node.name,
    status:index<progress?'defeated':index===progress?'current':'locked'});
  });
