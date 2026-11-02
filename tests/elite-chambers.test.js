@@ -60,9 +60,9 @@ test('T38: isolated from save schema, battle, rewards, RNG and Arena HUD',()=>{
  const code=fs.readFileSync('tools/pokearena/torre2-elite-chambers.js','utf8');
  const scene=fs.readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  const build=fs.readFileSync('tools/pokearena/build-preview.mjs','utf8');
- assert.doesNotMatch(code,/saveCampaign|resolveBattle|startBattle|Math\\.random|localStorage|inventory|xp\\s*=|money\\s*=/);
- assert.match(scene,/if\\(!gym&&eliteChamberPlan\\(state\\.stage\\)\\)/);
- assert.match(scene,/drawEliteChamber\\(this,state\\.stage,addFireRedNPC\\)/);
- assert.match(scene,/if\\(ready\\|\\|roster\\?\\.inGym\\)this\\.enterBattle\\(state\\)/);
- assert.match(build,/torre2-elite-chambers\\.js','torre2-elite-chambers\\.js'/);
+ assert.doesNotMatch(code,/saveCampaign|resolveBattle|startBattle|Math\.random|localStorage|inventory|xp\s*=|money\s*=/);
+ assert.match(scene,/if\(!gym&&eliteChamberPlan\(state\.stage\)\)/);
+ assert.match(scene,/drawEliteChamber\(this,state\.stage,addFireRedNPC\)/);
+ assert.match(scene,/if\(ready\|\|roster\?\.inGym\)this\.enterBattle\(state\)/);
+ assert.match(build,/torre2-elite-chambers\.js','torre2-elite-chambers\.js'/);
 });
