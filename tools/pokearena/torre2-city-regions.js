@@ -51,12 +51,19 @@ export function renderRegionalScenery(scene,profile){
   for(const [x,y]of [[80,245],[160,280],[438,280],[535,240]])tree(x,y,43);
  }else if(theme==='psychic'){
   tile('paving',0,35,640,273,0);road(0,167,640,35);road(282,35,76,273);
-  for(const x of [190,420])for(const y of [130,285]){rect(x-26,y-65,53,65,0x768ca3);rect(x-29,y-68,59,7,0xbed3ce);for(let a=0;a<3;a++)for(let b=0;b<4;b++)rect(x-19+a*16,y-53+b*13,9,8,0xaddfdf);}
+  for(const x of [190,420])for(const y of [130,285]){rect(x-28,y-65,57,65,0x354e64);rect(x-25,y-65,50,65,0x768ca3);rect(x+21,y-65,6,65,0x536a80);rect(x-29,y-68,59,7,0xbed3ce);rect(x-23,y-75,46,7,0x8fa5b0);rect(x-17,y-79,13,4,0xc4cfc7);for(let a=0;a<3;a++)for(let b=0;b<4;b++){rect(x-20+a*16,y-54+b*13,11,10,0x354e64);rect(x-19+a*16,y-53+b*13,8,7,0xaddfdf);rect(x-19+a*16,y-53+b*13,2,7,0x77b2c1);}rect(x-27,y-2,56,3,0xd0cbb3);}
   for(const x of [40,595]){hedge(x,270,40);flower(x+10,285)}
  }else if(theme==='volcano'){
   tile('water',0,35,640,273,0);cliff(55,139,535,146);cliff(92,95,480,75);
   tile('grass',60,143,525,134,4);road(110,184,440,31);road(281,209,48,70);
-  g.fillStyle(0x4f6067).fillTriangle(240,137,325,40,409,137);
+  // Texture-backed basalt mountain, not a flat placeholder triangle.
+  const mountain=tile('stone',240,40,169,97,4);
+  if(mountain){
+   const shape=scene.make.graphics({x:0,y:0,add:false});
+   shape.fillStyle(0xffffff).fillTriangle(240,137,325,40,409,137);
+   const mask=shape.createGeometryMask();mountain.setMask(mask);
+   mountain.once('destroy',()=>{mask.destroy();shape.destroy()});
+  }
   g.fillStyle(0xb86249).fillTriangle(301,68,325,40,348,68);
   rect(319,67,9,62,0xf2a255);rect(326,99,22,7,0xc97045);
   addCityBoat(scene,38,287,65);
@@ -109,7 +116,7 @@ export function renderRegionalScenery(scene,profile){
   furniture.fillStyle(0xffdfa0).fillRect(x-3,y-27,6,5);
  }
  // Shared vegetation and architecture, with each city's layout kept independent.
- for(const [x,y]of [[18,79],[48,70],[600,78],[629,85]])tree(x,y,46);
+ for(const [x,y]of (theme==='volcano'?[[78,190],[560,143],[574,269]]:[[18,79],[48,70],[600,78],[629,85]]))tree(x,y,46);
  for(const p of profile.landmarks){
   if(p.id==='gym')addRegionalGym(scene,theme,p.x,p.y-5,theme==='league'?137:114);
   else addCitySprite(scene,p.id,p.x,p.y-4,80);
