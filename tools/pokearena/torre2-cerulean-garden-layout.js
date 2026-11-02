@@ -19,11 +19,12 @@ export const CERULEAN_GREENERY = Object.freeze([
  Object.freeze({x:421,y:260,height:40,species:'oak_sun',zone:'east-riverbank'}),
  Object.freeze({x:441,y:252,height:37,species:'oak_deep',zone:'east-riverbank'}),
  Object.freeze({x:628,y:193,height:42,species:'pine',zone:'east-woodland'}),
- Object.freeze({x:247,y:174,height:37,species:'oak_lime',zone:'central-island'})
+ Object.freeze({x:446,y:77,height:37,species:'oak_lime',zone:'east-garden'})
 ]);
 export const CERULEAN_PROTECTED_WALKWAYS=Object.freeze([
  Object.freeze({id:'south-stairs',left:270,top:265,right:310,bottom:307}),
  Object.freeze({id:'canal-bridge',left:327,top:115,right:411,bottom:164}),
+ Object.freeze({id:'central-plaza',left:210,top:149,right:280,bottom:217}),
  Object.freeze({id:'gym-entrance',left:469,top:169,right:560,bottom:214}),
  Object.freeze({id:'center-entrance',left:85,top:141,right:164,bottom:179}),
  Object.freeze({id:'mart-entrance',left:64,top:236,right:145,bottom:270}),
