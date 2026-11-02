@@ -51,7 +51,9 @@ const server=createServer(async(req,res)=>{
    },null,{timeout:55000});
    const initial=await page.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha'),view=scene.__torre2ApprovedMapView;
-    return {id:view.id,source:view.image.texture.getSourceImage(),
+    return {id:view.id,source:{
+     width:view.image.texture.getSourceImage().width,
+     height:view.image.texture.getSourceImage().height},
      gym:scene.children.list.filter(x=>x.getData?.('torre2-approved-hotspot')==='pewter-city:gym')
       .map(x=>({x:x.x,y:x.y})),before:JSON.stringify(window.__mapFixture.readCampaign())};
    });
