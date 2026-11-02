@@ -3,7 +3,7 @@
 **Status:** ARTES APROVADAS PARA FUTURA INTEGRAÇÃO; NÃO IMPLEMENTADAS NESTA ETAPA.
 
 ## Backup dos PNGs
-Foram encontrados e verificados 58 arquivos PNG individuais. Cópia de segurança integral (189,3 MB) e `manifesto_58_imagens.json` com SHA-256 de cada imagem foram salvos na **Biblioteca do ChatGPT**, pasta:
+Foram encontrados e verificados 59 arquivos PNG individuais. Cópia de segurança integral (192,7 MB) e `manifesto_59_imagens.json` com SHA-256 de cada imagem foram salvos na **Biblioteca do ChatGPT**, pasta:
 `/Pokemon Torre 2/Mapas Aprovados 2026-11-02/`
 
 **Importante:** os PNGs novos **não foram adicionados a este repositório por esta alteração**. Esta PR documenta os aprovados e ajuda o implementador a não confundir conceitos com assets já versionados. O ZIP está salvo separadamente na Biblioteca, pois a integração posterior deve escolher como versionar os fundos e as camadas.
@@ -58,19 +58,19 @@ Foram encontrados e verificados 58 arquivos PNG individuais. Cópia de seguranç
 - [x] 47 — Ilha 1 (Sevii)
 - [x] 48 — Monte Ember
 - [x] 49 — Ilha 2 (Sevii)
-- [x] 50 — Ilha 4 (Sevii)
-- [x] 51 — Caverna Icefall
-- [x] 52 — Ilha 5 (Sevii)
-- [x] 53 — Depósito Rocket (Ilha 5)
-- [x] 54 — Ilha 6 (Sevii)
-- [x] 55 — Ilha 7 (Sevii)
-- [x] 56 — Cânion Sevault
-- [x] 57 — Ruínas Tanoby
-- [x] 58 — Torre dos Treinadores (interior)
+- [x] 50 — Ilha 3 (Sevii) — imagem original recuperada do chat
+- [x] 51 — Ilha 4 (Sevii)
+- [x] 52 — Caverna Icefall
+- [x] 53 — Ilha 5 (Sevii)
+- [x] 54 — Depósito Rocket (Ilha 5)
+- [x] 55 — Ilha 6 (Sevii)
+- [x] 56 — Ilha 7 (Sevii)
+- [x] 57 — Cânion Sevault
+- [x] 58 — Ruínas Tanoby
+- [x] 59 — Torre dos Treinadores (interior)
 
 ## Pendências de recuperação
 - [ ] **S.S. Anne — interior:** usuário aprovou, mas o arquivo correspondente não foi localizado com segurança no backup da conversa.
-- [ ] **Ilha 3 — Sevii:** aprovada no chat; a cópia original não foi recuperada no ambiente atual, possivelmente substituída por um PNG posterior de mesmo nome.
 
 Não reconstruir ou escolher variantes substitutas e declarar aprovação sem nova verificação do usuário.
 
@@ -88,7 +88,7 @@ Não reconstruir ou escolher variantes substitutas e declarar aprovação sem no
 11. A aprovação dos conceitos **não autoriza sobrescrever código/saves nem publicar uma implementação** sem testes e validação.
 
 ## Próximo trabalho
-1. Recuperar os PNGs pendentes de S.S. Anne e Ilha 3.
+1. Recuperar o PNG pendente do interior do S.S. Anne.
 2. Levar cada PNG para assets versionados de forma auditável, preferencialmente branch própria com rastreamento de origem/SHA-256.
 3. Criar atlas de coordenadas normalizadas (0..1), hotspots de rota/PC/loja/ginásio, batalhas/grama e camadas originais de sprites.
 4. Testar navegação ida/volta, progressão e saves; executar validações visuais em desktop/mobile antes de publicar.
