@@ -27,9 +27,12 @@ function drawGlyph(g,x,y,palette,phase){
 export function createReaVectorPreview(scene){
  if(!scene?.datos?.torre2?.laboratory)throw new Error('REA preview requires laboratory');
  if(!scene.add?.graphics||!scene.add?.text||!scene.events?.on)throw new Error('Phaser scene missing');
- // Static room is authored once per scene rather than issuing ~100 rect draws
- // every frame. Graphics retained as a separate WebGL display object.
- const backdrop=scene.add.graphics().setDepth(89999).setVisible(false);
+ // Author the backdrop in a temporary Graphics object, then cache it in
+ // one WebGL RenderTexture if the native client supports it. This reduces
+ // 139 static geometry commands per rendered frame to one texture quad.
+ // Keep a Graphics fallback for older clients and isolated test stubs.
+ let backdrop=scene.add.graphics().setDepth(89999).setVisible(false);
+ let usesCachedBackdrop=false;
 // Original layered pixel-art test room, covering high-depth battle UI.
     // Never draw over the LAB top controls at logical y=77.
     pixel(backdrop,16,105,608,173,0x020d1b,1);
@@ -77,6 +80,18 @@ export function createReaVectorPreview(scene){
   [TGT.x-6,TGT.y-4,12,10,0x6bdac7],
   [TGT.x-3,TGT.y-1,6,4,0xe8f9c8]
  ])pixel(backdrop,x,y,w,h,c);
+ if(typeof scene.add.renderTexture==='function'){
+  // RT coordinates are world logical 640×360; origin=0 keeps pixel math
+  // identical to Phaser.Graphics. Draw while source Graphics is visible,
+  // then destroy that temporary display object (no duplicate render).
+  const rt=scene.add.renderTexture(0,0,640,360)
+   .setOrigin(0,0).setDepth(89999).setVisible(false);
+  backdrop.setVisible(true);
+  rt.draw(backdrop);
+  backdrop.destroy();
+  backdrop=rt;
+  usesCachedBackdrop=true;
+ }
  // Static mode-specific paths are rebuilt only once per 1.8s mode.
  const trail=scene.add.graphics().setDepth(89999.5).setVisible(false);
  const drawModeTrail=(current,palette)=>{
@@ -106,7 +121,8 @@ export function createReaVectorPreview(scene){
  let lastLabel='',lastDetailMode=null;
  const debug={active:false,mode:null,hitCount:0,lastHitPosition:null,
   byMode:{beam:0,dash:0,arc:0},lastHitMode:null,
-  isolation:'LAB_VISUAL_ONLY',containsThirdPartyAssets:false,doesNotChangeDamage:true};
+  isolation:'LAB_VISUAL_ONLY',containsThirdPartyAssets:false,doesNotChangeDamage:true,
+  usesCachedBackdrop};
  scene.__torre2ReaMathPreview=debug;
  const render=(deltaMs=16.667)=>{
   if(!active||destroyed)return;

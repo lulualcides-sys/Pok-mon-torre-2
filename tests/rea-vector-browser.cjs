@@ -90,6 +90,8 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(during.save,save,'No campaign save writes allowed');
   assert.equal(during.debug.isolation,'LAB_VISUAL_ONLY');
+  assert.equal(during.debug.usesCachedBackdrop,true,
+   'native Phaser client must take the cached RenderTexture path');
   assert.deepEqual(during.debug.byMode,{beam:1,dash:1,arc:1});
   assert.equal(during.debug.hitCount,3,'must have exactly 1 impact per mode');
   assert.equal(during.shield.count,1,'one click blocker prevents underlying HUD input');

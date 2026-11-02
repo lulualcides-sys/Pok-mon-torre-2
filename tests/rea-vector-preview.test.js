@@ -43,8 +43,9 @@ test('continuous disc sweep detects small target crossed between frames without 
  assert.equal(moving.hit,true);near(moving.firstFraction,.425);
  assert.throws(()=>sweptVectorHit(before,after,-1,t,t,3),/hitboxes/);
 });
-function stubScene(laboratory=true){
+function stubScene(laboratory=true,withTexture=false){
  const events=new EventEmitter(),draw={calls:0,destroyed:false,visible:false},graphics=[];
+ const renderTextures=[];
  function shape(){
   const rec={clearCalls:0,rectCalls:0,destroyed:false,visible:false};
   graphics.push(rec);
@@ -56,8 +57,7 @@ function stubScene(laboratory=true){
   };
  }
  const textNodes=[],zones=[];
- const scene={datos:{torre2:{laboratory}},events,
-  add:{graphics:shape,zone:(_x,_y,_w,_h)=>{
+ const add={graphics:shape,zone:(_x,_y,_w,_h)=>{
    const zone={input:{enabled:false},destroyed:false,setDepth(){return this},
     setInteractive(){return this},destroy(){this.destroyed=true}};
    zones.push(zone);return zone;
@@ -65,8 +65,19 @@ function stubScene(laboratory=true){
    const o={text:'',textCalls:0,destroyed:false,setDepth(){return this},setVisible(){return this},
     setText(s){this.text=s;this.textCalls++;return this},destroy(){this.destroyed=true}};
    textNodes.push(o);return o;
-  }}};
- return {scene,events,draw,textNodes,zones,graphics};
+  }};
+ if(withTexture)add.renderTexture=(x,y,w,h)=>{
+  const record={x,y,w,h,drawCount:0,drawnSource:null,destroyed:false,visible:false,origin:null};
+  renderTextures.push(record);
+  return {
+   setOrigin(ox,oy){record.origin=[ox,oy];return this},
+   setDepth(){return this},setVisible(v){record.visible=v;return this},
+   draw(source){record.drawCount++;record.drawnSource=source;return this},
+   destroy(){record.destroyed=true}
+  };
+ };
+ const scene={datos:{torre2:{laboratory}},events,add};
+ return {scene,events,draw,textNodes,zones,graphics,renderTextures};
 }
 test('preview is opt-in, lab-only, visual-only, stops and cleans up on shutdown',()=>{
  const {scene,events,draw,textNodes,zones}=stubScene(true);
@@ -179,6 +190,31 @@ test('performance invariants: static scene draws exactly once, text not reraster
  assert.equal(dynamic.destroyed,true);
 });
 
+test('WebGL cached static artwork is drawn once and destroyed safely',()=>{
+ const {scene,events,graphics,renderTextures,zones}=stubScene(true,true);
+ const preview=createReaVectorPreview(scene);
+ assert.equal(preview.debug.usesCachedBackdrop,true);
+ assert.equal(renderTextures.length,1);
+ const rt=renderTextures[0];
+ assert.deepEqual([rt.x,rt.y,rt.w,rt.h],[0,0,640,360]);
+ assert.deepEqual(rt.origin,[0,0]);
+ assert.equal(rt.drawCount,1);
+ assert.equal(graphics[0].destroyed,true,'temporary Graphics released');
+ assert.ok(graphics[0].rectCalls>=130,'authored pixel art not dropped');
+ preview.toggle();
+ for(let i=0;i<350;i++)events.emit('update',i*16.67,16.67);
+ assert.deepEqual(preview.debug.byMode,{beam:1,dash:1,arc:1});
+ assert.equal(rt.drawCount,1,'never redraw static pixel art each frame');
+ assert.equal(rt.visible,true);
+ preview.toggle();
+ assert.equal(rt.visible,false);
+ assert.equal(zones[0].input.enabled,false);
+ preview.toggle();
+ assert.equal(rt.drawCount,1,'reopening does not allocate a new framebuffer');
+ events.emit('shutdown');
+ assert.equal(rt.destroyed,true,'texture freed on scene shutdown');
+ assert.equal(scene.__torre2ReaMathPreview,undefined);
+});
 test('curved swept geometry rejects chord-only false hits and detects true arc contacts',()=>{
  const arc=t=>({x:10*t,y:40*t*(1-t)});
  const stationary=(x,y)=>()=>({x,y});
