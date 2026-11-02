@@ -62,9 +62,10 @@ async function readFrames(page,millis){
     isMobile:mode.touch,hasTouch:mode.touch,
     deviceScaleFactor:1
    });
-   const errors=[],consoleErrors=[];
+   const errors=[],consoleErrors=[],failedRequests=[];
    page.on('pageerror',e=>errors.push(String(e)));
    page.on('console',e=>{if(e.type()==='error')consoleErrors.push(e.text().slice(0,300))});
+   page.on('response',r=>{if(r.status()>=400)failedRequests.push({status:r.status(),url:new URL(r.url()).pathname})});
    try{
     const firstLoad=performance.now();
     await page.goto('http://127.0.0.1:4317/arena2d/',{waitUntil:'domcontentloaded'});
@@ -91,6 +92,27 @@ async function readFrames(page,millis){
       initialSave:localStorage.getItem(window.__battlePerfCore.SAVE_KEY),
       campaignPage:c.__torre2BattlePath?.offset};
     });
+    // Passive, single-use native game-step trace: distinguish fixed VS
+    // cinematic, sprite prewarm, combat scene boot, fighter assembly and
+    // live input. No timers or changes to original gameplay controls.
+    await page.evaluate(()=>{
+     const game=window.__pt2Game,clock=performance.now();
+     const marks={clicked:0};
+     const mark=(name)=>{if(!Object.hasOwn(marks,name))marks[name]=Math.round(performance.now()-clock)};
+     const sample=()=>{
+      const map=game.scene.getScene('campanha'),b=game.scene.getScene('combate');
+      if(map.children.list.some(x=>x.getData?.('torre2-versus-intro')===true))mark('vsOverlay');
+      if(game.__torre2BattlePrewarm?.queued>0)mark('prewarmQueued');
+      if(game.__torre2BattlePrewarm?.readyAt)mark('prewarmReady');
+      if(b.scene.isActive())mark('combatSceneActive');
+      if(b.luchadores?.length===2)mark('fightersReady');
+      if(b.__torre2PartyInstalled)mark('partyReady');
+      if(b.fase==='lucha'&&b.scene.isActive())mark('battleLive');
+      if(Object.hasOwn(marks,'battleLive'))game.events.off('step',sample);
+     };
+     game.events.on('step',sample);
+     window.__nativePerfTrace={marks,detach:()=>game.events.off('step',sample)};
+    });
     const t=performance.now();
     const pos=await page.evaluate(()=>{
      const scene=window.__pt2Game.scene.getScene('campanha');
@@ -106,6 +128,10 @@ async function readFrames(page,millis){
      return b.scene.isActive()&&b.fase==='lucha'&&b.__torre2PartyInstalled===true;
     },null,{timeout:70000});
     const battleEntryMs=performance.now()-t;
+    const timeline=await page.evaluate(()=>{
+     window.__nativePerfTrace.detach();
+     return {...window.__nativePerfTrace.marks};
+    });
     const battle=await page.evaluate(()=>{
      const g=window.__pt2Game,b=g.scene.getScene('combate'),s=window.__battlePerfCore.readCampaign();
      return {kind:b.datos?.torre2?.kind,phase:b.fase,
@@ -131,7 +157,7 @@ async function readFrames(page,millis){
     assert.equal(battle.stage,0);assert.equal(battle.trainer,0);
     assert.deepEqual(errors,[]);
     await page.screenshot({path:'test-evidence/native-battle-'+mode.id+'.png'});
-    report.cases.push({mode:mode.id,menuMs,campaignMs,battleEntryMs,initial:{
+    report.cases.push({mode:mode.id,menuMs,campaignMs,battleEntryMs,timeline,failedRequests,initial:{
      textures:initial.textures,portraitCount:initial.portraitCount,
      npcCount:initial.npcCount,locationCount:initial.locationCount
     },battle:{...battle,save:undefined},frames,errors,consoleErrors});
