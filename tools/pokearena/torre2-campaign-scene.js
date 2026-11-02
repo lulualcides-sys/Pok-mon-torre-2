@@ -1,5 +1,5 @@
 import {paintCollectionPortraits,releaseCollectionPortraits} from './collection-portraits.js';
-import {CITY_TEXTURES,needsCeruleanAtlas} from './city-atlas.js';
+import {CITY_TEXTURES,needsCeruleanAtlas,addCitySurface} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -405,6 +405,13 @@ create(){
     const room=state.stage===0?'pewter':'cerulean';
     addGymInteriorFloor(this,room,{x:70,y:89,width:500,height:175,depth:4.2,
      surface:state.stage===1?'water':'floor'});
+    // The same approved Cerulean pixel-water surface used outdoors brings
+    // its tile detail into the gym. The raised platforms stay fully opaque,
+    // above the surface; Brock retains genuine stone FireRed floor.
+    if(state.stage===1){
+     const pool=addCitySurface(this,'water',70,89,500,175,4.27,.34);
+     pool?.setAlpha(.62);
+    }
    }else{
     // Preserve existing native interiors for the other gym stages.
     const g=this.add.graphics().setDepth(4);
