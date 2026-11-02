@@ -2,7 +2,7 @@
  * Pure geometry only: the native Phaser renderer owns sprites and clicks.
  * Preserve all stage/trainer indices, battle / rematch / captures and saves.
  */
-import {getSourceMainBounds,TILE_VIEW} from './frlg-location.js';
+import {getSourceMainBounds,TILE_VIEW} from './torre2-frlg-location.js';
 export const ROUTE_VIEW=Object.freeze({x:14,y:58,width:470,height:248});
 const clamp=(value,lo,hi)=>Math.max(lo,Math.min(hi,value));
 export function nativeRouteCrop(locale,width,height){
