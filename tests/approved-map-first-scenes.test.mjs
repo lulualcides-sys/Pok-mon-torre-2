@@ -49,7 +49,7 @@ test('T41 catalog is read only; original sixty approved art entries remain uncha
 function fakeScene(){
  const zones=[];
  const box=()=>({setOrigin(){return this},setDepth(){return this},setDisplaySize(){return this},
-  setInteractive(){return this},setData(k,v){this.data={k,v};return this},
+  setInteractive(){return this},setData(k,v){this.data={key:k,value:v};return this},
   on(evt,cb){this[evt]=cb;return this}});
  const scene={
   textures:{exists:()=>true,get:()=>({getSourceImage:()=>({width:1280,height:720})})},
