@@ -71,15 +71,18 @@ export function renderInteriorScene(scene,location,kind,{
  * giant blank flat-color panels around the boss platform. No pasted
  * screenshot, CSS background, extra texture download or battle change. */
 export function addGymInteriorFloor(scene,location,{
- x=83,y=82,width=474,height=128,depth=4.2
+ x=83,y=82,width=474,height=128,depth=4.2,surface='floor'
 }={}){
  if(!canRenderInterior(scene,location,'gym'))return null;
  const key='frlg-location-'+location,texture=scene.textures.get(key);
  const room=ROOM_CROPS[location].gym;
  // Pick clean room-floor pixels, away from wall/roof and entrance signs.
- const ox=location==='cerulean'?72:24;
- const oy=location==='cerulean'?170:Math.max(30,room[3]-64);
- const name='torre2-gym-floor-'+location;
+ // Cerulean x+24,y+190 is a real 16×16 clear pool segment from the
+ // native gym atlas; x+72,y+170 was the pale central walkway, not water.
+ const aquatic=location==='cerulean'&&surface==='water';
+ const ox=aquatic?24:location==='cerulean'?72:24;
+ const oy=aquatic?190:location==='cerulean'?170:Math.max(30,room[3]-64);
+ const name='torre2-gym-floor-'+location+(aquatic?'-water':'');
  if(!texture.has(name))texture.add(name,0,room[0]+ox,room[1]+oy,16,16);
  if(typeof Phaser!=='undefined')
   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);

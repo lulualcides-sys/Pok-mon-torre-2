@@ -403,7 +403,8 @@ create(){
     // Real 16×16 interior sprite tiles extracted from the existing FireRed
     // locality atlas; never scale up an entire gym screenshot.
     const room=state.stage===0?'pewter':'cerulean';
-    addGymInteriorFloor(this,room,{x:70,y:89,width:500,height:175,depth:4.2});
+    addGymInteriorFloor(this,room,{x:70,y:89,width:500,height:175,depth:4.2,
+     surface:state.stage===1?'water':'floor'});
    }else{
     // Preserve existing native interiors for the other gym stages.
     const g=this.add.graphics().setDepth(4);

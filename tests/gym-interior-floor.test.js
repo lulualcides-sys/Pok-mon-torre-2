@@ -20,3 +20,18 @@ test('T35 genuine FireRed floor frame stays inside each existing gym interior cr
   assert.equal(created.length,61,'60 independent batched Images + one interior, never TileSprite');
  }
 });
+
+test('T36 aquatic floor uses genuine Cerulean pool pixels, not the central beige path',()=>{
+ const location='cerulean',rect=ROOM_CROPS[location].gym,frames=new Map(),objects=[];
+ const texture={source:[{width:2500,height:2500}],has:k=>frames.has(k),
+  add(k,_source,x,y,w,h){frames.set(k,{x,y,w,h})},setFilter(){}};
+ const o=()=>({setOrigin(){return this},setDisplaySize(){return this},
+  setDepth(){return this},setData(){return this}});
+ const scene={textures:{exists:()=>true,get:()=>texture},
+  add:{image(...args){objects.push(args);return o()}}};
+ addGymInteriorFloor(scene,location,{x:70,y:89,width:500,height:175,depth:4.2,surface:'water'});
+ assert.deepEqual(frames.get('torre2-gym-floor-cerulean-water'),
+  {x:rect[0]+24,y:rect[1]+190,w:16,h:16});
+ assert.equal(objects.length,96,'reuse 96 shared-atlas images without texture duplication');
+ assert.ok(objects.every(args=>args[2]==='frlg-location-cerulean'));
+});
