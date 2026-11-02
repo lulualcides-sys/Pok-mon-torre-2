@@ -26,7 +26,8 @@
     "CHECK_GEN3_COMPATIBILITY": "Respeitar contrato de tipos e dano Gen III do Torre2",
     "CANDIDATE_ORIGINAL_IMPLEMENTATION": "Prototipar código e pixel art próprios, validar impactos reais sem copiar VFX",
     "RESEARCH_BEFORE_IMPLEMENTATION": "Não alterar golpe aprovado sem teste e consentimento",
-    "COMPARE_TYPES_ONLY": "Preservar as tabelas de clima atuais; referências de tipos, não de valores"
+    "COMPARE_TYPES_ONLY": "Preservar as tabelas de clima atuais; referências de tipos, não de valores",
+    "REFERENCE_FOR_FUTURE_VERIFICATION": "Recurso de replay documentado no site público; usar apenas partidas próprias/autorizadas, sem afirmar frames capturados"
   },
   "entries": [
     {
