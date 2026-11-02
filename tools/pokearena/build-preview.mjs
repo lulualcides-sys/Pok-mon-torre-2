@@ -808,13 +808,14 @@ for(const [filename,changes] of patches){
    // Remove exactly one profile-only entry, never the remaining settings.
    if(filename==='escenas/titulo.js'&&
       from.startsWith('ajustes:[{id:"perfil",txt:"PROFILE"')&&to==='ajustes:['){
-    const candidates=body.match(/ajustes:\\[\\{id:"perfil",[^}]{0,180}\\},/g)||[];
-    if(candidates.length===1){
-     body=body.replace(candidates[0],'ajustes:[');
-     console.warn('Offline: replaced exactly one changed profile-only title item');
-    }else if(candidates.length===0&&!body.includes('ajustes:[{id:"perfil"')){
-     console.warn('Offline: no profile-first settings item is present');
-    }else throw Error('Unknown profile menu structure; refusing account-menu rewrite');
+    const start=body.indexOf('ajustes:[{id:"perfil"');
+    if(start>=0){
+     const end=body.indexOf('},',start);
+     if(end<0||end-start>180||body.indexOf('ajustes:[{id:"perfil"',start+1)>=0)
+      throw Error('Ambiguous profile menu; cannot safely preserve other settings');
+     body=body.slice(0,start)+'ajustes:['+body.slice(end+2);
+     console.warn('Offline: removed exactly one profile-only settings entry');
+    }else console.warn('Offline: native settings no longer start with a profile entry');
     continue;
    }
    // Visual title sprite guards were written for an older upstream source.
