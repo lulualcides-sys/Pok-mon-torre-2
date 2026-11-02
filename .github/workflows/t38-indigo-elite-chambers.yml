@@ -1,7 +1,7 @@
 name: T38 — Indigo League five real Phaser rooms (DRAFT)
 on:
   push:
-    branches: [feat/t38-indigo-elite-rooms-20261102]
+    branches: [feat/t38-indigo-elite-rooms-20261102, test/t38-indigo-native-touch-portrait-20261102]
   workflow_dispatch:
 permissions:
   contents: read
@@ -40,11 +40,11 @@ jobs:
           source_dir=$(find _site/arena2d -maxdepth 1 -type d -name 'src-*' | head -1)
           test -n "$source_dir"
           test -f "$source_dir/torre2/torre2-elite-chambers.js"
-      - name: Five real Elite Four and Champion rooms — desktop/mobile
+      - name: Five real Elite rooms — desktop, mobile landscape and portrait touch
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/elite-chambers-browser.cjs
-      - name: Upload 10 real Phaser screenshots or failure evidence
+      - name: Upload 15 real Phaser screenshots or failure evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
