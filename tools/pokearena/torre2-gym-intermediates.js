@@ -58,10 +58,20 @@ export function drawGymIntermediates(scene,model,addNpc,onBattle){
    (npcKind==='swimmer'?addNpc(scene,'ace',t.x,t.y,{scale:1.05,depth:16}):null);
   npc?.setData('torre2-gym-intermediate',t.index);
   npc?.setData('torre2-gym-original-sprite',npcKind);
-  scene.add.text(t.x,t.y+6,t.title+(t.status==='defeated'?' ✓':''),{
-   fontFamily:'Pixelify Sans,monospace',fontSize:'9px',fontStyle:'bold',
+  // Original NPC sprite stays prominent: the former repeated TREINADOR
+  // label over every platform made the room look like a menu diagram.
+  // Only the active challenger gets a caption; other actors keep tiny cues.
+  const label=t.status==='current'?t.title:
+   t.status==='defeated'?'✓':String(t.slot+1);
+  scene.add.text(t.x,t.y+10,label,{
+   fontFamily:'Pixelify Sans,monospace',
+   fontSize:t.status==='current'?'9px':'8px',fontStyle:'bold',
    color:colors[t.status],stroke:'#132032',strokeThickness:2
   }).setOrigin(.5).setDepth(19);
+  if(t.status==='current'){
+   const active=scene.add.graphics().setDepth(18);
+   active.fillStyle(0xffdf82,.95).fillTriangle(t.x-4,t.y-35,t.x+4,t.y-35,t.x,t.y-29);
+  }
   if(t.status==='current'&&model.inGym){
    scene.add.zone(t.x,t.y-17,53,40).setDepth(20)
     .setInteractive({useHandCursor:true})
