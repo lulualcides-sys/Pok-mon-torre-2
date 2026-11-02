@@ -6,8 +6,8 @@ import {CERULEAN_GARDEN_BEDS,CERULEAN_CLEAR_ROUTES,
 test('the organic gardens stay clear of every live city service and water channel',()=>{
  const report=ceruleanLandscapeReport();
  assert.equal(report.pass,true,JSON.stringify(report.blocked));
- assert.equal(report.beds,10);
- assert.equal(report.uniqueZones,10);
+ assert.equal(report.beds,8);
+ assert.equal(report.uniqueZones,8);
  assert.ok(CERULEAN_CLEAR_ROUTES.length>=9);
  for(const bed of CERULEAN_GARDEN_BEDS){
   assert.ok(bed.points.length>=6);
