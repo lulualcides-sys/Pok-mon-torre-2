@@ -4,6 +4,7 @@
  * No load or display occurs when art is absent; legacy scenery stays intact.
  */
 import {gymWideLayout} from './torre2-gym-wide-layout.js';
+import {preflightGymImageOverlay} from './torre2-gym-image-preflight.js';
 export const GYM_IMAGE_VERSION='t38-approved-scene-v1';
 export const GYM_IMAGE_MANIFEST_KEY='torre2-approved-gym-scenes-v1';
 export const GYM_IMAGE_ART_ROOT='assets/ui/gym-interiors/';
@@ -16,6 +17,7 @@ export const GYM_IMAGE_SPECS=Object.freeze([
 export const GYM_IMAGE_VIEW=Object.freeze({x:0,y:0,width:640,height:360,depth:2.4});
 const GRID=2;
 const snap=v=>Math.round(v/GRID)*GRID;
+const overlayCache=new Map();
 const normalized=[
  [.185,.475],[.795,.515],[.276,.78],[.854,.78]
 ];
@@ -32,6 +34,7 @@ export function approvedGymImage(manifest,stage){
 }
 export function gymImageOverlayLayout(stage){
  if(!Number.isInteger(stage)||stage<0||stage>7)return null;
+ if(overlayCache.has(stage))return overlayCache.get(stage);
  const existing=gymWideLayout(stage);
  // Existing Brock/Misty positions are never changed by this new mode.
  const room=Object.freeze({x:66,y:68,width:508,height:200});
@@ -39,8 +42,13 @@ export function gymImageOverlayLayout(stage){
   Object.freeze({x:snap(room.x+u*room.width),y:snap(room.y+v*room.height)})));
  const leader=existing?.leader||Object.freeze({x:290,y:126});
  const ace=existing?.ace||Object.freeze({x:342,y:126});
- return Object.freeze({stage,room,slots,leader,ace,cameraZoom:1,
-  floorBottom:268,uiTop:274,margin:7});
+ const plan={stage,room,slots,leader,ace,cameraZoom:1,
+  floorBottom:268,uiTop:274,margin:7};
+ // Reject collisions and mobile clipping BEFORE any Phaser display object.
+ const safety=preflightGymImageOverlay(plan);
+ const verified=Object.freeze({...plan,safety});
+ overlayCache.set(stage,verified);
+ return verified;
 }
 export function rosterForGymImage(roster,stage){
  if(!roster)return null;
