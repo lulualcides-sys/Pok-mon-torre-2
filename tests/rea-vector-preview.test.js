@@ -128,3 +128,18 @@ test('bounded delta and repeated preview re-open never accumulate multiple impac
  assert.equal(events.listenerCount('update'),baseline);
  assert.equal(zones[0].destroyed,true);
 });
+
+test('Phaser may destroy inputShield.input before shutdown: cleanup still succeeds',()=>{
+ const {scene,events,zones,textNodes,draw}=stubScene(true);
+ const preview=createReaVectorPreview(scene);
+ assert.equal(preview.toggle(),true);
+ assert.equal(zones[0].input.enabled,true);
+ // Reproduce the real Chromium #41402178064 failure exactly.
+ zones[0].input=undefined;
+ assert.doesNotThrow(()=>events.emit('shutdown'));
+ assert.equal(zones[0].destroyed,true);
+ assert.equal(draw.destroyed,true);
+ assert.ok(textNodes.every(t=>t.destroyed));
+ assert.equal(scene.__torre2ReaMathPreview,undefined);
+ assert.equal(preview.toggle(),false);
+});
