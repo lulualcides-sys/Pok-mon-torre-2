@@ -83,3 +83,41 @@ test('T38 file list is fixed to canonical Kanto gyms, never all routes/cities',a
  const next=await installGymBackgrounds(dest,{source});
  assert.deepEqual(next.scenes.map(v=>[v.stage,v.slug]),[[7,'giovanni']]);
 });
+
+
+test('T38 rejects CRC-valid PNG files with invalid compressed pixel streams',async t=>{
+ const {source,dest}=await sandbox(t),file=path.join(source,'brock-interior.png');
+ const ihdr=Buffer.alloc(13);
+ ihdr.writeUInt32BE(640,0);ihdr.writeUInt32BE(360,4);ihdr[8]=8;ihdr[9]=6;
+ const wrap=compressed=>Buffer.concat([SIGNATURE,chunk('IHDR',ihdr),
+  chunk('IDAT',compressed),chunk('IEND',Buffer.alloc(0))]);
+ const badDeflate=wrap(Buffer.from([0x78,0x9c,0,0,0]));
+ const shortPixels=wrap(deflateSync(Buffer.alloc(16)));
+ const invalidFilter=Buffer.alloc((640*4+1)*360);
+ invalidFilter[0]=5;
+ for(const bytes of [badDeflate,shortPixels,wrap(deflateSync(invalidFilter))]){
+  await fs.writeFile(file,bytes);
+  await assert.rejects(installGymBackgrounds(dest,{source}),/PNG|IDAT|pixels|filter/i);
+ }
+});
+
+test('T38 preflights all eight images before writing any asset',async t=>{
+ const {source,dest}=await sandbox(t);
+ await fs.writeFile(path.join(source,'brock-interior.png'),png());
+ await fs.writeFile(path.join(source,'misty-interior.png'),Buffer.from('bad'));
+ await assert.rejects(installGymBackgrounds(dest,{source}),/PNG/);
+ await assert.rejects(fs.access(path.join(dest,'assets/ui/gym-interiors/brock-interior.png')),
+  {code:'ENOENT'},'a bad later gym must not leave an earlier copied asset');
+});
+
+test('T38 rebuild removes a withdrawn gym image rather than shipping stale art',async t=>{
+ const {source,dest}=await sandbox(t);
+ const original=path.join(source,'brock-interior.png');
+ const built=path.join(dest,'assets/ui/gym-interiors/brock-interior.png');
+ await fs.writeFile(original,png());
+ assert.equal((await installGymBackgrounds(dest,{source})).scenes.length,1);
+ await fs.access(built);
+ await fs.unlink(original);
+ assert.deepEqual((await installGymBackgrounds(dest,{source})).scenes,[]);
+ await assert.rejects(fs.access(built),{code:'ENOENT'});
+});
