@@ -10,7 +10,6 @@ import {pathCheckpointAction} from './path-actions.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
-import {ROOM_CROPS} from './frlg-interiors.js';
 import {routeBackdropForCampaign} from './frlg-location.js';
 import {ROUTE_VIEW,nativeRouteCrop,routeRailSpots,routeVisualCast} from './route-landscape.js';
 import {ball} from './campaign-art.js';
@@ -23,12 +22,6 @@ export const BATTLE_PATH_BACKDROP=Object.freeze([
 ]);
 const COLORS={ink:0x071729,navy:0x0a223a,edge:0x508cb4,gold:0xffd573,
  green:0x43d881,blue:0x5ba9dc,muted:0x768ca0};
-const ROWS=Object.freeze([
- // Normal trainers stay outside the gym; Brock owns the central platform.
- [53,116,179,242,305],
- [305,242,179,116,53],
- [70,148,226,304]
-]);
 const TX={fontFamily:'Pixelify Sans,monospace',fontStyle:'bold'};
 function txt(scene,x,y,value,size=10,color='#f5f8fc',depth=26){
  return scene.add.text(x,y,String(value),{...TX,fontSize:size+'px',
@@ -55,17 +48,6 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
  zone.on('pointerout',()=>{hover=false;paint()});
  zone.on('pointerdown',()=>{if(enabled){playOriginalMenuCue(scene);action()}});
  paint();return zone;
-}
-function connector(g,ax,ay,bx,by,lit){
- const dx=bx-ax,dy=by-ay,length=Math.hypot(dx,dy);
- const steps=Math.ceil(length/10);
- // Contrast backing makes the dashed route legible over dense FireRed trees.
- g.lineStyle(3,0x102a2d,.76);g.lineBetween(ax,ay,bx,by);
- for(let n=1;n<steps;n++){
-  const t=n/steps,x=ax+dx*t,y=ay+dy*t;
-  g.fillStyle(lit?0xffe9b3:0xf3f3ce,lit ? .98 : .93);
-  g.fillCircle(x,y,lit?2.4:2.05);
- }
 }
 function trainerKind(stage,node){
  if(node.type==='leader')return ['brock','misty','surge','erika','koga',
@@ -276,8 +258,8 @@ export function renderBattlePath(scene,state,handlers){
   hitZones.push(zone);
  }
  // Stable page navigation for Misty and later routes with >13 battles.
- if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
- if(!finished&&offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ if(offset>0)button(scene,37,248,43,18,'◀',()=>handlers.page(-1),{small:true});
+ if(!finished&&offset+length<total+1)button(scene,462,248,43,18,'▶',()=>handlers.page(1),{small:true});
  // After the final Champion KO, never redraw a fake 14th boss that can
  // reopen the gym. This honors the earned victory with native Phaser pixels.
  if(finished){
