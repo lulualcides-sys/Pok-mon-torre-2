@@ -194,10 +194,12 @@ export function renderCityScenery(scene){
  ];
  // Rich foliage reference with multiple real pixel-art silhouettes, not one stamp.
  // These display-only sprites never cover UI or door interaction zones.
- const kinds=['oak_light','oak_dark','oak_gold','oak_fresh','oak_moss',
-  'oak_dark','oak_gold','oak_light','blossom','oak_moss','oak_fresh',
-  'oak_dark','oak_light','oak_gold','oak_fresh','oak_moss','oak_gold',
-  'oak_dark','oak_light','oak_fresh','blossom'];
+ // Full-resolution, original Kanto art: green species predominate.
+ // Blossoms and one pine establish distinctive landmarks without clutter.
+ const kinds=['oak_sun','oak_lime','oak_deep','berry','oak_deep',
+  'oak_sun','oak_lime','oak_deep','sakura','wisteria','berry',
+  'oak_deep','oak_sun','oak_lime','berry','oak_sun','oak_lime',
+  'oak_deep','pine','oak_sun','sakura'];
  for(const [i,[x,y]]of positions.entries()){
   const height=40+(i*7%10);
   const tree=addCeruleanOrganicTree(scene,x,y,height,kinds[i])||
