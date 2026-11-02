@@ -27,19 +27,23 @@ export function gymWideLayout(stage){
 export function drawGymWideRoom(scene,stage){
  const plan=gymWideLayout(stage);if(!plan)return null;
  const water=plan.theme==='water';
- const g=scene.add.graphics().setDepth(4);
+ const bg=scene.add.graphics().setDepth(4);
+ const g=scene.add.graphics().setDepth(4.4);
  const block=(x,y,w,h,color,alpha=1)=>{
   g.fillStyle(color,alpha);g.fillRect(x,y,w,h);
  };
+ const background=(x,y,w,h,color)=>{bg.fillStyle(color);bg.fillRect(x,y,w,h)};
  const outline=(x,y,w,h,color)=>{
   g.lineStyle(2,color,1);g.strokeRect(x,y,w,h);
  };
  // Whole interior fits the EXISTING 640x360 camera. No camera zoom and
  // no scaled screenshot pasted into a narrow central strip.
- block(60,63,520,210,water?0x193e63:0x554536);
- block(65,68,510,200,water?0x3d8dc0:0xbca17a);
- outline(65,68,510,200,water?0xb4e6f7:0xdac8a5);
- block(70,72,500,15,water?0xb7d9e4:0x877664);
+ background(60,63,520,210,water?0x193e63:0x554536);
+ background(65,68,510,200,water?0x3d8dc0:0xbca17a);
+ bg.lineStyle(2,water?0xb4e6f7:0xdac8a5).strokeRect(65,68,510,200);
+ background(70,72,500,15,water?0xb7d9e4:0x877664);
+ // The authentic FRLG room-floor sprite batch is inserted at depth 4.2
+ // between this background and the raised bridges; no enlarged screenshot.
  // GBA-like 16 px tiling rendered in a single Phaser Graphics batch.
  for(let yy=90;yy<264;yy+=16)for(let xx=74;xx<568;xx+=16){
   if(water){

@@ -48,10 +48,16 @@ export function drawGymIntermediates(scene,model,addNpc,onBattle){
  for(const t of model.slots){
   // No character or hitbox in the central bridge, ace, leader or CTA.
   scene.add.ellipse(t.x,t.y+1,24,6,0x101c30,.36).setDepth(13);
+  // Existing authentic FRLG overworld sprites, not newly fabricated art.
+  // Class affects appearance only: battle opponent IDs/names remain intact.
+  const brockSprites=['hiker','youngster','hiker'];
+  const mistySprites=['swimmer','lass','swimmer','ace'];
   const npcKind=t.kind==='rival'?'rival':t.kind==='rocket'?'rocket':
-   model.stage===0?'hiker':'ace';
-  addNpc(scene,npcKind,t.x,t.y,{scale:1.05,depth:16})
-   ?.setData('torre2-gym-intermediate',t.index);
+   model.stage===0?brockSprites[t.slot]:model.stage===1?mistySprites[t.slot]:'ace';
+  const npc=addNpc(scene,npcKind,t.x,t.y,{scale:1.05,depth:16})||
+   (npcKind==='swimmer'?addNpc(scene,'ace',t.x,t.y,{scale:1.05,depth:16}):null);
+  npc?.setData('torre2-gym-intermediate',t.index);
+  npc?.setData('torre2-gym-original-sprite',npcKind);
   scene.add.text(t.x,t.y+6,t.title+(t.status==='defeated'?' ✓':''),{
    fontFamily:'Pixelify Sans,monospace',fontSize:'9px',fontStyle:'bold',
    color:colors[t.status],stroke:'#132032',strokeThickness:2

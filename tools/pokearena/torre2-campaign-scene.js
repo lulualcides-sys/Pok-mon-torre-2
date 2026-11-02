@@ -145,7 +145,8 @@ class Campanha extends Phaser.Scene{
    'blaine','giovanni','lorelei','bruno','agatha','lance','rival'][stage]||'brock';
   const archetypes=stage===0?
    ['youngster','lass','bugcatcher','hiker']:
-   ['youngster','lass','bugcatcher','hiker','ace','rocket'];
+   ['youngster','lass','bugcatcher','hiker','ace','rocket',
+    ...(stage===1?['swimmer']:[])];
   const needed=new Set(['red_normal',spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
@@ -399,6 +400,10 @@ create(){
     // The approved reference shows the WHOLE room and four/three opponents,
     // not a zoomed-in FireRed crop; keep the original camera zoom at 1.
     drawGymWideRoom(this,state.stage);
+    // Real 16×16 interior sprite tiles extracted from the existing FireRed
+    // locality atlas; never scale up an entire gym screenshot.
+    const room=state.stage===0?'pewter':'cerulean';
+    addGymInteriorFloor(this,room,{x:70,y:89,width:500,height:175,depth:4.2});
    }else{
     // Preserve existing native interiors for the other gym stages.
     const g=this.add.graphics().setDepth(4);

@@ -40,19 +40,21 @@ test('T36: the real Phaser room uses one Graphics object and never changes camer
   cameras:{main:{setZoom(){throw Error('no zoom allowed')}}}};
  const water=drawGymWideRoom(scene,1);
  assert.equal(water.theme,'water');
- assert.equal(graphicsCount,1);
+ assert.equal(graphicsCount,2);
  assert.ok(drawCount>100);
  assert.equal(scene.__torre2GymWideLayout,water);
  drawGymWideRoom(scene,0);
- assert.equal(graphicsCount,2);
+ assert.equal(graphicsCount,4);
  assert.equal(drawGymWideRoom(scene,3),null);
- assert.equal(graphicsCount,2);
+ assert.equal(graphicsCount,4);
 });
 test('T36: only presentation code changes, original battle/campaign boundaries remain',()=>{
  const room=fs.readFileSync('tools/pokearena/torre2-gym-wide-layout.js','utf8');
  const scene=fs.readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  const npc=fs.readFileSync('tools/pokearena/torre2-frlg-npc.js','utf8');
  assert.match(scene,/drawGymWideRoom\(this,state\.stage\)/);
+ assert.match(scene,/addGymInteriorFloor\(this,room,/);
+ assert.match(scene,/stage===1\?\['swimmer'\]:\[\]/);
  assert.match(scene,/gymWideLayout\(state\.stage\)/);
  assert.match(npc,/brock:'brock',misty:'misty'/);
  assert.doesNotMatch(room,/saveCampaign|resolveBattle|startBattle|Math\.random|localStorage/);
