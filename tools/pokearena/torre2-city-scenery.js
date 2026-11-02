@@ -1,8 +1,9 @@
+import {addCityBoat,addCitySprite,addCitySurface,CITY_ATLAS_KEY,CITY_SURFACES_KEY} from './city-atlas.js';
 /* Original modular pixel architecture, rendered by Phaser/WebGL.
  * No map screenshot, no uploaded sheet with uncertain redistribution rights.
  * Geometry is local to each building; vegetation uses shared original textures.
  */
-export const CITY_ART_VERSION='cerulean-layered-v1';
+export const CITY_ART_VERSION='cerulean-surfaces-v3';
 const px=(g,x,y,w,h,c,a=1)=>g.fillStyle(c,a).fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));
 function rng(seed){let s=seed;return()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296)}
 function poly(g,pts,c){g.fillStyle(c);g.fillPoints(pts.map(([x,y])=>({x,y})),true)}
@@ -31,11 +32,15 @@ function masonry(g,x,y,w,h){
  px(g,x-1,y-3,w+2,4,0xdddcc2);px(g,x,y-2,w,1,0xfff2d1);
 }
 function pavement(g,x,y,w,h){
- px(g,x,y,w,h,0xcfcbb0);
- for(let yy=0;yy<h;yy+=8)for(let xx=0;xx<w;xx+=12){
-  const width=Math.min(11,w-xx),height=Math.min(7,h-yy);
-  px(g,x+xx,y+yy,width,height,(xx+yy)%3?0xe0dcc3:0xd9d5b9);
-  px(g,x+xx,y+yy,width,1,0xeee9d0);
+ const r=rng(41+x*17+y*31);
+ px(g,x,y,w,h,0xaaa88e);
+ for(let yy=0;yy<h;yy+=5)for(let xx=-7;xx<w;xx+=9){
+  const left=Math.max(0,xx+(yy%10?4:0)),right=Math.min(w,xx+(yy%10?4:0)+8);
+  if(right<=left)continue;
+  const height=Math.min(4,h-yy),shade=[0xd8d4b8,0xe1dcc3,0xcac9af,0xd2cfb6][Math.floor(r()*4)];
+  px(g,x+left,y+yy,right-left,height,shade);
+  px(g,x+left,y+yy,right-left,1,0xeee7ce,.65);
+  if(r()>.7)px(g,x+left+1,y+yy+2,1,1,0xb4b49d,.6);
  }
 }
 function steps(g,x,y,w,n){
@@ -61,7 +66,9 @@ function roof(g,x,y,w,h,red=false){
  px(g,x+10,y,w-20,2,light);px(g,x,y+h-2,w,3,0x18394d);px(g,x+2,y+h,w-4,2,light);
 }
 function building(scene,x,y,w,h,kind='house'){
- const g=scene.add.graphics({x,y}).setDepth(20+y/1000).setData('torre2-city-building',kind);
+ const art=addCitySprite(scene,kind,x+w/2,y+h,h+9);
+ if(art)return art.setData('torre2-city-building',kind);
+ const g=scene.add.graphics({x,y}).setDepth(20+(y+h)/1000).setData('torre2-city-building',kind);
  const red=kind==='center',gym=kind==='gym';
  px(g,4,h-3,w+5,9,0x2c5553,.32);
  px(g,2,26,w-4,h-24,0x596c6b);px(g,5,27,w-10,h-28,0xe4d8b7);
@@ -114,24 +121,41 @@ function banner(g,x,y){
 export function renderCityScenery(scene){
  const water=scene.add.graphics().setDepth(0).setData('torre2-city-layer','water');
  px(water,0,0,640,360,0x188bb7);
- const random=rng(125);for(let i=0;i<260;i++){
+ const waterTile=addCitySurface(scene,'water',0,0,640,360,.1,.65);
+ const random=rng(125);for(let i=0;i<(waterTile?0:1600);i++){
   const x=random()*640,y=random()*310;
-  px(water,x,y,4+random()*11,2,i%3?0x27a7c3:0x64cad7,.45);
+  px(water,x,y,2+random()*8,1+random()*2,i%3?0x27a7c3:0x64cad7,.45);
  }
  const terrain=scene.add.graphics().setDepth(2).setData('torre2-city-layer','terrain');
  // Two stone islands separated by a canal, with a smaller west channel.
  for(const [x,y,w,h]of [[-8,35,343,239],[402,35,245,238]]){
-  masonry(terrain,x,y+12,w,h);pavement(terrain,x,y,w,h-12);
+  masonry(terrain,x,y+12,w,h);
+  if(!scene.textures.exists(CITY_SURFACES_KEY))pavement(terrain,x,y,w,h-12);
+  else px(terrain,x,y,w,h-12,0xd8d4b8);
  }
  px(terrain,154,196,44,80,0x188bb7);masonry(terrain,146,195,8,78);masonry(terrain,198,195,8,78);
- for(const [x,y,w,h]of [[1,39,73,30],[165,38,169,30],[408,39,47,35],[584,38,60,36],[1,187,44,74],[209,263,118,16],[409,259,40,14]]){
+ // Crop land paving around the west canal: never cover water with a sheet.
+ for(const rect of [[-8,35,343,160],[-8,195,154,67],[206,195,129,67],[402,35,245,226]])
+  addCitySurface(scene,'paving',...rect,2.1,.3);
+ for(const rect of [[-8,263,154,22],[206,263,129,22],[402,262,245,23],[146,197,8,77],[198,197,8,77]])
+  addCitySurface(scene,'stone',...rect,2.15,.2);
+ // The narrow side channel shares the animated river surface.
+ const channelTile=addCitySurface(scene,'water',154,196,44,80,2.2,.65);
+ for(const [x,y,w,h]of [[1,39,73,30],[165,38,169,30],[408,39,47,35],[584,38,60,36],[1,187,44,74],[209,263,118,16],[409,259,40,14],[210,161,49,19],[210,250,49,28],[409,220,38,48]]){
   px(terrain,x,y,w,h,0x3d914e);px(terrain,x+2,y+2,w-4,h-4,0x6aae55);
+  addCitySurface(scene,'grass',x+2,y+2,w-4,h-4,3,.24);
+  const grass=rng(x*9+y);
+  for(let i=0;i<w*h/12;i++){
+   const xx=x+2+grass()*(w-4),yy=y+2+grass()*(h-4);
+   px(terrain,xx,yy,1,2,i%3?0x438f49:0x98c765,.8);
+  }
  }
  // Canal bridge with masonry arch, deck, balustrades and stair approaches.
  const bridge=scene.add.graphics().setDepth(5).setData('torre2-city-layer','bridge');
  masonry(bridge,329,139,80,24);px(bridge,349,148,38,16,0x286d85);px(bridge,356,144,24,20,0x23738e);
  pavement(bridge,329,124,80,20);masonry(bridge,327,121,84,7);masonry(bridge,327,143,84,7);
  for(let x=329;x<410;x+=10){px(bridge,x,116,3,9,0xdedec4);px(bridge,x,139,3,9,0xe7e1c6)}
+ addCitySurface(scene,'paving',331,128,76,14,5.1,.3);
  steps(bridge,308,125,20,5);steps(bridge,411,125,20,5);
  steps(bridge,270,267,38,9);
  // Small decorative weir; falling water remains independent and animated.
@@ -141,37 +165,64 @@ export function renderCityScenery(scene){
  building(scene,454,55,122,111,'gym');steps(details,487,167,57,6);
  building(scene,212,53,79,69);building(scene,-29,86,78,79);building(scene,569,191,85,72);
  for(const p of [[205,123,91],[64,257,80],[442,180,28],[573,167,45],[212,251,42],[302,75,26],[9,172,30]])planter(details,...p);
+ for(const [x,y,w]of [[234,177,36],[228,258,30],[429,234,25]])
+  addCitySprite(scene,'planter',x,y,w*188/447,{depth:25});
  for(const p of [[55,150],[177,192],[320,169],[438,166],[584,184],[244,262],[443,251]])lamp(details,...p);
  for(const p of [[301,162],[421,94],[582,103],[314,243]])banner(details,...p);
  // Timber quay and boat are separate scenery objects.
  const quay=scene.add.graphics().setDepth(8).setData('torre2-city-layer','quay');
  px(quay,493,267,64,39,0x765c43);
  for(let y=268;y<306;y+=5){px(quay,493,y,64,4,0xc29866);px(quay,496,y,55,1,0xe4bd80)}
- for(const x of [491,551])for(const y of [267,303]){px(quay,x,y,5,10,0x644a37);px(quay,x,y,5,2,0xe4c08b)}
- ellipse(quay,454,293,24,43,0x145c7c,.6);poly(quay,[[443,273],[461,273],[468,290],[460,308],[448,308],[438,290]],0xcededb);
- poly(quay,[[446,278],[458,278],[463,290],[457,301],[449,301],[443,290]],0x477a94);px(quay,446,282,14,9,0xa4c5d0);px(quay,448,284,10,5,0x315575);
- const treeKey=treeTexture(scene),positions=[
+ // Recessed joints, paired rails and iron bolts give the quay a real edge.
+ for(const x of [494,551]){
+  px(quay,x,270,3,34,0x453e36);px(quay,x,270,2,34,0xd7af79);
+  for(const y of [267,284,302]){
+   px(quay,x-2,y-3,6,12,0x654d38);px(quay,x-1,y-3,3,10,0xc99f69);
+   px(quay,x-2,y-4,6,2,0xf0cd93);px(quay,x,y,1,1,0x464c50);
+  }
+ }
+ addCityBoat(scene,454,307,61);
+ // Mooring line and a ring on the pier (decorative, no extra menu).
+ quay.lineStyle(1,0xd3c7a1).lineBetween(463,288,493,284);
+ quay.lineStyle(2,0xf4ecda).strokeCircle(550,295,4);
+ px(quay,547,292,2,2,0xca5550);px(quay,551,297,2,2,0xca5550);
+ const treeKey=scene.textures.exists(CITY_ATLAS_KEY)?null:treeTexture(scene),positions=[
  [10,70],[43,64],[178,73],[195,61],[317,74],[333,44],[422,69],[446,51],[596,65],[628,61],
- [12,213],[25,239],[206,279],[226,291],[319,284],[414,275],[633,186],[612,182],
- [179,131],[321,223],[434,240],[32,302],[91,309],[243,309],[610,302]
+ [12,213],[25,239],[222,271],[243,277],[320,277],[424,269],[633,186],[612,182],
+ [179,131],[321,223],[434,240]
  ];
- for(const [x,y]of positions)scene.add.image(x,y,treeKey).setOrigin(.5,1).setScale(.72)
-  .setDepth(20+y/1000).setData('torre2-city-layer','vegetation');
+ for(const [x,y]of positions){
+  const tree=addCitySprite(scene,'tree',x,y,44);
+  if(tree)tree.setData('torre2-city-layer','vegetation');
+  else scene.add.image(x,y,treeKey).setOrigin(.5,1).setScale(.72)
+   .setDepth(20+y/1000).setData('torre2-city-layer','vegetation');
+ }
+ for(const [x,y,w]of [[250,134,45],[297,261,32],[436,184,27],[585,176,30]])
+  addCitySprite(scene,'planter',x,y,w*188/447,{depth:25});
  const ripples=scene.add.graphics().setDepth(1).setData('torre2-city-layer','water-animation');
  const falls=scene.add.graphics().setDepth(9);
  let tick=0;
  const animate=()=>{
   ripples.clear();falls.clear();tick++;
-  for(let i=0;i<56;i++){
+  if(waterTile?.active)waterTile.tilePositionY=tick*.18;
+  if(channelTile?.active)channelTile.tilePositionY=tick*.18;
+  for(let i=0;i<18;i++){
    const x=338+(i*17%63),y=40+((i*29+tick)%225);
    px(ripples,x,y,5+(i%5),1,0xc2f4eb,i%3?.38:.7);
   }
-  for(let i=0;i<54;i++){
+  for(let i=0;i<24;i++){
    const x=(i*47)%640,y=286+(i*7+tick)%25;
    px(ripples,x,y,4+i%7,1,0xb5f1eb,.5);
   }
-  for(let i=0;i<9;i++){px(falls,357+i*4,235+(tick+i*3)%13,2,7,0xe1ffff,.75)}
-  for(let i=0;i<15;i++)px(falls,351+i*3,256+(i+tick)%4,3,1,0xd3ffff,.8);
+  for(let i=0;i<17;i++){
+   px(falls,356+i*2,234,2,22,[0x279bc6,0x61d3e1,0xb0f5f0][i%3],.7);
+   px(falls,356+i*2,235+(tick*2+i*3)%14,1,6,0xe1ffff,.85);
+  }
+  for(let i=0;i<21;i++){
+   const x=351+i*2,y=256+(i+tick)%4;
+   px(falls,x,y,3,2,0xd3ffff,.8);
+   if(i%3===0)px(falls,x+1,y+4,2,1,0xe9ffff,.65);
+  }
  };
  animate();const timer=scene.time.addEvent({delay:120,loop:true,callback:animate});
  // Tag only this city's animation: the campaign owns other legitimate
