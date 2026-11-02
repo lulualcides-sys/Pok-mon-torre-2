@@ -37,6 +37,7 @@ const server=http.createServer((req,res)=>{
      },{stage,progress});
      await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
      await page.waitForFunction(p=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.routeCount===p,routeCount,{timeout:10000});
+     const routeCameraZoom=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').cameras.main.zoom);
      const before=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
      const routeInfo=await page.evaluate(()=>{
       const s=window.__pt2Game.scene.getScene('campanha');
@@ -74,8 +75,8 @@ const server=http.createServer((req,res)=>{
      assert.equal(info.gymCount,expected);
      assert.equal(info.npcCount,expected,'all authentic FireRed trainer NPCs should render');
      assert.equal(info.gymStage?.mode,'full-width','no zoomed interior thumbnail');
-     assert.equal(info.gymStage?.zoom,1);
-     assert.equal(info.cameraZoom,1,'never zoom the Phaser gym camera');
+     assert.equal(info.gymStage?.extraZoom,0);
+     assert.equal(info.cameraZoom,routeCameraZoom,'gym must preserve native Phaser camera zoom');
      assert.equal(new Set(info.npcTextureKeys).size,expected,
       'each gym intermediate needs a different original FireRed sprite');
      assert.ok(info.npcTextureKeys.every(k=>k?.startsWith('frlg-npc-')),
