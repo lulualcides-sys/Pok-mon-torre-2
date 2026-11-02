@@ -1,0 +1,35 @@
+name: Kanto vector reference engine — geometry and sprite integrity
+on:
+  push:
+    branches: [feat/kanto-vector-reference-engine-20261101]
+  pull_request:
+    paths:
+      - 'reference-assets/kanto/vector-reference-v1/**'
+      - 'tools/pokearena/torre2-vector-reference.mjs'
+      - 'tools/pokearena/build-vector-reference.mjs'
+      - 'tests/kanto-vector-reference.test.js'
+permissions:
+  contents: read
+concurrency:
+  group: vector-kanto-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  reference-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Parse static scripts, all geometry and old SVG library
+        run: |
+          node --check tools/pokearena/torre2-vector-reference.mjs
+          node --check tools/pokearena/build-vector-reference.mjs
+          node --test tests/kanto-vector-reference.test.js
+      - name: Verify reproducibility of committed generated SVG and manifest
+        run: node tools/pokearena/build-vector-reference.mjs --check
+      - name: Verify no runtime game changes relative to stacked asset PR
+        run: |
+          git diff --name-only HEAD~1 HEAD
+          test -s reference-assets/kanto/vector-reference-v1/generated-manifest.json
