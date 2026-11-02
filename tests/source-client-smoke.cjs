@@ -1119,10 +1119,14 @@ const server=http.createServer(async(req,res)=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return {stage:c.__torre2BattlePath?.stage,
     total:c.__torre2BattlePath?.total,markers:c.__torre2BattlePath?.locations,
+    routeIndices:c.__torre2BattlePath?.routeIndices,
     scenery:c.children.list.some(o=>o.type==='Image'&&
      o.texture?.key==='frlg-location-pewter'),gym:c.__torre2GymBackdrop?.realGym};
   });
-  assert.deepEqual(returnedMap,{stage:0,total:13,markers:14,scenery:true,gym:true},
+  // Thirteen canonical encounters are unchanged: ten outdoor markers plus
+  // one gym portal; trainer IDs 9–11 are indoors and Rival 12 stays outdoors.
+  assert.deepEqual(returnedMap,{stage:0,total:13,markers:11,
+   routeIndices:[0,1,2,3,4,5,6,7,8,12],scenery:true,gym:true},
    'After KO, return to Battle Road with saved stage, forest and checkpoints');
   await offline.screenshot({path:'test-evidence/torre2-after-ko-battle-road.png',
    fullPage:true});
