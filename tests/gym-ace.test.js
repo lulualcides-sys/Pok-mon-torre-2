@@ -193,7 +193,8 @@ test('T35 alpha bounds scale Onix from visible pixels, not transparent PMD frame
  assert.equal(reads,1,'avoid repeated alpha readback on mobile');
  const fit=gymAceSpriteFit(plan,p,b);
  assert.equal(fit.boundsMeasured,true);
- assert.ok(fit.scale>2,'Onix must not be shrunk by transparent atlas margins');
+ const oldFrameScale=Math.min(2.25,p.maxWidth/plan.frameWidth,p.maxHeight/plan.frameHeight);
+ assert.ok(fit.scale>oldFrameScale*2,'alpha fit must double the size compared with frame-based scaling');
  assert.ok(fit.visibleHeight>=32,'Onix should read as a larger boss Pokémon');
  assert.ok(p.baseline-3-fit.visibleHeight-2>=87,'Onix idle stays inside final platform');
  assert.ok(fit.visibleHeight<=p.maxHeight);
