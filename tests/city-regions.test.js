@@ -3,8 +3,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import {hasCampaignCity} from '../tools/pokearena/torre2-city-atlas.js';
 import {REGIONAL_SIGNATURES} from '../tools/pokearena/torre2-region-identity.js';
-const source=fs.readFileSync('tools/pokearena/torre2-city-regions.js','utf8').replaceAll("'./city-layout.js'",JSON.stringify(new URL('../tools/pokearena/torre2-city-layout.js',import.meta.url).href)).replaceAll("'./city-atlas.js'",JSON.stringify(new URL('../tools/pokearena/torre2-city-atlas.js',import.meta.url).href)).replaceAll("'./region-identity.js'",JSON.stringify(new URL('../tools/pokearena/torre2-region-identity.js',import.meta.url).href));
-const {cityProfile}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+import {CERULEAN_NATIVE_FOLIAGE_FRAMES} from '../tools/pokearena/torre2-cerulean-organic-foliage.js';
+const source=fs.readFileSync('tools/pokearena/torre2-city-regions.js','utf8').replaceAll("'./city-layout.js'",JSON.stringify(new URL('../tools/pokearena/torre2-city-layout.js',import.meta.url).href)).replaceAll("'./city-atlas.js'",JSON.stringify(new URL('../tools/pokearena/torre2-city-atlas.js',import.meta.url).href)).replaceAll("'./region-identity.js'",JSON.stringify(new URL('../tools/pokearena/torre2-region-identity.js',import.meta.url).href)).replaceAll("'./cerulean-organic-foliage.js'",JSON.stringify(new URL('../tools/pokearena/torre2-cerulean-organic-foliage.js',import.meta.url).href));
+const {cityProfile,REGIONAL_BIOME_FOLIAGE}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
 test('every Kanto city and Elite checkpoint has exactly three reachable services',()=>{
  for(let stage=0;stage<=12;stage++){
   assert.equal(hasCampaignCity(stage),true);
@@ -37,5 +38,17 @@ test('Viridian and League hit areas include the centers of their visible atlas d
  for(const [stage,x,y]of [[7,320,217],[8,320,128],[12,320,128]]){
   const p=cityProfile(stage).landmarks.find(p=>p.id==='gym');
   assert.ok(Math.abs(x-p.x)<41&&y>=p.doorY-12&&y<=p.y+15);
+ }
+});
+
+test('all eight regions select genuine HD species with distinct local palettes',()=>{
+ const themes=['stone','electric','garden','poison','psychic','volcano','forest','league'];
+ assert.deepEqual(Object.keys(REGIONAL_BIOME_FOLIAGE),themes);
+ assert.equal(new Set(Object.values(REGIONAL_BIOME_FOLIAGE).map(a=>a.join(','))).size,8);
+ for(const [theme,types] of Object.entries(REGIONAL_BIOME_FOLIAGE)){
+  assert.ok(types.length>=2,theme);
+  assert.equal(Object.isFrozen(types),true);
+  for(const species of types)
+   assert.ok(Object.hasOwn(CERULEAN_NATIVE_FOLIAGE_FRAMES,species),theme+' '+species);
  }
 });
