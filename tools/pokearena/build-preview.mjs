@@ -223,6 +223,7 @@ await Promise.all([
  ['tools/pokearena/torre2-city-atlas.js','city-atlas.js'],
  ['tools/pokearena/torre2-city-scenery.js','city-scenery.js'],
  ['tools/pokearena/torre2-cerulean-organic-foliage.js','cerulean-organic-foliage.js'],
+ ['tools/pokearena/torre2-cerulean-garden-layout.js','cerulean-garden-layout.js'],
  ['tools/pokearena/torre2-city-regions.js','city-regions.js'],
  ['tools/pokearena/torre2-region-identity.js','region-identity.js'],
  ['tools/pokearena/torre2-city-hub.js','city-hub.js'],
