@@ -229,6 +229,7 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-art.js','campaign-art.js'],
  ['tools/pokearena/torre2-cc0-overworld.js','cc0-overworld.js'],
  ['tools/pokearena/torre2-frlg-location.js','frlg-location.js'],
+ ['tools/pokearena/torre2-frlg-location.js','torre2-frlg-location.js'],
  ['tools/pokearena/torre2-kanto-hotspots.js','kanto-hotspots.js'],
  ['tools/pokearena/torre2-kanto-route-layout.js','kanto-route-layout.js'],
  ['tools/pokearena/torre2-frlg-npc.js','frlg-npc.js'],
