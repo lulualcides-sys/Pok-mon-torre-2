@@ -20,6 +20,9 @@ await fs.copyFile('reference-assets/kanto/city-original/cerulean-atlas-v1.webp',
  path.join(dest,'assets/ui/city-original/cerulean-atlas-v1.webp'));
 await fs.copyFile('reference-assets/kanto/city-original/cerulean-surfaces-v1.webp',
  path.join(dest,'assets/ui/city-original/cerulean-surfaces-v1.webp'));
+// The compact user-approved concept preview is a source for isolated trees.
+await fs.copyFile('reference-assets/kanto/concept-previews/vegetation_forest.webp',
+ path.join(dest,'assets/ui/city-original/cerulean-organic-reference-v1.webp'));
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
 // be verified. Never silently substitute another hand-drawn fake sprite.
@@ -216,6 +219,7 @@ await Promise.all([
  ['tools/pokearena/torre2-city-layout.js','city-layout.js'],
  ['tools/pokearena/torre2-city-atlas.js','city-atlas.js'],
  ['tools/pokearena/torre2-city-scenery.js','city-scenery.js'],
+ ['tools/pokearena/torre2-cerulean-organic-foliage.js','cerulean-organic-foliage.js'],
  ['tools/pokearena/torre2-city-regions.js','city-regions.js'],
  ['tools/pokearena/torre2-region-identity.js','region-identity.js'],
  ['tools/pokearena/torre2-city-hub.js','city-hub.js'],
