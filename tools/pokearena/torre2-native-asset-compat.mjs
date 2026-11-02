@@ -10,6 +10,9 @@ export function stripUnavailableUiBallsPreload(source){
  const request=/this\.load\.spritesheet\(\s*(["'])ui-balls\1\s*,\s*(["'])assets\/ui\/balls20\.png\2\s*,\s*\{[^{}]*\}\s*\)\s*;/g;
  const matches=[...source.matchAll(request)];
  if(matches.length!==1||mentions.length!==1)
-  throw new Error('Changed or referenced ui-balls preload; refusing to remove gameplay code');
+  throw new Error('Changed or referenced ui-balls preload; refusing to remove gameplay code ('+
+   'references='+mentions.length+', matches='+matches.length+', context='+
+   JSON.stringify(source.slice(Math.max(0,source.indexOf('ui-balls')-70),
+     source.indexOf('ui-balls')+170))+')');
  return source.replace(matches[0][0],'');
 }
