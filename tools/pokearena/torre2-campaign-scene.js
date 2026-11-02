@@ -36,6 +36,7 @@ import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
 import {gymIntermediateModel,drawGymIntermediates} from './gym-intermediates.js';
 import {gymWideLayout,drawGymWideRoom} from './torre2-gym-wide-layout.js';
+import {eliteChamberPlan,drawEliteChamber} from './torre2-elite-chambers.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
@@ -439,20 +440,29 @@ create(){
    // Leader and authentic ace are already visible on the final platform.
    // Do not print their names over their feet or the challenge CTA below.
   }
-  const wide=!!gymWideLayout(state.stage);
-  text(this,320,wide?19:32,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
+  // Stages 8..12 are five distinct League rooms, not a blank gym panel.
+  // Their real battle gate remains the same saved stage/trainer checkpoint.
+  if(!gym&&eliteChamberPlan(state.stage))
+   drawEliteChamber(this,state.stage,addFireRedNPC);
+  const wide=!!gymWideLayout(state.stage)||!!eliteChamberPlan(state.stage);
+  text(this,320,wide?19:32,state.stage<8?'DESAFIO DO GINÁSIO':
+   'LIGA · '+(STAGES[state.stage]?.leader||'CAMPEÃO').toUpperCase(),{
    ...titleStyle,fontSize:wide?'16px':'20px'}).setOrigin(.5).setDepth(20);
-  text(this,320,wide?46:64,ready?'LÍDER DISPONÍVEL PARA BATALHA':
+  text(this,320,wide?46:64,ready?(state.stage>=8?
+   'CONFRONTO DA LIGA LIBERADO':'LÍDER DISPONÍVEL PARA BATALHA'):
    roster?.inGym?'DESAFIE O INTERMEDIÁRIO ATUAL NO GINÁSIO.':
    'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
     fontSize:wide?'11px':'13px',color:ready?'#a9f4bd':'#f5dda0'
    }).setOrigin(.5).setDepth(20);
-  text(this,320,wide?280:265,ready?'VOCÊ PODE ENTRAR AGORA.':
+  text(this,320,wide?280:265,ready?(state.stage>=8?
+   'SALA DA LIGA · SEM CONFRONTOS EXTRAS.':'VOCÊ PODE ENTRAR AGORA.'):
    roster?.inGym?'RESTANTES NO GINÁSIO: '+roster.slots.filter(t=>t.index>=state.trainer).length+' · SEM EXTRAS.':
    'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
     fontSize:'11px',color:C.white
    }).setOrigin(.5).setDepth(20);
-  this.button(320,wide?311:231,278,wide?32:39,ready?'▶ DESAFIAR LÍDER':
+  this.button(320,wide?311:231,278,wide?32:39,ready?(state.stage>=8?
+   '▶ DESAFIAR '+(STAGES[state.stage]?.leader||'CAMPEÃO').toUpperCase():
+   '▶ DESAFIAR LÍDER'):
    roster?.inGym?'▶ DESAFIAR INTERMEDIÁRIO':'CONTINUAR A ROTA',()=>{
    if(ready||roster?.inGym)this.enterBattle(state);
    else {this.__torre2CityRoute=true;this.scene.restart();}
