@@ -3,34 +3,10 @@
  * are rendered by the established gym modules above this one Graphics layer.
  * No sprite sheet duplication, RNG, save, collision or battle writes.
  */
+import {calculateGymVector,GYM_VECTOR_VERSION} from './torre2-gym-vector.js';
 export const GYM_WIDE_VERSION='t36-wide-room-v1';
-const ROOM=Object.freeze({x:66,y:68,width:508,height:200});
-// Distinct, asymmetric routes instead of four repeated rectangular menus.
-const INTERMEDIATES=Object.freeze({
- rock:Object.freeze([
-  Object.freeze({x:160,y:163}),Object.freeze({x:470,y:184}),
-  Object.freeze({x:188,y:225})
- ]),
- water:Object.freeze([
-  Object.freeze({x:161,y:163}),Object.freeze({x:470,y:171}),
-  Object.freeze({x:206,y:224}),Object.freeze({x:500,y:224})
- ])
-});
-export function gymWideLayout(stage){
- if(stage!==0&&stage!==1)return null;
- const aquatic=stage===1;
- const slots=INTERMEDIATES[aquatic?'water':'rock'];
- return Object.freeze({
-  stage,theme:aquatic?'water':'rock',cameraZoom:1,
-  room:ROOM,
-  leader:Object.freeze({x:290,y:126}),
-  ace:Object.freeze({x:342,y:126}),
-  slots:Object.freeze(slots),
-  entrance:Object.freeze({x:320,y:266}),
-  // Reserve y=277..360 for native campaign information and controls.
-  interactiveFloorBottom:268
- });
-}
+// One mathematical source of truth for every decorative and gameplay anchor.
+export function gymWideLayout(stage){return calculateGymVector(stage);}
 export function drawGymWideRoom(scene,stage){
  const plan=gymWideLayout(stage);if(!plan)return null;
  const water=plan.theme==='water';
@@ -122,17 +98,12 @@ export function drawGymWideRoom(scene,stage){
   outline(x,y,w,h,trim);
   block(x+3,y+3,w-6,3,water?0xfff4d1:0xe8cd9e,.7);
  };
- // Main spine, side bridges and entrance all stay clear of trainer sprites.
- deck(304,122,32,145);
- // Staggered branch corridors keep the room legible but avoid the old
- // 2x2 diagram. Every platform remains connected to the central aisle.
- deck(202,154,102,15);
- deck(336,165,94,15);
- deck(water?247:228,213,water?57:76,15);
- if(water)deck(336,213,123,15);
- const platforms=water?
-  [[120,141,82,44],[429,148,82,44],[165,202,82,44],[459,202,82,44]]:
-  [[119,141,82,44],[429,162,82,44],[147,203,82,44]];
+ // Vector model was validated before creating any Phaser display objects.
+ // All bridges are computed to overlap both the spine and trainer platforms.
+ const geom=plan.geometry;
+ deck(geom.spine.x,geom.spine.y,geom.spine.w,geom.spine.h);
+ for(const r of geom.bridges)deck(r.x,r.y,r.w,r.h);
+ const platforms=geom.platforms.map(r=>[r.x,r.y,r.w,r.h]);
  for(const [x,y,w,h] of platforms){
   deck(x,y,w,h);
   if(water){
@@ -145,29 +116,25 @@ export function drawGymWideRoom(scene,stage){
    }
   }
  }
- // Final stage is truly separate from the intermediate platforms.
- deck(244,87,152,53);
- deck(304,135,32,14);
- if(water){
-  // Water outlets on both sides, with foam and a few pool highlights.
-  for(const x of [230,402]){
-   block(x,83,9,24,0x9cd5ed);
-   block(x+2,91,4,17,0xe5f7f6);
-   block(x-3,108,15,3,0xf4fcfc,.8);
-  }
-  for(const x of [90,524])for(const y of [108,183,246]){
-   block(x,y,15,3,0xb4eaf6,.65);
-   block(x+5,y+4,9,2,0xe8fbfb,.6);
-  }
- }else{
-  // Rock formations: small, original procedural terrain, not borrowed VFX.
-  for(const [x,y,s] of [[100,126,18],[526,124,19],[102,233,17],[536,238,15],
-    [227,185,12],[414,183,11],[260,242,10],[387,243,12]]){
-   block(x,y,s,s-3,0x776858);
-   block(x+3,y+2,s-7,s-9,0xc3b093);
-   block(x+2,y+s-4,s-4,3,0x52483d);
+ // Final platform, in the connectivity graph, remains unobstructed.
+ deck(geom.final.x,geom.final.y,geom.final.w,geom.final.h);
+ // Every ornamental cluster below is positioned by calculateGymVector;
+ // the audit excluded bridges, actor rectangles, boss+ace and CTA margins.
+ // Natural asymmetry is deterministic: same save => same scene geometry.
+ for(const r of geom.ornaments){
+  if(water){
+   block(r.x,r.y+r.h-2,r.w,2,0x155783,.55);
+   block(r.x+2,r.y+2,r.w-4,2,0xaee4eb,.72);
+   block(r.x+4,r.y+5,Math.max(3,r.w-8),2,0xe5f9f2,.75);
+   block(r.x+1,r.y+3,2,2,0x4fc1df,.7);
+  }else{
+   block(r.x+1,r.y+3,r.w,r.h-1,0x51483c,.92);
+   block(r.x,r.y,r.w,r.h-4,0x887660);
+   block(r.x+3,r.y+1,r.w-7,3,0xd5bf95);
+   block(r.x+3,r.y+r.h-5,r.w-4,2,0x6c5a46);
   }
  }
+ // Already-approved room architecture remains behind the upper wall.
  // Fine-grained rail posts, accenting bridges without covering crossings.
  for(const x of [189,294,336,447]){
   for(const y of [143,198]){
@@ -175,9 +142,9 @@ export function drawGymWideRoom(scene,stage){
    block(x+1,y-5,4,2,water?0xffffff:0xd8c5a2);
   }
  }
- // Entrance remains visible underneath the player's route controls.
- deck(294,252,52,16);
- block(308,262,24,4,water?0x5c94be:0x7f674d);
+ // The threshold is part of the verified entrance→boss traversal graph.
+ deck(geom.entry.x,geom.entry.y,geom.entry.w,geom.entry.h);
+ block(geom.entry.x+14,geom.entry.y+10,24,4,water?0x5c94be:0x7f674d);
  scene.__torre2GymWideLayout=plan;
  return plan;
 }
