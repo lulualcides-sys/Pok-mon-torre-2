@@ -5,6 +5,7 @@ on:
     paths:
       - 'tests/native-battle-perf-browser.cjs'
       - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/build-preview.mjs'
       - '.github/workflows/native-battle-perf.yml'
   workflow_dispatch:
 permissions:
