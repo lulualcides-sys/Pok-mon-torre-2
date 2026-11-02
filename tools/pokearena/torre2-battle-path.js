@@ -176,6 +176,9 @@ export function renderBattlePath(scene,state,handlers){
   .setOrigin(0,.5);
  button(scene,424,103,107,24,'VS SEEKER',()=>handlers.rematchAtlas?.(),
   {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
+ if(handlers.approvedMaps)button(scene,424,162,107,23,'MAPAS HD',
+  ()=>handlers.approvedMaps(),{depth:39,small:true})
+  .setData('torre2-open-approved-map',true);
  // Preserve the native trainer route by default. City is optional.
  if(stage===1)button(scene,424,131,107,23,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
