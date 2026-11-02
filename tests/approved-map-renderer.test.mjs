@@ -55,11 +55,11 @@ test('T40 approved S.S. Anne exit is not covered by a false locked footer or bac
  assert.ok(zones.some(z=>z.data?.value==='ss-anne:exit'));
 });
 test('T40 dynamic navigation moves above S.S. Anne exit and reserves a separate back target',()=>{
- const {scene}=fakeScene(true);
+ const {scene,rectangles}=fakeScene(true);
  const view=renderApprovedMap(scene,'ss-anne',{isUnlocked:()=>true});
  assert.equal(view.ok,true);
- assert.equal(view.footerY,undefined); // layout details remain internal to the renderer
- assert.equal(view.footer!==null,true);
+ assert.equal(rectangles.length,1);
+ assert.equal(rectangles[0][1],13); // top bar does not cover the southern exit
  assert.equal(view.back.pos[1],314);
 });
 test('T40 never silently drops Cerulean fifth connection; lock is rechecked on native tap',()=>{
@@ -86,4 +86,24 @@ test('T40 rejects corrupt texture dimensions before creating an image',()=>{
   assert.equal(renderApprovedMap(scene,'ss-anne').reason,'invalid-texture-size');
   assert.equal(images.length,0);
  }
+});
+
+test('T40 Fuchsia keeps five native route buttons even when both full-width bars collide',()=>{
+ const {scene,zones,rectangles}=fakeScene(true);
+ const view=renderApprovedMap(scene,'fuchsia-city',{isUnlocked:()=>true});
+ assert.equal(view.ok,true);
+ assert.equal(view.neighbors.length,5);
+ assert.equal(rectangles.length,0); // compact chips, not an opaque footer
+ assert.equal(zones.filter(z=>z.data?.key==='torre2-approved-route').length,5);
+});
+test('T40 pure preflight detects an overlapping hotspot before sprite creation',()=>{
+ const rect={x:0,y:0,width:640,height:360};
+ const entry={hotspots:[
+  {id:'a',cx:.5,cy:.5,w:.3,h:.3,validated:'visual'},
+  {id:'b',cx:.55,cy:.5,w:.3,h:.3,validated:'visual'}
+ ]};
+ const plan=planApprovedMapOverlays(entry,rect,[]);
+ assert.equal(plan.ok,false);
+ assert.equal(plan.reason,'hotspot-overlap');
+ assert.deepEqual(plan.ids,['a','b']);
 });
