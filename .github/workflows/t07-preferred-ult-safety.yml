@@ -1,0 +1,61 @@
+name: T07/T08 — blocked and approved Lv8 signature safety
+on:
+  push:
+    branches: [fix/t07-blocked-preferred-ult-20261029-1551]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-kanto-intro-moves.js'
+      - 'tests/kanto-intro-moves.test.js'
+      - '.github/workflows/t07-preferred-ult-safety.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preferred-ult:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify unit tests, approved move policy and syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-kanto-intro-moves.js
+          npm test
+      - name: Compile current native Phaser/WebGL client
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+                && node tools/pokearena/build-preview.mjs \
+                && test -s _site/arena2d/lib/phaser.min.js \
+                && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+      - name: Validate Kanto ULT, legal learnsets, editor and native Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/pokearena/audit-moves.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/kanto-intro-touch-browser.cjs
+          npm run test:browser
+      - name: Preserve Chromium and compiled matrix evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t07-blocked-preferred-ult-safety
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,32 @@
+name: Master T08 — 150 species ULT level transition
+on:
+  push:
+    branches: [test/master-t08-ult-transition-151-20261028]
+permissions:
+  contents: read
+jobs:
+  ult-boundary:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - run: |
+          npm test
+          npm run check
+          npm run check:reuse
+      - run: |
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - run: node tests/t08-kanto-ult-level-transition-built.test.mjs
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: t08-ult-transition-failure
+          path: test-evidence/

@@ -1,0 +1,49 @@
+name: Master T09 — native Arena cooldown symmetry
+on:
+  push:
+    branches: [test/master-t09-native-cooldown-symmetry-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-cooldown:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source and move preservation checks
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t09-native-cooldown-symmetry-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build authorized Phaser client
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*6))
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Validate native CPU/player cooldown parity in Chromium/WebGL
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t09-native-cooldown-symmetry-browser.cjs
+      - name: Run official complete Phaser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t09-native-arena-cooldown-evidence
+          path: test-evidence/
+          if-no-files-found: warn

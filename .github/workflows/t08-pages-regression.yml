@@ -1,0 +1,69 @@
+name: T07/T08 — regressions de Pages após ULTs temáticas
+on:
+  push:
+    branches: [fix/t07-t08-pages-regression-ult-gates-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  kanto-pages-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Complete tests and policy checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/kanto-ultimate-policy.js
+          npm test
+      - name: Build real captured Phaser/WebGL client
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/lib/phaser.min.js \
+              && test -s _site/arena2d/version.json; then
+              break
+            fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+      - name: Run exact failing Pages and REA gates plus full Kanto audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/pokearena/audit-moves.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/solo-kanto-built.test.mjs
+          node tests/misty-surge-built.test.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          node tests/t08-kanto-no-duplicate-native-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/finale13-built.test.mjs
+      - name: Chromium mobile controls and complete browser regressions
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/kanto-intro-touch-browser.cjs
+          node tests/t08-summary-mobile-choice-browser.cjs
+          npm run test:browser
+      - name: Preserve test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t08-pages-regression-fix-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 30

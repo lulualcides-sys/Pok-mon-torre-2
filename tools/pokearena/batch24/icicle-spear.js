@@ -1,0 +1,26 @@
+// Icicle Spear — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "icicle-spear",
+  "nombre": "Icicle Spear",
+  "approved": true,
+  "forma": "torre2_batch24_icicle_spear",
+  "tipo": "ICE",
+  "categoria": "PHYSICAL",
+  "poder": 25,
+  "precisao": 100,
+  "pp": 30,
+  "fazContato": false,
+  "dano": 5,
+  "alcance": 245,
+  "coste": 24,
+  "cd": 4.6,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "spear",
+  "palette": "ice",
+  "speed": 345,
+  "secondary": "multi",
+  "frames": 12,
+  "description": "Icicle Spear — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/icicle-spear"
+});

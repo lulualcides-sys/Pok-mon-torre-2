@@ -1,0 +1,28 @@
+import mud_shot from './mud-shot.js';
+import mud_bomb from './mud-bomb.js';
+import acid from './acid.js';
+import acid_spray from './acid-spray.js';
+import sludge from './sludge.js';
+import poison_jab from './poison-jab.js';
+import mega_drain from './mega-drain.js';
+import giga_drain from './giga-drain.js';
+import pin_missile from './pin-missile.js';
+import icicle_spear from './icicle-spear.js';
+import ice_shard from './ice-shard.js';
+import poison_fang from './poison-fang.js';
+import ice_fang from './ice-fang.js';
+import fury_cutter from './fury-cutter.js';
+import leaf_blade from './leaf-blade.js';
+import night_slash from './night-slash.js';
+import icy_wind from './icy-wind.js';
+import silver_wind from './silver-wind.js';
+import twister from './twister.js';
+import energy_ball from './energy-ball.js';
+import dark_pulse from './dark-pulse.js';
+import ancient_power from './ancient-power.js';
+import earth_power from './earth-power.js';
+export const BATCH24_MOVES=Object.freeze([mud_shot,mud_bomb,acid,acid_spray,sludge,poison_jab,mega_drain,giga_drain,pin_missile,icicle_spear,ice_shard,poison_fang,ice_fang,fury_cutter,leaf_blade,night_slash,icy_wind,silver_wind,twister,energy_ball,dark_pulse,ancient_power,earth_power]);
+
+// Dragon Pulse already belongs to the approved original Poké Arena 2D.
+// The batch requested 24 distinct moves: 23 new plus 1 original reused.
+export const BATCH24_NATIVE_REUSE=Object.freeze({id:'dragon-pulse',nombre:'Dragon Pulse',source:'arena2d-original'});

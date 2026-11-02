@@ -1,0 +1,49 @@
+name: T24 — public Pages smoke preserves separate capture and trainer zones
+on:
+  pull_request:
+    paths:
+      - 'tests/source-client-smoke.cjs'
+      - '.github/workflows/t24-pages-smoke-compat.yml'
+permissions:
+  contents: read
+jobs:
+  native-pages-smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate existing battle path and native capture semantics
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/source-client-smoke.cjs
+          node --test tests/t24-path-actions.test.js
+          npm run check
+          npm run check:reuse
+      - name: Capture approved client and build original Phaser/WebGL
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js &&
+               test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: Run exact Pages Chromium smoke that blocked T24 deployment
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/source-client-smoke.cjs
+      - name: Keep real screenshots for review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t24-pages-smoke-capture-badges
+          path: test-evidence/
+          retention-days: 10
+          if-no-files-found: warn

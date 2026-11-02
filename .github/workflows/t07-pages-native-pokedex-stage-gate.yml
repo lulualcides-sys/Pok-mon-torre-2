@@ -1,0 +1,75 @@
+name: T07/T08 — Pages Pokédex native-stage compatibility
+on:
+  push:
+    branches: [fix/t07-pages-pokedex-native-stage-gate-20261029-1651]
+  pull_request:
+    paths:
+      - 'tests/misty-surge-built.test.mjs'
+      - 'tools/pokearena/torre2-pokedex-pages.mjs'
+      - '.github/workflows/t07-pages-native-pokedex-stage-gate.yml'
+  workflow_dispatch:
+concurrency:
+  group: t07-pages-native-pokedex-${{ github.head_ref || github.ref }}
+  cancel-in-progress: true
+permissions:
+  contents: read
+jobs:
+  pages-gate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit, syntax and approved move policy
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture and compile the real Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt*8))
+          done
+      - name: Reproduce exact failed Pages gate and native-stage invariants
+        run: |
+          set -euo pipefail
+          node tools/pokearena/audit-moves.mjs
+          node tests/batch24-built.test.mjs
+          node tests/misty-surge-built.test.mjs
+          node tests/surge3-built.test.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/frlg-learnsets-built.test.mjs
+          node tests/t07-frlg-natural-catalog-built.test.mjs
+          node tests/t08-kanto-no-duplicate-native-built.test.mjs
+          node tests/t08-151-signature-ult-built.test.mjs
+          node tests/t08-kanto-onboarding-151-built.test.mjs
+          node tests/t07-frlg-unrendered-136x639-built.test.mjs
+          node tests/t08-arena-role-slots-built.test.mjs
+          node tests/t08-leech-seed-campaign-balance-built.test.mjs
+          node tests/finale13-built.test.mjs
+          node --test tests/pokedex-upstream-layout.test.js
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+      - name: Chromium Phaser battle regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/batch24-browser.cjs
+          node tests/source-client-smoke.cjs
+          node tests/t08-arena-roles-summary-mobile-browser.cjs
+          node tests/kanto-intro-touch-browser.cjs
+          npm run test:browser
+      - name: Keep Chromium evidence even when failing
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t07-pages-native-pokedex-stage-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 14

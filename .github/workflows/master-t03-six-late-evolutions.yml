@@ -1,0 +1,55 @@
+name: Master T03 — seis novas evoluções finais Kanto no WebGL
+on:
+  push:
+    branches: [test/master-t03-six-late-evolutions-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  t03-six-late-evolutions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar e validar sintaxe, regras e testes unitários
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t03-six-late-evolutions-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capturar e compilar o cliente Phaser original
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep $((i * 5))
+          done
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Verificar seis evoluções no Chromium WebGL
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t03-six-late-evolutions-browser.cjs
+      - name: Regressão oficial do jogo no navegador
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          npm run test:browser
+      - name: Guardar provas visuais e relatório
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t03-six-late-evolutions-evidence
+          path: |
+            test-evidence/t03-late-*-webgl.png
+            test-evidence/t03-six-late-evolutions.json
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14

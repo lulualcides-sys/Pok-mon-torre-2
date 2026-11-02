@@ -1,0 +1,700 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
+ CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput,tuneCampaignAutoBrain,
+ chooseCampaignAutoWeatherInput,pressureCampaignAutoSkillInput,livingCampaignOpponent}
+ from '../tools/pokearena/torre2-auto-battle.js';
+const makeObject=()=>{
+ const handlers=new Map;
+ const obj={handlers,destroyed:false,active:true,visible:true};
+ for(const method of ['setStrokeStyle','setDepth','setOrigin','setFillStyle','setX','setInteractive',
+ 'setText','setColor','setVisible','setActive'])obj[method]=function(...args){
+  if(method==='setText')this.text=args[0];
+  if(method==='setX')this.x=args[0];
+  if(method==='setActive')this.active=args[0];
+  if(method==='setVisible')this.visible=args[0];
+  if(method==='setFillStyle')this.fill=args[0];
+  return this;
+ };
+ obj.on=function(name,fn){handlers.set(name,fn);return this};
+ obj.removeAllListeners=()=>handlers.clear();
+ obj.destroy=function(){this.destroyed=true};
+ return obj;
+};
+function scene(options={}){
+ const handlers=new Map(),keyboard=new Map(),player={t:12,cd:{lmb:0},rival:{x:120,y:100}};
+ const human={tipo:'tactil',l:player,leer(){return{mx:0,my:0,ax:0,ay:0,lmb:false}}};
+ const target={tipo:'ia',l:player.rival,leer(){return{mx:0,my:0}}};
+ return {datos:{modo:'cpu',...options},sim:false,red:null,enLinea:false,fase:'lucha',
+  pausado:false,controles:[human,target],luchadores:[player,player.rival],
+  add:{rectangle:(x,y)=>Object.assign(makeObject(),{x,y}),
+   text:(x,y)=>Object.assign(makeObject(),{x,y}),
+   zone:(x,y)=>Object.assign(makeObject(),{x,y})},
+  input:{keyboard:{on:(k,fn)=>keyboard.set(k,fn),off:(k,fn)=>{if(keyboard.get(k)===fn)keyboard.delete(k)}}},
+  cameras:{main:{width:640,zoom:1}},
+  events:{on:(k,fn)=>handlers.set(k,fn),off:(k,fn)=>{if(handlers.get(k)===fn)handlers.delete(k)},
+   once:(k,fn)=>handlers.set(k,fn)},
+  handlers,keyboard};
+}
+test('AUTO only appears in solo battles, not PvP, online or replay',()=>{
+ for(const mode of ['online','versus','demo','replay'])
+  assert.equal(autoBattleAllowed(scene({modo:mode})),false,mode);
+ for(const mode of ['cpu','entreno','arena'])
+  assert.equal(autoBattleAllowed(scene({modo:mode})),true,mode);
+ const s=scene();s.sim=true;assert.equal(autoBattleAllowed(s),false);
+ s.sim=false;s.red={};assert.equal(autoBattleAllowed(s),false);
+ assert.equal(autoBattleAllowed(scene({torre2:{kind:'campaign'},modo:'cpu'})),true);
+});
+test('AUTO never appears when two humans share the local match',()=>{
+ const s=scene({modo:'arena'});
+ s.controles[1]={tipo:'kbm',l:s.luchadores[1],leer:()=>({mx:0,my:0})};
+ assert.equal(installAutoBattle(s,()=>({leer:()=>({})})),null);
+ assert.equal(s.__torre2AutoMode,undefined);
+});
+test('Native human controller is selected, never an enemy controller',()=>{
+ const s=scene();assert.strictEqual(manualFighterControl(s),s.controles[0]);
+ s.controles=[s.controles[1]];assert.strictEqual(manualFighterControl(s),null);
+});
+test('AUTO switches input to the original native AI and back without editing attacks',()=>{
+ const s=scene(),control=s.controles[0],original=control.leer;let dtUsed=0,aiCalls=0;
+ const state=installAutoBattle(s,actor=>{
+  assert.strictEqual(actor,control.l);
+  return {leer(dt){dtUsed=dt;aiCalls++;return{mx:1,my:0,ax:55,ay:60,lmb:true,mega:true}}};
+ });
+ assert.ok(state);assert.equal(state.enabled,false);assert.equal(state.label.text,'AUTO');
+ assert.deepEqual(control.leer(.1),{mx:0,my:0,ax:0,ay:0,lmb:false});
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,true);assert.equal(state.label.text,'AUTO ✓');
+ const auto=control.leer(.033);
+ assert.equal(aiCalls,1);assert.equal(dtUsed,.033);
+ assert.deepEqual(auto,{mx:1,my:0,ax:55,ay:60,lmb:true,mega:false});
+ assert.equal(control.l.cd.lmb,0,'Never bypass move cooldown');
+ s.fase='intro';assert.deepEqual(control.leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false});
+ s.fase='lucha';s.pausado=true;
+ assert.equal(control.leer(.016).lmb,false,'Do not move during pause');
+ s.pausado=false;state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(state.enabled,false);assert.deepEqual(control.leer(.016),original.call(control,.016));
+ s.events.once; s.handlers.get('shutdown')();
+ assert.strictEqual(control.leer,original,'Restore original exact reader on scene exit');
+ assert.equal(state.button.destroyed,true);assert.equal(state.label.destroyed,true);
+ assert.equal(state.zone.destroyed,true);assert.equal(s.__torre2AutoMode,null);
+});
+test('Campaign AUTO refreshes original AI once per Pokémon species after native party switch',()=>{
+ const s=scene({torre2:{kind:'trainer',stage:1}}),control=s.controles[0];
+ control.l.def={id:'ivysaur'};
+ let constructions=0;
+ const state=installAutoBattle(s,actor=>{
+  assert.strictEqual(actor,control.l);
+  const identity=actor.def.id,instance=++constructions;
+  return {leer:()=>({mx:instance,my:0,from:identity,lmb:true})};
+ });
+ assert.equal(constructions,1);
+ assert.equal(state.enabled,true);
+ assert.equal(control.leer(.016).mx,1);
+ // Native reiniciar() mutates the same actor, not the control or scene.
+ control.l.def={id:'pikachu'};
+ s.fase='torre2-sendout';
+ assert.equal(control.leer(.016).mx,0,'Input paused during send-out');
+ assert.equal(constructions,1,'No AI rebuild until the next live combat frame');
+ s.fase='lucha';
+ const second=control.leer(.016);
+ assert.equal(second.mx,2);
+ assert.equal(second.from,'pikachu');
+ assert.equal(second.mega,false);
+ assert.equal(state.autoSpecies,'pikachu:0');
+ assert.equal(constructions,2,'Exactly one new native IA for Pikachu');
+ control.leer(.016);control.leer(.016);
+ assert.equal(constructions,2,'Do not recreate IA on every frame');
+ control.l.def={id:'geodude'};
+ assert.equal(control.leer(.016).from,'geodude');
+ assert.equal(constructions,3);
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ control.l.def={id:'oddish'};
+ assert.equal(control.leer(.016).mx,0,'AUTO OFF means original manual reader');
+ assert.equal(constructions,3,'Never build AI while AUTO OFF');
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(control.leer(.016).from,'oddish');
+ assert.equal(constructions,4);
+ s.handlers.get('shutdown')();
+});
+
+test('Campaign AUTO also refreshes when evolution stage changes within one base family',()=>{
+ const s=scene({torre2:{kind:'trainer'}}),control=s.controles[0];
+ control.l.def={id:'squirtle'};control.l.etapa=0;
+ let created=0;
+ const state=installAutoBattle(s,actor=>{
+  const stage=actor.etapa;created++;
+  return {leer:()=>({mx:stage,my:0,lmb:true})};
+ });
+ assert.equal(state.enabled,true);
+ assert.equal(control.leer(.016).mx,0);
+ assert.equal(state.autoSpecies,'squirtle:0');
+ control.l.etapa=1; // Wartortle: ROSTER def.id remains Squirtle.
+ assert.equal(control.leer(.016).mx,1);
+ assert.equal(created,2,'Wartortle must get a NEW native AI');
+ assert.equal(state.autoSpecies,'squirtle:1');
+ control.leer(.016);
+ assert.equal(created,2,'No new IA each frame');
+ s.handlers.get('shutdown')();
+});
+
+test('Original Arena AUTO does not recreate its controller when species changes',()=>{
+ const s=scene({modo:'arena'}),control=s.controles[0];
+ control.l.def={id:'ivysaur'};
+ let creations=0;
+ const state=installAutoBattle(s,()=>({leer:()=>({mx:++creations,my:0})}));
+ assert.equal(creations,0);
+ state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ control.leer(.016);
+ control.l.def={id:'pikachu'};
+ control.leer(.016);
+ assert.equal(state.autoSpecies,'ivysaur:0','Keep existing Arena IA untouched');
+ s.handlers.get('shutdown')();
+});
+
+test('AUTO OFF by default every new battle, no multiple button installs',()=>{
+ const s=scene(),a=installAutoBattle(s,()=>({leer:()=>({})}));
+ assert.equal(installAutoBattle(s,()=>({leer:()=>({})})),null);
+ assert.equal(a.enabled,false);
+ s.handlers.get('shutdown')();
+ const next=scene(),b=installAutoBattle(next,()=>({leer:()=>({})}));
+ assert.equal(b.enabled,false);
+});
+test('AUTO keyboard B toggles, and button stays within virtual screen on wide cameras',()=>{
+ const s=scene(),a=installAutoBattle(s,()=>({leer:()=>({mx:0,my:0})}));
+ s.cameras.main.width=760;
+ s.handlers.get('postupdate')();
+ assert.equal(a.button.x,579);
+ assert.equal(a.zone.x,579);
+ assert.equal(a.zone.y,146,'AUTO below Bag in the upper-right region');
+ assert.ok(a.zone.x<640,'AUTO cannot leave logical 640px scene');
+ assert.ok(a.zone.y-18>92+12,'AUTO does not intercept Bag target');
+ s.keyboard.get('keydown-KeyB')({repeat:false,ctrlKey:false,altKey:false,metaKey:false});
+ assert.equal(a.enabled,true);
+ s.keyboard.get('keydown-KeyB')({repeat:true});
+ assert.equal(a.enabled,true);
+ s.fase='fin';s.handlers.get('postupdate')();
+ assert.equal(a.enabled,false);assert.equal(a.zone.active,false);
+ s.handlers.get('shutdown')();
+ assert.equal(s.keyboard.size,0);
+});
+test('AUTO also installs in the Batalla subclass when base Combate is patched',()=>{
+ class Solo{constructor(){Object.assign(this,scene())}create(){this.baseCreated=true}}
+ class ArenaTeam extends Solo{create(){this.arenaCreated=true}}
+ const Brain=class{constructor(actor){this.actor=actor}leer(){return{mx:.5,my:0,ax:200,ay:120}}};
+ bindAutoBattleToScene(Solo,Brain);
+ bindAutoBattleToScene(ArenaTeam,Brain);
+ const first=new Solo();first.create();
+ assert.equal(first.baseCreated,true);assert.ok(first.__torre2AutoMode);
+ const arena=new ArenaTeam();arena.create();
+ assert.equal(arena.arenaCreated,true);assert.ok(arena.__torre2AutoMode,
+  'Batalla has its own create method; inherited marker must not prevent install');
+ arena.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(arena.controles[0].leer(.1).mx,.5);
+ arena.handlers.get('shutdown')();
+ first.handlers.get('shutdown')();
+});
+test('Scene prototype wrapping preserves original create and delegates AI',()=>{
+ class FakeScene{constructor(){Object.assign(this,scene())}create(){this.wasCreated=true}}
+ const before=FakeScene.prototype.create;
+ bindAutoBattleToScene(FakeScene,class{constructor(actor){this.actor=actor}leer(){return{mx:.5,my:0}}});
+ assert.notStrictEqual(before,FakeScene.prototype.create);
+ const s=new FakeScene();s.create();
+ assert.equal(s.wasCreated,true);assert.ok(s.__torre2AutoMode);
+ s.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(s.controles[0].leer(.1).mx,.5);
+ s.handlers.get('shutdown')();
+});
+
+test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buffs',()=>{
+ const tiers=[];
+ const NativeBrain=class{constructor(_actor,tier){tiers.push(tier)}leer(){return{mx:1,my:0}}};
+ class Kanto{constructor(){Object.assign(this,scene({torre2:{kind:'trainer',stage:1}}))}create(){}}
+ class OriginalArena{constructor(){Object.assign(this,scene({modo:'arena'}))}create(){}}
+ bindAutoBattleToScene(Kanto,NativeBrain);
+ bindAutoBattleToScene(OriginalArena,NativeBrain);
+ const k=new Kanto(),a=new OriginalArena();
+ k.create();a.create();
+ assert.deepEqual(tiers,[CAMPAIGN_AUTO_OFFENSIVE,'normal'],
+  'Campaign uses offensive native tactics; original Arena remains normal');
+ assert.strictEqual(campaignAutoProfile(k),CAMPAIGN_AUTO_OFFENSIVE);
+ assert.equal(campaignAutoProfile(a),'normal');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.ventaja,1,
+  'Never import Maestro native 35% hidden damage advantage');
+ assert.ok(CAMPAIGN_AUTO_OFFENSIVE.reaccion<.08,'Must react faster than native Hard');
+ assert.ok(CAMPAIGN_AUTO_OFFENSIVE.basicos>.85,
+  'Native cfg.basicos only controls ordinary-projectile awareness, NOT basic attack frequency');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
+ assert.equal(k.__torre2AutoMode.enabled,true,'Campaign AUTO is ON from battle start');
+ assert.equal(a.__torre2AutoMode.enabled,false,'Arena still starts manual');
+ k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(k.__torre2AutoMode.enabled,false,'Player can disable AUTO');
+ assert.deepEqual(k.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
+  'Manual reader restored when player disables AUTO');
+ k.__torre2AutoMode.zone.handlers.get('pointerdown')(null,null,null,null);
+ assert.equal(k.__torre2AutoMode.enabled,true,'Player can re-enable AUTO');
+ k.handlers.get('shutdown')();a.handlers.get('shutdown')();
+});
+
+test('AUTO attaches when campaign native controller arrives after create',()=>{
+ const frames=new Map;
+ class DelayedScene{
+  constructor(){
+   Object.assign(this,scene({torre2:{kind:'trainer'}}));
+   this.controles=[];
+   this.game={events:{
+    on:(k,fn)=>frames.set(k,fn),
+    off:(k,fn)=>{if(frames.get(k)===fn)frames.delete(k)}
+   }};
+   this.scene={isActive:()=>true};
+  }
+  create(){this.wasCreated=true}
+ }
+ const Brain=class{constructor(actor){this.actor=actor}leer(){return{mx:1,my:0}}};
+ bindAutoBattleToScene(DelayedScene,Brain);
+ const s=new DelayedScene();s.create();
+ assert.equal(s.wasCreated,true);
+ assert.equal(s.__torre2AutoMode,undefined);
+ assert.equal(typeof frames.get('step'),'function');
+ const human=scene().controles;
+ s.controles=human;
+ frames.get('step')();
+ assert.ok(s.__torre2AutoMode,'AUTO installs when controller is ready');
+ assert.equal(s.__torre2AutoMode.zone.x,579);
+ assert.equal(frames.size,0,'no deferred listener left');
+ s.handlers.get('shutdown')();
+});
+
+test('Campaign AUTO level 2 is more aggressive without any combat-stat cheat',()=>{
+ assert.ok(CAMPAIGN_AUTO_OFFENSIVE.reaccion<=.025,'Level 2 reacts faster than the old 45 ms profile');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.error,0);
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.basicos,1,
+  'Native projectile awareness is independent of attack decisions');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.ventaja,1,'No Maestro hidden 35% damage buff');
+ assert.equal(CAMPAIGN_AUTO_OFFENSIVE.agresividad,1);
+});
+test('Only active campaign AUTO closes distance on idle frames; preserves skills, dodges and low HP',()=>{
+ const actor={x:30,y:40,hp:90,hpMax:100,kit:{lmb:{alcance:60}}};
+ const foe={x:210,y:40,hp:90,hpMax:100};
+ const s={datos:{torre2:{kind:'trainer'}},fase:'lucha',luchadores:[actor,foe]};
+ const idle={mx:0,my:0,ax:210,ay:40,lmb:false,rmb:false,q:false,e:false,esp:false};
+ const input=pressureCampaignAutoInput(s,actor,idle);
+ assert.deepEqual(input,{...idle,mx:1,my:0});
+ assert.deepEqual(idle,{mx:0,my:0,ax:210,ay:40,lmb:false,rmb:false,q:false,e:false,esp:false},
+  'Native AI input is never mutated');
+ assert.strictEqual(pressureCampaignAutoInput({...s,datos:{modo:'arena'}},actor,idle),idle,
+  'Arena AUTO must never inherit campaign level 2 pressure');
+ assert.strictEqual(pressureCampaignAutoInput({...s,fase:'intro'},actor,idle),idle);
+ for(const modified of [{...idle,esp:true},{...idle,q:true},{...idle,lmb:true},
+  {...idle,mx:-1,my:0}]){
+  assert.strictEqual(pressureCampaignAutoInput(s,actor,modified),modified,
+   'Never override an AI dodge, real native cast or deliberate movement');
+ }
+ const fragile={...actor,hp:20};
+ s.luchadores=[fragile,foe];
+ assert.strictEqual(pressureCampaignAutoInput(s,fragile,idle),idle,
+  'Low HP retains all native defensive decisions');
+ actor.hp=90;foe.x=70;s.luchadores=[actor,foe];
+ assert.strictEqual(pressureCampaignAutoInput(s,actor,idle),idle,
+  'Do not force movement at close range');
+});
+
+test('Level 3 uses real native attack thresholds, not cfg.basicos as a fake offensive knob',()=>{
+ const native={c:{pBasico:.30,pConGanas:.30,pSinGanas:.50,pSeguro:.85,
+  pAhorro:.50,reservaEnergia:60,energiaTope:95,pPlantarse:.50,
+  rodeo:.60,lateral:.25,rangoBanda:25,combos:[{usar:'q',prioridad:2}]}};
+ const original={...native.c};
+ const campaign=scene({torre2:{kind:'trainer'}});
+ const ret=tuneCampaignAutoBrain(campaign,native);
+ assert.strictEqual(ret,native);
+ assert.deepEqual(native.c.combos,original.combos,'Preserve official species combo rules');
+ assert.equal(native.c.pBasico,.14,'Basic attack hit confidence threshold is actually lowered');
+ assert.equal(native.c.pConGanas,.20,'Offensive skill confidence threshold is lowered');
+ assert.equal(native.c.pSinGanas,.34);
+ assert.equal(native.c.pAhorro,.08,'Native skill energy conservation reduced');
+ assert.equal(native.c.reservaEnergia,30);
+ assert.equal(native.c.energiaTope,72);
+ assert.equal(native.c.pPlantarse,.22,'Reduce passive standing decisions');
+ assert.equal(native.c.rodeo,.36,'Less circling, more forward pursuit');
+ assert.equal(native.c.lateral,.14);
+ assert.deepEqual(original,{pBasico:.30,pConGanas:.30,pSinGanas:.50,pSeguro:.85,
+  pAhorro:.50,reservaEnergia:60,energiaTope:95,pPlantarse:.50,
+  rodeo:.60,lateral:.25,rangoBanda:25,combos:[{usar:'q',prioridad:2}]},
+  'Per-species native brain must not be modified globally');
+ const arena={c:{pBasico:.3}};
+ assert.strictEqual(tuneCampaignAutoBrain(scene({modo:'arena'}),arena),arena);
+ assert.equal(arena.c.pBasico,.3,'Arena native AI unchanged');
+});
+
+test('Only campaign AUTO fires ready native LMB at reachable enemies with enough energy',()=>{
+ const actor={x:0,y:0,t:5,hp:90,hpMax:100,energia:85,calor:20,
+  cd:{lmb:0},kit:{lmb:{alcance:180,coste:8,pendiente:false}},est:{}};
+ const enemy={x:100,y:0,hp:100,hpMax:100,est:{}};
+ const b={datos:{torre2:{kind:'wild'}},fase:'lucha',luchadores:[actor,enemy]};
+ const idle={mx:0,my:0,ax:100,ay:0,lmb:false,rmb:false,q:false,e:false,esp:false};
+ const brain={c:{calorTope:80}};
+ assert.equal(pressureCampaignAutoInput(b,actor,idle,brain).lmb,true);
+ assert.equal(idle.lmb,false,'Native controller input must not be mutated');
+ for(const props of [{cd:{lmb:.8}},{energia:2},{calor:85},
+  {kit:{lmb:{alcance:180,coste:8,pendiente:true}}},
+  {accion:{bloquea:true}},{est:{aturdido:{hasta:8}}}]){
+  const damaged={...actor,...props};
+  const src={...b,luchadores:[damaged,enemy]};
+  assert.equal(pressureCampaignAutoInput(src,damaged,idle,brain).lmb,false,
+   'No cast during native cooldown, low energy, heat, locked animation, status or unlearned move');
+ }
+ assert.strictEqual(pressureCampaignAutoInput({...b,datos:{modo:'arena'}},actor,idle,brain),idle);
+ assert.strictEqual(pressureCampaignAutoInput({...b,fase:'capturando'},actor,idle,brain),idle);
+ for(const input of [{...idle,q:true},{...idle,rmb:true},{...idle,e:true},{...idle,esp:true}]){
+  assert.strictEqual(pressureCampaignAutoInput(b,actor,input,brain),input,
+   'Never override native skills or evasion');
+ }
+ enemy.est.invul={hasta:12};
+ assert.equal(pressureCampaignAutoInput(b,actor,idle,brain).lmb,false,
+  'Do not waste attacks during opponent invulnerability');
+});
+
+test('Level 3 pursues sideways native movement only when safe and in the Kanto campaign',()=>{
+ const actor={x:0,y:0,hp:90,hpMax:100,kit:{lmb:{alcance:70}}};
+ const enemy={x:300,y:0,hp:100,est:{}};
+ const s={datos:{torre2:{}},fase:'lucha',luchadores:[actor,enemy]};
+ const sidestep={mx:0,my:1,ax:300,ay:0};
+ const force=pressureCampaignAutoInput(s,actor,sidestep);
+ assert.ok(force.mx>.5,'Native circling now becomes actual forward offensive pressure');
+ assert.ok(force.my>0&&force.my<.6,'Keep some native strafing');
+ assert.deepEqual(sidestep,{mx:0,my:1,ax:300,ay:0},'Do not mutate AI input');
+ assert.strictEqual(pressureCampaignAutoInput({...s,datos:{modo:'arena'}},actor,sidestep),sidestep);
+ const retreat={...sidestep,mx:-1,my:0};
+ assert.strictEqual(pressureCampaignAutoInput(s,actor,retreat),retreat,'Keep intentional retreats');
+ const danger={vivo:true,dueno:enemy,x:15,y:15};
+ assert.strictEqual(pressureCampaignAutoInput({...s,efectos:[danger]},actor,sidestep),sidestep,
+  'Do not override native evasion near hostile projectiles');
+});
+
+test('Campaign AUTO tactically uses ready approved Rain Dance only in a legal normal slot',()=>{
+ const actor={x:110,y:110,hp:90,hpMax:100,energia:100,calor:0,
+  tipos:['WATER'],kit:{lmb:{nombre:'Tackle'},rmb:{
+   nombre:'Rain Dance',forma:'torre2_finale_raindance',coste:35
+  }},cd:{rmb:0},est:{}};
+ const foe={x:220,y:110,hp:100,hpMax:100,tipos:['FIRE'],est:{}};
+ actor.rival=foe;
+ const rain={kind:'none',remaining:0},s={
+  datos:{torre2:{kind:'trainer'}},fase:'lucha',luchadores:[actor,foe],
+  __torre2Weather:rain
+ };
+ const native={mx:0,my:1,lmb:true,rmb:false,q:false,e:false,
+  esp:false,mega:false,ax:foe.x,ay:foe.y};
+ const out=chooseCampaignAutoWeatherInput(s,actor,native);
+ assert.equal(out.rmb,true,'AUTO casts equipped rain before normal LMB when tactically favorable');
+ assert.equal(out.lmb,false,'Never cast two moves from one tactical input');
+ assert.equal(out.e,false,'Weather cannot steal charged ULT');
+ assert.strictEqual(native.lmb,true,'Native AI input is not mutated');
+ // Native weather activation will update the SAME state after an actual cast.
+ rain.kind='rain';rain.remaining=18;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'No redundant early recast under live Rain Dance');
+ rain.remaining=3;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'AUTO must attack rather than recast an existing weather near expiry');
+ actor.cd.rmb=4;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Native cooldown is mandatory for refreshes');
+ actor.cd.rmb=0;
+ actor.energia=18;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Cannot use Rain Dance without real energy');
+ actor.energia=100;
+ foe.tipos=['WATER'];
+ rain.kind='none';rain.remaining=0;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Do not waste a turn on a weather that favors both equally');
+ foe.tipos=['FIRE'];actor.tipos=['FIRE'];
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,native),native,
+  'Do not choose a harmful weather for the user');
+});
+test('Campaign AUTO suppresses repeated native climate and promotes ready damaging skills',()=>{
+ const actor={lado:0,x:0,y:0,hp:95,hpMax:100,energia:100,calor:0,
+  tipos:['WATER'],kit:{
+   lmb:{nombre:'Tackle',forma:'Swing',alcance:80,dano:4,coste:0},
+   rmb:{nombre:'Water Pulse',forma:'Shoot',alcance:230,dano:13,coste:22},
+   q:{nombre:'Rain Dance',forma:'torre2_finale_raindance',coste:35}
+  },cd:{lmb:0,rmb:0,q:0},est:{}};
+ const foe={lado:1,x:140,y:0,hp:100,hpMax:100,tipos:['FIRE'],est:{}};
+ actor.rival=foe;
+ const s={datos:{torre2:{kind:'trainer'}},fase:'lucha',
+  __torre2Weather:{kind:'rain',remaining:18},luchadores:[actor,foe]};
+ const native={mx:0,my:0,ax:140,ay:0,lmb:false,rmb:false,q:true,e:false,esp:false};
+ const filtered=chooseCampaignAutoWeatherInput(s,actor,native);
+ assert.equal(filtered.q,false,'Repeated weather request from native IA must be suppressed');
+ assert.equal(native.q,true,'Do not mutate the original native decision');
+ const skilled=pressureCampaignAutoSkillInput(s,actor,filtered);
+ assert.equal(skilled.rmb,true,'Real ready Water Pulse should take priority');
+ assert.equal(skilled.q,false);
+ assert.equal(skilled.ax,foe.x);
+ // A ready offensive skill from the source IA must never be overwritten.
+ const originalSkill={...native,rmb:true,q:false};
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,actor,originalSkill),originalSkill);
+ assert.strictEqual(pressureCampaignAutoSkillInput(s,actor,originalSkill),originalSkill);
+ // When Water Pulse is cooling down, use basic in range; never bypass CD.
+ actor.cd.rmb=5;foe.x=65;
+ const noSkill=pressureCampaignAutoSkillInput(s,actor,filtered);
+ assert.strictEqual(noSkill,filtered);
+ const basic=pressureCampaignAutoInput(s,actor,noSkill);
+ assert.equal(basic.lmb,true,'Use native-ready LMB instead of spamming weather');
+ assert.equal(actor.cd.rmb,5,'Never change cooldowns');
+ // No skill should be forced while out of range or without energy.
+ actor.cd.rmb=0;actor.energia=4;foe.x=140;
+ assert.strictEqual(pressureCampaignAutoSkillInput(s,actor,filtered),filtered);
+ actor.energia=100;foe.x=450;
+ assert.strictEqual(pressureCampaignAutoSkillInput(s,actor,filtered),filtered);
+});
+test('Campaign AUTO cannot spam unfavorable native weather or steal an offensive ULT',()=>{
+ const actor={lado:0,x:0,y:0,hp:90,hpMax:100,energia:100,calor:0,
+  tipos:['WATER'],kit:{q:{nombre:'Rain Dance',forma:'rain',coste:20}},
+  cd:{q:0},est:{}};
+ const foe={lado:1,x:130,y:0,hp:20,hpMax:100,tipos:['FIRE']};
+ const s={datos:{torre2:{}},fase:'lucha',luchadores:[actor,foe],
+  __torre2Weather:{kind:'none',remaining:0}};
+ const climate={q:true,rmb:false,e:false,lmb:false};
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,false,
+  'A nearly fainted enemy needs a finisher, not weather setup');
+ foe.hp=100;foe.tipos=['WATER'];
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,false,
+  'Do not cast weather when it equally benefits the opponent');
+ foe.tipos=['FIRE'];
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,true,
+  'Helpful weather is allowed once when it is not active');
+ s.__torre2Weather.kind='rain';s.__torre2Weather.remaining=1;
+ assert.equal(chooseCampaignAutoWeatherInput(s,actor,climate).q,false,
+  'Do not refresh rain even in its last second');
+ const ult={...climate,e:true};
+ const out=chooseCampaignAutoWeatherInput(s,actor,ult);
+ assert.equal(out.e,true,'Never suppress real offensive ULT');
+ assert.equal(out.q,false,'Native climate cannot execute beside an ULT');
+ assert.strictEqual(chooseCampaignAutoWeatherInput({...s,datos:{modo:'arena'}},actor,climate),climate,
+  'Arena native input must remain unmodified');
+});
+test('Campaign AUTO installed reader replaces climate-only native IA with actual attack',()=>{
+ const s=scene({torre2:{kind:'trainer'}}),player=s.controles[0].l,foe=s.luchadores[1];
+ player.lado=0;player.x=0;player.y=0;player.hp=90;player.hpMax=100;
+ player.energia=100;player.calor=0;player.tipos=['WATER'];player.est={};
+ player.kit={lmb:{nombre:'Tackle',alcance:75,dano:3,coste:0},
+  rmb:{nombre:'Water Pulse',forma:'Shoot',alcance:230,dano:12,coste:20},
+  q:{nombre:'Rain Dance',forma:'rain',coste:28}};
+ player.cd={lmb:0,rmb:0,q:0};
+ foe.lado=1;foe.x=120;foe.y=0;foe.hp=95;foe.hpMax=100;foe.tipos=['FIRE'];
+ s.__torre2Weather={kind:'rain',remaining:16};
+ const mode=installAutoBattle(s,()=>({leer:()=>({mx:0,my:0,q:true,lmb:false,
+  rmb:false,e:false,ax:foe.x,ay:foe.y})}));
+ const input=s.controles[0].leer(.016);
+ assert.equal(input.q,false);assert.equal(input.rmb,true);
+ assert.equal(mode.diagnostics.suppressedWeatherFrames,1);
+ assert.equal(mode.diagnostics.assistedSkillFrames,1);
+ s.handlers.get('shutdown')();
+});
+test('Campaign weather AUTO respects dodge, teammate changes, manual/Arena and unapproved slots',()=>{
+ const actor={x:0,y:0,hp:90,hpMax:100,tipos:['ELECTRIC'],
+  energia:100,calor:0,kit:{q:{nombre:'Rain Dance',
+    forma:'torre2_finale_raindance',coste:35}},cd:{q:0}};
+ const enemy={x:100,y:0,hp:100,tipos:['ROCK']};actor.rival=enemy;
+ const scene={datos:{torre2:{kind:'wild'}},fase:'lucha',
+  __torre2Weather:{kind:'none',remaining:0},luchadores:[actor,enemy]};
+ const quiet={mx:0,my:0,lmb:false,q:false,rmb:false,e:false,esp:false};
+ assert.equal(chooseCampaignAutoWeatherInput(scene,actor,quiet).q,true,
+  'AUTO casts real Q weather for electric species against rock opposition');
+ for(const input of [{...quiet,esp:true},{...quiet,rmb:true},
+  {...quiet,e:true},{...quiet,q:true}]){
+  assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,input),input,
+   'Native escape or a selected normal/ULT cast must take priority');
+ }
+ for(const modified of [
+  {...scene,datos:{modo:'arena'}},{...scene,fase:'capturando'},
+  {...scene,__torre2Changing:true},{...scene,pausado:true}
+ ]){
+  assert.strictEqual(chooseCampaignAutoWeatherInput(modified,actor,quiet),quiet,
+   'Only unblocked live campaign AUTO may plan weather');
+ }
+ const statuses=[{aturdido:true},{dormido:true},{congelado:true},{recarga:true}];
+ for(const status of statuses){
+  actor.est=status;
+  assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet);
+ }
+ actor.est={};
+ actor.accion={bloquea:true};
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet);
+ actor.accion=null;
+ actor.kit.q.pendiente=true;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'No missing visual or pending ability allowed');
+ actor.kit.q.pendiente=false;
+ actor.kit.q.nombre='Sunny Day';
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'Do not cast unavailable weather just because the motor supports its name');
+ actor.kit.q.nombre='Rain Dance';
+ actor.hp=25;
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'Do not sacrifice survival for weather at critical health');
+ actor.hp=90;
+ scene.efectos=[{vivo:true,dueno:enemy,x:2,y:3}];
+ assert.strictEqual(chooseCampaignAutoWeatherInput(scene,actor,quiet),quiet,
+  'Nearby hostile projectile takes precedence over weather setup');
+});
+test('AUTO may replace harmful active climate but never a favorable one with a worse spell',()=>{
+ const self={x:0,y:0,hp:100,hpMax:100,energia:100,calor:0,
+  tipos:['FIRE'],kit:{rmb:{nombre:'Sunny Day',forma:'native_sun',coste:30}},
+  cd:{rmb:0}};
+ const foe={x:100,y:0,hp:100,tipos:['WATER']};self.rival=foe;
+ const s={datos:{torre2:{}},fase:'lucha',
+  __torre2Weather:{kind:'rain',remaining:9},luchadores:[self,foe]};
+ const native={lmb:true,q:false,rmb:false,e:false,esp:false};
+ assert.equal(chooseCampaignAutoWeatherInput(s,self,native).rmb,true,
+  'An installed and ready sun can counter rain disadvantage');
+ self.kit.rmb.nombre='Rain Dance';
+ assert.strictEqual(chooseCampaignAutoWeatherInput(s,self,native),native,
+  'Do not refresh enemy-friendly climate');
+});
+
+test('AUTO chooses the live enemy after recall even when actor.rival points to a KO ghost',()=>{
+ const actor={lado:0,x:0,y:0,hp:80,hpMax:100,energia:100,calor:10,
+  cd:{lmb:0},kit:{lmb:{alcance:200,coste:8}},est:{}};
+ const ghost={lado:1,x:70,y:0,hp:0,ko:true,def:{id:'geodude'}};
+ const onix={lado:1,x:120,y:50,hp:70,ko:false,def:{id:'onix'},est:{}};
+ actor.rival=ghost;
+ const s={datos:{torre2:{kind:'leader'}},fase:'lucha',luchadores:[actor,onix]};
+ assert.strictEqual(livingCampaignOpponent(s,actor),onix);
+ const idle={mx:0,my:0,ax:70,ay:0,lmb:false};
+ const next=pressureCampaignAutoInput(s,actor,idle);
+ assert.equal(next.lmb,true);
+ assert.equal(next.ax,onix.x,'Forced LMB must aim at active Onix, not KO Geodude');
+ assert.equal(next.ay,onix.y);
+ assert.equal(idle.ax,70,'Original native aim remains immutable');
+ onix.hp=0;assert.strictEqual(livingCampaignOpponent(s,actor),null);
+ assert.strictEqual(pressureCampaignAutoInput(s,actor,idle),idle);
+});
+
+test('Kanto AUTO rebuilds its native brain exactly once per enemy sendout',()=>{
+ const s=scene({torre2:{kind:'leader'}}),control=s.controles[0],foe=s.luchadores[1];
+ control.l.def={id:'bulbasaur'};foe.def={id:'geodude'};foe.hp=100;
+ let builds=0;
+ const state=installAutoBattle(s,()=>({leer(){return {mx:0,my:0,ax:0,ay:0}}}));
+ // The initial factory is invoked once. Its closure represents original IA.
+ assert.equal(builds,0);
+ // Repeat with an instrumented factory using a separate native scene.
+ s.handlers.get('shutdown')();
+ const t=scene({torre2:{kind:'leader'}}),ctl=t.controles[0],enemy=t.luchadores[1];
+ ctl.l.def={id:'bulbasaur'};enemy.def={id:'geodude'};enemy.hp=100;
+ const active=installAutoBattle(t,()=>{builds++;return {leer(){return {mx:0,my:0}}}});
+ assert.equal(builds,1);
+ ctl.leer(.016);ctl.leer(.016);assert.equal(builds,1);
+ enemy.def={id:'onix'};ctl.leer(.016);
+ assert.equal(builds,2,'New foe species requires fresh native tactics');
+ assert.equal(active.autoOpponentSpecies,'onix:0');
+ assert.equal(active.diagnostics.foeRebinds,1);
+ ctl.leer(.016);assert.equal(builds,2,'Do not allocate brain each frame');
+ enemy.etapa=1;ctl.leer(.016);
+ assert.equal(builds,3,'Evolution stage also refreshes the opponent tactic');
+ assert.equal(active.diagnostics.foeRebinds,2);
+ assert.equal(active.diagnostics.playerRebinds,0);
+ t.handlers.get('shutdown')();
+});
+
+test('AUTO holds a neutral native input when IA returns null; manual toggle still works',()=>{
+ const s=scene({torre2:{kind:'trainer'}}),human=s.controles[0];
+ let manualReads=0;
+ human.leer=()=>{manualReads++;return {mx:1,my:0,lmb:true}};
+ const a=installAutoBattle(s,()=>({leer:()=>null}));
+ assert.equal(a.enabled,true);
+ const idle=human.leer(.016);
+ assert.equal(idle.mx,0);assert.equal(idle.my,0);
+ assert.equal(idle.lmb,false);assert.equal(idle.mega,false);
+ assert.equal(manualReads,0,'No held touch input may leak into AUTO');
+ assert.equal(a.diagnostics.nativeNoInput,1);
+ a.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(human.leer(.016).lmb,true);
+ assert.equal(manualReads,1,'Manual mode retains original reader');
+ s.handlers.get('shutdown')();
+});
+
+test('AUTO rebind telemetry remains bounded and native attacks remain gated',()=>{
+ const actor={lado:0,x:0,y:0,t:3,hp:90,hpMax:100,energia:99,calor:0,
+  cd:{lmb:.7},kit:{lmb:{alcance:190,coste:9}},est:{}};
+ const foe={lado:1,x:100,y:0,hp:100,est:{}};
+ const s={datos:{torre2:{}},fase:'lucha',luchadores:[actor,foe]};
+ const idle={mx:0,my:0,ax:0,ay:0,lmb:false};
+ assert.equal(pressureCampaignAutoInput(s,actor,idle).lmb,false,'Do not bypass real cooldown');
+ actor.cd.lmb=0;actor.energia=3;
+ assert.equal(pressureCampaignAutoInput(s,actor,idle).lmb,false,'Do not fabricate energy');
+ actor.energia=99;actor.est.aturdido=true;
+ assert.equal(pressureCampaignAutoInput(s,actor,idle).lmb,false,'No cast while stunned');
+ actor.est.aturdido=false;
+ const out=pressureCampaignAutoInput(s,actor,idle);
+ assert.equal(out.lmb,true);assert.equal(out.ax,100);
+ assert.deepEqual(idle,{mx:0,my:0,ax:0,ay:0,lmb:false});
+});
+
+test('Original Arena AUTO retains its manual fallback for missing native AI input',()=>{
+ const s=scene({modo:'arena'}),human=s.controles[0];
+ let reads=0;
+ human.leer=()=>{reads++;return {mx:.5,my:.25,ax:80,ay:60,lmb:true}};
+ const a=installAutoBattle(s,()=>({leer:()=>null}));
+ assert.equal(a.enabled,false);
+ a.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(a.enabled,true);
+ assert.deepEqual(human.leer(.016),{mx:.5,my:.25,ax:80,ay:60,lmb:true},
+  'Native Arena fallback must match pre-patch behavior exactly');
+ assert.equal(reads,1);
+ assert.equal(a.diagnostics.nativeNoInput,0,
+  'No Kanto telemetry or change to the original Arena fallback');
+ s.handlers.get('shutdown')();
+});
+
+test('T19: healthy AUTO closes four-minute-style retreat gap against nearly fainted Sandshrew',()=>{
+ const geodude={x:800,y:200,hp:74,hpMax:109,
+  kit:{lmb:{alcance:70,pendiente:false}},est:{},cd:{lmb:0},energia:85,calor:0};
+ const sandshrew={x:400,y:200,hp:14,hpMax:94,est:{}};
+ const battle={datos:{torre2:{kind:'trainer',stage:1}},fase:'lucha',
+  luchadores:[geodude,sandshrew],efectos:[]};
+ const backwards={mx:1,my:0,ax:400,ay:200,lmb:false,rmb:false,
+  q:false,e:false,esp:false,mega:false};
+ const inputCopy={...backwards};
+ const resumed=pressureCampaignAutoInput(battle,geodude,backwards);
+ assert.ok(resumed.mx<-.90,
+  'Safe healthy fighter must approach a distant foe at 15% HP despite stale native retreat');
+ assert.equal(resumed.my,0);
+ assert.equal(resumed.lmb,false,'Cannot invent a cast outside native reach');
+ assert.deepEqual(backwards,inputCopy,'Never mutate native input');
+ // This only closes distance. It cannot set opponent HP, bonus damage,
+ // cooldown, energy, status, victory or saved player progress.
+ assert.equal(geodude.hp,74);assert.equal(sandshrew.hp,14);
+ assert.equal(geodude.cd.lmb,0);assert.equal(geodude.energia,85);
+ assert.strictEqual(pressureCampaignAutoInput({...battle,datos:{modo:'arena'}},
+  geodude,backwards),backwards,'Original Arena AUTO remains unchanged');
+});
+
+test('T19: weak, endangered or busy AUTO still respects native defensive retreat',()=>{
+ const actor={x:800,y:200,hp:74,hpMax:109,
+  kit:{lmb:{alcance:70}},est:{}};
+ const foe={x:400,y:200,hp:14,hpMax:94};
+ const battle={datos:{torre2:{kind:'trainer'}},fase:'lucha',luchadores:[actor,foe]};
+ const native={mx:1,my:0,ax:400,ay:200,lmb:false,rmb:false,q:false,
+  e:false,esp:false};
+ const original=JSON.stringify(native);
+ for(const condition of [
+  {actor:{hp:40}},
+  {foe:{hp:50}},
+  {scene:{efectos:[{vivo:true,dueno:foe,x:795,y:200}]}},
+  {scene:{fase:'intro'}}
+ ]){
+  const ours={...actor,...condition.actor};
+  const enemy={...foe,...condition.foe};
+  const state={...battle,...condition.scene,luchadores:[ours,enemy]};
+  assert.strictEqual(pressureCampaignAutoInput(state,ours,native),native,
+   'Defensive native retreat must remain authoritative outside a safe finishing opportunity');
+ }
+ const ready={...battle,luchadores:[actor,foe]};
+ for(const locked of [{...native,esp:true},{...native,q:true},{...native,rmb:true}]){
+  assert.strictEqual(pressureCampaignAutoInput(ready,actor,locked),locked,
+   'Never cancel dodge or legitimate attack to chase a weakened foe');
+ }
+ assert.equal(JSON.stringify(native),original);
+});

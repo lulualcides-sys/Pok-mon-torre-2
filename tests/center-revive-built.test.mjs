@@ -1,0 +1,43 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const stage=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
+const version=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8')).modules;
+const {createCampaign,usePotion,healTeam}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')).href);
+const entries=new Map();
+globalThis.localStorage={getItem:k=>entries.get(k)??null,setItem:(k,v)=>entries.set(k,String(v)),removeItem:k=>entries.delete(k)};
+test('Potion cannot revive a fainted party member or decrement stock',()=>{
+ const s=createCampaign('bulbasaur'),qty=s.inventory.potion;s.team[0].hp=0;
+ const before=JSON.stringify(s);
+ const r=usePotion(s,'potion',0);
+ assert.equal(r.ok,false);assert.match(r.reason,/desmaiado/i);
+ assert.equal(s.inventory.potion,qty);assert.equal(JSON.stringify(s),before);
+});
+test('No stock burned on wrong party indexes, invalid HP or full HP',()=>{
+ const s=createCampaign('charmander'),before=s.inventory.potion;
+ assert.equal(usePotion(s,'potion',-1).ok,false);
+ assert.equal(usePotion(s,'potion',6).ok,false);
+ s.team[0].hp=Number.NaN;
+ assert.equal(usePotion(s,'potion',0).ok,false);
+ s.team[0].hp=100;
+ assert.equal(usePotion(s,'potion',0).ok,false);
+ assert.equal(s.inventory.potion,before);
+});
+test('Valid Potion remains healing-only; the Center treats KO and all statuses',()=>{
+ const s=createCampaign('squirtle');
+ s.team[0].hp=22;s.team[0].status={kind:'veneno'};
+ let a=usePotion(s,'potion',0);
+ assert.equal(a.ok,true);assert.equal(s.team[0].hp,47);
+ assert.equal(s.inventory.potion,2);
+ s.team[0].hp=0;s.team[0].confusion={remaining:2};
+ s.team[1].hp=12;s.team[1].status={kind:'queimado'};
+ const money=s.money,stage=s.stage,team=s.team.map(p=>p.uid),stock=s.inventory.potion;
+ healTeam(s);
+ assert.deepEqual(s.team.map(p=>p.hp),[100,100]);
+ assert.ok(s.team.every(p=>p.status===null&&p.confusion===null));
+ assert.equal(s.money,money);assert.equal(s.stage,stage);
+ assert.deepEqual(s.team.map(p=>p.uid),team);
+ assert.equal(s.inventory.potion,stock);
+});

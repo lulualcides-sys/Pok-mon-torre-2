@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "source": "https://www.pokearena2d.com/",
+  "previousVersion": "src-a0567ffb9f",
+  "currentVersion": "src-da4c1150a5",
+  "previousSiteVersion": "src-aea9a5348c",
+  "currentSiteVersion": "src-97f03e6e1b",
+  "comparison": "differential",
+  "additions": [],
+  "removals": [],
+  "changed": [],
+  "newSourcePokemon": [],
+  "initialSnapshotCount": null,
+  "action": "Cataloged for reuse; validate renderers, licensing, legal Kanto learning, approval and campaign gates before editing battle kits."
+}

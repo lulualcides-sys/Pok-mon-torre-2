@@ -1,0 +1,51 @@
+name: T05 — starter first-save recovery (Phaser)
+on:
+  push:
+    branches: [fix/t05-starter-save-retry-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  starter-save-retry:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit tests, syntax and approved move reuse
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/t05-starter-denied-ui-browser.cjs
+          npm test
+      - name: Build actual Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/index.html \
+              && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+      - name: Native mobile denial, retry and full Chromium regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t05-starter-denied-ui-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Preserve browser proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t05-starter-save-retry-evidence
+          path: test-evidence/
+          if-no-files-found: warn
+          retention-days: 30

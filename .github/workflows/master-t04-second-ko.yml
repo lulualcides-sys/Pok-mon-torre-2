@@ -1,0 +1,32 @@
+name: Master T04 — two natural CPU KOs
+on:
+  push:
+    branches: [test/master-t04-natural-faint-second-ko-20261028]
+permissions:
+  contents: read
+jobs:
+  browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          npm install --no-audit --no-fund
+          node --check tests/t04-natural-faint-second-ko-browser.cjs
+          npm test
+          npm run check
+      - run: |
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - run: CHROME_BIN="$(command -v google-chrome)" node tests/t04-natural-faint-second-ko-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t04-two-natural-ko
+          path: test-evidence/

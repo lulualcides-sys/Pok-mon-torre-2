@@ -1,0 +1,198 @@
+{
+  "schemaVersion": 1,
+  "purpose": "Detecção, catalogação e integração controlada de novidades do cliente Poké Arena 2D. Referência não é implementação.",
+  "source": {
+    "officialSite": "https://www.pokearena2d.com/",
+    "sourceClient": "src-32e8c9ae9b",
+    "modules": "src-f5c065d971",
+    "sourceSnapshotBranch": "pokearena2d-cliente-phaser",
+    "sourceSnapshotCommit": "e25ab44ac88cb766e9154ce54b4203851a7af6b3",
+    "capturedAt": "2026-10-29T18:39:30.521Z",
+    "provenance": "https://github.com/lulualcides-sys/Pok-mon-torre-2/blob/pokearena2d-cliente-phaser/capture-provenance.json"
+  },
+  "historicalBaseline": {
+    "date": "2026-10-20",
+    "distinctMoves": 160,
+    "sourceModule": "src-3e751f1895",
+    "reference": "docs/AUDITORIA-160-GOLPES-POKEARENA2D.md",
+    "caveat": "Historical count from a different capture, NOT a verified delta of new moves."
+  },
+  "observations": [
+    {
+      "pokemonId": "deoxys",
+      "nationalDex": 386,
+      "forms": [
+        "Normal",
+        "Attack",
+        "Defense",
+        "Speed"
+      ],
+      "presence": "confirmed-in-captured-client",
+      "additionDate": "unverified",
+      "campaignScope": "not-a-Kanto-151-species",
+      "moveNames": [
+        "Superpower",
+        "Shadow Ball",
+        "Psyshock",
+        "Cosmic Power",
+        "Zen Headbutt",
+        "Recover",
+        "Psycho Cut",
+        "Agility",
+        "Confusion",
+        "Psychic",
+        "Teleport",
+        "Form Change",
+        "Psycho Boost"
+      ],
+      "moves": [
+        {
+          "name": "Superpower",
+          "slug": "superpower",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Shadow Ball",
+          "slug": "shadow-ball",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Psyshock",
+          "slug": "psyshock",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Cosmic Power",
+          "slug": "cosmic-power",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Zen Headbutt",
+          "slug": "zen-headbutt",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Recover",
+          "slug": "recover",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Psycho Cut",
+          "slug": "psycho-cut",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Agility",
+          "slug": "agility",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Confusion",
+          "slug": "confusion",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Psychic",
+          "slug": "psychic",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Teleport",
+          "slug": "teleport",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": ""
+        },
+        {
+          "name": "Form Change",
+          "slug": "form-change",
+          "sourcePokemon": "deoxys",
+          "kind": "form-mechanic",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": "Deoxys form switch; not a freely teachable move"
+        },
+        {
+          "name": "Psycho Boost",
+          "slug": "psycho-boost",
+          "sourcePokemon": "deoxys",
+          "kind": "move",
+          "availability": "observed-in-deoxys-snapshot",
+          "kantoCompatibility": "not-yet-verified",
+          "libraryIntegration": "reference-only",
+          "notes": "Deoxys signature; do not distribute to unrelated Kanto Pokemon"
+        }
+      ],
+      "notes": "All names directly parsed from the Deoxys entry in src-f5c065d971/datos.js. Their appearance here does not prove each was added in the latest update, implemented in Torre 2, or can be taught to Kanto species."
+    }
+  ],
+  "syncPolicy": {
+    "compareBy": "capture version plus canonical move key with aliases PT/EN and current Torre 2 catalog",
+    "candidateStatuses": [
+      "observed-in-upstream",
+      "compatible-verified",
+      "cataloged",
+      "implemented",
+      "tested",
+      "published"
+    ],
+    "approvalProtection": "Do not overwrite approved effects, existing source moves, campaign saves or strong-ULT slot rules",
+    "learnsets": "Check authoritative FRLG level up/TM and accepted generation adaptations before teaching. Never assign only by type.",
+    "futureCapture": "Re-run the existing source snapshot/audit workflow upon verifiable upstream change; record changes separately from the historical baseline.",
+    "legal": "Do not copy or redistribute source assets beyond proven permission/license; record attribution."
+  }
+}

@@ -1,0 +1,1754 @@
+{
+  "method": "Debug route skip and forced KO; actual browser rendering, transitions, results and saves. NOT normal gameplay.",
+  "report": [
+    {
+      "stage": 0,
+      "name": "Brock",
+      "lineup": [
+        {
+          "id": "geodude",
+          "level": 12,
+          "moves": [
+            "Tackle",
+            "Rock Throw"
+          ]
+        },
+        {
+          "id": "onix",
+          "level": 14,
+          "moves": [
+            "Rock Throw",
+            "Rock Throw",
+            "Screech",
+            "Tackle"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "geodude",
+          "name": "GEODUDE",
+          "hudName": "GEODUDE",
+          "portrait": "retrato-0074",
+          "dex": "0074",
+          "texture": "pmd-0074-Idle",
+          "hp": 89,
+          "max": 89,
+          "x": 646,
+          "y": 222,
+          "level": 12,
+          "items": {
+            "potion": 1
+          }
+        },
+        {
+          "id": "onix",
+          "name": "ONIX",
+          "hudName": "ONIX",
+          "portrait": "retrato-0095",
+          "dex": "0095",
+          "texture": "pmd-0095-Idle",
+          "hp": 88,
+          "max": 88,
+          "x": 646,
+          "y": 222,
+          "level": 14,
+          "items": {
+            "potion": 1
+          }
+        }
+      ],
+      "after": {
+        "stage": 1,
+        "money": 2600,
+        "badges": [
+          "Rocha"
+        ],
+        "leagueHonors": [],
+        "wins": 1,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 1,
+      "name": "Misty",
+      "lineup": [
+        {
+          "id": "staryu",
+          "level": 18,
+          "moves": [
+            "Water Gun",
+            "Rapid Spin",
+            "Bubble Beam",
+            "Water Pulse"
+          ]
+        },
+        {
+          "id": "starmie",
+          "level": 21,
+          "moves": [
+            "Water Gun",
+            "Bubble Beam",
+            "Psybeam",
+            "Water Pulse"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "staryu",
+          "name": "STARYU",
+          "hudName": "STARYU",
+          "portrait": "retrato-0120",
+          "dex": "0120",
+          "texture": "pmd-0120-Idle",
+          "hp": 87,
+          "max": 87,
+          "x": 646,
+          "y": 222,
+          "level": 18,
+          "items": {
+            "superpotion": 1
+          }
+        },
+        {
+          "id": "starmie",
+          "name": "STARMIE",
+          "hudName": "STARMIE",
+          "portrait": "retrato-0121",
+          "dex": "0121",
+          "texture": "pmd-0121-Idle",
+          "hp": 141,
+          "max": 141,
+          "x": 646,
+          "y": 222,
+          "level": 21,
+          "items": {
+            "superpotion": 1
+          }
+        }
+      ],
+      "after": {
+        "stage": 2,
+        "money": 3800,
+        "badges": [
+          "Rocha",
+          "Cascata"
+        ],
+        "leagueHonors": [],
+        "wins": 2,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 2,
+      "name": "Lt. Surge",
+      "lineup": [
+        {
+          "id": "voltorb",
+          "level": 21,
+          "moves": [
+            "Tackle",
+            "Sonic Boom",
+            "Screech",
+            "Shock Wave"
+          ]
+        },
+        {
+          "id": "pikachu",
+          "level": 18,
+          "moves": [
+            "Quick Attack",
+            "Thunder Wave",
+            "Double Team",
+            "Shock Wave"
+          ]
+        },
+        {
+          "id": "raichu",
+          "level": 24,
+          "moves": [
+            "Quick Attack",
+            "Thunder Wave",
+            "Double Team",
+            "Shock Wave"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "voltorb",
+          "name": "VOLTORB",
+          "hudName": "VOLTORB",
+          "portrait": "retrato-0100",
+          "dex": "0100",
+          "texture": "pmd-0100-Idle",
+          "hp": 90,
+          "max": 90,
+          "x": 646,
+          "y": 222,
+          "level": 21,
+          "items": {
+            "superpotion": 2
+          }
+        },
+        {
+          "id": "pikachu",
+          "name": "PIKACHU",
+          "hudName": "PIKACHU",
+          "portrait": "retrato-0025",
+          "dex": "0025",
+          "texture": "pmd-0025-Idle",
+          "hp": 84,
+          "max": 84,
+          "x": 646,
+          "y": 222,
+          "level": 18,
+          "items": {
+            "superpotion": 2
+          }
+        },
+        {
+          "id": "raichu",
+          "name": "RAICHU",
+          "hudName": "RAICHU",
+          "portrait": "retrato-0026",
+          "dex": "0026",
+          "texture": "pmd-0026-Idle",
+          "hp": 115,
+          "max": 115,
+          "x": 646,
+          "y": 222,
+          "level": 24,
+          "items": {
+            "superpotion": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 3,
+        "money": 5000,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao"
+        ],
+        "leagueHonors": [],
+        "wins": 3,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 3,
+      "name": "Erika",
+      "lineup": [
+        {
+          "id": "victreebel",
+          "level": 29,
+          "moves": [
+            "Vine Whip",
+            "Razor Leaf",
+            "Sludge Bomb",
+            "Solar Beam"
+          ]
+        },
+        {
+          "id": "tangela",
+          "level": 24,
+          "moves": [
+            "Tackle",
+            "Absorb",
+            "Razor Leaf",
+            "Solar Beam"
+          ]
+        },
+        {
+          "id": "vileplume",
+          "level": 29,
+          "moves": [
+            "Tackle",
+            "Absorb",
+            "Sludge Bomb",
+            "Solar Beam"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "victreebel",
+          "name": "VICTREEBEL",
+          "hudName": "VICTREEBEL",
+          "portrait": "retrato-0071",
+          "dex": "0071",
+          "texture": "pmd-0071-Idle",
+          "hp": 181,
+          "max": 181,
+          "x": 646,
+          "y": 222,
+          "level": 29,
+          "items": {
+            "hyperpotion": 1
+          }
+        },
+        {
+          "id": "tangela",
+          "name": "TANGELA",
+          "hudName": "TANGELA",
+          "portrait": "retrato-0114",
+          "dex": "0114",
+          "texture": "pmd-0114-Idle",
+          "hp": 139,
+          "max": 139,
+          "x": 646,
+          "y": 222,
+          "level": 24,
+          "items": {
+            "hyperpotion": 1
+          }
+        },
+        {
+          "id": "vileplume",
+          "name": "VILEPLUME",
+          "hudName": "VILEPLUME",
+          "portrait": "retrato-0045",
+          "dex": "0045",
+          "texture": "pmd-0045-Idle",
+          "hp": 178,
+          "max": 178,
+          "x": 646,
+          "y": 222,
+          "level": 29,
+          "items": {
+            "hyperpotion": 1
+          }
+        }
+      ],
+      "after": {
+        "stage": 4,
+        "money": 6200,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris"
+        ],
+        "leagueHonors": [],
+        "wins": 4,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 4,
+      "name": "Koga",
+      "lineup": [
+        {
+          "id": "koffing",
+          "level": 37,
+          "moves": [
+            "Tackle",
+            "Acid",
+            "Sludge Bomb",
+            "Smog"
+          ]
+        },
+        {
+          "id": "muk",
+          "level": 39,
+          "moves": [
+            "Tackle",
+            "Poison Sting",
+            "Poison Punch",
+            "Sludge Bomb"
+          ]
+        },
+        {
+          "id": "koffing",
+          "level": 37,
+          "moves": [
+            "Tackle",
+            "Acid",
+            "Sludge Bomb",
+            "Smog"
+          ]
+        },
+        {
+          "id": "weezing",
+          "level": 43,
+          "moves": [
+            "Tackle",
+            "Acid",
+            "Sludge Bomb",
+            "Smog"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "koffing",
+          "name": "KOFFING",
+          "hudName": "KOFFING",
+          "portrait": "retrato-0109",
+          "dex": "0109",
+          "texture": "pmd-0109-Idle",
+          "hp": 158,
+          "max": 158,
+          "x": 646,
+          "y": 222,
+          "level": 37,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "muk",
+          "name": "MUK",
+          "hudName": "MUK",
+          "portrait": "retrato-0089",
+          "dex": "0089",
+          "texture": "pmd-0089-Idle",
+          "hp": 242,
+          "max": 242,
+          "x": 646,
+          "y": 222,
+          "level": 39,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "koffing",
+          "name": "KOFFING",
+          "hudName": "KOFFING",
+          "portrait": "retrato-0109",
+          "dex": "0109",
+          "texture": "pmd-0109-Idle",
+          "hp": 158,
+          "max": 158,
+          "x": 646,
+          "y": 222,
+          "level": 37,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "weezing",
+          "name": "WEEZING",
+          "hudName": "WEEZING",
+          "portrait": "retrato-0110",
+          "dex": "0110",
+          "texture": "pmd-0110-Idle",
+          "hp": 249,
+          "max": 249,
+          "x": 646,
+          "y": 222,
+          "level": 43,
+          "items": {
+            "hyperpotion": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 5,
+        "money": 7400,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma"
+        ],
+        "leagueHonors": [],
+        "wins": 5,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 5,
+      "name": "Sabrina",
+      "lineup": [
+        {
+          "id": "kadabra",
+          "level": 38,
+          "moves": [
+            "Pound",
+            "Confusion",
+            "Psybeam",
+            "Hyper Beam"
+          ]
+        },
+        {
+          "id": "mr-mime",
+          "level": 37,
+          "moves": [
+            "Pound",
+            "Confusion",
+            "Psybeam",
+            "Hyper Beam"
+          ]
+        },
+        {
+          "id": "venomoth",
+          "level": 38,
+          "moves": [
+            "Tackle",
+            "Gust",
+            "Leech Life",
+            "Psybeam"
+          ]
+        },
+        {
+          "id": "alakazam",
+          "level": 43,
+          "moves": [
+            "Pound",
+            "Confusion",
+            "Psybeam",
+            "Hyper Beam"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "kadabra",
+          "name": "KADABRA",
+          "hudName": "KADABRA",
+          "portrait": "retrato-0064",
+          "dex": "0064",
+          "texture": "pmd-0064-Idle",
+          "hp": 170,
+          "max": 170,
+          "x": 646,
+          "y": 222,
+          "level": 38,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "mr-mime",
+          "name": "MR. MIME",
+          "hudName": "MR. MIME",
+          "portrait": "retrato-0122",
+          "dex": "0122",
+          "texture": "pmd-0122-Idle",
+          "hp": 143,
+          "max": 143,
+          "x": 646,
+          "y": 222,
+          "level": 37,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "venomoth",
+          "name": "VENOMOTH",
+          "hudName": "VENOMOTH",
+          "portrait": "retrato-0049",
+          "dex": "0049",
+          "texture": "pmd-0049-Idle",
+          "hp": 196,
+          "max": 196,
+          "x": 646,
+          "y": 222,
+          "level": 38,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "alakazam",
+          "name": "ALAKAZAM",
+          "hudName": "ALAKAZAM",
+          "portrait": "retrato-0065",
+          "dex": "0065",
+          "texture": "pmd-0065-Idle",
+          "hp": 226,
+          "max": 226,
+          "x": 646,
+          "y": 222,
+          "level": 43,
+          "items": {
+            "hyperpotion": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 6,
+        "money": 8600,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano"
+        ],
+        "leagueHonors": [],
+        "wins": 6,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 6,
+      "name": "Blaine",
+      "lineup": [
+        {
+          "id": "growlithe",
+          "level": 42,
+          "moves": [
+            "Tackle",
+            "Bite",
+            "Flame Wheel",
+            "Fire Blast"
+          ]
+        },
+        {
+          "id": "ponyta",
+          "level": 40,
+          "moves": [
+            "Stomp",
+            "Ember",
+            "Fire Spin",
+            "Flame Wheel"
+          ]
+        },
+        {
+          "id": "rapidash",
+          "level": 42,
+          "moves": [
+            "Stomp",
+            "Ember",
+            "Fire Spin",
+            "Flame Wheel"
+          ]
+        },
+        {
+          "id": "arcanine",
+          "level": 47,
+          "moves": [
+            "Tackle",
+            "Bite",
+            "Flame Wheel",
+            "Fire Blast"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "growlithe",
+          "name": "GROWLITHE",
+          "hudName": "GROWLITHE",
+          "portrait": "retrato-0058",
+          "dex": "0058",
+          "texture": "pmd-0058-Idle",
+          "hp": 166,
+          "max": 166,
+          "x": 646,
+          "y": 222,
+          "level": 42,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "ponyta",
+          "name": "PONYTA",
+          "hudName": "PONYTA",
+          "portrait": "retrato-0077",
+          "dex": "0077",
+          "texture": "pmd-0077-Idle",
+          "hp": 115,
+          "max": 115,
+          "x": 646,
+          "y": 222,
+          "level": 40,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "rapidash",
+          "name": "RAPIDASH",
+          "hudName": "RAPIDASH",
+          "portrait": "retrato-0078",
+          "dex": "0078",
+          "texture": "pmd-0078-Idle",
+          "hp": 162,
+          "max": 162,
+          "x": 646,
+          "y": 222,
+          "level": 42,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "arcanine",
+          "name": "ARCANINE",
+          "hudName": "ARCANINE",
+          "portrait": "retrato-0059",
+          "dex": "0059",
+          "texture": "pmd-0059-Idle",
+          "hp": 278,
+          "max": 278,
+          "x": 646,
+          "y": 222,
+          "level": 47,
+          "items": {
+            "hyperpotion": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 7,
+        "money": 9800,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano",
+          "Vulcao"
+        ],
+        "leagueHonors": [],
+        "wins": 7,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 7,
+      "name": "Giovanni",
+      "lineup": [
+        {
+          "id": "rhyhorn",
+          "level": 45,
+          "moves": [
+            "Tackle",
+            "Horn Attack",
+            "Rock Blast",
+            "Earthquake"
+          ]
+        },
+        {
+          "id": "dugtrio",
+          "level": 42,
+          "moves": [
+            "Tackle",
+            "Dig",
+            "Tri Attack",
+            "Earthquake"
+          ]
+        },
+        {
+          "id": "nidoqueen",
+          "level": 44,
+          "moves": [
+            "Poison Sting",
+            "Horn Attack",
+            "Earthquake",
+            "Sludge Bomb"
+          ]
+        },
+        {
+          "id": "nidoking",
+          "level": 45,
+          "moves": [
+            "Poison Sting",
+            "Horn Attack",
+            "Earthquake",
+            "Sludge Bomb"
+          ]
+        },
+        {
+          "id": "rhyhorn",
+          "level": 50,
+          "moves": [
+            "Tackle",
+            "Horn Attack",
+            "Rock Blast",
+            "Earthquake"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "rhyhorn",
+          "name": "RHYHORN",
+          "hudName": "RHYHORN",
+          "portrait": "retrato-0111",
+          "dex": "0111",
+          "texture": "pmd-0111-Idle",
+          "hp": 249,
+          "max": 249,
+          "x": 646,
+          "y": 222,
+          "level": 45,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "dugtrio",
+          "name": "DUGTRIO",
+          "hudName": "DUGTRIO",
+          "portrait": "retrato-0051",
+          "dex": "0051",
+          "texture": "pmd-0051-Idle",
+          "hp": 182,
+          "max": 182,
+          "x": 646,
+          "y": 222,
+          "level": 42,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "nidoqueen",
+          "name": "NIDOQUEEN",
+          "hudName": "NIDOQUEEN",
+          "portrait": "retrato-0031",
+          "dex": "0031",
+          "texture": "pmd-0031-Idle",
+          "hp": 233,
+          "max": 233,
+          "x": 646,
+          "y": 222,
+          "level": 44,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "nidoking",
+          "name": "NIDOKING",
+          "hudName": "NIDOKING",
+          "portrait": "retrato-0034",
+          "dex": "0034",
+          "texture": "pmd-0034-Idle",
+          "hp": 237,
+          "max": 237,
+          "x": 646,
+          "y": 222,
+          "level": 45,
+          "items": {
+            "hyperpotion": 2
+          }
+        },
+        {
+          "id": "rhyhorn",
+          "name": "RHYHORN",
+          "hudName": "RHYHORN",
+          "portrait": "retrato-0111",
+          "dex": "0111",
+          "texture": "pmd-0111-Idle",
+          "hp": 270,
+          "max": 270,
+          "x": 646,
+          "y": 222,
+          "level": 50,
+          "items": {
+            "hyperpotion": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 8,
+        "money": 11000,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano",
+          "Vulcao",
+          "Terra"
+        ],
+        "leagueHonors": [],
+        "wins": 8,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 8,
+      "name": "Lorelei",
+      "lineup": [
+        {
+          "id": "dewgong",
+          "level": 52,
+          "moves": [
+            "Icy Wind",
+            "Aurora Beam",
+            "Rest",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "cloyster",
+          "level": 51,
+          "moves": [
+            "Tackle",
+            "Icicle Spear",
+            "Aurora Beam",
+            "Supersonic",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "slowbro",
+          "level": 52,
+          "moves": [
+            "Tackle",
+            "Water Gun",
+            "Confusion",
+            "Psychic",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "jynx",
+          "level": 54,
+          "moves": [
+            "Pound",
+            "Lovely Kiss",
+            "Lick",
+            "Body Slam",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "lapras",
+          "level": 54,
+          "moves": [
+            "Water Gun",
+            "Hydro Pump",
+            "Ice Beam",
+            "Rain Dance",
+            "Dodge"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "dewgong",
+          "name": "DEWGONG",
+          "hudName": "DEWGONG",
+          "portrait": "retrato-0087",
+          "dex": "0087",
+          "texture": "pmd-0087-Idle",
+          "hp": 261,
+          "max": 261,
+          "x": 646,
+          "y": 222,
+          "level": 52,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "cloyster",
+          "name": "CLOYSTER",
+          "hudName": "CLOYSTER",
+          "portrait": "retrato-0091",
+          "dex": "0091",
+          "texture": "pmd-0091-Idle",
+          "hp": 191,
+          "max": 191,
+          "x": 646,
+          "y": 222,
+          "level": 51,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "slowbro",
+          "name": "SLOWBRO",
+          "hudName": "SLOWBRO",
+          "portrait": "retrato-0080",
+          "dex": "0080",
+          "texture": "pmd-0080-Idle",
+          "hp": 268,
+          "max": 268,
+          "x": 646,
+          "y": 222,
+          "level": 52,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "jynx",
+          "name": "JYNX",
+          "hudName": "JYNX",
+          "portrait": "retrato-0124",
+          "dex": "0124",
+          "texture": "pmd-0124-Idle",
+          "hp": 224,
+          "max": 224,
+          "x": 646,
+          "y": 222,
+          "level": 54,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "lapras",
+          "name": "LAPRAS",
+          "hudName": "LAPRAS",
+          "portrait": "retrato-0131",
+          "dex": "0131",
+          "texture": "pmd-0131-Idle",
+          "hp": 337,
+          "max": 337,
+          "x": 646,
+          "y": 222,
+          "level": 54,
+          "items": {
+            "fullrestore": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 9,
+        "money": 12200,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano",
+          "Vulcao",
+          "Terra"
+        ],
+        "leagueHonors": [
+          "Elite 1"
+        ],
+        "wins": 9,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 9,
+      "name": "Bruno",
+      "lineup": [
+        {
+          "id": "onix",
+          "level": 51,
+          "moves": [
+            "Rock Throw",
+            "Harden",
+            "Iron Tail",
+            "Rock Throw"
+          ]
+        },
+        {
+          "id": "hitmonchan",
+          "level": 53,
+          "moves": [
+            "Revenge",
+            "Ice Punch",
+            "Thunder Punch",
+            "Fire Punch",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "hitmonlee",
+          "level": 53,
+          "moves": [
+            "Double Kick",
+            "Revenge",
+            "Jump Kick",
+            "High Jump Kick",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "onix",
+          "level": 54,
+          "moves": [
+            "Rock Throw",
+            "Harden",
+            "Iron Tail",
+            "Rock Throw"
+          ]
+        },
+        {
+          "id": "machamp",
+          "level": 56,
+          "moves": [
+            "Karate Chop",
+            "Karate Chop",
+            "Revenge",
+            "Seismic Toss"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "onix",
+          "name": "ONIX",
+          "hudName": "ONIX",
+          "portrait": "retrato-0095",
+          "dex": "0095",
+          "texture": "pmd-0095-Idle",
+          "hp": 201,
+          "max": 201,
+          "x": 646,
+          "y": 222,
+          "level": 51,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "hitmonchan",
+          "name": "HITMONCHAN",
+          "hudName": "HITMONCHAN",
+          "portrait": "retrato-0107",
+          "dex": "0107",
+          "texture": "pmd-0107-Idle",
+          "hp": 196,
+          "max": 196,
+          "x": 646,
+          "y": 222,
+          "level": 53,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "hitmonlee",
+          "name": "HITMONLEE",
+          "hudName": "HITMONLEE",
+          "portrait": "retrato-0106",
+          "dex": "0106",
+          "texture": "pmd-0106-Idle",
+          "hp": 196,
+          "max": 196,
+          "x": 646,
+          "y": 222,
+          "level": 53,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "onix",
+          "name": "ONIX",
+          "hudName": "ONIX",
+          "portrait": "retrato-0095",
+          "dex": "0095",
+          "texture": "pmd-0095-Idle",
+          "hp": 210,
+          "max": 210,
+          "x": 646,
+          "y": 222,
+          "level": 54,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "machamp",
+          "name": "MACHAMP",
+          "hudName": "MACHAMP",
+          "portrait": "retrato-0068",
+          "dex": "0068",
+          "texture": "pmd-0068-Idle",
+          "hp": 278,
+          "max": 278,
+          "x": 646,
+          "y": 222,
+          "level": 56,
+          "items": {
+            "fullrestore": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 10,
+        "money": 13400,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano",
+          "Vulcao",
+          "Terra"
+        ],
+        "leagueHonors": [
+          "Elite 1",
+          "Elite 2"
+        ],
+        "wins": 10,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 10,
+      "name": "Agatha",
+      "lineup": [
+        {
+          "id": "gengar",
+          "level": 54,
+          "moves": [
+            "Hypnosis",
+            "Lick",
+            "Shadow Ball",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "golbat",
+          "level": 54,
+          "moves": [
+            "Wing Attack",
+            "Air Cutter",
+            "Leech Life",
+            "Supersonic",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "haunter",
+          "level": 53,
+          "moves": [
+            "Hypnosis",
+            "Lick",
+            "Shadow Ball",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "arbok",
+          "level": 56,
+          "moves": [
+            "Bite",
+            "Acid",
+            "Sludge Bomb",
+            "Dark Pulse"
+          ]
+        },
+        {
+          "id": "gengar",
+          "level": 58,
+          "moves": [
+            "Hypnosis",
+            "Lick",
+            "Shadow Ball",
+            "Dodge"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "gengar",
+          "name": "GENGAR",
+          "hudName": "GENGAR",
+          "portrait": "retrato-0094",
+          "dex": "0094",
+          "texture": "pmd-0094-Idle",
+          "hp": 215,
+          "max": 215,
+          "x": 646,
+          "y": 222,
+          "level": 54,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "golbat",
+          "name": "GOLBAT",
+          "hudName": "GOLBAT",
+          "portrait": "retrato-0042",
+          "dex": "0042",
+          "texture": "pmd-0042-Idle",
+          "hp": 190,
+          "max": 190,
+          "x": 646,
+          "y": 222,
+          "level": 54,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "haunter",
+          "name": "HAUNTER",
+          "hudName": "HAUNTER",
+          "portrait": "retrato-0093",
+          "dex": "0093",
+          "texture": "pmd-0093-Idle",
+          "hp": 184,
+          "max": 184,
+          "x": 646,
+          "y": 222,
+          "level": 53,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "arbok",
+          "name": "ARBOK",
+          "hudName": "ARBOK",
+          "portrait": "retrato-0024",
+          "dex": "0024",
+          "texture": "pmd-0024-Idle",
+          "hp": 259,
+          "max": 259,
+          "x": 646,
+          "y": 222,
+          "level": 56,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "gengar",
+          "name": "GENGAR",
+          "hudName": "GENGAR",
+          "portrait": "retrato-0094",
+          "dex": "0094",
+          "texture": "pmd-0094-Idle",
+          "hp": 227,
+          "max": 227,
+          "x": 646,
+          "y": 222,
+          "level": 58,
+          "items": {
+            "fullrestore": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 11,
+        "money": 14600,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano",
+          "Vulcao",
+          "Terra"
+        ],
+        "leagueHonors": [
+          "Elite 1",
+          "Elite 2",
+          "Elite 3"
+        ],
+        "wins": 11,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 11,
+      "name": "Lance",
+      "lineup": [
+        {
+          "id": "gyarados",
+          "level": 56,
+          "moves": [
+            "Tackle",
+            "Flail",
+            "Flail",
+            "Splash"
+          ]
+        },
+        {
+          "id": "dragonair",
+          "level": 54,
+          "moves": [
+            "Twister",
+            "Outrage",
+            "Thunder Wave",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "dragonair",
+          "level": 54,
+          "moves": [
+            "Twister",
+            "Outrage",
+            "Thunder Wave",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "aerodactyl",
+          "level": 58,
+          "moves": [
+            "Wing Attack",
+            "Ancient Power",
+            "Bite",
+            "Hyper Beam",
+            "Dodge"
+          ]
+        },
+        {
+          "id": "dragonite",
+          "level": 60,
+          "moves": [
+            "Twister",
+            "Outrage",
+            "Wing Attack",
+            "Hyper Beam",
+            "Dodge"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "gyarados",
+          "name": "GYARADOS",
+          "hudName": "GYARADOS",
+          "portrait": "retrato-0130",
+          "dex": "0130",
+          "texture": "pmd-0130-Idle",
+          "hp": 295,
+          "max": 295,
+          "x": 646,
+          "y": 222,
+          "level": 56,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "dragonair",
+          "name": "DRAGONAIR",
+          "hudName": "DRAGONAIR",
+          "portrait": "retrato-0148",
+          "dex": "0148",
+          "texture": "pmd-0148-Idle",
+          "hp": 215,
+          "max": 215,
+          "x": 646,
+          "y": 222,
+          "level": 54,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "dragonair",
+          "name": "DRAGONAIR",
+          "hudName": "DRAGONAIR",
+          "portrait": "retrato-0148",
+          "dex": "0148",
+          "texture": "pmd-0148-Idle",
+          "hp": 215,
+          "max": 215,
+          "x": 646,
+          "y": 222,
+          "level": 54,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "aerodactyl",
+          "name": "AERODACTYL",
+          "hudName": "AERODACTYL",
+          "portrait": "retrato-0142",
+          "dex": "0142",
+          "texture": "pmd-0142-Idle",
+          "hp": 263,
+          "max": 263,
+          "x": 646,
+          "y": 222,
+          "level": 58,
+          "items": {
+            "fullrestore": 2
+          }
+        },
+        {
+          "id": "dragonite",
+          "name": "DRAGONITE",
+          "hudName": "DRAGONITE",
+          "portrait": "retrato-0149",
+          "dex": "0149",
+          "texture": "pmd-0149-Idle",
+          "hp": 292,
+          "max": 292,
+          "x": 646,
+          "y": 222,
+          "level": 60,
+          "items": {
+            "fullrestore": 2
+          }
+        }
+      ],
+      "after": {
+        "stage": 12,
+        "money": 15800,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano",
+          "Vulcao",
+          "Terra"
+        ],
+        "leagueHonors": [
+          "Elite 1",
+          "Elite 2",
+          "Elite 3",
+          "Elite 4"
+        ],
+        "wins": 12,
+        "champion": false,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    },
+    {
+      "stage": 12,
+      "name": "Campeão",
+      "lineup": [
+        {
+          "id": "pidgeot",
+          "level": 59,
+          "moves": [
+            "Tackle",
+            "Air Cutter",
+            "Wing Attack",
+            "Brave Bird"
+          ]
+        },
+        {
+          "id": "alakazam",
+          "level": 57,
+          "moves": [
+            "Pound",
+            "Confusion",
+            "Psybeam",
+            "Hyper Beam"
+          ]
+        },
+        {
+          "id": "rhydon",
+          "level": 59,
+          "moves": [
+            "Tackle",
+            "Horn Attack",
+            "Rock Blast",
+            "Earthquake"
+          ]
+        },
+        {
+          "id": "exeggutor",
+          "level": 59,
+          "moves": [
+            "Barrage",
+            "Barrage",
+            "Hypnosis",
+            "Egg Bomb"
+          ]
+        },
+        {
+          "id": "gyarados",
+          "level": 61,
+          "moves": [
+            "Tackle",
+            "Flail",
+            "Flail",
+            "Splash"
+          ]
+        },
+        {
+          "id": "charizard",
+          "level": 63,
+          "moves": [
+            "Ember",
+            "Flamethrower",
+            "Fire Spin",
+            "Blast Burn",
+            "Dodge"
+          ]
+        }
+      ],
+      "rendered": [
+        {
+          "id": "pidgeot",
+          "name": "PIDGEOT",
+          "hudName": "PIDGEOT",
+          "portrait": "retrato-0018",
+          "dex": "0018",
+          "texture": "pmd-0018-Idle",
+          "hp": 266,
+          "max": 266,
+          "x": 646,
+          "y": 222,
+          "level": 59,
+          "items": {
+            "fullrestore": 3
+          }
+        },
+        {
+          "id": "alakazam",
+          "name": "ALAKAZAM",
+          "hudName": "ALAKAZAM",
+          "portrait": "retrato-0065",
+          "dex": "0065",
+          "texture": "pmd-0065-Idle",
+          "hp": 280,
+          "max": 280,
+          "x": 646,
+          "y": 222,
+          "level": 57,
+          "items": {
+            "fullrestore": 3
+          }
+        },
+        {
+          "id": "rhydon",
+          "name": "RHYDON",
+          "hudName": "RHYDON",
+          "portrait": "retrato-0112",
+          "dex": "0112",
+          "texture": "pmd-0112-Idle",
+          "hp": 367,
+          "max": 367,
+          "x": 646,
+          "y": 222,
+          "level": 59,
+          "items": {
+            "fullrestore": 3
+          }
+        },
+        {
+          "id": "exeggutor",
+          "name": "EXEGGUTOR",
+          "hudName": "EXEGGUTOR",
+          "portrait": "retrato-0103",
+          "dex": "0103",
+          "texture": "pmd-0103-Idle",
+          "hp": 289,
+          "max": 289,
+          "x": 646,
+          "y": 222,
+          "level": 59,
+          "items": {
+            "fullrestore": 3
+          }
+        },
+        {
+          "id": "gyarados",
+          "name": "GYARADOS",
+          "hudName": "GYARADOS",
+          "portrait": "retrato-0130",
+          "dex": "0130",
+          "texture": "pmd-0130-Idle",
+          "hp": 316,
+          "max": 316,
+          "x": 646,
+          "y": 222,
+          "level": 61,
+          "items": {
+            "fullrestore": 3
+          }
+        },
+        {
+          "id": "charizard",
+          "name": "CHARIZARD",
+          "hudName": "CHARIZARD",
+          "portrait": "retrato-0006",
+          "dex": "0006",
+          "texture": "pmd-0006-Idle",
+          "hp": 250,
+          "max": 250,
+          "x": 646,
+          "y": 222,
+          "level": 63,
+          "items": {
+            "fullrestore": 3
+          }
+        }
+      ],
+      "after": {
+        "stage": 13,
+        "money": 17000,
+        "badges": [
+          "Rocha",
+          "Cascata",
+          "Trovao",
+          "Arco-Iris",
+          "Alma",
+          "Pantano",
+          "Vulcao",
+          "Terra"
+        ],
+        "leagueHonors": [
+          "Elite 1",
+          "Elite 2",
+          "Elite 3",
+          "Elite 4",
+          "Campeão"
+        ],
+        "wins": 13,
+        "champion": true,
+        "tms": [
+          "tm-rock-tomb"
+        ]
+      }
+    }
+  ],
+  "runtime": {
+    "src": "src-bf2b6eb2f1",
+    "modules": "src-5cc7bffeee",
+    "pixelFXVersion": "src-5cc7bffeee",
+    "localMirror": true
+  },
+  "runtimeCommit": "48221e707d4eb568872e4ea8ba7dde63e29450e6"
+}

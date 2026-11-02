@@ -1,0 +1,50 @@
+name: Master T26 — 13 leader screens and eight badges
+on:
+  push:
+    branches: [test/master-t26-kanto-leaders-mobile-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  t26-kanto-leaders:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit, syntax and move provenance
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t26-kanto-leaders-badges-mobile-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build authentic Phaser/WebGL game client
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - name: Test mobile leader challenge in 13 stages and badge sheet
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t26-kanto-leaders-badges-mobile-browser.cjs
+      - name: Full official native Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t26-kanto-badge-leader-ui-proof
+          path: test-evidence/
+          if-no-files-found: warn

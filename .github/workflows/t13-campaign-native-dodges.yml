@@ -1,0 +1,69 @@
+name: T13 — esquivas da Arena na campanha Kanto, Phaser/WebGL
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-campaign-native-dodges.js'
+      - 'tools/pokearena/torre2-move-pool.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/t13-campaign-native*'
+      - '.github/workflows/t13-campaign-native-dodges.yml'
+  push:
+    branches: [feat/t13-campaign-native-move-dodges-20261031]
+permissions:
+  contents: read
+jobs:
+  campaign-esp:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Node tests, approved VFX safety, syntax
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --test tests/t13-campaign-native-dodges.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-move-pool.js
+          node --check tools/pokearena/torre2-campaign-native-dodges.js
+      - name: Build original P2 Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs &&
+              node tools/pokearena/build-preview.mjs &&
+              test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: All 151 campaign ESP kits from actual built module
+        run: node --test tests/t13-campaign-native-dodges-built.test.mjs
+      - name: Misty, Surge, evolutions and native ESP contract
+        run: node tests/misty-surge-built.test.mjs
+      - name: Kanto 151 real PMD sprites, evolution kits and native ESP
+        run: node tests/kanto-151-built.test.mjs
+      - name: Real Phaser mobile ESP + native party switch
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/t13-campaign-native-dodges-browser.cjs
+      - name: Original Arena ESP unchanged and campaign regressions
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/arena-121-native-dodge-built.test.mjs
+          node tests/arena-121-native-esp-touch-browser.cjs
+          npm run test:browser
+      - name: Archive evidence and screenshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t13-native-campaign-evasion-${{ github.run_attempt }}
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          retention-days: 14
+          if-no-files-found: warn

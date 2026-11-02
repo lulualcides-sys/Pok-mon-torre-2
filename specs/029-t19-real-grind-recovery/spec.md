@@ -1,0 +1,7 @@
+# T19 — recuperação real por captura e treinamento, estágio Vermilion
+## Problema e origem
+Quando a equipe não vence o próximo treinador, o jogador precisa poder curar, derrotar selvagens, obter XP real e tentar capturar espécies úteis. Teste parte apenas do artifact #13041698112 da CI #41198922681, seed SHA-256 e sourceSha `8e483ee7`: cinco vitórias genuínas Vermilion, stage2/trainer5, wins47/losses0; dois Pokémon KO, Geodude vivo, 10 Poké Balls reais.
+## Aceite do teste
+Usar somente botões/camadas nativas Phaser; Centro curando equipe sem alterar vitórias; dois encontros selvagens repeatable (auto nativo, sem RNG override) e XP de batalha positivo, wins=49, trainer=5; evolução somente ao fim da batalha, nenhum prêmio de líder; um arremesso de Poké Ball real, aceitar GOTCHA OU breakout, debitar exatamente 1 bola e manter estágio/treinador/vitórias; capturado entra na equipe se houver espaço; persistência bytes exatos após reload. Salvar checkpoint real após cada vitória para a próxima sessão. Em derrota, timeout ou erro de tela, CI vermelha e relatório honesto; não fabricar vitória.
+## Escopo
+Somente teste e workflow de prova, sem tocar em saves de usuários, cooldowns, VFX aprovados, sprites, fonte Phaser ou resultado das batalhas. O fluxo não afirma que a captura probabilística vai suceder, nem que o jogador real obteve os mesmos níveis. O mecanismo de XP da campanha respeita currentLevelCap.

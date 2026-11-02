@@ -1,0 +1,60 @@
+name: Master T19 — five native Cerulean trainers from genuine earned save
+on:
+  push:
+    branches: [test/t19-cerulean-five-earned-save-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  earned-save-five-cerulean:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 85
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install and validate approved runtime
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t19-earned-brock-five-cerulean-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build native Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Retrieve exact real Pallet-to-Brock save from successful T19 run
+        uses: actions/download-artifact@v4
+        with:
+          name: master-t19-earned-brock-cerulean
+          run-id: 41162666401
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: test-evidence
+      - name: Verify source integrity and run five real Cerulean trainers
+        run: |
+          set -euo pipefail
+          test -s test-evidence/t19-earned-brock-save.json
+          CHROME_BIN="$(command -v google-chrome)" node tests/t19-earned-brock-five-cerulean-browser.cjs
+      - name: Full native Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Archive natural progress and screenshots even on failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t19-five-earned-cerulean
+          path: |
+            test-evidence/t19-earned-cerulean-first-trainer.json
+            test-evidence/t19-native-cerulean-*
+          retention-days: 21
+          if-no-files-found: warn

@@ -1,0 +1,26 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {pathToFileURL} from 'node:url';
+const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
+const ver=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
+const file=p=>path.join(root,ver,p);
+test('captured Phaser battle path selects trainer/rematch independently of optional catch badge',async()=>{
+ const pathCode=fs.readFileSync(file('torre2/battle-path.js'),'utf8');
+ const actionCode=fs.readFileSync(file('torre2/path-actions.js'),'utf8');
+ const reportCode=fs.readFileSync(file('torre2/battle-report.js'),'utf8');
+ assert.match(pathCode,/import \{pathCheckpointAction\} from '\.\/path-actions\.js'/);
+ assert.match(pathCode,/torre2-path-capture/);
+ assert.match(pathCode,/torre2-path-node/);
+ assert.match(pathCode,/checkpoint\.primary==='rematch'/);
+ assert.match(pathCode,/checkpoint\.primary==='battle'/);
+ assert.match(pathCode,/checkpoint\.primary==='gym'/);
+ assert.match(reportCode,/battleReportPage\(extras,detailPage\)/);
+ assert.match(reportCode,/torre2-report-previous/);
+ assert.match(reportCode,/torre2-report-more/);
+ assert.match(actionCode,/export function pathCheckpointAction/);
+ const mod=await import(pathToFileURL(file('torre2/path-actions.js')).href);
+ assert.equal(mod.pathCheckpointAction(2,2,13).primary,'battle');
+ assert.equal(mod.pathCheckpointAction(2,3,13,true).primary,'rematch');
+});

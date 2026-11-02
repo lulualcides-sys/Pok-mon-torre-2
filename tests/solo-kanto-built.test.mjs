@@ -1,0 +1,1008 @@
+import assert from 'node:assert/strict';
+import {pathToFileURL} from 'node:url';
+import fs from 'node:fs';
+import path from 'node:path';
+import {spawnSync} from 'node:child_process';
+const stage=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
+const version=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8')).modules;
+assert.ok(version,'Captured Phaser original client not staged');
+// Browser startup must never be blocked by malformed JS in campaign,
+// trainer art, shops or capture modules. Check each staged ES module.
+for(const name of ['main.js','torre2/campanha.js','torre2/campaign-art.js',
+ 'torre2/campaign-sprites.js','torre2/capture-arena.js',
+ 'torre2/capture-mechanics.js','torre2/campaign-core.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/campaign-map-unified.js','torre2/frlg-location.js','torre2/frlg-available.js','torre2/kanto-hotspots.js','torre2/frlg-npc.js','torre2/frlg-interiors.js']){
+ const source=path.join(stage,version,name);
+ const parsed=spawnSync(process.execPath,['--check',source],{encoding:'utf8'});
+ assert.equal(parsed.status,0,
+  'Invalid JavaScript in '+name+': '+parsed.stderr);
+}
+// Guard the whole browser import graph, not just campaign modules. A source
+// file outside that shortlist previously produced an uncaught SyntaxError and
+// blocked Phaser before the main menu could load.
+const walk=(folder,relative='')=>fs.readdirSync(folder,{withFileTypes:true})
+ .flatMap(entry=>entry.isDirectory()?walk(path.join(folder,entry.name),
+  path.join(relative,entry.name)):
+  entry.isFile()&&entry.name.endsWith('.js')?
+  [path.join(relative,entry.name)]:[]);
+for(const name of walk(path.join(stage,version))){
+ const check=spawnSync(process.execPath,['--check',path.join(stage,version,name)],{
+  encoding:'utf8'});
+ assert.equal(check.status,0,'Phaser browser module has invalid JS: '+name+'\\n'+check.stderr);
+}
+// The menu's HTML query string alone cannot bust cached JS imports. Every
+// patch must create a new hashed source folder, and the HTML must use it.
+assert.notEqual(version,'src-8d89349697',
+ 'Do not reuse cached upstream module directory between game revisions');
+// Regression: the REAL original Phaser hit/HP routines must receive levels.
+const lvlFile=path.join(stage,version,'torre2/level-balance.js');
+assert.ok(fs.existsSync(lvlFile),'Build must ship Kanto level mechanics');
+const fighterCode=fs.readFileSync(path.join(stage,version,'luchador.js'),'utf8');
+assert.ok(fighterCode.includes('torre2DamageMultiplier(')&&
+ fighterCode.includes('torre2ScaledHp('),
+ 'Level balance must be connected to the real Arena 2D fighter (not just HUD)');
+assert.ok(fighterCode.includes('!g.puro&&fuente&&fuente!==this'),
+ 'Poison, recoil, fixed damage and status effects retain native behavior');
+const {campaignDamageMultiplier,campaignScaledHp}=await import(pathToFileURL(lvlFile));
+assert.ok(campaignDamageMultiplier(50,6)>5);
+assert.ok(campaignDamageMultiplier(6,50)<.11);
+assert.ok(campaignScaledHp(100,50)>campaignScaledHp(100,6));
+const party41=fs.readFileSync(path.join(stage,version,'torre2/party-battle.js'),'utf8');
+assert.ok(party41.includes('actor.reiniciar(x,y)')&&!party41.includes('scene.scene.restart('),
+ 'Party switching must not reload Phaser combat or trigger a new countdown');
+assert.ok(party41.includes('drawPixelBall')&&party41.includes('redrawPartyHud'),
+ 'Battle displays live pixel Pokeballs for both teams');
+const buildDefinition=fs.readFileSync(path.join('tools','pokearena','build-preview.mjs'),'utf8');
+for(const moduleName of ['torre2/party-battle.js','torre2/campaign-map-unified.js','torre2/level-balance.js'])
+ assert.ok(buildDefinition.slice(buildDefinition.indexOf('const vfxFingerprint=')).includes(moduleName),
+ 'Changing '+moduleName+' MUST invalidate the live game versioned JS cache');
+const entryHTML=fs.readFileSync(path.join(stage,'index.html'),'utf8');
+const buildMeta=JSON.parse(fs.readFileSync(path.join(stage,'version.json'),'utf8'));
+assert.ok(entryHTML.includes('src="'+version+'/main.js"'),
+ 'Live game must import hashed, updated Phaser JavaScript');
+assert.equal(buildMeta.modules,version,
+ 'version.json must expose the exact currently published module path');
+assert.ok(entryHTML.includes('name="pokemon-torre-build" content="'+version+'"'),
+ 'HTML must expose module version, so users can verify updates');
+
+const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
+ TRAINERS_PER_GYM,GYMS,STARTERS,KANTO_DEX,SAVE_KEY,SAVE_BACKUP_KEY,saveCampaign,
+ startBattle,recordSeen,recordCaught,storePokemon,withdrawPokemon,swapPokemon,
+ wildAvailability,startWildEncounter,startWildBattle,resolveWildBattle,
+ purchaseItem,usePotion,teachTM}=await import(pathToFileURL(path.join(stage,version,'torre2/campaign-core.js')));
+const items=new Map();
+globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
+const {availableMoves,equipMove,selectedMoves,resolveLoadout,
+ TEST_LIBRARY,SIGNATURE_MOVES,canonicalMoveKey,
+ isPendingApprovalMove,filterMoveLibrary}=await import(
+ pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
+// New Steel moves are unique, equipable for test Mewtwo and visually isolated.
+for(const [name,form,power,accuracy,pp] of [
+ ['Flash Cannon','torre2_flashcannon',80,100,10],
+ ['Steel Beam','torre2_steelbeam',140,95,5],
+ ['Mirror Shot','torre2_mirrorshot',65,85,10]]){
+ const matching=TEST_LIBRARY.filter(x=>canonicalMoveKey(x.nombre)===canonicalMoveKey(name));
+ assert.equal(matching.length,1,'No duplicate '+name+' in original/native library');
+ assert.equal(matching[0].forma,form);
+ assert.equal(matching[0].poder,power);
+ assert.equal(matching[0].precisao,accuracy);
+ assert.equal(matching[0].pp,pp);
+ assert.equal(matching[0].approved,true,'Steel moves were visually approved by user; keep approval consistent with policy');
+}
+const steelModule=path.join(stage,version,'torre2/steel-fx.js');
+assert.ok(fs.existsSync(steelModule),'Steel WebGL FX must be included in published client');
+const steelSource=fs.readFileSync(steelModule,'utf8');
+for(const id of ['flashcannon','steelbeam','mirrorshot'])
+ assert.ok(steelSource.includes('export function '+id+'('),'Missing rendered Steel effect '+id);
+assert.ok(buildDefinition.slice(buildDefinition.indexOf('const vfxFingerprint='))
+ .includes('torre2/steel-fx.js'),'Steel visual changes must bust cached Phaser modules');
+
+assert.equal(KANTO_DEX.length,151);
+assert.equal(GYMS.length,8);
+assert.deepEqual(STARTERS,['bulbasaur','charmander','squirtle']);
+let state=createCampaign('charmander');
+assert.equal(state.trainer,0);
+assert.equal(state.money,1400);
+assert.equal(state.inventory.pokeball,5);
+const {routeNode,KANTO_ROUTES,MART_ITEMS}=await import(
+ pathToFileURL(path.join(stage,version,'torre2/route-data.js')));
+assert.equal(KANTO_ROUTES.length,9,'Eight regional gyms plus Victory Road grass encounters');
+const {KANTO_CHAPTERS,campaignRegion}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-regions.js')));
+assert.equal(KANTO_CHAPTERS.length,13,'Eight gyms, four Elite Four and Champion rival');
+const {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,
+ awardCampaignExperience,enforceCampaignCap,KANTO_LEVEL_CAPS}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-levels.js')));
+const {worldPosition,mapVisitInfo,drawKantoWorldMap}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-world-map.js')));
+assert.deepEqual(KANTO_LEVEL_CAPS.slice(0,8),[14,21,24,29,43,43,47,50],
+ 'Every gym uses the exact FireRed ace level');
+assert.equal(typeof drawKantoWorldMap,'function','Town Map is a live Phaser scene');
+assert.equal(worldPosition(0,0,13),'pallet','First town map pin starts at Viridian');
+assert.equal(worldPosition(0,13,13),'pewter','Before Brock pin moves to Pewter City');
+assert.equal(worldPosition(1,7,15),'moon','Mt. Moon is an early Cerulean checkpoint');
+assert.equal(mapVisitInfo(6,0,25).cap,47,'Cinnabar level cap mirrors Blaine');
+for(let gym=0;gym<13;gym++){
+ const cap=currentLevelCap(gym),limit=TRAINERS_PER_GYM(gym);
+ assert.equal(trainerLevelFor(gym,limit,limit,true),cap);
+ assert.ok(trainerLevelFor(gym,limit-1,limit)<cap,'Route trainer must not exceed boss ace');
+ assert.ok(wildLevelFor(gym,3,limit)<cap,'Wild encounters must stay below gym cap');
+ assert.ok(xpRewardFor(gym,limit)>0);
+}
+const {createPokemonProgression,totalExperienceForLevel}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/progression.js')));
+const capped=createPokemonProgression('charmander',13);
+for(let i=0;i<100;i++)awardCampaignExperience(capped,10000,0);
+assert.equal(capped.level,14,'Unlimited trainer fights never pass Brock cap');
+assert.ok(capped.experience<totalExperienceForLevel(15));
+const oldOverleveled=createPokemonProgression('pidgey',26);
+const downleveled={id:'pidgey',progression:oldOverleveled};
+assert.equal(enforceCampaignCap(downleveled,0),true,'Migrate old overleveled saves');
+assert.equal(oldOverleveled.level,14);
+const testerOverleveled={id:'mewtwo',progression:createPokemonProgression('mewtwo',50)};
+assert.equal(enforceCampaignCap(testerOverleveled,0),false,
+ 'Explicit level-50 test Mewtwo is preserved');
+
+assert.deepEqual(KANTO_CHAPTERS[0].map(p=>p[2]),['city','route','city','forest','pewter'],
+ 'Brock must be reached through Route 1, Viridian Forest and Pewter');
+for(let regionStage=0;regionStage<13;regionStage++){
+ const count=Math.ceil((TRAINERS_PER_GYM(regionStage)+1)/5);
+ const first=campaignRegion(regionStage,0,count);
+ const final=campaignRegion(regionStage,count-1,count);
+ assert.ok(first.title&&first.subtitle&&first.biome,'Each Kanto chapter has a map');
+ assert.ok(final.title&&final.subtitle&&final.biome,'Every gym/Elite leader has an arena');
+ assert.equal(final.chapterPage,KANTO_CHAPTERS[regionStage].length-1,
+  'The leader must sit at the last map page for chapter '+regionStage);
+}
+const biomes=new Set(KANTO_CHAPTERS.flatMap(chapter=>chapter.map(row=>row[2])));
+assert.ok(biomes.size>=20,'Kanto needs varied environments, not reused bland generic map');
+const {FRLG_LOCALE_NAMES,locationForCampaign,renderLocationTiles,getLocationViewport}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/frlg-location.js')));
+assert.deepEqual(FRLG_LOCALE_NAMES.slice(0,6),
+ ['pallet','route1','viridian','route2','forest','pewter']);
+for(let p=0;p<5;p++)assert.equal(locationForCampaign(campaignRegion(0,p,5)),
+ ['pallet','route1','viridian','forest','pewter'][p],
+ 'Brock campaign uses five true FireRed localities including Pallet');
+assert.equal(getLocationViewport('viridian',1360,672).main.w,768,
+ 'Main town crop must exclude adjacent interior panes');
+assert.equal(getLocationViewport('viridian',1360,672).main.x,8);
+assert.equal(getLocationViewport('route1',400,672).cols,23);
+assert.equal(typeof renderLocationTiles,'function');
+const {trainerRoutePoints}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-route-layout.js')));
+const natural=trainerRoutePoints(5,{stage:0,chapterPage:2,biome:'city'});
+assert.equal(natural.length,5,'Five trainer checkpoints per route');
+assert.ok(natural.every(p=>p.x>=64&&p.x<=342&&p.y>=103&&p.y<=255),
+ 'Checkpoints stay inside the FireRed map viewport');
+assert.ok(natural.every((p,i)=>i===0||p.y<natural[i-1].y),
+ 'The route should progress naturally toward the gym');
+assert.notDeepEqual(natural.map(p=>p.x),[99,292,99,292,99],
+ 'Do not use the previous fixed zigzag');
+const forestTrail=trainerRoutePoints(5,{biome:'forest'});
+assert.ok(forestTrail.some((p,i)=>i>0&&p.x<forestTrail[i-1].x),
+ 'Forest trail should include natural turns');
+assert.ok(trainerRoutePoints(5).every(p=>p.x>=21&&p.x<=389&&p.y>=90&&p.y<=266),
+ 'All trainer checkpoints must stay inside actual map image');
+assert.equal(locationForCampaign(campaignRegion(1,3,4)),'cerulean');
+assert.equal(locationForCampaign(campaignRegion(2,3,4)),'vermilion');
+assert.equal(locationForCampaign(campaignRegion(3,4,5)),'celadon');
+assert.equal(locationForCampaign(campaignRegion(4,4,5)),'fuchsia');
+assert.equal(locationForCampaign(campaignRegion(6,5,6)),'cinnabar');
+const {AVAILABLE_FRLG,AVAILABLE_FRLG_FILES,AVAILABLE_FRLG_NPCS}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/frlg-available.js')));
+for(const id of ['route1','viridian','forest','pewter'])
+ assert.ok(AVAILABLE_FRLG.includes(id),'Core FireRed map missing: '+id);
+for(const id of AVAILABLE_FRLG)
+ assert.ok(fs.statSync(path.join(stage,AVAILABLE_FRLG_FILES[id])).size>10000,
+  'Available locale has no downloaded art: '+id);
+for(const id of ['red_normal','youngster','rocket_m','brock'])
+ assert.ok(AVAILABLE_FRLG_NPCS.includes(id),'Core FireRed NPC missing: '+id);
+const {buildingInteractions,visibleBuildingInteractions}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-hotspots.js')));
+const {spriteIdForTrainer}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/frlg-npc.js')));
+assert.equal(spriteIdForTrainer('rocket'),'rocket_m');
+assert.equal(spriteIdForTrainer('bugcatcher'),'bug_catcher');
+assert.ok(buildingInteractions('viridian').some(x=>x.id==='center'));
+assert.ok(buildingInteractions('viridian').some(x=>x.id==='mart'));
+assert.ok(buildingInteractions('pallet').some(x=>x.id==='lab'));
+const viewport=getLocationViewport('viridian',1360,672);
+const entrances=visibleBuildingInteractions(viewport);
+assert.ok(entrances.length>=2,'Visible Viridian camera must contain actual building entrances');
+assert.ok(entrances.every(h=>h.x>=19&&h.y>=88&&h.x+h.width<=392&&h.y+h.height<=270),
+ 'Building touch targets cannot cover sidebar or battle controls');
+
+const {drawKantoTiles}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/kanto-tiles.js')));
+assert.equal(typeof drawKantoTiles,'function');
+let fills=0;
+const tileMock={fillStyle(){return this},fillRect(){fills++;return this}};
+for(const biome of ['route','forest','sea','cave','city','graveyard','ice','volcano','league']){
+ const before=fills;drawKantoTiles(tileMock,biome,5);
+ assert.ok(fills-before>500,'Biome '+biome+' needs independent Phaser tile detail');
+}
+assert.ok(fills<90000,'World map decoration must remain light enough for mobile');
+
+assert.equal(campaignRegion(7,5,6).biome,'ground-gym','Giovanni stays in Viridian Gym');
+assert.equal(campaignRegion(8,1,4).biome,'victory','Victory Road follows Giovanni');
+assert.equal(campaignRegion(12,0,1).biome,'hall','Champion is the Hall of Fame finale');
+
+assert.equal(routeNode(0,3,13).type,'rival');
+assert.equal(routeNode(0,5,13).type,'rocket');
+assert.equal(routeNode(0,13,13).type,'leader');
+assert.equal(MART_ITEMS.some(x=>x.kind==='tm'),true);
+const {trainerClass,drawTrainer,drawShopItem}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-sprites.js')));
+assert.equal(trainerClass(0,13,'leader'),'brock');
+assert.equal(trainerClass(0,3,'rival'),'rival');
+assert.equal(typeof drawTrainer,'function');
+assert.equal(typeof drawShopItem,'function');
+const marketState=createCampaign('squirtle');
+const boughtBall=purchaseItem(marketState,'pokeball');
+assert.equal(boughtBall.ok,true);
+assert.equal(marketState.inventory.pokeball,6);
+assert.equal(marketState.money,1200);
+marketState.money=3000;marketState.stage=1;
+assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,false,
+ 'TM03 must stay locked before Misty is defeated, even with sufficient money');
+marketState.stage=2;marketState.badges=['Rocha'];
+assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,false,
+ 'Stage alone cannot unlock TM03 without the Cascata badge');
+marketState.badges.push('Cascata');
+assert.equal(purchaseItem(marketState,'tm-water-pulse').ok,true,
+ 'TM03 becomes purchasable only after Misty and the Cascata badge');
+assert.equal(marketState.inventory.tms.includes('tm-water-pulse'),true);
+assert.equal(teachTM(marketState,'tm-water-pulse').ok,true);
+assert.equal(marketState.team[0].tmMoves.includes('Water Pulse'),true);
+assert.equal(availableMoves(marketState.team[0]).some(m=>m.nombre==='Water Pulse'),true);
+marketState.team[0].hp=50;
+assert.equal(usePotion(marketState,'potion').ok,true);
+assert.equal(marketState.team[0].hp,75);
+assert.equal(usePotion(marketState,'potion').ok,true);
+assert.equal(marketState.team[0].hp,100);
+assert.equal(usePotion(marketState,'potion').ok,false,'Potion cannot be wasted on full HP');
+const area=wildAvailability(0);
+assert.equal(area.area.includes('Viridian'),true);
+const {ROSTER}=await import(pathToFileURL(path.join(stage,version,'datos.js')));
+const {EARLY_KANTO_BASE,EARLY_KANTO_FORMS,EARLY_KANTO_LEARNSETS}=await import(
+ pathToFileURL(path.join(stage,version,'torre2/early-kanto-species.js')));
+for(const id of EARLY_KANTO_BASE)assert.ok(ROSTER.some(p=>p.id===id),
+ 'New pre-Brock species must exist in actual battle ROSTER: '+id);
+const manifest=JSON.parse(fs.readFileSync(path.join(stage,'assets/pmd/manifest.json'),'utf8'));
+for(const [id,dexes] of Object.entries(EARLY_KANTO_FORMS)){
+ assert.ok(ROSTER.some(p=>p.id===id),'Missing first route family '+id);
+ for(const dex of dexes){
+  const entry=manifest[dex];
+  assert.ok(entry?.anims?.Idle&&entry?.anims?.Walk,
+   'Missing battle Idle/Walk animations of '+id+' dex '+dex);
+  for(const action of ['Idle','Walk']){
+   const a=entry.anims[action],filename=path.join(stage,'assets/pmd',a.file);
+   assert.ok(fs.statSync(filename).size>50,'Missing credited PMD sheet '+filename);
+  }
+ }
+}
+for(const id of ['pidgey','rattata','caterpie','weedle','pikachu','spearow','mankey','geodude','nidoran-f','nidoran-m'])
+ assert.ok(area.available.includes(id),'Pre-Brock grass route species missing '+id);
+const nidoState=createCampaign('bulbasaur');
+assert.equal(recordSeen(nidoState,'nidoran-f'),true);
+assert.equal(recordCaught(nidoState,'nidoran-m'),true);
+assert.ok(nidoState.dexCaught.includes('nidoran-m'));
+const young={id:'pidgey',progression:{species:'pidgey',level:5}};
+// The legacy smoke used to expect only two buttons until level 13.
+ // The campaign contract is now 3 WEAK, DISTINCT moves at Lv5, a gated
+ // ULT at Lv8, and genuine stronger options only at their earned levels.
+const five=availableMoves(young);
+const training=five.filter(m=>m.torre2IntroPractice&&m.torre2IntroUnlockLevel===5);
+assert.equal(training.length,3,'Pidgey needs three usable Lv5 actions');
+assert.equal(new Set(training.map(m=>m.id)).size,3,'Lv5 buttons must be distinct');
+assert.ok(training.every(m=>m.dano<=9),'Lv5 damage cap');
+const startKit=resolveLoadout(young);
+assert.ok(['lmb','rmb','q'].every(slot=>startKit[slot]?.torre2IntroPractice));
+assert.equal(startKit.e,undefined,'ULT remains locked at Lv5');
+assert.ok(!five.some(m=>m.id==='dodge'));
+young.progression.level=7;
+assert.equal(resolveLoadout(young).e,undefined,'ULT remains locked at Lv7');
+young.progression.level=8;
+const ult8=resolveLoadout(young).e;
+assert.ok(ult8?.ulti&&ult8.torre2IntroPractice&&ult8.dano<=12,
+ 'Lv8 must offer a capped, energy-gated native ultimate');
+assert.ok(availableMoves(young).some(m=>m.id===ult8.id),
+ 'Lv8 ULT must be selectable in the editor');
+young.progression.level=13;
+assert.ok(availableMoves(young).some(x=>x.id==='gust'));
+assert.ok(availableMoves(young).some(x=>x.id==='quick-attack'));
+assert.ok(!availableMoves(young).some(x=>x.id==='wing-attack'));
+assert.ok(['lmb','rmb','q'].every(slot=>resolveLoadout(young)[slot]?.forma),
+ 'Lv13 must retain three working actions');
+young.progression.level=19;
+assert.ok(availableMoves(young).some(x=>x.id==='wing-attack'),
+ 'Real Wing Attack must unlock at its earned campaign level');
+assert.ok(resolveLoadout(young).e?.ulti,'Lv19 still has a usable ULT');
+assert.equal(equipMove(young,0,'wing-attack'),false,'Basic must remain weak');
+assert.equal(equipMove(young,3,'tackle'),false,'Ultimate stays at E');
+const bug={id:'caterpie',progression:{species:'caterpie',level:10}};
+assert.ok(availableMoves(bug).some(x=>x.id==='bug-bite'));
+assert.ok(EARLY_KANTO_LEARNSETS.butterfree.confusion<=10);
+for(const id of EARLY_KANTO_BASE){
+ const d=ROSTER.find(p=>p.id===id);
+ assert.ok(d);
+ for(const slot of ['lmb','rmb','esp','q','e'])
+  assert.ok(d.kit[slot]?.nombre&&d.kit[slot]?.forma,
+   'Every Kanto route Pokémon needs 5 functional Arena2D controls: '+id+'/'+slot);
+ assert.equal(d.kit.esp.forma,'dash','Native-style dodge control');
+ assert.equal(d.kit.esp.dano,0,'Dodge deals no damage');
+ assert.equal(d.kit.e.ulti,true);
+ for(const evo of d.evoluciones||[])
+  for(const slot of ['lmb','rmb','esp','q','e'])
+   assert.ok(evo.kit[slot]?.nombre,'Evolved form missing '+id+'/'+slot);
+}
+const caterpie=ROSTER.find(p=>p.id==='caterpie');
+assert.equal(caterpie.kit.rmb.nombre,'String Shot',
+ 'Native String Shot must remain the skill of Caterpie');
+assert.equal(caterpie.kit.e.pendiente,true,'Future Butterfree ULT stays locked');
+assert.equal(caterpie.evoluciones[1].kit.e.torre2UnlockEvolution,undefined);
+assert.ok(area.wild.includes('caterpie'),'Regional table keeps genuine FireRed species');
+if(area.available.length){
+ const grass=createCampaign('charmander');
+ const found=startWildEncounter(grass,()=>0);
+ assert.equal(found.ok,true);
+ assert.equal(grass.wildEncountersStage,1);
+ const fight=startWildBattle(grass);
+ assert.equal(fight.torre2.kind,'wild');
+ assert.equal(fight.p2,found.encounter.id);
+ const {captureChance,rollCapture}=await import(pathToFileURL(
+  path.join(stage,version,'torre2/capture-mechanics.js')));
+ assert.ok(captureChance({...grass.pendingWild,wild:true,hpPercent:10})>
+  captureChance({...grass.pendingWild,wild:true,hpPercent:100}),
+  'Lower HP must mean higher capture chance');
+ // Use a challenging wild species; easy targets can reach the 99.5% cap
+ // with either ball, making a strict improvement mathematically impossible.
+ const toughWild={id:'onix',wild:true,hpPercent:10};
+ assert.ok(captureChance(toughWild,'ultraball')>
+  captureChance(toughWild,'pokeball'),
+  'Ultra Ball must improve the catch chance when not capped');
+ const low={id:'onix',wild:true,hpPercent:8};
+ assert.ok(captureChance(low,'greatball')>captureChance({...low,hpPercent:100},'greatball'));
+ assert.equal(rollCapture(low,'pokeball',()=>0).shakes,3);
+ const failed=attemptCapture(grass,()=>.999,'pokeball',{duringBattle:true,hpPercent:95});
+ assert.equal(failed.ok,false);
+ assert.ok(grass.pendingWild,'Failed throw must not end live encounter');
+ assert.equal(grass.inventory.pokeball,4);
+ assert.equal(attemptCapture(grass,()=>0,'pokeball',{duringBattle:true,hpPercent:10}).ok,true);
+ assert.equal(grass.pendingWild,null);
+ assert.equal(grass.inventory.pokeball,3);
+ assert.equal(grass.trainer,0,'Wild capture does not advance gym trainer cursor');
+ const fainted=createCampaign('charmander');
+ assert.ok(startWildEncounter(fainted,()=>0).ok);
+ assert.equal(resolveWildBattle(fainted,true).won,true);
+ assert.equal(fainted.pendingCapture,null,'KO must not trigger free capture');
+}
+assert.equal(TRAINERS_PER_GYM(0),13);
+assert.equal(TRAINERS_PER_GYM(7),27,'Giovanni route has more trainers than Brock');
+assert.equal(TRAINERS_PER_GYM(8),17,'Victory Road has additional encounters');
+// The original Indigo PNG remains the single map asset, but the stage-specific
+// gate, color, NPC and caption must follow the Elite opponent accurately.
+const {getCampaignMapSpec:indigoWorld,ELITE_CHAMBERS}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-map-unified.js')));
+assert.deepEqual(ELITE_CHAMBERS.map(c=>c.leader),
+ ['LORELEI','BRUNO','AGATHA','LANCE','CAMPEÃO']);
+for(const chamber of ELITE_CHAMBERS){
+ const room=indigoWorld(chamber.stage,0);
+ assert.equal(room.id,chamber.world,'Elite stage renders the intended FireRed sprite');
+ assert.equal(room.leader,chamber.stage===8?'LORELEI':chamber.leader,
+  'Visible chamber must identify the actual trainer');
+ assert.equal(room.points.length,0,'No filler trainers inside the Elite rooms');
+ assert.ok(room.buildings.gym,'Elite challenge must have a clickable entry');
+}
+// Indigo League is five successive trainer battles with exact first
+// clear teams. Rival starter must never depend on current active/party slot.
+const {ELITE,rivalChampionTeam,campaignStarter}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-core.js')));
+const {createPartyMatch}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/party-battle.js')));
+const leagueLineups=[
+ [['dewgong','cloyster','slowbro','jynx','lapras'],[52,51,52,54,54]],
+ [['onix','hitmonchan','hitmonlee','onix','machamp'],[51,53,53,54,56]],
+ [['gengar','golbat','haunter','arbok','gengar'],[54,54,53,56,58]],
+ [['gyarados','dragonair','dragonair','aerodactyl','dragonite'],[56,54,54,58,60]],
+ [['pidgeot','alakazam','rhydon','exeggutor','gyarados','charizard'],[59,57,59,59,61,63]]
+];
+for(const [i,[expected,levels]] of leagueLineups.entries()){
+ const state=createCampaign('bulbasaur');state.stage=i+8;state.trainer=TRAINERS_PER_GYM(i+8);
+ const match=createPartyMatch(state,currentOpponent(state));
+ assert.deepEqual(match.foes.map(x=>x.id),expected,'FireRed Elite/Champion roster '+i);
+ assert.deepEqual(match.foes.map(x=>x.level),levels,'FireRed Elite/Champion levels '+i);
+ assert.ok(match.foes.every(x=>x.loadout.lmb?.forma&&x.loadout.rmb?.forma),
+  'Every Elite opponent must be able to use actual existing VFX');
+}
+for(const starter of ['bulbasaur','charmander','squirtle']){
+ const state=createCampaign(starter);state.stage=12;
+ // Swapping the first Pokémon in a team MUST NOT alter the rival's starter.
+ state.team.unshift({id:'geodude',uid:'temporary',hp:100,progression:{species:'geodude',level:50}});
+ assert.equal(campaignStarter(state),starter,'Starter identity survives changes to party');
+ const team=createPartyMatch(state,currentOpponent(state)).foes;
+ assert.deepEqual(team.map(x=>x.id),rivalChampionTeam(starter));
+ assert.equal(team.at(-1).id,currentOpponent(state).id,'Correct champion ace');
+}
+assert.equal(TRAINERS_PER_GYM(9),0,'Elite Four Bruno fights once, not 31 times');
+assert.equal(TRAINERS_PER_GYM(12),0,'Champion follows Lance without filler trainers');
+const finale=createCampaign('bulbasaur');
+finale.stage=12;finale.trainer=0;finale.inventory.pokeball=5;
+assert.equal(currentOpponent(finale).leader,true,'Final champion is a leader battle');
+assert.equal(currentOpponent(finale).id,'charizard',
+ 'Champion rival uses starter advantage over Bulbasaur');
+assert.equal(resolveBattle(finale,true,()=>0).won,true);
+assert.equal(finale.champion,true,'Champion must complete the entire Kanto campaign');
+assert.equal(finale.stage,13,'Champion clear is persisted after all gym/Elite stages');
+
+assert.equal(currentOpponent(state).id,'pidgey',
+ 'Pewter trainer ladder begins with integrated Route 1 Pokémon instead of Onix');
+
+const tester=state.team.find(p=>p.id==='mewtwo');
+assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
+assert.equal(tester.progression.level,50);
+const allMoves=availableMoves(tester);
+assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Arena client moves');
+// Protect the user's approved Poké Arena + Pokémon Arena 2D base.
+// Even alias names (PT/EN) cannot introduce a second copy of a move.
+// Different moves sharing native renderers are NOT duplicates.
+const uniqueNameKeys=new Set(TEST_LIBRARY.map(m=>canonicalMoveKey(m.nombre)));
+assert.equal(uniqueNameKeys.size,TEST_LIBRARY.length,
+ 'Duplicate Pokémon moves in selectable library (including translated aliases)');
+const nativeNames=new Set(TEST_LIBRARY
+ .filter(m=>m.source==='arena2d-original').map(m=>canonicalMoveKey(m.nombre)));
+const repeatedOriginals=SIGNATURE_MOVES
+ .filter(m=>nativeNames.has(canonicalMoveKey(m.nombre)));
+assert.deepEqual(repeatedOriginals,[],
+ 'A client-original move is already approved: never recreate a separate custom move');
+assert.equal(canonicalMoveKey('Bola Sombria'),canonicalMoveKey('Shadow Ball'));
+assert.equal(canonicalMoveKey('Pistola de Água'),canonicalMoveKey('Water Gun'));
+assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb'));
+// NEW is an approval queue. Native moves and approved custom art never enter it.
+const pending=filterMoveLibrary(allMoves,'NEW');
+const pendingIds=pending.map(m=>m.id);
+const expectedFinale13=[];
+assert.deepEqual([...pendingIds].sort(),expectedFinale13.sort(),
+ 'User approved everything from NEW; zero pending effects in the catalog');
+for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
+ 'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
+ 'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
+ assert.ok(!pendingIds.includes(id),'Native and approved moves must never enter NEW: '+id);
+for(const id of ['metronome','absorb','x-scissor'])
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
+  'User just approved the previously queued move '+id);
+assert.ok(pending.every(isPendingApprovalMove));
+assert.ok(pending.every(m=>m.source==='new-phaser-fx'));
+assert.equal(filterMoveLibrary(allMoves,'NEW','ROCK').length,0,
+ 'Approved Rock Tomb must not reappear in NEW even when searching');
+assert.ok(filterMoveLibrary(allMoves,'ROCK').some(m=>m.id==='rock-tomb'),
+ 'Element ROCK must remain unaffected by virtual NEW tab');
+assert.equal(filterMoveLibrary(allMoves,'ALL').length,allMoves.length,
+ 'ALL must retain the complete selectable move library');
+
+const officialMoveStats={
+ 'gust':{poder:40,precisao:100,pp:35,categoria:'SPECIAL',tipo:'FLYING',dano:8},
+ 'poison-sting':{poder:15,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'POISON',dano:3},
+ 'bite':{poder:60,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'DARK',dano:12},
+  'peck':{poder:35,precisao:100,pp:35,categoria:'PHYSICAL',tipo:'FLYING',dano:7},
+  'bug-bite':{poder:60,precisao:100,pp:20,categoria:'PHYSICAL',tipo:'BUG',dano:12},
+  'rock-tomb':{poder:60,precisao:95,pp:15,categoria:'PHYSICAL',tipo:'ROCK',dano:12},
+  'horn-attack':{poder:65,precisao:100,pp:25,categoria:'PHYSICAL',tipo:'NORMAL',dano:13},
+  'double-kick':{poder:30,precisao:100,pp:30,categoria:'PHYSICAL',tipo:'FIGHTING',dano:6},
+  'fury-attack':{poder:15,precisao:85,pp:20,categoria:'PHYSICAL',tipo:'NORMAL',dano:3},
+  'metal-claw':{poder:50,precisao:95,pp:35,categoria:'PHYSICAL',tipo:'STEEL',dano:10},
+  'bind':{poder:15,precisao:85,pp:20,categoria:'PHYSICAL',tipo:'NORMAL',dano:3},
+ 'mud-slap':{poder:20,precisao:100,pp:10,categoria:'SPECIAL',dano:4},
+ 'seed-bomb':{poder:80,precisao:100,pp:15,categoria:'PHYSICAL',dano:16},
+ 'super-fang':{poder:null,precisao:90,pp:10,categoria:'PHYSICAL',dano:0}
+};
+for(const [id,stats] of Object.entries(officialMoveStats)){
+ const move=allMoves.find(m=>m.id===id);
+ assert.ok(move,'Official statistics require real move '+id);
+ for(const [k,v] of Object.entries(stats))
+  assert.equal(move[k],v,'Official '+k+' should match Pokémon Database for '+id);
+}
+
+for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow-ball','lovely-kiss',
+ 'ice-beam','rock-blast','confuse-ray','soft-boiled','sing','crabhammer','smog',
+ 'hyper-fang','guillotine','petal-dance','metronome','absorb','x-scissor',
+ 'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch','peck','leech-life','bug-bite','rock-tomb','horn-attack','double-kick','fury-attack','metal-claw','bind'])
+ assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
+assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
+assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
+ ['torre2_bonemerang','torre2_boneclub','torre2_triattack','torre2_payday']);
+for(const id of ['mud-slap','seed-bomb','super-fang']){
+ assert.equal(equipMove(tester,0,id),true,'new adapted Kanto move can be equipped '+id);
+ assert.equal(resolveLoadout(tester).lmb.id,id,'new adapted move usable in battle '+id);
+}
+for(const id of ['gust','poison-sting','bite','crunch']){
+ assert.ok(allMoves.find(m=>m.id===id),'new early-route move not registered '+id);
+ assert.equal(equipMove(tester,0,id),true,'early-route move can be equipped '+id);
+ assert.equal(resolveLoadout(tester).lmb.id,id,'new early-route move usable '+id);
+}
+const nativeCrunch=allMoves.find(m=>m.id==='crunch');
+assert.ok(nativeCrunch,'Original Pokémon Arena Crunch must be available');
+assert.equal(nativeCrunch.forma,'torre2_crunch','Crunch renderer updated in Kanto loadout');
+assert.equal(nativeCrunch.source,'torre2-visual-override','Native Crunch stats kept');
+assert.equal(SIGNATURE_MOVES.some(m=>m.id==='crunch'),false,'Never duplicate native Crunch');
+const leech=allMoves.find(m=>m.id==='leech-life');
+assert.ok(leech,'Native Leech Life remains in original catalog');
+assert.equal(leech.source,'arena2d-original',
+ 'Native Leech Life must keep its existing renderer, category and stats');
+assert.equal(leech.forma,'golpe',
+ 'Leech Life renderer must remain the original Arena 2D hit effect');
+assert.ok(!SIGNATURE_MOVES.some(m=>m.id==='leech-life'),'No duplicate native move');
+for(const [id,forma] of [['peck','torre2_peck'],['bug-bite','torre2_bugbite']]){
+ const move=allMoves.find(m=>m.id===id);
+ assert.equal(move.forma,forma);
+ assert.equal(move.approved,true,'User approved Peck and Bug Bite; freeze graphics and effects');
+ assert.equal(equipMove(tester,0,id),true);
+ assert.equal(resolveLoadout(tester).lmb.forma,forma);
+}
+for(const [id,forma] of [
+ ['rock-tomb','torre2_rocktomb'],['horn-attack','torre2_hornattack'],
+ ['double-kick','torre2_doublekick'],['fury-attack','torre2_furyattack'],
+ ['metal-claw','torre2_metalclaw'],['bind','torre2_bind']
+]){
+ const move=allMoves.find(m=>m.id===id);
+ assert.ok(move,'Pre-Brock missing attack now installed: '+id);
+ assert.equal(move.forma,forma);
+ assert.equal(move.source,'new-phaser-fx','Never overwrite an original move');
+ assert.equal(move.approved,true,
+  'All six pre-Brock moves are now approved and protected');
+ assert.equal(equipMove(tester,0,id),true);
+ assert.equal(resolveLoadout(tester).lmb.forma,forma);
+}
+assert.equal(equipMove(tester,0,'crunch'),true);
+assert.equal(resolveLoadout(tester).lmb.forma,'torre2_crunch');
+assert.equal(allMoves.filter(x=>x.nombre==='Tackle').length,1,
+ 'Tackle already exists in original Pokémon Arena 2D and must not be duplicated');
+const confusion=allMoves.find(x=>x.nombre==='Confusion');
+assert.ok(confusion);
+assert.equal(equipMove(tester,0,confusion.id),true);
+assert.equal(resolveLoadout(tester).lmb.nombre,'Confusion');
+assert.equal(equipMove(tester,0,'nonexistent-attack'),false);
+assert.equal(equipMove(tester,1,'tri-attack'),false,'prevent duplicate moves in slots');
+saveCampaign(state);
+assert.equal(readCampaign().team.find(x=>x.id==='mewtwo').moves[0],confusion.id,
+ 'selected moves must persist in saved campaign');
+assert.equal(allMoves.filter(x=>x.id==='surf').length,1,'Reworked Surf must be unique');
+assert.equal(allMoves.find(x=>x.id==='surf')?.forma,'torre2_finale_surf',
+ 'Old rejected Surf must not be restored: test only the NEW pixel wave');
+assert.equal(allMoves.find(x=>x.id==='surf')?.approved,true,
+ 'User explicitly approved the remastered Torre 1 Surf; freeze its renderer');
+assert.equal(equipMove(tester,0,'surf'),true,
+ 'Test Mewtwo can equip new Surf in battle for visual review');
+assert.equal(equipMove(tester,0,'swift'),true,'new Swift must equip');
+assert.equal(resolveLoadout(tester).lmb.forma,'torre2_swift');
+assert.equal(equipMove(tester,0,'shadow-ball'),true,'new Shadow Ball must equip');
+assert.equal(resolveLoadout(tester).lmb.forma,'torre2_shadowball');
+assert.equal(equipMove(tester,0,'lovely-kiss'),true,'new Lovely Kiss must equip');
+assert.equal(resolveLoadout(tester).lmb.forma,'torre2_lovelykiss');
+assert.equal(equipMove(tester,0,'bonemerang'),true);
+for(const id of ['ice-beam','rock-blast','confuse-ray','soft-boiled']){
+ assert.equal(equipMove(tester,0,id),true,'new move equippable '+id);
+ assert.equal(resolveLoadout(tester).lmb.id,id,'new Phaser move active '+id);
+}
+const realBeam=allMoves.find(m=>m.id==='ice-beam');
+assert.equal(realBeam.forma,'chorro','Ice Beam must reuse real Hyper Beam/Aura Storm engine');
+assert.equal(realBeam.paleta,'hieloTorre2');
+assert.equal(realBeam.haz,true);
+assert.equal(realBeam.giro,3.5);
+assert.equal(realBeam.source,'new-phaser-fx','Only native renderer is reused, not falsely relabeled');
+for(const id of [
+ 'bonemerang','bone-club','tri-attack','pay-day','shadow-ball',
+ 'rock-blast','soft-boiled','confuse-ray'
+])
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,true,'Previously approved signature move '+id);
+for(const id of ['swift','lovely-kiss'])
+ assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
+  'The user has explicitly approved '+id);
+assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
+// Preserve approvals already registered in the master moveset, without editing their art.
+for(const [id,forma] of [['hyper-fang','torre2_hyperfang'],
+ ['guillotine','torre2_guillotine'],['petal-dance','torre2_petaldance']]){
+ const h=allMoves.find(x=>x.id===id);
+ assert.ok(h,'New Kanto move registered '+id);
+ assert.equal(h.forma,forma,'Correct art renderer '+id);
+ assert.equal(h.approved,true,
+  'All three prior Kanto moves received visual approval: '+id);
+ assert.equal(h.source,'new-phaser-fx');
+ assert.equal(equipMove(tester,0,id),true,'Mewtwo test loadout includes '+id);
+ assert.equal(resolveLoadout(tester).lmb.forma,forma);
+}
+for(const [id,forma] of [['metronome','torre2_metronome'],['absorb','torre2_absorb'],['x-scissor','torre2_xscissor']]){
+ const h=allMoves.find(m=>m.id===id);
+ assert.ok(h,'New ability must be in Kanto/Mewtwo move library: '+id);
+ assert.equal(h.forma,forma);
+ assert.equal(h.approved,true,'Moves already marked approved must remain approved');
+ assert.equal(equipMove(tester,0,id),true,'New trio selectable in Mewtwo test menu');
+}
+const newVfx=fs.readFileSync(path.join(stage,version,'torre2/next-specific-fx.js'),'utf8');
+for(const name of ['metronome','absorb','xscissor'])assert.ok(
+ newVfx.includes('export function '+name+'('),'New VFX renderer exists: '+name);
+assert.ok(newVfx.includes("from './move-pool.js'"),
+ 'Metronome picks a real installed move, not arbitrary dummy damage');
+const cargaBuilt=fs.readFileSync(path.join(stage,version,'escenas/carga.js'),'utf8');
+assert.ok(!cargaBuilt.includes('assets/ui/balls20.png'),
+ 'Do not request missing balls20.png from live site: native client has no consumer');
+const dexBuilt=fs.readFileSync(path.join(stage,version,'escenas/pokedex.js'),'utf8');
+assert.ok(dexBuilt.includes('preload(){const m=this.registry.get("manifiesto")'),
+ 'Pokédex loads all 26 original base portraits before drawing the grid');
+assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
+ 'Pokédex must use existing PMD portrait/Idle assets rather than placeholder');
+assert.ok(dexBuilt.includes('this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)}'),
+ 'Pokedex evolution tabs must lazily load each selected original PMD animation');
+const early=fs.readFileSync(path.join(stage,version,'torre2/early-route-fx.js'),'utf8');
+for(const name of ['gust','poisonsting','bite','crunch','peck','bugbite'])
+ assert.ok(early.includes('export function '+name+'('),
+  'Missing new hand-pixeled early-route renderer '+name);
+assert.ok(early.includes('clashAt(e,fx,l,tip,15')&&early.includes('clashAt(e,fx,l,tip,6'),
+ 'Gust and Poison Sting participate in physical Clash and dissipate on contact');
+for(const shape of ['const WIND_CURL=[','const NEEDLE=[','const JAW_UP=['])
+ assert.ok(early.includes(shape),'Distinct pixel matrix is missing: '+shape);
+assert.ok(early.includes('const rotations=[0,PI/2]') &&
+ early.includes('paintChomp(jaw,cx,cy,rotations[turn]') &&
+ early.includes('const struck=landed||strike('),
+ 'Crunch has horizontal + vertical pixel bites, with only one actual damaging hit');
+for(const id of ['gust','poison-sting'])
+ assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
+ 'These early-route moves are explicitly approved and frozen: '+id);
+for(const id of ['bite','crunch'])
+ assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
+ 'User explicitly approved Bite and Crunch; preserve their pixel art and mechanics');
+assert.ok(early.includes('export function contactDash(')&&early.includes('dash.step(age)'),
+ 'Bite and Crunch advance the actual fighter before returning');
+assert.ok(!early.includes('export function leechlife(')&&
+ !early.includes('torre2_leechlife:'),
+ 'No replacement renderer for the previously existing Leech Life');
+const prebrockFx=fs.readFileSync(path.join(stage,version,'torre2/prebrock-damage-fx.js'),'utf8');
+for(const fn of ['rocktomb','hornattack','doublekick','furyattack','metalclaw','bind'])
+ assert.ok(prebrockFx.includes('export function '+fn+'('),'Unbundled pre-Brock VFX: '+fn);
+assert.ok(prebrockFx.includes('ROCK_TOMB_COUNT=9')&&prebrockFx.includes('ROCK_FAN='),
+ 'Rock Tomb should render nine independently aimed stones');
+assert.ok(prebrockFx.includes("'......KK'"),'Horn Attack should have tiny pixel horn');
+assert.ok(prebrockFx.includes("from './clash-fx.js'"),
+ 'Rock Tomb collision must use shared native projectile Clash adapter');
+const sharedClash=fs.readFileSync(path.join(stage,version,'torre2/clash-fx.js'),'utf8');
+assert.ok(sharedClash.includes('export function clashAt('),'Shared clash adapter bundled');
+assert.ok(sharedClash.includes('export function clashBurst('),'Pixel dissipate after projectile Clash');
+assert.ok(sharedClash.includes('frame>=10'),'Ten hand-drawn frames must end cleanly');
+assert.ok(sharedClash.includes('item.dueno!==attacker.rival'),'Never clash with own projectiles');
+assert.ok(sharedClash.includes('scene.programar(0,()=>scene.efectos.push(fx))'),
+ 'Defer Clash graphics so original Phaser battle loop does not discard them');
+const adapted=fs.readFileSync(path.join(stage,version,'torre2/adapted-moves-fx.js'),'utf8');
+assert.ok(adapted.includes("import {clashAt} from './clash-fx.js';"),
+ 'New approved Mud-Slap and Seed Bomb register collision with shared adapter');
+assert.ok(adapted.includes('fx.clashBody=body;')&&adapted.includes('fx.clashBody=collisionBody;'),
+ 'Both new projectile moves expose physical hitboxes for Clash');
+
+for(const fn of ['mudslap','seedbomb','superfang'])assert.ok(
+ adapted.includes('export function '+fn+'('),'Missing hand-animated new renderer '+fn);
+for(const matrix of ['const MUD_PELLET=[','const MUD_SPLASH=[','const BOMB=[','const BOMB_CRACK=[','const JAW_TOP=[','const INCISOR=[']){
+ assert.ok(adapted.includes(matrix),'Missing hand-drawn pixel art sprite '+matrix);
+}
+assert.ok(adapted.includes("puro:true"),'Super Fang uses exact fixed half-HP damage');
+assert.ok(adapted.includes("Math.floor(r.hp*.5)"),'Super Fang hits for 50% current HP');
+// Visual-only adjustments: collision, move stats and already-approved Super Fang
+// must not change just because we improved Mud-Slap and Seed Bomb pixels.
+assert.ok(adapted.includes('const MUD_MICRO_SPLASH=['),
+ 'Mud-Slap must have three separate micro-splash pixel matrices');
+assert.ok(adapted.includes('stamp(proj,MUD_SPLASH,impact.x,impact.y,MUD_PALETTE,1.8,1-t)'),
+ 'Mud-Slap original impact is opened by 12.5%, not its projectile');
+assert.ok(adapted.includes('for(let i=0;i<3;i++){\n     const side=i-1;'),
+ 'Mud-Slap adds exactly 3 small lateral splash flecks');
+assert.ok(adapted.includes('stamp(body,BOMB,tip.x,'),
+ 'Seed Bomb stays intact during flight');
+assert.ok(!adapted.includes('frame===2?BOMB_CRACK:BOMB'),
+ 'Seed Bomb crack may not appear during flight');
+assert.ok(adapted.includes('stamp(body,BOMB_CRACK,impact.x'),
+ 'Seed Bomb shows its crack only at physical impact');
+assert.ok(adapted.includes('const SEED_CORE=['),
+ 'Seed Bomb briefly reveals the pale-green center');
+assert.ok(adapted.includes('const SEED_SHELL_CHIP=['),
+ 'Seed Bomb includes 3 additional micro shell chips');
+assert.ok(adapted.includes('for(let i=0;i<6;i++){')&&adapted.includes('for(let i=0;i<3;i++){\n     const travel='),
+ 'Seed Bomb has 6 original and 3 added shards — without additional hit checks');
+// FNV-1a guard of the art, timing and damage code of approved Super Fang.
+// Future work on the two previous spells cannot silently edit these bytes.
+const approvedFang=adapted.split('const JAW_COL=')[1]?.split('export const TORRE2_ADAPTED_FORMS')[0];
+assert.ok(approvedFang,'Missing approved Super Fang source');
+let fangGuard=2166136261;
+for(const char of 'const JAW_COL='+approvedFang){
+ fangGuard^=char.charCodeAt(0);
+ fangGuard=Math.imul(fangGuard,16777619);
+}
+assert.equal(fangGuard>>>0,0x098cb000,
+ 'Super Fang is approved and frozen: pixel matrices and behaviour must not change');
+assert.ok(!adapted.includes('CanvasRenderingContext2D'),'New 3 attacks use WebGL pixel matrices only');
+assert.ok(newVfx.includes('dealt*.5'),'Absorb heals half of actual dealt damage');
+assert.ok(!newVfx.includes('CanvasRenderingContext2D'),'New custom moves use Phaser Graphics only');
+for(const sprite of ['const HAND_PALM=[','const FINGER_FRAMES=[','const ABSORB_HEAD=[',
+ 'const ABSORB_MOTE=[','const SCISSOR_CUT=[']){
+ assert.ok(newVfx.includes(sprite),'Hand-authored sprite matrix required '+sprite);
+}
+assert.ok(newVfx.includes('const WAG=[0,1,2,3,3,2,1,0,0,1,2,3]'),
+ 'Metronome requires 12 named animation poses instead of a CSS-like moving slab');
+
+assert.ok(newVfx.includes('stencil(palm,HAND_PALM,cx,cy+5,HAND_PAL,1.5)'),
+ 'Metronome palm must be half of old scale 3');
+assert.ok(newVfx.includes('stencil(palm,FINGER_FRAMES[WAG[frame]],cx,cy-10,HAND_PAL,1.5)'),
+ 'Metronome finger must also be half size');
+assert.ok(newVfx.includes('PAL,1.5,1,a*.4)'),
+ 'Absorb head must be half the former scale 3');
+assert.ok(newVfx.includes('SCISSOR_CROSS=SCISSOR_CUT.map'),
+ 'X-Scissor uses two opposing pixel-matrix scythe streaks');
+assert.ok(newVfx.includes('if(!resolved&&frame>=6)'),
+ 'X-Scissor only resolves one hit when the two blades visually meet');
+assert.ok(newVfx.includes('stencil(blades,SCISSOR_CUT'),
+ 'X-Scissor renders two distinct crossing scythe-slash pixel sprites, not vector strokes');
+for(const forbidden of ['.fillCircle(','.fillEllipse(','.strokePath(','.lineTo(','.arc(']){
+ assert.ok(!newVfx.includes(forbidden),
+  'New effects must use only authored pixel stencils, not Canvas-like vectors: '+forbidden);
+}
+
+assert.equal(equipMove(tester,0,'bonemerang'),true);
+const kantoFile=fs.readFileSync(path.join(stage,version,'torre2/kanto-signatures-fx.js'),'utf8');
+assert.ok(kantoFile.includes('const FANG_UP=['),'Hyper Fang fangs defined as pixel cells');
+assert.ok(kantoFile.includes('const PINCER=['),'Guillotine pincers defined as pixel cells');
+assert.ok(kantoFile.includes('const PETAL=['),'Petal Dance petals defined as pixel cells');
+assert.ok(kantoFile.includes('const RAT_INCISOR=['),'Rat incisors encoded as pixel art');
+assert.ok(kantoFile.includes('x-6,toothY')&&kantoFile.includes('x+11,toothY'),
+ 'Both large rodent incisors are drawn');
+assert.ok(kantoFile.includes('const GUILLOTINE_JAW_TOP=[')&&
+ kantoFile.includes('const GUILLOTINE_JAW_BOTTOM='),
+ 'Opposing Guillotine blades must have readable silhouettes');
+assert.ok(kantoFile.includes('spread=Math.round(19*(1-phase))'),
+ 'Guillotine starts open and closes its two pincers');
+assert.ok(kantoFile.includes('const scale=2,rows=PETAL'),
+ 'Petals are one-third smaller');
+assert.ok(kantoFile.includes('PETAL_PALETTES[Math.abs(shade)%'),
+ 'Petal Dance has multiple pink palettes');
+assert.ok(kantoFile.includes('const orbitPhase=elapsed*')&&
+ kantoFile.includes('const vortexRadius=8+12*Math.sin(progress*PI)**2')&&
+ kantoFile.includes('petal(blooms,x,y,orbitPhase'),
+ 'Petal Dance must travel as individually tumbling Aura Storm-style petals');
+
+assert.ok(!kantoFile.includes('CanvasRenderingContext2D') &&
+ !kantoFile.includes('.fillPoints(') && !kantoFile.includes('.arc('),
+ 'No smooth polygon, Canvas 2D or vector VFX in new moves');
+const smogMove=allMoves.find(x=>x.id==='smog');
+assert.equal(smogMove?.approved,true,'Smog approved with extra pixel bubbles');
+for(const id of ['sing','crabhammer'])
+ assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
+  'Sing and Crabhammer explicitly approved by user; preserve current visuals');
+const menuCampaign=fs.readFileSync(path.join(stage,version,'torre2/campanha.js'),'utf8');
+assert.ok(!menuCampaign.includes('drawApprovedDashboard(this,state)'),
+ 'Never paste the approved reference image over the playable map');
+const partySource=fs.readFileSync(path.join(stage,version,'torre2/party-battle.js'),'utf8');
+assert.ok(!partySource.includes('scene.scene.restart(')&&
+ partySource.includes('actor.reiniciar(x,y)'),
+ 'Pokémon swaps reuse native Luchador without restart or countdown');
+assert.ok(partySource.includes('drawPixelBall('),
+ 'Pokéballs use a single lightweight pixel-art Graphics layer');
+const fightSource=fs.readFileSync(path.join(stage,version,'escenas/combate.js'),'utf8');
+assert.ok(fightSource.includes('d.torre2?.party?'),
+ 'Every party species preloaded before combat; never load on swap');
+assert.ok(menuCampaign.includes('this.launchBattle(match,wild)')&&
+ menuCampaign.includes('if(!wild&&state.pendingCapture)')&&
+ !menuCampaign.includes("state.lastMessage='Resolva a captura antes de continuar.'"),
+ 'Optional pending capture never locks the second trainer');
+const trainingSrc=fs.readFileSync(path.join(stage,version,'torre2/training.js'),'utf8');
+assert.ok(trainingSrc.includes('export function installTrainingDummy')&&
+ trainingSrc.includes('dummy.recibir=function')&&
+ trainingSrc.includes('ai.leer=()=>')&&
+ trainingSrc.includes("scene.scene.start('campanha')"),
+ 'Training runs inside real Phaser with an immobile invulnerable target and exit');
+const trainingModule=await import(pathToFileURL(path.join(stage,version,'torre2/training.js')));
+assert.equal(trainingModule.TRAINING_TARGET,'onix');
+assert.ok(buildDefinition.slice(buildDefinition.indexOf('const vfxFingerprint='))
+ .includes('torre2/training.js'),'Training code must invalidate mobile module cache');
+assert.ok(menuCampaign.includes('renderBattlePath(this,state,'),
+ 'Campaign must render the gym-bound zigzag battle road, not the old world map');
+assert.ok(!menuCampaign.includes('setCampaignPanelCollapsed(')&&
+ !menuCampaign.includes('renderCampaignLegacy('),
+ 'Old zoom/collapsible map modes must be fully deleted');
+const battlePath=fs.readFileSync(path.join(stage,version,'torre2/battle-path.js'),'utf8');
+assert.ok(battlePath.includes('ROOM_CROPS')&&
+ battlePath.includes('torre2-path-gym-')&&
+ battlePath.includes(" 'pewter','cerulean'"),
+ 'Battle Road must display authentic FireRed gym interior and current city exterior');
+assert.ok(!menuCampaign.includes('richMap(this,state.stage,points,page,region)'),
+ 'Trainer progression must not change the background every three battles');
+const {getCampaignMapSpec}=await import(pathToFileURL(
+ path.join(stage,version,'torre2/campaign-map-unified.js')));
+const pewterWorld=getCampaignMapSpec(0,13);
+assert.equal(pewterWorld.id,'pewter');
+assert.equal(pewterWorld.points.length,13,'Brock shows all 13 trainers at once');
+assert.ok(pewterWorld.buildings.center&&pewterWorld.buildings.mart&&
+ pewterWorld.buildings.gym&&pewterWorld.buildings.grass,
+ 'Single Pewter world needs real landmarks and encounter grass');
+// Brock is a designed, stable 13-trainer route over the USER map, not a
+// procedural grid. No NPCs spill beyond the illustration or occupy landmarks.
+const brockComposite=getCampaignMapSpec(0,13,true);
+assert.ok(brockComposite.customBrock&&brockComposite.trainerAreas?.length===13,
+ 'Brock uses its own manually planned FireRed story path');
+assert.equal(brockComposite.points.length,13);
+const seen=new Set();
+for(let i=0;i<13;i++){
+ const pt=brockComposite.points[i],key=pt.x+','+pt.y;
+ assert.ok(pt.x>=42&&pt.x<=365&&pt.y>=135&&pt.y<=280,
+  'Brock trainer '+(i+1)+' must stay inside usable image boundaries');
+ assert.ok(!seen.has(key),'Trainer coordinates cannot be duplicated');
+ seen.add(key);
+ for(let j=0;j<i;j++){
+  const before=brockComposite.points[j];
+  assert.ok(Math.hypot(pt.x-before.x,pt.y-before.y)>=28,
+    'NPCs cannot overlap: trainers '+(j+1)+' and '+(i+1));
+ }
+ for(const [name,loc] of Object.entries(brockComposite.buildings))
+  assert.ok(Math.hypot(pt.x-loc[0],pt.y-loc[1])>=29,
+   'Trainer '+(i+1)+' must not block '+name+' hotspot');
+}
+assert.deepEqual(brockComposite.trainerAreas.slice(0,1),['PALLET TOWN']);
+assert.deepEqual(brockComposite.trainerAreas.slice(-2),['PEWTER CITY','PEWTER CITY']);
+assert.deepEqual(getCampaignMapSpec(0,13,true).points,brockComposite.points,
+ 'Saved progress must not shuffle checkpoint positions');
+assert.equal(getCampaignMapSpec(1,15).customBrock,false,
+ 'Do not change the unfinished Misty map in Brock-only patch');
+assert.equal(getCampaignMapSpec(1,15).id,'cerulean',
+ 'Misty gets a separate themed map after defeating Brock');
+assert.equal(getCampaignMapSpec(7,27).points.length,27,
+ 'Later leaders keep increased trainer progression without pagination');
+for(let stage=0;stage<8;stage++){
+ const map=getCampaignMapSpec(stage,TRAINERS_PER_GYM(stage));
+ assert.equal(map.points.length,13+stage*2,'Each gym owns all trainers on one map');
+ assert.ok(map.points.every(p=>p.x>=25&&p.x<=380&&p.y>=112&&p.y<=291),
+  'Trainer marker must stay inside the playable world viewport');
+}
+for(let stage=1;stage<8;stage++){
+ const map=getCampaignMapSpec(stage,TRAINERS_PER_GYM(stage));
+ for(const p of map.points)for(const xy of Object.values(map.buildings))
+  assert.ok(Math.abs(p.x-xy[0])>33||Math.abs(p.y-xy[1])>31,
+   'Trainer marker must not hide building entrance on '+map.id);
+}
+assert.ok(battlePath.includes(".on('pointerup'")&&
+ battlePath.includes(".setData('torre2-fullscreen',true)"),
+ 'Fullscreen must use original Phaser ScaleManager on pointerup, not DOM zoom');
+assert.ok(menuCampaign.includes('const needed=new Set(')&&
+ menuCampaign.includes('AVAILABLE_FRLG.includes(world)'),
+ 'The campaign loads only current-map art and relevant overworld NPCs');
+assert.ok(menuCampaign.includes("key.startsWith('frlg-location-')")&&
+ menuCampaign.includes("key.startsWith('torre2-portrait-')"),
+ 'Unused stage and PC textures are released without purging PMD combat VFX');
+assert.ok(menuCampaign.includes('consumeCampaignResetLink()'),
+ 'Reset link must be consumed in the actual campaign scene');
+assert.ok(menuCampaign.includes("query.get('reset_kanto')"),
+ 'One-time URL reset is requested explicitly by the player');
+const npcFrames=fs.readFileSync(path.join(stage,version,'torre2/frlg-npc.js'),'utf8');
+assert.ok(npcFrames.includes('texture.add(frame,0,0,0,16,'),
+ 'FireRed NPCs use true cropped texture frames, not stretched spritesheets');
+assert.ok(!npcFrames.includes('image.setCrop(0,0,'),
+ 'Do not put sheet-sized cropped NPC images outside the playable map');
+for(let stage=9;stage<=12;stage++)
+ assert.equal(getCampaignMapSpec(stage,0).id,'indigo',
+  'Elite Four and Champion share the same themed map');
+const sidebar=fs.readFileSync(path.join(stage,version,'torre2/battle-path.js'),'utf8');
+assert.ok(sidebar.includes("['TREINAMENTO',handlers.training]")&&
+ sidebar.includes("['CAPTURA',handlers.capture]")&&!sidebar.includes("['GINÁSIO',handlers.gym]")&&
+ menuCampaign.includes('training:()=>this.enterTraining(state)'),
+ 'Sidebar replaces gym shortcut with training and keeps grass capture');
+const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
+for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',
+ 'function stone(','function tallGrass(','export function map(']){
+ assert.ok(nativeArt.includes(shape),'World map needs real Phaser pixel-art element: '+shape);
+}
+assert.ok(!fs.existsSync(path.join(stage,'assets/ui/kanto-approved.avif')),
+ 'Compiled Kanto map must not depend on pasted reference artwork');
+assert.ok(menuCampaign.includes('textoMenu(this,x,y'),'Campaign buttons use exact initial menu font');
+assert.ok(!menuCampaign.includes('0xdf803c'),'Remove orange generic battle button');
+const speciesFile=fs.readFileSync(path.join(stage,version,'torre2/species-fx.js'),'utf8');
+const pixelPincer=speciesFile.slice(speciesFile.indexOf('function crabPixels('),
+ speciesFile.indexOf('export function crabhammer('));
+assert.ok(pixelPincer.includes('draw(g,')&&!pixelPincer.includes('.fillPoints('),
+ 'Crabhammer claw is actual hand-crafted squared pixel art, not polygons');
+assert.ok(speciesFile.includes('SMOG_FAN.length'),'Smog must animate independent bubbles');
+assert.ok(speciesFile.includes('SMOG_FAN=Object.freeze(['),'Smog must retain fixed staggered spread');
+assert.ok(speciesFile.includes('if(hit(l,h,extra,.23,5))'),
+ 'Each Smog bubble applies its own balanced damage on impact');
+assert.ok(!speciesFile.includes('let age=0,previous={x:x0,y:y0},landed=false'),
+ 'No single global hit gate may suppress other Smog bubbles');
+assert.ok(speciesFile.includes('offsets=[0,-9,12,-5,7,-13,15,-1,10]'),
+ 'Sing keeps nine separate staggered pixel music notes');
+
+const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf8');
+assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
+assert.ok(abilityBody.includes('h.paleta==="hieloTorre2"'),'Ice particles apply only to Ice Beam');
+assert.equal(equipMove(tester,0,'ice-beam'),true);
+assert.equal(resolveLoadout(tester).lmb.forma,'chorro');
+assert.equal(resolveLoadout(tester).lmb.paleta,'hieloTorre2');
+assert.equal(equipMove(tester,0,'bonemerang'),true);
+const original=allMoves.filter(m=>['Flamethrower','Rock Slide','Water Pulse','Thunderbolt'].includes(m.nombre));
+assert.ok(original.length>=2,'captured Poké Arena move catalog retained');
+assert.ok(original.every(m=>m.source==='arena2d-original'),'original Arena VFX always take priority');
+assert.equal(state.dexCaught.includes('charmander'),true);
+assert.equal(recordSeen(state,'onix'),true);
+assert.equal(recordSeen(state,'onix'),false);
+assert.equal(recordSeen(state,'pichu'),false,'Kanto Pokedex excludes Pichu');
+assert.equal(startBattle(state).nivel,'facil');
+assert.equal(state.dexSeen.includes('onix'),true);
+state.stage=5;state.trainer=TRAINERS_PER_GYM(5);
+assert.equal(startBattle(state).nivel,'dificil','later gym bosses gain advanced native AI');
+state.stage=8;state.trainer=0;
+assert.equal(startBattle(state).nivel,'maestro','Elite Four uses the original master AI');
+state.stage=0;state.trainer=0;saveCampaign(state);
+assert.equal(recordCaught(state,'onix'),true);
+assert.equal(recordCaught(state,'onix'),false);
+
+
+const initialSpecies=state.team[0].id;
+for(let i=0;i<13;i++){
+ assert.equal(currentOpponent(state).leader,false);
+ const result=resolveBattle(state,true,()=>0);
+ assert.equal(result.won,true);
+ assert.equal(state.stage,0);
+ assert.ok(state.team[0].progression.experience>0);
+ if(state.pendingCapture){state.inventory.pokeball=Math.max(1,state.inventory.pokeball);const r=attemptCapture(state,()=>0);assert.ok(r.ok)}
+}
+assert.equal(state.trainer,13);
+assert.equal(currentOpponent(state).leader,true);
+const beforeBadge=state.badges.length;
+resolveBattle(state,true,()=>0);
+assert.equal(state.stage,1);
+assert.equal(state.badges.length,beforeBadge+1);
+if(state.pendingCapture){state.inventory.pokeball=Math.max(1,state.inventory.pokeball);assert.equal(attemptCapture(state,()=>0).ok,true)}
+assert.equal(readCampaign().stage,1);
+// Fill party/PC through wild encounters; trainer prizes were explicitly removed.
+for(let encounter=0;encounter<5;encounter++){
+ state.inventory.pokeball=Math.max(1,state.inventory.pokeball);
+ assert.equal(startWildEncounter(state,()=>0).ok,true);
+ assert.equal(attemptCapture(state,()=>0,'pokeball',{duringBattle:true,hpPercent:10}).ok,true);
+}
+assert.equal(state.team.length,6);
+assert.ok(state.box.length>0);
+const beforeParty=state.team.map(x=>x.uid),beforeBox=state.box.map(x=>x.uid);
+assert.equal(storePokemon(state,0),true);
+assert.equal(state.team.length,5);
+assert.equal(state.box.at(-1).uid,beforeParty[0]);
+assert.equal(withdrawPokemon(state,state.box.length-1),true);
+assert.equal(state.team.at(-1).uid,beforeParty[0]);
+assert.equal(state.box.length,beforeBox.length);
+const bench=state.box[0].uid,slot=state.team[0].uid;
+assert.equal(swapPokemon(state,0,0),true);
+assert.equal(state.team[0].uid,bench);
+assert.equal(state.box[0].uid,slot);
+assert.equal(swapPokemon(state,0,0),true);
+assert.equal(state.team[0].uid,slot);
+assert.equal(storePokemon(state,-1),false);
+assert.equal(withdrawPokemon(state,999),false);
+assert.equal(readCampaign().team[0].uid,slot);
+const legacy=JSON.parse(items.get(SAVE_KEY));
+delete legacy.box;delete legacy.dexSeen;delete legacy.dexCaught;
+items.set(SAVE_KEY,JSON.stringify(legacy));
+const migrated=readCampaign();
+assert.ok(Array.isArray(migrated.box)&&Array.isArray(migrated.dexCaught));
+assert.ok(migrated.team.length>0&&migrated.team.length<=6);
+saveCampaign(state);
+// Regression: a partial save write must fall back to the previous complete
+// checkpoint. The original user's Pokémon and gym progress are not reset.
+const checkpoint=readCampaign();
+state.money+=7;saveCampaign(state);
+assert.ok(items.has(SAVE_BACKUP_KEY),'One previous campaign save kept intact');
+items.set(SAVE_KEY,'{truncated');
+const recovered=readCampaign();
+assert.equal(recovered.stage,checkpoint.stage);
+assert.equal(recovered.trainer,checkpoint.trainer);
+assert.equal(recovered.team.length,checkpoint.team.length);
+assert.equal(recovered.money,checkpoint.money);
+state.money=checkpoint.money;saveCampaign(state);
+
+assert.ok(state.team[0].progression.level>=5);
+assert.ok(state.team[0].id!==initialSpecies || state.team[0].progression.level<16);
+const save=items.get(SAVE_KEY);assert.ok(save.includes('"version":1'));
+const before=state.trainer;
+resolveBattle(state,false);
+assert.equal(state.trainer,before,'a lost battle does not advance trainer progression');
+assert.equal(readCampaign().losses,state.losses,'defeat statistics must persist after refresh');
+assert.equal(readCampaign().trainer,before,'loss must not advance the saved trainer');
+assert.equal(readCampaign().pendingCapture,null,'loss must clear any stale capture opportunity');
+console.log('PASS offline Kanto campaign: 151 names, 8 gyms, 13 trainers, badges, captures, saves and no in-combat evolution.');

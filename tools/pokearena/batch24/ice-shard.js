@@ -1,0 +1,26 @@
+// Ice Shard — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "ice-shard",
+  "nombre": "Ice Shard",
+  "approved": true,
+  "forma": "torre2_batch24_ice_shard",
+  "tipo": "ICE",
+  "categoria": "PHYSICAL",
+  "poder": 40,
+  "precisao": 100,
+  "pp": 30,
+  "fazContato": false,
+  "dano": 8,
+  "alcance": 235,
+  "coste": 19,
+  "cd": 3.7,
+  "anim": "Shoot",
+  "lanzar": 0.06,
+  "style": "shard",
+  "palette": "ice",
+  "speed": 470,
+  "secondary": "priority",
+  "frames": 12,
+  "description": "Ice Shard — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/ice-shard"
+});

@@ -1,0 +1,61 @@
+name: Master section20 — grama alta sem bloqueio de cinco encontros
+on:
+  push:
+    branches: [fix/master-section20-unlimited-grass-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Syntax, approved rules and full unit suite
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/section20-repeatable-grass-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture original Phaser and compile the exact versioned site
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Core catch probabilities, save and repeatable encounters
+        run: |
+          set -euo pipefail
+          node --test tests/section20-repeatable-grass-built.test.mjs
+          node --test tests/capture-pre-misty.test.js
+          node tests/solo-kanto-built.test.mjs
+      - name: Sixth natural grass search in native desktop and touch Phaser
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/section20-repeatable-grass-browser.cjs
+      - name: Existing original client smoke and all browser regressions
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          npm run test:browser
+      - name: Preserve desktop mobile and compiled fingerprint
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-section20-unlimited-grass-evidence
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+            site-capture/CAPTURE-REPORT.json
+          if-no-files-found: warn
+          retention-days: 14

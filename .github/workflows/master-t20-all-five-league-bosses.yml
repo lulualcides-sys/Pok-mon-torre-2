@@ -1,0 +1,52 @@
+name: Master T20 — five native Indigo League bosses and Hall of Fame
+on:
+  push:
+    branches: [test/master-t20-entire-league-five-native-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  t20-sequential:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 84
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Full unit suite, syntax, reuse and code checks
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t20-all-five-native-league-bosses-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture and build the original Phaser WebGL client
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json \
+              && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - name: Play all five League bosses with no intermediate fixture
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t20-all-five-native-league-bosses-browser.cjs
+      - name: Official Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Preserve evidence even when battle is lost
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t20-five-league-bosses-evidence
+          path: test-evidence/
+          if-no-files-found: warn

@@ -1,0 +1,76 @@
+name: FireRed Mart originals, capture near Dash and battle load
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/install-frlg-mart-item-icons.mjs'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/torre2-campaign-sprites.js'
+      - 'tools/pokearena/torre2-capture-arena.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/frlg-mart-original-icons.test.js'
+      - 'tests/frlg-mart-original-built.test.mjs'
+      - 'tests/versus-intro-browser.cjs'
+      - 'tests/versus-intro-contract.test.js'
+      - 'tests/surge-shop-rematch-browser.cjs'
+      - 'tests/t06-*-capture-browser.cjs'
+      - 'tests/ball-choreography-browser.cjs'
+      - '.github/workflows/frlg-mart-capture-battle-perf.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-native-phaser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax and pinned original FireRed item unit tests
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/install-frlg-mart-item-icons.mjs
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/torre2-campaign-sprites.js
+          node --check tools/pokearena/torre2-capture-arena.js
+          node --test tests/frlg-mart-original-icons.test.js tests/versus-intro-contract.test.js tests/original-ball-capture.test.js
+      - name: Build the original Phaser client and approved Kanto content
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+      - name: Verify real PNG alpha, colored palettes and offline shop art
+        run: |
+          set -euo pipefail
+          node tests/frlg-mart-original-built.test.mjs
+          node tests/surge-shop-rematch-allmaps-built.test.mjs
+      - name: Chromium VS keeps approved 2.5 seconds and preloads native PMD
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/versus-intro-browser.cjs
+      - name: Chromium screenshot of original FireRed shop
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/surge-shop-rematch-browser.cjs
+      - name: Chromium actual wild capture on desktop, mobile and GOTCHA
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          set -euo pipefail
+          node tests/t06-desktop-capture-browser.cjs
+          node tests/t06-mobile-capture-browser.cjs
+          node tests/ball-choreography-browser.cjs
+      - name: Save proof of original items, VS and capture input positions
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: original-frlg-mart-battle-warmup-and-dash-capture
+          path: |
+            test-evidence/mart-frlg-original-icons.png
+            test-evidence/versus-intro/
+            test-evidence/t06-*
+            test-evidence/ball-*
+          retention-days: 14
+          if-no-files-found: warn

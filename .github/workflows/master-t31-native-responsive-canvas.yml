@@ -1,0 +1,54 @@
+name: Master T31 — native panoramic framebuffer and 16:9 Kanto world
+on:
+  push:
+    branches: [test/master-t31-native-responsive-canvas-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit tests, syntax and preservation gates
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/capture-client.mjs
+          node --check tests/source-client-smoke.cjs
+          node --test tests/capture-client-critical.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture and build original Phaser client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+          test -s _site/arena2d/lib/phaser.min.js
+      - name: Original native Phaser geometry smoke and browser regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/source-client-smoke.cjs
+          npm run test:browser
+      - name: Preserve build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t31-native-responsive-canvas-evidence
+          path: |
+            site-capture/CAPTURE-REPORT.json
+            _site/arena2d/version.json
+            test-evidence/
+          if-no-files-found: warn
+          retention-days: 14

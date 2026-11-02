@@ -1,0 +1,52 @@
+name: Arena Dodrio — poison causes true native KO
+on:
+  push:
+    branches: [fix/arena-dodrio-ko-hit-validation-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dodrio-poison-ko:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Check JS, unit tests and preservation
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/build-preview.mjs
+          node --check tests/arena-dodrio-poison-native-ko-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture and build original Phaser Arena 2D
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((8*i))
+          done
+      - name: Poison Dodrio and Doduo until native KO callback (real Phaser)
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-dodrio-poison-native-ko-browser.cjs
+      - name: Guard approved Arena slots, dodges and mobile controls
+        run: |
+          set -euo pipefail
+          node tests/arena-121-native-dodge-built.test.mjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-121-native-esp-touch-browser.cjs
+      - name: Persist diagnostic
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: arena-dodrio-native-poison-ko
+          path: test-evidence/arena-dodrio-poison-native-ko.json
+          retention-days: 21
+          if-no-files-found: warn

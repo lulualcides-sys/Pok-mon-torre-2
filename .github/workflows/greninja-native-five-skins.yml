@@ -1,0 +1,62 @@
+name: Arena — 5 Greninja original client skins and native red aura
+on:
+  push:
+    branches: [feat/arena-greninja-five-native-skins-20261030]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  greninja-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit integrity, skin source guard and existing approved VFX
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-greninja-variants.mjs
+          node --check tests/greninja-five-native-skins-browser.cjs
+          node --test tests/greninja-native-variants.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture latest original Poké Arena 2D and compile Phaser
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - name: Assert all original Greninja sprite assets and aura are present
+        run: |
+          set -euo pipefail
+          node tests/greninja-native-skins-built.test.mjs
+      - name: Browser inspect 5 native skins via actual Phaser selector
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/greninja-five-native-skins-browser.cjs
+      - name: Existing real Phaser Arena and campaign browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-preview-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-auto-battle-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-evolved-selection-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-base-form-touch-browser.cjs
+      - name: Keep evidence and variant screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: greninja-five-client-native
+          path: |
+            test-evidence/greninja-five-native-skins.*
+            _site/arena2d/version.json
+            site-capture/CAPTURE-REPORT.json
+          retention-days: 21
+          if-no-files-found: warn

@@ -1,0 +1,55 @@
+name: Master T05 — atomic PC transfers
+on:
+  push:
+    branches: [fix/master-t05-atomic-pc-transfers-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  atomic-pc:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax, complete unit suite and approved move preservation
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tests/t05-pc-transfer-atomic-built.test.mjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Build original versioned Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Test atomic PC transfers and existing save regressions
+        run: |
+          set -euo pipefail
+          node --test tests/t05-pc-transfer-atomic-built.test.mjs
+          node --test tests/t05-event-checkpoints-built.test.mjs
+          node --test tests/t05-reject-invalid-save-built.test.mjs
+          node --test tests/t05-legacy-party-uid-built.test.mjs
+      - name: Native Chromium Phaser/WebGL PC and official browser suite
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t25-mobile-pc-transfer-browser.cjs
+          node tests/t05-event-persistence-browser.cjs
+          npm run test:browser
+      - name: Retain build and browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t05-atomic-pc-transfers
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14

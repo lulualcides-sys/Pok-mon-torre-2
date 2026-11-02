@@ -1,0 +1,51 @@
+name: Master T17 — visible Shiny summary and Pokédex
+on:
+  push:
+    branches: [feat/t17-visible-shiny-summary-dex-20261031]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tests/t17-shiny-ui-mobile-browser.cjs'
+      - '.github/workflows/master-t17-shiny-ui.yml'
+      - 'specs/018-shiny-visual-markers/**'
+permissions:
+  contents: read
+jobs:
+  native-shiny-ui:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source, regressions and renderer preservation
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/t17-shiny-ui-mobile-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build the original Phaser WebGL client
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Mobile native summary and Pokédex markers, no save mutation
+        run: |
+          CHROME_BIN="$(command -v google-chrome)" node tests/t17-shiny-ui-mobile-browser.cjs
+      - name: Native original browser regression
+        run: |
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t17-shiny-ui-native-mobile
+          path: test-evidence/t17-shiny-*.png
+          if-no-files-found: warn

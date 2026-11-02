@@ -1,0 +1,50 @@
+name: Master T20 — natural Lorelei League fight
+on:
+  push:
+    branches: [test/master-t20-natural-lorelei-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  t20-lorelei:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source, syntax, provenance and unit gates
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t20-natural-lorelei-league-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture and build native Phaser game
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - name: Defeat Lorelei naturally using only real Phaser AI and attacks
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t20-natural-lorelei-league-browser.cjs
+      - name: Official complete Phaser WebGL regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t20-natural-lorelei-evidence
+          path: test-evidence/
+          if-no-files-found: warn

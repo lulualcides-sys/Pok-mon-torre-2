@@ -1,0 +1,36 @@
+name: Master T21 — FireRed no passive campaign regen
+on:
+  push:
+    branches: [fix/master-t21-campaign-no-passive-regen-20261028]
+permissions:
+  contents: read
+jobs:
+  regen:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 43
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: |
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/build-preview.mjs
+          node --check tests/t21-paras-no-passive-regen-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - run: |
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - run: node --test tests/t21-campaign-passive-regen-built.test.mjs
+      - run: CHROME_BIN="$(command -v google-chrome)" node tests/t21-paras-no-passive-regen-browser.cjs
+      - run: CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t21-campaign-regen-natural-paras
+          path: test-evidence/

@@ -1,0 +1,56 @@
+name: T24 — native path, separate catches, all-map rematches, battle results
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-battle-path.js'
+      - 'tools/pokearena/torre2-path-actions.js'
+      - 'tools/pokearena/torre2-battle-report.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/t24-*'
+      - '.github/workflows/t24-route-rematch-report.yml'
+permissions:
+  contents: read
+jobs:
+  path-and-report:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Native route priority, report pages, existing regressions
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --test tests/t24-path-actions.test.js tests/battle-report.test.js tests/rematch-policy.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original Phaser P2
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+          node --test tests/t24-path-actions-built.test.mjs
+          node tests/rematches-built.test.mjs
+          node --test tests/surge-shop-rematch-allmaps-built.test.mjs
+      - name: Mobile native touch catch versus mandatory trainer and VS seeker
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/t24-path-capture-browser.cjs
+          node tests/rematches-browser.cjs
+      - name: Screenshots and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t24-route-rematch-report
+          path: test-evidence/t24-*
+          if-no-files-found: warn
+          retention-days: 14

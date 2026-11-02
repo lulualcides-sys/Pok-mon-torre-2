@@ -1,0 +1,51 @@
+name: Master T03 — Pokédex real após evolução por experiência
+on:
+  push:
+    branches: [fix/master-t03-pokedex-earned-evolution-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  t03-pokedex-earned-evolution:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 32
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Instalar, verificar código, proveniência e unitários
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tests/t03-evolved-pokedex-built.test.mjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capturar e compilar cliente Phaser original
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep $((i * 5))
+          done
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Provar Pokédex de ambas as evoluções por XP no módulo real
+        run: |
+          set -euo pipefail
+          node tests/t03-evolved-pokedex-built.test.mjs
+      - name: Suíte oficial de regressão Phaser/WebGL no Chromium
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          npm run test:browser
+      - name: Guardar prova de build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t03-pokedex-earned-build
+          path: _site/arena2d/version.json
+          retention-days: 14

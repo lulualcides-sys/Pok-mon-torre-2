@@ -1,0 +1,26 @@
+// Dark Pulse — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "dark-pulse",
+  "nombre": "Dark Pulse",
+  "approved": true,
+  "forma": "torre2_batch24_dark_pulse",
+  "tipo": "DARK",
+  "categoria": "SPECIAL",
+  "poder": 80,
+  "precisao": 100,
+  "pp": 15,
+  "fazContato": false,
+  "dano": 16,
+  "alcance": 245,
+  "coste": 25,
+  "cd": 6,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "darkpulse",
+  "palette": "dark",
+  "speed": 290,
+  "secondary": "flinch20",
+  "frames": 12,
+  "description": "Dark Pulse — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/dark-pulse"
+});

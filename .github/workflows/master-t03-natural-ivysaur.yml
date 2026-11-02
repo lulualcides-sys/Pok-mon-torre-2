@@ -1,0 +1,55 @@
+name: Master T03 — evolução após vitória real com checkpoint isolado
+on:
+  push:
+    branches: [test/master-t03-natural-ivysaur-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  natural-evolution:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sintaxe, motor e política de golpes
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/section20-natural-team-brock-browser.cjs
+          node --check tests/t03-focused-natural-ivysaur-browser.cjs
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capturar e compilar o cliente Phaser original
+        run: |
+          set -euo pipefail
+          for i in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$i" -eq 3 ]; then exit 1; fi
+            sleep $((i * 5))
+          done
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Validar evolução real com checkpoint pré-batalha isolado (sem alterar XP na luta)
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t03-focused-natural-ivysaur-browser.cjs
+      - name: Testes oficiais de interface após regressão T03
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          npm run test:browser
+      - name: Preservar evidências do jogo real e do save
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: master-t03-natural-ivysaur-evidence
+          path: |
+            test-evidence/t03-focused-*
+                        _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14

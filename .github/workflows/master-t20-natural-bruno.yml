@@ -1,0 +1,50 @@
+name: Master T20 — natural Bruno League fight
+on:
+  push:
+    branches: [test/master-t20-natural-bruno-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  t20-bruno:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit, syntax and approved move provenance
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t20-natural-bruno-league-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original authorized Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - name: Fight Bruno with real Phaser AUTO, no forced damage or result
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t20-natural-bruno-league-browser.cjs
+      - name: Full official original Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t20-bruno-native-fight
+          path: test-evidence/
+          if-no-files-found: warn

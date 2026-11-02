@@ -1,0 +1,50 @@
+name: T17 — climate ATK 20pct native floating HUD
+on:
+  push:
+    branches: [feat/t17-weather-affinity-float-native-20261031]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-weather-status-float.js'
+      - 'tools/pokearena/torre2-party-battle.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/t17-weather-status-*'
+      - '.github/workflows/t17-weather-affinity-hud.yml'
+      - 'specs/020-weather-affinity-hud/**'
+permissions:
+  contents: read
+jobs:
+  weather-status-native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Focused weather status logic and inherited source gates
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --test tests/t17-weather-status-float.test.js tests/weather.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build actual original Phaser/WebGL arena
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs && node tools/pokearena/build-preview.mjs && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((8*i))
+          done
+      - name: Show and hide real native climate ATK labels in Chromium mobile
+        run: CHROME_BIN="$(command -v google-chrome)" node tests/t17-weather-status-mobile-browser.cjs
+      - name: Original Phaser complete browser regression
+        run: CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: weather-atk-20-float-native-mobile
+          path: test-evidence/t17-weather-status-mobile.png
+          if-no-files-found: warn

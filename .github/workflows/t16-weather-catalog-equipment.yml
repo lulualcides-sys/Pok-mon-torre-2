@@ -1,0 +1,54 @@
+name: T16 — conferir catalogo equipavel do clima em Phaser
+on:
+  push:
+    branches: [test/t16-weather-catalog-equipment-20261030]
+permissions:
+  contents: read
+jobs:
+  weather-catalog:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Protect current code, approved move visuals and climate math
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --test tests/weather.test.js tests/t16-weather-pixels.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original Phaser client with strict asset checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json \
+              && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            test "$attempt" != 4
+            sleep $((attempt * 8))
+          done
+      - name: Verify genuinely equipable weather status moves
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/t16-weather-equipment-built.test.mjs
+      - name: Chromium true native weather damage and expiry regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/weather-laboratory-browser.cjs
+      - name: Evidence of actual compiled weather inventory
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t16-weather-catalog-availability
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn

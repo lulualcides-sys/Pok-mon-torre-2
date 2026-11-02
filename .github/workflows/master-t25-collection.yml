@@ -1,0 +1,63 @@
+name: T25 — PC Shiny/KO/status and canonical Kanto Pokedex
+on:
+  push:
+    branches: [feat/t25-pc-pokedex-collection-20261031]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-collection:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Source syntax, 151 identity and pure PC transaction guard
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-collection-ui.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tests/t25-pc-pokedex-browser.cjs
+          node --test tests/campaign-collection-ui.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+          node tools/dev/approved-visual-guard.mjs
+      - name: Build real native Phaser/WebGL Kanto client
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+          test -s _site/arena2d/index.html
+      - name: Tap PC filters and Pokedex on actual Phaser desktop + mobile Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t25-pc-pokedex-browser.cjs
+      - name: Run native Phaser browser regression suite
+        shell: bash
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - name: Archive T25 visual and execution proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t25-collection-desktop-mobile
+          path: test-evidence/t25-*.png
+          if-no-files-found: warn
+          retention-days: 14

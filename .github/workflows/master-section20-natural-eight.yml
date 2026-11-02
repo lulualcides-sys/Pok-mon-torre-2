@@ -1,0 +1,38 @@
+name: Mestre secao20 — primeiros 8 confrontos naturais Kanto
+on:
+  push:
+    branches: [test/master-section20-natural-through-brock-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  first-eight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 28
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+      - name: Compile the authorized native Phaser game
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+      - name: Eight actual consecutive fights from Bulbasaur level 5
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/section20-natural-eight-trainers-browser.cjs
+      - name: Archive real combat and continuity artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-eight-natural-fights
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14

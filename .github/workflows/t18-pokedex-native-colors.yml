@@ -1,0 +1,49 @@
+name: T18 — native Pokédex missing type palette compatibility
+on:
+  push:
+    branches: [fix/t18-pokedex-native-type-colors-fallback-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dex-upstream:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit and game integrity
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-pokedex-pages.mjs
+          node --test tests/pokedex-native-type-fallback.test.js tests/pokedex-upstream-layout.test.js
+          npm run check
+          npm run check:reuse
+          npm test
+      - name: Capture original native client and build Phaser WebGL
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+               && node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/version.json; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep $((i*8))
+          done
+      - name: Prove native Phaser Pokédex starts without TIPOS, and browser-wide regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t18-pokedex-native-colors-browser.cjs
+          npm run test:browser
+      - name: Keep screenshot evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t18-pokedex-native-type-fallback
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn

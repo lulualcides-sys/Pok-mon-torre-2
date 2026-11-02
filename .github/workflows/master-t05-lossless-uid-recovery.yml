@@ -1,0 +1,60 @@
+name: Master T05 — lossless duplicate UID recovery
+on:
+  push:
+    branches: [fix/t05-recover-duplicate-uid-without-backup-20261028]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  t05-recovery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Full unit and preservation gates
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          node --check tools/pokearena/torre2-campaign-core.js
+          node --check tests/t05-duplicate-uid-repair-browser.cjs
+          npm test
+      - name: Build real Phaser/WebGL client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/version.json
+      - name: Save backup, UID and storage regression
+        run: |
+          set -euo pipefail
+          node --test tests/t05-duplicate-uid-repair-built.test.mjs
+          node --test tests/t05-duplicate-uid-built.test.mjs
+          node --test tests/t05-campaign-backup-built.test.mjs
+          node --test tests/t05-event-checkpoints-built.test.mjs
+          node --test tests/t05-partial-storage-reads-built.test.mjs
+      - name: Browser Phaser and full regression
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t05-duplicate-uid-repair-browser.cjs
+          node tests/t05-browser-reload.cjs
+          npm run test:browser
+      - name: Archive evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t05-lossless-uid-recovery
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14

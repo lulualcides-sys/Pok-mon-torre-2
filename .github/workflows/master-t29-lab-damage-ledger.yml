@@ -1,0 +1,51 @@
+name: Master T29 — native lab damage bookkeeping
+on:
+  push:
+    branches: [fix/master-t29-native-lab-damage-ledger-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-lab:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Original source and all unit tests
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tools/pokearena/torre2-laboratory.js
+          node --check tests/t29-native-lab-ledger-browser.cjs
+          node --test tests/t29-native-lab-ledger.test.js
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build original authorized Phaser client
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*6))
+          done
+          node tools/pokearena/build-preview.mjs
+      - name: Real Phaser Lab damage on first hit
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t29-native-lab-ledger-browser.cjs
+      - name: Full official Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t29-native-laboratory-damage
+          path: test-evidence/
+          if-no-files-found: warn

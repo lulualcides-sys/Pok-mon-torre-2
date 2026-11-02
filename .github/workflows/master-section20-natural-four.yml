@@ -1,0 +1,38 @@
+name: Master section20 — 4 batalhas reais consecutivas
+on:
+  push:
+    branches: [test/master-section20-natural-multiroute-20261027]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  natural-four:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install
+        run: npm install --no-audit --no-fund
+      - name: Capture original Phaser and compile
+        run: |
+          set -euo pipefail
+          node tools/pokearena/capture-client.mjs
+          node tools/pokearena/build-preview.mjs
+      - name: Natural 4 trainer ladder in same saved campaign without KO cheats
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/section20-natural-four-trainers-browser.cjs
+      - name: Archive real results regardless of outcome
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-natural-four-trainers-diagnostic
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14

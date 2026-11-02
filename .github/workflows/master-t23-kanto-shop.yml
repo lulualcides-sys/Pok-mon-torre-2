@@ -1,0 +1,50 @@
+name: Master T23 — Mart, TM and economic integrity
+on:
+  push:
+    branches: [test/master-t23-shop-tm-economy-20261028]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  t23-economy:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit, syntax and approved move checks
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t23-kanto-mart-tm-integrity-built.test.mjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Capture and compile real authorized Phaser Kanto client
+        run: |
+          set -euo pipefail
+          for n in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/version.json; then break; fi
+            if [ "$n" -eq 4 ]; then exit 1; fi
+            sleep $((n*8))
+          done
+      - name: Audit Mart and TMs in the built game modules
+        run: |
+          set -euo pipefail
+          node --test tests/t23-kanto-mart-tm-integrity-built.test.mjs
+      - name: Official full Phaser browser regression
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" npm run test:browser
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: t23-kanto-mart-and-tm-audit
+          path: test-evidence/
+          if-no-files-found: warn

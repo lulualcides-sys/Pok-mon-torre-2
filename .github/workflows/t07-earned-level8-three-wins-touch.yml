@@ -1,0 +1,61 @@
+name: T07/T08 — 3 vitórias nativas, Lv8 por XP, reload e controles
+on:
+  push:
+    branches: [test/t07-earned-lv8-three-wins-touch-20261029]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  earned-ult:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sintaxe, testes completos e política dos golpes aprovados
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          node --check tests/t07-earned-level8-three-natural-wins-touch-browser.cjs
+          npm test
+      - name: Capturar cliente original e compilar Phaser/WebGL
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs \
+              && node tools/pokearena/build-preview.mjs \
+              && test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep $((attempt * 8))
+          done
+      - name: Cobertura de 151 Kanto e progressão Lv5/8/13–50
+        run: |
+          set -euo pipefail
+          node tests/t07-151-movesets-built.test.mjs
+          node tests/t07-invalid-tm-save-151x227-built.test.mjs
+          node tests/t08-kanto-151-moves-level5-to-50-built.test.mjs
+          node tests/t08-kanto-ult-level-transition-built.test.mjs
+      - name: Três vitórias nativas até Lv8, reload e controle da ULT
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/t07-earned-level8-three-natural-wins-touch-browser.cjs
+      - name: Regressões completas Chromium Phaser
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          npm run test:browser
+      - name: Arquivar evidências, inclusive falhas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t07-t08-earned-level8-three-wins-touch-evidence
+          path: |
+            test-evidence/
+            _site/arena2d/version.json
+          if-no-files-found: warn
+          retention-days: 14
