@@ -804,6 +804,19 @@ for(const [filename,changes] of patches){
     console.warn('Obsolete decorative JOIN arrow absent or no longer used');
     continue;
    }
+   // The offline profile menu item may have changed its metadata.
+   // Remove exactly one profile-only entry, never the remaining settings.
+   if(filename==='escenas/titulo.js'&&
+      from.startsWith('ajustes:[{id:"perfil",txt:"PROFILE"')&&to==='ajustes:['){
+    const candidates=body.match(/ajustes:\\[\\{id:"perfil",[^}]{0,180}\\},/g)||[];
+    if(candidates.length===1){
+     body=body.replace(candidates[0],'ajustes:[');
+     console.warn('Offline: replaced exactly one changed profile-only title item');
+    }else if(candidates.length===0&&!body.includes('ajustes:[{id:"perfil"')){
+     console.warn('Offline: no profile-first settings item is present');
+    }else throw Error('Unknown profile menu structure; refusing account-menu rewrite');
+    continue;
+   }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
    // guessing which texture or avatar it should load; battle scenes untouched.
