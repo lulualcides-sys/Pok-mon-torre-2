@@ -45,20 +45,91 @@ const server=http.createServer(async(req,res)=>{
   const ui=await page.evaluate(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}});
   await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active===true,null,{timeout:7000});
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.hitCount>=2,null,{timeout:16000});
+  // Prove each individual real projected collision, not just two early hits.
+  const waitMode=mode=>page.waitForFunction(m=>{
+   const d=window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview;
+   return d?.active===true&&d.mode===m&&d.byMode?.[m]===1;
+  },mode,{timeout:16000});
+  await waitMode('beam');
+  await page.screenshot({path:'test-evidence/rea-vetor-laboratorio-beam.png'});
+  await waitMode('dash');
+  await page.screenshot({path:'test-evidence/rea-vetor-laboratorio-dash.png'});
+  await waitMode('arc');
+  await page.screenshot({path:'test-evidence/rea-vetor-laboratorio-arc.png'});
   await page.screenshot({path:'test-evidence/rea-vetor-laboratorio-real.png'});
-  const during=await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');
-   return {debug:{...b.__torre2ReaMathPreview},save:localStorage.getItem(core.SAVE_KEY),
-    combatState:b.fase,frameErrors:b.erroresFotograma||0,renderer:window.__pt2Game.renderer.type};
+  const during=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate'),d=b.__torre2ReaMathPreview;
+   const zones=b.children.list.filter(x=>x.type==='Zone'&&x.depth===90002);
+   return {debug:{...d,byMode:{...d.byMode}},save:localStorage.getItem(core.SAVE_KEY),
+    shield:{count:zones.length,inputEnabled:zones[0]?.input?.enabled},
+    combatState:b.fase,frameErrors:b.erroresFotograma||0,
+    renderer:window.__pt2Game.renderer.type,fps:window.__pt2Game.loop.actualFps};
   });
   assert.equal(during.save,save,'No campaign save writes allowed');
   assert.equal(during.debug.isolation,'LAB_VISUAL_ONLY');
-  assert.ok(during.debug.hitCount>=2);
+  assert.deepEqual(during.debug.byMode,{beam:1,dash:1,arc:1});
+  assert.equal(during.debug.hitCount,3,'must have exactly 1 impact per mode');
+  assert.equal(during.shield.count,1,'one click blocker prevents underlying HUD input');
+  assert.equal(during.shield.inputEnabled,true);
   assert.equal(during.frameErrors,0);
+  // Press the visible close control and verify no hidden interaction blocker.
   await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active===false,null,{timeout:6000});
+  const afterClose=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return {shieldEnabled:b.children.list.find(x=>x.type==='Zone'&&x.depth===90002)?.input?.enabled,
+    save:localStorage.getItem(core.SAVE_KEY)};
+  });
+  assert.equal(afterClose.shieldEnabled,false);
+  assert.equal(afterClose.save,save);
+  // Reopen on the actual Phaser canvas, confirm new counters and all 3 hits.
+  await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
+  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active===true,null,{timeout:6000});
+  await page.waitForFunction(()=>{
+   const d=window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview;
+   return d?.byMode?.arc>=1&&d?.byMode?.dash>=1&&d?.byMode?.beam>=1;
+  },null,{timeout:17000});
+  const reopening=await page.evaluate(()=>({
+   ...window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview,
+   save:localStorage.getItem(core.SAVE_KEY)
+  }));
+  assert.equal(reopening.hitCount,3);
+  assert.deepEqual(reopening.byMode,{beam:1,dash:1,arc:1});
+  assert.equal(reopening.save,save);
+  // Check a compact landscape viewport without creating a separate player.
+  await page.setViewportSize({width:960,height:540});
+  await page.waitForTimeout(400);
+  await page.screenshot({path:'test-evidence/rea-vetor-laboratorio-compacto.png'});
+  const compact=await page.evaluate(()=>({
+   phase:window.__pt2Game.scene.getScene('combate').fase,
+   enabled:window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active,
+   frameErrors:window.__pt2Game.scene.getScene('combate').erroresFotograma||0,
+   save:localStorage.getItem(core.SAVE_KEY)
+  }));
+  assert.equal(compact.enabled,true);
+  assert.equal(compact.save,save);
+  assert.equal(compact.frameErrors,0);
+  await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   b.scene.start('campanha');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:15000});
+  const afterExit=await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return {gone:b.__torre2ReaMathPreview===undefined,
+    save:localStorage.getItem(core.SAVE_KEY)};
+  });
+  assert.equal(afterExit.gone,true,'preview must clean up its instance on scene shutdown');
+  assert.equal(afterExit.save,save,'Lab scene exit must not change save');
   assert.deepEqual(errors,[]);
-  fs.writeFileSync('test-evidence/rea-vetor-laboratorio-metrics.json',JSON.stringify(during,null,2));
-  console.log('PASS: opt-in vector lab impact, no save writes, real Phaser screenshot',during);
+  const results={run:'REAL_CHROMIUM_PHASES',during:{
+   debug:during.debug,shield:during.shield,frameErrors:during.frameErrors,
+   renderer:during.renderer,fpsSample:during.fps},reopening:{
+   hitCount:reopening.hitCount,byMode:reopening.byMode},compact:{
+   phase:compact.phase,enabled:compact.enabled,frameErrors:compact.frameErrors},
+   afterExit:{instanceRemoved:afterExit.gone,saveByteIdentical:afterExit.save===save},
+   errors};
+  fs.writeFileSync('test-evidence/rea-vetor-laboratorio-regressao.json',JSON.stringify(results,null,2));
+  console.log('PASS real Chromium: 3 modes, click shield, reopen, compact viewport, scene shutdown and byte-identical save',results);
  }finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
