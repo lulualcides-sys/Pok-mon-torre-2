@@ -219,6 +219,10 @@ export function installPartyBattle(scene){
   let remaining=sides.length;
   for(const side of sides)animateBallActor(scene,actors[side],{
    side,from:{x:side===0?52:590,y:side===0?281:126},drawBall:drawCaptureBall,
+   // The camera can run at <15 FPS on slow WebGL devices. Avoid stretching
+   // the original 780ms release into several real seconds: use wall-time
+   // catch-up only on initial entry (not capture, KO, recall or switches).
+   maxFrameMs:180,wallClockCatchup:true,
    onComplete:()=>{shine(side,side===0?party.friend[party.playerIndex]:party.foes[party.enemyIndex]);
     if(--remaining===0)scene.fase=entryPhase==='intro'?'intro':'lucha'}
   });

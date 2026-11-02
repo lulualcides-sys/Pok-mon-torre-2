@@ -6,6 +6,13 @@
  * See credits and per-asset license conditions in docs.
  */
 export const clamp01=v=>Math.max(0,Math.min(1,Number(v)||0));
+// Native recall, catching and manual switching stay on the original 64ms
+// guard. Only the very first Kanto party sendout opts into a wider
+// wall-time catch-up budget for underpowered WebGL / mobile renderers.
+export function choreographyDelta(delta,maxFrameMs=64){
+ const limit=Number.isFinite(maxFrameMs)?Math.max(64,Math.min(180,maxFrameMs)):64;
+ return Math.min(limit,Math.max(1,Number(delta)||16.667));
+}
 export function ballArc(from,to,t,height=52){
  const p=clamp01(t);
  return {x:from.x+(to.x-from.x)*p,
@@ -122,9 +129,15 @@ export function restoreBody(body){
 }
 // One lifecycle for first entry, manual/KO replacement and recall. Run after
 // the native renderer has positioned its sprites, before WebGL draws them.
-export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0}){
+export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0,maxFrameMs=64,wallClockCatchup=false}){
  actor.actualizarGraficos?.(0);
- const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
+ const body=snapshotBody(actor);
+ // The initial release beam runs between fixed endpoints. Build the
+ // ORIGINAL pixel rectangles once, then animate only overall opacity.
+ // Recall still draws a moving beam every frame, unchanged.
+ const releaseBeam=mode==='release'?
+  scene.add.graphics().setDepth(2305).setVisible(false):null;
+ const g=scene.add.graphics().setDepth(2305);
  const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
   drawBall.originalBallSprite(scene,body.center.x,body.center.y,'pokeball',16,2306).setVisible(false):null;
  const showBall=(x,y,angle=0,opened=false)=>{
@@ -146,17 +159,32 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  }
  const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
  const origin=mode==='recall'?from:landing;
+ if(releaseBeam)drawRedBeam(releaseBeam,origin,body.center,1,body.width);
  let elapsed=0,done=false;
+ // Phaser normalizes frame delta after slow renders. For the first Kanto
+ // sendout only, compare that value with monotonic wall time to prevent a
+ // 780ms cosmetic entry from lasting many seconds on slow WebGL frames.
+ // Catch-up is bounded by maxFrameMs; suspended tabs never skip blindly.
+ const monotonicNow=()=>typeof performance!=='undefined'&&typeof performance.now==='function'?
+  performance.now():null;
+ let lastWall=wallClockCatchup?monotonicNow():null;
  scene.__torre2BallTransitions=(scene.__torre2BallTransitions||0)+1;
  const phase=mode==='recall'?'ko':'torre2-sendout';
  const hold=()=>{scene.fase=phase};hold();
  const clean=()=>{if(done)return;done=true;
   scene.__torre2BallTransitions=Math.max(0,(scene.__torre2BallTransitions||1)-1);
   scene.game.events.off('poststep',step);scene.events.off('preupdate',hold);
-  scene.events.off('shutdown',clean);g.destroy();nativeBall?.destroy();};
+  scene.events.off('shutdown',clean);releaseBeam?.destroy();g.destroy();nativeBall?.destroy();};
  const step=(_time,delta)=>{
   if(done||!scene.scene.isActive())return clean();
-  elapsed+=Math.min(64,Math.max(1,Number(delta)||16.667));hold();g.clear();
+  let elapsedDelta=delta;
+  if(wallClockCatchup){
+   const now=monotonicNow();
+   if(now!==null&&lastWall!==null)
+    elapsedDelta=Math.max(Number(delta)||16.667,Math.max(0,now-lastWall));
+   lastWall=now;
+  }
+  elapsed+=choreographyDelta(elapsedDelta,maxFrameMs);hold();g.clear();
   let state,center=body.center;
   if(mode==='release'&&elapsed<360){
    state='THROW';poseBody(body,center,.01,0);
@@ -169,7 +197,9 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
     const u=t*t;center={x:body.center.x+(origin.x-body.center.x)*u,y:body.center.y+(origin.y-body.center.y)*u};
     poseBody(body,center,1-.98*t,1-t);
    }else poseBody(body,center,.04+.96*t,t);
-   drawRedBeam(g,origin,center,Math.min(1,(1-t)*4),body.width);
+   if(releaseBeam){
+    releaseBeam.setVisible(true).setAlpha(Math.min(1,(1-t)*4));
+   }else drawRedBeam(g,origin,center,Math.min(1,(1-t)*4),body.width);
    drawReleaseBurst(g,center.x,center.y,t);
    showBall(origin.x,origin.y,0,true);
    if(t>=1){
