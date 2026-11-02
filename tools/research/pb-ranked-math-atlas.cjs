@@ -128,7 +128,7 @@ const model=({animations,families,progress,delta})=>{
    publicRoster:updatedAvailable,reportedUse:!!p.browserAgentUseReported,
    exactVisualFramesArchived:!!p.rawFramesCaptured,
    protectedApproved,defaultReady:added.has(norm(f.name))?null:defaultReady,
-   ownerSpeciesForNewMove:added.has(norm(f.name))?null:undefined,
+   ...(added.has(norm(f.name))?{ownerSpeciesForNewMove:null}:{}),
    staticIdentifiersCount:Array.isArray(f.staticIdentifiers)?f.staticIdentifiers.length:0,
    investigationPriorityScore:priority,
    animationParametersProven:false};
