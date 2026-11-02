@@ -47,7 +47,9 @@ test('T39: geometry rejects invalid input before drawing; no RNG, save or battle
  assert.equal(finished.navigation.next,null);
  const source=fs.readFileSync('tools/pokearena/torre2-battle-path-geometry.js','utf8');
  const route=fs.readFileSync('tools/pokearena/torre2-battle-path.js','utf8');
+ const build=fs.readFileSync('tools/pokearena/build-preview.mjs','utf8');
  assert.doesNotMatch(source,/Math\.random|saveCampaign|localStorage|resolveBattle|startBattle/);
  assert.match(route,/planBattlePathGeometry\(\{total,offset,finished\}\)/);
+ assert.match(build,/torre2-battle-path-geometry\.js','battle-path-geometry\.js'/);
  assert.doesNotMatch(route,/button\(scene,37,296,43,18/);
 });
