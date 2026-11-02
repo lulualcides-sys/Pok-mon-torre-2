@@ -4,6 +4,8 @@ import fs from 'node:fs';
 import {
  CERULEAN_FOLIAGE_SOURCE_KEY,CERULEAN_FOLIAGE_FRAMES,
  CERULEAN_FOLIAGE_SOURCE_FILE,isFoliageBackdrop,isolateFoliagePixels,
+ CERULEAN_NATIVE_SOURCE_KEY,CERULEAN_NATIVE_SOURCE_FILE,
+ CERULEAN_NATIVE_FOLIAGE_FRAMES,
  addCeruleanOrganicTree
 } from '../tools/pokearena/torre2-cerulean-organic-foliage.js';
 import {CITY_TEXTURES} from '../tools/pokearena/torre2-city-atlas.js';
@@ -24,6 +26,23 @@ test('foliage crops stay within 512x384 source and are not whole maps',()=>{
  assert.ok(data.length<180000);
 });
 
+test('eight transparent native PNG tree frames use bounded mobile assets',()=>{
+ const names=Object.keys(CERULEAN_NATIVE_FOLIAGE_FRAMES);
+ assert.equal(names.length,8);
+ const offsets=new Set();
+ for(const [name,[x,y,w,h]] of Object.entries(CERULEAN_NATIVE_FOLIAGE_FRAMES)){
+  assert.ok(name.length>=4&&x>=0&&y>=0&&w===80&&h===88);
+  assert.ok(x+w<=320&&y+h<=176);
+  offsets.add(x+','+y);
+ }
+ assert.equal(offsets.size,8);
+ assert.ok(CITY_TEXTURES.some(([k,p])=>k===CERULEAN_NATIVE_SOURCE_KEY&&p===CERULEAN_NATIVE_SOURCE_FILE));
+ const png=fs.readFileSync('reference-assets/kanto/city-original/cerulean-native-trees-v2.png');
+ assert.equal(png.subarray(0,8).toString('hex'),'89504e470d0a1a0a');
+ assert.equal(png.readUInt32BE(16),320);
+ assert.equal(png.readUInt32BE(20),176);
+ assert.ok(png.length>8000&&png.length<100000,'bounded mobile atlas');
+});
 test('dark blue matte is removed while green leaves and brown trunk remain',()=>{
  assert.equal(isFoliageBackdrop(19,25,30),true);
  assert.equal(isFoliageBackdrop(21,23,34),true);
