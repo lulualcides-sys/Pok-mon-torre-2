@@ -24,9 +24,10 @@ jobs:
           node --check tools/pokearena/build-preview.mjs
           node --check tools/pokearena/torre2-native-habilidades-compat.mjs
           node --check tools/pokearena/torre2-native-weather-import-compat.mjs
+          node --check tools/pokearena/torre2-native-social-compat.mjs
       - name: Run focused native skill and city map tests
         run: |
-          node --test tests/native-habilidades-compat.test.mjs tests/native-weather-import-compat.test.js tests/approved-map-first-scenes.test.mjs tests/approved-map-build-integration.test.mjs
+          node --test tests/native-habilidades-compat.test.mjs tests/native-weather-import-compat.test.js tests/native-social-compat.test.mjs tests/approved-map-first-scenes.test.mjs tests/approved-map-build-integration.test.mjs
       - name: Assemble original Phaser client for real compatibility gate
         run: |
           node tools/pokearena/capture-client.mjs
