@@ -43,6 +43,29 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>{const b=window.__pt2Game.scene.getScene('combate');return b.scene.isActive()&&b.__torre2LabInstalled&&b.fase==='lucha'},null,{timeout:30000});
   await page.evaluate(()=>{const b=window.__pt2Game.scene.getScene('combate');b.controles.forEach(c=>c.leer=()=>null);});
   const ui=await page.evaluate(()=>{const r=document.querySelector('canvas').getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height}});
+  // Compare the SAME running battle in the SAME Chromium session.
+  // Headless SwiftShader is CPU-bound: these are comparative metrics, not
+  // device-specific 60 FPS validation or claims about production.
+  const sampleFrames=async label=>page.evaluate(({label,durationMs})=>new Promise(resolve=>{
+   const frameDeltas=[];let first=null,last=null;
+   const tick=timestamp=>{
+    if(first===null)first=timestamp;
+    if(last!==null)frameDeltas.push(timestamp-last);
+    last=timestamp;
+    if(timestamp-first<durationMs)requestAnimationFrame(tick);
+    else{
+     const sorted=frameDeltas.slice().sort((a,b)=>a-b);
+     const pct=q=>sorted.length?sorted[Math.min(sorted.length-1,Math.floor((sorted.length-1)*q))]:null;
+     resolve({label,frames:frameDeltas.length,elapsedMs:timestamp-first,
+      fps:frameDeltas.length*1000/Math.max(1,timestamp-first),
+      p50FrameMs:pct(.5),p95FrameMs:pct(.95),
+      renderer:window.__pt2Game.renderer.type});
+    }
+   };
+   requestAnimationFrame(tick);
+  }),{label,durationMs:2600});
+  const fpsSamples=[];
+  fpsSamples.push(await sampleFrames('battle_without_vector_overlay'));
   await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active===true,null,{timeout:7000});
   // Prove each individual real projected collision, not just two early hits.
@@ -72,6 +95,8 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(during.shield.count,1,'one click blocker prevents underlying HUD input');
   assert.equal(during.shield.inputEnabled,true);
   assert.equal(during.frameErrors,0);
+  fpsSamples.push(await sampleFrames('same_battle_with_overlay'));
+
   // Press the visible close control and verify no hidden interaction blocker.
   await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active===false,null,{timeout:6000});
@@ -82,6 +107,8 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(afterClose.shieldEnabled,false);
   assert.equal(afterClose.save,save);
+  fpsSamples.push(await sampleFrames('battle_after_overlay_closed'));
+
   // Reopen on the actual Phaser canvas, confirm new counters and all 3 hits.
   await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active===true,null,{timeout:6000});
@@ -145,6 +172,10 @@ const server=http.createServer(async(req,res)=>{
    hitCount:reopening.hitCount,byMode:reopening.byMode},compact:{
    phase:compact.phase,enabled:compact.enabled,frameErrors:compact.frameErrors},
    afterExit:{instanceRemoved:afterExit.gone,saveByteIdentical:afterExit.save===save},
+   frameSamples:fpsSamples,
+   comparison:{baselineFps:fpsSamples[0].fps,overlayFps:fpsSamples[1].fps,
+    afterCloseFps:fpsSamples[2].fps,
+    relativeFpsChangePercent:+((fpsSamples[1].fps/fpsSamples[0].fps-1)*100).toFixed(2)},
    errors};
   fs.writeFileSync('test-evidence/rea-vetor-laboratorio-regressao.json',JSON.stringify(results,null,2));
   console.log('PASS real Chromium: 3 modes, click shield, reopen, compact viewport, scene shutdown and byte-identical save',results);
