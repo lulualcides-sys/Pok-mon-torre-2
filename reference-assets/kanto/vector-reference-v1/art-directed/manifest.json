@@ -1,0 +1,68 @@
+{
+  "schema": "kanto-art-directed-v1",
+  "base": "kanto-reference-v1",
+  "status": "not-in-game-review-required",
+  "assetType": "geometry-guided-pixel-sprites",
+  "assets": [
+    {
+      "w": 96,
+      "h": 112,
+      "theme": "forest",
+      "kind": "prop",
+      "shapes": 411,
+      "name": "viridian-oak",
+      "format": "SVG integer-pixel art",
+      "status": "art-review"
+    },
+    {
+      "w": 128,
+      "h": 96,
+      "theme": "rock",
+      "kind": "prop",
+      "shapes": 81,
+      "name": "pewter-ridge",
+      "format": "SVG integer-pixel art",
+      "status": "art-review"
+    },
+    {
+      "w": 128,
+      "h": 96,
+      "theme": "water",
+      "kind": "scene-module",
+      "shapes": 408,
+      "name": "cerulean-canal-bridge",
+      "format": "SVG integer-pixel art",
+      "status": "art-review"
+    },
+    {
+      "w": 128,
+      "h": 96,
+      "theme": "coast",
+      "kind": "scene-module",
+      "shapes": 346,
+      "name": "vermilion-pier",
+      "format": "SVG integer-pixel art",
+      "status": "art-review"
+    },
+    {
+      "w": 112,
+      "h": 88,
+      "theme": "garden",
+      "kind": "prop",
+      "shapes": 218,
+      "name": "celadon-botanic-bed",
+      "format": "SVG integer-pixel art",
+      "status": "art-review"
+    },
+    {
+      "w": 112,
+      "h": 96,
+      "theme": "marsh",
+      "kind": "scene-module",
+      "shapes": 207,
+      "name": "fuchsia-wetland",
+      "format": "SVG integer-pixel art",
+      "status": "art-review"
+    }
+  ]
+}
