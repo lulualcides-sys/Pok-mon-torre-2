@@ -1,5 +1,5 @@
 import {renderCityHub} from './city-hub.js';
-import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey} from './torre2-approved-map-renderer.js';
+import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap} from './torre2-approved-maps-atlas.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
@@ -627,6 +627,10 @@ create(){
   }
   this.__torre2ApprovedReturn={id,stage:state.stage};
   this.__torre2ApprovedMapView=result;
+  // Previous scene display objects were destroyed before this call.
+  // Keep only the active art + stage entry so 60 maps cannot accumulate
+  // hundreds of MB of WebGL textures on a mobile device.
+  pruneApprovedMapTextures(this,[id,APPROVED_STAGE_MAPS[state.stage]]);
   return true;
  }
  renderCampaign(state,{deferEeveeChoice=false}={}){

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {preloadApprovedMap,renderApprovedMap,planApprovedMapOverlays,APPROVED_MAP_ASSETS_READY} from '../tools/pokearena/torre2-approved-map-renderer.js';
+import {preloadApprovedMap,renderApprovedMap,planApprovedMapOverlays,APPROVED_MAP_ASSETS_READY,staleApprovedMapTextureKeys,pruneApprovedMapTextures} from '../tools/pokearena/torre2-approved-map-renderer.js';
 function fakeScene(hasAsset=true,dimensions={width:1280,height:720}){
  const zones=[],images=[],rectangles=[];
  const box=()=>({setDepth(){return this},setOrigin(){return this},setDisplaySize(){return this},
@@ -106,4 +106,16 @@ test('T40 pure preflight detects an overlapping hotspot before sprite creation',
  assert.equal(plan.ok,false);
  assert.equal(plan.reason,'hotspot-overlap');
  assert.deepEqual(plan.ids,['a','b']);
+});
+
+test('T45 GPU map cache never retains 60 full-size WebP backgrounds on mobile',()=>{
+ const all=['torre2-portrait-0025','frlg-location-vermilion',
+  'torre2-approved-map-unknown-map',
+  ...['vermilion-city','ss-anne','gym-surge','route-11'].map(id=>'torre2-approved-map-'+id)];
+ const evict=staleApprovedMapTextureKeys(all,['ss-anne','vermilion-city']);
+ assert.deepEqual(evict,['torre2-approved-map-gym-surge','torre2-approved-map-route-11']);
+ const state={calls:0,textures:{getTextureKeys:()=>all,remove(){state.calls++;}}};
+ assert.equal(pruneApprovedMapTextures(state,['ss-anne']),0,
+  'Production flag OFF must never remove any real textures');
+ assert.equal(state.calls,0);
 });
