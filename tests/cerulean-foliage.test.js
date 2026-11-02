@@ -9,6 +9,7 @@ import {
  addCeruleanOrganicTree
 } from '../tools/pokearena/torre2-cerulean-organic-foliage.js';
 import {CITY_TEXTURES} from '../tools/pokearena/torre2-city-atlas.js';
+import {CERULEAN_GREENERY,ceruleanGreeneryLayoutReport} from '../tools/pokearena/torre2-cerulean-garden-layout.js';
 
 test('foliage crops stay within 512x384 source and are not whole maps',()=>{
  const names=Object.keys(CERULEAN_FOLIAGE_FRAMES);
@@ -43,6 +44,17 @@ test('eight transparent native PNG tree frames use bounded mobile assets',()=>{
  assert.equal(png.readUInt32BE(20),176);
  assert.ok(png.length>8000&&png.length<100000,'bounded mobile atlas');
 });
+test('Cerulean riverbank geometry never places roots on protected walkways',()=>{
+ const result=ceruleanGreeneryLayoutReport();
+ assert.equal(result.count,17);
+ assert.equal(result.species>=6,true);
+ assert.equal(result.zones>=6,true);
+ assert.deepEqual(result.blocked,[]);
+ assert.deepEqual(result.duplicates,[]);
+ assert.equal(result.pass,true);
+ assert.ok(new Set(CERULEAN_GREENERY.map(v=>v.y)).size>=11,'prevent flat repetitive planting bands');
+ assert.ok(!CERULEAN_GREENERY.some(v=>v.x>=270&&v.x<=310&&v.y>=265),'keep staircase clear');
+});
 test('dark blue matte is removed while green leaves and brown trunk remain',()=>{
  assert.equal(isFoliageBackdrop(19,25,30),true);
  assert.equal(isFoliageBackdrop(21,23,34),true);
@@ -58,6 +70,6 @@ test('foliage is decorative and has a safe fallback when no scene asset is loade
  assert.equal(addCeruleanOrganicTree(scene,100,100,42,'oak_light'),null);
  const city=fs.readFileSync('tools/pokearena/torre2-city-scenery.js','utf8');
  assert.match(city,/addCeruleanOrganicTree/);
- assert.match(city,/addCitySprite\(scene,'tree',x,y,44\)/);
+ assert.match(city,/addCitySprite\(scene,'tree',p\.x,p\.y,p\.height\)/);
  assert.doesNotMatch(fs.readFileSync('tools/pokearena/torre2-cerulean-organic-foliage.js','utf8'),/setInteractive\(|localStorage|saveGame|battle/);
 });
