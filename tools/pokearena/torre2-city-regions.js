@@ -1,5 +1,6 @@
 import {CERULEAN_LANDMARKS} from './city-layout.js';
 import {addCitySprite,addCitySurface,addRegionalGym,addCityBoat} from './city-atlas.js';
+import {renderRegionalIdentity} from './region-identity.js';
 const profiles=[
  ['PEWTER CITY','BROCK','stone',[[105,155],[115,257],[470,170]]],
  ['CERULEAN CITY','MISTY','water',[]],
@@ -78,34 +79,49 @@ export function renderRegionalScenery(scene,profile){
   road(60,243,520,29);road(83,211,52,48);road(505,211,52,48);
   for(const x of [200,435]){rect(x,110,4,167,0xd9cc9d);rect(x+4,110,23,60,0x72588e);rect(x+9,119,12,39,0xd6c792);}
  }
- // Small residential blocks frame each service district without adding menus.
+ // Region-specific landmarks replace a recolored, interchangeable town backdrop.
+ // Decorative-only graphics: no new hitboxes, path logic, rewards or timers.
+ renderRegionalIdentity(scene,theme);
+ // The generic "two houses + four twin trees + flowers" pattern was
+ // repeating across every city. Keep density and silhouettes biome-specific.
  const homes={
-  stone:[[365,268,64],[520,266,61]],
-  electric:[[205,120,62],[390,128,65]],
-  garden:[[430,126,62],[75,263,59],[570,280,57]],
-  poison:[[200,136,62],[440,136,62]],
-  psychic:[[191,285,53],[421,285,53]],
-  volcano:[[230,183,57],[407,260,62]],
-  forest:[[210,139,64],[435,142,62],[110,275,63]],league:[]
+  stone:[[365,268,60]],
+  electric:[[205,120,59]],
+  garden:[[75,263,58],[570,280,52]],
+  poison:[[200,136,58]],
+  psychic:[],
+  volcano:[[230,183,52]],
+  forest:[[110,275,56]],
+  league:[]
  };
- const gardens={
-  stone:[[168,105],[195,258],[315,213],[550,114]],
-  electric:[[37,135],[247,104],[350,151],[585,144]],
-  garden:[[172,111],[390,110],[119,252],[410,280]],
-  poison:[[36,138],[238,105],[392,99],[596,146]],
-  psychic:[[34,141],[245,134],[396,139],[599,141]],
-  volcano:[[75,174],[192,258],[370,177],[550,257]],
-  forest:[[157,111],[251,145],[394,147],[590,210]],
-  league:[[63,165],[150,146],[484,150],[574,169]]
+ const flora={
+  stone:[[168,105,32],[195,258,28],[550,114,29]],
+  electric:[[37,135,33],[585,144,31]],
+  garden:[[172,111,51],[390,110,43],[119,252,38],[410,280,49],[228,118,40],[523,276,36]],
+  poison:[[36,138,45],[238,105,38],[392,99,48],[596,146,40],[100,271,45]],
+  psychic:[[34,141,34],[599,141,33]],
+  volcano:[[75,174,25],[550,257,23]],
+  forest:[[50,112,59],[85,88,48],[157,111,55],[251,145,47],[394,147,58],[590,210,54],[548,105,51],[72,275,49],[470,277,46]],
+  league:[[63,165,35],[574,169,35]]
  };
- for(const [x,y,h]of homes[theme]){
-  // Courtyards are real paving tiles under the individual houses.
-  tile('paving',x-31,y-10,62,23,5);
-  addCitySprite(scene,'house',x,y,h);flower(x+26,y+12);
+ const edgeFlora={
+  stone:[[18,78,30],[628,85,34]],
+  electric:[[19,79,28],[627,88,29]],
+  garden:[[18,79,49],[48,70,44],[600,78,50],[629,85,43]],
+  poison:[[18,79,50],[629,85,52]],
+  psychic:[],
+  volcano:[[78,190,28],[560,143,27]],
+  forest:[[18,79,63],[48,70,55],[600,78,62],[629,85,58]],
+  league:[[38,81,30],[602,85,32]]
+ };
+ for(const [x,y,h] of homes[theme]){
+  tile('paving',x-30,y-10,60,23,5);
+  addCitySprite(scene,'house',x,y,h);
  }
- for(const [x,y]of gardens[theme]){
-  tree(x,y,39);tree(x+19,y-12,33);flower(x+4,y+12);
- }
+ for(const [x,y,h] of [...flora[theme],...edgeFlora[theme]])tree(x,y,h);
+ // Parks get flower beds; working docks, quarries and volcanoes don't.
+ if(theme==='garden')for(const [x,y] of [[160,251],[460,214],[222,120],[482,264]])flower(x,y);
+ if(theme==='poison')for(const [x,y] of [[138,247],[475,262]])flower(x,y);
  const lamps=theme==='electric'?[[62,207],[255,207],[465,207],[594,207]]:
  theme==='league'?[[249,239],[388,239],[249,290],[388,290]]:
  theme==='volcano'?[[188,214],[368,214],[551,215]]:
@@ -117,17 +133,16 @@ export function renderRegionalScenery(scene,profile){
   furniture.fillStyle(0x213c4b).fillRect(x-5,y-29,10,8).fillRect(x-3,y-32,6,3);
   furniture.fillStyle(0xffdfa0).fillRect(x-3,y-27,6,5);
  }
- // Shared vegetation and architecture, with each city's layout kept independent.
- for(const [x,y]of (theme==='volcano'?[[78,190],[560,143],[574,269]]:[[18,79],[48,70],[600,78],[629,85]]))tree(x,y,46);
+ // Distinct regional vegetation has already been rendered above.
  for(const p of profile.landmarks){
   if(p.id==='gym')addRegionalGym(scene,theme,p.x,p.y-5,theme==='league'?137:114);
   else addCitySprite(scene,p.id,p.x,p.y-4,80);
-  flower(p.x-49,p.y+4);
+  if(theme==='garden'||theme==='poison'||theme==='forest')flower(p.x-49,p.y+4);
  }
  if(water.length){
   const timer=scene.time.addEvent({delay:120,loop:true,callback:()=>water.forEach(o=>{if(o.active)o.tilePositionY+=.18})});
   timer.__torre2CityWaterTimer=true;
   g.once('destroy',()=>scene.time.removeEvent(timer));
  }
- return {version:'regional-cities-v1',theme,layers:6,landmarks:3};
+ return {version:'regional-cities-v2',theme,layers:7,landmarks:3,regionalIdentity:true};
 }
