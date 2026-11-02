@@ -121,3 +121,31 @@ test('T38 rebuild removes a withdrawn gym image rather than shipping stale art',
  assert.deepEqual((await installGymBackgrounds(dest,{source})).scenes,[]);
  await assert.rejects(fs.access(built),{code:'ENOENT'});
 });
+
+test('T38 rejects CRC-valid unknown critical chunks and misplaced PNG palettes',async t=>{
+ const {source,dest}=await sandbox(t);
+ const file=path.join(source,'brock-interior.png');
+ const ihdr=Buffer.alloc(13);
+ ihdr.writeUInt32BE(640,0);ihdr.writeUInt32BE(360,4);
+ ihdr[8]=8;ihdr[9]=6;
+ const idat=chunk('IDAT',deflateSync(Buffer.alloc((640*4+1)*360)));
+ const palette=chunk('PLTE',Buffer.from([0,0,0]));
+ const wrap=parts=>Buffer.concat([
+  SIGNATURE,chunk('IHDR',ihdr),...parts,chunk('IEND',Buffer.alloc(0))
+ ]);
+ for(const invalid of [
+  wrap([chunk('ABCD',Buffer.alloc(0)),idat]),
+  wrap([idat,palette]),
+  wrap([palette,palette,idat]),
+  wrap([chunk('abca',Buffer.alloc(0)),idat])
+ ]){
+  await fs.writeFile(file,invalid);
+  await assert.rejects(installGymBackgrounds(dest,{source}),
+   /critical|palette|reserved/i);
+  await assert.rejects(fs.access(path.join(dest,
+   'assets/ui/gym-interiors/brock-interior.png')),{code:'ENOENT'});
+ }
+ // A normal optional ancillary text chunk remains compatible.
+ await fs.writeFile(file,wrap([chunk('tEXt',Buffer.from('Source\\0approved')),idat]));
+ assert.equal((await installGymBackgrounds(dest,{source})).scenes.length,1);
+});

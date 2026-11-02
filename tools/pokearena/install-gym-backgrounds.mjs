@@ -25,7 +25,7 @@ function assertRasterPNG(bytes,slug){
   bytes.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')
   throw new Error('Gym artwork must be a valid, bounded PNG: '+slug);
  let offset=8,sawIHDR=false,sawIDAT=false,sawIEND=false;
- let width=0,height=0,color=0,idatClosed=false;
+ let width=0,height=0,color=0,idatClosed=false,sawPLTE=false;
  const idat=[];
  while(offset+12<=bytes.length){
   const len=bytes.readUInt32BE(offset),type=bytes.toString('ascii',offset+4,offset+8);
@@ -35,6 +35,13 @@ function assertRasterPNG(bytes,slug){
   const checksum=bytes.readUInt32BE(end-4);
   if(crc32(bytes,offset+4,end-4)!==checksum)
    throw new Error('Invalid gym PNG chunk CRC: '+slug);
+  // A CRC-valid PNG can still contain a critical chunk unknown to browsers.
+  // Reject it before publishing an approved gym background.
+  if(!/^[A-Za-z]{4}$/.test(type)||type[2]!==type[2].toUpperCase())
+   throw new Error('Invalid gym PNG chunk name/reserved bit: '+slug);
+  if(type[0]===type[0].toUpperCase()&&
+   !['IHDR','PLTE','IDAT','IEND'].includes(type))
+   throw new Error('Unsupported critical gym PNG chunk: '+type+' '+slug);
   if(!sawIHDR){
    if(type!=='IHDR'||len!==13)throw new Error('Invalid gym PNG header: '+slug);
    width=bytes.readUInt32BE(offset+8);height=bytes.readUInt32BE(offset+12);
@@ -44,7 +51,11 @@ function assertRasterPNG(bytes,slug){
     interlace!==0)throw new Error('Gym PNG must be noninterlaced RGB/RGBA8: '+slug);
    sawIHDR=true;
   }else if(type==='IHDR')throw new Error('Duplicate gym PNG header: '+slug);
-  else if(type==='IDAT'){
+  else if(type==='PLTE'){
+   if(sawPLTE||sawIDAT||len===0||len>768||len%3!==0)
+    throw new Error('Invalid gym PNG palette order or size: '+slug);
+   sawPLTE=true;
+  }else if(type==='IDAT'){
    if(idatClosed)throw new Error('Noncontiguous gym PNG IDAT: '+slug);
    sawIDAT=true;idat.push(bytes.subarray(offset+8,end-4));
   }else if(type==='IEND'){
