@@ -9,12 +9,14 @@ Never installs partial or unexpected archives. Enables the runtime flag only
 after all 60 assets have been successfully written. Requires Python stdlib.
 """
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
 import tempfile
 import zipfile
 
+EXPECTED_ARCHIVE_SHA256 = "572e35cc530cf25e1c0551953a0f59034e5ed53d33cac09e1b0fd5b3f288e21c"
 PREFIX = "assets/ui/kanto-approved-maps/"
 RENDERER = "tools/pokearena/torre2-approved-map-renderer.js"
 OFF = "export const APPROVED_MAP_ASSETS_READY = false;"
@@ -90,8 +92,22 @@ def main():
                         default=Path(__file__).resolve().parents[2])
     parser.add_argument("--check-only", action="store_true")
     args = parser.parse_args()
+    actual_sha = hashlib.file_digest(args.archive.open("rb"), "sha256").hexdigest()
+    if actual_sha != EXPECTED_ARCHIVE_SHA256:
+        raise ValueError("Archive SHA-256 differs from the exact user-approved bundle")
     with zipfile.ZipFile(args.archive, "r") as archive:
         files = validate(archive)
+        package_manifest = json.loads(archive.read("approved-maps-atlas.json"))
+    source = (args.repo_root / "tools/pokearena/torre2-approved-maps-atlas.js").read_text(encoding="utf-8")
+    prefix = "export const APPROVED_MAPS_ATLAS = Object.freeze("
+    if source.count(prefix) != 1:
+        raise ValueError("Unknown local approved atlas source")
+    repo_manifest = json.loads(source.split(prefix, 1)[1].split(");", 1)[0])
+    expected = [(m["index"], m["id"], m["image"]) for m in package_manifest["maps"]]
+    actual = [(m["index"], m["id"], m["image"]) for m in repo_manifest["maps"]]
+    if expected != actual:
+        raise ValueError("ZIP images differ from canonical GitHub map index")
+    print(f"Verified pinned archive SHA-256 {actual_sha}; catalog mapping identical")
     print(f"Validated {len(files)} approved WebP files, "
           f"{sum(len(data) for _, data in files):,} bytes")
     if not args.check_only:
