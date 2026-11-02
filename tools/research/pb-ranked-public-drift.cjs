@@ -35,12 +35,14 @@ function compareRoster(saved,current){
  for(const [name,s] of after){
   const prior=before.get(name);if(!prior)continue;
   if(JSON.stringify(s.defaults)!==JSON.stringify(prior.defaults))
-   changedDefaults.push({species:name,beforeCount:prior.defaults.length,afterCount:s.defaults.length});
+   changedDefaults.push({species:name,beforeCount:prior.defaults.length,afterCount:s.defaults.length,beforeIds:prior.defaults,afterIds:s.defaults});
  }
  return {status:'compared',baselineSpecies:old.length,liveSpecies:live.length,
   speciesDiff:diff,distinctMoveNamesBefore:new Set(old.flatMap(s=>s.movePool.map(m=>norm(m.name)))).size,
   distinctMoveNamesAfter:new Set(live.flatMap(s=>s.movePool.map(m=>norm(m.name)))).size,
-  moveNameDiff:names,moveSpeciesPairsDiff:pairs,defaultSlotsChanged:changedDefaults.slice(0,80),
+  moveNameDiff:names,moveSpeciesPairsDiff:pairs,
+  newMoveCandidates:names.added.map(n=>({name:n,owners:live.filter(s=>s.movePool.some(m=>norm(m.name)===n)).map(s=>({pokemon:s.name,isDefault:s.movePool.some(m=>norm(m.name)===n&&s.defaults.includes(m.id))})).slice(0,80)})),
+  defaultSlotsChanged:changedDefaults.slice(0,80),
   defaultSlotsChangedCount:changedDefaults.length,warning:'Names and public move pool relations only, no sprites or implementation copied'};
 }
 const entries=manifest=>{
@@ -106,6 +108,8 @@ async function run(){
   errors:report.errors,roster:report.results.roster&&{live:report.results.roster.liveSpecies,baseline:report.results.roster.baselineSpecies,
    newSpecies:report.results.roster.speciesDiff?.addedCount,newMoves:report.results.roster.moveNameDiff?.addedCount,
    newMoveNames:report.results.roster.moveNameDiff?.added,removedMoveNames:report.results.roster.moveNameDiff?.removed,
+   newMoveOwners:report.results.roster.newMoveCandidates,
+   changedDefaults:report.results.roster.defaultSlotsChanged?.slice(0,12),
    changedDefaultSpecies:report.results.roster.defaultSlotsChanged?.map(x=>x.species).slice(0,30)},
   animations:report.results.animations&&{live:report.results.animations.liveAnimationEntries,
    baseline:report.results.animations.baselineAnimationEntries},
