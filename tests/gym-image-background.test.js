@@ -8,6 +8,7 @@ import {
  acePlacementForGymImage,drawGymImageBackground,requestGymImageBackground
 } from '../tools/pokearena/torre2-gym-image-background.js';
 import {gymWideLayout} from '../tools/pokearena/torre2-gym-wide-layout.js';
+import {drawGymIntermediates,gymNpcVisualKinds} from '../tools/pokearena/torre2-gym-intermediates.js';
 
 const manifest={version:1,scenes:GYM_IMAGE_SPECS.map(s=>({
  ...s,width:1280,height:720,sha256:'a'.repeat(64)
@@ -147,4 +148,27 @@ test('T38 preserves separate gameplay modules / Pokédex UI / original fight cou
  assert.doesNotMatch(installer,/https?:\/\//);
  const imageModule=fs.readFileSync('tools/pokearena/torre2-gym-image-background.js','utf8');
  assert.doesNotMatch(imageModule,/saveCampaign|resolveBattle|startBattle|Math\.random|localStorage/);
+});
+
+test('T38 all eight gyms reuse available FRLG classes and fallback only when absent',()=>{
+ assert.equal(gymNpcVisualKinds(0).length,3);
+ for(let i=1;i<8;i++)
+  assert.equal(gymNpcVisualKinds(i).length,4);
+ const stages=['hiker','swimmer','sailor','lass','biker','psychic','scientist','rocket'];
+ for(let i=0;i<8;i++)assert.equal(gymNpcVisualKinds(i)[0],stages[i]);
+ const output={used:[],calls:[]};
+ const obj=()=>({setDepth(){return this},setOrigin(){return this},
+  setData(k,v){output.used.push([k,v]);return this},
+  setInteractive(){return this},on(){return this}});
+ const scene={add:{ellipse:obj,text:obj,zone:obj}};
+ const data={stage:5,inGym:true,slots:[{index:13,slot:0,x:160,y:164,
+  kind:'trainer',title:'TREINADOR 1',status:'current'}]};
+ const out=drawGymIntermediates(scene,data,(_scene,kind)=>{
+  output.calls.push(kind);
+  return kind==='psychic'?null:obj();
+ },()=>{});
+ assert.deepEqual(output.calls,['psychic','ace']);
+ assert.deepEqual(output.used.filter(x=>x[0]==='torre2-gym-original-sprite'),
+  [['torre2-gym-original-sprite','ace']]);
+ assert.equal(out.interactiveCount,1);
 });
