@@ -69,7 +69,7 @@ function grassTexture(scene){
  const key='torre2-city-surfaces-v1';
  if(!scene.textures.exists(key))return null;
  const texture=scene.textures.get(key);
- if(!texture.has('grass'))texture.add('grass',0,0,256,256,256);
+ if(!texture.has('grass'))return null;
  return scene.add.tileSprite(0,35,640,250,key,'grass').setOrigin(0).setDepth(4.08)
   .setTileScale(.24).setData('torre2-cerulean-garden','grass-atlas');
 }
@@ -107,7 +107,7 @@ export function renderCeruleanLandscape(scene){
  for(const [i,bed] of CERULEAN_GARDEN_BEDS.entries()){
   const points=bed.points.map(([x,y])=>({x,y}));
   bg.fillStyle(0x60794c).fillPoints(points,true);
-  maskShape.fillStyle(0xffffff).fillPoints(points.map(p=>({x:p.x,y:p.y-35})),true);
+  maskShape.fillStyle(0xffffff).fillPoints(points,true);
   stoneRim(highlights,bed.points);
   pixelflowers(highlights,bed,i);
  }
