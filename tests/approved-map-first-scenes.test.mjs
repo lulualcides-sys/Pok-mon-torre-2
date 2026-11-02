@@ -85,17 +85,20 @@ test('T41 preflight rejects an unreviewed hotspot before drawing any pixels',()=
  assert.equal(layout.reason,'hotspot-out-of-bounds');
 });
 
-test('T43 first two approved gyms overlay a native leader, ace, and four saved trainer indices',()=>{
- const expected=[['gym-brock',0],['gym-misty',1]];
- for(const [id,stage] of expected){
-  const layout=firstApprovedGymActors(id,13);
+test('T43 Brock has 10 route + 3 gym trainers; Misty 11 route + 4 gym, with original checkpoint IDs',()=>{
+ const expected=[
+  ['gym-brock',0,13,[10,11,12]],
+  ['gym-misty',1,15,[11,12,13,14]]
+ ];
+ for(const [id,stage,total,indices] of expected){
+  const layout=firstApprovedGymActors(id,total);
   assert.equal(layout.stage,stage);
-  assert.equal(layout.trainers.length,4);
-  assert.deepEqual(layout.trainers.map(t=>t.index),[9,10,11,12]);
+  assert.equal(layout.trainers.length,indices.length);
+  assert.deepEqual(layout.trainers.map(t=>t.index),indices);
   for(const actor of [layout.leader,layout.ace,...layout.trainers]){
    assert.ok(actor.cx>0&&actor.cx<1&&actor.cy>0&&actor.cy<1);
   }
-  // Four trainers must not steal the clickable door/challenge hitbox.
+  // Gym trainers must not steal the clickable door/challenge hitbox.
   const h=firstApprovedHotspots(approvedMap(id));
   for(const npc of layout.trainers){
    for(const hotspot of h){
@@ -107,4 +110,34 @@ test('T43 first two approved gyms overlay a native leader, ace, and four saved t
  }
  assert.equal(firstApprovedGymActors('ss-anne',13),null);
  assert.throws(()=>firstApprovedGymActors('gym-brock',2),RangeError);
+ assert.throws(()=>firstApprovedGymActors('gym-misty',13),RangeError);
+ assert.throws(()=>firstApprovedGymActors('gym-brock',15),RangeError);
+});
+
+test('T43 pixel art placement: city Mart door and gym actors stay on stone platforms',()=>{
+ const cerulean=firstApprovedHotspots(approvedMap('cerulean-city'));
+ const shop=cerulean.find(h=>h.id==='mart');
+ // Approved 1280x720 city illustration: shop door roughly at (0.495, 0.36).
+ assert.ok(Math.abs(shop.cx-.495)<.005);
+ assert.ok(Math.abs(shop.cy-.36)<.01);
+ const [brock,misty]=[firstApprovedGymActors('gym-brock',13),
+                      firstApprovedGymActors('gym-misty',15)];
+ for(const gym of [brock,misty]){
+  // Leaders and aces occupy the upper central stone platform, not its stairs.
+  for(const p of [gym.leader,gym.ace]){
+   assert.ok(p.cx>=.44&&p.cx<=.61);
+   assert.ok(p.cy>=.18&&p.cy<=.27);
+  }
+  // The ace stands beside (not over) the leader.
+  assert.ok(gym.ace.cx-gym.leader.cx>=.08);
+ }
+ // Misty's four trainers are centered on the four dry raised platforms.
+ const islands=[[.27,.465],[.73,.465],[.27,.695],[.73,.695]];
+ misty.trainers.forEach((npc,i)=>{
+  assert.ok(Math.abs(npc.cx-islands[i][0])<.01);
+  assert.ok(Math.abs(npc.cy-islands[i][1])<.01);
+ });
+ // Brock's third subchief stands on the lower central path, not on a boulder.
+ assert.ok(Math.abs(brock.trainers[2].cx-.5)<.01);
+ assert.ok(Math.abs(brock.trainers[2].cy-.72)<.01);
 });
