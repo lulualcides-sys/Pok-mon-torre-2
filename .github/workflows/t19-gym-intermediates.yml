@@ -1,7 +1,7 @@
 name: T19 — Existing gym intermediates without new battles (DRAFT)
 on:
   push:
-    branches: [feat/t19-gym-intermediates-20261101, fix/t19-gym-route-gate-20261101, fix/t19-gym-route-identity-20261102, fix/t19-post-ko-route-smoke-20261102, feat/t36-gym-wide-layout-20261102, feat/t36-native-gym-scenery-20261102]
+    branches: [feat/t19-gym-intermediates-20261101, fix/t19-gym-route-gate-20261101, fix/t19-gym-route-identity-20261102, fix/t19-post-ko-route-smoke-20261102, feat/t36-gym-wide-layout-20261102, feat/t36-native-gym-scenery-20261102, fix/t35-ace-alpha-bounds-20261102]
   workflow_dispatch:
 permissions:
   contents: read
@@ -18,6 +18,7 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Syntax checks
         run: |
+          node --check tools/pokearena/torre2-gym-ace.js
           node --check tools/pokearena/torre2-gym-wide-layout.js
           node --check tools/pokearena/torre2-gym-intermediates.js
           node --check tools/pokearena/torre2-campaign-scene.js
