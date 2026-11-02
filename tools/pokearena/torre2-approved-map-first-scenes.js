@@ -47,7 +47,7 @@ export function firstApprovedDestination(mapId,hotspotId){
 }
 
 /* Native FireRed NPCs for the approved image-backed gym interiors.
- * The four trainer markers REUSE the last four existing route checkpoints.
+ * The gym trainer markers REUSE the last three (Brock) or four (Misty) route checkpoints.
  * They do not introduce a second save index or grant battle rewards.
  */
 export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
@@ -57,8 +57,7 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
   trainers:Object.freeze([
    Object.freeze({kind:'hiker',cx:.27,cy:.54}),
    Object.freeze({kind:'youngster',cx:.73,cy:.54}),
-   Object.freeze({kind:'hiker',cx:.29,cy:.78}),
-   Object.freeze({kind:'youngster',cx:.71,cy:.78})
+   Object.freeze({kind:'hiker',cx:.29,cy:.78})
   ])
  }),
  'gym-misty':Object.freeze({
@@ -75,9 +74,10 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
 export function firstApprovedGymActors(id,total){
  const layout=FIRST_APPROVED_GYM_LAYOUTS[id];
  if(!layout)return null;
- if(!Number.isInteger(total)||total<4)throw new RangeError('Four native checkpoints required');
+ if(!Number.isInteger(total)||total!==13+layout.stage*2)
+  throw new RangeError('Unexpected native checkpoint total for gym stage');
  return {
   stage:layout.stage,leader:layout.leader,ace:layout.ace,
-  trainers:layout.trainers.map((marker,i)=>({...marker,index:total-4+i}))
+  trainers:layout.trainers.map((marker,i)=>({...marker,index:total-layout.trainers.length+i}))
  };
 }
