@@ -75,13 +75,13 @@ export function locationForCampaign(region){
  export const KANTO_BACKDROP_SPANS=Object.freeze([5,4,4,4,5,5,6,4,4,2,2,3,1]);
  export function routeBackdropForCampaign(stage,trainer,total,fallback='indigo'){
   if(!Number.isInteger(stage)||stage<0||stage>=KANTO_BACKDROP_SPANS.length)
-   return Object.freeze({locale:fallback,requested:null,sourceReady:false,chapterPage:0});
+   return Object.freeze({locale:fallback,requested:null,mapped:false,chapterPage:0});
   const count=KANTO_BACKDROP_SPANS[stage],denom=Math.max(1,Number(total)||0);
   const done=Math.max(0,Math.min(denom,Math.floor(Number(trainer)||0)));
   const chapterPage=Math.floor(done*(count-1)/denom);
   const requested=locationForCampaign({stage,chapterPage});
   return Object.freeze({locale:requested||fallback,requested:requested||null,
-   sourceReady:!!requested,chapterPage});
+   mapped:!!requested,chapterPage});
  }
  // A full map-image sheet may include panels for Center, Mart, Gym etc.
 // Select only its primary world section; tall background tiles are not an

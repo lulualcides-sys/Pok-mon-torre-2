@@ -141,7 +141,7 @@ function renderBackdrop(scene,stage,trainer,total){
  glass.fillStyle(0x061827,.88);glass.fillRoundedRect(18,62,267,36,5);
  glass.lineStyle(1,0x638ba0,.94);glass.strokeRoundedRect(18,62,267,36,5);
  scene.__torre2GymBackdrop={city,locale,requestedLocale:requested.requested,
-  nativeBackdrop:requested.sourceReady&&locale===requested.locale,
+  nativeBackdrop:requested.mapped&&locale===requested.locale,
   chapterPage:requested.chapterPage,realExterior,realGym,texture:imageKey};
  return {imageKey};
 }

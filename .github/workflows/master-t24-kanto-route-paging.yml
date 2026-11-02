@@ -1,7 +1,7 @@
 name: Master T24 — Kanto routes and mobile paging
 on:
   push:
-    branches: [test/master-t24-mobile-kanto-route-paging-20261028]
+    branches: [test/master-t24-mobile-kanto-route-paging-20261028, feat/kanto-full-world-visual-progression-20261102]
   workflow_dispatch:
 
 permissions:
@@ -21,6 +21,7 @@ jobs:
           set -euo pipefail
           npm install --no-audit --no-fund
           node --check tests/t24-kanto-13-mobile-route-paging-browser.cjs
+          node --test tests/kanto-backdrop-progress.test.js
           npm test
           npm run check
           npm run check:reuse
@@ -45,6 +46,6 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: t24-kanto-mobile-route-pages
+          name: t24-kanto-mobile-route-pages-${{ github.sha }}
           path: test-evidence/
           if-no-files-found: warn
