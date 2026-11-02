@@ -66,6 +66,31 @@ export function createReaVectorPreview(scene){
     }
     for(let x=38;x<609;x+=24)
      pixel(backdrop,x,148+(x*7%13),2,2,0x85c9b7,.22);
+ // Stationary target and its reticle are drawn one time only.
+ for(const [x,y,w,h,c] of [
+  [TGT.x-18,TGT.y+13,36,5,0x071622],
+  [TGT.x-13,TGT.y+8,26,7,0x3b5656],
+  [TGT.x-3,TGT.y-17,6,29,0x3c6162],
+  [TGT.x-15,TGT.y-12,30,26,0x071927],
+  [TGT.x-12,TGT.y-9,24,20,0x7b9c9c],
+  [TGT.x-9,TGT.y-6,18,14,0x203d4c],
+  [TGT.x-6,TGT.y-4,12,10,0x6bdac7],
+  [TGT.x-3,TGT.y-1,6,4,0xe8f9c8]
+ ])pixel(backdrop,x,y,w,h,c);
+ // Static mode-specific paths are rebuilt only once per 1.8s mode.
+ const trail=scene.add.graphics().setDepth(89999.5).setVisible(false);
+ const drawModeTrail=(current,palette)=>{
+  trail.clear();
+  const count=current==='arc'?24:14;
+  for(let n=0;n<=count;n++){
+   const at=movePrototypePoint(current,n/count);
+   pixel(trail,at.x,at.y,2,2,current==='arc'?0xedb6be:palette[1],
+    current==='arc'?0.24:0.18);
+  }
+  const ix=MODES.indexOf(current);
+  for(let i=0;i<3;i++)pixel(trail,394+i*12,117,8,5,
+   i===ix?palette[2]:0x3c6067,i===ix?1:.6);
+ };
  const g=scene.add.graphics().setDepth(90000).setVisible(false);
  const label=scene.add.text(38,117,'',{fontFamily:'Pixelify Sans,monospace',
   fontSize:'11px',fontStyle:'bold',color:'#fff2d8',
@@ -88,8 +113,11 @@ export function createReaVectorPreview(scene){
   const step=Math.max(0,Math.min(64,Number(deltaMs)||16.667));
   clock+=step;const index=Math.floor(clock/1800)%MODES.length;
   const current=MODES[index],local=clock%1800,ratio=local/1800;
-  if(mode!==current){mode=current;previousRatio=null;impactTick=-Infinity;}
-  const point=movePrototypePoint(mode,ratio),palette=PALETTES[mode];
+  const point=movePrototypePoint(current,ratio),palette=PALETTES[current];
+  if(mode!==current){
+   mode=current;previousRatio=null;impactTick=-Infinity;
+   drawModeTrail(mode,palette);
+  }
   let collided=false;
   if(previousRatio!==null){
    // Check the actual sampled curved path, not just its endpoint chord.
@@ -107,27 +135,11 @@ export function createReaVectorPreview(scene){
   const flash=clock-impactTick<225,view=['PROJETIL CURVO','ESQUIVA / DASH','ARCO DE POKEBOLA'][index];
   const ref=[REA_FRAME_REFERENCES.Shoot,REA_FRAME_REFERENCES.Swing,REA_FRAME_REFERENCES.Attack][index];
   g.clear();
-  // Original practice dummy: shield, metallic pedestal and glowing center.
-  pixel(g,TGT.x-18,TGT.y+13,36,5,0x071622,1);
-  pixel(g,TGT.x-13,TGT.y+8,26,7,0x3b5656,1);
-  pixel(g,TGT.x-3,TGT.y-17,6,29,0x3c6162,1);
-  pixel(g,TGT.x-15,TGT.y-12,30,26,0x071927,1);
-  pixel(g,TGT.x-12,TGT.y-9,24,20,0x7b9c9c,1);
-  pixel(g,TGT.x-9,TGT.y-6,18,14,0x203d4c,1);
-  pixel(g,TGT.x-6,TGT.y-4,12,10,flash?0xffffff:0x6bdac7,1);
-  pixel(g,TGT.x-3,TGT.y-1,6,4,flash?palette[3]:0xe8f9c8,1);
-  if(mode==='arc'){
-   for(let n=0;n<=24;n++){
-    const t=n/24,p=movePrototypePoint('arc',t);
-    pixel(g,p.x,p.y,2,2,0xedb6be,.24);
-   }
-  }else{
-   for(let n=0;n<15;n++){
-    const p=movePrototypePoint(mode,n/14);
-    pixel(g,p.x,p.y,2,2,palette[1],.18);
-   }
-  }
   drawGlyph(g,point.x,point.y,palette,mode);
+  if(flash){
+   pixel(g,TGT.x-6,TGT.y-4,12,10,0xffffff);
+   pixel(g,TGT.x-3,TGT.y-1,6,4,palette[3]);
+  }
   if(flash){
    const since=u01((clock-impactTick)/225),r=6+23*since;
    for(let j=0;j<8;j++){
@@ -137,8 +149,6 @@ export function createReaVectorPreview(scene){
    }
    pixel(g,TGT.x-3,TGT.y-3,7,7,0xffffff,1-since);
   }
-  for(let i=0;i<3;i++)pixel(g,394+i*12,117,8,5,
-   i===index?palette[2]:0x3c6067,i===index?1:.6);
   // Phaser Text.setText may regenerate a canvas texture. Update only on a
   // meaningful mode/impact transition, not once per simulation frame.
   const labelState=mode+(flash?':hit':':normal');
@@ -159,7 +169,7 @@ export function createReaVectorPreview(scene){
   if(destroyed)return false;
   active=!active;debug.active=active;
   inputShield.input.enabled=active;
-  backdrop.setVisible(active);g.setVisible(active);label.setVisible(active);detail.setVisible(active);
+  backdrop.setVisible(active);trail.setVisible(active);g.setVisible(active);label.setVisible(active);detail.setVisible(active);
   if(active){
    clock=0;mode=null;previousRatio=null;impactTick=-Infinity;hitCount=0;
    lastLabel='';lastDetailMode=null;
@@ -175,7 +185,7 @@ export function createReaVectorPreview(scene){
   // Phaser can clear an input handler BEFORE scene shutdown listeners run.
   // Never abort scene transition because the already-released Zone has no input.
   if(inputShield.input)inputShield.input.enabled=false;
-  inputShield.destroy();g.destroy();backdrop.destroy();label.destroy();detail.destroy();
+  inputShield.destroy();g.destroy();trail.destroy();backdrop.destroy();label.destroy();detail.destroy();
   if(scene.__torre2ReaMathPreview===debug)delete scene.__torre2ReaMathPreview;
  };
  scene.events.on('update',tick);

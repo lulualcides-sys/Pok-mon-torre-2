@@ -150,15 +150,18 @@ test('Phaser may destroy inputShield.input before shutdown: cleanup still succee
 test('performance invariants: static scene draws exactly once, text not rerasterized every frame',()=>{
  const {scene,events,graphics,textNodes}=stubScene(true);
  const preview=createReaVectorPreview(scene);
- assert.equal(graphics.length,2,'one static backdrop and one animated overlay');
- const [background,dynamic]=graphics;
+ assert.equal(graphics.length,3,'static backdrop, mode trail and animated overlay');
+ const [background,trail,dynamic]=graphics;
  assert.ok(background.rectCalls>=100,'static scene should contain original pixel-art details');
  const staticTotal=background.rectCalls;
  assert.equal(dynamic.rectCalls,0);
+ assert.equal(trail.rectCalls,0);
  assert.equal(preview.toggle(),true);
  for(let i=0;i<370;i++)events.emit('update',i*16.667,16.667);
  assert.equal(background.rectCalls,staticTotal,'no pixel-art background redraws per frame');
  assert.equal(background.clearCalls,0);
+ assert.ok(trail.rectCalls>=15,'mode trail must be drawn');
+ assert.ok(trail.clearCalls<=6,'mode trail must not redraw per frame');
  assert.ok(dynamic.clearCalls>=370);
  assert.ok(textNodes[0].textCalls<=15,'labels must not regenerate each frame');
  assert.ok(textNodes[1].textCalls<=5,'details must not regenerate each frame');
@@ -167,10 +170,12 @@ test('performance invariants: static scene draws exactly once, text not reraster
  preview.toggle();preview.toggle();
  for(let i=0;i<370;i++)events.emit('update',i*16.667,16.667);
  assert.equal(background.rectCalls,staticTotal,'reopening must reuse static art');
+ assert.ok(trail.clearCalls<=12,'reopening must avoid per-frame trail redraw');
  assert.ok(textNodes[0].textCalls-labelsBefore<=15);
  assert.ok(textNodes[1].textCalls-detailBefore<=5);
  events.emit('shutdown');
  assert.equal(background.destroyed,true);
+ assert.equal(trail.destroyed,true);
  assert.equal(dynamic.destroyed,true);
 });
 
