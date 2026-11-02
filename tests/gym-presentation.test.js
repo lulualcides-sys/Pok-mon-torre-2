@@ -45,3 +45,11 @@ test('rapid gym A to B discards late A and releases B on exit, preserving battle
  assert.deepEqual([...f.textures.keys()],['pmd-0095-Idle','torre2-gym-ace-0121']);
  b.destroy();assert.deepEqual([...f.textures.keys()],['pmd-0095-Idle']);
 });
+
+test('visible pixel crop removes transparent sprite margins and handles empty frames',async()=>{
+ const {visiblePixelBounds}=await import('data:text/javascript;base64,'+Buffer.from(source).toString('base64'));
+ const pixels=new Uint8ClampedArray(8*8*4);
+ pixels[(2*8+3)*4+3]=255;pixels[(6*8+5)*4+3]=255;
+ assert.deepEqual(visiblePixelBounds(pixels,8,8),{x:3,y:2,width:3,height:5});
+ assert.equal(visiblePixelBounds(new Uint8ClampedArray(16),2,2),null);
+});

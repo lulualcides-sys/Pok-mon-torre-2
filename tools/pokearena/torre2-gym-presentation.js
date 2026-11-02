@@ -13,6 +13,22 @@ export function gymPresentationModel(state,stage,opponent,limit,tm){
 }
 // Own menu texture: never modify or evict the battle's PMD sheets.
 export function gymAceKey(dex){return 'torre2-gym-ace-'+dex}
+export function visiblePixelBounds(pixels,width,height){
+ let left=width,top=height,right=-1,bottom=-1;
+ for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(pixels[(y*width+x)*4+3]>=16){
+  left=Math.min(left,x);right=Math.max(right,x);top=Math.min(top,y);bottom=Math.max(bottom,y);
+ }
+ return right<0?null:{x:left,y:top,width:right-left+1,height:bottom-top+1};
+}
+function visibleAceFrame(texture,animation){
+ const name='gym-visible';if(texture.has(name))return name;
+ const canvas=document.createElement('canvas');canvas.width=animation.fw;canvas.height=animation.fh;
+ const ctx=canvas.getContext('2d',{willReadFrequently:true});
+ ctx.drawImage(texture.getSourceImage(),0,0,animation.fw,animation.fh,0,0,animation.fw,animation.fh);
+ const bounds=visiblePixelBounds(ctx.getImageData(0,0,animation.fw,animation.fh).data,animation.fw,animation.fh);
+ if(!bounds)return 0;
+ texture.add(name,0,bounds.x,bounds.y,bounds.width,bounds.height);return name;
+}
 export function releaseGymAce(scene,wanted=null){
  scene.__torre2GymAceWanted=wanted;
  for(const key of scene.textures.getTextureKeys())
@@ -33,8 +49,11 @@ export function paintGymAce(scene,dex,anchor){
  const paint=()=>{
   if(!anchor.active||!scene.textures.exists(key)||anchor.getData('ace-painted'))return;
   anchor.setData('ace-painted',true);scene.textures.get(key).setFilter(0);
-  const sprite=scene.add.image(277,224,key,0).setOrigin(.5,1).setDepth(12);
-  const scale=Math.min(126/animation.fw,138/animation.fh);
+  const texture=scene.textures.get(key);
+  const frame=typeof document==='undefined'?0:visibleAceFrame(texture,animation);
+  const sprite=scene.add.image(277,228,key,frame).setOrigin(.5,1).setDepth(12);
+  const size=texture.get?.(frame)||{width:animation.fw,height:animation.fh};
+  const scale=Math.min(126/size.width,138/size.height);
   sprite.setScale(scale).setData('torre2-gym-ace',dex);
   anchor.once('destroy',()=>{if(sprite.active)sprite.destroy()});
  };
@@ -58,7 +77,7 @@ export function renderGymPresentation(scene,model,{aceDex,onBattle,onRoute,onBac
  };
  const txt=(x,y,value,size=12,color='#eff7ff',depth=10)=>scene.add.text(x,y,value,{
   fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',fontStyle:'bold',color,
-  stroke:'#07182b',strokeThickness:2}).setDepth(depth);
+  stroke:'#07182b',strokeThickness:['#133249','#244a61','#46647b'].includes(color)?0:2}).setDepth(depth);
  scene.cameras.main.setBackgroundColor('#071421');
  const floor=addCitySurface(scene,'stone',0,42,386,228,0);
  if(floor)floor.setTint(model.index===1||model.index===8?0xa2dce8:model.index===10?0x9e81bc:0xc5b89e);
@@ -85,6 +104,7 @@ export function renderGymPresentation(scene,model,{aceDex,onBattle,onRoute,onBac
  if(model.index<8)drawBadgeIcon(scene,model.index,423,183,true,1.4).setDepth(10);
  box(402,216,218,49);txt(414,225,model.tm||(model.index<8?'RECOMPENSA DO GINÁSIO':'DESAFIO DA LIGA'),12,'#ffe0a1');
  txt(414,244,model.tm?'RECOMPENSA APÓS A PRIMEIRA VITÓRIA':model.index<8?'INSÍGNIA APÓS DERROTAR O LÍDER':'AVANCE PELA SEQUÊNCIA DA CAMPANHA',8,'#b7d1df');
+ g.fillStyle(0x030e1a,.5).fillEllipse(143,231,69,12).fillEllipse(277,231,86,14);
  const leader=addFireRedNPC(scene,model.kind,143,228,{scale:4,depth:13});
  if(leader)leader.setData('torre2-gym-leader',model.kind);
  else {
