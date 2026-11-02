@@ -1,5 +1,6 @@
 import {CERULEAN_LANDMARKS} from './city-layout.js';
 import {addCitySprite,addCitySurface,addRegionalGym,addCityBoat} from './city-atlas.js';
+import {renderRegionalIdentity} from './region-identity.js';
 const profiles=[
  ['PEWTER CITY','BROCK','stone',[[105,155],[115,257],[470,170]]],
  ['CERULEAN CITY','MISTY','water',[]],
@@ -78,6 +79,9 @@ export function renderRegionalScenery(scene,profile){
   road(60,243,520,29);road(83,211,52,48);road(505,211,52,48);
   for(const x of [200,435]){rect(x,110,4,167,0xd9cc9d);rect(x+4,110,23,60,0x72588e);rect(x+9,119,12,39,0xd6c792);}
  }
+ // Region-specific landmarks replace a recolored, interchangeable town backdrop.
+ // Decorative-only graphics: no new hitboxes, path logic, rewards or timers.
+ renderRegionalIdentity(scene,theme);
  // Small residential blocks frame each service district without adding menus.
  const homes={
   stone:[[365,268,64],[520,266,61]],
@@ -129,5 +133,5 @@ export function renderRegionalScenery(scene,profile){
   timer.__torre2CityWaterTimer=true;
   g.once('destroy',()=>scene.time.removeEvent(timer));
  }
- return {version:'regional-cities-v1',theme,layers:6,landmarks:3};
+ return {version:'regional-cities-v2',theme,layers:7,landmarks:3,regionalIdentity:true};
 }
