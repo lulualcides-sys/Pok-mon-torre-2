@@ -5,14 +5,21 @@
  */
 export const GYM_WIDE_VERSION='t36-wide-room-v1';
 const ROOM=Object.freeze({x:66,y:68,width:508,height:200});
-const INTERMEDIATES=Object.freeze([
- Object.freeze({x:157,y:160}),Object.freeze({x:483,y:160}),
- Object.freeze({x:157,y:215}),Object.freeze({x:483,y:215})
-]);
+// Distinct, asymmetric routes instead of four repeated rectangular menus.
+const INTERMEDIATES=Object.freeze({
+ rock:Object.freeze([
+  Object.freeze({x:160,y:163}),Object.freeze({x:470,y:184}),
+  Object.freeze({x:188,y:225})
+ ]),
+ water:Object.freeze([
+  Object.freeze({x:161,y:163}),Object.freeze({x:470,y:171}),
+  Object.freeze({x:206,y:224}),Object.freeze({x:500,y:224})
+ ])
+});
 export function gymWideLayout(stage){
  if(stage!==0&&stage!==1)return null;
  const aquatic=stage===1;
- const slots=INTERMEDIATES.slice(0,aquatic?4:3);
+ const slots=INTERMEDIATES[aquatic?'water':'rock'];
  return Object.freeze({
   stage,theme:aquatic?'water':'rock',cameraZoom:1,
   room:ROOM,
@@ -117,11 +124,15 @@ export function drawGymWideRoom(scene,stage){
  };
  // Main spine, side bridges and entrance all stay clear of trainer sprites.
  deck(304,122,32,145);
- deck(185,145,119,15);deck(336,145,119,15);
- deck(185,201,119,15);deck(336,201,119,15);
+ // Staggered branch corridors keep the room legible but avoid the old
+ // 2x2 diagram. Every platform remains connected to the central aisle.
+ deck(202,154,102,15);
+ deck(336,165,94,15);
+ deck(water?247:228,213,water?57:76,15);
+ if(water)deck(336,213,123,15);
  const platforms=water?
-  [[124,137,82,43],[434,137,82,43],[124,192,82,43],[434,192,82,43]]:
-  [[124,137,82,43],[434,137,82,43],[124,192,82,43]];
+  [[120,141,82,44],[429,148,82,44],[165,202,82,44],[459,202,82,44]]:
+  [[119,141,82,44],[429,162,82,44],[147,203,82,44]];
  for(const [x,y,w,h] of platforms){
   deck(x,y,w,h);
   if(water){
