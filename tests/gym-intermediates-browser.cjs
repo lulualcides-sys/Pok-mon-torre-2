@@ -37,6 +37,7 @@ const server=http.createServer((req,res)=>{
      },{stage,progress});
      await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
      await page.waitForFunction(p=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.routeCount===p,routeCount,{timeout:10000});
+     const routeCameraZoom=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').cameras.main.zoom);
      const before=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
      const routeInfo=await page.evaluate(()=>{
       const s=window.__pt2Game.scene.getScene('campanha');
@@ -64,13 +65,22 @@ const server=http.createServer((req,res)=>{
       const npc=s.children.list.filter(o=>o.getData?.('torre2-gym-intermediate')!==undefined);
       const ace=s.__torre2GymAce;
       return{stage:m.stage,routeCount:m.routeCount,gymCount:m.gymCount,slots:m.slots.map(x=>({index:x.index,kind:x.kind,status:x.status,x:x.x,y:x.y})),
-       interactiveCount:m.interactiveCount,zoneCount:zones.length,npcCount:npc.length,aceReady:ace?.ready,
+       interactiveCount:m.interactiveCount,zoneCount:zones.length,npcCount:npc.length,
+       npcTextureKeys:npc.map(o=>o.texture?.key),gymStage:s.__torre2GymStage,
+       cameraZoom:s.cameras.main.zoom,aceReady:ace?.ready,
        aceSpecies:ace?.species,renderer:s.game.renderer.type,fps:s.game.loop.actualFps,fixtureOnly:true};
      });
      assert.equal(info.renderer,2);
      assert.equal(info.stage,stage);
      assert.equal(info.gymCount,expected);
      assert.equal(info.npcCount,expected,'all authentic FireRed trainer NPCs should render');
+     assert.equal(info.gymStage?.mode,'full-width','no zoomed interior thumbnail');
+     assert.equal(info.gymStage?.extraZoom,0);
+     assert.equal(info.cameraZoom,routeCameraZoom,'gym must preserve native Phaser camera zoom');
+     assert.equal(new Set(info.npcTextureKeys).size,expected,
+      'each gym intermediate needs a different original FireRed sprite');
+     assert.ok(info.npcTextureKeys.every(k=>k?.startsWith('frlg-npc-')),
+      'only authentic FireRed NPC textures are allowed');
      assert.equal(info.interactiveCount,1);
      assert.equal(info.zoneCount,1);
      assert.deepEqual(info.slots.map(x=>x.index),stage===0?[9,10,11]:[10,11,13,14]);

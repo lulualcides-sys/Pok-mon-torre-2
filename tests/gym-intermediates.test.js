@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
-import {gymIntermediateModel,drawGymIntermediates} from '../tools/pokearena/torre2-gym-intermediates.js';
+import {gymIntermediateModel,drawGymIntermediates,gymTrainerSpriteKinds} from '../tools/pokearena/torre2-gym-intermediates.js';
 // The source uses build-time import aliases. Read the exact production
 // routeNode implementation without importing unbuilt './frlg-learnsets.js'.
 const routeSource=fs.readFileSync(new URL('../tools/pokearena/torre2-route-data.js',import.meta.url),'utf8');
@@ -88,4 +88,22 @@ test('render only one native current encounter hitbox; keep center bridge and ac
  assert.ok(zones.every(z=>z.x+z.w/2<240||z.x-z.w/2>400),'center bridge stays open');
  assert.ok(npcs.every(n=>n.x<200||n.x>440),'leader and ace platform stay clear');
  assert.equal(JSON.stringify(state),before);
+});
+
+test('all gym intermediates use distinct authentic FireRed NPC class art, not identical ace clones',async()=>{
+ const {spriteIdForTrainer}=await import('../tools/pokearena/torre2-frlg-npc.js');
+ const installer=fs.readFileSync('tools/pokearena/install-frlg-npcs.mjs','utf8');
+ const list=installer.match(/FRLG_NPC_NAMES=Object.freeze\(\[([\s\S]*?)\]\)/);
+ assert.ok(list,'original pret/pokefirered sprite inventory exists');
+ const available=new Set([...list[1].matchAll(/'([^']+)'/g)].map(m=>m[1]));
+ for(let stage=0;stage<8;stage++){
+  const kinds=gymTrainerSpriteKinds(stage),m=model(stage,0);
+  assert.equal(kinds.length,stage===0?3:4);
+  assert.equal(new Set(kinds).size,kinds.length,'no repetitive trainer art in gym '+stage);
+  assert.deepEqual(m.slots.map(s=>s.spriteKind),kinds);
+  for(const kind of kinds)assert.ok(available.has(spriteIdForTrainer(kind)),
+   'missing authentic FireRed NPC '+kind+' in gym '+stage);
+  assert.ok(m.slots.every(s=>s.kind==='trainer'),'sprite class cannot relabel opponent');
+ }
+ assert.deepEqual(gymTrainerSpriteKinds(8),[]);
 });
