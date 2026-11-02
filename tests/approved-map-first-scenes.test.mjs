@@ -174,3 +174,28 @@ test('T45 Surge has four clickable ORIGINAL artwork trainers, no added sprite cl
  assert.throws(()=>firstApprovedGymActors('gym-surge',15),RangeError);
  assert.equal(firstApprovedGymActors('gym-brock',13).artworkOnly,false);
 });
+
+test('T45 actual interactive zones route a click to every Vermilion door and Surge challenge',()=>{
+ for(const [id,expected] of [
+  ['vermilion-city',['center','mart','gym','ship','route6','route11']],
+  ['gym-surge',['challenge','exit']]
+ ]){
+  const {scene,zones}=fakeScene(),events=[];
+  const screen=renderApprovedMap(scene,id,{
+   resolveHotspots:firstApprovedHotspots,artNavigation:true,
+   isUnlocked:()=>true,
+   onHotspot:(source,spot)=>events.push(source+':'+spot)
+  });
+  assert.equal(screen.ok,true,id);
+  assert.equal(screen.zones.length,expected.length,id);
+  for(const spot of expected){
+   const z=zones.find(x=>x.data?.value===id+':'+spot);
+   assert.ok(z,id+' missing '+spot);
+   let propagationStopped=false;
+   z.pointerdown(null,0,0,{stopPropagation(){propagationStopped=true;}});
+   assert.equal(propagationStopped,true,id+':'+spot);
+  }
+  assert.deepEqual(events,expected.map(x=>id+':'+x));
+  assert.equal(zones.filter(x=>x.data?.key==='torre2-approved-route').length,0);
+ }
+});
