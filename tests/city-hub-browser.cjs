@@ -152,7 +152,9 @@ const server=http.createServer((req,res)=>{
     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>typeof o.getData?.('torre2-mart-buy')==='string'));
     await click(120,315);await city();
     const door=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').__torre2CityHub.hotspots.find(p=>p.id==='gym'));
-    await click(door.x,door.doorY);
+    // Independently measured visible door centers, not the hit-area model.
+    const visibleDoor=stage===7?[320,217]:stage>=8?[320,128]:[door.x,door.doorY];
+    await click(...visibleDoor);
     await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-city-layer')==='terrain'));
     await page.evaluate(async()=>{const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;const core=await import(new URL('./torre2/campaign-core.js',main));window.__pt2Game.scene.getScene('campanha').renderCampaign(core.readCampaign())});
     await city();

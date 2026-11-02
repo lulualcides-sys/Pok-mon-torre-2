@@ -14,7 +14,7 @@ const profiles=[
 export function cityProfile(stage){
  const p=profiles[Math.min(stage,8)];if(!p)return null;
  return {name:p[0],leader:p[1],theme:p[2],landmarks:stage===1?CERULEAN_LANDMARKS:
- p[3].map(([x,y],i)=>({id:['center','mart','gym'][i],label:['CENTRO POKÉMON','POKÉ MART',stage>=8?'LIGA POKÉMON':'GINÁSIO'][i],x,y,doorY:y-(i===2&&stage>=8?55:27)}))};
+ p[3].map(([x,y],i)=>({id:['center','mart','gym'][i],label:['CENTRO POKÉMON','POKÉ MART',stage>=8?'LIGA POKÉMON':'GINÁSIO'][i],x,y,doorY:y-(i===2?(stage>=8?55:stage===7?44:27):27)}))};
 }
 export function renderRegionalScenery(scene,profile){
  const theme=profile.theme,water=[],g=scene.add.graphics().setDepth(4).setData('torre2-city-layer','terrain');

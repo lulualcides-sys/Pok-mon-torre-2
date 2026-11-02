@@ -22,3 +22,10 @@ test('regional city layouts and gym identities are distinct, Elite shares its pa
   assert.equal(b.toString('ascii',8,12),'WEBP');assert.ok(b.length<450000);
  }
 });
+
+test('Viridian and League hit areas include the centers of their visible atlas doors',()=>{
+ for(const [stage,x,y]of [[7,320,217],[8,320,128],[12,320,128]]){
+  const p=cityProfile(stage).landmarks.find(p=>p.id==='gym');
+  assert.ok(Math.abs(x-p.x)<41&&y>=p.doorY-12&&y<=p.y+15);
+ }
+});
