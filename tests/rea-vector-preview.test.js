@@ -44,12 +44,15 @@ test('continuous disc sweep detects small target crossed between frames without 
  assert.throws(()=>sweptVectorHit(before,after,-1,t,t,3),/hitboxes/);
 });
 function stubScene(laboratory=true){
- const events=new EventEmitter(),draw={calls:0,destroyed:false,visible:false};
+ const events=new EventEmitter(),draw={calls:0,destroyed:false,visible:false},graphics=[];
  function shape(){
+  const rec={clearCalls:0,rectCalls:0,destroyed:false,visible:false};
+  graphics.push(rec);
   return {
-   setDepth(){return this},setVisible(v){draw.visible=v;return this},
-   clear(){draw.calls++;return this},fillStyle(){return this},fillRect(){return this},
-   destroy(){draw.destroyed=true}
+   setDepth(){return this},setVisible(v){rec.visible=v;draw.visible=v;return this},
+   clear(){rec.clearCalls++;draw.calls++;return this},
+   fillStyle(){return this},fillRect(){rec.rectCalls++;return this},
+   destroy(){rec.destroyed=true;draw.destroyed=true}
   };
  }
  const textNodes=[],zones=[];
@@ -59,11 +62,11 @@ function stubScene(laboratory=true){
     setInteractive(){return this},destroy(){this.destroyed=true}};
    zones.push(zone);return zone;
   },text:(_x,_y,_s,_opts)=>{
-   const o={text:'',destroyed:false,setDepth(){return this},setVisible(){return this},
-    setText(s){this.text=s;return this},destroy(){this.destroyed=true}};
+   const o={text:'',textCalls:0,destroyed:false,setDepth(){return this},setVisible(){return this},
+    setText(s){this.text=s;this.textCalls++;return this},destroy(){this.destroyed=true}};
    textNodes.push(o);return o;
   }}};
- return {scene,events,draw,textNodes,zones};
+ return {scene,events,draw,textNodes,zones,graphics};
 }
 test('preview is opt-in, lab-only, visual-only, stops and cleans up on shutdown',()=>{
  const {scene,events,draw,textNodes,zones}=stubScene(true);
@@ -142,4 +145,31 @@ test('Phaser may destroy inputShield.input before shutdown: cleanup still succee
  assert.ok(textNodes.every(t=>t.destroyed));
  assert.equal(scene.__torre2ReaMathPreview,undefined);
  assert.equal(preview.toggle(),false);
+});
+
+test('performance invariants: static scene draws exactly once, text not rerasterized every frame',()=>{
+ const {scene,events,graphics,textNodes}=stubScene(true);
+ const preview=createReaVectorPreview(scene);
+ assert.equal(graphics.length,2,'one static backdrop and one animated overlay');
+ const [background,dynamic]=graphics;
+ assert.ok(background.rectCalls>=100,'static scene should contain original pixel-art details');
+ const staticTotal=background.rectCalls;
+ assert.equal(dynamic.rectCalls,0);
+ assert.equal(preview.toggle(),true);
+ for(let i=0;i<370;i++)events.emit('update',i*16.667,16.667);
+ assert.equal(background.rectCalls,staticTotal,'no pixel-art background redraws per frame');
+ assert.equal(background.clearCalls,0);
+ assert.ok(dynamic.clearCalls>=370);
+ assert.ok(textNodes[0].textCalls<=15,'labels must not regenerate each frame');
+ assert.ok(textNodes[1].textCalls<=5,'details must not regenerate each frame');
+ assert.ok(dynamic.rectCalls>0);
+ const [labelsBefore,detailBefore]=textNodes.map(t=>t.textCalls);
+ preview.toggle();preview.toggle();
+ for(let i=0;i<370;i++)events.emit('update',i*16.667,16.667);
+ assert.equal(background.rectCalls,staticTotal,'reopening must reuse static art');
+ assert.ok(textNodes[0].textCalls-labelsBefore<=15);
+ assert.ok(textNodes[1].textCalls-detailBefore<=5);
+ events.emit('shutdown');
+ assert.equal(background.destroyed,true);
+ assert.equal(dynamic.destroyed,true);
 });
