@@ -64,8 +64,10 @@ export function renderRegionalScenery(scene,profile){
    const mask=shape.createGeometryMask();mountain.setMask(mask);
    mountain.once('destroy',()=>{mask.destroy();shape.destroy()});
   }
-  g.fillStyle(0xb86249).fillTriangle(301,68,325,40,348,68);
-  rect(319,67,9,62,0xf2a255);rect(326,99,22,7,0xc97045);
+  const lava=scene.add.graphics().setDepth(6);
+  lava.fillStyle(0xb86249).fillTriangle(301,68,325,40,348,68);
+  lava.fillStyle(0xf2a255).fillRect(319,67,9,62);
+  lava.fillStyle(0xc97045).fillRect(326,99,22,7);
   addCityBoat(scene,38,287,65);
  }else if(theme==='forest'){
   road(65,167,510,29);road(285,191,70,112);pond(442,219,128,66);
