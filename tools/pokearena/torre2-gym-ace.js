@@ -32,25 +32,55 @@ export function gymAcePlacement(plan){
  return Object.freeze({leaderX:294,aceX:342,baseline:190,
   maxWidth:big?58:52,maxHeight:big?72:60});
 }
-// PMD Idle sheets can have transparent rows below the feet. Anchoring the
-// entire frame at the floor makes the visible Pokémon float above its shadow.
-// Read at most one 256x256 frame once per gym; failures fall back safely.
-export function gymAceVisibleBottomPadding(texture,documentRef=globalThis.document){
+// A PMD spritesheet frame can be mostly transparent. Fitting the *frame*
+// rather than the visible pixels makes large species such as Onix tiny.
+// Inspect only the first local Idle frame once per texture; never resample
+// or rewrite the authentic SpriteCollab source pixels.
+const VISIBLE_BOUNDS_CACHE=new WeakMap();
+export function gymAceVisibleBounds(texture,documentRef=globalThis.document){
+ if(!texture||typeof texture!=='object')return null;
+ if(VISIBLE_BOUNDS_CACHE.has(texture))return VISIBLE_BOUNDS_CACHE.get(texture);
  try{
-  const frame=texture?.get?.(0),img=frame?.source?.image;
+  const frame=texture.get?.(0),img=frame?.source?.image;
   const w=frame?.cutWidth,h=frame?.cutHeight;
   if(!documentRef?.createElement||!img||!Number.isInteger(w)||!Number.isInteger(h)||
-   w<1||h<1||w>256||h>256)return 0;
+   w<1||h<1||w>256||h>256)return null;
   const canvas=documentRef.createElement('canvas');canvas.width=w;canvas.height=h;
   const ctx=canvas.getContext('2d',{willReadFrequently:true});
-  if(!ctx)return 0;
+  if(!ctx)return null;
   ctx.drawImage(img,frame.cutX,frame.cutY,w,h,0,0,w,h);
   const pixels=ctx.getImageData(0,0,w,h).data;
-  for(let y=h-1;y>=0;y--){
-   for(let x=0;x<w;x++)if(pixels[(y*w+x)*4+3]>8)return h-1-y;
+  let left=w,right=-1,top=h,bottom=-1;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+   if(pixels[(y*w+x)*4+3]<=8)continue;
+   if(x<left)left=x;if(x>right)right=x;
+   if(y<top)top=y;if(y>bottom)bottom=y;
   }
- }catch{ /* Missing or tainted canvas must not block gym navigation. */ }
- return 0;
+  if(right<left||bottom<top)return null;
+  const bounds=Object.freeze({left,right,top,bottom,
+   width:right-left+1,height:bottom-top+1,bottomPadding:h-1-bottom,
+   horizontalOffset:(w-1-left-right)/2});
+  VISIBLE_BOUNDS_CACHE.set(texture,bounds);
+  return bounds;
+ }catch{ /* Tainted canvas or unavailable DOM: keep the safe frame fit. */ }
+ return null;
+}
+export function gymAceVisibleBottomPadding(texture,documentRef=globalThis.document){
+ return gymAceVisibleBounds(texture,documentRef)?.bottomPadding||0;
+}
+export function gymAceSpriteFit(plan,placement,bounds=null){
+ // Geometric constraints are measured on the actual visible sprite.
+ // Limit the integer-pixel enlargement to keep pixel-art crisp and avoid
+ // an oversized ace on 640x360 / mobile. Other species keep the old cap.
+ const width=bounds?.width||plan.frameWidth;
+ const height=bounds?.height||plan.frameHeight;
+ const maxScale=plan.species==='onix'?2.75:2.25;
+ const scale=Math.min(maxScale,placement.maxWidth/width,placement.maxHeight/height);
+ const x=placement.aceX+(bounds?.horizontalOffset||0)*scale;
+ const y=placement.baseline-3+(bounds?.bottomPadding||0)*scale;
+ return Object.freeze({x,y,scale,
+  visibleWidth:width*scale,visibleHeight:height*scale,
+  boundsMeasured:!!bounds});
 }
 export function drawGymAce(scene,plan,addLeader,{token=null}={}){
  if(!plan)return null;
@@ -71,12 +101,12 @@ export function drawGymAce(scene,plan,addLeader,{token=null}={}){
   const texture=scene.textures.get(plan.textureKey);
   if(typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
    texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  const scale=Math.min(2.25,p.maxWidth/plan.frameWidth,p.maxHeight/plan.frameHeight);
-  const aceShadow=scene.add.ellipse(p.aceX,p.baseline,Math.min(65,plan.frameWidth*scale*.8),8,0x11243c,.48).setDepth(12);
-  const bottomPadding=gymAceVisibleBottomPadding(texture);
-  const spriteBaseY=p.baseline-3+bottomPadding*scale;
-  const sprite=scene.add.sprite(p.aceX,spriteBaseY,plan.textureKey,0)
-   .setOrigin(.5,1).setScale(scale).setDepth(17).setData('torre2-gym-ace',plan.species);
+  const fit=gymAceSpriteFit(plan,p,gymAceVisibleBounds(texture));
+  const aceShadow=scene.add.ellipse(p.aceX,p.baseline,
+   Math.max(17,Math.min(65,fit.visibleWidth*.8)),8,0x11243c,.48).setDepth(12);
+  const spriteBaseY=fit.y;
+  const sprite=scene.add.sprite(fit.x,spriteBaseY,plan.textureKey,0)
+   .setOrigin(.5,1).setScale(fit.scale).setDepth(17).setData('torre2-gym-ace',plan.species);
   const count=Math.min(plan.durations.length,texture.frameTotal||1);
   if(count>1){
    const anim='torre2-gym-ace-idle-'+plan.dex;
@@ -92,7 +122,8 @@ export function drawGymAce(scene,plan,addLeader,{token=null}={}){
    scene.tweens.add({targets:sprite,y:spriteBaseY-2,duration:1300,yoyo:true,repeat:-1,ease:'Sine.easeInOut'});
    sprite.once('destroy',()=>scene.tweens.killTweensOf(sprite));
   }
-  report.ready=true;report.sprite=sprite;report.shadow=aceShadow;report.reason=null;
+  report.ready=true;report.sprite=sprite;report.shadow=aceShadow;
+  report.fit=fit;report.reason=null;
  };
  if(!plan.assetReady){report.reason='Authentic PMD Idle manifest missing';return report;}
  if(scene.textures.exists(plan.textureKey)){mount();return report;}
