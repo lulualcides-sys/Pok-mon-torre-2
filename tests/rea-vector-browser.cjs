@@ -109,11 +109,28 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(compact.enabled,true);
   assert.equal(compact.save,save);
   assert.equal(compact.frameErrors,0);
-  await page.evaluate(()=>{
-   const b=window.__pt2Game.scene.getScene('combate');
-   b.scene.start('campanha');
+  // Use the ACTUAL visible SAIR LAB control, rather than forcing a
+  // programmatic scene change from outside Phaser's input/update event.
+  const leaveUi=await page.evaluate(()=>{
+   const r=document.querySelector('canvas').getBoundingClientRect();
+   return {x:r.x+r.width*502/640,y:r.y+r.height*77/360};
   });
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:15000});
+  await page.mouse.click(leaveUi.x,leaveUi.y);
+  try{
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:40000});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>{
+    const game=window.__pt2Game,b=game.scene.getScene('combate'),
+     c=game.scene.getScene('campanha');
+    return {battleActive:b.scene.isActive(),battlePhase:b.fase,
+     battleChanging:b.__torre2Changing,labInstalled:b.__torre2LabInstalled,
+     campaignActive:c.scene.isActive(),campaignState:c.sys.settings.status,
+     activeScenes:game.scene.getScenes(true).map(s=>s.sys.settings.key)};
+   });
+   console.error('LAB_EXIT_DIAGNOSTIC',JSON.stringify({diagnostic,errors}));
+   await page.screenshot({path:'test-evidence/rea-vetor-laboratorio-saida-diagnostico.png'});
+   throw error;
+  }
   const afterExit=await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    return {gone:b.__torre2ReaMathPreview===undefined,
