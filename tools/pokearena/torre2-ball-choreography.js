@@ -6,6 +6,13 @@
  * See credits and per-asset license conditions in docs.
  */
 export const clamp01=v=>Math.max(0,Math.min(1,Number(v)||0));
+// Native recall, catching and manual switching stay on the original 64ms
+// guard. Only the very first Kanto party sendout opts into a wider
+// wall-time catch-up budget for underpowered WebGL / mobile renderers.
+export function choreographyDelta(delta,maxFrameMs=64){
+ const limit=Number.isFinite(maxFrameMs)?Math.max(64,Math.min(180,maxFrameMs)):64;
+ return Math.min(limit,Math.max(1,Number(delta)||16.667));
+}
 export function ballArc(from,to,t,height=52){
  const p=clamp01(t);
  return {x:from.x+(to.x-from.x)*p,
@@ -122,7 +129,7 @@ export function restoreBody(body){
 }
 // One lifecycle for first entry, manual/KO replacement and recall. Run after
 // the native renderer has positioned its sprites, before WebGL draws them.
-export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0}){
+export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0,maxFrameMs=64}){
  actor.actualizarGraficos?.(0);
  const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
  const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
@@ -156,7 +163,7 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
   scene.events.off('shutdown',clean);g.destroy();nativeBall?.destroy();};
  const step=(_time,delta)=>{
   if(done||!scene.scene.isActive())return clean();
-  elapsed+=Math.min(64,Math.max(1,Number(delta)||16.667));hold();g.clear();
+  elapsed+=choreographyDelta(delta,maxFrameMs);hold();g.clear();
   let state,center=body.center;
   if(mode==='release'&&elapsed<360){
    state='THROW';poseBody(body,center,.01,0);
