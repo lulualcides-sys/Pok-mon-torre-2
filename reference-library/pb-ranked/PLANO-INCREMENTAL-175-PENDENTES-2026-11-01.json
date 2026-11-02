@@ -39,7 +39,8 @@
     "exactlyThreeSpecies": true,
     "allDefaultSetsHaveFourMoves": true,
     "allRareCovered": true,
-    "noFilesOrGameplayClaim": true
+    "noFilesOrGameplayClaim": true,
+    "allMoveIdsResolveToSpeciesPool": true
   },
   "notes": [
     "Optimized against reported uses, not against visually confirmed effects.",
@@ -48,7 +49,8 @@
     "A match marked planned is not an executed match; all actions must be separately evidenced.",
     "Protected moves are research references only, not authorization to replace Torre2 VFX.",
     "Server queues or premature KO may prevent use of some planned moves; carry them forward instead of falsely marking done.",
-    "Do not spend metered browser credits while site access, queue and visual capture remain unresolved."
+    "Do not spend metered browser credits while site access, queue and visual capture remain unresolved.",
+    "Source IDs of default moves are resolved against 127-entry public roster; prior optimizer omitted 42 IDs carried by default slots in the older plan."
   ],
   "batches": [
     {
@@ -3683,7 +3685,8 @@
             },
             {
               "name": "Moonblast",
-              "default": true
+              "default": true,
+              "moveId": "clefable:Moonblast"
             }
           ],
           "pendingMoves": [
@@ -3713,7 +3716,8 @@
             },
             {
               "name": "Freeze-Dry",
-              "default": true
+              "default": true,
+              "moveId": "ironBundle:Freeze-Dry"
             }
           ],
           "pendingMoves": [
@@ -3816,7 +3820,8 @@
             },
             {
               "name": "Lava Plume",
-              "default": true
+              "default": true,
+              "moveId": "torkoal:Lava Plume"
             }
           ],
           "pendingMoves": [
@@ -3841,11 +3846,13 @@
             },
             {
               "name": "Thunderbolt",
-              "default": true
+              "default": true,
+              "moveId": "magnezoneD:Thunderbolt"
             },
             {
               "name": "Flash Cannon",
-              "default": true
+              "default": true,
+              "moveId": "magnezoneD:Flash Cannon"
             }
           ],
           "pendingMoves": [
@@ -3869,11 +3876,13 @@
             },
             {
               "name": "Petal Blizzard",
-              "default": true
+              "default": true,
+              "moveId": "floette:Petal Blizzard"
             },
             {
               "name": "Sludge Bomb",
-              "default": true
+              "default": true,
+              "moveId": "gengar:Sludge Bomb"
             }
           ],
           "pendingMoves": [
@@ -3952,11 +3961,13 @@
             },
             {
               "name": "Water Pulse",
-              "default": true
+              "default": true,
+              "moveId": "armaldo:Water Pulse"
             },
             {
               "name": "Ancient Power",
-              "default": true
+              "default": true,
+              "moveId": "claydol:Ancient Power"
             }
           ],
           "pendingMoves": [
@@ -3980,11 +3991,13 @@
             },
             {
               "name": "Steel Wing",
-              "default": true
+              "default": true,
+              "moveId": "talonflame:Steel Wing"
             },
             {
               "name": "Flame Charge",
-              "default": true
+              "default": true,
+              "moveId": "talonflame:Flame Charge"
             }
           ],
           "pendingMoves": [
@@ -4003,15 +4016,18 @@
             },
             {
               "name": "Body Slam",
-              "default": true
+              "default": true,
+              "moveId": "wailord:Body Slam"
             },
             {
               "name": "Play Rough",
-              "default": true
+              "default": true,
+              "moveId": "luxrayM:Play Rough"
             },
             {
               "name": "Power Gem",
-              "default": true
+              "default": true,
+              "moveId": "persianG:Power Gem"
             }
           ],
           "pendingMoves": [
@@ -4072,15 +4088,18 @@
             },
             {
               "name": "Surf",
-              "default": true
+              "default": true,
+              "moveId": "milotic:Surf"
             },
             {
               "name": "Ice Beam",
-              "default": true
+              "default": true,
+              "moveId": "kyogre:Ice Beam"
             },
             {
               "name": "Aqua Tail",
-              "default": true
+              "default": true,
+              "moveId": "milotic:Aqua Tail"
             }
           ],
           "pendingMoves": [
@@ -4098,15 +4117,18 @@
             },
             {
               "name": "Megahorn",
-              "default": true
+              "default": true,
+              "moveId": "rhyperior:Megahorn"
             },
             {
               "name": "Earthquake",
-              "default": true
+              "default": true,
+              "moveId": "rhyperior:Earthquake"
             },
             {
               "name": "Rock Wrecker",
-              "default": true
+              "default": true,
+              "moveId": "rhyperior:Rock Wrecker"
             }
           ],
           "pendingMoves": [
@@ -4124,15 +4146,18 @@
             },
             {
               "name": "Flying Press",
-              "default": true
+              "default": true,
+              "moveId": "hawlucha:Flying Press"
             },
             {
               "name": "High Jump Kick",
-              "default": true
+              "default": true,
+              "moveId": "hawlucha:High Jump Kick"
             },
             {
               "name": "X-Scissor",
-              "default": true
+              "default": true,
+              "moveId": "bisharp:X-Scissor"
             }
           ],
           "pendingMoves": [
@@ -4181,15 +4206,18 @@
             },
             {
               "name": "Pollen Puff",
-              "default": true
+              "default": true,
+              "moveId": "ribombee:Pollen Puff"
             },
             {
               "name": "Dazzling Gleam",
-              "default": true
+              "default": true,
+              "moveId": "togekiss:Dazzling Gleam"
             },
             {
               "name": "Solar Beam",
-              "default": true
+              "default": true,
+              "moveId": "groudon:Solar Beam"
             }
           ],
           "pendingMoves": [
@@ -4207,15 +4235,18 @@
             },
             {
               "name": "Play Rough",
-              "default": true
+              "default": true,
+              "moveId": "luxrayM:Play Rough"
             },
             {
               "name": "Solar Beam",
-              "default": true
+              "default": true,
+              "moveId": "groudon:Solar Beam"
             },
             {
               "name": "Acrobatics",
-              "default": true
+              "default": true,
+              "moveId": "comfey:Acrobatics"
             }
           ],
           "pendingMoves": [
@@ -4233,15 +4264,18 @@
             },
             {
               "name": "Stone Edge",
-              "default": true
+              "default": true,
+              "moveId": "heracross:Stone Edge"
             },
             {
               "name": "Energy Ball",
-              "default": true
+              "default": true,
+              "moveId": "grotleAP:Energy Ball"
             },
             {
               "name": "Earthquake",
-              "default": true
+              "default": true,
+              "moveId": "groudon:Earthquake"
             }
           ],
           "pendingMoves": [
@@ -4290,15 +4324,18 @@
             },
             {
               "name": "Icicle Crash",
-              "default": true
+              "default": true,
+              "moveId": "sandslashA:Icicle Crash"
             },
             {
               "name": "Iron Head",
-              "default": true
+              "default": true,
+              "moveId": "sandslashA:Iron Head"
             },
             {
               "name": "Drill Run",
-              "default": true
+              "default": true,
+              "moveId": "sandslashA:Drill Run"
             }
           ],
           "pendingMoves": [
@@ -4316,15 +4353,18 @@
             },
             {
               "name": "Iron Tail",
-              "default": true
+              "default": true,
+              "moveId": "steelixD:Iron Tail"
             },
             {
               "name": "Heavy Slam",
-              "default": true
+              "default": true,
+              "moveId": "steelixD:Heavy Slam"
             },
             {
               "name": "Earthquake",
-              "default": true
+              "default": true,
+              "moveId": "steelixD:Earthquake"
             }
           ],
           "pendingMoves": [
@@ -4337,19 +4377,23 @@
           "configuredMoves": [
             {
               "name": "Petal Blizzard",
-              "default": true
+              "default": true,
+              "moveId": "floette:Petal Blizzard"
             },
             {
               "name": "Sludge Bomb",
-              "default": true
+              "default": true,
+              "moveId": "gengar:Sludge Bomb"
             },
             {
               "name": "Earthquake",
-              "default": true
+              "default": true,
+              "moveId": "venusaurO:Earthquake"
             },
             {
               "name": "Outrage",
-              "default": true
+              "default": true,
+              "moveId": "salamenceL:Outrage"
             }
           ],
           "pendingMoves": [],
