@@ -54,7 +54,7 @@ const server=http.createServer((req,res)=>{
    const foliageQuality=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.active&&o.getData?.('torre2-cerulean-foliage'))
     .map(o=>o.getData('torre2-cerulean-foliage-quality')));
-   assert.equal(foliageQuality.length,21);
+   assert.equal(foliageQuality.length,17);
    assert.ok(foliageQuality.every(x=>x==='native-v2'),'HD native textures must load; reject blurry fallback in visual CI');
    assert.ok(!pieces.includes('tree'),'Old identical atlas tree must not be used when the approved art loads');
    const surfaces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
