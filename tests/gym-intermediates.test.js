@@ -86,6 +86,6 @@ test('render only one native current encounter hitbox; keep center bridge and ac
  assert.equal(report.interactiveCount,1);
  assert.equal(zones[0].x,470);
  assert.ok(zones.every(z=>z.x+z.w/2<240||z.x-z.w/2>400),'center bridge stays open');
- assert.ok(npcs.every(n=>n.x<200||n.x>440),'leader and ace platform stay clear');
+ assert.ok(npcs.every(n=>n.y>140&&(n.x<230||n.x>410)),'leader and ace platform stay clear');
  assert.equal(JSON.stringify(state),before);
 });
