@@ -64,13 +64,22 @@ const server=http.createServer((req,res)=>{
       const npc=s.children.list.filter(o=>o.getData?.('torre2-gym-intermediate')!==undefined);
       const ace=s.__torre2GymAce;
       return{stage:m.stage,routeCount:m.routeCount,gymCount:m.gymCount,slots:m.slots.map(x=>({index:x.index,kind:x.kind,status:x.status,x:x.x,y:x.y})),
-       interactiveCount:m.interactiveCount,zoneCount:zones.length,npcCount:npc.length,aceReady:ace?.ready,
+       interactiveCount:m.interactiveCount,zoneCount:zones.length,npcCount:npc.length,
+       npcTextureKeys:npc.map(o=>o.texture?.key),gymStage:s.__torre2GymStage,
+       cameraZoom:s.cameras.main.zoom,aceReady:ace?.ready,
        aceSpecies:ace?.species,renderer:s.game.renderer.type,fps:s.game.loop.actualFps,fixtureOnly:true};
      });
      assert.equal(info.renderer,2);
      assert.equal(info.stage,stage);
      assert.equal(info.gymCount,expected);
      assert.equal(info.npcCount,expected,'all authentic FireRed trainer NPCs should render');
+     assert.equal(info.gymStage?.mode,'full-width','no zoomed interior thumbnail');
+     assert.equal(info.gymStage?.zoom,1);
+     assert.equal(info.cameraZoom,1,'never zoom the Phaser gym camera');
+     assert.equal(new Set(info.npcTextureKeys).size,expected,
+      'each gym intermediate needs a different original FireRed sprite');
+     assert.ok(info.npcTextureKeys.every(k=>k?.startsWith('frlg-npc-')),
+      'only authentic FireRed NPC textures are allowed');
      assert.equal(info.interactiveCount,1);
      assert.equal(info.zoneCount,1);
      assert.deepEqual(info.slots.map(x=>x.index),stage===0?[9,10,11]:[10,11,13,14]);
