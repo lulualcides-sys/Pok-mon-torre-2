@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: '24'
       - name: Install existing dependencies
-        run: npm ci --no-audit --no-fund
+        run: npm install --no-audit --no-fund
       - name: RED regressions and GREEN overlay geometry
         run: |
           node --check tools/pokearena/torre2-approved-map-renderer.js
