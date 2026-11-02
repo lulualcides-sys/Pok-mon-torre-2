@@ -123,7 +123,7 @@ export function renderVectorGuide(guide){
 // browser DOM, remote calls or executing SVG scripts.
 export function inspectRectOnlySvg(svg){
  invariant(typeof svg==='string'&&svg.length<350000,'SVG must be small text');
- invariant(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"\b/.test(svg),'SVG opening tag not allowed');
+ invariant(/^<svg xmlns="http:\/\/www\.w3\.org\/2000\/svg"(?=\s|>)/.test(svg),'SVG opening tag not allowed');
  invariant(!/<(?:script|image|use|foreignObject|style|path|circle|ellipse|polygon|polyline)|\bon[a-z]+\s*=|href\s*=/i.test(svg),'unsafe SVG elements or attributes');
  const view=svg.match(/viewBox="0 0 (\d+) (\d+)"/);
  invariant(view&&view[1]===view[2],'square viewBox required');
