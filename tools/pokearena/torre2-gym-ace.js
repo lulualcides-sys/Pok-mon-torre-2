@@ -23,8 +23,12 @@ export function gymAcePlan(gyms,stage,manifest){
 }
 export function gymAcePlacement(plan){
  const big=plan?.species==='onix'||plan?.species==='arcanine';
- // The native gym backdrop is only ~106 logical pixels wide (x267..373).
- // Keep both figures centered on its final platform, not over side walls.
+ // Brock and Misty use the approved wide room: a full 640x360 view,
+ // with both figures on the rear island, never floating over a tiny crop.
+ if(plan?.stage===0||plan?.stage===1)
+  return Object.freeze({leaderX:290,aceX:342,baseline:126,
+   maxWidth:big?58:52,maxHeight:big?48:45});
+ // Other gyms retain their original, validated camera and placement.
  return Object.freeze({leaderX:294,aceX:342,baseline:190,
   maxWidth:big?58:52,maxHeight:big?72:60});
 }
