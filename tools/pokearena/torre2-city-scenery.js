@@ -1,11 +1,12 @@
 import {addCityBoat,addCitySprite,addCitySurface,CITY_ATLAS_KEY,CITY_SURFACES_KEY} from './city-atlas.js';
 import {addCeruleanOrganicTree} from './cerulean-organic-foliage.js';
 import {CERULEAN_GREENERY} from './cerulean-garden-layout.js';
+import {renderCeruleanLandscape} from './cerulean-landscape.js';
 /* Original modular pixel architecture, rendered by Phaser/WebGL.
  * No map screenshot, no uploaded sheet with uncertain redistribution rights.
  * Geometry is local to each building; vegetation uses shared original textures.
  */
-export const CITY_ART_VERSION='cerulean-surfaces-v3';
+export const CITY_ART_VERSION='cerulean-landscape-v4';
 const px=(g,x,y,w,h,c,a=1)=>g.fillStyle(c,a).fillRect(Math.round(x),Math.round(y),Math.round(w),Math.round(h));
 function rng(seed){let s=seed;return()=>((s=(Math.imul(s,1664525)+1013904223)>>>0)/4294967296)}
 function poly(g,pts,c){g.fillStyle(c);g.fillPoints(pts.map(([x,y])=>({x,y})),true)}
@@ -152,6 +153,9 @@ export function renderCityScenery(scene){
    px(terrain,xx,yy,1,2,i%3?0x438f49:0x98c765,.8);
   }
  }
+ // New irregular botanical islands break the huge uniform pavement fields.
+ // Keep the three official service doors, bridge, boat and stairs clear.
+ const gardens=renderCeruleanLandscape(scene);
  // Canal bridge with masonry arch, deck, balustrades and stair approaches.
  const bridge=scene.add.graphics().setDepth(5).setData('torre2-city-layer','bridge');
  masonry(bridge,329,139,80,24);px(bridge,349,148,38,16,0x286d85);px(bridge,356,144,24,20,0x23738e);
@@ -166,8 +170,8 @@ export function renderCityScenery(scene){
  building(scene,81,69,84,82,'center');building(scene,62,177,82,76,'mart');
  building(scene,454,55,122,111,'gym');steps(details,487,167,57,6);
  building(scene,212,53,79,69);building(scene,-29,86,78,79);building(scene,569,191,85,72);
- for(const p of [[205,123,91],[64,257,80],[442,180,28],[573,167,45],[212,251,42],[302,75,26],[9,172,30]])planter(details,...p);
- for(const [x,y,w]of [[234,177,36],[228,258,30],[429,234,25]])
+ for(const p of [[205,123,40],[442,180,28],[573,167,34],[9,172,20]])planter(details,...p);
+ for(const [x,y,w]of [[234,177,27],[429,234,24]])
   addCitySprite(scene,'planter',x,y,w*188/447,{depth:25});
  for(const p of [[55,150],[177,192],[320,169],[438,166],[584,184],[244,262],[443,251]])lamp(details,...p);
  for(const p of [[301,162],[421,94],[582,103],[314,243]])banner(details,...p);
@@ -203,7 +207,7 @@ export function renderCityScenery(scene){
   else if(treeKey)scene.add.image(p.x,p.y,treeKey).setOrigin(.5,1).setScale(.72)
    .setDepth(20+p.y/1000).setData('torre2-city-layer','vegetation');
  }
- for(const [x,y,w]of [[250,134,45],[297,261,32],[436,184,27],[585,176,30]])
+ for(const [x,y,w]of [[250,134,26],[436,184,24],[585,176,24]])
   addCitySprite(scene,'planter',x,y,w*188/447,{depth:25});
  const ripples=scene.add.graphics().setDepth(1).setData('torre2-city-layer','water-animation');
  const falls=scene.add.graphics().setDepth(9);
@@ -242,5 +246,5 @@ export function renderCityScenery(scene){
   if(scene.__torre2CityWaterTimer===timer)scene.__torre2CityWaterTimer=null;
   if(falls.active)falls.destroy();
  });
- return {version:CITY_ART_VERSION,layers:6,landmarks:3};
+ return {version:CITY_ART_VERSION,layers:7,landmarks:3,gardens};
 }
