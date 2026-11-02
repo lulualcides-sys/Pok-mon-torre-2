@@ -108,6 +108,21 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(afterClose.shieldEnabled,false);
   assert.equal(afterClose.save,save);
   fpsSamples.push(await sampleFrames('battle_after_overlay_closed'));
+  // Two extra ON/OFF pairs, in the same scene with the same combat actors.
+  // This reduces reliance on one short measurement but cannot cancel the
+  // order/warm-up and CPU SwiftShader biases; do not claim mobile GPU FPS.
+  const setOverlay=async on=>{
+   await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
+   await page.waitForFunction(value=>
+    window.__pt2Game.scene.getScene('combate').__torre2ReaMathPreview?.active===value,
+    on,{timeout:7000});
+  };
+  for(let repetition=1;repetition<=2;repetition++){
+   await setOverlay(true);
+   fpsSamples.push(await sampleFrames('same_battle_with_overlay_repeat_'+repetition));
+   await setOverlay(false);
+   fpsSamples.push(await sampleFrames('battle_without_overlay_repeat_'+repetition));
+  }
 
   // Reopen on the actual Phaser canvas, confirm new counters and all 3 hits.
   await page.mouse.click(ui.x+ui.w*74/640,ui.y+ui.h*77/360);
@@ -166,6 +181,23 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(afterExit.gone,true,'preview must clean up its instance on scene shutdown');
   assert.equal(afterExit.save,save,'Lab scene exit must not change save');
   assert.deepEqual(errors,[]);
+  const median=numbers=>{
+   const s=numbers.slice().sort((a,b)=>a-b),m=Math.floor(s.length/2);
+   return s.length?(s.length%2?s[m]:(s[m-1]+s[m])/2):null;
+  };
+  const subset=on=>fpsSamples.filter(s=>on?
+   s.label.startsWith('same_battle_with_overlay'):
+   s.label==='battle_without_vector_overlay'||
+    s.label==='battle_after_overlay_closed'||
+    s.label.startsWith('battle_without_overlay_repeat_'));
+  const stats=frames=>({
+   count:frames.length,
+   fpsMedian:median(frames.map(s=>s.fps)),
+   fpsMin:Math.min(...frames.map(s=>s.fps)),
+   fpsMax:Math.max(...frames.map(s=>s.fps)),
+   frameP95MsMedian:median(frames.map(s=>s.p95FrameMs).filter(Number.isFinite))
+  });
+  const offStats=stats(subset(false)),onStats=stats(subset(true));
   const results={run:'REAL_CHROMIUM_PHASES',during:{
    debug:during.debug,shield:during.shield,frameErrors:during.frameErrors,
    renderer:during.renderer,fpsSample:during.fps},reopening:{
@@ -173,9 +205,14 @@ const server=http.createServer(async(req,res)=>{
    phase:compact.phase,enabled:compact.enabled,frameErrors:compact.frameErrors},
    afterExit:{instanceRemoved:afterExit.gone,saveByteIdentical:afterExit.save===save},
    frameSamples:fpsSamples,
-   comparison:{baselineFps:fpsSamples[0].fps,overlayFps:fpsSamples[1].fps,
+   comparison:{
+    environment:'Headless Chromium + SwiftShader, software rendering, not Android or real GPU',
+    protocol:'One battle, 1280x720, sequential samples ~2600ms, OFF/ON/OFF/ON/OFF/ON/OFF; no causal claim',
+    off:offStats,on:onStats,
+    descriptiveMedianChangePercent:+((onStats.fpsMedian/offStats.fpsMedian-1)*100).toFixed(2),
+    baselineFps:fpsSamples[0].fps,overlayFps:fpsSamples[1].fps,
     afterCloseFps:fpsSamples[2].fps,
-    relativeFpsChangePercent:+((fpsSamples[1].fps/fpsSamples[0].fps-1)*100).toFixed(2)},
+    initialRelativeFpsChangePercent:+((fpsSamples[1].fps/fpsSamples[0].fps-1)*100).toFixed(2)},
    errors};
   fs.writeFileSync('test-evidence/rea-vetor-laboratorio-regressao.json',JSON.stringify(results,null,2));
   console.log('PASS real Chromium: 3 modes, click shield, reopen, compact viewport, scene shutdown and byte-identical save',results);
