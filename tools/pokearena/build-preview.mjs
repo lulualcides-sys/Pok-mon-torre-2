@@ -605,6 +605,14 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Keep the native config import and add only the Kanto FX module.
+   if(filename==='habilidades.js' &&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}') &&
+      to.includes('TORRE2_FORMS')){
+    const {injectNativeTorre2FormsImport}=await import('./torre2-native-habilidades-compat.mjs');
+    body=injectNativeTorre2FormsImport(body);
+    continue;
+   }
    // Optional upstream spritesheet is gone/reshaped; it is not used by
    // the native capture pipeline. Handle only this exact known dependency.
    if(filename==='escenas/carga.js'&&
