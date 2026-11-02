@@ -605,6 +605,17 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Current upstream title rearranges social icon positions. The entire
+   // redes() call is stripped by the later exact, verified offline patch;
+   // keep its inactive original implementation untouched.
+   if(filename==='escenas/titulo.js' &&
+      ((from.startsWith('[["tiktok",600]')&&to.includes('"instagram"')) ||
+       (from.startsWith('const halo=this.add.graphics().setDepth(999)')&&to===''))){
+    if(body.split('this.redes();').length!==2)
+     throw Error('Unknown native title social entry point; cannot keep obsolete social patch');
+    console.warn('Native title social internals changed; offline call will be removed');
+    continue;
+   }
    // Keep the native config import and add only the Kanto FX module.
    if(filename==='habilidades.js' &&
       from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}') &&
