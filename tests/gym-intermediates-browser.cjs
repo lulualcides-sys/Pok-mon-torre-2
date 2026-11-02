@@ -75,7 +75,7 @@ const server=http.createServer((req,res)=>{
      assert.equal(info.zoneCount,1);
      assert.deepEqual(info.slots.map(x=>x.index),stage===0?[9,10,11]:[10,11,13,14]);
      assert.ok(info.slots.every(x=>x.kind==='trainer'),'Rival/Rocket cannot be gym intermediates');
-     assert.ok(info.slots.every(x=>x.x<200||x.x>440),'boss bridge must stay clear');
+     assert.ok(info.slots.every(x=>x.y>140&&(x.x<230||x.x>410)),'boss bridge must stay clear');
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before);
      assert.deepEqual(errors,[]);
      const file='gym-'+leader+'-intermediates-'+device+'.png';
