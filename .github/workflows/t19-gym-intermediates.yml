@@ -1,7 +1,7 @@
 name: T19 — Existing gym intermediates without new battles (DRAFT)
 on:
   push:
-    branches: [feat/t19-gym-intermediates-20261101, fix/t19-gym-route-gate-20261101]
+    branches: [feat/t19-gym-intermediates-20261101, fix/t19-gym-route-gate-20261101, fix/t19-gym-touch-debounce-20261102]
   workflow_dispatch:
 permissions:
   contents: read
