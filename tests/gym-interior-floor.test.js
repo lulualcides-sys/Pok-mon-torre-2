@@ -28,7 +28,7 @@ test('T35 full-width stage uses native floor, no zoomed room thumbnail or new hi
  for(const city of ['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian']){
   const m=renderGymStage(scene,city);
   assert.equal(m.mode,'full-width');
-  assert.equal(m.zoom,1);
+  assert.equal(m.extraZoom,0);
   assert.deepEqual(m.bounds,GYM_STAGE_BOUNDS);
   assert.equal(m.leaderPlatform.x,258);
   assert.deepEqual([...m.trainerColumns],[157,483]);
