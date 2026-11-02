@@ -74,3 +74,21 @@ test('render only one native current encounter hitbox; keep center bridge and ac
  assert.ok(npcs.every(n=>n.x<200||n.x>440),'leader and ace platform stay clear');
  assert.equal(JSON.stringify(state),before);
 });
+
+test('gym touch stops Phaser propagation and launches only one existing encounter',()=>{
+ const m=model(1,12),before=JSON.stringify(m),zones=[],calls=[];
+ const stub=()=>({setDepth(){return this},setOrigin(){return this},setData(){return this},
+  setInteractive(){return this},on(event,handler){this[event]=handler;return this}});
+ const scene={add:{ellipse:()=>stub(),text:()=>stub(),zone:()=>{
+  const z=stub();zones.push(z);return z;
+ }}};
+ drawGymIntermediates(scene,m,()=>stub(),index=>calls.push(index));
+ assert.equal(zones.length,1);
+ let stopped=0;
+ const event={stopPropagation(){stopped++}};
+ zones[0].pointerdown(null,0,0,event);
+ zones[0].pointerdown(null,0,0,event);
+ assert.deepEqual(calls,[12],'a double tap cannot launch two battles');
+ assert.equal(stopped,2,'each pointer event must not bubble to the underlying gym');
+ assert.equal(JSON.stringify(m),before,'decorative interaction must not mutate the roster');
+});
