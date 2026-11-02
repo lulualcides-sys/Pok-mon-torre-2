@@ -818,11 +818,17 @@ for(const [filename,changes] of patches){
     }else console.warn('Offline: native settings no longer start with a profile entry');
     continue;
    }
-   // A game-rule change needs an exact source read, never a speculative
-   // replacement. Log only a short public-source context on mismatch.
+   // Native fighter removed its old !helado predicate, but retained
+   // the same out-of-combat HP refill. In the Kanto campaign only, keep
+   // that refill disabled; preserve native Arena healing and status healing.
    if(filename==='luchador.js'&&from.startsWith('if(t-this.ultimoDano>=REGLAS.curaTras')){
-    const i=body.indexOf('curaTras');
-    throw Error('Native passive regeneration changed; review required: '+(i<0?'no curaTras symbol':body.slice(Math.max(0,i-360),Math.min(body.length,i+600))));
+    const native='if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!this.est.enfermo){';
+    const guarded='if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!this.est.enfermo&&!this.escena.datos?.torre2){';
+    if(!body.includes(native)||body.indexOf(native)!==body.lastIndexOf(native)||
+       !body.includes('this.hp=Math.min(this.hpMax,this.hp+REGLAS.curaFuera*REGLAS.vidaGlobal*this.curaMult*dt)'))
+     throw Error('Unknown passive regeneration structure; no silent combat change');
+    body=body.replace(native,guarded);
+    continue;
    }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
