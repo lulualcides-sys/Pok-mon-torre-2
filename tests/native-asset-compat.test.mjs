@@ -26,3 +26,8 @@ test('referenced or changed ball sprite is NOT silently removed',()=>{
   'this.load.spritesheet("ui-balls","assets/ui/balls20.png",{frameWidth:20}); this.load.spritesheet("ui-balls","assets/ui/balls20.png",{frameWidth:20});'
  ])assert.throws(()=>stripUnavailableUiBallsPreload(source),/refusing/);
 });
+
+test('current original upstream balls10 texture survives unchanged',()=>{
+ const source='this.load.spritesheet("ui-balls","assets/ui/balls10.png",{frameWidth:20,frameHeight:20});';
+ assert.equal(stripUnavailableUiBallsPreload(source),source);
+});
