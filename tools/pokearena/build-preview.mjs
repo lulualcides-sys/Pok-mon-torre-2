@@ -786,6 +786,24 @@ for(const [filename,changes] of patches){
     body=own+'\n'+body;
     continue;
    }
+   // Social links were already disabled by removing the original redes()
+   // call earlier. New upstream icon spacing needs no secondary rewrite;
+   // leaving a dead icon-list literal untouched cannot expose a link.
+   if(filename==='escenas/titulo.js'&&
+      from.startsWith('[["tiktok",600],["youtube",578],')&&
+      to.includes('instagram')&&!to.includes('discord')){
+    if(body.includes('this.redes();'))throw Error('Title still creates social controls');
+    console.warn('Social controls already removed; upstream icon list can remain native');
+    continue;
+   }
+   // The obsolete decorative JOIN arrow may be gone in newer title menus.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const halo=this.add.graphics()')&&to===''){
+    if(body.includes('this.redes();'))throw Error('Unexpected social controls in title');
+    if(body.includes('const halo=')&&body.includes('"JOIN!"'))
+     throw Error('Native JOIN arrow changed; review before deleting');
+    console.warn('Obsolete decorative JOIN arrow absent or no longer used');
+    continue;
+   }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
    // guessing which texture or avatar it should load; battle scenes untouched.
