@@ -199,8 +199,6 @@ await Promise.all([
  ['tools/pokearena/torre2-weather-status-float.js','weather-status-float.js'],
  ['tools/pokearena/torre2-rematch-policy.js','rematch-policy.js'],
  ['tools/pokearena/torre2-laboratory.js','laboratory.js'],
- ['tools/pokearena/torre2-rea-vector-math.js','rea-vector-math.js'],
- ['tools/pokearena/torre2-rea-vector-preview.js','rea-vector-preview.js'],
  ['tools/pokearena/torre2-training-input.js','training-input.js'],
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
@@ -742,115 +740,6 @@ for(const [filename,changes] of patches){
     body=body.slice(0,start)+body.slice(start).replace(native,updated);
     continue;
    }
-   // The current public client may omit the already optional UI balls preload,
-   // or spell it differently. This is not a battle sprite nor capture logic.
-   // Remove ONLY one matching obsolete preload or accept that it is absent.
-   if(filename==='escenas/carga.js'&&
-      from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
-    const candidates=body.match(/this\.load\.spritesheet\(\s*['\"]ui-balls['\"]\s*,\s*['\"]assets\/ui\/balls20\.png['\"]\s*,\s*\{[^}]{0,200}\}\s*\)\s*;?/g)||[];
-    if(candidates.length>1||candidates.some(x=>!x.includes('"ui-balls"')))
-     throw Error('Unknown native ui-balls preload; refuse ambiguous patch');
-    if(candidates.length===1){
-     body=body.replace(candidates[0],'');
-     console.warn('Compatibility: removed one unused legacy balls20 preload');
-    }else if(body.includes('this.load.spritesheet("ui-balls","assets/ui/balls10.png",{frameWidth:20,frameHeight:20});')&&!body.includes('balls20.png')){
-     // Live upstream replaced missing balls20 with a new balls10 file.
-     // Preserve the active replacement; do not strip or rewrite native UI sprites.
-     console.warn('Native balls10 preload replaces old balls20; preserved');
-    }else if(body.includes('ui-balls')||body.includes('balls20.png')){
-     throw Error('Unrecognized native ui-balls request; manual review needed: '+body.slice(Math.max(0,body.indexOf('ui-balls')-100),body.indexOf('ui-balls')+200));
-    }else console.warn('Unused ui-balls preload already absent upstream');
-    continue;
-   }
-   // Upstream added localhost-only disabled roster entries. Retain that
-   // condition EXACTLY while adding the same Kanto species before filtering.
-   if(filename==='datos.js'&&from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'){
-    const native='const ROSTER=TODOS.filter(p=>!p.desactivado||p.desactivado==="local"&&EN_LOCAL);';
-    if(!body.includes(native)||body.indexOf(native)!==body.lastIndexOf(native)||
-       !body.includes('const EN_LOCAL=typeof location!==')||
-       !body.includes('import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";'))
-     throw Error('Unknown new upstream roster expression; refusing to drop native local-mode eligibility');
-    const add='TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);';
-    if(body.includes(add))throw Error('Duplicate Kanto roster extension');
-    body=body.replace(native,add+native);
-    continue;
-   }
-   // The upstream abilities module may reorder its config import.
-   // Import only our own standalone forms symbol; leave native imports intact.
-   if(filename==='habilidades.js'&&
-      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
-      to.includes('TORRE2_FORMS')){
-    const own='import{TORRE2_FORMS}from"./torre2/signature-fx.js";';
-    if(body.includes(own))throw Error('Duplicate signature forms import');
-    if(!body.includes('const FORMAS='))throw Error('Unknown ability renderer; cannot insert own forms');
-    body=own+'\n'+body;
-    continue;
-   }
-   // Social links were already disabled by removing the original redes()
-   // call earlier. New upstream icon spacing needs no secondary rewrite;
-   // leaving a dead icon-list literal untouched cannot expose a link.
-   if(filename==='escenas/titulo.js'&&
-      from.startsWith('[["tiktok",600],["youtube",578],')&&
-      to.includes('instagram')&&!to.includes('discord')){
-    if(body.includes('this.redes();'))throw Error('Title still creates social controls');
-    console.warn('Social controls already removed; upstream icon list can remain native');
-    continue;
-   }
-   // The obsolete decorative JOIN arrow may be gone in newer title menus.
-   if(filename==='escenas/titulo.js'&&from.startsWith('const halo=this.add.graphics()')&&to===''){
-    if(body.includes('this.redes();'))throw Error('Unexpected social controls in title');
-    if(body.includes('const halo=')&&body.includes('"JOIN!"'))
-     throw Error('Native JOIN arrow changed; review before deleting');
-    console.warn('Obsolete decorative JOIN arrow absent or no longer used');
-    continue;
-   }
-   // The offline profile menu item may have changed its metadata.
-   // Remove exactly one profile-only entry, never the remaining settings.
-   if(filename==='escenas/titulo.js'&&
-      from.startsWith('ajustes:[{id:"perfil",txt:"PROFILE"')&&to==='ajustes:['){
-    const start=body.indexOf('ajustes:[{id:"perfil"');
-    if(start>=0){
-     const end=body.indexOf('},',start);
-     if(end<0||end-start>180||body.indexOf('ajustes:[{id:"perfil"',start+1)>=0)
-      throw Error('Ambiguous profile menu; cannot safely preserve other settings');
-     body=body.slice(0,start)+'ajustes:['+body.slice(end+2);
-     console.warn('Offline: removed exactly one profile-only settings entry');
-    }else console.warn('Offline: native settings no longer start with a profile entry');
-    continue;
-   }
-   // Native fighter removed its old !helado predicate, but retained
-   // the same out-of-combat HP refill. In the Kanto campaign only, keep
-   // that refill disabled; preserve native Arena healing and status healing.
-   if(filename==='luchador.js'&&from.startsWith('if(t-this.ultimoDano>=REGLAS.curaTras')){
-    const native='if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!this.est.enfermo){';
-    const guarded='if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!this.est.enfermo&&!this.escena.datos?.torre2){';
-    if(!body.includes(native)||body.indexOf(native)!==body.lastIndexOf(native)||
-       !body.includes('this.hp=Math.min(this.hpMax,this.hp+REGLAS.curaFuera*REGLAS.vidaGlobal*this.curaMult*dt)'))
-     throw Error('Unknown passive regeneration structure; no silent combat change');
-    body=body.replace(native,guarded);
-    continue;
-   }
-   // Rain/Sun move hook now also uses a separate local module. The
-   // external config import order is independent of our import.
-   if(filename==='habilidades.js'&&
-      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
-      to.includes('import{weatherFromMove}')){
-    const own='import{weatherFromMove}from"./torre2/weather.js";';
-    if(body.includes(own))throw Error('Duplicate weather handler import');
-    if(!body.includes('etiquetarAccion('))throw Error('Unknown native ability cast pipeline');
-    body=own+'\n'+body;
-    continue;
-   }
-   // Visual title sprite guards were written for an older upstream source.
-   // If its literal changes, preserve the live title animation rather than
-   // guessing which texture or avatar it should load; battle scenes untouched.
-   if(filename==='escenas/titulo.js'&&
-      (from.startsWith('return m&&(m.feet??5)-')||
-       from.startsWith('if(!m||(m.feet??5)-'))&&
-      (to.includes('this.anims.exists('))){
-    console.warn('Changed title sprite guard kept native; no speculative texture rewrite');
-    continue;
-   }
    // The original team-selection renderer changed its metadata field
    // names. Retain its updated built-in role/kit fallbacks; only fix the
    // previous exact unguarded expression if it still exists.
@@ -1076,7 +965,7 @@ for(const filename of [
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
  'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/versus-intro.js','torre2/battle-path.js',
- 'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/rea-vector-math.js','torre2/rea-vector-preview.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
+ 'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
 for(const name of (await fs.readdir('tools/pokearena/batch24')).sort())

@@ -3,7 +3,6 @@ import {KANTO_151_IDS} from './all-kanto-species.js';
 import {createPartyMatch} from './party-battle.js';
 import {resolveLoadout} from './move-pool.js';
 import {WEATHER_NAMES,setWeather} from './weather.js';
-import {createReaVectorPreview} from './rea-vector-preview.js';
 export {KANTO_151_IDS};
 export function prepareLaboratoryMatch(options={}){
  const pick=id=>KANTO_151_IDS.includes(id)?id:'mewtwo';
@@ -34,14 +33,11 @@ export function installLaboratoryControls(scene){
  // Native camUI already centers/scales the logical 640x360 UI. A zero
  // scroll factor applies that offset twice and pushes controls offscreen.
  const objects=[];
- const preview=createReaVectorPreview(scene);
  const button=(x,w,caption,run)=>{
   const bg=scene.add.rectangle(x,77,w,20,0x10283c,.95).setStrokeStyle(1,0x7298af).setDepth(2800).setInteractive({useHandCursor:true});
   const label=scene.add.text(x,77,caption,{fontFamily:'Pixelify Sans,monospace',fontSize:'8px',color:'#f0e5c8'}).setOrigin(.5).setDepth(2801);
   bg.on('pointerdown',()=>{if(scene.fase==='lucha'&&!scene.__torre2Changing)run(label)});objects.push(bg,label);
  };
- // Optional only; visual mathematical demo does not issue attacks or mutate saves.
- button(74,98,'VER REA',label=>label.setText(preview.toggle()?'FECHAR REA':'VER REA'));
  button(170,74,'CLIMA',()=>{wi=(wi+1)%weather.length;setWeather(scene.__torre2Weather,weather[wi]);});
  for(let side=0;side<2;side++)button(252+side*84,80,'STATUS '+(side?'CPU':'P1'),label=>{
   const a=scene.luchadores[side];si[side]=(si[side]+1)%statuses.length;a.est={};
@@ -50,5 +46,5 @@ export function installLaboratoryControls(scene){
  });
  button(420,74,'CURAR',()=>scene.luchadores.forEach(a=>{if(!a.ko){a.hp=a.hpMax;a.est={};}}));
  button(502,74,'SAIR LAB',()=>scene.scene.start('campanha'));
- scene.events.once('shutdown',()=>{preview.destroy();objects.forEach(o=>o.destroy());scene.__torre2LabInstalled=false;});
+ scene.events.once('shutdown',()=>{objects.forEach(o=>o.destroy());scene.__torre2LabInstalled=false;});
 }
