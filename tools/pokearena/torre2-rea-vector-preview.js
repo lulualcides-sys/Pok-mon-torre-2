@@ -156,7 +156,9 @@ export function createReaVectorPreview(scene){
  const destroy=()=>{
   if(destroyed)return;destroyed=true;active=false;
   scene.events.off('update',tick);scene.events.off('shutdown',destroy);
-  inputShield.input.enabled=false;
+  // Phaser can clear an input handler BEFORE scene shutdown listeners run.
+  // Never abort scene transition because the already-released Zone has no input.
+  if(inputShield.input)inputShield.input.enabled=false;
   inputShield.destroy();g.destroy();label.destroy();detail.destroy();
   if(scene.__torre2ReaMathPreview===debug)delete scene.__torre2ReaMathPreview;
  };
