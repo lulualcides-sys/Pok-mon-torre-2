@@ -1,0 +1,32 @@
+name: T41 - approved first Kanto scenes (isolated)
+on:
+  push:
+    branches: [feat/t41-approved-map-first-playable-scenes-20261102]
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-approved-map-first-scenes.js'
+      - 'tools/pokearena/torre2-approved-map-renderer.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/install-approved-maps.py'
+      - 'tests/approved-map-first-scenes.test.mjs'
+      - '.github/workflows/t41-approved-first-scenes.yml'
+permissions:
+  contents: read
+jobs:
+  first-scenes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Parse changed runtime modules and Python installer
+        run: |
+          node --check tools/pokearena/torre2-approved-map-first-scenes.js
+          node --check tools/pokearena/torre2-approved-map-renderer.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          python3 -m py_compile tools/pokearena/install-approved-maps.py
+      - name: Coordinate, navigation, and regression tests
+        run: |
+          node --test tests/approved-map-first-scenes.test.mjs tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs
