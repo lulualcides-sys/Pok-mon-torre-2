@@ -69,8 +69,10 @@ export function drawGymIntermediates(scene,model,addNpc,onBattle){
    color:colors[t.status],stroke:'#132032',strokeThickness:2
   }).setOrigin(.5).setDepth(19);
   if(t.status==='current'){
-   const active=scene.add.graphics().setDepth(18);
-   active.fillStyle(0xffdf82,.95).fillTriangle(t.x-4,t.y-35,t.x+4,t.y-35,t.x,t.y-29);
+   scene.add.text(t.x,t.y-32,'▼',{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'11px',
+    fontStyle:'bold',color:'#ffe49d',stroke:'#102a32',strokeThickness:2
+   }).setOrigin(.5).setDepth(18);
   }
   if(t.status==='current'&&model.inGym){
    scene.add.zone(t.x,t.y-17,53,40).setDepth(20)
