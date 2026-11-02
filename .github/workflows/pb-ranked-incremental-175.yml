@@ -1,0 +1,30 @@
+name: PB Ranked — coverage of 175 pending moves (research-only)
+
+on:
+  push:
+    branches:
+      - research/pb-ranked-175-pendentes-20261101
+    paths:
+      - 'reference-library/pb-ranked/PLANO-INCREMENTAL-175-PENDENTES-2026-11-01.json'
+      - 'reference-library/pb-ranked/PROGRESSO-GOLPES-283-2026-10-31.json'
+      - 'reference-library/pb-ranked/pokemon-movesets-completos-publicos.json'
+      - 'tests/pb-ranked-incremental-plan.test.cjs'
+      - '.github/workflows/pb-ranked-incremental-175.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  coverage-and-ids:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax validation
+        run: node --check tests/pb-ranked-incremental-plan.test.cjs
+      - name: Verify coverage, 3v3 roster, 360 configured move IDs, and evidence integrity
+        run: node --test tests/pb-ranked-incremental-plan.test.cjs
