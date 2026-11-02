@@ -616,6 +616,13 @@ for(const [filename,changes] of patches){
      body=body.replace(found[0][0],'ajustes:[');
      continue;
     }
+    // Upstream now gates the account tile with a DEBUG ternary.
+    // Remove that one tile (both branches), retain SOUND/CONTROLS/LANGUAGE.
+    const debugVariant='ajustes:[DEBUG?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
+    if(body.includes(debugVariant)){
+     body=body.replace(debugVariant,'ajustes:[');
+     continue;
+    }
     if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
      console.warn('Native title no longer exposes PROFILE in settings; no change');
      continue;
@@ -653,6 +660,14 @@ for(const [filename,changes] of patches){
       to.includes('TORRE2_FORMS')){
     const {injectNativeTorre2FormsImport}=await import('./torre2-native-habilidades-compat.mjs');
     body=injectNativeTorre2FormsImport(body);
+    continue;
+   }
+   // Native passive HP regeneration changed form; disable only in campaign.
+   if(filename==='luchador.js' &&
+      from.startsWith('if(t-this.ultimoDano>=REGLAS.curaTras') &&
+      to.includes('this.escena.datos?.torre2')){
+    const {disableNativeCampaignPassiveRegen}=await import('./torre2-native-regen-compat.mjs');
+    body=disableNativeCampaignPassiveRegen(body);
     continue;
    }
    // Optional upstream spritesheet is gone/reshaped; it is not used by
