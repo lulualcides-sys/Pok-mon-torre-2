@@ -1,5 +1,19 @@
 import {CERULEAN_LANDMARKS} from './city-layout.js';
 import {addCitySprite,addCitySurface,addRegionalGym,addCityBoat} from './city-atlas.js';
+import {addCeruleanOrganicTree,CERULEAN_NATIVE_FOLIAGE_FRAMES} from './cerulean-organic-foliage.js';
+// Distinct region-specific botanical palettes; reuse vetted original artwork,
+// never the six rejected geometric prototypes.
+export const REGIONAL_BIOME_FOLIAGE=Object.freeze({
+ stone:Object.freeze(['pine','oak_deep']),
+ electric:Object.freeze(['oak_sun','oak_lime','berry']),
+ garden:Object.freeze(['sakura','wisteria','berry','oak_lime']),
+ poison:Object.freeze(['oak_deep','pine','berry']),
+ psychic:Object.freeze(['oak_sun','sakura','oak_deep']),
+ volcano:Object.freeze(['pine','oak_deep','oak_autumn']),
+ forest:Object.freeze(['oak_deep','oak_lime','oak_sun','berry']),
+ league:Object.freeze(['pine','oak_deep','sakura'])
+});
+
 import {renderRegionalIdentity} from './region-identity.js';
 const profiles=[
  ['PEWTER CITY','BROCK','stone',[[105,155],[115,257],[470,170]]],
@@ -23,8 +37,18 @@ export function renderRegionalScenery(scene,profile){
  const tile=(name,x,y,w,h,depth=2)=>{const o=addCitySurface(scene,name,x,y,w,h,depth,name==='water'?.65:.25);if(name==='water'&&o)water.push(o);return o};
  const road=(x,y,w,h)=>{rect(x-2,y-2,w+4,h+4,0x8c9a87);tile('paving',x,y,w,h,5)};
  const pond=(x,y,w,h)=>{rect(x-3,y-3,w+6,h+6,0x93b6a2);tile('water',x,y,w,h,5)};
- const tree=(x,y,h=43)=>addCitySprite(scene,'tree',x,y,h);
- const hedge=(x,y,w)=>{for(let i=0;i<w;i+=22)tree(x+i,y,31)};
+ // Eight environments now select distinct foliage from the native atlas.
+ // Botanical choices are stable per position and purely decorative.
+ const tree=(x,y,h=43)=>{
+  const palette=REGIONAL_BIOME_FOLIAGE[theme]||REGIONAL_BIOME_FOLIAGE.forest;
+  const species=palette[Math.abs(Math.floor(x*7+y*11+h*3))%palette.length];
+  return addCeruleanOrganicTree(scene,x,y,h,species)||
+    addCitySprite(scene,'tree',x,y,h);
+ };
+ // Low garden beds, not miniature trees repeated to mimic shrubs.
+ const hedge=(x,y,w)=>{for(let i=0;i<w;i+=30)
+  addCitySprite(scene,'planter',x+i,y,13);
+ };
  const flower=(x,y)=>addCitySprite(scene,'planter',x,y,15);
  const cliff=(x,y,w,h)=>{tile('stone',x,y,w,h,3);rect(x,y,w,3,0xc0c8b0);rect(x,y+h-3,w,3,0x526a69)};
  const stairs=(x,y,w,h)=>{road(x,y,w,h);const lines=scene.add.graphics().setDepth(6).fillStyle(0xb5b29a);for(let a=y;a<y+h;a+=5)lines.fillRect(x,a,w,2);};
