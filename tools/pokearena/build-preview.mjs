@@ -217,6 +217,7 @@ await Promise.all([
  ['tools/pokearena/torre2-city-atlas.js','city-atlas.js'],
  ['tools/pokearena/torre2-city-scenery.js','city-scenery.js'],
  ['tools/pokearena/torre2-city-regions.js','city-regions.js'],
+ ['tools/pokearena/torre2-region-identity.js','region-identity.js'],
  ['tools/pokearena/torre2-city-hub.js','city-hub.js'],
  ['tools/pokearena/torre2-path-actions.js','path-actions.js'],
  ['tools/pokearena/torre2-battle-report.js','battle-report.js'],
