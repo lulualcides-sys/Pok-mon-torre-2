@@ -25,7 +25,7 @@ test('Pokeball launch curve and graphical endpoints stay identical',()=>{
 });
 test('only first Kanto sendout opts into catch-up; recall and swap retain native frame limit',()=>{
  const content=readFileSync('tools/pokearena/torre2-party-battle.js','utf8');
- const marker='maxFrameMs:180';
+ const marker='maxFrameMs:180,wallClockCatchup:true';
  assert.equal(content.split(marker).length-1,1,'one and only one opted-in battle entry');
  const intro=content.indexOf('if(party.changes===0){');
  const token=content.indexOf(marker);
@@ -34,4 +34,7 @@ test('only first Kanto sendout opts into catch-up; recall and swap retain native
   'new budget must be inside first-entry choreography, not recalls or battle effects');
  const source=readFileSync('tools/pokearena/torre2-ball-choreography.js','utf8');
  assert.match(source,/maxFrameMs=64/,'original animation cap remains the default');
+ assert.match(source,/wallClockCatchup=false/,'native recall and capture never use wall clock');
+ assert.match(source,/elapsedDelta=Math\.max\(Number\(delta\)\|\|16\.667,Math\.max\(0,now-lastWall\)\)/,
+  'first sendout compares game delta and measured monotonic time');
 });
