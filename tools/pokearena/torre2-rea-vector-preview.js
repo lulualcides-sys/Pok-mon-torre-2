@@ -27,13 +27,13 @@ function drawGlyph(g,x,y,palette,phase){
 export function createReaVectorPreview(scene){
  if(!scene?.datos?.torre2?.laboratory)throw new Error('REA preview requires laboratory');
  if(!scene.add?.graphics||!scene.add?.text||!scene.events?.on)throw new Error('Phaser scene missing');
- const g=scene.add.graphics().setDepth(2804).setVisible(false);
- const label=scene.add.text(32,113,'',{fontFamily:'Pixelify Sans,monospace',
+ const g=scene.add.graphics().setDepth(6500).setVisible(false);
+ const label=scene.add.text(38,117,'',{fontFamily:'Pixelify Sans,monospace',
   fontSize:'11px',fontStyle:'bold',color:'#fff2d8',
-  stroke:'#071727',strokeThickness:2}).setDepth(2805).setVisible(false);
- const detail=scene.add.text(32,258,'',{fontFamily:'Pixelify Sans,monospace',
+  stroke:'#071727',strokeThickness:2}).setDepth(6501).setVisible(false);
+ const detail=scene.add.text(38,256,'',{fontFamily:'Pixelify Sans,monospace',
   fontSize:'9px',color:'#c5deed',stroke:'#071727',strokeThickness:1})
-  .setDepth(2805).setVisible(false);
+  .setDepth(6501).setVisible(false);
  let active=false,destroyed=false,clock=0,mode=null,previous=null,impactTick=-Infinity,hitCount=0;
  const debug={active:false,mode:null,hitCount:0,lastHitPosition:null,
   isolation:'LAB_VISUAL_ONLY',containsThirdPartyAssets:false,doesNotChangeDamage:true};
@@ -59,19 +59,51 @@ export function createReaVectorPreview(scene){
   const flash=clock-impactTick<225,view=['PROJETIL CURVO','ESQUIVA / DASH','ARCO DE POKEBOLA'][index];
   const ref=[REA_FRAME_REFERENCES.Shoot,REA_FRAME_REFERENCES.Swing,REA_FRAME_REFERENCES.Attack][index];
   g.clear();
-  pixel(g,16,105,608,170,0x061625,.96);
-  pixel(g,18,107,604,2,0x7aaec3);
-  pixel(g,18,273,604,2,0x7aaec3);
-  for(let x=32;x<617;x+=22)for(let y=144;y<247;y+=22)
-   pixel(g,x,y,1,1,0x407388,.28);
-  // Distinct bands and floor give depth without importing background assets.
-  pixel(g,38,235,560,3,0x264d58,.9);
-  for(let x=43;x<590;x+=17)pixel(g,x,238,9,2,0x2e5960,.55);
-  // Pixel-art reference target, only a colored dummy, never a real opponent.
-  pixel(g,TGT.x-11,TGT.y-9,22,19,0x12202f);
-  pixel(g,TGT.x-9,TGT.y-7,18,15,0x7b90a1);
-  pixel(g,TGT.x-6,TGT.y-4,12,9,flash?0xffffff:0xa9c5d1);
-  pixel(g,TGT.x-14,TGT.y+12,28,3,0x304854,.8);
+  // Original layered pixel-art test room, covering high-depth battle UI.
+  // Never draw over the LAB top controls at logical y=77.
+  pixel(g,16,105,608,173,0x020d1b,1);
+  pixel(g,19,108,602,167,0x0a2131,1);
+  pixel(g,23,111,594,24,0x17374a,1);
+  pixel(g,23,135,594,64,0x0c2836,1);
+  pixel(g,23,160,594,39,0x123444,1);
+  pixel(g,23,184,594,15,0x163b48,1);
+  pixel(g,23,199,594,29,0x1c454c,1);
+  pixel(g,23,228,594,19,0x294d50,1);
+  pixel(g,23,247,594,27,0x071928,1);
+  // Hand-authored stepped bezel and amber/sea-glass corners.
+  pixel(g,19,108,602,3,0xbfd8ba,1);
+  pixel(g,19,272,602,3,0xbfd8ba,1);
+  pixel(g,19,111,3,161,0x7eaeab,1);
+  pixel(g,618,111,3,161,0x7eaeab,1);
+  for(const x of [20,610])for(const y of [110,265]){
+   pixel(g,x,y,9,3,0xffd17a,1);pixel(g,x,y,3,10,0xffd17a,1);
+  }
+  pixel(g,23,136,594,2,0x356875,1);
+  pixel(g,23,245,594,2,0x64847e,1);
+  // Mountains in the far distance: procedural placement is deterministic,
+  // pixel-aligned and original; no reference-game background assets.
+  for(let i=0;i<16;i++){
+   const x=23+i*38,h=9+(i*17%13);
+   pixel(g,x,198-h,36,h,0x1d4347,1);
+   pixel(g,x+6,195-h,20,3,0x31575a,.92);
+  }
+  // Irregular stone slabs, sparse grass and tiny glowing laboratory marks.
+  for(let i=0;i<34;i++){
+   const x=31+i*17,y=230+(i*11%11);
+   pixel(g,x,y,11,2,i%3?0x40655d:0x6a7363,.88);
+   if(i%4===0){pixel(g,x+4,225,2,3,0x94b774,.9);pixel(g,x+7,227,2,2,0x6b936c,.9);}
+  }
+  for(let x=38;x<609;x+=24)
+   pixel(g,x,148+(x*7%13),2,2,0x85c9b7,.22);
+  // Original practice dummy: shield, metallic pedestal and glowing center.
+  pixel(g,TGT.x-18,TGT.y+13,36,5,0x071622,1);
+  pixel(g,TGT.x-13,TGT.y+8,26,7,0x3b5656,1);
+  pixel(g,TGT.x-3,TGT.y-17,6,29,0x3c6162,1);
+  pixel(g,TGT.x-15,TGT.y-12,30,26,0x071927,1);
+  pixel(g,TGT.x-12,TGT.y-9,24,20,0x7b9c9c,1);
+  pixel(g,TGT.x-9,TGT.y-6,18,14,0x203d4c,1);
+  pixel(g,TGT.x-6,TGT.y-4,12,10,flash?0xffffff:0x6bdac7,1);
+  pixel(g,TGT.x-3,TGT.y-1,6,4,flash?palette[3]:0xe8f9c8,1);
   if(mode==='arc'){
    for(let n=0;n<=24;n++){
     const t=n/24,p=movePrototypePoint('arc',t);
@@ -95,10 +127,10 @@ export function createReaVectorPreview(scene){
   }
   for(let i=0;i<3;i++)pixel(g,394+i*12,117,8,5,
    i===index?palette[2]:0x3c6067,i===index?1:.6);
-  label.setText('REA • DEMO VETORIAL — '+view+'  '+(flash?'IMPACTO':''));
+  label.setText('LAB VETORIAL / '+view+'  '+(flash?'• IMPACTO':''));
   const ord=Math.round(ref.hitOrdinal*100);
-  detail.setText('REFERENCIA: '+ref.medianFrames+' QUADROS, HIT '+ord+
-    '% DA ORDEM • NAO E TEMPO MEDIDO • SEM DANO');
+  detail.setText('REA: '+ref.medianFrames+' QUADROS | HIT '+ord+
+    '% DA SEQUENCIA | TEMPO NAO MEDIDO | SEM DANO');
   return {mode,point,collided};
  };
  const tick=(_time,delta)=>render(delta);
