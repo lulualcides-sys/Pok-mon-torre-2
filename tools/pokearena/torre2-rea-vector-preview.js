@@ -27,6 +27,45 @@ function drawGlyph(g,x,y,palette,phase){
 export function createReaVectorPreview(scene){
  if(!scene?.datos?.torre2?.laboratory)throw new Error('REA preview requires laboratory');
  if(!scene.add?.graphics||!scene.add?.text||!scene.events?.on)throw new Error('Phaser scene missing');
+ // Static room is authored once per scene rather than issuing ~100 rect draws
+ // every frame. Graphics retained as a separate WebGL display object.
+ const backdrop=scene.add.graphics().setDepth(89999).setVisible(false);
+// Original layered pixel-art test room, covering high-depth battle UI.
+    // Never draw over the LAB top controls at logical y=77.
+    pixel(backdrop,16,105,608,173,0x020d1b,1);
+    pixel(backdrop,19,108,602,167,0x0a2131,1);
+    pixel(backdrop,23,111,594,24,0x17374a,1);
+    pixel(backdrop,23,135,594,64,0x0c2836,1);
+    pixel(backdrop,23,160,594,39,0x123444,1);
+    pixel(backdrop,23,184,594,15,0x163b48,1);
+    pixel(backdrop,23,199,594,29,0x1c454c,1);
+    pixel(backdrop,23,228,594,19,0x294d50,1);
+    pixel(backdrop,23,247,594,27,0x071928,1);
+    // Hand-authored stepped bezel and amber/sea-glass corners.
+    pixel(backdrop,19,108,602,3,0xbfd8ba,1);
+    pixel(backdrop,19,272,602,3,0xbfd8ba,1);
+    pixel(backdrop,19,111,3,161,0x7eaeab,1);
+    pixel(backdrop,618,111,3,161,0x7eaeab,1);
+    for(const x of [20,610])for(const y of [110,265]){
+     pixel(backdrop,x,y,9,3,0xffd17a,1);pixel(backdrop,x,y,3,10,0xffd17a,1);
+    }
+    pixel(backdrop,23,136,594,2,0x356875,1);
+    pixel(backdrop,23,245,594,2,0x64847e,1);
+    // Mountains in the far distance: procedural placement is deterministic,
+    // pixel-aligned and original; no reference-game background assets.
+    for(let i=0;i<16;i++){
+     const x=23+i*38,h=9+(i*17%13);
+     pixel(backdrop,x,198-h,36,h,0x1d4347,1);
+     pixel(backdrop,x+6,195-h,20,3,0x31575a,.92);
+    }
+    // Irregular stone slabs, sparse grass and tiny glowing laboratory marks.
+    for(let i=0;i<34;i++){
+     const x=31+i*17,y=230+(i*11%11);
+     pixel(backdrop,x,y,11,2,i%3?0x40655d:0x6a7363,.88);
+     if(i%4===0){pixel(backdrop,x+4,225,2,3,0x94b774,.9);pixel(backdrop,x+7,227,2,2,0x6b936c,.9);}
+    }
+    for(let x=38;x<609;x+=24)
+     pixel(backdrop,x,148+(x*7%13),2,2,0x85c9b7,.22);
  const g=scene.add.graphics().setDepth(90000).setVisible(false);
  const label=scene.add.text(38,117,'',{fontFamily:'Pixelify Sans,monospace',
   fontSize:'11px',fontStyle:'bold',color:'#fff2d8',
@@ -39,6 +78,7 @@ export function createReaVectorPreview(scene){
  const inputShield=scene.add.zone(320,191,608,173).setDepth(90002).setInteractive();
  inputShield.input.enabled=false;
  let active=false,destroyed=false,clock=0,mode=null,previous=null,impactTick=-Infinity,hitCount=0;
+ let lastLabel='',lastDetailMode=null;
  const debug={active:false,mode:null,hitCount:0,lastHitPosition:null,
   byMode:{beam:0,dash:0,arc:0},lastHitMode:null,
   isolation:'LAB_VISUAL_ONLY',containsThirdPartyAssets:false,doesNotChangeDamage:true};
@@ -65,42 +105,6 @@ export function createReaVectorPreview(scene){
   const flash=clock-impactTick<225,view=['PROJETIL CURVO','ESQUIVA / DASH','ARCO DE POKEBOLA'][index];
   const ref=[REA_FRAME_REFERENCES.Shoot,REA_FRAME_REFERENCES.Swing,REA_FRAME_REFERENCES.Attack][index];
   g.clear();
-  // Original layered pixel-art test room, covering high-depth battle UI.
-  // Never draw over the LAB top controls at logical y=77.
-  pixel(g,16,105,608,173,0x020d1b,1);
-  pixel(g,19,108,602,167,0x0a2131,1);
-  pixel(g,23,111,594,24,0x17374a,1);
-  pixel(g,23,135,594,64,0x0c2836,1);
-  pixel(g,23,160,594,39,0x123444,1);
-  pixel(g,23,184,594,15,0x163b48,1);
-  pixel(g,23,199,594,29,0x1c454c,1);
-  pixel(g,23,228,594,19,0x294d50,1);
-  pixel(g,23,247,594,27,0x071928,1);
-  // Hand-authored stepped bezel and amber/sea-glass corners.
-  pixel(g,19,108,602,3,0xbfd8ba,1);
-  pixel(g,19,272,602,3,0xbfd8ba,1);
-  pixel(g,19,111,3,161,0x7eaeab,1);
-  pixel(g,618,111,3,161,0x7eaeab,1);
-  for(const x of [20,610])for(const y of [110,265]){
-   pixel(g,x,y,9,3,0xffd17a,1);pixel(g,x,y,3,10,0xffd17a,1);
-  }
-  pixel(g,23,136,594,2,0x356875,1);
-  pixel(g,23,245,594,2,0x64847e,1);
-  // Mountains in the far distance: procedural placement is deterministic,
-  // pixel-aligned and original; no reference-game background assets.
-  for(let i=0;i<16;i++){
-   const x=23+i*38,h=9+(i*17%13);
-   pixel(g,x,198-h,36,h,0x1d4347,1);
-   pixel(g,x+6,195-h,20,3,0x31575a,.92);
-  }
-  // Irregular stone slabs, sparse grass and tiny glowing laboratory marks.
-  for(let i=0;i<34;i++){
-   const x=31+i*17,y=230+(i*11%11);
-   pixel(g,x,y,11,2,i%3?0x40655d:0x6a7363,.88);
-   if(i%4===0){pixel(g,x+4,225,2,3,0x94b774,.9);pixel(g,x+7,227,2,2,0x6b936c,.9);}
-  }
-  for(let x=38;x<609;x+=24)
-   pixel(g,x,148+(x*7%13),2,2,0x85c9b7,.22);
   // Original practice dummy: shield, metallic pedestal and glowing center.
   pixel(g,TGT.x-18,TGT.y+13,36,5,0x071622,1);
   pixel(g,TGT.x-13,TGT.y+8,26,7,0x3b5656,1);
@@ -133,10 +137,19 @@ export function createReaVectorPreview(scene){
   }
   for(let i=0;i<3;i++)pixel(g,394+i*12,117,8,5,
    i===index?palette[2]:0x3c6067,i===index?1:.6);
-  label.setText('LAB VETORIAL / '+view+'  '+(flash?'• IMPACTO':''));
-  const ord=Math.round(ref.hitOrdinal*100);
-  detail.setText('REA: '+ref.medianFrames+' QUADROS | HIT '+ord+
-    '% DA SEQUENCIA | TEMPO NAO MEDIDO | SEM DANO');
+  // Phaser Text.setText may regenerate a canvas texture. Update only on a
+  // meaningful mode/impact transition, not once per simulation frame.
+  const labelState=mode+(flash?':hit':':normal');
+  if(lastLabel!==labelState){
+   label.setText('LAB VETORIAL / '+view+'  '+(flash?'• IMPACTO':''));
+   lastLabel=labelState;
+  }
+  if(lastDetailMode!==mode){
+   const ord=Math.round(ref.hitOrdinal*100);
+   detail.setText('REA: '+ref.medianFrames+' QUADROS | HIT '+ord+
+     '% DA SEQUENCIA | TEMPO NAO MEDIDO | SEM DANO');
+   lastDetailMode=mode;
+  }
   return {mode,point,collided};
  };
  const tick=(_time,delta)=>render(delta);
@@ -144,9 +157,10 @@ export function createReaVectorPreview(scene){
   if(destroyed)return false;
   active=!active;debug.active=active;
   inputShield.input.enabled=active;
-  g.setVisible(active);label.setVisible(active);detail.setVisible(active);
+  backdrop.setVisible(active);g.setVisible(active);label.setVisible(active);detail.setVisible(active);
   if(active){
    clock=0;mode=null;previous=null;impactTick=-Infinity;hitCount=0;
+   lastLabel='';lastDetailMode=null;
    debug.hitCount=0;debug.lastHitPosition=null;debug.lastHitMode=null;
    debug.byMode={beam:0,dash:0,arc:0};
    render(0);
@@ -159,7 +173,7 @@ export function createReaVectorPreview(scene){
   // Phaser can clear an input handler BEFORE scene shutdown listeners run.
   // Never abort scene transition because the already-released Zone has no input.
   if(inputShield.input)inputShield.input.enabled=false;
-  inputShield.destroy();g.destroy();label.destroy();detail.destroy();
+  inputShield.destroy();g.destroy();backdrop.destroy();label.destroy();detail.destroy();
   if(scene.__torre2ReaMathPreview===debug)delete scene.__torre2ReaMathPreview;
  };
  scene.events.on('update',tick);
