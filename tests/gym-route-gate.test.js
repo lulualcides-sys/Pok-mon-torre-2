@@ -16,32 +16,39 @@ assert.ok(literal);
 const gyms=vm.runInNewContext('('+literal[1]+')',Object.create(null),{timeout:1000});
 const perStage=stage=>13+stage*2;
 
-test('every gym portal is the boundary before the original 3–4 interior encounters',()=>{
+test('all eight gym rosters keep stable IDs and place only trainers indoors',()=>{
  for(let stage=0;stage<8;stage++){
   const total=perStage(stage),routeCount=total-(stage===0?3:4);
-  for(const progress of [0,routeCount-1,routeCount,total-1,total]){
+  for(let progress=0;progress<=total;progress++){
    const state={stage,trainer:progress,team:[{id:'bulbasaur'}],money:1400};
    const before=JSON.stringify(state);
    const roster=gymIntermediateModel(state,gyms,perStage,routeNode);
    assert.equal(roster.routeCount,routeCount);
-   assert.equal(roster.slots[0].index,routeCount);
-   assert.equal(roster.slots.at(-1).index,total-1);
-   assert.equal(roster.inGym,progress>=routeCount&&progress<total);
+   assert.equal(roster.gymCount,total-routeCount);
+   assert.equal(roster.inGym,roster.gymIndices.includes(progress));
    assert.equal(roster.leaderReady,progress===total);
+   assert.equal(roster.routeProgress,roster.routeIndices.filter(i=>i<progress).length);
+   assert.deepEqual([...roster.routeIndices,...roster.gymIndices].sort((a,b)=>a-b),
+    Array.from({length:total},(_,i)=>i));
+   assert.ok(roster.slots.every(t=>routeNode(stage,t.index,total).type==='trainer'));
+   assert.ok(roster.routeIndices.filter(i=>['rival','rocket'].includes(routeNode(stage,i,total).type))
+    .every(i=>!roster.gymIndices.includes(i)));
    assert.equal(JSON.stringify(state),before);
   }
  }
 });
 
-test('native route path renders gym portal instead of repeating boss or interior NPCs',()=>{
+test('native route path uses original noncontiguous indices and an independent gym portal',()=>{
  const source=fs.readFileSync(new URL('../tools/pokearena/torre2-battle-path.js',import.meta.url),'utf8');
- assert.match(source,/const routeCount=gymRoster\?\.routeCount\?\?total/);
+ assert.match(source,/const routeIndices=gymRoster\?\.routeIndices\?\?Array\.from/);
+ assert.match(source,/const routeProgress=routeIndices\.filter\(i=>i<progress\)\.length/);
  assert.match(source,/const length=finished\?0:Math\.min\(14,Math\.max\(0,routeCount\+1-offset\)\)/);
- assert.match(source,/const gymPortal=!!gymRoster&&i===routeCount/);
+ assert.match(source,/global:boss\?total:routeIndices\[routeSlot\],portal:boss/);
+ assert.match(source,/const gymPortal=!!gymRoster&&p\.portal/);
  assert.match(source,/const node=gymPortal\?\{type:'gym',index:i\}:routeNode/);
  assert.match(source,/if\(gymPortal\)\{/);
- assert.match(source,/if\(progress>=total\|\|gymRoster&&progress>=routeCount\)return handlers\.gym\(\)/);
- assert.match(source,/scene\.__torre2BattlePath=\{stage,total,routeCount,progress/);
+ assert.match(source,/if\(progress>=total\|\|gymRoster\?\.inGym\)return handlers\.gym\(\)/);
+ assert.match(source,/scene\.__torre2BattlePath=\{stage,total,routeCount,routeIndices,progress/);
 });
 
 test('city building and route CTA cannot bypass the interior',()=>{

@@ -145,11 +145,12 @@ export function renderBattlePath(scene,state,handlers){
   progress=Math.min(total,Math.max(0,state.trainer||0)),
   leader=STAGES[stage]?.leader||'CAMPEÃO',
   city=STAGES[stage]?.city||'KANTO';
- // Last 3–4 existing encounters live only in the gym interior.
- // This changes the route's PRESENTATION, never trainer IDs or save progress.
+ // Route indices are stable original save IDs, not assumed contiguous.
+ // Rival/Rocket stay on the route even when their indices follow a gym NPC.
  const gymRoster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
  const routeCount=gymRoster?.routeCount??total;
- const routeProgress=Math.min(progress,routeCount);
+ const routeIndices=gymRoster?.routeIndices??Array.from({length:total},(_,i)=>i);
+ const routeProgress=routeIndices.filter(i=>i<progress).length;
  const sc=scene.add.graphics().setDepth(1);
  sc.fillStyle(COLORS.ink);sc.fillRect(0,0,640,360);
  sc.fillStyle(0x071d34);sc.fillRect(0,0,640,51);
@@ -206,10 +207,11 @@ export function renderBattlePath(scene,state,handlers){
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
-  const boss=offset+i===routeCount;
+  const routeSlot=offset+i;
+  const boss=routeSlot===routeCount;
   const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
   const y=boss?178:[275,211,147][Math.min(row,2)];
-  spots.push({x:px,y,global:offset+i});
+  spots.push({x:px,y,global:boss?total:routeIndices[routeSlot],portal:boss});
  }
  // Map region labels reference existing FireRed town/mountain sheets.
  // One connected zigzag and the leader at its end; no extra pages/maps.
@@ -229,12 +231,12 @@ export function renderBattlePath(scene,state,handlers){
  const hitZones=[];
  for(const p of spots){
   const i=p.global;
-  const gymPortal=!!gymRoster&&i===routeCount;
+  const gymPortal=!!gymRoster&&p.portal;
   const node=gymPortal?{type:'gym',index:i}:routeNode(stage,i,total);
   const checkpoint=gymPortal?{
-   done:false,active:progress>=routeCount,boss:true,
-   available:progress>=routeCount,
-   primary:progress>=routeCount?'gym':'locked',optionalCapture:false
+   done:false,active:gymRoster.inGym||gymRoster.leaderReady,boss:true,
+   available:gymRoster.inGym||gymRoster.leaderReady,
+   primary:gymRoster.inGym||gymRoster.leaderReady?'gym':'locked',optionalCapture:false
   }:pathCheckpointAction(i,progress,total,
    i<progress&&Boolean(rematchOpponent(state,i)));
   const {done,active,boss,available}=checkpoint;
@@ -281,7 +283,7 @@ export function renderBattlePath(scene,state,handlers){
    active?'#ffe29a':available?'#f1f8f3':'#afbdc8',23);
   g.fillStyle(active?0xf5c75d:done?0x56be86:0x40647e);
   g.fillRoundedRect(p.x-width/2+2,p.y-17,15,17,3);
-  txt(scene,p.x-width/2+9.5,p.y-8,String(i+1),8,
+  txt(scene,p.x-width/2+9.5,p.y-8,gymPortal?'G':String(i+1),8,
    active?'#30220f':'#fff7d4',24);
   for(let d=0;d<3;d++){
    g.lineStyle(1,done?0x76e0a6:0xb6ced9,.98);
@@ -388,14 +390,14 @@ export function renderBattlePath(scene,state,handlers){
  const current=finished?null:currentOpponent(state);
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
  txt(scene,24,342,finished?'CAMPEÃO DE KANTO':
-  gymRoster&&progress>=routeCount?'INTERIOR DO GINÁSIO':current?.name||leader,
+  gymRoster&&(gymRoster.inGym||gymRoster.leaderReady)?'INTERIOR DO GINÁSIO':current?.name||leader,
   12,'#fff2d2',30).setOrigin(0,.5);
  const label=finished?'★ SALÃO DA FAMA':progress>=total?
-  'ENFRENTAR '+leader.toUpperCase():gymRoster&&progress>=routeCount?
+  'ENFRENTAR '+leader.toUpperCase():gymRoster?.inGym?
   'ENTRAR NO GINÁSIO':'ENTRAR NA BATALHA';
  const cta=button(scene,359,335,217,32,label,()=>{
   if(finished)return handlers.hall?.();
-  if(progress>=total||gymRoster&&progress>=routeCount)return handlers.gym();
+  if(progress>=total||gymRoster?.inGym)return handlers.gym();
   handlers.battle();
  },{gold:true,enabled:true,depth:70});
  cta.setData('torre2-central-cta',true);
@@ -403,7 +405,7 @@ export function renderBattlePath(scene,state,handlers){
   .setData('torre2-reset-journey',true);
  // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
  installCampaignAudioSettings(scene);
- scene.__torre2BattlePath={stage,total,routeCount,progress,offset,locations:spots.length,
+ scene.__torre2BattlePath={stage,total,routeCount,routeIndices,progress,offset,locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
    stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
   nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),

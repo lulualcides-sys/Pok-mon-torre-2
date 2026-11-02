@@ -462,12 +462,13 @@ const server=http.createServer(async(req,res)=>{
     m.saveCampaign(m.createCampaign('charmander'));
     window.__pt2Game.scene.getScene('campanha').scene.restart();
   });
-  // Battle Road: replace the old oversized map with sequential click-to-fight
-  // checkpoints, including rival, Rocket, capture and the Brock leader.
+  // Battle Road: the 13 original trainer IDs are partitioned into 10 route
+  // encounters and 3 indoor gym encounters. Rival/Rocket remain on the route;
+  // the last route marker is a GYM PORTAL, never a second leader battle.
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&c.__torre2BattlePath?.stage===0&&
-     c.__torre2BattlePath?.locations===14;
+     c.__torre2BattlePath?.locations===11;
   },null,{timeout:25000});
   await offline.screenshot({path:'test-evidence/torre2-battle-road-pewter.png',fullPage:true});
   const road=await offline.evaluate(()=>{
@@ -485,6 +486,7 @@ const server=http.createServer(async(req,res)=>{
    const count=nodes.filter(o=>o.input?.enabled).length;
    const cta=c.children.list.find(o=>o.getData?.('torre2-central-cta'));
    return {nodes:nodes.length,types,captures,progress:p.progress,total:p.total,
+    routeCount:p.routeCount,routeIndices:p.routeIndices,
     badge:labels.includes('0/8 INSÍGNIAS'),money:labels.includes('$1920'),
     team:c.children.list.filter(o=>o.type==='Image'&&
      String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
@@ -497,11 +499,14 @@ const server=http.createServer(async(req,res)=>{
     gym:c.__torre2GymBackdrop};
   });
   assert.equal(road.total,13,'Brock still has 13 required trainers');
-  assert.equal(road.nodes,14,'Thirteen trainer checkpoints plus Brock leader');
+  assert.equal(road.nodes,11,'Ten outdoor route markers plus a gym portal');
+  assert.equal(road.routeCount,10,'Brock retains exactly ten outdoor encounters');
+  assert.deepEqual(road.routeIndices,[0,1,2,3,4,5,6,7,8,12],
+   'Original Rival ID 12 remains on route; 9–11 are inside the gym');
   assert.ok(road.types.includes('rival')&&road.types.includes('rocket')&&
-   road.types.includes('leader')&&road.captures.includes(2)&&
+   road.types.includes('gym')&&road.captures.includes(2)&&
    road.captures.includes(8)&&!road.types.includes('capture'),
-   'Rival/Rocket/leader stay fighters; wild catches use optional separate zones');
+   'Rival/Rocket remain outdoor fighters; the gym portal is not a second leader; wild catches remain separate');
   assert.ok(road.title&&road.button&&road.banner&&road.environment,
    'Battle hub displays original Pewter art, a compact team and fight CTA');
   assert.ok(road.gym?.realExterior&&road.gym?.realGym,
@@ -515,7 +520,7 @@ const server=http.createServer(async(req,res)=>{
    boss.emit('pointerdown');
    return {combat:c.game.scene.isActive('combate'),stage:c.__torre2BattlePath.stage};
   });
-  assert.equal(bossLocked.combat,false,'Brock cannot be accessed early');
+  assert.equal(bossLocked.combat,false,'The gym portal cannot bypass three indoor trainers or Brock');
   const gymResetQA=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const nodes=c.__torre2BattlePath.nodes,boss=nodes.at(-1);
@@ -533,7 +538,7 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(gymResetQA.bossX>=390&&gymResetQA.bossX<=430&&
    gymResetQA.bossY>=150&&gymResetQA.bossY<=200,
-   'Brock is the prominent central gym leader, not a regular left-side node');
+   'The gym portal is central; Brock himself remains in the separate gym interior');
   assert.ok(gymResetQA.trainers.every(x=>x<=310),
    'Ordinary trainers must remain outside the gym interior');
   assert.ok(gymResetQA.reset&&gymResetQA.opened&&
@@ -646,7 +651,7 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(fullscreenClicks,1,
    'Fullscreen button invokes Phaser on pointerup for Android compatibility');
   assert.equal(road.total,13);
-  assert.equal(road.nodes,14);
+  assert.equal(road.nodes,11);
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&c.__torre2BattlePath?.stage===0&&

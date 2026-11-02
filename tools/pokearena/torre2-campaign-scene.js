@@ -425,7 +425,7 @@ create(){
     fontSize:'13px',color:ready?'#a9f4bd':'#f5dda0'
    }).setOrigin(.5).setDepth(20);
   text(this,320,265,ready?'VOCÊ PODE ENTRAR AGORA.':
-   roster?.inGym?'RESTANTES NO GINÁSIO: '+remaining+' · SEM BATALHAS EXTRAS.':
+   roster?.inGym?'RESTANTES NO GINÁSIO: '+roster.slots.filter(t=>t.index>=state.trainer).length+' · SEM EXTRAS.':
    'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
     fontSize:'11px',color:C.white
    }).setOrigin(.5).setDepth(20);

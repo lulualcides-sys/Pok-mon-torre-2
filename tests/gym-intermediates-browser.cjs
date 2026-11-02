@@ -21,7 +21,7 @@ const server=http.createServer((req,res)=>{
  const reports=[];
  try{
   for(const [device,viewport] of [['desktop',{width:1280,height:720}],['mobile',{width:854,height:480}]]){
-   for(const [stage,leader,progress,expected] of [[0,'brock',10,3],[1,'misty',11,4]]){
+   for(const [stage,leader,progress,expected,routeCount] of [[0,'brock',9,3,10],[1,'misty',10,4,11]]){
     const page=await browser.newPage({viewport,hasTouch:device==='mobile'});
     const errors=[];page.on('pageerror',e=>errors.push(String(e)));
     try{
@@ -36,18 +36,20 @@ const server=http.createServer((req,res)=>{
       window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
      },{stage,progress});
      await page.waitForFunction(()=>window.__pt2Game.scene.isActive('campanha'),null,{timeout:60000});
-     await page.waitForFunction(p=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.routeCount===p,progress,{timeout:10000});
+     await page.waitForFunction(p=>window.__pt2Game.scene.getScene('campanha')?.__torre2BattlePath?.routeCount===p,routeCount,{timeout:10000});
      const before=await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'));
      const routeInfo=await page.evaluate(()=>{
       const s=window.__pt2Game.scene.getScene('campanha');
       const path=s.__torre2BattlePath;
       const nodes=path.nodes.map(n=>({index:n.getData('torre2-path-node'),type:n.getData('torre2-path-type')}));
-      return {routeCount:path.routeCount,total:path.total,nodes};
+      return {routeCount:path.routeCount,total:path.total,routeIndices:path.routeIndices,nodes};
      });
-     assert.equal(routeInfo.routeCount,progress,'route ends at gym entrance');
+     assert.equal(routeInfo.routeCount,routeCount,'route count preserves original battle total');
      assert.equal(routeInfo.nodes.at(-1)?.type,'gym','final route node is a gym building');
-     assert.equal(routeInfo.nodes.at(-1)?.index,progress);
-     assert.ok(routeInfo.nodes.every(n=>n.index<=progress),'no intermediate trainer duplicated on route');
+     assert.equal(routeInfo.nodes.at(-1)?.index,routeInfo.total);
+     assert.ok(routeInfo.nodes.filter(n=>n.type!=='gym').every(n=>routeInfo.routeIndices.includes(n.index)),
+      'no gym trainer duplicated on route');
+     assert.equal(routeInfo.nodes.some(n=>n.type==='rival'),true,'Rival must remain on route');
      // Trigger the actual Phaser interactive portal; do not call gymScreen directly.
      await page.evaluate(()=>{
       const s=window.__pt2Game.scene.getScene('campanha');
@@ -71,7 +73,8 @@ const server=http.createServer((req,res)=>{
      assert.equal(info.npcCount,expected,'all authentic FireRed trainer NPCs should render');
      assert.equal(info.interactiveCount,1);
      assert.equal(info.zoneCount,1);
-     assert.deepEqual(info.slots.map(x=>x.index),Array.from({length:expected},(_,i)=>progress+i));
+     assert.deepEqual(info.slots.map(x=>x.index),stage===0?[9,10,11]:[10,11,13,14]);
+     assert.ok(info.slots.every(x=>x.kind==='trainer'),'Rival/Rocket cannot be gym intermediates');
      assert.ok(info.slots.every(x=>x.x<200||x.x>440),'boss bridge must stay clear');
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),before);
      assert.deepEqual(errors,[]);
