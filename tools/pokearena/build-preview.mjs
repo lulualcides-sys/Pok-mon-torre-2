@@ -611,9 +611,17 @@ for(const [filename,changes] of patches){
    if(filename==='escenas/titulo.js' &&
       ((from.startsWith('[["tiktok",600]')&&to.includes('"instagram"')) ||
        (from.startsWith('const halo=this.add.graphics().setDepth(999)')&&to===''))){
-    if(body.split('this.redes();').length!==2)
-     throw Error('Unknown native title social entry point; cannot keep obsolete social patch');
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    disableNativeTitleSocialLinks(body); // fail closed if called in an unknown form
     console.warn('Native title social internals changed; offline call will be removed');
+    continue;
+   }
+   // Upstream can remove or reformat the optional social UI call.
+   // Strip it only when a single call is unambiguously identified; no links
+   // should be created by the solo game's title scene.
+   if(filename==='escenas/titulo.js'&&from==='this.redes();'&&to.includes('no social icons')){
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    body=disableNativeTitleSocialLinks(body);
     continue;
    }
    // Keep the native config import and add only the Kanto FX module.
