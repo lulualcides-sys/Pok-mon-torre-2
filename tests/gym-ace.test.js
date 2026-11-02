@@ -9,7 +9,7 @@ const gymsLiteral=coreSource.match(/export const GYMS=Object\.freeze\((\[[\s\S]*
 assert.ok(gymsLiteral,'canonical GYMS source must be readable');
 const GYMS=JSON.parse(JSON.stringify(vm.runInNewContext('('+gymsLiteral[1]+')',Object.create(null),{timeout:1000})));
 assert.match(coreSource,/export const TRAINERS_PER_GYM=stage=>stage<8\?13\+stage\*2/);
-import {GYM_ACE_VERSION,gymAcePlan,gymAcePlacement,gymAceVisibleBottomPadding,drawGymAce} from '../tools/pokearena/torre2-gym-ace.js';
+import {GYM_ACE_VERSION,gymAcePlan,gymAcePlacement,gymAceVisibleBottomPadding,gymAceVisibleBounds,gymAceSpriteFit,drawGymAce} from '../tools/pokearena/torre2-gym-ace.js';
 
 const expected=['onix','starmie','raichu','vileplume','weezing','alakazam','arcanine','rhyhorn'];
 const dex=['0095','0121','0026','0045','0110','0065','0059','0111'];
@@ -164,11 +164,89 @@ test('T35 Idle bob preserves the alpha-corrected ground anchor',()=>{
  try{
   const report=drawGymAce(scene,plan,()=>obj());
   assert.equal(report.ready,true);
-  const scale=Math.min(2.25,p.maxWidth/plan.frameWidth,p.maxHeight/plan.frameHeight);
+  const scale=Math.min(2.75,p.maxWidth/4,p.maxHeight/3);
   assert.ok(Math.abs(spriteY-(p.baseline-3+2*scale))<1e-8);
   assert.ok(tween,'Idle tween must be present');
   assert.equal(tween.y,spriteY-2,'bob must not snap back to uncorrected baseline');
   assert.equal(tween.yoyo,true);
+ }finally{
+  if(oldDocument===undefined)delete globalThis.document;
+  else globalThis.document=oldDocument;
+ }
+});
+
+test('T35 alpha bounds scale Onix from visible pixels, not transparent PMD frame',()=>{
+ const plan=gymAcePlan(GYMS,0,manifest),p=gymAcePlacement(plan);
+ const w=48,h=52,bytes=new Uint8ClampedArray(w*h*4);
+ // Only 14x22 visible pixels centered off-axis in a 48x52 PMD frame.
+ for(let y=11;y<=32;y++)for(let x=24;x<=37;x++)
+  bytes[(y*w+x)*4+3]=255;
+ let reads=0;
+ const doc={createElement:()=>({getContext:()=>({
+  drawImage(){},getImageData(){reads++;return {data:bytes}}
+ })})};
+ const texture={get:()=>({cutX:0,cutY:0,cutWidth:w,cutHeight:h,source:{image:{}}})};
+ const b=gymAceVisibleBounds(texture,doc);
+ assert.deepEqual({...b},{left:24,right:37,top:11,bottom:32,
+  width:14,height:22,bottomPadding:19,horizontalOffset:-7});
+ assert.equal(gymAceVisibleBounds(texture,doc),b,'single scan per texture');
+ assert.equal(reads,1,'avoid repeated alpha readback on mobile');
+ const fit=gymAceSpriteFit(plan,p,b);
+ assert.equal(fit.boundsMeasured,true);
+ assert.ok(fit.scale>2,'Onix must not be shrunk by transparent atlas margins');
+ assert.ok(fit.visibleHeight>=44,'Onix should read as the large boss Pokémon');
+ assert.ok(fit.visibleHeight<=p.maxHeight);
+ assert.ok(fit.visibleWidth<=p.maxWidth);
+ assert.equal(fit.x,p.aceX-7*fit.scale,'visual alpha center is centered on the ace anchor');
+ assert.equal(fit.y,p.baseline-3+19*fit.scale,'visible feet meet the shadow');
+ assert.ok(p.aceX-fit.visibleWidth/2>=p.leaderX+18,
+  'visible Onix cannot overlap Brock');
+});
+test('T35 sprite fitting falls back safely when canvas is missing/tainted',()=>{
+ const plan=gymAcePlan(GYMS,1,manifest),p=gymAcePlacement(plan);
+ const fit=gymAceSpriteFit(plan,p,null);
+ assert.equal(fit.boundsMeasured,false);
+ assert.equal(fit.scale,Math.min(2.25,p.maxWidth/plan.frameWidth,
+  p.maxHeight/plan.frameHeight));
+ assert.equal(fit.x,p.aceX);
+ assert.equal(fit.y,p.baseline-3);
+ const texture={get:()=>({cutX:0,cutY:0,cutWidth:48,cutHeight:52,source:{image:{}}})};
+ assert.equal(gymAceVisibleBounds(texture,null),null);
+ assert.equal(gymAceVisibleBounds(texture,{createElement:()=>({
+  getContext(){throw Error('tainted canvas')}
+ })}),null);
+});
+test('T35 alpha fitted sprite is placed at centered anchor, bounded height and ground baseline',()=>{
+ const plan=gymAcePlan(GYMS,0,manifest),p=gymAcePlacement(plan);
+ const w=48,h=52,bytes=new Uint8ClampedArray(w*h*4);
+ for(let y=10;y<34;y++)for(let x=23;x<37;x++)bytes[(y*w+x)*4+3]=255;
+ const oldDocument=globalThis.document;
+ globalThis.document={createElement:()=>({getContext:()=>({
+  drawImage(){},getImageData(){return {data:bytes}}
+ })})};
+ const texture={frameTotal:1,setFilter(){},get:()=>({
+  cutX:0,cutY:0,cutWidth:w,cutHeight:h,source:{image:{}}
+ })};
+ let sx,sy,scale,shadow;
+ const obj=()=>({active:true,setOrigin(){return this},
+  setScale(n){scale=n;return this},setDepth(){return this},
+  setData(){return this},once(){return this}});
+ const scene={scene:{isActive:()=>true},add:{
+  ellipse(x,y,w,h){shadow={x,y,w,h};return obj()},
+  sprite(x,y){sx=x;sy=y;return obj()}
+ },textures:{exists:()=>true,get:()=>texture},tweens:{add(){},killTweensOf(){}}};
+ try{
+  const report=drawGymAce(scene,plan,()=>obj());
+  assert.equal(report.ready,true);
+  assert.equal(report.fit.boundsMeasured,true);
+  assert.equal(scale,report.fit.scale);
+  assert.equal(sx,report.fit.x);
+  assert.equal(sy,report.fit.y);
+  assert.ok(report.fit.visibleHeight<=p.maxHeight);
+  assert.ok(report.fit.visibleWidth<=p.maxWidth);
+  assert.equal(shadow.x,p.aceX);
+  assert.ok(shadow.w>=17&&shadow.w<=65);
+  assert.equal(shadow.y,p.baseline);
  }finally{
   if(oldDocument===undefined)delete globalThis.document;
   else globalThis.document=oldDocument;
