@@ -747,14 +747,14 @@ for(const [filename,changes] of patches){
    // Remove ONLY one matching obsolete preload or accept that it is absent.
    if(filename==='escenas/carga.js'&&
       from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
-    const candidates=body.match(/this\.load\.spritesheet\([^;]*balls20\.png[^;]*\);/g)||[];
+    const candidates=body.match(/this\.load\.spritesheet\(\s*['\"]ui-balls['\"]\s*,\s*['\"]assets\/ui\/balls20\.png['\"]\s*,\s*\{[^}]{0,200}\}\s*\)\s*;?/g)||[];
     if(candidates.length>1||candidates.some(x=>!x.includes('"ui-balls"')))
      throw Error('Unknown native ui-balls preload; refuse ambiguous patch');
     if(candidates.length===1){
      body=body.replace(candidates[0],'');
      console.warn('Compatibility: removed one unused legacy balls20 preload');
     }else if(body.includes('ui-balls')||body.includes('balls20.png')){
-     throw Error('Unrecognized native ui-balls request; manual review needed');
+     throw Error('Unrecognized native ui-balls request; manual review needed: '+body.slice(Math.max(0,body.indexOf('ui-balls')-100),body.indexOf('ui-balls')+200));
     }else console.warn('Unused ui-balls preload already absent upstream');
     continue;
    }
