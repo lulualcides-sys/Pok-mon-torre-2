@@ -5,7 +5,26 @@
 
 **Escopo solicitado:** exclusivamente conteúdo de gameplay individual, sem PvP online, ranking ou multiplayer humano; a autenticação foi efetuada legitimamente pelo usuário no perfil privado do TinyFish para o treino contra bot. O titular do projeto informou autorização de acesso e uso **não comercial** para estudo. Não publicar arquivos brutos do jogo nem misturar ativos de terceiros no GitHub Pages sem comprovação do alcance dessa licença.
 
-## RESULTADO DA PESQUISA ACELERADA — 31/10/2026 (leia primeiro)
+## Atlas matemático das referências — 01/11/2026
+
+**Gerado e testado:** 3.815 entradas de estados animados de 237 IDs, 283 golpes, 246 no elenco público e 176 sem uso de batalha relatado. Os índices de impacto são percentuais **ordinais dos quadros**, não velocidades ou segundos. Nenhum frame original foi extraído.
+
+- [Atlas completo por sprite/estado e golpe — 1,8 MB](ATLAS-MATEMATICO-REA-2026-11-01.json)
+- [Resumo matemático — 14 KB](ATLAS-MATEMATICO-RESUMO-2026-11-01.json)
+- [Fórmulas, interpretação e limites](GUIA-ATLAS-MATEMATICO-2026-11-01.md)
+- [Gerador de trajetória, Bézier e colisão contínua](../../tools/research/pb-ranked-math-atlas.cjs)
+
+## Novidade verificada — 01/11/2026
+
+A auditoria de metadados públicos encontrou **Grassy Glide** no elenco atual, antes presente apenas no AST. A cobertura passa a **246 movimentos disponíveis / 176 ainda sem uso relatado**, de um universo de 283 nomes estáticos. Greninja teve alteração de golpes padrão, ainda sem IDs revalidados. Nenhuma animação quadro a quadro foi arquivada.
+
+- [Relatório atualizado e limitações](RELATORIO-COLETA-PUBLICA-2026-11-01.md)
+- [Delta estruturado 245→246](DELTA-REAL-2026-11-01.json)
+- [30 contratos públicos de combate; somente referência](CONTRATOS-PUBLICOS-COMBATE-2026-11-01.json)
+- [Plano original de 175 golpes, ainda pendente de Grassy Glide](PLANO-INCREMENTAL-175-PENDENTES-2026-11-01.json)
+- [Auditor de mudanças públicas e teste offline](../../tools/research/pb-ranked-public-drift.cjs)
+
+## RESULTADO DA PESQUISA ACELERADA — 31/10/2026 (histórico)
 
 - **283/283 nomes** do cliente público classificados por família técnica de ataque e sinais de áudio/VFX; [biblioteca de famílias](FAMILIAS-ESTRUTURAIS-283-GOLPES.json).
 - **245 nomes** correspondem ao elenco público de 127 Pokémon; **38** só estão no JavaScript de origem.

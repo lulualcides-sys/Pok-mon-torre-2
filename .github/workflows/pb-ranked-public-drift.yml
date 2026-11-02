@@ -1,0 +1,51 @@
+name: PB Ranked — verify full research and public catalog drift
+
+on:
+  push:
+    branches: [research/pb-ranked-175-pendentes-20261101]
+    paths:
+      - 'tools/research/pb-ranked-public-drift.cjs'
+      - 'tests/pb-ranked-public-drift.test.cjs'
+      - 'tests/pb-ranked-public-contracts.test.cjs'
+      - 'tests/pb-ranked-current-overlay.test.cjs'
+      - 'tests/pb-ranked-incremental-plan.test.cjs'
+      - 'reference-library/pb-ranked/CONTRATOS-PUBLICOS-COMBATE-2026-11-01.json'
+      - 'reference-library/pb-ranked/DELTA-REAL-2026-11-01.json'
+      - '.github/workflows/pb-ranked-public-drift.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  offline-integrity:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify syntax and all research invariants without network
+        run: |
+          node --check tools/research/pb-ranked-public-drift.cjs
+          node --test tests/pb-ranked-public-drift.test.cjs tests/pb-ranked-public-contracts.test.cjs tests/pb-ranked-current-overlay.test.cjs tests/pb-ranked-incremental-plan.test.cjs
+
+  public-source-availability:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Inspect live endpoints with bounded retries; fail only this job on outage
+        run: node tools/research/pb-ranked-public-drift.cjs
+      - name: Retain derived report including outages
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pb-ranked-public-drift-report
+          path: test-evidence/pb-ranked-public-drift.json
+          if-no-files-found: warn
+          retention-days: 7

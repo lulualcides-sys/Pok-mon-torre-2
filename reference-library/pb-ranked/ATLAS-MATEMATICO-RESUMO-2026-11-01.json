@@ -1,0 +1,582 @@
+{
+  "schemaVersion": 1,
+  "derivation": "Deterministic summary of ATLAS-MATEMATICO-REA-2026-11-01.json",
+  "evidence": {
+    "durationUnits": "source units, seconds NOT established",
+    "markerIndexAssumption": "zero-based frame ordinal; index/(n-1) = sequence position, NOT timing",
+    "averageUnitsPerFrame": "sourceDurationUnits/n; does NOT identify individual durations",
+    "uniformDurationEstimate": "(index+0.5)/n * sourceDurationUnits; hypothetical equal frame durations ONLY, not real measured timing",
+    "visualVfxCaptured": 0,
+    "familyHypothesis": "static AST heuristic, not a visual classification",
+    "priority": "heuristic only, not output of training or accuracy benchmark"
+  },
+  "coverage": {
+    "spriteIds": 237,
+    "animationStateEntries": 3815,
+    "staticMoves": 283,
+    "rosterMoves": 246,
+    "rosterMovesWithReportedUse": 70,
+    "rosterMovesPendingBattleUse": 176,
+    "protectedMoveNames": 45
+  },
+  "keyStateStatistics": {
+    "Attack": {
+      "sampleSize": 236,
+      "frames": {
+        "count": 236,
+        "min": 8,
+        "q1": 10,
+        "median": 12,
+        "q3": 14,
+        "max": 20,
+        "mean": 11.97881
+      },
+      "sourceDurationUnits": {
+        "count": 236,
+        "min": 18,
+        "q1": 21,
+        "median": 25,
+        "q3": 28,
+        "max": 46,
+        "mean": 25.08898
+      },
+      "averageUnitsPerFrame": {
+        "count": 236,
+        "min": 1.41176,
+        "q1": 1.92148,
+        "median": 2.09091,
+        "q3": 2.21429,
+        "max": 4.11111,
+        "mean": 2.11023
+      },
+      "markers": {
+        "hit": {
+          "count": 236,
+          "medianOrdinalFraction01": 0.33333,
+          "q1OrdinalFraction01": 0.25,
+          "q3OrdinalFraction01": 0.4
+        },
+        "rush": {
+          "count": 206,
+          "medianOrdinalFraction01": 0.11111,
+          "q1OrdinalFraction01": 0.1,
+          "q3OrdinalFraction01": 0.16667
+        },
+        "return": {
+          "count": 235,
+          "medianOrdinalFraction01": 0.66667,
+          "q1OrdinalFraction01": 0.55903,
+          "q3OrdinalFraction01": 0.66667
+        }
+      },
+      "orderedRushHitReturn": 206,
+      "otherMarkerOrder": 0
+    },
+    "Strike": {
+      "sampleSize": 163,
+      "frames": {
+        "count": 163,
+        "min": 9,
+        "q1": 10,
+        "median": 11,
+        "q3": 13,
+        "max": 20,
+        "mean": 11.71166
+      },
+      "sourceDurationUnits": {
+        "count": 163,
+        "min": 18,
+        "q1": 21,
+        "median": 24,
+        "q3": 28,
+        "max": 46,
+        "mean": 24.93865
+      },
+      "averageUnitsPerFrame": {
+        "count": 163,
+        "min": 1.4,
+        "q1": 1.93333,
+        "median": 2.1,
+        "q3": 2.3,
+        "max": 3.53846,
+        "mean": 2.14968
+      },
+      "markers": {
+        "hit": {
+          "count": 163,
+          "medianOrdinalFraction01": 0.33333,
+          "q1OrdinalFraction01": 0.25,
+          "q3OrdinalFraction01": 0.4
+        },
+        "rush": {
+          "count": 147,
+          "medianOrdinalFraction01": 0.11111,
+          "q1OrdinalFraction01": 0.1,
+          "q3OrdinalFraction01": 0.16667
+        },
+        "return": {
+          "count": 163,
+          "medianOrdinalFraction01": 0.66667,
+          "q1OrdinalFraction01": 0.53846,
+          "q3OrdinalFraction01": 0.66667
+        }
+      },
+      "orderedRushHitReturn": 147,
+      "otherMarkerOrder": 0
+    },
+    "Shoot": {
+      "sampleSize": 229,
+      "frames": {
+        "count": 229,
+        "min": 6,
+        "q1": 11,
+        "median": 12,
+        "q3": 12,
+        "max": 20,
+        "mean": 11.68559
+      },
+      "sourceDurationUnits": {
+        "count": 229,
+        "min": 18,
+        "q1": 26,
+        "median": 27,
+        "q3": 29,
+        "max": 47,
+        "mean": 27.18777
+      },
+      "averageUnitsPerFrame": {
+        "count": 229,
+        "min": 1.86667,
+        "q1": 2.16667,
+        "median": 2.25,
+        "q3": 2.36364,
+        "max": 4.75,
+        "mean": 2.37807
+      },
+      "markers": {
+        "hit": {
+          "count": 228,
+          "medianOrdinalFraction01": 0.18182,
+          "q1OrdinalFraction01": 0.16346,
+          "q3OrdinalFraction01": 0.33333
+        },
+        "rush": {
+          "count": 0,
+          "medianOrdinalFraction01": null,
+          "q1OrdinalFraction01": null,
+          "q3OrdinalFraction01": null
+        },
+        "return": {
+          "count": 224,
+          "medianOrdinalFraction01": 0.45805,
+          "q1OrdinalFraction01": 0.44444,
+          "q3OrdinalFraction01": 0.66667
+        }
+      },
+      "orderedRushHitReturn": 0,
+      "otherMarkerOrder": 0
+    },
+    "Swing": {
+      "sampleSize": 232,
+      "frames": {
+        "count": 232,
+        "min": 9,
+        "q1": 9,
+        "median": 9,
+        "q3": 9,
+        "max": 12,
+        "mean": 9.03017
+      },
+      "sourceDurationUnits": {
+        "count": 232,
+        "min": 16,
+        "q1": 16,
+        "median": 16,
+        "q3": 16,
+        "max": 30,
+        "mean": 16.16379
+      },
+      "averageUnitsPerFrame": {
+        "count": 232,
+        "min": 1.77778,
+        "q1": 1.77778,
+        "median": 1.77778,
+        "q3": 1.77778,
+        "max": 3,
+        "mean": 1.78784
+      },
+      "markers": {
+        "hit": {
+          "count": 232,
+          "medianOrdinalFraction01": 0.625,
+          "q1OrdinalFraction01": 0.625,
+          "q3OrdinalFraction01": 0.625
+        },
+        "rush": {
+          "count": 3,
+          "medianOrdinalFraction01": 0.18182,
+          "q1OrdinalFraction01": 0.14647,
+          "q3OrdinalFraction01": 0.18182
+        },
+        "return": {
+          "count": 232,
+          "medianOrdinalFraction01": 0.625,
+          "q1OrdinalFraction01": 0.625,
+          "q3OrdinalFraction01": 0.625
+        }
+      },
+      "orderedRushHitReturn": 3,
+      "otherMarkerOrder": 0
+    },
+    "Charge": {
+      "sampleSize": 235,
+      "frames": {
+        "count": 235,
+        "min": 6,
+        "q1": 10,
+        "median": 10,
+        "q3": 10,
+        "max": 10,
+        "mean": 9.95745
+      },
+      "sourceDurationUnits": {
+        "count": 235,
+        "min": 20,
+        "q1": 20,
+        "median": 20,
+        "q3": 20,
+        "max": 40,
+        "mean": 20.30638
+      },
+      "averageUnitsPerFrame": {
+        "count": 235,
+        "min": 2,
+        "q1": 2,
+        "median": 2,
+        "q3": 2,
+        "max": 4.5,
+        "mean": 2.04681
+      },
+      "markers": {
+        "hit": {
+          "count": 235,
+          "medianOrdinalFraction01": 0.55556,
+          "q1OrdinalFraction01": 0.55556,
+          "q3OrdinalFraction01": 0.55556
+        },
+        "rush": {
+          "count": 0,
+          "medianOrdinalFraction01": null,
+          "q1OrdinalFraction01": null,
+          "q3OrdinalFraction01": null
+        },
+        "return": {
+          "count": 232,
+          "medianOrdinalFraction01": 1,
+          "q1OrdinalFraction01": 1,
+          "q3OrdinalFraction01": 1
+        }
+      },
+      "orderedRushHitReturn": 0,
+      "otherMarkerOrder": 0
+    },
+    "Hop": {
+      "sampleSize": 234,
+      "frames": {
+        "count": 234,
+        "min": 7,
+        "q1": 10,
+        "median": 10,
+        "q3": 10,
+        "max": 12,
+        "mean": 9.98291
+      },
+      "sourceDurationUnits": {
+        "count": 234,
+        "min": 22,
+        "q1": 24,
+        "median": 24,
+        "q3": 24,
+        "max": 72,
+        "mean": 24.4188
+      },
+      "averageUnitsPerFrame": {
+        "count": 234,
+        "min": 2.27273,
+        "q1": 2.4,
+        "median": 2.4,
+        "q3": 2.4,
+        "max": 6,
+        "mean": 2.44269
+      },
+      "markers": {
+        "hit": {
+          "count": 231,
+          "medianOrdinalFraction01": 1,
+          "q1OrdinalFraction01": 1,
+          "q3OrdinalFraction01": 1
+        },
+        "rush": {
+          "count": 0,
+          "medianOrdinalFraction01": null,
+          "q1OrdinalFraction01": null,
+          "q3OrdinalFraction01": null
+        },
+        "return": {
+          "count": 0,
+          "medianOrdinalFraction01": null,
+          "q1OrdinalFraction01": null,
+          "q3OrdinalFraction01": null
+        }
+      },
+      "orderedRushHitReturn": 0,
+      "otherMarkerOrder": 0
+    },
+    "SpAttack": {
+      "sampleSize": 51,
+      "frames": {
+        "count": 51,
+        "min": 8,
+        "q1": 10.5,
+        "median": 13,
+        "q3": 15,
+        "max": 19,
+        "mean": 12.84314
+      },
+      "sourceDurationUnits": {
+        "count": 51,
+        "min": 18,
+        "q1": 27,
+        "median": 30,
+        "q3": 32,
+        "max": 47,
+        "mean": 30.03922
+      },
+      "averageUnitsPerFrame": {
+        "count": 51,
+        "min": 1.52632,
+        "q1": 2,
+        "median": 2.26667,
+        "q3": 2.55844,
+        "max": 5.625,
+        "mean": 2.41431
+      },
+      "markers": {
+        "hit": {
+          "count": 51,
+          "medianOrdinalFraction01": 0.27778,
+          "q1OrdinalFraction01": 0.10101,
+          "q3OrdinalFraction01": 0.4
+        },
+        "rush": {
+          "count": 0,
+          "medianOrdinalFraction01": null,
+          "q1OrdinalFraction01": null,
+          "q3OrdinalFraction01": null
+        },
+        "return": {
+          "count": 35,
+          "medianOrdinalFraction01": 0.6,
+          "q1OrdinalFraction01": 0.4,
+          "q3OrdinalFraction01": 0.76389
+        }
+      },
+      "orderedRushHitReturn": 0,
+      "otherMarkerOrder": 0
+    }
+  },
+  "moveFamilies": {
+    "beam": 30,
+    "light": 1,
+    "melee": 50,
+    "movement": 18,
+    "particles": 13,
+    "projectile": 25,
+    "status": 53,
+    "terrain": 57,
+    "undetermined": 14,
+    "wave": 22
+  },
+  "topPendingResearchPriorities": [
+    {
+      "name": "Brave Bird",
+      "familyHypothesis": "terrain",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Dragon Pulse",
+      "familyHypothesis": "status",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Focus Blast",
+      "familyHypothesis": "terrain",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Hyper Beam",
+      "familyHypothesis": "beam",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Iron Tail",
+      "familyHypothesis": "terrain",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Moonblast",
+      "familyHypothesis": "particles",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Rock Slide",
+      "familyHypothesis": "terrain",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Thunder",
+      "familyHypothesis": "melee",
+      "priority": 100,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Acrobatics",
+      "familyHypothesis": "wave",
+      "priority": 98,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Cross Poison",
+      "familyHypothesis": "status",
+      "priority": 98,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Dragon Dance",
+      "familyHypothesis": "status",
+      "priority": 98,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Heavy Slam",
+      "familyHypothesis": "melee",
+      "priority": 98,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Play Rough",
+      "familyHypothesis": "movement",
+      "priority": 98,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Power Gem",
+      "familyHypothesis": "particles",
+      "priority": 98,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Double Team",
+      "familyHypothesis": "status",
+      "priority": 96,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Drill Peck",
+      "familyHypothesis": "movement",
+      "priority": 96,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Drill Run",
+      "familyHypothesis": "particles",
+      "priority": 96,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Hyper Voice",
+      "familyHypothesis": "melee",
+      "priority": 96,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Psychic Fangs",
+      "familyHypothesis": "particles",
+      "priority": 96,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Steel Wing",
+      "familyHypothesis": "movement",
+      "priority": 96,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "U-turn",
+      "familyHypothesis": "status",
+      "priority": 96,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Aqua Tail",
+      "familyHypothesis": "status",
+      "priority": 94,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Blaze Kick",
+      "familyHypothesis": "melee",
+      "priority": 94,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Body Press",
+      "familyHypothesis": "projectile",
+      "priority": 94,
+      "defaultReady": true,
+      "protectedApproved": false
+    },
+    {
+      "name": "Clanging Scales",
+      "familyHypothesis": "beam",
+      "priority": 94,
+      "defaultReady": true,
+      "protectedApproved": false
+    }
+  ],
+  "warnings": [
+    "Statistical summaries from public declared animation metadata, not observed combat recordings",
+    "Fractional hit markers are ordinal frame positions, never measured seconds",
+    "Research scores are artificial heuristics, not validated move visuals or battle timing"
+  ]
+}

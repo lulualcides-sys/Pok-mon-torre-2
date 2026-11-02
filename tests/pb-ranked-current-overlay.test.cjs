@@ -1,0 +1,33 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const dir=path.resolve('reference-library/pb-ranked');
+const load=x=>JSON.parse(fs.readFileSync(path.join(dir,x),'utf8'));
+
+test('public 2026-11-01 overlay preserves old snapshot and highlights Grassy Glide without fake gameplay',()=>{
+ const delta=load('DELTA-REAL-2026-11-01.json');
+ const ast=load('golpes-mecanicas-ast.json');
+ const oldRoster=load('pokemon-movesets-completos-publicos.json');
+ const progress=load('PROGRESSO-GOLPES-283-2026-10-31.json');
+ const oldPlan=load('PLANO-INCREMENTAL-175-PENDENTES-2026-11-01.json');
+ assert.equal(ast.unique,283);
+ assert.equal(oldRoster.stats.distinctPoolMoveNames,245);
+ assert.equal(progress.rows.length,283);
+ assert.equal(progress.rows.filter(r=>r.browserAgentUseReported).length,70);
+ assert.equal(delta.baseline.rosterMoveNames,245);
+ assert.equal(delta.observed.rosterMoveNames,246);
+ assert.equal(delta.observed.staticOnly,37);
+ assert.equal(delta.observed.notReported,delta.observed.rosterMoveNames-70);
+ assert.equal(delta.publicRosterAdded.length,1);
+ assert.equal(delta.publicRosterAdded[0],'Grassy Glide');
+ assert.ok(ast.moves.some(x=>x.name==='Grassy Glide'));
+ assert.equal(delta.newTargets[0].observedInBattle,false);
+ assert.equal(delta.newTargets[0].requiresLiveGameplayAndVisualProof,true);
+ assert.equal(delta.newTargets[0].sourceSpeciesUnknown,true);
+ assert.equal(oldPlan.counts.remaining,175);
+ assert.equal(delta.existingIncrementalPlan.doesNotCoverNewGrassyGlide,true);
+ assert.equal(delta.flags.needsPlanRefreshFor176,true);
+ assert.equal(delta.flags.mainUnmodified,true);
+});

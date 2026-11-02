@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "verifiedOn": "2026-11-01",
+  "officialPublicPage": "https://ranked.pokemonbattlegrounds.com/",
+  "evidenceClass": "OFFICIAL_PUBLIC_RULES_NOT_INDEPENDENT_RUNTIME_TEST",
+  "usage": "Read-only gameplay design reference. Gameplay verified inside user project: NO.",
+  "scope": "Only battle, AI, movement, animation, collision and capture workflow; exclude PvP/ranking/network functionality",
+  "citations": [
+    {
+      "source": "https://ranked.pokemonbattlegrounds.com/",
+      "heading": "How battles work"
+    },
+    {
+      "source": "https://ranked.pokemonbattlegrounds.com/",
+      "heading": "How stats and moves work"
+    },
+    {
+      "source": "https://ranked.pokemonbattlegrounds.com/",
+      "heading": "Share this battle"
+    }
+  ],
+  "decisions": {
+    "COMPARE_ONLY": "Conferir equivalência no Torre2 antes de decidir; nunca transferir automaticamente",
+    "DO_NOT_IMPORT_NUMBERS": "Não substituir as regras ou cooldowns aprovados pelo usuário",
+    "OUT_OF_SCOPE": "Otimização exclusiva de campanha solo; não importar regras PvP",
+    "CHECK_GEN3_COMPATIBILITY": "Respeitar contrato de tipos e dano Gen III do Torre2",
+    "CANDIDATE_ORIGINAL_IMPLEMENTATION": "Prototipar código e pixel art próprios, validar impactos reais sem copiar VFX",
+    "RESEARCH_BEFORE_IMPLEMENTATION": "Não alterar golpe aprovado sem teste e consentimento",
+    "COMPARE_TYPES_ONLY": "Preservar as tabelas de clima atuais; referências de tipos, não de valores",
+    "REFERENCE_FOR_FUTURE_VERIFICATION": "Recurso de replay documentado no site público; usar apenas partidas próprias/autorizadas, sem afirmar frames capturados"
+  },
+  "entries": [
+    {
+      "id": "attack_queue",
+      "area": "combat",
+      "reference": {
+        "trigger": "manual move requested during current attack",
+        "effect": "queue until current attack ends"
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "move_ready_range",
+      "area": "combat",
+      "reference": {
+        "readyRequires": [
+          "cooldown expired",
+          "target in move range"
+        ],
+        "ui": "button glows when ready and in range"
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "manual_movement",
+      "area": "controls",
+      "reference": {
+        "enabled": true,
+        "methods": [
+          "keyboard/controller",
+          "arena dragging"
+        ],
+        "autoAttack": false
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "manual_dash",
+      "area": "controls",
+      "reference": {
+        "cooldownSeconds": 1.5,
+        "direction": "current steering direction"
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "auto_attacks_toggle",
+      "area": "ai",
+      "reference": {
+        "defaultMode": "auto",
+        "canAutoMoveAndDodgeWithoutAutoAttacking": true
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "bench_switch",
+      "area": "combat",
+      "reference": {
+        "method": "select bench Pokémon",
+        "onFaint": "select next Pokémon"
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "heal_limited",
+      "area": "combat",
+      "reference": {
+        "healMaxHpFraction": 0.3,
+        "usesPerPokemonPerBattle": 2
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "boost_limited",
+      "area": "combat",
+      "reference": {
+        "usesPerStayOnField": 2,
+        "resetOnSwitch": true
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "protect_repeat",
+      "area": "combat",
+      "reference": {
+        "extraCooldownPerUseSeconds": 3,
+        "resetCooldownSeconds": 7,
+        "resetOnSwitch": true
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "mega_once",
+      "area": "forms",
+      "reference": {
+        "usesPerBattle": 1,
+        "includesBattleBond": true
+      },
+      "decision": "OUT_OF_SCOPE",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "timer_3v3",
+      "area": "modes",
+      "reference": {
+        "durationSeconds": 240
+      },
+      "decision": "OUT_OF_SCOPE",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "timer_6v6",
+      "area": "modes",
+      "reference": {
+        "durationSeconds": 420
+      },
+      "decision": "OUT_OF_SCOPE",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "sudden_death",
+      "area": "modes",
+      "reference": {
+        "startRemainingFraction": 0.25,
+        "maxDamageMultiplier": 4,
+        "timeoutTiebreaker": "remaining HP"
+      },
+      "decision": "OUT_OF_SCOPE",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "stab",
+      "area": "damage",
+      "reference": {
+        "multiplier": 1.5
+      },
+      "decision": "CHECK_GEN3_COMPATIBILITY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "critical",
+      "area": "damage",
+      "reference": {
+        "chance": 0.05,
+        "multiplier": 1.5
+      },
+      "decision": "CHECK_GEN3_COMPATIBILITY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "speed_cooldown",
+      "area": "combat",
+      "reference": {
+        "speedShortensMoveCooldown": false
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "speed_auto_dodge",
+      "area": "ai",
+      "reference": {
+        "approxChance": "speed / 260",
+        "exampleSpeed": 130,
+        "approxChanceAtExample": 0.5
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "move_reach",
+      "area": "combat",
+      "reference": {
+        "categories": [
+          "close",
+          "mid",
+          "long"
+        ]
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "aim_dodge",
+      "area": "collision",
+      "reference": {
+        "projectilesBeamsLungesCanMissOnMovement": true,
+        "sureHitExceptions": true
+      },
+      "decision": "CANDIDATE_ORIGINAL_IMPLEMENTATION",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "decoys",
+      "area": "combat",
+      "reference": {
+        "sourceMove": "Double Team",
+        "effect": "attacks may hit decoys instead of Pokémon"
+      },
+      "decision": "RESEARCH_BEFORE_IMPLEMENTATION",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "stat_stages",
+      "area": "damage",
+      "reference": {
+        "plusOneStageMultiplier": 1.5,
+        "plusTwoStageMultiplier": 2,
+        "resetOnSwitch": true
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "weather_duration",
+      "area": "weather",
+      "reference": {
+        "durationSeconds": 15
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "rain_sun_types",
+      "area": "weather",
+      "reference": {
+        "rain": [
+          "boost Water",
+          "weaken Fire"
+        ],
+        "sun": [
+          "boost Fire",
+          "weaken Water"
+        ]
+      },
+      "decision": "COMPARE_TYPES_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "sand_hail_ticks",
+      "area": "weather",
+      "reference": {
+        "tickIntervalSeconds": 3,
+        "effect": "periodic HP loss"
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "flinch",
+      "area": "status",
+      "reference": {
+        "onlyWhenTargetNotExecutingMove": true,
+        "effect": "brief stagger"
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "burn",
+      "area": "status",
+      "reference": {
+        "damageTickIntervalSeconds": 3,
+        "physicalDamageMultiplier": 0.5
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "poison_toxic",
+      "area": "status",
+      "reference": {
+        "poison": "periodic HP loss",
+        "toxic": "damage increases over time"
+      },
+      "decision": "COMPARE_ONLY",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "paralysis",
+      "area": "status",
+      "reference": {
+        "movementSpeedMultiplier": 0.5,
+        "moveFailChance": 0.2
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "sleep",
+      "area": "status",
+      "reference": {
+        "minDurationSeconds": 2.5,
+        "maxDurationSeconds": 5
+      },
+      "decision": "DO_NOT_IMPORT_NUMBERS",
+      "verifiedInPracticeVsBot": false
+    },
+    {
+      "id": "battle_replays",
+      "area": "evidence",
+      "reference": {
+        "features": [
+          "watch replay",
+          "share video"
+        ],
+        "videoOrientations": [
+          "9:16",
+          "16:9"
+        ],
+        "onlyOwnMatchProof": true
+      },
+      "decision": "REFERENCE_FOR_FUTURE_VERIFICATION",
+      "verifiedInPracticeVsBot": false
+    }
+  ],
+  "warnings": [
+    "These are the creator's published rules, not audited frame/timing traces or code imported from another game.",
+    "Do not copy third-party animation assets without an applicable license.",
+    "Torre2 climate, ULT, cooldown, Gen III and battle item quotas remain authoritative; no automatic sync.",
+    "Only the user's own replay/session with lawful access can be used to check undocumented animations."
+  ]
+}
