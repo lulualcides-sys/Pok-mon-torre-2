@@ -1,0 +1,55 @@
+{
+  "schema": "kanto-reference-v1",
+  "generatedBy": "tools/pokearena/build-vector-reference.mjs",
+  "status": "visual-candidates-not-game-assets",
+  "assets": [
+    {
+      "name": "cerulean-canal",
+      "kind": "terrain",
+      "source": "guides/cerulean-canal.json",
+      "output": "rendered/cerulean-canal.svg",
+      "paletteCount": 6,
+      "foregroundBounds": [
+        6,
+        0,
+        26,
+        32
+      ],
+      "foregroundCoverage": 0.5,
+      "edgeTransitions": 236,
+      "seamMismatches": 0
+    },
+    {
+      "name": "pewter-ridge",
+      "kind": "terrain",
+      "source": "guides/pewter-ridge.json",
+      "output": "rendered/pewter-ridge.svg",
+      "paletteCount": 6,
+      "foregroundBounds": [
+        1,
+        4,
+        31,
+        32
+      ],
+      "foregroundCoverage": 0.543,
+      "edgeTransitions": 285,
+      "seamMismatches": 6
+    },
+    {
+      "name": "viridian-oak",
+      "kind": "prop",
+      "source": "guides/viridian-oak.json",
+      "output": "rendered/viridian-oak.svg",
+      "paletteCount": 6,
+      "foregroundBounds": [
+        3,
+        1,
+        29,
+        30
+      ],
+      "foregroundCoverage": 0.4658,
+      "edgeTransitions": 255,
+      "seamMismatches": 0
+    }
+  ]
+}
