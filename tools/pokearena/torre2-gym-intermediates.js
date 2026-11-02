@@ -32,7 +32,7 @@ export function gymIntermediateModel(state,gyms,trainersPerGym,routeNode){
 export function drawGymIntermediates(scene,model,addNpc,onBattle){
  if(!model)return null;
  const colors={defeated:'#93cda2',current:'#ffe29b',locked:'#b3b9bd'};
- let currentZones=0;
+ let currentZones=0,battleRequested=false;
  for(const t of model.slots){
   // No character or hitbox in the central bridge, ace, leader or CTA.
   scene.add.ellipse(t.x,t.y+1,24,6,0x101c30,.36).setDepth(13);
@@ -48,7 +48,12 @@ export function drawGymIntermediates(scene,model,addNpc,onBattle){
    scene.add.zone(t.x,t.y-17,53,40).setDepth(20)
     .setInteractive({useHandCursor:true})
     .setData('torre2-gym-intermediate-action',t.index)
-    .on('pointerdown',()=>onBattle?.(t.index));
+    .on('pointerdown',(_pointer,_localX,_localY,event)=>{
+     event?.stopPropagation?.();
+     if(battleRequested||!onBattle)return;
+     battleRequested=true;
+     onBattle(t.index);
+    });
    currentZones++;
   }
  }
