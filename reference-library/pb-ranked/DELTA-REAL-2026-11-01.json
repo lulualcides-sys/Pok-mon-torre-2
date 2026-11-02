@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "comparisonDate": "2026-11-01",
+  "source": "https://ranked.pokemonbattlegrounds.com/roster.json",
+  "evidence": {
+    "kind": "PUBLIC_METADATA_COMPARISON",
+    "run": "https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/41377576123",
+    "status": "success",
+    "note": "Public roster only, no battle observed."
+  },
+  "baseline": {
+    "date": "2026-10-31",
+    "staticMoveNames": 283,
+    "rosterMoveNames": 245,
+    "staticOnly": 38,
+    "reportedUsed": 70,
+    "notReported": 175,
+    "pokemon": 127,
+    "trainerNames": 28,
+    "animationEntries": 3815
+  },
+  "observed": {
+    "staticMoveNames": 283,
+    "rosterMoveNames": 246,
+    "staticOnly": 37,
+    "reportedUsedCarriedForward": 70,
+    "notReported": 176,
+    "pokemon": 127,
+    "trainerNames": 28,
+    "animationEntries": 3815,
+    "originalBundleHashChanged": false
+  },
+  "publicRosterAdded": [
+    "Grassy Glide"
+  ],
+  "publicRosterRemoved": [],
+  "defaultMoveListChangedFor": [
+    "Greninja"
+  ],
+  "newTargets": [
+    {
+      "name": "Grassy Glide",
+      "namePreviouslyStatic": true,
+      "nowInPublicRoster": true,
+      "observedInBattle": false,
+      "sourceSpeciesUnknown": true,
+      "defaultSlotUnknown": true,
+      "requiresLiveGameplayAndVisualProof": true,
+      "implementationStatus": "NOT_IMPLEMENTED_OR_VERIFIED_FROM_THIS_SOURCE"
+    }
+  ],
+  "existingIncrementalPlan": {
+    "path": "PLANO-INCREMENTAL-175-PENDENTES-2026-11-01.json",
+    "count": 175,
+    "status": "FROZEN_2026-10-31_BASELINE",
+    "stillCoversExisting175": true,
+    "doesNotCoverNewGrassyGlide": true,
+    "shouldNotClaimCompleteForUpdatedRoster": true
+  },
+  "limitations": [
+    "Newer read encountered HTTP 502; owner/defaults unverified.",
+    "Greninja default changes not identified individually; old slot assumptions may be stale.",
+    "No third-party code, art, assets or VFX copied.",
+    "Do not infer animation from appearance in roster."
+  ],
+  "flags": {
+    "needsNewMoveAssignment": true,
+    "needsActualCast": true,
+    "needsFrameEvidence": true,
+    "needsPlanRefreshFor176": true,
+    "mainUnmodified": true
+  }
+}
