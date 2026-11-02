@@ -1,5 +1,6 @@
 import {addCityBoat,addCitySprite,addCitySurface,CITY_ATLAS_KEY,CITY_SURFACES_KEY} from './city-atlas.js';
 import {addCeruleanOrganicTree} from './cerulean-organic-foliage.js';
+import {CERULEAN_GREENERY} from './cerulean-garden-layout.js';
 /* Original modular pixel architecture, rendered by Phaser/WebGL.
  * No map screenshot, no uploaded sheet with uncertain redistribution rights.
  * Geometry is local to each building; vegetation uses shared original textures.
@@ -192,27 +193,15 @@ export function renderCityScenery(scene){
  // A restrained 17 trees + existing flower planters reads more naturally than
  // 21 uniformly spaced stamps on paving. Fixed positions keep screenshot tests
  // deterministic and preserve all three city service hotspots.
- const treeKey=scene.textures.exists(CITY_ATLAS_KEY)?null:treeTexture(scene),positions=[
-  [15,69],[49,69],          // west woodland patch
-  [174,68],[210,69],[270,69],[310,68], // north garden belt
-  [424,74],[592,75],[629,75], // east gardens beyond the canal
-  [13,213],[29,245],       // lower west planted strip
-  [217,277],[283,276],[315,275], // south bank gardens
-  [420,272],[437,270],     // east canal bank
-  [630,190]                // east woodland edge
- ];
- // Original detailed botanical silhouettes; almost all native green foliage.
- // Occasional cherry and wisteria contrast with the dominant hardwood canopy.
- const kinds=['oak_sun','oak_deep','oak_lime','berry','oak_deep','oak_sun',
-  'oak_deep','oak_lime','wisteria','berry','oak_sun',
-  'oak_deep','oak_lime','sakura','oak_sun','oak_deep','pine'];
- for(const [i,[x,y]]of positions.entries()){
-  const height=36+(i*5%12);
-  const tree=addCeruleanOrganicTree(scene,x,y,height,kinds[i])||
-   addCitySprite(scene,'tree',x,y,44);
+ const treeKey=scene.textures.exists(CITY_ATLAS_KEY)?null:treeTexture(scene);
+ // Organic banks: native trees distributed across independent garden zones,
+ // without a uniform strip of stamps or trunks on the south stairway.
+ for(const p of CERULEAN_GREENERY){
+  const tree=addCeruleanOrganicTree(scene,p.x,p.y,p.height,p.species)||
+   addCitySprite(scene,'tree',p.x,p.y,p.height);
   if(tree)tree.setData('torre2-city-layer','vegetation');
-  else scene.add.image(x,y,treeKey).setOrigin(.5,1).setScale(.72)
-   .setDepth(20+y/1000).setData('torre2-city-layer','vegetation');
+  else if(treeKey)scene.add.image(p.x,p.y,treeKey).setOrigin(.5,1).setScale(.72)
+   .setDepth(20+p.y/1000).setData('torre2-city-layer','vegetation');
  }
  for(const [x,y,w]of [[250,134,45],[297,261,32],[436,184,27],[585,176,30]])
   addCitySprite(scene,'planter',x,y,w*188/447,{depth:25});
