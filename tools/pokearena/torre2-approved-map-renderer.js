@@ -45,14 +45,34 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
  // Five connections exist at Cerulean, Celadon and Fuchsia. Never hide the fifth.
  const navTargets=neighbors.slice();
  if(navTargets.length>5)return {ok:false,reason:'too-many-neighbors'};
- const footerY=navTargets.length?[347,13].find(y=>hotspots.every(h=>!overlaps(h,{x:320,y,width:636,height:25}))):null;
- if(navTargets.length&&!Number.isFinite(footerY))return {ok:false,reason:'navigation-overlap'};
+ const fullBarY=navTargets.length?[347,13].find(y=>hotspots.every(h=>!overlaps(h,{x:320,y,width:636,height:25}))):null;
+ const footerY=Number.isFinite(fullBarY)?fullBarY:null;
+ const navWidth=Math.min(130,(636-10)/Math.max(1,navTargets.length)-4);
+ let navBoxes=navTargets.map((_,i)=>({
+  x:320+(i-(navTargets.length-1)/2)*(navWidth+4),y:footerY,width:navWidth,height:25
+ }));
+ if(navTargets.length&&footerY===null){
+  // A wide bar obscures Fuchsia's northern Safari entrance and southern exit.
+  // Deterministic compact chips retain every connection without touching either.
+  const candidates=[];
+  for(const y of [347,13,314,46,281,79,248,112,215,145,180])
+   for(const x of [66,574,190,450,320])
+    candidates.push({x,y,width:110,height:23});
+  navBoxes=[];
+  for(const box of candidates){
+   if(!bounds(box,MAP_CANVAS)||hotspots.some(h=>overlaps(h,box))||
+      navBoxes.some(prev=>overlaps(prev,box)))continue;
+   navBoxes.push(box);
+   if(navBoxes.length===navTargets.length)break;
+  }
+  if(navBoxes.length!==navTargets.length)return {ok:false,reason:'navigation-overlap'};
+ }
  const backCandidates=[[601,20],[39,20],[601,314],[39,314]];
  const back=backCandidates.find(([x,y])=>hotspots.every(h=>!overlaps(h,{x,y,width:74,height:33}))&&
+  navBoxes.every(b=>!overlaps(b,{x,y,width:74,height:33}))&&
   (footerY===null||!overlaps({x,y,width:74,height:33},{x:320,y:footerY,width:636,height:25})));
  if(!back)return {ok:false,reason:'back-button-overlap'};
- const navWidth=Math.min(130,(636-10)/Math.max(1,navTargets.length)-4);
- return {ok:true,hotspots,navTargets,footerY,backX:back[0],backY:back[1],navWidth};
+ return {ok:true,hotspots,navTargets,navBoxes,footerY,backX:back[0],backY:back[1]};
 }
 
 export function renderApprovedMap(scene,id,{
@@ -96,12 +116,12 @@ export function renderApprovedMap(scene,id,{
   const footer=layout.footerY===null?null:
    scene.add.rectangle(320,layout.footerY,636,25,0x061b2e,.90).setDepth(47);
   layout.navTargets.forEach((target,i)=>{
-    const cx=320+(i-(layout.navTargets.length-1)/2)*(layout.navWidth+4);
+    const nav=layout.navBoxes[i],cx=nav.x;
     const neighbor=approvedMap(target);
-    scene.add.text(cx,layout.footerY,(neighbor?.name||target).slice(0,17).toUpperCase(),{
+    scene.add.text(cx,nav.y,(neighbor?.name||target).slice(0,17).toUpperCase(),{
       fontFamily:'Pixelify Sans,monospace',fontSize:'8px',color:'#dcf7f0',
       backgroundColor:'#174768',padding:{x:4,y:4}}).setDepth(48).setOrigin(.5);
-    scene.add.zone(cx,layout.footerY,layout.navWidth,25).setDepth(49).setInteractive({useHandCursor:true})
+    scene.add.zone(cx,nav.y,nav.width,nav.height).setDepth(49).setInteractive({useHandCursor:true})
       .setData('torre2-approved-route',target)
       .on('pointerdown',(_pointer,_x,_y,e)=>{
        e?.stopPropagation?.();
