@@ -13,6 +13,36 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dest=path.join(root,'arena2d');
 await fs.mkdir(root,{recursive:true});
 await fs.cp(source,dest,{recursive:true,force:true});
+// T41 maps are opt-in; when enabled by the validated ZIP installer, fail
+// the release if EVEN ONE approved asset is missing or malformed.
+const approvedRenderer=await fs.readFile('tools/pokearena/torre2-approved-map-renderer.js','utf8');
+if(approvedRenderer.includes('export const APPROVED_MAP_ASSETS_READY = true;')){
+ const {APPROVED_MAPS_ATLAS}=await import('./torre2-approved-maps-atlas.js');
+ const entries=APPROVED_MAPS_ATLAS.maps||[];
+ if(entries.length!==60||new Set(entries.map(m=>m.id)).size!==60)
+  throw Error('Approved map release requires exactly 60 distinct atlas entries');
+ const verified=[];
+ const sourceRoot=path.resolve('assets/ui/kanto-approved-maps')+path.sep;
+ for(const m of entries){
+  const rel=m.image;
+  if(typeof rel!=='string'||!rel.startsWith('assets/ui/kanto-approved-maps/')||
+     !rel.endsWith('.webp')||rel.includes('\\')||rel.includes('..'))
+   throw Error('Unsafe approved map path: '+rel);
+  const abs=path.resolve(rel);
+  if(!abs.startsWith(sourceRoot))throw Error('Approved map path escapes root: '+rel);
+  const pixels=await fs.readFile(abs);
+  if(pixels.length<1024||pixels.toString('ascii',0,4)!=='RIFF'||
+     pixels.toString('ascii',8,12)!=='WEBP')
+   throw Error('Approved map texture missing or invalid: '+rel);
+  verified.push({rel,pixels});
+ }
+ for(const {rel,pixels} of verified){
+  const destination=path.join(dest,rel);
+  await fs.mkdir(path.dirname(destination),{recursive:true});
+  await fs.writeFile(destination,pixels);
+ }
+ console.log('Installed 60 approved WebP maps into native Phaser site',verified.length);
+}
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
 // be verified. Never silently substitute another hand-drawn fake sprite.
@@ -203,6 +233,9 @@ await Promise.all([
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
+ ['tools/pokearena/torre2-approved-maps-atlas.js','approved-maps-atlas.js'],
+ ['tools/pokearena/torre2-approved-map-renderer.js','approved-map-renderer.js'],
+ ['tools/pokearena/torre2-approved-map-first-scenes.js','approved-map-first-scenes.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
@@ -571,6 +604,14 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Optional upstream spritesheet is gone/reshaped; it is not used by
+   // the native capture pipeline. Handle only this exact known dependency.
+   if(filename==='escenas/carga.js'&&
+      from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
+    const {stripUnavailableUiBallsPreload}=await import('./torre2-native-asset-compat.mjs');
+    body=stripUnavailableUiBallsPreload(body);
+    continue;
+   }
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
    if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){
@@ -861,6 +902,29 @@ for(const [filename,changes] of patches){
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
    }
+   // The native roster filter may evolve without changing the TODOS source.
+   // Insert Kanto species BEFORE the current native ROSTER declaration.
+   if(filename==='datos.js'&&
+      from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'&&
+      to.includes('upgradeKantoEvolutionBattleKits')){
+    const declarations=body.match(/(?:export\s+)?const\s+ROSTER\s*=\s*[^;]{1,220};/g)||[];
+    if(declarations.length!==1||!declarations[0].includes('TODOS'))
+     throw Error('Unknown native ROSTER declaration; not injecting species');
+    const setup='TODOS.push(...addEarlyKantoSpecies(TODOS));'+
+     'TODOS.push(...addAllKantoSpecies(TODOS));'+
+     'upgradeKantoEvolutionBattleKits(TODOS);';
+    body=body.replace(declarations[0],setup+declarations[0]);
+    continue;
+   }
+   // Native title sprite-size/Idle-2 heuristics changed upstream.
+   // The old literal no longer exists: preserve the new original visual
+   // chain instead of guessing new coordinates or disabling title animation.
+   // Browser smoke tests remain the publication gate for this compatibility.
+   if(filename==='escenas/titulo.js'&&to.includes('this.anims.exists')&&
+      (from.startsWith('return m&&')||from.startsWith('if(!m||'))){
+    console.warn('Changed upstream title Idle-2 conditions preserved unchanged');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
@@ -965,6 +1029,7 @@ for(const filename of [
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
  'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/versus-intro.js','torre2/battle-path.js',
+ 'torre2/approved-maps-atlas.js','torre2/approved-map-renderer.js','torre2/approved-map-first-scenes.js',
  'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));

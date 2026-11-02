@@ -1,6 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey} from './torre2-approved-map-renderer.js';
 import {approvedMap} from './torre2-approved-maps-atlas.js';
+import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -31,7 +32,7 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -135,7 +136,13 @@ class Campanha extends Phaser.Scene{
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
-  if(APPROVED_MAP_ASSETS_READY)preloadApprovedMap(this,APPROVED_STAGE_MAPS[stage]||'indigo-plateau');
+  if(APPROVED_MAP_ASSETS_READY){
+   // Preserve the user's current approved city when returning from PC/Mart
+   // and after a native Phaser scene restart. Never write it to save data.
+   const restored=this.__torre2ApprovedReturn?.stage===stage?
+    this.__torre2ApprovedReturn.id:null;
+   preloadApprovedMap(this,restored||APPROVED_STAGE_MAPS[stage]||'indigo-plateau');
+  }
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
   if(AVAILABLE_FRLG.includes(world)){
@@ -168,6 +175,8 @@ class Campanha extends Phaser.Scene{
    if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))
     this.textures.remove(key);
   }
+  if(APPROVED_MAP_ASSETS_READY)for(const kind of ['brock','misty','swimmer','hiker','youngster','lass'])
+   needed.add(spriteIdForTrainer(kind));
   for(const id of needed){
    if(!AVAILABLE_FRLG_NPCS.includes(id))continue;
    const key='frlg-npc-'+id;
@@ -175,6 +184,11 @@ class Campanha extends Phaser.Scene{
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  // One small original PMD portrait for each first-gym ace, beside its leader.
+  // No extra full animation set or online request during map navigation.
+  if(APPROVED_MAP_ASSETS_READY){
+   toLoad.add('0095');toLoad.add('0121');
+  }
   // Only this region's twelve unique wild entries; reuse existing small PMD
   // portraits, not twelve full animation sheets (mobile GPU memory).
   for(const id of [...new Set(wildAvailability(stage).wild)].slice(0,12)){
@@ -257,8 +271,18 @@ create(){
     }catch(error){console.warn('Torre 2: battle report unavailable',error);}
    }
   }
-  if(!state)return this.starterSelection();
-  this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
+  if(!state){
+   this.__torre2ApprovedReturn=null;
+   return this.starterSelection();
+  }
+  // Combat resolution must always show its native report before resuming
+  // navigation. Stale map IDs from another stage never hijack the save.
+  if(completed||this.__torre2ApprovedReturn?.stage!==state.stage)
+   this.__torre2ApprovedReturn=null;
+  const resume=this.__torre2ApprovedReturn;
+  const resumed=!battleReport&&APPROVED_MAP_ASSETS_READY&&resume&&
+   this.approvedMapPreview(state,resume.id);
+  if(!resumed)this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
    // Offer choices only AFTER the battle report has been acknowledged.
@@ -488,20 +512,56 @@ create(){
    const entry=approvedMap(target),key=mapTextureKey(target);
    if(!this.textures.exists(key)){
     if(this.load.isLoading?.())return;
+    let failed=false;
+    this.load.on('loaderror',onError);
+    const self=this;
+    function onError(file){if(file?.key===key)failed=true;}
     this.load.image(key,entry.image);
-    this.load.once('complete',()=>this.approvedMapPreview(readCampaign()||state,target));
+    this.load.once('complete',()=>{
+     self.load.off('loaderror',onError);
+     if(!self.scene.isActive())return;
+     if(failed||!self.textures.exists(key)){
+      self.add.text(320,313,'IMAGEM INDISPONÍVEL · MAPA ATUAL PRESERVADO',{
+       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffe3ab',
+       backgroundColor:'#092a40',padding:{x:5,y:4}}).setOrigin(.5).setDepth(60);
+      return;
+     }
+     self.approvedMapPreview(readCampaign()||state,target);
+    });
     this.load.start();
    }else this.approvedMapPreview(readCampaign()||state,target);
   };
   this.children.removeAll(true);
   const result=renderApprovedMap(this,id,{
-   onExit:()=>this.renderCampaign(readCampaign()||state),
+   onExit:()=>{
+    this.__torre2ApprovedReturn=null;
+    this.renderCampaign(readCampaign()||state);
+   },
    isUnlocked:canTravel,
    onNavigate:(_src,target)=>open(target),
    onHotspot:(_id,kind)=>{
     const fresh=readCampaign()||state;
     if(kind==='center')return this.centerScreen(fresh);
     if(kind==='mart')return this.martScreen(fresh);
+    // The approved artwork itself is clickable. All route destinations still
+    // go through the existing stage lock; clicking a sign grants no progress.
+    const firstTarget=firstApprovedDestination(id,kind);
+    if(firstTarget){
+     if(canTravel(id,firstTarget))return open(firstTarget);
+     this.add.text(320,320,'CAMINHO BLOQUEADO PELA PROGRESSÃO',{
+      fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
+      backgroundColor:'#0b293d',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
+     return;
+    }
+    if(kind==='challenge'){
+     const current=(id==='gym-brock'&&fresh.stage===0)||
+      (id==='gym-misty'&&fresh.stage===1);
+     if(current)return this.gymScreen(fresh);
+     this.add.text(320,320,'GINÁSIO FORA DA ETAPA ATUAL',{
+      fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
+      backgroundColor:'#0b293d',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
+     return;
+    }
     if(kind==='gym'&&APPROVED_GYMS[id])return open(APPROVED_GYMS[id]);
     const portals={
      'fuchsia-city':{safari:'safari-zone'},
@@ -515,9 +575,52 @@ create(){
     this.add.text(320,316,'EVENTO '+kind.toUpperCase()+' · EM INTEGRAÇÃO',{
      fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#fff2bd',
      backgroundColor:'#102e43',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
+   },
+   resolveHotspots:firstApprovedHotspots,
+   artNavigation:hasFirstApprovedHotspots(id),
+   renderSprite:(scene,entry,rect)=>{
+    const gymId=entry.id;
+    const gymStage=gymId==='gym-brock'?0:gymId==='gym-misty'?1:null;
+    if(gymStage===null)return;
+    const actors=firstApprovedGymActors(gymId,TRAINERS_PER_GYM(gymStage));
+    const project=(cx,cy)=>({x:rect.x+cx*rect.width,y:rect.y+cy*rect.height});
+    const leader=project(actors.leader.cx,actors.leader.cy);
+    addFireRedNPC(scene,actors.leader.kind,leader.x,leader.y,
+     {scale:1.7,depth:24});
+    const ace=project(actors.ace.cx,actors.ace.cy),
+     aceKey='torre2-portrait-'+actors.ace.dex;
+    if(scene.textures.exists(aceKey))
+     scene.add.image(ace.x,ace.y,aceKey)
+      .setDisplaySize(30,30).setDepth(24)
+      .setData('torre2-gym-ace',gymId);
+    for(const actor of actors.trainers){
+     const point=project(actor.cx,actor.cy);
+     const npc=addFireRedNPC(scene,actor.kind,point.x,point.y,
+      {scale:1.45,depth:24});
+     if(!npc)continue;
+     const hit=scene.add.zone(point.x,point.y-13,35,43).setDepth(41)
+      .setInteractive({useHandCursor:true})
+      .setData('torre2-approved-gym-trainer',gymId+':'+actor.index);
+     hit.on('pointerdown',(_pointer,_x,_y,event)=>{
+      event?.stopPropagation?.();
+      const fresh=readCampaign()||state;
+      if(fresh.stage===gymStage&&fresh.trainer===actor.index)
+       return this.enterBattle(fresh);
+      if(fresh.stage===gymStage&&fresh.trainer>actor.index)
+       return this.rematchScreen(fresh,actor.index,gymStage);
+      this.add.text(320,318,'DESAFIO BLOQUEADO · AVANCE NA ROTA',{
+       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffe4a1',
+       backgroundColor:'#09283b',padding:{x:5,y:4}}).setOrigin(.5).setDepth(60);
+     });
+    }
    }
   });
-  if(!result.ok)return this.renderCampaign(readCampaign()||state);
+  if(!result.ok){
+   this.__torre2ApprovedReturn=null;
+   this.renderCampaign(readCampaign()||state);
+   return false;
+  }
+  this.__torre2ApprovedReturn={id,stage:state.stage};
   this.__torre2ApprovedMapView=result;
   return true;
  }

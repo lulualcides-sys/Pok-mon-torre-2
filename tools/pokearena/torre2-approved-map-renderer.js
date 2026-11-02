@@ -77,7 +77,8 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
 
 export function renderApprovedMap(scene,id,{
   onExit=()=>{},onHotspot=()=>{},onNavigate=()=>{},isUnlocked=()=>false,
-  onLocked=()=>{},showHitAreas=false,renderSprite=null
+  onLocked=()=>{},showHitAreas=false,renderSprite=null,
+  resolveHotspots=null,artNavigation=false
 }={}) {
   const entry=approvedMap(id),texture=mapTextureKey(id);
   if(!entry)return {ok:false,reason:'unknown-map',id};
@@ -91,7 +92,10 @@ export function renderApprovedMap(scene,id,{
   const rect={x:(640-sourceW*fit)/2,y:(360-sourceH*fit)/2,
    width:sourceW*fit,height:sourceH*fit};
   const neighbors=approvedMapNeighbours(id).filter(target=>isUnlocked(id,target));
-  const layout=planApprovedMapOverlays(entry,rect,neighbors);
+  // A few audited city maps already have route signs painted on the art.
+  // Their interactive hit zones replace the otherwise intrusive footer bar.
+  const hotspots=typeof resolveHotspots==='function'?resolveHotspots(entry):entry.hotspots;
+  const layout=planApprovedMapOverlays({...entry,hotspots},rect,artNavigation?[]:neighbors);
   if(!layout.ok)return {...layout,id};
   const image=scene.add.image(320,180,texture)
    .setOrigin(.5,.5).setDisplaySize(rect.width,rect.height).setDepth(1);
