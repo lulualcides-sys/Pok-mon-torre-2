@@ -830,6 +830,17 @@ for(const [filename,changes] of patches){
     body=body.replace(native,guarded);
     continue;
    }
+   // Rain/Sun move hook now also uses a separate local module. The
+   // external config import order is independent of our import.
+   if(filename==='habilidades.js'&&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
+      to.includes('import{weatherFromMove}')){
+    const own='import{weatherFromMove}from"./torre2/weather.js";';
+    if(body.includes(own))throw Error('Duplicate weather handler import');
+    if(!body.includes('etiquetarAccion('))throw Error('Unknown native ability cast pipeline');
+    body=own+'\n'+body;
+    continue;
+   }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
    // guessing which texture or avatar it should load; battle scenes untouched.
