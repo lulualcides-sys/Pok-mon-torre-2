@@ -49,6 +49,7 @@ export const CITY_TEXTURES=Object.freeze([
  Object.freeze([CITY_ATLAS_KEY,CITY_ATLAS_FILE]),
  Object.freeze([CITY_SURFACES_KEY,CITY_SURFACES_FILE]),
  Object.freeze(['torre2-cerulean-organic-ref-v1','assets/ui/city-original/cerulean-organic-reference-v1.webp']),
+ Object.freeze(['torre2-cerulean-native-trees-v2','assets/ui/city-original/cerulean-native-trees-v2.png']),
  Object.freeze(['torre2-regional-gyms-v1','assets/ui/city-original/regional-gyms-v1.webp']),
  Object.freeze(['torre2-city-boat-v2','assets/ui/city-original/boat-v2.webp'])
 ]);
