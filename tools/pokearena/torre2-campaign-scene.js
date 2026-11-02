@@ -136,7 +136,13 @@ class Campanha extends Phaser.Scene{
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
-  if(APPROVED_MAP_ASSETS_READY)preloadApprovedMap(this,APPROVED_STAGE_MAPS[stage]||'indigo-plateau');
+  if(APPROVED_MAP_ASSETS_READY){
+   // Preserve the user's current approved city when returning from PC/Mart
+   // and after a native Phaser scene restart. Never write it to save data.
+   const restored=this.__torre2ApprovedReturn?.stage===stage?
+    this.__torre2ApprovedReturn.id:null;
+   preloadApprovedMap(this,restored||APPROVED_STAGE_MAPS[stage]||'indigo-plateau');
+  }
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
   if(AVAILABLE_FRLG.includes(world)){
@@ -258,8 +264,18 @@ create(){
     }catch(error){console.warn('Torre 2: battle report unavailable',error);}
    }
   }
-  if(!state)return this.starterSelection();
-  this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
+  if(!state){
+   this.__torre2ApprovedReturn=null;
+   return this.starterSelection();
+  }
+  // Combat resolution must always show its native report before resuming
+  // navigation. Stale map IDs from another stage never hijack the save.
+  if(completed||this.__torre2ApprovedReturn?.stage!==state.stage)
+   this.__torre2ApprovedReturn=null;
+  const resume=this.__torre2ApprovedReturn;
+  const resumed=!battleReport&&APPROVED_MAP_ASSETS_READY&&resume&&
+   this.approvedMapPreview(state,resume.id);
+  if(!resumed)this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
    // Offer choices only AFTER the battle report has been acknowledged.
@@ -489,14 +505,31 @@ create(){
    const entry=approvedMap(target),key=mapTextureKey(target);
    if(!this.textures.exists(key)){
     if(this.load.isLoading?.())return;
+    let failed=false;
+    this.load.on('loaderror',onError);
+    const self=this;
+    function onError(file){if(file?.key===key)failed=true;}
     this.load.image(key,entry.image);
-    this.load.once('complete',()=>this.approvedMapPreview(readCampaign()||state,target));
+    this.load.once('complete',()=>{
+     self.load.off('loaderror',onError);
+     if(!self.scene.isActive())return;
+     if(failed||!self.textures.exists(key)){
+      self.add.text(320,313,'IMAGEM INDISPONÍVEL · MAPA ATUAL PRESERVADO',{
+       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffe3ab',
+       backgroundColor:'#092a40',padding:{x:5,y:4}}).setOrigin(.5).setDepth(60);
+      return;
+     }
+     self.approvedMapPreview(readCampaign()||state,target);
+    });
     this.load.start();
    }else this.approvedMapPreview(readCampaign()||state,target);
   };
   this.children.removeAll(true);
   const result=renderApprovedMap(this,id,{
-   onExit:()=>this.renderCampaign(readCampaign()||state),
+   onExit:()=>{
+    this.__torre2ApprovedReturn=null;
+    this.renderCampaign(readCampaign()||state);
+   },
    isUnlocked:canTravel,
    onNavigate:(_src,target)=>open(target),
    onHotspot:(_id,kind)=>{
@@ -539,7 +572,12 @@ create(){
    resolveHotspots:firstApprovedHotspots,
    artNavigation:hasFirstApprovedHotspots(id)
   });
-  if(!result.ok)return this.renderCampaign(readCampaign()||state);
+  if(!result.ok){
+   this.__torre2ApprovedReturn=null;
+   this.renderCampaign(readCampaign()||state);
+   return false;
+  }
+  this.__torre2ApprovedReturn={id,stage:state.stage};
   this.__torre2ApprovedMapView=result;
   return true;
  }
