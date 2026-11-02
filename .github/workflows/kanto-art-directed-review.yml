@@ -1,0 +1,39 @@
+name: Kanto art-directed pixel sprites — exact render and review
+on:
+  push:
+    branches: [feat/kanto-art-directed-pixel-sprites-20261101]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: kanto-art-review-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  visual-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check six art assets match code and retained vector guide tests
+        run: |
+          node --check tools/pokearena/kanto-art-directed-v1.mjs
+          node --test tests/kanto-art-directed.test.js
+          node --test tests/kanto-vector-reference.test.js
+      - name: Render exact committed SVGs into transparent PNGs and contact sheet
+        run: |
+          python -m pip install --disable-pip-version-check Pillow
+          python tools/pokearena/render-kanto-art-review.py
+          test -s test-evidence/kanto-art-directed/kanto-art-directed-preview.png
+      - name: Upload visual proof — art candidates, not gameplay screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-art-directed-six-real-assets
+          path: test-evidence/kanto-art-directed/
+          retention-days: 21
