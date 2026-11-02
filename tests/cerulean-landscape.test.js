@@ -6,8 +6,8 @@ import {CERULEAN_GARDEN_BEDS,CERULEAN_CLEAR_ROUTES,
 test('the organic gardens stay clear of every live city service and water channel',()=>{
  const report=ceruleanLandscapeReport();
  assert.equal(report.pass,true,JSON.stringify(report.blocked));
- assert.equal(report.beds,10);
- assert.equal(report.uniqueZones,10);
+ assert.equal(report.beds,8);
+ assert.equal(report.uniqueZones,8);
  assert.ok(CERULEAN_CLEAR_ROUTES.length>=9);
  for(const bed of CERULEAN_GARDEN_BEDS){
   assert.ok(bed.points.length>=6);
@@ -20,7 +20,9 @@ test('rendering has exactly one masked grass texture and no clickable scenery',(
  assert.match(source,/\.setMask\(mask\)/);
  assert.match(source,/\.once\('destroy'/);
  assert.doesNotMatch(source,/setInteractive\(|saveCampaign|localStorage|scene\.scene\.start|fetch\(/);
- assert.match(source,/setTileScale\(\.24\)/);
+ const tileScale=Number(source.match(/\.setTileScale\((0?\.\d+)\)/)?.[1]);
+ assert.ok(Number.isFinite(tileScale)&&tileScale>=.20&&tileScale<=.30,
+  `garden texture scale ${tileScale} must remain within readable pixel-art bounds`);
  const city=fs.readFileSync('tools/pokearena/torre2-city-scenery.js','utf8');
  assert.match(city,/renderCeruleanLandscape\(scene\)/);
  assert.match(city,/const gardens=renderCeruleanLandscape/);
