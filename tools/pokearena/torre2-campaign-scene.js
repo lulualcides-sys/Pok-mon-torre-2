@@ -280,8 +280,15 @@ create(){
   if(completed||this.__torre2ApprovedReturn?.stage!==state.stage)
    this.__torre2ApprovedReturn=null;
   const resume=this.__torre2ApprovedReturn;
-  const resumed=!battleReport&&APPROVED_MAP_ASSETS_READY&&resume&&
-   this.approvedMapPreview(state,resume.id);
+  // Image-backed city becomes the normal campaign entrance ONLY after the
+  // complete, hash-validated approved WebP package is installed. All existing
+  // battle routes remain available via the ROTAS button inside the image view.
+  // A battle report always takes precedence over map navigation.
+  const desiredMap=resume?.id||APPROVED_STAGE_MAPS[state.stage];
+  const artReady=!battleReport&&APPROVED_MAP_ASSETS_READY&&
+   hasFirstApprovedHotspots(desiredMap)&&
+   this.textures.exists(mapTextureKey(desiredMap));
+  const resumed=artReady&&this.approvedMapPreview(state,desiredMap);
   if(!resumed)this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);

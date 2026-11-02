@@ -1,3 +1,4 @@
+import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
@@ -225,4 +226,15 @@ test('T46 S.S. Anne exits through the original Vermilion City artwork without an
  exit.pointerdown(null,0,0,{stopPropagation(){}});
  assert.deepEqual(events,[['ss-anne','exit']]);
  assert.equal(zones.some(z=>z.data?.value==='ss-anne:captain'),false);
+});
+
+test('T47 approved cities open by default only after verified textures, preserve route actions',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.match(source,/const desiredMap=resume\?\.id\|\|APPROVED_STAGE_MAPS\[state\.stage\]/);
+ assert.match(source,/hasFirstApprovedHotspots\(desiredMap\)/);
+ assert.match(source,/this\.textures\.exists\(mapTextureKey\(desiredMap\)\)/);
+ assert.match(source,/!battleReport&&APPROVED_MAP_ASSETS_READY/);
+ assert.match(source,/if\(!resumed\)this\.renderCampaign\(state/);
+ const renderer=readFileSync('tools/pokearena/torre2-approved-map-renderer.js','utf8');
+ assert.match(renderer,/entry\.type==='cidade'\?'ROTAS':'VOLTAR'/);
 });
