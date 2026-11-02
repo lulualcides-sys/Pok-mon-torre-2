@@ -187,21 +187,27 @@ export function renderCityScenery(scene){
  quay.lineStyle(1,0xd3c7a1).lineBetween(463,288,493,284);
  quay.lineStyle(2,0xf4ecda).strokeCircle(550,295,4);
  px(quay,547,292,2,2,0xca5550);px(quay,551,297,2,2,0xca5550);
+ // Plant the native species strictly on garden/green verge polygons, not
+ // in front of house entrances, on bridge stairs or in the main plaza.
+ // A restrained 17 trees + existing flower planters reads more naturally than
+ // 21 uniformly spaced stamps on paving. Fixed positions keep screenshot tests
+ // deterministic and preserve all three city service hotspots.
  const treeKey=scene.textures.exists(CITY_ATLAS_KEY)?null:treeTexture(scene),positions=[
- [10,70],[43,64],[178,73],[195,61],[317,74],[333,44],[422,69],[446,51],[596,65],[628,61],
- [12,213],[25,239],[222,271],[243,277],[320,277],[424,269],[633,186],[612,182],
- [179,131],[321,223],[434,240]
+  [15,69],[49,69],          // west woodland patch
+  [174,68],[210,69],[270,69],[310,68], // north garden belt
+  [424,74],[592,75],[629,75], // east gardens beyond the canal
+  [13,213],[29,245],       // lower west planted strip
+  [217,277],[283,276],[315,275], // south bank gardens
+  [420,272],[437,270],     // east canal bank
+  [630,190]                // east woodland edge
  ];
- // Rich foliage reference with multiple real pixel-art silhouettes, not one stamp.
- // These display-only sprites never cover UI or door interaction zones.
- // Full-resolution, original Kanto art: green species predominate.
- // Blossoms and one pine establish distinctive landmarks without clutter.
- const kinds=['oak_sun','oak_lime','oak_deep','berry','oak_deep',
-  'oak_sun','oak_lime','oak_deep','sakura','wisteria','berry',
-  'oak_deep','oak_sun','oak_lime','berry','oak_sun','oak_lime',
-  'oak_deep','pine','oak_sun','sakura'];
+ // Original detailed botanical silhouettes; almost all native green foliage.
+ // Occasional cherry and wisteria contrast with the dominant hardwood canopy.
+ const kinds=['oak_sun','oak_deep','oak_lime','berry','oak_deep','oak_sun',
+  'oak_deep','oak_lime','wisteria','berry','oak_sun',
+  'oak_deep','oak_lime','sakura','oak_sun','oak_deep','pine'];
  for(const [i,[x,y]]of positions.entries()){
-  const height=40+(i*7%10);
+  const height=36+(i*5%12);
   const tree=addCeruleanOrganicTree(scene,x,y,height,kinds[i])||
    addCitySprite(scene,'tree',x,y,44);
   if(tree)tree.setData('torre2-city-layer','vegetation');
