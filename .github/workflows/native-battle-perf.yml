@@ -6,6 +6,9 @@ on:
       - 'tests/native-battle-perf-browser.cjs'
       - 'tools/pokearena/torre2-campaign-scene.js'
       - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-ball-choreography.js'
+      - 'tools/pokearena/torre2-party-battle.js'
+      - 'tests/native-battle-entry-frame-budget.test.js'
       - '.github/workflows/native-battle-perf.yml'
   workflow_dispatch:
 permissions:
@@ -23,6 +26,9 @@ jobs:
           npm install --no-audit --no-fund
           node --check tests/native-battle-perf-browser.cjs
           node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/torre2-ball-choreography.js
+          node --check tools/pokearena/torre2-party-battle.js
+          node --test tests/native-battle-entry-frame-budget.test.js tests/ball-body.test.js
       - name: Capture native assets and assemble Phaser WebGL
         run: |
           set -euo pipefail
