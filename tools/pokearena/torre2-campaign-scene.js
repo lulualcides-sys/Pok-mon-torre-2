@@ -35,7 +35,7 @@ import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
 import {gymIntermediateModel,drawGymIntermediates} from './gym-intermediates.js';
-import {gymWideLayout,drawGymWideRoom} from './gym-wide-layout.js';
+import {gymWideLayout,drawGymWideRoom} from './torre2-gym-wide-layout.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
