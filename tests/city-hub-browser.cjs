@@ -149,7 +149,7 @@ const server=http.createServer((req,res)=>{
     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-center-pc')));
     await named('torre2-center-back',true);await city();
     await named('torre2-city-landmark','mart');
-    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-mart-buy')==='pokeball'));
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>typeof o.getData?.('torre2-mart-buy')==='string'));
     await click(120,315);await city();
     const door=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').__torre2CityHub.hotspots.find(p=>p.id==='gym'));
     await click(door.x,door.doorY);

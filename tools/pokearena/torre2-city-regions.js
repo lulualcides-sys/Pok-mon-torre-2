@@ -69,6 +69,45 @@ export function renderRegionalScenery(scene,profile){
   road(60,243,520,29);road(83,211,52,48);road(505,211,52,48);
   for(const x of [200,435]){rect(x,110,4,167,0xd9cc9d);rect(x+4,110,23,60,0x72588e);rect(x+9,119,12,39,0xd6c792);}
  }
+ // Small residential blocks frame each service district without adding menus.
+ const homes={
+  stone:[[365,268,64],[520,266,61]],
+  electric:[[205,120,62],[390,128,65]],
+  garden:[[430,126,62],[75,263,59],[570,280,57]],
+  poison:[[200,136,62],[440,136,62]],
+  psychic:[[191,285,53],[421,285,53]],
+  volcano:[[230,183,57],[407,260,62]],
+  forest:[[210,139,64],[435,142,62],[110,275,63]],league:[]
+ };
+ const gardens={
+  stone:[[168,105],[195,258],[315,213],[550,114]],
+  electric:[[37,135],[247,104],[350,151],[585,144]],
+  garden:[[172,111],[390,110],[119,252],[410,280]],
+  poison:[[36,138],[238,105],[392,99],[596,146]],
+  psychic:[[34,141],[245,134],[396,139],[599,141]],
+  volcano:[[75,174],[192,258],[370,177],[550,257]],
+  forest:[[157,111],[251,145],[394,147],[590,210]],
+  league:[[63,165],[150,146],[484,150],[574,169]]
+ };
+ for(const [x,y,h]of homes[theme]){
+  // Courtyards are real paving tiles under the individual houses.
+  tile('paving',x-31,y-10,62,23,5);
+  addCitySprite(scene,'house',x,y,h);flower(x+26,y+12);
+ }
+ for(const [x,y]of gardens[theme]){
+  tree(x,y,39);tree(x+19,y-12,33);flower(x+4,y+12);
+ }
+ const lamps=theme==='electric'?[[62,207],[255,207],[465,207],[594,207]]:
+ theme==='league'?[[249,239],[388,239],[249,290],[388,290]]:
+ theme==='volcano'?[[188,214],[368,214],[551,215]]:
+ [[73,195],[565,195],[265,286],[375,286]];
+ const furniture=scene.add.graphics().setDepth(21);
+ for(const [x,y]of lamps){
+  furniture.fillStyle(0x253f4c).fillRect(x-2,y-23,4,24).fillRect(x-5,y-1,10,3);
+  furniture.fillStyle(0x839d9d).fillRect(x-1,y-22,1,20);
+  furniture.fillStyle(0x213c4b).fillRect(x-5,y-29,10,8).fillRect(x-3,y-32,6,3);
+  furniture.fillStyle(0xffdfa0).fillRect(x-3,y-27,6,5);
+ }
  // Shared vegetation and architecture, with each city's layout kept independent.
  for(const [x,y]of [[18,79],[48,70],[600,78],[629,85]])tree(x,y,46);
  for(const p of profile.landmarks){
