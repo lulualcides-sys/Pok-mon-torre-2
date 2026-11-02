@@ -46,7 +46,8 @@ const server=http.createServer((req,res)=>{
       const scene=window.__pt2Game.scene.getScene('campanha');
       const a=scene.__torre2GymAce,object=scene.children.list.find(o=>o.getData?.('torre2-gym-ace')===a.species);
       const leader=scene.children.list.find(o=>o.getData?.('torre2-gym-leader')===a.leader);
-      const btn=scene.children.list.find(o=>o.input?.enabled&&o.x===320&&o.y===231);
+      const wide=!!scene.__torre2GymWideLayout;
+      const btn=scene.children.list.find(o=>o.input?.enabled&&o.x===320&&o.y===(wide?311:231));
       const spriteBounds=object?.getBounds?.(),btnBounds=btn?.getBounds?.();
       // Phaser getBounds includes transparent PMD Idle rows below the feet.
       // Test the actual opaque pixels and the native touch zone, not an empty
@@ -73,6 +74,7 @@ const server=http.createServer((req,res)=>{
      assert.equal(info.aceInteractive,false,'decorative ace must not intercept touches');
      assert.equal(info.platformCaptionOverlap,0,
       'leader+ace caption must not cover the final platform or challenge CTA');
+     assert.ok(info.spriteBounds.y>=70,'boss must stay below upper wall');
      assert.ok(info.visibleBottom<info.buttonBounds.top-4,
       'opaque ace pixels must not overlap challenge button: '+JSON.stringify(info));
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),saveBefore,'gym decorations must never mutate save');
@@ -83,7 +85,8 @@ const server=http.createServer((req,res)=>{
      // Exit through native return control; the idle sheet must not be drawn in the route/city.
      const back=await page.evaluate(()=>{
       const s=window.__pt2Game.scene.getScene('campanha');
-      const z=s.children.list.find(o=>o.input?.enabled&&o.x===320&&o.y===306);
+      const wide=!!s.__torre2GymWideLayout;
+      const z=s.children.list.find(o=>o.input?.enabled&&o.x===(wide?517:320)&&o.y===(wide?342:306));
       if(!z)throw Error('Gym back button missing');
       const r=document.querySelector('#juego canvas').getBoundingClientRect();
       return{x:r.x+z.x*r.width/640,y:r.y+z.y*r.height/360};
