@@ -40,6 +40,12 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  'gym-surge':Object.freeze([
   v('challenge',.496,.227,.195,.160),
   v('exit',.501,.934,.170,.120)
+ ]),
+ // S.S. Anne: the only working exit leads to the painted VERMILION CITY door.
+ // Captain/CUT, cabins and deck are NOT gameplay destinations yet. Never
+ // grant HMs or invent battles from decorative text painted in the image.
+ 'ss-anne':Object.freeze([
+  v('exit',.480,.910,.220,.120)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -51,7 +57,8 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'vermilion-city':Object.freeze({
   gym:'gym-surge',ship:'ss-anne',route6:'route-6',route11:'route-11'
  }),
- 'gym-surge':Object.freeze({exit:'vermilion-city'})
+ 'gym-surge':Object.freeze({exit:'vermilion-city'}),
+ 'ss-anne':Object.freeze({exit:'vermilion-city'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);
