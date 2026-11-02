@@ -12,7 +12,7 @@ export function stripUnavailableUiBallsPreload(source){
  // 2026-11 upstream uses balls10.png (not the removed balls20.png).
  // This is a different native asset and may be used by other scenes.
  // Keep it entirely intact; never rewrite an active upstream texture.
- const nextNative=/this\\.load\\.spritesheet\\(\\s*(["'])ui-balls\\1\\s*,\\s*(["'])assets\\/ui\\/balls10\\.png\\2\\s*,\\s*\\{[^{}]*\\}\\s*\\)\\s*;/g;
+ const nextNative=/this\.load\.spritesheet\(\s*(["'])ui-balls\1\s*,\s*(["'])assets\/ui\/balls10\.png\2\s*,\s*\{[^{}]*\}\s*\)\s*;/g;
  if(mentions.length===1&&[...source.matchAll(nextNative)].length===1)
   return source;
  if(matches.length!==1||mentions.length!==1)
