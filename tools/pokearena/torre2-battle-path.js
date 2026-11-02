@@ -11,6 +11,7 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {ROOM_CROPS} from './frlg-interiors.js';
+import {routeBackdropForCampaign} from './frlg-location.js';
 import {ball} from './campaign-art.js';
 import {TRAINERS_PER_GYM,STAGES,currentOpponent} from './campaign-core.js';
 
@@ -89,10 +90,14 @@ function hudSprite(scene,member,x,y,depth=34){
  if(!scene.textures.exists(key))return;
  scene.add.image(x,y,key).setDisplaySize(23,23).setDepth(depth);
 }
-function renderBackdrop(scene,stage){
+function renderBackdrop(scene,stage,trainer,total){
  // Use ORIGINAL FireRed exterior and gym interior from a loaded map sheet.
  // No screenshot-as-UI, no generated facade, no CSS/native-canvas zoom.
- const city=BATTLE_PATH_BACKDROP[stage]||'indigo',imageKey='frlg-location-'+city;
+ const city=BATTLE_PATH_BACKDROP[stage]||'indigo';
+ const requested=routeBackdropForCampaign(stage,trainer,total,city);
+ const locale=scene.textures.exists('frlg-location-'+requested.locale)?
+  requested.locale:city;
+ const imageKey='frlg-location-'+locale;
  const base=scene.add.graphics().setDepth(5);
  frame(base,10,54,478,255,{fill:0x163849,border:0xe0bd7b,radius:4});
  const texture=scene.textures.exists(imageKey)?scene.textures.get(imageKey):null;
@@ -102,11 +107,11 @@ function renderBackdrop(scene,stage){
   // Composite FRLG sheets have the city on the LEFT and rooms on the right.
   // The Pewter source includes Brock's pink-roof gym at (200..370,30..145).
   // Crop that real building as our BACKDROP, rather than all of Kanto.
-  const exteriorRect=city==='pewter'?[120,18,380,215]:
+  const exteriorRect=locale==='pewter'?[120,18,380,215]:
    [0,0,Math.min(768,src.width),Math.min(640,src.height)];
   const [sx,sy,w,h]=exteriorRect;
   if(w>=160&&h>=160){
-   const name='torre2-path-city-'+city;
+   const name='torre2-path-city-'+locale;
    if(!texture.has(name))texture.add(name,0,sx,sy,w,h);
    const cityImage=scene.add.image(249,181,imageKey,name).setDepth(6);
    cityImage.setScale(Math.max(470/w,247/h));
@@ -116,9 +121,9 @@ function renderBackdrop(scene,stage){
    scene.events.once('shutdown',()=>{cityImage.clearMask();mask.destroy()});
    realExterior=true;
   }
-  const rect=ROOM_CROPS[city]?.gym;
+  const rect=ROOM_CROPS[locale]?.gym;
   if(rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
-   const name='torre2-path-gym-'+city;
+   const name='torre2-path-gym-'+locale;
    if(!texture.has(name))texture.add(name,0,...rect);
    const arch=scene.add.graphics().setDepth(7);
    arch.fillStyle(0x071624,.9);arch.fillRoundedRect(346,65,135,240,7);
@@ -135,7 +140,9 @@ function renderBackdrop(scene,stage){
  glass.fillStyle(0x081b2a,.13);glass.fillRect(14,58,470,247);
  glass.fillStyle(0x061827,.88);glass.fillRoundedRect(18,62,267,36,5);
  glass.lineStyle(1,0x638ba0,.94);glass.strokeRoundedRect(18,62,267,36,5);
- scene.__torre2GymBackdrop={city,realExterior,realGym,texture:imageKey};
+ scene.__torre2GymBackdrop={city,locale,requestedLocale:requested.requested,
+  nativeBackdrop:requested.sourceReady&&locale===requested.locale,
+  chapterPage:requested.chapterPage,realExterior,realGym,texture:imageKey};
  return {imageKey};
 }
 export function renderBattlePath(scene,state,handlers){
@@ -165,7 +172,7 @@ export function renderBattlePath(scene,state,handlers){
   .on('pointerup',()=>scene.scale.isFullscreen?
    scene.scale.stopFullscreen():scene.scale.startFullscreen({navigationUI:'hide'}));
  button(scene,599,23,65,29,'MENU',handlers.menu,{depth:41});
- renderBackdrop(scene,stage);
+ renderBackdrop(scene,stage,progress,total);
  const mapTitle=txt(scene,25,69,finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
  mapTitle.setOrigin(0,.5);
  const areaLegend=stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':

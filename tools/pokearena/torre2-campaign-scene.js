@@ -34,7 +34,7 @@ import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-av
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
-import {locationForCampaign} from './frlg-location.js';
+import {locationForCampaign,routeBackdropForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
@@ -131,7 +131,8 @@ class Campanha extends Phaser.Scene{
    if(!needsAtlas&&this.textures.exists(key))this.textures.remove(key);
   }
   const world=getCampaignMapSpec(stage,0).id;
-  const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
+  const pathWorld=routeBackdropForCampaign(stage,state?.trainer??0,
+   TRAINERS_PER_GYM(stage),BATTLE_PATH_BACKDROP[stage]||'indigo').locale;
   if(AVAILABLE_FRLG.includes(world)){
    const key='frlg-location-'+world;
    if(!this.textures.exists(key))
