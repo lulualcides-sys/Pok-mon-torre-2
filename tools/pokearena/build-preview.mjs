@@ -762,14 +762,18 @@ for(const [filename,changes] of patches){
     }else console.warn('Unused ui-balls preload already absent upstream');
     continue;
    }
-   // Diagnose only the structural roster hook; do not inject the Kanto
-   // additions into an unknown expression or silently lose 151 species.
+   // Upstream added localhost-only disabled roster entries. Retain that
+   // condition EXACTLY while adding the same Kanto species before filtering.
    if(filename==='datos.js'&&from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'){
-    const markers=['ROSTER','TODOS','addEarlyKantoSpecies'];
-    const snippets=[];
-    for(const name of markers){let cursor=-1;while(snippets.length<24){cursor=body.indexOf(name,cursor+1);if(cursor<0)break;snippets.push({name,near:body.slice(Math.max(0,cursor-120),Math.min(body.length,cursor+220))});}}
-    const preview=snippets;
-    throw Error('Unknown upstream roster declaration; no Kanto injection made. Nearby identifiers: '+JSON.stringify(preview));
+    const native='const ROSTER=TODOS.filter(p=>!p.desactivado||p.desactivado==="local"&&EN_LOCAL);';
+    if(!body.includes(native)||body.indexOf(native)!==body.lastIndexOf(native)||
+       !body.includes('const EN_LOCAL=typeof location!==')||
+       !body.includes('import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";'))
+     throw Error('Unknown new upstream roster expression; refusing to drop native local-mode eligibility');
+    const add='TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);';
+    if(body.includes(add))throw Error('Duplicate Kanto roster extension');
+    body=body.replace(native,add+native);
+    continue;
    }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
