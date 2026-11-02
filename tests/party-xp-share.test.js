@@ -24,10 +24,13 @@ test('trainer and wild wins call one whole-party EXP Share, not active-only',()=
  assert.ok(src.includes('saveCampaign(next);')&&src.includes('Object.assign(state,next);'),
   'Commit battle rewards only after a successful checkpoint write');
 });
-test('Brock stands in gym center and common trainers stay outside',()=>{
- assert.ok(hub.includes('const px=boss?414:('));
- assert.ok(hub.includes("['hiker',359],['youngster',469]"));
- assert.ok(hub.includes("const width=boss?82:60"));
+test('Brock and the Elite retain a real separate gym gate; route NPCs cannot impersonate bosses',()=>{
+ assert.ok(hub.includes('routeRailSpots(offset,length,total)'));
+ assert.ok(hub.includes('const visible=routeVisualCast(progress,total,finished)'));
+ assert.ok(hub.includes("if(checkpoint.primary==='gym')return handlers.gym()"));
+ assert.ok(hub.includes("if(progress>=total)return handlers.gym()"));
+ assert.ok(!hub.includes('const px=boss?414:('),'obsolete overlay layout removed');
+ assert.ok(!hub.includes('const width=boss?82:60'),'14 large trainer cards removed');
 });
 test('reset requires deliberate confirmation before erasing the save',()=>{
  assert.ok(hub.includes("handlers.reset"));
