@@ -1,4 +1,6 @@
 import {renderCityHub} from './city-hub.js';
+import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey} from './torre2-approved-map-renderer.js';
+import {approvedMap} from './torre2-approved-maps-atlas.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -41,6 +43,17 @@ import {routeNode} from './route-data.js';
 import {kantoDexPageModel,pcPageModel,pcMemberLabel,PC_FILTERS} from './collection-ui.js';
 import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
+const APPROVED_STAGE_MAPS=['pewter-city','cerulean-city','vermilion-city','celadon-city',
+ 'fuchsia-city','saffron-city','cinnabar-island','gym-giovanni',
+ 'indigo-plateau','elite-four-rooms','elite-four-rooms','elite-four-rooms',
+ 'elite-four-rooms','hall-of-fame'];
+const APPROVED_STAGE_MAX=[3,9,18,26,31,36,40,42,45,46,46,46,46,60];
+const APPROVED_GYMS={
+ 'pewter-city':'gym-brock','cerulean-city':'gym-misty',
+ 'vermilion-city':'gym-surge','celadon-city':'gym-erika',
+ 'fuchsia-city':'gym-koga','saffron-city':'gym-sabrina',
+ 'cinnabar-island':'gym-blaine'
+};
 const C={gold:'#f8c448',blue:'#6bc4ff',ink:'#090d1c',panel:'#15233a',muted:'#9cb4cd',white:'#f0f5ff'};
 const titleStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'23px',fontStyle:'bold',color:C.gold,stroke:'#000',strokeThickness:3};
 const textStyle={fontFamily:'Pixelify Sans, monospace',fontSize:'13px',color:C.white};
@@ -122,6 +135,7 @@ class Campanha extends Phaser.Scene{
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
   const stage=state?.stage??0;
+  if(APPROVED_MAP_ASSETS_READY)preloadApprovedMap(this,APPROVED_STAGE_MAPS[stage]||'indigo-plateau');
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
   if(AVAILABLE_FRLG.includes(world)){
@@ -462,6 +476,51 @@ create(){
    .setData('torre2-hall-back',true);
   this.__torre2HallOfFame={...hall};
  }
+ // Read-only approved-map view; no new save fields, badges or encounter indices.
+ approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]||'pewter-city'){
+  if(!APPROVED_MAP_ASSETS_READY||!approvedMap(id))return false;
+  const canTravel=(_src,target)=>{
+   const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
+   return !!entry&&entry.index<=APPROVED_STAGE_MAX[s];
+  };
+  const open=target=>{
+   if(!canTravel(id,target))return;
+   const entry=approvedMap(target),key=mapTextureKey(target);
+   if(!this.textures.exists(key)){
+    if(this.load.isLoading?.())return;
+    this.load.image(key,entry.image);
+    this.load.once('complete',()=>this.approvedMapPreview(readCampaign()||state,target));
+    this.load.start();
+   }else this.approvedMapPreview(readCampaign()||state,target);
+  };
+  this.children.removeAll(true);
+  const result=renderApprovedMap(this,id,{
+   onExit:()=>this.renderCampaign(readCampaign()||state),
+   isUnlocked:canTravel,
+   onNavigate:(_src,target)=>open(target),
+   onHotspot:(_id,kind)=>{
+    const fresh=readCampaign()||state;
+    if(kind==='center')return this.centerScreen(fresh);
+    if(kind==='mart')return this.martScreen(fresh);
+    if(kind==='gym'&&APPROVED_GYMS[id])return open(APPROVED_GYMS[id]);
+    const portals={
+     'fuchsia-city':{safari:'safari-zone'},
+     'saffron-city':{silph:'silph-co',dojo:'fighting-dojo'},
+     'ss-anne':{exit:'vermilion-city'},
+     'cinnabar-island':{mansion:'pokemon-mansion',route21:'route-21',route20:'routes-19-20'},
+     'sevii-7':{tower:'trainer-tower',canyon:'sevault-canyon'}
+    };
+    const target=portals[id]?.[kind];
+    if(target)return open(target);
+    this.add.text(320,316,'EVENTO '+kind.toUpperCase()+' · EM INTEGRAÇÃO',{
+     fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#fff2bd',
+     backgroundColor:'#102e43',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
+   }
+  });
+  if(!result.ok)return this.renderCampaign(readCampaign()||state);
+  this.__torre2ApprovedMapView=result;
+  return true;
+ }
  renderCampaign(state,{deferEeveeChoice=false}={}){
   this.__torre2EeveeChoice=null;
   this.__torre2HallOpen=false;
@@ -516,6 +575,7 @@ create(){
   }
   const path=renderBattlePath(this,state,{
    city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
+   approvedMaps:APPROVED_MAP_ASSETS_READY?()=>this.approvedMapPreview(state):null,
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),
