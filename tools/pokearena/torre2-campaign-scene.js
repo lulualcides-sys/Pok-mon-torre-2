@@ -35,6 +35,7 @@ import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
 import {gymIntermediateModel,drawGymIntermediates} from './gym-intermediates.js';
+import {gymWideLayout,drawGymWideRoom} from './gym-wide-layout.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
@@ -393,17 +394,25 @@ create(){
   if(gym){
    // Separate interior view: the city's gym building is NOT the boss stage.
    // The original FireRed room remains independent of all battle/HUD scenes.
-   const g=this.add.graphics().setDepth(4);
-   const water=state.stage===1;
-   g.fillStyle(water?0x143f60:0x5b4b3e,.92).fillRect(83,82,474,128);
-   g.lineStyle(2,water?0x80dbe8:0xc7ae86).strokeRect(83,82,474,128);
-   g.fillStyle(water?0x307fa5:0x9d866a).fillRect(255,168,130,33);
-   g.fillStyle(water?0xa7e4e9:0xd8c49d).fillRect(257,166,126,5);
-   const location=['pewter','cerulean','vermilion','celadon',
-    'fuchsia','saffron','cinnabar','viridian'][state.stage];
-   addGymInteriorFloor(this,location);
-   renderInteriorScene(this,location,'gym',{
-    centerX:320,centerY:150,maxWidth:430,maxHeight:136,depth:5});
+   const wide=gymWideLayout(state.stage);
+   if(wide){
+    // The approved reference shows the WHOLE room and four/three opponents,
+    // not a zoomed-in FireRed crop; keep the original camera zoom at 1.
+    drawGymWideRoom(this,state.stage);
+   }else{
+    // Preserve existing native interiors for the other gym stages.
+    const g=this.add.graphics().setDepth(4);
+    const water=state.stage===1;
+    g.fillStyle(water?0x143f60:0x5b4b3e,.92).fillRect(83,82,474,128);
+    g.lineStyle(2,water?0x80dbe8:0xc7ae86).strokeRect(83,82,474,128);
+    g.fillStyle(water?0x307fa5:0x9d866a).fillRect(255,168,130,33);
+    g.fillStyle(water?0xa7e4e9:0xd8c49d).fillRect(257,166,126,5);
+    const location=['pewter','cerulean','vermilion','celadon',
+     'fuchsia','saffron','cinnabar','viridian'][state.stage];
+    addGymInteriorFloor(this,location);
+    renderInteriorScene(this,location,'gym',{
+     centerX:320,centerY:150,maxWidth:430,maxHeight:136,depth:5});
+   }
    // Token is destroyed with this screen; a delayed PMD download must
    // NEVER place a Pokémon on the city, PC, route or battle afterward.
    const token=this.add.zone(0,0,1,1).setVisible(false)
@@ -417,24 +426,27 @@ create(){
    // Leader and authentic ace are already visible on the final platform.
    // Do not print their names over their feet or the challenge CTA below.
   }
-  text(this,320,32,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
-   ...titleStyle,fontSize:'20px'}).setOrigin(.5).setDepth(20);
-  text(this,320,64,ready?'LÍDER DISPONÍVEL PARA BATALHA':
+  const wide=!!gymWideLayout(state.stage);
+  text(this,320,wide?19:32,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
+   ...titleStyle,fontSize:wide?'16px':'20px'}).setOrigin(.5).setDepth(20);
+  text(this,320,wide?46:64,ready?'LÍDER DISPONÍVEL PARA BATALHA':
    roster?.inGym?'DESAFIE O INTERMEDIÁRIO ATUAL NO GINÁSIO.':
    'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
-    fontSize:'13px',color:ready?'#a9f4bd':'#f5dda0'
+    fontSize:wide?'11px':'13px',color:ready?'#a9f4bd':'#f5dda0'
    }).setOrigin(.5).setDepth(20);
-  text(this,320,265,ready?'VOCÊ PODE ENTRAR AGORA.':
+  text(this,320,wide?280:265,ready?'VOCÊ PODE ENTRAR AGORA.':
    roster?.inGym?'RESTANTES NO GINÁSIO: '+roster.slots.filter(t=>t.index>=state.trainer).length+' · SEM EXTRAS.':
    'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
     fontSize:'11px',color:C.white
    }).setOrigin(.5).setDepth(20);
-  this.button(320,231,278,39,ready?'▶ DESAFIAR LÍDER':
+  this.button(320,wide?311:231,278,wide?32:39,ready?'▶ DESAFIAR LÍDER':
    roster?.inGym?'▶ DESAFIAR INTERMEDIÁRIO':'CONTINUAR A ROTA',()=>{
    if(ready||roster?.inGym)this.enterBattle(state);
    else {this.__torre2CityRoute=true;this.scene.restart();}
   },ready||!!roster?.inGym,21);
-  this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  this.button(wide?517:320,wide?342:306,wide?203:210,wide?24:33,
+   '◀ VOLTAR AO MAPA',()=>this.scene.restart());
+
  }
  card(x,y,w,h,accent=0x4b789b){
   const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
