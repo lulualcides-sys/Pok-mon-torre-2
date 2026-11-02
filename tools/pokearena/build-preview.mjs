@@ -765,8 +765,10 @@ for(const [filename,changes] of patches){
    // Diagnose only the structural roster hook; do not inject the Kanto
    // additions into an unknown expression or silently lose 151 species.
    if(filename==='datos.js'&&from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'){
-    const candidates=[...body.matchAll(/\\b(?:const|let|var)\\s+ROSTER\\b|\\bTODOS\\b|\\baddEarlyKantoSpecies\\b/g)].slice(0,20);
-    const preview=candidates.map(m=>body.slice(Math.max(0,m.index-110),Math.min(body.length,m.index+220)));
+    const markers=['ROSTER','TODOS','addEarlyKantoSpecies'];
+    const snippets=[];
+    for(const name of markers){let cursor=-1;while(snippets.length<24){cursor=body.indexOf(name,cursor+1);if(cursor<0)break;snippets.push({name,near:body.slice(Math.max(0,cursor-120),Math.min(body.length,cursor+220))});}}
+    const preview=snippets;
     throw Error('Unknown upstream roster declaration; no Kanto injection made. Nearby identifiers: '+JSON.stringify(preview));
    }
    // Visual title sprite guards were written for an older upstream source.
