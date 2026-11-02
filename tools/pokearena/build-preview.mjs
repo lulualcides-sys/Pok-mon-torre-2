@@ -775,6 +775,17 @@ for(const [filename,changes] of patches){
     body=body.replace(native,add+native);
     continue;
    }
+   // The upstream abilities module may reorder its config import.
+   // Import only our own standalone forms symbol; leave native imports intact.
+   if(filename==='habilidades.js'&&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
+      to.includes('TORRE2_FORMS')){
+    const own='import{TORRE2_FORMS}from"./torre2/signature-fx.js";';
+    if(body.includes(own))throw Error('Duplicate signature forms import');
+    if(!body.includes('const FORMAS='))throw Error('Unknown ability renderer; cannot insert own forms');
+    body=own+'\n'+body;
+    continue;
+   }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
    // guessing which texture or avatar it should load; battle scenes untouched.
