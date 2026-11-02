@@ -818,6 +818,12 @@ for(const [filename,changes] of patches){
     }else console.warn('Offline: native settings no longer start with a profile entry');
     continue;
    }
+   // A game-rule change needs an exact source read, never a speculative
+   // replacement. Log only a short public-source context on mismatch.
+   if(filename==='luchador.js'&&from.startsWith('if(t-this.ultimoDano>=REGLAS.curaTras')){
+    const i=body.indexOf('curaTras');
+    throw Error('Native passive regeneration changed; review required: '+(i<0?'no curaTras symbol':body.slice(Math.max(0,i-360),Math.min(body.length,i+600))));
+   }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
    // guessing which texture or avatar it should load; battle scenes untouched.
