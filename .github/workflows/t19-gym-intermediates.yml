@@ -1,7 +1,7 @@
 name: T19 — Existing gym intermediates without new battles (DRAFT)
 on:
   push:
-    branches: [feat/t19-gym-intermediates-20261101, fix/t19-gym-route-gate-20261101, fix/t19-gym-route-identity-20261102, fix/t19-post-ko-route-smoke-20261102, feat/t36-gym-wide-layout-20261102, feat/t36-native-gym-scenery-20261102, feat/t36-vector-layout-20261102, feat/t38-image-backdrop-gym-overlays-20261102]
+    branches: [feat/t19-gym-intermediates-20261101, fix/t19-gym-route-gate-20261101, fix/t19-gym-route-identity-20261102, fix/t19-post-ko-route-smoke-20261102, feat/t36-gym-wide-layout-20261102, feat/t36-native-gym-scenery-20261102, feat/t36-vector-layout-20261102, feat/t38-image-backdrop-gym-overlays-20261102, fix/t38-image-overlay-aabb-eight-gyms-20261102]
   workflow_dispatch:
 permissions:
   contents: read
@@ -19,6 +19,7 @@ jobs:
       - name: Syntax checks
         run: |
           node --check tools/pokearena/torre2-gym-image-background.js
+          node --check tools/pokearena/torre2-gym-image-preflight.js
           node --check tools/pokearena/install-gym-backgrounds.mjs
           node --check tests/gym-intermediates-browser.cjs
           node --check tools/pokearena/torre2-gym-vector.js
@@ -29,7 +30,7 @@ jobs:
           node --check tests/gym-route-gate.test.js
           node --check tests/gym-intermediates-browser.cjs
       - name: Focused gym roster tests
-        run: node --test tests/gym-image-background.test.js tests/gym-image-installer.test.js tests/gym-vector-geometry.test.js tests/gym-native-scenery.test.js tests/gym-wide-layout.test.js tests/gym-ace.test.js tests/gym-intermediates.test.js tests/gym-route-gate.test.js
+        run: node --test tests/gym-image-preflight.test.js tests/gym-image-background.test.js tests/gym-image-installer.test.js tests/gym-vector-geometry.test.js tests/gym-native-scenery.test.js tests/gym-wide-layout.test.js tests/gym-ace.test.js tests/gym-intermediates.test.js tests/gym-route-gate.test.js
       - name: Full repository tests
         run: npm test
       - name: Repository checks and reuse
