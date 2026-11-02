@@ -97,10 +97,19 @@ async function readFrames(page,millis){
     // live input. No timers or changes to original gameplay controls.
     await page.evaluate(()=>{
      const game=window.__pt2Game,clock=performance.now();
-     const marks={clicked:0};
+     const marks={clicked:0},phases=[],gaps=[];
+     let lastStep=null,lastPhase=null;
      const mark=(name)=>{if(!Object.hasOwn(marks,name))marks[name]=Math.round(performance.now()-clock)};
      const sample=()=>{
-      const map=game.scene.getScene('campanha'),b=game.scene.getScene('combate');
+      const now=performance.now(),map=game.scene.getScene('campanha'),b=game.scene.getScene('combate');
+      if(lastStep!==null&&now-lastStep>175)gaps.push({atMs:Math.round(now-clock),gapMs:Math.round(now-lastStep),phase:b.fase??null});
+      lastStep=now;
+      if(b.fase!==lastPhase){
+       phases.push({atMs:Math.round(now-clock),phase:b.fase??null,
+        active:b.scene.isActive(),loading:b.load?.isLoading?.()??null,
+        textures:game.textures.getTextureKeys().length});
+       lastPhase=b.fase;
+      }
       if(map.children.list.some(x=>x.getData?.('torre2-versus-intro')===true))mark('vsOverlay');
       if(game.__torre2BattlePrewarm?.queued>0)mark('prewarmQueued');
       if(game.__torre2BattlePrewarm?.readyAt)mark('prewarmReady');
@@ -111,7 +120,7 @@ async function readFrames(page,millis){
       if(Object.hasOwn(marks,'battleLive'))game.events.off('step',sample);
      };
      game.events.on('step',sample);
-     window.__nativePerfTrace={marks,detach:()=>game.events.off('step',sample)};
+     window.__nativePerfTrace={marks,phases,gaps,detach:()=>game.events.off('step',sample)};
     });
     const t=performance.now();
     const pos=await page.evaluate(()=>{
@@ -130,7 +139,8 @@ async function readFrames(page,millis){
     const battleEntryMs=performance.now()-t;
     const timeline=await page.evaluate(()=>{
      window.__nativePerfTrace.detach();
-     return {...window.__nativePerfTrace.marks};
+     return {marks:{...window.__nativePerfTrace.marks},
+      phases:window.__nativePerfTrace.phases,gaps:window.__nativePerfTrace.gaps};
     });
     const battle=await page.evaluate(()=>{
      const g=window.__pt2Game,b=g.scene.getScene('combate'),s=window.__battlePerfCore.readCampaign();
