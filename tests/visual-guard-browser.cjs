@@ -90,9 +90,25 @@ const server=http.createServer(async(req,res)=>{
    core.saveCampaign(core.createPlayerCampaign('bulbasaur'));
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha')&&
-   !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,
-   null,{timeout:50000});
+  // Approved maps become the default only after the archive is installed.
+  // Preserve the established visual guard's route/trainer assertions by
+  // opening the native route UI after capturing the verified city art.
+  await page.waitForFunction(()=>{
+   const g=window.__pt2Game,s=g?.scene.getScene('campanha');
+   return g?.scene.isActive('campanha')&&
+    (!!s?.__torre2BattlePath||s?.__torre2ApprovedMapView?.id==='pewter-city');
+  },null,{timeout:50000});
+  const imageDefault=await page.evaluate(()=>
+   window.__pt2Game.scene.getScene('campanha').__torre2ApprovedMapView?.id==='pewter-city');
+  if(imageDefault){
+   await shot('desktop-approved-city-default',page);
+   await page.evaluate(()=>{
+    const s=window.__pt2Game.scene.getScene('campanha');
+    s.renderCampaign(window.kanto.readCampaign());
+   });
+   await page.waitForFunction(()=>!!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,
+    null,{timeout:20000});
+  }
   state.scene='campanha';
   assert.equal(await page.evaluate(()=>window.kanto.readCampaign().team[0].id),'bulbasaur');
   await shot('desktop-campaign-map',page);
