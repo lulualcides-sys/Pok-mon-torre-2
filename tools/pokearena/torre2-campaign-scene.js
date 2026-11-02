@@ -32,9 +32,9 @@ import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
-import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
+import {renderInteriorScene,addGymInteriorFloor,renderGymStage} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
-import {gymIntermediateModel,drawGymIntermediates} from './gym-intermediates.js';
+import {gymIntermediateModel,drawGymIntermediates,gymTrainerSpriteKinds} from './gym-intermediates.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
@@ -148,6 +148,7 @@ class Campanha extends Phaser.Scene{
   const needed=new Set(['red_normal',spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
+   ...gymTrainerSpriteKinds(stage).map(spriteIdForTrainer),
    ...archetypes.map(spriteIdForTrainer)]);
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
@@ -388,22 +389,18 @@ create(){
   this.children.removeAll(true);this.backdrop();
   this.__torre2GymAce=null;
   this.__torre2GymRoster=null;
+  this.__torre2GymStage=null;
   const roster=gymIntermediateModel(state,GYMS,TRAINERS_PER_GYM,routeNode);
   const gym=GYMS[state.stage];
   if(gym){
    // Separate interior view: the city's gym building is NOT the boss stage.
    // The original FireRed room remains independent of all battle/HUD scenes.
-   const g=this.add.graphics().setDepth(4);
-   const water=state.stage===1;
-   g.fillStyle(water?0x143f60:0x5b4b3e,.92).fillRect(83,82,474,128);
-   g.lineStyle(2,water?0x80dbe8:0xc7ae86).strokeRect(83,82,474,128);
-   g.fillStyle(water?0x307fa5:0x9d866a).fillRect(255,168,130,33);
-   g.fillStyle(water?0xa7e4e9:0xd8c49d).fillRect(257,166,126,5);
    const location=['pewter','cerulean','vermilion','celadon',
     'fuchsia','saffron','cinnabar','viridian'][state.stage];
    addGymInteriorFloor(this,location);
-   renderInteriorScene(this,location,'gym',{
-    centerX:320,centerY:150,maxWidth:430,maxHeight:136,depth:5});
+   // Fill the gym stage; never shrink the tall FireRed room into a menu
+   // thumbnail or change the Phaser camera zoom.
+   renderGymStage(this,location);
    // Token is destroyed with this screen; a delayed PMD download must
    // NEVER place a Pokémon on the city, PC, route or battle afterward.
    const token=this.add.zone(0,0,1,1).setVisible(false)
@@ -522,6 +519,7 @@ create(){
   this.children.removeAll(true);
   // Drop stale PMD report after gym teardown; the real sprite was destroyed.
   this.__torre2GymAce=null;
+  this.__torre2GymStage=null;
   if(state.stage!==1)for(const [key] of CITY_TEXTURES)
    if(this.textures.exists(key))this.textures.remove(key);
   releaseCollectionPortraits(this);
