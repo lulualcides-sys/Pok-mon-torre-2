@@ -12,6 +12,7 @@ import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {ROOM_CROPS} from './frlg-interiors.js';
 import {routeBackdropForCampaign} from './frlg-location.js';
+import {ROUTE_VIEW,nativeRouteCrop,routeRailSpots,routeVisualCast} from './route-landscape.js';
 import {ball} from './campaign-art.js';
 import {TRAINERS_PER_GYM,STAGES,currentOpponent} from './campaign-core.js';
 
@@ -91,58 +92,42 @@ function hudSprite(scene,member,x,y,depth=34){
  scene.add.image(x,y,key).setDisplaySize(23,23).setDepth(depth);
 }
 function renderBackdrop(scene,stage,trainer,total){
- // Use ORIGINAL FireRed exterior and gym interior from a loaded map sheet.
- // No screenshot-as-UI, no generated facade, no CSS/native-canvas zoom.
  const city=BATTLE_PATH_BACKDROP[stage]||'indigo';
- const requested=routeBackdropForCampaign(stage,trainer,total,city);
- const locale=scene.textures.exists('frlg-location-'+requested.locale)?
-  requested.locale:city;
- const imageKey='frlg-location-'+locale;
- const base=scene.add.graphics().setDepth(5);
- frame(base,10,54,478,255,{fill:0x163849,border:0xe0bd7b,radius:4});
- const texture=scene.textures.exists(imageKey)?scene.textures.get(imageKey):null;
- const src=texture?.source?.[0];let realExterior=false,realGym=false;
- if(texture&&src){
-  texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
-  // Composite FRLG sheets have the city on the LEFT and rooms on the right.
-  // The Pewter source includes Brock's pink-roof gym at (200..370,30..145).
-  // Crop that real building as our BACKDROP, rather than all of Kanto.
-  const exteriorRect=locale==='pewter'?[120,18,380,215]:
-   [0,0,Math.min(768,src.width),Math.min(640,src.height)];
-  const [sx,sy,w,h]=exteriorRect;
-  if(w>=160&&h>=160){
-   const name='torre2-path-city-'+locale;
-   if(!texture.has(name))texture.add(name,0,sx,sy,w,h);
-   const cityImage=scene.add.image(249,181,imageKey,name).setDepth(6);
-   cityImage.setScale(Math.max(470/w,247/h));
-   const mask=scene.make.graphics({x:0,y:0,add:false});
-   mask.fillStyle(0xffffff);mask.fillRect(14,58,470,247);
-   cityImage.setMask(mask.createGeometryMask());
-   scene.events.once('shutdown',()=>{cityImage.clearMask();mask.destroy()});
-   realExterior=true;
-  }
-  const rect=ROOM_CROPS[locale]?.gym;
-  if(rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
-   const name='torre2-path-gym-'+locale;
-   if(!texture.has(name))texture.add(name,0,...rect);
-   const arch=scene.add.graphics().setDepth(7);
-   arch.fillStyle(0x071624,.9);arch.fillRoundedRect(346,65,135,240,7);
-   arch.lineStyle(2,0xeec376,1);arch.strokeRoundedRect(346,65,135,240,7);
-   arch.fillStyle(0x264862);arch.fillRoundedRect(351,71,125,19,3);
-   const scale=Math.min(117/rect[2],197/rect[3]);
-   scene.add.image(414,198,imageKey,name).setDepth(8).setScale(scale);
-   txt(scene,414,81,'GINÁSIO',9,'#ffe3a0',10);
-   realGym=true;
-  }
+ const request=routeBackdropForCampaign(stage,trainer,total,city);
+ const locale=scene.textures.exists('frlg-location-'+request.locale)?
+  request.locale:city;
+ const imageKey='frlg-location-'+locale,texture=
+  scene.textures.exists(imageKey)?scene.textures.get(imageKey):null;
+ const src=texture?.source?.[0],crop=src?
+  nativeRouteCrop(locale,src.width,src.height):null;
+ const bg=scene.add.graphics().setDepth(5);
+ frame(bg,10,54,478,255,{fill:0x183d4d,border:0xe0bd7b,radius:4});
+ let realExterior=false;
+ if(crop&&texture){
+  if(typeof Phaser!=='undefined')
+   texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  // A single actual FireRed exterior crop fills the landscape. No pasted
+  // miniature gym, giant trainer cards or WebGL TileSprite UV aliasing.
+  const key='torre2-route-panorama-'+locale+'-'+crop.x+'-'+crop.y;
+  if(!texture.has(key))texture.add(key,0,crop.x,crop.y,crop.w,crop.h);
+  scene.add.image(ROUTE_VIEW.x,ROUTE_VIEW.y,imageKey,key)
+   .setOrigin(0,0).setDisplaySize(ROUTE_VIEW.width,ROUTE_VIEW.height)
+   .setDepth(6).setData('torre2-native-route-scenery',locale);
+  realExterior=true;
  }
- if(!realExterior){base.fillStyle(0x244959);base.fillRect(14,58,470,247)}
- const glass=scene.add.graphics().setDepth(9);
- glass.fillStyle(0x081b2a,.13);glass.fillRect(14,58,470,247);
- glass.fillStyle(0x061827,.88);glass.fillRoundedRect(18,62,267,36,5);
- glass.lineStyle(1,0x638ba0,.94);glass.strokeRoundedRect(18,62,267,36,5);
- scene.__torre2GymBackdrop={city,locale,requestedLocale:requested.requested,
-  nativeBackdrop:requested.mapped&&locale===requested.locale,
-  chapterPage:requested.chapterPage,realExterior,realGym,texture:imageKey};
+ if(!realExterior){
+  bg.fillStyle(0x396b69).fillRect(ROUTE_VIEW.x,ROUTE_VIEW.y,
+   ROUTE_VIEW.width,ROUTE_VIEW.height);
+ }
+ const rim=scene.add.graphics().setDepth(9);
+ rim.lineStyle(2,0xe2d6a8).strokeRect(ROUTE_VIEW.x,ROUTE_VIEW.y,
+  ROUTE_VIEW.width,ROUTE_VIEW.height);
+ rim.fillStyle(0x082334,.82).fillRoundedRect(20,62,358,37,3);
+ rim.lineStyle(1,0x8daea9).strokeRoundedRect(20,62,358,37,3);
+ scene.__torre2GymBackdrop={city,locale,requestedLocale:request.requested,
+  nativeBackdrop:request.mapped&&locale===request.locale&&realExterior,
+  chapterPage:request.chapterPage,realExterior,realGym:false,
+  texture:imageKey,crop};
  return {imageKey};
 }
 export function renderBattlePath(scene,state,handlers){
@@ -181,10 +166,10 @@ export function renderBattlePath(scene,state,handlers){
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
- button(scene,424,103,107,24,'VS SEEKER',()=>handlers.rematchAtlas?.(),
+ button(scene,430,75,88,20,'VS SEEKER',()=>handlers.rematchAtlas?.(),
   {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
  // Preserve the native trainer route by default. City is optional.
- if(stage>=0&&stage<=12)button(scene,424,131,107,23,'VER CIDADE',
+ if(stage>=0&&stage<=12)button(scene,430,99,88,20,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
   .setData('torre2-open-city',true);
  // When a NORMAL battle advances the checkpoint beyond the current
@@ -204,14 +189,7 @@ export function renderBattlePath(scene,state,handlers){
  scene.__torre2RenderedPathProgress=progress;
  scene.__torre2RenderedPathStage=stage;
  const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
- const spots=[];
- for(let i=0;i<length;i++){
-  const row=Math.floor(i/5),column=i%5;
-  const boss=offset+i===total;
-  const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
-  const y=boss?178:[275,211,147][Math.min(row,2)];
-  spots.push({x:px,y,global:offset+i});
- }
+ const spots=routeRailSpots(offset,length,total);
  // Map region labels reference existing FireRed town/mountain sheets.
  // One connected zigzag and the leader at its end; no extra pages/maps.
  const checkpointZone=(n)=>{
@@ -394,7 +372,8 @@ export function renderBattlePath(scene,state,handlers){
  scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
    stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
-  nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
+  nodes:hitZones,imageKey:scene.__torre2GymBackdrop?.texture||
+   'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
   gym:scene.__torre2GymBackdrop};
  return scene.__torre2BattlePath;
 }
