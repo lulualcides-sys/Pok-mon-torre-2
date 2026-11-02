@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ROOM_CROPS,addGymInteriorFloor,renderInteriorScene} from '../tools/pokearena/torre2-frlg-interiors.js';
+import {ROOM_CROPS,addGymInteriorFloor,renderInteriorScene,renderGymStage,GYM_STAGE_BOUNDS} from '../tools/pokearena/torre2-frlg-interiors.js';
 test('T35 genuine FireRed floor frame stays inside each existing gym interior crop',()=>{
  for(const location of ['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian']){
   const rect=ROOM_CROPS[location]?.gym;
@@ -19,4 +19,25 @@ test('T35 genuine FireRed floor frame stays inside each existing gym interior cr
   assert.equal(renderInteriorScene(scene,location,'gym',{centerX:320,centerY:150,maxHeight:136}),true);
   assert.equal(created.length,61,'60 independent batched Images + one interior, never TileSprite');
  }
+});
+
+test('T35 full-width stage uses native floor, no zoomed room thumbnail or new hitboxes',async()=>{
+ const rects=[];
+ const g={setDepth(){return this},fillStyle(){return this},fillRect(...r){rects.push(r);return this}};
+ const scene={add:{graphics:()=>g}};
+ for(const city of ['pewter','cerulean','vermilion','celadon','fuchsia','saffron','cinnabar','viridian']){
+  const m=renderGymStage(scene,city);
+  assert.equal(m.mode,'full-width');
+  assert.equal(m.zoom,1);
+  assert.deepEqual(m.bounds,GYM_STAGE_BOUNDS);
+  assert.equal(m.leaderPlatform.x,258);
+  assert.deepEqual([...m.trainerColumns],[157,483]);
+  assert.equal(m.staticDraw,true);
+  assert.equal(scene.__torre2GymStage,m);
+ }
+ assert.ok(rects.length>100,'pixel-aligned thematic platforms rendered');
+ const src=(await import('node:fs')).readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.match(src,/renderGymStage\(this,location\)/);
+ assert.doesNotMatch(src,/renderInteriorScene\(this,location,'gym'/);
+ assert.doesNotMatch(src,/cameras\.main\.setZoom\(/);
 });
