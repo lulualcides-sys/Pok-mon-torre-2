@@ -238,6 +238,7 @@ await Promise.all([
  ['tools/pokearena/torre2-gym-wide-layout.js','torre2-gym-wide-layout.js'],
  ['tools/pokearena/torre2-gym-vector.js','torre2-gym-vector.js'],
  ['tools/pokearena/torre2-gym-image-background.js','gym-image-background.js'],
+ ['tools/pokearena/torre2-gym-image-preflight.js','torre2-gym-image-preflight.js'],
  ['tools/pokearena/torre2-move-pool.js','move-pool.js'],
  ['tools/pokearena/torre2-collection-ui.js','collection-ui.js'],
  ['tools/pokearena/torre2-collection-portraits.js','collection-portraits.js'],
