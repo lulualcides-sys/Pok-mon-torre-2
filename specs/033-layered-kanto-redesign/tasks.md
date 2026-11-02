@@ -28,3 +28,10 @@ The external client changed to `src-2755ffa8ef` during verification and failed t
 - City residents are decorative; three service entrances retain native Center/PC, Mart and gym actions. No walking or arena changes.
 - Extended WebGL desktop/touch fixtures to all regional stages, exact save preservation and visible gym-door clicks. Local 381 tests, syntax, reuse and preview build passed before final door alignment change; rerun and CI evidence required.
 - Remaining: review actual regional captures and polish art; full gym interior/subboss work and remaining secondary menu art are not claimed complete. No publication.
+
+## New reference direction — 2026-11-01, gym presentation
+The five user references add a clear navy/silver UI family, larger leader + actual ace composition, themed interiors for Elite checkpoints, and real collection/reward information. They are art direction, not map screenshots to flatten into a fake interactive background. Illustrative money, rewards, team composition and evolution levels must never override campaign data.
+
+Implemented first: separate gym presentation with native FRLG leader, original PMD Idle ace frame (stationary), themed hall, badge/TM and route gate. Champion ace follows the player's original starter via currentOpponent. No new gym fights/rewards or arena HUD changes. Own menu texture cleanup includes exit during load and rapid A→B navigation. Browser coverage now captures gym leader/ace for all stages.
+
+Still pending: richer building/interior assets and reference-quality composition, 3–4 actual gym subbosses with save-compatible progression, broader routes/menu visual treatment. The new gym presentation is not the complete reference redesign.

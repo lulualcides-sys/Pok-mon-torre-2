@@ -1,3 +1,4 @@
+import {gymPresentationModel,renderGymPresentation} from './gym-presentation.js';
 import {paintCollectionPortraits,releaseCollectionPortraits} from './collection-portraits.js';
 import {CITY_TEXTURES,hasCampaignCity} from './city-atlas.js';
 import {renderCityHub} from './city-hub.js';
@@ -378,26 +379,20 @@ create(){
   this.button(522,333,198,30,'◀ VOLTAR À ROTA',()=>this.scene.restart());
  }
  gymScreen(state){
-  const limit=TRAINERS_PER_GYM(state.stage);
-  const remaining=Math.max(0,limit-state.trainer);
-  const ready=!state.champion&&remaining===0;
-  this.children.removeAll(true);this.backdrop();
-  text(this,320,47,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
-   ...titleStyle,fontSize:'22px'}).setOrigin(.5);
-  text(this,320,104,ready?'LÍDER DISPONÍVEL PARA BATALHA':
-   'DERROTE OS TREINADORES DA ROTA PRIMEIRO.',{
-    fontSize:'15px',color:ready?'#a9f4bd':'#f5dda0'
-   }).setOrigin(.5);
-  text(this,320,162,ready?'VOCÊ PODE ENTRAR AGORA.':
-   'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER.',{
-    fontSize:'12px',color:C.white
-   }).setOrigin(.5);
-  this.button(320,225,278,47,ready?'▶ DESAFIAR LÍDER':'CONTINUAR A ROTA',()=>{
-   if(ready)this.enterBattle(state);
-   else {this.__torre2CityRoute=true;this.scene.restart();}
-  },ready,13);
-  this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  const limit=TRAINERS_PER_GYM(state.stage),stage=STAGES[state.stage];
+  if(!stage)return this.renderCampaign(state);
+  const opponent=currentOpponent({...state,trainer:limit});
+  const tm=MART_ITEMS.find(item=>item.id===GYM_TM_REWARDS[state.stage]);
+  const model=gymPresentationModel(state,stage,opponent,limit,tm);
+  this.children.removeAll(true);
+  renderGymPresentation(this,model,{
+   aceDex:grassPortraitDex(model.ace),
+   onBattle:()=>this.enterBattle(state),
+   onRoute:()=>{this.__torre2CityRoute=true;this.scene.restart()},
+   onBack:()=>this.scene.restart()
+  });
  }
+
  card(x,y,w,h,accent=0x4b789b){
   const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
   const line=this.add.rectangle(x+2,y+2,4,h-4,accent,.9).setOrigin(0,0);

@@ -72,8 +72,9 @@ const server=http.createServer((req,res)=>{
    await click(120,315);await city();
    await click(515,134);
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.text?.includes('FALTAM 13')));
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-gym-ace')==='0121'),null,{timeout:30000});
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-gym.png'});
-   await click(320,306);await city();
+   await named('torre2-gym-back',true);await city();
    await named('torre2-city-action','EQUIPE');
    await page.screenshot({path:'test-evidence/city-layered-'+label+'-summary.png'});
    await named('torre2-summary-back',true);await city();
@@ -156,7 +157,9 @@ const server=http.createServer((req,res)=>{
     const visibleDoor=stage===7?[320,217]:stage>=8?[320,128]:[door.x,door.doorY];
     await click(...visibleDoor);
     await page.waitForFunction(()=>!window.__pt2Game.scene.getScene('campanha').children.list.some(o=>o.getData?.('torre2-city-layer')==='terrain'));
-    await page.evaluate(async()=>{const main=[...document.scripts].find(s=>s.src.includes('/main.js')).src;const core=await import(new URL('./torre2/campaign-core.js',main));window.__pt2Game.scene.getScene('campanha').renderCampaign(core.readCampaign())});
+    await page.waitForFunction(()=>{const list=window.__pt2Game.scene.getScene('campanha').children.list;return list.some(o=>o.getData?.('torre2-gym-ace'))&&list.some(o=>o.getData?.('torre2-gym-leader'))},null,{timeout:30000});
+    await page.screenshot({path:'test-evidence/city-gym-'+stage+'-'+label+'.png'});
+    await named('torre2-gym-back',true);
     await city();
     await page.evaluate(()=>new Promise(resolve=>window.__pt2Game.events.once('poststep',resolve)));
     await named('torre2-city-action','ROTAS');

@@ -105,7 +105,7 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(await snapshot(),before,'Opening challenge mutated save '+stage);
    assert.equal(await page.evaluate(()=>window.__pt2Game.scene.isActive('combate')),
     false,'Challenge should not launch battle until explicit confirmation');
-   await tap(320,306);
+   await tap(570,24);
    await page.waitForFunction(stage=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return c.scene.isActive()&&c.__torre2BattlePath?.stage===stage&&
