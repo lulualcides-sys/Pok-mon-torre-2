@@ -45,7 +45,13 @@ const server=http.createServer((req,res)=>{
    assert.deepEqual(report.hotspots.map(x=>x.id),['center','mart','gym']);
    const pieces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.getData?.('torre2-city-atlas-piece')).map(o=>o.getData('torre2-city-atlas-piece')));
-   for(const name of ['center','gym','mart','house','tree','planter'])assert.ok(pieces.includes(name),'Missing cropped atlas piece '+name);
+   for(const name of ['center','gym','mart','house','planter'])assert.ok(pieces.includes(name),'Missing cropped atlas piece '+name);
+   const foliage=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
+    .filter(o=>o.active&&o.getData?.('torre2-cerulean-foliage'))
+    .map(o=>o.getData('torre2-cerulean-foliage')));
+   assert.equal(foliage.length,21,'Cerulean must use the organic user-approved foliage in all 21 placements');
+   assert.ok(new Set(foliage).size>=5,'Trees must visibly vary: no identical stamp across Kanto');
+   assert.ok(!pieces.includes('tree'),'Old identical atlas tree must not be used when the approved art loads');
    const surfaces=await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
     .filter(o=>o.getData?.('torre2-city-surface')).map(o=>o.getData('torre2-city-surface')));
    for(const name of ['water','paving','grass','stone'])assert.ok(surfaces.includes(name),'Missing surface '+name);

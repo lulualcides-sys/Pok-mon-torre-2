@@ -1,4 +1,5 @@
 import {addCityBoat,addCitySprite,addCitySurface,CITY_ATLAS_KEY,CITY_SURFACES_KEY} from './city-atlas.js';
+import {addCeruleanOrganicTree} from './cerulean-organic-foliage.js';
 /* Original modular pixel architecture, rendered by Phaser/WebGL.
  * No map screenshot, no uploaded sheet with uncertain redistribution rights.
  * Geometry is local to each building; vegetation uses shared original textures.
@@ -191,8 +192,16 @@ export function renderCityScenery(scene){
  [12,213],[25,239],[222,271],[243,277],[320,277],[424,269],[633,186],[612,182],
  [179,131],[321,223],[434,240]
  ];
- for(const [x,y]of positions){
-  const tree=addCitySprite(scene,'tree',x,y,44);
+ // Rich foliage reference with multiple real pixel-art silhouettes, not one stamp.
+ // These display-only sprites never cover UI or door interaction zones.
+ const kinds=['oak_light','oak_dark','oak_gold','oak_fresh','oak_moss',
+  'oak_dark','oak_gold','oak_light','blossom','oak_moss','oak_fresh',
+  'oak_dark','oak_light','oak_gold','oak_fresh','oak_moss','oak_gold',
+  'oak_dark','oak_light','oak_fresh','blossom'];
+ for(const [i,[x,y]]of positions.entries()){
+  const height=40+(i*7%10);
+  const tree=addCeruleanOrganicTree(scene,x,y,height,kinds[i])||
+   addCitySprite(scene,'tree',x,y,44);
   if(tree)tree.setData('torre2-city-layer','vegetation');
   else scene.add.image(x,y,treeKey).setOrigin(.5,1).setScale(.72)
    .setDepth(20+y/1000).setData('torre2-city-layer','vegetation');
