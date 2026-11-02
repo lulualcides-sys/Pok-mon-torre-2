@@ -121,6 +121,8 @@ class Campanha extends Phaser.Scene{
    if(!this.textures.exists(key))
     this.load.image(key,'assets/ui/frlg/items/'+file+'.png');
   }
+  // A scene restart opens a new region-loading window; no stale failures.
+  this.__torre2DynamicRouteLoading=new Set();
   // Mobile performance: the old loader uploaded every Kanto map and all
   // 41 trainer sheets to the GPU even though only one city is visible.
   // Load JUST the current gym world + the FireRed characters it displays.
@@ -483,6 +485,37 @@ create(){
   releaseCollectionPortraits(this);
   this.__torre2CityHub=null;
   this.__torre2PathData={buscar};
+  // The scenery changes as real trainer indices advance. The original
+  // preload only knows the locale at scene entry. Fetch the NEXT native
+  // FireRed map on demand after an earned checkpoint without restarting
+  // the story or modifying the saved battle result.
+  if(this.__torre2CityRoute&&Number.isInteger(state.stage)&&
+   state.stage>=0&&state.stage<=12){
+   const desired=routeBackdropForCampaign(state.stage,state.trainer,
+    TRAINERS_PER_GYM(state.stage),BATTLE_PATH_BACKDROP[state.stage]||'indigo').locale;
+   const key='frlg-location-'+desired;
+   const requested=this.__torre2DynamicRouteLoading??=new Set();
+   if(AVAILABLE_FRLG.includes(desired)&&!this.textures.exists(key)&&
+    !requested.has(key)){
+    requested.add(key);
+    this.load.image(key,AVAILABLE_FRLG_FILES[desired]||
+     'assets/ui/frlg/'+desired+'.webp');
+    this.load.once('complete',()=>{
+     // Failed/missing resources retain the fallback without a retry loop.
+     if(!this.textures.exists(key))return;
+     requested.delete(key);
+     const latest=readCampaign();
+     const stage=latest?.stage;
+     const now=latest&&stage>=0&&stage<=12?
+      routeBackdropForCampaign(stage,latest.trainer,TRAINERS_PER_GYM(stage),
+       BATTLE_PATH_BACKDROP[stage]||'indigo').locale:null;
+     if(this.scene.isActive()&&now===desired&&this.__torre2CityRoute)
+      this.renderCampaign(latest);
+    });
+    this.load.start();
+   }
+  }
+
   if(this.__torre2PathStage!==state.stage){
    this.__torre2PathPage=undefined;
    // Preserve native route as default; layered Cerulean is an opt-in view.
