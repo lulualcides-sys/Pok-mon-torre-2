@@ -762,6 +762,13 @@ for(const [filename,changes] of patches){
     }else console.warn('Unused ui-balls preload already absent upstream');
     continue;
    }
+   // Diagnose only the structural roster hook; do not inject the Kanto
+   // additions into an unknown expression or silently lose 151 species.
+   if(filename==='datos.js'&&from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'){
+    const candidates=[...body.matchAll(/\\b(?:const|let|var)\\s+ROSTER\\b|\\bTODOS\\b|\\baddEarlyKantoSpecies\\b/g)].slice(0,20);
+    const preview=candidates.map(m=>body.slice(Math.max(0,m.index-110),Math.min(body.length,m.index+220)));
+    throw Error('Unknown upstream roster declaration; no Kanto injection made. Nearby identifiers: '+JSON.stringify(preview));
+   }
    // Visual title sprite guards were written for an older upstream source.
    // If its literal changes, preserve the live title animation rather than
    // guessing which texture or avatar it should load; battle scenes untouched.
