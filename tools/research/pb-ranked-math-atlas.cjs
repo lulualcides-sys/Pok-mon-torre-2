@@ -173,8 +173,27 @@ const write=()=>{
   delta:read('DELTA-REAL-2026-11-01.json')});
  const output=path.join(ROOT,'ATLAS-MATEMATICO-REA-2026-11-01.json');
  fs.writeFileSync(output,JSON.stringify(atlas,null,2)+'\n');
- console.log(JSON.stringify({output,coverage:atlas.coverage,
-  attack:atlas.stateStatistics.Attack,shoot:atlas.stateStatistics.Shoot},null,2));
+ const keyStates=['Attack','Strike','Shoot','Swing','Charge','Hop','SpAttack'];
+ const digest={
+  schemaVersion:1,derivation:'Deterministic summary of ATLAS-MATEMATICO-REA-2026-11-01.json',
+  evidence:atlas.evidence,coverage:atlas.coverage,
+  keyStateStatistics:Object.fromEntries(keyStates.map(k=>[k,atlas.stateStatistics[k]])),
+  moveFamilies:Object.fromEntries([...new Set(atlas.moveResearchMath.map(m=>m.familyHypothesis))]
+   .sort().map(f=>[f,atlas.moveResearchMath.filter(m=>m.familyHypothesis===f).length])),
+  topPendingResearchPriorities:atlas.moveResearchMath.filter(m=>m.publicRoster&&!m.reportedUse)
+   .sort((a,b)=>b.investigationPriorityScore-a.investigationPriorityScore||a.name.localeCompare(b.name))
+   .slice(0,25).map(m=>({name:m.name,familyHypothesis:m.familyHypothesis,
+    priority:m.investigationPriorityScore,defaultReady:m.defaultReady,
+    protectedApproved:m.protectedApproved})),
+  warnings:['Statistical summaries from public declared animation metadata, not observed combat recordings',
+    'Fractional hit markers are ordinal frame positions, never measured seconds',
+    'Research scores are artificial heuristics, not validated move visuals or battle timing']
+ };
+ const summaryPath=path.join(ROOT,'ATLAS-MATEMATICO-RESUMO-2026-11-01.json');
+ fs.writeFileSync(summaryPath,JSON.stringify(digest,null,2)+'\n');
+ console.log(JSON.stringify({output,fullBytes:fs.statSync(output).size,
+  summaryPath,summaryBytes:fs.statSync(summaryPath).size,
+  coverage:atlas.coverage,attack:atlas.stateStatistics.Attack,shoot:atlas.stateStatistics.Shoot},null,2));
  return atlas;
 };
 if(require.main===module)write();
