@@ -1,0 +1,36 @@
+name: T44 — Native weather and FX import compatibility
+on:
+  push:
+    branches: [fix/t44-native-habilidades-import-20261102]
+  pull_request:
+    paths:
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-native-habilidades-compat.mjs'
+      - 'tools/pokearena/torre2-native-weather-import-compat.mjs'
+      - 'tests/native-habilidades-compat.test.mjs'
+      - 'tests/native-weather-import-compat.test.js'
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: {node-version: '24'}
+      - name: Parse build and native import compatibility modules
+        run: |
+          node --check tools/pokearena/build-preview.mjs
+          node --check tools/pokearena/torre2-native-habilidades-compat.mjs
+          node --check tools/pokearena/torre2-native-weather-import-compat.mjs
+          node --check tools/pokearena/torre2-native-social-compat.mjs
+          node --check tools/pokearena/torre2-native-regen-compat.mjs
+      - name: Run focused native skill and city map tests
+        run: |
+          node --test tests/native-habilidades-compat.test.mjs tests/native-weather-import-compat.test.js tests/native-social-compat.test.mjs tests/native-regen-compat.test.mjs tests/approved-map-first-scenes.test.mjs tests/approved-map-build-integration.test.mjs
+      - name: Assemble original Phaser client for real compatibility gate
+        run: |
+          node tools/pokearena/capture-client.mjs
+          TORRE2_UPSTREAM_AUDIT=1 node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/index.html

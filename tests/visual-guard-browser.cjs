@@ -55,7 +55,13 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.ok(title.width>=640&&title.height>=360,'Canvas is too small');
   assert.equal(title.logo,true,'Approved title texture missing');
-  assert.deepEqual(title.buttons,['jugar','pokedex','tutorial','ajustes','creditos']);
+  // Native Poké Arena now provides an offline Customize option. Preserve it
+  // instead of removing a working original feature to satisfy an old fixture.
+  const core=['jugar','pokedex','tutorial','ajustes','creditos'];
+  assert.deepEqual(title.buttons.filter(id=>id!=='personalizar'),core);
+  assert.equal(new Set(title.buttons).size,title.buttons.length,'Duplicate menu action');
+  assert.ok(!title.buttons.some(id=>['online','versus','perfil','cuenta'].includes(id)),
+   'Solo Kanto must not expose account or multiplayer entry points');
   await shot('desktop-title',page);
   state.step='mobile-title';
   const mobile=await makePage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
@@ -63,7 +69,8 @@ const server=http.createServer(async(req,res)=>{
    {waitUntil:'domcontentloaded',timeout:45000});
   await mobile.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
-  assert.equal(await mobile.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.length),5);
+  assert.deepEqual(await mobile.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.map(b=>b.id)),
+   title.buttons,'Portrait mobile menu must match native desktop actions');
   await shot('mobile-portrait-rotate',mobile);await mobile.close();
   state.step='mobile-landscape-title';
   const landscape=await makePage({viewport:{width:844,height:390},deviceScaleFactor:1,isMobile:true,hasTouch:true});
@@ -71,7 +78,8 @@ const server=http.createServer(async(req,res)=>{
    {waitUntil:'domcontentloaded',timeout:45000});
   await landscape.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
-  assert.equal(await landscape.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.length),5);
+  assert.deepEqual(await landscape.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.map(b=>b.id)),
+   title.buttons,'Landscape mobile menu must match native desktop actions');
   await shot('mobile-landscape-title',landscape);await landscape.close();
   state.step='campaign-map';
   await page.evaluate(async()=>{

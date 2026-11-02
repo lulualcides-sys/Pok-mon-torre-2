@@ -234,9 +234,9 @@ await Promise.all([
  ['tools/pokearena/torre2-level-balance.js','level-balance.js'],
  ['tools/pokearena/torre2-campaign-sprites.js','campaign-sprites.js'],
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
- ['tools/pokearena/torre2-approved-maps-atlas.js','approved-maps-atlas.js'],
- ['tools/pokearena/torre2-approved-map-renderer.js','approved-map-renderer.js'],
- ['tools/pokearena/torre2-approved-map-first-scenes.js','approved-map-first-scenes.js'],
+ ['tools/pokearena/torre2-approved-maps-atlas.js','torre2-approved-maps-atlas.js'],
+ ['tools/pokearena/torre2-approved-map-renderer.js','torre2-approved-map-renderer.js'],
+ ['tools/pokearena/torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js'],
  ['tools/pokearena/torre2-versus-intro.js','versus-intro.js'],
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
@@ -600,11 +600,76 @@ patches.push(['escenas/seleccion.js',[
  ['const R=ROLES[r];','const R=ROLES[r]??ROLES.MIXTO;'],
  ['const h=p.kit[slot];const ky=','const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=']
 ]]);
+const upstreamUnmatched=[];
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Account/profile entry is absent or reformatted in newer offline title.
+   // Remove only a confirmed profile item, never the whole settings menu.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('ajustes:[{id:"perfil"') && to==='ajustes:['){
+    const profile=/ajustes\s*:\s*\[\s*\{id:(["'])perfil\1,[^{}]{0,240}\},?/g;
+    const found=[...body.matchAll(profile)];
+    if(found.length===1){
+     body=body.replace(found[0][0],'ajustes:[');
+     continue;
+    }
+    // Upstream now gates the account tile with a DEBUG ternary.
+    // Remove that one tile (both branches), retain SOUND/CONTROLS/LANGUAGE.
+    const debugVariant='ajustes:[DEBUG?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
+    if(body.includes(debugVariant)){
+     body=body.replace(debugVariant,'ajustes:[');
+     continue;
+    }
+    if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
+     console.warn('Native title no longer exposes PROFILE in settings; no change');
+     continue;
+    }
+    if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
+     upstreamUnmatched.push({filename,issue:'profile menu changed',
+      current:body.slice(Math.max(0,body.indexOf('ajustes:')-40),
+        body.indexOf('ajustes:')+420)});
+     continue;
+    }
+    throw Error('Unknown native account profile menu; refusing guessed removal');
+   }
+   // Current upstream title rearranges social icon positions. The entire
+   // redes() call is stripped by the later exact, verified offline patch;
+   // keep its inactive original implementation untouched.
+   if(filename==='escenas/titulo.js' &&
+      ((from.startsWith('[["tiktok",600]')&&to.includes('"instagram"')) ||
+       (from.startsWith('const halo=this.add.graphics().setDepth(999)')&&to===''))){
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    disableNativeTitleSocialLinks(body); // fail closed if called in an unknown form
+    console.warn('Native title social internals changed; offline call will be removed');
+    continue;
+   }
+   // Upstream can remove or reformat the optional social UI call.
+   // Strip it only when a single call is unambiguously identified; no links
+   // should be created by the solo game's title scene.
+   if(filename==='escenas/titulo.js'&&from==='this.redes();'&&to.includes('no social icons')){
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    body=disableNativeTitleSocialLinks(body);
+    continue;
+   }
+   // Keep the native config import and add only the Kanto FX module.
+   if(filename==='habilidades.js' &&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}') &&
+      to.includes('TORRE2_FORMS')){
+    const {injectNativeTorre2FormsImport}=await import('./torre2-native-habilidades-compat.mjs');
+    body=injectNativeTorre2FormsImport(body);
+    continue;
+   }
+   // Native passive HP regeneration changed form; disable only in campaign.
+   if(filename==='luchador.js' &&
+      from.startsWith('if(t-this.ultimoDano>=REGLAS.curaTras') &&
+      to.includes('this.escena.datos?.torre2')){
+    const {disableNativeCampaignPassiveRegen}=await import('./torre2-native-regen-compat.mjs');
+    body=disableNativeCampaignPassiveRegen(body);
+    continue;
+   }
    // Optional upstream spritesheet is gone/reshaped; it is not used by
    // the native capture pipeline. Handle only this exact known dependency.
    if(filename==='escenas/carga.js'&&
@@ -935,12 +1000,20 @@ for(const [filename,changes] of patches){
     console.warn('Changed upstream title Idle-2 conditions preserved unchanged');
     continue;
    }
+   if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
+    upstreamUnmatched.push({filename,missing:from.slice(0,120),
+     target:to.slice(0,100)});
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
 }
+
+if(upstreamUnmatched.length)
+ throw Error('UPSTREAM AUDIT: '+JSON.stringify(upstreamUnmatched));
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
@@ -1039,7 +1112,7 @@ for(const filename of [
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
  'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/versus-intro.js','torre2/battle-path.js',
- 'torre2/approved-maps-atlas.js','torre2/approved-map-renderer.js','torre2/approved-map-first-scenes.js',
+ 'torre2/torre2-approved-maps-atlas.js','torre2/torre2-approved-map-renderer.js','torre2/torre2-approved-map-first-scenes.js',
  'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
