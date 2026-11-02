@@ -742,6 +742,22 @@ for(const [filename,changes] of patches){
     body=body.slice(0,start)+body.slice(start).replace(native,updated);
     continue;
    }
+   // The current public client may omit the already optional UI balls preload,
+   // or spell it differently. This is not a battle sprite nor capture logic.
+   // Remove ONLY one matching obsolete preload or accept that it is absent.
+   if(filename==='escenas/carga.js'&&
+      from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
+    const candidates=body.match(/this\.load\.spritesheet\([^;]*balls20\.png[^;]*\);/g)||[];
+    if(candidates.length>1||candidates.some(x=>!x.includes('"ui-balls"')))
+     throw Error('Unknown native ui-balls preload; refuse ambiguous patch');
+    if(candidates.length===1){
+     body=body.replace(candidates[0],'');
+     console.warn('Compatibility: removed one unused legacy balls20 preload');
+    }else if(body.includes('ui-balls')||body.includes('balls20.png')){
+     throw Error('Unrecognized native ui-balls request; manual review needed');
+    }else console.warn('Unused ui-balls preload already absent upstream');
+    continue;
+   }
    // The original team-selection renderer changed its metadata field
    // names. Retain its updated built-in role/kit fallbacks; only fix the
    // previous exact unguarded expression if it still exists.
