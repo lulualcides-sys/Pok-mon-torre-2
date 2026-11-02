@@ -129,7 +129,7 @@ export function restoreBody(body){
 }
 // One lifecycle for first entry, manual/KO replacement and recall. Run after
 // the native renderer has positioned its sprites, before WebGL draws them.
-export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0,maxFrameMs=64}){
+export function animateBallActor(scene,actor,{mode='release',from,drawBall,onComplete=()=>{},side=0,maxFrameMs=64,wallClockCatchup=false}){
  actor.actualizarGraficos?.(0);
  const body=snapshotBody(actor),g=scene.add.graphics().setDepth(2305);
  const nativeBall=scene.make?.graphics&&scene.textures?.exists&&scene.add?.image&&drawBall?.originalBallSprite?
@@ -154,6 +154,13 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
  const landing={x:body.center.x+(side===0?-42:42),y:body.center.y-22};
  const origin=mode==='recall'?from:landing;
  let elapsed=0,done=false;
+ // Phaser normalizes frame delta after slow renders. For the first Kanto
+ // sendout only, compare that value with monotonic wall time to prevent a
+ // 780ms cosmetic entry from lasting many seconds on slow WebGL frames.
+ // Catch-up is bounded by maxFrameMs; suspended tabs never skip blindly.
+ const monotonicNow=()=>typeof performance!=='undefined'&&typeof performance.now==='function'?
+  performance.now():null;
+ let lastWall=wallClockCatchup?monotonicNow():null;
  scene.__torre2BallTransitions=(scene.__torre2BallTransitions||0)+1;
  const phase=mode==='recall'?'ko':'torre2-sendout';
  const hold=()=>{scene.fase=phase};hold();
@@ -163,7 +170,14 @@ export function animateBallActor(scene,actor,{mode='release',from,drawBall,onCom
   scene.events.off('shutdown',clean);g.destroy();nativeBall?.destroy();};
  const step=(_time,delta)=>{
   if(done||!scene.scene.isActive())return clean();
-  elapsed+=choreographyDelta(delta,maxFrameMs);hold();g.clear();
+  let elapsedDelta=delta;
+  if(wallClockCatchup){
+   const now=monotonicNow();
+   if(now!==null&&lastWall!==null)
+    elapsedDelta=Math.max(Number(delta)||16.667,Math.max(0,now-lastWall));
+   lastWall=now;
+  }
+  elapsed+=choreographyDelta(elapsedDelta,maxFrameMs);hold();g.clear();
   let state,center=body.center;
   if(mode==='release'&&elapsed<360){
    state='THROW';poseBody(body,center,.01,0);
