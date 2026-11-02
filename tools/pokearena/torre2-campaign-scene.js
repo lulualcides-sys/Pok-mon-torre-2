@@ -34,7 +34,7 @@ import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene,addGymInteriorFloor} from './frlg-interiors.js';
 import {gymAcePlan,drawGymAce} from './gym-ace.js';
-import {gymIntermediateModel,drawGymIntermediates} from './gym-intermediates.js';
+import {gymIntermediateModel,drawGymIntermediates,gymNpcVisualKinds} from './gym-intermediates.js';
 import {gymWideLayout,drawGymWideRoom} from './torre2-gym-wide-layout.js';
 import {GYM_IMAGE_MANIFEST_KEY,approvedGymImage,drawGymImageBackground,
  requestGymImageBackground,rosterForGymImage,acePlacementForGymImage}
@@ -162,10 +162,14 @@ class Campanha extends Phaser.Scene{
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket',
     ...(stage===1?['swimmer']:[])];
+  // Reuse only the current gym's authentic FireRed trainer classes, not
+  // dozens of unused character atlases on Android.
+  const gymVisuals=gymNpcVisualKinds(stage);
   const needed=new Set(['red_normal',spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
-   ...archetypes.map(spriteIdForTrainer)]);
+   ...archetypes.map(spriteIdForTrainer),
+   ...gymVisuals.map(spriteIdForTrainer)]);
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
   const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld]);
