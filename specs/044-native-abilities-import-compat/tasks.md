@@ -1,7 +1,7 @@
 # T44 — Tasks
 
-- [x] Inspect actual visual guard failure #41532659667: habilidades.js import drift, before Chromium.
-- [x] Add bounded, fail-closed weather import helper and isolated Node tests (local 4/4).
-- [ ] GitHub CI unit suite, native client build and Guardião Visual SUCCESS at child HEAD.
-- [ ] Inspect genuine desktop/mobile screenshots and validate Kanto map interaction.
-- [ ] Merge only after upstream compatibility and full visual acceptance; verify Pages SHA/HTTP.
+- [x] Diagnose Guardião #41532659667 and first-patch ordering failure #41540318972.
+- [x] Implement sequential TORRE2_FORMS/weatherFromMove import compatibility; 4/4 local Node tests.
+- [ ] CI/build/Guardião SUCCESS on final child SHA.
+- [ ] Real Phaser desktop/mobile screenshots, interaction and #471 visual approval.
+- [ ] Merge and Pages HTTP SHA verification only after acceptance.

@@ -7,7 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
-import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
+import {ensureNativeAbilityImport} from './torre2-native-weather-import-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -613,12 +613,13 @@ for(const [filename,changes] of patches){
     body=stripUnavailableUiBallsPreload(body);
     continue;
    }
-   // The original abilities module may reorder/extend its config imports.
-   // Append only the Kanto weather hook; fail closed on ambiguous provenance.
+   // Signature effects and weather patch the SAME native config import.
+   // Preserve original config symbols; add only the known Torre 2 module.
    if(filename==='habilidades.js'&&
       from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
-      to.includes('weatherFromMove')){
-    body=ensureNativeWeatherFromMoveImport(body);
+      (to.includes('TORRE2_FORMS')||to.includes('weatherFromMove'))){
+    body=ensureNativeAbilityImport(body,
+      to.includes('TORRE2_FORMS')?'TORRE2_FORMS':'weatherFromMove');
     continue;
    }
    // The native client sometimes reorders imported data symbols.
