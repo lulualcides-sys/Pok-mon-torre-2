@@ -66,10 +66,16 @@ export function drawGymIntermediates(scene,model,addNpc,onBattle){
   // Class affects appearance only: battle opponent IDs/names remain intact.
   const npcKind=t.kind==='rival'?'rival':t.kind==='rocket'?'rocket':
    gymNpcVisualKinds(model.stage)[t.slot]||'ace';
-  const npc=addNpc(scene,npcKind,t.x,t.y,{scale:1.05,depth:16})||
-   (npcKind==='swimmer'?addNpc(scene,'ace',t.x,t.y,{scale:1.05,depth:16}):null);
+  // The decomp source may omit an optional class on one capture. Always
+  // prefer its original FRLG sprite; otherwise a legitimate existing
+  // FireRed ace/youngster is better than an invisible gym challenger.
+  let npc=null,usedKind=null;
+  for(const kind of new Set([npcKind,'ace','youngster'])){
+   npc=addNpc(scene,kind,t.x,t.y,{scale:1.05,depth:16});
+   if(npc){usedKind=kind;break}
+  }
   npc?.setData('torre2-gym-intermediate',t.index);
-  npc?.setData('torre2-gym-original-sprite',npcKind);
+  npc?.setData('torre2-gym-original-sprite',usedKind);
   // Original NPC sprite stays prominent: the former repeated TREINADOR
   // label over every platform made the room look like a menu diagram.
   // Only the active challenger gets a caption; other actors keep tiny cues.
