@@ -85,17 +85,20 @@ test('T41 preflight rejects an unreviewed hotspot before drawing any pixels',()=
  assert.equal(layout.reason,'hotspot-out-of-bounds');
 });
 
-test('T43 first two approved gyms overlay a native leader, ace, and four saved trainer indices',()=>{
- const expected=[['gym-brock',0],['gym-misty',1]];
- for(const [id,stage] of expected){
-  const layout=firstApprovedGymActors(id,13);
+test('T43 Brock has 10 route + 3 gym trainers; Misty 11 route + 4 gym, with original checkpoint IDs',()=>{
+ const expected=[
+  ['gym-brock',0,13,[10,11,12]],
+  ['gym-misty',1,15,[11,12,13,14]]
+ ];
+ for(const [id,stage,total,indices] of expected){
+  const layout=firstApprovedGymActors(id,total);
   assert.equal(layout.stage,stage);
-  assert.equal(layout.trainers.length,4);
-  assert.deepEqual(layout.trainers.map(t=>t.index),[9,10,11,12]);
+  assert.equal(layout.trainers.length,indices.length);
+  assert.deepEqual(layout.trainers.map(t=>t.index),indices);
   for(const actor of [layout.leader,layout.ace,...layout.trainers]){
    assert.ok(actor.cx>0&&actor.cx<1&&actor.cy>0&&actor.cy<1);
   }
-  // Four trainers must not steal the clickable door/challenge hitbox.
+  // Gym trainers must not steal the clickable door/challenge hitbox.
   const h=firstApprovedHotspots(approvedMap(id));
   for(const npc of layout.trainers){
    for(const hotspot of h){
@@ -107,4 +110,6 @@ test('T43 first two approved gyms overlay a native leader, ace, and four saved t
  }
  assert.equal(firstApprovedGymActors('ss-anne',13),null);
  assert.throws(()=>firstApprovedGymActors('gym-brock',2),RangeError);
+ assert.throws(()=>firstApprovedGymActors('gym-misty',13),RangeError);
+ assert.throws(()=>firstApprovedGymActors('gym-brock',15),RangeError);
 });
