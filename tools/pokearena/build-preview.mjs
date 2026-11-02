@@ -605,6 +605,22 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Account/profile entry is absent or reformatted in newer offline title.
+   // Remove only a confirmed profile item, never the whole settings menu.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('ajustes:[{id:"perfil"') && to==='ajustes:['){
+    const profile=/ajustes\s*:\s*\[\s*\{id:(["'])perfil\1,[^{}]{0,240}\},?/g;
+    const found=[...body.matchAll(profile)];
+    if(found.length===1){
+     body=body.replace(found[0][0],'ajustes:[');
+     continue;
+    }
+    if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
+     console.warn('Native title no longer exposes PROFILE in settings; no change');
+     continue;
+    }
+    throw Error('Unknown native account profile menu; refusing guessed removal');
+   }
    // Current upstream title rearranges social icon positions. The entire
    // redes() call is stripped by the later exact, verified offline patch;
    // keep its inactive original implementation untouched.
