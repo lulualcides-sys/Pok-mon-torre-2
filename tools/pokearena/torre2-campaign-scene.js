@@ -414,8 +414,8 @@ create(){
     // Existing ladder index only; never generate or skip an encounter.
     if(index===state.trainer)this.enterBattle(state);
    });
-   text(this,320,205,gym.leader.toUpperCase()+'  +  '+gym.boss.toUpperCase(),{
-    fontSize:'10px',color:C.gold}).setOrigin(.5).setDepth(19);
+   // Leader and authentic ace are already visible on the final platform.
+   // Do not print their names over their feet or the challenge CTA below.
   }
   text(this,320,32,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
    ...titleStyle,fontSize:'20px'}).setOrigin(.5).setDepth(20);

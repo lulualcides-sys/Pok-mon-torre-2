@@ -60,6 +60,8 @@ const server=http.createServer((req,res)=>{
        buttonBounds:btnBounds?{x:btnBounds.x,y:btnBounds.y,right:btnBounds.right,top:btnBounds.top}:null,
        fps:scene.game.loop.actualFps,hasGymInterior:scene.children.list.some(o=>o.texture?.key==='frlg-location-'+(a.stage?'cerulean':'pewter')),
        hasGymFloor:scene.children.list.some(o=>o.getData?.('torre2-gym-floor')===(a.stage?'cerulean':'pewter')),
+       platformCaptionOverlap:scene.children.list.filter(o=>o.type==='Text'&&
+        o.y>=192&&o.y<=218&&typeof o.text==='string'&&o.text.includes('  +  ')).length,
        visualFixture:true};
      });
      assert.equal(info.renderer,2,'must use real Phaser/WebGL');
@@ -69,6 +71,8 @@ const server=http.createServer((req,res)=>{
      assert.equal(info.hasGymFloor,true,'authentic tiled FireRed floor required');
      assert.ok(info.spriteBounds&&info.buttonBounds,'native sprite and button must exist');
      assert.equal(info.aceInteractive,false,'decorative ace must not intercept touches');
+     assert.equal(info.platformCaptionOverlap,0,
+      'leader+ace caption must not cover the final platform or challenge CTA');
      assert.ok(info.visibleBottom<info.buttonBounds.top-4,
       'opaque ace pixels must not overlap challenge button: '+JSON.stringify(info));
      assert.equal(await page.evaluate(()=>localStorage.getItem('pokemon-torre-2-kanto-campaign-v1')),saveBefore,'gym decorations must never mutate save');
