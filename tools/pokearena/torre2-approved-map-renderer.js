@@ -9,6 +9,23 @@ export const APPROVED_MAP_ASSETS_READY = false;
 export const MAP_CANVAS = Object.freeze({x:0,y:0,width:640,height:360});
 export const mapTextureKey = id => 'torre2-approved-map-'+id;
 
+// Pure list of obsolete approved background textures. Limit mobile WebGL
+// residency without changing external PMD sprites, HUD or shared FRLG maps.
+export function staleApprovedMapTextureKeys(textureKeys,keepIds=[]){
+ const keep=new Set(keepIds.map(mapTextureKey));
+ return (textureKeys||[]).filter(key=>{
+  if(typeof key!=='string'||!key.startsWith('torre2-approved-map-')||
+     keep.has(key))return false;
+  return !!approvedMap(key.slice('torre2-approved-map-'.length));
+ });
+}
+export function pruneApprovedMapTextures(scene,keepIds=[]){
+ if(!APPROVED_MAP_ASSETS_READY||!scene?.textures?.getTextureKeys)return 0;
+ const keys=staleApprovedMapTextureKeys(scene.textures.getTextureKeys(),keepIds);
+ for(const key of keys)scene.textures.remove(key);
+ return keys.length;
+}
+
 export function preloadApprovedMap(scene,id) {
   const item=approvedMap(id);
   if(!APPROVED_MAP_ASSETS_READY||!item||!scene?.load||scene.textures.exists(mapTextureKey(id)))return false;

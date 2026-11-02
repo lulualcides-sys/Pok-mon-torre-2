@@ -17,7 +17,7 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  ]),
  'cerulean-city':Object.freeze([
   v('center',.290,.369,.11,.14),
-  v('mart',.556,.359,.10,.13),
+  v('mart',.495,.359,.10,.13),
   v('gym',.705,.355,.14,.16),
   v('route4',.057,.693,.10,.13),
   v('route24',.476,.072,.12,.12),
@@ -27,6 +27,19 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  'gym-misty':Object.freeze([
   v('challenge',.505,.220,.20,.16),
   v('exit',.505,.918,.19,.13)
+ ]),
+ // Reviewed against the actual approved 1280×720 concept images.
+ 'vermilion-city':Object.freeze([
+  v('center',.274,.300,.105,.110),
+  v('mart',.654,.303,.105,.110),
+  v('gym',.196,.686,.145,.120),
+  v('ship',.598,.688,.160,.130),
+  v('route6',.469,.085,.135,.145),
+  v('route11',.946,.400,.095,.155)
+ ]),
+ 'gym-surge':Object.freeze([
+  v('challenge',.496,.227,.195,.160),
+  v('exit',.501,.934,.170,.120)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -34,7 +47,11 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'gym-brock':Object.freeze({exit:'pewter-city'}),
  'cerulean-city':Object.freeze({route4:'route-4-east',route24:'route-24',
    route5:'route-5',route9:'routes-9-10',gym:'gym-misty'}),
- 'gym-misty':Object.freeze({exit:'cerulean-city'})
+ 'gym-misty':Object.freeze({exit:'cerulean-city'}),
+ 'vermilion-city':Object.freeze({
+  gym:'gym-surge',ship:'ss-anne',route6:'route-6',route11:'route-11'
+ }),
+ 'gym-surge':Object.freeze({exit:'vermilion-city'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);
@@ -52,22 +69,35 @@ export function firstApprovedDestination(mapId,hotspotId){
  */
 export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
  'gym-brock':Object.freeze({
-  stage:0,leader:Object.freeze({kind:'brock',cx:.50,cy:.315}),
-  ace:Object.freeze({dex:'0095',cx:.575,cy:.285}),
+  stage:0,leader:Object.freeze({kind:'brock',cx:.480,cy:.240}),
+  ace:Object.freeze({dex:'0095',cx:.570,cy:.235}),
   trainers:Object.freeze([
    Object.freeze({kind:'hiker',cx:.27,cy:.54}),
    Object.freeze({kind:'youngster',cx:.73,cy:.54}),
-   Object.freeze({kind:'hiker',cx:.29,cy:.78})
+   Object.freeze({kind:'hiker',cx:.50,cy:.72})
   ])
  }),
  'gym-misty':Object.freeze({
-  stage:1,leader:Object.freeze({kind:'misty',cx:.50,cy:.305}),
-  ace:Object.freeze({dex:'0121',cx:.575,cy:.272}),
+  stage:1,leader:Object.freeze({kind:'misty',cx:.470,cy:.230}),
+  ace:Object.freeze({dex:'0121',cx:.570,cy:.225}),
   trainers:Object.freeze([
-   Object.freeze({kind:'swimmer',cx:.27,cy:.53}),
-   Object.freeze({kind:'lass',cx:.73,cy:.53}),
-   Object.freeze({kind:'swimmer',cx:.27,cy:.75}),
-   Object.freeze({kind:'lass',cx:.73,cy:.75})
+   Object.freeze({kind:'swimmer',cx:.27,cy:.465}),
+   Object.freeze({kind:'lass',cx:.73,cy:.465}),
+   Object.freeze({kind:'swimmer',cx:.27,cy:.695}),
+   Object.freeze({kind:'lass',cx:.73,cy:.695})
+  ])
+ }),
+ // The approved Surge image ALREADY contains leader, Pikachu and four NPCs.
+ // Attach invisible Phaser actions over their positions, not duplicate them.
+ 'gym-surge':Object.freeze({
+  stage:2,artworkOnly:true,
+  leader:Object.freeze({kind:'surge',cx:.480,cy:.232}),
+  ace:Object.freeze({dex:'0025',cx:.558,cy:.232}),
+  trainers:Object.freeze([
+   Object.freeze({kind:'youngster',cx:.169,cy:.394}),
+   Object.freeze({kind:'rocker',cx:.841,cy:.395}),
+   Object.freeze({kind:'lass',cx:.169,cy:.667}),
+   Object.freeze({kind:'youngster',cx:.840,cy:.667})
   ])
  })
 });
@@ -78,6 +108,7 @@ export function firstApprovedGymActors(id,total){
   throw new RangeError('Unexpected native checkpoint total for gym stage');
  return {
   stage:layout.stage,leader:layout.leader,ace:layout.ace,
+  artworkOnly:layout.artworkOnly===true,
   trainers:layout.trainers.map((marker,i)=>({...marker,index:total-layout.trainers.length+i}))
  };
 }

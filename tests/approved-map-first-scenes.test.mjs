@@ -113,3 +113,89 @@ test('T43 Brock has 10 route + 3 gym trainers; Misty 11 route + 4 gym, with orig
  assert.throws(()=>firstApprovedGymActors('gym-misty',13),RangeError);
  assert.throws(()=>firstApprovedGymActors('gym-brock',15),RangeError);
 });
+
+test('T43 pixel art placement: city Mart door and gym actors stay on stone platforms',()=>{
+ const cerulean=firstApprovedHotspots(approvedMap('cerulean-city'));
+ const shop=cerulean.find(h=>h.id==='mart');
+ // Approved 1280x720 city illustration: shop door roughly at (0.495, 0.36).
+ assert.ok(Math.abs(shop.cx-.495)<.005);
+ assert.ok(Math.abs(shop.cy-.36)<.01);
+ const [brock,misty]=[firstApprovedGymActors('gym-brock',13),
+                      firstApprovedGymActors('gym-misty',15)];
+ for(const gym of [brock,misty]){
+  // Leaders and aces occupy the upper central stone platform, not its stairs.
+  for(const p of [gym.leader,gym.ace]){
+   assert.ok(p.cx>=.44&&p.cx<=.61);
+   assert.ok(p.cy>=.18&&p.cy<=.27);
+  }
+  // The ace stands beside (not over) the leader.
+  assert.ok(gym.ace.cx-gym.leader.cx>=.08);
+ }
+ // Misty's four trainers are centered on the four dry raised platforms.
+ const islands=[[.27,.465],[.73,.465],[.27,.695],[.73,.695]];
+ misty.trainers.forEach((npc,i)=>{
+  assert.ok(Math.abs(npc.cx-islands[i][0])<.01);
+  assert.ok(Math.abs(npc.cy-islands[i][1])<.01);
+ });
+ // Brock's third subchief stands on the lower central path, not on a boulder.
+ assert.ok(Math.abs(brock.trainers[2].cx-.5)<.01);
+ assert.ok(Math.abs(brock.trainers[2].cy-.72)<.01);
+});
+
+test('T45 Vermilion map and Surge gym preserve full art and correct adjacent routes',()=>{
+ const city=approvedMap('vermilion-city'),gym=approvedMap('gym-surge');
+ assert.ok(city&&gym);
+ for(const id of ['vermilion-city','gym-surge']){
+  const entry=approvedMap(id),hotspots=firstApprovedHotspots(entry);
+  assert.equal(hasFirstApprovedHotspots(id),true);
+  const preflight=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+  assert.equal(preflight.ok,true,id+': '+JSON.stringify(preflight));
+  assert.equal(preflight.hotspots.length,id==='vermilion-city'?6:2);
+  assert.equal(preflight.navTargets.length,0);
+ }
+ for(const [key,target] of Object.entries({
+  gym:'gym-surge',ship:'ss-anne',route6:'route-6',route11:'route-11'
+ })){
+  assert.equal(firstApprovedDestination('vermilion-city',key),target);
+  assert.ok(approvedMapNeighbours('vermilion-city').includes(target),
+   key+' route must exist in geographic atlas');
+ }
+ assert.equal(firstApprovedDestination('gym-surge','exit'),'vermilion-city');
+});
+test('T45 Surge has four clickable ORIGINAL artwork trainers, no added sprite clones',()=>{
+ const gym=firstApprovedGymActors('gym-surge',17);
+ assert.equal(gym.stage,2);
+ assert.equal(gym.artworkOnly,true);
+ assert.deepEqual(gym.trainers.map(t=>t.index),[13,14,15,16]);
+ assert.deepEqual(gym.trainers.map(t=>t.kind),['youngster','rocker','lass','youngster']);
+ for(const t of gym.trainers){
+  assert.ok(t.cx>.10&&t.cx<.90&&t.cy>.30&&t.cy<.75);
+ }
+ assert.throws(()=>firstApprovedGymActors('gym-surge',15),RangeError);
+ assert.equal(firstApprovedGymActors('gym-brock',13).artworkOnly,false);
+});
+
+test('T45 actual interactive zones route a click to every Vermilion door and Surge challenge',()=>{
+ for(const [id,expected] of [
+  ['vermilion-city',['center','mart','gym','ship','route6','route11']],
+  ['gym-surge',['challenge','exit']]
+ ]){
+  const {scene,zones}=fakeScene(),events=[];
+  const screen=renderApprovedMap(scene,id,{
+   resolveHotspots:firstApprovedHotspots,artNavigation:true,
+   isUnlocked:()=>true,
+   onHotspot:(source,spot)=>events.push(source+':'+spot)
+  });
+  assert.equal(screen.ok,true,id);
+  assert.equal(screen.zones.length,expected.length,id);
+  for(const spot of expected){
+   const z=zones.find(x=>x.data?.value===id+':'+spot);
+   assert.ok(z,id+' missing '+spot);
+   let propagationStopped=false;
+   z.pointerdown(null,0,0,{stopPropagation(){propagationStopped=true;}});
+   assert.equal(propagationStopped,true,id+':'+spot);
+  }
+  assert.deepEqual(events,expected.map(x=>id+':'+x));
+  assert.equal(zones.filter(x=>x.data?.key==='torre2-approved-route').length,0);
+ }
+});

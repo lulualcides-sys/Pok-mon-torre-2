@@ -1,5 +1,5 @@
 import {renderCityHub} from './city-hub.js';
-import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey} from './torre2-approved-map-renderer.js';
+import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap} from './torre2-approved-maps-atlas.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
@@ -555,7 +555,8 @@ create(){
     }
     if(kind==='challenge'){
      const current=(id==='gym-brock'&&fresh.stage===0)||
-      (id==='gym-misty'&&fresh.stage===1);
+      (id==='gym-misty'&&fresh.stage===1)||
+      (id==='gym-surge'&&fresh.stage===2);
      if(current)return this.gymScreen(fresh);
      this.add.text(320,320,'GINÁSIO FORA DA ETAPA ATUAL',{
       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
@@ -580,24 +581,28 @@ create(){
    artNavigation:hasFirstApprovedHotspots(id),
    renderSprite:(scene,entry,rect)=>{
     const gymId=entry.id;
-    const gymStage=gymId==='gym-brock'?0:gymId==='gym-misty'?1:null;
+    const gymStage=gymId==='gym-brock'?0:
+     gymId==='gym-misty'?1:gymId==='gym-surge'?2:null;
     if(gymStage===null)return;
     const actors=firstApprovedGymActors(gymId,TRAINERS_PER_GYM(gymStage));
     const project=(cx,cy)=>({x:rect.x+cx*rect.width,y:rect.y+cy*rect.height});
-    const leader=project(actors.leader.cx,actors.leader.cy);
-    addFireRedNPC(scene,actors.leader.kind,leader.x,leader.y,
-     {scale:1.7,depth:24});
-    const ace=project(actors.ace.cx,actors.ace.cy),
-     aceKey='torre2-portrait-'+actors.ace.dex;
-    if(scene.textures.exists(aceKey))
-     scene.add.image(ace.x,ace.y,aceKey)
-      .setDisplaySize(30,30).setDepth(24)
-      .setData('torre2-gym-ace',gymId);
+    // Brock/Misty: independent original sprites. Surge: sprites already
+    // painted into the approved art; never draw them a second time.
+    if(!actors.artworkOnly){
+     const leader=project(actors.leader.cx,actors.leader.cy);
+     addFireRedNPC(scene,actors.leader.kind,leader.x,leader.y,
+      {scale:1.7,depth:24});
+     const ace=project(actors.ace.cx,actors.ace.cy),
+      aceKey='torre2-portrait-'+actors.ace.dex;
+     if(scene.textures.exists(aceKey))
+      scene.add.image(ace.x,ace.y,aceKey).setDisplaySize(30,30).setDepth(24)
+       .setData('torre2-gym-ace',gymId);
+    }
     for(const actor of actors.trainers){
      const point=project(actor.cx,actor.cy);
-     const npc=addFireRedNPC(scene,actor.kind,point.x,point.y,
-      {scale:1.45,depth:24});
-     if(!npc)continue;
+     const npc=actors.artworkOnly?null:addFireRedNPC(scene,actor.kind,
+      point.x,point.y,{scale:1.45,depth:24});
+     if(!npc&&!actors.artworkOnly)continue;
      const hit=scene.add.zone(point.x,point.y-13,35,43).setDepth(41)
       .setInteractive({useHandCursor:true})
       .setData('torre2-approved-gym-trainer',gymId+':'+actor.index);
@@ -622,6 +627,10 @@ create(){
   }
   this.__torre2ApprovedReturn={id,stage:state.stage};
   this.__torre2ApprovedMapView=result;
+  // Previous scene display objects were destroyed before this call.
+  // Keep only the active art + stage entry so 60 maps cannot accumulate
+  // hundreds of MB of WebGL textures on a mobile device.
+  pruneApprovedMapTextures(this,[id,APPROVED_STAGE_MAPS[state.stage]]);
   return true;
  }
  renderCampaign(state,{deferEeveeChoice=false}={}){
