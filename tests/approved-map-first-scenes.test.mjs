@@ -2,7 +2,8 @@ import {REQUIRED_OPENING_SCENES,OPTIONAL_OPENING_SCENES,missingApprovedOpeningSc
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
+import {APPROVED_MAPS_ATLAS,approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
+import {approvedBackMapId} from '../tools/pokearena/torre2-approved-progression-gates.js';
 import {planApprovedMapOverlays,renderApprovedMap} from '../tools/pokearena/torre2-approved-map-renderer.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
 
@@ -234,9 +235,9 @@ test('T47 approved cities open by default only after verified textures, preserve
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.match(source,/const desiredMap=resume\?\.id\|\|APPROVED_STAGE_MAPS\[state\.stage\]/);
  assert.match(source,/hasFirstApprovedHotspots\(desiredMap\)/);
- assert.match(source,/this\.textures\.exists\(mapTextureKey\(desiredMap\)\)/);
+ assert.match(source,/approvedMapEntryAllowed\(state,desiredMap\)/);
  assert.match(source,/!battleReport&&APPROVED_MAP_ASSETS_READY/);
- assert.match(source,/if\(!resumed\)this\.renderCampaign\(state/);
+ assert.match(source,/if\(!resumed&&!canOpenArt\)/);
  const renderer=readFileSync('tools/pokearena/torre2-approved-map-renderer.js','utf8');
  assert.match(renderer,/entry\.type==='cidade'\?'ROTAS':'VOLTAR'/);
 });
@@ -780,7 +781,7 @@ test('T66 leader and Elite challenger gates reuse existing battle system only',(
  assert.ok(source.includes("if(fresh.stage===eliteStage&&!fresh.champion)"));
  assert.ok(source.includes('approvedMapTravelAllowed(id,target,readCampaign()||state)'));
  assert.ok(source.includes('approvedMapEntryAllowed(state,id)'));
- assert.ok(source.includes('return this.gymScreen(fresh)'));
+ assert.ok(source.includes('return this.approvedGymChallengeDialog(fresh,id)'));
  assert.equal(firstApprovedDestination('routes-22-23','viridian'),null);
  assert.equal(firstApprovedDestination('gym-giovanni','route23'),null);
  assert.equal(firstApprovedDestination('hall-of-fame','sevii'),null);
@@ -859,4 +860,42 @@ test('T67 original entrances map to existing adjacent islands, not fake areas',(
  for(const sign of ['dotted-hole','lost-cave','ruby','moltres','tutor',
   'battle-1','final','viapois'])
   assert.equal(firstApprovedDestination('trainer-tower',sign),null);
+});
+
+
+test('T86: every one of the 60 approved backgrounds keeps a Phaser renderer contract',()=>{
+ assert.equal(APPROVED_MAPS_ATLAS.maps.length,60);
+ const ids=new Set();
+ for(const entry of APPROVED_MAPS_ATLAS.maps){
+  assert.equal(ids.has(entry.id),false,entry.id);
+  ids.add(entry.id);
+  assert.ok(entry.image.endsWith('.webp'),entry.id);
+  assert.ok(approvedMap(entry.id),entry.id);
+  const layout=planApprovedMapOverlays({
+   ...entry,hotspots:firstApprovedHotspots(entry)
+  },rect,[]);
+  assert.equal(layout.ok,true,entry.id+': '+JSON.stringify(layout));
+ }
+});
+
+test('T86: VOLTAR is a legal Phaser atlas transition, never a legacy route',()=>{
+ const stage1={stage:1,badges:['Rocha'],champion:false};
+ assert.equal(approvedBackMapId('mt-moon',stage1,['route-4-west']),
+  'route-4-west');
+ assert.equal(approvedBackMapId('mt-moon',stage1,[]),'route-4-west');
+ assert.equal(approvedBackMapId('route-3',stage1,[]),'pewter-city');
+ assert.equal(approvedBackMapId('gym-misty',stage1,[]),'cerulean-city');
+ assert.equal(approvedBackMapId('gym-misty',{stage:0,badges:[],champion:false},[]),null);
+ // Stale, nonadjacent map history cannot bypass the campaign gate.
+ assert.equal(approvedBackMapId('route-3',stage1,['gym-giovanni']),
+  'pewter-city');
+ const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(scene.includes('approvedBackMapId(id,fresh,this.__torre2ApprovedMapHistory)'));
+ assert.ok(scene.includes('preloadApprovedMap(this,target)'));
+ assert.ok(scene.includes('this.approvedGymChallengeDialog(fresh,id)'));
+ assert.ok(scene.includes('this.enterBattle(fresh)'));
+ assert.ok(scene.includes('if(!resumed&&!canOpenArt)'),
+  'Missing Phaser artwork must show error/retry, not legacy route');
+ assert.ok(!scene.includes('this.load.image(key,entry.image)'));
+ assert.ok(!scene.includes('this.__torre2ApprovedReturn=null;\n    this.renderCampaign(readCampaign()||state);'));
 });

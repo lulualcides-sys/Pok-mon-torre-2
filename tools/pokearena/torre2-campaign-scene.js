@@ -2,7 +2,7 @@ import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
 import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './torre2-sevii-ferry.js';
-import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,approvedPostBattleReturnMapId} from './torre2-approved-progression-gates.js';
+import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedBackMapId,approvedReturnMapId,approvedPostBattleReturnMapId} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
 import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
@@ -356,6 +356,10 @@ create(){
    this.__torre2ApprovedReturn,preBattleStage,state,checkpointAccepted);
   if(!currentMap)this.__torre2ApprovedReturn=null;
   const resume=this.__torre2ApprovedReturn;
+  if(this.__torre2ApprovedMapHistoryStage!==state.stage){
+   this.__torre2ApprovedMapHistory=[];
+   this.__torre2ApprovedMapHistoryStage=state.stage;
+  }
   // Image-backed city becomes the normal campaign entrance ONLY after the
   // complete, hash-validated approved WebP package is installed. All existing
   // battle routes remain available via the ROTAS button inside the image view.
@@ -363,10 +367,12 @@ create(){
   const desiredMap=resume?.id||APPROVED_STAGE_MAPS[state.stage];
   const artReady=!!APPROVED_STAGE_MAPS[0]||state.stage!==0;
   const canOpenArt=artReady&&!battleReport&&APPROVED_MAP_ASSETS_READY&&
-   hasFirstApprovedHotspots(desiredMap)&&
-   this.textures.exists(mapTextureKey(desiredMap));
+   hasFirstApprovedHotspots(desiredMap)&&approvedMapEntryAllowed(state,desiredMap);
+  // Missing Phaser textures must show the renderer's explicit error/retry
+  // screen, never silently open the obsolete campaign layout.
   const resumed=canOpenArt&&this.approvedMapPreview(state,desiredMap);
-  if(!resumed)this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
+  if(!resumed&&!canOpenArt)
+   this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
    // Offer choices only AFTER the battle report has been acknowledged.
@@ -602,6 +608,56 @@ create(){
    .setData('torre2-hall-back',true);
   this.__torre2HallOfFame={...hall};
  }
+ // Native Phaser challenge panel, drawn ON TOP of the approved gym artwork.
+ // A locked leader remains locked; the original battle resolver awards prizes.
+ approvedGymChallengeDialog(state,mapId){
+  if(this.__torre2ApprovedGymDialogOpen)return false;
+  if(this.__torre2ApprovedMapView?.id!==mapId||
+     !approvedMapEntryAllowed(state,mapId))return false;
+  const limit=TRAINERS_PER_GYM(state.stage);
+  const remaining=Math.max(0,limit-state.trainer);
+  const ready=!state.champion&&remaining===0;
+  this.__torre2ApprovedGymDialogOpen=true;
+  const parts=[],add=obj=>{parts.push(obj);return obj};
+  const depth=100;
+  add(this.add.rectangle(320,180,640,360,0x040d19,.68)
+   .setDepth(depth).setInteractive());
+  add(this.add.rectangle(320,181,468,216,0x13283e,.98)
+   .setStrokeStyle(2,0xffd77e).setDepth(depth+1));
+  const title=state.stage>=8?'DESAFIO DA LIGA':'DESAFIO DO GINÁSIO';
+  add(this.add.text(320,115,title,{
+   fontFamily:'Pixelify Sans,monospace',fontSize:'18px',
+   color:'#ffe5a0',fontStyle:'bold'}).setOrigin(.5).setDepth(depth+2));
+  add(this.add.text(320,157,ready?'LÍDER DISPONÍVEL PARA BATALHA':
+   'FALTAM '+remaining+' TREINADORES PARA LIBERAR O LÍDER',{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'12px',
+    color:ready?'#a5f9c2':'#f7d99e'}).setOrigin(.5).setDepth(depth+2));
+  const close=()=>{
+   for(const item of parts)if(item?.active)item.destroy();
+   this.__torre2ApprovedGymDialogOpen=false;
+  };
+  const action=(y,label,active,callback)=>{
+   add(this.add.rectangle(320,y,308,36,active?0x396e69:0x29445d,1)
+    .setStrokeStyle(1,active?0xbaf9d2:0x82a5bc).setDepth(depth+3));
+   add(this.add.text(320,y,label,{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'12px',
+    color:'#ffffff',fontStyle:'bold'}).setOrigin(.5).setDepth(depth+4));
+   add(this.add.zone(320,y,308,36).setDepth(depth+5)
+    .setInteractive({useHandCursor:true}).setData('torre2-approved-gym-dialog',label)
+    .on('pointerdown',(_p,_x,_y,event)=>{
+     event?.stopPropagation?.();
+     if(active)callback();
+    }));
+  };
+  action(216,ready?'▶ DESAFIAR LÍDER':'LÍDER BLOQUEADO',ready,()=>{
+   const fresh=readCampaign()||state;
+   if(fresh.stage!==state.stage||fresh.champion||
+      fresh.trainer<TRAINERS_PER_GYM(fresh.stage))return;
+   close();this.enterBattle(fresh);
+  });
+  action(264,'◀ VOLTAR AO GINÁSIO',true,close);
+  return true;
+ }
  // Read-only approved-map view; no new save fields, badges or encounter indices.
  approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]){
   if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false;
@@ -609,12 +665,23 @@ create(){
   // true native gym badges plus stage, not a stage-only cosmetic shortcut.
   if(!APPROVED_MAP_ASSETS_READY||!approvedMapEntryAllowed(state,id))return false;
   const canTravel=(_src,target)=>approvedMapTravelAllowed(_src,target,state);
+  const visit=target=>{
+   const fresh=readCampaign()||state;
+   if(!this.approvedMapPreview(fresh,target))return false;
+   if(target!==id){
+    const history=this.__torre2ApprovedMapHistory||[];
+    if(history[history.length-1]===target)history.pop();
+    else history.push(id);
+    this.__torre2ApprovedMapHistory=history.slice(-60);
+   }
+   return true;
+  };
   const open=target=>{
    // A user may finish a battle, switch scenes or restore a save while a
    // texture is loading. Never authorize a stale closure's old route.
    if(this.__torre2ApprovedMapView?.id!==id||
       !approvedMapTravelAllowed(id,target,readCampaign()||state))return;
-   const entry=approvedMap(target),key=mapTextureKey(target);
+   const key=mapTextureKey(target);
    if(!this.textures.exists(key)){
     if(this.load.isLoading?.()){
      // T67: Phaser may still be finishing the PREVIOUS map's texture
@@ -642,7 +709,7 @@ create(){
     this.load.on('loaderror',onError);
     const self=this;
     function onError(file){if(file?.key===key)failed=true;}
-    this.load.image(key,entry.image);
+    preloadApprovedMap(this,target);
     this.load.once('complete',()=>{
      self.load.off('loaderror',onError);
      if(!self.scene.isActive())return;
@@ -655,22 +722,27 @@ create(){
      const current=readCampaign()||state;
      if(self.__torre2ApprovedMapView?.id!==id||
         !approvedMapTravelAllowed(id,target,current))return;
-     self.approvedMapPreview(current,target);
+     visit(target);
     });
     this.load.start();
    }else{
     const current=readCampaign()||state;
     if(this.__torre2ApprovedMapView?.id===id&&
        approvedMapTravelAllowed(id,target,current))
-     this.approvedMapPreview(current,target);
+     visit(target);
    }
   };
   this.children.removeAll(true);
   this.__torre2SeviiFerryOpen=false;
+  this.__torre2ApprovedGymDialogOpen=false;
   const result=renderApprovedMap(this,id,{
    onExit:()=>{
-    this.__torre2ApprovedReturn=null;
-    this.renderCampaign(readCampaign()||state);
+    const fresh=readCampaign()||state;
+    const target=approvedBackMapId(id,fresh,this.__torre2ApprovedMapHistory);
+    if(target)return open(target);
+    this.add.text(320,318,'USE AS PLACAS PARA NAVEGAR · SEM SAÍDA VALIDADA',{
+     fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffe5ac',
+     backgroundColor:'#102b47',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
    },
    isUnlocked:canTravel,
    onNavigate:(_src,target)=>open(target),
@@ -743,7 +815,7 @@ create(){
       (id==='gym-blaine'&&fresh.stage===6)||
       (id==='gym-giovanni'&&fresh.stage===7)||
       (id==='indigo-plateau'&&fresh.stage===8);
-     if(current)return this.gymScreen(fresh);
+     if(current)return this.approvedGymChallengeDialog(fresh,id);
      this.add.text(320,320,'GINÁSIO FORA DA ETAPA ATUAL',{
       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
       backgroundColor:'#0b293d',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
@@ -754,7 +826,7 @@ create(){
     if(id==='elite-four-rooms'){
      const eliteStage={bruno:9,agatha:10,lance:11,champion:12}[kind];
      if(Number.isInteger(eliteStage)){
-      if(fresh.stage===eliteStage&&!fresh.champion)return this.gymScreen(fresh);
+      if(fresh.stage===eliteStage&&!fresh.champion)return this.approvedGymChallengeDialog(fresh,id);
       this.add.text(320,318,'SALA BLOQUEADA PELA PROGRESSÃO',{
        fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffe5ac',
        backgroundColor:'#102e43',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
@@ -911,8 +983,24 @@ create(){
    }
   });
   if(!result.ok){
-   this.__torre2ApprovedReturn=null;
-   this.renderCampaign(readCampaign()||state);
+   // Do not silently replace a missing/broken approved image with the old
+   // campaign layout. Keep the failure visible and allow a clean reload.
+   this.__torre2ApprovedMapView=null;
+   this.add.rectangle(320,180,640,360,0x0c192b,1).setDepth(70);
+   this.add.text(320,149,'MAPA PHASER INDISPONÍVEL',{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'19px',color:'#ffe0a2'
+   }).setOrigin(.5).setDepth(71);
+   this.add.text(320,190,String(result.reason||'Falha na imagem'),{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'12px',color:'#ffffff'
+   }).setOrigin(.5).setDepth(71);
+   this.add.text(320,242,'RECARREGAR CENA',{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'13px',color:'#ffffff',
+    backgroundColor:'#205a77',padding:{x:13,y:9}
+   }).setOrigin(.5).setDepth(71);
+   this.add.zone(320,242,195,46).setDepth(72)
+    .setInteractive({useHandCursor:true})
+    .setData('torre2-approved-map-retry',id)
+    .on('pointerdown',()=>this.scene.restart({}));
    return false;
   }
   // Hall of Fame has no painted ferry port. Only a real Champion victory
@@ -945,6 +1033,10 @@ create(){
   if(APPROVED_MAP_ASSETS_READY&&id&&
      this.textures.exists(mapTextureKey(id))&&
      this.approvedMapPreview(fresh,id))return true;
+  if(APPROVED_MAP_ASSETS_READY&&id){
+   this.scene.restart({}); // preload the approved art before restoring it
+   return false;
+  }
   this.renderCampaign(fresh);
   return false;
  }
