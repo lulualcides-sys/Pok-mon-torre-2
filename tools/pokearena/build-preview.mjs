@@ -7,6 +7,8 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {stripNativeSocialFooterLinks} from './torre2-native-social-compat.mjs';
+import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -64,6 +66,9 @@ let html=await fs.readFile(index,'utf8');
 html=html.replace(/<title>[^<]*<\/title>/i,'<title>Pokémon Torre</title>');
 html=html.replace(/<script\s+src="\/analitica\.js"><\/script>/g,'');
 html=html.replace(/<script\s+async\s+src="\/m\/s"><\/script>/g,'');
+// The original site's footer links are not gameplay or fullscreen controls.
+// Remove only external social anchors from our isolated solo copy.
+html=stripNativeSocialFooterLinks(html);
 // Original favicon and manifests must be relative to our subfolder.
 html=html.replace('href="/favicon.png"','href="favicon.png"');
 // Restore the ORIGINAL Poké Arena 2D responsive viewport and Phaser scaling.
@@ -571,6 +576,86 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Account/profile entry is absent or reformatted in newer offline title.
+   // Remove only a confirmed profile item, never the whole settings menu.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('ajustes:[{id:"perfil"') && to==='ajustes:['){
+    const profile=/ajustes\s*:\s*\[\s*\{id:(["'])perfil\1,[^{}]{0,240}\},?/g;
+    const found=[...body.matchAll(profile)];
+    if(found.length===1){
+     body=body.replace(found[0][0],'ajustes:[');
+     continue;
+    }
+    // Upstream now gates the account tile with a DEBUG ternary.
+    // Remove that one tile (both branches), retain SOUND/CONTROLS/LANGUAGE.
+    const debugVariant='ajustes:[DEBUG?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
+    if(body.includes(debugVariant)){
+     body=body.replace(debugVariant,'ajustes:[');
+     continue;
+    }
+    if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
+     console.warn('Native title no longer exposes PROFILE in settings; no change');
+     continue;
+    }
+    if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
+     upstreamUnmatched.push({filename,issue:'profile menu changed',
+      current:body.slice(Math.max(0,body.indexOf('ajustes:')-40),
+        body.indexOf('ajustes:')+420)});
+     continue;
+    }
+    throw Error('Unknown native account profile menu; refusing guessed removal');
+   }
+   // Current upstream title rearranges social icon positions. The entire
+   // redes() call is stripped by the later exact, verified offline patch;
+   // keep its inactive original implementation untouched.
+   if(filename==='escenas/titulo.js' &&
+      ((from.startsWith('[["tiktok",600]')&&to.includes('"instagram"')) ||
+       (from.startsWith('const halo=this.add.graphics().setDepth(999)')&&to===''))){
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    disableNativeTitleSocialLinks(body); // fail closed if called in an unknown form
+    console.warn('Native title social internals changed; offline call will be removed');
+    continue;
+   }
+   // Upstream can remove or reformat the optional social UI call.
+   // Strip it only when a single call is unambiguously identified; no links
+   // should be created by the solo game's title scene.
+   if(filename==='escenas/titulo.js'&&from==='this.redes();'&&to.includes('no social icons')){
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    body=disableNativeTitleSocialLinks(body);
+    continue;
+   }
+   // Keep the native config import and add only the Kanto FX module.
+   if(filename==='habilidades.js' &&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}') &&
+      to.includes('TORRE2_FORMS')){
+    const {injectNativeTorre2FormsImport}=await import('./torre2-native-habilidades-compat.mjs');
+    body=injectNativeTorre2FormsImport(body);
+    continue;
+   }
+   // Native passive HP regeneration changed form; disable only in campaign.
+   if(filename==='luchador.js' &&
+      from.startsWith('if(t-this.ultimoDano>=REGLAS.curaTras') &&
+      to.includes('this.escena.datos?.torre2')){
+    const {disableNativeCampaignPassiveRegen}=await import('./torre2-native-regen-compat.mjs');
+    body=disableNativeCampaignPassiveRegen(body);
+    continue;
+   }
+   // Optional upstream spritesheet is gone/reshaped; it is not used by
+   // the native capture pipeline. Handle only this exact known dependency.
+   if(filename==='escenas/carga.js'&&
+      from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
+    const {stripUnavailableUiBallsPreload}=await import('./torre2-native-asset-compat.mjs');
+    body=stripUnavailableUiBallsPreload(body);
+    continue;
+   }
+   // The original abilities module may reorder/extend its config imports.
+   // Append only the Kanto weather hook; fail closed on ambiguous provenance.
+   if(filename==='habilidades.js'&&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
+      to.includes('weatherFromMove')){
+    body=ensureNativeWeatherFromMoveImport(body);
+    continue;
+   }
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
    if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){
@@ -812,6 +897,19 @@ for(const [filename,changes] of patches){
     body=body.replace(match[0],'import{'+imports.join(',')+'}from"../sprites.js";');
     continue;
    }
+   // The current title screen has a revised responsive layout. Retain
+   // native button spacing and hitboxes; never replace unknown coordinates.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const DISPOSICION=')){
+    console.warn('Updated native title layout preserved unchanged');
+    continue;
+   }
+   // Optional title sprite heuristics were refactored upstream. The native
+   // animation remains authoritative; do not apply outdated source rewrites.
+   if(filename==='escenas/titulo.js'&&to.includes('this.anims.exists')&&
+      (from.startsWith('return m&&')||from.startsWith('if(!m||'))){
+    console.warn('Native title sprite condition retained after upstream refactor');
+    continue;
+   }
    // Native selection now computes mode-button x positions differently.
    // We already removed VERSUS and kept only VS CPU / TRAINING above.
    // Do not guess new hitbox positions by patching an obsolete literal.
@@ -859,6 +957,20 @@ for(const [filename,changes] of patches){
      throw Error('Native selection portrait initializer changed; refusing to guess placement: '+body.slice(Math.max(0,body.indexOf('const bloqueado=')-330),body.indexOf('const bloqueado=')+200));
     if(!body.slice(end+1,end+155).includes('ponerRetrato(this,img,p.dex)'))
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
+    continue;
+   }
+   // The native roster filter may evolve without changing the TODOS source.
+   // Insert Kanto species BEFORE the current native ROSTER declaration.
+   if(filename==='datos.js'&&
+      from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'&&
+      to.includes('upgradeKantoEvolutionBattleKits')){
+    const declarations=body.match(/(?:export\s+)?const\s+ROSTER\s*=\s*[^;]{1,220};/g)||[];
+    if(declarations.length!==1||!declarations[0].includes('TODOS'))
+     throw Error('Unknown native ROSTER declaration; not injecting species');
+    const setup='TODOS.push(...addEarlyKantoSpecies(TODOS));'+
+     'TODOS.push(...addAllKantoSpecies(TODOS));'+
+     'upgradeKantoEvolutionBattleKits(TODOS);';
+    body=body.replace(declarations[0],setup+declarations[0]);
     continue;
    }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));

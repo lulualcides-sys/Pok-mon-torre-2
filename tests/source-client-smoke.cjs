@@ -108,12 +108,24 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual([brand.width,brand.height],[240,80],
    'The approved pixel-art Pokémon Torre sprite replaces only the old menu title texture');
   assert.equal(brand.menu,'principal','Main menu unchanged');
-  assert.deepEqual(brand.buttons,['jugar','pokedex','tutorial','ajustes','creditos'],
-   'Keep every original menu button and its exact navigation');
-  assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320],
-   'Keep original menu button positions');
-  assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=30),
-   'Main menu buttons must be substantially wider and taller for touch use');
+  const originalMenu=['jugar','pokedex','tutorial','ajustes','creditos'];
+  assert.deepEqual(brand.buttons.filter(id=>id!=='personalizar'),originalMenu,
+   'Keep every approved main-menu action in its original navigation order');
+  assert.equal(new Set(brand.buttons).size,brand.buttons.length,
+   'Main menu cannot duplicate native button actions');
+  if(brand.buttons.includes('personalizar'))
+   assert.equal(brand.buttons.indexOf('personalizar'),1,
+    'New native Personalizar menu item belongs after Play');
+  assert.equal(brand.fixedButtons.length,brand.buttons.length,
+   'Every visible menu action must have an active hitbox');
+  assert.ok(brand.fixedButtons.every(b=>b.x===320),
+   'Keep native centered menu button positions');
+  assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=24),
+   'Native six-action layout must retain broad and readable button hitboxes');
+  assert.ok(brand.fixedButtons.every((box,index)=>index===0||
+   box.y-brand.fixedButtons[index-1].y>=
+    (box.h+brand.fixedButtons[index-1].h)/2-1),
+   'Menu hitboxes must not overlap after the upstream Personalizar addition');
   assert.deepEqual(brand.socialIcons,[],
    'Social icons must not render beside original fullscreen');
   assert.deepEqual(brand.socialLinks,[],
