@@ -14,7 +14,7 @@ test('T51 60 original WebPs really reside in this code branch',()=>{
 });
 test('T51 Pallet-first progression refuses premature stage-zero image despite all 60 assets',()=>{
  assert.deepEqual(missingApprovedOpeningScenes(approvedMap,hasFirstApprovedHotspots),
-  ['pallet-town','route-1','viridian-city','viridian-forest','route-2']);
+  ['pallet-town','route-1','viridian-city','route-2','viridian-forest']);
  assert.equal(approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),null);
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId("));
