@@ -5,16 +5,16 @@ import {firstApprovedGymActors,approvedGymAceIdlePlan} from
  '../tools/pokearena/torre2-approved-map-first-scenes.js';
 import {spriteIdForTrainer} from '../tools/pokearena/torre2-frlg-npc.js';
 
-test('T76 Misty: four distinct original FRLG trainer types, same checkpoints',()=>{
+test('T77 Misty: four authentic water-theme FRLG sprites, same checkpoints',()=>{
  const gym=firstApprovedGymActors('gym-misty',15);
  assert.equal(gym.stage,1);
  assert.deepEqual(gym.trainers.map(t=>t.index),[11,12,13,14]);
  assert.deepEqual(gym.trainers.map(t=>t.kind),
-  ['swimmer','sailor','picnicker','ace_f']);
+  ['swimmer','swimmer_f','tuber_m','tuber_f']);
  const textures=gym.trainers.map(t=>'frlg-npc-'+spriteIdForTrainer(t.kind));
  assert.deepEqual(textures,[
-  'frlg-npc-swimmer_m_land','frlg-npc-sailor',
-  'frlg-npc-picnicker','frlg-npc-cooltrainer_f'
+  'frlg-npc-swimmer_m_land','frlg-npc-swimmer_f_land',
+  'frlg-npc-tuber_m_land','frlg-npc-tuber_f'
  ]);
  assert.equal(new Set(textures).size,4);
  assert.equal(gym.leader.kind,'misty');
@@ -50,8 +50,8 @@ test('T76 Phaser scene renders full PMD Idle, not the opaque portrait for Misty'
  assert.ok(source.includes("if(gymId==='gym-misty'){"));
  assert.ok(source.includes('scene.add.sprite(ace.x,ace.y,plan.key,0)'));
  assert.ok(source.includes("setData('torre2-gym-ace-source','pmd-idle')"));
- assert.ok(source.includes("if(APPROVED_MAP_ASSETS_READY&&stage===1)"));
- for(const kind of ['sailor','picnicker','ace_f'])
+ assert.ok(source.includes("if(APPROVED_MAP_ASSETS_READY&&(stage===1||stage===2))"));
+ for(const kind of ['swimmer_f','tuber_m','tuber_f'])
   assert.ok(source.includes("'"+kind+"'"),kind);
  assert.ok(source.includes("npc?.setData('torre2-gym-trainer-sprite'"));
  assert.ok(source.includes("leaderSprite?.setData('torre2-gym-leader-sprite'"));
