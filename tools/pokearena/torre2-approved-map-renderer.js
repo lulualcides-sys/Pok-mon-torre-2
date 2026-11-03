@@ -4,8 +4,9 @@
  */
 import {approvedMap,approvedMapNeighbours,approvedPointToScreen} from './torre2-approved-maps-atlas.js';
 
-// Explicit off until the actual approved WebP files exist in GitHub.
-export const APPROVED_MAP_ASSETS_READY = false;
+// Sixty SHA-256-audited WebP backgrounds now exist in this DRAFT branch.
+// Build-preview refuses to emit an enabled site if any image is absent.
+export const APPROVED_MAP_ASSETS_READY = true;
 export const MAP_CANVAS = Object.freeze({x:0,y:0,width:640,height:360});
 export const mapTextureKey = id => 'torre2-approved-map-'+id;
 
