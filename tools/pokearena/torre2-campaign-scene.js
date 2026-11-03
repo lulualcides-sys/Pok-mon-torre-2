@@ -611,11 +611,16 @@ create(){
       this.__torre2SeviiFerryOpen=false;
      };
      targets.forEach((target,i)=>{
-      add(this.add.text(320,155+i*40,
+      const y=155+i*40;
+      // Independent Phaser hit zone: font metrics may change after a Text
+      // object becomes interactive, causing missed clicks on the ferry menu.
+      // Its visual label remains unchanged and the zone stays above the modal.
+      add(this.add.text(320,y,
        '⛴ '+(SEVII_FERRY_LABELS[target]||approvedMap(target)?.name),{
         fontFamily:'Pixelify Sans,monospace',fontSize:'16px',
         color:'#ffffff',backgroundColor:'#205575',
-        padding:{x:14,y:8}}).setOrigin(.5).setDepth(83)
+        padding:{x:14,y:8}}).setOrigin(.5).setDepth(83));
+      add(this.add.zone(320,y,260,34).setDepth(84)
        .setInteractive({useHandCursor:true})
        .setData('torre2-approved-ferry-destination',target)
        .on('pointerdown',(_p,_x,_y,event)=>{
