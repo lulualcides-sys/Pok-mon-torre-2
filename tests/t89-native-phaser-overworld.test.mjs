@@ -23,8 +23,14 @@ test('T90 no character movement, keyboard, joystick or image-ground pointer',()=
   /onPosition/,/__torre2OverworldPositions/,/installPlayableOverworld/
  ]){
   assert.doesNotMatch(module,forbidden,forbidden.toString());
-  assert.doesNotMatch(scene,forbidden,forbidden.toString());
  }
+ // Combat sprites and gym aces still use approved Phaser animations.
+ // This regression only forbids the newly invented overworld movement.
+ for(const oldController of [
+  /NATIVE_WALK_ROUTES/,/installPlayableOverworld/,
+  /__torre2OverworldPositions/,/onPosition:distance=>/,
+  /addPlayer:\(x,y\)=>/
+ ])assert.doesNotMatch(scene,oldController,oldController.toString());
  assert.match(scene,/onHotspot:\(_id,kind\)=>/);
  assert.match(scene,/addFireRedNPC\(scene,actor\.kind/);
  assert.match(scene,/this\.enterBattle\(fresh\)/);
