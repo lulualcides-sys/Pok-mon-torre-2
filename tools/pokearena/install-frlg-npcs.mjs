@@ -8,7 +8,8 @@ import path from 'node:path';
 export const FRLG_NPC_NAMES=Object.freeze([
  'red_normal','green_normal','blue','youngster','lass','bug_catcher','hiker',
  'camper','picnicker','rocket_m','rocket_f','sailor','fisher','scientist',
- 'channeler','biker','gentleman','swimmer_m_land','black_belt','cooltrainer_m',
+ 'channeler','biker','gentleman','swimmer_m_land','swimmer_f_land',
+ 'tuber_m_land','tuber_f','black_belt','cooltrainer_m',
  'cooltrainer_f','brock','misty','lt_surge','erika','koga','sabrina','blaine',
  'giovanni','prof_oak','nurse','clerk','man','woman_1','old_man_1',
  'mr_fuji','bill','lance','lorelei','agatha','bruno'
@@ -49,7 +50,10 @@ export async function installFRLGNPCs(dest){
    }catch(e){result.missing.push(name)}
   }));
  }
- const crucial=['red_normal','youngster','bug_catcher','rocket_m','brock'];
+ // The themed gym uses these exact ORIGINAL assets; fail the build if a
+ // remote fetch silently drops one rather than replacing it with a random NPC.
+ const crucial=['red_normal','youngster','bug_catcher','rocket_m','brock',
+  'misty','swimmer_m_land','swimmer_f_land','tuber_m_land','tuber_f'];
  if(crucial.some(x=>!result.available.includes(x)))
   throw Error('Missing essential original FireRed NPC graphics: '+
    crucial.filter(x=>!result.available.includes(x)));
