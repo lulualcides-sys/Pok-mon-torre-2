@@ -156,11 +156,11 @@ function collect(def){
  return moves;
 }
 // The upstream Poké Arena 2D client may later add a move we had already
-// pixel-animated and approved in Torre 2. Preserve these FOUR older approved
+// pixel-animated and approved in Torre 2. Preserve these FIVE older approved
 // Kanto renderer implementations, while leaving the upstream Arena/VS kits
 // completely intact. These are NOT permission to create future duplicates.
 export const APPROVED_KANTO_NATIVE_OVERLAPS=Object.freeze([
- 'ice-shard','psychic','shadow-ball','ice-beam'
+ 'ice-shard','psychic','shadow-ball','ice-beam','twister'
 ]);
 const approvedKantoOverlap=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
 // Two native Poke Arena moves existed in the user-approved 227-effect baseline

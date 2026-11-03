@@ -120,8 +120,12 @@ const server=http.createServer(async(req,res)=>{
    'Every visible menu action must have an active hitbox');
   assert.ok(brand.fixedButtons.every(b=>b.x===320),
    'Keep native centered menu button positions');
-  assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=30),
-   'Main menu buttons must be substantially wider and taller for touch use');
+  assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=24),
+   'Native six-action layout must retain broad and readable button hitboxes');
+  assert.ok(brand.fixedButtons.every((box,index)=>index===0||
+   box.y-brand.fixedButtons[index-1].y>=
+    (box.h+brand.fixedButtons[index-1].h)/2-1),
+   'Menu hitboxes must not overlap after the upstream Personalizar addition');
   assert.deepEqual(brand.socialIcons,[],
    'Social icons must not render beside original fullscreen');
   assert.deepEqual(brand.socialLinks,[],
