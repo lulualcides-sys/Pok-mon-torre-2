@@ -1072,19 +1072,19 @@ const server=http.createServer(async(req,res)=>{
      texture:scene.__torre2ApprovedMapView?.image?.texture?.key,
      leaders:scene.children.list.filter(o=>o.active&&
       o.getData?.('torre2-gym-leader-sprite')==='gym-erika')
-      .map(o=>o.texture?.key),
+      .map(o=>({key:o.texture?.key,y:o.y})),
      trainers:scene.children.list.filter(o=>o.active&&
       String(o.getData?.('torre2-gym-trainer-sprite')||'').startsWith('gym-erika:'))
       .map(o=>o.texture?.key),
      aces:scene.children.list.filter(o=>o.active&&
       o.getData?.('torre2-gym-ace')==='gym-erika')
-      .map(o=>({key:o.texture?.key,w:o.displayWidth,h:o.displayHeight,
+      .map(o=>({key:o.texture?.key,w:o.displayWidth,h:o.displayHeight,y:o.y,
        originY:o.originY,source:o.getData?.('torre2-gym-ace-source')})),
      save:JSON.stringify(window.kanto.readCampaign())
     };
    });
    assert.equal(erikaReport.texture,'torre2-approved-map-gym-erika');
-   assert.deepEqual(erikaReport.leaders,['frlg-npc-erika']);
+   assert.deepEqual(erikaReport.leaders.map(l=>l.key),['frlg-npc-erika']);
    assert.deepEqual(erikaReport.trainers,[
     'frlg-npc-lass','frlg-npc-beauty',
     'frlg-npc-picnicker','frlg-npc-cooltrainer_f'
@@ -1096,6 +1096,8 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(erikaReport.aces[0].originY,26/40,
     'T79 Vileplume must stand on platform using true alpha-visible feet');
    assert.ok(erikaReport.aces[0].w>=35&&erikaReport.aces[0].h>=35);
+   assert.ok(Math.abs(erikaReport.aces[0].y-erikaReport.leaders[0].y)<1,
+    'T80 Vileplume must stand on exactly the same ground plane as Erika');
    assert.equal(erikaReport.save,erikaBefore,
     'T79 walking into Erika gym modified story save');
    const erikaScreenshot='t79-approved-gym-erika-'+mode.name+'.png';
