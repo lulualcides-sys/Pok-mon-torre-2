@@ -73,8 +73,8 @@ export function showKantoLocation(scene,view,state,stageNames,trainersPerGym){
 export function installKantoLocationChip(scene,view,state,stageNames,trainersPerGym){
  const bg=scene.add.rectangle(316,339,38,27,0x082034,.94)
   .setStrokeStyle(1,0xffdd83,.95).setDepth(81);
- const glyph=scene.add.text(316,339,'⌖',{
-  fontFamily:'Pixelify Sans,monospace',fontSize:'18px',fontStyle:'bold',
+ const glyph=scene.add.text(316,339,'LOC',{
+  fontFamily:'Pixelify Sans,monospace',fontSize:'9px',fontStyle:'bold',
   color:'#ffdf85',stroke:'#061320',strokeThickness:2
  }).setOrigin(.5).setDepth(82);
  const hit=scene.add.zone(316,339,40,31).setDepth(85)
