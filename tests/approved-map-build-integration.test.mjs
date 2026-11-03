@@ -36,3 +36,12 @@ test('T42 native campaign imports resolve to exactly the built filenames',()=>{
    'Native dependency must invalidate cached mobile Phaser modules');
  }
 });
+
+test('T50 new opening dependency ships as exact ESM browser module',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(source.includes("import {approvedOpeningMapId} from './torre2-approved-opening.js';"));
+ assert.ok(build.includes("['tools/pokearena/torre2-approved-opening.js','torre2-approved-opening.js']"));
+ assert.ok(build.includes("'torre2/torre2-approved-opening.js'"));
+ assert.ok(source.includes('if(openingMap)preloadApprovedMap(this,openingMap)'));
+ assert.ok(source.includes('if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false'));
+});

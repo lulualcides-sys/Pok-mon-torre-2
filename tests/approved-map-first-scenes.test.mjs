@@ -1,3 +1,4 @@
+import {REQUIRED_OPENING_SCENES,OPTIONAL_OPENING_SCENES,missingApprovedOpeningScenes,approvedOpeningMapId} from '../tools/pokearena/torre2-approved-opening.js';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -387,4 +388,33 @@ test('T49 Safari Zone retains original art, touches the real Fuchsia exit, no in
  assert.ok(exit);
  exit.pointerdown(null,0,0,{stopPropagation(){}});
  assert.deepEqual(calls,['safari-zone:exit']);
+});
+
+
+test('T50 image-backed Kanto must begin at Pallet; Route 22 is optional',()=>{
+ assert.deepEqual(REQUIRED_OPENING_SCENES,[
+  'pallet-town','route-1','viridian-city','route-2',
+  'viridian-forest','pewter-city']);
+ assert.deepEqual(OPTIONAL_OPENING_SCENES,['route-22']);
+ const available=new Set(['route-2','pewter-city']);
+ const findMap=id=>available.has(id)?{id}:null;
+ const reviewed=id=>available.has(id);
+ assert.deepEqual(missingApprovedOpeningScenes(findMap,reviewed),[
+  'pallet-town','route-1','viridian-city','viridian-forest']);
+ assert.equal(approvedOpeningMapId(findMap,reviewed),null);
+ available.add('pallet-town');available.add('route-1');
+ available.add('viridian-city');available.add('viridian-forest');
+ assert.equal(approvedOpeningMapId(findMap,()=>false),null);
+ assert.equal(approvedOpeningMapId(findMap,reviewed),'pallet-town');
+ assert.throws(()=>approvedOpeningMapId(null,reviewed),TypeError);
+});
+
+test('T50 no stage-0 Pewter shortcut, no premature texture load or map button',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city'"));
+ assert.ok(source.includes('if(openingMap)preloadApprovedMap(this,openingMap)'));
+ assert.ok(source.includes('if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false'));
+ assert.ok(source.includes('APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS[state.stage]?'));
+ assert.ok(!source.includes("APPROVED_STAGE_MAPS=['pewter-city'"));
+ assert.ok(!source.includes("APPROVED_STAGE_MAPS[state?.stage]||'pewter-city'"));
 });

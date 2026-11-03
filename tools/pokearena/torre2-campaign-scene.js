@@ -1,6 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap} from './torre2-approved-maps-atlas.js';
+import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -44,7 +45,9 @@ import {routeNode} from './route-data.js';
 import {kantoDexPageModel,pcPageModel,pcMemberLabel,PC_FILTERS} from './collection-ui.js';
 import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
-const APPROVED_STAGE_MAPS=['pewter-city','cerulean-city','vermilion-city','celadon-city',
+// Stage 0 must remain the native campaign until the entire Pallet-to-Pewter
+// artwork AND its reviewed hotspots exist. Never silently start at Pewter.
+const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city','vermilion-city','celadon-city',
  'fuchsia-city','saffron-city','cinnabar-island','gym-giovanni',
  'indigo-plateau','elite-four-rooms','elite-four-rooms','elite-four-rooms',
  'elite-four-rooms','hall-of-fame'];
@@ -141,7 +144,8 @@ class Campanha extends Phaser.Scene{
    // and after a native Phaser scene restart. Never write it to save data.
    const restored=this.__torre2ApprovedReturn?.stage===stage?
     this.__torre2ApprovedReturn.id:null;
-   preloadApprovedMap(this,restored||APPROVED_STAGE_MAPS[stage]||'indigo-plateau');
+   const openingMap=restored||APPROVED_STAGE_MAPS[stage];
+   if(openingMap)preloadApprovedMap(this,openingMap);
   }
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
@@ -285,10 +289,11 @@ create(){
   // battle routes remain available via the ROTAS button inside the image view.
   // A battle report always takes precedence over map navigation.
   const desiredMap=resume?.id||APPROVED_STAGE_MAPS[state.stage];
-  const artReady=!battleReport&&APPROVED_MAP_ASSETS_READY&&
+  const artReady=!!APPROVED_STAGE_MAPS[0]||state.stage!==0;
+  const canOpenArt=artReady&&!battleReport&&APPROVED_MAP_ASSETS_READY&&
    hasFirstApprovedHotspots(desiredMap)&&
    this.textures.exists(mapTextureKey(desiredMap));
-  const resumed=artReady&&this.approvedMapPreview(state,desiredMap);
+  const resumed=canOpenArt&&this.approvedMapPreview(state,desiredMap);
   if(!resumed)this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
@@ -508,8 +513,9 @@ create(){
   this.__torre2HallOfFame={...hall};
  }
  // Read-only approved-map view; no new save fields, badges or encounter indices.
- approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]||'pewter-city'){
-  if(!APPROVED_MAP_ASSETS_READY||!approvedMap(id))return false;
+ approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]){
+  if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false;
+  if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
    return !!entry&&entry.index<=APPROVED_STAGE_MAX[s];
@@ -697,7 +703,8 @@ create(){
   }
   const path=renderBattlePath(this,state,{
    city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
-   approvedMaps:APPROVED_MAP_ASSETS_READY?()=>this.approvedMapPreview(state):null,
+   approvedMaps:APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS[state.stage]?
+    ()=>this.approvedMapPreview(state):null,
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),
