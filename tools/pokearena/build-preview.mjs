@@ -1031,6 +1031,13 @@ for(const [filename,changes] of patches){
     console.warn('Changed upstream title Idle-2 conditions preserved unchanged');
     continue;
    }
+   // The original title layout has evolved upstream. Do not apply an old
+   // coordinate expression to a new version: keep the native current layout
+   // intact, while the browser visual guard checks clickability and spacing.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const DISPOSICION=')){
+    console.warn('Updated upstream title layout preserved without guessed coordinates');
+    continue;
+   }
    if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
     upstreamUnmatched.push({filename,missing:from.slice(0,120),
      target:to.slice(0,100)});
