@@ -101,6 +101,24 @@ if(approvedRenderer.includes('export const APPROVED_MAP_ASSETS_READY = true;')){
  console.log('Installed original 60 approved WebP maps and certified prologue additions',
   {original:entries.length,prologue:verified.length-entries.length});
 }
+// T60: copy only SHA-256-verified original user reference sheets for
+// isolated browser QA. Never add them to the 60 approved production maps.
+const {PROLOGUE_REFERENCE_SHEETS,validatePrologueReferenceSheet}=
+ await import('./torre2-prologue-reference-sheets.js');
+for(const sheet of PROLOGUE_REFERENCE_SHEETS){
+ validatePrologueReferenceSheet(sheet);
+ const bits=await fs.readFile(sheet.source);
+ if(bits.subarray(0,8).toString('hex')!=='89504e470d0a1a0a'||
+    bits.readUInt32BE(16)!==sheet.sourceWidth||
+    bits.readUInt32BE(20)!==sheet.sourceHeight||
+    createHash('sha256').update(bits).digest('hex')!==sheet.sha256)
+   throw Error('Original reference PNG differs: '+sheet.id);
+ const out=path.join(dest,'assets/ui/kanto-reference-prologue',sheet.id+'.png');
+ await fs.mkdir(path.dirname(out),{recursive:true});
+ await fs.writeFile(out,bits);
+}
+console.log('T60: original source references for QA only',PROLOGUE_REFERENCE_SHEETS.length);
+
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
 // be verified. Never silently substitute another hand-drawn fake sprite.
@@ -293,6 +311,8 @@ await Promise.all([
  ['tools/pokearena/torre2-campaign-scene.js','campanha.js'],
  ['tools/pokearena/torre2-approved-maps-atlas.js','torre2-approved-maps-atlas.js'],
  ['tools/pokearena/torre2-approved-prologue-assets.js','torre2-approved-prologue-assets.js'],
+ ['tools/pokearena/torre2-prologue-reference-sheets.js','torre2-prologue-reference-sheets.js'],
+ ['tools/pokearena/torre2-prologue-source-preview.js','torre2-prologue-source-preview.js'],
  ['tools/pokearena/torre2-approved-map-renderer.js','torre2-approved-map-renderer.js'],
  ['tools/pokearena/torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js'],
  ['tools/pokearena/torre2-approved-opening.js','torre2-approved-opening.js'],
@@ -1170,7 +1190,7 @@ for(const filename of [
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
  'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/versus-intro.js','torre2/battle-path.js',
- 'torre2/torre2-approved-maps-atlas.js','torre2/torre2-approved-prologue-assets.js','torre2/torre2-approved-map-renderer.js','torre2/torre2-approved-map-first-scenes.js','torre2/torre2-approved-opening.js',
+ 'torre2/torre2-approved-maps-atlas.js','torre2/torre2-approved-prologue-assets.js','torre2/torre2-prologue-reference-sheets.js','torre2/torre2-prologue-source-preview.js','torre2/torre2-approved-map-renderer.js','torre2/torre2-approved-map-first-scenes.js','torre2/torre2-approved-opening.js',
  'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',
  'torre2/campaign-art.js','torre2/cc0-overworld.js','torre2/frlg-location.js','torre2/frlg-npc.js','torre2/kanto-hotspots.js','torre2/frlg-interiors.js','torre2/frlg-available.js','torre2/kanto-regions.js','torre2/kanto-tiles.js','torre2/kanto-levels.js','torre2/kanto-world-map.js','torre2/capture-mechanics.js','torre2/capture-arena.js','torre2/ball-sprites.js','torre2/ball-choreography.js','torre2/campaign-sprites.js','torre2/kanto-signatures-fx.js'
 ])vfxFingerprint.update(await fs.readFile(path.join(dest,clientSource,filename)));
