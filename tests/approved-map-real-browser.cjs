@@ -400,6 +400,113 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:path.join(out,'t66-approved-elite-four-rooms-'+
     mode.name+'.png'),fullPage:true,animations:'disabled'});
    await nativeChallenge('elite-four-rooms','bruno');
+   // T67 real Phaser visual proof; the Champion state below is a CONTROLLED
+   // TEST FIXTURE, not evidence of a player winning every fight.
+   await page.evaluate(()=>{
+    const save=window.kanto.readCampaign();
+    save.stage=13;save.champion=true;
+    window.kanto.saveCampaign(save);
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    scene.__torre2ApprovedReturn=null;
+    scene.__torre2ApprovedMapView=null;
+    scene.scene.restart();
+   });
+   await page.waitForFunction(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    return scene?.scene.isActive()&&scene.__torre2ApprovedMapView?.id==='hall-of-fame'&&
+     scene.children.list.some(x=>x.active&&x.getData?.('torre2-approved-sevii-departure'));
+   },null,{timeout:45000});
+   const seviiSave=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+   const clickPhaser=async what=>{
+    const position=await page.evaluate(goal=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     let target;
+     if(goal.type==='sign'){
+      const view=scene.__torre2ApprovedMapView;
+      if(view?.id!==goal.from)throw Error('T67 wrong map: '+view?.id+' not '+goal.from);
+      target=view.zones.find(z=>z.getData?.('torre2-approved-hotspot')===
+       goal.from+':'+goal.label);
+     }else{
+      target=scene.children.list.find(z=>z.active&&
+       z.getData?.(goal.type==='start'?
+        'torre2-approved-sevii-departure':'torre2-approved-ferry-destination')===
+        (goal.type==='start'?true:goal.label));
+     }
+     if(!target)throw Error('T67 missing actual Phaser click '+JSON.stringify(goal));
+     const bounds=document.querySelector('#juego canvas').getBoundingClientRect();
+     const w=Math.min(bounds.width,bounds.height*640/360),
+      h=Math.min(bounds.height,bounds.width*360/640);
+     return {x:bounds.x+(bounds.width-w)/2+target.x/640*w,
+      y:bounds.y+(bounds.height-h)/2+target.y/360*h};
+    },what);
+    if(mode.isMobile)await page.touchscreen.tap(position.x,position.y);
+    else await page.mouse.click(position.x,position.y);
+   };
+   const verifySave=async label=>{
+    const after=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+    assert.equal(after,seviiSave,'T67 map navigation modified save: '+label);
+   };
+   const waitMap=async id=>{
+    await page.waitForFunction(target=>{
+     const scene=window.__pt2Game.scene.getScene('campanha'),
+      view=scene?.__torre2ApprovedMapView;
+     return scene?.scene.isActive()&&view?.id===target&&view.image?.active;
+    },id,{timeout:25000});
+    await verifySave(id);
+    const name='t67-approved-'+id+'-'+mode.name+'.png';
+    await page.screenshot({path:path.join(out,name),fullPage:true,animations:'disabled'});
+    evidence.maps.push({id,mode:mode.name,fixture:'Champion stage 13 ONLY',
+     screenshot:name,saveUnchanged:true});
+   };
+   const move=async(from,sign,to)=>{
+    await clickPhaser({type:'sign',from,label:sign});
+    await waitMap(to);
+   };
+   const ferry=async(from,to)=>{
+    await clickPhaser({type:'sign',from,label:'port'});
+    await page.waitForFunction(target=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     return scene.__torre2SeviiFerryOpen&&
+      scene.children.list.some(x=>x.active&&
+       x.getData?.('torre2-approved-ferry-destination')===target);
+    },to,{timeout:10000});
+    await clickPhaser({type:'ferry',label:to});
+    await waitMap(to);
+   };
+   const hallGate=await page.evaluate(()=>{
+    const s=window.kanto.readCampaign();
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    return scene.approvedMapPreview({...s,champion:false},'sevii-1');
+   });
+   assert.equal(hallGate,false,'T67 must forbid Sevii before a real Champion flag');
+   await clickPhaser({type:'start'});
+   await waitMap('sevii-1');
+   await move('sevii-1','ember','mt-ember');
+   await move('mt-ember','island1','sevii-1');
+   await ferry('sevii-1','sevii-2');
+   await ferry('sevii-2','sevii-3');
+   await ferry('sevii-3','sevii-4');
+   await move('sevii-4','icefall','icefall-cave');
+   await move('icefall-cave','island4','sevii-4');
+   await ferry('sevii-4','sevii-5');
+   await clickPhaser({type:'sign',from:'sevii-5',label:'warehouse'});
+   assert.equal(await page.evaluate(()=>
+    window.__pt2Game.scene.getScene('campanha').__torre2ApprovedMapView?.id),
+    'sevii-5','T67 must not enter Rocket Warehouse without password');
+   await verifySave('protected-rocket');
+   await ferry('sevii-5','sevii-6');
+   await ferry('sevii-6','sevii-7');
+   await move('sevii-7','canyon','sevault-canyon');
+   await clickPhaser({type:'sign',from:'sevault-canyon',label:'tanoby'});
+   assert.equal(await page.evaluate(()=>
+    window.__pt2Game.scene.getScene('campanha').__torre2ApprovedMapView?.id),
+    'sevault-canyon','T67 must not enter Tanoby without key');
+   await verifySave('protected-tanoby');
+   await move('sevault-canyon','island7','sevii-7');
+   await move('sevii-7','tower','trainer-tower');
+   await clickPhaser({type:'sign',from:'trainer-tower',label:'battle-1'});
+   await verifySave('trainer-tower-decorative-battle');
+   await move('trainer-tower','exit','sevii-7');
    await page.close();
   }
   assert.deepEqual(evidence.errors,[],'Phaser page errors');
