@@ -410,7 +410,7 @@ const server=http.createServer(async(req,res)=>{
       null,{timeout:45000});
     await page.evaluate(()=>new Promise(resolve=>
      requestAnimationFrame(()=>requestAnimationFrame(resolve))));
-    const p=await page.evaluate(()=>{
+    const p=await page.evaluate(label=>{
      const hit=window.__pt2Game.scene.getScene('campanha').children.list.find(
       o=>o.active&&o.getData?.('torre2-report-continue')===true);
      if(!hit)throw Error('T72 missing real '+label+' report button');
@@ -419,10 +419,13 @@ const server=http.createServer(async(req,res)=>{
       h=Math.min(b.height,b.width*360/640);
      return {x:b.x+(b.width-w)/2+hit.x/640*w,
       y:b.y+(b.height-h)/2+hit.y/360*h};
-    });
+    },label);
     if(mode.isMobile)await page.touchscreen.tap(p.x,p.y);
     else await page.mouse.click(p.x,p.y);
    };
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.children.list.some(o=>o.active&&o.getData?.('torre2-report-continue')===true),
+    null,{timeout:45000});
    const misty=await page.evaluate(()=>{
     const s=window.kanto.readCampaign();
     return {stage:s.stage,trainer:s.trainer,wins:s.wins,
@@ -465,11 +468,6 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('campanha').scene.restart({
      finished:true,won:true,
      marker:{kind:'trainer',stage:s.stage,trainer:s.trainer}});
-   });
-   const trainer=await page.evaluate(()=>{
-    const s=window.kanto.readCampaign();
-    return {stage:s.stage,trainer:s.trainer,wins:s.wins,badges:s.badges.slice(),
-     snapshot:JSON.stringify(s)};
    });
    // Wait for the real report and the native save commit before checking.
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
