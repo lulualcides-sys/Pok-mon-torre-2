@@ -144,12 +144,12 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('lavender',.654,.610,.132,.132)
  ]),
  'lavender-town':Object.freeze([
-  v('route10',.370,.099,.157,.131),
-  v('tower',.500,.419,.186,.163),
+  v('route10',.406,.091,.160,.135),
+  v('tower',.641,.427,.178,.148),
   v('route8',.065,.547,.122,.134),
   v('route12',.455,.899,.144,.145),
-  v('center',.333,.548,.137,.140),
-  v('mart',.775,.548,.129,.142)
+  v('center',.360,.633,.144,.147),
+  v('mart',.752,.637,.137,.150)
  ]),
  'routes-7-8':Object.freeze([
   v('celadon',.066,.432,.128,.140),
