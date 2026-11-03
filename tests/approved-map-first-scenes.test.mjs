@@ -570,3 +570,12 @@ test('T62 five route/tunnel images have reviewed non-overlapping Phaser sign zon
   assert.deepEqual(events,signs.map(sign=>id+':'+sign));
  }
 });
+
+test('T62 back control avoids the original Mt. Moon painted upper-left title',()=>{
+ const map=approvedMap('mt-moon');
+ const layout=planApprovedMapOverlays(
+  {...map,hotspots:firstApprovedHotspots(map)},rect,[]);
+ assert.equal(layout.ok,true,JSON.stringify(layout));
+ // The cave exit sign is top-right; never place VOLTAR over the image title.
+ assert.deepEqual([layout.backX,layout.backY],[601,314]);
+});
