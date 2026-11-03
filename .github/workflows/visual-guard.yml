@@ -100,6 +100,10 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/approved-map-real-browser.cjs
+      - name: Capturar as três fontes originais no Phaser real (desktop/mobile)
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/t60-original-prologue-phaser-browser.cjs
       - name: Gerar diagnóstico automático na falha
         if: failure()
         env:
