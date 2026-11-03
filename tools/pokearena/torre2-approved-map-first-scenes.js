@@ -185,7 +185,7 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
   moon:'mt-moon',cerulean:'cerulean-city'
  }),
  'cerulean-city':Object.freeze({route4:'route-4-east',route24:'route-24',
-   route5:'route-5',route9:'routes-9-10',gym:'gym-misty'}),
+   route5:'route-5',route9:'route-9-solo',gym:'gym-misty'}),
  'gym-misty':Object.freeze({exit:'cerulean-city'}),
  'route-24':Object.freeze({cerulean:'cerulean-city',route25:'route-25'}),
  'route-25':Object.freeze({route24:'route-24'}),
