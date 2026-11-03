@@ -113,11 +113,12 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(brand.buttons,
    ['jugar','personalizar','pokedex','tutorial','ajustes','creditos'],
    'Keep all six native title buttons in the current authorized order');
-  assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320,320],
-   'Keep all native title button positions centered');
-  console.log('T84 ORIGINAL MENU BUTTON GEOMETRY',JSON.stringify(brand.fixedButtons));
-  assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=30),
-   'Main menu buttons must be substantially wider and taller for touch use');
+  // T84: all six buttons are native 260x24 logical px, with 2px clear
+  // between each. An obsolete >=30 height check rejected the actual design.
+  // Match exact geometry to prevent accidental overlaps or layout drift.
+  assert.deepEqual(brand.fixedButtons,
+   [148,174,200,226,252,278].map(y=>({x:320,y,w:260,h:24})),
+   'Keep the approved six-button native menu centered, evenly spaced and non-overlapping');
   assert.deepEqual(brand.socialIcons,[],
    'Social icons must not render beside original fullscreen');
   assert.deepEqual(brand.socialLinks,[],
