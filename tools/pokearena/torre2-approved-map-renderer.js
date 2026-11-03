@@ -155,7 +155,8 @@ export function renderApprovedMap(scene,id,{
   const back=scene.add.zone(layout.backX,layout.backY,74,33).setDepth(50)
    .setInteractive({useHandCursor:true}).setData('torre2-approved-exit',true)
    .on('pointerdown',(_pointer,_x,_y,e)=>{e?.stopPropagation?.();onExit();});
-  const backLabel=scene.add.text(layout.backX,layout.backY,'VOLTAR',{fontFamily:'Pixelify Sans,monospace',
+  const backText=entry.type==='cidade'?'ROTAS':'VOLTAR';
+  const backLabel=scene.add.text(layout.backX,layout.backY,backText,{fontFamily:'Pixelify Sans,monospace',
    fontSize:'10px',fontStyle:'bold',color:'#ffffff',backgroundColor:'#102b47',padding:{x:7,y:5}})
    .setOrigin(.5).setDepth(49);
   // Only registered original trainer sprites are painted above the approved background.

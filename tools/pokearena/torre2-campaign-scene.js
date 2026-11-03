@@ -1,6 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap} from './torre2-approved-maps-atlas.js';
+import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -44,7 +45,9 @@ import {routeNode} from './route-data.js';
 import {kantoDexPageModel,pcPageModel,pcMemberLabel,PC_FILTERS} from './collection-ui.js';
 import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
-const APPROVED_STAGE_MAPS=['pewter-city','cerulean-city','vermilion-city','celadon-city',
+// Stage 0 must remain the native campaign until the entire Pallet-to-Pewter
+// artwork AND its reviewed hotspots exist. Never silently start at Pewter.
+const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city','vermilion-city','celadon-city',
  'fuchsia-city','saffron-city','cinnabar-island','gym-giovanni',
  'indigo-plateau','elite-four-rooms','elite-four-rooms','elite-four-rooms',
  'elite-four-rooms','hall-of-fame'];
@@ -141,7 +144,8 @@ class Campanha extends Phaser.Scene{
    // and after a native Phaser scene restart. Never write it to save data.
    const restored=this.__torre2ApprovedReturn?.stage===stage?
     this.__torre2ApprovedReturn.id:null;
-   preloadApprovedMap(this,restored||APPROVED_STAGE_MAPS[stage]||'indigo-plateau');
+   const openingMap=restored||APPROVED_STAGE_MAPS[stage];
+   if(openingMap)preloadApprovedMap(this,openingMap);
   }
   const world=getCampaignMapSpec(stage,0).id;
   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
@@ -175,7 +179,7 @@ class Campanha extends Phaser.Scene{
    if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))
     this.textures.remove(key);
   }
-  if(APPROVED_MAP_ASSETS_READY)for(const kind of ['brock','misty','swimmer','hiker','youngster','lass'])
+  if(APPROVED_MAP_ASSETS_READY)for(const kind of ['brock','misty','erika','koga','swimmer','hiker','youngster','lass','bugcatcher','biker','psychic','ace'])
    needed.add(spriteIdForTrainer(kind));
   for(const id of needed){
    if(!AVAILABLE_FRLG_NPCS.includes(id))continue;
@@ -187,7 +191,7 @@ class Campanha extends Phaser.Scene{
   // One small original PMD portrait for each first-gym ace, beside its leader.
   // No extra full animation set or online request during map navigation.
   if(APPROVED_MAP_ASSETS_READY){
-   toLoad.add('0095');toLoad.add('0121');
+   toLoad.add('0095');toLoad.add('0121');toLoad.add('0045');toLoad.add('0110');
   }
   // Only this region's twelve unique wild entries; reuse existing small PMD
   // portraits, not twelve full animation sheets (mobile GPU memory).
@@ -280,8 +284,16 @@ create(){
   if(completed||this.__torre2ApprovedReturn?.stage!==state.stage)
    this.__torre2ApprovedReturn=null;
   const resume=this.__torre2ApprovedReturn;
-  const resumed=!battleReport&&APPROVED_MAP_ASSETS_READY&&resume&&
-   this.approvedMapPreview(state,resume.id);
+  // Image-backed city becomes the normal campaign entrance ONLY after the
+  // complete, hash-validated approved WebP package is installed. All existing
+  // battle routes remain available via the ROTAS button inside the image view.
+  // A battle report always takes precedence over map navigation.
+  const desiredMap=resume?.id||APPROVED_STAGE_MAPS[state.stage];
+  const artReady=!!APPROVED_STAGE_MAPS[0]||state.stage!==0;
+  const canOpenArt=artReady&&!battleReport&&APPROVED_MAP_ASSETS_READY&&
+   hasFirstApprovedHotspots(desiredMap)&&
+   this.textures.exists(mapTextureKey(desiredMap));
+  const resumed=canOpenArt&&this.approvedMapPreview(state,desiredMap);
   if(!resumed)this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
@@ -501,8 +513,9 @@ create(){
   this.__torre2HallOfFame={...hall};
  }
  // Read-only approved-map view; no new save fields, badges or encounter indices.
- approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]||'pewter-city'){
-  if(!APPROVED_MAP_ASSETS_READY||!approvedMap(id))return false;
+ approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]){
+  if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false;
+  if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
    return !!entry&&entry.index<=APPROVED_STAGE_MAX[s];
@@ -556,7 +569,9 @@ create(){
     if(kind==='challenge'){
      const current=(id==='gym-brock'&&fresh.stage===0)||
       (id==='gym-misty'&&fresh.stage===1)||
-      (id==='gym-surge'&&fresh.stage===2);
+      (id==='gym-surge'&&fresh.stage===2)||
+      (id==='gym-erika'&&fresh.stage===3)||
+      (id==='gym-koga'&&fresh.stage===4);
      if(current)return this.gymScreen(fresh);
      this.add.text(320,320,'GINÁSIO FORA DA ETAPA ATUAL',{
       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
@@ -582,7 +597,8 @@ create(){
    renderSprite:(scene,entry,rect)=>{
     const gymId=entry.id;
     const gymStage=gymId==='gym-brock'?0:
-     gymId==='gym-misty'?1:gymId==='gym-surge'?2:null;
+     gymId==='gym-misty'?1:gymId==='gym-surge'?2:
+     gymId==='gym-erika'?3:gymId==='gym-koga'?4:null;
     if(gymStage===null)return;
     const actors=firstApprovedGymActors(gymId,TRAINERS_PER_GYM(gymStage));
     const project=(cx,cy)=>({x:rect.x+cx*rect.width,y:rect.y+cy*rect.height});
@@ -687,7 +703,8 @@ create(){
   }
   const path=renderBattlePath(this,state,{
    city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
-   approvedMaps:APPROVED_MAP_ASSETS_READY?()=>this.approvedMapPreview(state):null,
+   approvedMaps:APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS[state.stage]?
+    ()=>this.approvedMapPreview(state):null,
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
    battle:()=>this.enterBattle(state),

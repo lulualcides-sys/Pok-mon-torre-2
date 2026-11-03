@@ -1,3 +1,5 @@
+import {REQUIRED_OPENING_SCENES,OPTIONAL_OPENING_SCENES,missingApprovedOpeningScenes,approvedOpeningMapId} from '../tools/pokearena/torre2-approved-opening.js';
+import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
@@ -42,8 +44,8 @@ test('T41 catalog is read only; original sixty approved art entries remain uncha
   assert.equal(approvedMap(id).hotspots.length,0);
   assert.notEqual(firstApprovedHotspots(approvedMap(id)),approvedMap(id).hotspots);
  }
- assert.equal(hasFirstApprovedHotspots('ss-anne'),false);
- assert.equal(firstApprovedHotspots(approvedMap('ss-anne')),approvedMap('ss-anne').hotspots);
+ assert.equal(hasFirstApprovedHotspots('ss-anne'),true);
+ assert.notEqual(firstApprovedHotspots(approvedMap('ss-anne')),approvedMap('ss-anne').hotspots);
 });
 
 function fakeScene(){
@@ -198,4 +200,221 @@ test('T45 actual interactive zones route a click to every Vermilion door and Sur
   assert.deepEqual(events,expected.map(x=>id+':'+x));
   assert.equal(zones.filter(x=>x.data?.key==='torre2-approved-route').length,0);
  }
+});
+
+test('T46 S.S. Anne exits through the original Vermilion City artwork without an HM requirement',()=>{
+ const id='ss-anne',entry=approvedMap(id);
+ const spots=firstApprovedHotspots(entry);
+ assert.deepEqual(spots.map(s=>s.id),['exit']);
+ assert.equal(firstApprovedDestination(id,'exit'),'vermilion-city');
+ assert.equal(firstApprovedDestination(id,'captain'),null);
+ assert.ok(approvedMapNeighbours(id).includes('vermilion-city'));
+ assert.equal(entry.image,'assets/ui/kanto-approved-maps/kanto/ss-anne.webp');
+ // Actual approved 1280x720 image has VERMILION CITY bottom-center.
+ assert.deepEqual(spots.map(s=>[s.cx,s.cy,s.w,s.h]),[[.48,.91,.22,.12]]);
+ const plan=planApprovedMapOverlays({...entry,hotspots:spots},rect,[]);
+ assert.equal(plan.ok,true);
+ assert.equal(plan.hotspots.length,1);
+ assert.equal(plan.navTargets.length,0);
+ const {scene,zones}=fakeScene(),events=[];
+ const view=renderApprovedMap(scene,id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,onHotspot:(map,spot)=>events.push([map,spot])
+ });
+ assert.equal(view.ok,true);
+ const exit=zones.find(z=>z.data?.value==='ss-anne:exit');
+ assert.ok(exit,'Missing clickable ship exit');
+ exit.pointerdown(null,0,0,{stopPropagation(){}});
+ assert.deepEqual(events,[['ss-anne','exit']]);
+ assert.equal(zones.some(z=>z.data?.value==='ss-anne:captain'),false);
+});
+
+test('T47 approved cities open by default only after verified textures, preserve route actions',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.match(source,/const desiredMap=resume\?\.id\|\|APPROVED_STAGE_MAPS\[state\.stage\]/);
+ assert.match(source,/hasFirstApprovedHotspots\(desiredMap\)/);
+ assert.match(source,/this\.textures\.exists\(mapTextureKey\(desiredMap\)\)/);
+ assert.match(source,/!battleReport&&APPROVED_MAP_ASSETS_READY/);
+ assert.match(source,/if\(!resumed\)this\.renderCampaign\(state/);
+ const renderer=readFileSync('tools/pokearena/torre2-approved-map-renderer.js','utf8');
+ assert.match(renderer,/entry\.type==='cidade'\?'ROTAS':'VOLTAR'/);
+});
+
+test('T48 Celadon click zones follow approved city doors and stay inside frame',()=>{
+ const city=approvedMap('celadon-city'),spots=firstApprovedHotspots(city);
+ assert.ok(city&&hasFirstApprovedHotspots(city.id));
+ assert.deepEqual(spots.map(h=>h.id),['center','mart','gym','game','route16','route7']);
+ const plan=planApprovedMapOverlays({...city,hotspots:spots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.equal(plan.hotspots.length,6);
+ assert.equal(plan.navTargets.length,0);
+ for(const [id,to] of Object.entries({
+  gym:'gym-erika',game:'rocket-hideout',
+  route16:'routes-16-18',route7:'routes-7-8'
+ })){
+  assert.equal(firstApprovedDestination(city.id,id),to);
+  assert.ok(approvedMapNeighbours(city.id).includes(to),id);
+ }
+ const {scene,zones}=fakeScene(),hits=[];
+ const view=renderApprovedMap(scene,city.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,onHotspot:(src,id)=>hits.push(src+':'+id)
+ });
+ assert.equal(view.ok,true);
+ for(const id of spots.map(h=>h.id)){
+  const zone=zones.find(z=>z.data?.value==='celadon-city:'+id);
+  assert.ok(zone,id);
+  zone.pointerdown(null,0,0,{stopPropagation(){}});
+ }
+ assert.deepEqual(hits,spots.map(h=>'celadon-city:'+h.id));
+});
+
+test('T48 Erika four existing gym trainer indices, no new story rewards',()=>{
+ const gym=approvedMap('gym-erika'),spots=firstApprovedHotspots(gym);
+ const plan=planApprovedMapOverlays({...gym,hotspots:spots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.deepEqual(spots.map(h=>h.id),['challenge','exit']);
+ assert.equal(firstApprovedDestination('gym-erika','exit'),'celadon-city');
+ const actors=firstApprovedGymActors('gym-erika',19);
+ assert.equal(actors.stage,3);
+ assert.equal(actors.artworkOnly,false);
+ assert.equal(actors.leader.kind,'erika');
+ assert.equal(actors.ace.dex,'0045');
+ assert.deepEqual(actors.trainers.map(t=>t.index),[15,16,17,18]);
+ for(const t of actors.trainers){
+  assert.ok(t.cx>.10&&t.cx<.90&&t.cy>.28&&t.cy<.78);
+  for(const h of spots){
+   assert.ok(Math.abs(t.cx-h.cx)>=(h.w+.06)/2||
+             Math.abs(t.cy-h.cy)>=(h.h+.12)/2,'Trainer blocked '+h.id);
+  }
+ }
+ assert.throws(()=>firstApprovedGymActors('gym-erika',17),RangeError);
+});
+
+test('T49 Fuchsia approved city has seven precise taps and registered geographic neighbors',()=>{
+ const city=approvedMap('fuchsia-city'),hotspots=firstApprovedHotspots(city);
+ assert.equal(hasFirstApprovedHotspots(city.id),true);
+ assert.deepEqual(hotspots.map(h=>h.id),[
+  'center','mart','gym','safari','route18','route15','route19'
+ ]);
+ const preflight=planApprovedMapOverlays({...city,hotspots},rect,[]);
+ assert.equal(preflight.ok,true,JSON.stringify(preflight));
+ assert.equal(preflight.hotspots.length,7);
+ assert.equal(preflight.navTargets.length,0);
+ for(const [id,target] of Object.entries({
+  gym:'gym-koga',safari:'safari-zone',
+  route18:'routes-16-18',route15:'routes-12-15',
+  route19:'routes-19-20'
+ })){
+  assert.equal(firstApprovedDestination(city.id,id),target);
+  assert.ok(approvedMapNeighbours(city.id).includes(target),city.id+':'+id);
+ }
+ // Route 19 is not accessible during the gym's stage 4: it unlocks later.
+ assert.ok(approvedMap('routes-19-20').index>31);
+ const {scene,zones}=fakeScene(),events=[];
+ const result=renderApprovedMap(scene,city.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,
+  onHotspot:(src,id)=>events.push(src+':'+id)
+ });
+ assert.equal(result.ok,true);
+ for(const spot of hotspots){
+  const hit=zones.find(z=>z.data?.value==='fuchsia-city:'+spot.id);
+  assert.ok(hit,spot.id+' missing clickable zone');
+  let stopped=false;
+  hit.pointerdown(null,0,0,{stopPropagation(){stopped=true;}});
+  assert.equal(stopped,true);
+ }
+ assert.deepEqual(events,hotspots.map(h=>city.id+':'+h.id));
+});
+
+test('T49 Koga places four native trainer checks on dry platforms and retains leader challenge',()=>{
+ const gym=approvedMap('gym-koga');
+ const hotspots=firstApprovedHotspots(gym);
+ assert.equal(hasFirstApprovedHotspots(gym.id),true);
+ assert.deepEqual(hotspots.map(h=>h.id),['challenge','exit']);
+ const plan=planApprovedMapOverlays({...gym,hotspots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.equal(plan.navTargets.length,0);
+ assert.equal(firstApprovedDestination(gym.id,'exit'),'fuchsia-city');
+ const actors=firstApprovedGymActors(gym.id,21);
+ assert.equal(actors.stage,4);
+ assert.equal(actors.artworkOnly,false);
+ assert.equal(actors.leader.kind,'koga');
+ assert.equal(actors.ace.dex,'0110');
+ assert.deepEqual(actors.trainers.map(t=>t.index),[17,18,19,20]);
+ const platforms=[[.265,.400],[.737,.400],[.267,.763],[.736,.763]];
+ actors.trainers.forEach((npc,i)=>{
+  assert.ok(Math.abs(npc.cx-platforms[i][0])<.005);
+  assert.ok(Math.abs(npc.cy-platforms[i][1])<.005);
+  for(const h of hotspots)
+   assert.ok(Math.abs(npc.cx-h.cx)>=(h.w+.060)/2||
+             Math.abs(npc.cy-h.cy)>=(h.h+.11)/2,
+             'Trainer overlapping '+h.id);
+ });
+ assert.throws(()=>firstApprovedGymActors(gym.id,19),RangeError);
+ const {scene,zones}=fakeScene(),hits=[];
+ const result=renderApprovedMap(scene,gym.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,onHotspot:(src,id)=>hits.push(id)
+ });
+ assert.equal(result.ok,true);
+ for(const id of ['challenge','exit']){
+  let z=zones.find(x=>x.data?.value==='gym-koga:'+id);
+  assert.ok(z,id);
+  z.pointerdown(null,0,0,{stopPropagation(){}});
+ }
+ assert.deepEqual(hits,['challenge','exit']);
+});
+
+test('T49 Safari Zone retains original art, touches the real Fuchsia exit, no invented HM',()=>{
+ const entry=approvedMap('safari-zone'),hotspots=firstApprovedHotspots(entry);
+ assert.equal(hasFirstApprovedHotspots(entry.id),true);
+ assert.deepEqual(hotspots.map(h=>h.id),['exit']);
+ assert.equal(firstApprovedDestination(entry.id,'exit'),'fuchsia-city');
+ assert.equal(firstApprovedDestination(entry.id,'hm03'),null);
+ assert.equal(firstApprovedDestination(entry.id,'gold-teeth'),null);
+ assert.ok(approvedMapNeighbours(entry.id).includes('fuchsia-city'));
+ const plan=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.equal(plan.hotspots.length,1);
+ const {scene,zones}=fakeScene(),calls=[];
+ const result=renderApprovedMap(scene,entry.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,isUnlocked:()=>true,
+  onHotspot:(src,id)=>calls.push(src+':'+id)
+ });
+ assert.equal(result.ok,true);
+ const exit=zones.find(x=>x.data?.value==='safari-zone:exit');
+ assert.ok(exit);
+ exit.pointerdown(null,0,0,{stopPropagation(){}});
+ assert.deepEqual(calls,['safari-zone:exit']);
+});
+
+
+test('T50 image-backed Kanto must begin at Pallet; Route 22 is optional',()=>{
+ assert.deepEqual(REQUIRED_OPENING_SCENES,[
+  'pallet-town','route-1','viridian-city','route-2',
+  'viridian-forest','pewter-city']);
+ assert.deepEqual(OPTIONAL_OPENING_SCENES,['route-22']);
+ const available=new Set(['route-2','pewter-city']);
+ const findMap=id=>available.has(id)?{id}:null;
+ const reviewed=id=>available.has(id);
+ assert.deepEqual(missingApprovedOpeningScenes(findMap,reviewed),[
+  'pallet-town','route-1','viridian-city','viridian-forest']);
+ assert.equal(approvedOpeningMapId(findMap,reviewed),null);
+ available.add('pallet-town');available.add('route-1');
+ available.add('viridian-city');available.add('viridian-forest');
+ assert.equal(approvedOpeningMapId(findMap,()=>false),null);
+ assert.equal(approvedOpeningMapId(findMap,reviewed),'pallet-town');
+ assert.throws(()=>approvedOpeningMapId(null,reviewed),TypeError);
+});
+
+test('T50 no stage-0 Pewter shortcut, no premature texture load or map button',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city'"));
+ assert.ok(source.includes('if(openingMap)preloadApprovedMap(this,openingMap)'));
+ assert.ok(source.includes('if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false'));
+ assert.ok(source.includes('APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS[state.stage]?'));
+ assert.ok(!source.includes("APPROVED_STAGE_MAPS=['pewter-city'"));
+ assert.ok(!source.includes("APPROVED_STAGE_MAPS[state?.stage]||'pewter-city'"));
 });

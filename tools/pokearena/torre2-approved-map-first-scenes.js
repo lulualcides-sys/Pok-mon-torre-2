@@ -40,6 +40,46 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  'gym-surge':Object.freeze([
   v('challenge',.496,.227,.195,.160),
   v('exit',.501,.934,.170,.120)
+ ]),
+ // S.S. Anne: the only working exit leads to the painted VERMILION CITY door.
+ // Captain/CUT, cabins and deck are NOT gameplay destinations yet. Never
+ // grant HMs or invent battles from decorative text painted in the image.
+ 'ss-anne':Object.freeze([
+  v('exit',.480,.910,.220,.120)
+ ]),
+ // Celadon 1280x720. Exact door/sign anchors, no scene repaint or zoom.
+ 'celadon-city':Object.freeze([
+  v('center',.252,.526,.123,.120),
+  v('mart',.500,.294,.142,.116),
+  v('gym',.501,.825,.166,.126),
+  v('game',.727,.318,.137,.125),
+  v('route16',.070,.352,.119,.129),
+  v('route7',.938,.353,.102,.130)
+ ]),
+ 'gym-erika':Object.freeze([
+  v('challenge',.503,.247,.182,.125),
+  v('exit',.502,.946,.182,.100)
+ ]),
+ // Fuchsia: exactly the painted buildings/route signs, normalized from
+ // the approved 1280x720 artwork. No movable overworld or forced HM.
+ 'fuchsia-city':Object.freeze([
+  v('center',.501,.741,.133,.116),
+  v('mart',.183,.311,.148,.128),
+  v('gym',.197,.777,.147,.130),
+  v('safari',.503,.144,.188,.120),
+  v('route18',.056,.408,.094,.111),
+  v('route15',.946,.405,.103,.111),
+  v('route19',.500,.925,.147,.103)
+ ]),
+ 'gym-koga':Object.freeze([
+  v('challenge',.503,.236,.204,.140),
+  v('exit',.501,.937,.175,.105)
+ ]),
+ // Safari park's only registered action is the signed south exit.
+ // Gold Teeth and HM03 labels are decorative until a validated gameplay
+ // interaction is implemented; don't grant HMs, items or badges.
+ 'safari-zone':Object.freeze([
+  v('exit',.500,.908,.182,.111)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -51,7 +91,20 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'vermilion-city':Object.freeze({
   gym:'gym-surge',ship:'ss-anne',route6:'route-6',route11:'route-11'
  }),
- 'gym-surge':Object.freeze({exit:'vermilion-city'})
+ 'gym-surge':Object.freeze({exit:'vermilion-city'}),
+ 'ss-anne':Object.freeze({exit:'vermilion-city'}),
+ 'celadon-city':Object.freeze({
+  gym:'gym-erika',game:'rocket-hideout',
+  route16:'routes-16-18',route7:'routes-7-8'
+ }),
+ 'gym-erika':Object.freeze({exit:'celadon-city'}),
+ 'fuchsia-city':Object.freeze({
+  gym:'gym-koga',safari:'safari-zone',
+  route18:'routes-16-18',route15:'routes-12-15',
+  route19:'routes-19-20'
+ }),
+ 'gym-koga':Object.freeze({exit:'fuchsia-city'}),
+ 'safari-zone':Object.freeze({exit:'fuchsia-city'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);
@@ -64,7 +117,7 @@ export function firstApprovedDestination(mapId,hotspotId){
 }
 
 /* Native FireRed NPCs for the approved image-backed gym interiors.
- * The gym trainer markers REUSE the last three (Brock) or four (Misty) route checkpoints.
+ * Trainers REUSE the existing route/gym checkpoints for each stage.
  * They do not introduce a second save index or grant battle rewards.
  */
 export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
@@ -98,6 +151,30 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
    Object.freeze({kind:'rocker',cx:.841,cy:.395}),
    Object.freeze({kind:'lass',cx:.169,cy:.667}),
    Object.freeze({kind:'youngster',cx:.840,cy:.667})
+  ])
+ }),
+ // Empty battle circles in the approved greenhouse: overlay real 16x32
+ // FireRed sprites and reuse the last four saved battle checkpoints.
+ 'gym-erika':Object.freeze({
+  stage:3,leader:Object.freeze({kind:'erika',cx:.493,cy:.248}),
+  ace:Object.freeze({dex:'0045',cx:.592,cy:.245}),
+  trainers:Object.freeze([
+   Object.freeze({kind:'lass',cx:.174,cy:.350}),
+   Object.freeze({kind:'bugcatcher',cx:.825,cy:.351}),
+   Object.freeze({kind:'lass',cx:.153,cy:.718}),
+   Object.freeze({kind:'bugcatcher',cx:.834,cy:.718})
+  ])
+ }),
+ // Koga's four platforms have no painted trainer sprites: overlay original
+ // 16x32 FireRed NPCs. They reuse the stage-4 route's saved battle indices.
+ 'gym-koga':Object.freeze({
+  stage:4,leader:Object.freeze({kind:'koga',cx:.495,cy:.260}),
+  ace:Object.freeze({dex:'0110',cx:.587,cy:.258}),
+  trainers:Object.freeze([
+   Object.freeze({kind:'biker',cx:.265,cy:.400}),
+   Object.freeze({kind:'psychic',cx:.737,cy:.400}),
+   Object.freeze({kind:'ace',cx:.267,cy:.763}),
+   Object.freeze({kind:'biker',cx:.736,cy:.763})
   ])
  })
 });

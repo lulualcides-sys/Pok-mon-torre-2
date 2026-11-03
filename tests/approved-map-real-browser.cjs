@@ -21,7 +21,7 @@ const server=http.createServer(async(req,res)=>{
 (async()=>{
  await fs.mkdir(out,{recursive:true});
  const evidence={ok:false,source:'real-Phaser-Chromium',
-  fixture:'starter factory; direct read-only map preview, NOT natural story progress',
+  fixture:'controlled stage-one state for screenshots; NOT natural story progress',
   maps:[],errors:[]};
  let browser;
  try{
@@ -43,12 +43,16 @@ const server=http.createServer(async(req,res)=>{
     if(!main)throw Error('Native main module absent');
     const core=await import(new URL('./torre2/campaign-core.js',main));
     window.kanto=core;
-    core.saveCampaign(core.createPlayerCampaign('bulbasaur'));
+    const fixture=core.createPlayerCampaign('bulbasaur');
+    fixture.stage=1; // controlled Cerulean fixture: stage zero stays in Pallet-safe fallback
+    core.saveCampaign(fixture);
     window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
    });
-   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha')&&
-    !!window.__pt2Game.scene.getScene('campanha').__torre2BattlePath,
-    null,{timeout:50000});
+   await page.waitForFunction(()=>{
+    const game=window.__pt2Game,scene=game?.scene.getScene('campanha');
+    return game?.scene.isActive('campanha')&&
+     (scene?.__torre2ApprovedMapView?.id==='cerulean-city'||!!scene?.__torre2BattlePath);
+   },null,{timeout:50000});
    for(const id of ['pewter-city','gym-brock','cerulean-city','gym-misty']){
     const info=await page.evaluate(async id=>{
      const game=window.__pt2Game,scene=game.scene.getScene('campanha');
