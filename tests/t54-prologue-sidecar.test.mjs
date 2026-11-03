@@ -7,7 +7,7 @@ import {
 } from '../tools/pokearena/torre2-approved-prologue-assets.js';
 import {APPROVED_MAPS_ATLAS,approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
 import {hasFirstApprovedHotspots,firstApprovedHotspots,firstApprovedDestination} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
-import {approvedOpeningMapId,missingApprovedOpeningScenes,openingJourneyForState,markOpeningForestVisit,openingTravelAllowed,restoreOpeningForestVisit,persistOpeningForestVisit} from '../tools/pokearena/torre2-approved-opening.js';
+import {approvedOpeningMapId,missingApprovedOpeningScenes,openingJourneyForState,markOpeningForestVisit,openingTravelAllowed,restoreOpeningForestVisit,persistOpeningForestVisit,clearOpeningForestVisit} from '../tools/pokearena/torre2-approved-opening.js';
 
 const art={
  id:'pallet-town',index:61,name:'Pallet Town',type:'cidade',group:'kanto',
@@ -153,8 +153,11 @@ test('T57 sidecar restores forest progress by saved starter UID without touching
  assert.equal(persistOpeningForestVisit(fresh,storage),false);
  const visited=markOpeningForestVisit(fresh,'route-2','viridian-forest');
  assert.equal(persistOpeningForestVisit(visited,storage),true);
- assert.equal(writes.length,1);
- assert.deepEqual(writes[0],['torre2:kanto:forest-visited:v1:bulbasaur-ab123','1']);
+ assert.equal(writes.length,2);
+ assert.deepEqual(writes,[
+  ['torre2:kanto:forest-visited:v1:bulbasaur-ab123','1'],
+  ['torre2:kanto:forest-visited:v1:active-starter-uid','uid:bulbasaur-ab123']
+ ]);
  const restored=restoreOpeningForestVisit(openingJourneyForState(null,state),storage);
  assert.equal(restored.forestVisited,true);
  assert.equal(values.get('main-campaign-save'),'original-save-bytes');
@@ -186,4 +189,56 @@ test('T57 visual scene stores forest visit only after successful real map render
  assert.ok(scene.includes('if(!alreadyVisited&&this.__torre2OpeningJourney?.forestVisited===true)'));
  assert.ok(scene.includes('persistOpeningForestVisit('));
  assert.ok(!scene.includes('saveCampaign(this.__torre2OpeningJourney'));
+});
+
+test('T58 reload restores original evolved starter UID even when stored in PC',()=>{
+ const keys=new Map(),mutations=[];
+ const storage={
+  getItem:k=>keys.get(k)||null,
+  setItem(k,v){mutations.push(['set',k,v]);keys.set(k,v)},
+  removeItem(k){mutations.push(['remove',k]);keys.delete(k)}
+ };
+ const original={stage:0,starter:'squirtle',team:[{id:'squirtle',uid:'squirtle-778'}],box:[]};
+ const marked=markOpeningForestVisit(openingJourneyForState(null,original),'route-2','viridian-forest');
+ assert.equal(persistOpeningForestVisit(marked,storage),true);
+ const afterReload={
+  stage:0,starter:'squirtle',team:[{id:'pidgey',uid:'pidgey-999'}],
+  box:[{id:'wartortle',uid:'squirtle-778'}]
+ };
+ const candidate=openingJourneyForState(null,afterReload);
+ assert.equal(candidate.owner,'uid:pidgey-999');
+ const restored=restoreOpeningForestVisit(candidate,storage,afterReload);
+ assert.deepEqual(restored,{owner:'uid:squirtle-778',forestVisited:true});
+ const unrelated={
+  ...afterReload,team:[{id:'pidgey',uid:'pidgey-999'}],box:[]
+ };
+ assert.equal(restoreOpeningForestVisit(
+  openingJourneyForState(null,unrelated),storage,unrelated).forestVisited,false);
+ assert.equal(clearOpeningForestVisit(storage),true);
+ assert.equal(keys.has('torre2:kanto:forest-visited:v1:squirtle-778'),false);
+ assert.equal(keys.has('torre2:kanto:forest-visited:v1:active-starter-uid'),false);
+ assert.equal(restoreOpeningForestVisit(
+  openingJourneyForState(null,afterReload),storage,afterReload).forestVisited,false);
+ const onlySidecar=mutations.every(([,k])=>k.startsWith('torre2:kanto:forest-visited:v1:'));
+ assert.equal(onlySidecar,true,'No writes outside the forest sidecar');
+});
+test('T58 malformed owner and denied removal do not transfer forest access',()=>{
+ const journey={owner:'uid:other-007',forestVisited:false};
+ const state={stage:0,team:[{id:'pidgey',uid:'other-007'}],box:[]};
+ const store={getItem(k){
+  return k.endsWith('active-starter-uid')?'uid:../../bad':'1';
+ },removeItem(){throw Error('Denied')}};
+ assert.deepEqual(restoreOpeningForestVisit(journey,store,state),journey);
+ // A malformed owner pointer never borrows a different teammate's marker.
+ assert.equal(clearOpeningForestVisit(store),false);
+ assert.equal(clearOpeningForestVisit({}),false);
+ assert.equal(clearOpeningForestVisit(null),false);
+});
+test('T58 native scene clears only sidecar after successful reset/new starter',()=>{
+ const s=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(s.includes('restoreOpeningForestVisit('));
+ assert.ok(s.includes('this.__torre2OpeningJourney,openingStorage,state)'));
+ assert.ok(s.includes('clearOpeningForestVisit(localStorage)'));
+ assert.ok(s.includes('resetCampaign();'));
+ assert.ok(s.includes('saveCampaign(createPlayerCampaign(id));'));
 });

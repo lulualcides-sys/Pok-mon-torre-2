@@ -79,21 +79,53 @@ function forestVisitStorageKey(journey){
  return /^[a-z0-9_-]{1,96}$/i.test(uid)?
   FOREST_VISIT_STORAGE_PREFIX+uid:null;
 }
-// Sidecar state: read only after an ordinary campaign save has supplied a
-// matching UID. No changes to SAVE_KEY, SAVE_BACKUP_KEY or save migrations.
-export function restoreOpeningForestVisit(journey,storage){
+// Sidecar state: never edit the main campaign save or its backup.
+// In addition to the UID-specific marker, save the *owner* UID separately.
+// After a reload the initial Pokémon may have evolved or moved into the PC,
+// so selecting the first visible party member would otherwise lose progress.
+const FOREST_VISIT_OWNER_KEY=FOREST_VISIT_STORAGE_PREFIX+'active-starter-uid';
+export function restoreOpeningForestVisit(journey,storage,state=null){
  if(!journey||journey.forestVisited===true)return journey;
  const key=forestVisitStorageKey(journey);
- if(!key||typeof storage?.getItem!=='function')return journey;
+ if(typeof storage?.getItem!=='function')return journey;
  try{
-  return storage.getItem(key)==='1'?{...journey,forestVisited:true}:journey;
+  if(state?.stage===0){
+   const owner=storage.getItem(FOREST_VISIT_OWNER_KEY);
+   if(owner!==null&&owner!==undefined){
+    const ownerKey=forestVisitStorageKey({owner});
+    const members=[...(Array.isArray(state.team)?state.team:[]),
+     ...(Array.isArray(state.box)?state.box:[])];
+    if(ownerKey&&members.some(m=>m?.uid===owner.slice(4))&&
+       storage.getItem(ownerKey)==='1')
+     return {owner,forestVisited:true};
+    // An explicit but malformed/stale owner must not silently fall back to
+    // a different leading Pokémon's old marker from another journey.
+    return journey;
+   }
+  }
+  return key&&storage.getItem(key)==='1'?
+   {...journey,forestVisited:true}:journey;
  }catch{return journey}
 }
 export function persistOpeningForestVisit(journey,storage){
  const key=forestVisitStorageKey(journey);
  if(!journey?.forestVisited||!key||typeof storage?.setItem!=='function')return false;
- try{storage.setItem(key,'1');return true}
- catch{return false}
+ try{
+  storage.setItem(key,'1');
+  storage.setItem(FOREST_VISIT_OWNER_KEY,journey.owner);
+  return true;
+ }catch{return false}
+}
+export function clearOpeningForestVisit(storage){
+ if(typeof storage?.getItem!=='function'||typeof storage?.removeItem!=='function')
+  return false;
+ try{
+  const owner=storage.getItem(FOREST_VISIT_OWNER_KEY);
+  const key=forestVisitStorageKey({owner});
+  if(key)storage.removeItem(key);
+  storage.removeItem(FOREST_VISIT_OWNER_KEY);
+  return true;
+ }catch{return false}
 }
 
 export function markOpeningForestVisit(previous,source,target){
