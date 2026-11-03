@@ -397,8 +397,8 @@ export function tuneCampaignOpponentEvasion(scene){
  if(opponent.__torre2OpponentBalance)return opponent.__torre2OpponentBalance;
  const stage=Number(scene.datos.torre2.stage)||0;
  const leader=Boolean(scene.datos.torre2.party?.gymLeader);
- const cap=leader?stage>=8?.73:stage>=4?.61:.52:
-  stage>=8?.65:stage>=3?.43:.30;
+ const cap=leader?stage>=8?.65:stage>=4?.52:.46:
+  stage>=8?.55:stage>=3?.36:.16;
  const before=Number(opponent.cfg.esquiva);
  const was=Number.isFinite(before)?before:.5;
  const after=Math.min(was,cap);
