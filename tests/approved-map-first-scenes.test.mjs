@@ -289,3 +289,79 @@ test('T48 Erika four existing gym trainer indices, no new story rewards',()=>{
  }
  assert.throws(()=>firstApprovedGymActors('gym-erika',17),RangeError);
 });
+
+test('T49 Fuchsia approved city has seven precise taps and registered geographic neighbors',()=>{
+ const city=approvedMap('fuchsia-city'),hotspots=firstApprovedHotspots(city);
+ assert.equal(hasFirstApprovedHotspots(city.id),true);
+ assert.deepEqual(hotspots.map(h=>h.id),[
+  'center','mart','gym','safari','route18','route15','route19'
+ ]);
+ const preflight=planApprovedMapOverlays({...city,hotspots},rect,[]);
+ assert.equal(preflight.ok,true,JSON.stringify(preflight));
+ assert.equal(preflight.hotspots.length,7);
+ assert.equal(preflight.navTargets.length,0);
+ for(const [id,target] of Object.entries({
+  gym:'gym-koga',safari:'safari-zone',
+  route18:'routes-16-18',route15:'routes-12-15',
+  route19:'routes-19-20'
+ })){
+  assert.equal(firstApprovedDestination(city.id,id),target);
+  assert.ok(approvedMapNeighbours(city.id).includes(target),city.id+':'+id);
+ }
+ // Route 19 is not accessible during the gym's stage 4: it unlocks later.
+ assert.ok(approvedMap('routes-19-20').index>31);
+ const {scene,zones}=fakeScene(),events=[];
+ const result=renderApprovedMap(scene,city.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,
+  onHotspot:(src,id)=>events.push(src+':'+id)
+ });
+ assert.equal(result.ok,true);
+ for(const spot of hotspots){
+  const hit=zones.find(z=>z.data?.value==='fuchsia-city:'+spot.id);
+  assert.ok(hit,spot.id+' missing clickable zone');
+  let stopped=false;
+  hit.pointerdown(null,0,0,{stopPropagation(){stopped=true;}});
+  assert.equal(stopped,true);
+ }
+ assert.deepEqual(events,hotspots.map(h=>city.id+':'+h.id));
+});
+
+test('T49 Koga places four native trainer checks on dry platforms and retains leader challenge',()=>{
+ const gym=approvedMap('gym-koga');
+ const hotspots=firstApprovedHotspots(gym);
+ assert.equal(hasFirstApprovedHotspots(gym.id),true);
+ assert.deepEqual(hotspots.map(h=>h.id),['challenge','exit']);
+ const plan=planApprovedMapOverlays({...gym,hotspots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.equal(plan.navTargets.length,0);
+ assert.equal(firstApprovedDestination(gym.id,'exit'),'fuchsia-city');
+ const actors=firstApprovedGymActors(gym.id,21);
+ assert.equal(actors.stage,4);
+ assert.equal(actors.artworkOnly,false);
+ assert.equal(actors.leader.kind,'koga');
+ assert.equal(actors.ace.dex,'0110');
+ assert.deepEqual(actors.trainers.map(t=>t.index),[17,18,19,20]);
+ const platforms=[[.265,.400],[.737,.400],[.267,.763],[.736,.763]];
+ actors.trainers.forEach((npc,i)=>{
+  assert.ok(Math.abs(npc.cx-platforms[i][0])<.005);
+  assert.ok(Math.abs(npc.cy-platforms[i][1])<.005);
+  for(const h of hotspots)
+   assert.ok(Math.abs(npc.cx-h.cx)>=(h.w+.060)/2||
+             Math.abs(npc.cy-h.cy)>=(h.h+.11)/2,
+             'Trainer overlapping '+h.id);
+ });
+ assert.throws(()=>firstApprovedGymActors(gym.id,19),RangeError);
+ const {scene,zones}=fakeScene(),hits=[];
+ const result=renderApprovedMap(scene,gym.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,onHotspot:(src,id)=>hits.push(id)
+ });
+ assert.equal(result.ok,true);
+ for(const id of ['challenge','exit']){
+  let z=zones.find(x=>x.data?.value==='gym-koga:'+id);
+  assert.ok(z,id);
+  z.pointerdown(null,0,0,{stopPropagation(){}});
+ }
+ assert.deepEqual(hits,['challenge','exit']);
+});
