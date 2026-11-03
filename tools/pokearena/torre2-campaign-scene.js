@@ -580,7 +580,7 @@ create(){
      const add=obj=>{layer.push(obj);return obj;};
      add(this.add.rectangle(320,180,640,360,0x050b17,.82)
       .setDepth(80).setInteractive());
-     add(this.add.rectangle(320,180,350,80+targets.length*40,
+     add(this.add.rectangle(320,180,350,140+targets.length*40,
       0x10253c,.98).setStrokeStyle(2,0x97d5ed).setDepth(81));
      add(this.add.text(320,116,'FERRY SEVII · ESCOLHA O DESTINO',{
       fontFamily:'Pixelify Sans,monospace',fontSize:'14px',
@@ -596,6 +596,7 @@ create(){
         color:'#ffffff',backgroundColor:'#205575',
         padding:{x:14,y:8}}).setOrigin(.5).setDepth(83)
        .setInteractive({useHandCursor:true})
+       .setData('torre2-approved-ferry-destination',target)
        .on('pointerdown',(_p,_x,_y,event)=>{
         event?.stopPropagation?.();close();open(target);
        }));
