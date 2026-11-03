@@ -1,3 +1,4 @@
+import {approvedPrologueMap,approvedPrologueDestination} from './torre2-approved-prologue-assets.js';
 /* T41: verified click targets placed on the four user-approved pixel-art scenes.
  * These are presentation coordinates, NOT battle/save progression checkpoints.
  * Backgrounds are 1280x720 and the renderer scales them uniformly.
@@ -116,13 +117,18 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'safari-zone':Object.freeze({exit:'fuchsia-city'})
 });
 export function hasFirstApprovedHotspots(id){
- return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);
+ if(Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id))return true;
+ const registered=approvedPrologueMap(id);
+ return !!registered&&registered.hotspots_status==='validated'&&
+  !!registered.hotspots?.length&&
+  registered.hotspots.every(h=>h.validated==='visual');
 }
 export function firstApprovedHotspots(entry){
  return FIRST_APPROVED_HOTSPOTS[entry?.id]||entry?.hotspots||[];
 }
 export function firstApprovedDestination(mapId,hotspotId){
- return FIRST_APPROVED_DESTINATIONS[mapId]?.[hotspotId]||null;
+ return FIRST_APPROVED_DESTINATIONS[mapId]?.[hotspotId]||
+  approvedPrologueDestination(mapId,hotspotId)||null;
 }
 
 /* Native FireRed NPCs for the approved image-backed gym interiors.
