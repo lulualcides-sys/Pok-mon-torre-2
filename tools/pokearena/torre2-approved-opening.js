@@ -91,12 +91,17 @@ export function restoreOpeningForestVisit(journey,storage,state=null){
  try{
   if(state?.stage===0){
    const owner=storage.getItem(FOREST_VISIT_OWNER_KEY);
-   const ownerKey=forestVisitStorageKey({owner});
-   const members=[...(Array.isArray(state.team)?state.team:[]),
-    ...(Array.isArray(state.box)?state.box:[])];
-   if(ownerKey&&members.some(m=>m?.uid===owner.slice(4))&&
-      storage.getItem(ownerKey)==='1')
-    return {owner,forestVisited:true};
+   if(owner!==null&&owner!==undefined){
+    const ownerKey=forestVisitStorageKey({owner});
+    const members=[...(Array.isArray(state.team)?state.team:[]),
+     ...(Array.isArray(state.box)?state.box:[])];
+    if(ownerKey&&members.some(m=>m?.uid===owner.slice(4))&&
+       storage.getItem(ownerKey)==='1')
+     return {owner,forestVisited:true};
+    // An explicit but malformed/stale owner must not silently fall back to
+    // a different leading Pokémon's old marker from another journey.
+    return journey;
+   }
   }
   return key&&storage.getItem(key)==='1'?
    {...journey,forestVisited:true}:journey;
