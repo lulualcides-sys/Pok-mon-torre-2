@@ -422,12 +422,14 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
  }),
  'gym-misty':Object.freeze({
   stage:1,leader:Object.freeze({kind:'misty',cx:.470,cy:.230}),
-  ace:Object.freeze({dex:'0121',cx:.570,cy:.225}),
+  // Original Starmie PMD Idle stands on the leader's upper stone dais.
+  ace:Object.freeze({dex:'0121',cx:.570,cy:.260}),
+  // Four distinct real FireRed sprite classes, no reused duplicate sheet.
   trainers:Object.freeze([
    Object.freeze({kind:'swimmer',cx:.27,cy:.465}),
-   Object.freeze({kind:'lass',cx:.73,cy:.465}),
-   Object.freeze({kind:'swimmer',cx:.27,cy:.695}),
-   Object.freeze({kind:'lass',cx:.73,cy:.695})
+   Object.freeze({kind:'sailor',cx:.73,cy:.465}),
+   Object.freeze({kind:'picnicker',cx:.27,cy:.695}),
+   Object.freeze({kind:'ace_f',cx:.73,cy:.695})
   ])
  }),
  // The approved Surge image ALREADY contains leader, Pikachu and four NPCs.
@@ -468,6 +470,33 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
   ])
  })
 });
+// Decode an actual local SpriteCollab PMD Idle sheet. No portrait, no new
+// external runtime request, no guessed sprite frame dimensions.
+export function approvedGymAceIdlePlan(dex,manifest){
+ if(!/^\\d{4}$/.test(String(dex||'')))return null;
+ const idle=manifest?.[dex]?.anims?.Idle;
+ if(!idle||!Number.isInteger(idle.fw)||idle.fw<12||idle.fw>256||
+    !Number.isInteger(idle.fh)||idle.fh<12||idle.fh>256||
+    !Array.isArray(idle.durations)||idle.durations.length<1||
+    idle.durations.length>40||
+    typeof idle.file!=='string'||
+    !new RegExp('^'+dex+'/[A-Za-z0-9_-]+-Anim\\\\.png
+ const layout=FIRST_APPROVED_GYM_LAYOUTS[id];
+ if(!layout)return null;
+ if(!Number.isInteger(total)||total!==13+layout.stage*2)
+  throw new RangeError('Unexpected native checkpoint total for gym stage');
+ return {
+  stage:layout.stage,leader:layout.leader,ace:layout.ace,
+  artworkOnly:layout.artworkOnly===true,
+  trainers:layout.trainers.map((marker,i)=>({...marker,index:total-layout.trainers.length+i}))
+ };
+}
+).test(idle.file))
+  return null;
+ return Object.freeze({dex,key:'torre2-gym-ace-idle-'+dex,
+  file:'assets/pmd/'+idle.file,fw:idle.fw,fh:idle.fh,
+  durations:Object.freeze([...idle.durations])});
+}
 export function firstApprovedGymActors(id,total){
  const layout=FIRST_APPROVED_GYM_LAYOUTS[id];
  if(!layout)return null;
