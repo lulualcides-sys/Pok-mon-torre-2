@@ -224,6 +224,49 @@ const server=http.createServer(async(req,res)=>{
     evidence.maps.push({id:to,mode:mode.name,from,sign,
       via:'actual Phaser sign click/touch',saveUnchanged:true,screenshot});
    }
+   // T69: the user-facing Party Summary must return to the SAME original
+   // approved map after Back and after selecting the current team member.
+   // No battle result, extra Pokémon or save edit is fabricated here.
+   const summaryBack=async control=>{
+    await page.evaluate(()=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     scene.showSummary(window.kanto.readCampaign(),0);
+    });
+    await page.waitForFunction(key=>window.__pt2Game.scene.getScene('campanha')
+     .children.list.some(x=>x.active&&x.getData?.(key)===true),
+     control,{timeout:20000});
+    // Phaser inserts interactive regions on the following input preUpdate.
+    await page.evaluate(()=>new Promise(resolve=>
+     requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const pos=await page.evaluate(key=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     const hit=scene.children.list.find(x=>x.active&&x.getData?.(key)===true);
+     if(!hit)throw Error('T69 real Phaser summary button absent: '+key);
+     const bounds=document.querySelector('#juego canvas').getBoundingClientRect();
+     const w=Math.min(bounds.width,bounds.height*640/360);
+     const h=Math.min(bounds.height,bounds.width*360/640);
+     return {x:bounds.x+(bounds.width-w)/2+hit.x/640*w,
+      y:bounds.y+(bounds.height-h)/2+hit.y/360*h};
+    },control);
+    if(mode.isMobile)await page.touchscreen.tap(pos.x,pos.y);
+    else await page.mouse.click(pos.x,pos.y);
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+     ?.__torre2ApprovedMapView?.id==='vermilion-city'&&
+     window.__pt2Game.scene.getScene('campanha')
+      ?.__torre2ApprovedMapView?.image?.active===true&&
+     window.__pt2Game.scene.getScene('campanha').children.list.some(x=>
+      x.active&&x.getData?.('torre2-approved-hotspot')==='vermilion-city:route6'),
+     null,{timeout:20000});
+    assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+     stage2Before,'T69 summary return unexpectedly modified a campaign save');
+    const screenshot='t69-summary-'+control+'-'+mode.name+'.png';
+    await page.screenshot({path:path.join(out,screenshot),
+     fullPage:true,animations:'disabled'});
+    evidence.maps.push({id:'vermilion-city',mode:mode.name,
+     via:'native summary '+control+' mouse/touch',saveUnchanged:true,screenshot});
+   };
+   await summaryBack('torre2-summary-back');
+   await summaryBack('torre2-active-select');
    // T63: controlled stage-three fixture after Lt. Surge — must start in
    // Vermilion, traverse the original Route 9 solo before Route 10, and
    // never mutate battle saves by simply clicking painted map signs.
