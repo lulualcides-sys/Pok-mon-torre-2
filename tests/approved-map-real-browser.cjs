@@ -233,10 +233,17 @@ const server=http.createServer(async(req,res)=>{
      window.kanto.saveCampaign(s);
      const scene=window.__pt2Game.scene.getScene('campanha');
      scene.__torre2ApprovedReturn=null;
+     // The previous stage may end in the SAME city as the new stage starts.
+     // Clear the old view before restarting to avoid clicking destroyed zones.
+     scene.__torre2ApprovedMapView=null;
      scene.scene.restart();
     },number);
-    await page.waitForFunction(id=>window.__pt2Game.scene.getScene('campanha')
-     ?.__torre2ApprovedMapView?.id===id,expected,{timeout:45000});
+    await page.waitForFunction(id=>{
+     const scene=window.__pt2Game.scene.getScene('campanha'),
+      view=scene?.__torre2ApprovedMapView;
+     return scene?.scene.isActive()&&view?.id===id&&view.zones?.some(z=>
+      z.active&&typeof z.getData==='function');
+    },expected,{timeout:45000});
     return page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
    };
    const followSigns=async(chain,baseline,label)=>{
