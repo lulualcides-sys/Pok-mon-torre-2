@@ -6,7 +6,8 @@ test('T42 approved Phaser map imports are copied into the browser module tree',(
  for(const [source,target] of [
   ['torre2-approved-maps-atlas.js','torre2-approved-maps-atlas.js'],
   ['torre2-approved-map-renderer.js','torre2-approved-map-renderer.js'],
-  ['torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js']
+  ['torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js'],
+  ['torre2-approved-progression-gates.js','torre2-approved-progression-gates.js']
  ]){
   assert.ok(build.includes("['tools/pokearena/"+source+"','"+target+"']"),source);
   assert.ok(build.includes("'torre2/"+target+"'"),target+' must be fingerprinted');
@@ -25,7 +26,8 @@ test('T42 native campaign imports resolve to exactly the built filenames',()=>{
  const dependencies=[
   './torre2-approved-map-renderer.js',
   './torre2-approved-maps-atlas.js',
-  './torre2-approved-map-first-scenes.js'
+  './torre2-approved-map-first-scenes.js',
+  './torre2-approved-progression-gates.js'
  ];
  for(const dep of dependencies){
   assert.ok(campaign.includes(dep)||renderer.includes(dep),'Unresolved native import '+dep);
