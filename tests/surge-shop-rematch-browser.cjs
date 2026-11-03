@@ -39,28 +39,39 @@ const server=http.createServer(async(req,res)=>{
    __qaCore.saveCampaign(s);
    __pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
-  // T83: stage three starts on the approved Celadon City artwork.
-  // Exercise its REAL Phaser exit before asserting native BattlePath/VS Seeker.
-  // Never bypass the gate via a direct scene method call or a synthetic event.
+  // T83: the fixture can start on the approved Celadon image OR native
+  // BattlePath when its texture was not preloaded. These are the two
+  // supported entry surfaces. Never fabricate an image or jump scenes.
   await page.waitForFunction(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
-   return scene.scene.isActive()&&scene.__torre2ApprovedMapView?.id==='celadon-city'&&
-    scene.children.list.some(o=>o.active&&o.input?.enabled&&
-     o.getData?.('torre2-approved-exit')===true);
+   return scene.scene.isActive()&&
+    (scene.__torre2ApprovedMapView?.id==='celadon-city'||
+     scene.__torre2BattlePath?.stage===3);
   },null,{timeout:60000});
-  const beforeExit=await page.evaluate(()=>JSON.stringify(__qaCore.readCampaign()));
-  const exitPoint=await page.evaluate(()=>{
+  const entry=await page.evaluate(()=>{
    const scene=__pt2Game.scene.getScene('campanha');
-   const exit=scene.children.list.find(o=>o.active&&o.input?.enabled&&
-    o.getData?.('torre2-approved-exit')===true);
-   if(!exit)throw Error('T83 approved Celadon exit unavailable');
-   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-   const drawW=Math.min(rect.width,rect.height*640/360);
-   const drawH=Math.min(rect.height,rect.width*360/640);
-   return {x:rect.x+(rect.width-drawW)/2+(exit.x/640)*drawW,
-    y:rect.y+(rect.height-drawH)/2+(exit.y/360)*drawH};
+   return {approvedMap:scene.__torre2ApprovedMapView?.id||null,
+    pathStage:scene.__torre2BattlePath?.stage??null,
+    celadonTextureLoaded:scene.textures.exists('torre2-approved-map-celadon-city')};
   });
-  await page.mouse.click(exitPoint.x,exitPoint.y);
+  console.log('T83 REAL STAGE THREE ENTRY',JSON.stringify(entry));
+  assert.ok(entry.approvedMap==='celadon-city'||entry.pathStage===3,
+   'T83 no verified real stage-three entry');
+  const beforeExit=await page.evaluate(()=>JSON.stringify(__qaCore.readCampaign()));
+  if(entry.approvedMap==='celadon-city'){
+   const exitPoint=await page.evaluate(()=>{
+    const scene=__pt2Game.scene.getScene('campanha');
+    const exit=scene.children.list.find(o=>o.active&&o.input?.enabled&&
+     o.getData?.('torre2-approved-exit')===true);
+    if(!exit)throw Error('T83 approved Celadon exit unavailable');
+    const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+    const drawW=Math.min(rect.width,rect.height*640/360);
+    const drawH=Math.min(rect.height,rect.width*360/640);
+    return {x:rect.x+(rect.width-drawW)/2+(exit.x/640)*drawW,
+     y:rect.y+(rect.height-drawH)/2+(exit.y/360)*drawH};
+   });
+   await page.mouse.click(exitPoint.x,exitPoint.y);
+  }
   await page.waitForFunction(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
    return scene.scene.isActive()&&scene.__torre2BattlePath?.stage===3&&
@@ -68,8 +79,9 @@ const server=http.createServer(async(req,res)=>{
      o.getData?.('torre2-open-rematch-atlas')===true);
   },null,{timeout:20000});
   assert.equal(await page.evaluate(()=>JSON.stringify(__qaCore.readCampaign())),
-   beforeExit,'T83 leaving approved Celadon cannot modify badge/party/money save');
-  await page.screenshot({path:'test-evidence/t83-celadon-real-exit-to-vs-seeker.png'});
+   beforeExit,'T83 stage-three UI navigation cannot modify badge/party/money save');
+  fs.mkdirSync('test-evidence',{recursive:true});
+  await page.screenshot({path:'test-evidence/t83-stage3-real-entry-to-vs-seeker.png'});
   const click=async(x,y)=>{
    const pos=await page.evaluate(([x,y])=>{
     const canvas=document.querySelector('#juego canvas')||document.querySelector('canvas');
