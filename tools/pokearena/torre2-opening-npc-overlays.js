@@ -6,11 +6,11 @@
 const npc=(id,kind,cx,feetY,index=null)=>Object.freeze({id,kind,cx,feetY,index});
 export const OPENING_NPC_PLANS=Object.freeze({
  'viridian-forest':Object.freeze([
-  npc('forest-bug-1','bugcatcher',.244,.317,3),
-  npc('forest-bug-2','bugcatcher',.454,.528,4),
-  npc('forest-bug-3','bugcatcher',.854,.299,5),
-  npc('forest-bug-4','bugcatcher',.210,.776,6),
-  npc('forest-bug-5','bugcatcher',.835,.776,7)
+  npc('forest-bug-1','bugcatcher',.244,.317,0),
+  npc('forest-bug-2','bugcatcher',.454,.528,1),
+  npc('forest-bug-3','bugcatcher',.854,.299,2),
+  npc('forest-bug-4','bugcatcher',.210,.776,3),
+  npc('forest-bug-5','bugcatcher',.835,.776,4)
  ]),
  'route-1':Object.freeze([
   npc('route1-resident','youngster',.777,.458)
