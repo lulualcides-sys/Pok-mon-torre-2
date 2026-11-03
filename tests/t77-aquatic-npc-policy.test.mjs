@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {FIRST_APPROVED_GYM_LAYOUTS,auditApprovedGymNpcThemes} from
+import {FIRST_APPROVED_GYM_LAYOUTS,firstApprovedGymActors,auditApprovedGymNpcThemes} from
  '../tools/pokearena/torre2-approved-map-first-scenes.js';
 import {reviewedGymNpcSpriteId,spriteIdForTrainer} from
  '../tools/pokearena/torre2-frlg-npc.js';
@@ -18,7 +18,8 @@ test('T77: user-reviewed Misty gym contains ONLY standing aquatic FRLG NPCs',()=
   ['swimmer','swimmer_f','tuber_m','tuber_f']);
  assert.deepEqual(misty.trainers.map(t=>reviewedGymNpcSpriteId(t.kind)),required);
  assert.equal(new Set(misty.trainers.map(t=>t.kind)).size,4);
- assert.deepEqual([11,12,13,14],[11,12,13,14]);
+ assert.deepEqual(firstApprovedGymActors('gym-misty',15).trainers.map(t=>t.index),
+  [11,12,13,14]);
  for(const kind of misty.trainers.map(t=>t.kind))
   assert.ok(!['picnicker','camper','hiker','ace_f','sailor'].includes(kind));
 });
