@@ -59,6 +59,27 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  'gym-erika':Object.freeze([
   v('challenge',.503,.247,.182,.125),
   v('exit',.502,.946,.182,.100)
+ ]),
+ // Fuchsia: exactly the painted buildings/route signs, normalized from
+ // the approved 1280x720 artwork. No movable overworld or forced HM.
+ 'fuchsia-city':Object.freeze([
+  v('center',.501,.741,.133,.116),
+  v('mart',.183,.311,.148,.128),
+  v('gym',.197,.777,.147,.130),
+  v('safari',.503,.144,.188,.120),
+  v('route18',.056,.408,.094,.111),
+  v('route15',.946,.405,.103,.111),
+  v('route19',.500,.925,.147,.103)
+ ]),
+ 'gym-koga':Object.freeze([
+  v('challenge',.503,.236,.204,.140),
+  v('exit',.501,.937,.175,.105)
+ ]),
+ // Safari park's only registered action is the signed south exit.
+ // Gold Teeth and HM03 labels are decorative until a validated gameplay
+ // interaction is implemented; don't grant HMs, items or badges.
+ 'safari-zone':Object.freeze([
+  v('exit',.500,.908,.182,.111)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -76,7 +97,14 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
   gym:'gym-erika',game:'rocket-hideout',
   route16:'routes-16-18',route7:'routes-7-8'
  }),
- 'gym-erika':Object.freeze({exit:'celadon-city'})
+ 'gym-erika':Object.freeze({exit:'celadon-city'}),
+ 'fuchsia-city':Object.freeze({
+  gym:'gym-koga',safari:'safari-zone',
+  route18:'routes-16-18',route15:'routes-12-15',
+  route19:'routes-19-20'
+ }),
+ 'gym-koga':Object.freeze({exit:'fuchsia-city'}),
+ 'safari-zone':Object.freeze({exit:'fuchsia-city'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);
@@ -89,7 +117,7 @@ export function firstApprovedDestination(mapId,hotspotId){
 }
 
 /* Native FireRed NPCs for the approved image-backed gym interiors.
- * The gym trainer markers REUSE the last three (Brock) or four (Misty) route checkpoints.
+ * Trainers REUSE the existing route/gym checkpoints for each stage.
  * They do not introduce a second save index or grant battle rewards.
  */
 export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
@@ -135,6 +163,18 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
    Object.freeze({kind:'bugcatcher',cx:.825,cy:.351}),
    Object.freeze({kind:'lass',cx:.153,cy:.718}),
    Object.freeze({kind:'bugcatcher',cx:.834,cy:.718})
+  ])
+ }),
+ // Koga's four platforms have no painted trainer sprites: overlay original
+ // 16x32 FireRed NPCs. They reuse the stage-4 route's saved battle indices.
+ 'gym-koga':Object.freeze({
+  stage:4,leader:Object.freeze({kind:'koga',cx:.495,cy:.260}),
+  ace:Object.freeze({dex:'0110',cx:.587,cy:.258}),
+  trainers:Object.freeze([
+   Object.freeze({kind:'biker',cx:.265,cy:.400}),
+   Object.freeze({kind:'psychic',cx:.737,cy:.400}),
+   Object.freeze({kind:'ace',cx:.267,cy:.763}),
+   Object.freeze({kind:'biker',cx:.736,cy:.763})
   ])
  })
 });

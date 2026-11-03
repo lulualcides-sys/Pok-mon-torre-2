@@ -175,7 +175,7 @@ class Campanha extends Phaser.Scene{
    if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))
     this.textures.remove(key);
   }
-  if(APPROVED_MAP_ASSETS_READY)for(const kind of ['brock','misty','erika','swimmer','hiker','youngster','lass','bugcatcher'])
+  if(APPROVED_MAP_ASSETS_READY)for(const kind of ['brock','misty','erika','koga','swimmer','hiker','youngster','lass','bugcatcher','biker','psychic','ace'])
    needed.add(spriteIdForTrainer(kind));
   for(const id of needed){
    if(!AVAILABLE_FRLG_NPCS.includes(id))continue;
@@ -187,7 +187,7 @@ class Campanha extends Phaser.Scene{
   // One small original PMD portrait for each first-gym ace, beside its leader.
   // No extra full animation set or online request during map navigation.
   if(APPROVED_MAP_ASSETS_READY){
-   toLoad.add('0095');toLoad.add('0121');toLoad.add('0045');
+   toLoad.add('0095');toLoad.add('0121');toLoad.add('0045');toLoad.add('0110');
   }
   // Only this region's twelve unique wild entries; reuse existing small PMD
   // portraits, not twelve full animation sheets (mobile GPU memory).
@@ -564,7 +564,8 @@ create(){
      const current=(id==='gym-brock'&&fresh.stage===0)||
       (id==='gym-misty'&&fresh.stage===1)||
       (id==='gym-surge'&&fresh.stage===2)||
-      (id==='gym-erika'&&fresh.stage===3);
+      (id==='gym-erika'&&fresh.stage===3)||
+      (id==='gym-koga'&&fresh.stage===4);
      if(current)return this.gymScreen(fresh);
      this.add.text(320,320,'GINÁSIO FORA DA ETAPA ATUAL',{
       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
@@ -591,7 +592,7 @@ create(){
     const gymId=entry.id;
     const gymStage=gymId==='gym-brock'?0:
      gymId==='gym-misty'?1:gymId==='gym-surge'?2:
-     gymId==='gym-erika'?3:null;
+     gymId==='gym-erika'?3:gymId==='gym-koga'?4:null;
     if(gymStage===null)return;
     const actors=firstApprovedGymActors(gymId,TRAINERS_PER_GYM(gymStage));
     const project=(cx,cy)=>({x:rect.x+cx*rect.width,y:rect.y+cy*rect.height});
