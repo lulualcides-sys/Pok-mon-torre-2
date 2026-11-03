@@ -238,3 +238,54 @@ test('T47 approved cities open by default only after verified textures, preserve
  const renderer=readFileSync('tools/pokearena/torre2-approved-map-renderer.js','utf8');
  assert.match(renderer,/entry\.type==='cidade'\?'ROTAS':'VOLTAR'/);
 });
+
+test('T48 Celadon click zones follow approved city doors and stay inside frame',()=>{
+ const city=approvedMap('celadon-city'),spots=firstApprovedHotspots(city);
+ assert.ok(city&&hasFirstApprovedHotspots(city.id));
+ assert.deepEqual(spots.map(h=>h.id),['center','mart','gym','game','route16','route7']);
+ const plan=planApprovedMapOverlays({...city,hotspots:spots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.equal(plan.hotspots.length,6);
+ assert.equal(plan.navTargets.length,0);
+ for(const [id,to] of Object.entries({
+  gym:'gym-erika',game:'rocket-hideout',
+  route16:'routes-16-18',route7:'routes-7-8'
+ })){
+  assert.equal(firstApprovedDestination(city.id,id),to);
+  assert.ok(approvedMapNeighbours(city.id).includes(to),id);
+ }
+ const {scene,zones}=fakeScene(),hits=[];
+ const view=renderApprovedMap(scene,city.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,onHotspot:(src,id)=>hits.push(src+':'+id)
+ });
+ assert.equal(view.ok,true);
+ for(const id of spots.map(h=>h.id)){
+  const zone=zones.find(z=>z.data?.value==='celadon-city:'+id);
+  assert.ok(zone,id);
+  zone.pointerdown(null,0,0,{stopPropagation(){}});
+ }
+ assert.deepEqual(hits,spots.map(h=>'celadon-city:'+h.id));
+});
+
+test('T48 Erika four existing gym trainer indices, no new story rewards',()=>{
+ const gym=approvedMap('gym-erika'),spots=firstApprovedHotspots(gym);
+ const plan=planApprovedMapOverlays({...gym,hotspots:spots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.deepEqual(spots.map(h=>h.id),['challenge','exit']);
+ assert.equal(firstApprovedDestination('gym-erika','exit'),'celadon-city');
+ const actors=firstApprovedGymActors('gym-erika',19);
+ assert.equal(actors.stage,3);
+ assert.equal(actors.artworkOnly,false);
+ assert.equal(actors.leader.kind,'erika');
+ assert.equal(actors.ace.dex,'0045');
+ assert.deepEqual(actors.trainers.map(t=>t.index),[15,16,17,18]);
+ for(const t of actors.trainers){
+  assert.ok(t.cx>.10&&t.cx<.90&&t.cy>.28&&t.cy<.78);
+  for(const h of spots){
+   assert.ok(Math.abs(t.cx-h.cx)>=(h.w+.06)/2||
+             Math.abs(t.cy-h.cy)>=(h.h+.12)/2,'Trainer blocked '+h.id);
+  }
+ }
+ assert.throws(()=>firstApprovedGymActors('gym-erika',17),RangeError);
+});

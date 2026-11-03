@@ -46,6 +46,19 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  // grant HMs or invent battles from decorative text painted in the image.
  'ss-anne':Object.freeze([
   v('exit',.480,.910,.220,.120)
+ ]),
+ // Celadon 1280x720. Exact door/sign anchors, no scene repaint or zoom.
+ 'celadon-city':Object.freeze([
+  v('center',.252,.526,.123,.120),
+  v('mart',.500,.294,.142,.116),
+  v('gym',.501,.825,.166,.126),
+  v('game',.727,.318,.137,.125),
+  v('route16',.070,.352,.119,.129),
+  v('route7',.938,.353,.102,.130)
+ ]),
+ 'gym-erika':Object.freeze([
+  v('challenge',.503,.247,.182,.125),
+  v('exit',.502,.946,.182,.100)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -58,7 +71,12 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
   gym:'gym-surge',ship:'ss-anne',route6:'route-6',route11:'route-11'
  }),
  'gym-surge':Object.freeze({exit:'vermilion-city'}),
- 'ss-anne':Object.freeze({exit:'vermilion-city'})
+ 'ss-anne':Object.freeze({exit:'vermilion-city'}),
+ 'celadon-city':Object.freeze({
+  gym:'gym-erika',game:'rocket-hideout',
+  route16:'routes-16-18',route7:'routes-7-8'
+ }),
+ 'gym-erika':Object.freeze({exit:'celadon-city'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);
@@ -105,6 +123,18 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
    Object.freeze({kind:'rocker',cx:.841,cy:.395}),
    Object.freeze({kind:'lass',cx:.169,cy:.667}),
    Object.freeze({kind:'youngster',cx:.840,cy:.667})
+  ])
+ }),
+ // Empty battle circles in the approved greenhouse: overlay real 16x32
+ // FireRed sprites and reuse the last four saved battle checkpoints.
+ 'gym-erika':Object.freeze({
+  stage:3,leader:Object.freeze({kind:'erika',cx:.493,cy:.248}),
+  ace:Object.freeze({dex:'0045',cx:.592,cy:.245}),
+  trainers:Object.freeze([
+   Object.freeze({kind:'lass',cx:.174,cy:.350}),
+   Object.freeze({kind:'bugcatcher',cx:.825,cy:.351}),
+   Object.freeze({kind:'lass',cx:.153,cy:.718}),
+   Object.freeze({kind:'bugcatcher',cx:.834,cy:.718})
   ])
  })
 });
