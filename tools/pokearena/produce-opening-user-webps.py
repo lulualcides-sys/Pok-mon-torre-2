@@ -61,7 +61,8 @@ def remove_forest_painted_actors(source_path: Path) -> Image.Image:
 
 
 def main():
-    # Initial materialization intentionally occurs only on T87 staging branch.\n    TARGET.mkdir(parents=True, exist_ok=True)
+    # Initial materialization intentionally occurs only on T87 staging branch.
+    TARGET.mkdir(parents=True, exist_ok=True)
     manifest = []
     for map_id, expected in SOURCE_SHA.items():
         original = SOURCE / (map_id + ".jpg")
