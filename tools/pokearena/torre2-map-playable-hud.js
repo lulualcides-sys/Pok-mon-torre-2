@@ -6,6 +6,9 @@
 export const CLICKABLE_OVERWORLD_MAPS=Object.freeze([
  'pallet-town','route-1','viridian-city','viridian-forest','route-2','pewter-city'
 ]);
+// UI formatting only; the underlying combat HP keeps its full precision.
+export const displayCampaignHP=value=>
+ Number.isFinite(Number(value))?String(Math.max(0,Math.round(Number(value)))):'?';
 function hudText(scene,x,y,str,size=10,color='#f2f5f9',originX=.5){
  return scene.add.text(x,y,String(str),{
   fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',fontStyle:'bold',
@@ -46,7 +49,7 @@ export function showOverworldParty(scene,team,active,{nameOf,portraitOf,onSummar
    fontFamily:'Pixelify Sans,monospace',fontSize:'12px',color:'#fff3d7'
   }).setDepth(103));
   add(scene.add.text(x-61,y+7,'NV. '+(member.progression?.level??member.level??'?')+
-    (i===active?'  ★ ATIVO':'')+'  HP '+(member.hp??'?'),{
+    (i===active?'  ★ ATIVO':'')+'  HP '+displayCampaignHP(member.hp),{
    fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#bddde9'
   }).setDepth(103));
   add(scene.add.zone(x,y,255,58).setDepth(105)
@@ -82,7 +85,7 @@ export function installClickableOverworld(scene,view,{
    scene.add.image(418,22,portrait).setDisplaySize(30,30).setDepth(82);
   hudText(scene,440,17,(nameOf(activeMember)+' · NV '+(activeMember.progression?.level??activeMember.level??'?')).slice(0,28),
    10,'#fff0ca',0);
-  hudText(scene,440,31,'HP '+(activeMember.hp??'?')+'   EQUIPE '+team.length+'/6',
+  hudText(scene,440,31,'HP '+displayCampaignHP(activeMember.hp)+'   EQUIPE '+team.length+'/6',
    9,'#b5e2d3',0);
   plate.setData('torre2-overworld-active-plate',id);
  }
