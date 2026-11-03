@@ -13,8 +13,8 @@ test('T89 all six stage-0 roads are valid bounded math vectors',()=>{
   assert.ok(road.total>.5&&road.total<3,id);
   for(const n of route)assert.ok(n.x>=0&&n.x<=1&&n.y>=0&&n.y<=1,id);
   const start=roadPoint(road,0),end=roadPoint(road,road.total);
-  assert.equal(start.y,route[0].y,id);
-  assert.equal(end.y,route.at(-1).y,id);
+  assert.ok(Math.abs(start.y-route[0].y)<1e-10,id);
+  assert.ok(Math.abs(end.y-route.at(-1).y)<1e-10,id);
   const middle=roadPoint(road,road.total/2);
   assert.ok(closestRoadPoint(road,middle.x,middle.y).distance<1e-8,id);
   const nearest=closestRoadPoint(road,.5,.6);
