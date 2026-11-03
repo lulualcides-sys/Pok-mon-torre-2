@@ -588,7 +588,14 @@ const server=http.createServer(async(req,res)=>{
     npcs:c.textures.getTextureKeys().filter(x=>x.startsWith('frlg-npc-'))};
   });
   assert.ok(resourceCheck.maps.length<=2,'Battle Road only uploads two local maps');
-  assert.ok(resourceCheck.npcs.length<=12,'Battle Road loads only a small trainer sprite set');
+  // T84: the approved gyms now retain up to twelve native FRLG specialty
+  // classes in addition to the core stage NPCs. A cap of 12 predates T80
+  // and rejects the intentional assets. Keep a strict 24-sheet GPU budget,
+  // far below the 41+ sheet unbounded loader it replaced.
+  console.log('T84 NATIVE GPU NPC INVENTORY',JSON.stringify({
+   count:resourceCheck.npcs.length,keys:resourceCheck.npcs}));
+  assert.ok(resourceCheck.npcs.length<=24,
+   'Battle Road must still bound active FRLG NPC textures after gym preload');
   // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
   // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
