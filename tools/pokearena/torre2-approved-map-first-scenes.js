@@ -435,17 +435,18 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
    Object.freeze({kind:'tuber_f',cx:.73,cy:.695})
   ])
  }),
- // The approved Surge image ALREADY contains leader, Pikachu and four NPCs.
- // Attach invisible Phaser actions over their positions, not duplicate them.
+ // The USER REPLACED the painted Surge background with a clean map on
+ // 2026-11-03. Overlay original FRLG actors on the four EMPTY platforms;
+ // do not modify the original archived WebP or invent any new battle index.
  'gym-surge':Object.freeze({
-  stage:2,artworkOnly:true,
-  leader:Object.freeze({kind:'surge',cx:.480,cy:.232}),
-  ace:Object.freeze({dex:'0025',cx:.558,cy:.232}),
+  stage:2,
+  leader:Object.freeze({kind:'surge',cx:.480,cy:.240}),
+  ace:Object.freeze({dex:'0026',cx:.565,cy:.240}),
   trainers:Object.freeze([
-   Object.freeze({kind:'youngster',cx:.169,cy:.394}),
-   Object.freeze({kind:'rocker',cx:.841,cy:.395}),
-   Object.freeze({kind:'lass',cx:.169,cy:.667}),
-   Object.freeze({kind:'youngster',cx:.840,cy:.667})
+   Object.freeze({kind:'sailor',cx:.169,cy:.397}),
+   Object.freeze({kind:'rocker',cx:.841,cy:.397}),
+   Object.freeze({kind:'gentleman',cx:.169,cy:.727}),
+   Object.freeze({kind:'worker_m',cx:.840,cy:.727})
   ])
  }),
  // Empty battle circles in the approved greenhouse: overlay real 16x32
@@ -482,8 +483,8 @@ export const APPROVED_GYM_NPC_THEMES=Object.freeze({
  'gym-brock':Object.freeze({theme:'rock',status:'review',allowed:['hiker','youngster']}),
  'gym-misty':Object.freeze({theme:'water',status:'validated',
   allowed:['swimmer','swimmer_f','tuber_m','tuber_f']}),
- 'gym-surge':Object.freeze({theme:'electric',status:'artwork-only',
-  allowed:[]}),
+ 'gym-surge':Object.freeze({theme:'electric',status:'validated',
+  allowed:['sailor','rocker','gentleman','worker_m']}),
  'gym-erika':Object.freeze({theme:'grass',status:'validated',
   allowed:['lass','beauty','picnicker','ace_f']}),
  'gym-koga':Object.freeze({theme:'poison',status:'review',
