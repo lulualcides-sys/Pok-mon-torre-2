@@ -25,8 +25,10 @@ def import_image(png, root=Path(".")):
     if sha256(png) != SOURCE_SHA256:
         raise ValueError("T80 source image does not match user-uploaded PNG")
     with Image.open(io.BytesIO(png)) as original:
-        if original.format != "PNG" or original.size != (1536, 864):
-            raise ValueError("T80 requires the exact user's 1536x864 PNG")
+        # ChatGPT may assign a .png display name to the user's original
+        # JPEG-encoded bytes. SHA-256 is the real source identity, not suffix.
+        if original.format not in ("JPEG", "PNG") or original.size != (1536, 864):
+            raise ValueError("T80 requires the exact user's 1536x864 uploaded image")
         frame = original.convert("RGB").resize((1280, 720), Image.Resampling.NEAREST)
         out = io.BytesIO()
         frame.save(out, "WEBP", quality=94, method=6)
