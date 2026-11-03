@@ -271,8 +271,10 @@ const server=http.createServer(async(req,res)=>{
      if(['route-11','route-9-solo','routes-9-10','lavender-town','routes-7-8',
       'rocket-hideout','routes-16-18','routes-12-15','fuchsia-city',
       'silph-co','gym-sabrina','routes-19-20','seafoam-islands',
-      'cinnabar-island','pokemon-mansion','gym-blaine'].includes(to)){
-      const name=(label.startsWith('stage5')||label.startsWith('stage6')?
+      'cinnabar-island','pokemon-mansion','gym-blaine',
+      'routes-22-23','victory-road','indigo-plateau','elite-four-rooms'].includes(to)){
+      const name=(label.startsWith('stage8')||label.startsWith('stage9')?
+       't66-approved-':label.startsWith('stage5')||label.startsWith('stage6')?
        't65-approved-':'t63-approved-')+to+'-'+mode.name+'.png';
       await page.screenshot({path:path.join(out,name),
        fullPage:true,animations:'disabled'});
@@ -360,6 +362,44 @@ const server=http.createServer(async(req,res)=>{
     ['seafoam-islands','route19','routes-19-20'],
     ['routes-19-20','fuchsia','fuchsia-city']
    ],stage6,'stage6-coastal');
+   // T66 stage-eight proof: Route 22/23 -> Victory Road -> Indigo,
+   // including physical return; no fabricated victory or battle grants.
+   const stage8=await gotoStage('routes-22-23',8);
+   await followSigns([
+    ['routes-22-23','victory','victory-road'],
+    ['victory-road','indigo','indigo-plateau'],
+    ['indigo-plateau','victory','victory-road'],
+    ['victory-road','indigo','indigo-plateau']
+   ],stage8,'stage8-league-route');
+   const nativeChallenge=async(expectedMap,hotspot)=>{
+    const position=await page.evaluate(([map,key])=>{
+     const scene=window.__pt2Game.scene.getScene('campanha'),
+      view=scene?.__torre2ApprovedMapView;
+     if(view?.id!==map)throw Error('T66 not on '+map+': '+view?.id);
+     const zone=view.zones.find(z=>z.getData?.('torre2-approved-hotspot')===map+':'+key);
+     if(!zone)throw Error('T66 missing real challenge '+map+':'+key);
+     const bounds=document.querySelector('#juego canvas').getBoundingClientRect();
+     const w=Math.min(bounds.width,bounds.height*640/360);
+     const h=Math.min(bounds.height,bounds.width*360/640);
+     return {x:bounds.x+(bounds.width-w)/2+zone.x/640*w,
+      y:bounds.y+(bounds.height-h)/2+zone.y/360*h};
+    },[expectedMap,hotspot]);
+    if(mode.isMobile)await page.touchscreen.tap(position.x,position.y);
+    else await page.mouse.click(position.x,position.y);
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+     ?.children.list.some(item=>typeof item?.text==='string'&&
+      item.text.includes('DESAFIO DA LIGA')),null,{timeout:20000});
+    const now=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+    assert.equal(now,expectedMap==='indigo-plateau'?stage8:stage9,
+     'T66 clicking a battle challenge must NOT simulate a victory');
+   };
+   await nativeChallenge('indigo-plateau','challenge');
+   // Synthetic stage-nine fixture: verify Bruno opens the native challenge,
+   // without claiming that Lorelei or any other battle was won.
+   const stage9=await gotoStage('elite-four-rooms',9);
+   await page.screenshot({path:path.join(out,'t66-approved-elite-four-rooms-'+
+    mode.name+'.png'),fullPage:true,animations:'disabled'});
+   await nativeChallenge('elite-four-rooms','bruno');
    await page.close();
   }
   assert.deepEqual(evidence.errors,[],'Phaser page errors');
