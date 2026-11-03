@@ -42,7 +42,17 @@ export function approvedMapEntryAllowed(state,id){
  return true;
 }
 
+// These atlas edges exist for geography only. Their ORIGINAL corresponding
+// walking exits were not approved/installed (Saffron gates, Viridian approach).
+// Never use them as a synthetic teleport or hidden navigation chip.
+const UNREVIEWED_WALK_LINKS=new Set([
+ 'celadon-city>saffron-city','saffron-city>celadon-city',
+ 'route-21>gym-giovanni','gym-giovanni>route-21',
+ 'gym-giovanni>routes-22-23','routes-22-23>gym-giovanni'
+]);
+
 export function approvedMapTravelAllowed(from,target,state){
- return approvedMapNeighbours(from).includes(target)&&
+ return !UNREVIEWED_WALK_LINKS.has(from+'>'+target)&&
+  approvedMapNeighbours(from).includes(target)&&
   approvedMapEntryAllowed(state,target);
 }
