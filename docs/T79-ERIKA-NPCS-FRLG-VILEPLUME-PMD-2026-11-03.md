@@ -8,7 +8,7 @@ O ginásio de Celadon tem quatro plataformas vazias prontas para overlays Phaser
 ## Correção realizada
 - Quatro classes coerentes com os treinadores originais FRLG de Celadon: `lass`, `beauty`, `picnicker` e `cooltrainer_f`. Quatro texturas originais diferentes, importadas do repositório público de decompilação `pret/pokefirered`, e desenhadas somente sobre os círculos vazios, sem tocar no fundo.
 - Incluído `beauty.png` ao instalador original; todos os cinco elementos indispensáveis (`erika`, `lass`, `beauty`, `picnicker`, `cooltrainer_f`) são verificados. Falta de arquivo faz o build falhar; sem substituição silenciosa por Youngster.
-- A líder Erika permanece no platô central; ao lado, `Vileplume` (Pokédex 0045) usa `Idle` transparente da biblioteca SpriteCollab PMD local, filtragem NEAREST e animação original, sem retrato quadrado.
+- A líder Erika permanece no platô central; ao lado, `Vileplume` (Pokédex 0045) usa `Idle` transparente da biblioteca SpriteCollab PMD local, filtragem NEAREST e animação original, sem retrato quadrado. O spritesheet nativo 0045 possui quadros 32×40 px, mas o primeiro quadro tem pixels opacos somente até a linha 25; o ponto de apoio foi corrigido matematicamente para `originY=26/40`, alinhando a base visível à plataforma, sem aumentar o sprite nem modificar a arte de fundo.
 - Carregamento limitado ao trecho de Celadon: etapas 3 e 4, sem baixar sprites em runtime nem carregar toda a Pokédex na GPU.
 - Índices de batalhas [15,16,17,18], equipes, golpes, saves, recompensas e regras de captura permanecem intocados.
 
