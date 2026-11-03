@@ -536,7 +536,28 @@ create(){
    if(!canTravel(id,target))return;
    const entry=approvedMap(target),key=mapTextureKey(target);
    if(!this.textures.exists(key)){
-    if(this.load.isLoading?.())return;
+    if(this.load.isLoading?.()){
+     // T67: Phaser may still be finishing the PREVIOUS map's texture
+     // when a player taps the next ferry sign. Never discard that click.
+     // Queue only the latest real neighbor and retry after the loader is idle.
+     this.__torre2QueuedApprovedTarget={from:id,target};
+     if(!this.__torre2QueuedApprovedFlush){
+      this.__torre2QueuedApprovedFlush=true;
+      this.load.once('complete',()=>{
+       this.__torre2QueuedApprovedFlush=false;
+       const pending=this.__torre2QueuedApprovedTarget;
+       this.__torre2QueuedApprovedTarget=null;
+       if(!this.scene.isActive()||
+          pending?.from!==this.__torre2ApprovedMapView?.id)return;
+       this.time.delayedCall(0,()=>{
+        if(this.scene.isActive()&&
+           this.__torre2ApprovedMapView?.id===pending.from)
+         open(pending.target);
+       });
+      });
+     }
+     return;
+    }
     let failed=false;
     this.load.on('loaderror',onError);
     const self=this;
