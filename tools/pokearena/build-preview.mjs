@@ -571,6 +571,15 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
+   // Poké Arena changed its optional UI ball sprite from balls20.png to
+   // balls10.png. The new resource exists in the upstream capture: keep its
+   // native loader unchanged instead of deleting a potentially valid sprite.
+   if(filename==='escenas/carga.js'&&
+      from==='this.load.spritesheet("ui-balls","assets/ui/balls20.png",{frameWidth:20,frameHeight:20});'&&
+      body.includes('this.load.spritesheet("ui-balls","assets/ui/balls10.png",{frameWidth:20,frameHeight:20});')){
+    console.warn('Native UI balls10.png preserved; legacy balls20.png removal skipped');
+    continue;
+   }
    // The native client sometimes reorders imported data symbols.
    // Keep the original import and add only this self-contained helper.
    if(filename==='luchador.js'&&from.startsWith('import{REGLAS,TIPOS,ESTADOS_TIPO,efectividad,etapaDe,umbralesExp}')){
@@ -861,7 +870,7 @@ for(const [filename,changes] of patches){
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
    }
-   throw Error('Unrecognized upstream client in '+filename+': expected='+JSON.stringify(from.slice(0,240))+' actual='+JSON.stringify(body.slice(Math.max(0,body.indexOf('ui-balls')-48),body.indexOf('ui-balls')+240)));
+   throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
  }
