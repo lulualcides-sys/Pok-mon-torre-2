@@ -2,7 +2,13 @@
  * Read-only: never mutates a campaign save, grants badges, unlocks quests,
  * or fabricates scenery for routes missing an approved image.
  */
-import {GYMS} from './campaign-core.js';
+// Keep the rules self-contained in Node tests: the captured native Phaser
+// client resolves campaign-core's upstream imports only during a build.
+// The regression test compares these badges with the native GYMS definition.
+export const KANTO_BADGES=Object.freeze([
+ 'Rocha','Cascata','Trovao','Arco-Iris',
+ 'Alma','Pantano','Vulcao','Terra'
+]);
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
 import {isSeviiSceneUnlocked,seviiHasUnimplementedQuestLock} from './torre2-sevii-ferry.js';
 
@@ -36,7 +42,7 @@ export function approvedMapEntryAllowed(state,id){
  if(required){
   if(!Array.isArray(state.badges))return false;
   const earned=new Set(state.badges);
-  if(!GYMS.slice(0,required).every(gym=>earned.has(gym.badge)))
+  if(!KANTO_BADGES.slice(0,required).every(badge=>earned.has(badge)))
    return false;
  }
  return true;
