@@ -66,3 +66,23 @@ export function showKantoLocation(scene,view,state,stageNames,trainersPerGym){
   .on('pointerdown',(_p,_x,_y,event)=>{event?.stopPropagation?.();close()}));
  return {info,close,objects};
 }
+
+/** Compact menu chip: one hit zone, works on every approved Kanto map.
+ * No new navigation and no changes to the original battle scene.
+ */
+export function installKantoLocationChip(scene,view,state,stageNames,trainersPerGym){
+ const bg=scene.add.rectangle(316,339,38,27,0x082034,.94)
+  .setStrokeStyle(1,0xffdd83,.95).setDepth(81);
+ const glyph=scene.add.text(316,339,'⌖',{
+  fontFamily:'Pixelify Sans,monospace',fontSize:'18px',fontStyle:'bold',
+  color:'#ffdf85',stroke:'#061320',strokeThickness:2
+ }).setOrigin(.5).setDepth(82);
+ const hit=scene.add.zone(316,339,40,31).setDepth(85)
+  .setInteractive({useHandCursor:true})
+  .setData('torre2-overworld-action','location')
+  .on('pointerdown',(_p,_x,_y,event)=>{
+   event?.stopPropagation?.();
+   showKantoLocation(scene,view,state,stageNames,trainersPerGym);
+  });
+ return {bg,glyph,hit};
+}
