@@ -1108,6 +1108,67 @@ const server=http.createServer(async(req,res)=>{
     fixture:'Controlled stage three; NOT an actual gym victory',
     aceTexture:erikaReport.aces[0].key,trainers:erikaReport.trainers,
     saveUnchanged:true,screenshot:erikaScreenshot});
+   // T80: fifth gym ace (Weezing) in a CONTROLLED stage-four
+   // checkpoint. Only a visual fixture; no artificial gym win is awarded.
+   await page.evaluate(()=>{
+    const k=window.kanto,s=k.readCampaign();
+    s.stage=4;s.trainer=0;s.champion=false;
+    s.badges=['Rocha','Cascata','Trovao','Arco-iris'];
+    s.pendingWild=null;s.pendingCapture=null;
+    k.saveCampaign(s);
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    scene.__torre2ApprovedReturn=null;scene.__torre2ApprovedMapView=null;
+    scene.scene.restart({});
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.scene.isActive(),null,{timeout:40000});
+   await page.evaluate(async()=>{
+    const game=window.__pt2Game,scene=game.scene.getScene('campanha');
+    const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
+    const atlas=await import(new URL('./torre2/torre2-approved-maps-atlas.js',main));
+    const renderer=await import(new URL('./torre2/torre2-approved-map-renderer.js',main));
+    const entry=atlas.approvedMap('gym-koga');
+    const key='torre2-approved-map-gym-koga';
+    if(!game.textures.exists(key)){
+     await new Promise((resolve,reject)=>{
+      let failed=false;
+      const onError=f=>{if(f?.key===key)failed=true};
+      scene.load.on('loaderror',onError);
+      scene.load.once('complete',()=>{
+       scene.load.off('loaderror',onError);
+       if(failed||!game.textures.exists(key))reject(Error('T80 Koga gym art missing'));
+       else resolve();
+      });
+      scene.load.image(key,renderer.approvedMapImagePath('gym-koga',entry));
+      scene.load.start();
+     });
+    }
+    if(!scene.approvedMapPreview(window.kanto.readCampaign(),'gym-koga'))
+     throw Error('T80 stage-four Koga preview blocked');
+   });
+   const kogaReport=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    const get=key=>scene.children.list.filter(o=>o.active&&
+     o.getData?.(key)==='gym-koga').map(o=>({
+      texture:o.texture?.key,y:o.y,source:o.getData?.('torre2-gym-ace-source')
+     }));
+    return {leaders:get('torre2-gym-leader-sprite'),
+     aces:get('torre2-gym-ace'),
+     save:JSON.stringify(window.kanto.readCampaign())};
+   });
+   assert.deepEqual(kogaReport.leaders.map(o=>o.texture),['frlg-npc-koga']);
+   assert.deepEqual(kogaReport.aces.map(o=>o.texture),['torre2-gym-ace-idle-0110']);
+   assert.equal(kogaReport.aces[0]?.source,'pmd-idle');
+   assert.ok(Math.abs(kogaReport.aces[0].y-kogaReport.leaders[0].y)<1,
+    'T80 Weezing must stand on the leader floor');
+   const kogaScreen='t80-koga-grounded-ace-'+mode.name+'.png';
+   await page.screenshot({path:path.join(out,kogaScreen),
+    fullPage:true,animations:'disabled'});
+   evidence.maps.push({id:'gym-koga',mode:mode.name,
+    via:'T80 controlled stage-four native Phaser PMD overlay',
+    fixture:'NOT a naturally fought battle',
+    aceTexture:kogaReport.aces[0]?.texture,
+    saveUnchanged:true,screenshot:kogaScreen});
    // T74: real native wild encounter persisted after reload. A second
    // 'search' must NEVER replace its species/Shiny or the encounter counter.
    // Deliberately force the 1% Shiny roll for this CONTROLLED test fixture;
