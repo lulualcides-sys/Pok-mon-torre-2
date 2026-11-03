@@ -817,6 +817,7 @@ export function startWildBattle(s){
  return {p1:s.team[s.active].id,p2:wild.id,modo:'cpu',nivel:'facil',
   arena:STAGES[s.stage].arena,mandos:['kbm','cpu'],
   torre2:{kind:'wild',stage:s.stage,trainer:s.trainer,id:wild.id,
+   encounterCounter:s.wildEncountersStage,
    shiny:wild.shiny===true,
    playerLevel:s.team[s.active].progression?.level??5,
    enemyLevel:wild.level,hardCap:currentLevelCap(s.stage)}};
