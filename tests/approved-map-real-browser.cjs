@@ -1054,7 +1054,7 @@ const server=http.createServer(async(req,res)=>{
      aces:scene.children.list.filter(o=>o.active&&
       o.getData?.('torre2-gym-ace')==='gym-erika')
       .map(o=>({key:o.texture?.key,w:o.displayWidth,h:o.displayHeight,
-       source:o.getData?.('torre2-gym-ace-source')})),
+       originY:o.originY,source:o.getData?.('torre2-gym-ace-source')})),
      save:JSON.stringify(window.kanto.readCampaign())
     };
    });
@@ -1068,6 +1068,8 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(erikaReport.aces.length,1);
    assert.equal(erikaReport.aces[0].key,'torre2-gym-ace-idle-0045');
    assert.equal(erikaReport.aces[0].source,'pmd-idle');
+   assert.equal(erikaReport.aces[0].originY,26/40,
+    'T79 Vileplume must stand on platform using true alpha-visible feet');
    assert.ok(erikaReport.aces[0].w>=35&&erikaReport.aces[0].h>=35);
    assert.equal(erikaReport.save,erikaBefore,
     'T79 walking into Erika gym modified story save');
