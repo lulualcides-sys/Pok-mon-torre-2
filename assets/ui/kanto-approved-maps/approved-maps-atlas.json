@@ -1,0 +1,1873 @@
+{
+  "version": 1,
+  "kind": "approved-concept-atlas",
+  "date": "2026-11-02",
+  "original_count": 60,
+  "deployment_status": "stage-assets-not-yet-in-github",
+  "notes": [
+    "Art approved in chat, not yet playable in production",
+    "Graph is metadata for independent click navigation, does not bypass story locks",
+    "No HM required per user approval",
+    "Sprites of trainers/Pokemon must overlay backgrounds in Phaser, never paint into images."
+  ],
+  "missing_previously_approved_base_maps": [
+    {
+      "id": "pallet-town",
+      "status": "not-in-this-approval-backup",
+      "source": "must verify against prior work/reference assets"
+    },
+    {
+      "id": "route-1",
+      "status": "not-in-this-approval-backup",
+      "source": "must verify against prior work/reference assets"
+    },
+    {
+      "id": "viridian-city",
+      "status": "not-in-this-approval-backup",
+      "source": "must verify against prior work/reference assets"
+    },
+    {
+      "id": "viridian-forest",
+      "status": "not-in-this-approval-backup",
+      "source": "must verify against prior work/reference assets"
+    },
+    {
+      "id": "rock-tunnel",
+      "status": "not-in-this-approval-backup",
+      "source": "must verify against prior work/reference assets"
+    }
+  ],
+  "maps": [
+    {
+      "index": 1,
+      "id": "route-2",
+      "name": "Rota 2",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "mapa_vibrante_da_rota_2_de_kanto.png",
+      "original_archive_path": "mapas_aprovados/03_rota-2.png",
+      "original_sha256": "81142052da7ba548b06f003ba861aedff4d364cf9d957edbf0415bda29e62969",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-2.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 336736,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "ba85ce4d8598f7d43cf7c29a20200859fec5836ba3f814dce11cab4cec3c2836"
+    },
+    {
+      "index": 2,
+      "id": "pewter-city",
+      "name": "Pewter City",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "mapa_pixelado_de_pewter_city_em_português.png",
+      "original_archive_path": "mapas_aprovados/01_pewter-city.png",
+      "original_sha256": "40331b2b9adc396c075b2434fa6c570d712d6b2d998e49b0b75b902a1556be21",
+      "image": "assets/ui/kanto-approved-maps/kanto/pewter-city.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 332288,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "6b5d7fb61f8c8acf045f35b9d94e2c6e295757cbabade590676ca143a8884aca"
+    },
+    {
+      "index": 3,
+      "id": "gym-brock",
+      "name": "Ginasio de Pedra",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "a_highly_detailed_pixel_art_game_map_scene_of_a_po.png",
+      "original_archive_path": "mapas_aprovados/02_ginasio-de-pedra.png",
+      "original_sha256": "124d7ed46046ab274fd7747657df7b5d369811fd39b7b94176f95d6516c35264",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-brock.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 301294,
+      "min_story_flags": [
+        "badge:0-training-complete"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "2e3b035108faa95b52247b9c2ff6c7b7cd4cbc4ccc2f35b7f49fc5559082078a"
+    },
+    {
+      "index": 4,
+      "id": "route-3",
+      "name": "Rota 3",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_vibrant_detailed_pixel_art_rpg_map_scene_top_d.png",
+      "original_archive_path": "mapas_aprovados/04_rota-3.png",
+      "original_sha256": "0dc718266d078a009059e36cc8ef63a6b37eb8e71f938a8282dc289be5512c62",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-3.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 443276,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "045ff6e589be26cfab7a7f9868d349d9b629097436f85dfeef0859d6f39631c3"
+    },
+    {
+      "index": 5,
+      "id": "route-4-west",
+      "name": "Rota 4 oeste e Mt Moon entrada",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_highly_detailed_colorful_16_9_pixel_art_map_sce.png",
+      "original_archive_path": "mapas_aprovados/05_rota-4-oeste-e-mt-moon-entrada.png",
+      "original_sha256": "c490467f058e3f05e35f83f2b994047f6996378a6f3ff45f6d22da0361a35a16",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-4-west.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 388590,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "1166bf7a3c36d27338ae24f899725722dd8f84693819b89aa212c5c5979908f5"
+    },
+    {
+      "index": 6,
+      "id": "mt-moon",
+      "name": "Mt Moon interior",
+      "group": "kanto",
+      "type": "caverna",
+      "original_source": "a_highly_detailed_vibrant_pixel_art_game_map_of_m.png",
+      "original_archive_path": "mapas_aprovados/06_mt-moon-interior.png",
+      "original_sha256": "816fe6204f2c6f187b8889f1b63e313b8a63de68bbca38d6af0ce746275bfc98",
+      "image": "assets/ui/kanto-approved-maps/kanto/mt-moon.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 381690,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "c2dc8209c636b217c721c34038ca247d18827b6d8f05c31f65c1860576254183"
+    },
+    {
+      "index": 7,
+      "id": "route-4-east",
+      "name": "Rota 4 leste",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_vibrant_highly_detailed_pixel_art_rpg_map_in_16.png",
+      "original_archive_path": "mapas_aprovados/07_rota-4-leste.png",
+      "original_sha256": "7d36c20f068919b946a7d3859eda92efba009e1853e08858c6503e3117273d30",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-4-east.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 439290,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "c1cd55b230ccba027a5da5f6a30ee76f9020de1479e4756221e25078193b7361"
+    },
+    {
+      "index": 8,
+      "id": "cerulean-city",
+      "name": "Cerulean City",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "a_vibrant_highly_detailed_pixel_art_rpg_town_map.png",
+      "original_archive_path": "mapas_aprovados/08_cerulean-city.png",
+      "original_sha256": "1b323f5579f356e6a5eb595be9b5a95aa0b1e55de831c47ce178a36b4a4522a8",
+      "image": "assets/ui/kanto-approved-maps/kanto/cerulean-city.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 398718,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "47dbaad7125b96fc5341ee6e386a9cff69c8c64f02ab2121916133af04fb0cfb"
+    },
+    {
+      "index": 9,
+      "id": "gym-misty",
+      "name": "Ginasio de Agua Misty",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "a_highly_detailed_pixel_art_game_map_background_of.png",
+      "original_archive_path": "mapas_aprovados/09_ginasio-de-agua-misty.png",
+      "original_sha256": "0f4661cf33abd8ee34baa75d551c5311ec79b34c1a92973e7e5440642f99855f",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-misty.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 295478,
+      "min_story_flags": [
+        "badge:1-training-complete"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "d99f72649d397605a47ccd33ccae93ea274ae1809dc13f64e2dbe168f30ebd2d"
+    },
+    {
+      "index": 10,
+      "id": "route-24",
+      "name": "Rota 24 Ponte Nugget",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_vibrant_detailed_16_9_pixel_art_game_map_scene.png",
+      "original_archive_path": "mapas_aprovados/10_rota-24-ponte-nugget.png",
+      "original_sha256": "24a4a3d235ba40245f533065ecf20ecbad3ff28bd265fb9e2b4ef4063842d7af",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-24.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 1732868,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "6a2f79e493a979c75106903707972bbb17c08d7e4b0de6a54a4853b067ac89a9"
+    },
+    {
+      "index": 11,
+      "id": "route-25",
+      "name": "Rota 25 casa de Bill",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_vibrant_highly_detailed_pixel_art_map_scene_in.png",
+      "original_archive_path": "mapas_aprovados/11_rota-25-casa-de-bill.png",
+      "original_sha256": "9f4a539f36e465e4d9117f7111ae67245cfa70cc68046184fbd3aee8e698a4ef",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-25.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 439428,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "3c417ba9621296ba132b445a52cb872dc7aaf99e9aa5c7043082aa708f6358eb"
+    },
+    {
+      "index": 12,
+      "id": "route-5",
+      "name": "Rota 5",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_highly_detailed_colorful_pixel_art_map_scene_in.png",
+      "original_archive_path": "mapas_aprovados/12_rota-5.png",
+      "original_sha256": "2c83f971f11450840fe12eb4ac08f336d66f20dcdfe2dc9d9510399c56aa647e",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-5.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 1821254,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "c2d6e72c0753afc05bc5255401ef6024d82baa1d207a1540424af813f9f16b5a"
+    },
+    {
+      "index": 13,
+      "id": "underground-5-6",
+      "name": "Passagem Subterranea 5-6",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_highly_detailed_colorful_pixel_art_16_bit_sty.png",
+      "original_archive_path": "mapas_aprovados/13_passagem-subterranea-5-6.png",
+      "original_sha256": "9a5aa43c8a71cdbb4da6a6fa945db838a2ca5a4f0aa880041fb48900c8416356",
+      "image": "assets/ui/kanto-approved-maps/kanto/underground-5-6.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 185744,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "be400da769407338328ba7b328df1e6a49bc4c55f59876e09c259ad4bdf757d8"
+    },
+    {
+      "index": 14,
+      "id": "route-6",
+      "name": "Rota 6",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_highly_detailed_colorful_pixel_art_16_bit_style.png",
+      "original_archive_path": "mapas_aprovados/14_rota-6.png",
+      "original_sha256": "71f86159325371068aaff9b53ea63777c0218e3b8b68735c488df92522a8de4c",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-6.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 464880,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "02df2dbeeb54bac04aac35dac8ae2a620e4b6c4c3253e3c9dbfe4837fe854d94"
+    },
+    {
+      "index": 15,
+      "id": "vermilion-city",
+      "name": "Vermilion City",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "a_vibrant_highly_detailed_pixel_art_top_down_map.png",
+      "original_archive_path": "mapas_aprovados/15_vermilion-city.png",
+      "original_sha256": "47196ec69599d1e060113b36dd7e8541639d1bb1da9673eb031cc5b43ae2ff74",
+      "image": "assets/ui/kanto-approved-maps/kanto/vermilion-city.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 435728,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "6a01d7d0d45b596a7b69a190569026883e3b7a6704a3b5307d2a1bf2054bc032"
+    },
+    {
+      "index": 16,
+      "id": "ss-anne",
+      "name": "S.S. Anne — interior",
+      "group": "kanto",
+      "type": "interior",
+      "original_source": "1001007759.png",
+      "original_archive_path": "user-upload/1001007759.png",
+      "original_sha256": "1f848ac817f9ac7bc0da4521379fb790d0c4a568f9487c65fcfe30e4e5b5f492",
+      "image": "assets/ui/kanto-approved-maps/kanto/ss-anne.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 310384,
+      "min_story_flags": [
+        "bill-ticket"
+      ],
+      "hotspots": [
+        {
+          "id": "captain",
+          "cx": 0.49,
+          "cy": 0.16,
+          "w": 0.2,
+          "h": 0.17,
+          "validated": "visual"
+        },
+        {
+          "id": "cabins",
+          "cx": 0.28,
+          "cy": 0.47,
+          "w": 0.18,
+          "h": 0.23,
+          "validated": "visual"
+        },
+        {
+          "id": "cabins",
+          "cx": 0.73,
+          "cy": 0.47,
+          "w": 0.18,
+          "h": 0.23,
+          "validated": "visual"
+        },
+        {
+          "id": "kitchen",
+          "cx": 0.09,
+          "cy": 0.53,
+          "w": 0.15,
+          "h": 0.27,
+          "validated": "visual"
+        },
+        {
+          "id": "deck",
+          "cx": 0.81,
+          "cy": 0.2,
+          "w": 0.23,
+          "h": 0.23,
+          "validated": "visual"
+        },
+        {
+          "id": "exit",
+          "cx": 0.48,
+          "cy": 0.91,
+          "w": 0.22,
+          "h": 0.12,
+          "validated": "visual"
+        }
+      ],
+      "hotspots_status": "partial-validated",
+      "approved": true,
+      "optimized_sha256": "8290137570a693b8b32692eed9bacf1fe8232a7d7d6591eb25129225201cd841"
+    },
+    {
+      "index": 17,
+      "id": "gym-surge",
+      "name": "Ginasio Eletrico Lt Surge",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "a_vivid_detailed_pixel_art_rpg_game_map_of_lt.png",
+      "original_archive_path": "mapas_aprovados/16_ginasio-eletrico-lt-surge.png",
+      "original_sha256": "c2bdff33ab10e3f021830eac3b96ba6b8fff281bb00a79995fd301ebcd1c5736",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-surge.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 253814,
+      "min_story_flags": [
+        "ss-anne-event"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "8e04973725c043027eea220f128a34696e074c1887e2c7154d210cabdc1efacc"
+    },
+    {
+      "index": 18,
+      "id": "route-11",
+      "name": "Rota 11",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "mapa_pixel_art_vibrante_da_rota_11.png",
+      "original_archive_path": "mapas_aprovados/17_rota-11.png",
+      "original_sha256": "f4aa8b3f1155170de0bf2365c1eb4e957b53d83df55c01e31403954e2a35a5af",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-11.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 360256,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "bf7e5673a130d8c65e54a07bbee07cf5b01d5045fb4ce101d676ae01643767ac"
+    },
+    {
+      "index": 19,
+      "id": "route-9-solo",
+      "name": "Rota 9",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_vibrant_highly_detailed_pixel_art_rpg_map_over.png",
+      "original_archive_path": "mapas_aprovados/18_rota-9.png",
+      "original_sha256": "e634d7a07a321e129b04778659a14edd106163e5078547475f13d0cbb77a4705",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-9-solo.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 424426,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "d99e3f13420fba1264a309d489f4cbbe62519a4d23d71f5753d3deb7c616cdb2"
+    },
+    {
+      "index": 20,
+      "id": "routes-9-10",
+      "name": "Rotas 9 e 10 agrupadas",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_vibrant_detailed_pixel_art_game_map_in_the_styl.png",
+      "original_archive_path": "mapas_aprovados/19_rotas-9-e-10-agrupadas.png",
+      "original_sha256": "8e01bbf0c6986617c5208af73570a0ed431843b4ccc6bdf876a76d03d1baee0c",
+      "image": "assets/ui/kanto-approved-maps/kanto/routes-9-10.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 439772,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "31fb08e84ef6e50a6c7583c0ad1438165ddb05ffa5242cced1a3a96c561356c0"
+    },
+    {
+      "index": 21,
+      "id": "lavender-town",
+      "name": "Lavender Town",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "a_highly_detailed_colorful_pixel_art_rpg_map_scen.png",
+      "original_archive_path": "mapas_aprovados/20_lavender-town.png",
+      "original_sha256": "b8fb8f93ef3d9efa250d8c81b0402b237ecc2cbb7294cd71d07f3997d25a2b85",
+      "image": "assets/ui/kanto-approved-maps/kanto/lavender-town.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 418104,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "303ea26b8323edeecedddab24dbc83a04a28fd27d8712a6b7657e1701a9f8f72"
+    },
+    {
+      "index": 22,
+      "id": "routes-7-8",
+      "name": "Rotas 8 e 7 agrupadas",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_highly_detailed_colorful_pixel_art_overhead_map.png",
+      "original_archive_path": "mapas_aprovados/21_rotas-8-e-7-agrupadas.png",
+      "original_sha256": "a1aa474c8cd86f8075957eaa91c8ff8d061da40db3ecf9a4c30a2ba06b0ab228",
+      "image": "assets/ui/kanto-approved-maps/kanto/routes-7-8.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 435494,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "4e35231ddb54190da1b74d8aa36be9f5afae0e284030bf8af601f6c95bb8a53f"
+    },
+    {
+      "index": 23,
+      "id": "celadon-city",
+      "name": "Celadon City",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "a_highly_detailed_vibrant_top_down_isometric_ins.png",
+      "original_archive_path": "mapas_aprovados/22_celadon-city.png",
+      "original_sha256": "8050e8802f12faf343f72430c458560bb98abfc797a191c862b9a0c2a307c97a",
+      "image": "assets/ui/kanto-approved-maps/kanto/celadon-city.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 451266,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "20889b7d4e31a9132873beaf687f6b339dc93bd4eca72f280d2a3df913ad0a4a"
+    },
+    {
+      "index": 24,
+      "id": "gym-erika",
+      "name": "Ginasio Planta Erika",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "a_highly_detailed_pixel_art_pokémon_style_gym_ma.png",
+      "original_archive_path": "mapas_aprovados/23_ginasio-planta-erika.png",
+      "original_sha256": "684ccd696b20ce6ecf23bef2a803b19d8b194a2e8ae693f1d4d06d7ff954861a",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-erika.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 455532,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "991ea4a499ba2f7df617a4e5a5500cb4d2fa3590f3447281f4d70c1aa626ce83"
+    },
+    {
+      "index": 25,
+      "id": "rocket-hideout",
+      "name": "Esconderijo Rocket",
+      "group": "kanto",
+      "type": "interior",
+      "original_source": "a_highly_detailed_pixel_art_top_down_isometric_li.png",
+      "original_archive_path": "mapas_aprovados/24_esconderijo-rocket.png",
+      "original_sha256": "1d10d29ffa4a537790df3ea17072b47e48e04210d82a4a0ac9694e2d642d873e",
+      "image": "assets/ui/kanto-approved-maps/kanto/rocket-hideout.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 242228,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "817658dc6c35dddcf616b251479edfc5106174997719642a6efeaed0891f15b6"
+    },
+    {
+      "index": 26,
+      "id": "pokemon-tower",
+      "name": "Torre Pokemon Lavender",
+      "group": "kanto",
+      "type": "interior",
+      "original_source": "a_detailed_pixel_art_game_map_scene_a_top_down_1.png",
+      "original_archive_path": "mapas_aprovados/25_torre-pokemon-lavender.png",
+      "original_sha256": "3da53121cae3b7f5453de3bceaaa02528ed435781ecc6fe6a44654973d44ced3",
+      "image": "assets/ui/kanto-approved-maps/kanto/pokemon-tower.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 266854,
+      "min_story_flags": [
+        "silph-scope"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "e8c92b2be5abf5e311a8d334914b9a8255ae1baebbb0f248a9a60dd2ca48f035"
+    },
+    {
+      "index": 27,
+      "id": "routes-12-15",
+      "name": "Rotas 12 a 15 agrupadas",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "mapa_pixelado_das_rotas_12_15.png",
+      "original_archive_path": "mapas_aprovados/26_rotas-12-a-15-agrupadas.png",
+      "original_sha256": "d8da6b9a322417c8e35e0283f190934d756855d131732b0c826f44ba26e73e93",
+      "image": "assets/ui/kanto-approved-maps/kanto/routes-12-15.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 388926,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "4d6bf436839251c1132867c1eacebb4818c8e3597d7d4a2a9e74d346eafa82fd"
+    },
+    {
+      "index": 28,
+      "id": "fuchsia-city",
+      "name": "Fuchsia City",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "a_vibrant_detailed_pixel_art_rpg_map_in_16_9_show.png",
+      "original_archive_path": "mapas_aprovados/27_fuchsia-city.png",
+      "original_sha256": "a14f53549b4c21ac983f8040f170b6590b06b3085cd9680b96a40ff564791722",
+      "image": "assets/ui/kanto-approved-maps/kanto/fuchsia-city.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 393060,
+      "min_story_flags": [],
+      "hotspots": [
+        {
+          "id": "safari",
+          "cx": 0.5,
+          "cy": 0.13,
+          "w": 0.18,
+          "h": 0.22,
+          "validated": "visual"
+        },
+        {
+          "id": "mart",
+          "cx": 0.18,
+          "cy": 0.24,
+          "w": 0.18,
+          "h": 0.22,
+          "validated": "visual"
+        },
+        {
+          "id": "gym",
+          "cx": 0.17,
+          "cy": 0.66,
+          "w": 0.24,
+          "h": 0.28,
+          "validated": "visual"
+        },
+        {
+          "id": "center",
+          "cx": 0.5,
+          "cy": 0.69,
+          "w": 0.19,
+          "h": 0.25,
+          "validated": "visual"
+        },
+        {
+          "id": "route18",
+          "cx": 0.06,
+          "cy": 0.4,
+          "w": 0.12,
+          "h": 0.1,
+          "validated": "visual"
+        },
+        {
+          "id": "route15",
+          "cx": 0.94,
+          "cy": 0.4,
+          "w": 0.12,
+          "h": 0.1,
+          "validated": "visual"
+        },
+        {
+          "id": "route19",
+          "cx": 0.5,
+          "cy": 0.93,
+          "w": 0.15,
+          "h": 0.1,
+          "validated": "visual"
+        }
+      ],
+      "hotspots_status": "partial-validated",
+      "approved": true,
+      "optimized_sha256": "e161249e968c43e35a91f99c274236979a5c38028cd176ff31c6908c3b43ec75"
+    },
+    {
+      "index": 29,
+      "id": "gym-koga",
+      "name": "Ginasio Veneno Koga",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "ginásio_de_veneno_em_pixel_art.png",
+      "original_archive_path": "mapas_aprovados/28_ginasio-veneno-koga.png",
+      "original_sha256": "2e49d590798aa9046b9414fe70785c6f77e397071c767abdfd637bf11fa23b45",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-koga.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 297886,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "3493608504f9afe108741ba11f5abe97c5f963510ffaf7be4f7b052c74955418"
+    },
+    {
+      "index": 30,
+      "id": "safari-zone",
+      "name": "Zona Safari",
+      "group": "kanto",
+      "type": "interior",
+      "original_source": "a_vibrant_detailed_pixel_art_top_down_rpg_map_of.png",
+      "original_archive_path": "mapas_aprovados/29_zona-safari.png",
+      "original_sha256": "d23c595d74435a6b67eb1d0d6e7d5fea9e1774e227ee3129785eee119afb7c5b",
+      "image": "assets/ui/kanto-approved-maps/kanto/safari-zone.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 427854,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "b74159a684d6a1cfa02c9435732f6ce29afa69197e40241393518ac0a1d104b6"
+    },
+    {
+      "index": 31,
+      "id": "routes-16-18",
+      "name": "Rotas 16 a 18 agrupadas",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "mapa_pixelado_das_rotas_16_17_e_18.png",
+      "original_archive_path": "mapas_aprovados/30_rotas-16-a-18-agrupadas.png",
+      "original_sha256": "a7f13892d049a6a713393a32a693163a839110820b5cdb49fc0b2035fcc9b8f6",
+      "image": "assets/ui/kanto-approved-maps/kanto/routes-16-18.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 405414,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "cc7278081be8a1b82013d6d60c3c70287c1d2f16b7f9a00a8d79d80c472d2b5a"
+    },
+    {
+      "index": 32,
+      "id": "saffron-city",
+      "name": "Saffron City",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "a_highly_detailed_colorful_pixel_art_top_down_map.png",
+      "original_archive_path": "mapas_aprovados/31_saffron-city.png",
+      "original_sha256": "997e1fecd8095a258dbedc798459c0df244eaa2fb7358a2accd41ca46313381b",
+      "image": "assets/ui/kanto-approved-maps/kanto/saffron-city.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 409516,
+      "min_story_flags": [],
+      "hotspots": [
+        {
+          "id": "silph",
+          "cx": 0.49,
+          "cy": 0.47,
+          "w": 0.28,
+          "h": 0.45,
+          "validated": "visual"
+        },
+        {
+          "id": "center",
+          "cx": 0.23,
+          "cy": 0.7,
+          "w": 0.19,
+          "h": 0.26,
+          "validated": "visual"
+        },
+        {
+          "id": "mart",
+          "cx": 0.78,
+          "cy": 0.72,
+          "w": 0.19,
+          "h": 0.26,
+          "validated": "visual"
+        },
+        {
+          "id": "dojo",
+          "cx": 0.7,
+          "cy": 0.2,
+          "w": 0.16,
+          "h": 0.19,
+          "validated": "visual"
+        },
+        {
+          "id": "gym",
+          "cx": 0.87,
+          "cy": 0.2,
+          "w": 0.16,
+          "h": 0.22,
+          "validated": "visual"
+        },
+        {
+          "id": "route5",
+          "cx": 0.5,
+          "cy": 0.035,
+          "w": 0.14,
+          "h": 0.07,
+          "validated": "visual"
+        },
+        {
+          "id": "route6",
+          "cx": 0.5,
+          "cy": 0.97,
+          "w": 0.14,
+          "h": 0.06,
+          "validated": "visual"
+        },
+        {
+          "id": "route7",
+          "cx": 0.05,
+          "cy": 0.49,
+          "w": 0.1,
+          "h": 0.1,
+          "validated": "visual"
+        },
+        {
+          "id": "route8",
+          "cx": 0.95,
+          "cy": 0.49,
+          "w": 0.1,
+          "h": 0.1,
+          "validated": "visual"
+        }
+      ],
+      "hotspots_status": "partial-validated",
+      "approved": true,
+      "optimized_sha256": "5a876648520d714bcf031383608591fc8b3dc376528949226aeae65defd219a1"
+    },
+    {
+      "index": 33,
+      "id": "silph-co",
+      "name": "Silph Co primeira versao com Lapras",
+      "group": "kanto",
+      "type": "interior",
+      "original_source": "a_highly_detailed_colorful_pixel_art_top_down_iso.png",
+      "original_archive_path": "mapas_aprovados/32_silph-co-primeira-versao-com-lapras.png",
+      "original_sha256": "23a6bd45ed9375a8f0c14793a6f1b4370f5bfb21bca601366e5c741b41202dd3",
+      "image": "assets/ui/kanto-approved-maps/kanto/silph-co.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 280816,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "0c5448871b14d019ac8281a4aadc6f6e2dca140cd5f273ebd6d372dc3fa5076f"
+    },
+    {
+      "index": 34,
+      "id": "fighting-dojo",
+      "name": "Dojo de Luta Saffron",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "a_highly_detailed_colorful_pixel_art_rpg_interior.png",
+      "original_archive_path": "mapas_aprovados/35_dojo-de-luta-saffron.png",
+      "original_sha256": "b8b36e1a42ce94360e8736b0c1dc2bb2494b6cba2f40013e1c80d221dfcb2eda",
+      "image": "assets/ui/kanto-approved-maps/kanto/fighting-dojo.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 267292,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "aa551e14fbcbf7b29d24dd02579c826d3c409fa990cbbc632af8dd01614fa502"
+    },
+    {
+      "index": 35,
+      "id": "gym-sabrina",
+      "name": "Ginasio Psiquico Sabrina",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "ginasio_psiquico_sabrina_corrigido.png",
+      "original_archive_path": "mapas_aprovados/33_ginasio-psiquico-sabrina.png",
+      "original_sha256": "20cb7a998302f1426d8f8e559ed9d6d4c544e21632848992d1d035196823c838",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-sabrina.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 260380,
+      "min_story_flags": [
+        "rocket-silph-resolved"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "8efb4f3e8d5058c6510300198473b37a64a8d327b600fe12d2f44270caac000e"
+    },
+    {
+      "index": 36,
+      "id": "routes-19-20",
+      "name": "Rotas 19 e 20 agrupadas",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "rotas_19_e_20_ilhas_seafoam.png",
+      "original_archive_path": "mapas_aprovados/34_rotas-19-e-20-agrupadas.png",
+      "original_sha256": "8ac69282ef5fbc069cd65885753b57c661134810da2ae581d463efc081792743",
+      "image": "assets/ui/kanto-approved-maps/kanto/routes-19-20.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 373414,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "65e45fa4f25f0ad40cf3271cfdc66a890670947df00322d6038e9c86c15e4907"
+    },
+    {
+      "index": 37,
+      "id": "seafoam-islands",
+      "name": "Ilhas Seafoam interior",
+      "group": "kanto",
+      "type": "caverna",
+      "original_source": "a_detailed_colorful_pixel_art_game_map_illustrati.png",
+      "original_archive_path": "mapas_aprovados/36_ilhas-seafoam-interior.png",
+      "original_sha256": "980553c7b9449c12896bbc31094f726b645e7ec998485a46b5009dce2bfeb41f",
+      "image": "assets/ui/kanto-approved-maps/kanto/seafoam-islands.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 380716,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "90a7275c36ab4609ea36eed41df5bd0c9453d5d8181031211463e4e14cf1d3d3"
+    },
+    {
+      "index": 38,
+      "id": "cinnabar-island",
+      "name": "Cinnabar Island versao aprovada",
+      "group": "kanto",
+      "type": "cidade",
+      "original_source": "a_vibrant_detailed_pixel_art_isometric_top_down_g.png",
+      "original_archive_path": "mapas_aprovados/37_cinnabar-island-versao-aprovada.png",
+      "original_sha256": "fcd8dfa0661c2e09c89e28ea7bb0df90ee0748643b05521a237bf7c0c78a3f22",
+      "image": "assets/ui/kanto-approved-maps/kanto/cinnabar-island.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 392386,
+      "min_story_flags": [],
+      "hotspots": [
+        {
+          "id": "mansion",
+          "cx": 0.24,
+          "cy": 0.21,
+          "w": 0.32,
+          "h": 0.35,
+          "validated": "visual"
+        },
+        {
+          "id": "gym",
+          "cx": 0.74,
+          "cy": 0.22,
+          "w": 0.27,
+          "h": 0.37,
+          "validated": "visual"
+        },
+        {
+          "id": "lab",
+          "cx": 0.19,
+          "cy": 0.69,
+          "w": 0.22,
+          "h": 0.32,
+          "validated": "visual"
+        },
+        {
+          "id": "center",
+          "cx": 0.46,
+          "cy": 0.69,
+          "w": 0.16,
+          "h": 0.24,
+          "validated": "visual"
+        },
+        {
+          "id": "mart",
+          "cx": 0.65,
+          "cy": 0.69,
+          "w": 0.18,
+          "h": 0.23,
+          "validated": "visual"
+        },
+        {
+          "id": "route20",
+          "cx": 0.94,
+          "cy": 0.46,
+          "w": 0.12,
+          "h": 0.11,
+          "validated": "visual"
+        },
+        {
+          "id": "route21",
+          "cx": 0.48,
+          "cy": 0.04,
+          "w": 0.14,
+          "h": 0.08,
+          "validated": "visual"
+        }
+      ],
+      "hotspots_status": "partial-validated",
+      "approved": true,
+      "optimized_sha256": "edd8efa50be319802f6e1a56ffa65da6a8099ec57608d06ec550ca6d60450096"
+    },
+    {
+      "index": 39,
+      "id": "pokemon-mansion",
+      "name": "Mansao Pokemon Cinnabar",
+      "group": "kanto",
+      "type": "interior",
+      "original_source": "a_detailed_vibrant_pixel_art_top_down_game_map_1.png",
+      "original_archive_path": "mapas_aprovados/38_mansao-pokemon-cinnabar.png",
+      "original_sha256": "017858ea7673969dd9d8c52a0824548aca6d2b911634f5ec9ccb557fade2a16d",
+      "image": "assets/ui/kanto-approved-maps/kanto/pokemon-mansion.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 355020,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "259966577dfc008897839acf439613b2e5a0339f62516c914485ff9fd731d9bf"
+    },
+    {
+      "index": 40,
+      "id": "gym-blaine",
+      "name": "Ginasio Fogo vazio sem Blaine Arcanine",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "a_detailed_pixel_art_game_map_scene_the_same_g.png",
+      "original_archive_path": "mapas_aprovados/39_ginasio-fogo-vazio-sem-blaine-arcanine.png",
+      "original_sha256": "faa979670ad1d3cdffadb93d7ad34c788e976ac198699aee43e6d5fe35b05105",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-blaine.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 1458870,
+      "min_story_flags": [
+        "mansion-secret-key"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "2dcb4dd41050cd7246542a7a1cef8da8ace184899749aa870d23a1299b7032f7"
+    },
+    {
+      "index": 41,
+      "id": "route-21",
+      "name": "Rota 21",
+      "group": "kanto",
+      "type": "rota",
+      "original_source": "a_vibrant_detailed_pixel_art_rpg_map_top_down_ov.png",
+      "original_archive_path": "mapas_aprovados/40_rota-21.png",
+      "original_sha256": "97d25b2f601215f599a2fd0745ad2bd8c40f9f355014b159adf3a60c28c26e48",
+      "image": "assets/ui/kanto-approved-maps/kanto/route-21.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 399984,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "94cd6d0bf0c4b01f870f545937ee6499f6fe620a653ab32df26445dec770247c"
+    },
+    {
+      "index": 42,
+      "id": "gym-giovanni",
+      "name": "Ginasio Terra Giovanni",
+      "group": "kanto",
+      "type": "ginasio",
+      "original_source": "a_detailed_pixel_art_game_map_scene_a_vibrant_hi.png",
+      "original_archive_path": "mapas_aprovados/41_ginasio-terra-giovanni.png",
+      "original_sha256": "79360dfd64e070836a738c4f9e6601aaa590a089127f1a309527b851275946f9",
+      "image": "assets/ui/kanto-approved-maps/kanto/gym-giovanni.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 1352300,
+      "min_story_flags": [
+        "badges:7"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "67848b20f7275090380396085ffb02f58d15bca17473392d09fa19d18cf04b10"
+    },
+    {
+      "index": 43,
+      "id": "routes-22-23",
+      "name": "Rotas 22 e 23 agrupadas",
+      "group": "liga",
+      "type": "rota",
+      "original_source": "a_highly_detailed_vibrant_pixel_art_rpg_map_scene.png",
+      "original_archive_path": "mapas_aprovados/42_rotas-22-e-23-agrupadas.png",
+      "original_sha256": "eeec1ca124d8de58e7f346725446b2eb9b30b13a49cb477e70cb2ac6826680ee",
+      "image": "assets/ui/kanto-approved-maps/liga/routes-22-23.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 489160,
+      "min_story_flags": [
+        "badges:8"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "95c4d84650622922d1a7f9e487897d59494546031da7c1b563029c3b3ed3f554"
+    },
+    {
+      "index": 44,
+      "id": "victory-road",
+      "name": "Victory Road interior",
+      "group": "liga",
+      "type": "caverna",
+      "original_source": "a_highly_detailed_colorful_pixel_art_rpg_map_in_t.png",
+      "original_archive_path": "mapas_aprovados/43_victory-road-interior.png",
+      "original_sha256": "3acb36cc39bc3f1867283f27c5d62374ef0f14d1c15f80771db9271961848586",
+      "image": "assets/ui/kanto-approved-maps/liga/victory-road.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 403436,
+      "min_story_flags": [
+        "badges:8"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "89de3c5e25bbf3af2bf43cc2f7c96d7530e95e0e47045e8959ed3d67e948f2b6"
+    },
+    {
+      "index": 45,
+      "id": "indigo-plateau",
+      "name": "Planalto Indigo",
+      "group": "liga",
+      "type": "liga",
+      "original_source": "a_highly_detailed_pixel_art_rpg_map_scene_top_dow.png",
+      "original_archive_path": "mapas_aprovados/44_planalto-indigo.png",
+      "original_sha256": "1e34bd6d683344ebe9f31422b66146f3d21bc51869e8b6a96baff41a3feae930",
+      "image": "assets/ui/kanto-approved-maps/liga/indigo-plateau.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 389832,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "9ea93380d8aff3ae76929abf3f0d4f125259c2ff77549c2726ba2be21aad41fb"
+    },
+    {
+      "index": 46,
+      "id": "elite-four-rooms",
+      "name": "Salas da Elite Four sem lideres",
+      "group": "liga",
+      "type": "liga",
+      "original_source": "salões_vazios_da_liga_pokémon.png",
+      "original_archive_path": "mapas_aprovados/45_salas-da-elite-four-sem-lideres.png",
+      "original_sha256": "fdd1780f78d96c9d778b8d32ee1a74552e6956fa926f92105480006065dbd4f2",
+      "image": "assets/ui/kanto-approved-maps/liga/elite-four-rooms.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 242678,
+      "min_story_flags": [
+        "badges:8"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "316175a8b07f317bc8dd46b7c284e83d9d2f8c5480a24b786df7f50137822c9e"
+    },
+    {
+      "index": 47,
+      "id": "hall-of-fame",
+      "name": "Sala da Fama",
+      "group": "liga",
+      "type": "liga",
+      "original_source": "salão_da_fama_pokémon_em_pixel_art.png",
+      "original_archive_path": "mapas_aprovados/46_sala-da-fama.png",
+      "original_sha256": "4995bd9b293620ea5a640ce2a252a14b256561b5e9e50e1ab10572fbed564a10",
+      "image": "assets/ui/kanto-approved-maps/liga/hall-of-fame.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 225956,
+      "min_story_flags": [
+        "champion-win"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "f30e3a3ceda1f759308cd3f3c97e45954e4d9820f1050062280558cd079bff4b"
+    },
+    {
+      "index": 48,
+      "id": "sevii-1",
+      "name": "Ilha 1 Sevii",
+      "group": "sevii",
+      "type": "cidade",
+      "original_source": "a_vibrant_highly_detailed_pixel_art_top_down_rpg.png",
+      "original_archive_path": "mapas_aprovados/47_ilha-1-sevii.png",
+      "original_sha256": "b31396e491e6242e68aec1e4a0285f5751f24c88facae964c9a50bb003db86fa",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevii-1.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 411198,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "d09174b65b2c216feed8a39da13d651019a70c79e7bdbad5ee417fc4e25524dc"
+    },
+    {
+      "index": 49,
+      "id": "mt-ember",
+      "name": "Monte Ember",
+      "group": "sevii",
+      "type": "caverna",
+      "original_source": "a_highly_detailed_vibrant_pixel_art_rpg_map_in_16.png",
+      "original_archive_path": "mapas_aprovados/48_monte-ember.png",
+      "original_sha256": "eddd27580af9f9c88ab29d39171f1752f1a23274a12551e22391098b23709c3a",
+      "image": "assets/ui/kanto-approved-maps/sevii/mt-ember.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 399626,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "deef40690583338d2166f35f0438594490f6766f32d5551343dbd003351f0f9a"
+    },
+    {
+      "index": 50,
+      "id": "sevii-2",
+      "name": "Ilha 2 Sevii",
+      "group": "sevii",
+      "type": "cidade",
+      "original_source": "a_highly_detailed_pixel_art_game_map_scene_pokémo.png",
+      "original_archive_path": "mapas_aprovados/49_ilha-2-sevii.png",
+      "original_sha256": "d3e964a67a1753e31bcf023062f3ad9b121412ca0110579b2930227d30b9e744",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevii-2.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 453834,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "b71095f0b3d95b1e6362c0f5e80c54c2cfab6b9649679000330fbcf1d81c849a"
+    },
+    {
+      "index": 51,
+      "id": "sevii-3",
+      "name": "Ilha 3 Sevii (imagem original recuperada)",
+      "group": "sevii",
+      "type": "cidade",
+      "original_source": "recovered/ilha_3_sevii_aprovada.png",
+      "original_archive_path": "mapas_aprovados/50_ilha-3-sevii.png",
+      "original_sha256": "bff4ee202d09fb21114c1323403f254df0691d31fcfccf07b292e1ec781fa414",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevii-3.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 418954,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "edbc174e0fed8f9330ad742ccdbbbfd1638b2b50b6d24848827deea38b74f9f0"
+    },
+    {
+      "index": 52,
+      "id": "sevii-4",
+      "name": "Ilha 4 Sevii",
+      "group": "sevii",
+      "type": "cidade",
+      "original_source": "a_vibrant_pixel_art_game_map_scene_in_the_style_of.png",
+      "original_archive_path": "mapas_aprovados/51_ilha-4-sevii.png",
+      "original_sha256": "bea3999c5e2e133742b4d420ae1b40db5fe1b86bcf55ab7e39aec94dcbea33bd",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevii-4.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 432914,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "7b4bb98b0fcf8e00b5d252cf167075e2eec6456e09c3c72fc0d052bfd2cee9a7"
+    },
+    {
+      "index": 53,
+      "id": "icefall-cave",
+      "name": "Caverna Icefall",
+      "group": "sevii",
+      "type": "caverna",
+      "original_source": "a_highly_detailed_pixel_art_rpg_map_scene_in_16_9.png",
+      "original_archive_path": "mapas_aprovados/52_caverna-icefall.png",
+      "original_sha256": "37bbba3977ff694c2b399395ce9c6e237618c037276b7e28cc22eba85ca041fd",
+      "image": "assets/ui/kanto-approved-maps/sevii/icefall-cave.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 369786,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "8e2915ac36c0191ac3994bbf8ef0b1b89c9ccf6e4502e6b17b528b0ef7c003b4"
+    },
+    {
+      "index": 54,
+      "id": "sevii-5",
+      "name": "Ilha 5 Sevii",
+      "group": "sevii",
+      "type": "cidade",
+      "original_source": "a_highly_detailed_colorful_pixel_art_map_scene_t.png",
+      "original_archive_path": "mapas_aprovados/53_ilha-5-sevii.png",
+      "original_sha256": "e288d0ddc690208b465f3022b4dd517f4304c8cec7b964171dc99761b03546c8",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevii-5.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 451766,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "5491395e80c7ccb46879be2b06aae5fc03fec7dd8a08215437c10d9c0e22c55c"
+    },
+    {
+      "index": 55,
+      "id": "rocket-warehouse",
+      "name": "Deposito Rocket Ilha 5",
+      "group": "sevii",
+      "type": "interior",
+      "original_source": "a_detailed_vibrant_pixel_art_video_game_map_scene.png",
+      "original_archive_path": "mapas_aprovados/54_deposito-rocket-ilha-5.png",
+      "original_sha256": "b9590fd185645d70d2018d251268a626103ad6cb687f79b3b87b25f7499fa4ea",
+      "image": "assets/ui/kanto-approved-maps/sevii/rocket-warehouse.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 299926,
+      "min_story_flags": [
+        "rocket-passwords"
+      ],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "778d63069cdbfc9f0da2cab6cd68e17f4ea6df9ec967f3326f336ea28cca322a"
+    },
+    {
+      "index": 56,
+      "id": "sevii-6",
+      "name": "Ilha 6 Sevii",
+      "group": "sevii",
+      "type": "cidade",
+      "original_source": "a_highly_detailed_pixel_art_16_bit_style_overhea.png",
+      "original_archive_path": "mapas_aprovados/55_ilha-6-sevii.png",
+      "original_sha256": "2987b46f9784fdc03a3ff071ec6908b068670bb6ead8898b4e9f98f3d1bdb6c3",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevii-6.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 445098,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "6d28e6bfe75d93322f463736c3a6d37b982e8c87d4e8a1526639e58510f99360"
+    },
+    {
+      "index": 57,
+      "id": "sevii-7",
+      "name": "Ilha 7 Sevii",
+      "group": "sevii",
+      "type": "cidade",
+      "original_source": "a_vibrant_highly_detailed_pixel_art_game_map_in_t.png",
+      "original_archive_path": "mapas_aprovados/56_ilha-7-sevii.png",
+      "original_sha256": "d5e2cfb7535846a6c492a2d45da9b294d67cdb035f810f32b0f81839b49e7e49",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevii-7.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 1807322,
+      "min_story_flags": [],
+      "hotspots": [
+        {
+          "id": "tower",
+          "cx": 0.5,
+          "cy": 0.13,
+          "w": 0.26,
+          "h": 0.26,
+          "validated": "visual"
+        },
+        {
+          "id": "center",
+          "cx": 0.38,
+          "cy": 0.4,
+          "w": 0.19,
+          "h": 0.21,
+          "validated": "visual"
+        },
+        {
+          "id": "mart",
+          "cx": 0.56,
+          "cy": 0.47,
+          "w": 0.13,
+          "h": 0.18,
+          "validated": "visual"
+        },
+        {
+          "id": "port",
+          "cx": 0.81,
+          "cy": 0.56,
+          "w": 0.22,
+          "h": 0.21,
+          "validated": "visual"
+        },
+        {
+          "id": "canyon",
+          "cx": 0.48,
+          "cy": 0.79,
+          "w": 0.19,
+          "h": 0.18,
+          "validated": "visual"
+        }
+      ],
+      "hotspots_status": "partial-validated",
+      "approved": true,
+      "optimized_sha256": "073dc37fc234ae7a3dc97f894f86a0921a019f7e8b84ca0c7e47b56560fc79b8"
+    },
+    {
+      "index": 58,
+      "id": "sevault-canyon",
+      "name": "Canion Sevault",
+      "group": "sevii",
+      "type": "caverna",
+      "original_source": "a_vibrant_detailed_pixel_art_top_down_3_quarter_r.png",
+      "original_archive_path": "mapas_aprovados/57_canion-sevault.png",
+      "original_sha256": "33f49d99bb440514a7577bec429f30ab3cc1318b06cbc031715bcd18c311743b",
+      "image": "assets/ui/kanto-approved-maps/sevii/sevault-canyon.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 463922,
+      "min_story_flags": [],
+      "hotspots": [],
+      "hotspots_status": "requires-hotspot-audit",
+      "approved": true,
+      "optimized_sha256": "c669012314935218e3006c87cd9d07cf95654895880ab969ee6beda6498d219b"
+    },
+    {
+      "index": 59,
+      "id": "tanoby-ruins",
+      "name": "Ruinas Tanoby",
+      "group": "sevii",
+      "type": "caverna",
+      "original_source": "a_vibrant_detailed_16_9_pixel_art_isometric_overh.png",
+      "original_archive_path": "mapas_aprovados/58_ruinas-tanoby.png",
+      "original_sha256": "10fe18f9143c407a5af24bf9b72b07661fba1c46c30b93e475b9cbd65a119df1",
+      "image": "assets/ui/kanto-approved-maps/sevii/tanoby-ruins.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 465062,
+      "min_story_flags": [
+        "tanoby-key"
+      ],
+      "hotspots": [
+        {
+          "id": "viapois",
+          "cx": 0.13,
+          "cy": 0.4,
+          "w": 0.16,
+          "h": 0.21,
+          "validated": "visual"
+        },
+        {
+          "id": "rixy",
+          "cx": 0.35,
+          "cy": 0.43,
+          "w": 0.16,
+          "h": 0.22,
+          "validated": "visual"
+        },
+        {
+          "id": "scufib",
+          "cx": 0.15,
+          "cy": 0.75,
+          "w": 0.16,
+          "h": 0.25,
+          "validated": "visual"
+        },
+        {
+          "id": "dilford",
+          "cx": 0.39,
+          "cy": 0.77,
+          "w": 0.16,
+          "h": 0.24,
+          "validated": "visual"
+        },
+        {
+          "id": "weepth",
+          "cx": 0.69,
+          "cy": 0.43,
+          "w": 0.17,
+          "h": 0.26,
+          "validated": "visual"
+        },
+        {
+          "id": "liptoo",
+          "cx": 0.66,
+          "cy": 0.77,
+          "w": 0.16,
+          "h": 0.24,
+          "validated": "visual"
+        },
+        {
+          "id": "monean",
+          "cx": 0.89,
+          "cy": 0.63,
+          "w": 0.16,
+          "h": 0.23,
+          "validated": "visual"
+        },
+        {
+          "id": "exit",
+          "cx": 0.5,
+          "cy": 0.12,
+          "w": 0.2,
+          "h": 0.2,
+          "validated": "visual"
+        }
+      ],
+      "hotspots_status": "partial-validated",
+      "approved": true,
+      "optimized_sha256": "2001ffd8be06b81e1651ef298842036cbdfd70e6c6f587aefdd529d64176782a"
+    },
+    {
+      "index": 60,
+      "id": "trainer-tower",
+      "name": "Torre dos Treinadores interior",
+      "group": "sevii",
+      "type": "liga",
+      "original_source": "a_highly_detailed_colorful_pixel_art_game_scene.png",
+      "original_archive_path": "mapas_aprovados/59_torre-dos-treinadores-interior.png",
+      "original_sha256": "3086f1ae97a9d217382fa12afe7b33425b9e3f39f75b36a61728632fff670374",
+      "image": "assets/ui/kanto-approved-maps/sevii/trainer-tower.webp",
+      "image_width": 1280,
+      "image_height": 720,
+      "bytes": 351512,
+      "min_story_flags": [],
+      "hotspots": [
+        {
+          "id": "battle-1",
+          "cx": 0.26,
+          "cy": 0.77,
+          "w": 0.21,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "battle-2",
+          "cx": 0.26,
+          "cy": 0.65,
+          "w": 0.21,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "battle-3",
+          "cx": 0.28,
+          "cy": 0.48,
+          "w": 0.2,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "battle-4",
+          "cx": 0.28,
+          "cy": 0.35,
+          "w": 0.2,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "battle-5",
+          "cx": 0.75,
+          "cy": 0.78,
+          "w": 0.2,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "battle-6",
+          "cx": 0.75,
+          "cy": 0.63,
+          "w": 0.2,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "battle-7",
+          "cx": 0.75,
+          "cy": 0.48,
+          "w": 0.2,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "battle-8",
+          "cx": 0.75,
+          "cy": 0.34,
+          "w": 0.2,
+          "h": 0.14,
+          "validated": "visual"
+        },
+        {
+          "id": "final",
+          "cx": 0.51,
+          "cy": 0.17,
+          "w": 0.18,
+          "h": 0.21,
+          "validated": "visual"
+        },
+        {
+          "id": "exit",
+          "cx": 0.5,
+          "cy": 0.9,
+          "w": 0.18,
+          "h": 0.16,
+          "validated": "visual"
+        }
+      ],
+      "hotspots_status": "partial-validated",
+      "approved": true,
+      "optimized_sha256": "047a2003cd2d95247bfbcd298212087211aed65b5eaeb6c402459199750fb6a5"
+    }
+  ],
+  "edges": [
+    [
+      "route-2",
+      "pewter-city"
+    ],
+    [
+      "pewter-city",
+      "gym-brock"
+    ],
+    [
+      "pewter-city",
+      "route-3"
+    ],
+    [
+      "route-3",
+      "route-4-west"
+    ],
+    [
+      "route-4-west",
+      "mt-moon"
+    ],
+    [
+      "mt-moon",
+      "route-4-east"
+    ],
+    [
+      "route-4-east",
+      "cerulean-city"
+    ],
+    [
+      "cerulean-city",
+      "gym-misty"
+    ],
+    [
+      "cerulean-city",
+      "route-24"
+    ],
+    [
+      "route-24",
+      "route-25"
+    ],
+    [
+      "cerulean-city",
+      "route-5"
+    ],
+    [
+      "route-5",
+      "underground-5-6"
+    ],
+    [
+      "underground-5-6",
+      "route-6"
+    ],
+    [
+      "route-6",
+      "vermilion-city"
+    ],
+    [
+      "vermilion-city",
+      "ss-anne"
+    ],
+    [
+      "vermilion-city",
+      "gym-surge"
+    ],
+    [
+      "vermilion-city",
+      "route-11"
+    ],
+    [
+      "cerulean-city",
+      "routes-9-10"
+    ],
+    [
+      "routes-9-10",
+      "lavender-town"
+    ],
+    [
+      "lavender-town",
+      "pokemon-tower"
+    ],
+    [
+      "lavender-town",
+      "routes-7-8"
+    ],
+    [
+      "routes-7-8",
+      "celadon-city"
+    ],
+    [
+      "celadon-city",
+      "gym-erika"
+    ],
+    [
+      "celadon-city",
+      "rocket-hideout"
+    ],
+    [
+      "lavender-town",
+      "routes-12-15"
+    ],
+    [
+      "routes-12-15",
+      "fuchsia-city"
+    ],
+    [
+      "fuchsia-city",
+      "gym-koga"
+    ],
+    [
+      "fuchsia-city",
+      "safari-zone"
+    ],
+    [
+      "celadon-city",
+      "routes-16-18"
+    ],
+    [
+      "routes-16-18",
+      "fuchsia-city"
+    ],
+    [
+      "celadon-city",
+      "saffron-city"
+    ],
+    [
+      "saffron-city",
+      "silph-co"
+    ],
+    [
+      "saffron-city",
+      "fighting-dojo"
+    ],
+    [
+      "saffron-city",
+      "gym-sabrina"
+    ],
+    [
+      "fuchsia-city",
+      "routes-19-20"
+    ],
+    [
+      "routes-19-20",
+      "seafoam-islands"
+    ],
+    [
+      "seafoam-islands",
+      "cinnabar-island"
+    ],
+    [
+      "cinnabar-island",
+      "pokemon-mansion"
+    ],
+    [
+      "cinnabar-island",
+      "gym-blaine"
+    ],
+    [
+      "cinnabar-island",
+      "route-21"
+    ],
+    [
+      "route-21",
+      "gym-giovanni"
+    ],
+    [
+      "gym-giovanni",
+      "routes-22-23"
+    ],
+    [
+      "routes-22-23",
+      "victory-road"
+    ],
+    [
+      "victory-road",
+      "indigo-plateau"
+    ],
+    [
+      "indigo-plateau",
+      "elite-four-rooms"
+    ],
+    [
+      "elite-four-rooms",
+      "hall-of-fame"
+    ],
+    [
+      "hall-of-fame",
+      "sevii-1"
+    ],
+    [
+      "sevii-1",
+      "mt-ember"
+    ],
+    [
+      "sevii-1",
+      "sevii-2"
+    ],
+    [
+      "sevii-2",
+      "sevii-3"
+    ],
+    [
+      "sevii-3",
+      "sevii-4"
+    ],
+    [
+      "sevii-4",
+      "icefall-cave"
+    ],
+    [
+      "sevii-4",
+      "sevii-5"
+    ],
+    [
+      "sevii-5",
+      "rocket-warehouse"
+    ],
+    [
+      "sevii-5",
+      "sevii-6"
+    ],
+    [
+      "sevii-6",
+      "sevii-7"
+    ],
+    [
+      "sevii-7",
+      "sevault-canyon"
+    ],
+    [
+      "sevault-canyon",
+      "tanoby-ruins"
+    ],
+    [
+      "sevii-7",
+      "trainer-tower"
+    ]
+  ],
+  "derivative_of_archive_sha256": "572e35cc530cf25e1c0551953a0f59034e5ed53d33cac09e1b0fd5b3f288e21c",
+  "normalization": "five 1280x721 scenes: one peripheral border row removed; lossless WebP derivative; originals remain in source ZIP"
+}
