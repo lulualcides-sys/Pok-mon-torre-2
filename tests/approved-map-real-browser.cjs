@@ -127,7 +127,8 @@ const server=http.createServer(async(req,res)=>{
      const trainers=scene.children.list.filter(x=>x.active&&
       String(x.getData?.('torre2-gym-trainer-sprite')||'').startsWith(id+':'))
       .map(x=>({texture:x.texture?.key,kind:x.getData('torre2-gym-trainer-kind'),
-       x:x.x,y:x.y}));
+       frameWidth:x.frame?.width,frameHeight:x.frame?.height,
+       displayHeight:x.displayHeight,x:x.x,y:x.y}));
      return {id,texture:view.image.texture.key,hotspots:view.zones.length,
       rect:view.rect,aces,leaders,trainers,fps:game.loop.actualFps,stage:state.stage};
     },id);
@@ -147,6 +148,11 @@ const server=http.createServer(async(req,res)=>{
       'frlg-npc-tuber_m_land','frlg-npc-tuber_f'
      ],'T77 all subchiefs must be aquatic FRLG overworld sprites (no camper)');
      assert.equal(new Set(info.trainers.map(t=>t.texture)).size,4);
+     assert.deepEqual(info.trainers.map(t=>t.frameHeight),[32,32,16,16],
+      'T77 authentic FireRed frame geometry: adults 16x32, children 16x16');
+     assert.ok(info.trainers.every(t=>t.frameWidth===16));
+     assert.ok(info.trainers[2].displayHeight<info.trainers[0].displayHeight,
+      'T77 child Tuber must remain visibly smaller than adult swimmer');
     }
     const filename='approved-'+id+'-'+mode.name+'.png';
     await page.screenshot({path:path.join(out,filename),fullPage:true,animations:'disabled'});
