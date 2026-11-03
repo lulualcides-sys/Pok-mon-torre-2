@@ -427,6 +427,9 @@ test('T50 image-backed Kanto must begin at Pallet; Route 22 is optional',()=>{
  assert.equal(openingTravelAllowed('pallet-town','pewter-city',findMap,neighbors),false);
  assert.equal(openingTravelAllowed('viridian-city','route-22',findMap,neighbors),false);
  assert.equal(openingTravelAllowed('viridian-city','route-2',findMap,neighbors),true);
+ assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors),false);
+ assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors,true),true);
+ assert.equal(openingTravelAllowed('pewter-city','gym-brock',findMap,neighbors),false);
  const removed=destinations.get('route-2:exit-viridian-forest');
  destinations.delete('route-2:exit-viridian-forest');
  assert.deepEqual(missingApprovedOpeningConnections(findMap,hotspotResolver,destination,neighbors),
@@ -486,5 +489,6 @@ test('T53 stage-zero browser code cannot substitute catalog indices for route ad
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(source.includes('firstApprovedHotspots,firstApprovedDestination,approvedMapNeighbours)'));
  assert.ok(source.includes('if(s===0)return !!APPROVED_STAGE_MAPS[0]&&'));
- assert.ok(source.includes('openingTravelAllowed(_src,target,approvedMap,approvedMapNeighbours)'));
+ assert.ok(source.includes('openingTravelAllowed(_src,target,approvedMap,approvedMapNeighbours,'));
+ assert.ok(source.includes('state.trainer>=TRAINERS_PER_GYM(0)-3'));
 });
