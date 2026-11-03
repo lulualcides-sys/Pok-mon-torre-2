@@ -23,6 +23,25 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('challenge',.502,.237,.19,.16),
   v('exit',.500,.921,.20,.11)
  ]),
+ // Four consecutive ORIGINAL images from the 60-map approved atlas.
+ // Touch only painted street signs/existing cave entrances. No new map art.
+ 'route-3':Object.freeze([
+  v('pewter',.070,.486,.132,.132),
+  v('route4',.927,.485,.135,.130)
+ ]),
+ 'route-4-west':Object.freeze([
+  v('center',.295,.368,.145,.142),
+  v('route3',.499,.913,.182,.133),
+  v('moon',.749,.390,.163,.155)
+ ]),
+ 'mt-moon':Object.freeze([
+  v('entrance',.101,.917,.165,.141),
+  v('exit',.925,.081,.148,.143)
+ ]),
+ 'route-4-east':Object.freeze([
+  v('moon',.073,.489,.135,.135),
+  v('cerulean',.919,.394,.152,.145)
+ ]),
  'cerulean-city':Object.freeze([
   v('center',.290,.369,.11,.14),
   v('mart',.495,.359,.10,.13),
@@ -94,6 +113,16 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'route-2':Object.freeze({pewter:'pewter-city'}),
  'pewter-city':Object.freeze({route2:'route-2',route3:'route-3',gym:'gym-brock'}),
  'gym-brock':Object.freeze({exit:'pewter-city'}),
+ 'route-3':Object.freeze({pewter:'pewter-city',route4:'route-4-west'}),
+ 'route-4-west':Object.freeze({
+  route3:'route-3',moon:'mt-moon'
+ }),
+ 'mt-moon':Object.freeze({
+  entrance:'route-4-west',exit:'route-4-east'
+ }),
+ 'route-4-east':Object.freeze({
+  moon:'mt-moon',cerulean:'cerulean-city'
+ }),
  'cerulean-city':Object.freeze({route4:'route-4-east',route24:'route-24',
    route5:'route-5',route9:'routes-9-10',gym:'gym-misty'}),
  'gym-misty':Object.freeze({exit:'cerulean-city'}),

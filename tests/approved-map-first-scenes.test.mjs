@@ -411,7 +411,7 @@ test('T50 image-backed Kanto must begin at Pallet; Route 22 is optional',()=>{
 
 test('T50 no stage-0 Pewter shortcut, no premature texture load or map button',()=>{
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city'"));
+ assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'route-3'"));
  assert.ok(source.includes('if(openingMap)preloadApprovedMap(this,openingMap)'));
  assert.ok(source.includes('if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false'));
  assert.ok(source.includes('APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS[state.stage]?'));
@@ -452,4 +452,62 @@ test('T52 approved Route 2 preserves its original north/south sign positions',()
  }
  assert.deepEqual(calls,['route-2:pewter','route-2:forest']);
  assert.equal(zones.some(z=>String(z.data?.value||'').includes('diglett')),false);
+});
+
+test('T61 approved 60-map story flows Pewter through Route 3, Mt Moon, Route 4 to Cerulean',()=>{
+ const chain=['pewter-city','route-3','route-4-west','mt-moon',
+  'route-4-east','cerulean-city'];
+ assert.deepEqual(chain.map(id=>approvedMap(id)?.index),[2,4,5,6,7,8]);
+ const expected=[
+  ['route-3','pewter','pewter-city'],
+  ['route-3','route4','route-4-west'],
+  ['route-4-west','route3','route-3'],
+  ['route-4-west','moon','mt-moon'],
+  ['mt-moon','entrance','route-4-west'],
+  ['mt-moon','exit','route-4-east'],
+  ['route-4-east','moon','mt-moon'],
+  ['route-4-east','cerulean','cerulean-city']
+ ];
+ for(const [from,sign,to] of expected){
+  assert.equal(firstApprovedDestination(from,sign),to);
+  assert.ok(approvedMapNeighbours(from).includes(to),from+'->'+to);
+  assert.ok(approvedMapNeighbours(to).includes(from),to+'->'+from);
+ }
+ const stage1=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(stage1.includes("'route-3','vermilion-city'"));
+ assert.ok(stage1.includes('const APPROVED_STAGE_MAX=[3,9,18'));
+ assert.equal(firstApprovedDestination('route-4-east','mega-punch'),null);
+ assert.equal(firstApprovedDestination('route-4-east','mega-kick'),null);
+ assert.equal(firstApprovedDestination('mt-moon','dome'),null);
+ assert.equal(firstApprovedDestination('mt-moon','helix'),null);
+});
+test('T61 source-verified route/cave sign hotspots pass renderer preflight and native clicking',()=>{
+ const expected={
+  'route-3': ['pewter','route4'],
+  'route-4-west': ['center','route3','moon'],
+  'mt-moon': ['entrance','exit'],
+  'route-4-east': ['moon','cerulean']
+ };
+ for(const [id,hotspotIds] of Object.entries(expected)){
+  const entry=approvedMap(id),hotspots=firstApprovedHotspots(entry);
+  assert.ok(entry&&hasFirstApprovedHotspots(id));
+  assert.deepEqual(hotspots.map(h=>h.id),hotspotIds);
+  const plan=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+  assert.equal(plan.ok,true,JSON.stringify({id,plan}));
+  assert.equal(plan.hotspots.length,hotspotIds.length);
+  const {scene,zones}=fakeScene(),hits=[];
+  const view=renderApprovedMap(scene,id,{
+   resolveHotspots:firstApprovedHotspots,artNavigation:true,
+   isUnlocked:()=>true,onHotspot:(from,k)=>hits.push(from+':'+k)
+  });
+  assert.equal(view.ok,true,id);
+  for(const label of hotspotIds){
+   const zone=zones.find(z=>z.data?.value===id+':'+label);
+   assert.ok(zone,id+':'+label);
+   let stopped=false;
+   zone.pointerdown(null,0,0,{stopPropagation(){stopped=true;}});
+   assert.equal(stopped,true);
+  }
+  assert.deepEqual(hits,hotspotIds.map(k=>id+':'+k));
+ }
 });
