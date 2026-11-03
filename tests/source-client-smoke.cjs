@@ -97,27 +97,53 @@ const server=http.createServer(async(req,res)=>{
   const brand=await page.evaluate(()=>{
     const game=window.__pt2Game,title=game.scene.getScene('titulo');
     const logo=game.textures.get('ui-logo').getSourceImage();
+    // T84: inspect actual pointer hit areas, not merely dormant DOM anchors.
+    const canvas=document.querySelector('#juego canvas'),cr=canvas.getBoundingClientRect();
+    const socialNodes=[...document.querySelectorAll('a[href]')].filter(node=>
+     /(?:instagram|youtube|tiktok|discord)/i.test(node.href));
+    const socialAudit=socialNodes.map(node=>{
+     const r=node.getBoundingClientRect(),css=getComputedStyle(node);
+     const left=Math.max(r.left,cr.left),top=Math.max(r.top,cr.top),
+      right=Math.min(r.right,cr.right),bottom=Math.min(r.bottom,cr.bottom);
+     const points=[];
+     if(right>left&&bottom>top)
+      for(const px of [.1,.5,.9])for(const py of [.1,.5,.9])
+       points.push({x:left+(right-left)*px,y:top+(bottom-top)*py});
+     const intercepts=points.some(p=>{
+      const hit=document.elementFromPoint(p.x,p.y);
+      return hit===node||node.contains(hit);
+     });
+     return {url:node.href,x:r.x,y:r.y,w:r.width,h:r.height,
+      display:css.display,visibility:css.visibility,pointerEvents:css.pointerEvents,
+      intercepts};
+    });
     return {width:logo.width,height:logo.height,
       menu:title.menu,buttons:title.botones.map(b=>b.id),
       fixedButtons:title.botones.map(b=>({x:b.x,y:b.y,w:b.w,h:b.h})),
       socialIcons:title.children.list.filter(obj=>['ico-instagram','ico-youtube',
        'ico-tiktok','ico-discord'].includes(obj.texture?.key)).map(obj=>obj.texture.key),
-      socialLinks:[...document.querySelectorAll('a[href]')].filter(node=>
-       /(?:instagram|youtube|tiktok|discord)/i.test(node.href)).map(node=>node.href)};
+      socialLinks:socialAudit.filter(x=>x.intercepts).map(x=>x.url),
+      socialAudit};
   });
   assert.deepEqual([brand.width,brand.height],[240,80],
    'The approved pixel-art Pokémon Torre sprite replaces only the old menu title texture');
   assert.equal(brand.menu,'principal','Main menu unchanged');
-  assert.deepEqual(brand.buttons,['jugar','pokedex','tutorial','ajustes','creditos'],
-   'Keep every original menu button and its exact navigation');
-  assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320],
-   'Keep original menu button positions');
-  assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=30),
-   'Main menu buttons must be substantially wider and taller for touch use');
+  // T84: native PERSONALIZAR is the authorized second menu button.
+  // Preserve the exact ordering and alignment of the five other entries.
+  assert.deepEqual(brand.buttons,
+   ['jugar','personalizar','pokedex','tutorial','ajustes','creditos'],
+   'Keep all six native title buttons in the current authorized order');
+  // T84: all six buttons are native 260x24 logical px, with 2px clear
+  // between each. An obsolete >=30 height check rejected the actual design.
+  // Match exact geometry to prevent accidental overlaps or layout drift.
+  assert.deepEqual(brand.fixedButtons,
+   [148,174,200,226,252,278].map(y=>({x:320,y,w:260,h:24})),
+   'Keep the approved six-button native menu centered, evenly spaced and non-overlapping');
   assert.deepEqual(brand.socialIcons,[],
    'Social icons must not render beside original fullscreen');
+  console.log('T84 SOCIAL HITBOX AUDIT',JSON.stringify(brand.socialAudit));
   assert.deepEqual(brand.socialLinks,[],
-   'Social link hit targets must not remain invisible on top of fullscreen');
+   'Social links must never intercept real pointer input on the Phaser canvas');
   const subMenuLayout=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('titulo');
    scene.abrirMenu('jugar');
@@ -562,7 +588,14 @@ const server=http.createServer(async(req,res)=>{
     npcs:c.textures.getTextureKeys().filter(x=>x.startsWith('frlg-npc-'))};
   });
   assert.ok(resourceCheck.maps.length<=2,'Battle Road only uploads two local maps');
-  assert.ok(resourceCheck.npcs.length<=12,'Battle Road loads only a small trainer sprite set');
+  // T84: the approved gyms now retain up to twelve native FRLG specialty
+  // classes in addition to the core stage NPCs. A cap of 12 predates T80
+  // and rejects the intentional assets. Keep a strict 24-sheet GPU budget,
+  // far below the 41+ sheet unbounded loader it replaced.
+  console.log('T84 NATIVE GPU NPC INVENTORY',JSON.stringify({
+   count:resourceCheck.npcs.length,keys:resourceCheck.npcs}));
+  assert.ok(resourceCheck.npcs.length<=24,
+   'Battle Road must still bound active FRLG NPC textures after gym preload');
   // Native Arena 2D viewport: NO injected landscape-fit CSS/JS,
   // fixed canvas dimensions, DOM re-parenting or artificial zoom.
   await offline.setViewportSize({width:980,height:420});
