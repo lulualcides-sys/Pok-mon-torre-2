@@ -1,7 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
-import {approvedOpeningMapId,openingTravelAllowed} from './torre2-approved-opening.js';
+import {approvedOpeningMapId,openingTravelAllowed,openingJourneyForState,markOpeningForestVisit} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -278,6 +278,7 @@ create(){
   }
   if(!state){
    this.__torre2ApprovedReturn=null;
+   this.__torre2OpeningJourney=null;
    return this.starterSelection();
   }
   // Combat resolution must always show its native report before resuming
@@ -340,6 +341,7 @@ create(){
    this.button(x,180,166,58,id.toUpperCase(),()=>{
     try{
      saveCampaign(createPlayerCampaign(id));
+     this.__torre2OpeningJourney=null;
     }catch(error){
      console.warn('Torre 2: starter selection could not be saved',error);
      saveError.setVisible(true);
@@ -517,6 +519,8 @@ create(){
  approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]){
   if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false;
   if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
+  this.__torre2OpeningJourney=openingJourneyForState(
+   this.__torre2OpeningJourney,state);
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
    if(!entry)return false;
@@ -524,11 +528,20 @@ create(){
    // may have higher catalog indices than the original sixty assets.
    if(s===0)return !!APPROVED_STAGE_MAPS[0]&&
     openingTravelAllowed(_src,target,approvedMap,approvedMapNeighbours,
-     Number.isInteger(state.trainer)&&state.trainer>=TRAINERS_PER_GYM(0)-3);
+     Number.isInteger(state.trainer)&&state.trainer>=TRAINERS_PER_GYM(0)-3,
+     this.__torre2OpeningJourney?.forestVisited===true);
    return entry.index<=APPROVED_STAGE_MAX[s];
   };
   const open=target=>{
    if(!canTravel(id,target))return;
+   const finishNavigation=nextState=>{
+    // Record the forest only AFTER the renderer confirms that its original
+    // texture was available and the scene transition completed.
+    const shown=this.approvedMapPreview(nextState,target);
+    if(shown&&nextState?.stage===0)
+     this.__torre2OpeningJourney=markOpeningForestVisit(
+      this.__torre2OpeningJourney,id,target);
+   };
    const entry=approvedMap(target),key=mapTextureKey(target);
    if(!this.textures.exists(key)){
     if(this.load.isLoading?.())return;
@@ -546,10 +559,10 @@ create(){
        backgroundColor:'#092a40',padding:{x:5,y:4}}).setOrigin(.5).setDepth(60);
       return;
      }
-     self.approvedMapPreview(readCampaign()||state,target);
+     finishNavigation(readCampaign()||state);
     });
     this.load.start();
-   }else this.approvedMapPreview(readCampaign()||state,target);
+   }else finishNavigation(readCampaign()||state);
   };
   this.children.removeAll(true);
   const result=renderApprovedMap(this,id,{
@@ -859,7 +872,7 @@ create(){
    zone.on('pointerdown',()=>{
     if(!confirm)close(); // Cancel closes only the dialog; save stays intact.
     if(!confirm)return;
-    try{resetCampaign();}
+    try{resetCampaign();this.__torre2OpeningJourney=null;}
     catch(error){
      // Never leave a broken confirmation flow or hide a denied deletion.
      // The primary journey still exists; after core rollback, its backup
