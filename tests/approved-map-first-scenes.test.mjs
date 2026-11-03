@@ -612,7 +612,7 @@ test('T63 respects all nine original map positions and excludes shortcuts',()=>{
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(source.includes("'route-3','cerulean-city','vermilion-city'"));
  assert.ok(source.includes("'celadon-city','fuchsia-city','fuchsia-city'"));
- assert.ok(source.includes('approvedMapNeighbours(_src).includes(target)'));
+ assert.ok(source.includes('approvedMapTravelAllowed(_src,target,state)'));
 });
 test('T63 all original map hotspots are bounded, non-overlapping and clickable in Phaser',()=>{
  const expected={
@@ -713,7 +713,7 @@ test('T65 original Saffron interiors and Seafoam-to-Cinnabar coastal route have 
 test('T65 coastal stage starts at Fuchsia, does not create missing Pallet shortcut',()=>{
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(source.includes("'celadon-city','fuchsia-city','fuchsia-city'"));
- assert.ok(source.includes('approvedMapNeighbours(_src).includes(target)'));
+ assert.ok(source.includes('approvedMapTravelAllowed(_src,target,state)'));
  for(const [id,sign] of [
    ['route-21','pallet'],['route-21','viridian'],
    ['routes-19-20','cinnabar'],['silph-co','card-key'],
