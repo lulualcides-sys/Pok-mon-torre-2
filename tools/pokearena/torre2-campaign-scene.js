@@ -49,7 +49,7 @@ import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 // artwork AND its reviewed hotspots exist. Never silently start at Pewter.
 const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'route-3','cerulean-city','vermilion-city',
  'celadon-city','fuchsia-city','fuchsia-city','gym-giovanni',
- 'indigo-plateau','elite-four-rooms','elite-four-rooms','elite-four-rooms',
+ 'routes-22-23','elite-four-rooms','elite-four-rooms','elite-four-rooms',
  'elite-four-rooms','hall-of-fame'];
 const APPROVED_STAGE_MAX=[3,9,18,26,31,36,40,42,45,46,46,46,46,60];
 const APPROVED_GYMS={
@@ -515,12 +515,16 @@ create(){
  // Read-only approved-map view; no new save fields, badges or encounter indices.
  approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]){
   if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false;
+  // Also cover direct stage-entry/render paths: an edited or stale save
+  // at the last index must not reveal the Hall before a real Champion win.
+  if(id==='hall-of-fame'&&state?.champion!==true)return false;
   if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
    // Real exits only: stage cap alone cannot turn a painted sign into a
    // shortcut to a non-adjacent map.
    return !!entry&&entry.index<=APPROVED_STAGE_MAX[s]&&
+    (target!=='hall-of-fame'||state.champion===true)&&
     approvedMapNeighbours(_src).includes(target);
   };
   const open=target=>{
@@ -574,12 +578,28 @@ create(){
       (id==='gym-misty'&&fresh.stage===1)||
       (id==='gym-surge'&&fresh.stage===2)||
       (id==='gym-erika'&&fresh.stage===3)||
-      (id==='gym-koga'&&fresh.stage===4);
+      (id==='gym-koga'&&fresh.stage===4)||
+      (id==='gym-sabrina'&&fresh.stage===5)||
+      (id==='gym-blaine'&&fresh.stage===6)||
+      (id==='gym-giovanni'&&fresh.stage===7)||
+      (id==='indigo-plateau'&&fresh.stage===8);
      if(current)return this.gymScreen(fresh);
      this.add.text(320,320,'GINÁSIO FORA DA ETAPA ATUAL',{
       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffdf9f',
       backgroundColor:'#0b293d',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
      return;
+    }
+    // One original approved Elite art contains several rooms. Only the
+    // CURRENT native league chapter can open its challenge.
+    if(id==='elite-four-rooms'){
+     const eliteStage={bruno:9,agatha:10,lance:11,champion:12}[kind];
+     if(Number.isInteger(eliteStage)){
+      if(fresh.stage===eliteStage&&!fresh.champion)return this.gymScreen(fresh);
+      this.add.text(320,318,'SALA BLOQUEADA PELA PROGRESSÃO',{
+       fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffe5ac',
+       backgroundColor:'#102e43',padding:{x:6,y:4}}).setOrigin(.5).setDepth(60);
+      return;
+     }
     }
     if(kind==='gym'&&APPROVED_GYMS[id])return open(APPROVED_GYMS[id]);
     const portals={

@@ -143,6 +143,7 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('exit',.500,.925,.183,.128)
  ]),
  'gym-sabrina':Object.freeze([
+  v('challenge',.501,.242,.187,.163),
   v('exit',.502,.930,.191,.124)
  ]),
  'routes-19-20':Object.freeze([
@@ -165,10 +166,38 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('exit',.503,.923,.201,.127)
  ]),
  'gym-blaine':Object.freeze([
+  v('challenge',.500,.235,.194,.160),
   v('exit',.499,.929,.190,.121)
  ]),
  'route-21':Object.freeze([
   v('cinnabar',.503,.929,.198,.119)
+ ]),
+ // T66: original six approved backgrounds 42–47; no invented Viridian exit.
+ 'gym-giovanni':Object.freeze([
+  v('challenge',.501,.238,.196,.155)
+ ]),
+ 'routes-22-23':Object.freeze([
+  v('victory',.573,.132,.184,.148)
+ ]),
+ 'victory-road':Object.freeze([
+  v('indigo',.502,.069,.184,.130),
+  v('route23',.503,.941,.185,.115)
+ ]),
+ 'indigo-plateau':Object.freeze([
+  v('challenge',.501,.309,.174,.148),
+  v('victory',.501,.937,.192,.118)
+ ]),
+ // Elite Four share ONE original approved background, not five maps.
+ 'elite-four-rooms':Object.freeze([
+  v('bruno',.499,.148,.153,.137),
+  v('agatha',.835,.148,.153,.137),
+  v('lance',.254,.765,.153,.143),
+  v('champion',.753,.765,.163,.145),
+  v('hall',.753,.565,.151,.116),
+  v('indigo',.140,.472,.150,.119)
+ ]),
+ 'hall-of-fame':Object.freeze([
+  v('elite',.497,.937,.182,.116)
  ]),
  // Safari park's only registered action is the signed south exit.
  // Gold Teeth and HM03 labels are decorative until a validated gameplay
@@ -274,6 +303,11 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'pokemon-mansion':Object.freeze({exit:'cinnabar-island'}),
  'gym-blaine':Object.freeze({exit:'cinnabar-island'}),
  'route-21':Object.freeze({cinnabar:'cinnabar-island'}),
+ 'routes-22-23':Object.freeze({victory:'victory-road'}),
+ 'victory-road':Object.freeze({route23:'routes-22-23',indigo:'indigo-plateau'}),
+ 'indigo-plateau':Object.freeze({victory:'victory-road'}),
+ 'elite-four-rooms':Object.freeze({indigo:'indigo-plateau',hall:'hall-of-fame'}),
+ 'hall-of-fame':Object.freeze({elite:'elite-four-rooms'}),
  'safari-zone':Object.freeze({exit:'fuchsia-city'}),
  'route-11':Object.freeze({vermilion:'vermilion-city'}),
  'route-9-solo':Object.freeze({cerulean:'cerulean-city',route10:'routes-9-10'}),
