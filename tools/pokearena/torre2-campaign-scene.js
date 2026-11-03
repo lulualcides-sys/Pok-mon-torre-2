@@ -1,8 +1,8 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
-import {seviiLeagueUnlocked,seviiFerryDestinations,isSeviiSceneUnlocked,
- seviiHasUnimplementedQuestLock,SEVII_FERRY_LABELS} from './torre2-sevii-ferry.js';
+import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './torre2-sevii-ferry.js';
+import {approvedMapEntryAllowed,approvedMapTravelAllowed} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
@@ -53,7 +53,6 @@ const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHots
  'celadon-city','fuchsia-city','fuchsia-city','gym-giovanni',
  'routes-22-23','elite-four-rooms','elite-four-rooms','elite-four-rooms',
  'elite-four-rooms','hall-of-fame'];
-const APPROVED_STAGE_MAX=[3,9,18,26,31,36,40,42,45,46,46,46,46,60];
 const APPROVED_GYMS={
  'pewter-city':'gym-brock','cerulean-city':'gym-misty',
  'vermilion-city':'gym-surge','celadon-city':'gym-erika',
@@ -517,23 +516,15 @@ create(){
  // Read-only approved-map view; no new save fields, badges or encounter indices.
  approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]){
   if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false;
-  // Also cover direct stage-entry/render paths: an edited or stale save
-  // at the last index must not reveal the Hall before a real Champion win.
-  if(id==='hall-of-fame'&&state?.champion!==true)return false;
-  if(!isSeviiSceneUnlocked(approvedMap(id),state))return false;
-  if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
-  const canTravel=(_src,target)=>{
-   const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
-   // Real exits only: stage cap alone cannot turn a painted sign into a
-   // shortcut to a non-adjacent map.
-   return !!entry&&entry.index<=APPROVED_STAGE_MAX[s]&&
-    (target!=='hall-of-fame'||state.champion===true)&&
-    isSeviiSceneUnlocked(entry,state)&&
-    !seviiHasUnimplementedQuestLock(target)&&
-    approvedMapNeighbours(_src).includes(target);
-  };
+  // Revalidate direct entry as well as painted-sign navigation. T68 checks
+  // true native gym badges plus stage, not a stage-only cosmetic shortcut.
+  if(!APPROVED_MAP_ASSETS_READY||!approvedMapEntryAllowed(state,id))return false;
+  const canTravel=(_src,target)=>approvedMapTravelAllowed(_src,target,state);
   const open=target=>{
-   if(!canTravel(id,target))return;
+   // A user may finish a battle, switch scenes or restore a save while a
+   // texture is loading. Never authorize a stale closure's old route.
+   if(this.__torre2ApprovedMapView?.id!==id||
+      !approvedMapTravelAllowed(id,target,readCampaign()||state))return;
    const entry=approvedMap(target),key=mapTextureKey(target);
    if(!this.textures.exists(key)){
     if(this.load.isLoading?.()){
@@ -572,10 +563,18 @@ create(){
        backgroundColor:'#092a40',padding:{x:5,y:4}}).setOrigin(.5).setDepth(60);
       return;
      }
-     self.approvedMapPreview(readCampaign()||state,target);
+     const current=readCampaign()||state;
+     if(self.__torre2ApprovedMapView?.id!==id||
+        !approvedMapTravelAllowed(id,target,current))return;
+     self.approvedMapPreview(current,target);
     });
     this.load.start();
-   }else this.approvedMapPreview(readCampaign()||state,target);
+   }else{
+    const current=readCampaign()||state;
+    if(this.__torre2ApprovedMapView?.id===id&&
+       approvedMapTravelAllowed(id,target,current))
+     this.approvedMapPreview(current,target);
+   }
   };
   this.children.removeAll(true);
   this.__torre2SeviiFerryOpen=false;
