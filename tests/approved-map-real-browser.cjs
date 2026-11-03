@@ -389,6 +389,109 @@ const server=http.createServer(async(req,res)=>{
     ?.__torre2ApprovedMapView?.id==='vermilion-city',null,{timeout:40000});
    assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
     afterDefeat.saved,'T71 restarting after report replayed defeat rewards or losses');
+   // T72: controlled battle-result fixtures, NOT naturally won fights.
+   // Feed the existing native resolver a first-clear Misty checkpoint; never
+   // add Cascata, a reward TM or a win directly. After Continue, Phaser must
+   // PRELOAD stage 2 and open the approved Cerulean map (not legacy HUD).
+   await page.evaluate(()=>{
+    const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+    const s=core.readCampaign();
+    s.stage=1;s.trainer=core.TRAINERS_PER_GYM(1);
+    s.badges=['Rocha'];s.leagueHonors=[];s.champion=false;
+    core.saveCampaign(s);
+    scene.__torre2ApprovedReturn=null;
+    scene.__torre2ApprovedMapView=null;
+    scene.scene.restart({finished:true,won:true,
+     marker:{kind:'trainer',stage:1,trainer:s.trainer}});
+   });
+   const reportClick=async label=>{
+    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+     ?.children.list.some(o=>o.active&&o.getData?.('torre2-report-continue')===true),
+      null,{timeout:45000});
+    await page.evaluate(()=>new Promise(resolve=>
+     requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const p=await page.evaluate(()=>{
+     const hit=window.__pt2Game.scene.getScene('campanha').children.list.find(
+      o=>o.active&&o.getData?.('torre2-report-continue')===true);
+     if(!hit)throw Error('T72 missing real '+label+' report button');
+     const b=document.querySelector('#juego canvas').getBoundingClientRect();
+     const w=Math.min(b.width,b.height*640/360),
+      h=Math.min(b.height,b.width*360/640);
+     return {x:b.x+(b.width-w)/2+hit.x/640*w,
+      y:b.y+(b.height-h)/2+hit.y/360*h};
+    });
+    if(mode.isMobile)await page.touchscreen.tap(p.x,p.y);
+    else await page.mouse.click(p.x,p.y);
+   };
+   const misty=await page.evaluate(()=>{
+    const s=window.kanto.readCampaign();
+    return {stage:s.stage,trainer:s.trainer,wins:s.wins,
+     badges:s.badges.slice(),claims:s.gymTMClaims?.slice()||[],
+     snapshot:JSON.stringify(s)};
+   });
+   assert.equal(misty.stage,2,'T72 native Misty resolver must advance to stage 2');
+   assert.equal(misty.trainer,0,'T72 native stage advance resets trainer index');
+   assert.ok(misty.badges.includes('Rocha')&&misty.badges.includes('Cascata'),
+    'T72 native win must persist both legitimate gym rewards');
+   assert.equal(misty.badges.length,2,'T72 no extra gym badges');
+   assert.ok(misty.claims.length>0,'T72 native Misty TM grant missing');
+   await reportClick('Misty');
+   await page.waitForFunction(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha'),v=scene?.__torre2ApprovedMapView;
+    return scene?.scene.isActive()&&v?.id==='cerulean-city'&&v?.image?.active&&
+     scene.children.list.some(o=>o.active&&
+      o.getData?.('torre2-approved-hotspot')==='cerulean-city:route24');
+   },null,{timeout:45000});
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    misty.snapshot,'T72 report Continue replayed Misty win/rewards');
+   const mistyShot='t72-misty-native-resolver-cerulean-'+mode.name+'.png';
+   await page.screenshot({path:path.join(out,mistyShot),
+    fullPage:true,animations:'disabled'});
+   evidence.maps.push({id:'cerulean-city',mode:mode.name,
+    via:'T72 controlled leader result + native award resolver + real Continue tap',
+    fixture:'NOT a naturally played Misty fight',screenshot:mistyShot,
+    stage:misty.stage,badges:misty.badges,saveUnchangedAfterContinue:true});
+   // A second native restart must not award Cascata, TM or XP twice.
+   await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha').scene.restart({}));
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='cerulean-city',null,{timeout:45000});
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    misty.snapshot,'T72 after leader restart replayed saved victory');
+
+   // A regular trainer win must keep the SAME stage, trainer index +1,
+   // and restore Cerulean without restarting again or granting badges.
+   await page.evaluate(()=>{
+    const s=window.kanto.readCampaign();
+    window.__pt2Game.scene.getScene('campanha').scene.restart({
+     finished:true,won:true,
+     marker:{kind:'trainer',stage:s.stage,trainer:s.trainer}});
+   });
+   const trainer=await page.evaluate(()=>{
+    const s=window.kanto.readCampaign();
+    return {stage:s.stage,trainer:s.trainer,wins:s.wins,badges:s.badges.slice(),
+     snapshot:JSON.stringify(s)};
+   });
+   // Wait for the real report and the native save commit before checking.
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.children.list.some(o=>o.active&&
+     o.getData?.('torre2-report-continue')===true),null,{timeout:45000});
+   const trainerAfter=await page.evaluate(()=>{
+    const s=window.kanto.readCampaign();
+    return {stage:s.stage,trainer:s.trainer,wins:s.wins,badges:s.badges.slice(),
+     snapshot:JSON.stringify(s)};
+   });
+   assert.equal(trainerAfter.stage,2,'T72 regular trainer must stay in stage 2');
+   assert.equal(trainerAfter.trainer,1,'T72 regular trainer advances index exactly one');
+   assert.equal(trainerAfter.wins,misty.wins+1,'T72 regular trainer win count');
+   assert.deepEqual(trainerAfter.badges,misty.badges,'T72 regular trainer cannot grant badge');
+   await reportClick('regular trainer');
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='cerulean-city',null,{timeout:25000});
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    trainerAfter.snapshot,'T72 regular trainer Continue must not re-award rewards');
+   evidence.maps.push({id:'cerulean-city',mode:mode.name,
+    via:'T72 controlled ordinary trainer victory + native checkpoint + Continue',
+    fixture:'NOT a naturally played battle',saveUnchangedAfterContinue:true});
    // T63: controlled stage-three fixture after Lt. Surge — must start in
    // Vermilion, traverse the original Route 9 solo before Route 10, and
    // never mutate battle saves by simply clicking painted map signs.
