@@ -790,8 +790,10 @@ create(){
     }
     for(const actor of actors.trainers){
      const point=project(actor.cx,actor.cy);
+     const scale=gymId==='gym-misty'&&
+      (actor.kind==='tuber_m'||actor.kind==='tuber_f')?1.85:1.45;
      const npc=actors.artworkOnly?null:addFireRedNPC(scene,actor.kind,
-      point.x,point.y,{scale:1.45,depth:24,strict:true});
+      point.x,point.y,{scale,depth:24,strict:true});
      if(!npc&&!actors.artworkOnly)continue;
      npc?.setData('torre2-gym-trainer-sprite',gymId+':'+actor.index)
       .setData('torre2-gym-trainer-kind',actor.kind);
