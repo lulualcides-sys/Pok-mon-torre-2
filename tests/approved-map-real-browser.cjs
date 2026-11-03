@@ -251,6 +251,76 @@ const server=http.createServer(async(req,res)=>{
     evidence.maps.push({id:to,mode:mode.name,from,sign,
       via:'actual Phaser sign click/touch',saveUnchanged:true,screenshot});
    }
+   // T78: use the actual Vermilion GYM hotspot to enter Surge's
+   // ORIGINAL approved image. The leader, Pikachu and trainers are painted
+   // already; Phaser may supply invisible actions but must NOT clone figures.
+   const surgeDoor=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    if(scene.__torre2ApprovedMapView?.id!=='vermilion-city')
+     throw Error('T78 must enter Surge through approved Vermilion city');
+    const zone=scene.__torre2ApprovedMapView.zones.find(z=>
+     z.getData?.('torre2-approved-hotspot')==='vermilion-city:gym');
+    if(!zone)throw Error('T78 original Vermilion gym doorway missing');
+    const b=document.querySelector('#juego canvas').getBoundingClientRect();
+    const w=Math.min(b.width,b.height*640/360);
+    const h=Math.min(b.height,b.width*360/640);
+    return {x:b.x+(b.width-w)/2+zone.x/640*w,
+      y:b.y+(b.height-h)/2+zone.y/360*h};
+   });
+   if(mode.isMobile)await page.touchscreen.tap(surgeDoor.x,surgeDoor.y);
+   else await page.mouse.click(surgeDoor.x,surgeDoor.y);
+   await page.waitForFunction(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    return scene?.__torre2ApprovedMapView?.id==='gym-surge'&&
+      scene.__torre2ApprovedMapView?.image?.active===true;
+   },null,{timeout:40000});
+   const surge=await page.evaluate(()=>{
+    const game=window.__pt2Game,scene=game.scene.getScene('campanha');
+    const painted=scene.__torre2ApprovedMapView;
+    return {texture:painted.image.texture.key,
+     actions:scene.children.list.filter(x=>x.active&&
+      String(x.getData?.('torre2-approved-gym-trainer')||'')
+       .startsWith('gym-surge:')).length,
+     actors:scene.children.list.filter(x=>x.active&&
+      (x.getData?.('torre2-gym-leader-sprite')==='gym-surge'||
+       x.getData?.('torre2-gym-ace')==='gym-surge'||
+       String(x.getData?.('torre2-gym-trainer-sprite')||'')
+        .startsWith('gym-surge:'))).length,
+     actualAce:window.kanto.GYMS[2]?.boss,
+     actualTeam:window.kanto.GYMS[2]?.leaderTeam,
+     save:JSON.stringify(window.kanto.readCampaign())};
+   });
+   assert.equal(surge.texture,'torre2-approved-map-gym-surge');
+   assert.equal(surge.actors,0,'T78 approved painted Surge figures were duplicated');
+   assert.equal(surge.actions,4,'T78 four original trainers must remain interactive');
+   assert.equal(surge.actualAce,'raichu','T78 real Surge ace must remain Raichu');
+   assert.ok(surge.actualTeam.includes('raichu'));
+   assert.equal(surge.save,stage2Before,'T78 entering approved gym altered campaign');
+   const surgeScreenshot='t78-approved-gym-surge-'+mode.name+'.png';
+   await page.screenshot({path:path.join(out,surgeScreenshot),fullPage:true,
+    animations:'disabled'});
+   evidence.maps.push({id:'gym-surge',mode:mode.name,
+    via:'T78 real Vermilion gym door click/touch',
+    fixture:'Controlled stage 2, not naturally earned Thunder Badge',
+    paintedNpcCount:4,duplicatedPhaserActors:surge.actors,
+    aceInBattle:surge.actualAce,screenshot:surgeScreenshot});
+   // Return using an actual approved exit, never an invented stage warp.
+   const surgeExit=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha'),view=scene.__torre2ApprovedMapView;
+    const zone=view?.zones?.find(x=>x.getData?.('torre2-approved-hotspot')==='gym-surge:exit');
+    if(!zone)throw Error('T78 original Surge exit missing');
+    const b=document.querySelector('#juego canvas').getBoundingClientRect();
+    const w=Math.min(b.width,b.height*640/360);
+    const h=Math.min(b.height,b.width*360/640);
+    return {x:b.x+(b.width-w)/2+zone.x/640*w,
+     y:b.y+(b.height-h)/2+zone.y/360*h};
+   });
+   if(mode.isMobile)await page.touchscreen.tap(surgeExit.x,surgeExit.y);
+   else await page.mouse.click(surgeExit.x,surgeExit.y);
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='vermilion-city',null,{timeout:30000});
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    stage2Before,'T78 approved gym visit altered campaign progression');
    // T69: the user-facing Party Summary must return to the SAME original
    // approved map after Back and after selecting the current team member.
    // No battle result, extra Pokémon or save edit is fabricated here.
