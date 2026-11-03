@@ -55,6 +55,28 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('challenge',.505,.220,.20,.16),
   v('exit',.505,.918,.19,.13)
  ]),
+ // T62: exact original approved route paintings, indices 10–14.
+ // Billboard at Bill's house and Saffron's blocked gate do not create
+ // extra interiors, gifts or early unlocks.
+ 'route-24':Object.freeze([
+  v('cerulean',.505,.883,.167,.126),
+  v('route25',.887,.113,.165,.135)
+ ]),
+ 'route-25':Object.freeze([
+  v('route24',.052,.433,.100,.144)
+ ]),
+ 'route-5':Object.freeze([
+  v('cerulean',.499,.061,.164,.118),
+  v('underground',.893,.667,.178,.169)
+ ]),
+ 'underground-5-6':Object.freeze([
+  v('route5',.500,.060,.170,.119),
+  v('route6',.500,.854,.170,.145)
+ ]),
+ 'route-6':Object.freeze([
+  v('underground',.873,.139,.165,.177),
+  v('vermilion',.503,.913,.184,.140)
+ ]),
  // Reviewed against the actual approved 1280×720 concept images.
  'vermilion-city':Object.freeze([
   v('center',.274,.300,.105,.110),
@@ -126,6 +148,11 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'cerulean-city':Object.freeze({route4:'route-4-east',route24:'route-24',
    route5:'route-5',route9:'routes-9-10',gym:'gym-misty'}),
  'gym-misty':Object.freeze({exit:'cerulean-city'}),
+ 'route-24':Object.freeze({cerulean:'cerulean-city',route25:'route-25'}),
+ 'route-25':Object.freeze({route24:'route-24'}),
+ 'route-5':Object.freeze({cerulean:'cerulean-city',underground:'underground-5-6'}),
+ 'underground-5-6':Object.freeze({route5:'route-5',route6:'route-6'}),
+ 'route-6':Object.freeze({underground:'underground-5-6',vermilion:'vermilion-city'}),
  'vermilion-city':Object.freeze({
   gym:'gym-surge',ship:'ss-anne',route6:'route-6',route11:'route-11'
  }),

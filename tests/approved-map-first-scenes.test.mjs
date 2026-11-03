@@ -474,7 +474,7 @@ test('T61 approved 60-map story flows Pewter through Route 3, Mt Moon, Route 4 t
   assert.ok(approvedMapNeighbours(to).includes(from),to+'->'+from);
  }
  const stage1=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(stage1.includes("'route-3','vermilion-city'"));
+ assert.ok(stage1.includes("'route-3','cerulean-city'"));
  assert.ok(stage1.includes('const APPROVED_STAGE_MAX=[3,9,18'));
  assert.equal(firstApprovedDestination('route-4-east','mega-punch'),null);
  assert.equal(firstApprovedDestination('route-4-east','mega-kick'),null);
@@ -509,5 +509,64 @@ test('T61 source-verified route/cave sign hotspots pass renderer preflight and n
    assert.equal(stopped,true);
   }
   assert.deepEqual(hits,hotspotIds.map(k=>id+':'+k));
+ }
+});
+
+test('T62 only original approved maps bridge Cerulean, Nugget Bridge, tunnel and Vermilion',()=>{
+ const maps=['cerulean-city','route-24','route-25','route-5',
+  'underground-5-6','route-6','vermilion-city'];
+ assert.deepEqual(maps.map(id=>approvedMap(id)?.index),[8,10,11,12,13,14,15]);
+ const links=[
+  ['route-24','cerulean','cerulean-city'],
+  ['route-24','route25','route-25'],
+  ['route-25','route24','route-24'],
+  ['route-5','cerulean','cerulean-city'],
+  ['route-5','underground','underground-5-6'],
+  ['underground-5-6','route5','route-5'],
+  ['underground-5-6','route6','route-6'],
+  ['route-6','underground','underground-5-6'],
+  ['route-6','vermilion','vermilion-city']
+ ];
+ for(const [from,sign,to] of links){
+  assert.equal(firstApprovedDestination(from,sign),to);
+  assert.ok(approvedMapNeighbours(from).includes(to),from+' must have '+to);
+  assert.ok(approvedMapNeighbours(to).includes(from),to+' must have '+from);
+ }
+ for(const [from,sign] of [
+  ['route-25','bill'],
+  ['route-5','saffron'],
+  ['route-6','saffron']
+ ])assert.equal(firstApprovedDestination(from,sign),null);
+ const stage=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(stage.includes("'route-3','cerulean-city','celadon-city'"));
+ assert.ok(stage.includes('const APPROVED_STAGE_MAX=[3,9,18,'));
+});
+test('T62 five route/tunnel images have reviewed non-overlapping Phaser sign zones',()=>{
+ const expected={
+  'route-24':['cerulean','route25'],
+  'route-25':['route24'],
+  'route-5':['cerulean','underground'],
+  'underground-5-6':['route5','route6'],
+  'route-6':['underground','vermilion']
+ };
+ for(const [id,signs] of Object.entries(expected)){
+  const entry=approvedMap(id),hotspots=firstApprovedHotspots(entry);
+  assert.ok(entry&&hasFirstApprovedHotspots(id));
+  assert.deepEqual(hotspots.map(h=>h.id),signs);
+  const p=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+  assert.equal(p.ok,true,JSON.stringify({id,plan:p}));
+  const {scene,zones}=fakeScene(),events=[];
+  const result=renderApprovedMap(scene,id,{resolveHotspots:firstApprovedHotspots,
+   artNavigation:true,isUnlocked:()=>true,
+   onHotspot:(src,key)=>events.push(src+':'+key)});
+  assert.equal(result.ok,true,id);
+  for(const sign of signs){
+   const hit=zones.find(z=>z.data?.value===id+':'+sign);
+   assert.ok(hit,id+':'+sign);
+   let stopped=false;
+   hit.pointerdown(null,0,0,{stopPropagation(){stopped=true}});
+   assert.equal(stopped,true);
+  }
+  assert.deepEqual(events,signs.map(sign=>id+':'+sign));
  }
 });
