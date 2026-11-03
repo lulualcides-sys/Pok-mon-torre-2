@@ -10,6 +10,9 @@ on:
       - 'tools/pokearena/install-approved-maps.py'
       - 'tests/approved-map-first-scenes.test.mjs'
       - 'tests/test_install_approved_maps.py'
+      - 'tests/approved-map-binary-integrity.test.mjs'
+      - 'assets/ui/kanto-approved-maps/**'
+      - 'tools/pokearena/build-preview.mjs'
       - '.github/workflows/t41-approved-first-scenes.yml'
 permissions:
   contents: read
@@ -33,4 +36,10 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_install_approved_maps.py' -v
       - name: Coordinate, navigation, and regression tests
         run: |
-          node --test tests/approved-map-first-scenes.test.mjs tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs tests/native-asset-compat.test.mjs tests/approved-map-build-integration.test.mjs
+          node --test tests/approved-map-first-scenes.test.mjs tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs tests/native-asset-compat.test.mjs tests/approved-map-build-integration.test.mjs tests/approved-map-binary-integrity.test.mjs
+      - name: Build isolated Phaser preview with all sixty verified images
+        run: |
+          node tools/pokearena/build-preview.mjs
+          test -f _site/arena2d/assets/ui/kanto-approved-maps/kanto/cerulean-city.webp
+          test -f _site/arena2d/assets/ui/kanto-approved-maps/kanto/gym-misty.webp
+          test -f _site/arena2d/assets/ui/kanto-approved-maps/liga/elite-four-rooms.webp
