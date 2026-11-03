@@ -2,7 +2,7 @@ import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
 import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './torre2-sevii-ferry.js';
-import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId} from './torre2-approved-progression-gates.js';
+import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,approvedPostBattleReturnMapId} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
@@ -291,9 +291,9 @@ create(){
   const noProgressEvent=!!(completed?.marker?.training||
    completed?.marker?.laboratory);
   const checkpointAccepted=!completed||battleOutcomeCommitted||noProgressEvent;
-  const currentMap=approvedReturnMapId(this.__torre2ApprovedReturn,state);
-  if(!checkpointAccepted||state.stage!==preBattleStage||!currentMap)
-   this.__torre2ApprovedReturn=null;
+  const currentMap=approvedPostBattleReturnMapId(
+   this.__torre2ApprovedReturn,preBattleStage,state,checkpointAccepted);
+  if(!currentMap)this.__torre2ApprovedReturn=null;
   const resume=this.__torre2ApprovedReturn;
   // Image-backed city becomes the normal campaign entrance ONLY after the
   // complete, hash-validated approved WebP package is installed. All existing
