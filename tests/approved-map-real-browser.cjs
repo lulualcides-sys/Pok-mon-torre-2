@@ -53,7 +53,7 @@ const server=http.createServer(async(req,res)=>{
     return game?.scene.isActive('campanha')&&
      (scene?.__torre2ApprovedMapView?.id==='cerulean-city'||!!scene?.__torre2BattlePath);
    },null,{timeout:50000});
-   for(const id of ['pewter-city','gym-brock','cerulean-city','gym-misty']){
+   for(const id of ['route-2','pewter-city','gym-brock','cerulean-city','gym-misty']){
     const info=await page.evaluate(async id=>{
      const game=window.__pt2Game,scene=game.scene.getScene('campanha');
      const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
@@ -90,6 +90,47 @@ const server=http.createServer(async(req,res)=>{
     const filename='approved-'+id+'-'+mode.name+'.png';
     await page.screenshot({path:path.join(out,filename),fullPage:true,animations:'disabled'});
     evidence.maps.push({...info,mode:mode.name,screenshot:filename});
+    if(id==='route-2'){
+     // Real mouse/touch dispatch over the approved SOUTH and NORTH signs.
+     // A stage-one fixture permits checking this navigation in isolation;
+     // this is NOT proof of a complete Pallet-to-Pewter story.
+     const checkpoint=await page.evaluate(()=>{
+      const scene=window.__pt2Game.scene.getScene('campanha');
+      const zones=scene.__torre2ApprovedMapView.zones;
+      const get=(label)=>zones.find(z=>
+       z.getData?.('torre2-approved-hotspot')==='route-2:'+label);
+      const north=get('pewter'),south=get('forest');
+      if(!north||!south)throw Error('Missing real Route 2 signage zones');
+      return {north:{x:north.x,y:north.y},south:{x:south.x,y:south.y},
+       before:JSON.stringify(window.kanto.readCampaign())};
+     });
+     const pointToViewport=await page.evaluate(points=>{
+      const canvas=document.querySelector('#juego canvas');
+      if(!canvas)throw Error('Phaser canvas missing');
+      const bounds=canvas.getBoundingClientRect();
+      const map=p=>({x:bounds.x+p.x/640*bounds.width,
+                     y:bounds.y+p.y/360*bounds.height});
+      return {north:map(points.north),south:map(points.south)};
+     },checkpoint);
+     const dispatch=async position=>{
+      if(mode.isMobile)await page.touchscreen.tap(position.x,position.y);
+      else await page.mouse.click(position.x,position.y);
+     };
+     await dispatch(pointToViewport.south);
+     assert.equal(await page.evaluate(()=>
+      window.__pt2Game.scene.getScene('campanha').__torre2ApprovedMapView?.id),
+      'route-2','Missing Viridian Forest artwork must not cause a false teleport');
+     await dispatch(pointToViewport.north);
+     await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+      ?.__torre2ApprovedMapView?.id==='pewter-city',null,{timeout:20000});
+     const after=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+     assert.equal(after,checkpoint.before,'Route 2 transition modified campaign save');
+     await page.screenshot({path:path.join(out,
+      'approved-route-2-to-pewter-'+mode.name+'.png'),fullPage:true,
+      animations:'disabled'});
+     evidence.maps.push({id:'route-2-to-pewter',mode:mode.name,
+      via:'native touch/click',saveUnchanged:true});
+    }
    }
    await page.close();
   }
