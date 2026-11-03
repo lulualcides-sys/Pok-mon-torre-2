@@ -418,6 +418,12 @@ const server=http.createServer(async(req,res)=>{
    },null,{timeout:45000});
    const seviiSave=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
    const clickPhaser=async what=>{
+    // Phaser registers newly created interactive zones on the next input
+    // preUpdate. Wait two rendered frames before simulating a human tap;
+    // otherwise the test can click a visible but not-yet-registered button.
+    // This still dispatches a real mouse/touch event, never invokes a callback.
+    await page.evaluate(()=>new Promise(resolve=>
+     requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     const position=await page.evaluate(goal=>{
      const scene=window.__pt2Game.scene.getScene('campanha');
      let target;
