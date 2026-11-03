@@ -7,6 +7,7 @@ test('T42 approved Phaser map imports are copied into the browser module tree',(
   ['torre2-approved-maps-atlas.js','torre2-approved-maps-atlas.js'],
   ['torre2-approved-map-renderer.js','torre2-approved-map-renderer.js'],
   ['torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js'],
+  ['torre2-gym-ace-ground.js','torre2-gym-ace-ground.js'],
   ['torre2-approved-progression-gates.js','torre2-approved-progression-gates.js'],
   ['torre2-battle-result-validation.js','torre2-battle-result-validation.js']
  ]){
