@@ -61,28 +61,52 @@ const server=http.createServer(async(req,res)=>{
    core.saveCampaign(s);
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
-  await page.waitForFunction(()=>{
+  // T82: Stage 1 now opens the original approved Route 3 in Phaser.
+  // Use the REAL art exit, native VS Seeker button and touchable trainer,
+  // rather than waiting for the obsolete BattlePath on scene start.
+  const locateTagged=async(key,value)=>page.evaluate(([tag,match])=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__torre2BattlePath?.progress===3;
+   const control=c.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.(tag)===match);
+   if(!control)throw Error('T82 native interactive control missing: '+tag+':'+match);
+   return {x:control.x,y:control.y};
+  },[key,value]);
+  const waitApprovedRoute=async()=>page.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.scene.isActive()&&c.__torre2ApprovedMapView?.id==='route-3'&&
+    c.children.list.some(o=>o.active&&o.getData?.('torre2-approved-exit')===true);
   },null,{timeout:60000});
+  const openRematchOffer=async()=>{
+   await waitApprovedRoute();
+   const exit=await locateTagged('torre2-approved-exit',true);
+   await touch(exit.x,exit.y);
+   await page.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.__torre2BattlePath?.progress===3&&
+     c.children.list.some(o=>o.active&&
+      o.getData?.('torre2-open-rematch-atlas')===true);
+   },null,{timeout:18000});
+   const seeker=await locateTagged('torre2-open-rematch-atlas',true);
+   await touch(seeker.x,seeker.y);
+   await page.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.__torre2RematchAtlas?.mapStage===1&&
+     c.children.list.some(o=>o.active&&
+      o.getData?.('torre2-rematch-trainer')==='1:0');
+   },null,{timeout:18000});
+   const trainer=await locateTagged('torre2-rematch-trainer','1:0');
+   await touch(trainer.x,trainer.y);
+   await page.waitForFunction(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    return c.scene.isActive()&&c.children.list.some(o=>
+     o.active&&typeof o.text==='string'&&o.text.startsWith('REVANCHE ·'));
+   },null,{timeout:12000});
+  };
+  await waitApprovedRoute();
   const before=await snapshot();
   assert.equal(before.rematches.charge,3);
-  const locate=async(index)=>{
-   return page.evaluate(i=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    const z=c.children.list.find(obj=>obj.active&&obj.input?.enabled&&
-     obj.getData?.('torre2-path-node')===i);
-    if(!z)throw Error('Previously defeated native trainer zone missing '+i);
-    return {x:z.x,y:z.y};
-   },index);
-  };
-  const point=await locate(0);
-  await touch(point.x,point.y);
-  await page.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.children.list.some(o=>
-    typeof o.text==='string'&&o.text.includes('REVANCHE'));
-  },null,{timeout:9000});
+  await page.screenshot({path:'test-evidence/t82-approved-route3-vs-seeker-entry.png'});
+  await openRematchOffer();
   await page.screenshot({path:'test-evidence/t22-mobile-rematch-offer.png'});
   await touch(320,235);
   await page.waitForFunction(()=>{
@@ -116,17 +140,10 @@ const server=http.createServer(async(req,res)=>{
    window.t22Core=await import(new URL('./torre2/campaign-core.js',src));
    window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
-  await page.waitForFunction(()=>{
-   const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__torre2BattlePath?.progress===3;
-  },null,{timeout:55000});
+  await waitApprovedRoute();
   const afterReload=await snapshot();
   assert.deepEqual(afterReload,reserved,'Reload must not refund/duplicate VS Seeker');
-  const p=await locate(0);
-  await touch(p.x,p.y);
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-   .children.list.some(o=>typeof o.text==='string'&&o.text.includes('REVANCHE')),
-   null,{timeout:9000});
+  await openRematchOffer();
   await touch(320,235);
   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
    .children.list.some(o=>typeof o.text==='string'&&
@@ -158,8 +175,8 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(afterResume,reserved,
    'Native battle resume must not spend additional charge or grant rewards');
   await page.screenshot({path:'test-evidence/t22-mobile-rematch-resumed.png'});
-  const report={scope:'T22 native mobile VS Seeker interrupted ticket resume and anti-duplicate',
-   fixture:'Misty-stage trainer checkpoints/recharge prepared; start and resume real, no artificial victory',
+  const report={scope:'T82 approved Route 3 mobile entry -> native VS Seeker, interrupted ticket resume and anti-duplicate',
+   fixture:'Prepared Stage 1 trainer checkpoint/recharge; real Phaser map EXIT, VS Seeker and rematch touch; no artificial victory',
    before,reserved,afterReload,afterDenied,afterResume,inBattle,resumedTicket};
   fs.writeFileSync('test-evidence/t22-mobile-rematch-reload.json',JSON.stringify(report,null,2));
   console.log('T22 MOBILE REAL REMATCH RELOAD PASS',JSON.stringify({
