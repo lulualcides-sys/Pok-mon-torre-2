@@ -75,6 +75,37 @@ if(approvedRenderer.includes('export const APPROVED_MAP_ASSETS_READY = true;')){
  }
  console.log('Installed 60 approved WebP maps into native Phaser site',verified.length);
 }
+// T87: separate four-map user opening, never counted among the 60
+// SHA-256-approved maps or written to their archived atlas.
+{
+ const openingRoot='assets/ui/kanto-opening-user';
+ const manifest=JSON.parse(await fs.readFile(
+  openingRoot+'/opening-user-manifest.json','utf8'));
+ const expected=['pallet-town','route-1','viridian-city','viridian-forest'];
+ if(manifest.original_count!==4||manifest.maps?.length!==4||
+    manifest.maps.some((item,i)=>item.id!==expected[i]))
+  throw Error('T87 user opening manifest changed or incomplete');
+ for(const item of manifest.maps){
+  const name=item.id,rel=openingRoot+'/'+name+'.webp';
+  if(item.image!==rel||item.width!==1280||item.height!==720||
+     !/^[a-f0-9]{64}$/.test(item.optimized_sha256||'')||
+     item.painted_trainers_removed!==(name==='viridian-forest'))
+   throw Error('T87 image provenance/clean-plate contract failed: '+name);
+  const source=await fs.readFile(openingRoot+'/original/'+name+'.jpg');
+  if(createHash('sha256').update(source).digest('hex')!==item.original_sha256)
+   throw Error('T87 original SHA-256 mismatch: '+name);
+  const pixels=await fs.readFile(rel);
+  if(pixels.length!==item.bytes||pixels.length<1024||
+     pixels.toString('ascii',0,4)!=='RIFF'||
+     pixels.toString('ascii',8,12)!=='WEBP'||
+     createHash('sha256').update(pixels).digest('hex')!==item.optimized_sha256)
+   throw Error('T87 binary WebP SHA-256 mismatch: '+name);
+  const destFile=path.join(dest,rel);
+  await fs.mkdir(path.dirname(destFile),{recursive:true});
+  await fs.writeFile(destFile,pixels);
+ }
+ console.log('T87 installed four original user opening scenes; only forest NPCs cleaned');
+}
 // T80 is an explicit user-authorized OVERRIDE only for the electric gym.
 // Keep every approved original hash untouched for audit / rollback.
 const surgeRel='assets/ui/kanto-overrides/gym-surge-user.webp';
@@ -294,6 +325,7 @@ await Promise.all([
  ['tools/pokearena/torre2-approved-maps-atlas.js','torre2-approved-maps-atlas.js'],
  ['tools/pokearena/torre2-approved-map-renderer.js','torre2-approved-map-renderer.js'],
  ['tools/pokearena/torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js'],
+ ['tools/pokearena/torre2-opening-npc-overlays.js','torre2-opening-npc-overlays.js'],
  ['tools/pokearena/torre2-gym-ace-ground.js','torre2-gym-ace-ground.js'],
  ['tools/pokearena/torre2-sevii-ferry.js','torre2-sevii-ferry.js'],
  ['tools/pokearena/torre2-approved-progression-gates.js','torre2-approved-progression-gates.js'],
@@ -1172,6 +1204,7 @@ console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-opening-npc-overlays.js'));
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',

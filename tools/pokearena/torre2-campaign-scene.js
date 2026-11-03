@@ -5,6 +5,7 @@ import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './t
 import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,approvedPostBattleReturnMapId} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
+import {openingNpcPlan,projectOpeningNpc} from './torre2-opening-npc-overlays.js';
 import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
 import {lockNativePmdIdleFeet} from './torre2-gym-ace-ground.js';
 import {statusLabel} from './gen3-status.js';
@@ -37,7 +38,7 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC,addRedPlayer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -169,6 +170,10 @@ class Campanha extends Phaser.Scene{
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
+  // T86: explicitly preload the Viridian town resident's original GBA sheet.
+  if(APPROVED_MAP_ASSETS_READY&&stage===0)
+   for(const kind of ['gentleman','camper'])
+    needed.add(spriteIdForTrainer(kind));
   // T77: four thematic ORIGINAL FRLG aquatic NPCs, all on land frames.
   // The approved Cerulean gym remains reachable after defeating Misty
   // (stage 2). Keep them loaded for a revisit, not just first-clear.
@@ -782,7 +787,48 @@ create(){
     const gymStage=gymId==='gym-brock'?0:
      gymId==='gym-misty'?1:gymId==='gym-surge'?2:
      gymId==='gym-erika'?3:gymId==='gym-koga'?4:null;
-    if(gymStage===null)return;
+    if(gymStage===null){
+     // T86: scenery is a static plate; trainers are 16x32 native GBA
+     // sprites rendered only when this scene proves its plate is cleaned.
+     // This prevents doubling painted NPCs in user-provided paintings.
+     const openingActors=openingNpcPlan(entry.id,{
+      cleanPlate:entry.npcCleanPlate===true,stage:state.stage
+     });
+     if(entry.id==='viridian-city'&&entry.npcCleanPlate===true&&state.stage===0){
+      const red=projectOpeningNpc({cx:.491,feetY:.939},rect);
+      addRedPlayer(scene,red.x,red.y,{scale:1.12,depth:24})
+       ?.setData('torre2-opening-player','viridian-city:red');
+     }
+     for(const actor of openingActors){
+      const pos=projectOpeningNpc(actor,rect);
+      const sprite=addFireRedNPC(scene,actor.kind,pos.x,pos.y,
+       {scale:1.12,depth:24,strict:true});
+      if(!sprite){
+       console.warn('T86 missing original trainer sprite',actor.kind);
+       continue;
+      }
+      sprite.setData('torre2-opening-npc',entry.id+':'+actor.id)
+       .setData('torre2-opening-npc-class',actor.kind);
+      // Decorative town residents are NPC sprites, not battle opponents.
+      if(actor.index===null)continue;
+      const hit=scene.add.zone(pos.x,pos.y-18,30,39)
+       .setDepth(42).setInteractive({useHandCursor:true})
+       .setData('torre2-opening-trainer',entry.id+':'+actor.index);
+      hit.on('pointerdown',(_pointer,_x,_y,event)=>{
+       event?.stopPropagation?.();
+       const fresh=readCampaign()||state;
+       if(fresh.stage!==0||!Number.isInteger(fresh.trainer))return;
+       if(fresh.trainer===actor.index)return this.enterBattle(fresh);
+       if(fresh.trainer>actor.index)
+        return this.rematchScreen(fresh,actor.index,0);
+       this.add.text(320,318,'TREINADOR BLOQUEADO · AVANCE NA ROTA',{
+        fontFamily:'Pixelify Sans,monospace',fontSize:'10px',
+        color:'#ffe3a1',backgroundColor:'#102e43',
+        padding:{x:5,y:4}}).setOrigin(.5).setDepth(60);
+      });
+     }
+     return;
+    }
     const actors=firstApprovedGymActors(gymId,TRAINERS_PER_GYM(gymStage));
     const project=(cx,cy)=>({x:rect.x+cx*rect.width,y:rect.y+cy*rect.height});
     // Brock/Misty: independent original sprites. Surge: sprites already

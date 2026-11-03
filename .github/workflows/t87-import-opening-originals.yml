@@ -1,0 +1,44 @@
+name: T87 — importar quatro fundos originais da abertura (homologação)
+
+on:
+  push:
+    branches: [fix/t86-forest-trainers-as-native-sprites-20261103]
+    paths:
+      - '.github/workflows/t87-import-opening-originals.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  import-user-assets:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download and SHA-256 verify four original user assets
+        env:
+          ASSET_HOST: https://sb-18ns67szijdw.vercel.run
+        run: |
+          set -euo pipefail
+          mkdir -p assets/ui/kanto-opening-user/original
+          for map in pallet-town route-1 viridian-city viridian-forest; do
+            curl -fsSL --retry 3 --max-time 40 "${ASSET_HOST}/${map}.jpg" -o "assets/ui/kanto-opening-user/original/${map}.jpg"
+          done
+          (cd assets/ui/kanto-opening-user/original && sha256sum -c - <<'CHECKS'
+          182307b602cb8cd2365610bbb183f0da74ac3f260e045f6b94ea8fde533df9de  pallet-town.jpg
+          919109d3a492708c87c38a858f40c094783dc1462ea98382e2139820f8202366  route-1.jpg
+          cfbf218967faf1e12da38bba3a307005a3f63ff36d20dd563ef543d7fbd02430  viridian-city.jpg
+          3f2dd05bb0e3028795dd0ca51cd5828bb415be6da536e476d7ce74b9cbe0f03d  viridian-forest.jpg
+          CHECKS
+          )
+      - name: Commit original images into test branch only
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/ui/kanto-opening-user/original/
+          git diff --cached --quiet && exit 0
+          git commit -m "assets(T87): preserve user's four verified Kanto opening source images"
+          git push origin HEAD:fix/t86-forest-trainers-as-native-sprites-20261103

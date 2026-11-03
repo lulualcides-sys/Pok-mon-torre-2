@@ -101,6 +101,7 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
  const protectPaintedUpperRight=[
   'route-11','routes-9-10','routes-12-15',
   'sevii-1','mt-ember','sevii-2','sevii-3','sevii-4','icefall-cave',
+  'viridian-city',
   'sevii-5','rocket-warehouse','sevii-6','sevii-7',
   'sevault-canyon','tanoby-ruins','trainer-tower'
  ].includes(entry.id);

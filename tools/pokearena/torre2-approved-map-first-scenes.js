@@ -4,6 +4,27 @@
  */
 const v=(id,cx,cy,w,h)=>Object.freeze({id,cx,cy,w,h,validated:'visual'});
 export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
+ // T87: normalized gates/doors audited against the user-provided opening
+ // originals. Never place dynamic NPC hit rectangles over these gates.
+ 'pallet-town':Object.freeze([
+  v('route1',.500,.055,.13,.09),
+  v('center',.500,.793,.125,.115)
+ ]),
+ 'route-1':Object.freeze([
+  v('viridian',.501,.054,.13,.10),
+  v('pallet',.503,.954,.13,.09)
+ ]),
+ 'viridian-city':Object.freeze([
+  v('route1',.494,.940,.135,.105),
+  v('forest',.500,.053,.135,.10),
+  v('center',.495,.785,.115,.12),
+  v('mart',.738,.730,.115,.13),
+  v('gym',.821,.265,.126,.12)
+ ]),
+ 'viridian-forest':Object.freeze([
+  v('route2',.500,.073,.148,.12),
+  v('viridian',.503,.927,.147,.12)
+ ]),
  // Route 2 is the first original approved WebP (1280x720).
  // NORTH: painted PEWTER CITY sign; SOUTH: VIRIDIAN FOREST sign.
  // The cave at left is decorative until a Diglett's Cave scene exists.
@@ -310,7 +331,11 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
- 'route-2':Object.freeze({pewter:'pewter-city'}),
+ 'pallet-town':Object.freeze({route1:'route-1'}),
+ 'route-1':Object.freeze({pallet:'pallet-town',viridian:'viridian-city'}),
+ 'viridian-city':Object.freeze({route1:'route-1',forest:'viridian-forest',gym:'gym-giovanni'}),
+ 'viridian-forest':Object.freeze({viridian:'viridian-city',route2:'route-2'}),
+ 'route-2':Object.freeze({pewter:'pewter-city',forest:'viridian-forest'}),
  'pewter-city':Object.freeze({route2:'route-2',route3:'route-3',gym:'gym-brock'}),
  'gym-brock':Object.freeze({exit:'pewter-city'}),
  'route-3':Object.freeze({pewter:'pewter-city',route4:'route-4-west'}),
