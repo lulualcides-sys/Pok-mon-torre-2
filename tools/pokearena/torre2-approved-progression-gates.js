@@ -10,6 +10,7 @@ export const KANTO_BADGES=Object.freeze([
  'Alma','Pantano','Vulcao','Terra'
 ]);
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
+import {firstApprovedDestination} from './torre2-approved-map-first-scenes.js';
 import {isSeviiSceneUnlocked,seviiHasUnimplementedQuestLock} from './torre2-sevii-ferry.js';
 
 // Zero-based last approved image visible during each native campaign stage.
@@ -82,4 +83,25 @@ export function approvedReturnMapId(returnEntry,state){
 export function approvedPostBattleReturnMapId(returnEntry,previousStage,nextState,accepted){
  if(accepted!==true||previousStage!==nextState?.stage)return null;
  return approvedReturnMapId(returnEntry,nextState);
+}
+
+/** Navigate back within the 60 approved Phaser scenes, never to the
+ * obsolete campaign path. Only legal adjacent links are permitted.
+ * This is UI history, not a campaign save or an unlock mechanism. */
+export function approvedBackMapId(currentId,state,history=[]){
+ if(!approvedMapEntryAllowed(state,currentId))return null;
+ if(Array.isArray(history)){
+  for(let i=history.length-1;i>=0;i--){
+   const previous=history[i];
+   if(previous!==currentId&&approvedMapTravelAllowed(currentId,previous,state))
+    return previous;
+  }
+ }
+ const exit=firstApprovedDestination(currentId,'exit');
+ if(exit&&approvedMapTravelAllowed(currentId,exit,state))return exit;
+ const neighbors=approvedMapNeighbours(currentId)
+  .filter(id=>approvedMapTravelAllowed(currentId,id,state));
+ // On a direct load (no previous in-memory scene), ROTAS should prefer
+ // the adjacent painted route; gyms/interiors simply return to their city.
+ return neighbors.find(id=>approvedMap(id)?.type==='rota')||neighbors[0]||null;
 }
