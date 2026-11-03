@@ -7,6 +7,7 @@ import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
 import {openingNpcPlan,projectOpeningNpc} from './torre2-opening-npc-overlays.js';
 import {CLICKABLE_OVERWORLD_MAPS,installClickableOverworld} from './torre2-map-playable-hud.js';
+import {installKantoLocationChip} from './torre2-kanto-location-ui.js';
 import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
 import {lockNativePmdIdleFeet} from './torre2-gym-ace-ground.js';
 import {statusLabel} from './gen3-status.js';
@@ -998,6 +999,11 @@ create(){
     onCapture:()=>this.grassScreen(readCampaign()||state)
    });
   }
+  // T93: a tiny read-only location button is available on every approved
+  // map, including advanced gyms, caves, routes and the Elite Four.
+  // Uses the ACTUAL current view and the unchanged campaign checkpoint.
+  installKantoLocationChip(this,result,state,
+   STAGES.map(stage=>stage.city+' · '+stage.leader),TRAINERS_PER_GYM);
   // Previous scene display objects were destroyed before this call.
   // Keep only the active art + stage entry so 60 maps cannot accumulate
   // hundreds of MB of WebGL textures on a mobile device.
