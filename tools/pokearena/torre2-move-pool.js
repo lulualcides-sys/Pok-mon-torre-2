@@ -1148,7 +1148,8 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  supersonic:1.5,
  'seismic-toss':1.8,
  'egg-bomb':2.3,
- hex:3,
+ hex:6.5,
+ discharge:4,
  thunderbolt:2,
  gust:0.7
 });
