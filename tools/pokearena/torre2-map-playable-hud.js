@@ -45,7 +45,7 @@ export function showOverworldParty(scene,team,active,{nameOf,portraitOf,onSummar
   add(scene.add.text(x-61,y-12,nameOf(member),{
    fontFamily:'Pixelify Sans,monospace',fontSize:'12px',color:'#fff3d7'
   }).setDepth(103));
-  add(scene.add.text(x-61,y+7,'NV. '+(member.level??'?')+
+  add(scene.add.text(x-61,y+7,'NV. '+(member.progression?.level??member.level??'?')+
     (i===active?'  ★ ATIVO':'')+'  HP '+(member.hp??'?'),{
    fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#bddde9'
   }).setDepth(103));
@@ -80,7 +80,7 @@ export function installClickableOverworld(scene,view,{
   const portrait=portraitOf(activeMember);
   if(scene.textures.exists(portrait))
    scene.add.image(418,22,portrait).setDisplaySize(30,30).setDepth(82);
-  hudText(scene,440,17,(nameOf(activeMember)+' · NV '+(activeMember.level??'?')).slice(0,28),
+  hudText(scene,440,17,(nameOf(activeMember)+' · NV '+(activeMember.progression?.level??activeMember.level??'?')).slice(0,28),
    10,'#fff0ca',0);
   hudText(scene,440,31,'HP '+(activeMember.hp??'?')+'   EQUIPE '+team.length+'/6',
    9,'#b5e2d3',0);

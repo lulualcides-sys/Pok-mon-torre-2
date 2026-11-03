@@ -327,6 +327,8 @@ await Promise.all([
  ['tools/pokearena/torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js'],
  ['tools/pokearena/torre2-opening-npc-overlays.js','torre2-opening-npc-overlays.js'],
  ['tools/pokearena/torre2-map-playable-hud.js','torre2-map-playable-hud.js'],
+ ['tools/pokearena/torre2-opening-trainer-rosters.js','torre2-opening-trainer-rosters.js'],
+ ['tools/pokearena/torre2-opening-click-guides.js','torre2-opening-click-guides.js'],
  ['tools/pokearena/torre2-gym-ace-ground.js','torre2-gym-ace-ground.js'],
  ['tools/pokearena/torre2-sevii-ferry.js','torre2-sevii-ferry.js'],
  ['tools/pokearena/torre2-approved-progression-gates.js','torre2-approved-progression-gates.js'],
@@ -1207,6 +1209,10 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-opening-npc-overlays.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-map-playable-hud.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-opening-trainer-rosters.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-opening-click-guides.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-approved-map-first-scenes.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-approved-map-renderer.js'));
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',

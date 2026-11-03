@@ -3,6 +3,7 @@
  * Do not enable until matching optimized images are installed in the repository.
  */
 import {approvedMap,approvedMapNeighbours,approvedPointToScreen} from './torre2-approved-maps-atlas.js';
+import {renderOpeningClickGuides} from './torre2-opening-click-guides.js';
 
 // Sixty SHA-256-audited WebP backgrounds now exist in this DRAFT branch.
 // Build-preview refuses to emit an enabled site if any image is absent.
@@ -157,6 +158,9 @@ export function renderApprovedMap(scene,id,{
    return zone;
   };
   for(const h of layout.hotspots)addZone(h.id,h,()=>onHotspot(id,h.id),h.id);
+  // T91: visual arrows are below real Phaser hitzones, never new buttons.
+  // 60 existing artworks are unchanged; only the six opening maps get cues.
+  const openingGuides=renderOpeningClickGuides(scene,entry,hotspots,rect,isUnlocked);
   // Navigation is absent when nothing is unlocked: never paint a false
   // "blocked" footer over the approved artwork or its exit hotspot.
   const footer=layout.footerY===null?null:
@@ -187,5 +191,5 @@ export function renderApprovedMap(scene,id,{
    .setOrigin(.5).setDepth(49);
   // Only registered original trainer sprites are painted above the approved background.
   if(typeof renderSprite==='function')renderSprite(scene,entry,rect);
-  return {ok:true,id,entry,rect,image,zones,neighbors,back,footer,text,backLabel};
+  return {ok:true,id,entry,rect,image,zones,neighbors,openingGuides,back,footer,text,backLabel};
 }

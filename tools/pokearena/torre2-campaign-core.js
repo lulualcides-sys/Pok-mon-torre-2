@@ -7,6 +7,7 @@ export {validRematchResult};
 import {createPokemonProgression,totalExperienceForLevel,awardBattleExperience,resolveEvolutionAfterBattle,levelEvolutionChoices} from './progression.js';
 import {ROSTER} from '../datos.js';
 import {KANTO_ROUTES,routeNode,routeEncounterTable,MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
+import {forestBugCatcher} from './torre2-opening-trainer-rosters.js';
 import {captureChance,rollCapture} from './capture-mechanics.js';
 import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
@@ -437,20 +438,24 @@ export function currentOpponent(s){
  const leader=s.trainer>=TRAINERS_PER_GYM(s.stage);
  const list=gym.enemy;
  const node=routeNode(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage));
- const role=leader?'leader':node.type;
+ const bugCatcher=!leader?forestBugCatcher(s.stage,s.trainer):null;
+ // The five painted-forest replacements are original Bug Catcher sprites:
+ // they cannot secretly launch a rival, Rocket or electric/rock Pokémon.
+ const role=leader?'leader':bugCatcher?'trainer':node.type;
  const originalStarter=campaignStarter(s);
  const rivalId=originalStarter==='charmander'?'squirtle':
   originalStarter==='squirtle'?'bulbasaur':'charmander';
  const championId=rivalChampionTeam(originalStarter).at(-1);
  const level=trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader);
- const baseSpecies=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
+ const baseSpecies=bugCatcher?bugCatcher.species:
+  leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
   role==='rocket'?(['zubat','machop','ekans'].includes(list[s.trainer%list.length])?
    list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
  // Fixed gym/League rosters remain untouched; rival and regular NPCs evolve
  // as their levels rise, with the actual evolved sprite and attacks.
- const species=leader?baseSpecies:trainerSpeciesForLevel(baseSpecies,level);
+ const species=leader||bugCatcher?baseSpecies:trainerSpeciesForLevel(baseSpecies,level);
  return {id:species,leader,kind:role,
-  name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':'Treinador '+(s.trainer+1),
+  name:leader?gym.leader:bugCatcher?bugCatcher.name:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':'Treinador '+(s.trainer+1),
   level,arena:gym.arena,city:gym.city};
 }
 // Route selection must never create a full-HP battle actor from a fainted save.

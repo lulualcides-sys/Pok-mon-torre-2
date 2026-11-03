@@ -8,7 +8,9 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  // originals. Never place dynamic NPC hit rectangles over these gates.
  'pallet-town':Object.freeze([
   v('route1',.500,.055,.13,.09),
-  v('center',.500,.793,.125,.115)
+  // Actual center door: x≈764, y≈610 in the approved 1536×864 art.
+  // The former .793 clicked the walkway BELOW the building.
+  v('center',.497,.711,.084,.104)
  ]),
  'route-1':Object.freeze([
   v('viridian',.501,.054,.13,.10),
@@ -17,8 +19,11 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  'viridian-city':Object.freeze([
   v('route1',.494,.940,.135,.105),
   v('forest',.500,.053,.135,.10),
-  v('center',.495,.785,.115,.12),
-  v('mart',.738,.730,.115,.13),
+  // T91: precise blue glass doors from the actual 1536×864 city art.
+  // PC door x≈757 y≈666; Mart door x≈1135 y≈624.
+  // Old wider zones allowed clicking trees, roof and sidewalk.
+  v('center',.493,.771,.077,.083),
+  v('mart',.739,.724,.070,.085),
   v('gym',.821,.265,.126,.12)
  ]),
  'viridian-forest':Object.freeze([
@@ -34,9 +39,12 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('forest',.480,.932,.175,.118)
  ]),
  'pewter-city':Object.freeze([
-  v('center',.184,.385,.12,.14),
-  v('mart',.183,.612,.12,.14),
-  v('gym',.800,.288,.14,.15),
+  // T91: inspected actual approved 1280×720 Pewter WebP.
+  // PC blue doors center (237,290), Mart doors (235,455),
+  // Brock Gym doors (1017,194). These are NOT building/roof click areas.
+  v('center',.185,.403,.072,.089),
+  v('mart',.184,.630,.072,.092),
+  v('gym',.795,.270,.093,.099),
   v('route2',.460,.867,.16,.11),
   v('route3',.952,.453,.09,.14)
  ]),
