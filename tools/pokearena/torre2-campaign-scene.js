@@ -4,7 +4,7 @@ import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js
 import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './torre2-sevii-ferry.js';
 import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,approvedPostBattleReturnMapId} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
-import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
+import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -167,6 +167,11 @@ class Campanha extends Phaser.Scene{
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
+  // Misty's four ORIGINAL FireRed subchief portraits are all different.
+  // Keep these only while Cerulean is the active Kanto story chapter.
+  if(APPROVED_MAP_ASSETS_READY&&stage===1)
+   for(const kind of ['sailor','picnicker','ace_f'])
+    needed.add(spriteIdForTrainer(kind));
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
   const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld]);
@@ -189,6 +194,19 @@ class Campanha extends Phaser.Scene{
    if(!this.textures.exists(key))
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
+  // One native transparent SpriteCollab Starmie Idle sheet in the Misty
+  // chapter. The approved background itself is never rewritten/retouched.
+  // Manifest metadata is authoritative: no arbitrary frame size or 404 URL.
+  this.__torre2MistyAcePlan=APPROVED_MAP_ASSETS_READY&&stage===1?
+   approvedGymAceIdlePlan('0121',this.registry.get('manifiesto')):null;
+  const mistyIdle=this.__torre2MistyAcePlan;
+  if(mistyIdle&&!this.textures.exists(mistyIdle.key))
+   this.load.spritesheet(mistyIdle.key,mistyIdle.file,{
+    frameWidth:mistyIdle.fw,frameHeight:mistyIdle.fh
+   });
+  for(const key of this.textures.getTextureKeys())
+   if(key.startsWith('torre2-gym-ace-idle-')&&key!==mistyIdle?.key)
+    this.textures.remove(key);
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   // One small original PMD portrait for each first-gym ace, beside its leader.
   // No extra full animation set or online request during map navigation.
@@ -730,19 +748,52 @@ create(){
     // painted into the approved art; never draw them a second time.
     if(!actors.artworkOnly){
      const leader=project(actors.leader.cx,actors.leader.cy);
-     addFireRedNPC(scene,actors.leader.kind,leader.x,leader.y,
+     const leaderSprite=addFireRedNPC(scene,actors.leader.kind,leader.x,leader.y,
       {scale:1.7,depth:24});
-     const ace=project(actors.ace.cx,actors.ace.cy),
-      aceKey='torre2-portrait-'+actors.ace.dex;
-     if(scene.textures.exists(aceKey))
-      scene.add.image(ace.x,ace.y,aceKey).setDisplaySize(30,30).setDepth(24)
-       .setData('torre2-gym-ace',gymId);
+     leaderSprite?.setData('torre2-gym-leader-sprite',gymId);
+     const ace=project(actors.ace.cx,actors.ace.cy);
+     if(gymId==='gym-misty'){
+      // Real PMD Idle with transparency. Never render a tiny square portrait
+      // or replace the actual Starmie with a decorative placeholder.
+      const plan=this.__torre2MistyAcePlan;
+      if(plan&&scene.textures.exists(plan.key)){
+       const texture=scene.textures.get(plan.key);
+       texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+       const scale=Math.min(2.25,60/plan.fw,64/plan.fh);
+       scene.add.ellipse(ace.x,ace.y-2,42,7,0x081e32,.42).setDepth(23);
+       const sprite=scene.add.sprite(ace.x,ace.y,plan.key,0)
+        .setOrigin(.5,1).setScale(scale).setDepth(24)
+        .setData('torre2-gym-ace',gymId)
+        .setData('torre2-gym-ace-source','pmd-idle');
+       const count=Math.min(plan.durations.length,texture.frameTotal||1);
+       if(count>1){
+        const anim='torre2-approved-misty-starmie-idle';
+        if(!scene.anims.exists(anim)){
+         const ticks=plan.durations.slice(0,count)
+          .reduce((sum,value)=>sum+(Number(value)||6),0)/count;
+         scene.anims.create({key:anim,
+          frames:scene.anims.generateFrameNumbers(plan.key,{start:0,end:count-1}),
+          frameRate:Math.max(2,Math.min(8,60/ticks)),repeat:-1});
+        }
+        sprite.play(anim);
+       }
+      }
+     }else{
+      // Other previously approved gyms retain their existing implementation
+      // until separately reviewed; no surprise art/sprite changes.
+      const aceKey='torre2-portrait-'+actors.ace.dex;
+      if(scene.textures.exists(aceKey))
+       scene.add.image(ace.x,ace.y,aceKey).setDisplaySize(30,30).setDepth(24)
+        .setData('torre2-gym-ace',gymId);
+     }
     }
     for(const actor of actors.trainers){
      const point=project(actor.cx,actor.cy);
      const npc=actors.artworkOnly?null:addFireRedNPC(scene,actor.kind,
       point.x,point.y,{scale:1.45,depth:24});
      if(!npc&&!actors.artworkOnly)continue;
+     npc?.setData('torre2-gym-trainer-sprite',gymId+':'+actor.index)
+      .setData('torre2-gym-trainer-kind',actor.kind);
      const hit=scene.add.zone(point.x,point.y-13,35,43).setDepth(41)
       .setInteractive({useHandCursor:true})
       .setData('torre2-approved-gym-trainer',gymId+':'+actor.index);
