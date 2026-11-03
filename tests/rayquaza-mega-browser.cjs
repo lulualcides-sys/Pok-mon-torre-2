@@ -60,7 +60,7 @@ const server=http.createServer(async(req,res)=>{
    l.etapa=l.def.evoluciones.length;
    l.cambiarForma(l.dexActual);
    l.kit=l.kitActual();
-   const v=await fetch('arena2d/version.json').then(r=>r.json());
+   const v=await fetch('/arena2d/version.json').then(r=>r.json());
    const {megaevolucionar}=await import('/arena2d/'+v.modules+'/habilidades.js');
    if(!l.forma.mega||l.forma.mega.dex!=='0384-0001')throw Error('Mega definition absent');
    megaevolucionar(l);
