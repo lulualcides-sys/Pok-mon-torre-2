@@ -35,4 +35,6 @@ test('T92 opponent evasion is scoped and does not mutate shared native IA config
  assert.match(auto,/if\(!scene\?\.datos\?\.torre2/);
  assert.match(auto,/opponent\.cfg=\{\.\.\.opponent\.cfg,esquiva:after\}/);
  assert.match(auto,/tuneCampaignOpponentEvasion\(this\)/);
+ assert.ok(auto.includes('stage>=8?.55:stage>=3?.36:.16'));
+ assert.ok(auto.includes('stage>=8?.65:stage>=4?.52:.46'));
 });
