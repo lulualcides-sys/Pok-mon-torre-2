@@ -53,6 +53,8 @@ test('T79 Vileplume original SpriteCollab PMD Idle is transparent, no portrait',
  assert.ok(scene.includes('this.load.spritesheet(erikaIdle.key,erikaIdle.file,{'));
  assert.ok(scene.includes("}else if(gymId==='gym-erika'){"));
  assert.ok(scene.includes("const anim='torre2-approved-erika-vileplume-idle';"));
+ assert.ok(scene.includes('.setOrigin(.5,26/40).setScale(scale).setDepth(24)'),
+  'Vileplume PMD visible bottom at alpha row 26/40 must touch the platform');
  assert.ok(scene.includes("setData('torre2-gym-ace-source','pmd-idle')"));
  assert.ok(scene.includes("for(const kind of ['lass','beauty','picnicker','ace_f'])"));
 });
