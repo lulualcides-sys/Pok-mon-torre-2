@@ -228,8 +228,8 @@ test('T58 malformed owner and denied removal do not transfer forest access',()=>
  const store={getItem(k){
   return k.endsWith('active-starter-uid')?'uid:../../bad':'1';
  },removeItem(){throw Error('Denied')}};
- assert.deepEqual(restoreOpeningForestVisit(journey,store,state),
-  {...journey,forestVisited:true}); // direct valid legacy marker remains supported
+ assert.deepEqual(restoreOpeningForestVisit(journey,store,state),journey);
+ // A malformed owner pointer never borrows a different teammate's marker.
  assert.equal(clearOpeningForestVisit(store),false);
  assert.equal(clearOpeningForestVisit({}),false);
  assert.equal(clearOpeningForestVisit(null),false);
