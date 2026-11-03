@@ -173,6 +173,11 @@ class Campanha extends Phaser.Scene{
   if(APPROVED_MAP_ASSETS_READY&&(stage===1||stage===2))
    for(const kind of ['swimmer','swimmer_f','tuber_m','tuber_f'])
     needed.add(spriteIdForTrainer(kind));
+  // T79: all four classic Celadon Gym NPC classes, not Bug Catchers.
+  // Keep the original FRLG NPCs on return visits after the Rainbow Badge.
+  if(APPROVED_MAP_ASSETS_READY&&(stage===3||stage===4))
+   for(const kind of ['lass','beauty','picnicker','ace_f'])
+    needed.add(spriteIdForTrainer(kind));
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
   const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld]);
@@ -205,8 +210,17 @@ class Campanha extends Phaser.Scene{
    this.load.spritesheet(mistyIdle.key,mistyIdle.file,{
     frameWidth:mistyIdle.fw,frameHeight:mistyIdle.fh
    });
+  // One local native Vileplume PMD Idle asset for Erika; no portrait square.
+  this.__torre2ErikaAcePlan=APPROVED_MAP_ASSETS_READY&&(stage===3||stage===4)?
+   approvedGymAceIdlePlan('0045',this.registry.get('manifiesto')):null;
+  const erikaIdle=this.__torre2ErikaAcePlan;
+  if(erikaIdle&&!this.textures.exists(erikaIdle.key))
+   this.load.spritesheet(erikaIdle.key,erikaIdle.file,{
+    frameWidth:erikaIdle.fw,frameHeight:erikaIdle.fh
+   });
+  const protectedAces=new Set([mistyIdle?.key,erikaIdle?.key].filter(Boolean));
   for(const key of this.textures.getTextureKeys())
-   if(key.startsWith('torre2-gym-ace-idle-')&&key!==mistyIdle?.key)
+   if(key.startsWith('torre2-gym-ace-idle-')&&!protectedAces.has(key))
     this.textures.remove(key);
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
   // One small original PMD portrait for each first-gym ace, beside its leader.
