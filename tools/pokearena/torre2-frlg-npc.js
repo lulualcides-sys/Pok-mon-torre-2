@@ -13,7 +13,7 @@ const ALIAS=Object.freeze({
  ace_f:'cooltrainer_f',
  psychic:'channeler',biker:'biker',cyclist:'biker',scientist:'scientist',
  fisherman:'fisher',fisher:'fisher',gentleman:'gentleman',
- channeler:'channeler',camper:'camper',picnicker:'picnicker',
+ channeler:'channeler',camper:'camper',picnicker:'picnicker',beauty:'beauty',
  brock:'brock',misty:'misty',surge:'lt_surge',erika:'erika',
  koga:'koga',sabrina:'sabrina',blaine:'blaine',giovanni:'giovanni',
  lorelei:'lorelei',bruno:'bruno',agatha:'agatha',lance:'lance',
