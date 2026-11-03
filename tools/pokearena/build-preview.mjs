@@ -327,6 +327,7 @@ await Promise.all([
  ['tools/pokearena/torre2-approved-map-first-scenes.js','torre2-approved-map-first-scenes.js'],
  ['tools/pokearena/torre2-opening-npc-overlays.js','torre2-opening-npc-overlays.js'],
  ['tools/pokearena/torre2-map-playable-hud.js','torre2-map-playable-hud.js'],
+ ['tools/pokearena/torre2-kanto-location-ui.js','torre2-kanto-location-ui.js'],
  ['tools/pokearena/torre2-opening-trainer-rosters.js','torre2-opening-trainer-rosters.js'],
  ['tools/pokearena/torre2-opening-click-guides.js','torre2-opening-click-guides.js'],
  ['tools/pokearena/torre2-gym-ace-ground.js','torre2-gym-ace-ground.js'],
@@ -1180,6 +1181,17 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
  if(!text.includes('class '+klass+' extends ')||!text.includes('create(){')||
     !text.includes('import{IA')||!text.includes('this.controles'))
   throw Error('Auto battle requires recognized native scene '+filename);
+ // Only Torre 2 solo battles use a 120s clock. Replace both original
+ // REGLAS.tiempoRonda usages (initial round and next-round reset);
+ // leave all original Arena matches at their native 99 seconds.
+ if(filename==='escenas/combate.js'){
+  const nativeClock='this.reloj=REGLAS.tiempoRonda;';
+  const nativeMatches=text.split(nativeClock).length-1;
+  if(nativeMatches!==2)
+   throw Error('Unknown native combat clock signature: '+nativeMatches);
+  await fs.writeFile(entry,text.split(nativeClock).join(
+   'this.reloj=this.datos?.torre2?120:REGLAS.tiempoRonda;'));
+ }
  await fs.appendFile(entry,
   '\nimport{bindAutoBattleToScene}from"../torre2/auto-battle.js";'+
   'bindAutoBattleToScene('+klass+',IA);\n');
@@ -1209,6 +1221,9 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-opening-npc-overlays.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-map-playable-hud.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-kanto-location-ui.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-auto-battle.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-core.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-opening-trainer-rosters.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-opening-click-guides.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-approved-map-first-scenes.js'));
