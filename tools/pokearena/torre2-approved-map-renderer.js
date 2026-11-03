@@ -85,10 +85,11 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
   }
   if(navBoxes.length!==navTargets.length)return {ok:false,reason:'navigation-overlap'};
  }
- // Mt. Moon's approved upper-left title must stay visible when its
- // upper-right exit consumes the regular back-button spot. Keep the
- // previously approved placement unchanged for ALL other sixty-map scenes.
- const backCandidates=entry.id==='mt-moon'
+ // A few ORIGINAL maps have upper-right signs and a painted title
+ // on the upper-left. Prefer the lower-right corner for their return
+ // button, while preserving the previously approved layouts elsewhere.
+ const protectPaintedTitle=['mt-moon','route-24','route-6'].includes(entry.id);
+ const backCandidates=protectPaintedTitle
   ?[[601,20],[601,314],[39,314],[39,20]]
   :[[601,20],[39,20],[601,314],[39,314]];
  const back=backCandidates.find(([x,y])=>hotspots.every(h=>!overlaps(h,{x,y,width:74,height:33}))&&
