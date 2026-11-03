@@ -32,7 +32,7 @@ const server=http.createServer(async(req,res)=>{
  try{
  const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
- await page.goto('http://127.0.0.1:4279/arena2d/');
+ await page.goto('http://127.0.0.1:4279/arena2d/?original=1');
  await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
  await page.evaluate(async()=>{
   const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
@@ -78,7 +78,19 @@ const server=http.createServer(async(req,res)=>{
   return c.__torre2RematchAtlas?.mapStage===1&&c.children.list.some(o=>
    o.active&&o.getData?.('torre2-rematch-trainer')==='1:0');
  },null,{timeout:20000});
+ await page.screenshot({path:'test-evidence/t82-desktop-rematch-atlas-before.png'});
  await clickTagged('torre2-rematch-trainer','1:0');
+ await page.screenshot({path:'test-evidence/t82-desktop-rematch-atlas-after.png'});
+ const trainerUi=await page.evaluate(()=>{
+  const c=window.__pt2Game.scene.getScene('campanha');
+  return {texts:c.children.list.filter(o=>o.active&&typeof o.text==='string')
+    .map(o=>o.text.slice(0,100)).slice(0,30),
+   atlas:c.__torre2RematchAtlas,
+   trainerZones:c.children.list.filter(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-rematch-trainer')).map(o=>({
+     tag:o.getData('torre2-rematch-trainer'),x:o.x,y:o.y}))};
+ });
+ console.log('T82 DESKTOP TRAINER UI AFTER REAL CLICK',JSON.stringify(trainerUi));
  await page.waitForFunction(()=>{
   const c=window.__pt2Game.scene.getScene('campanha');
   return c.children.list.some(o=>o.active&&typeof o.text==='string'&&
