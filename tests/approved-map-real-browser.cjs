@@ -981,6 +981,104 @@ const server=http.createServer(async(req,res)=>{
    await clickPhaser({type:'sign',from:'trainer-tower',label:'battle-1'});
    await verifySave('trainer-tower-decorative-battle');
    await move('trainer-tower','exit','sevii-7');
+   // T79: controlled Erika first-clear stage (not an earned story win).
+   // Keep all existing battle checkpoints; display the ORIGINAL Celadon art,
+   // enter its gym by a real interactive door, and audit the 4 native FRLG
+   // NPC textures plus the transparent Vileplume PMD Idle sprite.
+   await page.evaluate(()=>{
+    const core=window.kanto,s=core.readCampaign();
+    s.stage=3;s.trainer=0;s.champion=false;s.leagueHonors=[];
+    s.badges=['Rocha','Cascata','Trovao'];
+    s.pendingWild=null;s.pendingCapture=null;
+    core.saveCampaign(s);
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    scene.__torre2ApprovedReturn=null;
+    scene.__torre2ApprovedMapView=null;
+    scene.scene.restart({});
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='vermilion-city',null,{timeout:45000});
+   await page.evaluate(async()=>{
+    const game=window.__pt2Game,scene=game.scene.getScene('campanha');
+    const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
+    if(!main)throw Error('T79 original Phaser module missing');
+    const atlas=await import(new URL('./torre2/torre2-approved-maps-atlas.js',main));
+    const entry=atlas.approvedMap('celadon-city');
+    if(!entry)throw Error('T79 approved Celadon atlas entry missing');
+    const key='torre2-approved-map-celadon-city';
+    if(!game.textures.exists(key)){
+     await new Promise((resolve,reject)=>{
+      let failed=false;
+      const onError=file=>{if(file?.key===key)failed=true};
+      scene.load.on('loaderror',onError);
+      scene.load.once('complete',()=>{
+       scene.load.off('loaderror',onError);
+       if(failed||!game.textures.exists(key))reject(Error('T79 Celadon art missing'));
+       else resolve();
+      });
+      scene.load.image(key,entry.image);
+      scene.load.start();
+     });
+    }
+    if(!scene.approvedMapPreview(window.kanto.readCampaign(),'celadon-city'))
+     throw Error('T79 native Phaser refused Celadon preview');
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='celadon-city',null,{timeout:20000});
+   const erikaBefore=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+   const erikaDoor=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    const zone=scene.__torre2ApprovedMapView?.zones?.find(z=>
+     z.getData?.('torre2-approved-hotspot')==='celadon-city:gym');
+    if(!zone)throw Error('T79 approved Celadon gym door missing');
+    const b=document.querySelector('#juego canvas').getBoundingClientRect();
+    const w=Math.min(b.width,b.height*640/360),
+     h=Math.min(b.height,b.width*360/640);
+    return {x:b.x+(b.width-w)/2+zone.x/640*w,
+     y:b.y+(b.height-h)/2+zone.y/360*h};
+   });
+   if(mode.isMobile)await page.touchscreen.tap(erikaDoor.x,erikaDoor.y);
+   else await page.mouse.click(erikaDoor.x,erikaDoor.y);
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='gym-erika',null,{timeout:45000});
+   const erikaReport=await page.evaluate(()=>{
+    const game=window.__pt2Game,scene=game.scene.getScene('campanha');
+    return {
+     texture:scene.__torre2ApprovedMapView?.image?.texture?.key,
+     leaders:scene.children.list.filter(o=>o.active&&
+      o.getData?.('torre2-gym-leader-sprite')==='gym-erika')
+      .map(o=>o.texture?.key),
+     trainers:scene.children.list.filter(o=>o.active&&
+      String(o.getData?.('torre2-gym-trainer-sprite')||'').startsWith('gym-erika:'))
+      .map(o=>o.texture?.key),
+     aces:scene.children.list.filter(o=>o.active&&
+      o.getData?.('torre2-gym-ace')==='gym-erika')
+      .map(o=>({key:o.texture?.key,w:o.displayWidth,h:o.displayHeight,
+       source:o.getData?.('torre2-gym-ace-source')})),
+     save:JSON.stringify(window.kanto.readCampaign())
+    };
+   });
+   assert.equal(erikaReport.texture,'torre2-approved-map-gym-erika');
+   assert.deepEqual(erikaReport.leaders,['frlg-npc-erika']);
+   assert.deepEqual(erikaReport.trainers,[
+    'frlg-npc-lass','frlg-npc-beauty',
+    'frlg-npc-picnicker','frlg-npc-cooltrainer_f'
+   ],'T79 four distinct authentic Grass-gym FRLG NPCs, no Bug Catchers');
+   assert.equal(new Set(erikaReport.trainers).size,4);
+   assert.equal(erikaReport.aces.length,1);
+   assert.equal(erikaReport.aces[0].key,'torre2-gym-ace-idle-0045');
+   assert.equal(erikaReport.aces[0].source,'pmd-idle');
+   assert.ok(erikaReport.aces[0].w>=35&&erikaReport.aces[0].h>=35);
+   assert.equal(erikaReport.save,erikaBefore,
+    'T79 walking into Erika gym modified story save');
+   const erikaScreenshot='t79-approved-gym-erika-'+mode.name+'.png';
+   await page.screenshot({path:path.join(out,erikaScreenshot),
+    fullPage:true,animations:'disabled'});
+   evidence.maps.push({id:'gym-erika',mode:mode.name,
+    via:'T79 real Celadon gym door click/touch + original FRLG NPCs',
+    fixture:'Controlled stage three; NOT an actual gym victory',
+    aceTexture:erikaReport.aces[0].key,trainers:erikaReport.trainers,
+    saveUnchanged:true,screenshot:erikaScreenshot});
    // T74: real native wild encounter persisted after reload. A second
    // 'search' must NEVER replace its species/Shiny or the encounter counter.
    // Deliberately force the 1% Shiny roll for this CONTROLLED test fixture;
