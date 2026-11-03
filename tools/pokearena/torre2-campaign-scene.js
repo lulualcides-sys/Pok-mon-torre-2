@@ -1,7 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
-import {approvedOpeningMapId,openingTravelAllowed,openingJourneyForState,markOpeningForestVisit} from './torre2-approved-opening.js';
+import {approvedOpeningMapId,openingTravelAllowed,openingJourneyForState,markOpeningForestVisit,restoreOpeningForestVisit,persistOpeningForestVisit} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -521,6 +521,10 @@ create(){
   if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   this.__torre2OpeningJourney=openingJourneyForState(
    this.__torre2OpeningJourney,state);
+  let openingStorage=null;
+  try{openingStorage=localStorage}catch{/* restricted browser storage */}
+  this.__torre2OpeningJourney=restoreOpeningForestVisit(
+   this.__torre2OpeningJourney,openingStorage);
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
    if(!entry)return false;
@@ -538,9 +542,13 @@ create(){
     // Record the forest only AFTER the renderer confirms that its original
     // texture was available and the scene transition completed.
     const shown=this.approvedMapPreview(nextState,target);
-    if(shown&&nextState?.stage===0)
+    if(shown&&nextState?.stage===0){
+     const alreadyVisited=this.__torre2OpeningJourney?.forestVisited===true;
      this.__torre2OpeningJourney=markOpeningForestVisit(
       this.__torre2OpeningJourney,id,target);
+     if(!alreadyVisited&&this.__torre2OpeningJourney?.forestVisited===true)
+      persistOpeningForestVisit(this.__torre2OpeningJourney,openingStorage);
+    }
    };
    const entry=approvedMap(target),key=mapTextureKey(target);
    if(!this.textures.exists(key)){

@@ -7,7 +7,7 @@ import {
 } from '../tools/pokearena/torre2-approved-prologue-assets.js';
 import {APPROVED_MAPS_ATLAS,approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
 import {hasFirstApprovedHotspots,firstApprovedHotspots,firstApprovedDestination} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
-import {approvedOpeningMapId,missingApprovedOpeningScenes,openingJourneyForState,markOpeningForestVisit,openingTravelAllowed} from '../tools/pokearena/torre2-approved-opening.js';
+import {approvedOpeningMapId,missingApprovedOpeningScenes,openingJourneyForState,markOpeningForestVisit,openingTravelAllowed,restoreOpeningForestVisit,persistOpeningForestVisit} from '../tools/pokearena/torre2-approved-opening.js';
 
 const art={
  id:'pallet-town',index:61,name:'Pallet Town',type:'cidade',group:'kanto',
@@ -137,4 +137,53 @@ test('T56 first starter UID survives active slot changes and PC transfers',()=>{
  };
  assert.equal(openingJourneyForState(visited,newGame).forestVisited,false);
  assert.equal(openingJourneyForState(visited,{...state,stage:1}),null);
+});
+
+test('T57 sidecar restores forest progress by saved starter UID without touching primary saves',()=>{
+ const values=new Map([['main-campaign-save','original-save-bytes'],
+  ['main-campaign-backup','untouched-backup']]);
+ const reads=[],writes=[];
+ const storage={
+  getItem(k){reads.push(k);return values.get(k)||null},
+  setItem(k,v){writes.push([k,v]);values.set(k,v)}
+ };
+ const state={stage:0,starter:'bulbasaur',team:[{id:'bulbasaur',uid:'bulbasaur-ab123'}],box:[]};
+ const fresh=openingJourneyForState(null,state);
+ assert.equal(restoreOpeningForestVisit(fresh,storage).forestVisited,false);
+ assert.equal(persistOpeningForestVisit(fresh,storage),false);
+ const visited=markOpeningForestVisit(fresh,'route-2','viridian-forest');
+ assert.equal(persistOpeningForestVisit(visited,storage),true);
+ assert.equal(writes.length,1);
+ assert.deepEqual(writes[0],['torre2:kanto:forest-visited:v1:bulbasaur-ab123','1']);
+ const restored=restoreOpeningForestVisit(openingJourneyForState(null,state),storage);
+ assert.equal(restored.forestVisited,true);
+ assert.equal(values.get('main-campaign-save'),'original-save-bytes');
+ assert.equal(values.get('main-campaign-backup'),'untouched-backup');
+ assert.equal(reads.some(x=>x==='main-campaign-save'),false);
+ const newGame={...state,team:[{id:'bulbasaur',uid:'bulbasaur-new987'}]};
+ assert.equal(restoreOpeningForestVisit(openingJourneyForState(null,newGame),storage).forestVisited,false);
+});
+test('T57 deny old or forged persisted forest milestones, tolerate blocked storage',()=>{
+ const bad=[{owner:'legacy:bulbasaur',forestVisited:true},
+  {owner:'uid:../../bad',forestVisited:true},
+  {owner:'uid:'.concat('x'.repeat(120)),forestVisited:true}];
+ const storage={getItem(){return '1'},setItem(){throw Error('Not allowed')}};
+ for(const j of bad)assert.equal(persistOpeningForestVisit(j,storage),false);
+ for(const j of bad)
+  assert.equal(restoreOpeningForestVisit({...j,forestVisited:false},storage).forestVisited,false);
+ const valid={owner:'uid:squirtle-5gy7',forestVisited:true};
+ assert.equal(persistOpeningForestVisit(valid,storage),false);
+ const blocked={getItem(){throw Error('Not allowed')}};
+ assert.equal(restoreOpeningForestVisit({...valid,forestVisited:false},blocked).forestVisited,false);
+ assert.equal(restoreOpeningForestVisit(null,storage),null);
+ assert.equal(persistOpeningForestVisit(null,storage),false);
+});
+test('T57 visual scene stores forest visit only after successful real map render',()=>{
+ const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(scene.includes('restoreOpeningForestVisit('));
+ assert.ok(scene.includes('const shown=this.approvedMapPreview(nextState,target)'));
+ assert.ok(scene.includes('if(shown&&nextState?.stage===0)'));
+ assert.ok(scene.includes('if(!alreadyVisited&&this.__torre2OpeningJourney?.forestVisited===true)'));
+ assert.ok(scene.includes('persistOpeningForestVisit('));
+ assert.ok(!scene.includes('saveCampaign(this.__torre2OpeningJourney'));
 });

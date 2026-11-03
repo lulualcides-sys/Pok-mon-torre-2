@@ -70,6 +70,32 @@ export function openingJourneyForState(previous,state){
  if(!owner)return null;
  return {owner,forestVisited:previous?.owner===owner&&previous.forestVisited===true};
 }
+
+const FOREST_VISIT_STORAGE_PREFIX='torre2:kanto:forest-visited:v1:';
+function forestVisitStorageKey(journey){
+ if(typeof journey?.owner!=='string'||!journey.owner.startsWith('uid:'))return null;
+ const uid=journey.owner.slice(4);
+ // Never use legacy starter names, untrusted key delimiters or unbounded IDs.
+ return /^[a-z0-9_-]{1,96}$/i.test(uid)?
+  FOREST_VISIT_STORAGE_PREFIX+uid:null;
+}
+// Sidecar state: read only after an ordinary campaign save has supplied a
+// matching UID. No changes to SAVE_KEY, SAVE_BACKUP_KEY or save migrations.
+export function restoreOpeningForestVisit(journey,storage){
+ if(!journey||journey.forestVisited===true)return journey;
+ const key=forestVisitStorageKey(journey);
+ if(!key||typeof storage?.getItem!=='function')return journey;
+ try{
+  return storage.getItem(key)==='1'?{...journey,forestVisited:true}:journey;
+ }catch{return journey}
+}
+export function persistOpeningForestVisit(journey,storage){
+ const key=forestVisitStorageKey(journey);
+ if(!journey?.forestVisited||!key||typeof storage?.setItem!=='function')return false;
+ try{storage.setItem(key,'1');return true}
+ catch{return false}
+}
+
 export function markOpeningForestVisit(previous,source,target){
  if(!previous)return null;
  if(source==='route-2'&&target==='viridian-forest')
