@@ -120,7 +120,7 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
 export function renderApprovedMap(scene,id,{
   onExit=()=>{},onHotspot=()=>{},onNavigate=()=>{},isUnlocked=()=>false,
   onLocked=()=>{},showHitAreas=false,renderSprite=null,
-  resolveHotspots=null,artNavigation=false
+  resolveHotspots=null,artNavigation=false,hideBackButton=false
 }={}) {
   const entry=approvedMap(id),texture=mapTextureKey(id);
   if(!entry)return {ok:false,reason:'unknown-map',id};
@@ -176,11 +176,13 @@ export function renderApprovedMap(scene,id,{
       });
   });
   const text=null;
-  const back=scene.add.zone(layout.backX,layout.backY,74,33).setDepth(50)
+  // The opening itself is the native overworld: no legacy battle-road exit.
+  // All other 60 approved locations preserve their original exit behavior.
+  const back=hideBackButton?null:scene.add.zone(layout.backX,layout.backY,74,33).setDepth(50)
    .setInteractive({useHandCursor:true}).setData('torre2-approved-exit',true)
    .on('pointerdown',(_pointer,_x,_y,e)=>{e?.stopPropagation?.();onExit();});
   const backText=entry.type==='cidade'?'ROTAS':'VOLTAR';
-  const backLabel=scene.add.text(layout.backX,layout.backY,backText,{fontFamily:'Pixelify Sans,monospace',
+  const backLabel=hideBackButton?null:scene.add.text(layout.backX,layout.backY,backText,{fontFamily:'Pixelify Sans,monospace',
    fontSize:'10px',fontStyle:'bold',color:'#ffffff',backgroundColor:'#102b47',padding:{x:7,y:5}})
    .setOrigin(.5).setDepth(49);
   // Only registered original trainer sprites are painted above the approved background.
