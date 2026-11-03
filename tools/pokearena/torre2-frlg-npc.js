@@ -8,6 +8,7 @@ const ALIAS=Object.freeze({
  youngster:'youngster',lass:'lass',rival:'blue',
  rocket:'rocket_m',sailor:'sailor',hiker:'hiker',
  swimmer:'swimmer_m_land',blackbelt:'black_belt',ace:'cooltrainer_m',
+ ace_f:'cooltrainer_f',
  psychic:'channeler',biker:'biker',cyclist:'biker',scientist:'scientist',
  fisherman:'fisher',fisher:'fisher',gentleman:'gentleman',
  channeler:'channeler',camper:'camper',picnicker:'picnicker',
