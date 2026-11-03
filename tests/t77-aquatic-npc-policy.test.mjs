@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {FIRST_APPROVED_GYM_LAYOUTS,firstApprovedGymActors,auditApprovedGymNpcThemes} from
  '../tools/pokearena/torre2-approved-map-first-scenes.js';
-import {reviewedGymNpcSpriteId,spriteIdForTrainer} from
+import {reviewedGymNpcSpriteId,spriteIdForTrainer,reviewedGymNpcFrameHeight} from
  '../tools/pokearena/torre2-frlg-npc.js';
 import {FRLG_NPC_NAMES} from '../tools/pokearena/install-frlg-npcs.mjs';
 
@@ -29,10 +29,14 @@ test('T77: missing approved NPC must NOT silently turn into random Youngster',()
  assert.equal(reviewedGymNpcSpriteId('tuber_m'),'tuber_m_land');
  assert.equal(reviewedGymNpcSpriteId('tuber_f'),'tuber_f');
  assert.equal(reviewedGymNpcSpriteId('missing_role'),null);
+ assert.equal(reviewedGymNpcFrameHeight('swimmer_m_land'),32);
+ assert.equal(reviewedGymNpcFrameHeight('swimmer_f_land'),32);
+ assert.equal(reviewedGymNpcFrameHeight('tuber_m_land'),16);
+ assert.equal(reviewedGymNpcFrameHeight('tuber_f'),16);
  // Preserve legacy behavior elsewhere until route NPCs are audited one by one.
  assert.equal(spriteIdForTrainer('missing_role'),'youngster');
  const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(scene.includes('point.x,point.y,{scale:1.45,depth:24,strict:true}'));
+ assert.ok(scene.includes('point.x,point.y,{scale,depth:24,strict:true}'));
  assert.ok(scene.includes('{scale:1.7,depth:24,strict:true}'));
 });
 
