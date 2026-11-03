@@ -864,8 +864,10 @@ const server=http.createServer(async(req,res)=>{
    await page.evaluate(()=>{
     const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
     const s=core.readCampaign();
-    s.stage=2;s.trainer=0;s.champion=false;
-    s.badges=['Rocha','Cascata'];s.leagueHonors=[];
+    // Stage three starts on the ORIGINAL Vermilion image. Stage two
+    // starts at Cerulean, so using stage two would test a fake warp.
+    s.stage=3;s.trainer=0;s.champion=false;
+    s.badges=['Rocha','Cascata','Trovao'];s.leagueHonors=[];
     s.pendingWild=null;s.pendingCapture=null;s.wildEncountersStage=0;
     core.saveCampaign(s);
     scene.__torre2ApprovedReturn=null;
