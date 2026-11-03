@@ -61,7 +61,7 @@ def remove_forest_painted_actors(source_path: Path) -> Image.Image:
 
 
 def main():
-    # Initial materialization intentionally occurs only on T87 staging branch.
+    # Second materialization: run against the frozen T87 integration head.
     TARGET.mkdir(parents=True, exist_ok=True)
     manifest = []
     for map_id, expected in SOURCE_SHA.items():
