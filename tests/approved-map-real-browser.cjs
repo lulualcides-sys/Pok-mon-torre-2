@@ -447,11 +447,32 @@ const server=http.createServer(async(req,res)=>{
     assert.equal(after,seviiSave,'T67 map navigation modified save: '+label);
    };
    const waitMap=async id=>{
-    await page.waitForFunction(target=>{
-     const scene=window.__pt2Game.scene.getScene('campanha'),
-      view=scene?.__torre2ApprovedMapView;
-     return scene?.scene.isActive()&&view?.id===target&&view.image?.active;
-    },id,{timeout:25000});
+    try{
+     await page.waitForFunction(target=>{
+      const scene=window.__pt2Game.scene.getScene('campanha'),
+       view=scene?.__torre2ApprovedMapView;
+      return scene?.scene.isActive()&&view?.id===target&&view.image?.active;
+     },id,{timeout:25000});
+    }catch(error){
+     const state=await page.evaluate(target=>{
+      const scene=window.__pt2Game.scene.getScene('campanha'),
+       map=scene?.__torre2ApprovedMapView;
+      const saved=window.kanto.readCampaign();
+      return {expected:target,map:map?.id,stage:saved?.stage,champion:saved?.champion,
+       ferryOpen:scene.__torre2SeviiFerryOpen,
+       loaderBusy:scene.load.isLoading?.(),
+       texturePresent:scene.textures.exists('torre2-approved-map-'+target),
+       activeSelections:scene.children.list.filter(x=>x.active&&
+        x.getData?.('torre2-approved-ferry-destination'))
+        .map(x=>({destination:x.getData('torre2-approved-ferry-destination'),x:x.x,y:x.y})),
+       currentText:scene.children.list.filter(x=>x.active&&typeof x.text==='string')
+        .map(x=>x.text).slice(-14)};
+     },id);
+     const name='t67-failure-'+id+'-'+mode.name+'.png';
+     await page.screenshot({path:path.join(out,name),fullPage:true,animations:'disabled'});
+     evidence.errors.push('T67_DIAG '+JSON.stringify(state));
+     throw Error('T67 transition timed out: '+JSON.stringify(state)+'; '+error);
+    }
     await verifySave(id);
     const name='t67-approved-'+id+'-'+mode.name+'.png';
     await page.screenshot({path:path.join(out,name),fullPage:true,animations:'disabled'});
