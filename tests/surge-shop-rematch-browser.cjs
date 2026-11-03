@@ -39,7 +39,7 @@ const server=http.createServer(async(req,res)=>{
    __qaCore.saveCampaign(s);
    __pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
-  // T83: the fixture can start on the approved Celadon image OR native
+  // T83: the fixture can start on the approved Vermilion image OR native
   // BattlePath when its texture was not preloaded. These are the two
   // supported entry surfaces. Never fabricate an image or jump scenes.
   await page.waitForFunction(()=>{
@@ -53,7 +53,7 @@ const server=http.createServer(async(req,res)=>{
    const scene=__pt2Game.scene.getScene('campanha');
    return {approvedMap:scene.__torre2ApprovedMapView?.id||null,
     pathStage:scene.__torre2BattlePath?.stage??null,
-    celadonTextureLoaded:scene.textures.exists('torre2-approved-map-celadon-city'),
+    vermilionTextureLoaded:scene.textures.exists('torre2-approved-map-vermilion-city'),
     savedStage:__qaCore.readCampaign()?.stage??null,
     currentTexts:scene.children.list.filter(o=>o.active&&typeof o.text==='string')
      .map(o=>o.text.slice(0,100)).slice(0,14),
@@ -61,15 +61,15 @@ const server=http.createServer(async(req,res)=>{
   });
   console.log('T83 REAL STAGE THREE ENTRY',JSON.stringify(entry));
   assert.equal(entry.savedStage,3,'T83 fixture stage changed before native entry');
-  assert.ok(entry.approvedMap==='celadon-city'||entry.pathStage===3,
+  assert.ok(entry.approvedMap==='vermilion-city'||entry.pathStage===3,
    'T83 no verified real stage-three entry: '+JSON.stringify(entry));
   const beforeExit=await page.evaluate(()=>JSON.stringify(__qaCore.readCampaign()));
-  if(entry.approvedMap==='celadon-city'){
+  if(entry.approvedMap==='vermilion-city'){
    const exitPoint=await page.evaluate(()=>{
     const scene=__pt2Game.scene.getScene('campanha');
     const exit=scene.children.list.find(o=>o.active&&o.input?.enabled&&
      o.getData?.('torre2-approved-exit')===true);
-    if(!exit)throw Error('T83 approved Celadon exit unavailable');
+    if(!exit)throw Error('T83 approved Vermilion exit unavailable');
     const rect=document.querySelector('#juego canvas').getBoundingClientRect();
     const drawW=Math.min(rect.width,rect.height*640/360);
     const drawH=Math.min(rect.height,rect.width*360/640);
