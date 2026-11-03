@@ -9,6 +9,7 @@ on:
       - 'tools/pokearena/torre2-signature-fx.js'
       - 'tests/rival-payday-cooldowns-built.test.mjs'
       - 'tests/surge-shop-rematch-browser.cjs'
+      - 'tests/source-client-smoke.cjs'
       - '.github/workflows/rival-payday-validation.yml'
 permissions:
   contents: read
