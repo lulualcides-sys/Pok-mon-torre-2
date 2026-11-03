@@ -724,3 +724,66 @@ test('T65 coastal stage starts at Fuchsia, does not create missing Pallet shortc
  assert.equal(approvedMapNeighbours('route-21').includes('gym-giovanni'),true,
   'Catalogue has this edge, but no physical route sign is activated');
 });
+
+
+test('T66 original League images have bounds-safe native hotspots, no fabricated doors',()=>{
+ const plan={
+  'gym-giovanni':{index:42,hot:['challenge'],edges:{}},
+  'routes-22-23':{index:43,hot:['victory'],edges:{victory:'victory-road'}},
+  'victory-road':{index:44,hot:['indigo','route23'],
+   edges:{indigo:'indigo-plateau',route23:'routes-22-23'}},
+  'indigo-plateau':{index:45,hot:['challenge','victory'],
+   edges:{victory:'victory-road'}},
+  'elite-four-rooms':{index:46,hot:['bruno','agatha','lance','champion','hall','indigo'],
+   edges:{hall:'hall-of-fame',indigo:'indigo-plateau'}},
+  'hall-of-fame':{index:47,hot:['elite'],edges:{elite:'elite-four-rooms'}}
+ };
+ for(const [id,item] of Object.entries(plan)){
+  const entry=approvedMap(id);
+  assert.equal(entry.index,item.index,id);
+  const hotspots=firstApprovedHotspots(entry);
+  assert.deepEqual(hotspots.map(h=>h.id),item.hot,id);
+  const layout=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+  assert.equal(layout.ok,true,id+': '+JSON.stringify(layout));
+  assert.equal(hasFirstApprovedHotspots(id),true,id);
+  for(const [sign,target] of Object.entries(item.edges)){
+   assert.equal(firstApprovedDestination(id,sign),target);
+   assert.ok(approvedMapNeighbours(id).includes(target),id+'→'+target);
+   assert.ok(approvedMapNeighbours(target).includes(id),target+'→'+id);
+  }
+  const {scene,zones}=fakeScene(),hits=[];
+  const view=renderApprovedMap(scene,id,{
+   resolveHotspots:firstApprovedHotspots,artNavigation:true,
+   isUnlocked:()=>true,onHotspot:(src,sign)=>hits.push(src+':'+sign)
+  });
+  assert.equal(view.ok,true,id);
+  for(const sign of item.hot){
+   const zone=zones.find(z=>z.data?.value===id+':'+sign);
+   assert.ok(zone,id+':'+sign);
+   let stopped=false;
+   zone.pointerdown(null,0,0,{stopPropagation(){stopped=true;}});
+   assert.equal(stopped,true);
+  }
+  assert.deepEqual(hits,item.hot.map(sign=>id+':'+sign));
+ }
+});
+test('T66 leader and Elite challenger gates reuse existing battle system only',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(source.includes("'routes-22-23','elite-four-rooms'"));
+ for(const [id,stage] of [
+  ['gym-sabrina',5],['gym-blaine',6],
+  ['gym-giovanni',7],['indigo-plateau',8]
+ ])assert.ok(source.includes("(id==='"+id+"'&&fresh.stage==="+stage+")"));
+ for(const [leader,stage] of [['bruno',9],['agatha',10],['lance',11],['champion',12]])
+  assert.ok(source.includes(leader+':'+stage));
+ assert.ok(source.includes("if(fresh.stage===eliteStage&&!fresh.champion)"));
+ assert.ok(source.includes("target!=='hall-of-fame'||state.champion===true"));
+ assert.ok(source.includes('return this.gymScreen(fresh)'));
+ assert.equal(firstApprovedDestination('routes-22-23','viridian'),null);
+ assert.equal(firstApprovedDestination('gym-giovanni','route23'),null);
+ assert.equal(firstApprovedDestination('hall-of-fame','sevii'),null);
+ assert.equal(firstApprovedDestination('victory-road','articuno'),null);
+ assert.equal(firstApprovedDestination('elite-four-rooms','lorelei'),null);
+ for(const id of ['gym-sabrina','gym-blaine','gym-giovanni'])
+  assert.equal(firstApprovedDestination(id,'challenge'),null);
+});
