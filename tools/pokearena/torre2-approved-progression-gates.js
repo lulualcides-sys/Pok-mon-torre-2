@@ -97,11 +97,14 @@ export function approvedBackMapId(currentId,state,history=[]){
     return previous;
   }
  }
+ const entrance=firstApprovedDestination(currentId,'entrance');
+ if(entrance&&approvedMapTravelAllowed(currentId,entrance,state))return entrance;
  const exit=firstApprovedDestination(currentId,'exit');
  if(exit&&approvedMapTravelAllowed(currentId,exit,state))return exit;
  const neighbors=approvedMapNeighbours(currentId)
   .filter(id=>approvedMapTravelAllowed(currentId,id,state));
- // On a direct load (no previous in-memory scene), ROTAS should prefer
- // the adjacent painted route; gyms/interiors simply return to their city.
- return neighbors.find(id=>approvedMap(id)?.type==='rota')||neighbors[0]||null;
+ // With no history (direct entry or reload), go to the preceding atlas
+ // artwork instead of accidentally jumping FORWARD to an unvisited route.
+ // Never skip the existing stage/quest gate checked above.
+ return neighbors.sort((a,b)=>approvedMap(a).index-approvedMap(b).index)[0]||null;
 }
