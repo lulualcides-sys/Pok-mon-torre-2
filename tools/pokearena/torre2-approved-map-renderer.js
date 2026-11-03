@@ -85,7 +85,9 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
   }
   if(navBoxes.length!==navTargets.length)return {ok:false,reason:'navigation-overlap'};
  }
- const backCandidates=[[601,20],[39,20],[601,314],[39,314]];
+ // Use the opposite lower corner before covering the approved artwork's
+ // painted title. E.g. Mt. Moon has its exit at the upper-right.
+ const backCandidates=[[601,20],[601,314],[39,314],[39,20]];
  const back=backCandidates.find(([x,y])=>hotspots.every(h=>!overlaps(h,{x,y,width:74,height:33}))&&
   navBoxes.every(b=>!overlaps(b,{x,y,width:74,height:33}))&&
   (footerY===null||!overlaps({x,y,width:74,height:33},{x:320,y:footerY,width:636,height:25})));
