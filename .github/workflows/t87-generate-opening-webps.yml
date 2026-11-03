@@ -1,0 +1,36 @@
+name: T87 — gerar quatro WebPs Kanto (somente testes)
+
+on:
+  push:
+    branches: [fix/t86-forest-trainers-as-native-sprites-20261103]
+    paths:
+      - 'tools/pokearena/produce-opening-user-webps.py'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare-four-map-textures:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install image processing dependencies
+        run: python -m pip install --disable-pip-version-check --quiet Pillow==11.3.0 numpy==2.2.6 opencv-python-headless==4.11.0.86
+      - name: Convert exactly four hash-verified originals
+        run: python tools/pokearena/produce-opening-user-webps.py
+      - name: Commit assets to staging branch ONLY
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/ui/kanto-opening-user/*.webp assets/ui/kanto-opening-user/opening-user-manifest.json
+          git diff --cached --quiet && exit 0
+          git commit -m "assets(T87): four user opening maps with stage-only forest clean plate"
+          git push origin HEAD:fix/t86-forest-trainers-as-native-sprites-20261103
