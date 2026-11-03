@@ -1,0 +1,36 @@
+name: T86 — treinador FireRed como sprite nativo, sem NPC pintado
+
+on:
+  pull_request:
+    branches: [preview/homologacao-jogavel-20261103]
+    paths:
+      - '.github/workflows/t86-opening-npc-sprites.yml'
+      - 'tools/pokearena/torre2-opening-npc-overlays.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/t86-opening-npc-overlays.test.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-sprite-regression:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate native sprite modules
+        run: |
+          node --check tools/pokearena/torre2-opening-npc-overlays.js
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/build-preview.mjs
+      - name: No duplication and coordinates regression
+        run: node --test tests/t86-opening-npc-overlays.test.mjs
+      - name: Protect original approved images
+        run: |
+          node tools/dev/approved-visual-guard.mjs
+          node --test tests/approved-map-binary-integrity.test.mjs
