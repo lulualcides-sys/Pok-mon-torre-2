@@ -1,52 +1,54 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {
- FIRST_APPROVED_GYM_LAYOUTS,
- APPROVED_GYM_NPC_THEMES,
- auditApprovedGymNpcThemes,
- firstApprovedGymActors
-} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
+import {FIRST_APPROVED_GYM_LAYOUTS,APPROVED_GYM_NPC_THEMES,
+ auditApprovedGymNpcThemes,firstApprovedGymActors} from
+ '../tools/pokearena/torre2-approved-map-first-scenes.js';
+import {approvedMapImagePath,USER_SURGE_OVERRIDE_PATH} from
+ '../tools/pokearena/torre2-approved-map-renderer.js';
+import {reviewedGymNpcSpriteId} from '../tools/pokearena/torre2-frlg-npc.js';
 
-// T78: the user-approved WebP already PAINTS Surge, Pikachu and four NPCs.
-// The painted Pikachu is decoration; it is NOT evidence that Surge's
-// actual battle ACE is Pikachu. Never spawn an additional Raichu over it.
-test('Surge painted layer is not duplicated by Phaser NPC actors',()=>{
- const scene=FIRST_APPROVED_GYM_LAYOUTS['gym-surge'];
- assert.equal(scene.artworkOnly,true);
- assert.equal(scene.ace.dex,'0025'); // original painted Pikachu, not battle roster
- assert.equal(scene.trainers.length,4);
- assert.equal(APPROVED_GYM_NPC_THEMES['gym-surge'].status,'artwork-only');
- const audit=auditApprovedGymNpcThemes().find(row=>row.id==='gym-surge');
- assert.ok(audit);
- assert.equal(audit.renderedNpcCount,0);
- assert.deepEqual([...audit.unexpected],[]);
+test('T80 new user-owned Surge EMPTY map needs 6 independent Phaser actors',()=>{
+ const x=FIRST_APPROVED_GYM_LAYOUTS['gym-surge'];
+ assert.notEqual(x.artworkOnly,true,
+  'new user map has four empty platforms, no baked-in sprites');
+ assert.equal(x.leader.kind,'surge');
+ assert.equal(x.ace.dex,'0026','Raichu is the native battle ace');
+ assert.deepEqual(x.trainers.map(t=>t.kind),
+  ['sailor','rocker','gentleman','worker_m']);
+ assert.deepEqual(x.trainers.map(t=>reviewedGymNpcSpriteId(t.kind)),
+  ['sailor','rocker','gentleman','worker_m']);
  const actors=firstApprovedGymActors('gym-surge',17);
- assert.equal(actors.artworkOnly,true);
- assert.equal(actors.trainers.length,4);
- for(const actor of [actors.leader,actors.ace,...actors.trainers]){
+ assert.deepEqual(actors.trainers.map(t=>t.index),[13,14,15,16]);
+ for(const actor of [actors.leader,actors.ace,...actors.trainers])
   assert.ok(actor.cx>=0&&actor.cx<=1&&actor.cy>=0&&actor.cy<=1);
- }
+ assert.equal(APPROVED_GYM_NPC_THEMES['gym-surge'].status,'validated');
+ const audit=auditApprovedGymNpcThemes().find(x=>x.id==='gym-surge');
+ assert.equal(audit.renderedNpcCount,4);
+ assert.deepEqual(audit.unexpected,[]);
 });
 
-test('Surge artwork metadata never changes the battle roster or rewards',()=>{
- const scene=FIRST_APPROVED_GYM_LAYOUTS['gym-surge'];
- assert.equal(scene.stage,2);
- assert.equal(Object.hasOwn(scene,'battleAce'),false);
- assert.equal(Object.hasOwn(scene,'reward'),false);
- assert.equal(Object.hasOwn(scene,'battleResult'),false);
+test('T80 one image override without changing 60 approved scene references',()=>{
+ assert.equal(approvedMapImagePath('gym-surge'),USER_SURGE_OVERRIDE_PATH);
+ assert.equal(USER_SURGE_OVERRIDE_PATH,
+  'assets/ui/kanto-overrides/gym-surge-user.webp');
+ assert.notEqual(approvedMapImagePath('gym-misty'),USER_SURGE_OVERRIDE_PATH);
+ const renderer=readFileSync('tools/pokearena/torre2-approved-map-renderer.js','utf8');
+ assert.ok(renderer.includes('approvedMapImagePath(id,item)'));
+ const builder=readFileSync('tools/pokearena/build-preview.mjs','utf8');
+ assert.ok(builder.includes("const surgeRel='assets/ui/kanto-overrides/gym-surge-user.webp';"));
+ assert.ok(builder.includes('T80 user-authored Surge map override failed provenance SHA-256'));
 });
 
-test('T78 native Lt. Surge battle roster retains Raichu, never painted Pikachu',()=>{
+test('T80 Surge real team is still Voltorb/Pikachu/Raichu, no forged reward',()=>{
  const core=readFileSync('tools/pokearena/torre2-campaign-core.js','utf8');
- const surge=core.indexOf("leader:'Lt. Surge'");
- assert.ok(surge>0,'original FRLG Surge leader must exist');
- const roster=core.slice(surge,surge+700);
- assert.ok(roster.includes("boss:'raichu'"),'native battle ace must be Raichu');
- assert.ok(roster.includes("leaderTeam:['voltorb','pikachu','raichu']"),
-  'original team must remain Voltorb, Pikachu, Raichu');
- const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(scene.includes('if(!actors.artworkOnly){'));
- assert.ok(scene.includes('const npc=actors.artworkOnly?null:addFireRedNPC'));
- assert.ok(scene.includes("gymId==='gym-surge'?2"));
+ const i=core.indexOf("leader:'Lt. Surge'");
+ assert.ok(i>=0);
+ const roster=core.slice(i,i+700);
+ assert.ok(roster.includes("boss:'raichu'"));
+ assert.ok(roster.includes("leaderTeam:['voltorb','pikachu','raichu']"));
+ const x=FIRST_APPROVED_GYM_LAYOUTS['gym-surge'];
+ assert.equal(Object.hasOwn(x,'battleAce'),false);
+ assert.equal(Object.hasOwn(x,'reward'),false);
+ assert.equal(Object.hasOwn(x,'battleResult'),false);
 });
