@@ -523,7 +523,8 @@ create(){
    // Stage 0 requires a real, bidirectional approved prologue; the new art
    // may have higher catalog indices than the original sixty assets.
    if(s===0)return !!APPROVED_STAGE_MAPS[0]&&
-    openingTravelAllowed(_src,target,approvedMap,approvedMapNeighbours);
+    openingTravelAllowed(_src,target,approvedMap,approvedMapNeighbours,
+     Number.isInteger(state.trainer)&&state.trainer>=TRAINERS_PER_GYM(0)-3);
    return entry.index<=APPROVED_STAGE_MAX[s];
   };
   const open=target=>{

@@ -12,7 +12,9 @@ export const REQUIRED_OPENING_CONNECTIONS=Object.freeze([
  Object.freeze(['route-1','viridian-city']),
  Object.freeze(['viridian-city','route-2']),
  Object.freeze(['route-2','viridian-forest']),
- Object.freeze(['viridian-forest','pewter-city'])
+ // Forest exits back to Route 2's northern segment, THEN Pewter.
+ // No fictional direct doorway between the Forest and Pewter itself.
+ Object.freeze(['route-2','pewter-city'])
 ]);
 export function missingApprovedOpeningScenes(findMap,hasReviewedHotspots){
  if(typeof findMap!=='function'||typeof hasReviewedHotspots!=='function')
@@ -48,13 +50,16 @@ export function approvedOpeningMapId(findMap,hasReviewedHotspots,
 // Stage-zero visits are scoped to next/previous approved geographic edges,
 // with Brock's actual gym as the only non-spine destination.
 // Route 22 is optional and never required to unlock Pallet.
-export function openingTravelAllowed(source,target,findMap,neighbors){
+export function openingTravelAllowed(source,target,findMap,neighbors,routeTrainersCleared=false){
  if(typeof findMap!=='function'||typeof neighbors!=='function')
   throw new TypeError('Opening graph needs map and neighbor resolvers');
  const permitted=new Set([...REQUIRED_OPENING_SCENES,...OPTIONAL_OPENING_SCENES,'gym-brock']);
  if(!permitted.has(source)||!permitted.has(target)||!findMap(target))return false;
  if(!neighbors(source).includes(target))return false;
- if(target==='gym-brock')return source==='pewter-city';
+ if(target==='gym-brock')return source==='pewter-city'&&routeTrainersCleared;
+ // The north/Pewter exit on the Route 2 illustration must not skip the
+ // first ten existing route encounters (which include Viridian Forest).
+ if(source==='route-2'&&target==='pewter-city'&&!routeTrainersCleared)return false;
  if(source==='gym-brock')return target==='pewter-city';
  if(source==='route-22'||target==='route-22')
   return source==='viridian-city'||target==='viridian-city';

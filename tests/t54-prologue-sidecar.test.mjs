@@ -74,3 +74,10 @@ test('T54 existing Route 2 forest sign is activated only with real registered fo
  assert.throws(()=>approvedPrologueBridgeDestination('route-2','forest',null),TypeError);
  assert.equal(firstApprovedDestination('route-2','forest'),null);
 });
+
+test('T54 physical Kanto route: forest returns to Route 2; 10 route trainers before Pewter',()=>{
+ assert.ok(APPROVED_PROLOGUE_EDGES.some(([a,b])=>a==='route-2'&&b==='pewter-city'));
+ assert.equal(APPROVED_PROLOGUE_EDGES.some(([a,b])=>a==='viridian-forest'&&b==='pewter-city'),false);
+ const source=readFileSync('tools/pokearena/torre2-approved-opening.js','utf8');
+ assert.ok(source.includes("source==='route-2'&&target==='pewter-city'&&!routeTrainersCleared"));
+});

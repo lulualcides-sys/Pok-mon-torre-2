@@ -14,7 +14,7 @@ export const APPROVED_PROLOGUE_EDGES=Object.freeze([
  Object.freeze(['route-1','viridian-city']),
  Object.freeze(['viridian-city','route-2']),
  Object.freeze(['route-2','viridian-forest']),
- Object.freeze(['viridian-forest','pewter-city']),
+ Object.freeze(['route-2','pewter-city']),
  Object.freeze(['viridian-city','route-22'])
 ]);
 // IMPORTANT: additions require explicit user approval and measured coordinates.
