@@ -1150,7 +1150,7 @@ export const KANTO_CAMPAIGN_QUICK_COOLDOWNS=Object.freeze({
  'egg-bomb':2.3,
  hex:3,
  thunderbolt:2,
- gust:1.3
+ gust:0.7
 });
 export function balanceCampaignQuickCooldown(move){
  // Lv8 practice ULTs keep their >=8s cooldown. Only Gust/Thunderbolt
