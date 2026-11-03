@@ -91,7 +91,12 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
  const protectPaintedTitle=['mt-moon','route-24','route-6'].includes(entry.id);
  // Route 11/Route 10/Route 12–15 have critical painted signs at top right;
  // move Voltar down without repainting or covering those actual signs.
- const protectPaintedUpperRight=['route-11','routes-9-10','routes-12-15'].includes(entry.id);
+ const protectPaintedUpperRight=[
+  'route-11','routes-9-10','routes-12-15',
+  'sevii-1','mt-ember','sevii-2','sevii-3','sevii-4','icefall-cave',
+  'sevii-5','rocket-warehouse','sevii-6','sevii-7',
+  'sevault-canyon','tanoby-ruins','trainer-tower'
+ ].includes(entry.id);
  const backCandidates=protectPaintedUpperRight
   ?[[601,314],[601,20],[39,314],[39,20]]
   :protectPaintedTitle
