@@ -235,9 +235,9 @@ test('T47 approved cities open by default only after verified textures, preserve
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.match(source,/const desiredMap=resume\?\.id\|\|APPROVED_STAGE_MAPS\[state\.stage\]/);
  assert.match(source,/hasFirstApprovedHotspots\(desiredMap\)/);
- assert.match(source,/this\.textures\.exists\(mapTextureKey\(desiredMap\)\)/);
+ assert.match(source,/approvedMapEntryAllowed\(state,desiredMap\)/);
  assert.match(source,/!battleReport&&APPROVED_MAP_ASSETS_READY/);
- assert.match(source,/if\(!resumed\)this\.renderCampaign\(state/);
+ assert.match(source,/if\(!resumed&&!canOpenArt\)/);
  const renderer=readFileSync('tools/pokearena/torre2-approved-map-renderer.js','utf8');
  assert.match(renderer,/entry\.type==='cidade'\?'ROTAS':'VOLTAR'/);
 });
@@ -894,6 +894,8 @@ test('T86: VOLTAR is a legal Phaser atlas transition, never a legacy route',()=>
  assert.ok(scene.includes('preloadApprovedMap(this,target)'));
  assert.ok(scene.includes('this.approvedGymChallengeDialog(fresh,id)'));
  assert.ok(scene.includes('this.enterBattle(fresh)'));
+ assert.ok(scene.includes('if(!resumed&&!canOpenArt)'),
+  'Missing Phaser artwork must show error/retry, not legacy route');
  assert.ok(!scene.includes('this.load.image(key,entry.image)'));
  assert.ok(!scene.includes('this.__torre2ApprovedReturn=null;\n    this.renderCampaign(readCampaign()||state);'));
 });
