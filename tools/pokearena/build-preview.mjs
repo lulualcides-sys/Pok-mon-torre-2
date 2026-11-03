@@ -824,7 +824,7 @@ for(const [filename,changes] of patches){
    // The current title screen has a revised responsive layout. Retain
    // native button spacing and hitboxes; never replace unknown coordinates.
    if(filename==='escenas/titulo.js'&&from.startsWith('const DISPOSICION=')){
-    if(!/const DISPOSICION=\\{principal:/.test(body)||
+    if(!body.includes('const DISPOSICION={principal:')||
        !body.includes('jugar:')||!body.includes('ajustes:'))
      throw Error('Cannot verify native title layout after upstream change');
     console.warn('Updated native title layout preserved unchanged');
