@@ -367,10 +367,12 @@ create(){
   const desiredMap=resume?.id||APPROVED_STAGE_MAPS[state.stage];
   const artReady=!!APPROVED_STAGE_MAPS[0]||state.stage!==0;
   const canOpenArt=artReady&&!battleReport&&APPROVED_MAP_ASSETS_READY&&
-   hasFirstApprovedHotspots(desiredMap)&&
-   this.textures.exists(mapTextureKey(desiredMap));
+   hasFirstApprovedHotspots(desiredMap)&&approvedMapEntryAllowed(state,desiredMap);
+  // Missing Phaser textures must show the renderer's explicit error/retry
+  // screen, never silently open the obsolete campaign layout.
   const resumed=canOpenArt&&this.approvedMapPreview(state,desiredMap);
-  if(!resumed)this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
+  if(!resumed&&!canOpenArt)
+   this.renderCampaign(state,{deferEeveeChoice:!!battleReport});
   if(battleReport){
    const panel=showBattleReport(this,battleReport);
    // Offer choices only AFTER the battle report has been acknowledged.
