@@ -108,10 +108,13 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual([brand.width,brand.height],[240,80],
    'The approved pixel-art Pokémon Torre sprite replaces only the old menu title texture');
   assert.equal(brand.menu,'principal','Main menu unchanged');
-  assert.deepEqual(brand.buttons,['jugar','pokedex','tutorial','ajustes','creditos'],
-   'Keep every original menu button and its exact navigation');
-  assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320],
-   'Keep original menu button positions');
+  // T84: native PERSONALIZAR is the authorized second menu button.
+  // Preserve the exact ordering and alignment of the five other entries.
+  assert.deepEqual(brand.buttons,
+   ['jugar','personalizar','pokedex','tutorial','ajustes','creditos'],
+   'Keep all six native title buttons in the current authorized order');
+  assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320,320],
+   'Keep all native title button positions centered');
   assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=30),
    'Main menu buttons must be substantially wider and taller for touch use');
   assert.deepEqual(brand.socialIcons,[],
