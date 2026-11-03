@@ -7,6 +7,7 @@ import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
 import {openingNpcPlan,projectOpeningNpc} from './torre2-opening-npc-overlays.js';
 import {CLICKABLE_OVERWORLD_MAPS,installClickableOverworld} from './torre2-map-playable-hud.js';
+import {installKantoLocationChip} from './torre2-kanto-location-ui.js';
 import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
 import {lockNativePmdIdleFeet} from './torre2-gym-ace-ground.js';
 import {statusLabel} from './gen3-status.js';
@@ -998,6 +999,11 @@ create(){
     onCapture:()=>this.grassScreen(readCampaign()||state)
    });
   }
+  // T93: a tiny read-only location button is available on every approved
+  // map, including advanced gyms, caves, routes and the Elite Four.
+  // Uses the ACTUAL current view and the unchanged campaign checkpoint.
+  installKantoLocationChip(this,result,state,
+   STAGES.map(stage=>stage.city+' · '+stage.leader),TRAINERS_PER_GYM);
   // Previous scene display objects were destroyed before this call.
   // Keep only the active art + stage entry so 60 maps cannot accumulate
   // hundreds of MB of WebGL textures on a mobile device.
@@ -1935,6 +1941,22 @@ create(){
    // No scene.restart: retain browser fullscreen and native Phaser canvas.
    this.returnFromPartyToMap(state);
   }).setData('torre2-summary-back',true);
+  // Navigate adjacent team members in the same native Sumário without
+  // changing the active battler or writing the save.
+  if(state.team.length>1){
+   const go=offset=>{
+    const next=(index+offset+state.team.length)%state.team.length;
+    this.summaryFilter='ALL';this.summarySearch='';
+    this.summaryWarning=null;this.summaryView='moves';
+    this.showSummary(readCampaign()||state,next,0,0);
+   };
+   button(293,13,39,27,'◀',()=>go(-1))
+    .setData('torre2-summary-prev-pokemon',true);
+   label(355,20,(index+1)+' / '+state.team.length,C.gold,11)
+    .setOrigin(.5);
+   button(392,13,39,27,'▶',()=>go(1))
+    .setData('torre2-summary-next-pokemon',true);
+  }
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
   label(24,61,stats.name.toUpperCase(),C.gold,15);
@@ -2302,15 +2324,47 @@ create(){
    text(this,ANCHO/2,61,'✦ SHINY AVISTADOS '+view.totals.shinySeen+
     ' · CAPTURADOS '+view.totals.shinyCaught,{
     ...statusStyle,color:'#f0d789',fontSize:'9px'}).setOrigin(.5);
+  // Pixel-art PMD sprites are loaded per Pokédex page. Unseen Pokémon
+  // remain silhouettes; no changes to encounter, capture or shiny state.
+  const dexEpoch=this.__torre2DexEpoch=(this.__torre2DexEpoch||0)+1;
+  const dexImages=[],missingPortraits=[];
   view.rows.forEach((row,i)=>{
    const x=35+(i>=11?295:0),y=75+(i%11)*21;
+   const dex=String(row.index+1).padStart(4,'0');
+   const portraitKey='torre2-portrait-'+dex;
+   const paint=()=>{
+    if(this.__torre2DexEpoch!==dexEpoch||!this.scene.isActive()||
+       !this.textures.exists(portraitKey)||
+       !this.children.list.some(x=>x.active&&
+        x.getData?.('torre2-dex-id')===row.id))return;
+    this.textures.get(portraitKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    const image=this.add.image(x+8,y+8,portraitKey)
+     .setDisplaySize(19,19).setDepth(12)
+     .setData('torre2-dex-sprite',row.id);
+    if(!row.seen&&!row.caught)image.setTint(0x465b72);
+   };
+   const portraitReady=this.textures.exists(portraitKey);
+   if(!portraitReady&&row.ready){
+    this.load.image(portraitKey,'assets/pmd/'+dex+'/portrait.png');
+    dexImages.push(paint);missingPortraits.push(portraitKey);
+   }
    const marker=row.shinyCaught?' ✦ SHINY':row.shinySeen?' ✦':
     row.caught?' ★':row.seen?' ◦':row.ready?' ✓':'';
-   text(this,x,y,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
+   text(this,x+24,y,String(row.index+1).padStart(3,'0')+'. '+row.name+marker,{
     fontSize:'11px',color:row.shinyCaught?'#f5db86':
      row.caught?C.gold:row.seen?C.blue:C.muted
    }).setData('torre2-dex-id',row.id);
+   // Paint only after the row exists; delayed loader cannot leak sprites
+   // onto the Sumário if the player leaves the Pokédex during download.
+   if(portraitReady)paint();
   });
+  if(missingPortraits.length){
+   this.load.once('complete',()=>{
+    if(this.__torre2DexEpoch!==dexEpoch||!this.scene.isActive())return;
+    dexImages.forEach(paint=>paint());
+   });
+   if(!this.load.isLoading())this.load.start();
+  }
   this.button(82,329,140,31,'◀ VOLTAR',()=>this.returnFromPartyToMap(state))
    .setData('torre2-dex-back',true);
   this.button(236,329,133,31,'◀ ANTERIOR',()=>{

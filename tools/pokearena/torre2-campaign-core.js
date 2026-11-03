@@ -693,7 +693,7 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  // must not consume the ball, award a Pokémon, clear the wild encounter or
  // change the Pokédex in the live session. The same encounter can be retried.
  const next={...s,inventory:{...s.inventory,[ball]:s.inventory[ball]-1}};
- let member=null;
+ let member=null,captureShared=null;
  if(!outcome.caught){
   next.lastMessage=candidate.id+' escapou! '+outcome.shakes+' balanços.';
  }else{
@@ -702,16 +702,23 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
   member.hp=target.hpPercent;
   member.status=options.persistentStatus?JSON.parse(JSON.stringify(options.persistentStatus)):null;
   next.pendingWild=null;
-  next.team=[...s.team];next.box=[...s.box];
+  // Deep-copy progressions before award; denied storage remains atomic.
+  next.team=s.team.map(p=>JSON.parse(JSON.stringify(p)));
+  next.box=[...s.box];
   next.dexSeen=[...(s.dexSeen||[])];next.dexCaught=[...(s.dexCaught||[])];
   next.dexShinySeen=[...(s.dexShinySeen||[])];
   next.dexShinyCaught=[...(s.dexShinyCaught||[])];
   recordCaught(next,candidate.id);
   if(member.shiny)recordShiny(next,candidate.id,true);
+  // Capturing grants one wild-victory EXP reward to eligible teammates,
+  // not the caught individual, PC members or special Mewtwo tester.
+  const reward=xpRewardFor(next.stage,TRAINERS_PER_GYM(next.stage),'wild');
+  captureShared=awardSharedTeamExperience(next,reward,{kind:'capture'});
   const destination=next.team.length<6?'Equipe':'PC';
   if(destination==='Equipe')next.team.push(member);else next.box.push(member);
   next.lastMessage=candidate.id+' capturado! '+destination+
-   ' · '+Math.round(outcome.chance*100)+'% de chance.';
+   ' · '+Math.round(outcome.chance*100)+'% de chance. '+
+   'XP por captura: até +'+reward+' por Pokémon elegível.';
  }
  saveCampaign(next);
  // Commit only after both snapshot validation and the primary write succeed.
@@ -720,13 +727,22 @@ export function attemptCapture(s,random=Math.random,ball='pokeball',options={}){
  s.lastMessage=next.lastMessage;
  if(!outcome.caught)return {ok:false,reason:s.lastMessage,...outcome};
  s.pendingWild=null;
- recordCaught(s,candidate.id);
- if(member.shiny){
-  s.dexShinySeen=next.dexShinySeen;
-  s.dexShinyCaught=next.dexShinyCaught;
+ // A successful persisted throw now updates the same live Pokémon,
+ // preserving team/PC/inventory objects and progression references.
+ const oldCount=s.team.length;
+ for(let i=0;i<oldCount;i++){
+  const live=s.team[i],saved=next.team[i],existingProgress=live.progression;
+  Object.assign(live,saved);
+  if(existingProgress&&saved.progression){
+   Object.assign(existingProgress,saved.progression);
+   live.progression=existingProgress;
+  }
  }
- if(s.team.length<6)s.team.push(member);else s.box.push(member);
- return {ok:true,pokemon:member,...outcome};
+ s.dexSeen=next.dexSeen;s.dexCaught=next.dexCaught;
+ s.dexShinySeen=next.dexShinySeen;s.dexShinyCaught=next.dexShinyCaught;
+ if(oldCount<6)s.team.push(member);else s.box.push(member);
+ return {ok:true,pokemon:member,sharedExp:captureShared?.gains||[],
+  evolutions:captureShared?.evolutions||[],...outcome};
 }
 // The summary editor is a save transaction, not an in-memory preview.
 // Equip on a detached member first, persist the complete team checkpoint,

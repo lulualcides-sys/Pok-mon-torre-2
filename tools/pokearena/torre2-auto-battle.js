@@ -383,6 +383,32 @@ export function installAutoBattle(scene,makeNativeAI){
  sync();
  return state;
 }
+/** T92: opponent dodge frequency is tuned only in Torre 2 campaign.
+ * Player AUTO already has zero aim error. Native accuracy, i-frames,
+ * hitboxes, cooldowns, energy, and ALL original Arena modes stay intact.
+ * Do not mutate native difficulty objects (shared among other scenes).
+ */
+export function tuneCampaignOpponentEvasion(scene){
+ if(!scene?.datos?.torre2||!Array.isArray(scene.controles))return null;
+ const opponent=scene.controles.find((control,i)=>i!==0&&
+  control&&typeof control==='object'&&control.cfg&&
+  typeof control.cfg==='object'&&!isHuman(control));
+ if(!opponent)return null;
+ if(opponent.__torre2OpponentBalance)return opponent.__torre2OpponentBalance;
+ const stage=Number(scene.datos.torre2.stage)||0;
+ const leader=Boolean(scene.datos.torre2.party?.gymLeader);
+ const cap=leader?stage>=8?.65:stage>=4?.52:.46:
+  stage>=8?.55:stage>=3?.36:.16;
+ const before=Number(opponent.cfg.esquiva);
+ const was=Number.isFinite(before)?before:.5;
+ const after=Math.min(was,cap);
+ opponent.cfg={...opponent.cfg,esquiva:after};
+ const report={stage,leader,evasionBefore:was,evasionAfter:after,
+  reason:'Reduce repeated early enemy dodges, preserve native hit collision'};
+ opponent.__torre2OpponentBalance=report;
+ scene.__torre2OpponentBalance=report;
+ return report;
+}
 export function bindAutoBattleToScene(Scene,IA){
  if(typeof Scene?.prototype?.create!=='function'||typeof IA!=='function')
   throw Error('Original Phaser scene and Poké Arena IA required');
@@ -390,6 +416,7 @@ export function bindAutoBattleToScene(Scene,IA){
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
+  tuneCampaignOpponentEvasion(this);
   // Campaign AUTO: stronger-than-Hard tactical parameters ONLY for the
   // player AUTO brain. No bonus damage, speed, energy, cooldown or VFX changes.
   // Manual control and the original Arena AUTO still use their old settings.

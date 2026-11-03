@@ -1,0 +1,40 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {kantoLocationInfo,installKantoLocationChip} from '../tools/pokearena/torre2-kanto-location-ui.js';
+import {CLICKABLE_OVERWORLD_MAPS,displayCampaignHP} from '../tools/pokearena/torre2-map-playable-hud.js';
+const stageNames=['Pewter · Brock','Cerulean · Misty','Vermilion · Lt Surge'];
+const count=stage=>13+stage*2;
+test('T93 shows actual current approved map and progress, independent of previous city',()=>{
+ const state={stage:1,trainer:7};
+ const info=kantoLocationInfo('gym-brock',state,stageNames,count);
+ assert.equal(info.mapId,'gym-brock');
+ assert.equal(info.place,'Ginasio de Pedra');
+ assert.equal(info.stageName,stageNames[1]);
+ assert.equal(info.checkpoint,'TREINADOR 8/15');
+ assert.equal(info.marker,null,'Never invent a trainer pin in an unmapped gym');
+});
+test('T93 only marks a true visually indexed forest Bug Catcher',()=>{
+ const forest=kantoLocationInfo('viridian-forest',{stage:0,trainer:3},stageNames,count);
+ assert.equal(forest.marker.id,'forest-bug-4');
+ assert.ok(forest.marker.x>.05&&forest.marker.x<.95);
+ assert.equal(kantoLocationInfo('viridian-forest',{stage:1,trainer:3},stageNames,count).marker,null);
+ assert.equal(kantoLocationInfo('viridian-city',{stage:0,trainer:3},stageNames,count).marker,null);
+});
+test('T93 small location button available on every approved map; no movement, teleport or save',()=>{
+ assert.equal(typeof installKantoLocationChip,'function');
+ const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ const hud=readFileSync('tools/pokearena/torre2-kanto-location-ui.js','utf8');
+ const build=readFileSync('tools/pokearena/build-preview.mjs','utf8');
+ assert.equal(CLICKABLE_OVERWORLD_MAPS.length,6);
+ assert.match(scene,/installKantoLocationChip\(this,result,state,/);
+ assert.match(hud,/setData\('torre2-overworld-action','location'\)/);
+ assert.match(hud,/scene.add.zone\(316,339,40,31\)/);
+ assert.match(hud,/showKantoLocation\(scene,view,state,stageNames,trainersPerGym\)/);
+ assert.match(hud,/setDisplaySize\(418,235\)/);
+ assert.doesNotMatch(hud,/saveCampaign\(|scene.start\(|moveTo\(|setVelocity\(/);
+ assert.match(build,/torre2-kanto-location-ui\.js/);
+ assert.equal(displayCampaignHP(98.5880340136044),'99');
+ assert.equal(displayCampaignHP(0),'0');
+ assert.equal(displayCampaignHP(NaN),'?');
+});

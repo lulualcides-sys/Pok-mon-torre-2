@@ -12,9 +12,11 @@ python3 -m venv /tmp/t88-kanto-images
   Pillow==11.3.0 numpy==2.2.6 opencv-python-headless==4.11.0.86
 /tmp/t88-kanto-images/bin/python tools/pokearena/produce-opening-user-webps.py
 echo "T88 run focused navigation and sprite checks"
-node --test tests/t86-opening-npc-overlays.test.mjs tests/t87-user-opening-navigation.test.mjs tests/t89-native-phaser-overworld.test.mjs tests/t91-opening-guide-doors-trainers.test.mjs
+node --test tests/t86-opening-npc-overlays.test.mjs tests/t87-user-opening-navigation.test.mjs tests/t89-native-phaser-overworld.test.mjs tests/t91-opening-guide-doors-trainers.test.mjs tests/t92-ux-and-combat-policy.test.mjs tests/t93-location-button.test.mjs
 echo "T88 capture native client and build Phaser preview"
 node tools/pokearena/capture-client.mjs
 PREVIEW_ROOT=_site node tools/pokearena/build-preview.mjs
 node tools/dev/homologation-preview-index.mjs
+# Built-module tests must run after packaging with the real captured Phaser engine.
+PREVIEW_ROOT=_site node --test tests/t05-wild-capture-atomic-built.test.mjs tests/t92-capture-exp-built.test.mjs
 echo "T88 isolated Phaser opening packaged successfully"
