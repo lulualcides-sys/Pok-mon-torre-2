@@ -74,3 +74,12 @@ export function approvedReturnMapId(returnEntry,state){
     returnEntry.stage!==state?.stage)return null;
  return approvedMapEntryAllowed(state,returnEntry.id)?returnEntry.id:null;
 }
+
+
+/** Only a committed result in the same native stage may resume the last
+ * approved artwork. A gym/League win changes stages, while failed/stale
+ * battle markers are not durable checkpoints. Never write to the save. */
+export function approvedPostBattleReturnMapId(returnEntry,previousStage,nextState,accepted){
+ if(accepted!==true||previousStage!==nextState?.stage)return null;
+ return approvedReturnMapId(returnEntry,nextState);
+}
