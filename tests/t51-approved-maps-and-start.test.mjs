@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
-import {APPROVED_MAPS_ATLAS,approvedMap} from '../tools/pokearena/torre2-approved-maps-atlas.js';
-import {approvedOpeningMapId,missingApprovedOpeningScenes} from '../tools/pokearena/torre2-approved-opening.js';
-import {hasFirstApprovedHotspots} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
+import {APPROVED_MAPS_ATLAS,approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
+import {approvedOpeningMapId,missingApprovedOpeningScenes,missingApprovedOpeningConnections} from '../tools/pokearena/torre2-approved-opening.js';
+import {hasFirstApprovedHotspots,firstApprovedHotspots,firstApprovedDestination} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
 import {APPROVED_MAP_ASSETS_READY} from '../tools/pokearena/torre2-approved-map-renderer.js';
 test('T51 60 original WebPs really reside in this code branch',()=>{
  assert.equal(APPROVED_MAPS_ATLAS.maps.length,60);
@@ -35,4 +35,12 @@ test('T52 Route 2 is now mapped but missing forest art keeps stage zero blocked'
  assert.deepEqual(missingApprovedOpeningScenes(approvedMap,hasFirstApprovedHotspots),
   ['pallet-town','route-1','viridian-city','viridian-forest']);
  assert.equal(approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),null);
+});
+
+test('T53 future catalog additions cannot unlock stage zero without all return exits',()=>{
+ const absent=missingApprovedOpeningConnections(approvedMap,
+  firstApprovedHotspots,firstApprovedDestination,approvedMapNeighbours);
+ assert.ok(absent.includes('route-2<->viridian-forest'));
+ assert.equal(approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots,
+  firstApprovedHotspots,firstApprovedDestination,approvedMapNeighbours),null);
 });

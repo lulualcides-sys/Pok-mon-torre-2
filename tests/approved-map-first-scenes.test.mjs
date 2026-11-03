@@ -1,4 +1,4 @@
-import {REQUIRED_OPENING_SCENES,OPTIONAL_OPENING_SCENES,missingApprovedOpeningScenes,approvedOpeningMapId} from '../tools/pokearena/torre2-approved-opening.js';
+import {REQUIRED_OPENING_SCENES,OPTIONAL_OPENING_SCENES,REQUIRED_OPENING_CONNECTIONS,missingApprovedOpeningScenes,missingApprovedOpeningConnections,approvedOpeningMapId,openingTravelAllowed} from '../tools/pokearena/torre2-approved-opening.js';
 import {readFileSync} from 'node:fs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
@@ -405,13 +405,41 @@ test('T50 image-backed Kanto must begin at Pallet; Route 22 is optional',()=>{
  available.add('pallet-town');available.add('route-1');
  available.add('viridian-city');available.add('viridian-forest');
  assert.equal(approvedOpeningMapId(findMap,()=>false),null);
- assert.equal(approvedOpeningMapId(findMap,reviewed),'pallet-town');
+ // Merely having six images no longer suffices. Route exits must exist.
+ assert.equal(approvedOpeningMapId(findMap,reviewed),null);
+ const routes=new Map(REQUIRED_OPENING_SCENES.map(id=>[id,[]]));
+ const spots=new Map(REQUIRED_OPENING_SCENES.map(id=>[id,[]]));
+ const destinations=new Map();
+ for(const [from,to] of REQUIRED_OPENING_CONNECTIONS){
+  routes.get(from).push(to);routes.get(to).push(from);
+  for(const [src,dst] of [[from,to],[to,from]]){
+   const key='exit-'+dst;
+   spots.get(src).push({id:key});
+   destinations.set(src+':'+key,dst);
+  }
+ }
+ const hotspotResolver=entry=>spots.get(entry.id)||[];
+ const destination=(src,key)=>destinations.get(src+':'+key)||null;
+ const neighbors=id=>routes.get(id)||[];
+ assert.equal(missingApprovedOpeningConnections(findMap,hotspotResolver,destination,neighbors).length,0);
+ assert.equal(approvedOpeningMapId(findMap,reviewed,hotspotResolver,destination,neighbors),'pallet-town');
+ assert.equal(openingTravelAllowed('pallet-town','route-1',findMap,neighbors),true);
+ assert.equal(openingTravelAllowed('pallet-town','pewter-city',findMap,neighbors),false);
+ assert.equal(openingTravelAllowed('viridian-city','route-22',findMap,neighbors),false);
+ assert.equal(openingTravelAllowed('viridian-city','route-2',findMap,neighbors),true);
+ const removed=destinations.get('route-2:exit-viridian-forest');
+ destinations.delete('route-2:exit-viridian-forest');
+ assert.deepEqual(missingApprovedOpeningConnections(findMap,hotspotResolver,destination,neighbors),
+  ['route-2<->viridian-forest']);
+ assert.equal(approvedOpeningMapId(findMap,reviewed,hotspotResolver,destination,neighbors),null);
+ destinations.set('route-2:exit-viridian-forest',removed);
  assert.throws(()=>approvedOpeningMapId(null,reviewed),TypeError);
 });
 
 test('T50 no stage-0 Pewter shortcut, no premature texture load or map button',()=>{
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city'"));
+ assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots,"));
+ assert.ok(source.includes("firstApprovedHotspots,firstApprovedDestination,approvedMapNeighbours),'cerulean-city'"));
  assert.ok(source.includes('if(openingMap)preloadApprovedMap(this,openingMap)'));
  assert.ok(source.includes('if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false'));
  assert.ok(source.includes('APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS[state.stage]?'));
@@ -452,4 +480,11 @@ test('T52 approved Route 2 preserves its original north/south sign positions',()
  }
  assert.deepEqual(calls,['route-2:pewter','route-2:forest']);
  assert.equal(zones.some(z=>String(z.data?.value||'').includes('diglett')),false);
+});
+
+test('T53 stage-zero browser code cannot substitute catalog indices for route adjacency',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(source.includes('firstApprovedHotspots,firstApprovedDestination,approvedMapNeighbours)'));
+ assert.ok(source.includes('if(s===0)return !!APPROVED_STAGE_MAPS[0]&&'));
+ assert.ok(source.includes('openingTravelAllowed(_src,target,approvedMap,approvedMapNeighbours)'));
 });

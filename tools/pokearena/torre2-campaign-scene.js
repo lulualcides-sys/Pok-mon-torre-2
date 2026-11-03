@@ -1,7 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
-import {approvedMap} from './torre2-approved-maps-atlas.js';
-import {approvedOpeningMapId} from './torre2-approved-opening.js';
+import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
+import {approvedOpeningMapId,openingTravelAllowed} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -47,7 +47,8 @@ import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
 // Stage 0 must remain the native campaign until the entire Pallet-to-Pewter
 // artwork AND its reviewed hotspots exist. Never silently start at Pewter.
-const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city','vermilion-city','celadon-city',
+const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots,
+ firstApprovedHotspots,firstApprovedDestination,approvedMapNeighbours),'cerulean-city','vermilion-city','celadon-city',
  'fuchsia-city','saffron-city','cinnabar-island','gym-giovanni',
  'indigo-plateau','elite-four-rooms','elite-four-rooms','elite-four-rooms',
  'elite-four-rooms','hall-of-fame'];
@@ -518,7 +519,12 @@ create(){
   if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
-   return !!entry&&entry.index<=APPROVED_STAGE_MAX[s];
+   if(!entry)return false;
+   // Stage 0 requires a real, bidirectional approved prologue; the new art
+   // may have higher catalog indices than the original sixty assets.
+   if(s===0)return !!APPROVED_STAGE_MAPS[0]&&
+    openingTravelAllowed(_src,target,approvedMap,approvedMapNeighbours);
+   return entry.index<=APPROVED_STAGE_MAX[s];
   };
   const open=target=>{
    if(!canTravel(id,target))return;
