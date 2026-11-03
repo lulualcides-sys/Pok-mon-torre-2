@@ -924,6 +924,20 @@ async function verifyAnimatedGymFeet(page,id){
     const now=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
     assert.equal(now,expectedMap==='indigo-plateau'?stage8:stage9,
      'T66 clicking a battle challenge must NOT simulate a victory');
+    // T86 regression: a challenge MUST overlay the image-backed Phaser
+    // gym/League room, not replace it with the legacy gymScreen().
+    const visual=await page.evaluate(expectedMap=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     return {map:scene.__torre2ApprovedMapView?.id,
+      art:scene.__torre2ApprovedMapView?.image?.active,
+      texture:scene.__torre2ApprovedMapView?.image?.texture?.key,
+      dialog:scene.__torre2ApprovedGymDialogOpen,
+      controls:scene.children.list.filter(o=>o.active&&
+       o.getData?.('torre2-approved-gym-dialog')).length};
+    },expectedMap);
+    assert.deepEqual(visual,{map:expectedMap,art:true,
+     texture:'torre2-approved-map-'+expectedMap,dialog:true,controls:2},
+     'T86 gym/League challenge replaced the approved Phaser image');
    };
    await nativeChallenge('indigo-plateau','challenge');
    // Synthetic stage-nine fixture: verify Bruno opens the native challenge,
