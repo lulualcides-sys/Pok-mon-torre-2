@@ -8,6 +8,7 @@ import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
 import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
+import {enableRayquazaForHomologation,rayquazaRequiredSpriteFiles} from './torre2-rayquaza-preview.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -1082,6 +1083,22 @@ for(const [filename,changes] of patches){
 
 if(upstreamUnmatched.length)
  throw Error('UPSTREAM AUDIT: '+JSON.stringify(upstreamUnmatched));
+
+// Isolated PLAYABLE Rayquaza preview: the official client's local-only kit
+// already defines both Rayquaza and its Mega form. Do not bypass the remote
+// game's roster, alter its source, or unlock other disabled Pokémon: this
+// changes our copied offline test bundle only. Require the native renderer,
+// attack kits and all 10 mandatory PMD sprite sheets before declaring ready.
+const rayquazaRosterFile=path.join(dest,clientSource,'datos.js');
+const nativeRoster=await fs.readFile(rayquazaRosterFile,'utf8');
+const previewRoster=enableRayquazaForHomologation(nativeRoster);
+const spriteManifestFile=path.join(dest,'assets/pmd/manifest.json');
+const spriteManifest=JSON.parse(await fs.readFile(spriteManifestFile,'utf8'));
+for(const relativeSprite of rayquazaRequiredSpriteFiles(spriteManifest)){
+ await fs.access(path.join(dest,'assets/pmd',relativeSprite));
+}
+await fs.writeFile(rayquazaRosterFile,previewRoster);
+console.log('Torre 2 homologation: Rayquaza + Mega Rayquaza native kits and sprites verified');
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
