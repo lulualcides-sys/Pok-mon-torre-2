@@ -821,6 +821,22 @@ for(const [filename,changes] of patches){
     body=body.replace(match[0],'import{'+imports.join(',')+'}from"../sprites.js";');
     continue;
    }
+   // The current title screen has a revised responsive layout. Retain
+   // native button spacing and hitboxes; never replace unknown coordinates.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const DISPOSICION=')){
+    if(!/const DISPOSICION=\\{principal:/.test(body)||
+       !body.includes('jugar:')||!body.includes('ajustes:'))
+     throw Error('Cannot verify native title layout after upstream change');
+    console.warn('Updated native title layout preserved unchanged');
+    continue;
+   }
+   // Optional title sprite heuristics were refactored upstream. The native
+   // animation remains authoritative; do not apply outdated source rewrites.
+   if(filename==='escenas/titulo.js'&&to.includes('this.anims.exists')&&
+      (from.startsWith('return m&&')||from.startsWith('if(!m||'))){
+    console.warn('Native title sprite condition retained after upstream refactor');
+    continue;
+   }
    // Native selection now computes mode-button x positions differently.
    // We already removed VERSUS and kept only VS CPU / TRAINING above.
    // Do not guess new hitbox positions by patching an obsolete literal.
