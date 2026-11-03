@@ -39,8 +39,12 @@ test('Surge artwork metadata never changes the battle roster or rewards',()=>{
 
 test('T78 native Lt. Surge battle roster retains Raichu, never painted Pikachu',()=>{
  const core=readFileSync('tools/pokearena/torre2-campaign-core.js','utf8');
- assert.match(core,/leader:'Lt\\. Surge'[\\s\\S]{0,250}boss:'raichu'/);
- assert.match(core,/leaderTeam:\\['voltorb','pikachu','raichu'\\]/);
+ const surge=core.indexOf("leader:'Lt. Surge'");
+ assert.ok(surge>0,'original FRLG Surge leader must exist');
+ const roster=core.slice(surge,surge+700);
+ assert.ok(roster.includes("boss:'raichu'"),'native battle ace must be Raichu');
+ assert.ok(roster.includes("leaderTeam:['voltorb','pikachu','raichu']"),
+  'original team must remain Voltorb, Pikachu, Raichu');
  const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(scene.includes('if(!actors.artworkOnly){'));
  assert.ok(scene.includes('const npc=actors.artworkOnly?null:addFireRedNPC'));
