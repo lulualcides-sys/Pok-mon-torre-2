@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {stripNativeSocialFooterLinks} from './torre2-native-social-compat.mjs';
 import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
@@ -65,6 +66,9 @@ let html=await fs.readFile(index,'utf8');
 html=html.replace(/<title>[^<]*<\/title>/i,'<title>Pokémon Torre</title>');
 html=html.replace(/<script\s+src="\/analitica\.js"><\/script>/g,'');
 html=html.replace(/<script\s+async\s+src="\/m\/s"><\/script>/g,'');
+// The original site's footer links are not gameplay or fullscreen controls.
+// Remove only external social anchors from our isolated solo copy.
+html=stripNativeSocialFooterLinks(html);
 // Original favicon and manifests must be relative to our subfolder.
 html=html.replace('href="/favicon.png"','href="favicon.png"');
 // Restore the ORIGINAL Poké Arena 2D responsive viewport and Phaser scaling.
