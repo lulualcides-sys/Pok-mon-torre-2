@@ -20,8 +20,8 @@ SOURCE = ROOT / "assets/ui/kanto-opening-user/original"
 TARGET = ROOT / "assets/ui/kanto-opening-user"
 SOURCE_SHA = {
     "pallet-town": "182307b602cb8cd2365610bbb183f0da74ac3f260e045f6b94ea8fde533df9de",
-    "route-1": "cfbf218967faf1e12da38bba3a307005a3f63ff36d20dd563ef543d7fbd02430",
-    "viridian-city": "919109d3a492708c87c38a858f40c094783dc1462ea98382e2139820f8202366",
+    "route-1": "919109d3a492708c87c38a858f40c094783dc1462ea98382e2139820f8202366",
+    "viridian-city": "cfbf218967faf1e12da38bba3a307005a3f63ff36d20dd563ef543d7fbd02430",
     "viridian-forest": "3f2dd05bb0e3028795dd0ca51cd5828bb415be6da536e476d7ce74b9cbe0f03d"
 }
 # Five painted actor areas on the original 1536x864 user picture.
