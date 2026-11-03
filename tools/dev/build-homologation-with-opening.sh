@@ -12,7 +12,7 @@ python3 -m venv /tmp/t88-kanto-images
   Pillow==11.3.0 numpy==2.2.6 opencv-python-headless==4.11.0.86
 /tmp/t88-kanto-images/bin/python tools/pokearena/produce-opening-user-webps.py
 echo "T88 run focused navigation and sprite checks"
-node --test tests/t86-opening-npc-overlays.test.mjs tests/t87-user-opening-navigation.test.mjs tests/t89-native-phaser-overworld.test.mjs
+node --test tests/t86-opening-npc-overlays.test.mjs tests/t87-user-opening-navigation.test.mjs tests/t89-native-phaser-overworld.test.mjs tests/t91-opening-guide-doors-trainers.test.mjs
 echo "T88 capture native client and build Phaser preview"
 node tools/pokearena/capture-client.mjs
 PREVIEW_ROOT=_site node tools/pokearena/build-preview.mjs
