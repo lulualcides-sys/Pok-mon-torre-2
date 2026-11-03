@@ -39,7 +39,7 @@ test('T42 native campaign imports resolve to exactly the built filenames',()=>{
 
 test('T50 new opening dependency ships as exact ESM browser module',()=>{
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(source.includes("import {approvedOpeningMapId} from './torre2-approved-opening.js';"));
+ assert.ok(source.includes("import {approvedOpeningMapId,openingTravelAllowed} from './torre2-approved-opening.js';"));
  assert.ok(build.includes("['tools/pokearena/torre2-approved-opening.js','torre2-approved-opening.js']"));
  assert.ok(build.includes("'torre2/torre2-approved-opening.js'"));
  assert.ok(source.includes('if(openingMap)preloadApprovedMap(this,openingMap)'));
