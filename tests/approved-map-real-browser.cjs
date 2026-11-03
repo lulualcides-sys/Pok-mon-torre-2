@@ -119,14 +119,35 @@ const server=http.createServer(async(req,res)=>{
      if(!scene.approvedMapPreview(state,id))throw Error('Phaser rejected approved preview: '+id);
      const view=scene.__torre2ApprovedMapView;
      const aces=scene.children.list.filter(x=>x.active&&x.getData?.('torre2-gym-ace')===id)
-      .map(x=>({texture:x.texture?.key,w:x.displayWidth,h:x.displayHeight}));
+      .map(x=>({texture:x.texture?.key,w:x.displayWidth,h:x.displayHeight,
+       source:x.getData?.('torre2-gym-ace-source')||'legacy-portrait'}));
+     const leaders=scene.children.list.filter(x=>x.active&&
+      x.getData?.('torre2-gym-leader-sprite')===id)
+      .map(x=>({texture:x.texture?.key,x:x.x,y:x.y}));
+     const trainers=scene.children.list.filter(x=>x.active&&
+      String(x.getData?.('torre2-gym-trainer-sprite')||'').startsWith(id+':'))
+      .map(x=>({texture:x.texture?.key,kind:x.getData('torre2-gym-trainer-kind'),
+       x:x.x,y:x.y}));
      return {id,texture:view.image.texture.key,hotspots:view.zones.length,
-      rect:view.rect,aces,fps:game.loop.actualFps,stage:state.stage};
+      rect:view.rect,aces,leaders,trainers,fps:game.loop.actualFps,stage:state.stage};
     },id);
     assert.equal(info.texture,'torre2-approved-map-'+id);
     assert.ok(info.rect.width>=639.9&&info.rect.height>=359.9,id+' must be 16:9');
     if(id==='gym-brock'||id==='gym-misty')
-     assert.equal(info.aces.length,1,id+' must show the real ace portrait');
+     assert.equal(info.aces.length,1,id+' must show exactly one ace');
+    if(id==='gym-misty'){
+     assert.equal(info.aces[0].texture,'torre2-gym-ace-idle-0121',
+      'T76 real transparent Starmie PMD animation sheet, not portrait');
+     assert.equal(info.aces[0].source,'pmd-idle');
+     assert.ok(info.aces[0].w>=35&&info.aces[0].h>=35,
+      'T76 Starmie must be a legible full-body sprite on the leader dais');
+     assert.deepEqual(info.leaders.map(l=>l.texture),['frlg-npc-misty']);
+     assert.deepEqual(info.trainers.map(t=>t.texture),[
+      'frlg-npc-swimmer_m_land','frlg-npc-sailor',
+      'frlg-npc-picnicker','frlg-npc-cooltrainer_f'
+     ],'T76 all four subchiefs must have original distinct FireRed sprites');
+     assert.equal(new Set(info.trainers.map(t=>t.texture)).size,4);
+    }
     const filename='approved-'+id+'-'+mode.name+'.png';
     await page.screenshot({path:path.join(out,filename),fullPage:true,animations:'disabled'});
     evidence.maps.push({...info,mode:mode.name,screenshot:filename});
