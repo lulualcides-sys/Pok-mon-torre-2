@@ -15,6 +15,14 @@ test('T91: user-approved door positions align with glass doors, not sidewalk/roo
  assert.ok(Math.abs(pc.x-757)<12&&Math.abs(pc.y-666)<15,JSON.stringify(pc));
  assert.ok(Math.abs(mart.x-1135)<12&&Math.abs(mart.y-624)<15,JSON.stringify(mart));
  for(const anchor of [pallet,pc,mart])assert.ok(anchor.w<140&&anchor.h<100,JSON.stringify(anchor));
+ // Pewter approved image is exactly 1280×720, independent of user 1536×864 art.
+ const pewter=(action)=>{const h=FIRST_APPROVED_HOTSPOTS['pewter-city'].find(x=>x.id===action);
+  return {x:h.cx*1280,y:h.cy*720,w:h.w*1280,h:h.h*720};};
+ for(const [action,x,y] of [['center',237,290],['mart',235,455],['gym',1017,194]]){
+  const point=pewter(action);
+  assert.ok(Math.abs(point.x-x)<12&&Math.abs(point.y-y)<12,action+':'+JSON.stringify(point));
+  assert.ok(point.w<125&&point.h<75,action+':'+JSON.stringify(point));
+ }
 });
 test('T91: all 6 playable maps have non-overlapping original hotspots',()=>{
  for(const id of Object.keys(OPENING_CLICK_GUIDES)){
