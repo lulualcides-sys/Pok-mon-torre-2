@@ -48,7 +48,7 @@ import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 // Stage 0 must remain the native campaign until the entire Pallet-to-Pewter
 // artwork AND its reviewed hotspots exist. Never silently start at Pewter.
 const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'route-3','cerulean-city','vermilion-city',
- 'celadon-city','fuchsia-city','cinnabar-island','gym-giovanni',
+ 'celadon-city','fuchsia-city','fuchsia-city','gym-giovanni',
  'indigo-plateau','elite-four-rooms','elite-four-rooms','elite-four-rooms',
  'elite-four-rooms','hall-of-fame'];
 const APPROVED_STAGE_MAX=[3,9,18,26,31,36,40,42,45,46,46,46,46,60];

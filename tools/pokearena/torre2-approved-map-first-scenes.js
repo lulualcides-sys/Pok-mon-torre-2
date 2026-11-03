@@ -133,6 +133,43 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('mart',.780,.720,.190,.260),
   v('gym',.870,.200,.160,.220)
  ]),
+ // T65: actual approved interiors and seaside coast (atlas 33-41).
+ // Stage-specific battle, Card Key, fossil, and HM scripts are NOT inferred
+ // from written labels or pictures in the scenery.
+ 'silph-co':Object.freeze([
+  v('exit',.500,.938,.187,.115)
+ ]),
+ 'fighting-dojo':Object.freeze([
+  v('exit',.500,.925,.183,.128)
+ ]),
+ 'gym-sabrina':Object.freeze([
+  v('exit',.502,.930,.191,.124)
+ ]),
+ 'routes-19-20':Object.freeze([
+  v('fuchsia',.952,.124,.094,.129),
+  v('seafoam',.214,.343,.161,.153)
+ ]),
+ 'seafoam-islands':Object.freeze([
+  v('route19',.914,.743,.164,.152),
+  v('cinnabar',.080,.740,.153,.154)
+ ]),
+ 'cinnabar-island':Object.freeze([
+  v('mansion',.253,.331,.151,.145),
+  v('gym',.748,.333,.148,.146),
+  v('center',.473,.743,.144,.124),
+  v('mart',.648,.742,.136,.122),
+  v('route21',.500,.063,.155,.119),
+  v('seafoam',.943,.502,.104,.141)
+ ]),
+ 'pokemon-mansion':Object.freeze([
+  v('exit',.503,.923,.201,.127)
+ ]),
+ 'gym-blaine':Object.freeze([
+  v('exit',.499,.929,.190,.121)
+ ]),
+ 'route-21':Object.freeze([
+  v('cinnabar',.503,.929,.198,.119)
+ ]),
  // Safari park's only registered action is the signed south exit.
  // Gold Teeth and HM03 labels are decorative until a validated gameplay
  // interaction is implemented; don't grant HMs, items or badges.
@@ -221,6 +258,22 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'saffron-city':Object.freeze({
   silph:'silph-co',gym:'gym-sabrina'
  }),
+ 'silph-co':Object.freeze({exit:'saffron-city'}),
+ 'fighting-dojo':Object.freeze({exit:'saffron-city'}),
+ 'gym-sabrina':Object.freeze({exit:'saffron-city'}),
+ 'routes-19-20':Object.freeze({
+  fuchsia:'fuchsia-city',seafoam:'seafoam-islands'
+ }),
+ 'seafoam-islands':Object.freeze({
+  route19:'routes-19-20',cinnabar:'cinnabar-island'
+ }),
+ 'cinnabar-island':Object.freeze({
+  mansion:'pokemon-mansion',gym:'gym-blaine',
+  route21:'route-21',seafoam:'seafoam-islands'
+ }),
+ 'pokemon-mansion':Object.freeze({exit:'cinnabar-island'}),
+ 'gym-blaine':Object.freeze({exit:'cinnabar-island'}),
+ 'route-21':Object.freeze({cinnabar:'cinnabar-island'}),
  'safari-zone':Object.freeze({exit:'fuchsia-city'}),
  'route-11':Object.freeze({vermilion:'vermilion-city'}),
  'route-9-solo':Object.freeze({cerulean:'cerulean-city',route10:'routes-9-10'}),
