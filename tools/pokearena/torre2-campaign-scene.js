@@ -38,7 +38,7 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC,addRedPlayer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -172,7 +172,8 @@ class Campanha extends Phaser.Scene{
    ...archetypes.map(spriteIdForTrainer)]);
   // T86: explicitly preload the Viridian town resident's original GBA sheet.
   if(APPROVED_MAP_ASSETS_READY&&stage===0)
-   needed.add(spriteIdForTrainer('gentleman'));
+   for(const kind of ['gentleman','camper'])
+    needed.add(spriteIdForTrainer(kind));
   // T77: four thematic ORIGINAL FRLG aquatic NPCs, all on land frames.
   // The approved Cerulean gym remains reachable after defeating Misty
   // (stage 2). Keep them loaded for a revisit, not just first-clear.
@@ -793,6 +794,11 @@ create(){
      const openingActors=openingNpcPlan(entry.id,{
       cleanPlate:entry.npcCleanPlate===true,stage:state.stage
      });
+     if(entry.id==='viridian-city'&&entry.npcCleanPlate===true&&state.stage===0){
+      const red=projectOpeningNpc({cx:.491,feetY:.939},rect);
+      addRedPlayer(scene,red.x,red.y,{scale:1.12,depth:24})
+       ?.setData('torre2-opening-player','viridian-city:red');
+     }
      for(const actor of openingActors){
       const pos=projectOpeningNpc(actor,rect);
       const sprite=addFireRedNPC(scene,actor.kind,pos.x,pos.y,
@@ -803,6 +809,8 @@ create(){
       }
       sprite.setData('torre2-opening-npc',entry.id+':'+actor.id)
        .setData('torre2-opening-npc-class',actor.kind);
+      // Decorative town residents are NPC sprites, not battle opponents.
+      if(actor.index===null)continue;
       const hit=scene.add.zone(pos.x,pos.y-18,30,39)
        .setDepth(42).setInteractive({useHandCursor:true})
        .setData('torre2-opening-trainer',entry.id+':'+actor.index);
