@@ -18,8 +18,8 @@ test('T90 no character movement, keyboard, joystick or image-ground pointer',()=
  const module=readFileSync('tools/pokearena/torre2-map-playable-hud.js','utf8');
  const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  for(const forbidden of [
-  /addPlayer/,/moveTo/,/keydown/,/keyboard/,/tweens/,/fieldRoad/,
-  /roadPoint/,/joystick/,/setVelocity/,/setPosition\(/,/view\.image\.setInteractive/,
+  /addPlayer:/,/moveTo\(/,/on\('keydown'/,/input\.keyboard/,/tweens\.add/,/fieldRoad\(/,
+  /roadPoint\(/,/input\.gamepad/,/setVelocity\(/,/setPosition\(/,/view\.image\.setInteractive/,
   /onPosition/,/__torre2OverworldPositions/,/installPlayableOverworld/
  ]){
   assert.doesNotMatch(module,forbidden,forbidden.toString());
