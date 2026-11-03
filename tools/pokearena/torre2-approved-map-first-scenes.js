@@ -333,7 +333,7 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'pallet-town':Object.freeze({route1:'route-1'}),
  'route-1':Object.freeze({pallet:'pallet-town',viridian:'viridian-city'}),
- 'viridian-city':Object.freeze({route1:'route-1',forest:'viridian-forest'}),
+ 'viridian-city':Object.freeze({route1:'route-1',forest:'viridian-forest',gym:'gym-giovanni'}),
  'viridian-forest':Object.freeze({viridian:'viridian-city',route2:'route-2'}),
  'route-2':Object.freeze({pewter:'pewter-city',forest:'viridian-forest'}),
  'pewter-city':Object.freeze({route2:'route-2',route3:'route-3',gym:'gym-brock'}),
