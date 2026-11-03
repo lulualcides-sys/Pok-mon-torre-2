@@ -267,6 +267,57 @@ const server=http.createServer(async(req,res)=>{
    };
    await summaryBack('torre2-summary-back');
    await summaryBack('torre2-active-select');
+   // T70: exercise the six menu return buttons with real Chromium
+   // mouse/touch. Menus are opened with a controlled stage-two fixture,
+   // not invented battle victories, purchases, heals or badges.
+   const backMenus=[
+    ['center','centerScreen','torre2-center-back'],
+    ['mart','martScreen','torre2-mart-back'],
+    ['bag','bagScreen','torre2-bag-back'],
+    ['pc','pcScreen','torre2-pc-back'],
+    ['dex','dexScreen','torre2-dex-back'],
+    ['badges','badgeCaseScreen','torre2-badge-case-back']
+   ];
+   for(const [label,method,key] of backMenus){
+    await page.evaluate(fn=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     const current=window.kanto.readCampaign();
+     if(scene.__torre2ApprovedMapView?.id!=='vermilion-city')
+      throw Error('T70 menu opened outside approved Vermilion map');
+     scene[fn](current);
+    },method);
+    await page.waitForFunction(k=>window.__pt2Game.scene.getScene('campanha')
+     .children.list.some(obj=>obj.active&&obj.getData?.(k)===true),key,{timeout:20000});
+    await page.evaluate(()=>new Promise(resolve=>
+     requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    const pos=await page.evaluate(k=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     const hit=scene.children.list.find(x=>x.active&&x.getData?.(k)===true);
+     if(!hit)throw Error('T70 missing physical button '+k);
+     const b=document.querySelector('#juego canvas').getBoundingClientRect();
+     const w=Math.min(b.width,b.height*640/360);
+     const h=Math.min(b.height,b.width*360/640);
+     return {x:b.x+(b.width-w)/2+hit.x/640*w,
+      y:b.y+(b.height-h)/2+hit.y/360*h};
+    },key);
+    if(mode.isMobile)await page.touchscreen.tap(pos.x,pos.y);
+    else await page.mouse.click(pos.x,pos.y);
+    await page.waitForFunction(()=>{
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     return scene?.__torre2ApprovedMapView?.id==='vermilion-city'&&
+      scene.__torre2ApprovedMapView?.image?.active===true&&
+      scene.children.list.some(x=>x.active&&x.getData?.(
+       'torre2-approved-hotspot')==='vermilion-city:route6');
+    },null,{timeout:25000});
+    assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+     stage2Before,'T70 '+label+' Back unexpectedly changed the real campaign save');
+    if(label==='center'||label==='pc'||label==='dex'){
+     const screenshot='t70-'+label+'-return-'+mode.name+'.png';
+     await page.screenshot({path:path.join(out,screenshot),fullPage:true,animations:'disabled'});
+     evidence.maps.push({id:'vermilion-city',mode:mode.name,
+      via:'T70 '+label+' real mouse/touch',saveUnchanged:true,screenshot});
+    }
+   }
    // T63: controlled stage-three fixture after Lt. Surge — must start in
    // Vermilion, traverse the original Route 9 solo before Route 10, and
    // never mutate battle saves by simply clicking painted map signs.
