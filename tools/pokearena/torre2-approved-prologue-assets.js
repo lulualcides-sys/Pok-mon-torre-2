@@ -63,6 +63,14 @@ export function approvedPrologueDestination(mapId,hotspotId){
  const map=approvedPrologueMap(mapId);
  return map?.destinations?.[hotspotId]||null;
 }
+// The original Route 2 artwork already has a South/Forest sign but its
+// corresponding map did not exist among the 60 original approved images.
+// Activate this destination ONLY after the exact forest WebP is registered.
+export function approvedPrologueBridgeDestination(mapId,hotspotId,findExtra=approvedPrologueMap){
+ if(typeof findExtra!=='function')throw new TypeError('Extra map resolver required');
+ return mapId==='route-2'&&hotspotId==='forest'&&findExtra('viridian-forest')?
+  'viridian-forest':null;
+}
 // Expose a graph edge only when BOTH registered/approved endpoint images exist.
 // "route-2" and "pewter-city" belong to the fixed original 60-image catalog.
 export function activePrologueEdges(findMap){

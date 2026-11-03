@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {
  APPROVED_PROLOGUE_MAPS,APPROVED_PROLOGUE_EDGES,APPROVED_PROLOGUE_IDS,
- activePrologueEdges,validateApprovedPrologueMap
+ activePrologueEdges,approvedPrologueBridgeDestination,validateApprovedPrologueMap
 } from '../tools/pokearena/torre2-approved-prologue-assets.js';
 import {APPROVED_MAPS_ATLAS,approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
 import {hasFirstApprovedHotspots,firstApprovedHotspots,firstApprovedDestination} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
@@ -63,4 +63,14 @@ test('T54 Phaser build copies the sidecar under the same ESM browser import name
  assert.ok(first.includes("from './torre2-approved-prologue-assets.js'"));
  assert.ok(build.includes('validateApprovedPrologueMap(extra,originalIds)'));
  assert.ok(build.includes("digest('hex')!==extra.sha256"));
+});
+
+test('T54 existing Route 2 forest sign is activated only with real registered forest art',()=>{
+ assert.equal(approvedPrologueBridgeDestination('route-2','forest'),null);
+ const approved=id=>id==='viridian-forest'?{id}:null;
+ assert.equal(approvedPrologueBridgeDestination('route-2','forest',approved),'viridian-forest');
+ assert.equal(approvedPrologueBridgeDestination('route-2','pewter',approved),null);
+ assert.equal(approvedPrologueBridgeDestination('route-3','forest',approved),null);
+ assert.throws(()=>approvedPrologueBridgeDestination('route-2','forest',null),TypeError);
+ assert.equal(firstApprovedDestination('route-2','forest'),null);
 });
