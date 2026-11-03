@@ -22,6 +22,27 @@ if(approvedRenderer.includes('export const APPROVED_MAP_ASSETS_READY = true;')){
  const entries=APPROVED_MAPS_ATLAS.maps||[];
  if(entries.length!==60||new Set(entries.map(m=>m.id)).size!==60)
   throw Error('Approved map release requires exactly 60 distinct atlas entries');
+ const manifest=JSON.parse(await fs.readFile(
+  'assets/ui/kanto-approved-maps/approved-maps-atlas.json','utf8'));
+ if(manifest.original_count!==60||manifest.maps?.length!==60||
+    new Set(manifest.maps.map(m=>m.id)).size!==60)
+  throw Error('Approved map SHA-256 manifest must contain 60 unique maps');
+ const approvedById=new Map(manifest.maps.map(m=>[m.id,m]));
+ const approvedWebpSize=pixels=>{
+  if(pixels.readUInt32LE(4)+8!==pixels.length)
+   throw Error('Approved WebP RIFF length mismatch');
+  const chunk=pixels.toString('ascii',12,16);
+  if(chunk==='VP8 '&&pixels.length>=30&&
+     pixels[23]===0x9d&&pixels[24]===0x01&&pixels[25]===0x2a)
+   return [pixels.readUInt16LE(26)&0x3fff,pixels.readUInt16LE(28)&0x3fff];
+  if(chunk==='VP8L'&&pixels.length>=25&&pixels[20]===0x2f){
+   const bits=pixels.readUInt32LE(21);
+   return [(bits&0x3fff)+1,((bits>>>14)&0x3fff)+1];
+  }
+  if(chunk==='VP8X'&&pixels.length>=30)
+   return [pixels.readUIntLE(24,3)+1,pixels.readUIntLE(27,3)+1];
+  throw Error('Unsupported approved WebP frame header');
+ };
  const verified=[];
  const sourceRoot=path.resolve('assets/ui/kanto-approved-maps')+path.sep;
  for(const m of entries){
@@ -35,6 +56,16 @@ if(approvedRenderer.includes('export const APPROVED_MAP_ASSETS_READY = true;')){
   if(pixels.length<1024||pixels.toString('ascii',0,4)!=='RIFF'||
      pixels.toString('ascii',8,12)!=='WEBP')
    throw Error('Approved map texture missing or invalid: '+rel);
+  const approved=approvedById.get(m.id);
+  if(!approved||approved.image!==rel||approved.image_width!==1280||
+     approved.image_height!==720||approved.bytes!==pixels.length||
+     !/^[0-9a-f]{64}$/.test(approved.optimized_sha256||''))
+   throw Error('Approved map provenance or dimensions mismatch: '+rel);
+  const [width,height]=approvedWebpSize(pixels);
+  if(width!==1280||height!==720)
+   throw Error('Approved map is not 1280x720: '+rel);
+  if(createHash('sha256').update(pixels).digest('hex')!==approved.optimized_sha256)
+   throw Error('Approved map SHA-256 mismatch: '+rel);
   verified.push({rel,pixels});
  }
  for(const {rel,pixels} of verified){

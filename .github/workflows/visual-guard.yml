@@ -96,6 +96,10 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/visual-guard-browser.cjs
+      - name: Capturar oito cenas de mapas aprovados em Phaser real (desktop/mobile)
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/approved-map-real-browser.cjs
       - name: Gerar diagnóstico automático na falha
         if: failure()
         env:

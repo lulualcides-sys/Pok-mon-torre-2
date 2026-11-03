@@ -2,20 +2,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {preloadApprovedMap,renderApprovedMap,planApprovedMapOverlays,APPROVED_MAP_ASSETS_READY,staleApprovedMapTextureKeys,pruneApprovedMapTextures} from '../tools/pokearena/torre2-approved-map-renderer.js';
 function fakeScene(hasAsset=true,dimensions={width:1280,height:720}){
- const zones=[],images=[],rectangles=[];
+ const zones=[],images=[],rectangles=[],loads=[];
  const box=()=>({setDepth(){return this},setOrigin(){return this},setDisplaySize(){return this},
   setInteractive(){return this},setData(key,value){this.data={key,value};return this},on(event,cb){this[event]=cb;return this}});
  const scene={textures:{exists:()=>hasAsset,get:()=>({getSourceImage:()=>dimensions})},
   add:{image:()=>{images.push(1);return box()},zone:(...v)=>{const z=box();z.pos=v;zones.push(z);return z},
-   rectangle:(...args)=>{rectangles.push(args);return box()},text:()=>box(),graphics:()=>({setDepth(){return this},lineStyle(){return this},strokeRect(){return this}})},load:{image(){throw Error('Must not load preview without assets')}}};
- return {scene,zones,images,rectangles};
+   rectangle:(...args)=>{rectangles.push(args);return box()},text:()=>box(),graphics:()=>({setDepth(){return this},lineStyle(){return this},strokeRect(){return this}})},load:{image(...args){loads.push(args)}}};
+ return {scene,zones,images,rectangles,loads};
 }
 test('fails closed when images are absent, preserving existing campaign',()=>{
- const {scene,zones}=fakeScene(false);
+ const {scene,zones,loads}=fakeScene(false);
  assert.equal(renderApprovedMap(scene,'ss-anne').reason,'asset-not-installed');
  assert.equal(zones.length,0);
- assert.equal(APPROVED_MAP_ASSETS_READY,false);
- assert.equal(preloadApprovedMap(scene,'ss-anne'),false);
+ assert.equal(APPROVED_MAP_ASSETS_READY,true);
+ assert.equal(preloadApprovedMap(scene,'ss-anne'),true);
+ assert.equal(loads.length,1);
+ assert.equal(loads[0][0],'torre2-approved-map-ss-anne');
 });
 test('draws approved pixels and separate clickable zones without mutating save',()=>{
  const {scene,zones}=fakeScene(true);
@@ -115,7 +117,7 @@ test('T45 GPU map cache never retains 60 full-size WebP backgrounds on mobile',(
  const evict=staleApprovedMapTextureKeys(all,['ss-anne','vermilion-city']);
  assert.deepEqual(evict,['torre2-approved-map-gym-surge','torre2-approved-map-route-11']);
  const state={calls:0,textures:{getTextureKeys:()=>all,remove(){state.calls++;}}};
- assert.equal(pruneApprovedMapTextures(state,['ss-anne']),0,
-  'Production flag OFF must never remove any real textures');
- assert.equal(state.calls,0);
+ assert.equal(pruneApprovedMapTextures(state,['ss-anne']),3,
+  'Enabled preview evicts only stale approved-map textures');
+ assert.equal(state.calls,3);
 });
