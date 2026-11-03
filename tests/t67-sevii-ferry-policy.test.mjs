@@ -48,8 +48,11 @@ test('T67 never bypasses protected original Tanoby/warehouse quests',()=>{
  assert.equal(seviiHasUnimplementedQuestLock('icefall-cave'),false);
  assert.equal(seviiHasUnimplementedQuestLock('trainer-tower'),false);
  const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(scene.includes("if(!isSeviiSceneUnlocked(approvedMap(id),state))return false"));
- assert.ok(scene.includes('!seviiHasUnimplementedQuestLock(target)'));
+ const gates=readFileSync('tools/pokearena/torre2-approved-progression-gates.js','utf8');
+ assert.ok(gates.includes('if(!isSeviiSceneUnlocked(entry,state))return false'));
+ assert.ok(gates.includes('if(seviiHasUnimplementedQuestLock(id))return false'));
+ assert.ok(scene.includes('approvedMapEntryAllowed(state,id)'));
+ assert.ok(scene.includes('approvedMapTravelAllowed(_src,target,state)'));
  assert.ok(scene.includes('seviiFerryDestinations(id,fresh)'));
  assert.ok(scene.includes("if(id==='hall-of-fame'&&seviiLeagueUnlocked(state))"));
  assert.ok(scene.includes('torre2-approved-sevii-departure'));
