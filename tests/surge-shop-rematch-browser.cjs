@@ -39,8 +39,37 @@ const server=http.createServer(async(req,res)=>{
    __qaCore.saveCampaign(s);
    __pt2Game.scene.getScene('titulo').scene.start('campanha');
   });
-  await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2BattlePath?.stage===3,
-   null,{timeout:60000});
+  // T83: stage three starts on the approved Celadon City artwork.
+  // Exercise its REAL Phaser exit before asserting native BattlePath/VS Seeker.
+  // Never bypass the gate via a direct scene method call or a synthetic event.
+  await page.waitForFunction(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   return scene.scene.isActive()&&scene.__torre2ApprovedMapView?.id==='celadon-city'&&
+    scene.children.list.some(o=>o.active&&o.input?.enabled&&
+     o.getData?.('torre2-approved-exit')===true);
+  },null,{timeout:60000});
+  const beforeExit=await page.evaluate(()=>JSON.stringify(__qaCore.readCampaign()));
+  const exitPoint=await page.evaluate(()=>{
+   const scene=__pt2Game.scene.getScene('campanha');
+   const exit=scene.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-approved-exit')===true);
+   if(!exit)throw Error('T83 approved Celadon exit unavailable');
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   const drawW=Math.min(rect.width,rect.height*640/360);
+   const drawH=Math.min(rect.height,rect.width*360/640);
+   return {x:rect.x+(rect.width-drawW)/2+(exit.x/640)*drawW,
+    y:rect.y+(rect.height-drawH)/2+(exit.y/360)*drawH};
+  });
+  await page.mouse.click(exitPoint.x,exitPoint.y);
+  await page.waitForFunction(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   return scene.scene.isActive()&&scene.__torre2BattlePath?.stage===3&&
+    scene.children.list.some(o=>o.active&&o.input?.enabled&&
+     o.getData?.('torre2-open-rematch-atlas')===true);
+  },null,{timeout:20000});
+  assert.equal(await page.evaluate(()=>JSON.stringify(__qaCore.readCampaign())),
+   beforeExit,'T83 leaving approved Celadon cannot modify badge/party/money save');
+  await page.screenshot({path:'test-evidence/t83-celadon-real-exit-to-vs-seeker.png'});
   const click=async(x,y)=>{
    const pos=await page.evaluate(([x,y])=>{
     const canvas=document.querySelector('#juego canvas')||document.querySelector('canvas');
