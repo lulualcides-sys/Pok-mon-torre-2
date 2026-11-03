@@ -1,29 +1,3 @@
-import {approvedMap} from './torre2-approved-maps-atlas.js';
-
-// Mandatory Pallet-first storyline. Route 22 is an optional detour.
-// Do not use the existing Route 2 image as a fake Pallet/Viridian map.
-export const APPROVED_OPENING_SPINE=Object.freeze([
- 'pallet-town','route-1','viridian-city','viridian-forest',
- 'route-2','pewter-city'
-]);
-export const APPROVED_OPENING_OPTIONAL=Object.freeze(['route-22']);
-export function approvedOpeningSequenceStatus(){
- const missing=[],unmapped=[],outOfOrder=[];
- let previous=-Infinity;
- for(const id of APPROVED_OPENING_SPINE){
-  const map=approvedMap(id);
-  if(!map){missing.push(id);continue;}
-  if(!hasFirstApprovedHotspots(id))unmapped.push(id);
-  if(!Number.isInteger(map.index)||map.index<=previous)outOfOrder.push(id);
-  previous=map.index;
- }
- return {ready:missing.length===0&&unmapped.length===0&&
-   outOfOrder.length===0,missing,unmapped,outOfOrder};
-}
-export function approvedOpeningSequenceReady(){
- return approvedOpeningSequenceStatus().ready;
-}
-
 /* T41: verified click targets placed on the four user-approved pixel-art scenes.
  * These are presentation coordinates, NOT battle/save progression checkpoints.
  * Backgrounds are 1280x720 and the renderer scales them uniformly.
