@@ -143,9 +143,9 @@ const server=http.createServer(async(req,res)=>{
       'T76 Starmie must be a legible full-body sprite on the leader dais');
      assert.deepEqual(info.leaders.map(l=>l.texture),['frlg-npc-misty']);
      assert.deepEqual(info.trainers.map(t=>t.texture),[
-      'frlg-npc-swimmer_m_land','frlg-npc-sailor',
-      'frlg-npc-picnicker','frlg-npc-cooltrainer_f'
-     ],'T76 all four subchiefs must have original distinct FireRed sprites');
+      'frlg-npc-swimmer_m_land','frlg-npc-swimmer_f_land',
+      'frlg-npc-tuber_m_land','frlg-npc-tuber_f'
+     ],'T77 all subchiefs must be aquatic FRLG overworld sprites (no camper)');
      assert.equal(new Set(info.trainers.map(t=>t.texture)).size,4);
     }
     const filename='approved-'+id+'-'+mode.name+'.png';
