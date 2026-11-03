@@ -1,5 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {
  FIRST_APPROVED_GYM_LAYOUTS,
  APPROVED_GYM_NPC_THEMES,
@@ -34,4 +35,14 @@ test('Surge artwork metadata never changes the battle roster or rewards',()=>{
  assert.equal(Object.hasOwn(scene,'battleAce'),false);
  assert.equal(Object.hasOwn(scene,'reward'),false);
  assert.equal(Object.hasOwn(scene,'battleResult'),false);
+});
+
+test('T78 native Lt. Surge battle roster retains Raichu, never painted Pikachu',()=>{
+ const core=readFileSync('tools/pokearena/torre2-campaign-core.js','utf8');
+ assert.match(core,/leader:'Lt\\. Surge'[\\s\\S]{0,250}boss:'raichu'/);
+ assert.match(core,/leaderTeam:\\['voltorb','pikachu','raichu'\\]/);
+ const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(scene.includes('if(!actors.artworkOnly){'));
+ assert.ok(scene.includes('const npc=actors.artworkOnly?null:addFireRedNPC'));
+ assert.ok(scene.includes("gymId==='gym-surge'?2"));
 });
