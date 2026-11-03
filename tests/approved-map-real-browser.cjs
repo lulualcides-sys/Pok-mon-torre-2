@@ -224,6 +224,87 @@ const server=http.createServer(async(req,res)=>{
     evidence.maps.push({id:to,mode:mode.name,from,sign,
       via:'actual Phaser sign click/touch',saveUnchanged:true,screenshot});
    }
+   // T63: controlled stage-three fixture after Lt. Surge — must start in
+   // Vermilion, traverse the original Route 9 solo before Route 10, and
+   // never mutate battle saves by simply clicking painted map signs.
+   const gotoStage=async(expected,number)=>{
+    await page.evaluate(stage=>{
+     const s=window.kanto.readCampaign();s.stage=stage;
+     window.kanto.saveCampaign(s);
+     const scene=window.__pt2Game.scene.getScene('campanha');
+     scene.__torre2ApprovedReturn=null;
+     // The previous stage may end in the SAME city as the new stage starts.
+     // Clear the old view before restarting to avoid clicking destroyed zones.
+     scene.__torre2ApprovedMapView=null;
+     scene.scene.restart();
+    },number);
+    await page.waitForFunction(id=>{
+     const scene=window.__pt2Game.scene.getScene('campanha'),
+      view=scene?.__torre2ApprovedMapView;
+     return scene?.scene.isActive()&&view?.id===id&&view.zones?.some(z=>
+      z.active&&typeof z.getData==='function');
+    },expected,{timeout:45000});
+    return page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+   };
+   const followSigns=async(chain,baseline,label)=>{
+    for(const [from,sign,to] of chain){
+     const position=await page.evaluate(([source,hotspot])=>{
+      const scene=window.__pt2Game.scene.getScene('campanha'),
+       view=scene.__torre2ApprovedMapView;
+      if(view?.id!==source)throw Error('T63 wrong '+source+' map: '+view?.id);
+      const zone=view.zones.find(z=>z.getData?.('torre2-approved-hotspot')===
+       source+':'+hotspot);
+      if(!zone)throw Error('T63 missing actual sign '+source+':'+hotspot);
+      const bounds=document.querySelector('#juego canvas').getBoundingClientRect();
+      const drawW=Math.min(bounds.width,bounds.height*640/360);
+      const drawH=Math.min(bounds.height,bounds.width*360/640);
+      return {x:bounds.x+(bounds.width-drawW)/2+zone.x/640*drawW,
+       y:bounds.y+(bounds.height-drawH)/2+zone.y/360*drawH};
+     },[from,sign]);
+     if(mode.isMobile)await page.touchscreen.tap(position.x,position.y);
+     else await page.mouse.click(position.x,position.y);
+     await page.waitForFunction(target=>window.__pt2Game.scene.getScene('campanha')
+      ?.__torre2ApprovedMapView?.id===target,to,{timeout:25000});
+     const actual=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+     assert.equal(actual,baseline,'T63 navigation altered save '+from+'→'+to);
+     // Screenshot representative scenes, not 18 duplicate frames.
+     if(['route-11','route-9-solo','routes-9-10','lavender-town','routes-7-8',
+      'rocket-hideout','routes-16-18','routes-12-15','fuchsia-city'].includes(to)){
+      const name='t63-approved-'+to+'-'+mode.name+'.png';
+      await page.screenshot({path:path.join(out,name),
+       fullPage:true,animations:'disabled'});
+      evidence.maps.push({id:to,mode:mode.name,from,sign,saveUnchanged:true,
+       via:'real mouse/touch in Phaser',screenshot:name});
+     }
+    }
+   };
+   const stage3=await gotoStage('vermilion-city',3);
+   await followSigns([
+    ['vermilion-city','route11','route-11'],
+    ['route-11','vermilion','vermilion-city'],
+    ['vermilion-city','route6','route-6'],
+    ['route-6','underground','underground-5-6'],
+    ['underground-5-6','route5','route-5'],
+    ['route-5','cerulean','cerulean-city'],
+    ['cerulean-city','route9','route-9-solo'],
+    ['route-9-solo','route10','routes-9-10'],
+    ['routes-9-10','lavender','lavender-town'],
+    ['lavender-town','tower','pokemon-tower'],
+    ['pokemon-tower','exit','lavender-town'],
+    ['lavender-town','route8','routes-7-8'],
+    ['routes-7-8','celadon','celadon-city'],
+    ['celadon-city','game','rocket-hideout'],
+    ['rocket-hideout','exit','celadon-city']
+   ],stage3,'stage3');
+   // T63: after Erika, do not skip Celadon → original Cycling Road →
+   // Fuchsia. Continue into approved Routes 12–15 via the actual sign.
+   const stage4=await gotoStage('celadon-city',4);
+   await followSigns([
+    ['celadon-city','route16','routes-16-18'],
+    ['routes-16-18','fuchsia','fuchsia-city'],
+    ['fuchsia-city','route15','routes-12-15'],
+    ['routes-12-15','lavender','lavender-town']
+   ],stage4,'stage4');
    await page.close();
   }
   assert.deepEqual(evidence.errors,[],'Phaser page errors');

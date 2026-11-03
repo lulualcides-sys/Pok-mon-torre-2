@@ -89,9 +89,14 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
  // on the upper-left. Prefer the lower-right corner for their return
  // button, while preserving the previously approved layouts elsewhere.
  const protectPaintedTitle=['mt-moon','route-24','route-6'].includes(entry.id);
- const backCandidates=protectPaintedTitle
-  ?[[601,20],[601,314],[39,314],[39,20]]
-  :[[601,20],[39,20],[601,314],[39,314]];
+ // Route 11/Route 10/Route 12–15 have critical painted signs at top right;
+ // move Voltar down without repainting or covering those actual signs.
+ const protectPaintedUpperRight=['route-11','routes-9-10','routes-12-15'].includes(entry.id);
+ const backCandidates=protectPaintedUpperRight
+  ?[[601,314],[601,20],[39,314],[39,20]]
+  :protectPaintedTitle
+   ?[[601,20],[601,314],[39,314],[39,20]]
+   :[[601,20],[39,20],[601,314],[39,314]];
  const back=backCandidates.find(([x,y])=>hotspots.every(h=>!overlaps(h,{x,y,width:74,height:33}))&&
   navBoxes.every(b=>!overlaps(b,{x,y,width:74,height:33}))&&
   (footerY===null||!overlaps({x,y,width:74,height:33},{x:320,y:footerY,width:636,height:25})));

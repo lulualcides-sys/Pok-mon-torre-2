@@ -1,6 +1,6 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
-import {approvedMap} from './torre2-approved-maps-atlas.js';
+import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
@@ -47,8 +47,8 @@ import {versusOpponentProfile,playVersusIntro} from './versus-intro.js';
 
 // Stage 0 must remain the native campaign until the entire Pallet-to-Pewter
 // artwork AND its reviewed hotspots exist. Never silently start at Pewter.
-const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'route-3','cerulean-city','celadon-city',
- 'fuchsia-city','saffron-city','cinnabar-island','gym-giovanni',
+const APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'route-3','cerulean-city','vermilion-city',
+ 'celadon-city','fuchsia-city','cinnabar-island','gym-giovanni',
  'indigo-plateau','elite-four-rooms','elite-four-rooms','elite-four-rooms',
  'elite-four-rooms','hall-of-fame'];
 const APPROVED_STAGE_MAX=[3,9,18,26,31,36,40,42,45,46,46,46,46,60];
@@ -518,7 +518,10 @@ create(){
   if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
-   return !!entry&&entry.index<=APPROVED_STAGE_MAX[s];
+   // Real exits only: stage cap alone cannot turn a painted sign into a
+   // shortcut to a non-adjacent map.
+   return !!entry&&entry.index<=APPROVED_STAGE_MAX[s]&&
+    approvedMapNeighbours(_src).includes(target);
   };
   const open=target=>{
    if(!canTravel(id,target))return;

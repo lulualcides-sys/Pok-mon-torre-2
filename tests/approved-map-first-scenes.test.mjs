@@ -538,7 +538,7 @@ test('T62 only original approved maps bridge Cerulean, Nugget Bridge, tunnel and
   ['route-6','saffron']
  ])assert.equal(firstApprovedDestination(from,sign),null);
  const stage=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.ok(stage.includes("'route-3','cerulean-city','celadon-city'"));
+ assert.ok(stage.includes("'route-3','cerulean-city','vermilion-city'"));
  assert.ok(stage.includes('const APPROVED_STAGE_MAX=[3,9,18,'));
 });
 test('T62 five route/tunnel images have reviewed non-overlapping Phaser sign zones',()=>{
@@ -579,6 +579,91 @@ test('T62 Voltar never covers the painted titles of approved caves/routes',()=>{
   assert.equal(layout.ok,true,JSON.stringify({id,layout}));
   // Upper-right sign is interactive: use the lower-right return corner,
   // not the original pixel-art title on upper-left.
+  assert.deepEqual([layout.backX,layout.backY],[601,314],id);
+ }
+});
+
+
+test('T63 respects all nine original map positions and excludes shortcuts',()=>{
+ const ids=['route-11','route-9-solo','routes-9-10','lavender-town',
+  'routes-7-8','rocket-hideout','pokemon-tower','routes-12-15','routes-16-18'];
+ const indices=[18,19,20,21,22,25,26,27,31];
+ assert.deepEqual(ids.map(id=>approvedMap(id)?.index),indices);
+ const edges=[
+  ['vermilion-city','route-11'],
+  ['cerulean-city','route-9-solo'],['route-9-solo','routes-9-10'],
+  ['routes-9-10','lavender-town'],
+  ['lavender-town','pokemon-tower'],['lavender-town','routes-7-8'],
+  ['routes-7-8','celadon-city'],['celadon-city','rocket-hideout'],
+  ['lavender-town','routes-12-15'],['routes-12-15','fuchsia-city'],
+  ['celadon-city','routes-16-18'],['routes-16-18','fuchsia-city']
+ ];
+ for(const [a,b] of edges){
+  assert.ok(approvedMapNeighbours(a).includes(b),a+'→'+b);
+  assert.ok(approvedMapNeighbours(b).includes(a),b+'→'+a);
+ }
+ assert.equal(approvedMapNeighbours('route-11').includes('route-3'),false);
+ assert.equal(approvedMapNeighbours('cerulean-city').includes('routes-9-10'),false);
+ for(const [id,sign] of [
+  ['route-11','route3'],['routes-9-10','rock-tunnel'],
+  ['routes-9-10','surf'],['routes-7-8','saffron'],
+  ['rocket-hideout','rocket-boss'],['pokemon-tower','silph-scope']
+ ])assert.equal(firstApprovedDestination(id,sign),null);
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(source.includes("'route-3','cerulean-city','vermilion-city'"));
+ assert.ok(source.includes("'celadon-city','fuchsia-city','cinnabar-island'"));
+ assert.ok(source.includes('approvedMapNeighbours(_src).includes(target)'));
+});
+test('T63 all original map hotspots are bounded, non-overlapping and clickable in Phaser',()=>{
+ const expected={
+  'route-11':['vermilion'],
+  'route-9-solo':['cerulean','route10'],
+  'routes-9-10':['route9','lavender'],
+  'lavender-town':['route10','tower','route8','route12','center','mart'],
+  'routes-7-8':['celadon','lavender'],
+  'rocket-hideout':['exit'],
+  'pokemon-tower':['exit'],
+  'routes-12-15':['lavender','fuchsia'],
+  'routes-16-18':['celadon','fuchsia']
+ };
+ for(const [id,signs] of Object.entries(expected)){
+  const entry=approvedMap(id),hotspots=firstApprovedHotspots(entry);
+  assert.equal(hasFirstApprovedHotspots(id),true);
+  assert.deepEqual(hotspots.map(h=>h.id),signs,id);
+  const layout=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+  assert.equal(layout.ok,true,JSON.stringify({id,layout}));
+  assert.equal(layout.hotspots.length,signs.length,id);
+  assert.equal(layout.navTargets.length,0,id);
+  assert.equal(layout.footerY,null,id);
+  const {scene,zones}=fakeScene(),events=[];
+  const result=renderApprovedMap(scene,id,{resolveHotspots:firstApprovedHotspots,
+   artNavigation:true,isUnlocked:()=>true,onHotspot:(map,key)=>events.push(map+':'+key)});
+  assert.equal(result.ok,true,id);
+  for(const label of signs){
+   const z=zones.find(x=>x.data?.value===id+':'+label);
+   assert.ok(z,id+':'+label);
+   let stopped=false;
+   z.pointerdown(null,0,0,{stopPropagation(){stopped=true}});
+   assert.equal(stopped,true,id+':'+label);
+  }
+  assert.deepEqual(events,signs.map(label=>id+':'+label));
+ }
+});
+test('T63 every real T63 destination points to an approved adjacent map',()=>{
+ for(const id of ['route-11','route-9-solo','routes-9-10','lavender-town',
+  'routes-7-8','rocket-hideout','pokemon-tower','routes-12-15','routes-16-18']){
+  const entry=approvedMap(id);
+  for(const {id:sign} of firstApprovedHotspots(entry)){
+   const target=firstApprovedDestination(id,sign);
+   if(!target)continue; // Center, Mart or decorative cue only.
+   assert.ok(approvedMap(target),id+':'+sign);
+   assert.ok(approvedMapNeighbours(id).includes(target),id+':'+sign+'→'+target);
+  }
+ }
+ for(const id of ['route-11','routes-9-10','routes-12-15']){
+  const entry=approvedMap(id);
+  const layout=planApprovedMapOverlays({...entry,hotspots:firstApprovedHotspots(entry)},rect,[]);
+  assert.equal(layout.ok,true,id);
   assert.deepEqual([layout.backX,layout.backY],[601,314],id);
  }
 });

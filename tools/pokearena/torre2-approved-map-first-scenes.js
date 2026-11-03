@@ -129,6 +129,45 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  // interaction is implemented; don't grant HMs, items or badges.
  'safari-zone':Object.freeze([
   v('exit',.500,.908,.182,.111)
+ ]),
+ // T63: these nine image-backed scenes are already among the ORIGINAL 60.
+ // Mark only painted exits; do not invent the false Route 11→Route 3 link.
+ 'route-11':Object.freeze([
+  v('vermilion',.070,.522,.136,.155)
+ ]),
+ 'route-9-solo':Object.freeze([
+  v('cerulean',.070,.433,.137,.148),
+  v('route10',.931,.431,.138,.152)
+ ]),
+ 'routes-9-10':Object.freeze([
+  v('route9',.070,.434,.138,.151),
+  v('lavender',.654,.610,.132,.132)
+ ]),
+ 'lavender-town':Object.freeze([
+  v('route10',.406,.091,.160,.135),
+  v('tower',.641,.427,.178,.148),
+  v('route8',.065,.547,.122,.134),
+  v('route12',.455,.899,.144,.145),
+  v('center',.360,.633,.144,.147),
+  v('mart',.752,.637,.137,.150)
+ ]),
+ 'routes-7-8':Object.freeze([
+  v('celadon',.066,.432,.128,.140),
+  v('lavender',.933,.432,.131,.145)
+ ]),
+ 'rocket-hideout':Object.freeze([
+  v('exit',.505,.924,.183,.126)
+ ]),
+ 'pokemon-tower':Object.freeze([
+  v('exit',.505,.921,.190,.135)
+ ]),
+ 'routes-12-15':Object.freeze([
+  v('lavender',.943,.090,.113,.131),
+  v('fuchsia',.065,.760,.129,.126)
+ ]),
+ 'routes-16-18':Object.freeze([
+  v('celadon',.055,.166,.108,.128),
+  v('fuchsia',.945,.921,.107,.134)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -146,7 +185,7 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
   moon:'mt-moon',cerulean:'cerulean-city'
  }),
  'cerulean-city':Object.freeze({route4:'route-4-east',route24:'route-24',
-   route5:'route-5',route9:'routes-9-10',gym:'gym-misty'}),
+   route5:'route-5',route9:'route-9-solo',gym:'gym-misty'}),
  'gym-misty':Object.freeze({exit:'cerulean-city'}),
  'route-24':Object.freeze({cerulean:'cerulean-city',route25:'route-25'}),
  'route-25':Object.freeze({route24:'route-24'}),
@@ -169,7 +208,19 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
   route19:'routes-19-20'
  }),
  'gym-koga':Object.freeze({exit:'fuchsia-city'}),
- 'safari-zone':Object.freeze({exit:'fuchsia-city'})
+ 'safari-zone':Object.freeze({exit:'fuchsia-city'}),
+ 'route-11':Object.freeze({vermilion:'vermilion-city'}),
+ 'route-9-solo':Object.freeze({cerulean:'cerulean-city',route10:'routes-9-10'}),
+ 'routes-9-10':Object.freeze({route9:'route-9-solo',lavender:'lavender-town'}),
+ 'lavender-town':Object.freeze({
+  route10:'routes-9-10',tower:'pokemon-tower',
+  route8:'routes-7-8',route12:'routes-12-15'
+ }),
+ 'routes-7-8':Object.freeze({celadon:'celadon-city',lavender:'lavender-town'}),
+ 'rocket-hideout':Object.freeze({exit:'celadon-city'}),
+ 'pokemon-tower':Object.freeze({exit:'lavender-town'}),
+ 'routes-12-15':Object.freeze({lavender:'lavender-town',fuchsia:'fuchsia-city'}),
+ 'routes-16-18':Object.freeze({celadon:'celadon-city',fuchsia:'fuchsia-city'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);
