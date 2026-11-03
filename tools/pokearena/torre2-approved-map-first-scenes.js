@@ -74,6 +74,12 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  'gym-koga':Object.freeze([
   v('challenge',.503,.236,.204,.140),
   v('exit',.501,.937,.175,.105)
+ ]),
+ // Safari park's only registered action is the signed south exit.
+ // Gold Teeth and HM03 labels are decorative until a validated gameplay
+ // interaction is implemented; don't grant HMs, items or badges.
+ 'safari-zone':Object.freeze([
+  v('exit',.500,.908,.182,.111)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -97,7 +103,8 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
   route18:'routes-16-18',route15:'routes-12-15',
   route19:'routes-19-20'
  }),
- 'gym-koga':Object.freeze({exit:'fuchsia-city'})
+ 'gym-koga':Object.freeze({exit:'fuchsia-city'}),
+ 'safari-zone':Object.freeze({exit:'fuchsia-city'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);

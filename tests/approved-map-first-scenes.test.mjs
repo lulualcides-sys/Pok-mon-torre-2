@@ -365,3 +365,26 @@ test('T49 Koga places four native trainer checks on dry platforms and retains le
  }
  assert.deepEqual(hits,['challenge','exit']);
 });
+
+test('T49 Safari Zone retains original art, touches the real Fuchsia exit, no invented HM',()=>{
+ const entry=approvedMap('safari-zone'),hotspots=firstApprovedHotspots(entry);
+ assert.equal(hasFirstApprovedHotspots(entry.id),true);
+ assert.deepEqual(hotspots.map(h=>h.id),['exit']);
+ assert.equal(firstApprovedDestination(entry.id,'exit'),'fuchsia-city');
+ assert.equal(firstApprovedDestination(entry.id,'hm03'),null);
+ assert.equal(firstApprovedDestination(entry.id,'gold-teeth'),null);
+ assert.ok(approvedMapNeighbours(entry.id).includes('fuchsia-city'));
+ const plan=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.equal(plan.hotspots.length,1);
+ const {scene,zones}=fakeScene(),calls=[];
+ const result=renderApprovedMap(scene,entry.id,{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,isUnlocked:()=>true,
+  onHotspot:(src,id)=>calls.push(src+':'+id)
+ });
+ assert.equal(result.ok,true);
+ const exit=zones.find(x=>x.data?.value==='safari-zone:exit');
+ assert.ok(exit);
+ exit.pointerdown(null,0,0,{stopPropagation(){}});
+ assert.deepEqual(calls,['safari-zone:exit']);
+});
