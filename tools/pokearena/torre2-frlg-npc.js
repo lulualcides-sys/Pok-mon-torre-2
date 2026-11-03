@@ -30,12 +30,18 @@ export function reviewedGymNpcSpriteId(kind){
 // A cropped Image still uses the ORIGINAL sheet dimensions as its geometry.
  // A dedicated texture frame has true 16x32 bounds and fixes NPCs shifted
  // outside the map / incorrect hover targets on mobile.
+// The original FireRed GBA sprite metadata uses 2x2 tiles (16x16 px)
+// for Tuber children, but 2x4 tiles (16x32 px) for adult swimmers. Never
+// concatenate two vertical child frames into a fake 16x32 character.
+export function reviewedGymNpcFrameHeight(spriteId){
+ return spriteId==='tuber_m_land'||spriteId==='tuber_f'?16:32;
+}
 function frontFrame(texture,key){
- const source=texture.source?.[0];
- if(!source||source.width<16||source.height<16)return null;
- const frame='torre2-front-16x32';
- if(!texture.has(frame))
-  texture.add(frame,0,0,0,16,Math.min(32,source.height));
+ const source=texture.source?.[0],spriteId=key.slice(NPC_TEXTURE_PREFIX.length);
+ const height=reviewedGymNpcFrameHeight(spriteId);
+ if(!source||source.width<16||source.height<height)return null;
+ const frame='torre2-front-16x'+height;
+ if(!texture.has(frame))texture.add(frame,0,0,0,16,height);
  return frame;
 }
 export function addFireRedNPC(scene,kind,x,y,{scale=1,depth=8,strict=false}={}){
