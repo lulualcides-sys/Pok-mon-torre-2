@@ -6,6 +6,7 @@ import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,app
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
 import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
+import {lockNativePmdIdleFeet} from './torre2-gym-ace-ground.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -807,6 +808,7 @@ create(){
         .setOrigin(.5,nativePmdFootOrigin(texture,plan)).setScale(scale).setDepth(24)
         .setData('torre2-gym-ace',gymId)
         .setData('torre2-gym-ace-source','pmd-idle');
+        lockNativePmdIdleFeet(sprite,texture,plan);
        const count=Math.min(plan.durations.length,texture.frameTotal||1);
        if(count>1){
         const anim='torre2-approved-misty-starmie-idle';
@@ -838,6 +840,7 @@ create(){
         .setOrigin(.5,26/40).setScale(scale).setDepth(24)
         .setData('torre2-gym-ace',gymId)
         .setData('torre2-gym-ace-source','pmd-idle');
+        lockNativePmdIdleFeet(sprite,texture,plan,26/40);
        const count=Math.min(plan.durations.length,texture.frameTotal||1);
        if(count>1){
         const anim='torre2-approved-erika-vileplume-idle';
@@ -865,6 +868,7 @@ create(){
         .setScale(scale).setDepth(24)
         .setData('torre2-gym-ace',gymId)
         .setData('torre2-gym-ace-source','pmd-idle');
+        lockNativePmdIdleFeet(sprite,texture,plan);
        const count=Math.min(plan.durations.length,texture.frameTotal||1);
        if(count>1){
         const anim='torre2-approved-'+gymId+'-native-idle';

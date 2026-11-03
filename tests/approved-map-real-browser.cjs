@@ -18,6 +18,63 @@ const server=http.createServer(async(req,res)=>{
  try{const b=await fs.readFile(file);res.writeHead(200,{'content-type':mime[path.extname(file)]||'application/octet-stream'});res.end(b)}
  catch{res.writeHead(404);res.end('missing')}
 });
+// T81: inspect REAL animated SpriteCollab alpha pixels in Chromium.
+// No changes to the story save, encounters, or combat fixtures.
+async function verifyAnimatedGymFeet(page,id){
+ const result=await page.evaluate(async gymId=>{
+  const scene=window.__pt2Game.scene.getScene('campanha');
+  const ace=scene.children.list.find(o=>o.active&&
+   o.getData?.('torre2-gym-ace')===gymId);
+  const leader=scene.children.list.find(o=>o.active&&
+   o.getData?.('torre2-gym-leader-sprite')===gymId);
+  if(!ace||!leader)throw Error('T81 missing PMD and leader '+gymId);
+  const samples=[],seen=new Set();
+  const read=()=>{
+   const frame=ace.frame,w=frame?.cutWidth||frame?.width,
+    h=frame?.cutHeight||frame?.height;
+   if(!w||!h)throw Error('T81 PMD missing frame size '+gymId);
+   const canvas=document.createElement('canvas');
+   canvas.width=w;canvas.height=h;
+   const ctx=canvas.getContext('2d',{willReadFrequently:true});
+   ctx.drawImage(ace.texture.getSourceImage(),frame.cutX,frame.cutY,
+    w,h,0,0,w,h);
+   const rgba=ctx.getImageData(0,0,w,h).data;
+   let bottom=-1;
+   for(let y=h-1;y>=0&&bottom<0;y--)
+    for(let x=0;x<w;x++)if(rgba[(y*w+x)*4+3]>=20){
+     bottom=y;break;
+    }
+   const expected=bottom<0?1:(bottom+1)/h;
+   const key=String(frame.name);
+   if(seen.has(key))return;
+   seen.add(key);
+   samples.push({frame:key,originY:ace.originY,expected,
+    y:ace.y,leaderY:leader.y,displayHeight:ace.displayHeight});
+  };
+  read();
+  if(ace.anims?.isPlaying&&ace.texture.frameTotal>1){
+   await new Promise(resolve=>{
+    let timer;
+    const onFrame=()=>{read();if(samples.length>=3){
+     clearTimeout(timer);ace.off('animationupdate',onFrame);resolve();
+    }};
+    ace.on('animationupdate',onFrame);
+    timer=setTimeout(()=>{ace.off('animationupdate',onFrame);resolve();},2200);
+   });
+  }
+  return {playing:!!ace.anims?.isPlaying,samples};
+ },id);
+ assert.ok(result.samples.length>=1,'T81 no PMD samples '+id);
+ if(result.playing)assert.ok(result.samples.length>=2,
+  'T81 Idle playback did not change frames '+id);
+ for(const v of result.samples){
+  assert.ok(Math.abs(v.y-v.leaderY)<1,'T81 leader floor changed '+id);
+  assert.ok(Math.abs(v.originY-v.expected)*v.displayHeight<1,
+   'T81 visible alpha feet are ungrounded '+id+' frame '+v.frame+
+   ' origin='+v.originY+' expected='+v.expected);
+ }
+ return result;
+}
 (async()=>{
  await fs.mkdir(out,{recursive:true});
  const evidence={ok:false,source:'real-Phaser-Chromium',
@@ -321,6 +378,9 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(surge.actualAce,'raichu','T78 real Surge ace must remain Raichu');
    assert.ok(surge.actualTeam.includes('raichu'));
    assert.equal(surge.save,stage2Before,'T78 entering approved gym altered campaign');
+   const surgeFeet=await verifyAnimatedGymFeet(page,'gym-surge');
+   evidence.maps.push({id:'gym-surge-idle-frames',mode:mode.name,
+    frames:surgeFeet.samples.length,alphaGrounded:true});
    const surgeScreenshot='t78-approved-gym-surge-'+mode.name+'.png';
    await page.screenshot({path:path.join(out,surgeScreenshot),fullPage:true,
     animations:'disabled'});
@@ -1093,8 +1153,11 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(erikaReport.aces.length,1);
    assert.equal(erikaReport.aces[0].key,'torre2-gym-ace-idle-0045');
    assert.equal(erikaReport.aces[0].source,'pmd-idle');
-   assert.equal(erikaReport.aces[0].originY,26/40,
-    'T79 Vileplume must stand on platform using true alpha-visible feet');
+   // T79b still locks Vileplume frame zero at 26/40. Later animation
+   // frames use their own visible alpha bottoms instead of a fixed origin.
+   const erikaFeet=await verifyAnimatedGymFeet(page,'gym-erika');
+   evidence.maps.push({id:'gym-erika-idle-frames',mode:mode.name,
+    frames:erikaFeet.samples.length,alphaGrounded:true});
    assert.ok(erikaReport.aces[0].w>=35&&erikaReport.aces[0].h>=35);
    assert.ok(Math.abs(erikaReport.aces[0].y-erikaReport.leaders[0].y)<1,
     'T80 Vileplume must stand on exactly the same ground plane as Erika');
