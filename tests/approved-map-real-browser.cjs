@@ -257,9 +257,9 @@ const server=http.createServer(async(req,res)=>{
     evidence.maps.push({id:to,mode:mode.name,from,sign,
       via:'actual Phaser sign click/touch',saveUnchanged:true,screenshot});
    }
-   // T78: use the actual Vermilion GYM hotspot to enter Surge's
-   // ORIGINAL approved image. The leader, Pikachu and trainers are painted
-   // already; Phaser may supply invisible actions but must NOT clone figures.
+   // T80: use the real Vermilion GYM door to enter the USER-REPLACED
+   // background. It has empty platforms: all six authentic actors must be
+   // overlaid independently, with Raichu grounded next to Lt. Surge.
    const surgeDoor=await page.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
     if(scene.__torre2ApprovedMapView?.id!=='vermilion-city')
@@ -283,7 +283,18 @@ const server=http.createServer(async(req,res)=>{
    const surge=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('campanha');
     const painted=scene.__torre2ApprovedMapView;
+    const leaders=scene.children.list.filter(x=>x.active&&
+     x.getData?.('torre2-gym-leader-sprite')==='gym-surge');
+    const aces=scene.children.list.filter(x=>x.active&&
+     x.getData?.('torre2-gym-ace')==='gym-surge');
+    const trainers=scene.children.list.filter(x=>x.active&&
+     String(x.getData?.('torre2-gym-trainer-sprite')||'').startsWith('gym-surge:'));
     return {texture:painted.image.texture.key,
+     sourceImage:painted.image.texture.getSourceImage().width,
+     leaders:leaders.map(x=>({texture:x.texture?.key,y:x.y})),
+     aces:aces.map(x=>({texture:x.texture?.key,y:x.y,originY:x.originY,
+      source:x.getData?.('torre2-gym-ace-source')})),
+     trainers:trainers.map(x=>x.texture?.key),
      actions:scene.children.list.filter(x=>x.active&&
       String(x.getData?.('torre2-approved-gym-trainer')||'')
        .startsWith('gym-surge:')).length,
@@ -297,7 +308,15 @@ const server=http.createServer(async(req,res)=>{
      save:JSON.stringify(window.kanto.readCampaign())};
    });
    assert.equal(surge.texture,'torre2-approved-map-gym-surge');
-   assert.equal(surge.actors,0,'T78 approved painted Surge figures were duplicated');
+   assert.equal(surge.actors,6,'T80 all 6 original FRLG/PMD characters must render');
+   assert.deepEqual(surge.leaders.map(x=>x.texture),['frlg-npc-lt_surge']);
+   assert.deepEqual(surge.trainers,[
+    'frlg-npc-sailor','frlg-npc-rocker','frlg-npc-gentleman','frlg-npc-worker_m'
+   ]);
+   assert.equal(surge.aces[0]?.texture,'torre2-gym-ace-idle-0026');
+   assert.equal(surge.aces[0]?.source,'pmd-idle');
+   assert.ok(Math.abs(surge.aces[0].y-surge.leaders[0].y)<1,
+    'T80 Raichu visible feet must align with the leader floor line');
    assert.equal(surge.actions,4,'T78 four original trainers must remain interactive');
    assert.equal(surge.actualAce,'raichu','T78 real Surge ace must remain Raichu');
    assert.ok(surge.actualTeam.includes('raichu'));
@@ -308,7 +327,7 @@ const server=http.createServer(async(req,res)=>{
    evidence.maps.push({id:'gym-surge',mode:mode.name,
     via:'T78 real Vermilion gym door click/touch',
     fixture:'Controlled stage 2, not naturally earned Thunder Badge',
-    paintedNpcCount:4,duplicatedPhaserActors:surge.actors,
+    userBackground:true,renderedPhaserActors:surge.actors,
     aceInBattle:surge.actualAce,screenshot:surgeScreenshot});
    // Return using an actual approved exit, never an invented stage warp.
    const surgeExit=await page.evaluate(()=>{
