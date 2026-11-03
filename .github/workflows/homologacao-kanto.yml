@@ -1,0 +1,105 @@
+name: Pokémon Torre 2 — Homologação isolada (SEM DEPLOY)
+
+on:
+  push:
+    branches:
+      - test/homologacao-kanto-20261103
+
+permissions:
+  contents: read
+
+concurrency:
+  group: torre2-homologacao-isolada
+  cancel-in-progress: true
+
+jobs:
+  gerar-versao-teste:
+    if: github.ref == 'refs/heads/test/homologacao-kanto-20261103'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Proteger artes e conferir T67
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/dev/approved-visual-guard.mjs
+          node --test tests/t67-sevii-ferry-policy.test.mjs tests/approved-map-binary-integrity.test.mjs
+      - name: Preparar dependências para testes Chromium
+        run: npm install --no-audit --no-fund
+      - name: Gerar cliente Phaser de homologação — nunca publicar
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs \
+               && PREVIEW_ROOT=_site node tools/pokearena/build-preview.mjs \
+               && test -s _site/arena2d/index.html \
+               && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Build de homologação incompleto"
+              exit 1
+            fi
+            echo "Build incompleto; nova tentativa $((attempt + 1))/3"
+            sleep $((attempt * 8))
+          done
+          cat > _site/index.html <<'HTML'
+          <!doctype html>
+          <html lang="pt-BR">
+          <head><meta charset="UTF-8">
+          <meta name="viewport" content="width=device-width,initial-scale=1">
+          <meta name="robots" content="noindex,nofollow">
+          <meta http-equiv="refresh" content="0;url=./arena2d/index.html">
+          <title>Pokémon Torre 2 — HOMOLOGAÇÃO, NÃO PUBLICADO</title>
+          <script>location.replace("./arena2d/index.html" + location.search + location.hash);</script>
+          </head>
+          <body><p>Versão experimental. Abrindo o cliente de teste...</p>
+          <p><a href="./arena2d/index.html">Abrir versão de homologação</a></p></body>
+          </html>
+          HTML
+          {
+            echo 'POKÉMON TORRE 2 — VERSÃO DE HOMOLOGAÇÃO'
+            echo 'NÃO PUBLICAR NO GITHUB PAGES / NÃO MESCLAR NA MAIN.'
+            echo "Commit: $GITHUB_SHA"
+            echo "Gerado (UTC): $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            echo 'Contém conteúdo experimental, sujeito à aprovação final do usuário.'
+            echo 'Abrir com servidor HTTP local; arquivo file:// não substitui um servidor.'
+          } > _site/LEIA-ANTES-DE-TESTAR.txt
+          test -s _site/LEIA-ANTES-DE-TESTAR.txt
+      - name: Exercitar navegação real desktop/mobile
+        id: chromium
+        continue-on-error: true
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/approved-map-real-browser.cjs
+      - name: Disponibilizar ZIP de teste, sem publicação
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokemon-torre-2-HOMOLOGACAO
+          path: _site/
+          retention-days: 30
+          if-no-files-found: warn
+      - name: Arquivar capturas e laudos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: homologacao-evidencias
+          path: test-evidence/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Não aceitar QA visual falho
+        if: always()
+        shell: bash
+        env:
+          BROWSER_OUTCOME: ${{ steps.chromium.outcome }}
+        run: |
+          if [ "$BROWSER_OUTCOME" != "success" ]; then
+            echo "::error::Homologação NÃO aprovada: browser=$BROWSER_OUTCOME"
+            exit 1
+          fi
