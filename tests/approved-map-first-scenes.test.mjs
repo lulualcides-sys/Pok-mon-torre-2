@@ -778,6 +778,7 @@ test('T66 leader and Elite challenger gates reuse existing battle system only',(
   assert.ok(source.includes(leader+':'+stage));
  assert.ok(source.includes("if(fresh.stage===eliteStage&&!fresh.champion)"));
  assert.ok(source.includes("target!=='hall-of-fame'||state.champion===true"));
+ assert.ok(source.includes("if(id==='hall-of-fame'&&state?.champion!==true)return false;"));
  assert.ok(source.includes('return this.gymScreen(fresh)'));
  assert.equal(firstApprovedDestination('routes-22-23','viridian'),null);
  assert.equal(firstApprovedDestination('gym-giovanni','route23'),null);
