@@ -63,12 +63,13 @@ test('T77: map-by-map visual policy records outstanding gym work honestly',()=>{
  assert.equal(surge.artworkOnly,true);
  assert.equal(surge.status,'artwork-only');
  assert.equal(surge.renderedNpcCount,0);
- for(const id of ['gym-erika','gym-koga']){
-  const report=reports.find(r=>r.id===id);
-  assert.equal(report.status,'review');
-  assert.ok(report.unexpected.length>0,
-   id+' must stay in the review backlog until original sprites are replaced');
- }
+ const erika=reports.find(r=>r.id==='gym-erika');
+ assert.equal(erika.status,'validated','T79 original trainer sprites approved');
+ assert.deepEqual(erika.unexpected,[]);
+ const koga=reports.find(r=>r.id==='gym-koga');
+ assert.equal(koga.status,'review');
+ assert.ok(koga.unexpected.length>0,
+  'Koga still needs original themed sprites; do not mark as finished');
 });
 
 test('T77: Misty original PMD Starmie and approved art stay unchanged',()=>{
