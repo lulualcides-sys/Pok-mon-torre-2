@@ -6,6 +6,7 @@ on:
     paths:
       - 'tools/pokearena/torre2-prologue-reference-sheets.js'
       - 'tests/t59-original-prologue-references.test.mjs'
+      - 'tests/t60-original-prologue-phaser.test.mjs'
       - 'reference-assets/kanto/**'
       - 'tools/pokearena/torre2-approved-prologue-assets.js'
       - 'tools/pokearena/torre2-approved-maps-atlas.js'
@@ -34,6 +35,7 @@ jobs:
       - name: Parse changed runtime modules and Python installer
         run: |
           node --check tools/pokearena/torre2-prologue-reference-sheets.js
+          node --check tools/pokearena/torre2-prologue-source-preview.js
           node --check tools/pokearena/torre2-approved-prologue-assets.js
           node --check tools/pokearena/torre2-approved-maps-atlas.js
           node --check tools/pokearena/torre2-approved-opening.js
@@ -46,7 +48,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_install_approved_maps.py' -v
       - name: Coordinate, navigation, and regression tests
         run: |
-          node --test tests/approved-map-first-scenes.test.mjs tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs tests/native-asset-compat.test.mjs tests/approved-map-build-integration.test.mjs tests/approved-map-binary-integrity.test.mjs tests/t51-approved-maps-and-start.test.mjs tests/t54-prologue-sidecar.test.mjs tests/t59-original-prologue-references.test.mjs
+          node --test tests/approved-map-first-scenes.test.mjs tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs tests/native-asset-compat.test.mjs tests/approved-map-build-integration.test.mjs tests/approved-map-binary-integrity.test.mjs tests/t51-approved-maps-and-start.test.mjs tests/t54-prologue-sidecar.test.mjs tests/t59-original-prologue-references.test.mjs tests/t60-original-prologue-phaser.test.mjs
       # Native Phaser build and Chromium desktop/mobile are already gated by
       # visual-guard.yml, which captures the upstream client first. Never
       # duplicate that network-heavy setup in this fast integrity job.
