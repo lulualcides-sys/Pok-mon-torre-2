@@ -315,8 +315,19 @@ create(){
     const fresh=readCampaign()||state;
     // Eevee's unresolved choice has priority after acknowledged rewards.
     if(this.promptPendingEeveeEvolution(fresh))return;
-    // Restore the art only after the report is dismissed. This never
-    // reruns the resolver or manufactures a win/badge.
+    // T72: Phaser.preload() ran BEFORE the leader's victory was committed.
+    // It prepared the OLD stage map, not the newly unlocked one. Now that
+    // the native checkpoint is durable and the report was acknowledged,
+    // restart with an EMPTY payload so preload reads the new stage/texture.
+    // init({}) clears this.result; no victory, TM or badge is replayed.
+    // Only committed stage transitions may use this intentional restart;
+    // same-stage matches still restore the current art without a restart.
+    if(battleOutcomeCommitted&&fresh.stage!==preBattleStage){
+     this.__torre2ApprovedReturn=null;
+     this.scene.restart({});
+     return;
+    }
+    // Restore the same-stage approved art without rerunning the resolver.
     if(approvedReturnMapId(this.__torre2ApprovedReturn,fresh))
      this.returnFromPartyToMap(fresh);
    });
