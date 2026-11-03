@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": null,
   "installCommand": "npm install --no-audit --no-fund",
-  "buildCommand": "node tools/pokearena/capture-client.mjs && PREVIEW_ROOT=_site node tools/pokearena/build-preview.mjs && node tools/dev/homologation-preview-index.mjs",
+  "buildCommand": "bash tools/dev/build-homologation-with-opening.sh",
   "outputDirectory": "_site",
   "headers": [
     {
