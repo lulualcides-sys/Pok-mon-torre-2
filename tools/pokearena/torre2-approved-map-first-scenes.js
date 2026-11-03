@@ -243,6 +243,70 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  'routes-16-18':Object.freeze([
   v('celadon',.055,.166,.108,.128),
   v('fuchsia',.945,.921,.107,.134)
+ ]),
+ // T67: all thirteen scenes are IDENTICAL approved WebPs #48–60.
+ // Ferry ports are real signs on the island artworks. Never create
+ // fake interiors for dotted hole, berry forest or Lost Cave.
+ 'sevii-1':Object.freeze([
+  v('ember',.500,.056,.180,.100),
+  v('center',.506,.398,.179,.143),
+  v('port',.182,.615,.161,.144)
+ ]),
+ 'mt-ember':Object.freeze([
+  v('island1',.497,.931,.192,.115)
+ ]),
+ 'sevii-2':Object.freeze([
+  v('mart',.281,.440,.138,.133),
+  v('center',.374,.606,.170,.145),
+  v('port',.198,.747,.148,.137)
+ ]),
+ 'sevii-3':Object.freeze([
+  v('center',.532,.424,.178,.145),
+  v('mart',.735,.430,.157,.145),
+  v('port',.379,.764,.163,.143)
+ ]),
+ 'sevii-4':Object.freeze([
+  v('center',.557,.418,.170,.150),
+  v('mart',.547,.688,.146,.130),
+  v('icefall',.893,.097,.169,.123),
+  v('port',.357,.751,.149,.137)
+ ]),
+ 'icefall-cave':Object.freeze([
+  v('island4',.500,.931,.181,.115)
+ ]),
+ 'sevii-5':Object.freeze([
+  v('center',.375,.403,.177,.149),
+  v('mart',.387,.632,.149,.126),
+  v('warehouse',.804,.416,.158,.139),
+  v('port',.194,.757,.156,.144)
+ ]),
+ 'rocket-warehouse':Object.freeze([
+  v('island5',.500,.923,.187,.130)
+ ]),
+ 'sevii-6':Object.freeze([
+  v('center',.387,.393,.129,.139),
+  v('mart',.555,.394,.125,.139),
+  v('port',.208,.755,.153,.137)
+ ]),
+ // The five originally catalogued island-seven zones remain unchanged,
+ // including its real Tower, Canyon, PC, Mart and Ferry signs.
+ 'sevault-canyon':Object.freeze([
+  v('island7',.622,.083,.183,.125),
+  v('tanoby',.508,.923,.181,.126)
+ ]),
+ // The original seven Tanoby chamber shapes stay in the atlas. Only
+ // the canyon exit navigates; chamber names do not grant encounters.
+ 'trainer-tower':Object.freeze([
+  v('battle-1',.260,.770,.180,.100),
+  v('battle-2',.260,.646,.180,.100),
+  v('battle-3',.280,.480,.171,.100),
+  v('battle-4',.280,.349,.171,.100),
+  v('battle-5',.750,.773,.180,.100),
+  v('battle-6',.750,.640,.180,.100),
+  v('battle-7',.750,.485,.180,.100),
+  v('battle-8',.750,.349,.180,.100),
+  v('final',.510,.167,.165,.155),
+  v('exit',.500,.928,.170,.110)
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
@@ -320,7 +384,17 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'rocket-hideout':Object.freeze({exit:'celadon-city'}),
  'pokemon-tower':Object.freeze({exit:'lavender-town'}),
  'routes-12-15':Object.freeze({lavender:'lavender-town',fuchsia:'fuchsia-city'}),
- 'routes-16-18':Object.freeze({celadon:'celadon-city',fuchsia:'fuchsia-city'})
+ 'routes-16-18':Object.freeze({celadon:'celadon-city',fuchsia:'fuchsia-city'}),
+ 'sevii-1':Object.freeze({ember:'mt-ember'}),
+ 'mt-ember':Object.freeze({island1:'sevii-1'}),
+ 'sevii-4':Object.freeze({icefall:'icefall-cave'}),
+ 'icefall-cave':Object.freeze({island4:'sevii-4'}),
+ 'sevii-5':Object.freeze({warehouse:'rocket-warehouse'}),
+ 'rocket-warehouse':Object.freeze({island5:'sevii-5'}),
+ 'sevii-7':Object.freeze({tower:'trainer-tower',canyon:'sevault-canyon'}),
+ 'sevault-canyon':Object.freeze({island7:'sevii-7',tanoby:'tanoby-ruins'}),
+ 'tanoby-ruins':Object.freeze({exit:'sevault-canyon'}),
+ 'trainer-tower':Object.freeze({exit:'sevii-7'})
 });
 export function hasFirstApprovedHotspots(id){
  return Object.prototype.hasOwnProperty.call(FIRST_APPROVED_HOTSPOTS,id);

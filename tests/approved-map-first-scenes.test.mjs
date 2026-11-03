@@ -788,3 +788,74 @@ test('T66 leader and Elite challenger gates reuse existing battle system only',(
  for(const id of ['gym-sabrina','gym-blaine','gym-giovanni'])
   assert.equal(firstApprovedDestination(id,'challenge'),null);
 });
+
+test('T67 Sevii uses only thirteen original approved WebPs, with bounded unique hotspots',()=>{
+ const expected={
+  'sevii-1':['ember','center','port'],
+  'mt-ember':['island1'],
+  'sevii-2':['mart','center','port'],
+  'sevii-3':['center','mart','port'],
+  'sevii-4':['center','mart','icefall','port'],
+  'icefall-cave':['island4'],
+  'sevii-5':['center','mart','warehouse','port'],
+  'rocket-warehouse':['island5'],
+  'sevii-6':['center','mart','port'],
+  'sevii-7':['tower','center','mart','port','canyon'],
+  'sevault-canyon':['island7','tanoby'],
+  'tanoby-ruins':['viapois','rixy','scufib','dilford','weepth',
+   'liptoo','monean','exit'],
+  'trainer-tower':['battle-1','battle-2','battle-3','battle-4',
+   'battle-5','battle-6','battle-7','battle-8','final','exit']
+ };
+ assert.equal(Object.keys(expected).length,13);
+ for(const [id,labels] of Object.entries(expected)){
+  const entry=approvedMap(id);
+  assert.ok(entry&&entry.index>=48&&entry.index<=60,id);
+  assert.equal(hasFirstApprovedHotspots(id)||entry.hotspots.length>0,true,id);
+  const spots=firstApprovedHotspots(entry);
+  assert.deepEqual(spots.map(h=>h.id),labels,id);
+  const layout=planApprovedMapOverlays({...entry,hotspots:spots},rect,[]);
+  assert.equal(layout.ok,true,id+':'+JSON.stringify(layout));
+  assert.equal(layout.hotspots.length,labels.length);
+  assert.equal(layout.footerY,null);
+  assert.deepEqual([layout.backX,layout.backY],[601,314],id);
+  const {scene,zones}=fakeScene(),events=[];
+  const view=renderApprovedMap(scene,id,{
+   resolveHotspots:firstApprovedHotspots,artNavigation:true,isUnlocked:()=>true,
+   onHotspot:(map,sign)=>events.push(map+':'+sign)
+  });
+  assert.equal(view.ok,true,id);
+  for(const sign of labels){
+   const zone=zones.find(z=>z.data?.value===id+':'+sign);
+   assert.ok(zone,id+':'+sign);
+   let stopped=false;
+   zone.pointerdown(null,0,0,{stopPropagation(){stopped=true;}});
+   assert.equal(stopped,true);
+  }
+  assert.deepEqual(events,labels.map(sign=>id+':'+sign),id);
+ }
+});
+test('T67 original entrances map to existing adjacent islands, not fake areas',()=>{
+ const edges=[
+  ['sevii-1','ember','mt-ember'],
+  ['mt-ember','island1','sevii-1'],
+  ['sevii-4','icefall','icefall-cave'],
+  ['icefall-cave','island4','sevii-4'],
+  ['sevii-5','warehouse','rocket-warehouse'],
+  ['rocket-warehouse','island5','sevii-5'],
+  ['sevii-7','tower','trainer-tower'],
+  ['sevii-7','canyon','sevault-canyon'],
+  ['sevault-canyon','island7','sevii-7'],
+  ['sevault-canyon','tanoby','tanoby-ruins'],
+  ['tanoby-ruins','exit','sevault-canyon'],
+  ['trainer-tower','exit','sevii-7']
+ ];
+ for(const [from,sign,to] of edges){
+  assert.equal(firstApprovedDestination(from,sign),to,from+':'+sign);
+  assert.ok(approvedMapNeighbours(from).includes(to),from+'->'+to);
+  assert.ok(approvedMapNeighbours(to).includes(from),to+'->'+from);
+ }
+ for(const sign of ['dotted-hole','lost-cave','ruby','moltres','tutor',
+  'battle-1','final','viapois'])
+  assert.equal(firstApprovedDestination('trainer-tower',sign),null);
+});

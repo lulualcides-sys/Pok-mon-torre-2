@@ -1,6 +1,8 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
+import {seviiLeagueUnlocked,seviiFerryDestinations,isSeviiSceneUnlocked,
+ seviiHasUnimplementedQuestLock,SEVII_FERRY_LABELS} from './torre2-sevii-ferry.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
@@ -518,6 +520,7 @@ create(){
   // Also cover direct stage-entry/render paths: an edited or stale save
   // at the last index must not reveal the Hall before a real Champion win.
   if(id==='hall-of-fame'&&state?.champion!==true)return false;
+  if(!isSeviiSceneUnlocked(approvedMap(id),state))return false;
   if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
@@ -525,6 +528,8 @@ create(){
    // shortcut to a non-adjacent map.
    return !!entry&&entry.index<=APPROVED_STAGE_MAX[s]&&
     (target!=='hall-of-fame'||state.champion===true)&&
+    isSeviiSceneUnlocked(entry,state)&&
+    !seviiHasUnimplementedQuestLock(target)&&
     approvedMapNeighbours(_src).includes(target);
   };
   const open=target=>{
@@ -552,6 +557,7 @@ create(){
    }else this.approvedMapPreview(readCampaign()||state,target);
   };
   this.children.removeAll(true);
+  this.__torre2SeviiFerryOpen=false;
   const result=renderApprovedMap(this,id,{
    onExit:()=>{
     this.__torre2ApprovedReturn=null;
@@ -563,6 +569,45 @@ create(){
     const fresh=readCampaign()||state;
     if(kind==='center')return this.centerScreen(fresh);
     if(kind==='mart')return this.martScreen(fresh);
+    if(kind==='port'&&/^sevii-[1-7]$/.test(id)){
+     // The painted port opens a choice of EXISTING ferry edges, not a
+     // teleport to a user-unapproved island or an automatic HM reward.
+     const targets=seviiFerryDestinations(id,fresh)
+      .filter(target=>canTravel(id,target));
+     if(!targets.length||this.__torre2SeviiFerryOpen)return;
+     this.__torre2SeviiFerryOpen=true;
+     const layer=[];
+     const add=obj=>{layer.push(obj);return obj;};
+     add(this.add.rectangle(320,180,640,360,0x050b17,.82)
+      .setDepth(80).setInteractive());
+     add(this.add.rectangle(320,180,350,80+targets.length*40,
+      0x10253c,.98).setStrokeStyle(2,0x97d5ed).setDepth(81));
+     add(this.add.text(320,116,'FERRY SEVII · ESCOLHA O DESTINO',{
+      fontFamily:'Pixelify Sans,monospace',fontSize:'14px',
+      color:'#f8e6b5',align:'center'}).setOrigin(.5).setDepth(82));
+     const close=()=>{
+      for(const obj of layer)obj.destroy();
+      this.__torre2SeviiFerryOpen=false;
+     };
+     targets.forEach((target,i)=>{
+      add(this.add.text(320,155+i*40,
+       '⛴ '+(SEVII_FERRY_LABELS[target]||approvedMap(target)?.name),{
+        fontFamily:'Pixelify Sans,monospace',fontSize:'16px',
+        color:'#ffffff',backgroundColor:'#205575',
+        padding:{x:14,y:8}}).setOrigin(.5).setDepth(83)
+       .setInteractive({useHandCursor:true})
+       .on('pointerdown',(_p,_x,_y,event)=>{
+        event?.stopPropagation?.();close();open(target);
+       }));
+     });
+     add(this.add.text(320,155+targets.length*40,'CANCELAR',{
+      fontFamily:'Pixelify Sans,monospace',fontSize:'13px',
+      color:'#e7f0fa',padding:{x:10,y:5}}).setOrigin(.5).setDepth(83)
+      .setInteractive({useHandCursor:true}).on('pointerdown',(_p,_x,_y,event)=>{
+       event?.stopPropagation?.();close();
+      }));
+     return;
+    }
     // The approved artwork itself is clickable. All route destinations still
     // go through the existing stage lock; clicking a sign grants no progress.
     const firstTarget=firstApprovedDestination(id,kind);
@@ -663,6 +708,19 @@ create(){
    this.__torre2ApprovedReturn=null;
    this.renderCampaign(readCampaign()||state);
    return false;
+  }
+  // Hall of Fame has no painted ferry port. Only a real Champion victory
+  // exposes this discreet link to the existing first Sevii island.
+  if(id==='hall-of-fame'&&seviiLeagueUnlocked(state)){
+   this.add.text(531,296,'⛴ VISITAR ILHAS SEVII',{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'11px',
+    color:'#ffffff',backgroundColor:'#143b56',
+    padding:{x:7,y:7}}).setOrigin(.5).setDepth(66)
+    .setData('torre2-approved-sevii-departure',true)
+    .setInteractive({useHandCursor:true})
+    .on('pointerdown',(_p,_x,_y,event)=>{
+     event?.stopPropagation?.();open('sevii-1');
+    });
   }
   this.__torre2ApprovedReturn={id,stage:state.stage};
   this.__torre2ApprovedMapView=result;
