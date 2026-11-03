@@ -16,7 +16,7 @@
 ## QA
 
 - `tests/t74-pending-wild-resume.test.mjs`: guarda de ausência de mutações, retomada do save, identidade do encontro T73, consumo único de ticket VS Seeker e rejeição após progresso alterado.
-- `tests/approved-map-real-browser.cjs`: em **fixture controlada** de Vermilion etapa 2, o resolvedor nativo gera um Shiny forçado apenas pela sequência RNG de teste, confirma save e contador, exige que uma segunda busca não substitua o encontro, abre a janela de grama, fotografa o botão e toca/clica nele em desktop e mobile; verifica que o próprio combate recebe a espécie, Shiny e o contador salvos, com checkpoint idêntico.
+- `tests/approved-map-real-browser.cjs`: em **fixture controlada** de Vermilion etapa 3 (após Lt. Surge), o resolvedor nativo gera um Shiny forçado apenas pela sequência RNG de teste, confirma save e contador, exige que uma segunda busca não substitua o encontro, abre a janela de grama, fotografa o botão e toca/clica nele em desktop e mobile; verifica que o próprio combate recebe a espécie, Shiny e o contador salvos, com checkpoint idêntico.
 
 **Observação:** forçar um resultado Shiny exclusivamente em testes não altera a taxa real de 1% nem representa um Shiny obtido por um jogador. Uma campanha natural completa e testes de desempenho em Android físico permanecem pendentes.
 
