@@ -6,6 +6,7 @@ import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,app
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
 import {openingNpcPlan,projectOpeningNpc} from './torre2-opening-npc-overlays.js';
+import {NATIVE_WALK_ROUTES,installPlayableOverworld} from './torre2-map-playable-hud.js';
 import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
 import {lockNativePmdIdleFeet} from './torre2-gym-ace-ground.js';
 import {statusLabel} from './gen3-status.js';
@@ -660,6 +661,7 @@ create(){
      const current=readCampaign()||state;
      if(self.__torre2ApprovedMapView?.id!==id||
         !approvedMapTravelAllowed(id,target,current))return;
+     self.__torre2OverworldEntry={from:id,to:target};
      self.approvedMapPreview(current,target);
     });
     this.load.start();
@@ -667,9 +669,16 @@ create(){
     const current=readCampaign()||state;
     if(this.__torre2ApprovedMapView?.id===id&&
        approvedMapTravelAllowed(id,target,current))
-     this.approvedMapPreview(current,target);
+     {this.__torre2OverworldEntry={from:id,to:target};
+     this.approvedMapPreview(current,target);}
    }
   };
+  // T89: only one native Phaser layer owns the playable Kanto world.
+  this.__torre2PlayableMap?.destroy();
+  this.__torre2PlayableMap=null;
+  this.scene.bringToTop();
+  this.scene.stop('titulo');
+  this.input.setTopOnly(true);
   this.children.removeAll(true);
   this.__torre2SeviiFerryOpen=false;
   const result=renderApprovedMap(this,id,{
@@ -782,6 +791,7 @@ create(){
    },
    resolveHotspots:firstApprovedHotspots,
    artNavigation:hasFirstApprovedHotspots(id),
+   hideBackButton:!!NATIVE_WALK_ROUTES[id],
    renderSprite:(scene,entry,rect)=>{
     const gymId=entry.id;
     const gymStage=gymId==='gym-brock'?0:
@@ -976,6 +986,27 @@ create(){
   }
   this.__torre2ApprovedReturn={id,stage:state.stage};
   this.__torre2ApprovedMapView=result;
+  if(NATIVE_WALK_ROUTES[id]){
+   const from=this.__torre2OverworldEntry?.to===id?
+    this.__torre2OverworldEntry.from:null;
+   const last=this.__torre2OverworldPositions?.[id];
+   this.__torre2PlayableMap=installPlayableOverworld(this,result,{
+    state,previousMap:from,storedDistance:last,
+    addPlayer:(x,y)=>addRedPlayer(this,x,y,{scale:1.5,depth:35}),
+    nameOf:member=>pokemonStats(member).name||String(member.id||'POKÉMON'),
+    portraitOf:portraitKey,
+    onPosition:distance=>{
+     this.__torre2OverworldPositions??={};
+     this.__torre2OverworldPositions[id]=distance;
+    },
+    onSummary:index=>this.showSummary(readCampaign()||state,index),
+    onBag:()=>this.bagScreen(readCampaign()||state),
+    onDex:()=>this.dexScreen(readCampaign()||state),
+    onBattle:()=>this.enterBattle(readCampaign()||state),
+    onCapture:()=>this.grassScreen(readCampaign()||state)
+   });
+   this.__torre2OverworldEntry=null;
+  }
   // Previous scene display objects were destroyed before this call.
   // Keep only the active art + stage entry so 60 maps cannot accumulate
   // hundreds of MB of WebGL textures on a mobile device.
@@ -1725,6 +1756,7 @@ create(){
   if(errorText)notice.setData('torre2-mart-save-error',true);
  }
  bagScreen(state,errorText=''){
+  this.__torre2PlayableMap?.destroy();this.__torre2PlayableMap=null;
   this.children.removeAll(true);this.backdrop();
   text(this,320,27,'BOLSA · POKÉDÓLARES '+state.money,{
    ...titleStyle,fontSize:'20px'}).setOrigin(.5);
@@ -1842,6 +1874,8 @@ create(){
   this.button(465,330,260,32,'POKÉ MART',()=>this.martScreen(state));
  }
  showSummary(state,index,slot=0,page=0){
+  this.__torre2PlayableMap?.destroy();
+  this.__torre2PlayableMap=null;
   // Game-native Phaser UI: clear hierarchy, 4 visible attack slots, large
   // touch targets, instant type filtering and search for Mewtwo's large pool.
   this.children.removeAll(true);
@@ -2261,6 +2295,7 @@ create(){
     this.__torre2PcNotice?'#ffdb94':C.muted});
  }
  dexScreen(state){
+  this.__torre2PlayableMap?.destroy();this.__torre2PlayableMap=null;
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   const supported=ROSTER.flatMap(p=>[p.id,
