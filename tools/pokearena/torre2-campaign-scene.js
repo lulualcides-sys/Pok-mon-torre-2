@@ -221,6 +221,8 @@ create(){
   this.cameras.main.setBackgroundColor(C.ink);
   this.summaryIndex=null;this.movePage=0;this.editSlot=0;
   let state=readCampaign();
+  const preBattleStage=state?.stage;
+  let battleOutcomeCommitted=false;
   let battleReport=null;
   // Finished battles are single-use events. A loss preserves the same
   // stage/trainer, so replaying the old result on Phaser scene.restart()
@@ -249,7 +251,10 @@ create(){
       resolveBattle(next,!!completed.won);
      kind=wild?'wild':'trainer';
     }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
-    if(outcome&&outcome.ok!==false)state=next;
+    if(outcome&&outcome.ok!==false){
+     state=next;
+     battleOutcomeCommitted=true;
+    }
    }catch(error){
     console.warn('Torre 2: battle result could not be saved',error);
     this.backdrop();
@@ -280,9 +285,14 @@ create(){
    this.__torre2ApprovedReturn=null;
    return this.starterSelection();
   }
-  // Combat resolution must always show its native report before resuming
-  // navigation. Stale map IDs from another stage never hijack the save.
-  if(completed||this.__torre2ApprovedReturn?.stage!==state.stage)
+  // T71: Preserve the original approved location after a committed battle
+  // when the actual stage has NOT changed. Gym/League progression, stale
+  // results and revoked badges must never resurrect the previous map.
+  const noProgressEvent=!!(completed?.marker?.training||
+   completed?.marker?.laboratory);
+  const checkpointAccepted=!completed||battleOutcomeCommitted||noProgressEvent;
+  const currentMap=approvedReturnMapId(this.__torre2ApprovedReturn,state);
+  if(!checkpointAccepted||state.stage!==preBattleStage||!currentMap)
    this.__torre2ApprovedReturn=null;
   const resume=this.__torre2ApprovedReturn;
   // Image-backed city becomes the normal campaign entrance ONLY after the
@@ -301,7 +311,14 @@ create(){
    // Offer choices only AFTER the battle report has been acknowledged.
    // The save remains pending on reload if the player leaves meanwhile.
    panel.button.on('pointerdown',()=>{
-    if(this.scene.isActive())this.promptPendingEeveeEvolution(readCampaign());
+    if(!this.scene.isActive())return;
+    const fresh=readCampaign()||state;
+    // Eevee's unresolved choice has priority after acknowledged rewards.
+    if(this.promptPendingEeveeEvolution(fresh))return;
+    // Restore the art only after the report is dismissed. This never
+    // reruns the resolver or manufactures a win/badge.
+    if(approvedReturnMapId(this.__torre2ApprovedReturn,fresh))
+     this.returnFromPartyToMap(fresh);
    });
   }
  }
