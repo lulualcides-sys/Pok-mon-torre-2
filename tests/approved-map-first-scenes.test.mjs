@@ -411,10 +411,10 @@ test('T50 image-backed Kanto must begin at Pallet; Route 22 is optional',()=>{
 
 test('T50 no stage-0 Pewter shortcut, no premature texture load or map button',()=>{
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
- assert.match(source,/APPROVED_STAGE_MAPS=\\[approvedOpeningMapId\\(approvedMap,hasFirstApprovedHotspots\\),'cerulean-city'/);
- assert.match(source,/if\\(openingMap\\)preloadApprovedMap\\(this,openingMap\\)/);
- assert.match(source,/if\\(state\\?\\.stage===0&&!APPROVED_STAGE_MAPS\\[0\\]\\)return false/);
- assert.match(source,/APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS\\[state\\.stage\\]\\?/);
- assert.doesNotMatch(source,/APPROVED_STAGE_MAPS=\\['pewter-city'/);
- assert.doesNotMatch(source,/approvedMapPreview\\(state,id=APPROVED_STAGE_MAPS\\[state\\?\\.stage\\]\\|\\|'pewter-city'/);
+ assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),'cerulean-city'"));
+ assert.ok(source.includes('if(openingMap)preloadApprovedMap(this,openingMap)'));
+ assert.ok(source.includes('if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false'));
+ assert.ok(source.includes('APPROVED_MAP_ASSETS_READY&&APPROVED_STAGE_MAPS[state.stage]?'));
+ assert.ok(!source.includes("APPROVED_STAGE_MAPS=['pewter-city'"));
+ assert.ok(!source.includes("APPROVED_STAGE_MAPS[state?.stage]||'pewter-city'"));
 });
