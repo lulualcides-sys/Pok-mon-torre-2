@@ -16,6 +16,7 @@ on:
       - 'tests/t74-pending-wild-resume.test.mjs'
       - 'tests/t76-misty-native-sprites.test.mjs'
       - 'tests/t77-aquatic-npc-policy.test.mjs'
+      - 'tests/t78-surge-painted-artwork-policy.test.mjs'
       - 'tools/pokearena/install-frlg-npcs.mjs'
       - 'tools/pokearena/torre2-frlg-npc.js'
       - 'tools/pokearena/torre2-battle-result-validation.js'
@@ -58,7 +59,7 @@ jobs:
           python3 -m unittest discover -s tests -p 'test_install_approved_maps.py' -v
       - name: Coordinate, navigation, and regression tests
         run: |
-          node --test tests/approved-map-first-scenes.test.mjs tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs tests/native-asset-compat.test.mjs tests/approved-map-build-integration.test.mjs tests/approved-map-binary-integrity.test.mjs tests/t51-approved-maps-and-start.test.mjs tests/t67-sevii-ferry-policy.test.mjs tests/t68-approved-progression-gates.test.mjs tests/t69-approved-map-party-return.test.mjs tests/t70-approved-menu-return.test.mjs tests/t71-approved-battle-return.test.mjs tests/t72-approved-leader-transition.test.mjs tests/t73-battle-result-validation.test.mjs tests/t74-pending-wild-resume.test.mjs tests/t76-misty-native-sprites.test.mjs tests/t77-aquatic-npc-policy.test.mjs
+          node --test tests/approved-map-first-scenes.test.mjs tests/approved-map-renderer.test.mjs tests/approved-maps-atlas.test.mjs tests/native-asset-compat.test.mjs tests/approved-map-build-integration.test.mjs tests/approved-map-binary-integrity.test.mjs tests/t51-approved-maps-and-start.test.mjs tests/t67-sevii-ferry-policy.test.mjs tests/t68-approved-progression-gates.test.mjs tests/t69-approved-map-party-return.test.mjs tests/t70-approved-menu-return.test.mjs tests/t71-approved-battle-return.test.mjs tests/t72-approved-leader-transition.test.mjs tests/t73-battle-result-validation.test.mjs tests/t74-pending-wild-resume.test.mjs tests/t76-misty-native-sprites.test.mjs tests/t77-aquatic-npc-policy.test.mjs tests/t78-surge-painted-artwork-policy.test.mjs
       # Native Phaser build and Chromium desktop/mobile are already gated by
       # visual-guard.yml, which captures the upstream client first. Never
       # duplicate that network-heavy setup in this fast integrity job.
