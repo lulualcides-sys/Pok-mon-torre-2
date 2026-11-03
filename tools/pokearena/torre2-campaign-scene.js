@@ -1390,9 +1390,17 @@ create(){
   msg(320,248,'ENCONTROS REALIZADOS: '+(state.wildEncountersStage||0)+' · SEM LIMITE',
    {fontSize:'11px',color:C.gold});
   modalButton(174,292,224,31,'◀ VOLTAR AO MAPA',close);
-  modalButton(465,292,224,31,'PROCURAR POKÉMON',()=>{
+  const hasPending=state.pendingWild?.stage===state.stage;
+  // T74: Retain the original species, Shiny roll and persistent encounter
+  // counter after reload. Resume must not create or replace a new encounter.
+  const search=modalButton(465,292,224,31,
+   hasPending?'RETOMAR ENCONTRO':'PROCURAR POKÉMON',()=>{
+   const live=readCampaign()||state;
+   if(live.pendingWild?.stage===live.stage){
+    close();this.enterBattle(live,true);return;
+   }
    let found;
-   try{found=startWildEncounter(state);}
+   try{found=startWildEncounter(live);}
    catch(error){
     console.warn('Torre 2: wild encounter not saved',error);
     const notice=text(this,320,266,'ENCONTRO NÃO SALVO · TENTE NOVAMENTE',{
@@ -1401,14 +1409,15 @@ create(){
     this.time.delayedCall(2300,()=>notice.active&&notice.destroy());
     return;
    }
-   if(found.ok){close();this.enterBattle(state,true);}
+   if(found.ok){close();this.enterBattle(live,true);}
    else{
     close();
-    const toast=text(this,320,285,state.lastMessage||'Nenhum encontro disponível.',{
+    const toast=text(this,320,285,found.reason||'Nenhum encontro disponível.',{
      fontSize:'11px',color:C.gold}).setOrigin(.5).setDepth(620);
     this.time.delayedCall(1600,()=>toast.active&&toast.destroy());
    }
   },true);
+  search.setData(hasPending?'torre2-grass-resume':'torre2-grass-find',true);
  }
  centerScreen(state){
   this.__torre2CenterBusy=false;
