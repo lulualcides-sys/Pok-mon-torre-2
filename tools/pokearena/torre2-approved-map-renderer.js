@@ -9,6 +9,13 @@ import {approvedMap,approvedMapNeighbours,approvedPointToScreen} from './torre2-
 export const APPROVED_MAP_ASSETS_READY = true;
 export const MAP_CANVAS = Object.freeze({x:0,y:0,width:640,height:360});
 export const mapTextureKey = id => 'torre2-approved-map-'+id;
+// T80: explicit replacement authorized by the user ONLY for Lt. Surge.
+// The previous one of the 60 approved originals remains in the atlas,
+// unchanged and reversible. All other scenes use the exact verified art.
+export const USER_SURGE_OVERRIDE_PATH='assets/ui/kanto-overrides/gym-surge-user.webp';
+export function approvedMapImagePath(id,item=approvedMap(id)){
+ return id==='gym-surge'?USER_SURGE_OVERRIDE_PATH:item?.image||null;
+}
 
 // Pure list of obsolete approved background textures. Limit mobile WebGL
 // residency without changing external PMD sprites, HUD or shared FRLG maps.
@@ -30,7 +37,7 @@ export function pruneApprovedMapTextures(scene,keepIds=[]){
 export function preloadApprovedMap(scene,id) {
   const item=approvedMap(id);
   if(!APPROVED_MAP_ASSETS_READY||!item||!scene?.load||scene.textures.exists(mapTextureKey(id)))return false;
-  scene.load.image(mapTextureKey(id),item.image);
+  scene.load.image(mapTextureKey(id),approvedMapImagePath(id,item));
   return true;
 }
 
