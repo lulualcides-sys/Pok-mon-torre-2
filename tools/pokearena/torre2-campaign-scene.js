@@ -1,7 +1,7 @@
 import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
-import {approvedOpeningMapId,openingTravelAllowed,openingJourneyForState,markOpeningForestVisit,restoreOpeningForestVisit,persistOpeningForestVisit} from './torre2-approved-opening.js';
+import {approvedOpeningMapId,openingTravelAllowed,openingJourneyForState,markOpeningForestVisit,restoreOpeningForestVisit,persistOpeningForestVisit,clearOpeningForestVisit} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -341,6 +341,7 @@ create(){
    this.button(x,180,166,58,id.toUpperCase(),()=>{
     try{
      saveCampaign(createPlayerCampaign(id));
+     try{clearOpeningForestVisit(localStorage)}catch{/* denied storage */}
      this.__torre2OpeningJourney=null;
     }catch(error){
      console.warn('Torre 2: starter selection could not be saved',error);
@@ -524,7 +525,7 @@ create(){
   let openingStorage=null;
   try{openingStorage=localStorage}catch{/* restricted browser storage */}
   this.__torre2OpeningJourney=restoreOpeningForestVisit(
-   this.__torre2OpeningJourney,openingStorage);
+   this.__torre2OpeningJourney,openingStorage,state);
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
    if(!entry)return false;
@@ -880,7 +881,11 @@ create(){
    zone.on('pointerdown',()=>{
     if(!confirm)close(); // Cancel closes only the dialog; save stays intact.
     if(!confirm)return;
-    try{resetCampaign();this.__torre2OpeningJourney=null;}
+    try{
+     resetCampaign();
+     try{clearOpeningForestVisit(localStorage)}catch{/* denied storage */}
+     this.__torre2OpeningJourney=null;
+    }
     catch(error){
      // Never leave a broken confirmation flow or hide a denied deletion.
      // The primary journey still exists; after core rollback, its backup
