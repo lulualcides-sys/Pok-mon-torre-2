@@ -926,7 +926,7 @@ create(){
    'TM06 TOXIC  ·  INDISPONÍVEL NESTA VERSÃO';
   text(this,320,278,rewardText,{fontSize:'11px',color:C.white}).setOrigin(.5);
   text(this,320,297,'Selecione uma insígnia para consultar o ginásio e a recompensa.',{fontSize:'9px',color:C.muted}).setOrigin(.5);
-  this.button(320,332,230,29,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
+  this.button(320,332,230,29,'◀ VOLTAR AO MAPA',()=>this.returnFromPartyToMap(state))
    .setData('torre2-badge-case-back',true);
   this.__torre2BadgeCase={selected:index,earned,claimed,reward:reward||null};
  }
@@ -1445,7 +1445,7 @@ create(){
    .setData('torre2-center-heal',true);
   this.button(320,219,275,40,'ABRIR PC',()=>this.pcScreen(state))
    .setData('torre2-center-pc',true);
-  this.button(320,298,275,32,'◀ VOLTAR AO MAPA',()=>this.scene.restart())
+  this.button(320,298,275,32,'◀ VOLTAR AO MAPA',()=>this.returnFromPartyToMap(state))
    .setData('torre2-center-back',true);
  }
  martScreen(state,page=0,errorText=''){
@@ -1480,7 +1480,8 @@ create(){
     }
    },state.money>=item.price).setData('torre2-mart-buy',item.id);
   });
-  this.button(140,315,177,33,'◀ MAPA',()=>this.scene.restart());
+  this.button(140,315,177,33,'◀ MAPA',()=>this.returnFromPartyToMap(state))
+   .setData('torre2-mart-back',true);
   this.button(346,315,205,33,'ITENS '+(pageNum+1)+'/'+count,()=>this.martScreen(state,(pageNum+1)%count),true);
   this.button(543,315,176,33,'BOLSA / TM',()=>this.bagScreen(state)).setData('torre2-mart-bag',true);
   const notice=text(this,320,281,errorText||state.lastMessage||'Compre Pokébolas, poções e TM',{
@@ -1574,7 +1575,8 @@ create(){
     wordWrap:{width:585}}).setOrigin(.5);
    if(errorText)notice.setData('torre2-bag-save-error',true);
   }
-  this.button(320,343,220,23,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
+  this.button(320,343,220,23,'◀ VOLTAR AO MAPA',()=>this.returnFromPartyToMap(state))
+   .setData('torre2-bag-back',true);
  }
  statusMedicineScreen(state,target,errorText=''){
   this.children.removeAll(true);this.backdrop();
@@ -1960,8 +1962,9 @@ create(){
   const {page:safePage,pages:totalPages}=boxView;
   text(this,20,13,'CENTRO POKÉMON · PC',{...titleStyle,fontSize:'19px'});
   this.button(549,21,155,28,'◀ CAMPANHA',()=>{
-   this.pcSelected=null;this.__torre2PcNotice=null;this.scene.restart()
-  });
+   this.pcSelected=null;this.__torre2PcNotice=null;
+   this.returnFromPartyToMap(state);
+  }).setData('torre2-pc-back',true);
   text(this,22,52,'EQUIPE '+state.team.length+'/6',{color:C.gold,fontSize:'14px'});
   text(this,330,52,'ARMAZENAMENTO '+boxView.total+' · ✦ '+boxView.shiny,{
    color:C.gold,fontSize:'12px'});
@@ -2047,7 +2050,8 @@ create(){
      row.caught?C.gold:row.seen?C.blue:C.muted
    }).setData('torre2-dex-id',row.id);
   });
-  this.button(82,329,140,31,'◀ VOLTAR',()=>this.scene.restart());
+  this.button(82,329,140,31,'◀ VOLTAR',()=>this.returnFromPartyToMap(state))
+   .setData('torre2-dex-back',true);
   this.button(236,329,133,31,'◀ ANTERIOR',()=>{
    this.dexPage=(view.page-1+view.pages)%view.pages;this.dexScreen(state);
   }).setData('torre2-dex-prev',true);
