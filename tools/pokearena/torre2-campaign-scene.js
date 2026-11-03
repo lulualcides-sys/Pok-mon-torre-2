@@ -41,6 +41,7 @@ import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
+import {classifyCampaignBattleResult} from './torre2-battle-result-validation.js';
 import {hallOfFameModel} from './hall-of-fame.js';
 import {originalBallSprite} from './ball-sprites.js';
 import {routeNode} from './route-data.js';
@@ -238,18 +239,19 @@ create(){
     // Battle HP/status and rewards share ONE durable checkpoint. Do not
     // mutate the map's live state or save the result a second time.
     const next=JSON.parse(JSON.stringify(state));
-    if(marker.kind==='rematch'){
-     if(validRematchResult(next,marker.ticket)){
-      applyPartyBattleResult(next,marker.party);
-      outcome=resolveRematch(next,marker.ticket,!!completed.won);
-      kind='rematch';
-     }
-    }else if(marker.stage===next.stage&&marker.trainer===next.trainer){
+    const resolved=classifyCampaignBattleResult(next,marker,{
+     rematchValid:marker.kind==='rematch'&&
+      validRematchResult(next,marker.ticket)
+    });
+    if(resolved==='rematch'){
      applyPartyBattleResult(next,marker.party);
-     const wild=marker.kind==='wild'&&next.pendingWild?.id===marker.id;
-     outcome=wild?resolveWildBattle(next,!!completed.won):
+     outcome=resolveRematch(next,marker.ticket,!!completed.won);
+     kind='rematch';
+    }else if(resolved==='trainer'||resolved==='wild'){
+     applyPartyBattleResult(next,marker.party);
+     outcome=resolved==='wild'?resolveWildBattle(next,!!completed.won):
       resolveBattle(next,!!completed.won);
-     kind=wild?'wild':'trainer';
+     kind=resolved;
     }else state.lastMessage='Resultado antigo ignorado. Progresso preservado.';
     if(outcome&&outcome.ok!==false){
      state=next;
