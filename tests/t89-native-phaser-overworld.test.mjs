@@ -47,7 +47,7 @@ test('T89 the map is one native Phaser scene with original summaries and all six
  assert.match(renderer,/const back=hideBackButton\?null:/);
  for(const button of ['party','summary','bag','dex','battle','capture'])
   assert.ok(hud.includes("'"+button+"'"),button);
- assert.match(hud,/this\.saveCampaign|saveCampaign/,{message:'Unexpected write path'}); // replaced below
+ assert.doesNotMatch(hud,/saveCampaign\(/);
  assert.match(build,/torre2-map-playable-hud\.js/);
  assert.equal(APPROVED_MAPS_ATLAS.maps.length,60);
  assert.equal(USER_OPENING_MAPS.length,4);
