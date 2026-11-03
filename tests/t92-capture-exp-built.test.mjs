@@ -6,6 +6,7 @@ import {pathToFileURL} from 'node:url';
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site','arena2d');
 const modules=JSON.parse(fs.readFileSync(path.join(root,'version.json'),'utf8')).modules;
 const core=await import(pathToFileURL(path.join(root,modules,'torre2/campaign-core.js')).href);
+const progression=await import(pathToFileURL(path.join(root,modules,'torre2/progression.js')).href);
 const db=new Map();
 const storage={
  getItem:key=>db.get(key)??null,
@@ -31,7 +32,7 @@ test('T92 successful capture awards real persisted EXP to existing party, not ca
  assert.ok(out.sharedExp.some(x=>x.index===0&&x.reward>0));
  assert.ok(out.sharedExp.some(x=>x.tester&&x.reward===0));
  assert.equal(s.team.at(-1).id,'pikachu');
- assert.equal(s.team.at(-1).progression.experience,core.createCampaign('squirtle').team[0].progression.experience);
+ assert.equal(s.team.at(-1).progression.experience,progression.createPokemonProgression('pikachu',4).experience);
  assert.equal(s.wins,before.wins);
  assert.equal(s.trainer,before.trainer);
  assert.equal(s.money,before.money);
