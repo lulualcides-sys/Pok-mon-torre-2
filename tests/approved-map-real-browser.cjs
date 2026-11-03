@@ -174,6 +174,56 @@ const server=http.createServer(async(req,res)=>{
       via:'native touch/click',saveUnchanged:true});
     }
    }
+   // Controlled stage-two fixture: after Misty, the journey must still
+   // start in Cerulean (not skip Nugget Bridge / Route 5 to Vermilion).
+   await page.evaluate(()=>{
+    const state=window.kanto.readCampaign();
+    state.stage=2;
+    window.kanto.saveCampaign(state);
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    scene.__torre2ApprovedReturn=null;
+    scene.scene.restart();
+   });
+   await page.waitForFunction(()=>
+    window.__pt2Game.scene.getScene('campanha')
+     ?.__torre2ApprovedMapView?.id==='cerulean-city',null,{timeout:40000});
+   const stage2Before=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+   const stage2Path=[
+    ['cerulean-city','route24','route-24'],
+    ['route-24','route25','route-25'],
+    ['route-25','route24','route-24'],
+    ['route-24','cerulean','cerulean-city'],
+    ['cerulean-city','route5','route-5'],
+    ['route-5','underground','underground-5-6'],
+    ['underground-5-6','route6','route-6'],
+    ['route-6','vermilion','vermilion-city']
+   ];
+   for(const [from,sign,to] of stage2Path){
+    const position=await page.evaluate(([source,hotspot])=>{
+     const scene=window.__pt2Game.scene.getScene('campanha'),
+      view=scene.__torre2ApprovedMapView;
+     if(view?.id!==source)throw Error('Wrong stage-2 map '+view?.id+' != '+source);
+     const zone=view.zones.find(z=>z.getData?.('torre2-approved-hotspot')===
+      source+':'+hotspot);
+     if(!zone)throw Error('No clickable stage-2 sign '+source+':'+hotspot);
+     const bounds=document.querySelector('#juego canvas').getBoundingClientRect();
+     const w=Math.min(bounds.width,bounds.height*640/360);
+     const h=Math.min(bounds.height,bounds.width*360/640);
+     return {x:bounds.x+(bounds.width-w)/2+zone.x/640*w,
+      y:bounds.y+(bounds.height-h)/2+zone.y/360*h};
+    },[from,sign]);
+    if(mode.isMobile)await page.touchscreen.tap(position.x,position.y);
+    else await page.mouse.click(position.x,position.y);
+    await page.waitForFunction(id=>window.__pt2Game.scene.getScene('campanha')
+     ?.__torre2ApprovedMapView?.id===id,to,{timeout:25000});
+    const after=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+    assert.equal(after,stage2Before,'Stage 2 route transition changed saves: '+from+'->'+to);
+    const screenshot='t62-approved-'+to+'-'+mode.name+'.png';
+    await page.screenshot({path:path.join(out,screenshot),fullPage:true,
+      animations:'disabled'});
+    evidence.maps.push({id:to,mode:mode.name,from,sign,
+      via:'actual Phaser sign click/touch',saveUnchanged:true,screenshot});
+   }
    await page.close();
   }
   assert.deepEqual(evidence.errors,[],'Phaser page errors');
