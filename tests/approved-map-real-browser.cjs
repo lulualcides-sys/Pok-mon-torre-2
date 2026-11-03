@@ -311,10 +311,32 @@ const server=http.createServer(async(req,res)=>{
    // T65 isolated Saffron proof: this direct renderer fixture DOES NOT
    // imply a finished city-gate route (Celadon→Saffron lacks a valid sign).
    const stage5=await gotoStage('fuchsia-city',5);
-   await page.evaluate(()=>{
+   await page.evaluate(async()=>{
     const scene=window.__pt2Game.scene.getScene('campanha'),
      state=window.kanto.readCampaign();
-    if(!scene.approvedMapPreview(state,'saffron-city'))
+    const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
+    if(!main)throw Error('T65 Phaser main module missing');
+    const atlas=await import(new URL('./torre2/torre2-approved-maps-atlas.js',main));
+    const renderer=await import(new URL('./torre2/torre2-approved-map-renderer.js',main));
+    const id='saffron-city',key=renderer.mapTextureKey(id);
+    const entry=atlas.approvedMap(id);
+    if(!entry)throw Error('T65 Saffron absent from original atlas');
+    if(!scene.textures.exists(key)){
+     await new Promise((resolve,reject)=>{
+      let failed=false;
+      const onError=file=>{if(file?.key===key)failed=true};
+      scene.load.on('loaderror',onError);
+      scene.load.once('complete',()=>{
+       scene.load.off('loaderror',onError);
+       if(failed||!scene.textures.exists(key))
+        reject(Error('T65 approved Saffron texture failed'));
+       else resolve();
+      });
+      scene.load.image(key,entry.image);
+      scene.load.start();
+     });
+    }
+    if(!scene.approvedMapPreview(state,id))
      throw Error('T65 original Saffron view unavailable');
    });
    await followSigns([
