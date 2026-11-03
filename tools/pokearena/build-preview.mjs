@@ -7,6 +7,7 @@ import {createHash} from 'node:crypto';
 import {addTorre2FormsToNativeCatalog} from './torre2-forms-compat.mjs';
 import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
+import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -572,13 +573,84 @@ for(const [filename,changes] of patches){
  let body=await fs.readFile(filenameFull,'utf8');
  for(const [from,to] of changes){
   if(!body.includes(from)){
-   // Poké Arena changed its optional UI ball sprite from balls20.png to
-   // balls10.png. The new resource exists in the upstream capture: keep its
-   // native loader unchanged instead of deleting a potentially valid sprite.
+   // Account/profile entry is absent or reformatted in newer offline title.
+   // Remove only a confirmed profile item, never the whole settings menu.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('ajustes:[{id:"perfil"') && to==='ajustes:['){
+    const profile=/ajustes\s*:\s*\[\s*\{id:(["'])perfil\1,[^{}]{0,240}\},?/g;
+    const found=[...body.matchAll(profile)];
+    if(found.length===1){
+     body=body.replace(found[0][0],'ajustes:[');
+     continue;
+    }
+    // Upstream now gates the account tile with a DEBUG ternary.
+    // Remove that one tile (both branches), retain SOUND/CONTROLS/LANGUAGE.
+    const debugVariant='ajustes:[DEBUG?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
+    if(body.includes(debugVariant)){
+     body=body.replace(debugVariant,'ajustes:[');
+     continue;
+    }
+    if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
+     console.warn('Native title no longer exposes PROFILE in settings; no change');
+     continue;
+    }
+    if(process.env.TORRE2_UPSTREAM_AUDIT==='1'){
+     upstreamUnmatched.push({filename,issue:'profile menu changed',
+      current:body.slice(Math.max(0,body.indexOf('ajustes:')-40),
+        body.indexOf('ajustes:')+420)});
+     continue;
+    }
+    throw Error('Unknown native account profile menu; refusing guessed removal');
+   }
+   // Current upstream title rearranges social icon positions. The entire
+   // redes() call is stripped by the later exact, verified offline patch;
+   // keep its inactive original implementation untouched.
+   if(filename==='escenas/titulo.js' &&
+      ((from.startsWith('[["tiktok",600]')&&to.includes('"instagram"')) ||
+       (from.startsWith('const halo=this.add.graphics().setDepth(999)')&&to===''))){
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    disableNativeTitleSocialLinks(body); // fail closed if called in an unknown form
+    console.warn('Native title social internals changed; offline call will be removed');
+    continue;
+   }
+   // Upstream can remove or reformat the optional social UI call.
+   // Strip it only when a single call is unambiguously identified; no links
+   // should be created by the solo game's title scene.
+   if(filename==='escenas/titulo.js'&&from==='this.redes();'&&to.includes('no social icons')){
+    const {disableNativeTitleSocialLinks}=await import('./torre2-native-social-compat.mjs');
+    body=disableNativeTitleSocialLinks(body);
+    continue;
+   }
+   // Keep the native config import and add only the Kanto FX module.
+   if(filename==='habilidades.js' &&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}') &&
+      to.includes('TORRE2_FORMS')){
+    const {injectNativeTorre2FormsImport}=await import('./torre2-native-habilidades-compat.mjs');
+    body=injectNativeTorre2FormsImport(body);
+    continue;
+   }
+   // Native passive HP regeneration changed form; disable only in campaign.
+   if(filename==='luchador.js' &&
+      from.startsWith('if(t-this.ultimoDano>=REGLAS.curaTras') &&
+      to.includes('this.escena.datos?.torre2')){
+    const {disableNativeCampaignPassiveRegen}=await import('./torre2-native-regen-compat.mjs');
+    body=disableNativeCampaignPassiveRegen(body);
+    continue;
+   }
+   // Optional upstream spritesheet is gone/reshaped; it is not used by
+   // the native capture pipeline. Handle only this exact known dependency.
    if(filename==='escenas/carga.js'&&
-      from==='this.load.spritesheet("ui-balls","assets/ui/balls20.png",{frameWidth:20,frameHeight:20});'&&
-      body.includes('this.load.spritesheet("ui-balls","assets/ui/balls10.png",{frameWidth:20,frameHeight:20});')){
-    console.warn('Native UI balls10.png preserved; legacy balls20.png removal skipped');
+      from.startsWith('this.load.spritesheet("ui-balls"')&&to===''){
+    const {stripUnavailableUiBallsPreload}=await import('./torre2-native-asset-compat.mjs');
+    body=stripUnavailableUiBallsPreload(body);
+    continue;
+   }
+   // The original abilities module may reorder/extend its config imports.
+   // Append only the Kanto weather hook; fail closed on ambiguous provenance.
+   if(filename==='habilidades.js'&&
+      from.startsWith('import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}')&&
+      to.includes('weatherFromMove')){
+    body=ensureNativeWeatherFromMoveImport(body);
     continue;
    }
    // The native client sometimes reorders imported data symbols.
