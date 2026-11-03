@@ -515,6 +515,9 @@ create(){
  // Read-only approved-map view; no new save fields, badges or encounter indices.
  approvedMapPreview(state,id=APPROVED_STAGE_MAPS[state?.stage]){
   if(state?.stage===0&&!APPROVED_STAGE_MAPS[0])return false;
+  // Also cover direct stage-entry/render paths: an edited or stale save
+  // at the last index must not reveal the Hall before a real Champion win.
+  if(id==='hall-of-fame'&&state?.champion!==true)return false;
   if(!APPROVED_MAP_ASSETS_READY||!id||!approvedMap(id))return false;
   const canTravel=(_src,target)=>{
    const entry=approvedMap(target),s=Math.min(13,Math.max(0,state.stage||0));
