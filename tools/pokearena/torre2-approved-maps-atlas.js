@@ -12,17 +12,18 @@ export const USER_OPENING_MAPS=Object.freeze([
   min_story_flags:[],npcCleanPlate:true},
  {index:0,id:'route-1',name:'Rota 1',group:'kanto-opening',
   type:'rota',image:'assets/ui/kanto-opening-user/route-1.webp',
-  min_story_flags:[],npcCleanPlate:true},
+  min_story_flags:[],npcCleanPlate:false},
  {index:0,id:'viridian-city',name:'Viridian City',group:'kanto-opening',
   type:'cidade',image:'assets/ui/kanto-opening-user/viridian-city.webp',
-  min_story_flags:[],npcCleanPlate:true},
+  min_story_flags:[],npcCleanPlate:false},
  {index:0,id:'viridian-forest',name:'Floresta de Viridian',group:'kanto-opening',
   type:'rota',image:'assets/ui/kanto-opening-user/viridian-forest.webp',
   min_story_flags:[],npcCleanPlate:true}
 ].map(m=>Object.freeze(m)));
 export const USER_OPENING_EDGES=Object.freeze([
  ['pallet-town','route-1'],['route-1','viridian-city'],
- ['viridian-city','viridian-forest'],['viridian-forest','route-2']
+ ['viridian-city','viridian-forest'],['viridian-forest','route-2'],
+ ['viridian-city','gym-giovanni']
 ].map(e=>Object.freeze(e)));
 export function approvedMap(id) {
   return USER_OPENING_MAPS.find(m=>m.id===id) ||
