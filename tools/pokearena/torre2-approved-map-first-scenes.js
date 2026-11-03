@@ -124,14 +124,13 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('challenge',.503,.236,.204,.140),
   v('exit',.501,.937,.175,.105)
  ]),
- // T64: use only five pre-existing building anchors in the ORIGINAL Saffron
+ // T64: use only four non-overlapping pre-existing building anchors in the ORIGINAL Saffron
  // 1280x720 atlas. The four painted city gates are intentionally NOT active:
  // no adjacent route has yet been audited for a reciprocal Saffron entrance.
  'saffron-city':Object.freeze([
   v('silph',.490,.470,.280,.450),
   v('center',.230,.700,.190,.260),
   v('mart',.780,.720,.190,.260),
-  v('dojo',.700,.200,.160,.190),
   v('gym',.870,.200,.160,.220)
  ]),
  // Safari park's only registered action is the signed south exit.
@@ -220,7 +219,7 @@ export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
  'gym-koga':Object.freeze({exit:'fuchsia-city'}),
  // T64: no unverified Saffron route shortcuts; native stage locks still apply.
  'saffron-city':Object.freeze({
-  silph:'silph-co',dojo:'fighting-dojo',gym:'gym-sabrina'
+  silph:'silph-co',gym:'gym-sabrina'
  }),
  'safari-zone':Object.freeze({exit:'fuchsia-city'}),
  'route-11':Object.freeze({vermilion:'vermilion-city'}),
