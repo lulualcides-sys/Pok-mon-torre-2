@@ -1,64 +1,11 @@
-/* T89: an actual native Phaser field scene, never a second old campaign UI.
- * Original approved backgrounds are scenery; Red, party and controls are
- * separate game objects, using the existing save/battle/summary callbacks.
- * Prototype road vectors are bounded: no teleporting through trees.
+/* T90: click-only Phaser map HUD. The approved image is background,
+ * static NPC sprites are interactive, and doors/signs remain clickable.
+ * NO movement, keyboard, joystick, tween, road vectors or character controller.
+ * Reuse the ORIGINAL campaign Sumário/Bolsa/Pokédex/combate callbacks.
  */
-const freezeRoute=points=>Object.freeze(points.map(([x,y])=>Object.freeze({x,y})));
-export const NATIVE_WALK_ROUTES=Object.freeze({
- 'pallet-town':freezeRoute([[.50,.92],[.50,.85],[.50,.77],[.50,.60],[.50,.50],[.50,.40],[.50,.30],[.50,.20],[.50,.075]]),
- 'route-1':freezeRoute([[.50,.94],[.49,.84],[.43,.75],[.47,.65],[.53,.56],[.51,.48],[.40,.38],[.46,.29],[.55,.22],[.52,.13],[.50,.07]]),
- 'viridian-city':freezeRoute([[.50,.94],[.50,.86],[.50,.75],[.39,.69],[.31,.57],[.33,.47],[.37,.40],[.42,.29],[.50,.28],[.50,.16],[.50,.075]]),
- 'viridian-forest':freezeRoute([[.50,.93],[.50,.85],[.53,.79],[.56,.72],[.61,.65],[.57,.57],[.46,.52],[.40,.45],[.50,.38],[.53,.30],[.48,.23],[.50,.14],[.50,.07]]),
- 'route-2':freezeRoute([[.50,.94],[.50,.81],[.49,.71],[.53,.62],[.56,.52],[.52,.43],[.49,.36],[.51,.24],[.50,.08]]),
- 'pewter-city':freezeRoute([[.46,.89],[.46,.77],[.49,.65],[.50,.55],[.49,.46],[.48,.34],[.50,.20]])
-});
-const clamp=(n,min,max)=>Math.min(max,Math.max(min,n));
-export function fieldRoad(route){
- if(!Array.isArray(route)||route.length<2)throw new TypeError('Road requires at least two waypoints');
- const lengths=[0];let total=0;
- for(let i=1;i<route.length;i++){
-  const a=route[i-1],b=route[i];
-  const segment=Math.hypot(b.x-a.x,b.y-a.y);
-  if(!Number.isFinite(segment)||segment<.001)throw new RangeError('Degenerate road vector');
-  total+=segment;lengths.push(total);
- }
- return {nodes:route,lengths,total};
-}
-export function roadPoint(road,d){
- const pos=clamp(d,0,road.total);
- for(let i=1;i<road.nodes.length;i++){
-  if(pos<=road.lengths[i]||i===road.nodes.length-1){
-   const a=road.nodes[i-1],b=road.nodes[i];
-   const fraction=clamp((pos-road.lengths[i-1])/(road.lengths[i]-road.lengths[i-1]),0,1);
-   return {x:a.x+(b.x-a.x)*fraction,y:a.y+(b.y-a.y)*fraction,d:pos};
-  }
- }
- return {...road.nodes.at(-1),d:road.total};
-}
-export function closestRoadPoint(road,x,y){
- if(!Number.isFinite(x)||!Number.isFinite(y))throw new TypeError('Invalid road pointer');
- let best=null;
- for(let i=1;i<road.nodes.length;i++){
-  const a=road.nodes[i-1],b=road.nodes[i],dx=b.x-a.x,dy=b.y-a.y;
-  const f=clamp(((x-a.x)*dx+(y-a.y)*dy)/(dx*dx+dy*dy),0,1);
-  const px=a.x+dx*f,py=a.y+dy*f,dist=Math.hypot(px-x,py-y);
-  if(!best||dist<best.distance)
-   best={x:px,y:py,d:road.lengths[i-1]+(road.lengths[i]-road.lengths[i-1])*f,distance:dist};
- }
- return best;
-}
-export function fieldStartDistance(mapId,previousMap,stored){
- const route=NATIVE_WALK_ROUTES[mapId];if(!route)return null;
- const road=fieldRoad(route);
- if(Number.isFinite(stored))return clamp(stored,0,road.total);
- const fromNorth=(mapId==='pallet-town'?false:
-  mapId==='route-1'?previousMap==='viridian-city':
-  mapId==='viridian-city'?previousMap==='viridian-forest':
-  mapId==='viridian-forest'?previousMap==='route-2':
-  mapId==='route-2'?previousMap==='pewter-city':
-  mapId==='pewter-city'?false:false);
- return road.total*(fromNorth?.89:.10);
-}
+export const CLICKABLE_OVERWORLD_MAPS=Object.freeze([
+ 'pallet-town','route-1','viridian-city','viridian-forest','route-2','pewter-city'
+]);
 function hudText(scene,x,y,str,size=10,color='#f2f5f9',originX=.5){
  return scene.add.text(x,y,String(str),{
   fontFamily:'Pixelify Sans,monospace',fontSize:size+'px',fontStyle:'bold',
@@ -116,77 +63,30 @@ export function showOverworldParty(scene,team,active,{nameOf,portraitOf,onSummar
   .on('pointerdown',(_p,_x,_y,event)=>{event?.stopPropagation?.();close()}));
  return {close,objects};
 }
-/** Install a single map-owned HUD and movable 16x32 Red. Stops/stays local
- * to Phaser Scene; never writes into the campaign save or opens legacy cards.
+/** One native Phaser scene for clickable maps. Underlying art and NPC
+ * hotspots belong to renderApprovedMap; only menu buttons are added here.
+ * This module never touches campaign saves or takes over ground-pointer input.
  */
-export function installPlayableOverworld(scene,view,{
- state,previousMap=null,storedDistance=null,
- addPlayer,nameOf,portraitOf,
- onPosition=()=>{},onSummary=()=>{},onBag=()=>{},onDex=()=>{},
- onBattle=()=>{},onCapture=()=>{},onMenu=()=>{}
+export function installClickableOverworld(scene,view,{
+ state,nameOf,portraitOf,
+ onSummary=()=>{},onBag=()=>{},onDex=()=>{},
+ onBattle=()=>{},onCapture=()=>{}
 }={}){
- const id=view?.id,route=NATIVE_WALK_ROUTES[id],rect=view?.rect;
- if(!route||!rect)return null;
- const road=fieldRoad(route),start=fieldStartDistance(id,previousMap,storedDistance);
- let distance=start,tween=null;
- const pos=roadPoint(road,start);
- const player=addPlayer(rect.x+pos.x*rect.width,rect.y+pos.y*rect.height);
- if(!player)throw Error('T89 original FireRed overworld Red sprite missing');
- player.setDepth(35).setData('torre2-field-player',id);
- const place=d=>{
-  const pt=roadPoint(road,d);
-  const x=rect.x+pt.x*rect.width,y=rect.y+pt.y*rect.height;
-  player.setPosition(x,y);
-  distance=d;onPosition(d);
- };
- const moveTo=d=>{
-  if(!player.active)return false;
-  const target=clamp(d,0,road.total),delta=target-distance;
-  if(Math.abs(delta)<.002)return false;
-  if(tween){tween.stop();tween=null}
-  const first=roadPoint(road,distance),last=roadPoint(road,target);
-  player.setFlipX(last.x<first.x);
-  tween=scene.tweens.addCounter({
-   from:distance,to:target,duration:Math.max(100,Math.min(5500,Math.abs(delta)*360*9)),
-   ease:'Linear',
-   onUpdate:t=>{if(player.active)place(t.getValue());},
-   onComplete:()=>{tween=null;if(player.active)place(target);}
-  });
-  return true;
- };
- // Ground is interactive only beneath the original sign/door hotspot zones.
- view.image.setInteractive({useHandCursor:true}).on('pointerdown',(pointer,_lx,_ly,event)=>{
-  event?.stopPropagation?.();
-  if(!player.active)return;
-  const mx=(pointer.worldX-rect.x)/rect.width,my=(pointer.worldY-rect.y)/rect.height;
-  const nearest=closestRoadPoint(road,mx,my);
-  // Block off-path taps so Red never jumps across cliffs, trees or buildings.
-  if(nearest.distance>.155)return;
-  moveTo(nearest.d);
- });
- // Keyboard movement is along the same verified route vector, never diagonal
- // through obstacles. Listener is unbound on next scene/map replacement.
- const keys=scene.input.keyboard;
- const onKey=event=>{
-  if(!player.active||scene.__torre2ApprovedMapView?.id!==id)return;
-  const k=event.key?.toLowerCase();
-  if(['arrowup','w','arrowright','d'].includes(k))moveTo(distance+.11);
-  if(['arrowdown','s','arrowleft','a'].includes(k))moveTo(distance-.11);
- };
- keys?.on('keydown',onKey);
- const activeMember=state.team?.[state.active??0];
+ if(!CLICKABLE_OVERWORLD_MAPS.includes(view?.id))return null;
+ const id=view.id,team=state?.team||[],activeMember=team[state.active??0];
  if(activeMember){
-  const plate=scene.add.rectangle(516,22,230,36,0x0b2239,.92)
+  const plate=scene.add.rectangle(518,22,234,36,0x0b2239,.90)
    .setStrokeStyle(1,0xe7cc80).setDepth(79);
   const portrait=portraitOf(activeMember);
   if(scene.textures.exists(portrait))
-   scene.add.image(420,22,portrait).setDisplaySize(32,32).setDepth(82);
-  const label=(nameOf(activeMember)+' · NV '+(activeMember.level??'?')).slice(0,29);
-  hudText(scene,445,17,label,10,'#fff0ca',0);
-  hudText(scene,445,31,'HP '+(activeMember.hp??'?')+'   EQUIPE '+state.team.length+'/6',9,'#b5e2d3',0);
+   scene.add.image(418,22,portrait).setDisplaySize(30,30).setDepth(82);
+  hudText(scene,440,17,(nameOf(activeMember)+' · NV '+(activeMember.level??'?')).slice(0,28),
+   10,'#fff0ca',0);
+  hudText(scene,440,31,'HP '+(activeMember.hp??'?')+'   EQUIPE '+team.length+'/6',
+   9,'#b5e2d3',0);
   plate.setData('torre2-overworld-active-plate',id);
  }
- uiButton(scene,47,339,'EQUIPE',()=>showOverworldParty(scene,state.team||[],state.active,{
+ uiButton(scene,47,339,'EQUIPE',()=>showOverworldParty(scene,team,state.active,{
   nameOf,portraitOf,onSummary
  }),'party',76);
  uiButton(scene,128,339,'SUMÁRIO',()=>onSummary(state.active??0),'summary',76);
@@ -194,10 +94,9 @@ export function installPlayableOverworld(scene,view,{
  uiButton(scene,428,339,'POKÉDEX',onDex,'dex',76);
  uiButton(scene,510,339,'BATALHA',onBattle,'battle',76);
  uiButton(scene,593,339,'CAPTURA',onCapture,'capture',76);
- const cleanup=()=>{
-  if(tween){tween.stop();tween=null}
-  keys?.off('keydown',onKey);
-  view.image?.removeAllListeners('pointerdown');
+ return {
+  id,
+  mode:'click',
+  destroy:()=>{/* scene.children.removeAll(true) owns all Phaser HUD objects */}
  };
- return {id,player,road,moveTo,place,get distance(){return distance},destroy:cleanup};
 }
