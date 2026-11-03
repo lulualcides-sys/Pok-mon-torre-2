@@ -418,3 +418,38 @@ test('T50 no stage-0 Pewter shortcut, no premature texture load or map button',(
  assert.ok(!source.includes("APPROVED_STAGE_MAPS=['pewter-city'"));
  assert.ok(!source.includes("APPROVED_STAGE_MAPS[state?.stage]||'pewter-city'"));
 });
+
+test('T52 approved Route 2 preserves its original north/south sign positions',()=>{
+ const entry=approvedMap('route-2'),spots=firstApprovedHotspots(entry);
+ assert.ok(entry);
+ assert.equal(hasFirstApprovedHotspots('route-2'),true);
+ assert.deepEqual(spots.map(x=>x.id),['pewter','forest']);
+ assert.deepEqual(spots.map(x=>[x.cx,x.cy,x.w,x.h]),[
+  [.546,.069,.145,.122],[.480,.932,.175,.118]
+ ]);
+ const plan=planApprovedMapOverlays({...entry,hotspots:spots},rect,[]);
+ assert.equal(plan.ok,true,JSON.stringify(plan));
+ assert.equal(plan.hotspots.length,2);
+ assert.equal(plan.navTargets.length,0);
+ assert.equal(firstApprovedDestination('route-2','pewter'),'pewter-city');
+ assert.ok(approvedMapNeighbours('route-2').includes('pewter-city'));
+ // No fake Viridian Forest or Diglett's Cave map is created.
+ assert.equal(approvedMap('viridian-forest'),null);
+ assert.equal(firstApprovedDestination('route-2','forest'),null);
+ assert.equal(firstApprovedDestination('route-2','diglett-cave'),null);
+ const {scene,zones}=fakeScene(),calls=[];
+ const view=renderApprovedMap(scene,'route-2',{
+  resolveHotspots:firstApprovedHotspots,artNavigation:true,
+  isUnlocked:()=>true,onHotspot:(map,id)=>calls.push(map+':'+id)
+ });
+ assert.equal(view.ok,true);
+ for(const hotspot of spots){
+  const hit=zones.find(z=>z.data?.value==='route-2:'+hotspot.id);
+  assert.ok(hit,'missing native click target '+hotspot.id);
+  let propagationStopped=false;
+  hit.pointerdown(null,0,0,{stopPropagation(){propagationStopped=true}});
+  assert.equal(propagationStopped,true);
+ }
+ assert.deepEqual(calls,['route-2:pewter','route-2:forest']);
+ assert.equal(zones.some(z=>String(z.data?.value||'').includes('diglett')),false);
+});
