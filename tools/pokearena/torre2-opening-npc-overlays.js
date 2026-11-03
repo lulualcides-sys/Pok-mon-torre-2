@@ -3,7 +3,7 @@
  * The background itself must be a CLEAN plate, verified by its own manifest.
  * Normalized positions are independent of desktop/mobile viewport scaling.
  */
-const npc=(id,kind,cx,feetY,index)=>Object.freeze({id,kind,cx,feetY,index});
+const npc=(id,kind,cx,feetY,index=null)=>Object.freeze({id,kind,cx,feetY,index});
 export const OPENING_NPC_PLANS=Object.freeze({
  'viridian-forest':Object.freeze([
   npc('forest-bug-1','bugcatcher',.244,.317,3),
@@ -13,13 +13,14 @@ export const OPENING_NPC_PLANS=Object.freeze({
   npc('forest-bug-5','bugcatcher',.835,.776,7)
  ]),
  'route-1':Object.freeze([
-  npc('route1-npc','youngster',.777,.458,0)
+  npc('route1-resident','youngster',.777,.458)
  ]),
  'viridian-city':Object.freeze([
-  npc('viridian-youngster','youngster',.358,.479,0),
-  npc('viridian-elder','gentleman',.662,.491,1),
-  npc('viridian-lass','lass',.843,.461,2),
-  npc('viridian-local','youngster',.870,.850,3)
+  npc('viridian-resident-west','youngster',.358,.479),
+  npc('viridian-elder','gentleman',.640,.492),
+  npc('viridian-lass','lass',.817,.472),
+  npc('viridian-camper','camper',.333,.817),
+  npc('viridian-resident-east','youngster',.862,.816)
  ]),
  'pallet-town':Object.freeze([])
 });
@@ -44,13 +45,13 @@ export function auditOpeningNpcPlan(mapId,layout=OPENING_NPC_PLANS[mapId]){
  const ids=new Set(),indexes=new Set();
  for(const actor of layout){
   if(!actor||typeof actor.id!=='string'||!actor.id||
-   !['bugcatcher','youngster','gentleman','lass'].includes(actor.kind)||
-   !Number.isInteger(actor.index)||actor.index<0||actor.index>=13||
-   ids.has(actor.id)||indexes.has(actor.index)||
+    !['bugcatcher','youngster','gentleman','lass','camper'].includes(actor.kind)||
+   (actor.index!==null&&(!Number.isInteger(actor.index)||actor.index<0||actor.index>=13))||
+   ids.has(actor.id)||(actor.index!==null&&indexes.has(actor.index))||
    !Number.isFinite(actor.cx)||!Number.isFinite(actor.feetY)||
    actor.cx<.03||actor.cx>.97||actor.feetY<.05||actor.feetY>.95)
    return false;
-  ids.add(actor.id);indexes.add(actor.index);
+  ids.add(actor.id);if(actor.index!==null)indexes.add(actor.index);
  }
  return true;
 }
