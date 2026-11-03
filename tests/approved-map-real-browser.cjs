@@ -265,10 +265,37 @@ const server=http.createServer(async(req,res)=>{
       return {x:bounds.x+(bounds.width-drawW)/2+zone.x/640*drawW,
        y:bounds.y+(bounds.height-drawH)/2+zone.y/360*drawH};
      },[from,sign]);
+     // A freshly drawn Phaser hit zone only enters the active input list
+     // on a subsequent render frame. Never click an unregistered zone.
+     // Still use actual mouse/touch; no direct callback or synthetic win.
+     await page.evaluate(()=>new Promise(resolve=>
+      requestAnimationFrame(()=>requestAnimationFrame(resolve))));
      if(mode.isMobile)await page.touchscreen.tap(position.x,position.y);
      else await page.mouse.click(position.x,position.y);
-     await page.waitForFunction(target=>window.__pt2Game.scene.getScene('campanha')
-      ?.__torre2ApprovedMapView?.id===target,to,{timeout:25000});
+     try{
+      await page.waitForFunction(target=>window.__pt2Game.scene.getScene('campanha')
+       ?.__torre2ApprovedMapView?.id===target,to,{timeout:25000});
+     }catch(error){
+      const status=await page.evaluate(([source,hotspot,target])=>{
+       const game=window.__pt2Game,scene=game.scene.getScene('campanha');
+       const view=scene.__torre2ApprovedMapView;
+       const hit=view?.zones?.find(z=>z.getData?.('torre2-approved-hotspot')===
+        source+':'+hotspot);
+       const save=window.kanto.readCampaign();
+       return {from:source,sign:hotspot,expected:target,
+        actual:view?.id,zoneActive:hit?.active,
+        loaderBusy:scene.load.isLoading?.(),
+        queued:scene.__torre2QueuedApprovedTarget,
+        texturePresent:scene.textures.exists('torre2-approved-map-'+target),
+        stage:save?.stage,badges:save?.badges,
+        viewport:{width:innerWidth,height:innerHeight}};
+      },[from,sign,to]);
+      evidence.errors.push('T68_ROUTE_DIAG '+JSON.stringify(status));
+      await page.screenshot({path:path.join(out,
+       't68-route-failure-'+from+'-'+to+'-'+mode.name+'.png'),
+       fullPage:true,animations:'disabled'});
+      throw Error('T68 route timeout '+JSON.stringify(status)+'; '+error);
+     }
      const actual=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
      assert.equal(actual,baseline,'T63 navigation altered save '+from+'→'+to);
      // Screenshot representative scenes, not 18 duplicate frames.
