@@ -85,7 +85,13 @@ export function planApprovedMapOverlays(entry,rect,neighbors=[]){
   }
   if(navBoxes.length!==navTargets.length)return {ok:false,reason:'navigation-overlap'};
  }
- const backCandidates=[[601,20],[39,20],[601,314],[39,314]];
+ // A few ORIGINAL maps have upper-right signs and a painted title
+ // on the upper-left. Prefer the lower-right corner for their return
+ // button, while preserving the previously approved layouts elsewhere.
+ const protectPaintedTitle=['mt-moon','route-24','route-6'].includes(entry.id);
+ const backCandidates=protectPaintedTitle
+  ?[[601,20],[601,314],[39,314],[39,20]]
+  :[[601,20],[39,20],[601,314],[39,314]];
  const back=backCandidates.find(([x,y])=>hotspots.every(h=>!overlaps(h,{x,y,width:74,height:33}))&&
   navBoxes.every(b=>!overlaps(b,{x,y,width:74,height:33}))&&
   (footerY===null||!overlaps({x,y,width:74,height:33},{x:320,y:footerY,width:636,height:25})));
