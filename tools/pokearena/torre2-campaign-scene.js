@@ -802,8 +802,13 @@ create(){
        texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
        const scale=Math.min(2.4,76/plan.fw,74/plan.fh);
        scene.add.ellipse(ace.x,ace.y-2,45,7,0x11331b,.40).setDepth(23);
+       // Native SpriteCollab 0045 Idle-Anim.png first 32x40 frame has
+       // alpha bounds y=5..25 (lower edge=26). Using originY=1 had
+       // anchored an invisible 14px transparent tail to the stone platform,
+       // visibly floating Vileplume ~26 Phaser px above its shadow.
+       // Put the alpha-visible feet at the ORIGINAL platform coordinate.
        const sprite=scene.add.sprite(ace.x,ace.y,plan.key,0)
-        .setOrigin(.5,1).setScale(scale).setDepth(24)
+        .setOrigin(.5,26/40).setScale(scale).setDepth(24)
         .setData('torre2-gym-ace',gymId)
         .setData('torre2-gym-ace-source','pmd-idle');
        const count=Math.min(plan.durations.length,texture.frameTotal||1);
