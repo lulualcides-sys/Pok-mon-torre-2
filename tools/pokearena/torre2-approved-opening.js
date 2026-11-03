@@ -53,10 +53,20 @@ export function approvedOpeningMapId(findMap,hasReviewedHotspots,
 // restart a player may revisit the forest, rather than receive a false pass.
 export function openingJourneyForState(previous,state){
  if(!state||state.stage!==0)return null;
- const uid=state.team?.[0]?.uid;
- const owner=typeof uid==='string'&&uid.length?
-  'uid:'+uid:typeof state.starter==='string'&&state.starter.length?
-  'legacy:'+state.starter:null;
+ const members=[...(Array.isArray(state.team)?state.team:[]),
+  ...(Array.isArray(state.box)?state.box:[])];
+ const validUid=member=>typeof member?.uid==='string'&&member.uid.length>0;
+ // Preserve the *same* starter across team reordering and PC transfers.
+ // Do not accidentally assign its forest milestone to a newly captured lead.
+ const priorUid=previous?.owner?.startsWith('uid:')?
+  previous.owner.slice(4):null;
+ if(priorUid&&members.some(member=>validUid(member)&&member.uid===priorUid))
+  return {owner:previous.owner,forestVisited:previous.forestVisited===true};
+ const firstStarter=members.find(member=>member?.id===state.starter&&validUid(member));
+ const candidate=firstStarter||members.find(validUid);
+ const owner=candidate?'uid:'+candidate.uid:
+  typeof state.starter==='string'&&state.starter.length?
+   'legacy:'+state.starter:null;
  if(!owner)return null;
  return {owner,forestVisited:previous?.owner===owner&&previous.forestVisited===true};
 }

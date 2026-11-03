@@ -110,3 +110,31 @@ test('T55 forest milestone changes only after successful Phaser navigation',()=>
  assert.ok(scene.includes('this.__torre2OpeningJourney?.forestVisited===true'));
  assert.ok(scene.includes('this.__torre2OpeningJourney=null'));
 });
+
+test('T56 first starter UID survives active slot changes and PC transfers',()=>{
+ const state={
+  stage:0,starter:'squirtle',
+  team:[{id:'squirtle',uid:'starter-001'},{id:'pidgey',uid:'bird-002'}],
+  box:[]
+ };
+ const initial=openingJourneyForState(null,state);
+ const visited=markOpeningForestVisit(initial,'route-2','viridian-forest');
+ assert.equal(visited.forestVisited,true);
+ const rearranged={
+  ...state,team:[state.team[1],state.team[0]]
+ };
+ assert.deepEqual(openingJourneyForState(visited,rearranged),visited);
+ const inPC={...state,team:[state.team[1]],box:[state.team[0]]};
+ assert.deepEqual(openingJourneyForState(visited,inPC),visited);
+ const evolved={...state,team:[{id:'wartortle',uid:'starter-001'},state.team[1]]};
+ assert.deepEqual(openingJourneyForState(visited,evolved),visited);
+ const replaced={...state,team:[state.team[1]]};
+ const denied=openingJourneyForState(visited,replaced);
+ assert.equal(denied.owner,'uid:bird-002');
+ assert.equal(denied.forestVisited,false);
+ const newGame={
+  ...state,team:[{id:'squirtle',uid:'starter-new-game'}],box:[]
+ };
+ assert.equal(openingJourneyForState(visited,newGame).forestVisited,false);
+ assert.equal(openingJourneyForState(visited,{...state,stage:1}),null);
+});
