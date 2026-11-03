@@ -424,12 +424,15 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
   stage:1,leader:Object.freeze({kind:'misty',cx:.470,cy:.230}),
   // Original Starmie PMD Idle stands on the leader's upper stone dais.
   ace:Object.freeze({dex:'0121',cx:.570,cy:.260}),
-  // Four distinct real FireRed sprite classes, no reused duplicate sheet.
+  // T77: four WATER-themed original FRLG land-standing overworld sheets.
+  // The player requested no Picnicker/Camper in our CUSTOM four-trainer
+  // variant (the original FRLG only has two non-leader trainers).
+  // Land swimmers and tubers stand naturally on the four stone platforms.
   trainers:Object.freeze([
    Object.freeze({kind:'swimmer',cx:.27,cy:.465}),
-   Object.freeze({kind:'sailor',cx:.73,cy:.465}),
-   Object.freeze({kind:'picnicker',cx:.27,cy:.695}),
-   Object.freeze({kind:'ace_f',cx:.73,cy:.695})
+   Object.freeze({kind:'swimmer_f',cx:.73,cy:.465}),
+   Object.freeze({kind:'tuber_m',cx:.27,cy:.695}),
+   Object.freeze({kind:'tuber_f',cx:.73,cy:.695})
   ])
  }),
  // The approved Surge image ALREADY contains leader, Pikachu and four NPCs.
@@ -470,6 +473,32 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
   ])
  })
 });
+// Theme audit for every approved gym with named/interactive NPC layouts.
+ // "painted" scenes cannot be repainted without changing approved WebPs.
+ // "pending" stages remain explicitly listed rather than falsely certified.
+export const APPROVED_GYM_NPC_THEMES=Object.freeze({
+ 'gym-brock':Object.freeze({theme:'rock',status:'review',allowed:['hiker','youngster']}),
+ 'gym-misty':Object.freeze({theme:'water',status:'validated',
+  allowed:['swimmer','swimmer_f','tuber_m','tuber_f']}),
+ 'gym-surge':Object.freeze({theme:'electric',status:'artwork-only',
+  allowed:[]}),
+ 'gym-erika':Object.freeze({theme:'grass',status:'review',
+  allowed:['lass','beauty','picnicker','ace_f']}),
+ 'gym-koga':Object.freeze({theme:'poison',status:'review',
+  allowed:['biker','juggler','tamer','psychic']})
+});
+export function auditApprovedGymNpcThemes(){
+ return Object.freeze(Object.entries(FIRST_APPROVED_GYM_LAYOUTS).map(([id,layout])=>{
+  const policy=APPROVED_GYM_NPC_THEMES[id];
+  const unexpected=layout.artworkOnly?[]:
+   layout.trainers.map(actor=>actor.kind).filter(kind=>!policy?.allowed.includes(kind));
+  return Object.freeze({id,theme:policy?.theme||'unknown',
+   status:policy?.status||'missing-policy',
+   artworkOnly:layout.artworkOnly===true,
+   renderedNpcCount:layout.artworkOnly?0:layout.trainers.length,
+   unexpected:Object.freeze([...unexpected])});
+ }));
+}
 // Decode an actual local SpriteCollab PMD Idle sheet. No portrait, no new
 // external runtime request, no guessed sprite frame dimensions.
 export function approvedGymAceIdlePlan(dex,manifest){
