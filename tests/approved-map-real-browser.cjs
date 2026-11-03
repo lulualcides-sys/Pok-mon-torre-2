@@ -48,11 +48,45 @@ const server=http.createServer(async(req,res)=>{
     core.saveCampaign(fixture);
     window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
    });
+   // Stage 1 after Brock must begin on Route 3, not jump to Cerulean.
    await page.waitForFunction(()=>{
     const game=window.__pt2Game,scene=game?.scene.getScene('campanha');
     return game?.scene.isActive('campanha')&&
-     (scene?.__torre2ApprovedMapView?.id==='cerulean-city'||!!scene?.__torre2BattlePath);
+     scene?.__torre2ApprovedMapView?.id==='route-3';
    },null,{timeout:50000});
+   const beforeChain=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+   await page.screenshot({path:path.join(out,
+    't61-approved-route-3-'+mode.name+'.png'),fullPage:true,animations:'disabled'});
+   const routeChain=[
+    ['route-3','route4','route-4-west'],
+    ['route-4-west','moon','mt-moon'],
+    ['mt-moon','exit','route-4-east'],
+    ['route-4-east','cerulean','cerulean-city']
+   ];
+   for(const [from,sign,to] of routeChain){
+    const src=await page.evaluate(([id,hotspot])=>{
+     const scene=window.__pt2Game.scene.getScene('campanha'),
+      view=scene.__torre2ApprovedMapView;
+     if(view?.id!==id)throw Error('Wrong route view: '+view?.id+' expected '+id);
+     const zone=view.zones.find(z=>z.getData?.('torre2-approved-hotspot')===id+':'+hotspot);
+     if(!zone)throw Error('Missing real Phaser sign '+id+':'+hotspot);
+     const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+     return {x:rect.x+(zone.x/640)*rect.width,
+      y:rect.y+(zone.y/360)*rect.height,texture:view.image.texture.key};
+    },[from,sign]);
+    assert.equal(src.texture,'torre2-approved-map-'+from);
+    if(mode.isMobile)await page.touchscreen.tap(src.x,src.y);
+    else await page.mouse.click(src.x,src.y);
+    await page.waitForFunction(expected=>
+     window.__pt2Game.scene.getScene('campanha')
+      ?.__torre2ApprovedMapView?.id===expected,to,{timeout:25000});
+    assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+     beforeChain,'Navigating '+from+'->'+to+' unexpectedly changed campaign save');
+    const filename='t61-approved-'+to+'-'+mode.name+'.png';
+    await page.screenshot({path:path.join(out,filename),fullPage:true,animations:'disabled'});
+    evidence.maps.push({id:to,mode:mode.name,via:'real Phaser sign mouse/touch',
+     from,sign,saveUnchanged:true,screenshot:filename});
+   }
    for(const id of ['route-2','pewter-city','gym-brock','cerulean-city','gym-misty']){
     const info=await page.evaluate(async id=>{
      const game=window.__pt2Game,scene=game.scene.getScene('campanha');
