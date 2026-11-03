@@ -566,6 +566,7 @@ patches.push(['escenas/seleccion.js',[
  ['const R=ROLES[r];','const R=ROLES[r]??ROLES.MIXTO;'],
  ['const h=p.kit[slot];const ky=','const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=']
 ]]);
+const upstreamAuditMissing=[];
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
@@ -883,12 +884,16 @@ for(const [filename,changes] of patches){
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
    }
-   throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
+   upstreamAuditMissing.push({filename,expected:from.slice(0,115),
+    actual:body.slice(0,160),target:to.slice(0,110)});
+   continue;
   }
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
 }
+
+if(upstreamAuditMissing.length) throw Error('UPSTREAM AUDIT '+JSON.stringify(upstreamAuditMissing));
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
