@@ -352,9 +352,13 @@ const server=http.createServer(async(req,res)=>{
      marker:{kind:'wild',stage:current.stage,trainer:current.trainer,
       id:'zubat',encounterCounter:current.wildEncountersStage||0}});
    });
+   // T71 intentionally discards the last-map return marker for a REJECTED
+   // battle result. The native stage-2 opening is Cerulean, NOT Vermilion.
+   // Verify that authorized canonical map instead of demanding a forbidden
+   // stale-location restore. Then walk approved signs back to Vermilion.
    await page.waitForFunction(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
-    return scene?.scene.isActive()&&scene.__torre2ApprovedMapView?.id==='vermilion-city'&&
+    return scene?.scene.isActive()&&scene.__torre2ApprovedMapView?.id==='cerulean-city'&&
      scene.__torre2ApprovedMapView?.image?.active===true;
    },null,{timeout:45000});
    assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
@@ -362,9 +366,32 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha')
      .children.list.some(o=>o.active&&o.getData?.('torre2-report-continue')===true)),
     false,'T73 stale result must not show a fabricated victory report');
-   evidence.maps.push({id:'vermilion-city',mode:mode.name,
-    via:'T73 obsolete wild marker rejected by native runtime',
+   evidence.maps.push({id:'cerulean-city',mode:mode.name,
+    via:'T73 obsolete wild marker rejected; canonical opening restored',
     fixture:'INVALID result; no actual battle',saveUnchanged:true});
+   // Go back on real approved clickable signs; no fabricated checkpoint
+   // or teleport is allowed just to prepare the T71 regression.
+   for(const [from,sign,to] of stage2Path.slice(4)){
+    const position=await page.evaluate(([source,hotspot])=>{
+     const scene=window.__pt2Game.scene.getScene('campanha'),
+      view=scene.__torre2ApprovedMapView;
+     if(view?.id!==source)throw Error('T76 expected map '+source+', got '+view?.id);
+     const zone=view.zones.find(z=>z.getData?.('torre2-approved-hotspot')===
+      source+':'+hotspot);
+     if(!zone)throw Error('T76 missing approved sign '+source+':'+hotspot);
+     const bounds=document.querySelector('#juego canvas').getBoundingClientRect();
+     const w=Math.min(bounds.width,bounds.height*640/360),
+      h=Math.min(bounds.height,bounds.width*360/640);
+     return {x:bounds.x+(bounds.width-w)/2+zone.x/640*w,
+      y:bounds.y+(bounds.height-h)/2+zone.y/360*h};
+    },[from,sign]);
+    if(mode.isMobile)await page.touchscreen.tap(position.x,position.y);
+    else await page.mouse.click(position.x,position.y);
+    await page.waitForFunction(id=>window.__pt2Game.scene.getScene('campanha')
+     ?.__torre2ApprovedMapView?.id===id,to,{timeout:25000});
+   }
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    beforeStale,'T76 approved post-stale navigation mutated the save');
    // T71: controlled defeat RESULT in stage 2 (not a naturally played
    // fight or a simulated victory). Run the native save resolver once, and
    // use a REAL mouse/touch click on the original report Continue button.
