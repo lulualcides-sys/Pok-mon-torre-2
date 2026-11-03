@@ -71,8 +71,14 @@ const server=http.createServer(async(req,res)=>{
      const zone=view.zones.find(z=>z.getData?.('torre2-approved-hotspot')===id+':'+hotspot);
      if(!zone)throw Error('Missing real Phaser sign '+id+':'+hotspot);
      const rect=document.querySelector('#juego canvas').getBoundingClientRect();
-     return {x:rect.x+(zone.x/640)*rect.width,
-      y:rect.y+(zone.y/360)*rect.height,texture:view.image.texture.key};
+     // Phaser preserves 16:9 inside the phone's wider viewport. The canvas
+     // bounding box may include side letterboxes (844x390 -> ~693x390).
+     const drawWidth=Math.min(rect.width,rect.height*640/360);
+     const drawHeight=Math.min(rect.height,rect.width*360/640);
+     const left=rect.x+(rect.width-drawWidth)/2;
+     const top=rect.y+(rect.height-drawHeight)/2;
+     return {x:left+(zone.x/640)*drawWidth,
+      y:top+(zone.y/360)*drawHeight,texture:view.image.texture.key};
     },[from,sign]);
     assert.equal(src.texture,'torre2-approved-map-'+from);
     if(mode.isMobile)await page.touchscreen.tap(src.x,src.y);
@@ -142,8 +148,10 @@ const server=http.createServer(async(req,res)=>{
       const canvas=document.querySelector('#juego canvas');
       if(!canvas)throw Error('Phaser canvas missing');
       const bounds=canvas.getBoundingClientRect();
-      const map=p=>({x:bounds.x+p.x/640*bounds.width,
-                     y:bounds.y+p.y/360*bounds.height});
+      const w=Math.min(bounds.width,bounds.height*640/360);
+      const h=Math.min(bounds.height,bounds.width*360/640);
+      const left=bounds.x+(bounds.width-w)/2,top=bounds.y+(bounds.height-h)/2;
+      const map=p=>({x:left+p.x/640*w,y:top+p.y/360*h});
       return {north:map(points.north),south:map(points.south)};
      },checkpoint);
      const dispatch=async position=>{
