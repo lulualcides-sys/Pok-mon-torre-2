@@ -164,12 +164,13 @@ test('T45 Vermilion map and Surge gym preserve full art and correct adjacent rou
  }
  assert.equal(firstApprovedDestination('gym-surge','exit'),'vermilion-city');
 });
-test('T45 Surge has four clickable ORIGINAL artwork trainers, no added sprite clones',()=>{
+test('T80 user-approved NEW Surge background has four clickable FRLG sprite actors',()=>{
  const gym=firstApprovedGymActors('gym-surge',17);
  assert.equal(gym.stage,2);
- assert.equal(gym.artworkOnly,true);
+ assert.notEqual(gym.artworkOnly,true);
  assert.deepEqual(gym.trainers.map(t=>t.index),[13,14,15,16]);
- assert.deepEqual(gym.trainers.map(t=>t.kind),['youngster','rocker','lass','youngster']);
+ assert.deepEqual(gym.trainers.map(t=>t.kind),
+  ['sailor','rocker','gentleman','worker_m']);
  for(const t of gym.trainers){
   assert.ok(t.cx>.10&&t.cx<.90&&t.cy>.30&&t.cy<.75);
  }
