@@ -1120,8 +1120,11 @@ const server=http.createServer(async(req,res)=>{
     scene.__torre2ApprovedReturn=null;scene.__torre2ApprovedMapView=null;
     scene.scene.restart({});
    });
+   // Stage 4 starts on the original Celadon image. Waiting only for
+   // scene.isActive() races the Phaser restart loader, which can discard
+   // the manually requested Koga texture on the next frame.
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
-    ?.scene.isActive(),null,{timeout:40000});
+    ?.__torre2ApprovedMapView?.id==='celadon-city',null,{timeout:45000});
    await page.evaluate(async()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('campanha');
     const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
