@@ -7,7 +7,7 @@ A PR T83 passou no Chromium por Vermilion → ROTAS → VS Seeker → Brock → 
 ## Alteração
 
 - Atualizar a lista esperada para os seis botões atuais, sem relaxar a verificação da ordem.
-- Continuar exigindo que todos estejam centralizados em x=320, com a mesma largura mínima/camadas originais, e que botões sociais invisíveis não sejam criados.
+- A medição real do browser revelou seis botões com \`x=320, w=260, h=24\` e \`y=[148,174,200,226,252,278]\`: sem sobreposição e com 2 unidades de intervalo. O teste antigo exigia \`h>=30\` e estava incorreto. Exigir essa geometria **exata**, preservando tamanho/posição do design aprovado; não confundir esta validação de layout com certificação de tamanho físico para toque em todos os dispositivos.
 - Acrescentar o teste ao filtro de caminhos do workflow `rival-payday-validation.yml` para que futuras mudanças no contrato do menu acionem Chromium.
 
 Esta PR é empilhada sobre o T83 e **modifica somente o teste/CI**. Nenhum comportamento, sprite, arte aprovada, botão do jogo, save ou build de produção é modificado.
