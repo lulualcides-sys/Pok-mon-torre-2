@@ -318,6 +318,32 @@ const server=http.createServer(async(req,res)=>{
       via:'T70 '+label+' real mouse/touch',saveUnchanged:true,screenshot});
     }
    }
+   // T73: an obsolete wild result must NEVER be reinterpreted as a
+   // trainer victory, even when its stage and trainer index match.
+   // This is a CONTROLLED invalid-result fixture, not a played battle.
+   const beforeStale=await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign()));
+   await page.evaluate(()=>{
+    const current=window.kanto.readCampaign();
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    if(scene.__torre2ApprovedMapView?.id!=='vermilion-city')
+     throw Error('T73 expects unchanged Vermilion stage-two map');
+    scene.scene.restart({finished:true,won:true,
+     marker:{kind:'wild',stage:current.stage,trainer:current.trainer,
+      id:'zubat',encounterCounter:current.wildEncountersStage||0}});
+   });
+   await page.waitForFunction(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    return scene?.scene.isActive()&&scene.__torre2ApprovedMapView?.id==='vermilion-city'&&
+     scene.__torre2ApprovedMapView?.image?.active===true;
+   },null,{timeout:45000});
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    beforeStale,'T73 invalid wild result granted a trainer win, badge or money');
+   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha')
+     .children.list.some(o=>o.active&&o.getData?.('torre2-report-continue')===true)),
+    false,'T73 stale result must not show a fabricated victory report');
+   evidence.maps.push({id:'vermilion-city',mode:mode.name,
+    via:'T73 obsolete wild marker rejected by native runtime',
+    fixture:'INVALID result; no actual battle',saveUnchanged:true});
    // T71: controlled defeat RESULT in stage 2 (not a naturally played
    // fight or a simulated victory). Run the native save resolver once, and
    // use a REAL mouse/touch click on the original report Continue button.
