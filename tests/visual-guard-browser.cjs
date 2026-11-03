@@ -70,7 +70,12 @@ const server=http.createServer(async(req,res)=>{
    {waitUntil:'domcontentloaded',timeout:45000});
   await mobile.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
-  assert.equal(await mobile.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.length),5);
+  const mobileButtons=await mobile.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.map(b=>b.id));
+  assert.deepEqual(mobileButtons.filter(id=>id!=='personalizar'),
+   ['jugar','pokedex','tutorial','ajustes','creditos'],
+   'Mobile native title must retain every approved action');
+  assert.equal(new Set(mobileButtons).size,mobileButtons.length,
+   'No duplicate touch hitboxes on mobile');
   await shot('mobile-portrait-rotate',mobile);await mobile.close();
   state.step='mobile-landscape-title';
   const landscape=await makePage({viewport:{width:844,height:390},deviceScaleFactor:1,isMobile:true,hasTouch:true});
@@ -78,7 +83,12 @@ const server=http.createServer(async(req,res)=>{
    {waitUntil:'domcontentloaded',timeout:45000});
   await landscape.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
-  assert.equal(await landscape.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.length),5);
+  const landscapeButtons=await landscape.evaluate(()=>window.__pt2Game.scene.getScene('titulo').botones.map(b=>b.id));
+  assert.deepEqual(landscapeButtons.filter(id=>id!=='personalizar'),
+   ['jugar','pokedex','tutorial','ajustes','creditos'],
+   'Mobile native title must retain every approved action');
+  assert.equal(new Set(landscapeButtons).size,landscapeButtons.length,
+   'No duplicate touch hitboxes on mobile');
   await shot('mobile-landscape-title',landscape);await landscape.close();
   state.step='campaign-map';
   await page.evaluate(async()=>{
