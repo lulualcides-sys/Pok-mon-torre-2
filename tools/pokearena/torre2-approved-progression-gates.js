@@ -62,3 +62,15 @@ export function approvedMapTravelAllowed(from,target,state){
   approvedMapNeighbours(from).includes(target)&&
   approvedMapEntryAllowed(state,target);
 }
+
+
+/** Restore only a map the player actually viewed in the SAME campaign stage.
+ * This is UI-only memory, not a save migration or a travel authorization.
+ * The current persisted badges/champion flag are rechecked, so returning
+ * from the party menu cannot resurrect a now-locked map.
+ */
+export function approvedReturnMapId(returnEntry,state){
+ if(!returnEntry||typeof returnEntry.id!=='string'||
+    returnEntry.stage!==state?.stage)return null;
+ return approvedMapEntryAllowed(state,returnEntry.id)?returnEntry.id:null;
+}
