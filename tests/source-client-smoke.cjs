@@ -97,13 +97,33 @@ const server=http.createServer(async(req,res)=>{
   const brand=await page.evaluate(()=>{
     const game=window.__pt2Game,title=game.scene.getScene('titulo');
     const logo=game.textures.get('ui-logo').getSourceImage();
+    // T84: inspect actual pointer hit areas, not merely dormant DOM anchors.
+    const canvas=document.querySelector('#juego canvas'),cr=canvas.getBoundingClientRect();
+    const socialNodes=[...document.querySelectorAll('a[href]')].filter(node=>
+     /(?:instagram|youtube|tiktok|discord)/i.test(node.href));
+    const socialAudit=socialNodes.map(node=>{
+     const r=node.getBoundingClientRect(),css=getComputedStyle(node);
+     const left=Math.max(r.left,cr.left),top=Math.max(r.top,cr.top),
+      right=Math.min(r.right,cr.right),bottom=Math.min(r.bottom,cr.bottom);
+     const points=[];
+     if(right>left&&bottom>top)
+      for(const px of [.1,.5,.9])for(const py of [.1,.5,.9])
+       points.push({x:left+(right-left)*px,y:top+(bottom-top)*py});
+     const intercepts=points.some(p=>{
+      const hit=document.elementFromPoint(p.x,p.y);
+      return hit===node||node.contains(hit);
+     });
+     return {url:node.href,x:r.x,y:r.y,w:r.width,h:r.height,
+      display:css.display,visibility:css.visibility,pointerEvents:css.pointerEvents,
+      intercepts};
+    });
     return {width:logo.width,height:logo.height,
       menu:title.menu,buttons:title.botones.map(b=>b.id),
       fixedButtons:title.botones.map(b=>({x:b.x,y:b.y,w:b.w,h:b.h})),
       socialIcons:title.children.list.filter(obj=>['ico-instagram','ico-youtube',
        'ico-tiktok','ico-discord'].includes(obj.texture?.key)).map(obj=>obj.texture.key),
-      socialLinks:[...document.querySelectorAll('a[href]')].filter(node=>
-       /(?:instagram|youtube|tiktok|discord)/i.test(node.href)).map(node=>node.href)};
+      socialLinks:socialAudit.filter(x=>x.intercepts).map(x=>x.url),
+      socialAudit};
   });
   assert.deepEqual([brand.width,brand.height],[240,80],
    'The approved pixel-art Pokémon Torre sprite replaces only the old menu title texture');
@@ -121,8 +141,9 @@ const server=http.createServer(async(req,res)=>{
    'Keep the approved six-button native menu centered, evenly spaced and non-overlapping');
   assert.deepEqual(brand.socialIcons,[],
    'Social icons must not render beside original fullscreen');
+  console.log('T84 SOCIAL HITBOX AUDIT',JSON.stringify(brand.socialAudit));
   assert.deepEqual(brand.socialLinks,[],
-   'Social link hit targets must not remain invisible on top of fullscreen');
+   'Social links must never intercept real pointer input on the Phaser canvas');
   const subMenuLayout=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('titulo');
    scene.abrirMenu('jugar');
