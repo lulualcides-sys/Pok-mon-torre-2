@@ -39,9 +39,12 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
   v('forest',.480,.932,.175,.118)
  ]),
  'pewter-city':Object.freeze([
-  v('center',.184,.385,.12,.14),
-  v('mart',.183,.612,.12,.14),
-  v('gym',.800,.288,.14,.15),
+  // T91: inspected actual approved 1280×720 Pewter WebP.
+  // PC blue doors center (237,290), Mart doors (235,455),
+  // Brock Gym doors (1017,194). These are NOT building/roof click areas.
+  v('center',.185,.403,.072,.089),
+  v('mart',.184,.630,.072,.092),
+  v('gym',.795,.270,.093,.099),
   v('route2',.460,.867,.16,.11),
   v('route3',.952,.453,.09,.14)
  ]),
