@@ -115,6 +115,7 @@ const server=http.createServer(async(req,res)=>{
    'Keep all six native title buttons in the current authorized order');
   assert.deepEqual(brand.fixedButtons.map(b=>b.x),[320,320,320,320,320,320],
    'Keep all native title button positions centered');
+  console.log('T84 ORIGINAL MENU BUTTON GEOMETRY',JSON.stringify(brand.fixedButtons));
   assert.ok(brand.fixedButtons.every(b=>b.w===260&&b.h>=30),
    'Main menu buttons must be substantially wider and taller for touch use');
   assert.deepEqual(brand.socialIcons,[],
