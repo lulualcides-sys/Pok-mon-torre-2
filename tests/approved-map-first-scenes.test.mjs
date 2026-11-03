@@ -611,7 +611,7 @@ test('T63 respects all nine original map positions and excludes shortcuts',()=>{
  ])assert.equal(firstApprovedDestination(id,sign),null);
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(source.includes("'route-3','cerulean-city','vermilion-city'"));
- assert.ok(source.includes("'celadon-city','fuchsia-city','cinnabar-island'"));
+ assert.ok(source.includes("'celadon-city','fuchsia-city','fuchsia-city'"));
  assert.ok(source.includes('approvedMapNeighbours(_src).includes(target)'));
 });
 test('T63 all original map hotspots are bounded, non-overlapping and clickable in Phaser',()=>{
@@ -666,4 +666,61 @@ test('T63 every real T63 destination points to an approved adjacent map',()=>{
   assert.equal(layout.ok,true,id);
   assert.deepEqual([layout.backX,layout.backY],[601,314],id);
  }
+});
+
+test('T65 original Saffron interiors and Seafoam-to-Cinnabar coastal route have safe exits',()=>{
+ const groups={
+  'silph-co':{exit:'saffron-city'},
+  'fighting-dojo':{exit:'saffron-city'},
+  'gym-sabrina':{exit:'saffron-city'},
+  'routes-19-20':{fuchsia:'fuchsia-city',seafoam:'seafoam-islands'},
+  'seafoam-islands':{route19:'routes-19-20',cinnabar:'cinnabar-island'},
+  'cinnabar-island':{mansion:'pokemon-mansion',gym:'gym-blaine',
+    route21:'route-21',seafoam:'seafoam-islands'},
+  'pokemon-mansion':{exit:'cinnabar-island'},
+  'gym-blaine':{exit:'cinnabar-island'},
+  'route-21':{cinnabar:'cinnabar-island'}
+ };
+ assert.deepEqual(Object.keys(groups).map(id=>approvedMap(id)?.index),
+  [33,34,35,36,37,38,39,40,41]);
+ for(const [id,arcs] of Object.entries(groups)){
+  const entry=approvedMap(id),hotspots=firstApprovedHotspots(entry);
+  assert.equal(hasFirstApprovedHotspots(id),true,id);
+  const plan=planApprovedMapOverlays({...entry,hotspots},rect,[]);
+  assert.equal(plan.ok,true,id+': '+JSON.stringify(plan));
+  for(const [label,target] of Object.entries(arcs)){
+   assert.equal(firstApprovedDestination(id,label),target);
+   assert.ok(hotspots.some(h=>h.id===label),id+':'+label);
+   assert.ok(approvedMapNeighbours(id).includes(target),id+'→'+target);
+   assert.ok(approvedMapNeighbours(target).includes(id),target+'→'+id);
+  }
+  const {scene,zones}=fakeScene(),events=[];
+  const view=renderApprovedMap(scene,id,{
+   resolveHotspots:firstApprovedHotspots,artNavigation:true,
+   isUnlocked:()=>true,onHotspot:(src,sign)=>events.push(src+':'+sign)
+  });
+  assert.equal(view.ok,true,id);
+  for(const hotspot of hotspots){
+   const z=zones.find(z=>z.data?.value===id+':'+hotspot.id);
+   assert.ok(z,id+':'+hotspot.id);
+   let stop=false;
+   z.pointerdown(null,0,0,{stopPropagation(){stop=true;}});
+   assert.equal(stop,true);
+  }
+  assert.deepEqual(events,hotspots.map(h=>id+':'+h.id));
+ }
+});
+test('T65 coastal stage starts at Fuchsia, does not create missing Pallet shortcut',()=>{
+ const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(source.includes("'celadon-city','fuchsia-city','fuchsia-city'"));
+ assert.ok(source.includes('approvedMapNeighbours(_src).includes(target)'));
+ for(const [id,sign] of [
+   ['route-21','pallet'],['route-21','viridian'],
+   ['routes-19-20','cinnabar'],['silph-co','card-key'],
+   ['seafoam-islands','articuno'],['gym-blaine','challenge'],
+   ['gym-sabrina','challenge'],['fighting-dojo','hitmonlee']
+ ])assert.equal(firstApprovedDestination(id,sign),null,id+':'+sign);
+ assert.equal(approvedMap('route-21').index,41);
+ assert.equal(approvedMapNeighbours('route-21').includes('gym-giovanni'),true,
+  'Catalogue has this edge, but no physical route sign is activated');
 });

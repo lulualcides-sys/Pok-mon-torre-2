@@ -269,8 +269,11 @@ const server=http.createServer(async(req,res)=>{
      assert.equal(actual,baseline,'T63 navigation altered save '+from+'→'+to);
      // Screenshot representative scenes, not 18 duplicate frames.
      if(['route-11','route-9-solo','routes-9-10','lavender-town','routes-7-8',
-      'rocket-hideout','routes-16-18','routes-12-15','fuchsia-city'].includes(to)){
-      const name='t63-approved-'+to+'-'+mode.name+'.png';
+      'rocket-hideout','routes-16-18','routes-12-15','fuchsia-city',
+      'silph-co','gym-sabrina','routes-19-20','seafoam-islands',
+      'cinnabar-island','pokemon-mansion','gym-blaine'].includes(to)){
+      const name=(label.startsWith('stage5')||label.startsWith('stage6')?
+       't65-approved-':'t63-approved-')+to+'-'+mode.name+'.png';
       await page.screenshot({path:path.join(out,name),
        fullPage:true,animations:'disabled'});
       evidence.maps.push({id:to,mode:mode.name,from,sign,saveUnchanged:true,
@@ -305,6 +308,58 @@ const server=http.createServer(async(req,res)=>{
     ['fuchsia-city','route15','routes-12-15'],
     ['routes-12-15','lavender','lavender-town']
    ],stage4,'stage4');
+   // T65 isolated Saffron proof: this direct renderer fixture DOES NOT
+   // imply a finished city-gate route (Celadon→Saffron lacks a valid sign).
+   const stage5=await gotoStage('fuchsia-city',5);
+   await page.evaluate(async()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha'),
+     state=window.kanto.readCampaign();
+    const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
+    if(!main)throw Error('T65 Phaser main module missing');
+    const atlas=await import(new URL('./torre2/torre2-approved-maps-atlas.js',main));
+    const renderer=await import(new URL('./torre2/torre2-approved-map-renderer.js',main));
+    const id='saffron-city',key=renderer.mapTextureKey(id);
+    const entry=atlas.approvedMap(id);
+    if(!entry)throw Error('T65 Saffron absent from original atlas');
+    if(!scene.textures.exists(key)){
+     await new Promise((resolve,reject)=>{
+      let failed=false;
+      const onError=file=>{if(file?.key===key)failed=true};
+      scene.load.on('loaderror',onError);
+      scene.load.once('complete',()=>{
+       scene.load.off('loaderror',onError);
+       if(failed||!scene.textures.exists(key))
+        reject(Error('T65 approved Saffron texture failed'));
+       else resolve();
+      });
+      scene.load.image(key,entry.image);
+      scene.load.start();
+     });
+    }
+    if(!scene.approvedMapPreview(state,id))
+     throw Error('T65 original Saffron view unavailable');
+   });
+   await followSigns([
+    ['saffron-city','silph','silph-co'],
+    ['silph-co','exit','saffron-city'],
+    ['saffron-city','gym','gym-sabrina'],
+    ['gym-sabrina','exit','saffron-city']
+   ],stage5,'stage5-isolated-saffron');
+   // After the Sabrina chapter, do not teleport to Cinnabar. Navigate
+   // through the physical Fuchsia → Route 19/20 → Seafoam corridor.
+   const stage6=await gotoStage('fuchsia-city',6);
+   await followSigns([
+    ['fuchsia-city','route19','routes-19-20'],
+    ['routes-19-20','seafoam','seafoam-islands'],
+    ['seafoam-islands','cinnabar','cinnabar-island'],
+    ['cinnabar-island','mansion','pokemon-mansion'],
+    ['pokemon-mansion','exit','cinnabar-island'],
+    ['cinnabar-island','gym','gym-blaine'],
+    ['gym-blaine','exit','cinnabar-island'],
+    ['cinnabar-island','seafoam','seafoam-islands'],
+    ['seafoam-islands','route19','routes-19-20'],
+    ['routes-19-20','fuchsia','fuchsia-city']
+   ],stage6,'stage6-coastal');
    await page.close();
   }
   assert.deepEqual(evidence.errors,[],'Phaser page errors');
