@@ -5,6 +5,7 @@ import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './t
 import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,approvedPostBattleReturnMapId} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
+import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
@@ -178,6 +179,11 @@ class Campanha extends Phaser.Scene{
   if(APPROVED_MAP_ASSETS_READY&&(stage===3||stage===4))
    for(const kind of ['lass','beauty','picnicker','ace_f'])
     needed.add(spriteIdForTrainer(kind));
+  // T80: four electricity-themed ORIGINAL FRLG sheets. Stage 3 allows
+  // a visit after the Thunder Badge without dropping the gym NPCs.
+  if(APPROVED_MAP_ASSETS_READY&&(stage===2||stage===3))
+   for(const kind of ['surge','sailor','rocker','gentleman','worker_m'])
+    needed.add(spriteIdForTrainer(kind));
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
   const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld]);
@@ -218,7 +224,26 @@ class Campanha extends Phaser.Scene{
    this.load.spritesheet(erikaIdle.key,erikaIdle.file,{
     frameWidth:erikaIdle.fw,frameHeight:erikaIdle.fh
    });
-  const protectedAces=new Set([mistyIdle?.key,erikaIdle?.key].filter(Boolean));
+  // Keep one native Idle per current/previous gym, never load the entire
+  // PMD library. Brock, Surge and Koga join Misty and Erika.
+  this.__torre2OtherGymAcePlans={};
+  for(const [gym,dex,minStage] of [
+   ['gym-brock','0095',0],['gym-surge','0026',2],['gym-koga','0110',4]
+  ]){
+   if(!APPROVED_MAP_ASSETS_READY||
+      (stage!==minStage&&stage!==minStage+1))continue;
+   const plan=approvedGymAceIdlePlan(dex,this.registry.get('manifiesto'));
+   if(!plan)continue;
+   this.__torre2OtherGymAcePlans[gym]=plan;
+   if(!this.textures.exists(plan.key))
+    this.load.spritesheet(plan.key,plan.file,{
+     frameWidth:plan.fw,frameHeight:plan.fh
+    });
+  }
+  const protectedAces=new Set([
+   mistyIdle?.key,erikaIdle?.key,
+   ...Object.values(this.__torre2OtherGymAcePlans).map(plan=>plan.key)
+  ].filter(Boolean));
   for(const key of this.textures.getTextureKeys())
    if(key.startsWith('torre2-gym-ace-idle-')&&!protectedAces.has(key))
     this.textures.remove(key);
@@ -766,7 +791,9 @@ create(){
      const leaderSprite=addFireRedNPC(scene,actors.leader.kind,leader.x,leader.y,
       {scale:1.7,depth:24,strict:true});
      leaderSprite?.setData('torre2-gym-leader-sprite',gymId);
-     const ace=project(actors.ace.cx,actors.ace.cy);
+     // All species must place their visible feet on the LEADER'S SAME
+     // floor line; their alpha padding is handled by nativePmdFootOrigin.
+     const ace=project(actors.ace.cx,actors.leader.cy);
      if(gymId==='gym-misty'){
       // Real PMD Idle with transparency. Never render a tiny square portrait
       // or replace the actual Starmie with a decorative placeholder.
@@ -777,7 +804,7 @@ create(){
        const scale=Math.min(2.25,60/plan.fw,64/plan.fh);
        scene.add.ellipse(ace.x,ace.y-2,42,7,0x081e32,.42).setDepth(23);
        const sprite=scene.add.sprite(ace.x,ace.y,plan.key,0)
-        .setOrigin(.5,1).setScale(scale).setDepth(24)
+        .setOrigin(.5,nativePmdFootOrigin(texture,plan)).setScale(scale).setDepth(24)
         .setData('torre2-gym-ace',gymId)
         .setData('torre2-gym-ace-source','pmd-idle');
        const count=Math.min(plan.durations.length,texture.frameTotal||1);
@@ -825,12 +852,32 @@ create(){
        }
       }
      }else{
-      // Other previously approved gyms retain their existing implementation
-      // until separately reviewed; no surprise art/sprite changes.
-      const aceKey='torre2-portrait-'+actors.ace.dex;
-      if(scene.textures.exists(aceKey))
-       scene.add.image(ace.x,ace.y,aceKey).setDisplaySize(30,30).setDepth(24)
-        .setData('torre2-gym-ace',gymId);
+      // T80: Onix/Raichu/Weezing use the same native PMD Idle system,
+      // including transparent-foot correction. Never a 30x30 portrait.
+      const plan=this.__torre2OtherGymAcePlans?.[gymId];
+      if(plan&&scene.textures.exists(plan.key)){
+       const texture=scene.textures.get(plan.key);
+       texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+       const scale=Math.min(2.25,72/plan.fw,68/plan.fh);
+       scene.add.ellipse(ace.x,ace.y-2,44,7,0x13212d,.38).setDepth(23);
+       const sprite=scene.add.sprite(ace.x,ace.y,plan.key,0)
+        .setOrigin(.5,nativePmdFootOrigin(texture,plan))
+        .setScale(scale).setDepth(24)
+        .setData('torre2-gym-ace',gymId)
+        .setData('torre2-gym-ace-source','pmd-idle');
+       const count=Math.min(plan.durations.length,texture.frameTotal||1);
+       if(count>1){
+        const anim='torre2-approved-'+gymId+'-native-idle';
+        if(!scene.anims.exists(anim)){
+         const ticks=plan.durations.slice(0,count)
+          .reduce((sum,value)=>sum+(Number(value)||6),0)/count;
+         scene.anims.create({key:anim,
+          frames:scene.anims.generateFrameNumbers(plan.key,{start:0,end:count-1}),
+          frameRate:Math.max(2,Math.min(8,60/ticks)),repeat:-1});
+        }
+        sprite.play(anim);
+       }
+      }
      }
     }
     for(const actor of actors.trainers){
