@@ -567,7 +567,6 @@ patches.push(['escenas/seleccion.js',[
  ['const R=ROLES[r];','const R=ROLES[r]??ROLES.MIXTO;'],
  ['const h=p.kit[slot];const ky=','const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=']
 ]]);
-const upstreamAuditMissing=[];
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
@@ -956,16 +955,26 @@ for(const [filename,changes] of patches){
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
    }
-   upstreamAuditMissing.push({filename,expected:from.slice(0,115),
-    actual:body.slice(0,160),target:to.slice(0,110)});
-   continue;
+   // The native roster filter may evolve without changing the TODOS source.
+   // Insert Kanto species BEFORE the current native ROSTER declaration.
+   if(filename==='datos.js'&&
+      from==='const ROSTER=TODOS.filter(p=>!p.desactivado);'&&
+      to.includes('upgradeKantoEvolutionBattleKits')){
+    const declarations=body.match(/(?:export\s+)?const\s+ROSTER\s*=\s*[^;]{1,220};/g)||[];
+    if(declarations.length!==1||!declarations[0].includes('TODOS'))
+     throw Error('Unknown native ROSTER declaration; not injecting species');
+    const setup='TODOS.push(...addEarlyKantoSpecies(TODOS));'+
+     'TODOS.push(...addAllKantoSpecies(TODOS));'+
+     'upgradeKantoEvolutionBattleKits(TODOS);';
+    body=body.replace(declarations[0],setup+declarations[0]);
+    continue;
+   }
+   throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
  }
  await fs.writeFile(filenameFull,body);
 }
-
-if(upstreamAuditMissing.length) throw Error('UPSTREAM AUDIT '+JSON.stringify(upstreamAuditMissing));
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
