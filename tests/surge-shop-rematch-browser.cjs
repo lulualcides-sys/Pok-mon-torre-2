@@ -44,19 +44,25 @@ const server=http.createServer(async(req,res)=>{
   // supported entry surfaces. Never fabricate an image or jump scenes.
   await page.waitForFunction(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
-   return scene.scene.isActive()&&
-    (scene.__torre2ApprovedMapView?.id==='celadon-city'||
-     scene.__torre2BattlePath?.stage===3);
+   return scene.scene.isActive()&&!scene.load.isLoading();
   },null,{timeout:60000});
+  // When neither expected surface renders, fail WITH an explicit real scene
+  // snapshot instead of silently waiting another minute in CI.
+  await page.waitForTimeout(300);
   const entry=await page.evaluate(()=>{
    const scene=__pt2Game.scene.getScene('campanha');
    return {approvedMap:scene.__torre2ApprovedMapView?.id||null,
     pathStage:scene.__torre2BattlePath?.stage??null,
-    celadonTextureLoaded:scene.textures.exists('torre2-approved-map-celadon-city')};
+    celadonTextureLoaded:scene.textures.exists('torre2-approved-map-celadon-city'),
+    savedStage:__qaCore.readCampaign()?.stage??null,
+    currentTexts:scene.children.list.filter(o=>o.active&&typeof o.text==='string')
+     .map(o=>o.text.slice(0,100)).slice(0,14),
+    activeScenes:__pt2Game.scene.getScenes(true).map(s=>s.sys.settings.key)};
   });
   console.log('T83 REAL STAGE THREE ENTRY',JSON.stringify(entry));
+  assert.equal(entry.savedStage,3,'T83 fixture stage changed before native entry');
   assert.ok(entry.approvedMap==='celadon-city'||entry.pathStage===3,
-   'T83 no verified real stage-three entry');
+   'T83 no verified real stage-three entry: '+JSON.stringify(entry));
   const beforeExit=await page.evaluate(()=>JSON.stringify(__qaCore.readCampaign()));
   if(entry.approvedMap==='celadon-city'){
    const exitPoint=await page.evaluate(()=>{
