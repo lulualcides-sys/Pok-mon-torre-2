@@ -230,6 +230,10 @@ const server=http.createServer(async(req,res)=>{
    const gotoStage=async(expected,number)=>{
     await page.evaluate(stage=>{
      const s=window.kanto.readCampaign();s.stage=stage;
+     // Synthetic browser fixture only: stage eight starts with exactly the
+     // eight native badges. This does NOT imply a real player won any gym.
+     // It allows real mouse/touch QA without bypassing the T68 badge gate.
+     if(stage>=8)s.badges=window.kanto.GYMS.map(gym=>gym.badge);
      window.kanto.saveCampaign(s);
      const scene=window.__pt2Game.scene.getScene('campanha');
      scene.__torre2ApprovedReturn=null;
