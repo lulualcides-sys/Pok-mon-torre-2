@@ -21,7 +21,7 @@ jobs:
         run: |
           python3 -m venv /tmp/t80-image-converter
           /tmp/t80-image-converter/bin/pip install --disable-pip-version-check Pillow
-      - name: Import exact uploaded PNG, verify SHA-256 and create WebP
+      - name: Import exact uploaded JPEG-encoded image (display name .png), verify SHA-256 and create WebP
         env:
           USER_SURGE_PNG_URL: "https://d2jqrm6oza8nb6.cloudfront.net/datasets/2f190171-c813-420a-907d-d45dc7defbc2.png?_jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJrZXlIYXNoIjoiNjRmYWFjMDYxNzJlZTY2MSIsImJ1Y2tldCI6InJ1bndheS1kYXRhc2V0cyIsInN0YWdlIjoicHJvZCIsImV4cCI6MTc5Mzg1NTIzOH0.nDMTxGgLdcQMfe-0f05qdDCy0ayHZbxqMAaWUW-gAp0"
         run: |
