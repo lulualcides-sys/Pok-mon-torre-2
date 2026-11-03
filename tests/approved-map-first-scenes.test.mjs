@@ -475,7 +475,7 @@ test('T61 approved 60-map story flows Pewter through Route 3, Mt Moon, Route 4 t
  }
  const stage1=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(stage1.includes("'route-3','cerulean-city'"));
- assert.ok(stage1.includes('const APPROVED_STAGE_MAX=[3,9,18'));
+ assert.ok(stage1.includes('approvedMapEntryAllowed(state,id)'));
  assert.equal(firstApprovedDestination('route-4-east','mega-punch'),null);
  assert.equal(firstApprovedDestination('route-4-east','mega-kick'),null);
  assert.equal(firstApprovedDestination('mt-moon','dome'),null);
@@ -539,7 +539,7 @@ test('T62 only original approved maps bridge Cerulean, Nugget Bridge, tunnel and
  ])assert.equal(firstApprovedDestination(from,sign),null);
  const stage=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(stage.includes("'route-3','cerulean-city','vermilion-city'"));
- assert.ok(stage.includes('const APPROVED_STAGE_MAX=[3,9,18,'));
+ assert.ok(stage.includes('approvedMapTravelAllowed(_src,target,state)'));
 });
 test('T62 five route/tunnel images have reviewed non-overlapping Phaser sign zones',()=>{
  const expected={
@@ -777,8 +777,8 @@ test('T66 leader and Elite challenger gates reuse existing battle system only',(
  for(const [leader,stage] of [['bruno',9],['agatha',10],['lance',11],['champion',12]])
   assert.ok(source.includes(leader+':'+stage));
  assert.ok(source.includes("if(fresh.stage===eliteStage&&!fresh.champion)"));
- assert.ok(source.includes("target!=='hall-of-fame'||state.champion===true"));
- assert.ok(source.includes("if(id==='hall-of-fame'&&state?.champion!==true)return false;"));
+ assert.ok(source.includes('approvedMapTravelAllowed(id,target,readCampaign()||state)'));
+ assert.ok(source.includes('approvedMapEntryAllowed(state,id)'));
  assert.ok(source.includes('return this.gymScreen(fresh)'));
  assert.equal(firstApprovedDestination('routes-22-23','viridian'),null);
  assert.equal(firstApprovedDestination('gym-giovanni','route23'),null);
