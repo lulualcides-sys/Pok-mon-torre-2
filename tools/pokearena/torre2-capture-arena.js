@@ -321,12 +321,18 @@ export function installWildCapture(scene){
             });
             // A brief clear success panel matches the moment shown in the user's
             // capture reference, without changing original Arena 2D effects.
-            const panel=frame(scene,156,133,328,68);
-            const heading=txt(scene,320,148,'GOTCHA!',24,'#ffda6a').setOrigin(.5);
+            const panel=frame(scene,156,128,328,90);
+            const heading=txt(scene,320,144,'GOTCHA!',24,'#ffda6a').setOrigin(.5);
             const destination=save.team.some(p=>p.uid===result.pokemon?.uid)?'EQUIPE':'PC';
-            const info=txt(scene,320,181,(result.pokemon?.id||'POKÉMON').toUpperCase()+
+            const info=txt(scene,320,179,(result.pokemon?.id||'POKÉMON').toUpperCase()+
              ' CAPTURADO · '+destination,12,'#ddf8e6').setOrigin(.5);
-            activeVisuals.push(panel,heading,info);
+            const xpGains=(result.sharedExp||[]).filter(g=>Number(g.reward)>0);
+            const xp=Math.max(0,...xpGains.map(g=>g.reward));
+            const xpText=txt(scene,320,201,
+             'XP +'+xp+' · '+xpGains.length+' POKÉMON NA EQUIPE',
+             10,'#ffdf93').setOrigin(.5)
+             .setData('torre2-capture-xp',xp);
+            activeVisuals.push(panel,heading,info,xpText);
             scene.__torre2CaptureDebug.state='CAUGHT';
             caption.setText('CAPTURA CONCLUÍDA!').setColor('#a4ffc1');
             scene.time.delayedCall(1150,()=>scene.scene.start('campanha'));
