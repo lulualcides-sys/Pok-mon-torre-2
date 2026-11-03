@@ -773,6 +773,11 @@ export function wildAvailability(stage){
 }
 export function startWildEncounter(s,random=Math.random){
  if(s.pendingCapture)return {ok:false,reason:'Resolva a captura pendente primeiro.'};
+ // T74: the search button must never silently replace a pending wild battle.
+ // Otherwise the save loses a rare/Shiny encounter and the old result token
+ // becomes invalid without the player ever choosing to abandon it. Retake
+ // the same saved encounter via startWildBattle instead.
+ if(s.pendingWild)return {ok:false,reason:'Encontro pendente. Retome a batalha antes de procurar outro Pokémon.'};
  // Stage 8 has genuine Victory Road trainers before Lorelei. Keep those
  // encounters, but do not allow fresh wild battles after the final route
  // trainer has been defeated and the Elite Four chamber is unlocked.
