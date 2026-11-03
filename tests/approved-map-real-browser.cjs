@@ -318,6 +318,77 @@ const server=http.createServer(async(req,res)=>{
       via:'T70 '+label+' real mouse/touch',saveUnchanged:true,screenshot});
     }
    }
+   // T71: controlled defeat RESULT in stage 2 (not a naturally played
+   // fight or a simulated victory). Run the native save resolver once, and
+   // use a REAL mouse/touch click on the original report Continue button.
+   // A loss must not award a badge or skip a trainer, and the last approved
+   // Vermilion location must survive after acknowledgement and restart.
+   const beforeDefeat=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    const s=window.kanto.readCampaign();
+    if(scene.__torre2ApprovedMapView?.id!=='vermilion-city')
+     throw Error('T71 fixture must start in original Vermilion');
+    const before={stage:s.stage,trainer:s.trainer,wins:s.wins,
+     losses:s.losses,money:s.money,badges:[...s.badges],
+     lastMap:scene.__torre2ApprovedReturn?.id};
+    if(before.lastMap!=='vermilion-city')
+     throw Error('T71 no original approved-map return checkpoint');
+    scene.scene.restart({finished:true,won:false,
+     marker:{kind:'trainer',stage:s.stage,trainer:s.trainer}});
+    return before;
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.children.list.some(item=>item.active&&
+     item.getData?.('torre2-report-continue')===true),null,{timeout:45000});
+   const afterDefeat=await page.evaluate(()=>{
+    const s=window.kanto.readCampaign();
+    return {stage:s.stage,trainer:s.trainer,wins:s.wins,
+     losses:s.losses,money:s.money,badges:[...s.badges],
+     saved:JSON.stringify(s)};
+   });
+   assert.equal(afterDefeat.stage,beforeDefeat.stage,'T71 defeat changed native stage');
+   assert.equal(afterDefeat.trainer,beforeDefeat.trainer,'T71 defeat skipped trainer');
+   assert.equal(afterDefeat.wins,beforeDefeat.wins,'T71 defeat counted a victory');
+   assert.equal(afterDefeat.losses,beforeDefeat.losses+1,'T71 defeat must save exactly once');
+   assert.equal(afterDefeat.money,beforeDefeat.money,'T71 defeat awarded money');
+   assert.deepEqual(afterDefeat.badges,beforeDefeat.badges,'T71 defeat awarded badge');
+   await page.evaluate(()=>new Promise(resolve=>
+    requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   const continueAt=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    const hit=scene.children.list.find(o=>o.active&&
+     o.getData?.('torre2-report-continue')===true);
+    if(!hit)throw Error('T71 report Continue zone absent');
+    const b=document.querySelector('#juego canvas').getBoundingClientRect();
+    const w=Math.min(b.width,b.height*640/360);
+    const h=Math.min(b.height,b.width*360/640);
+    return {x:b.x+(b.width-w)/2+hit.x/640*w,
+     y:b.y+(b.height-h)/2+hit.y/360*h};
+   });
+   if(mode.isMobile)await page.touchscreen.tap(continueAt.x,continueAt.y);
+   else await page.mouse.click(continueAt.x,continueAt.y);
+   await page.waitForFunction(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    return scene?.__torre2ApprovedMapView?.id==='vermilion-city'&&
+     scene.__torre2ApprovedMapView?.image?.active&&
+     scene.children.list.some(o=>o.active&&
+      o.getData?.('torre2-approved-hotspot')==='vermilion-city:route6');
+   },null,{timeout:25000});
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    afterDefeat.saved,'T71 report Continue altered checkpoint a second time');
+   const defeatShot='t71-post-defeat-original-vermilion-'+mode.name+'.png';
+   await page.screenshot({path:path.join(out,defeatShot),
+    fullPage:true,animations:'disabled'});
+   evidence.maps.push({id:'vermilion-city',mode:mode.name,
+    via:'T71 controlled defeat + native report Continue mouse/touch',
+    noFakeWins:true,saveUnchangedAfterContinue:true,screenshot:defeatShot});
+   await page.evaluate(()=>{
+    window.__pt2Game.scene.getScene('campanha').scene.restart();
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='vermilion-city',null,{timeout:40000});
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    afterDefeat.saved,'T71 restarting after report replayed defeat rewards or losses');
    // T63: controlled stage-three fixture after Lt. Surge — must start in
    // Vermilion, traverse the original Route 9 solo before Route 10, and
    // never mutate battle saves by simply clicking painted map signs.
