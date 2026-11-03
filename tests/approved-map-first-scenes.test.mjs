@@ -428,7 +428,8 @@ test('T50 image-backed Kanto must begin at Pallet; Route 22 is optional',()=>{
  assert.equal(openingTravelAllowed('viridian-city','route-22',findMap,neighbors),false);
  assert.equal(openingTravelAllowed('viridian-city','route-2',findMap,neighbors),true);
  assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors),false);
- assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors,true),true);
+ assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors,true),false);
+ assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors,true,true),true);
  assert.equal(openingTravelAllowed('pewter-city','gym-brock',findMap,neighbors),false);
  const removed=destinations.get('route-2:exit-viridian-forest');
  destinations.delete('route-2:exit-viridian-forest');

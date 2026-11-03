@@ -7,7 +7,7 @@ import {
 } from '../tools/pokearena/torre2-approved-prologue-assets.js';
 import {APPROVED_MAPS_ATLAS,approvedMap,approvedMapNeighbours} from '../tools/pokearena/torre2-approved-maps-atlas.js';
 import {hasFirstApprovedHotspots,firstApprovedHotspots,firstApprovedDestination} from '../tools/pokearena/torre2-approved-map-first-scenes.js';
-import {approvedOpeningMapId,missingApprovedOpeningScenes} from '../tools/pokearena/torre2-approved-opening.js';
+import {approvedOpeningMapId,missingApprovedOpeningScenes,openingJourneyForState,markOpeningForestVisit,openingTravelAllowed} from '../tools/pokearena/torre2-approved-opening.js';
 
 const art={
  id:'pallet-town',index:61,name:'Pallet Town',type:'cidade',group:'kanto',
@@ -79,5 +79,34 @@ test('T54 physical Kanto route: forest returns to Route 2; 10 route trainers bef
  assert.ok(APPROVED_PROLOGUE_EDGES.some(([a,b])=>a==='route-2'&&b==='pewter-city'));
  assert.equal(APPROVED_PROLOGUE_EDGES.some(([a,b])=>a==='viridian-forest'&&b==='pewter-city'),false);
  const source=readFileSync('tools/pokearena/torre2-approved-opening.js','utf8');
- assert.ok(source.includes("source==='route-2'&&target==='pewter-city'&&!routeTrainersCleared"));
+ assert.ok(source.includes("source==='route-2'&&target==='pewter-city'&&(!routeTrainersCleared||!forestVisited)"));
+});
+
+test('T55 visiting the real forest is required in addition to ten route battles',()=>{
+ const available=new Set(['pallet-town','route-1','viridian-city','route-2','viridian-forest','pewter-city','gym-brock']);
+ const edges=[['route-2','viridian-forest'],['route-2','pewter-city'],['pewter-city','gym-brock']];
+ const findMap=id=>available.has(id)?{id}:null;
+ const neighbors=id=>edges.filter(e=>e.includes(id)).map(e=>e[0]===id?e[1]:e[0]);
+ const save={stage:0,starter:'squirtle',trainer:10,team:[{uid:'starter-immutable-1'}]};
+ const start=openingJourneyForState(null,save);
+ assert.deepEqual(start,{owner:'uid:starter-immutable-1',forestVisited:false});
+ assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors,true,start.forestVisited),false);
+ const justTouched=markOpeningForestVisit(start,'route-2','pewter-city');
+ assert.equal(justTouched.forestVisited,false);
+ const visited=markOpeningForestVisit(start,'route-2','viridian-forest');
+ assert.equal(visited.forestVisited,true);
+ assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors,false,visited.forestVisited),false);
+ assert.equal(openingTravelAllowed('route-2','pewter-city',findMap,neighbors,true,visited.forestVisited),true);
+ assert.equal(openingTravelAllowed('pewter-city','gym-brock',findMap,neighbors,true,visited.forestVisited),true);
+ assert.equal(openingTravelAllowed('pewter-city','gym-brock',findMap,neighbors,true,false),false);
+ assert.equal(openingJourneyForState(visited,{...save,team:[{uid:'new-starter-2'}]}).forestVisited,false);
+ assert.equal(openingJourneyForState(visited,{...save,stage:1}),null);
+});
+test('T55 forest milestone changes only after successful Phaser navigation',()=>{
+ const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ assert.ok(scene.includes('const shown=this.approvedMapPreview(nextState,target)'));
+ assert.ok(scene.includes('if(shown&&nextState?.stage===0)'));
+ assert.ok(scene.includes('markOpeningForestVisit('));
+ assert.ok(scene.includes('this.__torre2OpeningJourney?.forestVisited===true'));
+ assert.ok(scene.includes('this.__torre2OpeningJourney=null'));
 });

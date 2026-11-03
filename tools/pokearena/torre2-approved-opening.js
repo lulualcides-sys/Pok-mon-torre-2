@@ -47,19 +47,39 @@ export function approvedOpeningMapId(findMap,hasReviewedHotspots,
  return missingApprovedOpeningConnections(findMap,resolveHotspots,
   resolveDestination,neighbors).length===0?'pallet-town':null;
 }
+
+// In-memory visual journey state, keyed by the starter's persistent UID.
+// This does NOT add fields to the historical battle save. After a browser
+// restart a player may revisit the forest, rather than receive a false pass.
+export function openingJourneyForState(previous,state){
+ if(!state||state.stage!==0)return null;
+ const uid=state.team?.[0]?.uid;
+ const owner=typeof uid==='string'&&uid.length?
+  'uid:'+uid:typeof state.starter==='string'&&state.starter.length?
+  'legacy:'+state.starter:null;
+ if(!owner)return null;
+ return {owner,forestVisited:previous?.owner===owner&&previous.forestVisited===true};
+}
+export function markOpeningForestVisit(previous,source,target){
+ if(!previous)return null;
+ if(source==='route-2'&&target==='viridian-forest')
+  return {owner:previous.owner,forestVisited:true};
+ return previous;
+}
+
 // Stage-zero visits are scoped to next/previous approved geographic edges,
 // with Brock's actual gym as the only non-spine destination.
 // Route 22 is optional and never required to unlock Pallet.
-export function openingTravelAllowed(source,target,findMap,neighbors,routeTrainersCleared=false){
+export function openingTravelAllowed(source,target,findMap,neighbors,routeTrainersCleared=false,forestVisited=false){
  if(typeof findMap!=='function'||typeof neighbors!=='function')
   throw new TypeError('Opening graph needs map and neighbor resolvers');
  const permitted=new Set([...REQUIRED_OPENING_SCENES,...OPTIONAL_OPENING_SCENES,'gym-brock']);
  if(!permitted.has(source)||!permitted.has(target)||!findMap(target))return false;
  if(!neighbors(source).includes(target))return false;
- if(target==='gym-brock')return source==='pewter-city'&&routeTrainersCleared;
+ if(target==='gym-brock')return source==='pewter-city'&&routeTrainersCleared&&forestVisited;
  // The north/Pewter exit on the Route 2 illustration must not skip the
  // first ten existing route encounters (which include Viridian Forest).
- if(source==='route-2'&&target==='pewter-city'&&!routeTrainersCleared)return false;
+ if(source==='route-2'&&target==='pewter-city'&&(!routeTrainersCleared||!forestVisited))return false;
  if(source==='gym-brock')return target==='pewter-city';
  if(source==='route-22'||target==='route-22')
   return source==='viridian-city'||target==='viridian-city';
