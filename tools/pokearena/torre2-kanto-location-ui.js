@@ -47,7 +47,7 @@ export function showKantoLocation(scene,view,state,stageNames,trainersPerGym){
  if(texture&&scene.textures.exists(texture)){
   add(scene.add.rectangle(320,187,472,228,0x061521,1)
    .setStrokeStyle(1,0x8299ab).setDepth(121));
-  add(scene.add.image(320,187,468,texture).setDisplaySize(468,224).setDepth(122));
+  add(scene.add.image(320,187,texture).setDisplaySize(468,224).setDepth(122));
   if(info.marker){
    const x=86+info.marker.x*468,y=75+info.marker.y*224;
    add(scene.add.circle(x,y-13,8,0xffca58,.92)
