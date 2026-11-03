@@ -1,12 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {GYMS} from '../tools/pokearena/torre2-campaign-core.js';
+import {readFileSync} from 'node:fs';
 import {APPROVED_MAPS_ATLAS,approvedMap} from '../tools/pokearena/torre2-approved-maps-atlas.js';
 import {
- APPROVED_STAGE_MAP_MAX,approvedMapEntryAllowed,approvedMapTravelAllowed
+ KANTO_BADGES,APPROVED_STAGE_MAP_MAX,approvedMapEntryAllowed,approvedMapTravelAllowed
 } from '../tools/pokearena/torre2-approved-progression-gates.js';
 
-const badges=GYMS.map(gym=>gym.badge);
+const badges=KANTO_BADGES.slice();
+// Do not silently drift from the native campaign's real gym awards.
+const sourceBadges=[...readFileSync('tools/pokearena/torre2-campaign-core.js','utf8')
+ .matchAll(/badge:'([^']+)'/g)].slice(0,8).map(match=>match[1]);
+assert.deepEqual(badges,sourceBadges);
 const fixture=(stage,badgesEarned=[],champion=false)=>({
  stage,badges:badgesEarned.slice(),champion
 });
