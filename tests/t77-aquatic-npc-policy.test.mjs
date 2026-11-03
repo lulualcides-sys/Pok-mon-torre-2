@@ -60,9 +60,9 @@ test('T77: map-by-map visual policy records outstanding gym work honestly',()=>{
  assert.deepEqual(misty.unexpected,[]);
  assert.equal(misty.renderedNpcCount,4);
  const surge=reports.find(r=>r.id==='gym-surge');
- assert.equal(surge.artworkOnly,true);
- assert.equal(surge.status,'artwork-only');
- assert.equal(surge.renderedNpcCount,0);
+ assert.equal(surge.artworkOnly,false);
+ assert.equal(surge.status,'validated');
+ assert.equal(surge.renderedNpcCount,4);
  const erika=reports.find(r=>r.id==='gym-erika');
  assert.equal(erika.status,'validated','T79 original trainer sprites approved');
  assert.deepEqual(erika.unexpected,[]);
