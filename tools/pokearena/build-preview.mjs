@@ -861,7 +861,7 @@ for(const [filename,changes] of patches){
      body=body.slice(0,end+1)+'ponerRetrato(this,img,p.dex);'+body.slice(end+1);
     continue;
    }
-   throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
+   throw Error('Unrecognized upstream client in '+filename+': expected='+JSON.stringify(from.slice(0,240))+' actual='+JSON.stringify(body.slice(Math.max(0,body.indexOf('ui-balls')-48),body.indexOf('ui-balls')+240)));
   }
   body=body.replace(from,to);
  }
