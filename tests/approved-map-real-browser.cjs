@@ -857,6 +857,79 @@ const server=http.createServer(async(req,res)=>{
    await clickPhaser({type:'sign',from:'trainer-tower',label:'battle-1'});
    await verifySave('trainer-tower-decorative-battle');
    await move('trainer-tower','exit','sevii-7');
+   // T74: real native wild encounter persisted after reload. A second
+   // 'search' must NEVER replace its species/Shiny or the encounter counter.
+   // Deliberately force the 1% Shiny roll for this CONTROLLED test fixture;
+   // no test mutation is written to main or a real player's localStorage.
+   await page.evaluate(()=>{
+    const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+    const s=core.readCampaign();
+    s.stage=2;s.trainer=0;s.champion=false;
+    s.badges=['Rocha','Cascata'];s.leagueHonors=[];
+    s.pendingWild=null;s.pendingCapture=null;s.wildEncountersStage=0;
+    core.saveCampaign(s);
+    scene.__torre2ApprovedReturn=null;
+    scene.__torre2ApprovedMapView=null;
+    scene.scene.restart({});
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    ?.__torre2ApprovedMapView?.id==='vermilion-city',null,{timeout:45000});
+   const pending=await page.evaluate(()=>{
+    const core=window.kanto,s=core.readCampaign();
+    const first=core.startWildEncounter(s,()=>0);
+    if(!first.ok)throw Error('T74 first native wild encounter did not start');
+    if(first.encounter?.shiny!==true)throw Error('T74 RNG fixture not shiny');
+    return {snapshot:JSON.stringify(core.readCampaign()),species:first.encounter.id};
+   });
+   const second=await page.evaluate(()=>{
+    const core=window.kanto,s=core.readCampaign();
+    return core.startWildEncounter(s,()=>0.9);
+   });
+   assert.equal(second.ok,false,'T74 second search replaced pending wild');
+   assert.match(second.reason,/Retome a batalha/i);
+   assert.equal(await page.evaluate(()=>JSON.stringify(window.kanto.readCampaign())),
+    pending.snapshot,'T74 second search changed existing Shiny encounter/save');
+   await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    scene.grassScreen(window.kanto.readCampaign());
+   });
+   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha')
+    .children.list.some(o=>o.active&&o.getData?.('torre2-grass-resume')===true),
+    null,{timeout:20000});
+   const resumeShot='t74-shiny-encontro-pendente-'+mode.name+'.png';
+   await page.screenshot({path:path.join(out,resumeShot),
+    fullPage:true,animations:'disabled'});
+   evidence.maps.push({id:'vermilion-city',mode:mode.name,
+    via:'T74 saved Shiny encounter + real Phaser grass Resume button',
+    fixture:'Shiny RNG forced for QA only; not real random chance',
+    screenshot:resumeShot,saveUnchanged:true});
+   const target=await page.evaluate(()=>{
+    const hit=window.__pt2Game.scene.getScene('campanha').children.list.find(
+     o=>o.active&&o.getData?.('torre2-grass-resume')===true);
+    const b=document.querySelector('#juego canvas').getBoundingClientRect();
+    const w=Math.min(b.width,b.height*640/360),
+     h=Math.min(b.height,b.width*360/640);
+    return {x:b.x+(b.width-w)/2+hit.x/640*w,
+     y:b.y+(b.height-h)/2+hit.y/360*h};
+   });
+   await page.evaluate(()=>new Promise(resolve=>
+    requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   if(mode.isMobile)await page.touchscreen.tap(target.x,target.y);
+   else await page.mouse.click(target.x,target.y);
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('combate'),
+    null,{timeout:45000});
+   const resumed=await page.evaluate(()=>{
+    const game=window.__pt2Game;
+    return {payload:game.scene.getScene('combate')?.datos?.torre2,
+     saved:JSON.stringify(window.kanto.readCampaign())};
+   });
+   assert.equal(resumed.payload?.kind,'wild','T74 resumed battle became a trainer');
+   assert.equal(resumed.payload?.id,pending.species,'T74 resumed battle replaced species');
+   assert.equal(resumed.payload?.encounterCounter,1,
+    'T74 resumed encounter lost its durable token');
+   assert.equal(resumed.payload?.shiny,true,'T74 resumed encounter lost Shiny state');
+   assert.equal(resumed.saved,pending.snapshot,
+    'T74 returning to combat unexpectedly changed the saved encounter');
    await page.close();
   }
   assert.deepEqual(evidence.errors,[],'Phaser page errors');
