@@ -5,7 +5,8 @@ import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './t
 import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId,approvedPostBattleReturnMapId} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors,approvedGymAceIdlePlan} from './torre2-approved-map-first-scenes.js';
-import {nativePmdFootOrigin,lockNativePmdIdleFeet} from './torre2-gym-ace-ground.js';
+import {nativePmdFootOrigin} from './torre2-gym-ace-ground.js';
+import {lockNativePmdIdleFeet} from './torre2-gym-ace-ground.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
 import {prepareLaboratoryMatch,installLaboratoryControls,KANTO_151_IDS} from './laboratory.js';
