@@ -167,10 +167,11 @@ class Campanha extends Phaser.Scene{
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
-  // Misty's four ORIGINAL FireRed subchief portraits are all different.
-  // Keep these only while Cerulean is the active Kanto story chapter.
-  if(APPROVED_MAP_ASSETS_READY&&stage===1)
-   for(const kind of ['sailor','picnicker','ace_f'])
+  // T77: four thematic ORIGINAL FRLG aquatic NPCs, all on land frames.
+  // The approved Cerulean gym remains reachable after defeating Misty
+  // (stage 2). Keep them loaded for a revisit, not just first-clear.
+  if(APPROVED_MAP_ASSETS_READY&&(stage===1||stage===2))
+   for(const kind of ['swimmer','swimmer_f','tuber_m','tuber_f'])
     needed.add(spriteIdForTrainer(kind));
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
@@ -197,7 +198,7 @@ class Campanha extends Phaser.Scene{
   // One native transparent SpriteCollab Starmie Idle sheet in the Misty
   // chapter. The approved background itself is never rewritten/retouched.
   // Manifest metadata is authoritative: no arbitrary frame size or 404 URL.
-  this.__torre2MistyAcePlan=APPROVED_MAP_ASSETS_READY&&stage===1?
+  this.__torre2MistyAcePlan=APPROVED_MAP_ASSETS_READY&&(stage===1||stage===2)?
    approvedGymAceIdlePlan('0121',this.registry.get('manifiesto')):null;
   const mistyIdle=this.__torre2MistyAcePlan;
   if(mistyIdle&&!this.textures.exists(mistyIdle.key))
@@ -749,7 +750,7 @@ create(){
     if(!actors.artworkOnly){
      const leader=project(actors.leader.cx,actors.leader.cy);
      const leaderSprite=addFireRedNPC(scene,actors.leader.kind,leader.x,leader.y,
-      {scale:1.7,depth:24});
+      {scale:1.7,depth:24,strict:true});
      leaderSprite?.setData('torre2-gym-leader-sprite',gymId);
      const ace=project(actors.ace.cx,actors.ace.cy);
      if(gymId==='gym-misty'){
@@ -790,7 +791,7 @@ create(){
     for(const actor of actors.trainers){
      const point=project(actor.cx,actor.cy);
      const npc=actors.artworkOnly?null:addFireRedNPC(scene,actor.kind,
-      point.x,point.y,{scale:1.45,depth:24});
+      point.x,point.y,{scale:1.45,depth:24,strict:true});
      if(!npc&&!actors.artworkOnly)continue;
      npc?.setData('torre2-gym-trainer-sprite',gymId+':'+actor.index)
       .setData('torre2-gym-trainer-kind',actor.kind);
