@@ -4,6 +4,14 @@
  */
 const v=(id,cx,cy,w,h)=>Object.freeze({id,cx,cy,w,h,validated:'visual'});
 export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
+ // Route 2 is the first original approved WebP (1280x720).
+ // NORTH: painted PEWTER CITY sign; SOUTH: VIRIDIAN FOREST sign.
+ // The cave at left is decorative until a Diglett's Cave scene exists.
+ // Forest art is still absent: its hotspot deliberately has no destination.
+ 'route-2':Object.freeze([
+  v('pewter',.546,.069,.145,.122),
+  v('forest',.480,.932,.175,.118)
+ ]),
  'pewter-city':Object.freeze([
   v('center',.184,.385,.12,.14),
   v('mart',.183,.612,.12,.14),
@@ -83,6 +91,7 @@ export const FIRST_APPROVED_HOTSPOTS=Object.freeze({
  ])
 });
 export const FIRST_APPROVED_DESTINATIONS=Object.freeze({
+ 'route-2':Object.freeze({pewter:'pewter-city'}),
  'pewter-city':Object.freeze({route2:'route-2',route3:'route-3',gym:'gym-brock'}),
  'gym-brock':Object.freeze({exit:'pewter-city'}),
  'cerulean-city':Object.freeze({route4:'route-4-east',route24:'route-24',

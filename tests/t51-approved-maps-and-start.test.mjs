@@ -14,7 +14,7 @@ test('T51 60 original WebPs really reside in this code branch',()=>{
 });
 test('T51 Pallet-first progression refuses premature stage-zero image despite all 60 assets',()=>{
  assert.deepEqual(missingApprovedOpeningScenes(approvedMap,hasFirstApprovedHotspots),
-  ['pallet-town','route-1','viridian-city','route-2','viridian-forest']);
+  ['pallet-town','route-1','viridian-city','viridian-forest']);
  assert.equal(approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),null);
  const source=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
  assert.ok(source.includes("APPROVED_STAGE_MAPS=[approvedOpeningMapId("));
@@ -26,4 +26,13 @@ test('T51 browser loader includes opening module and native cities retain route 
  assert.ok(build.includes("['tools/pokearena/torre2-approved-opening.js','torre2-approved-opening.js']"));
  assert.ok(build.includes("'torre2/torre2-approved-opening.js'"));
  assert.ok(renderer.includes("entry.type==='cidade'?'ROTAS':'VOLTAR'"));
+});
+
+test('T52 Route 2 is now mapped but missing forest art keeps stage zero blocked',()=>{
+ assert.equal(hasFirstApprovedHotspots('route-2'),true);
+ assert.equal(approvedMap('route-2').index,1);
+ assert.equal(approvedMap('viridian-forest'),null);
+ assert.deepEqual(missingApprovedOpeningScenes(approvedMap,hasFirstApprovedHotspots),
+  ['pallet-town','route-1','viridian-city','viridian-forest']);
+ assert.equal(approvedOpeningMapId(approvedMap,hasFirstApprovedHotspots),null);
 });
