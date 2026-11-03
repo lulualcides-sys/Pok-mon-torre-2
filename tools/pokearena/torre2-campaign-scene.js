@@ -793,6 +793,32 @@ create(){
         sprite.play(anim);
        }
       }
+     }else if(gymId==='gym-erika'){
+      // The Vileplume is a genuine transparent PMD Idle, standing on the
+      // greenhouse stage beside Erika. No 30x30 portrait or repaint.
+      const plan=this.__torre2ErikaAcePlan;
+      if(plan&&scene.textures.exists(plan.key)){
+       const texture=scene.textures.get(plan.key);
+       texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+       const scale=Math.min(2.4,76/plan.fw,74/plan.fh);
+       scene.add.ellipse(ace.x,ace.y-2,45,7,0x11331b,.40).setDepth(23);
+       const sprite=scene.add.sprite(ace.x,ace.y,plan.key,0)
+        .setOrigin(.5,1).setScale(scale).setDepth(24)
+        .setData('torre2-gym-ace',gymId)
+        .setData('torre2-gym-ace-source','pmd-idle');
+       const count=Math.min(plan.durations.length,texture.frameTotal||1);
+       if(count>1){
+        const anim='torre2-approved-erika-vileplume-idle';
+        if(!scene.anims.exists(anim)){
+         const ticks=plan.durations.slice(0,count)
+          .reduce((sum,value)=>sum+(Number(value)||6),0)/count;
+         scene.anims.create({key:anim,
+          frames:scene.anims.generateFrameNumbers(plan.key,{start:0,end:count-1}),
+          frameRate:Math.max(2,Math.min(8,60/ticks)),repeat:-1});
+        }
+        sprite.play(anim);
+       }
+      }
      }else{
       // Other previously approved gyms retain their existing implementation
       // until separately reviewed; no surprise art/sprite changes.
