@@ -452,12 +452,14 @@ export const FIRST_APPROVED_GYM_LAYOUTS=Object.freeze({
  // FireRed sprites and reuse the last four saved battle checkpoints.
  'gym-erika':Object.freeze({
   stage:3,leader:Object.freeze({kind:'erika',cx:.493,cy:.248}),
-  ace:Object.freeze({dex:'0045',cx:.592,cy:.245}),
+  ace:Object.freeze({dex:'0045',cx:.592,cy:.265}),
+  // Four original FRLG Grass-gym trainer classes, each a distinct sheet.
+  // Unlike Surge, these circles are empty in the approved WebP background.
   trainers:Object.freeze([
    Object.freeze({kind:'lass',cx:.174,cy:.350}),
-   Object.freeze({kind:'bugcatcher',cx:.825,cy:.351}),
-   Object.freeze({kind:'lass',cx:.153,cy:.718}),
-   Object.freeze({kind:'bugcatcher',cx:.834,cy:.718})
+   Object.freeze({kind:'beauty',cx:.825,cy:.351}),
+   Object.freeze({kind:'picnicker',cx:.153,cy:.718}),
+   Object.freeze({kind:'ace_f',cx:.834,cy:.718})
   ])
  }),
  // Koga's four platforms have no painted trainer sprites: overlay original
@@ -482,7 +484,7 @@ export const APPROVED_GYM_NPC_THEMES=Object.freeze({
   allowed:['swimmer','swimmer_f','tuber_m','tuber_f']}),
  'gym-surge':Object.freeze({theme:'electric',status:'artwork-only',
   allowed:[]}),
- 'gym-erika':Object.freeze({theme:'grass',status:'review',
+ 'gym-erika':Object.freeze({theme:'grass',status:'validated',
   allowed:['lass','beauty','picnicker','ace_f']}),
  'gym-koga':Object.freeze({theme:'poison',status:'review',
   allowed:['biker','juggler','tamer','psychic']})
