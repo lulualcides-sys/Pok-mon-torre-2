@@ -2334,15 +2334,17 @@ create(){
    const portraitKey='torre2-portrait-'+dex;
    const paint=()=>{
     if(this.__torre2DexEpoch!==dexEpoch||!this.scene.isActive()||
-       !this.textures.exists(portraitKey))return;
+       !this.textures.exists(portraitKey)||
+       !this.children.list.some(x=>x.active&&
+        x.getData?.('torre2-dex-id')===row.id))return;
     this.textures.get(portraitKey).setFilter(Phaser.Textures.FilterMode.NEAREST);
     const image=this.add.image(x+8,y+8,portraitKey)
      .setDisplaySize(19,19).setDepth(12)
      .setData('torre2-dex-sprite',row.id);
     if(!row.seen&&!row.caught)image.setTint(0x465b72);
    };
-   if(this.textures.exists(portraitKey))paint();
-   else if(row.ready){
+   const portraitReady=this.textures.exists(portraitKey);
+   if(!portraitReady&&row.ready){
     this.load.image(portraitKey,'assets/pmd/'+dex+'/portrait.png');
     dexImages.push(paint);missingPortraits.push(portraitKey);
    }
@@ -2352,6 +2354,9 @@ create(){
     fontSize:'11px',color:row.shinyCaught?'#f5db86':
      row.caught?C.gold:row.seen?C.blue:C.muted
    }).setData('torre2-dex-id',row.id);
+   // Paint only after the row exists; delayed loader cannot leak sprites
+   // onto the Sumário if the player leaves the Pokédex during download.
+   if(portraitReady)paint();
   });
   if(missingPortraits.length){
    this.load.once('complete',()=>{
