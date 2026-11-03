@@ -98,6 +98,7 @@ const server=http.createServer(async(req,res)=>{
      const game=window.__pt2Game,scene=game.scene.getScene('campanha');
      const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
      const atlas=await import(new URL('./torre2/torre2-approved-maps-atlas.js',main));
+     const renderer=await import(new URL('./torre2/torre2-approved-map-renderer.js',main));
      const entry=atlas.approvedMap(id);
      if(!entry)throw Error('Approved map not registered: '+id);
      const key='torre2-approved-map-'+id;
@@ -111,7 +112,7 @@ const server=http.createServer(async(req,res)=>{
         if(failed||!game.textures.exists(key))reject(Error('Approved map texture missing: '+id));
         else resolve();
        });
-       scene.load.image(key,entry.image);
+       scene.load.image(key,renderer.approvedMapImagePath(id,entry));
        scene.load.start();
       });
      }
@@ -120,6 +121,7 @@ const server=http.createServer(async(req,res)=>{
      const view=scene.__torre2ApprovedMapView;
      const aces=scene.children.list.filter(x=>x.active&&x.getData?.('torre2-gym-ace')===id)
       .map(x=>({texture:x.texture?.key,w:x.displayWidth,h:x.displayHeight,
+       originY:x.originY,x:x.x,y:x.y,
        source:x.getData?.('torre2-gym-ace-source')||'legacy-portrait'}));
      const leaders=scene.children.list.filter(x=>x.active&&
       x.getData?.('torre2-gym-leader-sprite')===id)
@@ -134,8 +136,12 @@ const server=http.createServer(async(req,res)=>{
     },id);
     assert.equal(info.texture,'torre2-approved-map-'+id);
     assert.ok(info.rect.width>=639.9&&info.rect.height>=359.9,id+' must be 16:9');
-    if(id==='gym-brock'||id==='gym-misty')
+    if(id==='gym-brock'||id==='gym-misty'){
      assert.equal(info.aces.length,1,id+' must show exactly one ace');
+     assert.equal(info.aces[0].source,'pmd-idle',id+' needs native PMD Idle, not portrait');
+     assert.ok(Math.abs(info.aces[0].y-info.leaders[0].y)<1,
+      id+' Pokémon visible feet must be aligned with leader');
+    }
     if(id==='gym-misty'){
      assert.equal(info.aces[0].texture,'torre2-gym-ace-idle-0121',
       'T76 real transparent Starmie PMD animation sheet, not portrait');
