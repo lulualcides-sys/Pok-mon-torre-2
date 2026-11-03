@@ -2,7 +2,7 @@ import {renderCityHub} from './city-hub.js';
 import {APPROVED_MAP_ASSETS_READY,preloadApprovedMap,renderApprovedMap,mapTextureKey,pruneApprovedMapTextures} from './torre2-approved-map-renderer.js';
 import {approvedMap,approvedMapNeighbours} from './torre2-approved-maps-atlas.js';
 import {seviiLeagueUnlocked,seviiFerryDestinations,SEVII_FERRY_LABELS} from './torre2-sevii-ferry.js';
-import {approvedMapEntryAllowed,approvedMapTravelAllowed} from './torre2-approved-progression-gates.js';
+import {approvedMapEntryAllowed,approvedMapTravelAllowed,approvedReturnMapId} from './torre2-approved-progression-gates.js';
 import {approvedOpeningMapId} from './torre2-approved-opening.js';
 import {firstApprovedHotspots,firstApprovedDestination,hasFirstApprovedHotspots,firstApprovedGymActors} from './torre2-approved-map-first-scenes.js';
 import {statusLabel} from './gen3-status.js';
@@ -755,6 +755,18 @@ create(){
   // hundreds of MB of WebGL textures on a mobile device.
   pruneApprovedMapTextures(this,[id,APPROVED_STAGE_MAPS[state.stage]]);
   return true;
+ }
+ // T69: Party/Summary returns to the same approved artwork, not the
+ // old battle path. Reuse the live scene to preserve mobile fullscreen.
+ // A previous stage or revoked badge can never resurrect a locked scene.
+ returnFromPartyToMap(state){
+  const fresh=readCampaign()||state;
+  const id=approvedReturnMapId(this.__torre2ApprovedReturn,fresh);
+  if(APPROVED_MAP_ASSETS_READY&&id&&
+     this.textures.exists(mapTextureKey(id))&&
+     this.approvedMapPreview(fresh,id))return true;
+  this.renderCampaign(fresh);
+  return false;
  }
  renderCampaign(state,{deferEeveeChoice=false}={}){
   this.__torre2EeveeChoice=null;
@@ -1659,7 +1671,7 @@ create(){
    this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
    this.summaryView='moves';
    // No scene.restart: retain browser fullscreen and native Phaser canvas.
-   this.renderCampaign(state);
+   this.returnFromPartyToMap(state);
   }).setData('torre2-summary-back',true);
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
@@ -1707,7 +1719,7 @@ create(){
     this.showSummary(state,index,slot,page);
     return;
    }
-   this.summaryFilter='ALL';this.summarySearch='';this.summaryView='moves';this.renderCampaign(state);
+   this.summaryFilter='ALL';this.summarySearch='';this.summaryView='moves';this.returnFromPartyToMap(state);
   },index===state.active).setData('torre2-active-select',true);
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
