@@ -75,6 +75,32 @@ if(approvedRenderer.includes('export const APPROVED_MAP_ASSETS_READY = true;')){
  }
  console.log('Installed 60 approved WebP maps into native Phaser site',verified.length);
 }
+// T80 is an explicit user-authorized OVERRIDE only for the electric gym.
+// Keep every approved original hash untouched for audit / rollback.
+const surgeRel='assets/ui/kanto-overrides/gym-surge-user.webp';
+const surgeManifestRel='assets/ui/kanto-overrides/gym-surge-user.json';
+const surgeMeta=JSON.parse(await fs.readFile(surgeManifestRel,'utf8'));
+const surgeBytes=await fs.readFile(surgeRel);
+if(surgeMeta.id!=='gym-surge'||surgeMeta.width!==1280||
+   surgeMeta.height!==720||surgeMeta.image!==surgeRel||
+   surgeMeta.source_sha256!=='6ad10368ae69d1be43a07ad31aecafce21e4a8a076c37eac2e73f6271653d469'||
+   surgeBytes.length!==surgeMeta.bytes||
+   createHash('sha256').update(surgeBytes).digest('hex')!==surgeMeta.optimized_sha256)
+ throw Error('T80 user-authored Surge map override failed provenance SHA-256');
+if(surgeBytes.toString('ascii',0,4)!=='RIFF'||
+   surgeBytes.toString('ascii',8,12)!=='WEBP')
+ throw Error('T80 Surge background must be real WebP');
+const surgeSize=s=>{const kind=s.toString('ascii',12,16);
+ if(kind==='VP8 '&&s.length>=30)return [s.readUInt16LE(26)&0x3fff,s.readUInt16LE(28)&0x3fff];
+ if(kind==='VP8L'&&s.length>=25){const x=s.readUInt32LE(21);return [(x&0x3fff)+1,((x>>>14)&0x3fff)+1];}
+ if(kind==='VP8X'&&s.length>=30)return [s.readUIntLE(24,3)+1,s.readUIntLE(27,3)+1];
+ throw Error('T80 unsupported WebP framing');
+};
+if(surgeSize(surgeBytes).join('x')!=='1280x720')
+ throw Error('T80 user Surge image must match approved 16:9 geometry');
+await fs.mkdir(path.dirname(path.join(dest,surgeRel)),{recursive:true});
+await fs.writeFile(path.join(dest,surgeRel),surgeBytes);
+console.log('T80 installed exact user-uploaded Surge override, old art preserved');
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
 // be verified. Never silently substitute another hand-drawn fake sprite.
