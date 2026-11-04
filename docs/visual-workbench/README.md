@@ -47,11 +47,11 @@ Pixelorama.x86_64 --headless --quit -- \
   reference-assets/visual-workbench/moves/zap-cannon.pxo
 ```
 
-**Os arquivos `.pxo` e PNG ainda não foram desenhados.** Por isso os três alvos do manifesto estão marcados `not_drawn` e `approved:false`. Não usar placeholder como definitivo.
+**Atualização executada:** a rotina `tools/pokearena/torre2-pixel-sheets.mjs` exporta três PNGs animados de 12 quadros para `_site/arena2d/assets/torre2/johto-pilot/`, com teste unitário e captura real em Chromium. São protótipos feitos por código, **não** projetos editáveis `.pxo` do Pixelorama e **não** arte final aprovada. Os `.pxo` ainda não existem; os três golpes permanecem `approved:false` e devem ser refinados num editor pixel-art antes de qualquer publicação definitiva.
 
 ## Bloqueios reais
 
 - Falta baseline visual aprovado por uma pessoa para Cinnabar e para os três primeiros golpes.
-- Cinnabar ainda precisa de correção de composição em Tiled/Phaser e nova aprovação.
+- Cinnabar recebeu recorte do mapa original, separação entre cidade e rota Seafoam e screenshot CI; a qualidade final do layout ainda requer inspeção/aprovação do usuário.
 - Ferramentas externas não instaladas; scripts e documentos em PR são o início da integração, **não resultado final de sprite/UI**.
 - Aprovação visual e legal de referências externas é separada de tests funcionais.
