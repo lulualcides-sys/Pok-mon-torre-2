@@ -8,6 +8,10 @@ on:
       - 'tools/pokearena/torre2-move-pool.js'
       - 'tests/trainer-cards.test.js'
       - 'tests/t98-*'
+      - 'tests/t13-campaign-native-dodges-browser.cjs'
+      - 'tests/t16-auto-weather-native-browser.cjs'
+      - 'tests/rematches-browser.cjs'
+      - 'tests/t27-native-mobile-report-pages-browser.cjs'
       - '.github/workflows/kanto-cards-fireblast-verify.yml'
 permissions:
   contents: read
@@ -61,6 +65,15 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/t07-fire-blast-browser.cjs
+      - name: Check legacy battle features in QA-only map mode
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          set -euo pipefail
+          node tests/t13-campaign-native-dodges-browser.cjs
+          node tests/t16-auto-weather-native-browser.cjs
+          node tests/rematches-browser.cjs
+          node tests/t27-native-mobile-report-pages-browser.cjs
       - name: Archive preview evidence
         if: always()
         uses: actions/upload-artifact@v4
