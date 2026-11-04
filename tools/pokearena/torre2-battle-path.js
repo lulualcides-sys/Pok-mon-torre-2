@@ -59,7 +59,7 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
  zone.on('pointerdown',(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
   if(!enabled)return;
-  const now=scene.time?.now??Date.now();
+  const now=Date.now();
   if(now-lastPress<190)return;
   lastPress=now;
   playOriginalMenuCue(scene);action();
@@ -124,7 +124,7 @@ function spriteShortcut(scene,x,y,spec,onPress,portrait=null){
  let lastPress=-Infinity;
  hit.on('pointerdown',(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
-  const now=scene.time?.now??Date.now();
+  const now=Date.now();
   if(now-lastPress<190)return;
   lastPress=now;
   playOriginalMenuCue(scene);onPress();
