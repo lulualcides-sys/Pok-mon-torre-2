@@ -43,3 +43,18 @@ test("pixel renderer paints sharp integer cells with no antialiased geometry",()
  assert.match(runtime,/nativeP2\(e,h\.id\)/);
  assert.match(runtime,/stampJohto\(g,id/);
 });
+
+// Regression: each prototype's P2 texture choreography is individually authored,
+// rather than reusing the same orbit/squash effect for 18 different move names.
+test("eighteen distinct native P2 poses preserve crisp sprites and hit semantics",()=>{
+ const runtime=readFileSync("tools/pokearena/torre2-johto-lab-runtime.js","utf8");
+ assert.match(runtime,/const NATIVE_POSES=Object\.freeze/);
+ assert.match(runtime,/setBlendMode\?\.\(Phaser\.BlendModes\.NORMAL\)/);
+ assert.match(runtime,/function paintNativeSprites/);
+ for(const move of JOHTO_18){
+  assert.ok(runtime.includes("'"+move.id+"':["),move.id+" missing bespoke pixel scale");
+  assert.ok(runtime.includes("case '"+move.id+"':"),move.id+" missing authored pose");
+ }
+ assert.match(runtime,/Math\.round\(anchor\.x/);
+ assert.match(runtime,/Math\.round\(anchor\.y/);
+});
