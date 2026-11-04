@@ -22,7 +22,7 @@ test('trainer cards are a separate native Phaser UI without changing saves or th
 test('leader showdown has real roster, dialogue and existing 2.5s VS transition',()=>{
  const dialogue=card.match(/'([^']+)'/g)||[];
  assert.match(card,/LEADER_DIALOGUE=Object\.freeze/);
- assert.match(card,/leader\?'INICIAR VS'/);
+ assert.match(card,/if\(leader\)\{action='INICIAR VS'/);
  assert.match(vs,/LEADER_DIALOGUE\[leaderIndex\]/);
  assert.match(vs,/export const VERSUS_DURATION_MS=2500/);
  assert.match(vs,/scheduleVsEntry\(scene,advance,VERSUS_DURATION_MS\)/);
