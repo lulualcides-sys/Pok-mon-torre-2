@@ -320,10 +320,12 @@ export function renderBattlePath(scene,state,handlers){
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
   const boss=offset+i===total;
-  const [px,y]=stage===6?seafoamTerraces[i]:
-   [boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]),
-    boss?178:[275,211,147][Math.min(row,2)]];
-  spots.push({x:px,y,global:offset+i});
+  // Keep the established leader placement in every non-Seafoam stage.
+  // Existing campaign/EXP integration tests protect this invariant.
+  const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
+  const py=boss?178:[275,211,147][Math.min(row,2)];
+  const [x,y]=stage===6?seafoamTerraces[i]:[px,py];
+  spots.push({x,y,global:offset+i});
  }
  // Map region labels reference existing FireRed town/mountain sheets.
  // One connected zigzag and the leader at its end; no extra pages/maps.
