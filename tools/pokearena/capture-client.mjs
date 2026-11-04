@@ -97,6 +97,15 @@ async function main() {
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'REA named asset'});
  }
  for(const extra of ['safari.js','manifest.webmanifest','favicon.png','iconos/icono-192.png']) {const p=sanitize(extra);if(p)tasks.set(p,{source:'HTML accessory'});}
+ // Modern native title references this image dynamically. The previous REA
+ // inventory did not include it, and the ACTUAL public Pokédex browser gate
+ // observed a 404 at /assets/ui/portada/dia.jpg. Mirror ONLY the genuine
+ // first-party image, never create a placeholder or hide the 404.
+ for(const asset of ['assets/ui/portada/dia.jpg']){
+  const normalized=sanitize(asset);
+  if(!normalized)throw Error('Unsafe native title image path: '+asset);
+  tasks.set(normalized,{source:'required native title background',required:true});
+ }
  for(const value of html.matchAll(/(?:src|href)\s*=\s*["']([^"'#?]+)["']/gi)){
   const normalized=sanitize(value[1]);
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'HTML direct'});
@@ -132,6 +141,34 @@ async function main() {
   }
  }
  await Promise.all(Array.from({length:8},worker));
+ // Fail the capture rather than publishing a title that requests a 404.
+ // This is a REAL upstream JPEG, not a stand-in for the approved artwork.
+ const nativeTitle='assets/ui/portada/dia.jpg';
+ let nativeTitleData=null;
+ try {nativeTitleData=await fs.readFile(path.join(DIR,nativeTitle));}catch{}
+ if(!nativeTitleData||nativeTitleData.length<1024||
+    nativeTitleData[0]!==0xff||nativeTitleData[1]!==0xd8||
+    nativeTitleData.at(-2)!==0xff||nativeTitleData.at(-1)!==0xd9){
+   let fetched=false;
+   for(let attempt=0;attempt<3;attempt++){
+    try{
+     const {data,contentType}=await get(ORIGIN+'/'+nativeTitle);
+     if(data.length<1024||data[0]!==0xff||data[1]!==0xd8||
+        data.at(-2)!==0xff||data.at(-1)!==0xd9)
+       throw Error('Upstream returned invalid native JPEG');
+     const full=path.join(DIR,nativeTitle);
+     await fs.mkdir(path.dirname(full),{recursive:true});
+     await fs.writeFile(full,data);
+     details.retrieved=details.retrieved.filter(x=>x.path!==nativeTitle);
+     details.retrieved.push({path:nativeTitle,bytes:data.length,
+       sha256:sha256(data),contentType,source:'required original title JPEG retry'});
+     details.unavailable=details.unavailable.filter(x=>x.path!==nativeTitle);
+     fetched=true;break;
+    }catch(e){details.unavailable.push({path:nativeTitle,source:'required original title JPEG retry',error:String(e?.message||e).slice(0,180)});}
+   }
+   if(!fetched)throw Error('Native title missing after verified JPEG retries: '+nativeTitle);
+ }
+
  // A transient 503 can omit seleccion.js (or another boot module) while
  // the generic inventory still has >10 JS files. Previously capture exited
  // successfully and build-preview failed later, defeating Pages' capture
