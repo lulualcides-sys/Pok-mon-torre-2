@@ -1,10 +1,11 @@
 /* Solo Kanto — weather affinity feedback uses the same real damage rule.
- * Display remains beside the real native PMD actor for the ENTIRE active
- * weather window, rather than disappearing after one second.
+ * Show a short 3-second status toast beside the actual fighter. The real
+ * weather damage multiplier continues unchanged until climate expires.
  * Only cosmetic Phaser Text; battle hitboxes, saves and native Arena stay intact.
  */
 import {weatherSpeciesMultiplier,WEATHER_NAMES} from './weather.js';
 export const WEATHER_STATUS_FLOAT_MS=240;
+export const WEATHER_STATUS_VISIBLE_MS=3000;
 export const WEATHER_STATUS_COLORS=Object.freeze({
  bonus:'#9df5ba',penalty:'#ff9b80'
 });
@@ -18,7 +19,7 @@ export function weatherStatusDescriptor(weather,types=[]){
   color:WEATHER_STATUS_COLORS[bonus?'bonus':'penalty']};
 }
 export function installWeatherStatusFloat(scene,weather,actors,party){
- const shown=['',''],labels=[null,null];
+ const shown=['',''],labels=[null,null],shownAt=[0,0];
  let disposed=false;
  const debug={shown:[],active:labels,disposed:false};
  scene.__torre2WeatherStatus=debug;
@@ -31,9 +32,11 @@ export function installWeatherStatusFloat(scene,weather,actors,party){
  function position(side){
   const actor=actors[side];
   // Keep a compact native-scale badge beside the moving Pokémon.
-  const sx=Math.min(565,Math.max(75,Math.round((Number(actor.x)||320)+(side===0?51:-51))));
+  // Move OUTWARD from the actor, not toward the opponent. The old +51/-51
+  // offsets put both badges in the middle where they collided.
+  const sx=Math.min(575,Math.max(65,Math.round((Number(actor.x)||320)+(side===0?-23:23))));
   const sy=Math.min(313,Math.max(98,Math.round((Number(actor.y)||170)-
-   (Number(actor.alto)||36)*.40-12)));
+   (Number(actor.alto)||36)*.48-12)));
   return {x:sx,y:sy};
  }
  function show(side,info,member){
@@ -47,9 +50,11 @@ export function installWeatherStatusFloat(scene,weather,actors,party){
   tag.setData('torre2-weather-status',side);
   tag.setData('torre2-weather-status-kind',info.kind);
   labels[side]=tag;
+  shownAt[side]=scene.time?.now??0;
   debug.shown.push({side,species:member.id,revision:weather.revision,
    kind:info.kind,text:info.text,climate:info.climate});
-  // One quick entrance animation only; never fade the active 20% modifier.
+  // Small appearance tween only. The label expires after three seconds;
+  // the real 20% multiplier keeps applying until the climate ends.
   scene.tweens.add({targets:tag,alpha:1,duration:WEATHER_STATUS_FLOAT_MS,
    ease:'Cubic.Out'});
  }
@@ -70,7 +75,11 @@ export function installWeatherStatusFloat(scene,weather,actors,party){
    show(side,info,member);
   }
   const tag=labels[side];
-  if(tag?.active){const at=position(side);tag.setPosition(at.x,at.y);}
+  if(tag?.active){
+   if((scene.time?.now??0)-shownAt[side]>=WEATHER_STATUS_VISIBLE_MS)
+    remove(side);
+   else{const at=position(side);tag.setPosition(at.x,at.y);}
+  }
  }
  function update(){refresh(0);refresh(1);}
  function dispose(){
