@@ -54,6 +54,64 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
  zone.on('pointerdown',()=>{if(enabled){playOriginalMenuCue(scene);action()}});
  paint();return zone;
 }
+// Native, indexed FireRed item sprites already preloaded by CampaignScene.
+ // The active Pokémon icon uses its real PMD portrait instead of a drawn glyph.
+ // Deliberately scoped to the six campaign shortcuts; never affect battle HUD.
+export const CAMPAIGN_SPRITE_SHORTCUTS=Object.freeze([
+ {id:'bag',label:'BOLSA',item:'superpotion',accent:0xd5ad67},
+ {id:'pokemon',label:'POKÉMON',item:'ultraball',accent:0xe6a58d},
+ {id:'center',label:'CENTRO',item:'fullheal',accent:0x8cdbc0},
+ {id:'shop',label:'LOJA',item:'greatball',accent:0x91bee0},
+ {id:'training',label:'TREINAMENTO',item:'tm-rock-tomb',accent:0xc4a9db},
+ {id:'capture',label:'CAPTURA',item:'pokeball',accent:0xe7be83}
+]);
+function activePortraitKey(scene,state){
+ const member=state.team?.[state.active]||state.team?.[0];
+ if(!member)return null;
+ try{
+  const {def,etapa}=scene.__torre2PathData.buscar(member.id);
+  const dex=String((etapa>0?def.evoluciones?.[etapa-1]?.dex:def.dex)||'0150').padStart(4,'0');
+  const key='torre2-portrait-'+dex;
+  return scene.textures.exists(key)?key:null;
+ }catch{return null}
+}
+function spriteShortcut(scene,x,y,spec,onPress,portrait=null){
+ const w=61,h=20,depth=40,left=Math.round(x-w/2),top=Math.round(y-h/2);
+ const native='torre2-frlg-mart-'+spec.item;
+ const key=spec.id==='pokemon'&&portrait?portrait:native;
+ const g=scene.add.graphics().setDepth(depth);
+ const caption=txt(scene,left+22,y,spec.label,7,'#edf5fa',depth+2).setOrigin(0,.5);
+ // Fit long Portuguese labels without hiding, clipping, or overlapping icons.
+ caption.setScale(Math.min(1,Math.max(.65,37/Math.max(1,caption.width))));
+ const sprite=scene.textures.exists(key)
+  ?scene.add.image(left+12,y,key).setDisplaySize(16,16).setDepth(depth+2):null;
+ if(sprite&&typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
+  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+ let hover=false;
+ const paint=()=>{
+  g.clear();
+  // Sharp GBA-style stepped silhouette, shadow, inset sprite well and trim.
+  g.fillStyle(0x020c17,.94);g.fillRect(left+1,top+2,w,h-1);
+  g.fillStyle(0x071a2c,1);g.fillRect(left,top,w,h-2);
+  g.fillStyle(hover?0x36576d:0x214358,1);g.fillRect(left+1,top+1,w-2,h-4);
+  g.fillStyle(hover?0xf5e2ac:spec.accent,1);g.fillRect(left+2,top+2,w-4,1);
+  g.fillRect(left+2,top+3,2,h-7);
+  g.fillStyle(0x081723,1);g.fillRect(left+3,top+3,18,h-7);
+  g.fillStyle(0x486a78,1);g.fillRect(left+3,top+3,18,1);
+  g.fillStyle(0x51788d,1);g.fillRect(left+23,top+h-5,w-26,1);
+  g.fillStyle(0xd5e5e8,.95);g.fillRect(left+w-3,top+2,1,2);
+  caption.setColor(hover?'#fff5d6':'#eef3f5');
+ };
+ const hit=scene.add.zone(x,y,w,20).setDepth(depth+3)
+  .setInteractive({useHandCursor:true})
+  .setData('torre2-path-action',spec.label)
+  .setData('torre2-shortcut-sprite',key)
+  .setData('torre2-shortcut-role',spec.id);
+ hit.on('pointerover',()=>{hover=true;paint()});
+ hit.on('pointerout',()=>{hover=false;paint()});
+ hit.on('pointerdown',()=>{playOriginalMenuCue(scene);onPress()});
+ paint();return hit;
+}
 function connector(g,ax,ay,bx,by,lit){
  const dx=bx-ax,dy=by-ay,length=Math.hypot(dx,dy);
  const steps=Math.ceil(length/10);
@@ -362,11 +420,11 @@ export function renderBattlePath(scene,state,handlers){
   scene.add.zone(564,y+1,124,22).setDepth(35).setInteractive({useHandCursor:true})
    .on('pointerdown',()=>handlers.pokemon(i));
  }
- [['BOLSA',handlers.bag],['POKÉMON',()=>handlers.pokemon(state.active)],
-  ['CENTRO',handlers.center],['LOJA',handlers.mart],
-  ['TREINAMENTO',handlers.training],['CAPTURA',handlers.capture]
- ].forEach(([label,action],i)=>button(scene,533+(i%2)*64,261+Math.floor(i/2)*19,
-  60,17,label,action,{depth:39,small:true}));
+ const portrait=activePortraitKey(scene,state);
+ const actions=[handlers.bag,()=>handlers.pokemon(state.active),
+  handlers.center,handlers.mart,handlers.training,handlers.capture];
+ CAMPAIGN_SPRITE_SHORTCUTS.forEach((spec,i)=>spriteShortcut(
+  scene,532+(i%2)*65,252+Math.floor(i/2)*22,spec,actions[i],portrait));
  // Bottom action bar: the only primary gameplay action, directly starts battle.
  const current=finished?null:currentOpponent(state);
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
