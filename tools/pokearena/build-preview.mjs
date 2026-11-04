@@ -204,6 +204,7 @@ await fs.writeFile(path.join(dest,clientSource,'torre2','frlg-available.js'),
 await Promise.all([
  ['src/progression.js','progression.js'],
  ['tools/pokearena/torre2-campaign-core.js','campaign-core.js'],
+ ['tools/pokearena/torre2-trainer-rosters.js','torre2-trainer-rosters.js'],
  ['tools/pokearena/torre2-capture-mechanics.js','capture-mechanics.js'],
  ['tools/pokearena/torre2-capture-arena.js','capture-arena.js'],
  ['tools/pokearena/torre2-ball-sprites.js','ball-sprites.js'],
