@@ -58,7 +58,7 @@ test('the card and battle resolve the SAME actual species and sprite class',()=>
  assert.match(card,/regionalTrainerPartySize\(stage,index\)/);
  assert.match(card,/trainerSpeciesForLevel\(id,foe\?\.level\)/);
  assert.match(card,/rivalChampionTeam\(campaignStarter\(state\)\)/);
- assert.match(battle,/regionalTrainerParty\(state\.stage,state\.trainer,opponent\.id,count\)/);
+ assert.match(battle,/regionalTrainerParty\(state\.stage,state\.trainer,opponent\.id,count,/);
  assert.match(battle,/regionalTrainerPartySize\(state\.stage,state\.trainer\)/);
  assert.match(card,/opponent\?\.spriteKind\|\|trainerClass/);
  assert.match(scene,/projection\?\.spriteKind\|\|/);
@@ -81,6 +81,8 @@ test('every displayed NPC party slot corresponds to the actual battle projection
  assert.equal(regionalTrainerPartySize(0,0),1);
  assert.equal(regionalTrainerPartySize(0,12),3);
  assert.equal(regionalTrainerPartySize(8,16),4);
+ assert.equal(regionalTrainerParty(1,5,'zubat',2,'rocket')[1],'rattata');
+ assert.equal(regionalTrainerParty(2,3,'squirtle',2,'rival')[1],'pidgey');
 });
 test('Professor Oak is new-game-only and uses real native FRLG sprites',()=>{
  assert.match(frlg,/oak:'prof_oak'/);
