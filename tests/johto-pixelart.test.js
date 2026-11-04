@@ -57,4 +57,6 @@ test("eighteen distinct native P2 poses preserve crisp sprites and hit semantics
  }
  assert.match(runtime,/Math\.round\(anchor\.x/);
  assert.match(runtime,/Math\.round\(anchor\.y/);
+ assert.doesNotMatch(runtime,/const orbit=frame\*Math\.PI\/6/,
+  "shared orbit effect would make 18 move animations look the same");
 });
