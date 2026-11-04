@@ -9,8 +9,29 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+# Discard outdated CI from previous pushes to this PR, rather than queuing
+# a full Mewtwo browser build for each tiny art adjustment.
+concurrency:
+  group: pt2-johto-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
+  quick-pixel:
+    name: Quick 3-move pixel validation (no browser/download)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax and targeted pixel assertions
+        run: |
+          node --check tools/pokearena/torre2-pixel-sheets.mjs
+          node --check tools/pokearena/torre2-johto-lab-runtime.js
+          node --check tools/pokearena/torre2-johto-lab-scene.js
+          node --test tests/johto-pilot-sprites.test.mjs tests/johto-pixelart.test.js tests/johto-training-lab.test.js
   johto-training:
+    needs: quick-pixel
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     steps:
@@ -24,10 +45,9 @@ jobs:
         run: |
           set -euo pipefail
           for file in tools/pokearena/torre2-johto-*.js tools/pokearena/build-preview.mjs; do node --check "$file"; done
-          node --test tests/johto-training-lab.test.js
-          node --test tests/johto-pixelart.test.js
-          node --check tools/pokearena/torre2-pixel-sheets.mjs
-          node --test tests/johto-pilot-sprites.test.mjs
+          # Targeted tests already passed before this expensive browser job.
+          # Full npm test remains in guard and pre-publication pipelines.
+          node --test tests/johto-training-lab.test.js tests/johto-pixelart.test.js
           npm test
       - name: Capture upstream and build isolated Phaser preview
         run: |
