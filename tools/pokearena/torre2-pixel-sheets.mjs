@@ -35,100 +35,155 @@ class PixelArt{
    this.dot(x+dx*arm,y+dy*arm,'pale');
  }
 }
+// 12 animation cels: charge (0-3), heavy electric projectile (4-7),
+// fragmented lightning impact (8-11). Every outline is hard pixel art.
 function zap(f,p){
- const impact=f>=8,flight=f>=4&&f<8,phase=f%4,x=flight?19:16,y=16;
- if(impact){
-  for(let i=0;i<8;i++){
-   const angle=i*Math.PI/4+.14*(phase%2),dx=Math.cos(angle),dy=Math.sin(angle);
-   const near=3+phase,far=14+(3-phase)*2;
-   const points=[[x+Math.round(dx*near),y+Math.round(dy*near)],
-    [x+Math.round(dx*far*.55),y+Math.round(dy*far*.55)],
-    [x+Math.round(dx*far+Math.sin(i*5)*3),y+Math.round(dy*far)]];
-   p.bolt(points,'ink',3);p.bolt(points,i%2?'bright':'gold',1);
+ const impact=f>=8,phase=impact?f-8:f%4,cx=16,cy=16;
+ if(!impact){
+  const radius=f<4?4+Math.floor(f/2):7+Math.floor((f-4)/2);
+  const jump=f%2?1:-1;
+  // Ink silhouette; broken amber edge, deep-blue interior and glowing core.
+  for(let yy=-radius-1;yy<=radius+1;yy++)for(let xx=-radius-1;xx<=radius+1;xx++){
+   const wobble=(Math.sin(xx*2.7+f*.8)+Math.cos(yy*1.9-f*.6))*.6;
+   const distance=Math.hypot(xx*1.05,yy*.94)+wobble;
+   if(distance>radius+.7)continue;
+   const color=distance>radius-1.1?'ink':distance>radius-2.4?'ochre':
+    distance>radius-4?'gold':distance>1.6?'lemon':'white';
+   p.dot(cx+xx,cy+yy,color);
   }
-  p.dot(x-3,y-3,'ochre',7);p.dot(x-2,y-2,'lemon',5);p.dot(x,y,'white',3);
+  // Lightning arcs break the silhouette into a charged, jagged outline.
+  const arms=[
+   [[-6,-4],[-10,-9],[-8,-14],[-13,-17]],
+   [[6,-3],[11,-6],[10,-10],[15,-12]],
+   [[3,6],[6,10],[5,13],[9,16]],
+   [[-6,4],[-12,5],[-11,9],[-16,11]]
+  ];
+  for(let i=0;i<arms.length;i++){
+   const vertices=arms[i].map(([x,y],j)=>
+    [cx+x+(j===2?jump:0),cy+y+(j===1?-jump:0)]);
+   if(f<4&&i>=2)continue;
+   p.bolt(vertices,'ink',3);
+   p.bolt(vertices,i%2?'lemon':'gold',1);
+  }
+  // Bright internal lightning notch and an asymmetric energetic corona.
+  p.bolt([[12,14],[17,11],[15,16],[20,18],[17,22]],'bright');
+  p.dot(15,15,'white',2);p.dot(19,17,'bright',2);
+  if(f>=4){
+   for(let j=0;j<4;j++){
+    const x=3+(j*7+f*3)%26,y=4+(j*9+f)%23;
+    p.dot(x,y,j%2?'lemon':'bright',j===1?2:1);
+   }
+  }
   return;
  }
- const hull=[[x-8,y],[x-4,y-7],[x-1,y-5],[x+3,y-9],[x+5,y-4],
-  [x+9,y-1],[x+6,y+3],[x+7,y+7],[x+1,y+6],[x-3,y+9],[x-4,y+4]];
- for(let i=0;i<hull.length;i++)p.line(...hull[i],...hull[(i+1)%hull.length],'ink',2);
- for(const [dx,dy] of [[0,0],[-3,0],[2,-1],[-1,-3],[2,3],[-3,3]])
-  p.dot(x+dx,y+dy,'ochre',3);
- for(const [dx,dy] of [[-2,-2],[1,-3],[3,0],[-1,2],[1,3]])
-  p.dot(x+dx,y+dy,'gold',3);
- p.dot(x,y,'lemon',5);p.dot(x+1,y,'bright',2);
- const n=phase%2?1:-1;
- for(const [coords,tint,width] of [
-  [[[x-3,y-5],[x-6,y-10],[x-4,y-13+n]],'gold',2],
-  [[[x+5,y-3],[x+10,y-7],[x+13,y-5+n]],'lemon',2],
-  [[[x+3,y+4],[x+7,y+10],[x+5,y+12-n]],'gold',2],
-  [[[x-5,y+4],[x-11,y+7],[x-14,y+4+n]],'bright',1]])
-  p.bolt(coords,tint,width);
- if(flight)for(let i=0;i<4;i++)
-  p.bolt([[x-7,y-5+i*3],[x-13-i%2,y-4+i*3],[1+i%3,y-9+i*3]],i%2?'gold':'lemon');
- if(phase>=2){p.dot(x-12,y-11,'lemon',2);p.dot(x+13,y+8,'white')}
+ // Contact: branching discharge fragments extend out of a central flash.
+ const spread=[11,15,14,9][phase];
+ for(let i=0;i<8;i++){
+  const angle=(i/8)*Math.PI*2+((f%2)*.12);
+  const dir=[Math.cos(angle),Math.sin(angle)];
+  const tx=cx+Math.round(dir[0]*spread),ty=cy+Math.round(dir[1]*spread);
+  const mid=[cx+Math.round(dir[0]*spread*.47+Math.sin(i+f)*2),
+   cy+Math.round(dir[1]*spread*.47-Math.cos(i+f)*2)];
+  const branch=[cx+Math.round(dir[0]*spread*.8-dir[1]*3),
+   cy+Math.round(dir[1]*spread*.8+dir[0]*3)];
+  p.bolt([[cx,cy],mid,[tx,ty]],'ink',3);
+  p.bolt([[cx,cy],mid,[tx,ty]],i%2?'gold':'lemon');
+  if(phase<3)p.bolt([mid,branch],i%3?'bright':'gold');
+ }
+ for(let y=-5;y<=5;y++)for(let x=-5;x<=5;x++){
+  const distance=Math.hypot(x,y);
+  if(distance>5-phase*.5)continue;
+  p.dot(cx+x,cy+y,distance>3.5?'gold':distance>1.9?'lemon':'white');
+ }
+ for(let j=0;j<10;j++){
+  const a=j*2.4+phase*.8;
+  const r=9+(j%3)*2+phase;
+  p.dot(cx+Math.cos(a)*r,cy+Math.sin(a)*r,j%2?'bright':'gold');
+ }
 }
-const FLAKES=[[6,15,2],[12,9,3],[19,16,2],[25,12,2],[10,23,1],[22,24,2],
- [27,4,1],[15,28,1],[3,26,1],[19,3,1],[29,20,1],[7,5,1],[24,29,1]];
+// Snow is a wind-driven cluster of individually legible six-point crystals.
+// Deliberately leaves plenty of transparency around the enemy sprite.
+const FLAKES=[
+ [1,4,1],[5,20,2],[11,8,1],[19,24,2],[26,12,1],
+ [3,29,1],[15,17,2],[28,29,2],[23,3,1],[8,12,1],
+ [14,28,1],[29,21,1],[21,13,2]
+];
 function snow(f,p){
- for(let i=0;i<FLAKES.length;i++){
-  let [x,y,arm]=FLAKES[i];
-  x=(x+Math.round(f*.65*(1+i%3))+32)%32;
-  y+=Math.round(Math.sin((f+i)*.58)*(i%3===0?2:1));
-  if(y<2||y>30)continue;
-  if((f+i)%4===0)arm=Math.min(3,arm+1);
-  p.flake(x,y,arm);
-  const tint=i%3===0?'frost':i%3===1?'pale':'ice';
-  p.dot(x-4,y+2,tint,2);p.dot(x-8,y+3,'steel');
-  if(i%2===0){p.dot(x-6,y,tint);p.dot(x-10,y+1,'pale')}
+ const density=f<3?5:f<7?9:13;
+ for(let i=0;i<density;i++){
+  const [seedX,seedY,arm]=FLAKES[i];
+  const x=((seedX+f*(2+i%3))%37)-2;
+  const y=seedY+Math.round(Math.sin((f+i)*.65)*2);
+  if(x<2||x>30||y<2||y>30)continue;
+  const tint=i%3===0?'frost':i%3===1?'pale':'white';
+  // Ice crystal with separated thin arms (never a filled white rectangle).
+  p.dot(x,y,'white',2);
+  p.dot(x-arm-1,y,tint);p.dot(x+arm+1,y,tint);
+  p.dot(x,y-arm-1,'ice');p.dot(x,y+arm+1,'ice');
+  if(arm===2){
+   for(const [dx,dy] of [[-2,-2],[-2,2],[2,-2],[2,2]])
+    p.dot(x+dx,y+dy,'pale');
+  }
+  // Two diagonal cold-air wisps trailing left of each crystal.
+  if(i%2===0){
+   p.line(x-6,y+2,x-3,y+2,'steel');
+   p.line(x-8,y+4,x-5,y+4,'ice');
+  }
  }
- for(let i=0;i<3;i++){
-  const y=6+i*8+(f+i)%3;
-  p.line(1+i*2,y,7+i*2,y,'steel');
-  p.line(4+i*2,y-1,12+i*2,y-1,i%2?'frost':'pale');
+ if(f>=7){
+  // Short shattering-ice burst at contact, no fullscreen snow cloud.
+  const grow=3+Math.min(4,f-7);
+  for(let i=0;i<6;i++){
+   const angle=i*Math.PI/3+f*.15;
+   const x=16+Math.round(Math.cos(angle)*grow);
+   const y=16+Math.round(Math.sin(angle)*grow);
+   p.dot(x,y,'frost',2);
+   p.dot(x+Math.round(Math.cos(angle)*3),
+    y+Math.round(Math.sin(angle)*3),'ice');
+  }
+  p.dot(15,15,'white',2);
  }
 }
+// Hollow three-level whirlpool with rotating whitecaps: the Pokémon stays
+// legible through the center. No large opaque blue square at contact.
 function whirlpool(f,p){
- // Three visibly different water belts wrap the target vertically.
- // Keep the center transparent: Pokémon sprite must stay readable.
- const phase=f*Math.PI/6;
- const rings=[
-  {y:8,rx:8,ry:3},{y:17,rx:11,ry:4},{y:26,rx:14,ry:4}
+ const rotation=f*Math.PI/7;
+ const layers=[
+  {y:8,rx:7,ry:3},{y:17,rx:10,ry:4},{y:26,rx:13,ry:4}
  ];
- for(let tier=0;tier<rings.length;tier++){
-  const {y,rx,ry}=rings[tier];
-  for(let n=0;n<42;n++){
-   const angle=n*Math.PI/21+phase*(tier%2?-.74:1);
-   const px=16+Math.round(Math.cos(angle)*rx);
-   const py=y+Math.round(Math.sin(angle)*ry);
-   const front=Math.sin(angle)>=0;
-   p.dot(px-1,py,front?'waterink':'shadow',3);
-   p.dot(px,py,front?'water':'blue',2);
-   if(front&&((n+f*3+tier*5)%4<2))p.dot(px,py,'foam');
-   else if(!front&&n%5<2)p.dot(px,py,'crest');
+ for(let level=0;level<layers.length;level++){
+  const {y,rx,ry}=layers[level];
+  for(let i=0;i<36;i++){
+   const a=i*Math.PI/18+rotation*(level===1?-.8:1);
+   const x=16+Math.round(Math.cos(a)*rx);
+   const yy=y+Math.round(Math.sin(a)*ry);
+   const front=Math.sin(a)>0;
+   p.dot(x,yy,front?'water':'shadow',2);
+   if((i+2*f+level)%5<3)p.dot(x,yy,front?'foam':'crest');
+   if(front&&(i+f)%8===0)p.dot(x+1,yy-1,'white');
   }
-  // A crescent of moving foam on each ring's forward lip.
-  const crestX=16+Math.round(Math.cos(phase+tier*2.2)*rx*.74);
-  p.line(crestX-3,y+ry-1,crestX+2,y+ry-1,'foam',2);
+  // An animated brighter lip at one side of each ellipse.
+  const a=rotation*(level%2?-1:1)+level*1.8;
+  const x=16+Math.round(Math.cos(a)*rx);
+  const yy=y+Math.round(Math.sin(a)*ry);
+  p.line(x-2,yy,x+2,yy,'foam');
  }
- // Opposing helical strands connect the three belts (a continuous vortex,
- // not disconnected circular splash symbols).
- for(let i=0;i<17;i++){
-  const h=6+i*1.25,turn=phase+h*.37;
-  const radius=7+(h-6)*.33;
-  for(const a of [turn,turn+Math.PI]){
-   const px=16+Math.cos(a)*radius;
-   const py=h+Math.sin(a)*1.5;
-   p.dot(px-1,py,'waterink',3);
-   p.dot(px,py,'crest',2);
-   if(i%3===0)p.dot(px+1,py,'foam');
+ // Sidewall flowing upward and curling into the rings. No center filler.
+ for(const side of [-1,1]){
+  for(let i=0;i<10;i++){
+   const y=10+i*1.7,osc=Math.sin(rotation+y*.38)*2;
+   const x=16+side*(8+i*.36)+osc;
+   p.dot(x,y,'waterink',2);
+   if(i%2===0)p.dot(x+side,y-1,'crest');
+   if(i%3===0)p.dot(x+side,y,'foam');
   }
  }
- for(let i=0;i<6;i++){
-  const angle=(i*.95+phase*1.3);
-  const x=16+Math.round(Math.cos(angle)*(10+i%3*3));
-  const y=3+(i*7+f*2)%8;
-  p.dot(x,y,i%2?'pale':'foam',i%3===0?2:1);
+ // Foam particles fly off the outer rim at staggered positions.
+ for(let i=0;i<7;i++){
+  const a=i*2.4+rotation;
+  const r=11+(i%3)*2;
+  p.dot(16+Math.cos(a)*r,5+(i*5+f*2)%23,
+   i%2?'pale':'foam',i%3===0?2:1);
  }
 }
 function crc(b){

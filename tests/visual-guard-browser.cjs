@@ -174,6 +174,24 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(seafoam.textures,true,'Seafoam must be preloaded in campaign');
   assert.equal(seafoam.image,true,'Seafoam image must appear in native Phaser scene');
   assert.ok(seafoam.width>=160&&seafoam.height>=125,'Seafoam art crop must be nontrivial');
+  // Fixed cave terraces, not arbitrary generic zigzag coordinates over rocks
+  // and gym buildings. Test every visible opponent, not just the active one.
+  const caveSpots=await page.evaluate(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2BattlePath.spots);
+  assert.equal(caveSpots.length,7,'Cinnabar routes should render seven spaced NPCs per page');
+  for(let i=0;i<caveSpots.length;i++){
+   const {x,y}=caveSpots[i];
+   assert.ok(x>=40&&x<=452&&y>=125&&y<=275,
+    'Seafoam NPC '+i+' must sit within the cave floor viewport');
+   for(let j=0;j<i;j++){
+    const distance=Math.hypot(x-caveSpots[j].x,y-caveSpots[j].y);
+    assert.ok(distance>=46,'Cave NPC interaction zones overlap at '+i+'/'+j);
+   }
+  }
+  assert.ok(caveSpots.slice(0,4).every(p=>p.y>=245),
+   'First cave terrace must stay on the lower traversable path');
+  assert.ok(caveSpots.slice(4).every(p=>p.y<=210),
+   'Second cave terrace must stay on the upper walkable path');
   await shot('desktop-cinnabar-sea-routes',page);
   await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');

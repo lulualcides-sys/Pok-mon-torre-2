@@ -309,12 +309,20 @@ export function renderBattlePath(scene,state,handlers){
  scene.__torre2RenderedPathStage=stage;
  // Town view has no trainer sprites over roofs or water; routes own fights.
  const length=finished||cityView?0:Math.min(stage===6?7:14,Math.max(0,total+1-offset));
+ // Seafoam caves use two traversable terraces. The old generic zigzag
+ // pinned trainers to boulders, water and the bottom edge of the frame.
+ // Fixed scenic anchors are intentionally shared by every seven-battle page.
+ const seafoamTerraces=[
+  [65,262],[126,260],[188,261],[252,259],
+  [238,196],[352,197],[119,148]
+ ];
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
   const boss=offset+i===total;
-  const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
-  const y=boss?178:[275,211,147][Math.min(row,2)];
+  const [px,y]=stage===6?seafoamTerraces[i]:
+   [boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]),
+    boss?178:[275,211,147][Math.min(row,2)]];
   spots.push({x:px,y,global:offset+i});
  }
  // Map region labels reference existing FireRed town/mountain sheets.
@@ -328,7 +336,10 @@ export function renderBattlePath(scene,state,handlers){
  const pathGraphics=scene.add.graphics().setDepth(14);
  for(let i=1;i<spots.length;i++){
   const a=spots[i-1],b=spots[i];
-  connector(pathGraphics,a.x,a.y,b.x,b.y,a.global<progress);
+  // Breadcrumbs must never imply a walkable bridge through a Seafoam cliff.
+  // Keep only links within the same cave terrace; page numbers show sequence.
+  if(stage!==6||(a.y>240&&b.y>240)||(a.y<215&&b.y<215))
+   connector(pathGraphics,a.x,a.y,b.x,b.y,a.global<progress);
  }
  // The next checkpoint receives the gold border. Completed checkpoints
  // retain their own pass/fail mark, and future ones remain visible.
@@ -346,11 +357,27 @@ export function renderBattlePath(scene,state,handlers){
   const width=boss?72:58,top=p.y-23;
   // NPC sprite first, with only a small pixel-number marker beneath it.
   // Preserve the 58/72px interactive touch targets, not the old big cards.
-  if(active){g.fillStyle(0xf4d077,.35);g.fillRect(p.x-21,p.y-2,42,24);}
-  g.fillStyle(0x0b2324,.85);g.fillRect(p.x-11,p.y+6,23,14);
-  g.fillStyle(active?0xf4d077:done?0x75d1ad:0x719c9c);
-  g.fillRect(p.x-11,p.y+6,23,2);
-  g.fillStyle(0x17382b,.55);g.fillRect(p.x-13,top+10,26,3);
+  if(stage===6){
+   // A small ground shadow and a legible ordinal pin; no large opaque cards
+   // concealing rock tiles. The current NPC gets an unobtrusive gold bracket.
+   g.fillStyle(0x102b3b,.48);g.fillRect(p.x-13,p.y+5,27,3);
+   g.fillStyle(0x0a2634,.78);g.fillRect(p.x-9,p.y+9,19,12);
+   g.fillStyle(active?0xffda75:done?0x9de0b2:0x83acb8);
+   g.fillRect(p.x-9,p.y+9,19,2);
+   if(active){
+    g.fillStyle(0xf4d077,.94);
+    for(const d of [-1,1]){
+     g.fillRect(p.x+d*18-(d>0?2:0),p.y-21,3,9);
+     g.fillRect(p.x+d*18-(d>0?7:0),p.y-21,8,2);
+    }
+   }
+  }else{
+   if(active){g.fillStyle(0xf4d077,.35);g.fillRect(p.x-21,p.y-2,42,24);}
+   g.fillStyle(0x0b2324,.85);g.fillRect(p.x-11,p.y+6,23,14);
+   g.fillStyle(active?0xf4d077:done?0x75d1ad:0x719c9c);
+   g.fillRect(p.x-11,p.y+6,23,2);
+   g.fillStyle(0x17382b,.55);g.fillRect(p.x-13,top+10,26,3);
+  }
   if(boss){g.fillStyle(0xf7d999,.95);g.fillRect(p.x-15,top-5,30,2);}
   if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
@@ -366,12 +393,14 @@ export function renderBattlePath(scene,state,handlers){
   // The current objective is shown in the bottom action bar, not repeated
   // fourteen times over town roofs, water and pathways.
   txt(scene,p.x,p.y+13,String(i+1),8,
-   active?'#20241c':done?'#e3ffe8':'#e5eee3',24);
+   active&&stage!==6?'#20241c':done?'#e3ffe8':'#e5eee3',24);
   if(boss&&active)txt(scene,p.x,p.y+29,leader.toUpperCase(),8,'#ffe6a2',24);
   if(done){
-   g.fillStyle(0x43c98b);g.fillRect(p.x+width/2-9,p.y-23,10,10);
-   g.fillStyle(0xf6ffe9);g.fillRect(p.x+width/2-6,p.y-19,5,2);
-   g.fillRect(p.x+width/2-4,p.y-21,2,5);
+   const size=stage===6?6:10;
+   const checkX=p.x+(stage===6?12:width/2-9),checkY=p.y-23;
+   g.fillStyle(0x378c70);g.fillRect(checkX,checkY,size,size);
+   g.fillStyle(0xf6ffe9);g.fillRect(checkX+2,checkY+Math.floor(size/2),size-3,2);
+   if(stage!==6)g.fillRect(checkX+4,checkY+2,2,size-3);
   }else if(active){
    g.fillStyle(0xffdf8a);g.fillTriangle(p.x-4,top-17,p.x+4,top-17,p.x,top-8);
   }
@@ -487,7 +516,8 @@ export function renderBattlePath(scene,state,handlers){
   locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
    stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
-  nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
+  nodes:hitZones,spots:spots.map(({x,y,global:i})=>({x,y,i})),
+  imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
   gym:scene.__torre2GymBackdrop};
  return scene.__torre2BattlePath;
 }

@@ -345,11 +345,15 @@ function cast(l,h,extra){
    const target={x:tx,y:ty};
    const dest=h.id==='whirlpool'||(h.id==='zap-cannon'&&phase>.67)?
     target:{x,y};
-   const moveScale=h.id==='whirlpool'?1.28:
-    h.id==='zap-cannon'?(phase>.67?1.22:1.04):.88;
+   // Preserve Onix's silhouette: the old 64px Whirlpool sheet was 82px
+   // after scaling, masking the whole Pokémon with an opaque blue mass.
+   // The redesigned sheet is a hollow vortex and fits around the target.
+   const moveScale=h.id==='whirlpool'?.88:
+    h.id==='zap-cannon'?(phase>.67?1.15:.94):.76;
    pilotSprite.setPosition(Math.round(dest.x),Math.round(dest.y))
     .setScale(moveScale)
-    .setAlpha(phase>.86?Math.max(.06,(1-phase)/.14):1);
+    .setAlpha((h.id==='whirlpool'?.9:1)*
+     (phase>.86?Math.max(.06,(1-phase)/.14):1));
    // Multiple small ice clouds travel across the real fighter gap, then
    // disperse around the enemy instead of forming a detached white block.
    for(let i=0;i<snowTrail.length;i++){
