@@ -270,6 +270,12 @@ function cast(l,h,extra){
  const style=h.style,palette=tones[h.id];if(!palette)return false;
  const g=e.add.graphics().setDepth(1520);
  const nativeSprites=nativeP2(e,h.id);
+ // Art pilot is limited to the isolated Mewtwo laboratory.
+ const pilotKey='torre2-johto-pilot-'+h.id;
+ const pilotSprite=e.textures.exists(pilotKey)?
+  e.add.sprite(0,0,pilotKey,0).setDepth(1533):null;
+ if(pilotSprite)e.textures.get(pilotKey)
+  .setFilter(Phaser.Textures.FilterMode.NEAREST);
  const sx=l.x+dx*12,sy=l.y-l.alto*.5+dy*8;
  const beam=projectile.has(style),melee=adjacent.has(style);
  const duration=style==="vortex"?1.65:style==="quake"?1.05:beam?1.1:.75;
@@ -310,18 +316,33 @@ function cast(l,h,extra){
  };
  const fx={update(dt){
   age+=Math.max(0,Math.min(.05,dt||0));
-  if(age>=duration){g.destroy();for(const sprite of nativeSprites)sprite.destroy();return false;}
+  if(age>=duration){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
+   pilotSprite?.destroy();return false;}
   const travel=Math.min(h.alcance,age*360);
   const x=beam?sx+dx*travel:style==="quake"?l.x+dx*80:melee?l.x+dx*37:r.x;
   const y=beam?sy+dy*travel:style==="quake"?l.y-7:melee?l.y-l.alto*.5+dy*12:r.y-r.alto*.5;
-  artwork(g,h.id,style,x,y,age,duration,r,l);
-  paintNativeSprites(nativeSprites,h.id,x,y,age,duration,r,l);
+  if(pilotSprite){
+   // Twelve authored PNG frames instead of another procedural circle.
+   g.clear();
+   const phase=age/duration;
+   pilotSprite.setFrame(Math.min(JOHTO_PIXEL_FRAMES-1,
+    Math.floor(phase*JOHTO_PIXEL_FRAMES)));
+   const dest=h.id==='whirlpool'?{x:r.x,y:r.y-r.alto*.55}:{x,y};
+   pilotSprite.setPosition(Math.round(dest.x),Math.round(dest.y))
+    .setScale(h.id==='whirlpool'?1.45:1.25)
+    .setAlpha(phase>.8?Math.max(.08,(1-phase)/.2):1);
+   paintNativeSprites(nativeSprites,h.id,x,y,age,duration,r,l);
+   for(const img of nativeSprites)img.setAlpha(img.alpha*.22);
+  }else{
+   artwork(g,h.id,style,x,y,age,duration,r,l);
+   paintNativeSprites(nativeSprites,h.id,x,y,age,duration,r,l);
+  }
   if(hits<windows.length&&age>=windows[hits]){
    if(receiver(x,y))hit();
    hits++; // independent hit windows; only triple-kick stops after miss
   }
   return true;
- },destroy(){g.destroy();for(const sprite of nativeSprites)sprite.destroy();}};
+ },destroy(){g.destroy();for(const sprite of nativeSprites)sprite.destroy();pilotSprite?.destroy();}};
  e.efectos.push(fx);return true;
 }
 export const TORRE2_JOHTO_LAB_FORMS=Object.freeze(Object.fromEntries(
