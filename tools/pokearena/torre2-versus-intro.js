@@ -5,6 +5,7 @@ import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {spriteIdForTrainer,addRedPlayer,addFireRedNPC} from './frlg-npc.js';
 import {originalBallSprite} from './ball-sprites.js';
 import {scheduleVsEntry} from './versus-transition.js';
+import {LEADER_DIALOGUE} from './trainer-cards.js';
 
 const LEADERS=Object.freeze([
  'brock','misty','surge','erika','koga','sabrina','blaine',
@@ -97,8 +98,25 @@ export function playVersusIntro(scene,match,onComplete){
  text(scene,overlay,488,247,meta.versus.name,meta.versus.name.length>15?14:18,'#ffffff');
  text(scene,overlay,152,271,'SEU TREINADOR',9,'#9ce3ff');
  text(scene,overlay,488,271,meta.versus.title,9,'#ffc9bf');
- text(scene,overlay,320,319,meta.versus.city,14,'#fff0cd');
- text(scene,overlay,320,342,'PREPARE-SE PARA A BATALHA!',9,'#cad9ef');
+ const leaderIndex=LEADERS.indexOf(meta.versus.kind);
+ const quote=leaderIndex>=0&&meta.versus.title!=='REVANCHE'?
+  LEADER_DIALOGUE[leaderIndex]:null;
+ if(quote){
+  // Leader dialogue shares the existing approved 2.5 s transition and
+  // displays before battle without any extra taps or changes to combat.
+  const words=quote.split(' '),lines=['',''];
+  for(const word of words){
+   const target=lines[0].length+word.length<51?0:1;
+   lines[target]+=(lines[target]?' ':'')+word;
+  }
+  text(scene,overlay,320,316,meta.versus.name+': '+lines[0],
+   11,'#fff0cd');
+  text(scene,overlay,320,338,lines[1]||'VAMOS BATALHAR!',
+   11,'#cfe9ff');
+ }else{
+  text(scene,overlay,320,319,meta.versus.city,14,'#fff0cd');
+  text(scene,overlay,320,342,'PREPARE-SE PARA A BATALHA!',9,'#cad9ef');
+ }
 
  // Actual party size, not a made-up six-monster lineup.
  const friend=cap(meta.party?.friend?.length??1);

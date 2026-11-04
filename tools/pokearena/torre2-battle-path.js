@@ -11,6 +11,7 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {ROOM_CROPS} from './frlg-interiors.js';
+import {getSourceMainBounds,TILE_VIEW} from './frlg-location.js';
 import {ball} from './campaign-art.js';
 import {TRAINERS_PER_GYM,STAGES,currentOpponent} from './campaign-core.js';
 
@@ -119,11 +120,11 @@ function connector(g,ax,ay,bx,by,lit){
  const dx=bx-ax,dy=by-ay,length=Math.hypot(dx,dy);
  const steps=Math.ceil(length/10);
  // Contrast backing makes the dashed route legible over dense FireRed trees.
- g.lineStyle(3,0x102a2d,.76);g.lineBetween(ax,ay,bx,by);
- for(let n=1;n<steps;n++){
-  const t=n/steps,x=ax+dx*t,y=ay+dy*t;
-  g.fillStyle(lit?0xffe9b3:0xf3f3ce,lit ? .98 : .93);
-  g.fillCircle(x,y,lit?2.4:2.05);
+ // Quiet 1-pixel breadcrumbs, not thick white dotted railway tracks.
+ for(let n=1;n<steps;n+=2){
+  const t=n/steps,x=Math.round(ax+dx*t),y=Math.round(ay+dy*t);
+  g.fillStyle(lit?0x88b89d:0x597b78,.52);
+  g.fillRect(x,y,2,2);
  }
 }
 function trainerKind(stage,node){
@@ -150,10 +151,11 @@ function hudSprite(scene,member,x,y,depth=34){
  if(!scene.textures.exists(key))return;
  scene.add.image(x,y,key).setDisplaySize(23,23).setDepth(depth);
 }
-function renderBackdrop(scene,stage){
+function renderBackdrop(scene,stage,{seaRoutes=false}={}){
  // Use ORIGINAL FireRed exterior and gym interior from a loaded map sheet.
  // No screenshot-as-UI, no generated facade, no CSS/native-canvas zoom.
- const city=BATTLE_PATH_BACKDROP[stage]||'indigo',imageKey='frlg-location-'+city;
+ const city=seaRoutes&&stage===6?'seafoam':BATTLE_PATH_BACKDROP[stage]||'indigo';
+ const imageKey='frlg-location-'+city;
  const base=scene.add.graphics().setDepth(5);
  frame(base,10,54,478,255,{fill:0x163849,border:0xe0bd7b,radius:4});
  const texture=scene.textures.exists(imageKey)?scene.textures.get(imageKey):null;
@@ -163,44 +165,84 @@ function renderBackdrop(scene,stage){
   // Composite FRLG sheets have the city on the LEFT and rooms on the right.
   // The Pewter source includes Brock's pink-roof gym at (200..370,30..145).
   // Crop that real building as our BACKDROP, rather than all of Kanto.
-  const exteriorRect=city==='pewter'?[120,18,380,215]:
-   [0,0,Math.min(768,src.width),Math.min(640,src.height)];
-  const [sx,sy,w,h]=exteriorRect;
-  if(w>=160&&h>=160){
-   const name='torre2-path-city-'+city;
+  // Composite FireRed sheets place rooms/white separators to the right.
+  // The old 768x640 frame crossed out of Cinnabar's actual 384x320 world,
+  // exposing blank white/black panels on the production map.
+  // Fit one REAL town-only viewport with the exact 470:247 map ratio.
+  const bounds=getSourceMainBounds(city,src.width,src.height);
+  const vw=470,vh=247,ratio=vw/vh;
+  const w=Math.floor(Math.min(bounds.w,bounds.h*ratio));
+  const h=Math.floor(w/ratio);
+  const focus=TILE_VIEW[city]||{cx:bounds.w/2,cy:bounds.h/2};
+  const sx=bounds.x+Math.max(0,Math.min(bounds.w-w,
+    Math.round(focus.cx-w/2)));
+  const sy=bounds.y+Math.max(0,Math.min(bounds.h-h,
+    Math.round(focus.cy-h/2)));
+  if(w>=160&&h>=125&&sx>=0&&sy>=0&&sx+w<=src.width&&sy+h<=src.height){
+   const name='torre2-path-city-clean-v2-'+city;
    if(!texture.has(name))texture.add(name,0,sx,sy,w,h);
-   const cityImage=scene.add.image(249,181,imageKey,name).setDepth(6);
-   cityImage.setScale(Math.max(470/w,247/h));
-   const mask=scene.make.graphics({x:0,y:0,add:false});
-   mask.fillStyle(0xffffff);mask.fillRect(14,58,470,247);
-   cityImage.setMask(mask.createGeometryMask());
-   scene.events.once('shutdown',()=>{cityImage.clearMask();mask.destroy()});
+   // No geometry mask or over-scaled screenshot: crop is EXACTLY the display.
+   scene.add.image(249,181,imageKey,name).setDepth(6)
+    .setDisplaySize(vw,vh);
    realExterior=true;
+   scene.__torre2ExteriorViewport={city,x:sx,y:sy,w,h,
+    worldOnly:true,sourceWidth:src.width,sourceHeight:src.height};
   }
   const rect=ROOM_CROPS[city]?.gym;
-  if(rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
+  // The Cinnabar gym is visible IN the town art. Duplicating an interior
+  // screenshot in its upper-right corner hid buildings and looked like UI.
+  if(stage!==6&&rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
    const name='torre2-path-gym-'+city;
    if(!texture.has(name))texture.add(name,0,...rect);
    const arch=scene.add.graphics().setDepth(7);
    // Gym destination thumbnail: original pixels, no 240px map obstruction.
-   frame(arch,356,64,125,85,{fill:0x17353b,border:0xe9cc83});
-   arch.fillStyle(0x315b5c);arch.fillRect(360,68,117,15);
-   const scale=Math.min(110/rect[2],61/rect[3]);
-   scene.add.image(418,117,imageKey,name).setDepth(8).setScale(scale);
-   txt(scene,418,75,'GINÁSIO',9,'#ffe6a5',10);
+   // A small destination thumbnail; town scenery stays predominant.
+   frame(arch,397,59,85,68,{fill:0x17353b,border:0xe9cc83});
+   arch.fillStyle(0x315b5c);arch.fillRect(400,62,79,12);
+   const scale=Math.min(75/rect[2],48/rect[3]);
+   scene.add.image(440,100,imageKey,name).setDepth(8).setScale(scale);
+   txt(scene,440,67,'GINÁSIO',8,'#ffe6a5',10);
    realGym=true;
   }
  }
  if(!realExterior){base.fillStyle(0x244959);base.fillRect(14,58,470,247)}
  const glass=scene.add.graphics().setDepth(9);
  glass.fillStyle(0x081b2a,.13);glass.fillRect(14,58,470,247);
- glass.fillStyle(0x061827,.88);glass.fillRoundedRect(18,62,267,36,5);
- glass.lineStyle(1,0x638ba0,.94);glass.strokeRoundedRect(18,62,267,36,5);
+ if(stage===6){
+  // Genuine overworld: a single slim GBA area ribbon, not a huge black
+  // billboard over the buildings or the Seafoam cave entrance.
+  glass.fillStyle(0x071e27,.88);glass.fillRect(17,58,467,26);
+  glass.fillStyle(0xc9b981,.8);glass.fillRect(17,82,467,1);
+ }else{
+  glass.fillStyle(0x091d23,.90);glass.fillRect(17,58,211,33);
+  glass.fillStyle(0x80b2ac,.85);glass.fillRect(17,58,211,2);
+ }
  scene.__torre2GymBackdrop={city,realExterior,realGym,texture:imageKey};
  return {imageKey};
 }
+// The Cinnabar town is a real walkable map: point precisely to its three
+// existing entrances instead of covering its architecture with a second
+// gym thumbnail or inserting trainer cards. All hit zones remain 44px+.
+function cinnabarLandmark(scene,x,y,label,role,callback){
+ const depth=36;
+ // Doors use small RPG interaction chevrons; permanent black rectangles
+ // previously covered the path and made the city look like a website.
+ const g=scene.add.graphics().setDepth(depth-2);
+ g.fillStyle(0x081b20,.75);g.fillRect(x-5,y-11,10,11);
+ g.fillStyle(0xfff4cb);g.fillTriangle(x-4,y-10,x+4,y-10,x,y-3);
+ g.fillStyle(0xdbad4b);g.fillRect(x-2,y-12,4,2);
+ const tip=txt(scene,x,y+13,label,8,'#fff0be',depth+1).setVisible(false);
+ const hit=scene.add.zone(x,y,42,32).setDepth(depth)
+  .setInteractive({useHandCursor:true})
+  .setData('torre2-cinnabar-landmark',role);
+ hit.on('pointerover',()=>tip.setVisible(true));
+ hit.on('pointerout',()=>tip.setVisible(false));
+ hit.on('pointerdown',()=>{playOriginalMenuCue(scene);callback?.()});
+ return hit;
+}
 export function renderBattlePath(scene,state,handlers){
  const stage=state.stage,finished=state.champion||!STAGES[stage],
+  cityView=stage===6&&Boolean(handlers.showCinnabarCity),
   total=finished?0:TRAINERS_PER_GYM(stage),
   progress=Math.min(total,Math.max(0,state.trainer||0)),
   leader=STAGES[stage]?.leader||'CAMPEÃO',
@@ -226,19 +268,39 @@ export function renderBattlePath(scene,state,handlers){
   .on('pointerup',()=>scene.scale.isFullscreen?
    scene.scale.stopFullscreen():scene.scale.startFullscreen({navigationUI:'hide'}));
  button(scene,599,23,65,29,'MENU',handlers.menu,{depth:41});
- renderBackdrop(scene,stage);
- const mapTitle=txt(scene,25,69,finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
+ renderBackdrop(scene,stage,{seaRoutes:stage===6&&!cityView});
+ const mapName=cityView?'CINNABAR · CIDADE':
+  stage===6?'SEAFOAM · CAVERNA':finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase();
+ const mapTitle=txt(scene,25,69,mapName,stage===6?11:13,'#fff5d8',28);
  mapTitle.setOrigin(0,.5);
- const areaLegend=stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':
+ const areaLegend=cityView?'CENTRO  ·  LOJA  ·  GINÁSIO':
+  stage===6?'ROTAS 19/20  ·  ILHAS SEAFOAM  ·  CINNABAR':
+  stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':
   stage===2?'ROTAS 24/25  >  5/6  >  S.S. ANNE  >  VERMILION':
   finished?'O SALÃO DA FAMA AGUARDA A SUA EQUIPE':
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
- txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
-  .setOrigin(0,.5);
- button(scene,423,270,108,23,'VS SEEKER',()=>handlers.rematchAtlas?.(),
-  {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
+ // Route details stay in the header and stop covering the overworld art.
+ if(stage!==6)txt(scene,28,84,
+  areaLegend.length>28?areaLegend.slice(0,27)+'…':areaLegend,
+  7,'#d4e7cf',28).setOrigin(0,.5);
+ // Cinnabar route/menu commands belong in the narrow area ribbon.
+ // No floating rectangular buttons on the town beach or cave floors.
+ button(scene,stage===6?360:389,stage===6?70:294,stage===6?78:88,18,
+  'VS SEEKER',()=>handlers.rematchAtlas?.(),{depth:39,small:true})
+  .setData('torre2-open-rematch-atlas',true);
+ if(stage===6)button(scene,448,70,65,18,
+  cityView?'ROTAS':'CIDADE',
+  ()=>cityView?handlers.viewRoutes?.():handlers.viewCinnabarCity?.(),
+  {depth:39,small:true}).setData('torre2-cinnabar-switch',cityView?'routes':'city');
+ // Three door-targets are the ONLY town interactions, apart from route
+ // navigation and the persistent team/actions outside the map.
+ const cinnabarLandmarks=cityView?[
+  cinnabarLandmark(scene,173,210,'GINÁSIO','gym',handlers.gym),
+  cinnabarLandmark(scene,302,229,'CENTRO','center',handlers.center),
+  cinnabarLandmark(scene,398,229,'LOJA','mart',handlers.mart)
+ ]:[];
  // Preserve the native trainer route by default. City is optional.
- if(stage===1)button(scene,423,239,108,23,'VER CIDADE',
+ if(stage===1)button(scene,389,273,88,18,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
   .setData('torre2-open-city',true);
  // When a NORMAL battle advances the checkpoint beyond the current
@@ -250,21 +312,33 @@ export function renderBattlePath(scene,state,handlers){
  const requested=scene.__torre2PathPage;
  const progressed=previousStage===stage&&
   Number.isInteger(previousProgress)&&previousProgress!==progress;
- const oldPage=Math.max(0,Math.floor((requested??0)/13)*13);
- const outOfView=progress<oldPage||progress>oldPage+13;
- const pageForProgress=Math.max(0,Math.floor(Math.max(0,progress-1)/13)*13);
+ const pageSize=stage===6?7:13;
+ const oldPage=Math.max(0,Math.floor((requested??0)/pageSize)*pageSize);
+ const outOfView=progress<oldPage||progress>oldPage+pageSize;
+ const pageForProgress=Math.max(0,Math.floor(Math.max(0,progress-1)/pageSize)*pageSize);
  const page=progressed&&outOfView?pageForProgress:(requested??progress);
- const offset=Math.max(0,Math.min(total,Math.floor(page/13)*13));
+ const offset=Math.max(0,Math.min(total,Math.floor(page/pageSize)*pageSize));
  scene.__torre2RenderedPathProgress=progress;
  scene.__torre2RenderedPathStage=stage;
- const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
+ // Town view has no trainer sprites over roofs or water; routes own fights.
+ const length=finished||cityView?0:Math.min(stage===6?7:14,Math.max(0,total+1-offset));
+ // Seafoam caves use two traversable terraces. The old generic zigzag
+ // pinned trainers to boulders, water and the bottom edge of the frame.
+ // Fixed scenic anchors are intentionally shared by every seven-battle page.
+ const seafoamTerraces=[
+  [65,262],[126,260],[188,261],[252,259],
+  [238,196],[352,197],[119,148]
+ ];
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
   const boss=offset+i===total;
+  // Keep the established leader placement in every non-Seafoam stage.
+  // Existing campaign/EXP integration tests protect this invariant.
   const px=boss?414:(ROWS[Math.min(2,row)][column]??ROWS[2][3]);
-  const y=boss?178:[275,211,147][Math.min(row,2)];
-  spots.push({x:px,y,global:offset+i});
+  const py=boss?178:[275,211,147][Math.min(row,2)];
+  const [x,y]=stage===6?seafoamTerraces[i]:[px,py];
+  spots.push({x,y,global:offset+i});
  }
  // Map region labels reference existing FireRed town/mountain sheets.
  // One connected zigzag and the leader at its end; no extra pages/maps.
@@ -277,7 +351,9 @@ export function renderBattlePath(scene,state,handlers){
  const pathGraphics=scene.add.graphics().setDepth(14);
  for(let i=1;i<spots.length;i++){
   const a=spots[i-1],b=spots[i];
-  connector(pathGraphics,a.x,a.y,b.x,b.y,a.global<progress);
+  // Breadcrumbs must never imply a walkable bridge through a Seafoam cliff.
+  // Keep only links within the same cave terrace; page numbers show sequence.
+  if(stage!==6)connector(pathGraphics,a.x,a.y,b.x,b.y,a.global<progress);
  }
  // The next checkpoint receives the gold border. Completed checkpoints
  // retain their own pass/fail mark, and future ones remain visible.
@@ -293,42 +369,50 @@ export function renderBattlePath(scene,state,handlers){
   const capture=checkpoint.optionalCapture;
   const g=scene.add.graphics().setDepth(18);
   const width=boss?72:58,top=p.y-23;
-  // Compact travel markers: trainer sprite is visible above a small nameplate.
-  if(active){g.fillStyle(0xffe2a0,.30);g.fillRect(p.x-width/2-3,p.y+1,width+6,24);}
-  g.fillStyle(0x071d25,.93);g.fillRect(p.x-width/2,p.y+3,width,18);
-  g.fillStyle(active?0xf4d077:done?0x7ee3af:0x89a8b0);
-  g.fillRect(p.x-width/2,p.y+3,width,2);
-  g.fillRect(p.x-width/2,p.y+3,2,18);
-  g.fillRect(p.x+width/2-2,p.y+3,2,18);
-  g.fillStyle(0x234a47,.9);g.fillRect(p.x-width/2+3,p.y+6,14,12);
-  g.fillStyle(0x17382b,.75);g.fillRect(p.x-15,top+11,30,3);
-  if(boss){
-   g.fillStyle(0xf7d999,.9);g.fillRect(p.x-23,top-5,46,2);
-   g.fillStyle(0xf7d999,.3);g.fillRect(p.x-20,top-3,40,2);
+  // NPC sprite first, with only a small pixel-number marker beneath it.
+  // Preserve the 58/72px interactive touch targets, not the old big cards.
+  if(stage===6){
+   // Real NPCs are enough to indicate future opponents; no opaque
+   // card/number badges on every tile. Highlight ONLY the next encounter.
+   g.fillStyle(0x142d33,.42);g.fillRect(p.x-8,p.y+5,17,3);
+   if(active){
+    g.fillStyle(0x1b3037,.9);
+    g.fillRect(p.x-5,top-14,11,5);
+    g.fillStyle(0xf9ce65);g.fillTriangle(p.x-5,top-15,p.x+5,top-15,p.x,top-6);
+   }
+  }else{
+   if(active){g.fillStyle(0xf4d077,.35);g.fillRect(p.x-21,p.y-2,42,24);}
+   g.fillStyle(0x0b2324,.85);g.fillRect(p.x-11,p.y+6,23,14);
+   g.fillStyle(active?0xf4d077:done?0x75d1ad:0x719c9c);
+   g.fillRect(p.x-11,p.y+6,23,2);
+   g.fillStyle(0x17382b,.55);g.fillRect(p.x-13,top+10,26,3);
   }
+  if(boss){g.fillStyle(0xf7d999,.95);g.fillRect(p.x-15,top-5,30,2);}
   if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
-   g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
-   g.fillTriangle(p.x,top+1,p.x+6,top-14,p.x+14,top+1);
-   ball(g,p.x,top-2,9);
+   if(stage!==6){
+    g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
+    g.fillTriangle(p.x,top+1,p.x+6,top-14,p.x+14,top+1);
+   }
+   ball(g,p.x,top-2,stage===6?6:9);
   }else{
    const kind=trainerKind(stage,node);
-   const npc=addFireRedNPC(scene,kind,p.x,top+12,{scale:boss?1.68:1.20,depth:21});
+   const npc=addFireRedNPC(scene,kind,p.x,top+12,
+    {scale:stage===6?(boss?1.16:.98):(boss?1.68:1.20),depth:21});
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
    if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
-  txt(scene,p.x+7,p.y+12,boss?leader.toUpperCase():
-   node.type==='rocket'?'ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
-   boss?9:7,active?'#ffe6a2':available?'#f3f8ed':'#b7c6be',23);
-  txt(scene,p.x-width/2+10,p.y+12,String(i+1),8,
-   active?'#ffe29a':'#f0faf0',24);
-  if(checkpoint.primary==='rematch')txt(scene,p.x,p.y+27,
-   (state.rematches?.charge||0)>=3?'REVANCHE':'VS '+(state.rematches?.charge||0)+'/3',
-   6,'#f7d986',25);
+  // The current objective is shown in the bottom action bar, not repeated
+  // fourteen times over town roofs, water and pathways.
+  if(stage!==6||active)txt(scene,p.x,p.y+13,String(i+1),stage===6?7:8,
+   active&&stage!==6?'#20241c':done?'#e3ffe8':'#e5eee3',24);
+  if(boss&&active)txt(scene,p.x,p.y+29,leader.toUpperCase(),8,'#ffe6a2',24);
   if(done){
-   g.fillStyle(0x43c98b);g.fillRect(p.x+width/2-9,p.y-23,10,10);
-   g.fillStyle(0xf6ffe9);g.fillRect(p.x+width/2-6,p.y-19,5,2);
-   g.fillRect(p.x+width/2-4,p.y-21,2,5);
+   const size=stage===6?4:10;
+   const checkX=p.x+(stage===6?11:width/2-9),checkY=p.y-23;
+   g.fillStyle(0x378c70);g.fillRect(checkX,checkY,size,size);
+   g.fillStyle(0xf6ffe9);g.fillRect(checkX+2,checkY+Math.floor(size/2),size-3,2);
+   if(stage!==6)g.fillRect(checkX+4,checkY+2,2,size-3);
   }else if(active){
    g.fillStyle(0xffdf8a);g.fillTriangle(p.x-4,top-17,p.x+4,top-17,p.x,top-8);
   }
@@ -371,8 +455,9 @@ export function renderBattlePath(scene,state,handlers){
   }
  }
  // Stable page navigation for Misty and later routes with >13 battles.
- if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
- if(!finished&&offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ if(!cityView&&offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
+ if(!finished&&!cityView&&offset+length<total+1)
+  button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
  // After the final Champion KO, never redraw a fake 14th boss that can
  // reopen the gym. This honors the earned victory with native Phaser pixels.
  if(finished){
@@ -395,12 +480,22 @@ export function renderBattlePath(scene,state,handlers){
  for(let i=0;i<6;i++){
   const m=state.team[i],y=119+i*22;
   side.fillStyle(i===state.active?0x28475a:0x102c43);
-  side.fillRoundedRect(502,y-9,124,21,3);
-  side.lineStyle(1,i===state.active?0xf2c267:0x345d76,1);
-  side.strokeRoundedRect(502,y-9,124,21,3);
+  if(m||stage!==6){
+   side.fillRoundedRect(502,y-9,124,21,3);
+   side.lineStyle(1,i===state.active?0xf2c267:0x345d76,1);
+   side.strokeRoundedRect(502,y-9,124,21,3);
+  }
   if(!m){
-   txt(scene,517,y,'◌',10,'#47677b',24);
-   txt(scene,535,y,'ESPAÇO LIVRE',7,'#5f839b',24).setOrigin(0,.5);
+   // A row of six giant empty cards was dominating the stage-six UI.
+   // Collapse all free slots into a single understated roster count.
+   if(stage===6){
+    if(i===state.team.length)
+     txt(scene,562,y+3,(6-state.team.length)+' VAGAS DISPONÍVEIS',
+      8,'#7897a3',24);
+   }else{
+    txt(scene,517,y,'◌',10,'#47677b',24);
+    txt(scene,535,y,'ESPAÇO LIVRE',7,'#5f839b',24).setOrigin(0,.5);
+   }
    continue;
   }
   hudSprite(scene,m,514,y+1,23);
@@ -423,22 +518,29 @@ export function renderBattlePath(scene,state,handlers){
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
  txt(scene,24,342,finished?'CAMPEÃO DE KANTO':current?.name||leader,
   12,'#fff2d2',30).setOrigin(0,.5);
- const label=finished?'★ SALÃO DA FAMA':progress>=total?
+ const label=finished?'★ SALÃO DA FAMA':cityView&&progress<total?
+  'EXPLORAR ROTAS':progress>=total?
   'ENFRENTAR '+leader.toUpperCase():'ENTRAR NA BATALHA';
- const cta=button(scene,359,335,217,32,label,()=>{
+ const cta=button(scene,stage===6?371:359,335,stage===6?163:217,30,label,()=>{
   if(finished)return handlers.hall?.();
+  if(cityView&&progress<total)return handlers.viewRoutes?.();
   if(progress>=total)return handlers.gym();
   handlers.battle();
  },{gold:true,enabled:true,depth:70});
  cta.setData('torre2-central-cta',true);
- button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
+ button(scene,stage===6?590:568,336,stage===6?72:113,27,
+  'REINICIAR',handlers.reset,{depth:70,small:true})
   .setData('torre2-reset-journey',true);
  // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
  installCampaignAudioSettings(scene);
- scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
+ scene.__torre2BattlePath={stage,total,progress,offset,pageSize,
+  landmarks:cinnabarLandmarks.length,
+  mode:cityView?'city':stage===6?'sea-routes':'route',
+  locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
    stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
-  nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
+  nodes:hitZones,spots:spots.map(({x,y,global:i})=>({x,y,i})),
+  imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
   gym:scene.__torre2GymBackdrop};
  return scene.__torre2BattlePath;
 }

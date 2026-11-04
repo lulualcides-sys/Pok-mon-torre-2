@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "objective": "Original pixel PNG pilot is build-generated, while visual quality requires human-reviewed screenshots and re-editing in Pixelorama/Tiled.",
+  "status": "pending_visual_review",
+  "requiredScenes": [
+    {
+      "id": "cinnabar-campaign",
+      "screenshot": "test-evidence/visual-guard/desktop-cinnabar-map.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    },
+    {
+      "id": "pewter-campaign",
+      "screenshot": "test-evidence/visual-guard/desktop-campaign-map.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    },
+    {
+      "id": "mobile-title",
+      "screenshot": "test-evidence/visual-guard/mobile-landscape-title.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    },
+    {
+      "id": "battle-interface",
+      "screenshot": "test-evidence/visual-guard/desktop-first-battle.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    }
+  ],
+  "priorityMoves": [
+    {
+      "id": "zap-cannon",
+      "editor": "pixelorama",
+      "source": "tools/pokearena/torre2-pixel-sheets.mjs",
+      "export": "_site/arena2d/assets/torre2/johto-pilot/zap-cannon.png",
+      "frames": 12,
+      "status": "pilot_generated_build_only",
+      "approved": false
+    },
+    {
+      "id": "powder-snow",
+      "editor": "pixelorama",
+      "source": "tools/pokearena/torre2-pixel-sheets.mjs",
+      "export": "_site/arena2d/assets/torre2/johto-pilot/powder-snow.png",
+      "frames": 12,
+      "status": "pilot_generated_build_only",
+      "approved": false
+    },
+    {
+      "id": "whirlpool",
+      "editor": "pixelorama",
+      "source": "tools/pokearena/torre2-pixel-sheets.mjs",
+      "export": "_site/arena2d/assets/torre2/johto-pilot/whirlpool.png",
+      "frames": 12,
+      "status": "pilot_generated_build_only",
+      "approved": false
+    }
+  ],
+  "policy": {
+    "renderer": "actual-Phaser-WebGL",
+    "pixelFilter": "nearest",
+    "noUpscaleBlur": true,
+    "approvalRequiredForMain": true,
+    "neverAutoApproveGeneratedBaseline": true,
+    "preserveArenaHUD": true,
+    "preserveCampaignSave": true
+  }
+}

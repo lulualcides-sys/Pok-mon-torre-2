@@ -68,7 +68,21 @@ const server=http.createServer(async(req,res)=>{
     const native=JOHTO_P2_TEXTURES[move.id]||[];
     const textures=native.map(name=>({name,loaded:scene.textures.exists(name),
       rendered:scene.children.list.some(o=>o.active&&o.texture?.key===name)}));
-    result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures});
+    const pilotKey='torre2-johto-pilot-'+move.id;
+    const pilot=scene.textures.exists(pilotKey);
+    const electroBallLoaded=scene.textures.exists('vfx-electroball');
+    const electroBallRendered=move.id==='zap-cannon'&&
+     scene.children.list.some(o=>o.active&&
+      o.getData?.('torre2-zap-native-orb')===true&&
+      o.texture?.key==='vfx-electroball');
+    const zapImpactRendered=move.id==='zap-cannon'&&
+     scene.children.list.some(o=>o.active&&
+      o.getData?.('torre2-zap-native-impact')===true&&
+      o.texture?.key==='vfx-electroball');
+    result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures,
+     pilot,electroBallLoaded,electroBallRendered,zapImpactRendered,
+     previewVisible:pilot&&scene.children.list.some(o=>
+      o.active&&o.texture?.key===pilotKey)});
    }
    return result;
   });
@@ -77,9 +91,28 @@ const server=http.createServer(async(req,res)=>{
   for(const cast of casts){
    assert.equal(cast.output,true,cast.id+' cast');
    assert.equal(cast.instantiated,true,cast.id+' visual effect');
-   assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
-    cast.id+' missing actual native P2 pixel-art sprite: '+JSON.stringify(cast.textures));
+   if(cast.id==='zap-cannon'){
+    assert.ok(cast.electroBallLoaded&&cast.electroBallRendered&&cast.zapImpactRendered,
+     'Zap Cannon must render original Raichu Electro Ball plus impact');
+   }else{
+    assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
+     cast.id+' missing actual native P2 sprite: '+JSON.stringify(cast.textures));
+   }
   }
+  // Snow and Whirlpool are approved. Zap Cannon now uses the base sprite
+  // vfx-electroball, not its old 12-frame generated Zap PNG.
+  for(const id of ['powder-snow','whirlpool']){
+   const item=casts.find(x=>x.id===id);
+   assert.ok(item?.pilot&&item?.previewVisible,
+    id+' PILOT art was not loaded/rendered by the actual WebGL scene');
+  }
+  const zapCast=casts.find(x=>x.id==='zap-cannon');
+  assert.equal(zapCast.electroBallLoaded,true,
+   'Electro Ball 40x40 source sprite must preload in the client');
+  assert.equal(zapCast.electroBallRendered,true,
+   'Zap Cannon must use the original Electro Ball projectile spritesheet');
+  assert.equal(zapCast.zapImpactRendered,true,
+   'Zap Cannon must use the original Electro Ball explosion frames');
   // True projectile/contact path: count real native receive calls, not only VFX constructors.
   const impacts=await page.evaluate(async()=>{
    const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
@@ -142,6 +175,13 @@ const server=http.createServer(async(req,res)=>{
    },id);
    await page.waitForTimeout(190);
    await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'.png'});
+   // Visual approval needs intermediate frames, not a single cast screenshot.
+   if(['zap-cannon','powder-snow','whirlpool'].includes(id)){
+    await page.waitForTimeout(200);
+    await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'-middle.png'});
+    await page.waitForTimeout(160);
+    await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'-impact.png'});
+   }
   }
   console.log('JOHTO_PIXEL_ART_EVIDENCE_SAVED',casts.map(c=>c.id).join(','));
   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').salir());

@@ -5,6 +5,7 @@ on:
       - 'src/**'
       - 'tools/pokearena/**'
       - 'tools/dev/approved-visual-guard.mjs'
+      - 'tools/dev/visual-review-gate.mjs'
       - 'tools/dev/ci-diagnostics.mjs'
       - 'tests/**'
       - 'data/**'
@@ -19,6 +20,7 @@ on:
       - 'tools/pokearena/kanto-approved-ui.avif'
       - 'tools/pokearena/pokemon-torre-logo.b64'
       - 'tools/dev/approved-visual-guard.mjs'
+      - 'tools/dev/visual-review-gate.mjs'
       - 'tools/dev/ci-diagnostics.mjs'
       - 'tests/approved-visual-guard.test.js'
       - 'tests/ci-diagnostics.test.js'
@@ -40,7 +42,7 @@ jobs:
         with:
           node-version: '24'
       - name: Testar guardião e gerador de diagnóstico
-        run: node --test tests/approved-visual-guard.test.js tests/ci-diagnostics.test.js
+        run: node --test tests/approved-visual-guard.test.js tests/ci-diagnostics.test.js tests/visual-review-gate.test.mjs
       - name: Bloquear alterações acidentais de referências aprovadas
         run: node tools/dev/approved-visual-guard.mjs
       - name: Diagnóstico se houver falha
@@ -104,6 +106,11 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/visual-guard-browser.cjs
+      - name: Validar presença de screenshots e marcar revisão estética pendente
+        run: |
+          # Evidence mode checks genuine screenshots and emits review-status.json.
+          # It never auto-approves generated images as a golden visual reference.
+          node tools/dev/visual-review-gate.mjs --mode evidence
       - name: Validar seleção real pelo menu original PLAY → TRAINING
         env:
           CHROME_BIN: /usr/bin/google-chrome

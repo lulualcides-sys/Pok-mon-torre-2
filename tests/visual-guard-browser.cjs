@@ -42,7 +42,7 @@ const server=http.createServer(async(req,res)=>{
   };
   page=await makePage({viewport:{width:1280,height:720},deviceScaleFactor:1});
   state.step='desktop-title';
-  const response=await page.goto('http://127.0.0.1:'+port+'/arena2d/?original=1',
+  const response=await page.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   assert.equal(response?.status(),200);
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
@@ -74,7 +74,7 @@ const server=http.createServer(async(req,res)=>{
   await shot('desktop-title',page);
   state.step='mobile-title';
   const mobile=await makePage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-  await mobile.goto('http://127.0.0.1:'+port+'/arena2d/?original=1',
+  await mobile.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   await mobile.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
@@ -87,7 +87,7 @@ const server=http.createServer(async(req,res)=>{
   await shot('mobile-portrait-rotate',mobile);await mobile.close();
   state.step='mobile-landscape-title';
   const landscape=await makePage({viewport:{width:844,height:390},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-  await landscape.goto('http://127.0.0.1:'+port+'/arena2d/?original=1',
+  await landscape.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   await landscape.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
@@ -112,7 +112,203 @@ const server=http.createServer(async(req,res)=>{
    null,{timeout:50000});
   state.scene='campanha';
   assert.equal(await page.evaluate(()=>window.kanto.readCampaign().team[0].id),'bulbasaur');
+  const cardHub=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.__torre2CardUI;
+  });
+  assert.equal(cardHub?.mode,'cards','Campaign must start in trainer card navigation');
+  assert.equal(cardHub.total,14,'Brock stage needs 13 trainers and one leader');
+  assert.ok(cardHub.visible.includes(0),'The first card must be visible');
   await shot('desktop-campaign-map',page);
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const card=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   const zone=card?.list?.find(o=>o.getData?.('torre2-trainer-card-index')===0);
+   if(!zone)throw Error('Trainer card 1 missing interactive touch zone');
+   zone.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode==='detail',null,{timeout:7000});
+  const trainerDetail=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.__torre2CardUI;
+  });
+  assert.equal(trainerDetail.canBattle,true,'Current trainer must be challengeable');
+  assert.deepEqual(trainerDetail.roster,
+   [await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()).id)],
+   'Cards must show real saved campaign roster, not invented Pokémon');
+  await shot('desktop-trainer-card-details',page);
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const layer=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   layer?.list?.find(o=>o.getData?.('torre2-card-control')==='cards-detail-back')?.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode==='cards',null,{timeout:7000});
+  // Validate a real leader team from the campaign manifest. This is
+  // a screenshot of native Phaser UI, not the user's conceptual mockup.
+  state.step='misty-leader-card';
+  await page.evaluate(()=>{
+   const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+   const fixture=core.createPlayerCampaign('squirtle');
+   fixture.stage=1;fixture.trainer=core.TRAINERS_PER_GYM(1);
+   fixture.badges=[core.GYMS[0].badge];
+   core.saveCampaign(fixture);
+   scene.scene.restart();
+  });
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game?.scene.getScene('campanha');
+   return c?.scene.isActive()&&c.__torre2CardUI?.stage===1&&
+    c.__torre2CardUI?.mode==='cards';
+  },null,{timeout:20000});
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const panel=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   const open=panel?.list?.find(o=>o.getData?.('torre2-card-control')==='cards-open-current');
+   if(!open)throw Error('Leader current-card button missing');
+   open.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode==='detail',null,{timeout:7000});
+  const leaderCard=await page.evaluate(()=>window.__pt2Game
+   .scene.getScene('campanha').__torre2CardUI);
+  assert.equal(leaderCard.leader,true,'Misty must use the leader presentation');
+  assert.equal(leaderCard.canBattle,true,'The defeated 13 trainers unlock Misty');
+  assert.deepEqual(leaderCard.roster,['staryu','starmie'],
+   'Misty card must show her exact FireRed roster, never invented Pokémon');
+  await shot('desktop-misty-leader-card',page);
+  // The former guard only captured stage 0. The user-rejected layout is the
+  // Blaine/Cinnabar route at stage 6; test THAT actual native Phaser scene.
+  // Use a disposable in-browser save fixture and restore the starter before
+  // testing the rest of the campaign. Never mutate production player saves.
+  state.step='cinnabar-layout-review';
+  await page.evaluate(()=>{
+   const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+   const fixture=core.createPlayerCampaign('bulbasaur');
+   fixture.stage=6;fixture.trainer=6;
+   fixture.badges=core.GYMS.slice(0,6).map(g=>g.badge);
+   core.saveCampaign(fixture);
+   scene.scene.restart();
+  });
+  await page.waitForFunction(()=>{
+   const scene=window.__pt2Game?.scene.getScene('campanha');
+   return scene?.scene.isActive()&&scene.__torre2BattlePath?.stage===6&&
+    scene.children.list.some(o=>String(o.text||'').toUpperCase().includes('CINNABAR'));
+  },null,{timeout:25000});
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode),'cards',
+   'Cinnabar must also expose the trainer cards');
+  // Switch to the existing walkable map by its actual Card UI action.
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const panel=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   const tab=panel?.list?.find(o=>o.getData?.('torre2-card-control')==='map');
+   if(!tab)throw Error('Trainer cards MAPA control missing');
+   tab.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardsMapOnly===true,null,{timeout:7000});
+  const mode=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const view=c.__torre2BattlePath;
+   return {mode:view.mode,visibleTrainers:c.children.list
+    .filter(o=>o.active&&Number.isInteger(o.getData?.('torre2-path-node'))).length,
+    total:view.total,stage:view.stage};
+  });
+  assert.equal(mode.mode,'city','Cinnabar must start on the town, not a trainer-filled collage');
+  assert.equal(mode.visibleTrainers,0,'No 14 NPCs may float over Cinnabar water or roofs');
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha')
+   .__torre2BattlePath.landmarks),3,'Town must have exactly Gym, Center and Mart doors');
+  // Overworld must remain the focus: compact landmarks and both route tabs
+  // inside the area ribbon. Regression from oversized map buttons/cards.
+  const townControls=await page.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   return {landmarks:scene.children.list.filter(o=>o.active&&o.input?.enabled&&
+     o.getData?.('torre2-cinnabar-landmark')).map(o=>o.getData('torre2-cinnabar-landmark')),
+    switcher:scene.children.list.find(o=>o.active&&o.getData?.('torre2-cinnabar-switch')==='routes')?.y,
+    rematch:scene.children.list.find(o=>o.active&&o.getData?.('torre2-open-rematch-atlas'))?.y};
+  });
+  assert.deepEqual(townControls.landmarks.sort(),['center','gym','mart']);
+  assert.ok(townControls.switcher<=85&&townControls.rematch<=85,
+   'Cinnabar navigation belongs in header, not over the water/streets');
+  await shot('desktop-cinnabar-map',page);
+  // Test the ACTUAL Phaser touch target, not the callback in isolation.
+  const switchPoint=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const zone=c.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-cinnabar-switch')==='routes');
+   if(!zone)throw Error('Cinnabar route switch missing');
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:rect.left+zone.x*rect.width/640,y:rect.top+zone.y*rect.height/360};
+  });
+  await page.mouse.click(switchPoint.x,switchPoint.y);
+  await page.waitForFunction(()=>{
+   const view=window.__pt2Game.scene.getScene('campanha').__torre2BattlePath;
+   return view?.stage===6&&view?.mode==='sea-routes'&&
+    view.locations>0&&view.locations<=7;
+  },null,{timeout:12000});
+  // Hard gate: merely changing a menu to "Seafoam" is not a real map.
+  // Verify the ORIGINAL cave artwork is loaded and rendered as a Phaser
+  // image. This would have failed on the previously approved blank blue map.
+  const seafoam=await page.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   const art=scene.__torre2GymBackdrop;
+   return {city:art?.city,realExterior:art?.realExterior,
+    textures:scene.textures.exists('frlg-location-seafoam'),
+    image:scene.children.list.some(o=>o.active&&o.texture?.key==='frlg-location-seafoam'),
+    width:scene.__torre2ExteriorViewport?.w,height:scene.__torre2ExteriorViewport?.h};
+  });
+  assert.equal(seafoam.city,'seafoam','Route stage must use Seafoam cave art');
+  assert.equal(seafoam.realExterior,true,'Blank fallback blue route is unacceptable');
+  assert.equal(seafoam.textures,true,'Seafoam must be preloaded in campaign');
+  assert.equal(seafoam.image,true,'Seafoam image must appear in native Phaser scene');
+  assert.ok(seafoam.width>=160&&seafoam.height>=125,'Seafoam art crop must be nontrivial');
+  // Fixed cave terraces, not arbitrary generic zigzag coordinates over rocks
+  // and gym buildings. Test every visible opponent, not just the active one.
+  const caveSpots=await page.evaluate(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2BattlePath.spots);
+  assert.equal(caveSpots.length,7,'Cinnabar routes should render seven spaced NPCs per page');
+  for(let i=0;i<caveSpots.length;i++){
+   const {x,y}=caveSpots[i];
+   assert.ok(x>=40&&x<=452&&y>=125&&y<=275,
+    'Seafoam NPC '+i+' must sit within the cave floor viewport');
+   for(let j=0;j<i;j++){
+    const distance=Math.hypot(x-caveSpots[j].x,y-caveSpots[j].y);
+    assert.ok(distance>=46,'Cave NPC interaction zones overlap at '+i+'/'+j);
+   }
+  }
+  assert.ok(caveSpots.slice(0,4).every(p=>p.y>=245),
+   'First cave terrace must stay on the lower traversable path');
+  assert.ok(caveSpots.slice(4).every(p=>p.y<=210),
+   'Second cave terrace must stay on the upper walkable path');
+  const seaNav=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return {back:c.children.list.find(o=>o.active&&
+    o.getData?.('torre2-cinnabar-switch')==='city')?.y,
+    rematch:c.children.list.find(o=>o.active&&
+    o.getData?.('torre2-open-rematch-atlas'))?.y};
+  });
+  assert.ok(seaNav.back<=85&&seaNav.rematch<=85,
+   'Seafoam route buttons cannot cover trainers or the floor');
+  await shot('desktop-cinnabar-sea-routes',page);
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const back=c.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-cinnabar-switch')==='city');
+   if(!back)throw Error('Back to Cinnabar city button missing');
+   back.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>{
+   const view=window.__pt2Game.scene.getScene('campanha').__torre2BattlePath;
+   return view?.stage===6&&view?.mode==='city';
+  },null,{timeout:10000});
+  await page.evaluate(()=>{
+   const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+   core.saveCampaign(core.createPlayerCampaign('bulbasaur'));
+   scene.scene.restart();
+  });
+  await page.waitForFunction(()=>window.__pt2Game?.scene.getScene('campanha')
+    .__torre2BattlePath?.stage===0,null,{timeout:25000});
   state.step='wild-grass-sprites';
   const grass=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');

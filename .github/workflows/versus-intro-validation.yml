@@ -13,6 +13,11 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  # Cancel superseded PR run; preserve all validation jobs.
+  group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   phaser-versus:
     runs-on: ubuntu-24.04
