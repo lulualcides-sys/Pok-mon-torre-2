@@ -68,7 +68,11 @@ const server=http.createServer(async(req,res)=>{
     const native=JOHTO_P2_TEXTURES[move.id]||[];
     const textures=native.map(name=>({name,loaded:scene.textures.exists(name),
       rendered:scene.children.list.some(o=>o.active&&o.texture?.key===name)}));
-    result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures});
+    const pilotKey='torre2-johto-pilot-'+move.id;
+    const pilot=scene.textures.exists(pilotKey);
+    result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures,
+     pilot,previewVisible:pilot&&scene.children.list.some(o=>
+      o.active&&o.texture?.key===pilotKey)});
    }
    return result;
   });
@@ -79,6 +83,13 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(cast.instantiated,true,cast.id+' visual effect');
    assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
     cast.id+' missing actual native P2 pixel-art sprite: '+JSON.stringify(cast.textures));
+  }
+  // The three rebuilt effects MUST render real PNG frame textures in Phaser,
+  // while the remaining moves keep their native P2 reference treatment.
+  for(const id of ['zap-cannon','powder-snow','whirlpool']){
+   const item=casts.find(x=>x.id===id);
+   assert.ok(item?.pilot&&item?.previewVisible,
+    id+' PILOT art was not loaded/rendered by the actual WebGL scene');
   }
   // True projectile/contact path: count real native receive calls, not only VFX constructors.
   const impacts=await page.evaluate(async()=>{
@@ -142,6 +153,13 @@ const server=http.createServer(async(req,res)=>{
    },id);
    await page.waitForTimeout(190);
    await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'.png'});
+   // Visual approval needs intermediate frames, not a single cast screenshot.
+   if(['zap-cannon','powder-snow','whirlpool'].includes(id)){
+    await page.waitForTimeout(200);
+    await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'-middle.png'});
+    await page.waitForTimeout(160);
+    await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'-impact.png'});
+   }
   }
   console.log('JOHTO_PIXEL_ART_EVIDENCE_SAVED',casts.map(c=>c.id).join(','));
   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').salir());
