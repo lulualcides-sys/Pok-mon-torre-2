@@ -72,7 +72,7 @@ function npcKind(stage,index,leader=false){
  if(!n)return 'youngster';
  const opponent=currentOpponent({stage,trainer:index,team:[],champion:false,starter:'bulbasaur'});
  if(opponent?.kind==='rival'||opponent?.kind==='rocket')return opponent.kind;
- return trainerClass(stage,index,opponent?.kind||'trainer',stage===0?'forest':'route');
+ return opponent?.spriteKind||trainerClass(stage,index,opponent?.kind||'trainer',stage===0?'forest':'route');
 }
 function portraitDex(scene,id){
  try{
