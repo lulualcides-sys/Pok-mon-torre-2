@@ -42,7 +42,7 @@ const server=http.createServer(async(req,res)=>{
     state.team[0].progression.level=level;
     state.dexSeen.push('charizard');state.dexCaught.push('charizard');
     if(!window.__moves.selectedMoves(state.team[0]).includes('fire-blast')&&
-       !window.__moves.equipMove(state.team[0],2,'fire-blast'))
+       ![2,3].some(slot=>window.__moves.equipMove(state.team[0],slot,'fire-blast')))
      throw Error('Charizard Lv50 could not equip native Fire Blast');
     window.__core.saveCampaign(state);
     window.__pt2Game.scene.getScene('campanha').enterBattle(state,false);
