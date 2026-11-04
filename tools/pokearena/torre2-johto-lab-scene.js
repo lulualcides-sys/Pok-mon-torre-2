@@ -5,6 +5,15 @@ import {esTactil} from "../tactil.js";
 export class JohtoLab extends Phaser.Scene{
  constructor(){super("johto-lab")}
  init(data={}){this.picks=validateJohtoLabSlots(data.slots)?[...data.slots]:[...JOHTO_LAB_DEFAULT];this.slot=0;}
+ preload(){
+  // Artist-editable PNG strips built offline; only the isolated test lab loads them.
+  // Browser nearest-neighbor preserves crisp pixel art on 16:9/WebGL displays.
+  for(const id of ['zap-cannon','powder-snow','whirlpool'])
+   this.load.spritesheet('torre2-johto-pilot-'+id,
+    'assets/torre2/johto-pilot/'+id+'.png',
+    {frameWidth:64,frameHeight:64});
+ }
+
  create(){
   this.add.rectangle(320,180,640,360,0x071426);
   this.add.text(320,13,"MEWTWO · JOHTO TRAINING LAB",{fontFamily:"Pixelify Sans,monospace",
