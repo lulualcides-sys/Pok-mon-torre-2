@@ -511,8 +511,10 @@ for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow
  'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch','peck','leech-life','bug-bite','rock-tomb','horn-attack','double-kick','fury-attack','metal-claw','bind'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
-assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
+assert.deepEqual(['lmb','rmb','q','e'].map(slot=>resolveLoadout(tester)[slot]?.forma),
  ['torre2_bonemerang','torre2_boneclub','torre2_triattack','torre2_payday']);
+assert.ok(resolveLoadout(tester).esp?.forma,
+ 'Approved native dodge is a fifth, separate campaign action; do not drop ESP');
 for(const id of ['mud-slap','seed-bomb','super-fang']){
  assert.equal(equipMove(tester,0,id),true,'new adapted Kanto move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new adapted move usable in battle '+id);
