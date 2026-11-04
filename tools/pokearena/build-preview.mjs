@@ -200,6 +200,8 @@ await fs.writeFile(path.join(dest,clientSource,'torre2','frlg-available.js'),
  ([id,info])=>[id,info.file])))+');\n'+
  'export const AVAILABLE_FRLG_NPCS=Object.freeze('+JSON.stringify(
  originalNPCs.available)+');\n'+
+ 'export const AVAILABLE_OAK_INTRO=Object.freeze('+JSON.stringify(
+ originalNPCs.introAvailable)+');\n'+
  'export const HAS_CUSTOM_BROCK='+JSON.stringify(hasCustomBrock)+';\n');
 await Promise.all([
  ['src/progression.js','progression.js'],
