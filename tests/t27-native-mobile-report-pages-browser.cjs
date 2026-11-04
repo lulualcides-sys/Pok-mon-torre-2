@@ -35,7 +35,7 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(pos.x>=0&&pos.x<=854&&pos.y>=0&&pos.y<=480);
    await page.touchscreen.tap(pos.x,pos.y);
   };
-  await page.goto('http://127.0.0.1:4489/arena2d/?original=1',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:4489/arena2d/?original=1&qa-legacy-map=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
   await page.evaluate(async()=>{
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
