@@ -47,10 +47,11 @@ for(const species of KANTO_FIRE_BLAST_SPECIES){
  // Some native Poké Arena kits already equip Fire Blast as their ULT.
  // Do not force a duplicate into HAB3; preserve the owner's chosen slots.
  if(!initial.includes('fire-blast')){
-  assert.ok(equipMove(at50,2,'fire-blast'),
-   species+' must allow manual selection in HAB 3 once Lv50');
+  const legalSlot=[2,3].find(slot=>equipMove(at50,slot,'fire-blast'));
+  assert.notEqual(legalSlot,undefined,
+   species+' must allow Fire Blast in a legal strong-attack/ULT slot at Lv50');
   assert.equal(at50.movePlanSpecies,species,'Save must track current species');
-  assert.equal(at50.moves?.[2],'fire-blast','Manual loadout must persist');
+  assert.equal(at50.moves?.[legalSlot],'fire-blast','Manual loadout must persist');
  }else{
   console.log('FIRE_BLAST_ALREADY_EQUIPPED',species,
    JSON.stringify({slot:initial.indexOf('fire-blast'),loadout:initial}));
