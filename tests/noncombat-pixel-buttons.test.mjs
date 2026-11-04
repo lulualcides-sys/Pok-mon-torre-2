@@ -29,3 +29,13 @@ test('abort for combat scenes and unknown source instead of changing gameplay',(
  assert.throws(()=>skinMenuScene('const begin=1;','titulo'),/upstream changed/);
  assert.throws(()=>skinMenuScene('const begin=1;','preparar'),/import missing/);
 });
+
+// Regression: the public Alpha 0.63.6 ui.js exports boton.ancho() and
+// boton.apagar(). Missing either silently crashed the original TRAINING route.
+test('original native menu button API remains complete with premium skin',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const custom=readFileSync('tools/pokearena/torre2-noncombat-pixel-buttons.js','utf8');
+ for(const method of ['activar(value)','apagar(value)','texto(value)','mostrar(value)','mover(nx,ny)','ancho(){return dimensions().w}','capa(depth)','destruir()'])
+  assert.ok(custom.includes(method),'Missing native boton method: '+method);
+ assert.ok(custom.includes('dimmed?.45:1'));
+});
