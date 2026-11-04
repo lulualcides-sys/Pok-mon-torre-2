@@ -41,7 +41,7 @@ function frame(g,x,y,w,h,{fill=COLORS.navy,border=COLORS.edge,radius=4}={}){
 // live in independent scenes and are deliberately not referenced here.
 // Authentic low-resolution Phaser pixel icons, painted into graphics rather
 // than a raster overlay. Every campaign action has its own recognizable symbol.
-function campaignIcon(g,role,x,y){
+export function campaignIcon(g,role,x,y){
  const p=(dx,dy,w,h,c,a=1)=>{g.fillStyle(c,a);g.fillRect(Math.round(x+dx),Math.round(y+dy),w,h)};
  const ink=0x13293e,white=0xfff9e9,glint=0xffffff,steel=0xc6dce8,shade=0x426b89;
  switch(role){
