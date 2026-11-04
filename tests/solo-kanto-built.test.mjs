@@ -888,10 +888,11 @@ for(let stage=9;stage<=12;stage++)
  assert.equal(getCampaignMapSpec(stage,0).id,'indigo',
   'Elite Four and Champion share the same themed map');
 const sidebar=fs.readFileSync(path.join(stage,version,'torre2/battle-path.js'),'utf8');
-assert.ok(sidebar.includes("['TREINAMENTO',handlers.training]")&&
- sidebar.includes("['CAPTURA',handlers.capture]")&&!sidebar.includes("['GINÁSIO',handlers.gym]")&&
+assert.ok(sidebar.includes("id:'training',label:'TREINAMENTO'")&&
+ sidebar.includes("id:'capture',label:'CAPTURA'")&&
+ sidebar.includes('handlers.center,handlers.mart,handlers.training,handlers.capture')&&
  menuCampaign.includes('training:()=>this.enterTraining(state)'),
- 'Sidebar replaces gym shortcut with training and keeps grass capture');
+ 'Native sprite shortcuts retain training and grass capture without changing real Gym landmarks');
 const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
 for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',
  'function stone(','function tallGrass(','export function map(']){
