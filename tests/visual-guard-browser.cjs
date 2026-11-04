@@ -42,7 +42,7 @@ const server=http.createServer(async(req,res)=>{
   };
   page=await makePage({viewport:{width:1280,height:720},deviceScaleFactor:1});
   state.step='desktop-title';
-  const response=await page.goto('http://127.0.0.1:'+port+'/arena2d/?original=1',
+  const response=await page.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   assert.equal(response?.status(),200);
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
@@ -74,7 +74,7 @@ const server=http.createServer(async(req,res)=>{
   await shot('desktop-title',page);
   state.step='mobile-title';
   const mobile=await makePage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-  await mobile.goto('http://127.0.0.1:'+port+'/arena2d/?original=1',
+  await mobile.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   await mobile.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
@@ -87,7 +87,7 @@ const server=http.createServer(async(req,res)=>{
   await shot('mobile-portrait-rotate',mobile);await mobile.close();
   state.step='mobile-landscape-title';
   const landscape=await makePage({viewport:{width:844,height:390},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-  await landscape.goto('http://127.0.0.1:'+port+'/arena2d/?original=1',
+  await landscape.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   await landscape.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});

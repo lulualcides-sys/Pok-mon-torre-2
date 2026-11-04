@@ -503,8 +503,14 @@ create(){
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
    this.__torre2PathPage=undefined;
-   this.__torre2CardsMapOnly=false;
+   // Explicit original-game route view; normal game links open cards.
+   // ?original=1 keeps the old playable map until TREINADORES is selected.
+   // ?torre2-cards=1 opts into browser regression of the new cards.
+   const query=new URLSearchParams(location.search);
+   this.__torre2CardsMapOnly=query.get('original')==='1'&&
+    query.get('torre2-cards')!=='1';
    this.__torre2CardPage=undefined;
+   this.__torre2CardPortraitQueue=new Set();
    // Preserve native route as default; layered Cerulean is an opt-in view.
    this.__torre2CityRoute=true;
    // Cinnabar renders the town separately from sea routes and caves.
