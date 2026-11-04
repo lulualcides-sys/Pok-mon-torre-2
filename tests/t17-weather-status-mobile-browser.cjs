@@ -68,6 +68,16 @@ const server=http.createServer(async(req,res)=>{
    [{side:0,text:'ATK +20%'},{side:1,text:'ATK -20%'}]);
   assert.ok(first.onScreen.length>=1,'Native Text must be visible beside actor');
   await page.screenshot({path:'test-evidence/t17-weather-status-mobile.png'});
+  // The native scene clock (not a mocked Date) must clear cosmetic labels
+  // at 3 seconds while the real weather damage effect continues.
+  await page.waitForTimeout(3150);
+  await page.waitForFunction(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   return b?.children.list.filter(o=>o.active&&
+    o.getData?.('torre2-weather-status')!==undefined).length===0;
+  },null,{timeout:6000});
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('combate')
+   .__torre2Weather.kind),'sun','The actual weather must not expire with its caption');
   await page.evaluate(()=>{
    const b=window.__pt2Game.scene.getScene('combate');
    window.__weatherTestModule.setWeather(b.__torre2Weather,'rain');
