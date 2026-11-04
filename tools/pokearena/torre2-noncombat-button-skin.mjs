@@ -31,7 +31,19 @@ export function skinMenuScene(source,scene){
    'b.g.fillStyle(i===this.foco?0xf0ce67:0x68bfe3,1);'+
    'b.g.fillRect(x0+6,y0+6,2,Math.max(1,b.h-12));'+
    'efectosBoton(b.g,b.luz,x0,y0,BW,b.h,this.time.now)';
-  return once(source,old,pixels,'titulo pixel borders');
+  const themed=once(source,old,pixels,'titulo pixel borders');
+  // The upstream PLAY menu may grow (new customizer/modes). Preserve every
+  // action and its hitbox, but reduce step and button height together so
+  // the last item remains above the 312px decorative ground line.
+  // This only changes titulo's menu layout, NEVER combat HUD or abilities.
+  const from='const ops=MENUS[menu],{y,paso,alto=BH}=DISPOSICION[menu];this.botones=ops.map((o,i)=>this.boton(o,i,y+i*paso,paso,alto));';
+  const to='const ops=MENUS[menu];let {y,paso,alto=BH}=DISPOSICION[menu];'+
+   'if(menu==="jugar"&&ops.length>1&&y+(ops.length-1)*paso+alto>=312){'+
+   'for(const h of [alto,26,24,22]){const step=Math.min(paso,Math.floor((310-y-h)/(ops.length-1)));'+
+   'if(step>=h+1){alto=h;paso=step;break}}'+
+   'if(y+(ops.length-1)*paso+alto>=312)throw Error("PLAY menu cannot fit above floor without overlapping hitboxes");}'+
+   'this.botones=ops.map((o,i)=>this.boton(o,i,y+i*paso,paso,alto));';
+  return once(themed,from,to,'titulo responsive PLAY submenu layout');
  }
  if(scene==='pokedex'){
   const old='marco(g,x0,PY+3,w,14,i===this.etapa?"oro":"azul");efectosBoton(g,luz,x0,PY+3,w,14,this.time.now)';
