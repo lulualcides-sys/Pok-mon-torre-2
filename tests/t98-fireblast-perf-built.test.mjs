@@ -20,7 +20,6 @@ for(const key of ['radio','hoja','arde'])
  assert.deepEqual(optimized.explosion[key],approved.explosion[key],'Explosion gameplay & core art: '+key);
 assert.equal(approved.explosion.ecos,true,'No original object mutation');
 const charizard={id:'charizard',progression:{species:'charizard',level:50}};
-if(!resolveLoadout(charizard).e?.id==='fire-blast'){}
 const selected=resolveLoadout(charizard);
 const slot=['lmb','rmb','q','e'].find(k=>selected[k]?.id==='fire-blast');
 if(!slot){
