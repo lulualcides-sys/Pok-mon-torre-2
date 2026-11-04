@@ -94,7 +94,13 @@ test('every displayed NPC party slot corresponds to the actual battle projection
  assert.equal(regionalTrainerPartySize(0,12),3);
  assert.equal(regionalTrainerPartySize(8,16),4);
  assert.equal(regionalTrainerParty(1,5,'zubat',2,'rocket')[1],'rattata');
- assert.equal(regionalTrainerParty(2,3,'squirtle',2,'rival')[1],'pidgey');
+ assert.equal(regionalTrainerParty(2,3,'squirtle',2,'rival')[1],'pidgeotto');
+ assert.equal(regionalTrainerParty(0,3,'squirtle',2,'rival')[1],'pidgey');
+ assert.equal(regionalTrainerParty(8,12,'venusaur',4,'rival')[1],'pidgeot');
+ assert.equal(regionalTrainerParty(8,12,'venusaur',4,'rival')[2],'alakazam');
+ assert.equal(regionalTrainerParty(1,5,'zubat',4,'rocket').length,4);
+ assert.equal(new Set(regionalTrainerParty(1,5,'zubat',4,'rocket')).size,4,
+  'Team Rocket must not copy identical members when the full party expands');
 });
 test('Professor Oak is new-game-only and uses real native FRLG sprites',()=>{
  assert.match(frlg,/oak:'prof_oak'/);
