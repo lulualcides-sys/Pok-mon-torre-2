@@ -59,8 +59,8 @@ const server=http.createServer(async(req,res)=>{
   // existing 2.5 s VS. The battle still owns normal loading and animation.
   const warmup=await page.evaluate(()=>window.__pt2Game.__torre2BattlePrewarm);
   assert.ok(warmup?.queued>0,'Trainer intro should warm first-pair PMD animations');
-  assert.ok(warmup.species.includes('0001')&&warmup.species.includes('0016'),
-   'Warmup includes actual Bulbasaur/Pidgey, never guessed sprites');
+  assert.ok(warmup.species.includes('0001')&&warmup.species.includes('0019'),
+   'Warmup includes Bulbasaur and the new region-correct Rattata foe');
   const vs=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
    const overlay=scene.children.list.find(o=>o.getData?.('torre2-versus-intro'));
@@ -72,7 +72,7 @@ const server=http.createServer(async(req,res)=>{
      .map(o=>o.texture.key)};
   });
   assert.ok(vs.titles.includes('VOCÊ'),'Player label');
-  assert.ok(vs.titles.includes('TREINADOR 1'),'Opponent label');
+  assert.ok(vs.titles.includes('JOVEM 1'),'Opponent label');
   assert.ok(vs.titles.includes('VS'),'VS visible');
   assert.ok(vs.sprites.includes('frlg-npc-red_normal'),'Player art');
   assert.ok(vs.sprites.length===2,'Opponent art');
@@ -89,7 +89,7 @@ const server=http.createServer(async(req,res)=>{
     trainer:window.__vsTestCore.readCampaign().trainer};
   });
   assert.equal(combat.p1,'bulbasaur');
-  assert.equal(combat.p2,'pidgey');
+  assert.equal(combat.p2,'rattata');
   assert.equal(combat.trainer,0);
   assert.deepEqual(errors,[],'No runtime page errors');
   const loaded=await page.evaluate(()=>window.__pt2Game.__torre2BattlePrewarm);
