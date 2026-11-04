@@ -23,6 +23,8 @@ assert.ok(skin.includes("zone.setData('torre2-ui-theme','premium-noncombat')"));
 assert.ok(skin.includes('zone.input.enabled=visible'),'Hidden hitboxes must disable on mobile');
 assert.ok(skin.includes('t.alRepintar=measure'),'Dynamic text must resize its click target');
 assert.ok(skin.includes('setSize(w,altoZona)'),'Touch hit areas must follow labels');
+assert.ok(skin.includes('ancho(){return dimensions().w}'),'Original selection needs boton.ancho()');
+assert.ok(skin.includes('apagar(value){dimmed=Boolean(value);draw();return this}'),'Original UI needs boton.apagar()');
 for(const noTouch of ['ui.js','hud.js','tactil.js','escenas/combate.js','escenas/batalla.js']){
  const js=read(noTouch);
  assert.ok(!js.includes('noncombat-pixel-buttons'),'Battle/client shared UI import changed: '+noTouch);
