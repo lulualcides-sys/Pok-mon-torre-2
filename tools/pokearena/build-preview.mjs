@@ -1164,6 +1164,24 @@ console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
  await fs.writeFile(titleFile,title);
  console.log('MEWTWO LAB seven-button PLAY layout: fitted above the 312px floor');
 }
+
+// The native title positions two animation-playing Pokémon at x=110/530.
+// A bounded startup preload may have no *final* forms that decode on the
+// current REA mirror, although original starter Idle sheets do load.
+// In that case do not render an empty halo: reuse already-loaded native
+// Kanto base/early evolution sprites, never a fake/generated placeholder.
+// Keep the original animation, shadow, attack callback and parade.
+{
+ const titleFile=path.join(dest,clientSource,'escenas/titulo.js');
+ let source=await fs.readFile(titleFile,'utf8');
+ const target="posar(){const finales=ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(f=>{const m=this.manifiesto[f.dex];return m&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36});Phaser.Utils.Array.Shuffle(finales);";
+ const replacement="posar(){const elegible=f=>{const m=this.manifiesto[f.dex];return m&&this.textures.exists(`pmd-${f.dex}-Idle`)&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36};const finales=ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(elegible);if(finales.length<2){const vistos=new Set(finales.map(f=>f.dex));for(const f of ROSTER.flatMap(p=>[p,...(p.evoluciones??[])])){if(vistos.has(f.dex)||!elegible(f))continue;finales.push(f);vistos.add(f.dex);if(finales.length>=12)break;}}Phaser.Utils.Array.Shuffle(finales);";
+ if(source.split(target).length!==2)
+  throw Error('Native title posar() changed; cannot safely restore original Pokémon');
+ source=source.replace(target,replacement);
+ await fs.writeFile(titleFile,source);
+ console.log('Torre 2 title mascots: native loaded-Idle fallback for both logo sides');
+}
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
