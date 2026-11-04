@@ -316,7 +316,7 @@ create(){
   zone.on('pointerdown',(_p,_x,_y,event)=>{
    event?.stopPropagation?.();
    // Avoid duplicate mobile purchase, restart and starter submissions.
-   const now=this.time?.now??Date.now();
+   const now=Date.now();
    if(now-lastPress<190)return;
    lastPress=now;
    callback();
@@ -895,7 +895,7 @@ create(){
   zone.on('pointerdown',(_p,_x,_y,event)=>{
    event?.stopPropagation?.();
    if(!active)return;
-   const now=this.time?.now??Date.now();
+   const now=Date.now();
    if(now-lastPress<190)return;
    lastPress=now;
    callback();
