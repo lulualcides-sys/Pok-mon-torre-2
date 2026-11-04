@@ -11,7 +11,8 @@ test('Kanto campaign never renders any world map or hidden battle-road behind ca
  assert.match(method,/this\.__torre2BattlePath=null/);
  assert.match(method,/renderTrainerCardHub\(this,state,handlers\)/);
  assert.doesNotMatch(method,/renderBattlePath\(|renderCityHub\(|renderTrainerCardMapTab\(/);
- assert.doesNotMatch(method,/__torre2CardsMapOnly|URLSearchParams\(location\.search\)/);
+ assert.doesNotMatch(method,/__torre2CardsMapOnly|query\.get\('original'\)/);
+ assert.match(method,/get\('qa-legacy-map'\)==='1'/);
  assert.match(cards,/'MAIS'/);
  assert.doesNotMatch(cards,/'MAPA',handlers\.map/);
 });
