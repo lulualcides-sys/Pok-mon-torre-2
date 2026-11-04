@@ -48,6 +48,7 @@ jobs:
         run: |
           set -euo pipefail
           node tools/dev/approved-visual-guard.mjs
+          node --test tests/selection-upstream-pagination.test.js tests/rayquaza-mega-preview.test.js
       - name: Adicionar cliente Phaser autorizado do Poké Arena como arena isolada
         shell: bash
         run: |
@@ -124,6 +125,7 @@ jobs:
           node tests/t08-arena-role-slots-built.test.mjs
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
+          node tests/rayquaza-mega-built.test.mjs
           echo "Inventário checado: 23 famílias Kanto com evoluções, 5 comandos e ginásios reais."
       - name: Testar a arena Phaser original no Chromium antes de publicar
         shell: bash
@@ -136,6 +138,8 @@ jobs:
           CHROME_BIN="$(command -v google-chrome)" node tests/surge-shop-rematch-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/selection-original-mobile-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/rayquaza-mega-browser.cjs
       - name: Guardião Chromium — título mobile, mapa e batalha (sem novo build)
         shell: bash
         run: |
