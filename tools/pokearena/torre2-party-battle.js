@@ -42,7 +42,8 @@ export function createPartyMatch(state,opponent,wild=false){
  const count=wild?1:leaderTeam?leaderTeam.length:opponent.leader?
   Math.min(6,state.stage>=8?4:state.stage>=4?3:2):
   regionalTrainerPartySize(state.stage,state.trainer);
- const regionalParty=regionalTrainerParty(state.stage,state.trainer,opponent.id,count);
+ const regionalParty=regionalTrainerParty(state.stage,state.trainer,opponent.id,count,
+  opponent.kind);
  const foes=Array.from({length:count},(_,i)=>{
   const baseId=leaderTeam?leaderTeam[i]:regionalParty[i]||
    pool[(state.trainer+i)%pool.length]||opponent.id;
