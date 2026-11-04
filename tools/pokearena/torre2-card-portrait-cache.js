@@ -40,7 +40,7 @@ export function requestCardPortrait(scene,key,url,render){
  const dispose=()=>{
   if(done)return;
   done=true;
-  loader.off('filecomplete-image-'+key,loaded);
+  loader.off('filecomplete-image-'+key,succeed);
   loader.off('loaderror',loadError);
   requests.delete(key);
   subscribers.length=0;
