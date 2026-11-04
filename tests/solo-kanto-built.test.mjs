@@ -227,7 +227,10 @@ assert.equal(campaignRegion(8,1,4).biome,'victory','Victory Road follows Giovann
 assert.equal(campaignRegion(12,0,1).biome,'hall','Champion is the Hall of Fame finale');
 
 assert.equal(routeNode(0,3,13).type,'rival');
-assert.equal(routeNode(0,5,13).type,'rocket');
+assert.equal(routeNode(0,5,13).type,'trainer',
+ 'Viridian Forest must not contain random Rocket grunts');
+assert.equal(routeNode(1,5,15).type,'rocket',
+ 'Rocket encounters belong to Mt. Moon and subsequent Rocket areas');
 assert.equal(routeNode(0,13,13).type,'leader');
 assert.equal(MART_ITEMS.some(x=>x.kind==='tm'),true);
 const {trainerClass,drawTrainer,drawShopItem}=await import(pathToFileURL(
@@ -434,8 +437,8 @@ assert.equal(resolveBattle(finale,true,()=>0).won,true);
 assert.equal(finale.champion,true,'Champion must complete the entire Kanto campaign');
 assert.equal(finale.stage,13,'Champion clear is persisted after all gym/Elite stages');
 
-assert.equal(currentOpponent(state).id,'pidgey',
- 'Pewter trainer ladder begins with integrated Route 1 Pokémon instead of Onix');
+assert.equal(currentOpponent(state).id,'rattata',
+ 'Pewter trainer ladder begins with the new region-correct Rattata');
 
 const tester=state.team.find(p=>p.id==='mewtwo');
 assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
