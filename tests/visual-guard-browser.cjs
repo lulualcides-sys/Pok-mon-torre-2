@@ -142,6 +142,18 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(mode.visibleTrainers,0,'No 14 NPCs may float over Cinnabar water or roofs');
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha')
    .__torre2BattlePath.landmarks),3,'Town must have exactly Gym, Center and Mart doors');
+  // Overworld must remain the focus: compact landmarks and both route tabs
+  // inside the area ribbon. Regression from oversized map buttons/cards.
+  const townControls=await page.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   return {landmarks:scene.children.list.filter(o=>o.active&&o.input?.enabled&&
+     o.getData?.('torre2-cinnabar-landmark')).map(o=>o.getData('torre2-cinnabar-landmark')),
+    switcher:scene.children.list.find(o=>o.active&&o.getData?.('torre2-cinnabar-switch')==='routes')?.y,
+    rematch:scene.children.list.find(o=>o.active&&o.getData?.('torre2-open-rematch-atlas'))?.y};
+  });
+  assert.deepEqual(townControls.landmarks.sort(),['center','gym','mart']);
+  assert.ok(townControls.switcher<=85&&townControls.rematch<=85,
+   'Cinnabar navigation belongs in header, not over the water/streets');
   await shot('desktop-cinnabar-map',page);
   // Test the ACTUAL Phaser touch target, not the callback in isolation.
   const switchPoint=await page.evaluate(()=>{
@@ -192,6 +204,15 @@ const server=http.createServer(async(req,res)=>{
    'First cave terrace must stay on the lower traversable path');
   assert.ok(caveSpots.slice(4).every(p=>p.y<=210),
    'Second cave terrace must stay on the upper walkable path');
+  const seaNav=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return {back:c.children.list.find(o=>o.active&&
+    o.getData?.('torre2-cinnabar-switch')==='city')?.y,
+    rematch:c.children.list.find(o=>o.active&&
+    o.getData?.('torre2-open-rematch-atlas'))?.y};
+  });
+  assert.ok(seaNav.back<=85&&seaNav.rematch<=85,
+   'Seafoam route buttons cannot cover trainers or the floor');
   await shot('desktop-cinnabar-sea-routes',page);
   await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');

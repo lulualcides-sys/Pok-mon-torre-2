@@ -208,8 +208,15 @@ function renderBackdrop(scene,stage,{seaRoutes=false}={}){
  if(!realExterior){base.fillStyle(0x244959);base.fillRect(14,58,470,247)}
  const glass=scene.add.graphics().setDepth(9);
  glass.fillStyle(0x081b2a,.13);glass.fillRect(14,58,470,247);
- glass.fillStyle(0x091d23,.90);glass.fillRect(17,58,211,33);
- glass.fillStyle(0x80b2ac,.85);glass.fillRect(17,58,211,2);
+ if(stage===6){
+  // Genuine overworld: a single slim GBA area ribbon, not a huge black
+  // billboard over the buildings or the Seafoam cave entrance.
+  glass.fillStyle(0x071e27,.88);glass.fillRect(17,58,467,26);
+  glass.fillStyle(0xc9b981,.8);glass.fillRect(17,82,467,1);
+ }else{
+  glass.fillStyle(0x091d23,.90);glass.fillRect(17,58,211,33);
+  glass.fillStyle(0x80b2ac,.85);glass.fillRect(17,58,211,2);
+ }
  scene.__torre2GymBackdrop={city,realExterior,realGym,texture:imageKey};
  return {imageKey};
 }
@@ -218,15 +225,18 @@ function renderBackdrop(scene,stage,{seaRoutes=false}={}){
 // gym thumbnail or inserting trainer cards. All hit zones remain 44px+.
 function cinnabarLandmark(scene,x,y,label,role,callback){
  const depth=36;
+ // Doors use small RPG interaction chevrons; permanent black rectangles
+ // previously covered the path and made the city look like a website.
  const g=scene.add.graphics().setDepth(depth-2);
- const w=label==='GINÁSIO'?55:label==='CENTRO'?51:42;
- g.fillStyle(0x0b2d2b,.88);g.fillRect(x-w/2,y-10,w,20);
- g.fillStyle(0xecd78c);g.fillRect(x-w/2,y-10,w,2);
- g.fillStyle(0x375f57);g.fillRect(x-w/2,y+8,w,2);
- txt(scene,x,y,label,8,'#fff5cb',depth-1);
- const hit=scene.add.zone(x,y,Math.max(48,w),31).setDepth(depth)
+ g.fillStyle(0x081b20,.75);g.fillRect(x-5,y-11,10,11);
+ g.fillStyle(0xfff4cb);g.fillTriangle(x-4,y-10,x+4,y-10,x,y-3);
+ g.fillStyle(0xdbad4b);g.fillRect(x-2,y-12,4,2);
+ const tip=txt(scene,x,y+13,label,8,'#fff0be',depth+1).setVisible(false);
+ const hit=scene.add.zone(x,y,42,32).setDepth(depth)
   .setInteractive({useHandCursor:true})
   .setData('torre2-cinnabar-landmark',role);
+ hit.on('pointerover',()=>tip.setVisible(true));
+ hit.on('pointerout',()=>tip.setVisible(false));
  hit.on('pointerdown',()=>{playOriginalMenuCue(scene);callback?.()});
  return hit;
 }
@@ -259,9 +269,9 @@ export function renderBattlePath(scene,state,handlers){
    scene.scale.stopFullscreen():scene.scale.startFullscreen({navigationUI:'hide'}));
  button(scene,599,23,65,29,'MENU',handlers.menu,{depth:41});
  renderBackdrop(scene,stage,{seaRoutes:stage===6&&!cityView});
- const mapName=cityView?'CIDADE DE CINNABAR':
-  stage===6?'ROTAS E CAVERNAS':finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase();
- const mapTitle=txt(scene,25,69,mapName,13,'#fff5d8',28);
+ const mapName=cityView?'CINNABAR · CIDADE':
+  stage===6?'SEAFOAM · CAVERNA':finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase();
+ const mapTitle=txt(scene,25,69,mapName,stage===6?11:13,'#fff5d8',28);
  mapTitle.setOrigin(0,.5);
  const areaLegend=cityView?'CENTRO  ·  LOJA  ·  GINÁSIO':
   stage===6?'ROTAS 19/20  ·  ILHAS SEAFOAM  ·  CINNABAR':
@@ -270,21 +280,24 @@ export function renderBattlePath(scene,state,handlers){
   finished?'O SALÃO DA FAMA AGUARDA A SUA EQUIPE':
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  // Route details stay in the header and stop covering the overworld art.
- txt(scene,28,84,areaLegend.length>28?areaLegend.slice(0,27)+'…':areaLegend,
+ if(stage!==6)txt(scene,28,84,
+  areaLegend.length>28?areaLegend.slice(0,27)+'…':areaLegend,
   7,'#d4e7cf',28).setOrigin(0,.5);
- button(scene,389,stage===6?272:294,88,18,'VS SEEKER',
-  ()=>handlers.rematchAtlas?.(),{depth:39,small:true})
+ // Cinnabar route/menu commands belong in the narrow area ribbon.
+ // No floating rectangular buttons on the town beach or cave floors.
+ button(scene,stage===6?360:389,stage===6?70:294,stage===6?78:88,18,
+  'VS SEEKER',()=>handlers.rematchAtlas?.(),{depth:39,small:true})
   .setData('torre2-open-rematch-atlas',true);
- if(stage===6)button(scene,389,294,88,18,
-  cityView?'VER ROTAS':'VER CIDADE',
+ if(stage===6)button(scene,448,70,65,18,
+  cityView?'ROTAS':'CIDADE',
   ()=>cityView?handlers.viewRoutes?.():handlers.viewCinnabarCity?.(),
   {depth:39,small:true}).setData('torre2-cinnabar-switch',cityView?'routes':'city');
  // Three door-targets are the ONLY town interactions, apart from route
  // navigation and the persistent team/actions outside the map.
  const cinnabarLandmarks=cityView?[
-  cinnabarLandmark(scene,172,216,'GINÁSIO','gym',handlers.gym),
-  cinnabarLandmark(scene,302,238,'CENTRO','center',handlers.center),
-  cinnabarLandmark(scene,399,238,'LOJA','mart',handlers.mart)
+  cinnabarLandmark(scene,173,210,'GINÁSIO','gym',handlers.gym),
+  cinnabarLandmark(scene,302,229,'CENTRO','center',handlers.center),
+  cinnabarLandmark(scene,398,229,'LOJA','mart',handlers.mart)
  ]:[];
  // Preserve the native trainer route by default. City is optional.
  if(stage===1)button(scene,389,273,88,18,'VER CIDADE',
@@ -340,8 +353,7 @@ export function renderBattlePath(scene,state,handlers){
   const a=spots[i-1],b=spots[i];
   // Breadcrumbs must never imply a walkable bridge through a Seafoam cliff.
   // Keep only links within the same cave terrace; page numbers show sequence.
-  if(stage!==6||(a.y>240&&b.y>240)||(a.y<215&&b.y<215))
-   connector(pathGraphics,a.x,a.y,b.x,b.y,a.global<progress);
+  if(stage!==6)connector(pathGraphics,a.x,a.y,b.x,b.y,a.global<progress);
  }
  // The next checkpoint receives the gold border. Completed checkpoints
  // retain their own pass/fail mark, and future ones remain visible.
@@ -360,18 +372,13 @@ export function renderBattlePath(scene,state,handlers){
   // NPC sprite first, with only a small pixel-number marker beneath it.
   // Preserve the 58/72px interactive touch targets, not the old big cards.
   if(stage===6){
-   // A small ground shadow and a legible ordinal pin; no large opaque cards
-   // concealing rock tiles. The current NPC gets an unobtrusive gold bracket.
-   g.fillStyle(0x102b3b,.48);g.fillRect(p.x-13,p.y+5,27,3);
-   g.fillStyle(0x0a2634,.78);g.fillRect(p.x-9,p.y+9,19,12);
-   g.fillStyle(active?0xffda75:done?0x9de0b2:0x83acb8);
-   g.fillRect(p.x-9,p.y+9,19,2);
+   // Real NPCs are enough to indicate future opponents; no opaque
+   // card/number badges on every tile. Highlight ONLY the next encounter.
+   g.fillStyle(0x142d33,.42);g.fillRect(p.x-8,p.y+5,17,3);
    if(active){
-    g.fillStyle(0xf4d077,.94);
-    for(const d of [-1,1]){
-     g.fillRect(p.x+d*18-(d>0?2:0),p.y-21,3,9);
-     g.fillRect(p.x+d*18-(d>0?7:0),p.y-21,8,2);
-    }
+    g.fillStyle(0x1b3037,.9);
+    g.fillRect(p.x-5,top-14,11,5);
+    g.fillStyle(0xf9ce65);g.fillTriangle(p.x-5,top-15,p.x+5,top-15,p.x,top-6);
    }
   }else{
    if(active){g.fillStyle(0xf4d077,.35);g.fillRect(p.x-21,p.y-2,42,24);}
@@ -383,23 +390,26 @@ export function renderBattlePath(scene,state,handlers){
   if(boss){g.fillStyle(0xf7d999,.95);g.fillRect(p.x-15,top-5,30,2);}
   if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
-   g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
-   g.fillTriangle(p.x,top+1,p.x+6,top-14,p.x+14,top+1);
-   ball(g,p.x,top-2,9);
+   if(stage!==6){
+    g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
+    g.fillTriangle(p.x,top+1,p.x+6,top-14,p.x+14,top+1);
+   }
+   ball(g,p.x,top-2,stage===6?6:9);
   }else{
    const kind=trainerKind(stage,node);
-   const npc=addFireRedNPC(scene,kind,p.x,top+12,{scale:boss?1.68:1.20,depth:21});
+   const npc=addFireRedNPC(scene,kind,p.x,top+12,
+    {scale:stage===6?(boss?1.16:.98):(boss?1.68:1.20),depth:21});
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
    if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
   // The current objective is shown in the bottom action bar, not repeated
   // fourteen times over town roofs, water and pathways.
-  txt(scene,p.x,p.y+13,String(i+1),8,
+  if(stage!==6||active)txt(scene,p.x,p.y+13,String(i+1),stage===6?7:8,
    active&&stage!==6?'#20241c':done?'#e3ffe8':'#e5eee3',24);
   if(boss&&active)txt(scene,p.x,p.y+29,leader.toUpperCase(),8,'#ffe6a2',24);
   if(done){
-   const size=stage===6?6:10;
-   const checkX=p.x+(stage===6?12:width/2-9),checkY=p.y-23;
+   const size=stage===6?4:10;
+   const checkX=p.x+(stage===6?11:width/2-9),checkY=p.y-23;
    g.fillStyle(0x378c70);g.fillRect(checkX,checkY,size,size);
    g.fillStyle(0xf6ffe9);g.fillRect(checkX+2,checkY+Math.floor(size/2),size-3,2);
    if(stage!==6)g.fillRect(checkX+4,checkY+2,2,size-3);
@@ -470,12 +480,22 @@ export function renderBattlePath(scene,state,handlers){
  for(let i=0;i<6;i++){
   const m=state.team[i],y=119+i*22;
   side.fillStyle(i===state.active?0x28475a:0x102c43);
-  side.fillRoundedRect(502,y-9,124,21,3);
-  side.lineStyle(1,i===state.active?0xf2c267:0x345d76,1);
-  side.strokeRoundedRect(502,y-9,124,21,3);
+  if(m||stage!==6){
+   side.fillRoundedRect(502,y-9,124,21,3);
+   side.lineStyle(1,i===state.active?0xf2c267:0x345d76,1);
+   side.strokeRoundedRect(502,y-9,124,21,3);
+  }
   if(!m){
-   txt(scene,517,y,'◌',10,'#47677b',24);
-   txt(scene,535,y,'ESPAÇO LIVRE',7,'#5f839b',24).setOrigin(0,.5);
+   // A row of six giant empty cards was dominating the stage-six UI.
+   // Collapse all free slots into a single understated roster count.
+   if(stage===6){
+    if(i===state.team.length)
+     txt(scene,562,y+3,(6-state.team.length)+' VAGAS DISPONÍVEIS',
+      8,'#7897a3',24);
+   }else{
+    txt(scene,517,y,'◌',10,'#47677b',24);
+    txt(scene,535,y,'ESPAÇO LIVRE',7,'#5f839b',24).setOrigin(0,.5);
+   }
    continue;
   }
   hudSprite(scene,m,514,y+1,23);
@@ -501,14 +521,15 @@ export function renderBattlePath(scene,state,handlers){
  const label=finished?'★ SALÃO DA FAMA':cityView&&progress<total?
   'EXPLORAR ROTAS':progress>=total?
   'ENFRENTAR '+leader.toUpperCase():'ENTRAR NA BATALHA';
- const cta=button(scene,359,335,217,32,label,()=>{
+ const cta=button(scene,stage===6?371:359,335,stage===6?163:217,30,label,()=>{
   if(finished)return handlers.hall?.();
   if(cityView&&progress<total)return handlers.viewRoutes?.();
   if(progress>=total)return handlers.gym();
   handlers.battle();
  },{gold:true,enabled:true,depth:70});
  cta.setData('torre2-central-cta',true);
- button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
+ button(scene,stage===6?590:568,336,stage===6?72:113,27,
+  'REINICIAR',handlers.reset,{depth:70,small:true})
   .setData('torre2-reset-journey',true);
  // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
  installCampaignAudioSettings(scene);
