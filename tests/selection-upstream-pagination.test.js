@@ -17,16 +17,19 @@ const october='const TY=43,TGAP=2,FILAS=ROSTER.length>13?2:1;'+
 test('legacy original two-row grid still receives real native page navigation',()=>{
  const patched=paginateSelectionSource(old);
  assert.ok(patched.includes('Math.min(2,Math.ceil(ROSTER.length/POR_FILA))'));
+ assert.ok(patched.includes('const POR_FILA=8;'));
  assert.ok(patched.includes('this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2))'));
  assert.ok(patched.includes('card.objects=this.children.list.slice(before)'));
  assert.ok(patched.includes('this.torre2Page=Math.floor(this.foco/(POR_FILA*2))'));
 });
-test('October upstream native grid stays 12 columns, two rows, 24 per page',()=>{
+test('Native grid is eight columns, two rows, 16 per page',()=>{
  const patched=paginateSelectionSource(october);
- assert.ok(patched.includes('FILAS=2;const POR_FILA=12;'));
+ assert.ok(patched.includes('FILAS=2;const POR_FILA=8;'));
  assert.ok(!patched.includes('Math.ceil(ROSTER.length/FILAS)'),
   'Huge dynamic column count makes FIGHT button and roster inaccessible');
  assert.ok(patched.includes('Math.floor((i%(POR_FILA*2))/POR_FILA)'));
+ assert.ok(patched.includes('this.torre2PageLabel=texto(this,ANCHO-14'));
+ assert.ok(patched.includes('this.torre2PageLabel?.setText("PÁG "'));
  assert.ok(patched.includes('card.page=Math.floor(i/(POR_FILA*2))'));
  assert.ok(patched.includes('this.torre2Pages=Math.ceil(ROSTER.length/(POR_FILA*2))'));
 });
