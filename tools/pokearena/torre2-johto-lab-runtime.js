@@ -4,7 +4,7 @@
  */
 import * as vfx from "../vfx.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
-import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
+import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
 const tones={
  "triple-kick":[0xedb555,0xfff0b9],"thief":[0x715298,0xd5b8ed],
  "snore":[0x6ed0de,0xc9f8ff],"powder-snow":[0x79c6ed,0xf1ffff],
@@ -70,6 +70,114 @@ function pixelShards(g,id,x,y,age,phase,scale=2){
   g.fillRect(xx,yy,size*scale/2,size*scale/2);
  }
 }
+// Crisp stepped pixel clusters from an authored trajectory, never a vector
+// stroke. The native P2 renderer displays every cell at integer coordinates.
+function tileRoute(g,x1,y1,x2,y2,ink,highlight,weight=2){
+ const dx=x2-x1,dy=y2-y1;
+ const parts=Math.max(1,Math.ceil(Math.max(Math.abs(dx),Math.abs(dy))/4));
+ for(let i=0;i<=parts;i++){
+  const px=Math.round(x1+dx*i/parts),py=Math.round(y1+dy*i/parts);
+  g.fillStyle(ink,1).fillRect(px-1,py-1,weight+2,weight+2);
+  g.fillStyle(highlight,.96).fillRect(px,py,weight,weight);
+ }
+}
+function signatureFrames(g,id,age,duration,x,y,r,l,frame,alpha){
+ const pal=JOHTO_PIXEL_PALETTES[id];if(!pal)return;
+ const phase=Math.min(1,age/duration);
+ const tx=Math.round(r.x),ty=Math.round(r.y-r.alto*.5);
+ const sx=Math.round(l.x),sy=Math.round(l.y-l.alto*.5);
+ const px=Math.round(x),py=Math.round(y);
+ const stamp=(cx,cy,scale=1,flip=false,opacity=alpha)=>stampJohto(g,id,cx,cy,frame,scale,opacity,flip);
+ if(id==='zap-cannon'){
+  const path=[
+   {x:sx,y:sy},{x:sx+24,y:sy-12},{x:sx+43,y:sy+9},
+   {x:px-28,y:py-15},{x:px-9,y:py+10},{x:px,y:py}
+  ];
+  for(let i=1;i<path.length;i++){
+   const a=path[i-1],b=path[i];
+   tileRoute(g,a.x,a.y,b.x,b.y,pal[1],pal[4],i%2?2:3);
+  }
+  for(const [dx,dy] of [[-22,-18],[12,-24],[22,12],[-7,26]]){
+   tileRoute(g,px,py,px+dx,py+dy,pal[1],pal[3],2);
+   g.fillStyle(pal[4]).fillRect(px+dx-2,py+dy-2,5,5);
+  }
+ }else if(id==='whirlpool'){
+  // Two crossing water spirals embrace the real opponent, rather than
+  // a generic expanding circle in front of the caster.
+  for(let n=0;n<9;n++){
+   const a=n*.86+age*9,radius=12+4*(n%4);
+   const yy=ty-22+(n%5)*9,xx=tx+Math.round(Math.cos(a)*radius);
+   stamp(xx,yy,1,n%2===0,alpha*.85);
+   g.fillStyle(pal[4],.85).fillRect(xx+Math.round(Math.sin(a)*7),yy-3,3,3);
+  }
+  for(const n of [-1,0,1]){
+   tileRoute(g,tx-26,ty+n*12,tx+26,ty-8+n*10,pal[1],pal[n===0?4:3],2);
+  }
+ }else if(id==='powder-snow'){
+  for(let n=0;n<9;n++){
+   const t=n/9,a=t*2.2+age*5;
+   stamp(Math.round(sx+(px-sx)*t+Math.sin(a)*18),
+    Math.round(sy+(py-sy)*t+Math.cos(a*1.3)*20),1,n%2===0,alpha*.72);
+  }
+ }else if(id==='octazooka'){
+  for(let n=0;n<7;n++){
+   const a=n*2.4+age*3,dist=10+phase*27;
+   stamp(px+Math.round(Math.cos(a)*dist),py+Math.round(Math.sin(a)*dist),1,n%2===0,.8*alpha);
+  }
+ }else if(id==='false-swipe'||id==='steel-wing'){
+  const yoff=id==='steel-wing'?20:9;
+  for(const flip of [false,true]){
+   stamp(tx+(flip?-12:12),ty+(flip?yoff:-yoff),2,flip,alpha*.85);
+  }
+  const cutX=tx+(frame%3-1)*9;
+  tileRoute(g,cutX-25,ty-24,cutX+24,ty+23,pal[0],pal[4],2);
+  if(id==='steel-wing')tileRoute(g,cutX+23,ty-23,cutX-20,ty+17,pal[1],pal[3],2);
+ }else if(id==='rock-smash'||id==='magnitude'){
+  const ground=Math.round(r.y-5);
+  const span=id==='magnitude'?70:38;
+  for(let n=-2;n<=2;n++){
+   const xx=tx+n*(span/2)|0;
+   tileRoute(g,xx-9,ground,xx+7,ground-8-(n%2)*6,pal[0],pal[3],2);
+   stamp(xx+Math.round(Math.sin(frame+n)*7),ground-11,1,n%2===0,.7*alpha);
+  }
+ }else if(id==='triple-kick'||id==='beat-up'){
+  const count=id==='triple-kick'?3:5;
+  for(let n=0;n<count;n++){
+   const t=n*(id==='triple-kick'?.17:.11),delta=age-t;
+   if(delta<0||delta>.22)continue;
+   stamp(tx+Math.round(Math.cos(n*2.2)*24),
+    ty+Math.round(Math.sin(n*2.2)*19),2,n%2===0,alpha);
+  }
+ }else if(id==='thief'||id==='pursuit'){
+  for(let n=0;n<4;n++){
+   const t=Math.max(0,phase-n*.13);
+   stamp(Math.round(sx+(tx-sx)*t),Math.round(sy+(ty-sy)*t)-n*5,
+    1,n%2===0,alpha*.7);
+  }
+ }else if(id==='snore'){
+  for(let n=0;n<4;n++){
+   stamp(sx+n*21,sy-14-n*19-Math.round(age*14),1,n%2===0,alpha*.7);
+  }
+ }else if(id==='hidden-power'){
+  for(let n=0;n<6;n++){
+   const a=n*Math.PI/3+age*7;
+   const rad=30-Math.min(22,phase*20);
+   stamp(sx+Math.round(Math.cos(a)*rad),sy+Math.round(Math.sin(a)*rad),1,n%2===0,alpha*.72);
+  }
+ }else if(id==='vital-throw'||id==='frustration'){
+  for(let n=0;n<5;n++){
+   const t=n/5;
+   stamp(sx+Math.round((tx-sx)*t),sy+Math.round((ty-sy)*t)+((n%2)*12-6),
+    1,n%2===0,alpha*.7);
+  }
+ }else if(id==='return'||id==='present'){
+  for(let n=0;n<5;n++){
+   const t=n/5;
+   stamp(Math.round(sx+(tx-sx)*t),Math.round(sy+(ty-sy)*t-Math.sin(t*Math.PI)*20),
+    1,n%2===0,alpha*.6);
+  }
+ }
+}
 function artwork(g,id,style,x,y,age,duration,r,l){
  g.clear();
  const phase=Math.min(.999,Math.max(0,age/duration)),frame=Math.floor(phase*JOHTO_PIXEL_FRAMES);
@@ -112,6 +220,7 @@ function artwork(g,id,style,x,y,age,duration,r,l){
   for(let n=0;n<3;n++)stampJohto(g,id,
    x0+(n-1)*16,y0+(n%2?9:-8),frame+n,1,tail*.6,n%2===0);
  }
+ signatureFrames(g,id,age,duration,x0,y0,r,l,frame,tail);
  if(phase>.24)pixelShards(g,id,x0,y0,age,(phase-.24)/.76);
 }
 function cast(l,h,extra){
