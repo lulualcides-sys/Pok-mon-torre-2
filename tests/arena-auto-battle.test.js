@@ -790,8 +790,9 @@ test('Extreme native reader requests real evolution; AUTO OFF restores manual an
  actor.etapa=1;actor.puedeEvolucionar=false;
  assert.equal(battle.controles[0].leer(.016).mega,false,'After EVO, stop requesting');
  auto.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
- assert.strictEqual(battle.controles[0].leer,original===battle.controles[0].leer?original:battle.controles[0].leer);
- assert.equal(battle.controles[0].leer(.016).lmb,false,'Manual still returns original input');
+ assert.equal(auto.enabled,false,'AUTO button still allows manual control');
+ assert.deepEqual(battle.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
+  'Manual still returns original input');
  battle.handlers.get('shutdown')();
  assert.strictEqual(battle.controles[0].leer,original,'Reader restored on shutdown');
 });
