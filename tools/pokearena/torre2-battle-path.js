@@ -121,7 +121,14 @@ function spriteShortcut(scene,x,y,spec,onPress,portrait=null){
   .setData('torre2-shortcut-role',spec.id);
  hit.on('pointerover',()=>{hover=true;paint()});
  hit.on('pointerout',()=>{hover=false;paint()});
- hit.on('pointerdown',()=>{playOriginalMenuCue(scene);onPress()});
+ let lastPress=-Infinity;
+ hit.on('pointerdown',(_p,_x,_y,event)=>{
+  event?.stopPropagation?.();
+  const now=scene.time?.now??Date.now();
+  if(now-lastPress<190)return;
+  lastPress=now;
+  playOriginalMenuCue(scene);onPress();
+ });
  paint();return hit;
 }
 function connector(g,ax,ay,bx,by,lit){
