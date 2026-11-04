@@ -4,6 +4,7 @@ import {gen3Effectiveness} from './gen3-types.js';
 import {createWeather,setWeather,tickWeather,WEATHER_NAMES} from './weather.js';
 import {installWeatherPixels} from './weather-pixels.js';
 import {installWeatherStatusFloat} from './weather-status-float.js';
+import {installCampaignMoveLabelGuard} from './combat-visual-guard.js';
 import {serializeGen3Status,restoreGen3Status,statusLabel} from './gen3-status.js';
 import {trainerInventory,createTrainerItems,trainerItemStep,TRAINER_ITEM_RULES} from './trainer-items.js';
 import {clearDepartingCombat} from './combat-boundary.js';
@@ -155,6 +156,11 @@ export function installPartyBattle(scene){
  // Side-of-sprite ATK ±20% only when the actual species modifier applies.
  // The weather status overlay is cosmetic and never touches the damage path.
  installWeatherStatusFloat(scene,weather,actors,party);
+ // Prevent oversize native move names from covering Weezing or the HP HUD.
+ // This only adjusts Text display size, never the actual attacks or their VFX.
+ const campaignLabelGuard=installCampaignMoveLabelGuard(scene,actors);
+ scene.__torre2CampaignLabelGuard=campaignLabelGuard;
+ scene.events.once('shutdown',()=>{scene.__torre2CampaignLabelGuard=null;});
  const weatherHud=label(scene,320,105,'',8,'#d9e7ed',2802);
  scene.events.once('shutdown',()=>{weatherHud.destroy();scene.__torre2Weather=null;scene.__torre2Rain=null;});
  const levelLabels=actors.map(()=>label(scene,0,0,'',7,'#d5e9ef',2302));

@@ -10,12 +10,13 @@ function fixture(){
  const scene={events,fase:'lucha',scene:{isActive:()=>true},
   add:{text(x,y,value,style){
    const object={x,y,text:value,style,active:true,data:{},
+    setPosition(x,y){this.x=x;this.y=y;return this},
     setOrigin(){return this},setDepth(n){this.depth=n;return this},
     setAlpha(){return this},setScale(){return this},
     setData(k,v){this.data[k]=v;return this},destroy(){this.active=false}};
    objects.push(object);return object;
   }},
-  tweens:{add(c){tweens.push(c);return c;}}};
+  tweens:{add(c){tweens.push(c);return c;},killTweensOf(){}}};
  const weather=createWeather();
  const actors=[
   {x:160,y:190,alto:38,tipos:['GRASS'],hp:80,ko:false,spr:{visible:true}},
@@ -50,9 +51,9 @@ test('descriptor always reuses real ±20% species damage and respects neutral du
   'Pure Water should not display a hail offensive bonus');
  setWeather(w,'none');
  assert.equal(weatherStatusDescriptor(w,['FIRE']),null);
- assert.equal(WEATHER_STATUS_FLOAT_MS,1120);
+ assert.equal(WEATHER_STATUS_FLOAT_MS,240);
 });
-test('sprite-side labels animate once per active climate, do not spam, expire',()=>{
+test('sprite-side labels remain visible for full climate, do not spam, expire',()=>{
  const f=fixture();
  f.update();assert.equal(f.objects.length,0);
  setWeather(f.weather,'sun');f.update();
@@ -64,12 +65,13 @@ test('sprite-side labels animate once per active climate, do not spam, expire',(
  assert.ok(f.objects[0].x>f.actors[0].x&&f.objects[1].x<f.actors[1].x);
  for(let i=0;i<90;i++)f.update();
  assert.equal(f.objects.length,2,'same weather revision must not keep repeating');
- assert.deepEqual(f.tweens.map(x=>x.duration),[1120,1120]);
- f.tweens[0].onComplete();
- assert.equal(f.objects[0].active,false);
- assert.equal(f.ui.debug.active[0],null);
+ assert.deepEqual(f.tweens.map(x=>x.duration),[240,240]);
+ assert.equal(f.objects[0].active,true,'active climate must keep its +20% visible');
+ assert.equal(f.ui.debug.active[0],f.objects[0]);
  tickWeather(f.weather,20,[]);f.update();
- assert.equal(f.ui.debug.active[1],null,'weather expiry clears pending negatives');
+ assert.equal(f.ui.debug.active[0],null,'weather expiry clears visible positives');
+ assert.equal(f.ui.debug.active[1],null,'weather expiry clears visible negatives');
+ assert.ok(f.objects.every(x=>!x.active),'weather expiry must destroy labels');
  assert.equal(f.ui.debug.shown.length,2,'no neutral toast when climate expires');
 });
 test('weather replacement and real teammate switch re-announce only affected Pokémon',()=>{
