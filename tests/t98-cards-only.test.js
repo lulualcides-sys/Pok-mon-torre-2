@@ -6,7 +6,7 @@ const cards=readFileSync('tools/pokearena/torre2-trainer-cards.js','utf8');
 
 test('Kanto campaign never renders any world map or hidden battle-road behind cards',()=>{
  const method=scene.slice(scene.indexOf(' renderCampaign(state,{deferEeveeChoice=false}={}){'),
-  scene.indexOf(' // This is a campaign-only choice'));
+  scene.indexOf(' renderLegacyCampaign(state,'));
  assert.ok(method.length>500);
  assert.match(method,/this\.__torre2BattlePath=null/);
  assert.match(method,/renderTrainerCardHub\(this,state,handlers\)/);
