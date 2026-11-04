@@ -58,6 +58,11 @@ const server=http.createServer(async(req,res)=>{
     a.inmortal=true;s.luchadores[1].inmortal=true;
     s.controles[1].leer=()=>({mx:0,my:0,ax:a.x,ay:a.y});
     a.energia=100;a.ulti=100;a.cd[slot]=0;a.accion=null;a.animAccion=null;a.dash=null;
+    // The campaign deliberately starts AUTO enabled, which consumes native
+    // touch input with CPU decisions (including ESP). Test the real MANUAL
+    // touchscreen command by switching the battle's approved AUTO toggle OFF.
+    if(s.__torre2AutoMode)s.__torre2AutoMode.enabled=false;
+    s.pausado=false;s.pausaGolpe=0;
     a.est={};a.dolorHasta=-1;a.ko=false;
     return {name:entry?.nombre,forma:entry?.forma,locked:entry?.pendiente===true,
      slot,uses:a.stats.usosSlot?.[slot]||0,level:s.datos.torre2.playerLevel,
