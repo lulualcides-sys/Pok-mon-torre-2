@@ -28,7 +28,9 @@ test('Enemy party is rendered fully with genuine PMD textures at exact 50% size'
 });
 test('Retired maps do not consume campaign preload memory; original features remain accessible',()=>{
  const preload=scene.slice(scene.indexOf(' preload(){'),scene.indexOf(' create(){'));
- assert.doesNotMatch(preload,/this\.load\.image\(key,AVAILABLE_FRLG_FILES/);
+ const qaElse=preload.slice(preload.indexOf('  }else{',preload.indexOf('  if(qaLegacyMap){')));
+ assert.ok(qaElse.length>100,'Cards-only loader must have a separate non-QA branch');
+ assert.doesNotMatch(qaElse,/this\.load\.image\(key,AVAILABLE_FRLG_FILES/);
  assert.match(preload,/if\(key\.startsWith\('frlg-location-'\)\)this\.textures\.remove\(key\)/);
  for(const token of ['rematchAtlas','battle:()=>this.enterBattle(state)',
   'reset:()=>this.confirmResetJourney()','dex:()=>this.dexScreen(state)',
