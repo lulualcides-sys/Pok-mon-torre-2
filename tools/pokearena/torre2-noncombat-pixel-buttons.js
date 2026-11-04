@@ -12,7 +12,9 @@ export function pixelMenuButton(scene,x,y,label,onPress,{
 }={}){
  if(typeof onPress!=='function')throw TypeError('Menu button needs callback');
  const mobile=Boolean(MOVIL.activo);
- if(mobile){altoZona=Math.max(altoZona,27);anchoExtra=Math.max(anchoExtra,8)}
+ // Preserve original menu row spacing: oversizing a zone would overlap
+ // adjacent level/arena options in landscape mobile selection.
+ if(mobile){altoZona=Math.max(altoZona,20);anchoExtra=Math.max(anchoExtra,8)}
  const g=scene.add.graphics();
  const t=texto(scene,x,y+4,label,{tam:8}).setOrigin(.5).setDepth(1);
  let enabled=false,visible=true;
