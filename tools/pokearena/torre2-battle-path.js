@@ -253,7 +253,7 @@ export function renderBattlePath(scene,state,handlers){
  // Route details stay in the header and stop covering the overworld art.
  txt(scene,28,84,areaLegend.length>28?areaLegend.slice(0,27)+'…':areaLegend,
   7,'#d4e7cf',28).setOrigin(0,.5);
- button(scene,stage===6?288:389,294,stage===6?89:88,18,'VS SEEKER',
+ button(scene,389,stage===6?272:294,88,18,'VS SEEKER',
   ()=>handlers.rematchAtlas?.(),{depth:39,small:true})
   .setData('torre2-open-rematch-atlas',true);
  if(stage===6)button(scene,389,294,88,18,
