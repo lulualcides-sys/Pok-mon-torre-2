@@ -49,6 +49,11 @@ const server=http.createServer(async(req,res)=>{
     };
    });
    const initial=await inspect();
+   const themedControls=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('seleccion');
+    return scene.children.list.filter(obj=>obj?.getData?.('torre2-ui-theme')==='premium-noncombat').length;
+   });
+   assert.ok(themedControls>=3,'Original noncombat selection controls must use Pixel Art Premium');
    assert.equal(initial.visibleCards,16,'Only 16 Pokémon can be rendered on one page');
    assert.deepEqual(initial.visiblePages,[initial.page],'A hidden page has visible sprites');
    assert.equal(initial.hiddenClickable,0,'Hidden Pokémon cannot be touched');
