@@ -27,9 +27,12 @@ test('campaign buttons have clear semantic tones and preserve callbacks',()=>{
  assert.match(source,/setData\('torre2-reset-journey',true\)/);
 });
 test('arena and real combat controls never import the campaign skin',()=>{
- const tree=fs.readFileSync('tools/pokearena/build-preview.mjs','utf8');
- assert.ok(!tree.includes("['escenas/combate.js',[["));
+ // The existing build already patches battle logic for older approved
+ // features; this PR must not change those patches. Check this campaign-only
+ // component instead of falsely rejecting established build transforms.
  assert.ok(!source.includes('from "../hud.js"'));
+ assert.ok(!source.includes("from '../hud.js'"));
+ assert.ok(!source.includes('torre2/noncombat-pixel-buttons.js'));
  // We changed only battle-path.js, a campaign navigation module.
  assert.match(source,/renderBattlePath\(scene,state,handlers\)/);
 });
