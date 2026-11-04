@@ -9,7 +9,7 @@ const {chromium}=require('playwright-core');
 const base=(process.env.POKEDEX_PUBLIC_URL||
  'https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/').replace(/\/?$/,'/');
 const expected={
- mew:['Pound','Ancient Power','Mega Punch','ULT · Psychic'],
+ mew:['Pound','Ancient Power','Mega Punch','Psychic'],
  scyther:['Wing Attack','Fury Cutter','Double Team','X-Scissor'],
  'mr-mime':['Pound','Confusion','Psywave','Psychic'],
  cubone:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
@@ -97,6 +97,8 @@ const expected={
     const slots=['lmb','rmb','q','e'];
     observations[id]={
      slots:Object.fromEntries(slots.map(slot=>[slot,kit[slot]?.nombre||null])),
+     ultSlot:{id:kit.e?.id||null,isUltimate:kit.e?.ulti===true},
+     ultLabelVisible:scene.movs?.list?.some(x=>typeof x.text==='string'&&x.text==='ULT')===true,
      unavailable:slots.filter(slot=>
       !kit[slot]?.forma||kit[slot]?.pendiente||kit[slot]?.torre2Unavailable||kit[slot]?.torre2RequiresTM),
      visible:scene.movs?.list?.filter(x=>typeof x.text==='string').map(x=>x.text).slice(0,25)||[],
@@ -194,6 +196,14 @@ const expected={
     'PUBLIC Pokédex stale/incorrect for '+id+'; real loaded slots: '+JSON.stringify(values));
    assert.deepEqual(item.unavailable,[],id+' shows Locked, inactive or unlearned TM');
   }
+  // Separate canonical move names from the role badge. Native Psychic
+  // is the move name; its fourth-slot metadata and visible ULT badge
+  // must BOTH be retained. Do not weaken any Pokédex/UI assertion.
+  assert.equal(result.observations.mew.ultSlot.id,'psychic');
+  assert.equal(result.observations.mew.ultSlot.isUltimate,true,
+   'Mew Psychic must remain a real ULT in the fourth slot');
+  assert.equal(result.observations.mew.ultLabelVisible,true,
+   'Mew Psychic must visibly display the ULT role badge');
   assert.match(result.observations.mew.descriptor,/KIT CAMPANHA · NV50/);
   assert.deepEqual(errors,[],'Public Phaser browser runtime errors');
   assert.deepEqual(missing,[],'Missing assets on the published site');
