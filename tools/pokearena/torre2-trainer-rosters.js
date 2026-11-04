@@ -114,6 +114,14 @@ export function regionalTrainerPartySize(stage,index){
 // Related evolutionary forms count as ONE family. At later levels,
  // Ponyta/Rapidash, Grimer/Muk, Koffing/Weezing etc. would otherwise
  // evolve into visually duplicated fighters in the very same battle.
+const RIVAL_SUPPORT=Object.freeze({
+ 0:['pidgey','rattata','abra','spearow'],
+ 1:['pidgeotto','rattata','abra','spearow'],
+ 2:['pidgeotto','raticate','kadabra','growlithe'],
+ 4:['pidgeot','kadabra','exeggcute','growlithe'],
+ 5:['pidgeot','alakazam','gyarados','growlithe'],
+ 8:['pidgeot','alakazam','rhydon','gyarados']
+});
 const EVOLUTION_FAMILIES=Object.freeze({
  caterpie:'caterpie',metapod:'caterpie',butterfree:'caterpie',
  weedle:'weedle',kakuna:'weedle',beedrill:'weedle',
@@ -152,7 +160,9 @@ export function regionalTrainerParty(stage,index,firstId,count,kind='trainer'){
  const size=Math.max(1,Math.min(6,Math.trunc(count)||1));
  const result=[firstId];
  if(size===1)return result;
- const rivalPicks=['pidgey','abra','rattata','gyarados'];
+ // Blue's support team gains the correct FireRed family as Kanto advances.
+ // The starter/ace is still supplied by currentOpponent, never overridden.
+ const rivalPicks=RIVAL_SUPPORT[stage]||RIVAL_SUPPORT[8];
  const stageRows=REGIONAL_TRAINERS[stage]||[];
  const trainer=regionalTrainer(stage,index);
  const classPicks=unique(stageRows.filter(row=>row.spriteKind===trainer?.spriteKind)
@@ -182,10 +192,12 @@ export function regionalTrainerParty(stage,index,firstId,count,kind='trainer'){
  return result;
 }
 const ROCKET_ROSTERS=Object.freeze({
- 1:['zubat','ekans','rattata'],
- 3:['raticate','koffing','zubat'],
- 5:['koffing','grimer','golbat'],
- 7:['rhyhorn','nidorino','dugtrio']
+ // FRLG-inspired Rocket families vary across Mt. Moon, hideout, Silph
+ // and Viridian while keeping existing first three identities stable.
+ 1:['zubat','ekans','rattata','sandshrew','koffing'],
+ 3:['raticate','koffing','zubat','ekans','grimer','sandshrew'],
+ 5:['koffing','grimer','golbat','raticate','hypno','magnemite'],
+ 7:['rhyhorn','nidorino','dugtrio','sandshrew','machoke','marowak']
 });
 export function regionalRocket(stage,index){
  const roster=ROCKET_ROSTERS[stage];
