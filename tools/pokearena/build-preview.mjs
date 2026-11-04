@@ -275,6 +275,7 @@ await Promise.all([
  ['tools/pokearena/torre2-johto-lab-catalog.js','johto-lab-catalog.js'],
  ['tools/pokearena/torre2-johto-lab-scene.js','johto-lab-scene.js'],
  ['tools/pokearena/torre2-johto-lab-runtime.js','johto-lab-runtime.js'],
+ ['tools/pokearena/torre2-johto-lab-pixelart.js','johto-lab-pixelart.js'],
  ['tools/pokearena/torre2-johto-lab-combat.js','johto-lab-combat.js']
 ].map(async([source,name])=>fs.copyFile(path.resolve(source),
  path.join(dest,clientSource,'torre2',name))));
@@ -1162,7 +1163,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.j
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
- 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/johto-lab-combat.js',
+ 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/johto-lab-pixelart.js','torre2/johto-lab-combat.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
