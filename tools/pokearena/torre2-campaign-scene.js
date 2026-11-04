@@ -27,7 +27,7 @@ import {prepareTrainingMatch,installTrainingDummy} from './training.js';
 import {trainerClass,drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ITEM_FILES} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
-import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
+import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES,AVAILABLE_OAK_INTRO} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
 import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
@@ -116,6 +116,16 @@ class Campanha extends Phaser.Scene{
   if(!this.textures.exists('torre2-frlg-bag'))
    this.load.spritesheet('torre2-frlg-bag','assets/ui/frlg/items/bag-male.png',{frameWidth:64,frameHeight:64});
   const state=readCampaign();
+  // Prefer the full-body FireRed lecture sprite shown in the user's reference.
+  // The 16x32 native NPC remains as an offline-safe fallback.
+  if(!state){
+   for(const name of ['oak','platform']){
+    if(AVAILABLE_OAK_INTRO.includes(name)&&
+       !this.textures.exists('frlg-oak-intro-'+name))
+     this.load.image('frlg-oak-intro-'+name,
+      'assets/ui/frlg/intro/'+name+'.png');
+   }
+  }
   // Nine tiny original GBA item icons shared by every Mart page.
   // Load once into Phaser's image cache, never over the network during shopping.
   for(const file of FRLG_MART_ITEM_FILES){
@@ -303,45 +313,62 @@ create(){
   paint();return zone;
  }
  professorOakIntro(){
-  // Native FRLG Professor Oak appears only for a new game, never on an
-  // existing save. No campaign write occurs until the starter is selected.
+  // Full-body FRLG lecture portrait (not the overworld NPC): original crisp
+  // pixels, on a light teal presentation stage with a dialogue box.
+  // The starter and save are created only after all four dialogue pages.
   const g=this.add.graphics().setDepth(1);
-  g.fillStyle(0x081c31).fillRect(0,0,640,360);
-  g.fillStyle(0x17475d).fillRect(0,0,640,251);
-  g.fillStyle(0x277c82).fillRect(0,203,640,48);
+  g.fillStyle(0xf0f3e8).fillRect(0,0,640,360);
+  g.fillStyle(0xe2eee9).fillRect(0,0,640,156);
+  g.fillStyle(0xc9e6e0).fillRect(0,156,640,24);
+  g.fillStyle(0xa3d9d1).fillRect(0,180,640,34);
+  g.fillStyle(0x5da9a6).fillRect(0,214,640,36);
+  g.fillStyle(0x2a8889).fillRect(0,250,640,110);
   for(let x=0;x<640;x+=64){
-   g.fillStyle(0x3a8590,.4).fillRect(x+4,210,54,3);
-   g.fillStyle(0x114259).fillRect(x+4,243,54,5);
+   g.fillStyle(0xffffff,.1).fillRect(x+6,192,33,3);
   }
-  g.fillStyle(0xc8e3cd).fillRect(112,42,416,7);
-  g.fillStyle(0x9ac6c3).fillRect(124,49,392,7);
-  g.fillStyle(0x122c43).fillRect(146,56,348,32);
-  g.fillStyle(0x4f9fa3).fillRect(154,62,332,19);
-  g.fillStyle(0x091f32).fillRect(0,251,640,109);
-  g.fillStyle(0xe6d598).fillRect(30,265,580,85);
-  g.fillStyle(0x214464).fillRect(34,269,572,77);
-  g.fillStyle(0x14304e).fillRect(38,273,564,69);
-  g.fillStyle(0x0a2739,.6).fillEllipse(320,249,85,17);
-  const oak=addFireRedNPC(this,'oak',320,250,{scale:4.9,depth:2});
-  if(!oak)text(this,320,172,'SPRITE DO PROFESSOR INDISPONÍVEL',{
-   fontSize:'14px',color:'#ffe19a'}).setOrigin(.5).setDepth(3);
-  text(this,320,25,'LABORATÓRIO DO PROFESSOR OAK',{
-   fontSize:'20px',fontStyle:'bold',color:'#fff2c1'
+  const hasPlatform=this.textures.exists('frlg-oak-intro-platform');
+  if(hasPlatform){
+   const platform=this.add.image(320,237,'frlg-oak-intro-platform').setDepth(1.5);
+   platform.setScale(Math.min(2.6,190/platform.width,62/platform.height));
+   if(typeof Phaser!=='undefined')
+    platform.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }else{
+   g.fillStyle(0xb9dfbd).fillEllipse(320,240,202,45);
+   g.lineStyle(3,0x5bafab).strokeEllipse(320,240,202,45);
+  }
+  if(this.textures.exists('frlg-oak-intro-oak')){
+   const oak=this.add.image(320,238,'frlg-oak-intro-oak')
+    .setOrigin(.5,1).setDepth(2);
+   oak.setScale(Math.min(2.6,126/oak.width,174/oak.height));
+   if(typeof Phaser!=='undefined')
+    oak.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   oak.setData('torre2-professor-oak-lecture',true);
+  }else{
+   const npc=addFireRedNPC(this,'oak',320,240,{scale:4.9,depth:2});
+   npc?.setData('torre2-professor-oak-lecture-fallback',true);
+  }
+  text(this,320,23,'POKÉMON TORRE 2 · KANTO',{
+   fontSize:'19px',fontStyle:'bold',color:'#153a4f',
+   stroke:'#e0efe8',strokeThickness:2
   }).setOrigin(.5).setDepth(3);
+  g.fillStyle(0x153b58).fillRect(22,266,596,84);
+  g.fillStyle(0xfff9e5).fillRect(26,270,588,76);
+  g.fillStyle(0x264363).fillRect(29,273,582,70);
+  g.fillStyle(0xe5f3fa).fillRect(32,276,576,64);
   const dialogue=[
    'Olá! Bem-vindo ao mundo dos Pokémon!',
    'Sou o Professor Oak. Estudo as criaturas que vivem por toda Kanto.',
    'Você conhecerá treinadores, rotas e os oito líderes de ginásio.',
    'Sua jornada começa agora. Escolha um Pokémon para ser seu parceiro!'
   ];
-  const heading=text(this,57,279,'PROF. OAK',{
-   fontSize:'12px',fontStyle:'bold',color:'#ffe49e'}).setDepth(4);
-  heading.setData('torre2-oak-dialogue',true);
+  text(this,48,281,'PROF. OAK',{
+   fontSize:'12px',fontStyle:'bold',color:'#1b3d65'
+  }).setDepth(4).setData('torre2-oak-dialogue',true);
   let index=0;
-  const message=text(this,57,301,dialogue[index],{
-   fontSize:'14px',color:'#f3f7ec',wordWrap:{width:495}
+  const message=text(this,48,302,dialogue[index],{
+   fontSize:'13px',color:'#15243c',wordWrap:{width:472}
   }).setDepth(4);
-  this.button(539,330,120,26,'CONTINUAR',()=>{
+  this.button(539,328,120,26,'CONTINUAR',()=>{
    index++;
    if(index<dialogue.length){message.setText(dialogue[index]);return;}
    this.__torre2OakIntroSeen=true;
