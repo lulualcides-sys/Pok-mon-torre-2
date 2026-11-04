@@ -35,6 +35,7 @@ import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {renderTrainerCardHub,renderTrainerCardMapTab} from './trainer-cards.js';
+import {resetCardPortraitRequests} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
 import {originalBallSprite} from './ball-sprites.js';
@@ -109,6 +110,8 @@ class Campanha extends Phaser.Scene{
   // when the user heals at the Center and returns to the same trainer.
   this.result=input?.finished&&input!==this.__torre2ConsumedFinished?input:null;
   this.__torre2OakIntroSeen=false;
+  // Restarted Phaser scenes keep the instance, but discard old card layers.
+  resetCardPortraitRequests(this);
  }
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
@@ -309,7 +312,15 @@ create(){
    .setInteractive({useHandCursor:true});
   zone.on('pointerover',()=>{hovered=true;paint()});
   zone.on('pointerout',()=>{hovered=false;paint()});
-  zone.on('pointerdown',()=>callback());
+  let lastPress=-Infinity;
+  zone.on('pointerdown',(_p,_x,_y,event)=>{
+   event?.stopPropagation?.();
+   // Avoid duplicate mobile purchase, restart and starter submissions.
+   const now=Date.now();
+   if(now-lastPress<190)return;
+   lastPress=now;
+   callback();
+  });
   paint();return zone;
  }
  professorOakIntro(){
@@ -880,7 +891,15 @@ create(){
    .setDepth(79).setInteractive({useHandCursor:true});
   zone.on('pointerover',()=>{hovered=true;paint()});
   zone.on('pointerout',()=>{hovered=false;paint()});
-  zone.on('pointerdown',()=>{if(active)callback()});
+  let lastPress=-Infinity;
+  zone.on('pointerdown',(_p,_x,_y,event)=>{
+   event?.stopPropagation?.();
+   if(!active)return;
+   const now=Date.now();
+   if(now-lastPress<190)return;
+   lastPress=now;
+   callback();
+  });
   paint();
   return zone;
  }

@@ -1,0 +1,77 @@
+name: T95 — campanha estável, retratos e Pages preflight
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/torre2-card-portrait-cache.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/torre2-trainer-cards.js'
+      - 'tools/pokearena/torre2-battle-path.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/t95-card-portrait-restart.test.js'
+      - 'tests/t95-oak-onboarding-browser.cjs'
+      - 'tests/solo-kanto-built.test.mjs'
+      - 'tests/rival-payday-cooldowns-built.test.mjs'
+      - '.github/workflows/t95-pr-release-check.yml'
+permissions:
+  contents: read
+jobs:
+  node-checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sintaxe, regressão do save e carregamento de sprites
+        run: |
+          set -euo pipefail
+          npm run check
+          for file in tools/pokearena/torre2-{card-portrait-cache,campaign-scene,trainer-cards,battle-path}.js; do
+            node --check "$file"
+          done
+          node --check tools/pokearena/build-preview.mjs
+          node --test tests/t95-card-portrait-restart.test.js
+          npm test
+  pages-preflight:
+    needs: node-checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Preparar browser
+        run: npm install --no-audit --no-fund
+      - name: Capturar e construir cliente Phaser real
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs                 && node tools/pokearena/build-preview.mjs                 && test -s _site/arena2d/lib/phaser.min.js; then
+              break
+            fi
+            if [ "$attempt" -eq 3 ]; then exit 1; fi
+            sleep $((attempt*5))
+          done
+      - name: Executar os gates que bloquearam o último deploy
+        run: |
+          set -euo pipefail
+          node tests/solo-kanto-built.test.mjs
+          node tests/rival-payday-cooldowns-built.test.mjs
+          node tests/versus-intro-built.test.mjs
+      - name: Smoke Phaser no Chromium real
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t95-oak-onboarding-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/versus-intro-browser.cjs
+      - name: Preservar prints e relatórios
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t95-kanto-mobile-phaser
+          path: test-evidence/
+          if-no-files-found: ignore
+          retention-days: 7

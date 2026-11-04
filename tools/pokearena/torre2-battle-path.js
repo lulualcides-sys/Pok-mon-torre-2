@@ -55,7 +55,15 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
   .setInteractive({useHandCursor:true}).setData('torre2-path-action',title);
  zone.on('pointerover',()=>{hover=true;paint()});
  zone.on('pointerout',()=>{hover=false;paint()});
- zone.on('pointerdown',()=>{if(enabled){playOriginalMenuCue(scene);action()}});
+ let lastPress=-Infinity;
+ zone.on('pointerdown',(_p,_x,_y,event)=>{
+  event?.stopPropagation?.();
+  if(!enabled)return;
+  const now=Date.now();
+  if(now-lastPress<190)return;
+  lastPress=now;
+  playOriginalMenuCue(scene);action();
+ });
  paint();return zone;
 }
 // Native, indexed FireRed item sprites already preloaded by CampaignScene.
@@ -113,7 +121,14 @@ function spriteShortcut(scene,x,y,spec,onPress,portrait=null){
   .setData('torre2-shortcut-role',spec.id);
  hit.on('pointerover',()=>{hover=true;paint()});
  hit.on('pointerout',()=>{hover=false;paint()});
- hit.on('pointerdown',()=>{playOriginalMenuCue(scene);onPress()});
+ let lastPress=-Infinity;
+ hit.on('pointerdown',(_p,_x,_y,event)=>{
+  event?.stopPropagation?.();
+  const now=Date.now();
+  if(now-lastPress<190)return;
+  lastPress=now;
+  playOriginalMenuCue(scene);onPress();
+ });
  paint();return hit;
 }
 function connector(g,ax,ay,bx,by,lit){

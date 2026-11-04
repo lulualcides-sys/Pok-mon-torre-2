@@ -6,6 +6,7 @@ import {STAGES,TRAINERS_PER_GYM,currentOpponent,rematchOpponent,trainerSpeciesFo
 import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
+import {requestCardPortrait} from './card-portrait-cache.js';
 import {ball} from './campaign-art.js';
 
 const PALETTE={
@@ -56,8 +57,13 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
  const zone=scene.add.zone(x+w/2,y+h/2,w,h)
   .setInteractive({useHandCursor:!muted}).setData('torre2-card-control',id||label);
  layer.add(zone);
+ let lastPress=-Infinity;
  if(!muted)zone.on('pointerdown',(_p,_x,_y,event)=>{
-  event?.stopPropagation?.();fn?.();
+  event?.stopPropagation?.();
+  const now=Date.now();
+  if(now-lastPress<190)return;
+  lastPress=now;
+  fn?.();
  });
  return zone;
 }
@@ -93,17 +99,9 @@ function portrait(scene,layer,id,x,y,size=43){
   layer.add(image);
  };
  if(scene.textures.exists(key)){show();return key;}
- // Native PMD art is loaded on demand for only the selected trainer,
- // rather than allocating 151 GPU portraits while the map is shown.
- const req=scene.__torre2CardPortraitQueue??=new Set();
- if(!req.has(key)){
-  req.add(key);scene.load.image(key,'assets/pmd/'+dex+'/portrait.png');
-  scene.load.once('filecomplete-image-'+key,show);
-  scene.load.once('loaderror',file=>{if(file?.key===key)req.delete(key)});
-  if(!scene.load.isLoading())scene.load.start();
- }else{
-  scene.load.once('filecomplete-image-'+key,show);
- }
+ // Native on-demand PMD portraits with bounded callbacks and one
+ // request per species; unavailable art cannot retry infinitely.
+ requestCardPortrait(scene,key,'assets/pmd/'+dex+'/portrait.png',show);
  return key;
 }
 export function trainerCardEntries(state){

@@ -36,8 +36,8 @@ test('Rival starter evolves in Kanto when and only when required levels are reac
 
 test('Rival from actual Kanto route launches and uses evolved sprite species and loadout',()=>{
  const s=core.createCampaign('bulbasaur');
- s.stage=6;
- s.trainer=3; // Route 3rd NPC checkpoint is the official rival.
+ s.stage=5;
+ s.trainer=3; // Saffron keeps a rival encounter; Seafoam does not.
  const opponent=core.currentOpponent(s);
  assert.equal(opponent.kind,'rival');
  assert.equal(opponent.id,'charizard','Rival counters Bulbasaur with its evolved Fire starter');

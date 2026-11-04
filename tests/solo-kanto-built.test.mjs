@@ -227,7 +227,10 @@ assert.equal(campaignRegion(8,1,4).biome,'victory','Victory Road follows Giovann
 assert.equal(campaignRegion(12,0,1).biome,'hall','Champion is the Hall of Fame finale');
 
 assert.equal(routeNode(0,3,13).type,'rival');
-assert.equal(routeNode(0,5,13).type,'rocket');
+assert.equal(routeNode(0,5,13).type,'trainer',
+ 'Viridian Forest must not contain random Rocket grunts');
+assert.equal(routeNode(1,5,15).type,'rocket',
+ 'Rocket encounters belong to Mt. Moon and subsequent Rocket areas');
 assert.equal(routeNode(0,13,13).type,'leader');
 assert.equal(MART_ITEMS.some(x=>x.kind==='tm'),true);
 const {trainerClass,drawTrainer,drawShopItem}=await import(pathToFileURL(
@@ -434,8 +437,8 @@ assert.equal(resolveBattle(finale,true,()=>0).won,true);
 assert.equal(finale.champion,true,'Champion must complete the entire Kanto campaign');
 assert.equal(finale.stage,13,'Champion clear is persisted after all gym/Elite stages');
 
-assert.equal(currentOpponent(state).id,'pidgey',
- 'Pewter trainer ladder begins with integrated Route 1 Pokémon instead of Onix');
+assert.equal(currentOpponent(state).id,'rattata',
+ 'Pewter trainer ladder begins with the new region-correct Rattata');
 
 const tester=state.team.find(p=>p.id==='mewtwo');
 assert.ok(tester,'level-50 Mewtwo should be on the Kanto team at game start');
@@ -508,8 +511,10 @@ for(const id of ['bonemerang','bone-club','tri-attack','pay-day','swift','shadow
  'mud-slap','seed-bomb','super-fang','gust','poison-sting','bite','crunch','peck','leech-life','bug-bite','rock-tomb','horn-attack','double-kick','fury-attack','metal-claw','bind'])
  assert.ok(allMoves.find(x=>x.id===id),'missing signature move '+id);
 assert.deepEqual(selectedMoves(tester),['bonemerang','bone-club','tri-attack','pay-day']);
-assert.deepEqual(Object.values(resolveLoadout(tester)).map(h=>h.forma),
+assert.deepEqual(['lmb','rmb','q','e'].map(slot=>resolveLoadout(tester)[slot]?.forma),
  ['torre2_bonemerang','torre2_boneclub','torre2_triattack','torre2_payday']);
+assert.ok(resolveLoadout(tester).esp?.forma,
+ 'Approved native dodge is a fifth, separate campaign action; do not drop ESP');
 for(const id of ['mud-slap','seed-bomb','super-fang']){
  assert.equal(equipMove(tester,0,id),true,'new adapted Kanto move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new adapted move usable in battle '+id);
@@ -883,10 +888,11 @@ for(let stage=9;stage<=12;stage++)
  assert.equal(getCampaignMapSpec(stage,0).id,'indigo',
   'Elite Four and Champion share the same themed map');
 const sidebar=fs.readFileSync(path.join(stage,version,'torre2/battle-path.js'),'utf8');
-assert.ok(sidebar.includes("['TREINAMENTO',handlers.training]")&&
- sidebar.includes("['CAPTURA',handlers.capture]")&&!sidebar.includes("['GINÁSIO',handlers.gym]")&&
+assert.ok(sidebar.includes("id:'training',label:'TREINAMENTO'")&&
+ sidebar.includes("id:'capture',label:'CAPTURA'")&&
+ sidebar.includes('handlers.center,handlers.mart,handlers.training,handlers.capture')&&
  menuCampaign.includes('training:()=>this.enterTraining(state)'),
- 'Sidebar replaces gym shortcut with training and keeps grass capture');
+ 'Native sprite shortcuts retain training and grass capture without changing real Gym landmarks');
 const nativeArt=fs.readFileSync(path.join(stage,version,'torre2/campaign-art.js'),'utf8');
 for(const shape of ['function pine(','function routeBuilding(','function pathStroke(',
  'function stone(','function tallGrass(','export function map(']){
