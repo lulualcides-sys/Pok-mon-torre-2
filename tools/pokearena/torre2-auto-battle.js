@@ -1,7 +1,8 @@
 import {WEATHER_MOVES,weatherSpeciesMultiplier} from './weather.js';
-/* Optional single-player AUTO button backed by the native Poké Arena IA.
- * Kanto campaign starts ON; original Arena modes start OFF. No stat bonuses,
- * battle math, cooldown or approved VFX changes. */
+/* Optional single-player AUTO powered by the native Poké Arena IA.
+ * Kanto campaign retains its own behavior; Arena/League/VS CPU receive a
+ * separate extreme tactical profile and legal native EVO/MEGA inputs.
+ * No stat bonuses, battle math, cooldown or approved VFX changes. */
 // Campaign AUTO level 2: more proactive than the previous above-Hard
 // profile. Native AI still owns attacks, dodges, energy and move cooldowns.
 // NO native Maestro 35% hidden damage multiplier or player stat bonuses.
@@ -9,6 +10,18 @@ export const CAMPAIGN_AUTO_OFFENSIVE=Object.freeze({
  reaccion:.02,error:0,esquiva:.86,basicos:1,reflejo:.10,
  reflejoRival:.18,agresividad:1,juicio:1,umbralUlti:.60,ventaja:1
 });
+// This config is used ONLY by the player's AUTO in offline competitive modes.
+// It is deliberately stronger than the campaign profile, but "ventaja:1"
+// prohibits the hidden native Maestro damage multiplier (no stat cheating).
+export const OFFLINE_AUTO_EXTREME=Object.freeze({
+ reaccion:.008,error:0,esquiva:.98,basicos:1,reflejo:.04,
+ reflejoRival:.08,agresividad:1,juicio:1,umbralUlti:.30,ventaja:1
+});
+const EXTREME_MODES=new Set(['cpu','arena','liga','league']);
+export const isExtremeOfflineAutoScene=scene=>
+ !scene?.datos?.torre2&&EXTREME_MODES.has(scene?.datos?.modo)&&
+ !scene?.sim&&!scene?.enLinea&&!scene?.red&&
+ !scene?.datos?.online&&!scene?.datos?.ranked&&!scene?.datos?.registro;
 // These are actual native offensive decision thresholds in cerebros.js.
 // Unlike the cfg.basicos field (projectile threat awareness), c.pBasico
 // gates firing LMB; pConGanas/pSinGanas gate offensive RMB/Q decisions.
@@ -30,6 +43,46 @@ export function tuneCampaignAutoBrain(scene,brain){
   rangoBanda:Math.min(c.rangoBanda??25,18)
  };
  return brain;
+}
+// Tune a fresh native brain per AI instance; never edit its species template or
+// the enemy's shared cerebral configuration. Native energy and cooldown checks
+// still decide whether any skill actually fires.
+export function tuneExtremeOfflineAutoBrain(scene,brain){
+ if(!isExtremeOfflineAutoScene(scene)||!brain?.c||typeof brain.c!=='object')return brain;
+ const c=brain.c;
+ brain.c={...c,
+  pBasico:Math.min(c.pBasico??.30,.08),
+  pConGanas:Math.min(c.pConGanas??.30,.12),
+  pSinGanas:Math.min(c.pSinGanas??.50,.22),
+  pSeguro:Math.min(c.pSeguro??.85,.55),
+  pAhorro:Math.min(c.pAhorro??.50,.04),
+  reservaEnergia:Math.min(c.reservaEnergia??60,18),
+  energiaTope:Math.min(c.energiaTope??95,60),
+  pPlantarse:Math.min(c.pPlantarse??.50,.12),
+  rodeo:Math.min(c.rodeo??.60,.22),
+  lateral:Math.min(c.lateral??.25,.10),
+  rangoBanda:Math.min(c.rangoBanda??25,13)
+ };
+ return brain;
+}
+// A player AUTO can request EVO/MEGA, but ONLY when the native Luchador
+// advertises readiness. No artificial EXP, meter, stage or resource grants;
+// the native Phaser Luchador still validates and performs the transformation.
+export function requestOfflineAutoEvolution(scene,actor,input){
+ if(!isExtremeOfflineAutoScene(scene)||scene?.fase!=='lucha'||
+    scene?.pausado||!actor||!input||typeof input!=='object')return input;
+ const canEvolve=actor.puedeEvolucionar===true||actor.puedeMega===true;
+ if(!canEvolve){
+  return input.mega?{...input,mega:false}:input;
+ }
+ if(actor.ko||!(Number(actor.hp)>0)||actor.dash||
+    actor.accion?.bloquea||actor.est?.aturdido||
+    actor.est?.dormido||actor.est?.congelado||actor.est?.recarga)
+  return input.mega?{...input,mega:false}:input;
+ if(input.mega)return input;
+ // Evolution takes priority over casts in this frame; the native engine
+ // controls its own activation and animation (the HUD stays unchanged).
+ return {...input,mega:true,lmb:false,rmb:false,q:false,e:false};
 }
 // Native combat reuses one Phaser fighter instance when a new enemy is sent
 // out. Prefer the active opposite-side fighter over a stale rival pointer;
@@ -236,7 +289,10 @@ export function pressureCampaignAutoSkillInput(scene,actor,input,brain=null){
 }
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
-const OFFLINE_MODES=new Set(['cpu','entreno','arena']);
+export const autoBattleProfile=scene=>scene?.datos?.torre2?
+ CAMPAIGN_AUTO_OFFENSIVE:isExtremeOfflineAutoScene(scene)?
+ OFFLINE_AUTO_EXTREME:'normal';
+const OFFLINE_MODES=new Set(['cpu','entreno','arena','liga','league']);
 const HUMAN_TYPES=new Set(['kbm','tactil','teclado2']);
 const isHuman=c=>HUMAN_TYPES.has(c?.tipo)||/^pad[0-9]+$/.test(c?.tipo||'');
 export function autoBattleAllowed(scene){
@@ -261,7 +317,7 @@ export function installAutoBattle(scene,makeNativeAI){
  // in etapa. Both must be part of the key (e.g. Squirtle -> Wartortle).
  const fighterSpecies=actor=>String(actor?.def?.id||actor?.dex||'')+':'+String(actor?.etapa??0);
  const state={enabled:!!scene.datos?.torre2,control:original,read:original.leer,
-  ai:tuneCampaignAutoBrain(scene,makeNativeAI(original.l)),
+  ai:tuneExtremeOfflineAutoBrain(scene,tuneCampaignAutoBrain(scene,makeNativeAI(original.l))),
   autoActor:original.l,autoSpecies:fighterSpecies(original.l),
   autoOpponent:livingCampaignOpponent(scene,original.l),
   autoOpponentSpecies:fighterSpecies(livingCampaignOpponent(scene,original.l)),
@@ -280,7 +336,7 @@ export function installAutoBattle(scene,makeNativeAI){
   // cooldowns, damage, energy and every approved move/VFX.
   const fighter=original.l;
   const foe=livingCampaignOpponent(scene,fighter);
-  if(scene.datos?.torre2){
+  if(scene.datos?.torre2||isExtremeOfflineAutoScene(scene)){
    const species=fighterSpecies(fighter),foeSpecies=fighterSpecies(foe);
    const playerChanged=fighter!==state.autoActor||species!==state.autoSpecies;
    const foeChanged=foe!==state.autoOpponent||foeSpecies!==state.autoOpponentSpecies;
@@ -290,7 +346,7 @@ export function installAutoBattle(scene,makeNativeAI){
    if(fighter&&(playerChanged||foeChanged)){
     const ai=makeNativeAI(fighter);
     if(typeof ai?.leer!=='function')throw Error('Native Poké Arena IA missing after party switch');
-    state.ai=tuneCampaignAutoBrain(scene,ai);
+    state.ai=tuneExtremeOfflineAutoBrain(scene,tuneCampaignAutoBrain(scene,ai));
     state.autoActor=fighter;state.autoSpecies=species;
     state.autoOpponent=foe;state.autoOpponentSpecies=foeSpecies;
     if(playerChanged)state.diagnostics.playerRebinds++;
@@ -320,7 +376,12 @@ export function installAutoBattle(scene,makeNativeAI){
   if(['rmb','q','e'].some(slot=>it[slot]&&
     WEATHER_MOVES[fighter.kit?.[slot]?.nombre]&&!pressured[slot]))
    stats.suppressedWeatherFrames++;
-  return {...pressured,mega:false};
+  // Campaign never evolves mid-fight. Competitive offline modes evolve
+  // automatically once EXP / native Mega conditions are genuinely ready.
+  if(scene.datos?.torre2)return {...pressured,mega:false};
+  if(isExtremeOfflineAutoScene(scene))
+   return requestOfflineAutoEvolution(scene,fighter,pressured);
+  return pressured;
  };
  original.leer=safeRead;
  scene.__torre2AutoMode=state;
@@ -390,10 +451,9 @@ export function bindAutoBattleToScene(Scene,IA){
  const original=Scene.prototype.create;
  Scene.prototype.create=function(...args){
   const result=original.apply(this,args);
-  // Campaign AUTO: stronger-than-Hard tactical parameters ONLY for the
-  // player AUTO brain. No bonus damage, speed, energy, cooldown or VFX changes.
-  // Manual control and the original Arena AUTO still use their old settings.
-  const tactic=campaignAutoProfile(this);
+  // Competitive offline AUTO has its own extreme tactical profile;
+  // campaign retains its separate rules. No damage/energy/cooldown buffs.
+  const tactic=autoBattleProfile(this);
   const install=()=>installAutoBattle(this,fighter=>new IA(fighter,tactic));
   if(!install()&&autoBattleAllowed(this)&&!this.__torre2AutoRetry){
    // Campaign/Phaser may create the player controller AFTER create().
