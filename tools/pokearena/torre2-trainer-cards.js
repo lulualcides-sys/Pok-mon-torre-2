@@ -2,7 +2,8 @@
  * Somente apresentação Phaser; jamais altera progressão, time, saves
  * ou a interface aprovada da Arena. Sprites reais FRLG e PMD.
  */
-import {STAGES,TRAINERS_PER_GYM,currentOpponent,rematchOpponent} from './campaign-core.js';
+import {STAGES,TRAINERS_PER_GYM,currentOpponent,rematchOpponent,trainerSpeciesForLevel,rivalChampionTeam,campaignStarter} from './campaign-core.js';
+import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {ball} from './campaign-art.js';
@@ -72,7 +73,7 @@ function npcKind(stage,index,leader=false){
  if(!n)return 'youngster';
  const opponent=currentOpponent({stage,trainer:index,team:[],champion:false,starter:'bulbasaur'});
  if(opponent?.kind==='rival'||opponent?.kind==='rocket')return opponent.kind;
- return trainerClass(stage,index,opponent?.kind||'trainer',stage===0?'forest':'route');
+ return opponent?.spriteKind||trainerClass(stage,index,opponent?.kind||'trainer',stage===0?'forest':'route');
 }
 function portraitDex(scene,id){
  try{
@@ -112,10 +113,15 @@ export function trainerCardEntries(state){
   const leader=index===total;
   // currentOpponent is a pure roster projection; it does not save or start.
   const foe=currentOpponent({...state,trainer:index,champion:false});
+  const leaderSpecies=stage===12?rivalChampionTeam(campaignStarter(state)):
+   (STAGES[stage]?.leaderTeam?.length?STAGES[stage].leaderTeam:[foe?.id]);
+  const party=leader?leaderSpecies:
+   regionalTrainerParty(stage,index,foe?.id,
+    regionalTrainerPartySize(stage,index),foe?.kind)
+   .map(id=>trainerSpeciesForLevel(id,foe?.level));
   return {index,leader,foe,completed:index<progress,
    active:index===progress,locked:index>progress,
-   species:leader?(STAGES[stage]?.leaderTeam?.length?
-    STAGES[stage].leaderTeam:[foe?.id]).filter(Boolean):[foe?.id].filter(Boolean)};
+   species:party.filter(Boolean)};
  });
 }
 function status(entry){

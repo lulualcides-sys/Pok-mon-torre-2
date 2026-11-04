@@ -11,6 +11,7 @@ import {captureChance,rollCapture} from './capture-mechanics.js';
 import {equipMove} from './move-pool.js';
 import {currentLevelCap,trainerLevelFor,wildLevelFor,xpRewardFor,awardCampaignExperience,enforceCampaignCap} from './kanto-levels.js';
 import {KANTO_LEVEL_EVOLUTIONS} from './frlg-learnsets.js';
+import {regionalTrainer,regionalRocket} from './torre2-trainer-rosters.js';
 
 // Persistent normal Kanto campaign. No temporary preview slots or save switches.
 export const SAVE_KEY='pokemon-torre-2-kanto-campaign-v1';
@@ -436,6 +437,7 @@ export function currentOpponent(s){
  const gym=STAGES[s.stage];
  const leader=s.trainer>=TRAINERS_PER_GYM(s.stage);
  const list=gym.enemy;
+ const encounter=regionalTrainer(s.stage,s.trainer);
  const node=routeNode(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage));
  const role=leader?'leader':node.type;
  const originalStarter=campaignStarter(s);
@@ -444,13 +446,16 @@ export function currentOpponent(s){
  const championId=rivalChampionTeam(originalStarter).at(-1);
  const level=trainerLevelFor(s.stage,s.trainer,TRAINERS_PER_GYM(s.stage),leader);
  const baseSpecies=leader?(s.stage===STAGES.length-1?championId:gym.boss):role==='rival'?rivalId:
-  role==='rocket'?(['zubat','machop','ekans'].includes(list[s.trainer%list.length])?
-   list[s.trainer%list.length]:'zubat'):list[s.trainer%list.length];
+  role==='rocket'?regionalRocket(s.stage,s.trainer):
+  (encounter?.id||list[s.trainer%list.length]);
  // Fixed gym/League rosters remain untouched; rival and regular NPCs evolve
  // as their levels rise, with the actual evolved sprite and attacks.
  const species=leader?baseSpecies:trainerSpeciesForLevel(baseSpecies,level);
  return {id:species,leader,kind:role,
-  name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':'Treinador '+(s.trainer+1),
+  spriteKind:leader?null:role==='rival'?'rival':role==='rocket'?'rocket':
+   (encounter?.spriteKind||'youngster'),
+  name:leader?gym.leader:role==='rival'?'Rival':role==='rocket'?'Equipe Rocket':
+   (encounter?.name||'Treinador '+(s.trainer+1)),
   level,arena:gym.arena,city:gym.city};
 }
 // Route selection must never create a full-HP battle actor from a fainted save.

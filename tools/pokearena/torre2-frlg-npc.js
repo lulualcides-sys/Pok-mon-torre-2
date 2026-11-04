@@ -8,13 +8,14 @@ const ALIAS=Object.freeze({
  youngster:'youngster',lass:'lass',rival:'blue',
  rocket:'rocket_m',sailor:'sailor',hiker:'hiker',
  swimmer:'swimmer_m_land',blackbelt:'black_belt',ace:'cooltrainer_m',
- psychic:'channeler',biker:'biker',cyclist:'biker',scientist:'scientist',
+ psychic:'psychic',biker:'biker',cyclist:'biker',scientist:'scientist',
  fisherman:'fisher',fisher:'fisher',gentleman:'gentleman',
  channeler:'channeler',camper:'camper',picnicker:'picnicker',
  brock:'brock',misty:'misty',surge:'lt_surge',erika:'erika',
  koga:'koga',sabrina:'sabrina',blaine:'blaine',giovanni:'giovanni',
  lorelei:'lorelei',bruno:'bruno',agatha:'agatha',lance:'lance',
- trainer:'youngster',rocker:'biker'
+ oak:'prof_oak',professor:'prof_oak',prof_oak:'prof_oak',
+ trainer:'youngster',rocker:'rocker'
 });
 export function spriteIdForTrainer(kind){
  return ALIAS[String(kind||'').toLowerCase()]||'youngster';

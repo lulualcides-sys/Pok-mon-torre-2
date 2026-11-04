@@ -27,9 +27,9 @@ import {prepareTrainingMatch,installTrainingDummy} from './training.js';
 import {trainerClass,drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ITEM_FILES} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
-import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
+import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES,AVAILABLE_OAK_INTRO} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -108,6 +108,7 @@ class Campanha extends Phaser.Scene{
   // defeat is an event, not persistent scene data: never process it twice
   // when the user heals at the Center and returns to the same trainer.
   this.result=input?.finished&&input!==this.__torre2ConsumedFinished?input:null;
+  this.__torre2OakIntroSeen=false;
  }
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
@@ -115,6 +116,16 @@ class Campanha extends Phaser.Scene{
   if(!this.textures.exists('torre2-frlg-bag'))
    this.load.spritesheet('torre2-frlg-bag','assets/ui/frlg/items/bag-male.png',{frameWidth:64,frameHeight:64});
   const state=readCampaign();
+  // Prefer the full-body FireRed lecture sprite shown in the user's reference.
+  // The 16x32 native NPC remains as an offline-safe fallback.
+  if(!state){
+   for(const name of ['oak','platform']){
+    if(AVAILABLE_OAK_INTRO.includes(name)&&
+       !this.textures.exists('frlg-oak-intro-'+name))
+     this.load.image('frlg-oak-intro-'+name,
+      'assets/ui/frlg/intro/'+name+'.png');
+   }
+  }
   // Nine tiny original GBA item icons shared by every Mart page.
   // Load once into Phaser's image cache, never over the network during shopping.
   for(const file of FRLG_MART_ITEM_FILES){
@@ -140,7 +151,7 @@ class Campanha extends Phaser.Scene{
   const archetypes=stage===0?
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
-  const needed=new Set(['red_normal',spriteIdForTrainer(boss),
+  const needed=new Set(['red_normal',...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
@@ -149,7 +160,7 @@ class Campanha extends Phaser.Scene{
   for(let i=0;i<TRAINERS_PER_GYM(stage);i++){
    const projection=currentOpponent({...state,stage,trainer:i,champion:false});
    const kind=projection?.kind;
-   const archetype=kind==='rival'||kind==='rocket'?kind:
+   const archetype=projection?.spriteKind||
     trainerClass(stage,i,kind||'trainer',stage===0?'forest':'route');
    needed.add(spriteIdForTrainer(archetype));
   }
@@ -185,6 +196,7 @@ class Campanha extends Phaser.Scene{
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  if(!state)for(const dex of ['0001','0004','0007'])toLoad.add(dex);
   // Only this region's twelve unique wild entries; reuse existing small PMD
   // portraits, not twelve full animation sheets (mobile GPU memory).
   for(const id of [...new Set(wildAvailability(stage).wild)].slice(0,12)){
@@ -300,9 +312,74 @@ create(){
   zone.on('pointerdown',()=>callback());
   paint();return zone;
  }
+ professorOakIntro(){
+  // Full-body FRLG lecture portrait (not the overworld NPC): original crisp
+  // pixels, on a light teal presentation stage with a dialogue box.
+  // The starter and save are created only after all four dialogue pages.
+  const g=this.add.graphics().setDepth(1);
+  g.fillStyle(0xf0f3e8).fillRect(0,0,640,360);
+  g.fillStyle(0xe2eee9).fillRect(0,0,640,156);
+  g.fillStyle(0xc9e6e0).fillRect(0,156,640,24);
+  g.fillStyle(0xa3d9d1).fillRect(0,180,640,34);
+  g.fillStyle(0x5da9a6).fillRect(0,214,640,36);
+  g.fillStyle(0x2a8889).fillRect(0,250,640,110);
+  for(let x=0;x<640;x+=64){
+   g.fillStyle(0xffffff,.1).fillRect(x+6,192,33,3);
+  }
+  const hasPlatform=this.textures.exists('frlg-oak-intro-platform');
+  if(hasPlatform){
+   const platform=this.add.image(320,237,'frlg-oak-intro-platform').setDepth(1.5);
+   platform.setScale(Math.min(2.6,190/platform.width,62/platform.height));
+   if(typeof Phaser!=='undefined')
+    platform.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+  }else{
+   g.fillStyle(0xb9dfbd).fillEllipse(320,240,202,45);
+   g.lineStyle(3,0x5bafab).strokeEllipse(320,240,202,45);
+  }
+  if(this.textures.exists('frlg-oak-intro-oak')){
+   const oak=this.add.image(320,238,'frlg-oak-intro-oak')
+    .setOrigin(.5,1).setDepth(2);
+   oak.setScale(Math.min(2.6,126/oak.width,174/oak.height));
+   if(typeof Phaser!=='undefined')
+    oak.texture.setFilter(Phaser.Textures.FilterMode.NEAREST);
+   oak.setData('torre2-professor-oak-lecture',true);
+  }else{
+   const npc=addFireRedNPC(this,'oak',320,240,{scale:4.9,depth:2});
+   npc?.setData('torre2-professor-oak-lecture-fallback',true);
+  }
+  text(this,320,23,'POKÉMON TORRE 2 · KANTO',{
+   fontSize:'19px',fontStyle:'bold',color:'#153a4f',
+   stroke:'#e0efe8',strokeThickness:2
+  }).setOrigin(.5).setDepth(3);
+  g.fillStyle(0x153b58).fillRect(22,266,596,84);
+  g.fillStyle(0xfff9e5).fillRect(26,270,588,76);
+  g.fillStyle(0x264363).fillRect(29,273,582,70);
+  g.fillStyle(0xe5f3fa).fillRect(32,276,576,64);
+  const dialogue=[
+   'Olá! Bem-vindo ao mundo dos Pokémon!',
+   'Sou o Professor Oak. Estudo as criaturas que vivem por toda Kanto.',
+   'Você conhecerá treinadores, rotas e os oito líderes de ginásio.',
+   'Sua jornada começa agora. Escolha um Pokémon para ser seu parceiro!'
+  ];
+  text(this,48,281,'PROF. OAK',{
+   fontSize:'12px',fontStyle:'bold',color:'#1b3d65'
+  }).setDepth(4).setData('torre2-oak-dialogue',true);
+  let index=0;
+  const message=text(this,48,302,dialogue[index],{
+   fontSize:'13px',color:'#15243c',wordWrap:{width:472}
+  }).setDepth(4);
+  this.button(539,328,120,26,'CONTINUAR',()=>{
+   index++;
+   if(index<dialogue.length){message.setText(dialogue[index]);return;}
+   this.__torre2OakIntroSeen=true;
+   this.children.removeAll(true);
+   this.starterSelection();
+  },true,10).setData('torre2-oak-continue',true);
+ }
  starterSelection(){
+  if(!this.__torre2OakIntroSeen)return this.professorOakIntro();
   text(this,ANCHO/2,73,'ESCOLHA SEU PRIMEIRO POKÉMON',{color:C.gold,fontSize:'19px'}).setOrigin(.5);
-  text(this,ANCHO/2,111,'Campanha Kanto: 13 treinadores antes do primeiro ginásio.',statusStyle).setOrigin(.5);
+  text(this,ANCHO/2,101,'Escolha o companheiro que Oak entregará para sua jornada.',statusStyle).setOrigin(.5);
   // A blocked first write must not crash Phaser or leave a phantom journey.
   // Keep the three native choices available for retry when storage returns.
   const saveError=text(this,ANCHO/2,326,'NÃO FOI POSSÍVEL SALVAR · TENTE NOVAMENTE',{
@@ -310,6 +387,9 @@ create(){
   }).setOrigin(.5).setVisible(false).setData('torre2-starter-save-error',true);
   STARTERS.forEach((id,i)=>{
    const x=135+i*185;
+   const key='torre2-portrait-'+['0001','0004','0007'][i];
+   if(this.textures.exists(key))this.add.image(x,131,key)
+    .setDisplaySize(36,36).setDepth(4);
    this.button(x,180,166,58,id.toUpperCase(),()=>{
     try{
      saveCampaign(createPlayerCampaign(id));
@@ -979,6 +1059,7 @@ create(){
    return;
   }
   const foe={id:match.p2,level:match.torre2.enemyLevel,
+   kind:wild?'wild':currentOpponent(state)?.kind,
    leader:!wild&&state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
@@ -986,6 +1067,7 @@ create(){
    const opponent=currentOpponent(state);
    if(opponent)match.torre2.versus=versusOpponentProfile({
     stage:state.stage,trainer:state.trainer,kind:opponent.kind,
+    spriteKind:opponent.spriteKind,
     leader:opponent.leader,name:opponent.name,city:opponent.city
    });
   }

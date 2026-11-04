@@ -1,0 +1,46 @@
+name: Kanto PR — Trainer sprites and Oak premerge checks
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/torre2-trainer-rosters.js'
+      - 'tools/pokearena/torre2-campaign-core.js'
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/torre2-trainer-cards.js'
+      - 'tools/pokearena/torre2-frlg-npc.js'
+      - 'tools/pokearena/torre2-route-data.js'
+      - 'tools/pokearena/torre2-versus-intro.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/install-frlg-npcs.mjs'
+      - 'tests/trainer-regional-oak.test.js'
+
+permissions:
+  contents: read
+
+jobs:
+  node-premerge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Compile native JS and verify changed modules
+        run: |
+          set -euo pipefail
+          npm run check
+          for file in tools/pokearena/torre2-{trainer-rosters,campaign-core,campaign-scene,trainer-cards,frlg-npc,route-data,versus-intro}.js; do
+            node --check "$file"
+          done
+          node --check tools/pokearena/build-preview.mjs
+          node --check tools/pokearena/install-frlg-npcs.mjs
+      - name: Test trainer mapping, original VS and Oak opening
+        run: |
+          set -euo pipefail
+          node --test tests/trainer-regional-oak.test.js tests/trainer-cards.test.js
+      - name: Run complete Node unit/regression suite
+        run: |
+          set -euo pipefail
+          npm test
