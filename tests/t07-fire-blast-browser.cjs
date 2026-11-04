@@ -42,7 +42,7 @@ const server=http.createServer(async(req,res)=>{
     state.team[0].progression.level=level;
     state.dexSeen.push('charizard');state.dexCaught.push('charizard');
     if(!window.__moves.selectedMoves(state.team[0]).includes('fire-blast')&&
-       !window.__moves.equipMove(state.team[0],2,'fire-blast'))
+       ![2,3].some(slot=>window.__moves.equipMove(state.team[0],slot,'fire-blast')))
      throw Error('Charizard Lv50 could not equip native Fire Blast');
     window.__core.saveCampaign(state);
     window.__pt2Game.scene.getScene('campanha').enterBattle(state,false);
@@ -58,9 +58,15 @@ const server=http.createServer(async(req,res)=>{
     a.inmortal=true;s.luchadores[1].inmortal=true;
     s.controles[1].leer=()=>({mx:0,my:0,ax:a.x,ay:a.y});
     a.energia=100;a.ulti=100;a.cd[slot]=0;a.accion=null;a.animAccion=null;a.dash=null;
+    // The campaign deliberately starts AUTO enabled, which consumes native
+    // touch input with CPU decisions (including ESP). Test the real MANUAL
+    // touchscreen command by switching the battle's approved AUTO toggle OFF.
+    if(s.__torre2AutoMode)s.__torre2AutoMode.enabled=false;
+    s.pausado=false;s.pausaGolpe=0;
     a.est={};a.dolorHasta=-1;a.ko=false;
     return {name:entry?.nombre,forma:entry?.forma,locked:entry?.pendiente===true,
-     slot,uses:a.stats.usosSlot?.[slot]||0,level:s.datos.torre2.playerLevel};
+     slot,uses:a.stats.usosSlot?.[slot]||0,level:s.datos.torre2.playerLevel,
+     ult:a.ulti,energy:a.energia,action:a.accion,phase:s.fase};
    },move);
    assert.equal(before.name,move,'Campaign not equipping native move at '+level);
    assert.ok(before.forma,'Missing native VFX for '+move);
@@ -72,7 +78,8 @@ const server=http.createServer(async(req,res)=>{
     function assertBrowser(cond,message){if(!cond)throw Error(message)}
     const at=p.pos(b),zero=p.punto({x:0,y:0}),one=p.punto({x:1,y:1});
     p.abajo({id:71,x:(at.x-zero.x)/(one.x-zero.x),y:(at.y-zero.y)/(one.y-zero.y)});
-    p.leer(x=>({ax:x.x,ay:x.y}));
+    window.__fireblastTouch={slot,buttons:p.botones.map(x=>({slot:x.slot,x:x.x,y:x.y})),
+     read:p.leer(x=>({ax:x.x,ay:x.y})),pointers:p.toques?.size??null};
    },before.slot);
    await page.waitForTimeout(430);
    const after=await page.evaluate(slot=>{
@@ -80,6 +87,11 @@ const server=http.createServer(async(req,res)=>{
     s.panelTactil.arriba({id:71});
     return s.luchadores[0].stats.usosSlot?.[slot]||0;
    },before.slot);
+   if(!(after>before.uses))console.log('FIREBLAST_TOUCH_DIAG',JSON.stringify(await page.evaluate(()=>{
+     const s=window.__pt2Game.scene.getScene('combate'),a=s.luchadores[0];
+     return {before:window.__fireblastTouch,after:{phase:s.fase,action:a.accion,slotUses:a.stats.usosSlot,ult:a.ulti,energy:a.energia,cd:a.cd,pending:a.kit.e?.pendiente},
+      input:s.controles[0].leer?.(.016)};
+    })));
    assert.ok(after>before.uses,move+' did not fire via real touch input');
    checks.push({species:'charizard',level,move,renderer:before.forma,touchCast:true});
    await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').scene.start('campanha'));

@@ -49,6 +49,17 @@ export const KANTO_RAIN_DANCE_LEVEL=25;
 // Explicit legacy late-generation mastery gates from the Script Mestre.
 // Do not auto-grant these two status moves at Lv25.
 export const KANTO_RAIN_DANCE_LATE_LEVELS=Object.freeze({slowpoke:49});
+// Only the Kanto campaign's native Fire Blast projectile disables repeated
+// decorative explosion echoes. The main fireblast/fireblast-boom sprites,
+ // hit radius, lingering burn duration, damage, timing and cooldown remain
+ // byte-for-byte equivalent to the approved original move. The other modes
+ // continue to use the untouched source ROSTER kit.
+export function optimizeCampaignFireBlastVfx(move){
+ if(!move||canonicalMoveKey(move.nombre)!=='fire-blast'||
+    move.forma!=='proyectil'||move.explosion?.hoja!=='fireblast-boom'||
+    move.explosion.ecos!==true)return move;
+ return {...move,explosion:{...move.explosion,ecos:false}};
+}
 export const KANTO_FIRE_BLAST_LEVEL=50;
 export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
  'charmander','charmeleon','charizard','vulpix','ninetales',
@@ -1223,7 +1234,8 @@ export function resolveLoadout(member){
  // The early overlay can inject Leech Seed after selectedMoves. Balance
  // FINAL campaign battle slots including practice, evolution and saved kits.
  for(const slot of SLOTS)if(battle[slot])
-  battle[slot]=balanceCampaignQuickCooldown(balanceCampaignLeechSeed(battle[slot]));
+  battle[slot]=optimizeCampaignFireBlastVfx(
+   balanceCampaignQuickCooldown(balanceCampaignLeechSeed(battle[slot])));
  const found=buscar(member.id),native=found?.def?.torre2ArenaAdded===true?null:
   (etapaDe(found.def,found.etapa)?.kit?.esp||found?.def?.kit?.esp);
  battle.esp=campaignNativeDodge(member.id,battle,CAMPAIGN_NATIVE_DODGES,native);

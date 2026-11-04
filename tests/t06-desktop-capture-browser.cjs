@@ -45,7 +45,7 @@ const report={scope:'T06 native desktop Pokeball HUD, breakout, GOTCHA, save/rel
    await page.waitForTimeout(95);
    await page.mouse.up();
   };
-  await page.goto('http://127.0.0.1:4390/arena2d/?original=1',{waitUntil:'domcontentloaded'});
+  await page.goto('http://127.0.0.1:4390/arena2d/?original=1&qa-legacy-map=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
   await page.evaluate(async()=>{
    const src=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;

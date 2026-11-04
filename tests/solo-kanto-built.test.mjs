@@ -870,8 +870,9 @@ assert.ok(battlePath.includes(".on('pointerup'")&&
  battlePath.includes(".setData('torre2-fullscreen',true)"),
  'Fullscreen must use original Phaser ScaleManager on pointerup, not DOM zoom');
 assert.ok(menuCampaign.includes('const needed=new Set(')&&
- menuCampaign.includes('AVAILABLE_FRLG.includes(world)'),
- 'The campaign loads only current-map art and relevant overworld NPCs');
+ menuCampaign.includes('if(qaLegacyMap){')&&
+ menuCampaign.includes('AVAILABLE_FRLG.includes(id)'),
+ 'Only the QA legacy renderer may load maps; live cards preload trainer NPCs only');
 assert.ok(menuCampaign.includes("key.startsWith('frlg-location-')")&&
  menuCampaign.includes("key.startsWith('torre2-portrait-')"),
  'Unused stage and PC textures are released without purging PMD combat VFX');

@@ -1,0 +1,84 @@
+name: Kanto cards-only and Fire Blast prepublish
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/torre2-campaign-scene.js'
+      - 'tools/pokearena/torre2-trainer-cards.js'
+      - 'tools/pokearena/torre2-move-pool.js'
+      - 'tests/trainer-cards.test.js'
+      - 'tests/t98-*'
+      - 'tests/t13-campaign-native-dodges-browser.cjs'
+      - 'tests/t16-auto-weather-native-browser.cjs'
+      - 'tests/rematches-browser.cjs'
+      - 'tests/t27-native-mobile-report-pages-browser.cjs'
+      - '.github/workflows/kanto-cards-fireblast-verify.yml'
+permissions:
+  contents: read
+jobs:
+  focused-checks:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax and all Node regressions
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-campaign-scene.js
+          node --check tools/pokearena/torre2-trainer-cards.js
+          node --check tools/pokearena/torre2-move-pool.js
+          npm test
+  phaser-preview:
+    needs: focused-checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - run: npm install --no-audit --no-fund
+      - name: Build captured offline Phaser client
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$attempt" = 3 ]; then exit 1; fi
+            sleep $((attempt*5))
+          done
+      - name: Inspect approved Fire Blast renderer parameters
+        run: node tests/t98-fireblast-diagnostic-built.mjs
+      - name: Verify Fire Blast catalog and unlock gates
+        run: |
+          node tests/t07-fire-blast-kanto-built.test.mjs
+          node tests/t98-fireblast-perf-built.test.mjs
+      - name: Check full-party cards without maps in Chromium
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/t98-cards-only-browser.cjs
+      - name: Cast native Fire Blast on the real Phaser touch HUD
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/t07-fire-blast-browser.cjs
+      - name: Check legacy battle features in QA-only map mode
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          set -euo pipefail
+          node tests/t13-campaign-native-dodges-browser.cjs
+          node tests/t16-auto-weather-native-browser.cjs
+          node tests/rematches-browser.cjs
+          node tests/t27-native-mobile-report-pages-browser.cjs
+      - name: Archive preview evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kanto-cards-full-party-1
+          path: test-evidence/kanto-cards/
+          if-no-files-found: ignore
+          retention-days: 7

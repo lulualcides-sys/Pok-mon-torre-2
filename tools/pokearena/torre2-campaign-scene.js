@@ -35,6 +35,7 @@ import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {renderTrainerCardHub,renderTrainerCardMapTab} from './trainer-cards.js';
+import {installCampaignAudioSettings} from './audio-settings.js';
 import {resetCardPortraitRequests} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
@@ -136,19 +137,9 @@ class Campanha extends Phaser.Scene{
    if(!this.textures.exists(key))
     this.load.image(key,'assets/ui/frlg/items/'+file+'.png');
   }
-  // Mobile performance: the old loader uploaded every Kanto map and all
-  // 41 trainer sheets to the GPU even though only one city is visible.
-  // Load JUST the current gym world + the FireRed characters it displays.
+  // Cards-only campaign: do not upload city/cave/route atlases to WebGL.
+  // Genuine trainer sprites remain available below.
   const stage=state?.stage??0;
-  const world=getCampaignMapSpec(stage,0).id;
-  const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
-  if(AVAILABLE_FRLG.includes(world)){
-   const key='frlg-location-'+world;
-   if(!this.textures.exists(key))
-    this.load.image(key,AVAILABLE_FRLG_FILES[world]||'assets/ui/frlg/'+world+'.webp');
-  }else if(!this.textures.exists('torre2-cc0-world')){
-   this.load.image('torre2-cc0-world','assets/ui/kanto-cc0-world.png');
-  }
   const boss=['brock','misty','surge','erika','koga','sabrina',
    'blaine','giovanni','lorelei','bruno','agatha','lance','rival'][stage]||'brock';
   const archetypes=stage===0?
@@ -167,30 +158,30 @@ class Campanha extends Phaser.Scene{
     trainerClass(stage,i,kind||'trainer',stage===0?'forest':'route');
    needed.add(spriteIdForTrainer(archetype));
   }
-  // Across gyms, old campaign-specific GPU textures used to accumulate.
-  // Prune only our private FRLG resources, never PMD battle sprites/effects.
-  // Cinnabar has TWO genuine maps: the town and Seafoam/route screen.
-  // Previously only 'cinnabar' was preloaded; switching to 'seafoam' showed
-  // an empty blue rectangle despite green Chromium navigation tests.
-  const routeWorld=stage===6?'seafoam':null;
-  const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld,
-   ...(routeWorld?['frlg-location-'+routeWorld]:[])]);
-  if(routeWorld&&AVAILABLE_FRLG.includes(routeWorld)){
-   const key='frlg-location-'+routeWorld;
-   if(!this.textures.exists(key))
-    this.load.image(key,AVAILABLE_FRLG_FILES[routeWorld]||
-     'assets/ui/frlg/'+routeWorld+'.webp');
-  }
-  if(AVAILABLE_FRLG.includes(pathWorld)){
-   const key='frlg-location-'+pathWorld;
-   if(!this.textures.exists(key))
-    this.load.image(key,AVAILABLE_FRLG_FILES[pathWorld]||'assets/ui/frlg/'+pathWorld+'.webp');
-  }
-  for(const key of this.textures.getTextureKeys()){
-   if(key.startsWith('frlg-location-')&&!desired.has(key))
-    this.textures.remove(key);
-   if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))
-    this.textures.remove(key);
+  // Map rendering is retained ONLY for old automated regression suites.
+  const qaLegacyMap=new URLSearchParams(location.search).get('qa-legacy-map')==='1';
+  if(qaLegacyMap){
+   const world=getCampaignMapSpec(stage,0).id;
+   const pathWorld=BATTLE_PATH_BACKDROP[stage]||'indigo';
+   const routeWorld=stage===6?'seafoam':null;
+   const desired=new Set();
+   for(const id of [world,pathWorld,routeWorld].filter(Boolean)){
+    if(!AVAILABLE_FRLG.includes(id))continue;
+    const key='frlg-location-'+id;
+    desired.add(key);
+    if(!this.textures.exists(key))
+     this.load.image(key,AVAILABLE_FRLG_FILES[id]||'assets/ui/frlg/'+id+'.webp');
+   }
+   for(const key of this.textures.getTextureKeys()){
+    if(key.startsWith('frlg-location-')&&!desired.has(key))this.textures.remove(key);
+    if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))this.textures.remove(key);
+   }
+  }else{
+   // Normal Kanto: no map textures are allocated or retained on the GPU.
+   for(const key of this.textures.getTextureKeys()){
+    if(key.startsWith('frlg-location-'))this.textures.remove(key);
+    if(key.startsWith('frlg-npc-')&&!needed.has(key.slice(9)))this.textures.remove(key);
+   }
   }
   for(const id of needed){
    if(!AVAILABLE_FRLG_NPCS.includes(id))continue;
@@ -573,11 +564,52 @@ create(){
   if(!hall.team.length)center(320,172,'EQUIPE NÃO ENCONTRADA NO SAVE',11,'#f3c7a7');
   center(320,301,'LIGA CONCLUÍDA · PROGRESSO PRESERVADO NO SEU SAVE',
    9,'#adcbe0');
-  this.button(320,327,232,27,'◀ VOLTAR AO MAPA',()=>this.renderCampaign(state))
+  this.button(320,327,232,27,'◀ VOLTAR AO MENU',()=>this.scene.start('titulo',{menu:'principal'}))
    .setData('torre2-hall-back',true);
   this.__torre2HallOfFame={...hall};
  }
  renderCampaign(state,{deferEeveeChoice=false}={}){
+  if(new URLSearchParams(location.search).get('qa-legacy-map')==='1')
+   return this.renderLegacyCampaign(state,{deferEeveeChoice});
+  this.__torre2EeveeChoice=null;
+  this.__torre2HallOpen=false;
+  if(this.__torre2CityWaterTimer){
+   this.time.removeEvent(this.__torre2CityWaterTimer);
+   this.__torre2CityWaterTimer=null;
+  }
+  // No battle-road, overworld maps or hidden hotspots. One card screen.
+  this.children.removeAll(true);
+  this.__torre2CityHub=null;
+  this.__torre2BattlePath=null;
+  this.__torre2CardsOnly=true;
+  this.__torre2PathData={buscar};
+  if(state.champion)return this.hallOfFameScreen(state);
+  // The original audio modal remains accessible through MAIS; its small
+  // tab sits below the 200-depth cards and never covers card controls.
+  installCampaignAudioSettings(this);
+  const handlers={
+   menu:()=>this.scene.start('titulo',{menu:'principal'}),
+   battle:()=>this.enterBattle(state),
+   rematch:i=>this.rematchScreen(state,i),
+   pokemon:()=>state.team[state.active]&&this.showSummary(state,state.active),
+   bag:()=>this.bagScreen(state),
+   center:()=>this.centerScreen(state),
+   mart:()=>this.martScreen(state),
+   training:()=>this.enterTraining(state),
+   capture:()=>this.grassScreen(state),
+   rematchAtlas:()=>this.rematchAtlasScreen(state),
+   dex:()=>this.dexScreen(state),
+   badges:()=>this.badgeCaseScreen(state),
+   audio:()=>this.__torre2AudioSettings?.open(),
+   reset:()=>this.confirmResetJourney()
+  };
+  const cards=renderTrainerCardHub(this,state,handlers);
+  if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
+  return cards;
+ }
+ // Only explicitly flagged QA sessions may exercise the old path engine.
+ // The public game never paints maps, nor does ?original=1 enable them.
+ renderLegacyCampaign(state,{deferEeveeChoice=false}={}){
   this.__torre2EeveeChoice=null;
   this.__torre2HallOpen=false;
   // The image-approved UI is a sequential battle road, not an overworld.

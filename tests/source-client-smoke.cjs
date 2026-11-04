@@ -46,7 +46,7 @@ const server=http.createServer(async(req,res)=>{
   });
  });
  try{
-  const response=await page.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:30000});
+  const response=await page.goto('http://127.0.0.1:4274/arena2d/?original=1&qa-legacy-map=1',{waitUntil:'domcontentloaded',timeout:30000});
   assert.equal(response.status(),200);
   assert.equal(await page.title(),'Pokémon Torre','The title must use the approved new game name');
   try {
@@ -402,7 +402,7 @@ const server=http.createServer(async(req,res)=>{
   const leagueErrors=[],leagueMisses=[];
   league.on('pageerror',err=>leagueErrors.push(String(err)));
   league.on('response',response=>{if(response.status()>=400)leagueMisses.push(response.url())});
-  await league.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded'});
+  await league.goto('http://127.0.0.1:4274/arena2d/?original=1&qa-legacy-map=1',{waitUntil:'domcontentloaded'});
   await league.waitForFunction(()=>window.__pt2Started===true&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
   await league.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('liga'));
   try{
@@ -446,7 +446,7 @@ const server=http.createServer(async(req,res)=>{
   mobile.on('pageerror',e=>mobileErrors.push(String(e)));
   mobile.on('response',r=>{if(r.status()>=400)mobileMissing.push({status:r.status(),url:r.url()})});
   const begin=Date.now();
-  await mobile.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:35000});
+  await mobile.goto('http://127.0.0.1:4274/arena2d/?original=1&qa-legacy-map=1',{waitUntil:'domcontentloaded',timeout:35000});
   await mobile.waitForFunction(()=>window.__pt2Started===true&&!!document.querySelector('#juego canvas'),null,{timeout:55000,polling:250});
   await mobile.waitForTimeout(750);
   const mobileBootMs=Date.now()-begin;
@@ -465,7 +465,7 @@ const server=http.createServer(async(req,res)=>{
   offline.on('request',r=>{
    if(/wss?:|\/api\/|\/auth\/|\/socket/.test(r.url()))outRequests.push(r.url());
   });
-  await offline.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:35000});
+  await offline.goto('http://127.0.0.1:4274/arena2d/?original=1&qa-legacy-map=1',{waitUntil:'domcontentloaded',timeout:35000});
   await offline.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),
     null,{timeout:60000,polling:300});
   const opening=await offline.evaluate(()=>{
@@ -1367,7 +1367,7 @@ const server=http.createServer(async(req,res)=>{
   const tester=await browser.newPage({viewport:{width:980,height:650},deviceScaleFactor:1});
   const newErrors=[];
   tester.on('pageerror',e=>newErrors.push(String(e)));
-  await tester.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded'});
+  await tester.goto('http://127.0.0.1:4274/arena2d/?original=1&qa-legacy-map=1',{waitUntil:'domcontentloaded'});
   await tester.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:65000});
   const summaryState=await tester.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));

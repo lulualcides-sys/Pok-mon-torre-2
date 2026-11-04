@@ -2,7 +2,7 @@
  * Somente apresentação Phaser; jamais altera progressão, time, saves
  * ou a interface aprovada da Arena. Sprites reais FRLG e PMD.
  */
-import {STAGES,TRAINERS_PER_GYM,currentOpponent,rematchOpponent,trainerSpeciesForLevel,rivalChampionTeam,campaignStarter} from './campaign-core.js';
+import {STAGES,TRAINERS_PER_GYM,currentOpponent,rematchOpponent,trainerSpeciesForLevel,rivalChampionTeam,campaignStarter,KANTO_DEX} from './campaign-core.js';
 import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
@@ -81,21 +81,26 @@ function npcKind(stage,index,leader=false){
  if(opponent?.kind==='rival'||opponent?.kind==='rocket')return opponent.kind;
  return opponent?.spriteKind||trainerClass(stage,index,opponent?.kind||'trainer',stage===0?'forest':'route');
 }
-function portraitDex(scene,id){
+const dexKey=name=>String(name||'').toLowerCase().replace('♀','-f').replace('♂','-m').replace(/[^a-z0-9]/g,'');
+const nationalDex=new Map(KANTO_DEX.map((name,i)=>[dexKey(name),String(i+1).padStart(4,'0')]));
+export function enemyPortraitDex(scene,id){
+ const known=nationalDex.get(dexKey(id));if(known)return known;
  try{
-  const item=scene.__torre2PathData?.buscar?.(id);
-  if(!item)return null;
-  return String((item.etapa>0?item.def.evoluciones?.[item.etapa-1]?.dex:
-   item.def.dex)||'').padStart(4,'0');
+  const m=scene.__torre2PathData?.buscar?.(id);
+  const dex=m&&(m.etapa>0?m.def.evoluciones?.[m.etapa-1]?.dex:m.def.dex);
+  return dex?String(dex).padStart(4,'0'):null;
  }catch{return null}
 }
+function portraitDex(scene,id){return enemyPortraitDex(scene,id)}
 function portrait(scene,layer,id,x,y,size=43){
  const dex=portraitDex(scene,id);
  if(!dex)return null;
  const key='torre2-portrait-'+dex;
  const show=()=>{
   if(!layer.active||!scene.textures.exists(key))return;
-  const image=scene.add.image(x,y,key).setDisplaySize(size,size);
+  const image=scene.add.image(x,y,key).setDisplaySize(size,size)
+   .setData('torre2-opponent-sprite',id)
+   .setData('torre2-opponent-size',size);
   layer.add(image);
  };
  if(scene.textures.exists(key)){show();return key;}
@@ -125,29 +130,41 @@ export function trainerCardEntries(state){
 function status(entry){
  return entry.completed?'VENCIDO':entry.active?'DISPONÍVEL':'BLOQUEADO';
 }
-function spriteRoster(scene,layer,entry,x,y,compact=false){
- const species=entry.species.slice(0,6);
- const width=compact?34:Math.min(66,276/species.length);
- species.forEach((id,i)=>{
-  const xx=x+(i-(species.length-1)/2)*width;
-  if(!compact)box(scene,layer,xx-28,y-29,56,73,
-   {fill:0x174065,edge:0x4b8cae,accent:0x81b9d0});
-  const gp=scene.add.graphics();
-  gp.fillStyle(0x0a1c31,.8);gp.fillRect(xx-14,y-16,28,28);
-  ball(gp,xx,y-2,9);
-  layer.add(gp);
-  if(!compact){
-   const key=portrait(scene,layer,id,xx,y-4,38);
-   text(scene,layer,xx,y+22,id.toUpperCase().slice(0,9),8,'#e8f5ff');
-   if(entry.leader){
-    const levels=STAGES[scene.__torre2CardStage]?.leaderLevels;
-    // Index is authoritative for levels when provided by the gym manifest.
-    const level=STAGES[scene.__torre2CardStage]?.leaderLevels?.[i]??
-     entry.foe?.level;
-    text(scene,layer,xx,y+33,'NV.'+(level||'—'),8,'#ffe4a5');
-   }
-  }
+// The previous list preview was 22px; detail portrait was 53px.
+export const OPPONENT_SPRITE_SCALE=0.5;
+export const OPPONENT_LIST_SPRITE_SIZE=22*OPPONENT_SPRITE_SCALE;
+export const OPPONENT_DETAIL_SPRITE_SIZE=53*OPPONENT_SPRITE_SCALE;
+function compactRoster(scene,layer,entry,x,y){
+ entry.species.slice(0,6).forEach((id,i)=>{
+  const xx=x+(i%3-1)*25,yy=y+Math.floor(i/3)*17;
+  const placeholder=scene.add.graphics();ball(placeholder,xx,yy,5);layer.add(placeholder);
+  portrait(scene,layer,id,xx,yy,OPPONENT_LIST_SPRITE_SIZE);
  });
+ return entry.species.length;
+}
+function extrasPage(scene,state,handlers){
+ const layer=scene.add.container(0,0).setDepth(410);
+ layer.setData('torre2-cards-extras',true);
+ const shade=scene.add.graphics();
+ shade.fillStyle(0x051324,.97);shade.fillRect(0,0,640,360);
+ shade.fillStyle(0x173754);shade.fillRect(50,32,540,286);
+ shade.lineStyle(3,PALETTE.gold);shade.strokeRect(50,32,540,286);
+ layer.add(shade);
+ layer.add(scene.add.zone(320,180,640,360).setInteractive());
+ text(scene,layer,320,68,'OPÇÕES DA CAMPANHA',21,'#ffe6a2');
+ text(scene,layer,320,97,'A JORNADA CONTINUA PELOS CARDS',10,'#b8d7e8');
+ const actions=[
+  ['POKÉDEX',handlers.dex],['INSÍGNIAS',handlers.badges],
+  ['ÁUDIO',handlers.audio],['REINICIAR JORNADA',handlers.reset]
+ ];
+ actions.forEach(([name,fn],i)=>{
+  const x=205+(i%2)*230,y=118+Math.floor(i/2)*76;
+  control(scene,layer,x,y,220,56,name,()=>{layer.destroy(true);fn?.()},
+   {id:'cards-extras-'+i,gold:name==='POKÉDEX',size:12});
+ });
+ control(scene,layer,320,276,168,30,'VOLTAR AOS CARDS',()=>layer.destroy(true),
+  {id:'cards-extras-close',size:10});
+ return layer;
 }
 function cardsPage(scene,state,handlers){
  const all=trainerCardEntries(state);
@@ -175,8 +192,8 @@ function cardsPage(scene,state,handlers){
  text(scene,layer,17,38,'KANTO  ·  '+city.toUpperCase(),10,'#a6dcf4').setOrigin(0,.5);
  text(scene,layer,408,18,'DESAFIOS',10,'#a9c9dd');
  text(scene,layer,408,36,(state.trainer||0)+' / '+(all.length-1),15,'#ffdf89');
- control(scene,layer,465,9,54,32,'MAPA',handlers.map,
-  {id:'map',size:9});
+ control(scene,layer,465,9,54,32,'MAIS',()=>extrasPage(scene,state,handlers),
+  {id:'cards-more',size:9});
  control(scene,layer,523,9,51,32,'CHEIA',()=>{
   if(scene.scale.isFullscreen)scene.scale.stopFullscreen();
   else scene.scale.startFullscreen({navigationUI:'hide'});
@@ -204,21 +221,15 @@ function cardsPage(scene,state,handlers){
   podium.fillRect(x+17,y+116,w-34,4);
   podium.fillStyle(0x112e45,.7);podium.fillRect(x+18,y+122,w-36,2);
   layer.add(podium);
-  npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+114,
+  npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+102,
    entry.leader?2.55:2.35);
-  if(entry.leader)text(scene,layer,x+w/2,y+140,
+  if(entry.leader)text(scene,layer,x+w/2,y+126,
    (entry.foe?.name||'LÍDER').toUpperCase(),10,'#ffe18f');
-  else text(scene,layer,x+w/2,y+142,
+  else text(scene,layer,x+w/2,y+129,
    (entry.foe?.name||'TREINADOR').toUpperCase().slice(0,16),
    9,'#e5f4ff');
-  const balls=scene.add.graphics();
-  for(let j=0;j<Math.min(6,entry.species.length);j++)
-   ball(balls,x+42+(j-(entry.species.length-1)/2)*17,y+157,7);
-  layer.add(balls);
-  // Render the actual opponent's PMD mini portrait on unlocked cards.
-  // The Poké Ball remains as a placeholder only during first asset load.
-  if(!entry.locked&&entry.species[0])
-   portrait(scene,layer,entry.species[0],x+w/2+15,y+158,22);
+  // Always display 1–6 actual opponents, including on locked cards.
+  compactRoster(scene,layer,entry,x+w/2,y+146);
   box(scene,layer,x+7,y+171,w-14,16,{fill:entry.active?0x86611e:
    entry.completed?0x205b42:0x263b52,edge,
    accent:entry.active?0xffe8a0:edge});
@@ -292,25 +303,23 @@ function detailPage(scene,state,handlers,entry){
  text(scene,layer,410,36,'TIME DO ADVERSÁRIO',17,'#ffe0a2');
  text(scene,layer,408,65,'DESAFIO '+(entry.index+1)+' / '+
   (TRAINERS_PER_GYM(state.stage)+1),10,'#b5d6ec');
- const species=entry.locked&&!leader?[]:entry.species;
+ const species=entry.species.slice(0,6);
  if(species.length){
-  const full=species.length;
-  for(let k=0;k<full;k++){
-   const cx=full===1?445:full===2?388+k*112:full===3?335+k*110:306+(k%4)*80;
-   const cy=full<=3?153:124+Math.floor(k/4)*90;
-   box(scene,layer,cx-43,cy-47,86,99,
+  const cols=Math.min(3,species.length),stepX=118;
+  const firstX=444-(cols-1)*stepX/2,rows=Math.ceil(species.length/3);
+  for(let k=0;k<species.length;k++){
+   const cx=firstX+(k%3)*stepX;
+   const cy=rows===1?150:117+Math.floor(k/3)*83;
+   box(scene,layer,cx-52,cy-36,104,74,
     {fill:0x103454,edge:0x4f8caf,accent:0x89c9dd});
-   const ballLayer=scene.add.graphics();ball(ballLayer,cx,cy-11,14);layer.add(ballLayer);
-   portrait(scene,layer,species[k],cx,cy-13,53);
-   text(scene,layer,cx,cy+23,species[k].toUpperCase().slice(0,12),
-    9,'#f5f8fb');
-   const level=leader?STAGES[state.stage]?.leaderLevels?.[k]??entry.foe?.level:
-    entry.foe?.level;
-   text(scene,layer,cx,cy+38,'NV. '+(level??'?'),9,'#ffe6a8');
+   const placeholder=scene.add.graphics();ball(placeholder,cx,cy-15,10);layer.add(placeholder);
+   portrait(scene,layer,species[k],cx,cy-15,OPPONENT_DETAIL_SPRITE_SIZE);
+   text(scene,layer,cx,cy+9,species[k].toUpperCase().slice(0,13),9,'#f5f8fb');
+   const level=leader?STAGES[state.stage]?.leaderLevels?.[k]??entry.foe?.level:entry.foe?.level;
+   text(scene,layer,cx,cy+25,'NV. '+(level??'?'),9,'#ffe6a8');
   }
- }else{
-  text(scene,layer,445,144,'EQUIPE AINDA BLOQUEADA',12,'#a7bcd0');
- }
+ }else text(scene,layer,445,144,'EQUIPE INDISPONÍVEL',12,'#a7bcd0');
+
  if(leader){
   const sentence=LEADER_DIALOGUE[state.stage]||'Prepare-se para a batalha!';
   box(scene,layer,269,231,351,64,{fill:0x112c45,edge:0x6c9aba,
