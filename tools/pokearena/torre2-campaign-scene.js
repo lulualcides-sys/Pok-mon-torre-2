@@ -582,6 +582,8 @@ create(){
    bag:()=>this.bagScreen(state),
    center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),
+   training:()=>this.enterTraining(state),
+   capture:()=>this.grassScreen(state),
    rematchAtlas:()=>this.rematchAtlasScreen(state)
   };
   if(!this.__torre2CardsMapOnly)

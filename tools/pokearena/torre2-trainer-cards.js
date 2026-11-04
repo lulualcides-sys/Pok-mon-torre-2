@@ -171,10 +171,14 @@ function cardsPage(scene,state,handlers){
  text(scene,layer,17,38,'KANTO  ·  '+city.toUpperCase(),10,'#a6dcf4').setOrigin(0,.5);
  text(scene,layer,408,18,'DESAFIOS',10,'#a9c9dd');
  text(scene,layer,408,36,(state.trainer||0)+' / '+(all.length-1),15,'#ffdf89');
- control(scene,layer,476,9,78,32,'MAPA',handlers.map,
-  {id:'map',size:11});
- control(scene,layer,561,9,69,32,'MENU',handlers.menu,
-  {id:'menu',size:11});
+ control(scene,layer,465,9,54,32,'MAPA',handlers.map,
+  {id:'map',size:9});
+ control(scene,layer,523,9,51,32,'CHEIA',()=>{
+  if(scene.scale.isFullscreen)scene.scale.stopFullscreen();
+  else scene.scale.startFullscreen({navigationUI:'hide'});
+ },{id:'fullscreen',size:9});
+ control(scene,layer,578,9,54,32,'MENU',handlers.menu,
+  {id:'menu',size:9});
  const heading=page*5+1;
  text(scene,layer,320,68,
   'GINÁSIO DE '+city.toUpperCase()+'  ·  DESAFIOS '+heading+'–'+
@@ -238,14 +242,15 @@ function cardsPage(scene,state,handlers){
  const bottom=[
   ['EQUIPE',handlers.pokemon],['BOLSA',handlers.bag],
   ['CENTRO',handlers.center],['LOJA',handlers.mart],
+  ['CAPTURA',handlers.capture],['TREINO',handlers.training],
   ['VS SEEKER',handlers.rematchAtlas]
  ];
  for(let i=0;i<bottom.length;i++)
-  control(scene,layer,15+i*101,317,94,29,bottom[i][0],bottom[i][1],
-   {size:9,id:'cards-'+i});
- control(scene,layer,532,317,96,29,'VER ATUAL',()=>{
+  control(scene,layer,6+i*79,317,76,29,bottom[i][0],bottom[i][1],
+   {size:8,id:'cards-'+i});
+ control(scene,layer,559,317,75,29,'VER ATUAL',()=>{
   detailPage(scene,state,handlers,current);
- },{gold:true,id:'cards-open-current',size:9});
+ },{gold:true,id:'cards-open-current',size:8});
  scene.__torre2CardUI={stage:state.stage,mode:'cards',total:all.length,
   page,active:current.index,visible:all.slice(page*5,(page+1)*5).map(e=>e.index)};
  return scene.__torre2CardUI;
