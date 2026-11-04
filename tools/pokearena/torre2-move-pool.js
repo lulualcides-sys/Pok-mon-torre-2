@@ -981,6 +981,14 @@ export function defaultLoadout(member){
   // learns no ordinary ULT in its official late FireRed level-up table.
   if(!reserved[3]&&level>=8)reserved[3]=
    available.find(m=>m.torre2IntroSlot==='e')?.id||null;
+  // The original FRLG Mew learns Ancient Power at Lv50. Its natural
+  // Lv50 skill must not be displaced from the default HAB 2 by the
+  // optional Fire Punch bonus. Existing manually equipped choices
+  // continue to win in selectedMoves() and no persistent save is edited.
+  if(member.id==='mew'&&level>=50&&byId.has('ancient-power')&&
+     !reserved.slice(0,3).includes('ancient-power')&&
+     !campaignMoveSlotReason(member,1,byId.get('ancient-power')))
+   reserved[1]='ancient-power';
   return uniqueCampaignSlots(meaningfulDefaultUltimate(member,reserved,available),available,member);
  }
  const {def}=buscar(member.id),slots=['lmb','rmb','q','e'];
