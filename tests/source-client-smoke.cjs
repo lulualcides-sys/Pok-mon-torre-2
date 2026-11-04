@@ -507,11 +507,15 @@ const server=http.createServer(async(req,res)=>{
   const offlineInitial=await offline.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return {seen:c.__torre2OakIntroSeen,
-    text:c.children.list.filter(x=>typeof x.text==='string')
-     .map(x=>x.text).join(' | ')};
+    choices:c.children.list.filter(x=>x.input?.enabled&&
+     ['bulbasaur','charmander','squirtle'].includes(
+      x.getData?.('torre2-starter-select')))
+     .map(x=>x.getData('torre2-starter-select')).sort()};
   });
-  assert.ok(offlineInitial.seen&&offlineInitial.text.includes('CHARMANDER'),
-   'After Professor Oak, all three native starter choices are visible');
+  assert.equal(offlineInitial.seen,true,
+   'All Professor Oak dialogue pages must finish before selection');
+  assert.deepEqual(offlineInitial.choices,['bulbasaur','charmander','squirtle'],
+   'Three interactive starter buttons must be available after Oak');
   // Choose starter via campaign module and confirm launch into real Phaser combat.
   await offline.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
