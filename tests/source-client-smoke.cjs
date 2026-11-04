@@ -141,7 +141,7 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(subMenuLayout.widths.every(w=>w===260),
    'Enlarged buttons must be consistent in PLAY submenus');
   assert.ok(subMenuLayout.bottoms.every(bottom=>bottom<312),
-   'PLAY submenu must not overlap the decorative ground line');
+   'PLAY submenu must not overlap the decorative ground line: '+JSON.stringify(subMenuLayout));
   // Pokédex retains 26 native families and adds ten licensed PMD sprite families:
   // native layout and clickable evolution tabs must remain unchanged.
   const dexPage=await browser.newPage({viewport:{width:980,height:650}});
