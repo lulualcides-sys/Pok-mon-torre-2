@@ -151,10 +151,11 @@ function hudSprite(scene,member,x,y,depth=34){
  if(!scene.textures.exists(key))return;
  scene.add.image(x,y,key).setDisplaySize(23,23).setDepth(depth);
 }
-function renderBackdrop(scene,stage){
+function renderBackdrop(scene,stage,{seaRoutes=false}={}){
  // Use ORIGINAL FireRed exterior and gym interior from a loaded map sheet.
  // No screenshot-as-UI, no generated facade, no CSS/native-canvas zoom.
- const city=BATTLE_PATH_BACKDROP[stage]||'indigo',imageKey='frlg-location-'+city;
+ const city=seaRoutes&&stage===6?'seafoam':BATTLE_PATH_BACKDROP[stage]||'indigo';
+ const imageKey='frlg-location-'+city;
  const base=scene.add.graphics().setDepth(5);
  frame(base,10,54,478,255,{fill:0x163849,border:0xe0bd7b,radius:4});
  const texture=scene.textures.exists(imageKey)?scene.textures.get(imageKey):null;
@@ -212,6 +213,7 @@ function renderBackdrop(scene,stage){
 }
 export function renderBattlePath(scene,state,handlers){
  const stage=state.stage,finished=state.champion||!STAGES[stage],
+  cityView=stage===6&&Boolean(handlers.showCinnabarCity),
   total=finished?0:TRAINERS_PER_GYM(stage),
   progress=Math.min(total,Math.max(0,state.trainer||0)),
   leader=STAGES[stage]?.leader||'CAMPEÃO',
@@ -237,18 +239,27 @@ export function renderBattlePath(scene,state,handlers){
   .on('pointerup',()=>scene.scale.isFullscreen?
    scene.scale.stopFullscreen():scene.scale.startFullscreen({navigationUI:'hide'}));
  button(scene,599,23,65,29,'MENU',handlers.menu,{depth:41});
- renderBackdrop(scene,stage);
- const mapTitle=txt(scene,25,69,finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase(),13,'#fff5d8',28);
+ renderBackdrop(scene,stage,{seaRoutes:stage===6&&!cityView});
+ const mapName=cityView?'CIDADE DE CINNABAR':
+  stage===6?'ROTAS E CAVERNAS':finished?'CAMPEÃO DE KANTO':'ROTA DE '+city.toUpperCase();
+ const mapTitle=txt(scene,25,69,mapName,13,'#fff5d8',28);
  mapTitle.setOrigin(0,.5);
- const areaLegend=stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':
+ const areaLegend=cityView?'CENTRO  ·  LOJA  ·  GINÁSIO':
+  stage===6?'ROTAS 19/20  ·  ILHAS SEAFOAM  ·  CINNABAR':
+  stage===1?'ROTA 3  >  MT. MOON  >  ROTA 4  >  CERULEAN':
   stage===2?'ROTAS 24/25  >  5/6  >  S.S. ANNE  >  VERMILION':
   finished?'O SALÃO DA FAMA AGUARDA A SUA EQUIPE':
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  // Route details stay in the header and stop covering the overworld art.
  txt(scene,28,84,areaLegend.length>28?areaLegend.slice(0,27)+'…':areaLegend,
   7,'#d4e7cf',28).setOrigin(0,.5);
- button(scene,389,294,88,18,'VS SEEKER',()=>handlers.rematchAtlas?.(),
-  {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
+ button(scene,stage===6?288:389,294,stage===6?89:88,18,'VS SEEKER',
+  ()=>handlers.rematchAtlas?.(),{depth:39,small:true})
+  .setData('torre2-open-rematch-atlas',true);
+ if(stage===6)button(scene,389,294,88,18,
+  cityView?'VER ROTAS':'VER CIDADE',
+  ()=>cityView?handlers.viewRoutes?.():handlers.viewCinnabarCity?.(),
+  {depth:39,small:true}).setData('torre2-cinnabar-switch',cityView?'routes':'city');
  // Preserve the native trainer route by default. City is optional.
  if(stage===1)button(scene,389,273,88,18,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
@@ -262,14 +273,16 @@ export function renderBattlePath(scene,state,handlers){
  const requested=scene.__torre2PathPage;
  const progressed=previousStage===stage&&
   Number.isInteger(previousProgress)&&previousProgress!==progress;
- const oldPage=Math.max(0,Math.floor((requested??0)/13)*13);
- const outOfView=progress<oldPage||progress>oldPage+13;
- const pageForProgress=Math.max(0,Math.floor(Math.max(0,progress-1)/13)*13);
+ const pageSize=stage===6?7:13;
+ const oldPage=Math.max(0,Math.floor((requested??0)/pageSize)*pageSize);
+ const outOfView=progress<oldPage||progress>oldPage+pageSize;
+ const pageForProgress=Math.max(0,Math.floor(Math.max(0,progress-1)/pageSize)*pageSize);
  const page=progressed&&outOfView?pageForProgress:(requested??progress);
- const offset=Math.max(0,Math.min(total,Math.floor(page/13)*13));
+ const offset=Math.max(0,Math.min(total,Math.floor(page/pageSize)*pageSize));
  scene.__torre2RenderedPathProgress=progress;
  scene.__torre2RenderedPathStage=stage;
- const length=finished?0:Math.min(14,Math.max(0,total+1-offset));
+ // Town view has no trainer sprites over roofs or water; routes own fights.
+ const length=finished||cityView?0:Math.min(stage===6?7:14,Math.max(0,total+1-offset));
  const spots=[];
  for(let i=0;i<length;i++){
   const row=Math.floor(i/5),column=i%5;
@@ -375,8 +388,9 @@ export function renderBattlePath(scene,state,handlers){
   }
  }
  // Stable page navigation for Misty and later routes with >13 battles.
- if(offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
- if(!finished&&offset+length<total+1)button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
+ if(!cityView&&offset>0)button(scene,37,296,43,18,'◀',()=>handlers.page(-1),{small:true});
+ if(!finished&&!cityView&&offset+length<total+1)
+  button(scene,460,296,43,18,'▶',()=>handlers.page(1),{small:true});
  // After the final Champion KO, never redraw a fake 14th boss that can
  // reopen the gym. This honors the earned victory with native Phaser pixels.
  if(finished){
@@ -439,7 +453,9 @@ export function renderBattlePath(scene,state,handlers){
   .setData('torre2-reset-journey',true);
  // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
  installCampaignAudioSettings(scene);
- scene.__torre2BattlePath={stage,total,progress,offset,locations:spots.length,
+ scene.__torre2BattlePath={stage,total,progress,offset,pageSize,
+  mode:cityView?'city':stage===6?'sea-routes':'route',
+  locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:
    stage===2?['ROTAS 24/25','ROTAS 5/6','S.S. ANNE','VERMILION']:null,
   nodes:hitZones,imageKey:'frlg-location-'+(BATTLE_PATH_BACKDROP[stage]||'indigo'),
