@@ -1,0 +1,81 @@
+{
+  "schemaVersion": 1,
+  "objective": "Review genuine Phaser screenshots and editable pixel-art sources; no automatic approval from green CI.",
+  "status": "pending_visual_review",
+  "requiredScenes": [
+    {
+      "id": "cinnabar-campaign",
+      "screenshot": "test-evidence/visual-guard/desktop-cinnabar-map.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    },
+    {
+      "id": "pewter-campaign",
+      "screenshot": "test-evidence/visual-guard/desktop-campaign-map.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    },
+    {
+      "id": "mobile-title",
+      "screenshot": "test-evidence/visual-guard/mobile-landscape-title.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    },
+    {
+      "id": "battle-interface",
+      "screenshot": "test-evidence/visual-guard/desktop-first-battle.png",
+      "approvedBaseline": null,
+      "approval": "pending",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "maxDifferentPixelRatio": 0.02
+    }
+  ],
+  "priorityMoves": [
+    {
+      "id": "zap-cannon",
+      "editor": "pixelorama",
+      "source": "reference-assets/visual-workbench/moves/zap-cannon.pxo",
+      "export": "reference-assets/visual-workbench/exports/zap-cannon.png",
+      "frames": 12,
+      "status": "not_drawn",
+      "approved": false
+    },
+    {
+      "id": "powder-snow",
+      "editor": "pixelorama",
+      "source": "reference-assets/visual-workbench/moves/powder-snow.pxo",
+      "export": "reference-assets/visual-workbench/exports/powder-snow.png",
+      "frames": 12,
+      "status": "not_drawn",
+      "approved": false
+    },
+    {
+      "id": "whirlpool",
+      "editor": "pixelorama",
+      "source": "reference-assets/visual-workbench/moves/whirlpool.pxo",
+      "export": "reference-assets/visual-workbench/exports/whirlpool.png",
+      "frames": 12,
+      "status": "not_drawn",
+      "approved": false
+    }
+  ],
+  "policy": {
+    "renderer": "actual-Phaser-WebGL",
+    "pixelFilter": "nearest",
+    "noUpscaleBlur": true,
+    "approvalRequiredForMain": true,
+    "neverAutoApproveGeneratedBaseline": true,
+    "preserveArenaHUD": true,
+    "preserveCampaignSave": true
+  }
+}
