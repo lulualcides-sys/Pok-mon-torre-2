@@ -10,6 +10,7 @@ import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
 import {stripNativeSocialFooterLinks} from './torre2-native-social-compat.mjs';
 import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
 import {enableRayquazaForHomologation,rayquazaRequiredSpriteFiles} from './torre2-rayquaza-preview.mjs';
+import {skinMenuScene} from './torre2-noncombat-button-skin.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -992,6 +993,20 @@ for(const spriteFile of rayquazaRequiredSpriteFiles(spriteManifest))
  await fs.access(path.join(dest,'assets/pmd',spriteFile));
 await fs.writeFile(rayquazaRosterFile,previewRoster);
 console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; required PMD sprite assets verified.');
+
+// Native menus only: install premium pixel borders, maintaining original
+// callback/hitbox APIs. Never patch combate/batalla/hud/tactil or skill code.
+// Keep approved campaign visuals, saves, sprites and battle behavior intact.
+await fs.copyFile('tools/pokearena/torre2-noncombat-pixel-buttons.js',
+ path.join(dest,clientSource,'torre2/noncombat-pixel-buttons.js'));
+for(const scene of ['titulo','seleccion','preparar','pokedex']){
+ const filename=path.join(dest,clientSource,'escenas',scene+'.js');
+ const before=await fs.readFile(filename,'utf8');
+ const after=skinMenuScene(before,scene);
+ if(before===after)throw Error('Button skin not installed: '+scene);
+ await fs.writeFile(filename,after);
+}
+console.log('Premium pixel buttons applied to title, selection, preparation and Pokédex only');
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
