@@ -22,6 +22,7 @@ import {originalBallSprite} from './ball-sprites.js';
 import {installBattleBag} from './battle-bag.js';
 import {animateBallActor} from './ball-choreography.js';
 import {installShinyEntrance} from './shiny-fx.js';
+import {regionalTrainerPartySize,regionalTrainerParty} from './torre2-trainer-rosters.js';
 
 const clamp=v=>Math.max(0,Math.min(100,Number(v)||0));
 const label=(scene,x,y,value,size=10,color='#fff3cd',depth=2482)=>{
@@ -40,9 +41,10 @@ export function createPartyMatch(state,opponent,wild=false){
   (state.stage===12?rivalChampionTeam(campaignStarter(state)):gym.leaderTeam):null;
  const count=wild?1:leaderTeam?leaderTeam.length:opponent.leader?
   Math.min(6,state.stage>=8?4:state.stage>=4?3:2):
-  Math.min(4,1+Math.floor((state.trainer+(state.stage||0))/5));
+  regionalTrainerPartySize(state.stage,state.trainer);
+ const regionalParty=regionalTrainerParty(state.stage,state.trainer,opponent.id,count);
  const foes=Array.from({length:count},(_,i)=>{
-  const baseId=leaderTeam?leaderTeam[i]:i===0?opponent.id:
+  const baseId=leaderTeam?leaderTeam[i]:regionalParty[i]||
    pool[(state.trainer+i)%pool.length]||opponent.id;
   // The true gym ace is the LAST enemy, not the first. Preserves 15/17
   // trainer checkpoints and saved opponent indices for existing journeys.
