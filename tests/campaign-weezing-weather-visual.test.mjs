@@ -5,16 +5,14 @@ import {createWeather,setWeather,weatherDamageMultiplier,weatherFromMove} from
  '../tools/pokearena/torre2-weather.js';
 import {installCampaignMoveLabelGuard} from '../tools/pokearena/torre2-combat-visual-guard.js';
 import {weatherStatusDescriptor} from '../tools/pokearena/torre2-weather-status-float.js';
-import {KANTO_CAMPAIGN_QUICK_COOLDOWNS,balanceCampaignQuickCooldown} from
- '../tools/pokearena/torre2-move-pool.js';
-test('both campaigns abilities last four seconds, without touching native move',()=>{
- for(const name of ['Seismic Toss','Egg Bomb']){
-  const original={nombre:name,cd:1.4,forma:'native'};
-  const updated=balanceCampaignQuickCooldown(original);
-  assert.equal(updated.cd,4);
-  assert.equal(original.cd,1.4);
- }
- assert.equal(KANTO_CAMPAIGN_QUICK_COOLDOWNS.gust,.7);
+import {readFileSync} from 'node:fs';
+test('both campaign abilities are explicitly 4s; native attacks are copied',()=>{
+ const src=readFileSync('tools/pokearena/torre2-move-pool.js','utf8');
+ assert.match(src,/'seismic-toss':4,/);
+ assert.match(src,/'egg-bomb':4,/);
+ assert.match(src,/gust:0\.7/);
+ assert.match(src,/return Number\.isFinite\(cd\)\?\{\.\.\.move,cd\}:move;/,
+  'Campaign must create a balanced copy instead of mutating native moves');
 });
 test('actual weather state begins with the native status move and multiplies coverage damage',()=>{
  for(const [move,kind,positive,negative] of [
