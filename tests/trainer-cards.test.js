@@ -15,13 +15,16 @@ test('trainer cards are a separate native Phaser UI without changing saves or th
  assert.match(card,/canBattle:!disabled/);
  assert.match(card,/setData\('torre2-trainer-card-index'/);
  assert.doesNotMatch(card,/saveCampaign\(|resetCampaign\(|resolveBattle\(|startBattle\(/);
- assert.match(scene,/renderTrainerCardHub\(this,state,cardsHandlers\)/);
- assert.match(scene,/renderTrainerCardMapTab\(this/);
+ assert.match(scene,/renderTrainerCardHub\(this,state,handlers\)/);
+ assert.doesNotMatch(scene,/renderTrainerCardMapTab\(this/);
  assert.match(scene,/capture:\(\)=>this\.grassScreen\(state\)/);
  assert.match(scene,/training:\(\)=>this\.enterTraining\(state\)/);
  assert.match(card,/'CAPTURA',handlers\.capture/);
  assert.match(card,/'TREINO',handlers\.training/);
  assert.match(card,/'CHEIA'/);
+ assert.match(card,/'MAIS'/);
+ assert.doesNotMatch(card,/'MAPA',handlers\.map/);
+ assert.match(card,/OPPONENT_SPRITE_SCALE=0\.5/);
  assert.match(build,/torre2-trainer-cards\.js','trainer-cards\.js'/);
 });
 test('leader showdown has real roster, dialogue and existing 2.5s VS transition',()=>{
