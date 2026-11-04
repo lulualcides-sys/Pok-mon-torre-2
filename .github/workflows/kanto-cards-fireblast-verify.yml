@@ -50,7 +50,9 @@ jobs:
       - name: Inspect approved Fire Blast renderer parameters
         run: node tests/t98-fireblast-diagnostic-built.mjs
       - name: Verify Fire Blast catalog and unlock gates
-        run: node tests/t07-fire-blast-kanto-built.test.mjs
+        run: |
+          node tests/t07-fire-blast-kanto-built.test.mjs
+          node tests/t98-fireblast-perf-built.test.mjs
       - name: Check full-party cards without maps in Chromium
         env:
           CHROME_BIN: /usr/bin/google-chrome
