@@ -17,13 +17,17 @@ export function pixelMenuButton(scene,x,y,label,onPress,{
  if(mobile){altoZona=Math.max(altoZona,20);anchoExtra=Math.max(anchoExtra,8)}
  const g=scene.add.graphics();
  const t=texto(scene,x,y+4,label,{tam:8}).setOrigin(.5).setDepth(1);
- let enabled=false,visible=true;
+ let enabled=false,visible=true,dimmed=false;
  const dimensions=()=>{
   const w=Math.max(ancho,whole(t.width)+(mobile?20:12),24);
   return{w,bx:whole(x-w/2),by:whole(y-(mobile?6:3)),h:mobile?20:14};
  };
  const draw=()=>{
   g.clear();
+  // Preserve the native Poké Arena button contract: its pregame scenes
+  // may dim controls without hiding their positions or input layout.
+  g.setAlpha(dimmed?.45:1);
+  t.setAlpha(dimmed?.45:1);
   if(!visible)return;
   const {w,bx,by,h}=dimensions();
   const gold=enabled;
@@ -64,9 +68,14 @@ export function pixelMenuButton(scene,x,y,label,onPress,{
  return{
   zona:zone,
   activar(value){enabled=Boolean(value);draw();return this},
+  apagar(value){dimmed=Boolean(value);draw();return this},
   texto(value){t.setText(value);measure();return this},
   mostrar(value){visible=Boolean(value);t.setVisible(visible);zone.input.enabled=visible;draw();return this},
   mover(nx,ny){x=nx;y=ny;t.setPosition(x,y+4);zone.setPosition(x,y+4);draw();return this},
+  // ui.js filaTrasEtiqueta calls b.ancho() to lay out arena/CPU rows.
+  // The new visual wrapper must expose this ORIGINAL method or selection
+  // crashes before Phaser activates the scene (and Pages cannot deploy).
+  ancho(){return dimensions().w},
   capa(depth){g.setDepth(depth);t.setDepth(depth+1);zone.setDepth(depth+1);return this},
   destruir(){light.quitar();g.destroy();t.destroy();zone.destroy()}
  };
