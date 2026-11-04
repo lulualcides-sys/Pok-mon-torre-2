@@ -9,11 +9,16 @@ const TRAINERS=[
  ['youngster:rattata','bugcatcher:caterpie','bugcatcher:weedle',
   'youngster:pidgey','bugcatcher:metapod','bugcatcher:kakuna',
   'lass:nidoran-f','bugcatcher:butterfree','youngster:mankey',
-  'hiker:geodude','youngster:spearow','hiker:geodude','hiker:onix'],
+  'youngster:spearow','bugcatcher:weedle','camper:geodude',
+  'camper:sandshrew'],
  // Route 3, Mt. Moon, Route 4, Cerulean and its water gym
- ['youngster:ekans','lass:jigglypuff','hiker:geodude','bugcatcher:paras',
-  'hiker:geodude','lass:clefairy','hiker:onix','youngster:sandshrew',
-  'swimmer:goldeen','swimmer:horsea','swimmer:staryu','sailor:tentacool'],
+ // Route 3 starts with FRLG trainer archetypes/species (single-member
+ // projections); Mt. Moon then introduces hikers and Rocket before Misty.
+ ['lass:pidgey','bugcatcher:caterpie','youngster:rattata',
+  'bugcatcher:weedle','lass:nidoran-f','youngster:spearow',
+  'bugcatcher:metapod','lass:jigglypuff','hiker:geodude',
+  'hiker:onix','lass:clefairy','swimmer:goldeen',
+  'swimmer:horsea','swimmer:staryu','sailor:tentacool'],
  // Nugget Bridge, routes 24/25, Vermilion and S.S. Anne
  ['youngster:oddish','lass:bellsprout','ace:pidgeotto','sailor:machop',
   'sailor:tentacool','gentleman:growlithe','sailor:shellder',
@@ -43,16 +48,18 @@ const TRAINERS=[
   'blackbelt:machop','hiker:onix','ace:dugtrio','hiker:marowak',
   'ace:nidorina','blackbelt:machamp','hiker:rhydon','ace:nidoking'],
  // Victory Road before the Indigo League
- ['hiker:graveler','blackbelt:machoke','ace:golbat','hiker:onix',
-  'ace:persian','blackbelt:primeape','ace:arbok','hiker:marowak',
-  'ace:venomoth','blackbelt:machamp','hiker:rhydon','ace:exeggutor']
+ ['ace:persian','ace:raticate','blackbelt:machoke','ace:drowzee',
+  'ace:golduck','ace:mr-mime','ace:exeggutor','ace:charmeleon',
+  'ace:clefairy','ace:kingler','ace:weepinbell','ace:nidoking',
+  'blackbelt:machoke','ace:rapidash','ace:electrode',
+  'ace:seadra','ace:arcanine']
 ].map(rows=>Object.freeze(rows.map(row=>{
  const [spriteKind,id]=row.split(':');
  return Object.freeze({spriteKind,id});
 })));
 export const REGIONAL_TRAINERS=Object.freeze(TRAINERS);
 const TITLES=Object.freeze({
- youngster:'Jovem',bugcatcher:'Caça-Insetos',lass:'Garota',
+ youngster:'Jovem',bugcatcher:'Caça-Insetos',lass:'Garota',camper:'Campista',
  hiker:'Montanhista',swimmer:'Nadador',sailor:'Marinheiro',
  gentleman:'Cavalheiro',ace:'Treinador Elite',scientist:'Cientista',
  rocker:'Roqueiro',cyclist:'Ciclista',fisher:'Pescador',
