@@ -55,7 +55,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: visual-guard-asset-evidence-${{ github.run_attempt }}
-          path: test-evidence/visual-guard/
+          path: |
+            test-evidence/visual-guard/
+            test-evidence/training-selection-timeout.png
           if-no-files-found: warn
           retention-days: 14
   browser-visual:
@@ -103,6 +105,10 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/visual-guard-browser.cjs
+      - name: Reproduzir smoke ORIGINAL completo da publicação Pages
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/source-client-smoke.cjs
       - name: Gerar diagnóstico automático na falha
         if: failure()
         env:
