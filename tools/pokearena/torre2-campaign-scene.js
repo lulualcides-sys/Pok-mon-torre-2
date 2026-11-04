@@ -1059,6 +1059,7 @@ create(){
    return;
   }
   const foe={id:match.p2,level:match.torre2.enemyLevel,
+   kind:wild?'wild':currentOpponent(state)?.kind,
    leader:!wild&&state.trainer>=TRAINERS_PER_GYM(state.stage)};
   const party=createPartyMatch(state,foe,wild);
   match.torre2.party=party;
