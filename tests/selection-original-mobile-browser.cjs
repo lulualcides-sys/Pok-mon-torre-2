@@ -50,20 +50,21 @@ const server=http.createServer(async(req,res)=>{
    });
    const initial=await inspect();
    assert.equal(initial.visibleCards,16,'Only 16 Pokémon can be rendered on one page');
-   assert.deepEqual(initial.visiblePages,[0],'A hidden page has visible sprites');
+   assert.deepEqual(initial.visiblePages,[initial.page],'A hidden page has visible sprites');
    assert.equal(initial.hiddenClickable,0,'Hidden Pokémon cannot be touched');
-   assert.ok(initial.label.startsWith('PÁG 1/'),'Page indicator must be visible');
+   assert.ok(initial.label.startsWith('PÁG '+(initial.page+1)+'/'),'Page indicator must match the focused Pokémon');
    assert.ok(initial.fightButton,'Keep the native FIGHT button');
    assert.ok(initial.rayquaza,'Rayquaza must be selectable in the ORIGINAL game');
-   await page.evaluate(()=>{
+   const nextPage=initial.page===0?1:0;
+   await page.evaluate((targetPage)=>{
     const s=window.__pt2Game.scene.getScene('seleccion');
-    s.foco=16;s.refrescar();
-   });
+    s.foco=targetPage*16;s.refrescar();
+   },nextPage);
    const changed=await inspect();
    assert.equal(changed.visibleCards,16);
-   assert.deepEqual(changed.visiblePages,[1]);
+   assert.deepEqual(changed.visiblePages,[nextPage]);
    assert.equal(changed.hiddenClickable,0);
-   assert.ok(changed.label.startsWith('PÁG 2/'));
+   assert.ok(changed.label.startsWith('PÁG '+(nextPage+1)+'/'));
    await fs.mkdir('test-evidence',{recursive:true});
    await page.screenshot({path:mobile?'test-evidence/selection-16-per-page-mobile.png':
     'test-evidence/selection-16-per-page-desktop.png',fullPage:true});
