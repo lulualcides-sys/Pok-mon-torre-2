@@ -286,12 +286,15 @@ create(){
  }
  // Exact original Poké Arena 2D menu frame, font and hover/highlight,
  // reused here rather than reinterpreted with generic rectangles and CSS.
- button(x,y,w,h,label,callback,emphasis=false,tam=null,variant=null){
+ button(x,y,w,h,label,callback,emphasis=false,tam=null,variant=null,captionInset=0){
   const g=this.add.graphics().setDepth(3);
   const size=tam??(w>=202?12:w>=145?10:w>=92?9:8);
+  // Reserve an icon gutter so TM art never covers its caption.
   const caption=estrechar(textoMenu(this,x,y,label,{
    tam:size,borde:3,colorBorde:MENU_UI.bordeTexto
-  }).setOrigin(.5).setDepth(5),w-14);
+  }).setOrigin(.5).setDepth(5),w-14-captionInset)
+   .setData('torre2-button-caption',label);
+  if(captionInset)caption.setX(x+captionInset/2);
   let hovered=false;
   const paint=()=>{
    g.clear();const tone=variant||(emphasis?'gold':'blue');
@@ -591,7 +594,7 @@ create(){
    menu:()=>this.scene.start('titulo',{menu:'principal'}),
    battle:()=>this.enterBattle(state),
    rematch:i=>this.rematchScreen(state,i),
-   pokemon:()=>state.team[state.active]&&this.showSummary(state,state.active),
+   pokemon:()=>this.teamScreen(state),
    bag:()=>this.bagScreen(state),
    center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),
@@ -701,7 +704,7 @@ create(){
    menu:()=>this.scene.start('titulo',{menu:'principal'}),
    battle:()=>this.enterBattle(state),
    rematch:i=>this.rematchScreen(state,i),
-   pokemon:()=>state.team[state.active]&&this.showSummary(state,state.active),
+   pokemon:()=>this.teamScreen(state),
    bag:()=>this.bagScreen(state),
    center:()=>this.centerScreen(state),
    mart:()=>this.martScreen(state),
@@ -1371,6 +1374,52 @@ create(){
    wordWrap:{width:560}}).setOrigin(.5);
   if(errorText)notice.setData('torre2-mart-save-error',true);
  }
+ teamScreen(state){
+  // EQUIPE is a full roster, not a shortcut to the active Pokémon's summary.
+  this.__torre2SummaryFromTeam=false;
+  this.children.removeAll(true);
+  this.cameras.main.setBackgroundColor(C.ink);
+  this.backdrop();
+  text(this,320,24,'MINHA EQUIPE · '+state.team.length+'/6',{
+   ...titleStyle,fontSize:'20px'}).setOrigin(.5).setDepth(6)
+   .setData('torre2-team-overview',true);
+  text(this,320,52,'TOQUE EM UM POKÉMON PARA VER SEU SUMÁRIO',{
+   fontSize:'11px',color:C.blue}).setOrigin(.5).setDepth(6);
+  state.team.slice(0,6).forEach((member,i)=>{
+   const x=111+(i%3)*209,y=119+Math.floor(i/3)*111;
+   const active=i===state.active;
+   const tile=this.add.rectangle(x,y,196,98,active?0x294b65:0x1b344c)
+    .setStrokeStyle(2,active?0xf6c851:0x648eaa).setDepth(3)
+    .setInteractive({useHandCursor:true})
+    .setData('torre2-team-overview-slot',i);
+   this.drawPortrait(member,x-68,y-3,43,5);
+   const name=(active?'◆ ':'')+member.id.toUpperCase();
+   estrechar(text(this,x-36,y-36,name,{
+    fontSize:'12px',fontStyle:'bold',color:active?'#ffe5a1':C.white
+   }).setDepth(6),123);
+   text(this,x-36,y-15,'NV. '+(member.progression?.level??'?'),{
+    fontSize:'11px',color:C.blue}).setDepth(6);
+   const hp=Math.round(Math.max(0,Math.min(100,Number(member.hp??100)||0)));
+   text(this,x-36,y+5,'HP '+hp+'%',{
+    fontSize:'11px',color:hp===0?'#ff9d9d':C.white}).setDepth(6);
+   const condition=hp===0?'DESMAIADO':
+    statusLabel({est:{[member.status?.kind]:true}})||
+    (member.confusion?'CONFUSÃO':'PRONTO');
+   estrechar(text(this,x-36,y+25,condition,{
+    fontSize:'10px',color:hp===0?'#ff9d9d':C.muted
+   }).setDepth(6),123);
+   tile.on('pointerdown',(_p,_x,_y,event)=>{
+    event?.stopPropagation?.();
+    this.__torre2SummaryFromTeam=true;
+    this.showSummary(state,i);
+   });
+  });
+  text(this,320,299,'SELECIONE NO SUMÁRIO QUEM ENTRA EM BATALHA',{
+   fontSize:'10px',color:C.muted}).setOrigin(.5).setDepth(6);
+  this.button(320,330,250,31,'◀ VOLTAR AOS CARDS',()=>{
+   this.renderCampaign(state);
+  }).setData('torre2-team-overview-back',true);
+ }
  bagScreen(state,errorText=''){
   this.children.removeAll(true);this.backdrop();
   text(this,320,27,'BOLSA · POKÉDÓLARES '+state.money,{
@@ -1448,7 +1497,7 @@ create(){
      console.warn('Torre 2: TM teaching not saved',error);
      this.bagScreen(state,'TM NÃO SALVA · ARMAZENAMENTO BLOQUEADO · TENTE NOVAMENTE');
     }
-   },compatible).setData('torre2-bag-teach-tm',id);
+   },compatible,9,null,32).setData('torre2-bag-teach-tm',id);
    drawShopItem(this.add.graphics().setDepth(6),76+i*181,303,item,.65);
   });
   if(errorText||state.lastMessage){
@@ -1550,11 +1599,13 @@ create(){
   box(10,8,620,36,0x10243d,0x456b91);
   label(23,15,'POKÉMON / SUMÁRIO',C.gold,16);
   // Avoid the legacy fullscreen hitbox around x=624.
-  button(494,13,108,27,'◀ EQUIPE',()=>{
+  button(494,13,108,27,this.__torre2SummaryFromTeam?'◀ EQUIPE':'◀ CAMPANHA',()=>{
+   const backToTeam=this.__torre2SummaryFromTeam===true;
+   this.__torre2SummaryFromTeam=false;
    this.summaryFilter='ALL';this.summarySearch='';this.summaryWarning=null;
    this.summaryView='moves';
-   // No scene.restart: retain browser fullscreen and native Phaser canvas.
-   this.renderCampaign(state);
+   if(backToTeam)this.teamScreen(state);
+   else this.renderCampaign(state);
   }).setData('torre2-summary-back',true);
   // Left: species identity and visible stats.
   box(13,52,197,296,0x13233b,0x4a789f);
@@ -1602,7 +1653,11 @@ create(){
     this.showSummary(state,index,slot,page);
     return;
    }
-   this.summaryFilter='ALL';this.summarySearch='';this.summaryView='moves';this.renderCampaign(state);
+   const backToTeam=this.__torre2SummaryFromTeam===true;
+   this.__torre2SummaryFromTeam=false;
+   this.summaryFilter='ALL';this.summarySearch='';this.summaryView='moves';
+   if(backToTeam)this.teamScreen(state);
+   else this.renderCampaign(state);
   },index===state.active).setData('torre2-active-select',true);
   // Right: four prominent touch-friendly equipped slots, 2×2.
   box(218,52,409,296,0x12243a,0x496b86);
