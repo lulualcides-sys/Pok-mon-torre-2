@@ -300,6 +300,7 @@ await Promise.all([
  ['tools/pokearena/torre2-johto-lab-catalog.js','johto-lab-catalog.js'],
  ['tools/pokearena/torre2-johto-lab-scene.js','johto-lab-scene.js'],
  ['tools/pokearena/torre2-johto-lab-runtime.js','johto-lab-runtime.js'],
+ ['tools/pokearena/torre2-native-zap.js','native-zap.js'],
  ['tools/pokearena/torre2-johto-lab-pixelart.js','johto-lab-pixelart.js'],
  ['tools/pokearena/torre2-johto-lab-combat.js','johto-lab-combat.js']
 ].map(async([source,name])=>fs.copyFile(path.resolve(source),

@@ -70,8 +70,13 @@ const server=http.createServer(async(req,res)=>{
       rendered:scene.children.list.some(o=>o.active&&o.texture?.key===name)}));
     const pilotKey='torre2-johto-pilot-'+move.id;
     const pilot=scene.textures.exists(pilotKey);
+    const nativeRays=move.id==='zap-cannon'?
+     scene.children.list.filter(o=>o.active&&
+      o.getData?.('torre2-zap-native-ray')!==undefined):[];
     result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures,
-     pilot,previewVisible:pilot&&scene.children.list.some(o=>
+     pilot,nativeRayCount:nativeRays.length,
+     nativeRayTextures:[...new Set(nativeRays.map(o=>o.texture?.key))],
+     previewVisible:pilot&&scene.children.list.some(o=>
       o.active&&o.texture?.key===pilotKey)});
    }
    return result;
@@ -91,6 +96,13 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(item?.pilot&&item?.previewVisible,
     id+' PILOT art was not loaded/rendered by the actual WebGL scene');
   }
+  const zapCast=casts.find(x=>x.id==='zap-cannon');
+  assert.equal(zapCast.nativeRayCount,32,
+   'Zap Cannon must own one bounded native client lightning sprite pool');
+  assert.ok(zapCast.nativeRayTextures.includes('p-rayo'),
+   'Zap Cannon ray must use the client-base p-rayo texture');
+  assert.ok(zapCast.textures.some(t=>t.name==='p-electro'&&t.loaded),
+   'Zap Cannon impact must keep the native client p-electro texture');
   // True projectile/contact path: count real native receive calls, not only VFX constructors.
   const impacts=await page.evaluate(async()=>{
    const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
