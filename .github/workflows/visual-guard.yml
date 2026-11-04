@@ -92,6 +92,8 @@ jobs:
             fi
             sleep $((attempt*8))
           done
+      - name: Validar Mew Lv50 no Phaser com saves intactos
+        run: node tests/mew-lv50-natural-pokedex-built.test.mjs
       - name: Capturar título, mobile, mapa e combate em Chromium
         env:
           CHROME_BIN: /usr/bin/google-chrome
