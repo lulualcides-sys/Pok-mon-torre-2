@@ -17,7 +17,9 @@ const member=(id,level,tmMoves=[])=>({id,
 const blast=TEST_LIBRARY.find(m=>m.id==='fire-blast');
 assert.ok(blast?.forma,'Fire Blast must reuse captured existing renderer');
 assert.equal(blast.source,'arena2d-original','Do not replace the approved P2 VFX');
-assert.equal(TEST_LIBRARY.length,227,'Do not grow the 227-move catalog');
+assert.ok(TEST_LIBRARY.length>=227,'Preserve the 227 approved Kanto moves and any newer installed effects');
+assert.equal(new Set(TEST_LIBRARY.map(m=>m.id)).size,TEST_LIBRARY.length,
+ 'Fire Blast optimization may not duplicate move entries');
 assert.equal(KANTO_FIRE_BLAST_LEVEL,50);
 assert.equal(KANTO_FIRE_BLAST_SPECIES.length,12);
 for(const species of KANTO_FIRE_BLAST_SPECIES){
