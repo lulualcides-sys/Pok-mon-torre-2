@@ -86,8 +86,15 @@ const server=http.createServer(async(req,res)=>{
    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
     import(new URL('torre2/johto-lab-catalog.js',base)),import(new URL('torre2/johto-lab-runtime.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
-   const original=enemy.recibir,originalRandom=Math.random,originalXP=me.ganarExp,originalHitFX=enemy.efectosGolpe,measured=[];
+   const original=enemy.recibir,originalRandom=Math.random,originalXP=me.ganarExp,
+    originalEnemyXP=enemy.ganarExp,originalEnemyUlt=enemy.ganarUlti,
+    originalHitFX=enemy.efectosGolpe,measured=[];
    me.ganarExp=()=>{}; // synthetic 18-cast burst must not summon XP text
+   // Force only native hit/HP behavior during a rapid test burst: the original
+   // fighter shows ULT/EXP text when its meter fills, which needlessly allocates
+   // 18+ Phaser text canvases in one synchronous page.evaluate frame. Real
+   // gameplay still uses the unmodified methods and the visual test below.
+   enemy.ganarUlti=()=>{};enemy.ganarExp=()=>{};
    enemy.efectosGolpe=()=>{}; // native HP/contact remain; suppress 18 simultaneous HUD damage texts
    Math.random=()=>.35; // deterministic accuracy pass; misses tested separately
    let calls=0;enemy.recibir=function(...args){calls++;return original.apply(this,args)};
@@ -106,7 +113,9 @@ const server=http.createServer(async(req,res)=>{
      if(ok&&effect)for(let i=0;i<125;i++){if(effect.update(.016)===false)break;}
      measured.push({id:move.id,ok,calls});
     }
-   }finally{enemy.recibir=original;me.ganarExp=originalXP;enemy.efectosGolpe=originalHitFX;Math.random=originalRandom;}
+   }finally{enemy.recibir=original;me.ganarExp=originalXP;
+    enemy.ganarExp=originalEnemyXP;enemy.ganarUlti=originalEnemyUlt;
+    enemy.efectosGolpe=originalHitFX;Math.random=originalRandom;}
    return measured;
   });
   console.log('JOHTO_LAB_18_NATIVE_CONTACTS',JSON.stringify(impacts));

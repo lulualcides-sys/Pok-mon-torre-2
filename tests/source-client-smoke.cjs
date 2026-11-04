@@ -525,7 +525,7 @@ const server=http.createServer(async(req,res)=>{
     team:c.children.list.filter(o=>o.type==='Image'&&
      String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
     title:labels.includes('ROTA DE PEWTER'),button:labels.includes('ENTRAR NA BATALHA'),
-    banner:labels.includes('SUA EQUIPE  2/6'),
+    banner:labels.includes('EQUIPE  2/6'),
     enabled:count,cta:{x:cta?.x,y:cta?.y,active:cta?.input?.enabled},
     oldMap:c.children.list.some(o=>o.type==='Image'&&o.texture?.key==='torre2-brock-custom'),
     environment:c.children.list.some(o=>o.type==='Image'&&
@@ -686,7 +686,7 @@ const server=http.createServer(async(req,res)=>{
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    return c.scene.isActive()&&c.__torre2BattlePath?.stage===0&&
-    c.children.list.some(o=>String(o.text||'').startsWith('SUA EQUIPE'));
+    c.children.list.some(o=>String(o.text||'').startsWith('EQUIPE  '));
   },null,{timeout:15000});
   // Existing Center, Mart and Bag actions remain native and functional.
   const newMap=await offline.evaluate(async()=>{
@@ -1234,7 +1234,7 @@ const server=http.createServer(async(req,res)=>{
   await offline.waitForFunction(()=>{
     const c=window.__pt2Game.scene.getScene('campanha');
     return c.__torre2BattlePath?.stage===0&&
-     c.children.list.some(o=>String(o.text||'').startsWith('SUA EQUIPE'));
+     c.children.list.some(o=>String(o.text||'').startsWith('EQUIPE  '));
   },null,{timeout:12000});
 
   await offline.evaluate(async()=>{

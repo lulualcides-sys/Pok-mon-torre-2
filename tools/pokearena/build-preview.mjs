@@ -653,6 +653,14 @@ for(const [filename,changes] of patches){
      body=body.replace(debugVariant,'ajustes:[');
      continue;
     }
+    // The upstream 2026-11-04 title switched the identical profile tile
+    // from DEBUG to CUSTOMIZE. Match precisely; preserve SOUND/CONTROLS/
+    // LANGUAGE/BACK and fail closed on any unrecognized menu structure.
+    const customizeVariant='ajustes:[CUSTOMIZE?{id:"cuenta",txt:"DISCORD & EMAIL",escena:"perfil",datos:{ajustes:true},ficha:true,ico:"perfil"}:{id:"perfil",txt:"PROFILE",escena:"perfil",ficha:true,ico:"perfil"},';
+    if(body.includes(customizeVariant)){
+     body=body.replace(customizeVariant,'ajustes:[');
+     continue;
+    }
     if(found.length===0&&!/\bid\s*:\s*(["'])perfil\1/.test(body)){
      console.warn('Native title no longer exposes PROFILE in settings; no change');
      continue;

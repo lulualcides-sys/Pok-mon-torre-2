@@ -27,7 +27,9 @@ test('trainer and wild wins call one whole-party EXP Share, not active-only',()=
 test('Brock stands in gym center and common trainers stay outside',()=>{
  assert.ok(hub.includes('const px=boss?414:('));
  assert.ok(hub.includes("['hiker',359],['youngster',469]"));
- assert.ok(hub.includes("const width=boss?82:60"));
+ // Leaders keep a larger hit target; presentation may become more compact.
+ assert.ok(hub.includes("const width=boss?72:58"));
+ assert.ok(hub.includes("setData('torre2-path-node',i)"));
 });
 test('reset requires deliberate confirmation before erasing the save',()=>{
  assert.ok(hub.includes("handlers.reset"));

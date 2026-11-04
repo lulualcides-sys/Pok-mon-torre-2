@@ -51,7 +51,16 @@ const server=http.createServer(async(req,res)=>{
   };
   assert.equal(await page.evaluate(()=>__pt2Game.scene.getScene('campanha').children.list.some(o=>
    o.active&&o.getData?.('torre2-open-rematch-atlas'))),true);
-  await click(424,103);
+  // Locate the actual Phaser control: the redesigned map moved VS Seeker
+  // below the gym thumbnail. Do not click an obsolete hard-coded position.
+  const seeker=await page.evaluate(()=>{
+   const scene=__pt2Game.scene.getScene('campanha');
+   const zone=scene.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-open-rematch-atlas'));
+   if(!zone)throw Error('VS Seeker action missing from native campaign');
+   return {x:zone.x,y:zone.y};
+  });
+  await click(seeker.x,seeker.y);
   await page.waitForFunction(()=>!!__pt2Game.scene.getScene('campanha').__torre2RematchAtlas,
    null,{timeout:10000});
   let selection=await page.evaluate(()=>{

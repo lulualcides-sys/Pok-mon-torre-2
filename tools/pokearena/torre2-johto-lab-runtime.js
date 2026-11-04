@@ -24,35 +24,72 @@ const near=(a,b,r)=>Math.hypot(a.x-b.x,a.y-b.y)<=r;
  * coordinates, following the approved 2x2 tile method of batch24/pixels.js.
  * There are NO outline circles, vector arcs, glow ellipses or generic beams.
  */
+// Per-move native sprite proportions are tuned to their actual semantic silhouettes.
+// Original Poké Arena textures, never flat geometric stand-ins or blurred scaling.
+const NATIVE_POSES=Object.freeze({
+ 'triple-kick':[2.4,1.35],'thief':[2.2,1.3],'snore':[1.75,1.3],
+ 'powder-snow':[1.6,1.1],'octazooka':[2.55,1.45],
+ 'zap-cannon':[3.2,2.1],'false-swipe':[2.8,1.4],
+ 'steel-wing':[2.8,1.6],'return':[1.8,1.5],
+ 'present':[2.6,1.4],'frustration':[2.1,1.45],
+ 'magnitude':[2.7,1.4],'pursuit':[2.4,1.4],
+ 'vital-throw':[2.7,1.7],'hidden-power':[2.1,1.4],
+ 'rock-smash':[2.5,1.4],'whirlpool':[2.15,1.15],
+ 'beat-up':[2.35,1.25]
+});
 function nativeP2(e,id){
  const textures=JOHTO_P2_TEXTURES[id]||[];
  return textures.map((name,index)=>{
   if(!e.textures.exists(name))return null;
-  const img=e.add.image(0,0,name);
-  img.setDepth(1531+index);
-  img.setScale(index===0?3:2);
-  img.setAlpha(index===0?.98:.83);
+  const img=e.add.image(0,0,name).setDepth(1531+index);
+  img.setScale(NATIVE_POSES[id]?.[index]||2);
+  img.setAlpha(index===0?.98:.76);
+  img.setBlendMode?.(Phaser.BlendModes.NORMAL);
   return img;
  }).filter(Boolean);
 }
+// Twelve authored timing poses. Each move gets a different spatial story:
+// contact kicks, a rising Z, icedust, charged bolt, cut arc, ground rupture,
+// a carried gift, a trapped whirlpool, etc. All coordinates are integer-snapped.
 function paintNativeSprites(imgs,id,x,y,age,duration,r,l){
- const frame=Math.min(JOHTO_PIXEL_FRAMES-1,Math.floor(age/duration*JOHTO_PIXEL_FRAMES));
+ const t=Math.min(1,age/duration);
+ const frame=Math.min(JOHTO_PIXEL_FRAMES-1,Math.floor(t*JOHTO_PIXEL_FRAMES));
+ const caster={x:Math.round(l.x),y:Math.round(l.y-l.alto*.5)};
  const target={x:Math.round(r.x),y:Math.round(r.y-r.alto*.5)};
- const bob=(frame%4-2)*2;
- const orbit=frame*Math.PI/6;
- const xy={x:Math.round(x),y:Math.round(y)};
+ const flight={x:Math.round(x),y:Math.round(y)};
+ const lerp=(a,b,f)=>Math.round(a+(b-a)*Math.max(0,Math.min(1,f)));
+ const travel=(f)=>({x:lerp(caster.x,target.x,f),y:lerp(caster.y,target.y,f)});
+ let anchor=flight,rotation=0,dx=0,dy=0;
+ switch(id){
+  case 'triple-kick':{
+   const hits=[[-20,-12],[13,0],[-4,14]];
+   [dx,dy]=hits[Math.min(2,Math.floor(t*3))];anchor=target;break;
+  }
+  case 'thief':anchor=travel(t*.95);dx=-12+frame*2;dy=-6;break;
+  case 'snore':anchor=caster;dx=11+(frame%3)*4;dy=-18-frame*5;break;
+  case 'powder-snow':anchor=travel(t);dx=(frame%3-1)*13;dy=(frame%4-2)*7;break;
+  case 'octazooka':anchor=t>.58?target:travel(t/.58);dx=t>.58?(frame%3-1)*10:0;dy=t>.58?-10:0;break;
+  case 'zap-cannon':anchor=t>.73?target:travel(t/.73);dy=frame%2?-5:5;break;
+  case 'false-swipe':anchor=target;dx=frame%2?-12:12;dy=frame<6?-12:12;rotation=frame%2?90:0;break;
+  case 'steel-wing':anchor=target;dx=frame%2?-19:19;dy=frame<6?-13:7;rotation=frame%2?90:0;break;
+  case 'return':anchor=travel(Math.min(1,t*1.8));dy=-12+Math.round(Math.sin(t*Math.PI)*-13);break;
+  case 'present':anchor=travel(Math.min(1,t*1.35));dy=Math.round(Math.sin(t*Math.PI)*-23);break;
+  case 'frustration':anchor=travel(Math.min(1,t*1.9));dx=frame%2?-6:6;break;
+  case 'magnitude':anchor=target;dx=(frame%3-1)*17;dy=Math.max(-29,-8-frame*2);break;
+  case 'pursuit':anchor=travel(Math.min(1,t*1.8));dx=frame%2?-15:15;dy=-8;break;
+  case 'vital-throw':anchor=t<.32?caster:target;dx=t<.32?12:(frame%3-1)*8;dy=t<.32?-18:0;break;
+  case 'hidden-power':anchor=t<.4?caster:travel((t-.4)/.6);dx=frame%2?-8:8;dy=-9;break;
+  case 'rock-smash':anchor=target;dx=(frame%3-1)*12;dy=frame<5?-24:4;break;
+  case 'whirlpool':anchor=target;dx=[-19,-10,9,20,12,-8][frame%6];dy=[-17,8,13,-12,-20,6][frame%6];break;
+  case 'beat-up':anchor=target;dx=[-23,14,0,19,-8][frame%5];dy=[-9,-12,14,7,-15][frame%5];break;
+ }
  for(let i=0;i<imgs.length;i++){
   const img=imgs[i];
-  const isOrb=id==='hidden-power'||id==='zap-cannon'||id==='powder-snow';
-  const splash=id==='magnitude'||id==='rock-smash'||id==='whirlpool';
-  const center=splash&&age>duration*.25?target:xy;
-  const off=i?Math.round(Math.cos(orbit)*21):0;
-  const offY=i?Math.round(Math.sin(orbit)*15):0;
-  img.setPosition(center.x+off,center.y+offY+(isOrb?bob:0));
-  img.setAlpha(Math.max(.25,(i?.75:1)*(1-Math.max(0,age/duration-.75)*2)));
-  if(isOrb)img.setAngle((frame%4)*90);
-  else if(id==='steel-wing'||id==='false-swipe'||id==='thief')img.setAngle(i?90:frame%3===0?-90:0);
-  else img.setAngle(0);
+  const px=Math.round(anchor.x+dx+(i?9:-3)),py=Math.round(anchor.y+dy+(i?-8:2));
+  img.setPosition(px,py);
+  img.setAngle(i?0:rotation);
+  img.setFlipX?.((frame+i)%2===1&&(id==='steel-wing'||id==='false-swipe'||id==='triple-kick'));
+  img.setAlpha(Math.max(.13,(i?.62:.96)*(t>.78?(1-t)/.22:1)));
  }
 }
 function pixelShards(g,id,x,y,age,phase,scale=2){
@@ -221,7 +258,10 @@ function artwork(g,id,style,x,y,age,duration,r,l){
    x0+(n-1)*16,y0+(n%2?9:-8),frame+n,1,tail*.6,n%2===0);
  }
  signatureFrames(g,id,age,duration,x0,y0,r,l,frame,tail);
- if(phase>.24)pixelShards(g,id,x0,y0,age,(phase-.24)/.76);
+ // Tiny finishing debris only where impact legitimately breaks material.
+ if(phase>.36&&['triple-kick','beat-up','rock-smash','magnitude',
+  'zap-cannon','steel-wing','powder-snow'].includes(id))
+  pixelShards(g,id,x0,y0,age,(phase-.36)/.64);
 }
 function cast(l,h,extra){
  if(!l?.escena?.datos?.johtoLab||!l.rival)return false;

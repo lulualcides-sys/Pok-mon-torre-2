@@ -33,9 +33,12 @@ function txt(scene,x,y,value,size=10,color='#f5f8fc',depth=26){
   color,stroke:'#07121f',strokeThickness:2}).setOrigin(.5).setDepth(depth)
 }
 function frame(g,x,y,w,h,{fill=COLORS.navy,border=COLORS.edge,radius=4}={}){
- g.fillStyle(0x020816,.88);g.fillRoundedRect(x+2,y+3,w,h,radius);
- g.fillStyle(fill,.96);g.fillRoundedRect(x,y,w,h,radius);
- g.lineStyle(1,border,1);g.strokeRoundedRect(x+.5,y+.5,w-1,h-1,radius);
+ // Square pixel bevel, inspired by FireRed, without rounded web cards.
+ g.fillStyle(0x041018,.75);g.fillRect(x+2,y+3,w,h);
+ g.fillStyle(border,.96);g.fillRect(x,y,w,h);
+ g.fillStyle(fill,.98);g.fillRect(x+2,y+2,w-4,h-4);
+ g.fillStyle(0xffeed2,.25);g.fillRect(x+3,y+3,w-6,1);
+ g.fillStyle(0x061625,.55);g.fillRect(x+3,y+h-4,w-6,1);
 }
 function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,small=false}={}){
  const g=scene.add.graphics().setDepth(depth),label=txt(scene,x,y,title,small?8:gold?13:9,
@@ -179,12 +182,12 @@ function renderBackdrop(scene,stage){
    const name='torre2-path-gym-'+city;
    if(!texture.has(name))texture.add(name,0,...rect);
    const arch=scene.add.graphics().setDepth(7);
-   arch.fillStyle(0x071624,.9);arch.fillRoundedRect(346,65,135,240,7);
-   arch.lineStyle(2,0xeec376,1);arch.strokeRoundedRect(346,65,135,240,7);
-   arch.fillStyle(0x264862);arch.fillRoundedRect(351,71,125,19,3);
-   const scale=Math.min(117/rect[2],197/rect[3]);
-   scene.add.image(414,198,imageKey,name).setDepth(8).setScale(scale);
-   txt(scene,414,81,'GINÁSIO',9,'#ffe3a0',10);
+   // Gym destination thumbnail: original pixels, no 240px map obstruction.
+   frame(arch,356,64,125,85,{fill:0x17353b,border:0xe9cc83});
+   arch.fillStyle(0x315b5c);arch.fillRect(360,68,117,15);
+   const scale=Math.min(110/rect[2],61/rect[3]);
+   scene.add.image(418,117,imageKey,name).setDepth(8).setScale(scale);
+   txt(scene,418,75,'GINÁSIO',9,'#ffe6a5',10);
    realGym=true;
   }
  }
@@ -232,10 +235,10 @@ export function renderBattlePath(scene,state,handlers){
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
- button(scene,424,103,107,24,'VS SEEKER',()=>handlers.rematchAtlas?.(),
+ button(scene,423,270,108,23,'VS SEEKER',()=>handlers.rematchAtlas?.(),
   {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
  // Preserve the native trainer route by default. City is optional.
- if(stage===1)button(scene,424,131,107,23,'VER CIDADE',
+ if(stage===1)button(scene,423,239,108,23,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
   .setData('torre2-open-city',true);
  // When a NORMAL battle advances the checkpoint beyond the current
@@ -289,22 +292,19 @@ export function renderBattlePath(scene,state,handlers){
   // has its own small hit target above the trainer/rematch node.
   const capture=checkpoint.optionalCapture;
   const g=scene.add.graphics().setDepth(18);
-  const width=boss?82:60,top=p.y-23;
-  if(active){
-   g.fillStyle(0xffd374,.17);g.fillCircle(p.x,p.y-5,boss?36:29);
-  }
-  g.fillStyle(0x061a2e,.88);g.fillRoundedRect(p.x-width/2,top+10,width,37,5);
-  g.lineStyle(active?2:1,active?0xffd15f:done?0x54d99a:0x768a95,1);
-  g.strokeRoundedRect(p.x-width/2,top+10,width,37,5);
-  g.fillStyle(active?0x7c5521:done?0x255b4b:0x304755,.95);
-  g.fillEllipse(p.x,top+8,boss?50:42,18);
-  g.lineStyle(2,active?0xffe9aa:done?0x66d5a6:0x778f9c);
-  g.strokeEllipse(p.x,top+8,boss?50:42,18);
+  const width=boss?72:58,top=p.y-23;
+  // Compact travel markers: trainer sprite is visible above a small nameplate.
+  if(active){g.fillStyle(0xffe2a0,.30);g.fillRect(p.x-width/2-3,p.y+1,width+6,24);}
+  g.fillStyle(0x071d25,.93);g.fillRect(p.x-width/2,p.y+3,width,18);
+  g.fillStyle(active?0xf4d077:done?0x7ee3af:0x89a8b0);
+  g.fillRect(p.x-width/2,p.y+3,width,2);
+  g.fillRect(p.x-width/2,p.y+3,2,18);
+  g.fillRect(p.x+width/2-2,p.y+3,2,18);
+  g.fillStyle(0x234a47,.9);g.fillRect(p.x-width/2+3,p.y+6,14,12);
+  g.fillStyle(0x17382b,.75);g.fillRect(p.x-15,top+11,30,3);
   if(boss){
-   g.fillStyle(0xffe0a0,.18);g.fillEllipse(p.x,p.y+9,90,50);
-   g.lineStyle(3,0xffda77,1);g.strokeEllipse(p.x,p.y+9,80,38);
-   g.fillStyle(0x93713b,.9);g.fillRoundedRect(p.x-34,top-5,68,15,3);
-   g.lineStyle(1,0xffedb5,1);g.strokeRoundedRect(p.x-34,top-5,68,15,3);
+   g.fillStyle(0xf7d999,.9);g.fillRect(p.x-23,top-5,46,2);
+   g.fillStyle(0xf7d999,.3);g.fillRect(p.x-20,top-3,40,2);
   }
   if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
@@ -317,27 +317,20 @@ export function renderBattlePath(scene,state,handlers){
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
    if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
-  txt(scene,p.x,boss?p.y+11:p.y+8,boss?leader.toUpperCase():
-   node.type==='rocket'?'EQUIPE ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
-   boss?12:node.type==='rocket'?7:8,
-   active?'#ffe29a':available?'#f1f8f3':'#afbdc8',23);
-  g.fillStyle(active?0xf5c75d:done?0x56be86:0x40647e);
-  g.fillRoundedRect(p.x-width/2+2,p.y-17,15,17,3);
-  txt(scene,p.x-width/2+9.5,p.y-8,String(i+1),8,
-   active?'#30220f':'#fff7d4',24);
-  for(let d=0;d<3;d++){
-   g.lineStyle(1,done?0x76e0a6:0xb6ced9,.98);
-   g.strokeCircle(p.x-10+d*10,p.y+23,2.1);
-  }
-  if(checkpoint.primary==='rematch')txt(scene,p.x,p.y+22,
+  txt(scene,p.x+7,p.y+12,boss?leader.toUpperCase():
+   node.type==='rocket'?'ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
+   boss?9:7,active?'#ffe6a2':available?'#f3f8ed':'#b7c6be',23);
+  txt(scene,p.x-width/2+10,p.y+12,String(i+1),8,
+   active?'#ffe29a':'#f0faf0',24);
+  if(checkpoint.primary==='rematch')txt(scene,p.x,p.y+27,
    (state.rematches?.charge||0)>=3?'REVANCHE':'VS '+(state.rematches?.charge||0)+'/3',
    6,'#f7d986',25);
   if(done){
-   g.fillStyle(0x28c868);g.fillCircle(p.x+width/2-8,p.y-17,7);
-   g.lineStyle(2,0xffffff);g.lineBetween(p.x+width/2-11,p.y-17,p.x+width/2-9,p.y-14);
-   g.lineBetween(p.x+width/2-9,p.y-14,p.x+width/2-5,p.y-21);
+   g.fillStyle(0x43c98b);g.fillRect(p.x+width/2-9,p.y-23,10,10);
+   g.fillStyle(0xf6ffe9);g.fillRect(p.x+width/2-6,p.y-19,5,2);
+   g.fillRect(p.x+width/2-4,p.y-21,2,5);
   }else if(active){
-   g.fillStyle(0xffdd85);g.fillTriangle(p.x-4,top-17,p.x+4,top-17,p.x,top-8);
+   g.fillStyle(0xffdf8a);g.fillTriangle(p.x-4,top-17,p.x+4,top-17,p.x,top-8);
   }
   const zone=scene.add.zone(p.x,p.y-1,width,63).setDepth(31)
    .setInteractive({useHandCursor:true}).setData('torre2-path-node',i)
@@ -393,9 +386,9 @@ export function renderBattlePath(scene,state,handlers){
  }
  // Right-hand side: portraits with compact HP, no giant cards or map overlays.
  const side=scene.add.graphics().setDepth(12);
- frame(side,496,54,136,255,{fill:0x081d31,border:0x5a91b6,radius:4});
- frame(side,502,60,124,30,{fill:0x19476d,border:0x578db0,radius:3});
- txt(scene,561,74,'SUA EQUIPE  '+state.team.length+'/6',11,'#fff1c7',24);
+ frame(side,496,54,136,255,{fill:0x102a34,border:0x8fb49e});
+ frame(side,502,60,124,30,{fill:0x2b4d52,border:0xb1c1a0});
+ txt(scene,561,74,'EQUIPE  '+state.team.length+'/6',11,'#fff1c7',24);
  button(scene,538,101,80,17,Math.min(8,state.badges.length)+'/8 INSÍGNIAS',()=>handlers.badges?.(),{depth:39,small:true})
   .setData('torre2-badge-case-open',true);
  txt(scene,596,102,'$'+(state.money||0),9,'#ffda74',24);
