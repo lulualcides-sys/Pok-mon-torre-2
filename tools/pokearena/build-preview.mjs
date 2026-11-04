@@ -1165,22 +1165,33 @@ console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
  console.log('MEWTWO LAB seven-button PLAY layout: fitted above the 312px floor');
 }
 
-// The native title positions two animation-playing Pokémon at x=110/530.
-// A bounded startup preload may have no *final* forms that decode on the
-// current REA mirror, although original starter Idle sheets do load.
-// In that case do not render an empty halo: reuse already-loaded native
-// Kanto base/early evolution sprites, never a fake/generated placeholder.
-// Keep the original animation, shadow, attack callback and parade.
+// The original client formerly had a poser() beside the logo. Its new
+// 2026 design switched to ponerFondo() and removed that method entirely.
+// Keep BOTH native source layouts supported: update the old poser when
+// present, or ADD a standalone native PMD Sprite decoration to the new
+// title. This is not a fake canvas overlay; real Idle/Attack animations,
+// exact original x=110/530 positions, and original PMD resources only.
 {
- const titleFile=path.join(dest,clientSource,'escenas/titulo.js');
- let source=await fs.readFile(titleFile,'utf8');
- const target="posar(){const finales=ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(f=>{const m=this.manifiesto[f.dex];return m&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36});Phaser.Utils.Array.Shuffle(finales);";
- const replacement="posar(){const elegible=f=>{const m=this.manifiesto[f.dex];return m&&this.textures.exists(`pmd-${f.dex}-Idle`)&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36};const finales=ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(elegible);if(finales.length<2){const vistos=new Set(finales.map(f=>f.dex));for(const f of ROSTER.flatMap(p=>[p,...(p.evoluciones??[])])){if(vistos.has(f.dex)||!elegible(f))continue;finales.push(f);vistos.add(f.dex);if(finales.length>=12)break;}}Phaser.Utils.Array.Shuffle(finales);";
- if(source.split(target).length!==2)
-  throw Error('Native title posar() changed; cannot safely restore original Pokémon');
- source=source.replace(target,replacement);
- await fs.writeFile(titleFile,source);
- console.log('Torre 2 title mascots: native loaded-Idle fallback for both logo sides');
+ const file=path.join(dest,clientSource,'escenas/titulo.js');
+ let source=await fs.readFile(file,'utf8');
+ const original="posar(){const finales=ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(f=>{const m=this.manifiesto[f.dex];return m&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36});Phaser.Utils.Array.Shuffle(finales);";
+ const oldReplacement="posar(){const elegible=f=>{const m=this.manifiesto[f.dex];return m&&this.textures.exists(`pmd-${f.dex}-Idle`)&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36};const finales=ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(elegible);if(finales.length<2){const vistos=new Set(finales.map(f=>f.dex));for(const f of ROSTER.flatMap(p=>[p,...(p.evoluciones??[])])){if(vistos.has(f.dex)||!elegible(f))continue;finales.push(f);vistos.add(f.dex);if(finales.length>=12)break;}}Phaser.Utils.Array.Shuffle(finales);";
+ const currentClass='class Titulo extends Phaser.Scene{constructor(){super("titulo")}';
+ const currentInit='this.manifiesto=this.registry.get("manifiesto");fondoMenu(this);this.ponerFondo();';
+ const modernMethod="torre2Posar(){const elegible=f=>{const m=this.manifiesto[f.dex];return m&&this.textures.exists(`pmd-${f.dex}-Idle`)&&this.anims.exists(`${f.dex}-Idle-2`)&&(m.feet??5)-(m.head??-16)<=36};const finales=ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(elegible);const vistos=new Set(finales.map(f=>f.dex));if(finales.length<2){for(const f of ROSTER.flatMap(p=>[p,...(p.evoluciones??[])])){if(vistos.has(f.dex)||!elegible(f))continue;finales.push(f);vistos.add(f.dex);if(finales.length>=12)break;}}Phaser.Utils.Array.Shuffle(finales);[[110,2],[530,6]].forEach(([x,fila],i)=>{const f=finales[i];if(!f)return;const m=this.manifiesto[f.dex],zoom=2,suelo=114+BAJA;const sombra=this.add.graphics().setDepth(5.15);sombra.fillStyle(0,.35);sombra.fillEllipse(x,suelo,46,10);const spr=this.add.sprite(x,suelo-(m.feet??5)*zoom,`pmd-${f.dex}-Idle`).setScale(zoom).setDepth(5.25).play(`${f.dex}-Idle-${fila}`);this.time.addEvent({delay:3200+i*1600,loop:true,callback:()=>spr.active&&atacarEnMenu(this,spr,f.dex,fila)})})}";
+ if(source.includes(original)){
+  source=source.replace(original,oldReplacement);
+  console.log('Torre2 title restored original native PMD logo mascots');
+ }else if(source.includes(currentClass)&&source.includes(currentInit)&&!source.includes('posar(){')){
+  source=source.replace(currentClass,currentClass+modernMethod);
+  source=source.replace(currentInit,currentInit+'this.torre2Posar();');
+  if(!source.includes('import{atacarEnMenu}from"../sprites.js";'))
+   source='import{atacarEnMenu}from"../sprites.js";'+source;
+  console.log('Torre2 title 2026 native PMD mascots restored beside logo');
+ }else{
+  throw Error('Unknown native title structure; cannot safely restore original Pokémon');
+ }
+ await fs.writeFile(file,source);
 }
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
