@@ -31,7 +31,7 @@ test('campaign button library paints unique pixel icons and preserves all callba
  assert.match(source,/setData\('torre2-central-cta',true\)/);
  assert.match(source,/setData\('torre2-reset-journey',true\)/);
  assert.match(source,/side\.fillRect\(499,242,130,69\)/);
- assert.match(source,/const iconOffset=compact\?8:gold&&role\?12:0/);
+ assert.match(source,/iconOffset=compact\?8:gold&&role\?12:0/);
 });
 test('arena and real combat controls never import the campaign skin',()=>{
  // The existing build already patches battle logic for older approved
