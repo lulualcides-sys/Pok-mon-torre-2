@@ -17,6 +17,16 @@ const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
 const dest=path.join(root,'arena2d');
 await fs.mkdir(root,{recursive:true});
 await fs.cp(source,dest,{recursive:true,force:true});
+// The public Chromium Pokédex audit must not be the first place that detects
+// an absent original title background. Preserve the actual upstream bytes.
+{
+ const p=path.join(dest,'assets/ui/portada/dia.jpg');
+ const data=await fs.readFile(p);
+ if(data.length<1024||data[0]!==0xff||data[1]!==0xd8||
+    data.at(-2)!==0xff||data.at(-1)!==0xd9)
+  throw Error('Original native portada/dia.jpg missing or invalid in Pages build');
+}
+
 // World map and dashboard now render from native Phaser Graphics, not a picture.
 // Install genuine CC0 environment sprites; fail the build if they cannot
 // be verified. Never silently substitute another hand-drawn fake sprite.
