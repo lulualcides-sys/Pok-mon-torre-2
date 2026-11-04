@@ -32,7 +32,7 @@ const server=http.createServer(async(req,res)=>{
  try{
  const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
  page.on('pageerror',e=>errors.push(String(e)));
- await page.goto('http://127.0.0.1:4280/arena2d/?original=1');
+ await page.goto('http://127.0.0.1:4280/arena2d/?original=1&qa-legacy-map=1');
  await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
  await page.evaluate(async()=>{
   const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
