@@ -42,7 +42,7 @@ const server=http.createServer(async(req,res)=>{
   };
   page=await makePage({viewport:{width:1280,height:720},deviceScaleFactor:1});
   state.step='desktop-title';
-  const response=await page.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
+  const response=await page.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1&qa-legacy-map=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   assert.equal(response?.status(),200);
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
@@ -74,7 +74,7 @@ const server=http.createServer(async(req,res)=>{
   await shot('desktop-title',page);
   state.step='mobile-title';
   const mobile=await makePage({viewport:{width:390,height:844},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-  await mobile.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
+  await mobile.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1&qa-legacy-map=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   await mobile.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
@@ -87,7 +87,7 @@ const server=http.createServer(async(req,res)=>{
   await shot('mobile-portrait-rotate',mobile);await mobile.close();
   state.step='mobile-landscape-title';
   const landscape=await makePage({viewport:{width:844,height:390},deviceScaleFactor:1,isMobile:true,hasTouch:true});
-  await landscape.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1',
+  await landscape.goto('http://127.0.0.1:'+port+'/arena2d/?original=1&torre2-cards=1&qa-legacy-map=1',
    {waitUntil:'domcontentloaded',timeout:45000});
   await landscape.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo')&&
    document.querySelector('#juego canvas'),null,{timeout:55000});
@@ -198,13 +198,14 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(await page.evaluate(()=>window.__pt2Game.scene
    .getScene('campanha').__torre2CardUI?.mode),'cards',
    'Cinnabar must also expose the trainer cards');
-  // Switch to the existing walkable map by its actual Card UI action.
+  // Normal Kanto has no MAPA tab. Keep approved map image regressions in
+  // the explicit QA-only route renderer, never public navigation.
   await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   const panel=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
-   const tab=panel?.list?.find(o=>o.getData?.('torre2-card-control')==='map');
-   if(!tab)throw Error('Trainer cards MAPA control missing');
-   tab.emit('pointerdown');
+   if(new URLSearchParams(location.search).get('qa-legacy-map')!=='1')
+    throw Error('Legacy map is forbidden outside QA');
+   c.__torre2CardsMapOnly=true;
+   c.renderLegacyCampaign(window.kanto.readCampaign());
   });
   await page.waitForFunction(()=>window.__pt2Game.scene
    .getScene('campanha').__torre2CardsMapOnly===true,null,{timeout:7000});
