@@ -17,14 +17,21 @@ test('six campaign quick-actions remain visible with 23px nonoverlapping mobile 
  assert.ok(y[0]-hit/2>=240&&y[2]+hit/2<=313,
   'All quick actions must fit below party slots and above bottom action bar');
 });
-test('campaign buttons have clear semantic tones and preserve callbacks',()=>{
- for(const tone of ['blue','green','teal','red','gold'])
+test('campaign button library paints unique pixel icons and preserves all callbacks',()=>{
+ for(const tone of ['blue','green','teal','red','gold','cream'])
   assert.match(source,new RegExp(tone+":\\s*\\{fill:"));
  assert.match(source,/\.setData\('torre2-path-action',title\)/);
  assert.match(source,/\.setData\('torre2-campaign-button-tone',kind\)/);
+ assert.match(source,/\.setData\('torre2-campaign-button-role',role\)/);
+ for(const role of ['bag','pokemon','center','shop','training','capture','battle','reset','fullscreen','menu','seeker','badge','city'])
+  assert.ok(source.includes("case '"+role+"':"),'Unillustrated item '+role);
+ assert.match(source,/export function campaignIcon\(/);
+ assert.match(source,/graphics\.fillRect\(iconX-8,by\+3,16,h-6\)/);
  assert.match(source,/playOriginalMenuCue\(scene\);action\(\)/);
  assert.match(source,/setData\('torre2-central-cta',true\)/);
  assert.match(source,/setData\('torre2-reset-journey',true\)/);
+ assert.match(source,/side\.fillRect\(499,242,130,69\)/);
+ assert.match(source,/const iconOffset=compact\?8:gold&&role\?12:0/);
 });
 test('arena and real combat controls never import the campaign skin',()=>{
  // The existing build already patches battle logic for older approved
@@ -35,4 +42,15 @@ test('arena and real combat controls never import the campaign skin',()=>{
  assert.ok(!source.includes('torre2/noncombat-pixel-buttons.js'));
  // We changed only battle-path.js, a campaign navigation module.
  assert.match(source,/renderBattlePath\(scene,state,handlers\)/);
+});
+
+test('shop, healing, inventory and capture use distinct icons in campaign submenus',()=>{
+ const sub=fs.readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+ const art=fs.readFileSync('tools/pokearena/torre2-campaign-art.js','utf8');
+ assert.match(sub,/import \{renderBattlePath,BATTLE_PATH_BACKDROP,campaignIcon\} from '\.\/battle-path\.js'/);
+ for(const role of ['bag','pokemon','center','shop','training','capture'])
+  assert.ok(sub.includes("?'"+role+"'"),'Missing submenu icon role '+role);
+ assert.match(sub,/setData\('torre2-campaign-item-icon',decorated\?role:null\)/);
+ assert.match(sub,/const decorated=Boolean\(role\)&&w>=116&&h>=27/);
+ for(const tone of ['teal','red','cream'])assert.ok(art.includes("tone==='"+tone+"'"));
 });
