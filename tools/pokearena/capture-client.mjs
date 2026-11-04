@@ -97,6 +97,15 @@ async function main() {
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'REA named asset'});
  }
  for(const extra of ['safari.js','manifest.webmanifest','favicon.png','iconos/icono-192.png']) {const p=sanitize(extra);if(p)tasks.set(p,{source:'HTML accessory'});}
+ // Modern native title references this image dynamically. The previous REA
+ // inventory did not include it, and the ACTUAL public Pokédex browser gate
+ // observed a 404 at /assets/ui/portada/dia.jpg. Mirror ONLY the genuine
+ // first-party image, never create a placeholder or hide the 404.
+ for(const asset of ['assets/ui/portada/dia.jpg']){
+  const normalized=sanitize(asset);
+  if(!normalized)throw Error('Unsafe native title image path: '+asset);
+  tasks.set(normalized,{source:'required native title background',required:true});
+ }
  for(const value of html.matchAll(/(?:src|href)\s*=\s*["']([^"'#?]+)["']/gi)){
   const normalized=sanitize(value[1]);
   if(normalized&&!tasks.has(normalized))tasks.set(normalized,{source:'HTML direct'});
