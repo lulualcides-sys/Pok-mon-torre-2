@@ -286,6 +286,13 @@ await Promise.all([
 ].map(async([source,name])=>{
  await fs.copyFile(path.resolve(source),path.join(dest,clientSource,'torre2',name));
 }));
+// Original, explicitly unapproved pilot PNG sprites for the Mewtwo lab.
+// No source game moves or approved Arena VFX are overwritten.
+const {generateJohtoPilotSheets}=await import('./torre2-pixel-sheets.mjs');
+const johtoPilot=await generateJohtoPilotSheets(path.join(dest,'assets/torre2/johto-pilot'));
+if(johtoPilot.length!==3||johtoPilot.some(s=>s.frames!==12||s.bytes<512))
+ throw Error('Incomplete pilot spritesheet export; refusing placeholder art');
+console.log('Johto PNG pilot sprites:',JSON.stringify(johtoPilot));
 await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
 await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
 await Promise.all([
@@ -1214,6 +1221,8 @@ console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixel-sheets.mjs'));
+
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
