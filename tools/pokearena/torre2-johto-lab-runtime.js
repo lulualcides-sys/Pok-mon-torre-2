@@ -276,6 +276,9 @@ function cast(l,h,extra){
   e.add.sprite(0,0,pilotKey,0).setDepth(1533):null;
  if(pilotSprite)e.textures.get(pilotKey)
   .setFilter(Phaser.Textures.FilterMode.NEAREST);
+ // Snow is a moving flurry, not one sprite far beyond the opponent.
+ const snowTrail=pilotSprite&&h.id==='powder-snow'?
+  [0,1].map(()=>e.add.sprite(0,0,pilotKey,0).setDepth(1531)) :[];
  const sx=l.x+dx*12,sy=l.y-l.alto*.5+dy*8;
  const beam=projectile.has(style),melee=adjacent.has(style);
  const duration=style==="vortex"?1.65:style==="quake"?1.05:beam?1.1:.75;
@@ -317,22 +320,49 @@ function cast(l,h,extra){
  const fx={update(dt){
   age+=Math.max(0,Math.min(.05,dt||0));
   if(age>=duration){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
+   for(const sprite of snowTrail)sprite.destroy();
    pilotSprite?.destroy();return false;}
-  const travel=Math.min(h.alcance,age*360);
-  const x=beam?sx+dx*travel:style==="quake"?l.x+dx*80:melee?l.x+dx*37:r.x;
-  const y=beam?sy+dy*travel:style==="quake"?l.y-7:melee?l.y-l.alto*.5+dy*12:r.y-r.alto*.5;
+  // The old projectile kept travelling the whole move's range even after
+  // reaching Onix. Both Zap Cannon and Powder Snow ended far to his right.
+  // Only the THREE Mewtwo lab pilots clamp to the actual opponent: leave
+  // the existing 15 battle prototypes and approved campaign VFX unchanged.
+  const ty=r.y-r.alto*.5,tx=r.x;
+  const targetDistance=Math.hypot(tx-sx,ty-sy);
+  const maxTravel=pilotSprite&&beam?
+   Math.min(h.alcance,targetDistance):h.alcance;
+  const travel=Math.min(maxTravel,age*360);
+  const fly=(beam&&pilotSprite)?
+   {x:sx+(tx-sx)*(targetDistance?travel/targetDistance:1),
+    y:sy+(ty-sy)*(targetDistance?travel/targetDistance:1)}:null;
+  const x=fly?fly.x:beam?sx+dx*travel:style==="quake"?l.x+dx*80:melee?l.x+dx*37:r.x;
+  const y=fly?fly.y:beam?sy+dy*travel:style==="quake"?l.y-7:melee?l.y-l.alto*.5+dy*12:ty;
   if(pilotSprite){
    // Twelve authored PNG frames instead of another procedural circle.
    g.clear();
    const phase=age/duration;
    pilotSprite.setFrame(Math.min(JOHTO_PIXEL_FRAMES-1,
     Math.floor(phase*JOHTO_PIXEL_FRAMES)));
-   const dest=h.id==='whirlpool'?{x:r.x,y:r.y-r.alto*.55}:{x,y};
+   const target={x:tx,y:ty};
+   const dest=h.id==='whirlpool'||(h.id==='zap-cannon'&&phase>.67)?
+    target:{x,y};
+   const moveScale=h.id==='whirlpool'?1.28:
+    h.id==='zap-cannon'?(phase>.67?1.22:1.04):.88;
    pilotSprite.setPosition(Math.round(dest.x),Math.round(dest.y))
-    .setScale(h.id==='whirlpool'?1.45:1.25)
-    .setAlpha(phase>.8?Math.max(.08,(1-phase)/.2):1);
+    .setScale(moveScale)
+    .setAlpha(phase>.86?Math.max(.06,(1-phase)/.14):1);
+   // Multiple small ice clouds travel across the real fighter gap, then
+   // disperse around the enemy instead of forming a detached white block.
+   for(let i=0;i<snowTrail.length;i++){
+    const progress=Math.max(0,Math.min(1,phase*1.65-(i+1)*.22));
+    snowTrail[i].setFrame((Math.floor(phase*12)+i*4)%JOHTO_PIXEL_FRAMES)
+     .setPosition(Math.round(sx+(tx-sx)*progress),
+      Math.round(sy+(ty-sy)*progress+(i?7:-8)))
+     .setScale(.55).setAlpha(progress>0?.58:0);
+   }
+   // Native reference sprite is a low-opacity timing accent, not a giant
+   // duplicate placed over the new sprite frames.
    paintNativeSprites(nativeSprites,h.id,x,y,age,duration,r,l);
-   for(const img of nativeSprites)img.setAlpha(img.alpha*.22);
+   for(const img of nativeSprites)img.setAlpha(img.alpha*.12);
   }else{
    artwork(g,h.id,style,x,y,age,duration,r,l);
    paintNativeSprites(nativeSprites,h.id,x,y,age,duration,r,l);
@@ -342,7 +372,8 @@ function cast(l,h,extra){
    hits++; // independent hit windows; only triple-kick stops after miss
   }
   return true;
- },destroy(){g.destroy();for(const sprite of nativeSprites)sprite.destroy();pilotSprite?.destroy();}};
+ },destroy(){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
+  for(const sprite of snowTrail)sprite.destroy();pilotSprite?.destroy();}};
  e.efectos.push(fx);return true;
 }
 export const TORRE2_JOHTO_LAB_FORMS=Object.freeze(Object.fromEntries(

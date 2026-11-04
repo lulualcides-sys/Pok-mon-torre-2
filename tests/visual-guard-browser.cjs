@@ -140,6 +140,8 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(mode.mode,'city','Cinnabar must start on the town, not a trainer-filled collage');
   assert.equal(mode.visibleTrainers,0,'No 14 NPCs may float over Cinnabar water or roofs');
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene.getScene('campanha')
+   .__torre2BattlePath.landmarks),3,'Town must have exactly Gym, Center and Mart doors');
   await shot('desktop-cinnabar-map',page);
   // Test the ACTUAL Phaser touch target, not the callback in isolation.
   const switchPoint=await page.evaluate(()=>{
@@ -156,6 +158,22 @@ const server=http.createServer(async(req,res)=>{
    return view?.stage===6&&view?.mode==='sea-routes'&&
     view.locations>0&&view.locations<=7;
   },null,{timeout:12000});
+  // Hard gate: merely changing a menu to "Seafoam" is not a real map.
+  // Verify the ORIGINAL cave artwork is loaded and rendered as a Phaser
+  // image. This would have failed on the previously approved blank blue map.
+  const seafoam=await page.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   const art=scene.__torre2GymBackdrop;
+   return {city:art?.city,realExterior:art?.realExterior,
+    textures:scene.textures.exists('frlg-location-seafoam'),
+    image:scene.children.list.some(o=>o.active&&o.texture?.key==='frlg-location-seafoam'),
+    width:scene.__torre2ExteriorViewport?.w,height:scene.__torre2ExteriorViewport?.h};
+  });
+  assert.equal(seafoam.city,'seafoam','Route stage must use Seafoam cave art');
+  assert.equal(seafoam.realExterior,true,'Blank fallback blue route is unacceptable');
+  assert.equal(seafoam.textures,true,'Seafoam must be preloaded in campaign');
+  assert.equal(seafoam.image,true,'Seafoam image must appear in native Phaser scene');
+  assert.ok(seafoam.width>=160&&seafoam.height>=125,'Seafoam art crop must be nontrivial');
   await shot('desktop-cinnabar-sea-routes',page);
   await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');

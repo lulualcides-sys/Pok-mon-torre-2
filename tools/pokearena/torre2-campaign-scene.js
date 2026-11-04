@@ -145,7 +145,18 @@ class Campanha extends Phaser.Scene{
    ...archetypes.map(spriteIdForTrainer)]);
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
-  const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld]);
+  // Cinnabar has TWO genuine maps: the town and Seafoam/route screen.
+  // Previously only 'cinnabar' was preloaded; switching to 'seafoam' showed
+  // an empty blue rectangle despite green Chromium navigation tests.
+  const routeWorld=stage===6?'seafoam':null;
+  const desired=new Set(['frlg-location-'+world,'frlg-location-'+pathWorld,
+   ...(routeWorld?['frlg-location-'+routeWorld]:[])]);
+  if(routeWorld&&AVAILABLE_FRLG.includes(routeWorld)){
+   const key='frlg-location-'+routeWorld;
+   if(!this.textures.exists(key))
+    this.load.image(key,AVAILABLE_FRLG_FILES[routeWorld]||
+     'assets/ui/frlg/'+routeWorld+'.webp');
+  }
   if(AVAILABLE_FRLG.includes(pathWorld)){
    const key='frlg-location-'+pathWorld;
    if(!this.textures.exists(key))

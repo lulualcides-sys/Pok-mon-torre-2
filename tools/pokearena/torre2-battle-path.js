@@ -189,7 +189,9 @@ function renderBackdrop(scene,stage,{seaRoutes=false}={}){
     worldOnly:true,sourceWidth:src.width,sourceHeight:src.height};
   }
   const rect=ROOM_CROPS[city]?.gym;
-  if(rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
+  // The Cinnabar gym is visible IN the town art. Duplicating an interior
+  // screenshot in its upper-right corner hid buildings and looked like UI.
+  if(stage!==6&&rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
    const name='torre2-path-gym-'+city;
    if(!texture.has(name))texture.add(name,0,...rect);
    const arch=scene.add.graphics().setDepth(7);
@@ -210,6 +212,23 @@ function renderBackdrop(scene,stage,{seaRoutes=false}={}){
  glass.fillStyle(0x80b2ac,.85);glass.fillRect(17,58,211,2);
  scene.__torre2GymBackdrop={city,realExterior,realGym,texture:imageKey};
  return {imageKey};
+}
+// The Cinnabar town is a real walkable map: point precisely to its three
+// existing entrances instead of covering its architecture with a second
+// gym thumbnail or inserting trainer cards. All hit zones remain 44px+.
+function cinnabarLandmark(scene,x,y,label,role,callback){
+ const depth=36;
+ const g=scene.add.graphics().setDepth(depth-2);
+ const w=label==='GINÁSIO'?55:label==='CENTRO'?51:42;
+ g.fillStyle(0x0b2d2b,.88);g.fillRect(x-w/2,y-10,w,20);
+ g.fillStyle(0xecd78c);g.fillRect(x-w/2,y-10,w,2);
+ g.fillStyle(0x375f57);g.fillRect(x-w/2,y+8,w,2);
+ txt(scene,x,y,label,8,'#fff5cb',depth-1);
+ const hit=scene.add.zone(x,y,Math.max(48,w),31).setDepth(depth)
+  .setInteractive({useHandCursor:true})
+  .setData('torre2-cinnabar-landmark',role);
+ hit.on('pointerdown',()=>{playOriginalMenuCue(scene);callback?.()});
+ return hit;
 }
 export function renderBattlePath(scene,state,handlers){
  const stage=state.stage,finished=state.champion||!STAGES[stage],
@@ -260,6 +279,13 @@ export function renderBattlePath(scene,state,handlers){
   cityView?'VER ROTAS':'VER CIDADE',
   ()=>cityView?handlers.viewRoutes?.():handlers.viewCinnabarCity?.(),
   {depth:39,small:true}).setData('torre2-cinnabar-switch',cityView?'routes':'city');
+ // Three door-targets are the ONLY town interactions, apart from route
+ // navigation and the persistent team/actions outside the map.
+ const cinnabarLandmarks=cityView?[
+  cinnabarLandmark(scene,172,216,'GINÁSIO','gym',handlers.gym),
+  cinnabarLandmark(scene,302,238,'CENTRO','center',handlers.center),
+  cinnabarLandmark(scene,399,238,'LOJA','mart',handlers.mart)
+ ]:[];
  // Preserve the native trainer route by default. City is optional.
  if(stage===1)button(scene,389,273,88,18,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
@@ -441,10 +467,12 @@ export function renderBattlePath(scene,state,handlers){
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
  txt(scene,24,342,finished?'CAMPEÃO DE KANTO':current?.name||leader,
   12,'#fff2d2',30).setOrigin(0,.5);
- const label=finished?'★ SALÃO DA FAMA':progress>=total?
+ const label=finished?'★ SALÃO DA FAMA':cityView&&progress<total?
+  'EXPLORAR ROTAS':progress>=total?
   'ENFRENTAR '+leader.toUpperCase():'ENTRAR NA BATALHA';
  const cta=button(scene,359,335,217,32,label,()=>{
   if(finished)return handlers.hall?.();
+  if(cityView&&progress<total)return handlers.viewRoutes?.();
   if(progress>=total)return handlers.gym();
   handlers.battle();
  },{gold:true,enabled:true,depth:70});
@@ -454,6 +482,7 @@ export function renderBattlePath(scene,state,handlers){
  // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
  installCampaignAudioSettings(scene);
  scene.__torre2BattlePath={stage,total,progress,offset,pageSize,
+  landmarks:cinnabarLandmarks.length,
   mode:cityView?'city':stage===6?'sea-routes':'route',
   locations:spots.length,
   regions:stage===1?['ROTA 3','MT. MOON','ROTA 4','CERULEAN']:

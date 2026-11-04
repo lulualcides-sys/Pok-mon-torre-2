@@ -89,30 +89,47 @@ function snow(f,p){
  }
 }
 function whirlpool(f,p){
- const phase=f*.44;
- for(let y=5;y<28;y++){
-  const radius=7+8*(y-5)/23,rotation=phase+y*.21;
-  for(const side of [0,Math.PI]){
-   const x=16+Math.round(Math.cos(rotation+side)*radius);
-   const yy=y+Math.round(Math.sin(rotation+side)*1.3);
-   p.dot(x-1,yy,'waterink',3);
-   p.dot(x,yy,side===0?'water':'crest',2);
-   p.dot(x,yy,side===0?'foam':'pale');
-   if((y+f)%5===0)p.dot(x+3,yy+1,'blue');
+ // Three visibly different water belts wrap the target vertically.
+ // Keep the center transparent: Pokémon sprite must stay readable.
+ const phase=f*Math.PI/6;
+ const rings=[
+  {y:8,rx:8,ry:3},{y:17,rx:11,ry:4},{y:26,rx:14,ry:4}
+ ];
+ for(let tier=0;tier<rings.length;tier++){
+  const {y,rx,ry}=rings[tier];
+  for(let n=0;n<42;n++){
+   const angle=n*Math.PI/21+phase*(tier%2?-.74:1);
+   const px=16+Math.round(Math.cos(angle)*rx);
+   const py=y+Math.round(Math.sin(angle)*ry);
+   const front=Math.sin(angle)>=0;
+   p.dot(px-1,py,front?'waterink':'shadow',3);
+   p.dot(px,py,front?'water':'blue',2);
+   if(front&&((n+f*3+tier*5)%4<2))p.dot(px,py,'foam');
+   else if(!front&&n%5<2)p.dot(px,py,'crest');
+  }
+  // A crescent of moving foam on each ring's forward lip.
+  const crestX=16+Math.round(Math.cos(phase+tier*2.2)*rx*.74);
+  p.line(crestX-3,y+ry-1,crestX+2,y+ry-1,'foam',2);
+ }
+ // Opposing helical strands connect the three belts (a continuous vortex,
+ // not disconnected circular splash symbols).
+ for(let i=0;i<17;i++){
+  const h=6+i*1.25,turn=phase+h*.37;
+  const radius=7+(h-6)*.33;
+  for(const a of [turn,turn+Math.PI]){
+   const px=16+Math.cos(a)*radius;
+   const py=h+Math.sin(a)*1.5;
+   p.dot(px-1,py,'waterink',3);
+   p.dot(px,py,'crest',2);
+   if(i%3===0)p.dot(px+1,py,'foam');
   }
  }
- for(let j=0;j<34;j++){
-  const angle=j*2*Math.PI/34+f*.16;
-  const x=16+Math.round(Math.cos(angle)*(11+f%3)),y=24+Math.round(Math.sin(angle)*4);
-  p.dot(x,y,'waterink',2);if(j%3!==0)p.dot(x,y,'foam');
+ for(let i=0;i<6;i++){
+  const angle=(i*.95+phase*1.3);
+  const x=16+Math.round(Math.cos(angle)*(10+i%3*3));
+  const y=3+(i*7+f*2)%8;
+  p.dot(x,y,i%2?'pale':'foam',i%3===0?2:1);
  }
- for(let j=0;j<7;j++){
-  const x=(3+j*5+f*2)%31,y=3+((j*7+f)%9);
-  p.dot(x,y,j%2===0?'foam':'pale',j%3===0?2:1);
-  if(j%2===0)p.dot(x,y+3,'water');
- }
- p.line(9,28,23,28,'shadow',2);
- for(let x=10;x<=21;x+=4)p.dot(x,27,'foam',2);
 }
 function crc(b){
  let c=0xffffffff;
