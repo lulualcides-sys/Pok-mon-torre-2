@@ -76,7 +76,8 @@ const server=http.createServer(async(req,res)=>{
    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
     import(new URL('torre2/johto-lab-catalog.js',base)),import(new URL('torre2/johto-lab-runtime.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
-   const original=enemy.recibir,measured=[];
+   const original=enemy.recibir,originalRandom=Math.random,measured=[];
+   Math.random=()=>.35; // deterministic accuracy pass; misses tested separately
    let calls=0;enemy.recibir=function(...args){calls++;return original.apply(this,args)};
    try{
     scene.fase='lucha';me.inmortal=true;enemy.inmortal=true;
@@ -93,7 +94,7 @@ const server=http.createServer(async(req,res)=>{
      if(ok&&effect)for(let i=0;i<125;i++){if(effect.update(.016)===false)break;}
      measured.push({id:move.id,ok,calls});
     }
-   }finally{enemy.recibir=original;}
+   }finally{enemy.recibir=original;Math.random=originalRandom;}
    return measured;
   });
   console.log('JOHTO_LAB_18_NATIVE_CONTACTS',JSON.stringify(impacts));
