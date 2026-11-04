@@ -484,11 +484,13 @@ create(){
    this.__torre2PathPage=undefined;
    // Preserve native route as default; layered Cerulean is an opt-in view.
    this.__torre2CityRoute=true;
+   // Cinnabar renders the town separately from sea routes and caves.
+   this.__torre2CinnabarCityView=state.stage===6;
    this.__torre2PathStage=state.stage;
   }
   const movePage=delta=>{
    const current=this.__torre2BattlePath?.offset||0;
-   this.__torre2PathPage=Math.max(0,current+delta*13);
+   this.__torre2PathPage=Math.max(0,current+delta*(this.__torre2BattlePath?.pageSize||13));
    this.renderCampaign(state);
   };
   const details=()=>{
@@ -518,6 +520,9 @@ create(){
    return city;
   }
   const path=renderBattlePath(this,state,{
+   showCinnabarCity:state.stage===6&&this.__torre2CinnabarCityView,
+   viewRoutes:()=>{this.__torre2CinnabarCityView=false;this.renderCampaign(state)},
+   viewCinnabarCity:()=>{this.__torre2CinnabarCityView=true;this.renderCampaign(state)},
    city:()=>{this.__torre2CityRoute=false;this.renderCampaign(state)},
    rematch:i=>this.rematchScreen(state,i),
    rematchAtlas:()=>this.rematchAtlasScreen(state),
