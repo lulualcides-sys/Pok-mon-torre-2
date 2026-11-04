@@ -2,9 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {REGIONAL_TRAINERS,regionalTrainer,regionalRocket,regionalTrainerParty,regionalTrainerPartySize} from '../tools/pokearena/torre2-trainer-rosters.js';
-import {routeNode} from '../tools/pokearena/torre2-route-data.js';
-
+// Test routeNode's actual pure source without importing build-time-only
+// './frlg-learnsets.js' (created by build-preview, absent in source tree).
 const file=path=>readFileSync(path,'utf8');
+const routeSource=file('tools/pokearena/torre2-route-data.js');
+const routeBody=routeSource.match(/export function routeNode\(stage,index,max\)\{([\s\S]*?)\n\}/)?.[1];
+assert.ok(routeBody,'routeNode must remain an explicit pure function');
+const routeNode=new Function('stage','index','max',routeBody);
 const core=file('tools/pokearena/torre2-campaign-core.js');
 const scene=file('tools/pokearena/torre2-campaign-scene.js');
 const card=file('tools/pokearena/torre2-trainer-cards.js');
