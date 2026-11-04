@@ -11,6 +11,7 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {trainerClass,drawTrainer} from './campaign-sprites.js';
 import {addFireRedNPC} from './frlg-npc.js';
 import {ROOM_CROPS} from './frlg-interiors.js';
+import {getSourceMainBounds,TILE_VIEW} from './frlg-location.js';
 import {ball} from './campaign-art.js';
 import {TRAINERS_PER_GYM,STAGES,currentOpponent} from './campaign-core.js';
 
@@ -119,11 +120,11 @@ function connector(g,ax,ay,bx,by,lit){
  const dx=bx-ax,dy=by-ay,length=Math.hypot(dx,dy);
  const steps=Math.ceil(length/10);
  // Contrast backing makes the dashed route legible over dense FireRed trees.
- g.lineStyle(3,0x102a2d,.76);g.lineBetween(ax,ay,bx,by);
- for(let n=1;n<steps;n++){
-  const t=n/steps,x=ax+dx*t,y=ay+dy*t;
-  g.fillStyle(lit?0xffe9b3:0xf3f3ce,lit ? .98 : .93);
-  g.fillCircle(x,y,lit?2.4:2.05);
+ // Quiet 1-pixel breadcrumbs, not thick white dotted railway tracks.
+ for(let n=1;n<steps;n+=2){
+  const t=n/steps,x=Math.round(ax+dx*t),y=Math.round(ay+dy*t);
+  g.fillStyle(lit?0x88b89d:0x597b78,.52);
+  g.fillRect(x,y,2,2);
  }
 }
 function trainerKind(stage,node){
@@ -163,19 +164,28 @@ function renderBackdrop(scene,stage){
   // Composite FRLG sheets have the city on the LEFT and rooms on the right.
   // The Pewter source includes Brock's pink-roof gym at (200..370,30..145).
   // Crop that real building as our BACKDROP, rather than all of Kanto.
-  const exteriorRect=city==='pewter'?[120,18,380,215]:
-   [0,0,Math.min(768,src.width),Math.min(640,src.height)];
-  const [sx,sy,w,h]=exteriorRect;
-  if(w>=160&&h>=160){
-   const name='torre2-path-city-'+city;
+  // Composite FireRed sheets place rooms/white separators to the right.
+  // The old 768x640 frame crossed out of Cinnabar's actual 384x320 world,
+  // exposing blank white/black panels on the production map.
+  // Fit one REAL town-only viewport with the exact 470:247 map ratio.
+  const bounds=getSourceMainBounds(city,src.width,src.height);
+  const vw=470,vh=247,ratio=vw/vh;
+  const w=Math.floor(Math.min(bounds.w,bounds.h*ratio));
+  const h=Math.floor(w/ratio);
+  const focus=TILE_VIEW[city]||{cx:bounds.w/2,cy:bounds.h/2};
+  const sx=bounds.x+Math.max(0,Math.min(bounds.w-w,
+    Math.round(focus.cx-w/2)));
+  const sy=bounds.y+Math.max(0,Math.min(bounds.h-h,
+    Math.round(focus.cy-h/2)));
+  if(w>=160&&h>=125&&sx>=0&&sy>=0&&sx+w<=src.width&&sy+h<=src.height){
+   const name='torre2-path-city-clean-v2-'+city;
    if(!texture.has(name))texture.add(name,0,sx,sy,w,h);
-   const cityImage=scene.add.image(249,181,imageKey,name).setDepth(6);
-   cityImage.setScale(Math.max(470/w,247/h));
-   const mask=scene.make.graphics({x:0,y:0,add:false});
-   mask.fillStyle(0xffffff);mask.fillRect(14,58,470,247);
-   cityImage.setMask(mask.createGeometryMask());
-   scene.events.once('shutdown',()=>{cityImage.clearMask();mask.destroy()});
+   // No geometry mask or over-scaled screenshot: crop is EXACTLY the display.
+   scene.add.image(249,181,imageKey,name).setDepth(6)
+    .setDisplaySize(vw,vh);
    realExterior=true;
+   scene.__torre2ExteriorViewport={city,x:sx,y:sy,w,h,
+    worldOnly:true,sourceWidth:src.width,sourceHeight:src.height};
   }
   const rect=ROOM_CROPS[city]?.gym;
   if(rect&&rect[0]+rect[2]<=src.width&&rect[1]+rect[3]<=src.height){
@@ -183,19 +193,20 @@ function renderBackdrop(scene,stage){
    if(!texture.has(name))texture.add(name,0,...rect);
    const arch=scene.add.graphics().setDepth(7);
    // Gym destination thumbnail: original pixels, no 240px map obstruction.
-   frame(arch,356,64,125,85,{fill:0x17353b,border:0xe9cc83});
-   arch.fillStyle(0x315b5c);arch.fillRect(360,68,117,15);
-   const scale=Math.min(110/rect[2],61/rect[3]);
-   scene.add.image(418,117,imageKey,name).setDepth(8).setScale(scale);
-   txt(scene,418,75,'GINÁSIO',9,'#ffe6a5',10);
+   // A small destination thumbnail; town scenery stays predominant.
+   frame(arch,397,59,85,68,{fill:0x17353b,border:0xe9cc83});
+   arch.fillStyle(0x315b5c);arch.fillRect(400,62,79,12);
+   const scale=Math.min(75/rect[2],48/rect[3]);
+   scene.add.image(440,100,imageKey,name).setDepth(8).setScale(scale);
+   txt(scene,440,67,'GINÁSIO',8,'#ffe6a5',10);
    realGym=true;
   }
  }
  if(!realExterior){base.fillStyle(0x244959);base.fillRect(14,58,470,247)}
  const glass=scene.add.graphics().setDepth(9);
  glass.fillStyle(0x081b2a,.13);glass.fillRect(14,58,470,247);
- glass.fillStyle(0x061827,.88);glass.fillRoundedRect(18,62,267,36,5);
- glass.lineStyle(1,0x638ba0,.94);glass.strokeRoundedRect(18,62,267,36,5);
+ glass.fillStyle(0x091d23,.90);glass.fillRect(17,58,211,33);
+ glass.fillStyle(0x80b2ac,.85);glass.fillRect(17,58,211,2);
  scene.__torre2GymBackdrop={city,realExterior,realGym,texture:imageKey};
  return {imageKey};
 }
@@ -233,12 +244,13 @@ export function renderBattlePath(scene,state,handlers){
   stage===2?'ROTAS 24/25  >  5/6  >  S.S. ANNE  >  VERMILION':
   finished?'O SALÃO DA FAMA AGUARDA A SUA EQUIPE':
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
- txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
-  .setOrigin(0,.5);
- button(scene,423,270,108,23,'VS SEEKER',()=>handlers.rematchAtlas?.(),
+ // Route details stay in the header and stop covering the overworld art.
+ txt(scene,28,84,areaLegend.length>28?areaLegend.slice(0,27)+'…':areaLegend,
+  7,'#d4e7cf',28).setOrigin(0,.5);
+ button(scene,389,294,88,18,'VS SEEKER',()=>handlers.rematchAtlas?.(),
   {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
  // Preserve the native trainer route by default. City is optional.
- if(stage===1)button(scene,423,239,108,23,'VER CIDADE',
+ if(stage===1)button(scene,389,273,88,18,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
   .setData('torre2-open-city',true);
  // When a NORMAL battle advances the checkpoint beyond the current
@@ -293,19 +305,14 @@ export function renderBattlePath(scene,state,handlers){
   const capture=checkpoint.optionalCapture;
   const g=scene.add.graphics().setDepth(18);
   const width=boss?72:58,top=p.y-23;
-  // Compact travel markers: trainer sprite is visible above a small nameplate.
-  if(active){g.fillStyle(0xffe2a0,.30);g.fillRect(p.x-width/2-3,p.y+1,width+6,24);}
-  g.fillStyle(0x071d25,.93);g.fillRect(p.x-width/2,p.y+3,width,18);
-  g.fillStyle(active?0xf4d077:done?0x7ee3af:0x89a8b0);
-  g.fillRect(p.x-width/2,p.y+3,width,2);
-  g.fillRect(p.x-width/2,p.y+3,2,18);
-  g.fillRect(p.x+width/2-2,p.y+3,2,18);
-  g.fillStyle(0x234a47,.9);g.fillRect(p.x-width/2+3,p.y+6,14,12);
-  g.fillStyle(0x17382b,.75);g.fillRect(p.x-15,top+11,30,3);
-  if(boss){
-   g.fillStyle(0xf7d999,.9);g.fillRect(p.x-23,top-5,46,2);
-   g.fillStyle(0xf7d999,.3);g.fillRect(p.x-20,top-3,40,2);
-  }
+  // NPC sprite first, with only a small pixel-number marker beneath it.
+  // Preserve the 58/72px interactive touch targets, not the old big cards.
+  if(active){g.fillStyle(0xf4d077,.35);g.fillRect(p.x-21,p.y-2,42,24);}
+  g.fillStyle(0x0b2324,.85);g.fillRect(p.x-11,p.y+6,23,14);
+  g.fillStyle(active?0xf4d077:done?0x75d1ad:0x719c9c);
+  g.fillRect(p.x-11,p.y+6,23,2);
+  g.fillStyle(0x17382b,.55);g.fillRect(p.x-13,top+10,26,3);
+  if(boss){g.fillStyle(0xf7d999,.95);g.fillRect(p.x-15,top-5,30,2);}
   if(capture){
    // A real ball icon in grass, with a direct encounter interaction.
    g.fillStyle(0x2d8a47);g.fillTriangle(p.x-14,top+1,p.x-8,top-11,p.x-1,top+1);
@@ -317,14 +324,11 @@ export function renderBattlePath(scene,state,handlers){
    if(!npc)drawTrainer(g,p.x,top-1,kind,.9);
    if(!available&&npc)npc.setTint(0xd2dfd4).setAlpha(.94);
   }
-  txt(scene,p.x+7,p.y+12,boss?leader.toUpperCase():
-   node.type==='rocket'?'ROCKET':node.type==='rival'?'RIVAL':'TREINADOR',
-   boss?9:7,active?'#ffe6a2':available?'#f3f8ed':'#b7c6be',23);
-  txt(scene,p.x-width/2+10,p.y+12,String(i+1),8,
-   active?'#ffe29a':'#f0faf0',24);
-  if(checkpoint.primary==='rematch')txt(scene,p.x,p.y+27,
-   (state.rematches?.charge||0)>=3?'REVANCHE':'VS '+(state.rematches?.charge||0)+'/3',
-   6,'#f7d986',25);
+  // The current objective is shown in the bottom action bar, not repeated
+  // fourteen times over town roofs, water and pathways.
+  txt(scene,p.x,p.y+13,String(i+1),8,
+   active?'#20241c':done?'#e3ffe8':'#e5eee3',24);
+  if(boss&&active)txt(scene,p.x,p.y+29,leader.toUpperCase(),8,'#ffe6a2',24);
   if(done){
    g.fillStyle(0x43c98b);g.fillRect(p.x+width/2-9,p.y-23,10,10);
    g.fillStyle(0xf6ffe9);g.fillRect(p.x+width/2-6,p.y-19,5,2);
