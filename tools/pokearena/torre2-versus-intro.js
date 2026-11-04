@@ -14,14 +14,14 @@ const LEADERS=Object.freeze([
 export const VERSUS_DURATION_MS=2500;
 
 export function versusOpponentProfile({
- stage=0,trainer=0,kind='trainer',leader=false,name='Treinador',
+ stage=0,trainer=0,kind='trainer',spriteKind=null,leader=false,name='Treinador',
  city='Kanto',rematch=false
 }={}){
  const stageNo=Number.isInteger(stage)&&stage>=0?stage:0;
  const index=Number.isInteger(trainer)&&trainer>=0?trainer:0;
  const opponentKind=leader?(LEADERS[stageNo]||'rival'):
   kind==='rival'||kind==='rocket'?kind:
-  trainerClass(stageNo,index,kind,stageNo===0?'forest':'route');
+  spriteKind||trainerClass(stageNo,index,kind,stageNo===0?'forest':'route');
  return {
   name:String(name||'Treinador').toUpperCase().slice(0,24),
   city:String(city||'Kanto').toUpperCase().slice(0,27),
