@@ -98,7 +98,9 @@ function portrait(scene,layer,id,x,y,size=43){
  const key='torre2-portrait-'+dex;
  const show=()=>{
   if(!layer.active||!scene.textures.exists(key))return;
-  const image=scene.add.image(x,y,key).setDisplaySize(size,size);
+  const image=scene.add.image(x,y,key).setDisplaySize(size,size)
+   .setData('torre2-opponent-sprite',id)
+   .setData('torre2-opponent-size',size);
   layer.add(image);
  };
  if(scene.textures.exists(key)){show();return key;}
