@@ -29,3 +29,12 @@ test('abort for combat scenes and unknown source instead of changing gameplay',(
  assert.throws(()=>skinMenuScene('const begin=1;','titulo'),/upstream changed/);
  assert.throws(()=>skinMenuScene('const begin=1;','preparar'),/import missing/);
 });
+
+// Match the Alpha 0.63.6 native ui.js public interface. A missing ancho()
+// crashes the actual arena selection before the scene becomes active.
+test('premium menu retains native ancho and apagar methods',async()=>{
+ const {readFileSync}=await import('node:fs');
+ const code=readFileSync('tools/pokearena/torre2-noncombat-pixel-buttons.js','utf8');
+ for(const method of ['activar(value)','apagar(value)','texto(value)','mostrar(value)','mover(nx,ny)','ancho(){return dimensions().w}','capa(depth)','destruir()'])
+  assert.ok(code.includes(method),'Missing native button method: '+method);
+});
