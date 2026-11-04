@@ -122,6 +122,7 @@ jobs:
           node tests/t08-151-signature-ult-built.test.mjs
           node tests/t08-kanto-onboarding-151-built.test.mjs
           node tests/mew-lv50-natural-pokedex-built.test.mjs
+          node tests/noncombat-pixel-buttons-built.test.mjs
           node tests/t07-frlg-unrendered-136x639-built.test.mjs
           node tests/t08-arena-role-slots-built.test.mjs
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
