@@ -50,6 +50,12 @@ await installBadgeSprites(dest);
 const {installFRLGMartItems}=await import('./install-frlg-mart-item-icons.mjs');
 const martIcons=await installFRLGMartItems(dest);
 console.log('Original FireRed Mart item icons verified:',JSON.stringify(martIcons));
+// Pin the actual FireRed bag sprite in-repo: four authentic 64×64 frames.
+// The build does not need a second network source, and native Phaser selects frame 0.
+const bagPNG=await fs.readFile('reference-assets/kanto/ui/bag-male-frlg.png');
+if(bagPNG.length<100||!bagPNG.subarray(0,8).equals(Buffer.from([137,80,78,71,13,10,26,10])))
+ throw Error('Original FireRed bag sprite is not a PNG');
+await fs.writeFile(path.join(dest,'assets/ui/frlg/items/bag-male.png'),bagPNG);
 
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');
