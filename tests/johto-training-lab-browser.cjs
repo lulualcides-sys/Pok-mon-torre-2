@@ -111,6 +111,30 @@ const server=http.createServer(async(req,res)=>{
   });
   console.log('JOHTO_LAB_18_NATIVE_CONTACTS',JSON.stringify(impacts));
   for(const row of impacts)assert.ok(row.calls>0,'Missing genuine native contact '+row.id);
+  // Visual evidence: capture every native P2 pixel-art move in the actual
+  // Phaser combat canvas. No compositing of mockups or generated concept art.
+  await fs.mkdir('test-evidence/johto-native-pixelart',{recursive:true});
+  for(const {id} of casts){
+   await page.evaluate(async moveId=>{
+    const base=new URL('./',Array.from(document.scripts)
+     .find(s=>s.src.includes('/main.js')).src);
+    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
+     import(new URL('torre2/johto-lab-catalog.js',base)),
+     import(new URL('torre2/johto-lab-runtime.js',base))]);
+    const scene=window.__pt2Game.scene.getScene('combate');
+    scene.efectos.forEach(fx=>fx.destroy?.());scene.efectos=[];
+    const me=scene.luchadores[0],enemy=scene.luchadores[1];
+    me.est={};me.accion=null;me.dash=null;
+    me.x=178;me.y=178;enemy.x=273;enemy.y=178;
+    me.ax=enemy.x;me.ay=enemy.y;
+    if(moveId==='snore')me.ponerEstado('dormido',6,{cura:0});
+    const m=JOHTO_18.find(m=>m.id===moveId);
+    TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:'q'});
+   },id);
+   await page.waitForTimeout(190);
+   await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'.png'});
+  }
+  console.log('JOHTO_PIXEL_ART_EVIDENCE_SAVED',casts.map(c=>c.id).join(','));
   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').salir());
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('johto-lab'),null,{timeout:12000});
   const returned=await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').picks);
