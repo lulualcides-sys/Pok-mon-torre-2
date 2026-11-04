@@ -62,6 +62,12 @@ test('the card and battle resolve the SAME actual species and sprite class',()=>
 test('Professor Oak is new-game-only and uses real native FRLG sprites',()=>{
  assert.match(frlg,/oak:'prof_oak'/);
  assert.match(assets,/'prof_oak'/);
+ assert.match(assets,/graphics\/oak_speech\/oak\/pic/);
+ assert.match(assets,/graphics\/oak_speech\/platform/);
+ assert.match(builder,/AVAILABLE_OAK_INTRO/);
+ assert.match(scene,/AVAILABLE_OAK_INTRO\.includes\(name\)/);
+ assert.match(scene,/frlg-oak-intro-oak/);
+ assert.match(scene,/torre2-professor-oak-lecture/);
  assert.match(scene,/if\(!state\)return this\.starterSelection\(\)/);
  assert.match(scene,/professorOakIntro\(\)/);
  assert.match(scene,/addFireRedNPC\(this,'oak'/);
