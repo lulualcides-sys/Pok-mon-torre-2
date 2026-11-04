@@ -10,6 +10,7 @@ on:
       - 'tools/pokearena/torre2-battle-path.js'
       - 'tools/pokearena/build-preview.mjs'
       - 'tests/t95-card-portrait-restart.test.js'
+      - 'tests/t95-oak-onboarding-browser.cjs'
       - 'tests/solo-kanto-built.test.mjs'
       - 'tests/rival-payday-cooldowns-built.test.mjs'
       - '.github/workflows/t95-pr-release-check.yml'
@@ -64,6 +65,7 @@ jobs:
       - name: Smoke Phaser no Chromium real
         run: |
           set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/t95-oak-onboarding-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/versus-intro-browser.cjs
       - name: Preservar prints e relatórios
         if: always()
