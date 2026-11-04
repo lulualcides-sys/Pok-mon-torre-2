@@ -2,12 +2,12 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {EventEmitter} from 'node:events';
 import {createWeather,setWeather,tickWeather,weatherSpeciesMultiplier} from '../tools/pokearena/torre2-weather.js';
-import {WEATHER_STATUS_FLOAT_MS,weatherStatusDescriptor,installWeatherStatusFloat}
+import {WEATHER_STATUS_FLOAT_MS,WEATHER_STATUS_VISIBLE_MS,weatherStatusDescriptor,installWeatherStatusFloat}
  from '../tools/pokearena/torre2-weather-status-float.js';
 
 function fixture(){
  const events=new EventEmitter(),objects=[],tweens=[];
- const scene={events,fase:'lucha',scene:{isActive:()=>true},
+ const scene={events,fase:'lucha',time:{now:0},scene:{isActive:()=>true},
   add:{text(x,y,value,style){
    const object={x,y,text:value,style,active:true,data:{},
     setPosition(x,y){this.x=x;this.y=y;return this},
@@ -52,8 +52,9 @@ test('descriptor always reuses real ±20% species damage and respects neutral du
  setWeather(w,'none');
  assert.equal(weatherStatusDescriptor(w,['FIRE']),null);
  assert.equal(WEATHER_STATUS_FLOAT_MS,240);
+ assert.equal(WEATHER_STATUS_VISIBLE_MS,3000);
 });
-test('sprite-side labels remain visible for full climate, do not spam, expire',()=>{
+test('sprite-side badges track the PMD actor and expire after 3s without ending the weather',()=>{
  const f=fixture();
  f.update();assert.equal(f.objects.length,0);
  setWeather(f.weather,'sun');f.update();
@@ -62,12 +63,22 @@ test('sprite-side labels remain visible for full climate, do not spam, expire',(
  assert.equal(f.objects[0].style.fontFamily,'Pixelify Sans,monospace');
  assert.equal(f.objects[0].data['torre2-weather-status'],0);
  assert.equal(f.objects[1].data['torre2-weather-status-kind'],'penalty');
- assert.ok(f.objects[0].x>f.actors[0].x&&f.objects[1].x<f.actors[1].x);
+ assert.equal(f.objects[0].x,f.actors[0].x-23);
+ assert.equal(f.objects[1].x,f.actors[1].x+23);
  for(let i=0;i<90;i++)f.update();
  assert.equal(f.objects.length,2,'same weather revision must not keep repeating');
  assert.deepEqual(f.tweens.map(x=>x.duration),[240,240]);
- assert.equal(f.objects[0].active,true,'active climate must keep its +20% visible');
+ assert.equal(f.objects[0].active,true,'badge remains visible before 3s');
  assert.equal(f.ui.debug.active[0],f.objects[0]);
+ f.scene.time.now=2999;f.update();
+ assert.ok(f.objects.every(x=>x.active),'both badges visible at 2,999ms');
+ f.scene.time.now=3000;f.update();
+ assert.ok(f.objects.every(x=>!x.active),'both badges vanish at three seconds');
+ assert.deepEqual(f.ui.debug.active,[null,null]);
+ assert.equal(weatherSpeciesMultiplier(f.weather,['GRASS']),1.2,
+  'real weather damage bonus must continue after floating label disappears');
+ // Same revision must not re-create a badge on later frames.
+ f.scene.time.now=4016;f.update();assert.equal(f.objects.length,2);
  tickWeather(f.weather,20,[]);f.update();
  assert.equal(f.ui.debug.active[0],null,'weather expiry clears visible positives');
  assert.equal(f.ui.debug.active[1],null,'weather expiry clears visible negatives');
