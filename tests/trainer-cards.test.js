@@ -1,0 +1,32 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const card=readFileSync('tools/pokearena/torre2-trainer-cards.js','utf8');
+const scene=readFileSync('tools/pokearena/torre2-campaign-scene.js','utf8');
+const build=readFileSync('tools/pokearena/build-preview.mjs','utf8');
+const vs=readFileSync('tools/pokearena/torre2-versus-intro.js','utf8');
+test('trainer cards are a separate native Phaser UI without changing saves or the combat HUD',()=>{
+ assert.match(card,/export function renderTrainerCardHub/);
+ assert.match(card,/trainerCardEntries\(state\)/);
+ assert.match(card,/currentOpponent\(\{\.\.\.state,trainer:index/);
+ assert.match(card,/STAGES\[stage\]\?\.leaderTeam/);
+ assert.match(card,/rematchOpponent\(state,entry.index\)/);
+ assert.match(card,/entry\.locked/);
+ assert.match(card,/canBattle:!disabled/);
+ assert.match(card,/setData\('torre2-trainer-card-index'/);
+ assert.doesNotMatch(card,/saveCampaign\(|resetCampaign\(|resolveBattle\(|startBattle\(/);
+ assert.match(scene,/renderTrainerCardHub\(this,state,cardsHandlers\)/);
+ assert.match(scene,/renderTrainerCardMapTab\(this/);
+ assert.match(build,/torre2-trainer-cards\.js','trainer-cards\.js'/);
+});
+test('leader showdown has real roster, dialogue and existing 2.5s VS transition',()=>{
+ const dialogue=card.match(/'([^']+)'/g)||[];
+ assert.match(card,/LEADER_DIALOGUE=Object\.freeze/);
+ assert.match(card,/leader\?'INICIAR VS'/);
+ assert.match(vs,/LEADER_DIALOGUE\[leaderIndex\]/);
+ assert.match(vs,/export const VERSUS_DURATION_MS=2500/);
+ assert.match(vs,/scheduleVsEntry\(scene,advance,VERSUS_DURATION_MS\)/);
+ assert.match(vs,/addRedPlayer/);
+ assert.match(vs,/addFireRedNPC/);
+ assert.ok(dialogue.length>=13);
+});

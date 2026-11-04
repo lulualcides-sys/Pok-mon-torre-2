@@ -24,7 +24,7 @@ import {MART_ITEMS,GYM_TM_REWARDS,martItemUnlocked} from './route-data.js';
 import {installWildCapture} from './capture-arena.js';
 import {createPartyMatch,applyPartyBattleResult,installPartyBattle} from './party-battle.js';
 import {prepareTrainingMatch,installTrainingDummy} from './training.js';
-import {drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ITEM_FILES} from './campaign-sprites.js';
+import {trainerClass,drawTrainer,drawShopItem,shopItemSprite,FRLG_MART_ITEM_FILES} from './campaign-sprites.js';
 import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
@@ -34,6 +34,7 @@ import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
+import {renderTrainerCardHub,renderTrainerCardMapTab} from './trainer-cards.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
 import {originalBallSprite} from './ball-sprites.js';
@@ -143,6 +144,15 @@ class Campanha extends Phaser.Scene{
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
+  // Each trainer's card must render the genuine NPC, not a generic silhouette.
+  // A gym has at most 13 regular challengers; the image cost is small.
+  for(let i=0;i<TRAINERS_PER_GYM(stage);i++){
+   const projection=currentOpponent({...state,stage,trainer:i,champion:false});
+   const kind=projection?.kind;
+   const archetype=kind==='rival'||kind==='rocket'?kind:
+    trainerClass(stage,i,kind||'trainer',stage===0?'forest':'route');
+   needed.add(spriteIdForTrainer(archetype));
+  }
   // Across gyms, old campaign-specific GPU textures used to accumulate.
   // Prune only our private FRLG resources, never PMD battle sprites/effects.
   // Cinnabar has TWO genuine maps: the town and Seafoam/route screen.
@@ -493,6 +503,8 @@ create(){
   this.__torre2PathData={buscar};
   if(this.__torre2PathStage!==state.stage){
    this.__torre2PathPage=undefined;
+   this.__torre2CardsMapOnly=false;
+   this.__torre2CardPage=undefined;
    // Preserve native route as default; layered Cerulean is an opt-in view.
    this.__torre2CityRoute=true;
    // Cinnabar renders the town separately from sea routes and caves.
@@ -552,6 +564,25 @@ create(){
   // Expose stable index for smoke tests and safe scene re-entry; no overworld
   // map, invisible trainer zones or city navigation are created.
   this.__torre2PathPage=path.offset;
+  // One visually selectable card per real trainer. Keep the legacy route
+  // beneath the new layer so saved checkpoint hit zones and pre-existing
+  // native navigation remain intact. Toggling MAPA never changes the save.
+  const cardsHandlers={
+   map:()=>{this.__torre2CardsMapOnly=true;this.renderCampaign(state)},
+   menu:()=>this.scene.start('titulo',{menu:'principal'}),
+   battle:()=>this.enterBattle(state),
+   rematch:i=>this.rematchScreen(state,i),
+   pokemon:()=>state.team[state.active]&&this.showSummary(state,state.active),
+   bag:()=>this.bagScreen(state),
+   center:()=>this.centerScreen(state),
+   mart:()=>this.martScreen(state),
+   rematchAtlas:()=>this.rematchAtlasScreen(state)
+  };
+  if(!this.__torre2CardsMapOnly)
+   renderTrainerCardHub(this,state,cardsHandlers);
+  else renderTrainerCardMapTab(this,()=>{
+   this.__torre2CardsMapOnly=false;this.renderCampaign(state);
+  });
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   return path;
  }

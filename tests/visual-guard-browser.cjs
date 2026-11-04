@@ -112,7 +112,39 @@ const server=http.createServer(async(req,res)=>{
    null,{timeout:50000});
   state.scene='campanha';
   assert.equal(await page.evaluate(()=>window.kanto.readCampaign().team[0].id),'bulbasaur');
+  const cardHub=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.__torre2CardUI;
+  });
+  assert.equal(cardHub?.mode,'cards','Campaign must start in trainer card navigation');
+  assert.equal(cardHub.total,14,'Brock stage needs 13 trainers and one leader');
+  assert.ok(cardHub.visible.includes(0),'The first card must be visible');
   await shot('desktop-campaign-map',page);
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const card=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   const zone=card?.list?.find(o=>o.getData?.('torre2-trainer-card-index')===0);
+   if(!zone)throw Error('Trainer card 1 missing interactive touch zone');
+   zone.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode==='detail',null,{timeout:7000});
+  const trainerDetail=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.__torre2CardUI;
+  });
+  assert.equal(trainerDetail.canBattle,true,'Current trainer must be challengeable');
+  assert.deepEqual(trainerDetail.roster,
+   [await page.evaluate(()=>window.kanto.currentOpponent(window.kanto.readCampaign()).id)],
+   'Cards must show real saved campaign roster, not invented Pokémon');
+  await shot('desktop-trainer-card-details',page);
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const layer=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   layer?.list?.find(o=>o.getData?.('torre2-card-control')==='cards-detail-back')?.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode==='cards',null,{timeout:7000});
   // The former guard only captured stage 0. The user-rejected layout is the
   // Blaine/Cinnabar route at stage 6; test THAT actual native Phaser scene.
   // Use a disposable in-browser save fixture and restore the starter before
@@ -131,6 +163,19 @@ const server=http.createServer(async(req,res)=>{
    return scene?.scene.isActive()&&scene.__torre2BattlePath?.stage===6&&
     scene.children.list.some(o=>String(o.text||'').toUpperCase().includes('CINNABAR'));
   },null,{timeout:25000});
+  assert.equal(await page.evaluate(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode),'cards',
+   'Cinnabar must also expose the trainer cards');
+  // Switch to the existing walkable map by its actual Card UI action.
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const panel=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   const tab=panel?.list?.find(o=>o.getData?.('torre2-card-control')==='map');
+   if(!tab)throw Error('Trainer cards MAPA control missing');
+   tab.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardsMapOnly===true,null,{timeout:7000});
   const mode=await page.evaluate(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
    const view=c.__torre2BattlePath;
