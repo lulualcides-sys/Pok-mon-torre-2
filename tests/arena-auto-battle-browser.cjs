@@ -23,7 +23,7 @@ const server=http.createServer(async(req,res)=>{
   await page.goto('http://127.0.0.1:4298/arena2d/?original=1');
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
   await page.evaluate(()=>window.__pt2Game.scene.getScene('titulo').scene.start('combate',{
-   modo:'cpu',p1:'koffing',p2:'buneary',mandos:['tactil','pad0'],nivel:'normal'
+   modo:'cpu',p1:'magikarp',p2:'joltik',mandos:['tactil','pad0'],nivel:'normal'
   }));
   await page.waitForFunction(()=>{
    const s=window.__pt2Game.scene.getScene('combate');
@@ -38,10 +38,15 @@ const server=http.createServer(async(req,res)=>{
    return {mode:s.datos.modo,enabled:a.enabled,label:a.label.text,
     player:a.control.l.def.id,enemy:enemy.def.id,
     matches:a.control===s.controles[0],notAi:s.controles[1]!==a.control,
-    originalReader:typeof original==='function',x:a.zone.x,y:a.zone.y};
+    originalReader:typeof original==='function',x:a.zone.x,y:a.zone.y,
+    profile:{...a.ai.cfg},threshold:a.ai.c?.pBasico};
   });
   console.log('AUTO_BEFORE',JSON.stringify(before));
   assert.equal(before.enabled,false);assert.equal(before.label,'AUTO');
+  assert.equal(before.player,'magikarp');
+  assert.equal(before.profile.ventaja,1,'Extreme AUTO may not cheat damage');
+  assert.ok(before.profile.reaccion<=.01,'Extreme AUTO must react faster');
+  assert.ok(before.threshold<=.08,'Extreme AUTO should use aggressive native basic decisions');
   assert.equal(before.matches,true);assert.equal(before.notAi,true);
   assert.ok(before.x>500&&before.y>65&&before.y<190,'Button must stay small on right side');
   // Real Phaser input event (same as touching the small AUTO button).
@@ -70,6 +75,28 @@ const server=http.createServer(async(req,res)=>{
   });
   console.log('AUTO_PLAYING',JSON.stringify(playing));
   assert.equal(playing.enabled,true);
+  // Start from a LEGAL evolution-ready Magikarp fixture. Only EXP is prepared:
+  // the AUTO must press the real native EVO command and Phaser evolves it.
+  const ready=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
+   me.exp=me.expNecesaria;me.energia=100;
+   return {before:me.etapa,ready:me.puedeEvolucionar,
+    exp:me.exp,expNeeded:me.expNecesaria};
+  });
+  assert.equal(ready.before,0);
+  assert.equal(ready.ready,true,'Native EXP threshold must report EVO ready');
+  await page.waitForFunction(()=>{
+   const s=window.__pt2Game.scene.getScene('combate');
+   return s.luchadores[0]?.etapa===1;
+  },null,{timeout:12000});
+  const evolution=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('combate');
+   const me=s.luchadores[0];
+   return {stage:me.etapa,name:me.forma?.nombre,auto:s.__torre2AutoMode.enabled};
+  });
+  assert.equal(evolution.stage,1,'Real native fighter must evolve while AUTO is on');
+  assert.equal(evolution.auto,true,'AUTO stays enabled after evolution');
+  console.log('AUTO_NATIVE_EVOLUTION',JSON.stringify({ready,evolution}));
   assert.ok(playing.ai,'AUTO must create original native AI');
   await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('combate');
