@@ -23,7 +23,8 @@ const charizard={id:'charizard',progression:{species:'charizard',level:50}};
 const selected=resolveLoadout(charizard);
 const slot=['lmb','rmb','q','e'].find(k=>selected[k]?.id==='fire-blast');
 if(!slot){
- assert.ok(equipMove(charizard,2,'fire-blast'),'Level-50 Charizard must equip Fire Blast');
+ assert.ok([2,3].some(slot=>equipMove(charizard,slot,'fire-blast')),
+  'Level-50 Charizard must equip Fire Blast in a legal strong-attack slot');
 }
 const kit=resolveLoadout(charizard),live=['lmb','rmb','q','e'].find(k=>kit[k]?.id==='fire-blast');
 assert.ok(live,'Actual campaign loadout must contain Fire Blast');
