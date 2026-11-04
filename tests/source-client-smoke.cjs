@@ -342,16 +342,45 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForTimeout(1100);
   await page.screenshot({path:'test-evidence/pokearena-play-menu.png',fullPage:true});
   // The original layout remains, but PLAY now contains only solo entries.
-  await page.evaluate(()=>{
+  const launchedTraining=await page.evaluate(async()=>{
     const title=window.__pt2Game.scene.getScene('titulo');
     if(title.menu!=='jugar')title.abrirMenu('jugar');
     const choices=title.botones.map(b=>b.o?.id||b.id);
     if(choices.includes('versus'))throw Error('2 PLAYERS still available');
     const item=title.botones.findIndex(b=>b.o?.id==='entreno'||b.id==='entreno');
     if(item<0)throw Error('TRAINING disappeared from original menu');
-    title.elegir(item);
+    const chosen=title.botones[item];
+    const before=window.__pt2Game.scene.getScenes(true).map(s=>s.scene.key);
+    // elegir is async in the upstream client: await its rejection instead of
+    // ignoring a potentially failed transition and reporting only a timeout.
+    await title.elegir(item);
+    return {menu:title.menu,chosen:chosen?.id,scene:chosen?.escena,
+      before,after:window.__pt2Game.scene.getScenes(true).map(s=>s.scene.key)};
   });
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:35000});
+  assert.equal(launchedTraining.chosen,'entreno','Training option must be the real on-canvas action');
+  assert.equal(launchedTraining.scene,'seleccion','Training should open the original selection scene');
+  try{
+    await page.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:35000});
+  }catch(err){
+    const snapshot=await page.evaluate(()=>{
+      const g=window.__pt2Game,selection=g?.scene?.getScene('seleccion');
+      return {
+        started:window.__pt2Started,
+        active:g?.scene?.getScenes(true)?.map(x=>x.scene.key),
+        title:g?.scene?.getScene('titulo')?.menu,
+        selectionStatus:selection?.sys?.settings?.status,
+        selectionCreated:!!selection?.casillas,
+        selectionCards:selection?.casillas?.length,
+        selectionFocus:selection?.foco,
+        frame:document.querySelector('#juego canvas')?.getBoundingClientRect().toJSON()
+      };
+    });
+    console.error('TRAINING_SELECTION_TRANSITION_DIAGNOSTIC',JSON.stringify({
+      launchedTraining,snapshot,errors,consoleFailures,notFound,requestFailures
+    }).slice(0,18000));
+    await page.screenshot({path:'test-evidence/training-selection-timeout.png',fullPage:true}).catch(()=>{});
+    throw err;
+  }
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
