@@ -60,7 +60,7 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
  let lastPress=-Infinity;
  if(!muted)zone.on('pointerdown',(_p,_x,_y,event)=>{
   event?.stopPropagation?.();
-  const now=scene.time?.now??Date.now();
+  const now=Date.now();
   if(now-lastPress<190)return;
   lastPress=now;
   fn?.();
