@@ -89,7 +89,45 @@ const server=http.createServer(async(req,res)=>{
    'Mobile native title must retain every approved action');
   assert.equal(new Set(landscapeButtons).size,landscapeButtons.length,
    'No duplicate touch hitboxes on mobile');
-  await shot('mobile-landscape-title',landscape);await landscape.close();
+  await shot('mobile-landscape-title',landscape);
+  // The owner requested campaign button screenshots, not title-menu artwork.
+  // Create only a disposable starter fixture inside the mobile browser.
+  state.step='mobile-landscape-campaign-controls';
+  await landscape.evaluate(async()=>{
+   const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;
+   if(!main)throw Error('Missing native Phaser module for campaign buttons');
+   const core=await import(new URL('./torre2/campaign-core.js',main));
+   core.saveCampaign(core.createPlayerCampaign('bulbasaur'));
+   window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+  });
+  await landscape.waitForFunction(()=>{
+   const game=window.__pt2Game;
+   return game?.scene.isActive('campanha')&&
+    !!game.scene.getScene('campanha').__torre2BattlePath;
+  },null,{timeout:50000});
+  const campaignActions=await landscape.evaluate(()=>{
+   const scene=window.__pt2Game.scene.getScene('campanha');
+   return scene.children.list.filter(o=>o.getData?.('torre2-campaign-quick-action'))
+    .map(o=>({name:o.getData('torre2-campaign-quick-action'),
+     tone:o.getData('torre2-campaign-button-tone'),
+     role:o.getData('torre2-campaign-button-role'),
+     x:o.x,y:o.y,w:o.input?.hitArea?.width,h:o.input?.hitArea?.height}));
+  });
+  assert.deepEqual(campaignActions.map(x=>x.name),
+   ['BOLSA','POKÉMON','CENTRO','LOJA','TREINAMENTO','CAPTURA'],
+   'Six campaign shortcuts must remain visible on landscape mobile');
+  assert.deepEqual(campaignActions.map(x=>x.tone),
+   ['cream','cream','cream','cream','cream','cream'],
+   'Visual palette should unify item surfaces while using distinct icons');
+  assert.deepEqual(campaignActions.map(x=>x.role),
+   ['bag','pokemon','center','shop','training','capture'],
+   'Each item must have its own actual drawn pixel-art icon');
+  for(const control of campaignActions){
+   assert.ok(control.h>=23&&control.w>=60,'Small campaign touch target: '+control.name);
+   assert.ok(control.y+control.h/2<=313,'Campaign shortcut overlaps bottom CTA: '+control.name);
+  }
+  await shot('mobile-landscape-campaign-buttons',landscape);
+  await landscape.close();
   state.step='campaign-map';
   await page.evaluate(async()=>{
    const main=[...document.scripts].find(s=>s.src?.includes('/main.js'))?.src;

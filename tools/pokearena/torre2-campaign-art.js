@@ -49,6 +49,9 @@ export function backdrop(scene){
 export function buttonFrame(g,x,y,w,h,tone='blue',hover=false){
  const opts=tone==='gold'?[0xefd06d,0xfff4aa,0xd48929,0xffcb52]:
   tone==='green'?[0x6ae0a2,0xc0ffd6,0x086b42,0x1a9f67]:
+  tone==='teal'?[0x72d6db,0xe1ffff,0x174f61,0x26848f]:
+  tone==='cream'?[0xb8d0e7,0xf3fcff,0x4c6383,0xc7dce9]:
+  tone==='red'?[0xc59eb0,0xffdfe0,0x523249,0x786178]:
   [0x65bbf6,0xd8f6ff,0x103e86,0x2066b2];
  const [trim,hi,deep,base]=opts;
  px(g,x+2,y+4,w,h,0x020b17,.8);

@@ -37,21 +37,165 @@ function frame(g,x,y,w,h,{fill=COLORS.navy,border=COLORS.edge,radius=4}={}){
  g.fillStyle(fill,.96);g.fillRoundedRect(x,y,w,h,radius);
  g.lineStyle(1,border,1);g.strokeRoundedRect(x+.5,y+.5,w-1,h-1,radius);
 }
-function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,small=false}={}){
- const g=scene.add.graphics().setDepth(depth),label=txt(scene,x,y,title,small?8:gold?13:9,
-  enabled?(gold?'#262114':'#f7f8ff'):'#9facb9',depth+1);
- let hover=false;
+// Campaign/navigation buttons ONLY. The original Arena battle buttons/HUD
+// live in independent scenes and are deliberately not referenced here.
+// Authentic low-resolution Phaser pixel icons, painted into graphics rather
+// than a raster overlay. Every campaign action has its own recognizable symbol.
+export function campaignIcon(g,role,x,y){
+ const p=(dx,dy,w,h,c,a=1)=>{g.fillStyle(c,a);g.fillRect(Math.round(x+dx),Math.round(y+dy),w,h)};
+ const ink=0x13293e,white=0xfff9e9,glint=0xffffff,steel=0xc6dce8,shade=0x426b89;
+ switch(role){
+  case 'bag':
+   p(-3,-6,6,3,ink);p(-2,-5,4,2,0xf7d679);
+   p(-5,-3,10,9,ink);p(-4,-2,8,7,0xe4a02e);
+   p(-3,-2,6,2,0xffd16a);p(-4,2,8,1,0x95520b);
+   p(-1,0,2,4,white);p(-1,2,2,2,0xb97920);break;
+  case 'pokemon':
+   p(-4,-5,8,10,ink);p(-5,-4,10,8,ink);
+   p(-4,-4,8,4,0xf3564f);p(-4,0,8,4,white);
+   p(-5,-1,10,2,ink);p(-2,-2,4,4,white);
+   p(-1,-1,2,2,shade);p(-3,-4,5,1,glint);break;
+  case 'center':
+   p(-5,-1,10,7,ink);p(-4,0,8,5,white);
+   p(-6,-4,12,4,0xa92532);p(-5,-5,10,2,0xf36a5e);
+   p(-1,-4,2,5,white);p(-3,-2,6,2,white);
+   p(-1,3,3,2,0x347db0);break;
+  case 'shop':
+   p(-6,-5,4,2,ink);p(-3,-3,9,2,ink);
+   p(-2,-1,7,4,steel);p(-1,0,6,2,0x69c0eb);
+   p(-2,3,8,2,ink);p(-3,5,3,2,ink);p(3,5,3,2,ink);
+   p(-2,5,1,1,glint);p(4,5,1,1,glint);break;
+  case 'training':
+   p(-6,-4,3,8,ink);p(-5,-3,2,6,steel);
+   p(-3,-1,6,2,ink);p(-2,-1,4,2,white);
+   p(3,-4,3,8,ink);p(3,-3,2,6,steel);break;
+  case 'capture':
+   p(-6,-6,8,8,ink);p(-5,-5,6,6,0x73d6bf);
+   p(-4,-4,4,4,0x183b56);
+   p(-4,-4,1,4,white);p(-2,-5,1,6,white);p(-5,-2,6,1,white);
+   p(1,1,2,2,ink);p(3,3,4,2,ink);p(5,4,2,3,0xd8a250);break;
+  case 'battle':
+   p(-6,-5,4,2,0xfff4b8);p(-3,-3,5,3,0xfad772);
+   p(-1,-1,4,4,ink);p(1,1,3,3,0xfef7ca);
+   p(-5,3,4,2,ink);p(-4,2,2,5,0xf0ba45);
+   p(3,-5,2,5,0xffffff);p(3,-6,4,2,0xfff5a4);break;
+  case 'reset':
+   p(-4,-5,7,2,steel);p(-5,-3,2,6,steel);
+   p(-3,3,7,2,steel);p(3,0,2,4,steel);
+   p(-6,-3,3,3,white);p(-4,-6,2,3,white);break;
+  case 'fullscreen':
+   p(-6,-6,5,2,white);p(-6,-6,2,5,white);
+   p(1,-6,5,2,white);p(4,-6,2,5,white);
+   p(-6,4,5,2,white);p(-6,1,2,5,white);
+   p(1,4,5,2,white);p(4,1,2,5,white);break;
+  case 'menu':
+   for(let n=-4;n<=4;n+=4){p(-5,n,10,2,white);p(-5,n,2,2,0x7ed2fa)}break;
+  case 'seeker':
+   p(-6,-3,11,6,ink);p(-5,-2,9,4,steel);
+   p(-4,-2,3,3,0xc23a41);p(0,-1,3,2,0x4aa5cc);
+   p(5,-1,2,3,0x0d3253);break;
+  case 'badge':
+   p(-2,-6,4,2,white);p(-4,-4,8,3,steel);
+   p(-5,-1,10,3,ink);p(-4,2,8,2,steel);
+   p(-2,4,4,2,white);p(-1,-2,2,5,0xe8c87c);break;
+  case 'city':
+   p(-5,-2,10,8,ink);p(-4,-1,8,6,steel);
+   p(-6,-4,12,3,0xcc626e);p(-2,1,4,5,0x4288b1);break;
+  default:break;
+ }
+}
+const CAMPAIGN_BUTTON_ROLE=Object.freeze({
+ 'BOLSA':'bag','POKÉMON':'pokemon','CENTRO':'center','LOJA':'shop',
+ 'TREINAMENTO':'training','CAPTURA':'capture','REINICIAR':'reset',
+ 'TELA CHEIA':'fullscreen','MENU':'menu','VS SEEKER':'seeker',
+ 'VER CIDADE':'city'
+});
+function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,small=false,tone='blue',icon=null}={}){
+ const role=icon||CAMPAIGN_BUTTON_ROLE[title]||
+  (title.includes('INSÍGNIAS')?'badge':gold?'battle':null);
+ const palettes={
+  blue:{fill:0x274b79,edge:0xa5d2ef,hi:0xe6f6ff,shadow:0x112843},
+  green:{fill:0x255e54,edge:0x93e1bc,hi:0xdbffdf,shadow:0x10372f},
+  teal:{fill:0x245866,edge:0x9cdae5,hi:0xe3ffff,shadow:0x12313e},
+  red:{fill:0x503d54,edge:0xc7b4be,hi:0xf8e0e6,shadow:0x2b2735},
+  gold:{fill:0xeeb94e,edge:0xfff3bc,hi:0xffffff,shadow:0x855019},
+  cream:{fill:0xd5e4e6,edge:0xffffff,hi:0xffffff,shadow:0x4b6986}
+ };
+ const kind=gold?'gold':palettes[tone]?tone:'blue',p=palettes[kind];
+ const graphics=scene.add.graphics().setDepth(depth);
+ const stacked=Boolean(role)&&w<=68&&h>=24;
+ const compact=Boolean(role)&&w<=120&&!stacked;
+ const iconOffset=stacked?0:compact?8:gold&&role?12:0;
+ const long=String(title).length>9;
+ const fontSize=stacked?(long?7:8):small?(compact&&long?6:long?7:8):gold?12:9;
+ const textColor=gold||kind==='cream'?'#2e2b30':enabled?'#f8faff':'#9caebd';
+ const label=txt(scene,x+iconOffset,y+(stacked?7:0),String(title),fontSize,textColor,depth+1);
+ let hover=false,pressed=false;
  const paint=()=>{
-  g.clear();frame(g,x-w/2,y-h/2,w,h,{fill:gold?
-   hover?0xffe392:0xf4be4e:hover?0x22588a:0x164674,
-   border:gold?0xffe7a0:0x6fb7e3,radius:3});
-  g.fillStyle(gold?0xffe99e:0x92d5fa,.9);g.fillRect(x-w/2+4,y-h/2+3,w-8,2);
+  graphics.clear();
+  const bx=Math.round(x-w/2),by=Math.round(y-h/2)+(pressed?1:0);
+  const safe=Math.max(1,w-10),inner=Math.max(1,h-10);
+  // Layered, truly pixel-aligned metallic frame. No smooth rounded CSS-like
+  // buttons, no textures lifted from a third-party client.
+  graphics.fillStyle(0x020c1d,.95);graphics.fillRect(bx+2,by+3,w,h);
+  graphics.fillStyle(p.shadow,1);graphics.fillRect(bx,by,w,h);
+  graphics.fillStyle(p.edge,1);graphics.fillRect(bx+1,by+1,w-2,h-2);
+  graphics.fillStyle(p.shadow,1);graphics.fillRect(bx+3,by+3,w-6,h-6);
+  graphics.fillStyle(hover?p.edge:p.fill,enabled?1:.53);
+  graphics.fillRect(bx+4,by+4,w-8,h-8);
+  graphics.fillStyle(p.hi,1);graphics.fillRect(bx+5,by+3,safe,2);
+  graphics.fillStyle(p.shadow,1);graphics.fillRect(bx+5,by+h-6,safe,2);
+  graphics.fillStyle(p.hi,.65);graphics.fillRect(bx+3,by+6,2,inner);
+  graphics.fillStyle(p.shadow,.8);graphics.fillRect(bx+w-5,by+6,2,inner);
+  for(const cx of [bx+1,bx+w-4]){
+   graphics.fillStyle(p.hi,1);graphics.fillRect(cx,by+1,3,3);
+   graphics.fillStyle(p.shadow,1);graphics.fillRect(cx,by+h-4,3,3);
+  }
+  if(role){
+   const iconX=stacked?x:compact?bx+10:gold?bx+15:bx+13;
+   const plateY=stacked?by+2:by+3;
+   const plateH=stacked?14:h-6;
+   graphics.fillStyle(p.shadow,.75);
+   graphics.fillRect(iconX-8,plateY,16,plateH);
+   graphics.fillStyle(p.edge,1);
+   graphics.fillRect(iconX-7,plateY+1,14,plateH-2);
+   graphics.fillStyle(0x17334e,1);
+   graphics.fillRect(iconX-6,plateY+2,12,plateH-4);
+   campaignIcon(graphics,role,iconX,by+(stacked?8:Math.floor(h/2)));
+   if(!compact&&!stacked){
+    graphics.fillStyle(p.hi,.7);
+    graphics.fillRect(iconX+10,by+6,1,Math.max(1,h-12));
+   }
+  }
+  if(gold&&w>=140){
+   // Main adventure CTA gets a unique gold laurel/plaque treatment.
+   for(let i=0;i<4;i++){
+    graphics.fillStyle(i%2?0xffe99b:0xa96a20,1);
+    graphics.fillRect(bx+4+i*3,by+6+i*2,3,4);
+    graphics.fillRect(bx+w-7-i*3,by+6+i*2,3,4);
+   }
+   graphics.fillStyle(0xffffff,.58);
+   graphics.fillRect(bx+40,by+5,Math.max(1,w-80),1);
+  }
+  if(pressed){
+   graphics.fillStyle(p.shadow,.18);
+   graphics.fillRect(bx+4,by+4,w-8,h-8);
+  }
+  label.setY(y+(stacked?7:0)+(pressed?1:0)).setColor(
+   enabled?textColor:'#9caebd');
  };
  const zone=scene.add.zone(x,y,w,Math.max(h,23)).setDepth(depth+2)
-  .setInteractive({useHandCursor:true}).setData('torre2-path-action',title);
+  .setInteractive({useHandCursor:true})
+  .setData('torre2-path-action',title)
+  .setData('torre2-campaign-button-role',role)
+  .setData('torre2-campaign-button-tone',kind);
  zone.on('pointerover',()=>{hover=true;paint()});
- zone.on('pointerout',()=>{hover=false;paint()});
- zone.on('pointerdown',()=>{if(enabled){playOriginalMenuCue(scene);action()}});
+ zone.on('pointerout',()=>{hover=false;pressed=false;paint()});
+ zone.on('pointerdown',()=>{
+  if(!enabled)return;
+  pressed=true;paint();playOriginalMenuCue(scene);action();
+ });
+ zone.on('pointerup',()=>{pressed=false;paint()});
  paint();return zone;
 }
 function connector(g,ax,ay,bx,by,lit){
@@ -342,11 +486,11 @@ export function renderBattlePath(scene,state,handlers){
   .setData('torre2-badge-case-open',true);
  txt(scene,596,102,'$'+(state.money||0),9,'#ffda74',24);
  for(let i=0;i<6;i++){
-  const m=state.team[i],y=119+i*22;
+  const m=state.team[i],y=119+i*19;
   side.fillStyle(i===state.active?0x28475a:0x102c43);
-  side.fillRoundedRect(502,y-9,124,21,3);
+  side.fillRoundedRect(502,y-9,124,18,3);
   side.lineStyle(1,i===state.active?0xf2c267:0x345d76,1);
-  side.strokeRoundedRect(502,y-9,124,21,3);
+  side.strokeRoundedRect(502,y-9,124,18,3);
   if(!m){
    txt(scene,517,y,'◌',10,'#47677b',24);
    txt(scene,535,y,'ESPAÇO LIVRE',7,'#5f839b',24).setOrigin(0,.5);
@@ -359,14 +503,24 @@ export function renderBattlePath(scene,state,handlers){
   side.fillStyle(0x091c2c);side.fillRect(576,y+5,45,4);
   side.fillStyle(hp>50?0x3ee18f:hp>22?0xf0ce61:0xe9716e);
   side.fillRect(576,y+5,Math.round(45*hp/100),4);
-  scene.add.zone(564,y+1,124,22).setDepth(35).setInteractive({useHandCursor:true})
+  scene.add.zone(564,y+1,124,19).setDepth(35).setInteractive({useHandCursor:true})
    .on('pointerdown',()=>handlers.pokemon(i));
  }
- [['BOLSA',handlers.bag],['POKÉMON',()=>handlers.pokemon(state.active)],
-  ['CENTRO',handlers.center],['LOJA',handlers.mart],
-  ['TREINAMENTO',handlers.training],['CAPTURA',handlers.capture]
- ].forEach(([label,action],i)=>button(scene,533+(i%2)*64,261+Math.floor(i/2)*19,
-  60,17,label,action,{depth:39,small:true}));
+ // Inset ornamental tray separating equipment from the six journey tools.
+ // All geometry fits the original 640x360 canvas and touch targets.
+ side.fillStyle(0x071829,.98);side.fillRect(499,225,130,84);
+ side.lineStyle(1,0xe5bf75,.96);side.strokeRect(499.5,225.5,129,83);
+ side.fillStyle(0x9c7a43,1);side.fillRect(503,226,6,2);
+ side.fillRect(620,226,6,2);side.fillRect(503,307,6,2);
+ side.fillRect(620,307,6,2);
+ // Spaced campaign quick actions: 6 readable native controls, 2 columns,
+ // 23 px touch hitboxes with no overlap, separate from the fighting HUD.
+ [['BOLSA',handlers.bag,'cream'],['POKÉMON',()=>handlers.pokemon(state.active),'cream'],
+  ['CENTRO',handlers.center,'cream'],['LOJA',handlers.mart,'cream'],
+  ['TREINAMENTO',handlers.training,'cream'],['CAPTURA',handlers.capture,'cream']
+ ].forEach(([label,action,tone],i)=>button(scene,533+(i%2)*64,240+Math.floor(i/2)*27,
+  60,25,label,action,{depth:39,small:true,tone})
+   .setData('torre2-campaign-quick-action',label));
  // Bottom action bar: the only primary gameplay action, directly starts battle.
  const current=finished?null:currentOpponent(state);
  txt(scene,24,323,'DESAFIO ATUAL',8,'#a9d6e8',30).setOrigin(0,.5);
@@ -380,7 +534,7 @@ export function renderBattlePath(scene,state,handlers){
   handlers.battle();
  },{gold:true,enabled:true,depth:70});
  cta.setData('torre2-central-cta',true);
- button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true})
+ button(scene,568,336,113,27,'REINICIAR',handlers.reset,{depth:70,small:true,tone:'red',icon:'reset'})
   .setData('torre2-reset-journey',true);
  // Standalone audio tab on the Kanto path; avoids moving any approved HUD control.
  installCampaignAudioSettings(scene);

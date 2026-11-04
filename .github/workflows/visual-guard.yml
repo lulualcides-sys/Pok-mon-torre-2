@@ -95,6 +95,7 @@ jobs:
       - name: Validar skin premium APENAS em menus não combatentes
         run: |
           node --test tests/noncombat-pixel-buttons.test.mjs
+          node --test tests/campaign-premium-buttons.test.mjs
           node tests/noncombat-pixel-buttons-built.test.mjs
       - name: Validar Mew Lv50 no Phaser com saves intactos
         run: node tests/mew-lv50-natural-pokedex-built.test.mjs
