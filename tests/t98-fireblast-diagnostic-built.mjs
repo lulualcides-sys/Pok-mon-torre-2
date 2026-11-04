@@ -19,7 +19,8 @@ if(fs.existsSync(bundle)){
 
 // Confirm how the captured Phaser projectile renderer uses the cosmetic
 // fields before reducing echo/linger cost; no asset bytes are modified.
-const roots=[path.join(root,modules),path.join(root,'src')];
+const roots=[path.join(root,modules),path.join(root,'src'),
+ path.resolve('site-capture/pokearena-client'),root];
 let examined=0,found=0;
 for(const base of roots){
  if(!fs.existsSync(base))continue;
