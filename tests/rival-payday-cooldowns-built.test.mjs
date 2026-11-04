@@ -62,9 +62,9 @@ test('Author-defined leaders and wild captures retain their exact species and te
  assert.deepEqual(wild.foes.map(x=>x.id),['zubat']);
 });
 
-test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 1.8s, Egg Bomb 2.3s, Hex 6.5s, Discharge 4s, Thunderbolt 2s, Gust 0.7s',()=>{
- assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':1.8,'egg-bomb':2.3,hex:6.5,discharge:4,thunderbolt:2,gust:0.7});
- for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',1.8],['Egg Bomb',2.3],['Hex',6.5],['Discharge',4],['Thunderbolt',2],['Gust',0.7]]){
+test('Campaign cooldowns: Charge Beam / Supersonic 1.5s, Seismic Toss 4s, Egg Bomb 4s, Hex 6.5s, Discharge 4s, Thunderbolt 2s, Gust 0.7s',()=>{
+ assert.deepEqual(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS,{'charge-beam':1.5,supersonic:1.5,'seismic-toss':4,'egg-bomb':4,hex:6.5,discharge:4,thunderbolt:2,gust:0.7});
+ for(const [label,expected] of [['Charge Beam',1.5],['Supersonic',1.5],['Seismic Toss',4],['Egg Bomb',4],['Hex',6.5],['Discharge',4],['Thunderbolt',2],['Gust',0.7]]){
   const native={nombre:label,cd:label==='Egg Bomb'?1.2:5.8,forma:'proyectil',dano:4};
   const copy=moves.balanceCampaignQuickCooldown(native);
   assert.equal(copy.cd,expected,label);

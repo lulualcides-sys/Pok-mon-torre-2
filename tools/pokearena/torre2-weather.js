@@ -102,6 +102,12 @@ export function tickWeather(state,dt,actors=[]){
 }
 export function weatherFromMove(actor,move){
  if(!actor?.escena?.datos?.torre2)return;
- const kind=WEATHER_MOVES[move?.nombre];
+ // Native clients may pass canonical IDs while user-facing labels can carry
+ // whitespace or a legacy ULT prefix; accept only the four known techniques.
+ const raw=String(move?.nombre||move?.id||'').trim().replace(/^ULT\s*[·:-]\s*/i,'');
+ const key=moveKey(raw);
+ const kind=WEATHER_MOVES[raw]||({
+  'sunny day':'sun','rain dance':'rain',sandstorm:'sand',hail:'hail'
+ })[key];
  if(kind)setWeather(actor.escena.__torre2Weather??=createWeather(),kind);
 }

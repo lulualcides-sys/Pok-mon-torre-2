@@ -210,6 +210,7 @@ await Promise.all([
  ['tools/pokearena/torre2-weather.js','weather.js'],
  ['tools/pokearena/torre2-weather-pixels.js','weather-pixels.js'],
  ['tools/pokearena/torre2-weather-status-float.js','weather-status-float.js'],
+ ['tools/pokearena/torre2-combat-visual-guard.js','combat-visual-guard.js'],
  ['tools/pokearena/torre2-rematch-policy.js','rematch-policy.js'],
  ['tools/pokearena/torre2-laboratory.js','laboratory.js'],
  ['tools/pokearena/torre2-training-input.js','training-input.js'],
