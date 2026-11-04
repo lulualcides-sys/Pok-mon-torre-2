@@ -353,7 +353,29 @@ const server=http.createServer(async(req,res)=>{
     if(item<0)throw Error('TRAINING disappeared from original menu');
     title.elegir(item);
   });
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:35000});
+  try{
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('seleccion'),null,{timeout:35000});
+  }catch(err){
+   const diag=await page.evaluate(()=>{
+    const game=window.__pt2Game,scene=game?.scene?.getScene('seleccion');
+    const title=game?.scene?.getScene('titulo');
+    return {started:window.__pt2Started,
+      activeScenes:game?.scene?.getScenes(true)?.map(s=>({key:s.scene.key,status:s.sys.settings.status})),
+      title:{active:title?.scene.isActive(),menu:title?.menu,buttons:title?.botones?.map(b=>b.id)},
+      selection:{active:scene?.scene.isActive(),status:scene?.sys?.settings?.status,
+        textures:scene?.textures?.list?Object.keys(scene.textures.list).length:null,
+        hasCards:scene?.casillas?.length||0,loaded:scene?.load?.progress??null,
+        loaderState:scene?.load?.state??null},
+      canvas:!!document.querySelector('#juego canvas')
+    };
+   });
+   console.error('TRAINING_SELECTION_TIMEOUT_DIAGNOSTIC',JSON.stringify({
+    diag,errors:errors.slice(-8),consoleFailures:consoleFailures.slice(-8),
+    notFound:notFound.slice(-8),requestFailures:requestFailures.slice(-8)
+   }));
+   await page.screenshot({path:'test-evidence/training-select-timeout.png',fullPage:true}).catch(()=>{});
+   throw err;
+  }
   const visiblePokemon=await page.evaluate(()=>{
     const game=window.__pt2Game,scene=game.scene.getScene('seleccion');
     const m=scene.registry.get('manifiesto');
