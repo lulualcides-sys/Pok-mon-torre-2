@@ -15,12 +15,15 @@ test('six unique FireRed item/party sprites power campaign shortcuts',()=>{
  const assets=[...segment.matchAll(/item:'([^']+)'/g)].map(x=>x[1]);
  assert.equal(assets.length,6);
  assert.equal(new Set(assets).size,6);
- for(const name of assets)assert.ok(installer.includes(name+':spec(')||installer.includes("'"+name+"':spec("),
+ for(const name of assets)assert.ok(name==='bag-male'||installer.includes(name+':spec(')||installer.includes("'"+name+"':spec("),
   name+' absent from pinned FireRed assets');
- assert.match(path,/scene\.add\.image\(left\+12,y,key\)/);
+ assert.match(path,/scene\.add\.image\(left\+12,y,key,spec\.id==='bag'\?0:undefined\)/);
  assert.match(path,/Phaser\.Textures\.FilterMode\.NEAREST/);
  assert.match(path,/torre2-portrait-/);
- assert.match(scene,/for\(const file of FRLG_MART_ITEM_FILES\)/);
+ assert.match(scene,/for\\(const file of FRLG_MART_ITEM_FILES\\)/);
+ assert.match(scene,/this\\.load\\.spritesheet\\('torre2-frlg-bag'/);
+ assert.match(path,/spec\\.id==='bag'\\?'torre2-frlg-bag'/);
+ assert.match(readFileSync('tools/pokearena/build-preview.mjs','utf8'),/assets\\/ui\\/frlg\\/items\\/bag-male\\.png/);
 });
 
 test('six hit regions remain separate, accessible and wired to native campaign handlers',()=>{

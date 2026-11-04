@@ -58,7 +58,7 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
  // The active Pokémon icon uses its real PMD portrait instead of a drawn glyph.
  // Deliberately scoped to the six campaign shortcuts; never affect battle HUD.
 export const CAMPAIGN_SPRITE_SHORTCUTS=Object.freeze([
- {id:'bag',label:'BOLSA',item:'superpotion',accent:0xd5ad67},
+ {id:'bag',label:'BOLSA',item:'bag-male',accent:0xd5ad67},
  {id:'pokemon',label:'POKÉMON',item:'ultraball',accent:0xe6a58d},
  {id:'center',label:'CENTRO',item:'fullheal',accent:0x8cdbc0},
  {id:'shop',label:'LOJA',item:'greatball',accent:0x91bee0},
@@ -77,14 +77,14 @@ function activePortraitKey(scene,state){
 }
 function spriteShortcut(scene,x,y,spec,onPress,portrait=null){
  const w=61,h=20,depth=40,left=Math.round(x-w/2),top=Math.round(y-h/2);
- const native='torre2-frlg-mart-'+spec.item;
+ const native=spec.id==='bag'?'torre2-frlg-bag':'torre2-frlg-mart-'+spec.item;
  const key=spec.id==='pokemon'&&portrait?portrait:native;
  const g=scene.add.graphics().setDepth(depth);
  const caption=txt(scene,left+22,y,spec.label,7,'#edf5fa',depth+2).setOrigin(0,.5);
  // Fit long Portuguese labels without hiding, clipping, or overlapping icons.
  caption.setScale(Math.min(1,Math.max(.65,37/Math.max(1,caption.width))));
  const sprite=scene.textures.exists(key)
-  ?scene.add.image(left+12,y,key).setDisplaySize(16,16).setDepth(depth+2):null;
+  ?scene.add.image(left+12,y,key,spec.id==='bag'?0:undefined).setDisplaySize(16,16).setDepth(depth+2):null;
  if(sprite&&typeof Phaser!=='undefined'&&Phaser.Textures?.FilterMode)
   scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
  let hover=false;

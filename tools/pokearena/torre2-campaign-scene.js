@@ -110,6 +110,9 @@ class Campanha extends Phaser.Scene{
  }
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
+  // Original Pokémon FireRed bag frames, bundled locally at build time.
+  if(!this.textures.exists('torre2-frlg-bag'))
+   this.load.spritesheet('torre2-frlg-bag','assets/ui/frlg/items/bag-male.png',{frameWidth:64,frameHeight:64});
   const state=readCampaign();
   // Nine tiny original GBA item icons shared by every Mart page.
   // Load once into Phaser's image cache, never over the network during shopping.
