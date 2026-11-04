@@ -145,6 +145,38 @@ const server=http.createServer(async(req,res)=>{
   });
   await page.waitForFunction(()=>window.__pt2Game.scene
    .getScene('campanha').__torre2CardUI?.mode==='cards',null,{timeout:7000});
+  // Validate a real leader team from the campaign manifest. This is
+  // a screenshot of native Phaser UI, not the user's conceptual mockup.
+  state.step='misty-leader-card';
+  await page.evaluate(()=>{
+   const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+   const fixture=core.createPlayerCampaign('squirtle');
+   fixture.stage=1;fixture.trainer=core.TRAINERS_PER_GYM(1);
+   fixture.badges=[core.GYMS[0].badge];
+   core.saveCampaign(fixture);
+   scene.scene.restart();
+  });
+  await page.waitForFunction(()=>{
+   const c=window.__pt2Game?.scene.getScene('campanha');
+   return c?.scene.isActive()&&c.__torre2CardUI?.stage===1&&
+    c.__torre2CardUI?.mode==='cards';
+  },null,{timeout:20000});
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const panel=c.children.list.find(o=>o.active&&o.getData?.('torre2-trainer-cards-root'));
+   const open=panel?.list?.find(o=>o.getData?.('torre2-card-control')==='cards-open-current');
+   if(!open)throw Error('Leader current-card button missing');
+   open.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>window.__pt2Game.scene
+   .getScene('campanha').__torre2CardUI?.mode==='detail',null,{timeout:7000});
+  const leaderCard=await page.evaluate(()=>window.__pt2Game
+   .scene.getScene('campanha').__torre2CardUI);
+  assert.equal(leaderCard.leader,true,'Misty must use the leader presentation');
+  assert.equal(leaderCard.canBattle,true,'The defeated 13 trainers unlock Misty');
+  assert.deepEqual(leaderCard.roster,['staryu','starmie'],
+   'Misty card must show her exact FireRed roster, never invented Pokémon');
+  await shot('desktop-misty-leader-card',page);
   // The former guard only captured stage 0. The user-rejected layout is the
   // Blaine/Cinnabar route at stage 6; test THAT actual native Phaser scene.
   // Use a disposable in-browser save fixture and restore the starter before

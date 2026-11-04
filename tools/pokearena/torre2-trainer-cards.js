@@ -207,6 +207,10 @@ function cardsPage(scene,state,handlers){
   for(let j=0;j<Math.min(6,entry.species.length);j++)
    ball(balls,x+42+(j-(entry.species.length-1)/2)*17,y+157,7);
   layer.add(balls);
+  // Render the actual opponent's PMD mini portrait on unlocked cards.
+  // The Poké Ball remains as a placeholder only during first asset load.
+  if(!entry.locked&&entry.species[0])
+   portrait(scene,layer,entry.species[0],x+w/2+15,y+158,22);
   box(scene,layer,x+7,y+171,w-14,16,{fill:entry.active?0x86611e:
    entry.completed?0x205b42:0x263b52,edge,
    accent:entry.active?0xffe8a0:edge});

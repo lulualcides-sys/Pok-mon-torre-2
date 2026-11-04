@@ -465,7 +465,7 @@ const server=http.createServer(async(req,res)=>{
   offline.on('request',r=>{
    if(/wss?:|\/api\/|\/auth\/|\/socket/.test(r.url()))outRequests.push(r.url());
   });
-  await offline.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded',timeout:35000});
+  await offline.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded',timeout:35000});
   await offline.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),
     null,{timeout:60000,polling:300});
   const opening=await offline.evaluate(()=>{
@@ -1339,7 +1339,7 @@ const server=http.createServer(async(req,res)=>{
   const tester=await browser.newPage({viewport:{width:980,height:650},deviceScaleFactor:1});
   const newErrors=[];
   tester.on('pageerror',e=>newErrors.push(String(e)));
-  await tester.goto('http://127.0.0.1:4274/arena2d/',{waitUntil:'domcontentloaded'});
+  await tester.goto('http://127.0.0.1:4274/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await tester.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:65000});
   const summaryState=await tester.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));

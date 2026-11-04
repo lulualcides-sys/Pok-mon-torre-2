@@ -28,7 +28,7 @@ const server=http.createServer(async(req,res)=>{
   const page=await browser.newPage({viewport,hasTouch:label==='mobile'});
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   try{
-   await page.goto('http://127.0.0.1:4304/arena2d/',{waitUntil:'domcontentloaded'});
+   await page.goto('http://127.0.0.1:4304/arena2d/?original=1',{waitUntil:'domcontentloaded'});
    await page.waitForFunction(()=>window.__pt2Started&&window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
    await page.evaluate(async()=>{
     const src=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
