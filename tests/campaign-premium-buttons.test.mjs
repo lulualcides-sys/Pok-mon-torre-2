@@ -5,16 +5,16 @@ import path from 'node:path';
 
 const file=path.resolve('tools/pokearena/torre2-battle-path.js');
 const source=fs.readFileSync(file,'utf8');
-test('six campaign quick-actions remain visible with 23px nonoverlapping mobile touch targets',()=>{
+test('six campaign quick-actions render stacked icons with 25px separated touch targets',()=>{
  const expected=['BOLSA','POKÉMON','CENTRO','LOJA','TREINAMENTO','CAPTURA'];
  for(const label of expected)
   assert.ok(source.includes("'"+label+"'"),'Missing campaign control '+label);
- assert.match(source,/533\+\(i%2\)\*64,254\+Math\.floor\(i\/2\)\*23,/);
- assert.match(source,/60,20,label,action,\{depth:39,small:true,tone\}/);
+ assert.match(source,/533\+\(i%2\)\*64,240\+Math\.floor\(i\/2\)\*27,/);
+ assert.match(source,/60,25,label,action,\{depth:39,small:true,tone\}/);
  assert.match(source,/Math\.max\(h,23\)/);
- const y=[254,277,300],hit=23;
+ const y=[240,267,294],hit=25;
  assert.ok(y.every((v,i)=>i===0||v-y[i-1]>=hit));
- assert.ok(y[0]-hit/2>=240&&y[2]+hit/2<=313,
+ assert.ok(y[0]-hit/2>=225&&y[2]+hit/2<=309,
   'All quick actions must fit below party slots and above bottom action bar');
 });
 test('campaign button library paints unique pixel icons and preserves all callbacks',()=>{
@@ -26,12 +26,12 @@ test('campaign button library paints unique pixel icons and preserves all callba
  for(const role of ['bag','pokemon','center','shop','training','capture','battle','reset','fullscreen','menu','seeker','badge','city'])
   assert.ok(source.includes("case '"+role+"':"),'Unillustrated item '+role);
  assert.match(source,/export function campaignIcon\(/);
- assert.match(source,/graphics\.fillRect\(iconX-8,by\+3,16,h-6\)/);
+ assert.match(source,/graphics\.fillRect\(iconX-8,plateY,16,plateH\)/);
  assert.match(source,/playOriginalMenuCue\(scene\);action\(\)/);
  assert.match(source,/setData\('torre2-central-cta',true\)/);
  assert.match(source,/setData\('torre2-reset-journey',true\)/);
- assert.match(source,/side\.fillRect\(499,242,130,69\)/);
- assert.match(source,/iconOffset=compact\?8:gold&&role\?12:0/);
+ assert.match(source,/side\.fillRect\(499,225,130,84\)/);
+ assert.match(source,/iconOffset=stacked\?0:compact\?8:gold&&role\?12:0/);
 });
 test('arena and real combat controls never import the campaign skin',()=>{
  // The existing build already patches battle logic for older approved
@@ -53,4 +53,14 @@ test('shop, healing, inventory and capture use distinct icons in campaign submen
  assert.match(sub,/setData\('torre2-campaign-item-icon',decorated\?role:null\)/);
  assert.match(sub,/const decorated=Boolean\(role\)&&w>=116&&h>=27/);
  for(const tone of ['teal','red','cream'])assert.ok(art.includes("tone==='"+tone+"'"));
+});
+
+test('six party slots persist; quick actions do not overlay the last party slot',()=>{
+ assert.match(source,/for\(let i=0;i<6;i\+\+\)/);
+ assert.match(source,/const m=state\.team\[i\],y=119\+i\*19/);
+ assert.match(source,/scene\.add\.zone\(564,y\+1,124,19\)/);
+ assert.match(source,/const stacked=Boolean\(role\)&&w<=68&&h>=24/);
+ const lastPartyBottom=119+5*19+1+19/2;
+ const firstButtonTop=240-25/2;
+ assert.ok(lastPartyBottom<firstButtonTop);
 });
