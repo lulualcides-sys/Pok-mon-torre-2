@@ -271,6 +271,14 @@ await Promise.all([
 }));
 await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
 await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
+await Promise.all([
+ ['tools/pokearena/torre2-johto-lab-catalog.js','johto-lab-catalog.js'],
+ ['tools/pokearena/torre2-johto-lab-scene.js','johto-lab-scene.js'],
+ ['tools/pokearena/torre2-johto-lab-runtime.js','johto-lab-runtime.js'],
+ ['tools/pokearena/torre2-johto-lab-combat.js','johto-lab-combat.js']
+].map(async([source,name])=>fs.copyFile(path.resolve(source),
+ path.join(dest,clientSource,'torre2',name))));
+
 patches.push(
  ['datos.js',[
   ['function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];return{...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen}}',
@@ -573,6 +581,38 @@ patches.push(['escenas/seleccion.js',[
  ['const R=ROLES[r];','const R=ROLES[r]??ROLES.MIXTO;'],
  ['const h=p.kit[slot];const ky=','const h=p.kit?.[slot]??{nombre:"—",tipo:"NORMAL",coste:0,dano:0};const ky=']
 ]]);
+
+// Johto Mewtwo Training lab: OFFLINE-only, additive, no campaign pool/save edits.
+patches.push(
+ ['main.js',[
+  ['import{Campanha}from"./torre2/campanha.js";',
+   'import{Campanha}from"./torre2/campanha.js";import{JohtoLab}from"./torre2/johto-lab-scene.js";'],
+  ['scene:[Carga,Campanha,Titulo,Seleccion,Combate,Batalla,Reel,Preparar,',
+   'scene:[Carga,Campanha,Titulo,Seleccion,JohtoLab,Combate,Batalla,Reel,Preparar,']
+ ]],
+ ['escenas/titulo.js',[[
+  '{id:"entreno",txt:"TRAINING",escena:"seleccion",datos:{previo:{modo:"entreno"}},ico:"diana"},',
+  '{id:"entreno",txt:"TRAINING",escena:"seleccion",datos:{previo:{modo:"entreno"}},ico:"diana"},{id:"johto-lab",txt:"MEWTWO TEST LAB",escena:"johto-lab",ico:"diana"},'
+ ]]],
+ ['torre2/signature-fx.js',[
+  ["import * as vfx from '../vfx.js';",
+   "import * as vfx from '../vfx.js';import{TORRE2_JOHTO_LAB_FORMS}from'./johto-lab-runtime.js';"],
+  ['export const TORRE2_FORMS={',
+   'export const TORRE2_FORMS={...TORRE2_JOHTO_LAB_FORMS,']
+ ]],
+ ['luchador.js',[[
+  'this.kit=this.kitActual();this.x=x;',
+  'this.kit=this.kitActual();if(this.escena.datos?.johtoLab&&this.lado===0)this.kit={...this.kit,...this.escena.datos.johtoLab.kit};this.x=x;'
+ ]]],
+ ['escenas/combate.js',[
+  ['import{HUD}from"../hud.js";',
+   'import{HUD}from"../hud.js";import{installJohtoLabCombat}from"../torre2/johto-lab-combat.js";'],
+  ['if(this.entreno)this.crearPanelEntreno();',
+   'if(this.entreno)this.crearPanelEntreno();if(d.johtoLab)installJohtoLabCombat(this);'],
+  ['salir(){this.soltarTiempo();if(this.datos.torre2)',
+   'salir(){this.soltarTiempo();if(this.datos.johtoLab)return this.scene.start("johto-lab",{slots:this.datos.johtoLab.slots});if(this.datos.torre2)']
+ ]]
+);
 for(const [filename,changes] of patches){
  const filenameFull=path.join(dest,clientSource,filename);
  let body=await fs.readFile(filenameFull,'utf8');
@@ -1100,7 +1140,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.j
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
- 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
+ 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/johto-lab-combat.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
