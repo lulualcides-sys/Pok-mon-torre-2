@@ -102,12 +102,12 @@ test('Lt Surge uses themed, distinct, offensive four-role kits and retains FireR
  assert.equal(roster[2].loadout.e.nombre,'Thunderbolt');
  assert.equal(roster[1].loadout.rmb.nombre,'Thunder Shock');
 });
-test('Seismic Toss is 1.8s in Kanto only, original mode and Lv8 ULT are untouched',()=>{
+test('Seismic Toss is 4s in Kanto only, original mode and Lv8 ULT are untouched',()=>{
  const native={nombre:'Seismic Toss',cd:6,forma:'proyectil'};
  const altered=moves.balanceCampaignQuickCooldown(native);
- assert.equal(altered.cd,1.8);
+ assert.equal(altered.cd,4);
  assert.equal(native.cd,6);
- assert.equal(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS['seismic-toss'],1.8);
+ assert.equal(moves.KANTO_CAMPAIGN_QUICK_COOLDOWNS['seismic-toss'],4);
  assert.strictEqual(moves.balanceCampaignQuickCooldown({nombre:'ULT · Seismic Toss',
   torre2IntroSource:'seismic-toss',torre2IntroPractice:true,cd:8}).cd,8);
  assert.match(read('torre2/move-pool.js'),
