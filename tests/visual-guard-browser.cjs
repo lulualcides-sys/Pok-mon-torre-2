@@ -131,7 +131,43 @@ const server=http.createServer(async(req,res)=>{
    return scene?.scene.isActive()&&scene.__torre2BattlePath?.stage===6&&
     scene.children.list.some(o=>String(o.text||'').toUpperCase().includes('CINNABAR'));
   },null,{timeout:25000});
+  const mode=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const view=c.__torre2BattlePath;
+   return {mode:view.mode,visibleTrainers:c.children.list
+    .filter(o=>o.active&&Number.isInteger(o.getData?.('torre2-path-node'))).length,
+    total:view.total,stage:view.stage};
+  });
+  assert.equal(mode.mode,'city','Cinnabar must start on the town, not a trainer-filled collage');
+  assert.equal(mode.visibleTrainers,0,'No 14 NPCs may float over Cinnabar water or roofs');
   await shot('desktop-cinnabar-map',page);
+  // Test the ACTUAL Phaser touch target, not the callback in isolation.
+  const switchPoint=await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const zone=c.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-cinnabar-switch')==='routes');
+   if(!zone)throw Error('Cinnabar route switch missing');
+   const rect=document.querySelector('#juego canvas').getBoundingClientRect();
+   return {x:rect.left+zone.x*rect.width/640,y:rect.top+zone.y*rect.height/360};
+  });
+  await page.mouse.click(switchPoint.x,switchPoint.y);
+  await page.waitForFunction(()=>{
+   const view=window.__pt2Game.scene.getScene('campanha').__torre2BattlePath;
+   return view?.stage===6&&view?.mode==='sea-routes'&&
+    view.locations>0&&view.locations<=7;
+  },null,{timeout:12000});
+  await shot('desktop-cinnabar-sea-routes',page);
+  await page.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   const back=c.children.list.find(o=>o.active&&o.input?.enabled&&
+    o.getData?.('torre2-cinnabar-switch')==='city');
+   if(!back)throw Error('Back to Cinnabar city button missing');
+   back.emit('pointerdown');
+  });
+  await page.waitForFunction(()=>{
+   const view=window.__pt2Game.scene.getScene('campanha').__torre2BattlePath;
+   return view?.stage===6&&view?.mode==='city';
+  },null,{timeout:10000});
   await page.evaluate(()=>{
    const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
    core.saveCampaign(core.createPlayerCampaign('bulbasaur'));
