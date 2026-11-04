@@ -25,7 +25,7 @@ const EXTRA_TRAINERS=Object.freeze([
   'psychic:abra','scientist:koffing','psychic:kadabra'],
  // Seafoam, Mansion and Cinnabar Gym: vary archetype as well as species (25).
  ['scientist:voltorb','scientist:magnemite','ace:growlithe','scientist:muk',
-  'ace:ponyta','scientist:electrode','ace:rapidash','scientist:weezing',
+  'ace:arcanine','scientist:electrode','ace:rapidash','scientist:weezing',
   'scientist:magmar','ace:arcanine','scientist:koffing','ace:ponyta',
   'scientist:grimer'],
  // Viridian Gym, routes 22/23 and the ground-type approach (27).
