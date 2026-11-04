@@ -61,6 +61,21 @@ export function buttonFrame(g,x,y,w,h,tone='blue',hover=false){
  px(g,x+5,y+h-6,w-10,2,deep);
  for(const [cx,cy] of [[x+1,y+1],[x+w-5,y+1],[x+1,y+h-5],[x+w-5,y+h-5]])
   px(g,cx,cy,4,4,hi);
+ // Pixel Art Premium: embossed Game Boy Advance frame with a readable
+ // pressed/hover state. Only campaign navigation, shop, bag, starter and
+ // Pokédex uses this function; the fighting arena uses separate HUD code.
+ if(w>=34&&h>=18){
+  px(g,x+7,y+6,w-14,1,hover?hi:trim,.85);
+  px(g,x+7,y+h-7,w-14,2,0x061527,.88);
+  px(g,x+6,y+8,2,h-16,hi,.65);
+  px(g,x+w-8,y+8,2,h-16,deep,.9);
+  px(g,x+3,y+3,3,3,0xffffff,.32);
+  px(g,x+w-6,y+h-6,3,3,0x061527,.8);
+  if(hover){
+   px(g,x+8,y+3,Math.max(1,w-16),2,hi,.68);
+   px(g,x+8,y+h-5,Math.max(1,w-16),1,trim,.6);
+  }
+ }
 }
 function tree(g,x,y,k=1){
  const p=(a,b,w,h,c)=>px(g,x+a*k,y+b*k,w*k,h*k,c);
