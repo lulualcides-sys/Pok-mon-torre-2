@@ -57,8 +57,13 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
  const zone=scene.add.zone(x+w/2,y+h/2,w,h)
   .setInteractive({useHandCursor:!muted}).setData('torre2-card-control',id||label);
  layer.add(zone);
+ let lastPress=-Infinity;
  if(!muted)zone.on('pointerdown',(_p,_x,_y,event)=>{
-  event?.stopPropagation?.();fn?.();
+  event?.stopPropagation?.();
+  const now=scene.time?.now??Date.now();
+  if(now-lastPress<190)return;
+  lastPress=now;
+  fn?.();
  });
  return zone;
 }
