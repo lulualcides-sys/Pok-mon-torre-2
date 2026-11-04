@@ -71,6 +71,19 @@ export function regionalTrainer(stage,index){
  const member=rows[index%rows.length];
  return {...member,name:(TITLES[member.spriteKind]||'Treinador')+' '+(index+1)};
 }
+// The same normal-party size and species projection drive both the
+// information card AND the actual in-battle PartyMatch roster. No card-only
+// species or hidden random regional pool can disagree with the battle.
+export function regionalTrainerPartySize(stage,index){
+ if(!Number.isInteger(stage)||stage<0||!Number.isInteger(index)||index<0)
+  return 1;
+ return Math.min(4,1+Math.floor((index+stage)/5));
+}
+export function regionalTrainerParty(stage,index,firstId,count){
+ const size=Math.max(1,Math.min(6,Math.trunc(count)||1));
+ return Array.from({length:size},(_,slot)=>slot===0?firstId:
+  regionalTrainer(stage,index+slot)?.id||firstId);
+}
 const ROCKET_ROSTERS=Object.freeze({
  1:['zubat','ekans','rattata'],
  3:['raticate','koffing','zubat'],
