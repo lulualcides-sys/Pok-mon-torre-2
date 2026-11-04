@@ -13,12 +13,14 @@ export const FRLG_NPC_NAMES=Object.freeze([
  'giovanni','prof_oak','nurse','clerk','man','woman_1','old_man_1',
  'mr_fuji','bill','lance','lorelei','agatha','bruno','rocker'
 ]);
-const RAW='https://raw.githubusercontent.com/pret/pokefirered/master/graphics/object_events/pics/people/';
-const API='https://api.github.com/repos/pret/pokefirered/contents/graphics/object_events/pics/people/';
+const RAW='https://raw.githubusercontent.com/pret/pokefirered/master/';
+const API='https://api.github.com/repos/pret/pokefirered/contents/';
 const png=Buffer.from([137,80,78,71,13,10,26,10]);
 async function source(name){
+ const relative=(name.startsWith('graphics/')?name:
+  'graphics/object_events/pics/people/'+name)+'.png';
  let error;
- for(const url of [RAW+name+'.png',API+name+'.png']){
+ for(const url of [RAW+relative,API+relative]){
   try{
    const r=await fetch(url,{headers:{'Accept':'application/vnd.github+json',
     'User-Agent':'Pokémon-Torre-2-FireRed-NPC-installer'},
@@ -39,7 +41,7 @@ export async function installFRLGNPCs(dest){
  const folder=path.join(dest,'assets','ui','frlg','npc');
  await fs.mkdir(folder,{recursive:true});
  const result={source:'pret/pokefirered; Game Freak / Nintendo character sprites',
-  available:[],missing:[]};
+  available:[],missing:[],introAvailable:[],introMissing:[]};
  for(let i=0;i<FRLG_NPC_NAMES.length;i+=7){
   await Promise.all(FRLG_NPC_NAMES.slice(i,i+7).map(async name=>{
    try{
@@ -48,6 +50,19 @@ export async function installFRLGNPCs(dest){
     result.available.push(name);
    }catch(e){result.missing.push(name)}
   }));
+ }
+ // The full-body GBA Oak lecture sprite is DIFFERENT from his 16x32 map NPC.
+ // The lecture is optional so an upstream image outage cannot break the
+ // regular campaign client; only the already-installed overworld fallback
+ // remains mandatory for a valid new-game intro.
+ const introFolder=path.join(dest,'assets','ui','frlg','intro');
+ await fs.mkdir(introFolder,{recursive:true});
+ for(const [name,remote] of [['oak','graphics/oak_speech/oak/pic'],
+  ['platform','graphics/oak_speech/platform']]){
+  try{
+   await fs.writeFile(path.join(introFolder,name+'.png'),await source(remote));
+   result.introAvailable.push(name);
+  }catch(error){result.introMissing.push(name);}
  }
  const crucial=['red_normal','youngster','bug_catcher','rocket_m','brock','prof_oak'];
  if(crucial.some(x=>!result.available.includes(x)))
