@@ -110,13 +110,18 @@ const server=http.createServer(async(req,res)=>{
    return scene.children.list.filter(o=>o.getData?.('torre2-campaign-quick-action'))
     .map(o=>({name:o.getData('torre2-campaign-quick-action'),
      tone:o.getData('torre2-campaign-button-tone'),
+     role:o.getData('torre2-campaign-button-role'),
      x:o.x,y:o.y,w:o.input?.hitArea?.width,h:o.input?.hitArea?.height}));
   });
   assert.deepEqual(campaignActions.map(x=>x.name),
    ['BOLSA','POKÉMON','CENTRO','LOJA','TREINAMENTO','CAPTURA'],
    'Six campaign shortcuts must remain visible on landscape mobile');
   assert.deepEqual(campaignActions.map(x=>x.tone),
-   ['blue','blue','green','gold','blue','teal']);
+   ['cream','cream','cream','cream','cream','cream'],
+   'Visual palette should unify item surfaces while using distinct icons');
+  assert.deepEqual(campaignActions.map(x=>x.role),
+   ['bag','pokemon','center','shop','training','capture'],
+   'Each item must have its own actual drawn pixel-art icon');
   for(const control of campaignActions){
    assert.ok(control.h>=23&&control.w>=60,'Small campaign touch target: '+control.name);
    assert.ok(control.y+control.h/2<=313,'Campaign shortcut overlaps bottom CTA: '+control.name);
