@@ -487,9 +487,31 @@ const server=http.createServer(async(req,res)=>{
   });
   await offline.waitForFunction(()=>window.__pt2Game?.scene.isActive('campanha'),null,
     {timeout:15000,polling:250});
-  const offlineInitial=await offline.evaluate(()=>window.__pt2Game.scene.getScene('campanha').children.list
-   .filter(x=>typeof x.text==='string').map(x=>x.text).join(' | '));
-  assert.ok(offlineInitial.includes('CHARMANDER'),'starter selection must be available');
+  // A new Kanto game displays the full Professor Oak introduction before
+  // the three starters. Exercise all four real Phaser dialogue taps.
+  await offline.waitForFunction(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return c.children.list.some(x=>x.getData?.('torre2-oak-continue')&&x.input?.enabled);
+  },null,{timeout:10000});
+  for(let page=0;page<4;page++){
+   await offline.evaluate(()=>{
+    const c=window.__pt2Game.scene.getScene('campanha');
+    const next=c.children.list.find(x=>
+     x.getData?.('torre2-oak-continue')&&x.input?.enabled);
+    if(!next)throw Error('Professor Oak dialogue control disappeared');
+    next.emit('pointerdown');
+   });
+   // Our native button guard deliberately ignores double taps in one frame.
+   await offline.waitForTimeout(230);
+  }
+  const offlineInitial=await offline.evaluate(()=>{
+   const c=window.__pt2Game.scene.getScene('campanha');
+   return {seen:c.__torre2OakIntroSeen,
+    text:c.children.list.filter(x=>typeof x.text==='string')
+     .map(x=>x.text).join(' | ')};
+  });
+  assert.ok(offlineInitial.seen&&offlineInitial.text.includes('CHARMANDER'),
+   'After Professor Oak, all three native starter choices are visible');
   // Choose starter via campaign module and confirm launch into real Phaser combat.
   await offline.evaluate(async()=>{
     const entry=[...document.querySelectorAll('script[src]')].find(x=>x.src.includes('/main.js'));
@@ -534,10 +556,10 @@ const server=http.createServer(async(req,res)=>{
   });
   assert.equal(road.total,13,'Brock still has 13 required trainers');
   assert.equal(road.nodes,14,'Thirteen trainer checkpoints plus Brock leader');
-  assert.ok(road.types.includes('rival')&&road.types.includes('rocket')&&
+  assert.ok(road.types.includes('rival')&&!road.types.includes('rocket')&&
    road.types.includes('leader')&&road.captures.includes(2)&&
    road.captures.includes(8)&&!road.types.includes('capture'),
-   'Rival/Rocket/leader stay fighters; wild catches use optional separate zones');
+   'Viridian Forest has no Rocket; Rival and leader are battles, catches stay optional');
   assert.ok(road.title&&road.button&&road.banner&&road.environment,
    'Battle hub displays original Pewter art, a compact team and fight CTA');
   assert.ok(road.gym?.realExterior&&road.gym?.realGym,
@@ -1243,7 +1265,7 @@ const server=http.createServer(async(req,res)=>{
     const s=core.readCampaign();
     const match=core.startBattle(s);
     // Only this AI regression uses Onix, so its historic evolution scenario
-    // remains identical while the real Kanto trainer ladder starts at Pidgey.
+    // remains identical while the real Kanto trainer ladder starts at Rattata.
     match.p2='onix';
     window.__pt2Game.scene.getScene('campanha').scene.start('combate',match);
   });
