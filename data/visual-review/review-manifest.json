@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "objective": "Review genuine Phaser screenshots and editable pixel-art sources; no automatic approval from green CI.",
+  "objective": "Original pixel PNG pilot is build-generated, while visual quality requires human-reviewed screenshots and re-editing in Pixelorama/Tiled.",
   "status": "pending_visual_review",
   "requiredScenes": [
     {
@@ -44,28 +44,28 @@
     {
       "id": "zap-cannon",
       "editor": "pixelorama",
-      "source": "reference-assets/visual-workbench/moves/zap-cannon.pxo",
-      "export": "reference-assets/visual-workbench/exports/zap-cannon.png",
+      "source": "tools/pokearena/torre2-pixel-sheets.mjs",
+      "export": "_site/arena2d/assets/torre2/johto-pilot/zap-cannon.png",
       "frames": 12,
-      "status": "not_drawn",
+      "status": "pilot_generated_build_only",
       "approved": false
     },
     {
       "id": "powder-snow",
       "editor": "pixelorama",
-      "source": "reference-assets/visual-workbench/moves/powder-snow.pxo",
-      "export": "reference-assets/visual-workbench/exports/powder-snow.png",
+      "source": "tools/pokearena/torre2-pixel-sheets.mjs",
+      "export": "_site/arena2d/assets/torre2/johto-pilot/powder-snow.png",
       "frames": 12,
-      "status": "not_drawn",
+      "status": "pilot_generated_build_only",
       "approved": false
     },
     {
       "id": "whirlpool",
       "editor": "pixelorama",
-      "source": "reference-assets/visual-workbench/moves/whirlpool.pxo",
-      "export": "reference-assets/visual-workbench/exports/whirlpool.png",
+      "source": "tools/pokearena/torre2-pixel-sheets.mjs",
+      "export": "_site/arena2d/assets/torre2/johto-pilot/whirlpool.png",
       "frames": 12,
-      "status": "not_drawn",
+      "status": "pilot_generated_build_only",
       "approved": false
     }
   ],
