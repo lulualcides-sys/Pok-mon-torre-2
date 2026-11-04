@@ -51,10 +51,18 @@ const server=http.createServer(async(req,res)=>{
    const game=window.__pt2Game,canvas=document.querySelector('#juego canvas');
    return {width:canvas.width,height:canvas.height,
     buttons:game.scene.getScene('titulo').botones.map(b=>b.id),
-    logo:game.textures.exists('ui-logo')};
+    logo:game.textures.exists('ui-logo'),
+    mascots:game.scene.getScene('titulo').children.list
+     .filter(x=>x.type==='Sprite'&&/^pmd-.+-Idle$/.test(x.texture?.key||''))
+     .map(x=>({key:x.texture.key,x:x.x,y:x.y,
+      playing:x.anims?.isPlaying===true}))};
   });
   assert.ok(title.width>=640&&title.height>=360,'Canvas is too small');
   assert.equal(title.logo,true,'Approved title texture missing');
+  assert.ok(title.mascots.some(s=>Math.abs(s.x-110)<12&&s.playing),
+   'Missing original animated Pokémon to LEFT of title logo: '+JSON.stringify(title.mascots));
+  assert.ok(title.mascots.some(s=>Math.abs(s.x-530)<12&&s.playing),
+   'Missing original animated Pokémon to RIGHT of title logo: '+JSON.stringify(title.mascots));
   assert.deepEqual(title.buttons.filter(id=>id!=='personalizar'),
    ['jugar','pokedex','tutorial','ajustes','creditos'],
    'Existing approved title actions must remain visible and ordered');
