@@ -1,13 +1,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {REGIONAL_TRAINERS,regionalTrainer,regionalRocket} from '../tools/pokearena/torre2-trainer-rosters.js';
+import {REGIONAL_TRAINERS,regionalTrainer,regionalRocket,regionalTrainerParty,regionalTrainerPartySize} from '../tools/pokearena/torre2-trainer-rosters.js';
 import {routeNode} from '../tools/pokearena/torre2-route-data.js';
 
 const file=path=>readFileSync(path,'utf8');
 const core=file('tools/pokearena/torre2-campaign-core.js');
 const scene=file('tools/pokearena/torre2-campaign-scene.js');
 const card=file('tools/pokearena/torre2-trainer-cards.js');
+const battle=file('tools/pokearena/torre2-party-battle.js');
 const versus=file('tools/pokearena/torre2-versus-intro.js');
 const frlg=file('tools/pokearena/torre2-frlg-npc.js');
 const builder=file('tools/pokearena/build-preview.mjs');
@@ -53,11 +54,33 @@ test('the card and battle resolve the SAME actual species and sprite class',()=>
  assert.match(core,/spriteKind:leader\?null/);
  assert.match(core,/encounter\?\.id\|\|list/);
  assert.match(card,/currentOpponent\(\{\.\.\.state,trainer:index/);
+ assert.match(card,/regionalTrainerParty\(stage,index,foe\?\.id/);
+ assert.match(card,/regionalTrainerPartySize\(stage,index\)/);
+ assert.match(card,/trainerSpeciesForLevel\(id,foe\?\.level\)/);
+ assert.match(card,/rivalChampionTeam\(campaignStarter\(state\)\)/);
+ assert.match(battle,/regionalTrainerParty\(state\.stage,state\.trainer,opponent\.id,count\)/);
+ assert.match(battle,/regionalTrainerPartySize\(state\.stage,state\.trainer\)/);
  assert.match(card,/opponent\?\.spriteKind\|\|trainerClass/);
  assert.match(scene,/projection\?\.spriteKind\|\|/);
  assert.match(scene,/spriteKind:opponent\.spriteKind/);
  assert.match(versus,/spriteKind\|\|trainerClass/);
  assert.doesNotMatch(card,/saveCampaign\(/);
+});
+test('every displayed NPC party slot corresponds to the actual battle projection',()=>{
+ for(let stage=0;stage<=8;stage++){
+  const limit=stage<8?13+stage*2:17;
+  for(let index=0;index<limit;index++){
+   const expected=regionalTrainerPartySize(stage,index);
+   const party=regionalTrainerParty(stage,index,'pidgey',expected);
+   assert.equal(party.length,expected);
+   assert.equal(party[0],'pidgey');
+   for(let slot=1;slot<party.length;slot++)
+    assert.equal(party[slot],regionalTrainer(stage,index+slot).id);
+  }
+ }
+ assert.equal(regionalTrainerPartySize(0,0),1);
+ assert.equal(regionalTrainerPartySize(0,12),3);
+ assert.equal(regionalTrainerPartySize(8,16),4);
 });
 test('Professor Oak is new-game-only and uses real native FRLG sprites',()=>{
  assert.match(frlg,/oak:'prof_oak'/);
