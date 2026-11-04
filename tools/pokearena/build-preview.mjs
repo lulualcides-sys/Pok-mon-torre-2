@@ -1134,6 +1134,28 @@ console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
 // URL: a ?v= query added to /arena2d/ never invalidated those modules.
 // Fingerprint the FINAL patched JS and place that entire original Phaser
 // module tree under a fresh, content-addressed src-xxxxxxxxxx directory.
+// Johto Lab adds a seventh button to PLAY. The native upstream title
+// layout can change independently of the older premium-menu patch, so fit
+// this one submenu AFTER all other source rewrites and before fingerprinting.
+// Reject unknown geometries instead of letting a hidden, unclickable button
+// through Pages. All other scenes and the battle HUD are untouched.
+{
+ const titleFile=path.join(dest,clientSource,'escenas/titulo.js');
+ let title=await fs.readFile(titleFile,'utf8');
+ const fitted='jugar:{y:108+BAJA,paso:26,alto:25}';
+ if(!title.includes(fitted)){
+  const originals=['jugar:{y:110+BAJA,paso:PASO}',
+   'jugar:{y:114+BAJA,paso:PASO}'];
+  const present=originals.filter(x=>title.includes(x));
+  if(present.length!==1)
+   throw Error('Unknown PLAY menu geometry: cannot safely fit seven Johto Lab entries');
+  title=title.replace(present[0],fitted);
+ }
+ if(!title.includes('MEWTWO TEST LAB')||!title.includes(fitted))
+  throw Error('Missing Johto Lab entry or its safe seven-button menu geometry');
+ await fs.writeFile(titleFile,title);
+ console.log('MEWTWO LAB seven-button PLAY layout: fitted above the 312px floor');
+}
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
