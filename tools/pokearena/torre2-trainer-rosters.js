@@ -79,9 +79,12 @@ export function regionalTrainerPartySize(stage,index){
   return 1;
  return Math.min(4,1+Math.floor((index+stage)/5));
 }
-export function regionalTrainerParty(stage,index,firstId,count){
+export function regionalTrainerParty(stage,index,firstId,count,kind='trainer'){
  const size=Math.max(1,Math.min(6,Math.trunc(count)||1));
+ const rivalPicks=['pidgey','abra','rattata','gyarados'];
  return Array.from({length:size},(_,slot)=>slot===0?firstId:
+  kind==='rocket'?regionalRocket(stage,index+slot*5):
+  kind==='rival'?rivalPicks[(slot-1)%rivalPicks.length]:
   regionalTrainer(stage,index+slot)?.id||firstId);
 }
 const ROCKET_ROSTERS=Object.freeze({
