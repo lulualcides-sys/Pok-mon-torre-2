@@ -290,10 +290,11 @@ create(){
   const g=this.add.graphics().setDepth(3);
   const size=tam??(w>=202?12:w>=145?10:w>=92?9:8);
   // Reserve an icon gutter so TM art never covers its caption.
-  const caption=estrechar(textoMenu(this,x+captionInset/2,y,label,{
+  const caption=estrechar(textoMenu(this,x,y,label,{
    tam:size,borde:3,colorBorde:MENU_UI.bordeTexto
   }).setOrigin(.5).setDepth(5),w-14-captionInset)
    .setData('torre2-button-caption',label);
+  if(captionInset)caption.setX(x+captionInset/2);
   let hovered=false;
   const paint=()=>{
    g.clear();const tone=variant||(emphasis?'gold':'blue');
