@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "source": "https://www.pokearena2d.com/",
-  "sourceVersion": "src-2203b5fd63",
-  "siteVersion": "src-2d2489fdee",
+  "sourceVersion": "src-a7abf17cdc",
+  "siteVersion": "src-582cf3cf6c",
   "note": "Only confirmed native source names. Kanto compatibility is official level-up metadata; battle availability, VFX, user-approved ULT rules and save safety still require independent validation.",
   "originalMoveCount": 168,
   "nativePokemonCount": 33,
@@ -4501,7 +4501,7 @@
         }
       ],
       "nativeScopes": [
-        "disabled"
+        "active"
       ],
       "compatibleKantoByVerifiedLevelUp": [],
       "integration": "native-source-metadata; not automatically equipped"
@@ -4607,8 +4607,7 @@
         }
       ],
       "nativeScopes": [
-        "active",
-        "disabled"
+        "active"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -6348,8 +6347,7 @@
         }
       ],
       "nativeScopes": [
-        "active",
-        "disabled"
+        "active"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -8853,7 +8851,7 @@
         }
       ],
       "nativeScopes": [
-        "disabled"
+        "active"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -19833,7 +19831,7 @@
         }
       ],
       "nativeScopes": [
-        "disabled"
+        "active"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
