@@ -64,7 +64,8 @@ const server=http.createServer(async(req,res)=>{
   });
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
-   return c.scene.isActive()&&c.__torre2BattlePath?.stage===0;
+   return c.scene.isActive()&&c.__torre2CardUI?.stage===0&&
+     c.__torre2CardUI.mode==='cards'&&c.__torre2BattlePath===null;
   },null,{timeout:35000});
   const saved=await page.evaluate(async()=>{
    const main=[...document.scripts].find(x=>x.src?.includes('/main.js')).src;
