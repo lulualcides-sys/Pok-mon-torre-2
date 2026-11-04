@@ -15,6 +15,7 @@ const campaignArt=read('torre2/campaign-art.js');
 const skin=read('torre2/noncombat-pixel-buttons.js');
 
 assert.ok(title.includes('b.g.fillRect(x0+6,y0+3,9,2)'),'Menu principal not skinned');
+assert.ok(title.includes('for(const h of [alto,26,24,22])'),'PLAY menu must fit above floor');
 assert.ok(select.includes('pixelMenuButton as boton'),'Pokémon selection not skinned');
 assert.ok(prepare.includes('pixelMenuButton as boton'),'Prebattle configuration not skinned');
 assert.ok(pokedex.includes('g.fillRect(x0+4,PY+5'),'Pokédex tabs not skinned');
