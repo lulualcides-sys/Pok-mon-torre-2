@@ -41,7 +41,10 @@ export function routeNode(stage,index,max){
  if(index>=max)return {type:'leader',name:'GINÁSIO',index};
  // Insert rivals/Rocket IN the trainer ladder without adding extra
  // compulsory battles. Boss and existing 13+ progression remain unchanged.
- const type=index>0&&index%9===3?'rival':index>0&&index%7===5?'rocket':'trainer';
+ const rivals=[0,1,2,4,5,8].includes(stage);
+ const rockets=[1,3,5,7].includes(stage);
+ const type=index>0&&index%9===3&&rivals?'rival':
+  index>0&&index%7===5&&rockets?'rocket':'trainer';
  return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
 // Gym rewards only refer to installed moves. Toxic awaits its own implementation.
