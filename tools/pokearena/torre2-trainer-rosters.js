@@ -55,7 +55,7 @@ const TRAINERS=[
  ['youngster:oddish','lass:bellsprout','ace:pidgeotto','sailor:machop',
   'sailor:tentacool','gentleman:growlithe','sailor:shellder',
   'youngster:meowth','sailor:horsea','scientist:magnemite',
-  'rocker:voltorb','scientist:voltorb','sailor:krabby'],
+  'rocker:voltorb','scientist:magnemite','sailor:krabby'],
  // Routes 7/8, Celadon park and Rocket hideout
  ['lass:oddish','lass:gloom','ace:growlithe','ace:ponyta',
   'lass:bellsprout','lass:weepinbell','ace:venonat','lass:exeggcute',
