@@ -33,7 +33,7 @@ import {spriteIdForTrainer} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
-import {renderBattlePath,BATTLE_PATH_BACKDROP,campaignIcon} from './battle-path.js';
+import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
 import {originalBallSprite} from './ball-sprites.js';
@@ -257,42 +257,20 @@ create(){
  // Exact original Poké Arena 2D menu frame, font and hover/highlight,
  // reused here rather than reinterpreted with generic rectangles and CSS.
  button(x,y,w,h,label,callback,emphasis=false,tam=null,variant=null){
-  // Individually illustrated item controls. This scene is campaign-only;
-  // the arena battle HUD and attack buttons remain their original code.
-  const name=String(label).toUpperCase();
-  const role=/(BOLSA|ITENS|MOCHILA|TM)/.test(name)?'bag':
-   /(POKÉMON|POKEMON|EQUIPE|BULBASAUR|CHARMANDER|SQUIRTLE)/.test(name)?'pokemon':
-   /(CENTRO|CURAR|POÇÃO|POTION)/.test(name)?'center':
-   /(LOJA|COMPRAR|PREÇO|MART)/.test(name)?'shop':
-   /(TREINO|TREINAMENTO)/.test(name)?'training':
-   /(CAPTUR|POKÉ BALL|GREAT BALL|ULTRA BALL)/.test(name)?'capture':
-   /(REINICIAR|APAGAR|RESETAR)/.test(name)?'reset':null;
-  const decorated=Boolean(role)&&w>=116&&h>=27;
   const g=this.add.graphics().setDepth(3);
   const size=tam??(w>=202?12:w>=145?10:w>=92?9:8);
-  const caption=estrechar(textoMenu(this,x+(decorated?8:0),y,label,{
+  const caption=estrechar(textoMenu(this,x,y,label,{
    tam:size,borde:3,colorBorde:MENU_UI.bordeTexto
-  }).setOrigin(.5).setDepth(5),w-(decorated?36:14));
+  }).setOrigin(.5).setDepth(5),w-14);
   let hovered=false;
   const paint=()=>{
-   g.clear();
-   const tone=variant||(emphasis?'gold':
-    role==='center'?'green':role==='shop'?'cream':
-    role==='capture'?'teal':role==='reset'?'red':'blue');
+   g.clear();const tone=variant||(emphasis?'gold':'blue');
    buttonFrame(g,x-w/2,y-h/2,w,h,tone,hovered);
-   if(decorated){
-    const ox=Math.round(x-w/2+16),oy=Math.round(y);
-    g.fillStyle(0x071a2b,.85);g.fillRect(ox-10,oy-10,20,20);
-    g.lineStyle(1,0xf9e4ac,.8);g.strokeRect(ox-9.5,oy-9.5,19,19);
-    campaignIcon(g,role,ox,oy);
-   }
-   const dark=tone==='gold'||tone==='cream';
-   caption.setColor(dark?'#2e291b':hovered?'#fff5cd':'#f9fdff');
-   caption.setStroke(dark?'#fff1ac':'#091629',dark?0:3);
+   caption.setColor(tone==='gold'?'#2e291b':hovered?'#fff5cd':'#f9fdff');
+   caption.setStroke(tone==='gold'?'#fff1ac':'#091629',tone==='gold'?0:3);
   };
   const zone=this.add.zone(x,y,w,Math.max(h,27)).setDepth(8)
-   .setInteractive({useHandCursor:true})
-   .setData('torre2-campaign-item-icon',decorated?role:null);
+   .setInteractive({useHandCursor:true});
   zone.on('pointerover',()=>{hovered=true;paint()});
   zone.on('pointerout',()=>{hovered=false;paint()});
   zone.on('pointerdown',()=>callback());
