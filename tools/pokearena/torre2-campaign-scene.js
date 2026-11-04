@@ -29,7 +29,7 @@ import {campaignRegion} from './kanto-regions.js';
 import {currentLevelCap} from './kanto-levels.js';
 import {AVAILABLE_FRLG,AVAILABLE_FRLG_NPCS,AVAILABLE_FRLG_FILES} from './frlg-available.js';
 import {buildingInteractions} from './kanto-hotspots.js';
-import {spriteIdForTrainer} from './frlg-npc.js';
+import {spriteIdForTrainer,addFireRedNPC} from './frlg-npc.js';
 import {renderInteriorScene} from './frlg-interiors.js';
 import {locationForCampaign} from './frlg-location.js';
 import {getCampaignMapSpec} from './campaign-map-unified.js';
@@ -108,6 +108,7 @@ class Campanha extends Phaser.Scene{
   // defeat is an event, not persistent scene data: never process it twice
   // when the user heals at the Center and returns to the same trainer.
   this.result=input?.finished&&input!==this.__torre2ConsumedFinished?input:null;
+  this.__torre2OakIntroSeen=false;
  }
  preload(){
   if(!this.textures.exists('torre2-frlg-badges'))this.load.spritesheet('torre2-frlg-badges','assets/ui/frlg/badges.png',{frameWidth:16,frameHeight:16});
@@ -140,7 +141,7 @@ class Campanha extends Phaser.Scene{
   const archetypes=stage===0?
    ['youngster','lass','bugcatcher','hiker']:
    ['youngster','lass','bugcatcher','hiker','ace','rocket'];
-  const needed=new Set(['red_normal',spriteIdForTrainer(boss),
+  const needed=new Set(['red_normal',...(state?[]:['prof_oak']),spriteIdForTrainer(boss),
    spriteIdForTrainer('rival'),spriteIdForTrainer('rocket'),
    spriteIdForTrainer('ace'),
    ...archetypes.map(spriteIdForTrainer)]);
@@ -149,7 +150,7 @@ class Campanha extends Phaser.Scene{
   for(let i=0;i<TRAINERS_PER_GYM(stage);i++){
    const projection=currentOpponent({...state,stage,trainer:i,champion:false});
    const kind=projection?.kind;
-   const archetype=kind==='rival'||kind==='rocket'?kind:
+   const archetype=projection?.spriteKind||
     trainerClass(stage,i,kind||'trainer',stage===0?'forest':'route');
    needed.add(spriteIdForTrainer(archetype));
   }
@@ -185,6 +186,7 @@ class Campanha extends Phaser.Scene{
     this.load.image(key,'assets/ui/frlg/npc/'+id+'.png');
   }
   const toLoad=new Set(state?.team?.map(p=>portraitId(p))||[]);
+  if(!state)for(const dex of ['0001','0004','0007'])toLoad.add(dex);
   // Only this region's twelve unique wild entries; reuse existing small PMD
   // portraits, not twelve full animation sheets (mobile GPU memory).
   for(const id of [...new Set(wildAvailability(stage).wild)].slice(0,12)){
@@ -300,9 +302,57 @@ create(){
   zone.on('pointerdown',()=>callback());
   paint();return zone;
  }
+ professorOakIntro(){
+  // Native FRLG Professor Oak appears only for a new game, never on an
+  // existing save. No campaign write occurs until the starter is selected.
+  const g=this.add.graphics().setDepth(1);
+  g.fillStyle(0x081c31).fillRect(0,0,640,360);
+  g.fillStyle(0x17475d).fillRect(0,0,640,251);
+  g.fillStyle(0x277c82).fillRect(0,203,640,48);
+  for(let x=0;x<640;x+=64){
+   g.fillStyle(0x3a8590,.4).fillRect(x+4,210,54,3);
+   g.fillStyle(0x114259).fillRect(x+4,243,54,5);
+  }
+  g.fillStyle(0xc8e3cd).fillRect(112,42,416,7);
+  g.fillStyle(0x9ac6c3).fillRect(124,49,392,7);
+  g.fillStyle(0x122c43).fillRect(146,56,348,32);
+  g.fillStyle(0x4f9fa3).fillRect(154,62,332,19);
+  g.fillStyle(0x091f32).fillRect(0,251,640,109);
+  g.fillStyle(0xe6d598).fillRect(30,265,580,85);
+  g.fillStyle(0x214464).fillRect(34,269,572,77);
+  g.fillStyle(0x14304e).fillRect(38,273,564,69);
+  g.fillStyle(0x0a2739,.6).fillEllipse(320,249,85,17);
+  const oak=addFireRedNPC(this,'oak',320,250,{scale:4.9,depth:2});
+  if(!oak)text(this,320,172,'SPRITE DO PROFESSOR INDISPONÍVEL',{
+   fontSize:'14px',color:'#ffe19a'}).setOrigin(.5).setDepth(3);
+  text(this,320,25,'LABORATÓRIO DO PROFESSOR OAK',{
+   fontSize:'20px',fontStyle:'bold',color:'#fff2c1'
+  }).setOrigin(.5).setDepth(3);
+  const dialogue=[
+   'Olá! Bem-vindo ao mundo dos Pokémon!',
+   'Sou o Professor Oak. Estudo as criaturas que vivem por toda Kanto.',
+   'Você conhecerá treinadores, rotas e os oito líderes de ginásio.',
+   'Sua jornada começa agora. Escolha um Pokémon para ser seu parceiro!'
+  ];
+  const heading=text(this,57,279,'PROF. OAK',{
+   fontSize:'12px',fontStyle:'bold',color:'#ffe49e'}).setDepth(4);
+  heading.setData('torre2-oak-dialogue',true);
+  let index=0;
+  const message=text(this,57,301,dialogue[index],{
+   fontSize:'14px',color:'#f3f7ec',wordWrap:{width:495}
+  }).setDepth(4);
+  this.button(539,330,120,26,'CONTINUAR',()=>{
+   index++;
+   if(index<dialogue.length){message.setText(dialogue[index]);return;}
+   this.__torre2OakIntroSeen=true;
+   this.children.removeAll(true);
+   this.starterSelection();
+  },true,10).setData('torre2-oak-continue',true);
+ }
  starterSelection(){
+  if(!this.__torre2OakIntroSeen)return this.professorOakIntro();
   text(this,ANCHO/2,73,'ESCOLHA SEU PRIMEIRO POKÉMON',{color:C.gold,fontSize:'19px'}).setOrigin(.5);
-  text(this,ANCHO/2,111,'Campanha Kanto: 13 treinadores antes do primeiro ginásio.',statusStyle).setOrigin(.5);
+  text(this,ANCHO/2,101,'Escolha o companheiro que Oak entregará para sua jornada.',statusStyle).setOrigin(.5);
   // A blocked first write must not crash Phaser or leave a phantom journey.
   // Keep the three native choices available for retry when storage returns.
   const saveError=text(this,ANCHO/2,326,'NÃO FOI POSSÍVEL SALVAR · TENTE NOVAMENTE',{
@@ -310,6 +360,9 @@ create(){
   }).setOrigin(.5).setVisible(false).setData('torre2-starter-save-error',true);
   STARTERS.forEach((id,i)=>{
    const x=135+i*185;
+   const key='torre2-portrait-'+['0001','0004','0007'][i];
+   if(this.textures.exists(key))this.add.image(x,131,key)
+    .setDisplaySize(36,36).setDepth(4);
    this.button(x,180,166,58,id.toUpperCase(),()=>{
     try{
      saveCampaign(createPlayerCampaign(id));
@@ -986,6 +1039,7 @@ create(){
    const opponent=currentOpponent(state);
    if(opponent)match.torre2.versus=versusOpponentProfile({
     stage:state.stage,trainer:state.trainer,kind:opponent.kind,
+    spriteKind:opponent.spriteKind,
     leader:opponent.leader,name:opponent.name,city:opponent.city
    });
   }
