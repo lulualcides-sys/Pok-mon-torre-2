@@ -9,6 +9,7 @@ import {ensureNativePortraitExport} from './torre2-native-portrait-compat.mjs';
 import {ensureLeagueSpriteImports} from './torre2-league-sprite-import.mjs';
 import {stripNativeSocialFooterLinks} from './torre2-native-social-compat.mjs';
 import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
+import {enableRayquazaForHomologation,rayquazaRequiredSpriteFiles} from './torre2-rayquaza-preview.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -979,6 +980,18 @@ for(const [filename,changes] of patches){
  }
  await fs.writeFile(filenameFull,body);
 }
+
+// Original Torre 2 release: make Rayquaza selectable in OUR offline Phaser
+// arena and keep Mega's native animation/kit. Never change the upstream site.
+// Fail the build if the roster, Mega kit or sprite assets changed or vanished.
+const rayquazaRosterFile=path.join(dest,clientSource,'datos.js');
+const nativeRoster=await fs.readFile(rayquazaRosterFile,'utf8');
+const previewRoster=enableRayquazaForHomologation(nativeRoster);
+const spriteManifest=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/manifest.json'),'utf8'));
+for(const spriteFile of rayquazaRequiredSpriteFiles(spriteManifest))
+ await fs.access(path.join(dest,'assets/pmd',spriteFile));
+await fs.writeFile(rayquazaRosterFile,previewRoster);
+console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; required PMD sprite assets verified.');
 
 // In source checkout the FRLG module has its namespaced file name; the
 // captured Phaser client intentionally installs it with a short basename.
