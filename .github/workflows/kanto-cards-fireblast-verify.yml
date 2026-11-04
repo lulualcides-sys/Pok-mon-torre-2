@@ -57,6 +57,10 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/t98-cards-only-browser.cjs
+      - name: Cast native Fire Blast on the real Phaser touch HUD
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/t07-fire-blast-browser.cjs
       - name: Archive preview evidence
         if: always()
         uses: actions/upload-artifact@v4
