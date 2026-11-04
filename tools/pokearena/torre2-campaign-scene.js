@@ -891,7 +891,15 @@ create(){
    .setDepth(79).setInteractive({useHandCursor:true});
   zone.on('pointerover',()=>{hovered=true;paint()});
   zone.on('pointerout',()=>{hovered=false;paint()});
-  zone.on('pointerdown',()=>{if(active)callback()});
+  let lastPress=-Infinity;
+  zone.on('pointerdown',(_p,_x,_y,event)=>{
+   event?.stopPropagation?.();
+   if(!active)return;
+   const now=this.time?.now??Date.now();
+   if(now-lastPress<190)return;
+   lastPress=now;
+   callback();
+  });
   paint();
   return zone;
  }
