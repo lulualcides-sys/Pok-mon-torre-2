@@ -113,6 +113,32 @@ const server=http.createServer(async(req,res)=>{
   state.scene='campanha';
   assert.equal(await page.evaluate(()=>window.kanto.readCampaign().team[0].id),'bulbasaur');
   await shot('desktop-campaign-map',page);
+  // The former guard only captured stage 0. The user-rejected layout is the
+  // Blaine/Cinnabar route at stage 6; test THAT actual native Phaser scene.
+  // Use a disposable in-browser save fixture and restore the starter before
+  // testing the rest of the campaign. Never mutate production player saves.
+  state.step='cinnabar-layout-review';
+  await page.evaluate(()=>{
+   const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+   const fixture=core.createPlayerCampaign('bulbasaur');
+   fixture.stage=6;fixture.trainer=6;
+   fixture.badges=core.GYMS.slice(0,6).map(g=>g.badge);
+   core.saveCampaign(fixture);
+   scene.scene.restart();
+  });
+  await page.waitForFunction(()=>{
+   const scene=window.__pt2Game?.scene.getScene('campanha');
+   return scene?.scene.isActive()&&scene.__torre2BattlePath?.stage===6&&
+    scene.children.list.some(o=>String(o.text||'').toUpperCase().includes('CINNABAR'));
+  },null,{timeout:25000});
+  await shot('desktop-cinnabar-map',page);
+  await page.evaluate(()=>{
+   const core=window.kanto,scene=window.__pt2Game.scene.getScene('campanha');
+   core.saveCampaign(core.createPlayerCampaign('bulbasaur'));
+   scene.scene.restart();
+  });
+  await page.waitForFunction(()=>window.__pt2Game?.scene.getScene('campanha')
+    .__torre2BattlePath?.stage===0,null,{timeout:25000});
   state.step='wild-grass-sprites';
   const grass=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('campanha');
