@@ -135,13 +135,15 @@ const server=http.createServer(async(req,res)=>{
    scene.abrirMenu('jugar');
    const bottoms=scene.botones.map(b=>b.y+b.h/2);
    const widths=scene.botones.map(b=>b.w);
+   const positions=scene.botones.map(b=>({id:b.id,y:b.y,h:b.h}));
    scene.abrirMenu('principal');
-   return {bottoms,widths};
+   return {bottoms,widths,positions};
   });
   assert.ok(subMenuLayout.widths.every(w=>w===260),
    'Enlarged buttons must be consistent in PLAY submenus');
+  console.log('PHASER_PLAY_MENU_GEOMETRY',JSON.stringify(subMenuLayout));
   assert.ok(subMenuLayout.bottoms.every(bottom=>bottom<312),
-   'PLAY submenu must not overlap the decorative ground line');
+   'PLAY submenu must not overlap the decorative ground line: '+JSON.stringify(subMenuLayout.positions));
   // Pokédex retains 26 native families and adds ten licensed PMD sprite families:
   // native layout and clickable evolution tabs must remain unchanged.
   const dexPage=await browser.newPage({viewport:{width:980,height:650}});
