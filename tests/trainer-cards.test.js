@@ -16,7 +16,9 @@ test('trainer cards are a separate native Phaser UI without changing saves or th
  assert.match(card,/setData\('torre2-trainer-card-index'/);
  assert.doesNotMatch(card,/saveCampaign\(|resetCampaign\(|resolveBattle\(|startBattle\(/);
  assert.match(scene,/renderTrainerCardHub\(this,state,handlers\)/);
- assert.doesNotMatch(scene,/renderTrainerCardMapTab\(this/);
+ assert.match(scene,/get\('qa-legacy-map'\)==='1'/);
+ assert.doesNotMatch(scene.slice(scene.indexOf(' renderCampaign(state,{'),
+  scene.indexOf(' renderLegacyCampaign(state,')),/renderTrainerCardMapTab\(this/);
  assert.match(scene,/capture:\(\)=>this\.grassScreen\(state\)/);
  assert.match(scene,/training:\(\)=>this\.enterTraining\(state\)/);
  assert.match(card,/'CAPTURA',handlers\.capture/);
