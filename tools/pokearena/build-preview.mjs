@@ -160,7 +160,7 @@ const patches=[
   ['const BX=320,BW=210,BH=MOVIL.activo?30:24,PASO=MOVIL.activo?32:27;',
    'const BX=320,BW=260,BH=MOVIL.activo?30:28,PASO=MOVIL.activo?32:29;'],
   ['const DISPOSICION={principal:MOVIL.activo?{y:114+BAJA,paso:27,alto:25}:{y:112+BAJA,paso:25,alto:23},jugar:{y:114+BAJA,paso:PASO},online:{y:113+BAJA,paso:PASO},ajustes:{y:114+BAJA,paso:PASO}};',
-   'const DISPOSICION={principal:MOVIL.activo?{y:116+BAJA,paso:34,alto:32}:{y:112+BAJA,paso:32,alto:30},jugar:{y:108+BAJA,paso:26,alto:25},online:{y:110+BAJA,paso:PASO},ajustes:{y:112+BAJA,paso:PASO}};'],
+   'const DISPOSICION={principal:MOVIL.activo?{y:116+BAJA,paso:34,alto:32}:{y:112+BAJA,paso:32,alto:30},jugar:{y:104+BAJA,paso:26,alto:25},online:{y:110+BAJA,paso:PASO},ajustes:{y:112+BAJA,paso:PASO}};'],
   ['textoBoton(o),{tam:16,borde:4','textoBoton(o),{tam:18,borde:4'],
   // This single call creates all four icons AND their clickable HTML links.
   // No external social controls are created; fullscreen at x=624 remains.
@@ -1142,7 +1142,7 @@ console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
 {
  const titleFile=path.join(dest,clientSource,'escenas/titulo.js');
  let title=await fs.readFile(titleFile,'utf8');
- const fitted='jugar:{y:108+BAJA,paso:26,alto:25}';
+ const fitted='jugar:{y:104+BAJA,paso:26,alto:25}';
  if(!title.includes(fitted)){
   const originals=['jugar:{y:110+BAJA,paso:PASO}',
    'jugar:{y:114+BAJA,paso:PASO}'];
