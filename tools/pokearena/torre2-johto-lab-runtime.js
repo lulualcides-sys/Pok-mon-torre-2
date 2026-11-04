@@ -5,7 +5,7 @@
 import * as vfx from "../vfx.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
-import {ZAP_NATIVE_CLIENT_TEXTURES,zapClientLightningGeometry} from "./native-zap.js";
+import {ZAP_ELECTRO_BALL_TEXTURE,zapCannonMotion} from "./native-zap.js";
 const tones={
  "triple-kick":[0xedb555,0xfff0b9],"thief":[0x715298,0xd5b8ed],
  "snore":[0x6ed0de,0xc9f8ff],"powder-snow":[0x79c6ed,0xf1ffff],
@@ -270,33 +270,39 @@ function cast(l,h,extra){
  const e=l.escena,r=l.rival,angle=Math.atan2(l.ay-l.y,l.ax-l.x),dx=Math.cos(angle),dy=Math.sin(angle);
  const style=h.style,palette=tones[h.id];if(!palette)return false;
  const g=e.add.graphics().setDepth(1520);
- const nativeSprites=nativeP2(e,h.id);
- // Art pilot is limited to the isolated Mewtwo laboratory.
+ // Zap Cannon uses the original Raichu Electro Ball sprite from the P2
+ // client. Never combine it with the rejected ray fragments or pilot orb.
+ const nativeSprites=h.id==='zap-cannon'?[]:nativeP2(e,h.id);
  const pilotKey='torre2-johto-pilot-'+h.id;
- const pilotSprite=e.textures.exists(pilotKey)?
+ const pilotSprite=h.id!=='zap-cannon'&&e.textures.exists(pilotKey)?
   e.add.sprite(0,0,pilotKey,0).setDepth(1533):null;
+ const nativeOrb=h.id==='zap-cannon'&&e.textures.exists(ZAP_ELECTRO_BALL_TEXTURE)?
+  e.add.sprite(0,0,ZAP_ELECTRO_BALL_TEXTURE,0)
+   .setDepth(1534).setData('torre2-zap-native-orb',true):null;
+ const nativeImpact=nativeOrb?
+  e.add.sprite(0,0,ZAP_ELECTRO_BALL_TEXTURE,6)
+   .setDepth(1535).setAlpha(0).setData('torre2-zap-native-impact',true):null;
+ if(nativeOrb)e.textures.get(ZAP_ELECTRO_BALL_TEXTURE)
+  .setFilter(Phaser.Textures.FilterMode.NEAREST);
  if(pilotSprite)e.textures.get(pilotKey)
   .setFilter(Phaser.Textures.FilterMode.NEAREST);
  // Snow is a moving flurry, not one sprite far beyond the opponent.
  const snowTrail=pilotSprite&&h.id==='powder-snow'?
   [0,1].map(()=>e.add.sprite(0,0,pilotKey,0).setDepth(1531)) :[];
- // Zap Cannon's electricity is made from the ORIGINAL Poké Arena client
- // textures (p-rayo and p-electro), not additional generic generated blobs.
- // Reuse this small object pool for the entire cast; no per-frame allocation.
- const hasNativeZap=Boolean(pilotSprite&&h.id==='zap-cannon'&&
-  ZAP_NATIVE_CLIENT_TEXTURES.every(key=>e.textures.exists(key)));
- const zapLightning=hasNativeZap?Array.from({length:32},(_,index)=>
-  e.add.image(0,0,'p-rayo').setDepth(1534)
-   .setDisplaySize(10,10).setAlpha(0)
-   .setData('torre2-zap-native-ray',index)):[];
- if(hasNativeZap){
-  for(const key of ZAP_NATIVE_CLIENT_TEXTURES)
-   e.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
- }
+ // Six restrained electric chips add depth to the base-client Electro Ball.
+ // Reused each frame; no procedural beam and no GPU object churn.
+ const zapSparks=nativeOrb&&e.textures.exists('p-electro')?
+  Array.from({length:6},(_,index)=>e.add.image(0,0,'p-electro')
+   .setDepth(1533).setAlpha(0)
+   .setData('torre2-zap-orb-spark',index)):[];
+ if(zapSparks.length)e.textures.get('p-electro')
+  .setFilter(Phaser.Textures.FilterMode.NEAREST);
  const sx=l.x+dx*12,sy=l.y-l.alto*.5+dy*8;
  const beam=projectile.has(style),melee=adjacent.has(style);
- const duration=style==="vortex"?1.65:style==="quake"?1.05:beam?1.1:.75;
- const windows=h.id==="triple-kick"?[.17,.34,.51]:
+ const duration=h.id==='zap-cannon'?1.2:
+  style==="vortex"?1.65:style==="quake"?1.05:beam?1.1:.75;
+ const windows=h.id==='zap-cannon'?[.84]:
+  h.id==="triple-kick"?[.17,.34,.51]:
   h.id==="beat-up"?[.12,.23,.34,.45,.56]:
   h.id==="whirlpool"?[.4,.7,1,1.3]:[.31];
  let age=0,hits=0,stopped=false;
@@ -335,7 +341,8 @@ function cast(l,h,extra){
   age+=Math.max(0,Math.min(.05,dt||0));
   if(age>=duration){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
    for(const sprite of snowTrail)sprite.destroy();
-   for(const sprite of zapLightning)sprite.destroy();
+   for(const sprite of zapSparks)sprite.destroy();
+   nativeOrb?.destroy();nativeImpact?.destroy();
    pilotSprite?.destroy();return false;}
   // The old projectile kept travelling the whole move's range even after
   // reaching Onix. Both Zap Cannon and Powder Snow ended far to his right.
@@ -343,15 +350,35 @@ function cast(l,h,extra){
   // the existing 15 battle prototypes and approved campaign VFX unchanged.
   const ty=r.y-r.alto*.5,tx=r.x;
   const targetDistance=Math.hypot(tx-sx,ty-sy);
-  const maxTravel=pilotSprite&&beam?
+  const maxTravel=(pilotSprite||nativeOrb)&&beam?
    Math.min(h.alcance,targetDistance):h.alcance;
   const travel=Math.min(maxTravel,age*360);
-  const fly=(beam&&pilotSprite)?
+  const fly=(beam&&(pilotSprite||nativeOrb))?
    {x:sx+(tx-sx)*(targetDistance?travel/targetDistance:1),
     y:sy+(ty-sy)*(targetDistance?travel/targetDistance:1)}:null;
   const x=fly?fly.x:beam?sx+dx*travel:style==="quake"?l.x+dx*80:melee?l.x+dx*37:r.x;
   const y=fly?fly.y:beam?sy+dy*travel:style==="quake"?l.y-7:melee?l.y-l.alto*.5+dy*12:ty;
-  if(pilotSprite){
+  if(nativeOrb){
+   // Source sprite frames: vfx-electroball row 0 (six flying poses),
+   // row 1 (six impact poses). Adapted into a weightier cannon blast.
+   // This is the real Raichu Electro Ball visual, not the old generated
+   // Zap Cannon circle or the p-rayo particle stream.
+   g.clear();
+   const motion=zapCannonMotion({x:sx,y:sy},{x:tx,y:ty},
+    age/duration,Math.floor(age*14));
+   nativeOrb.setFrame(motion.ball.frame)
+    .setPosition(motion.ball.x,motion.ball.y)
+    .setScale(motion.ball.scale).setAlpha(motion.ball.alpha);
+   nativeImpact.setFrame(motion.impact.frame)
+    .setPosition(motion.impact.x,motion.impact.y)
+    .setScale(motion.impact.scale).setAlpha(motion.impact.alpha);
+   for(let i=0;i<zapSparks.length;i++){
+    const chip=motion.sparks[i],sprite=zapSparks[i];
+    if(!chip){sprite.setAlpha(0);continue;}
+    sprite.setPosition(chip.x,chip.y)
+     .setDisplaySize(chip.size,chip.size).setAlpha(chip.alpha);
+   }
+  }else if(pilotSprite){
    // Twelve authored PNG frames instead of another procedural circle.
    g.clear();
    const phase=age/duration;
@@ -369,23 +396,6 @@ function cast(l,h,extra){
     .setScale(moveScale)
     .setAlpha((h.id==='whirlpool'?.9:1)*
      (phase>.86?Math.max(.06,(1-phase)/.14):1));
-   // A connected client-native electrical stream follows the moving bolt
-   // until it reaches the REAL target; p-electro finishes the contact burst.
-   // Snow and Whirlpool do not enter this branch and retain approved art.
-   if(zapLightning.length){
-    const path=zapClientLightningGeometry({x:sx,y:sy},target,
-     phase,Math.floor(phase*JOHTO_PIXEL_FRAMES));
-    for(let i=0;i<zapLightning.length;i++){
-     const sprite=zapLightning[i],segment=path[i];
-     if(!segment){sprite.setAlpha(0);continue;}
-     if(sprite.texture.key!==segment.texture)
-      sprite.setTexture(segment.texture);
-     sprite.setPosition(segment.x,segment.y)
-      .setRotation(segment.angle)
-      .setDisplaySize(segment.size,segment.size)
-      .setAlpha(segment.alpha);
-    }
-   }
    // Multiple small ice clouds travel across the real fighter gap, then
    // disperse around the enemy instead of forming a detached white block.
    for(let i=0;i<snowTrail.length;i++){
@@ -410,7 +420,8 @@ function cast(l,h,extra){
   return true;
  },destroy(){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
   for(const sprite of snowTrail)sprite.destroy();
-  for(const sprite of zapLightning)sprite.destroy();pilotSprite?.destroy();}};
+  for(const sprite of zapSparks)sprite.destroy();
+  nativeOrb?.destroy();nativeImpact?.destroy();pilotSprite?.destroy();}};
  e.efectos.push(fx);return true;
 }
 export const TORRE2_JOHTO_LAB_FORMS=Object.freeze(Object.fromEntries(

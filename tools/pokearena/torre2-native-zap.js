@@ -1,49 +1,66 @@
-/* Zap Cannon in native Poké Arena 2D pixel-art style.
- * Reuses the runtime's original p-rayo/p-electro textures (not external PNGs).
- * Pure integer geometry: deterministic mobile rendering and focused tests.
+/* Zap Cannon: heavy Electro Ball evolution.
+ * Based on the base client's own 40x40 Electro Ball spritesheet, not on
+ * the old 32-particle line. Presentation only; damage/save rules stay native.
+ * Source client: vfx-electroball (row 0: 6 frames flight, row 1: 6 impact).
  */
-export const ZAP_NATIVE_CLIENT_TEXTURES=Object.freeze(['p-rayo','p-electro']);
-const clamp=(x,min=0,max=1)=>Math.max(min,Math.min(max,Number(x)||0));
-const snap=n=>Math.round(n);
-
-export function zapClientLightningGeometry(start,end,phase,frame=0){
- const p=clamp(phase),a={x:snap(start?.x),y:snap(start?.y)},
-  b={x:snap(end?.x),y:snap(end?.y)};
- if(!Number.isFinite(a.x)||!Number.isFinite(a.y)||
-    !Number.isFinite(b.x)||!Number.isFinite(b.y)||p<.055)return [];
- const diffX=b.x-a.x,diffY=b.y-a.y,len=Math.hypot(diffX,diffY);
- if(len<1)return [];
- const ux=diffX/len,uy=diffY/len,nx=-uy,ny=ux;
- const progress=clamp((p-.055)/.62),tip=Math.min(1,progress),
-  back=Math.max(0,tip-.77);
- const alive=p<.87,fade=p>.76?clamp((.98-p)/.22):1;
- const segments=Math.min(25,Math.max(8,Math.ceil(len*(tip-back)/5)));
- const out=[];
- if(alive&&tip>0){
-  for(let i=0;i<segments;i++){
-   const local=(i+.5)/segments,t=back+(tip-back)*local;
-   const jitter=Math.sin((i+frame*3)*2.1)*3.5*Math.sin(local*Math.PI);
-   const x=snap(a.x+diffX*t+nx*jitter);
-   const y=snap(a.y+diffY*t+ny*jitter);
-   out.push({x,y,angle:Math.atan2(diffY,diffX)+
-    (Math.sin((i+frame)*1.7)*.19),
-    size:(i%3===0?12:9),alpha:fade*(i%4===0?.95:.75),
-    texture:'p-rayo'});
+export const ZAP_ELECTRO_BALL_TEXTURE='vfx-electroball';
+export const ZAP_ELECTRO_BALL_FRAMES=Object.freeze({flight:[0,1,2,3,4,5],impact:[6,7,8,9,10,11]});
+export const ZAP_ELECTRO_BALL_REFERENCE=Object.freeze({
+ atlas:'electroball',frameWidth:40,frameHeight:40,columns:6,
+ flightAnimation:'vfx-electroball',impactAnimation:'vfx-electroball-fin',
+ raichuScale:2.2,flightSpeed:240
+});
+const clamp=n=>Math.max(0,Math.min(1,n));
+const snap=n=>Math.round(n||0);
+function frameAt(t,frames){return frames[Math.min(frames.length-1,Math.floor(clamp(t)*frames.length))]}
+export function zapCannonMotion(source,target,phase,tick=0){
+ const p=clamp(phase),a={x:snap(source?.x),y:snap(source?.y)},
+  b={x:snap(target?.x),y:snap(target?.y)};
+ const dx=b.x-a.x,dy=b.y-a.y;
+ const charge=clamp(p/.22),flight=clamp((p-.22)/.47);
+ const firing=p>=.22&&p<.69,contact=p>=.69;
+ // The main object is a single readable Electro Ball, NOT a long neon ray.
+ const x=firing?snap(a.x+dx*flight):contact?b.x:a.x;
+ const y=firing?snap(a.y+dy*flight):contact?b.y:a.y;
+ const pulse=(tick%4===0?.06:tick%2===0?.025:0);
+ const ball={
+  x,y,frame:frameAt(p<.22?charge:flight,ZAP_ELECTRO_BALL_FRAMES.flight),
+  scale:p<.22?.52+charge*.78:1.82+pulse,
+  alpha:contact?0:1
+ };
+ const impactT=clamp((p-.69)/.27);
+ const impact={x:b.x,y:b.y,
+  frame:frameAt(impactT,ZAP_ELECTRO_BALL_FRAMES.impact),
+  scale:1.58+Math.min(.33,impactT*.33),
+  alpha:contact?Math.min(1,(1-p)/.18):0};
+ const sparks=[];
+ const angle=Math.atan2(dy,dx);
+ // Sparse native p-electro accents. Six moving chips maximum, never a beam.
+ if(p<.22&&p>.03){
+  for(let i=0;i<4;i++){
+   const ang=i*Math.PI/2+tick*.26,radius=20-9*charge+(i%2)*3;
+   sparks.push({x:snap(a.x+Math.cos(ang)*radius),
+    y:snap(a.y+Math.sin(ang)*radius),size:8+i%2*2,
+    alpha:.38+.4*charge});
+  }
+ }else if(firing){
+  const dist=Math.hypot(dx,dy);
+  const ux=dist?dx/dist:1,uy=dist?dy/dist:0;
+  for(let i=0;i<4;i++){
+   const drift=12+i*11,flutter=Math.sin((tick+i)*1.7)*4;
+   sparks.push({x:snap(x-ux*drift-uy*flutter),
+    y:snap(y-uy*drift+ux*flutter),size:i%2?8:11,
+    alpha:.72-i*.14});
+  }
+ }else if(contact&&p<.98){
+  const rad=10+impactT*17;
+  for(let i=0;i<6;i++){
+   const ang=angle+i*Math.PI/3+tick*.18;
+   sparks.push({x:snap(b.x+Math.cos(ang)*rad),
+    y:snap(b.y+Math.sin(ang)*rad),size:i%2?9:12,
+    alpha:Math.min(.86,(1-p)/.22)*(.95-i*.065)});
   }
  }
- // Spark branches only after the main beam reaches the actual target.
- // Keep the opponent's body visible by using a sparse, short discharge.
- if(p>.53){
-  const grow=clamp((p-.53)/.16),shrink=clamp((1-p)/.17);
-  const count=6;
-  for(let i=0;i<count;i++){
-   const angle=i*Math.PI/3+frame*.25;
-   const radius=(8+(i%3)*5)*grow;
-   out.push({x:snap(b.x+Math.cos(angle)*radius),
-    y:snap(b.y+Math.sin(angle)*radius),
-    angle,texture:'p-electro',size:i%2?11:14,
-    alpha:Math.max(.0,shrink*.88)});
-  }
- }
- return out;
+ return {phase:p,stage:p<.22?'charge':p<.69?'flight':'impact',
+  ball,impact,sparks};
 }

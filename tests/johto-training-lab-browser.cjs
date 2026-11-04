@@ -70,12 +70,17 @@ const server=http.createServer(async(req,res)=>{
       rendered:scene.children.list.some(o=>o.active&&o.texture?.key===name)}));
     const pilotKey='torre2-johto-pilot-'+move.id;
     const pilot=scene.textures.exists(pilotKey);
-    const nativeRays=move.id==='zap-cannon'?
-     scene.children.list.filter(o=>o.active&&
-      o.getData?.('torre2-zap-native-ray')!==undefined):[];
+    const electroBallLoaded=scene.textures.exists('vfx-electroball');
+    const electroBallRendered=move.id==='zap-cannon'&&
+     scene.children.list.some(o=>o.active&&
+      o.getData?.('torre2-zap-native-orb')===true&&
+      o.texture?.key==='vfx-electroball');
+    const zapImpactRendered=move.id==='zap-cannon'&&
+     scene.children.list.some(o=>o.active&&
+      o.getData?.('torre2-zap-native-impact')===true&&
+      o.texture?.key==='vfx-electroball');
     result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures,
-     pilot,nativeRayCount:nativeRays.length,
-     nativeRayTextures:[...new Set(nativeRays.map(o=>o.texture?.key))],
+     pilot,electroBallLoaded,electroBallRendered,zapImpactRendered,
      previewVisible:pilot&&scene.children.list.some(o=>
       o.active&&o.texture?.key===pilotKey)});
    }
@@ -86,23 +91,28 @@ const server=http.createServer(async(req,res)=>{
   for(const cast of casts){
    assert.equal(cast.output,true,cast.id+' cast');
    assert.equal(cast.instantiated,true,cast.id+' visual effect');
-   assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
-    cast.id+' missing actual native P2 pixel-art sprite: '+JSON.stringify(cast.textures));
+   if(cast.id==='zap-cannon'){
+    assert.ok(cast.electroBallLoaded&&cast.electroBallRendered&&cast.zapImpactRendered,
+     'Zap Cannon must render original Raichu Electro Ball plus impact');
+   }else{
+    assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
+     cast.id+' missing actual native P2 sprite: '+JSON.stringify(cast.textures));
+   }
   }
-  // The three rebuilt effects MUST render real PNG frame textures in Phaser,
-  // while the remaining moves keep their native P2 reference treatment.
-  for(const id of ['zap-cannon','powder-snow','whirlpool']){
+  // Snow and Whirlpool are approved. Zap Cannon now uses the base sprite
+  // vfx-electroball, not its old 12-frame generated Zap PNG.
+  for(const id of ['powder-snow','whirlpool']){
    const item=casts.find(x=>x.id===id);
    assert.ok(item?.pilot&&item?.previewVisible,
     id+' PILOT art was not loaded/rendered by the actual WebGL scene');
   }
   const zapCast=casts.find(x=>x.id==='zap-cannon');
-  assert.equal(zapCast.nativeRayCount,32,
-   'Zap Cannon must own one bounded native client lightning sprite pool');
-  assert.ok(zapCast.nativeRayTextures.includes('p-rayo'),
-   'Zap Cannon ray must use the client-base p-rayo texture');
-  assert.ok(zapCast.textures.some(t=>t.name==='p-electro'&&t.loaded),
-   'Zap Cannon impact must keep the native client p-electro texture');
+  assert.equal(zapCast.electroBallLoaded,true,
+   'Electro Ball 40x40 source sprite must preload in the client');
+  assert.equal(zapCast.electroBallRendered,true,
+   'Zap Cannon must use the original Electro Ball projectile spritesheet');
+  assert.equal(zapCast.zapImpactRendered,true,
+   'Zap Cannon must use the original Electro Ball explosion frames');
   // True projectile/contact path: count real native receive calls, not only VFX constructors.
   const impacts=await page.evaluate(async()=>{
    const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);

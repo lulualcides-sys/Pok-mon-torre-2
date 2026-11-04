@@ -1,37 +1,53 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {ZAP_NATIVE_CLIENT_TEXTURES,zapClientLightningGeometry}
- from '../tools/pokearena/torre2-native-zap.js';
+import {
+ ZAP_ELECTRO_BALL_TEXTURE,ZAP_ELECTRO_BALL_FRAMES,
+ ZAP_ELECTRO_BALL_REFERENCE,zapCannonMotion
+} from '../tools/pokearena/torre2-native-zap.js';
 
-test('Zap Cannon reuses the exact native client electrical textures',()=>{
- assert.deepEqual([...ZAP_NATIVE_CLIENT_TEXTURES],['p-rayo','p-electro']);
+test('Zap Cannon uses the original Raichu Electro Ball sprite and frames',()=>{
+ assert.equal(ZAP_ELECTRO_BALL_TEXTURE,'vfx-electroball');
+ assert.deepEqual(ZAP_ELECTRO_BALL_FRAMES.flight,[0,1,2,3,4,5]);
+ assert.deepEqual(ZAP_ELECTRO_BALL_FRAMES.impact,[6,7,8,9,10,11]);
+ assert.equal(ZAP_ELECTRO_BALL_REFERENCE.frameWidth,40);
+ assert.equal(ZAP_ELECTRO_BALL_REFERENCE.frameHeight,40);
+ assert.equal(ZAP_ELECTRO_BALL_REFERENCE.columns,6);
+ assert.equal(ZAP_ELECTRO_BALL_REFERENCE.flightAnimation,'vfx-electroball');
+ assert.equal(ZAP_ELECTRO_BALL_REFERENCE.impactAnimation,'vfx-electroball-fin');
 });
 
-test('Zap Cannon beam advances to real target and fragments only at impact',()=>{
- const start={x:174,y:165},target={x:283,y:165};
- assert.deepEqual(zapClientLightningGeometry(start,target,0),[]);
- const mid=zapClientLightningGeometry(start,target,.32,4);
- assert.ok(mid.length>=8&&mid.length<=32);
- assert.ok(mid.some(p=>p.texture==='p-rayo'));
- assert.ok(mid.every(p=>p.texture==='p-rayo'));
- assert.ok(Math.max(...mid.map(p=>p.x))<target.x);
- const contact=zapClientLightningGeometry(start,target,.71,9);
- assert.ok(contact.some(p=>p.texture==='p-electro'));
- assert.ok(contact.some(p=>Math.abs(p.x-target.x)<=20&&Math.abs(p.y-target.y)<=20));
- assert.ok(contact.length<=32,'One finite preallocated object pool');
- assert.ok(contact.every(p=>Number.isInteger(p.x)&&Number.isInteger(p.y)&&
-  Number.isFinite(p.angle)&&p.alpha>=0&&p.alpha<=1));
- const off=zapClientLightningGeometry(start,target,1,12);
- assert.ok(off.length<=6,'No long ray after hit window');
- assert.ok(off.every(p=>p.texture==='p-electro'&&p.alpha===0));
+test('One large Electro Ball flies to target and impact uses second sprite row',()=>{
+ const a={x:178,y:168},b={x:280,y:168};
+ const start=zapCannonMotion(a,b,.1,2);
+ assert.equal(start.stage,'charge');
+ assert.equal(start.ball.x,a.x);
+ assert.equal(start.impact.alpha,0);
+ const flying=zapCannonMotion(a,b,.5,6);
+ assert.equal(flying.stage,'flight');
+ assert.ok(flying.ball.x>a.x&&flying.ball.x<b.x);
+ assert.ok(flying.ball.frame>=0&&flying.ball.frame<=5);
+ assert.equal(flying.impact.alpha,0);
+ assert.ok(flying.sparks.length<=6);
+ const collision=zapCannonMotion(a,b,.74,9);
+ assert.equal(collision.stage,'impact');
+ assert.equal(collision.ball.alpha,0);
+ assert.equal(collision.impact.x,b.x);
+ assert.ok(collision.impact.frame>=6&&collision.impact.frame<=11);
+ assert.ok(collision.impact.alpha>0);
+ assert.ok(collision.sparks.length<=6);
+ const end=zapCannonMotion(a,b,1,12);
+ assert.equal(end.impact.alpha,0);
+ assert.equal(end.sparks.length,0);
 });
 
-test('Zap Cannon geometry is deterministic and pixel-snapped',()=>{
- const args=[{x:130.4,y:141.6},{x:281.1,y:169.9},.5,6];
- assert.deepEqual(zapClientLightningGeometry(...args),zapClientLightningGeometry(...args));
- assert.notDeepEqual(zapClientLightningGeometry(...args),
-  zapClientLightningGeometry(args[0],args[1],args[2],7));
- const items=zapClientLightningGeometry(...args);
- assert.ok(items.every(p=>Number.isInteger(p.x)&&Number.isInteger(p.y)));
- assert.deepEqual(zapClientLightningGeometry({x:2,y:2},{x:2,y:2},.5),[]);
+test('Pure sprite positioning is deterministic, nearest-pixel and bounded',()=>{
+ const args=[{x:132.4,y:155.7},{x:280.4,y:181.7},.48,7];
+ assert.deepEqual(zapCannonMotion(...args),zapCannonMotion(...args));
+ for(const phase of [0,.08,.17,.22,.35,.55,.68,.71,.83,.92,1]){
+  const m=zapCannonMotion(args[0],args[1],phase,11);
+  assert.ok(m.sparks.length<=6);
+  assert.ok([m.ball,m.impact,...m.sparks].every(o=>
+   Number.isInteger(o.x)&&Number.isInteger(o.y)&&
+   Number.isFinite(o.alpha)&&o.alpha>=0&&o.alpha<=1));
+ }
 });
