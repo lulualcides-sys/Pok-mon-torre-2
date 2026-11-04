@@ -17,7 +17,7 @@ test('Kanto trainer encounters have an explicit regional type and species',()=>{
  assert.equal(REGIONAL_TRAINERS.length,9);
  const expectedSizes=Array.from({length:9},(_,stage)=>stage<8?13+stage*2:17);
  const allowed=new Set(['youngster','bugcatcher','lass','hiker','swimmer','sailor',
-  'gentleman','ace','scientist','rocker','cyclist','fisher','psychic','blackbelt']);
+  'gentleman','camper','ace','scientist','rocker','cyclist','fisher','psychic','blackbelt']);
  for(let stage=0;stage<9;stage++){
   for(let index=0;index<expectedSizes[stage];index++){
    const foe=regionalTrainer(stage,index);
