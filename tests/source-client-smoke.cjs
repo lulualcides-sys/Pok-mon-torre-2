@@ -887,8 +887,10 @@ const server=http.createServer(async(req,res)=>{
   });
   await offline.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('campanha');
+   // Reset starts a fresh game with Professor Oak, before starter selection.
    return c.scene.isActive()&&
-    c.children.list.some(o=>String(o.text||'').includes('ESCOLHA SEU PRIMEIRO'));
+    c.children.list.some(o=>o.input?.enabled&&
+     o.getData?.('torre2-oak-continue')===true);
   },null,{timeout:14000});
   const erased=await offline.evaluate(()=>({
    main:localStorage.getItem('pokemon-torre-2-kanto-campaign-v1'),
