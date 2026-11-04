@@ -525,7 +525,7 @@ const server=http.createServer(async(req,res)=>{
     team:c.children.list.filter(o=>o.type==='Image'&&
      String(o.texture?.key||'').startsWith('torre2-portrait-')).length,
     title:labels.includes('ROTA DE PEWTER'),button:labels.includes('ENTRAR NA BATALHA'),
-    banner:labels.includes('SUA EQUIPE  2/6'),
+    banner:labels.includes('EQUIPE  2/6'),
     enabled:count,cta:{x:cta?.x,y:cta?.y,active:cta?.input?.enabled},
     oldMap:c.children.list.some(o=>o.type==='Image'&&o.texture?.key==='torre2-brock-custom'),
     environment:c.children.list.some(o=>o.type==='Image'&&
