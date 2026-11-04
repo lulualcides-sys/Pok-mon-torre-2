@@ -46,7 +46,7 @@ test('Rivals and Rocket have stage-specific roles, no Rocket in Viridian Forest'
  assert.equal(routeNode(3,5,19).type,'rocket');
  assert.equal(routeNode(8,0,17).type,'trainer');
  assert.equal(routeNode(8,17,17).type,'leader');
- assert.equal(regionalRocket(3,5),'raticate');
+ assert.equal(regionalRocket(3,5),'koffing');
 });
 test('the card and battle resolve the SAME actual species and sprite class',()=>{
  assert.match(core,/regionalTrainer\(s\.stage,s\.trainer\)/);
