@@ -117,7 +117,7 @@ export function trainerCardEntries(state){
    (STAGES[stage]?.leaderTeam?.length?STAGES[stage].leaderTeam:[foe?.id]);
   const party=leader?leaderSpecies:
    regionalTrainerParty(stage,index,foe?.id,
-    regionalTrainerPartySize(stage,index))
+    regionalTrainerPartySize(stage,index),foe?.kind)
    .map(id=>trainerSpeciesForLevel(id,foe?.level));
   return {index,leader,foe,completed:index<progress,
    active:index===progress,locked:index>progress,
