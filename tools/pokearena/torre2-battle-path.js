@@ -33,9 +33,12 @@ function txt(scene,x,y,value,size=10,color='#f5f8fc',depth=26){
   color,stroke:'#07121f',strokeThickness:2}).setOrigin(.5).setDepth(depth)
 }
 function frame(g,x,y,w,h,{fill=COLORS.navy,border=COLORS.edge,radius=4}={}){
- g.fillStyle(0x020816,.88);g.fillRoundedRect(x+2,y+3,w,h,radius);
- g.fillStyle(fill,.96);g.fillRoundedRect(x,y,w,h,radius);
- g.lineStyle(1,border,1);g.strokeRoundedRect(x+.5,y+.5,w-1,h-1,radius);
+ // Square pixel bevel, inspired by FireRed, without rounded web cards.
+ g.fillStyle(0x041018,.75);g.fillRect(x+2,y+3,w,h);
+ g.fillStyle(border,.96);g.fillRect(x,y,w,h);
+ g.fillStyle(fill,.98);g.fillRect(x+2,y+2,w-4,h-4);
+ g.fillStyle(0xffeed2,.25);g.fillRect(x+3,y+3,w-6,1);
+ g.fillStyle(0x061625,.55);g.fillRect(x+3,y+h-4,w-6,1);
 }
 function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,small=false}={}){
  const g=scene.add.graphics().setDepth(depth),label=txt(scene,x,y,title,small?8:gold?13:9,
@@ -179,12 +182,12 @@ function renderBackdrop(scene,stage){
    const name='torre2-path-gym-'+city;
    if(!texture.has(name))texture.add(name,0,...rect);
    const arch=scene.add.graphics().setDepth(7);
-   arch.fillStyle(0x071624,.9);arch.fillRoundedRect(346,65,135,240,7);
-   arch.lineStyle(2,0xeec376,1);arch.strokeRoundedRect(346,65,135,240,7);
-   arch.fillStyle(0x264862);arch.fillRoundedRect(351,71,125,19,3);
-   const scale=Math.min(117/rect[2],197/rect[3]);
-   scene.add.image(414,198,imageKey,name).setDepth(8).setScale(scale);
-   txt(scene,414,81,'GINÁSIO',9,'#ffe3a0',10);
+   // Gym destination thumbnail: original pixels, no 240px map obstruction.
+   frame(arch,356,64,125,85,{fill:0x17353b,border:0xe9cc83});
+   arch.fillStyle(0x315b5c);arch.fillRect(360,68,117,15);
+   const scale=Math.min(110/rect[2],61/rect[3]);
+   scene.add.image(418,117,imageKey,name).setDepth(8).setScale(scale);
+   txt(scene,418,75,'GINÁSIO',9,'#ffe6a5',10);
    realGym=true;
   }
  }
@@ -232,10 +235,10 @@ export function renderBattlePath(scene,state,handlers){
   'VENÇA OS DESAFIOS ATÉ '+leader.toUpperCase();
  txt(scene,28,89,areaLegend,stage===1||stage===2?7:8,'#cdeaf4',28)
   .setOrigin(0,.5);
- button(scene,424,103,107,24,'VS SEEKER',()=>handlers.rematchAtlas?.(),
+ button(scene,423,270,108,23,'VS SEEKER',()=>handlers.rematchAtlas?.(),
   {depth:39,small:true}).setData('torre2-open-rematch-atlas',true);
  // Preserve the native trainer route by default. City is optional.
- if(stage===1)button(scene,424,131,107,23,'VER CIDADE',
+ if(stage===1)button(scene,423,239,108,23,'VER CIDADE',
   ()=>handlers.city?.(),{depth:39,small:true})
   .setData('torre2-open-city',true);
  // When a NORMAL battle advances the checkpoint beyond the current
@@ -393,9 +396,9 @@ export function renderBattlePath(scene,state,handlers){
  }
  // Right-hand side: portraits with compact HP, no giant cards or map overlays.
  const side=scene.add.graphics().setDepth(12);
- frame(side,496,54,136,255,{fill:0x081d31,border:0x5a91b6,radius:4});
- frame(side,502,60,124,30,{fill:0x19476d,border:0x578db0,radius:3});
- txt(scene,561,74,'SUA EQUIPE  '+state.team.length+'/6',11,'#fff1c7',24);
+ frame(side,496,54,136,255,{fill:0x102a34,border:0x8fb49e});
+ frame(side,502,60,124,30,{fill:0x2b4d52,border:0xb1c1a0});
+ txt(scene,561,74,'EQUIPE  '+state.team.length+'/6',11,'#fff1c7',24);
  button(scene,538,101,80,17,Math.min(8,state.badges.length)+'/8 INSÍGNIAS',()=>handlers.badges?.(),{depth:39,small:true})
   .setData('torre2-badge-case-open',true);
  txt(scene,596,102,'$'+(state.money||0),9,'#ffda74',24);
