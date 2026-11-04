@@ -123,11 +123,13 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
  };
  const kind=gold?'gold':palettes[tone]?tone:'blue',p=palettes[kind];
  const graphics=scene.add.graphics().setDepth(depth);
- const compact=Boolean(role)&&w<=120, iconOffset=compact?8:gold&&role?12:0;
+ const stacked=Boolean(role)&&w<=68&&h>=24;
+ const compact=Boolean(role)&&w<=120&&!stacked;
+ const iconOffset=stacked?0:compact?8:gold&&role?12:0;
  const long=String(title).length>9;
- const fontSize=small?(compact&&long?6:long?7:8):gold?12:9;
+ const fontSize=stacked?(long?7:8):small?(compact&&long?6:long?7:8):gold?12:9;
  const textColor=gold||kind==='cream'?'#2e2b30':enabled?'#f8faff':'#9caebd';
- const label=txt(scene,x+iconOffset,y,String(title),fontSize,textColor,depth+1);
+ const label=txt(scene,x+iconOffset,y+(stacked?7:0),String(title),fontSize,textColor,depth+1);
  let hover=false,pressed=false;
  const paint=()=>{
   graphics.clear();
@@ -150,15 +152,17 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
    graphics.fillStyle(p.shadow,1);graphics.fillRect(cx,by+h-4,3,3);
   }
   if(role){
-   const iconX=compact?bx+10:gold?bx+15:bx+13;
+   const iconX=stacked?x:compact?bx+10:gold?bx+15:bx+13;
+   const plateY=stacked?by+2:by+3;
+   const plateH=stacked?14:h-6;
    graphics.fillStyle(p.shadow,.75);
-   graphics.fillRect(iconX-8,by+3,16,h-6);
+   graphics.fillRect(iconX-8,plateY,16,plateH);
    graphics.fillStyle(p.edge,1);
-   graphics.fillRect(iconX-7,by+4,14,h-8);
+   graphics.fillRect(iconX-7,plateY+1,14,plateH-2);
    graphics.fillStyle(0x17334e,1);
-   graphics.fillRect(iconX-6,by+5,12,h-10);
-   campaignIcon(graphics,role,iconX,by+Math.floor(h/2));
-   if(!compact){
+   graphics.fillRect(iconX-6,plateY+2,12,plateH-4);
+   campaignIcon(graphics,role,iconX,by+(stacked?8:Math.floor(h/2)));
+   if(!compact&&!stacked){
     graphics.fillStyle(p.hi,.7);
     graphics.fillRect(iconX+10,by+6,1,Math.max(1,h-12));
    }
@@ -177,7 +181,7 @@ function button(scene,x,y,w,h,title,action,{gold=false,enabled=true,depth=40,sma
    graphics.fillStyle(p.shadow,.18);
    graphics.fillRect(bx+4,by+4,w-8,h-8);
   }
-  label.setY(y+(pressed?1:0)).setColor(
+  label.setY(y+(stacked?7:0)+(pressed?1:0)).setColor(
    enabled?textColor:'#9caebd');
  };
  const zone=scene.add.zone(x,y,w,Math.max(h,23)).setDepth(depth+2)
@@ -482,11 +486,11 @@ export function renderBattlePath(scene,state,handlers){
   .setData('torre2-badge-case-open',true);
  txt(scene,596,102,'$'+(state.money||0),9,'#ffda74',24);
  for(let i=0;i<6;i++){
-  const m=state.team[i],y=119+i*22;
+  const m=state.team[i],y=119+i*19;
   side.fillStyle(i===state.active?0x28475a:0x102c43);
-  side.fillRoundedRect(502,y-9,124,21,3);
+  side.fillRoundedRect(502,y-9,124,18,3);
   side.lineStyle(1,i===state.active?0xf2c267:0x345d76,1);
-  side.strokeRoundedRect(502,y-9,124,21,3);
+  side.strokeRoundedRect(502,y-9,124,18,3);
   if(!m){
    txt(scene,517,y,'◌',10,'#47677b',24);
    txt(scene,535,y,'ESPAÇO LIVRE',7,'#5f839b',24).setOrigin(0,.5);
@@ -499,23 +503,23 @@ export function renderBattlePath(scene,state,handlers){
   side.fillStyle(0x091c2c);side.fillRect(576,y+5,45,4);
   side.fillStyle(hp>50?0x3ee18f:hp>22?0xf0ce61:0xe9716e);
   side.fillRect(576,y+5,Math.round(45*hp/100),4);
-  scene.add.zone(564,y+1,124,22).setDepth(35).setInteractive({useHandCursor:true})
+  scene.add.zone(564,y+1,124,19).setDepth(35).setInteractive({useHandCursor:true})
    .on('pointerdown',()=>handlers.pokemon(i));
  }
  // Inset ornamental tray separating equipment from the six journey tools.
  // All geometry fits the original 640x360 canvas and touch targets.
- side.fillStyle(0x071829,.98);side.fillRect(499,242,130,69);
- side.lineStyle(1,0xe5bf75,.96);side.strokeRect(499.5,242.5,129,67);
- side.fillStyle(0x9c7a43,1);side.fillRect(503,243,6,2);
- side.fillRect(620,243,6,2);side.fillRect(503,307,6,2);
+ side.fillStyle(0x071829,.98);side.fillRect(499,225,130,84);
+ side.lineStyle(1,0xe5bf75,.96);side.strokeRect(499.5,225.5,129,83);
+ side.fillStyle(0x9c7a43,1);side.fillRect(503,226,6,2);
+ side.fillRect(620,226,6,2);side.fillRect(503,307,6,2);
  side.fillRect(620,307,6,2);
  // Spaced campaign quick actions: 6 readable native controls, 2 columns,
  // 23 px touch hitboxes with no overlap, separate from the fighting HUD.
  [['BOLSA',handlers.bag,'cream'],['POKÉMON',()=>handlers.pokemon(state.active),'cream'],
   ['CENTRO',handlers.center,'cream'],['LOJA',handlers.mart,'cream'],
   ['TREINAMENTO',handlers.training,'cream'],['CAPTURA',handlers.capture,'cream']
- ].forEach(([label,action,tone],i)=>button(scene,533+(i%2)*64,254+Math.floor(i/2)*23,
-  60,20,label,action,{depth:39,small:true,tone})
+ ].forEach(([label,action,tone],i)=>button(scene,533+(i%2)*64,240+Math.floor(i/2)*27,
+  60,25,label,action,{depth:39,small:true,tone})
    .setData('torre2-campaign-quick-action',label));
  // Bottom action bar: the only primary gameplay action, directly starts battle.
  const current=finished?null:currentOpponent(state);
