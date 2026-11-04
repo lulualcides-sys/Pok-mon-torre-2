@@ -19,8 +19,9 @@ assert.equal(defaultLoadout(at50)[1],'ancient-power',
  'Automatic Mew must prefer FRLG Lv50 Ancient Power to bonus Fire Punch');
 const kit=resolveLoadout(at50);
 assert.deepEqual(['lmb','rmb','q','e'].map(slot=>kit[slot]?.nombre),
- ['Pound','Ancient Power','Mega Punch','ULT · Psychic'],
- 'Real battle Mew Lv50 kit and Pokédex must agree');
+ ['Pound','Ancient Power','Mega Punch','Psychic'],
+ 'Real battle Mew Lv50 internal kit should use the exact native move names');
+assert.equal(kit.e.ulti,true,'Psychic remains the charged ULT in real battle');
 assert.equal(kit.rmb.pendiente,false,'Mew learned Ancient Power at Lv50');
 
 const manual=member(50);
