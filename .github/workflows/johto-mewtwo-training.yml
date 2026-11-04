@@ -25,6 +25,7 @@ jobs:
           set -euo pipefail
           for file in tools/pokearena/torre2-johto-*.js tools/pokearena/build-preview.mjs; do node --check "$file"; done
           node --test tests/johto-training-lab.test.js
+          node --test tests/johto-pixelart.test.js
           npm test
       - name: Capture upstream and build isolated Phaser preview
         run: |

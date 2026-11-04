@@ -12,6 +12,11 @@ for(const p of ["torre2/johto-lab-catalog.js","torre2/johto-lab-runtime.js",
 assert.match(read("main.js"),/JohtoLab/);
 assert.match(read("escenas/titulo.js"),/MEWTWO TEST LAB/);
 assert.match(read("torre2/signature-fx.js"),/TORRE2_JOHTO_LAB_FORMS/);
+assert.match(read("torre2/johto-lab-runtime.js"),/stampJohto/);
+assert.match(read("torre2/johto-lab-runtime.js"),/nativeP2/);
+assert.doesNotMatch(read("torre2/johto-lab-runtime.js"),/strokeCircle|strokeEllipse|lineBetween|fillCircle/);
+assert.match(read("torre2/johto-lab-pixelart.js"),/JOHTO_P2_TEXTURES/);
+
 assert.match(read("luchador.js"),/this\.escena\.datos\.johtoLab\.kit/);
 assert.match(read("escenas/combate.js"),/installJohtoLabCombat/);
 assert.doesNotMatch(read("torre2/move-pool.js"),/JOHTO_18|johto-lab/);

@@ -51,8 +51,10 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(combat.dummy,true);assert.equal(combat.saveFlag,false);
   const casts=await page.evaluate(async()=>{
    const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
-   const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
-    import(new URL('torre2/johto-lab-catalog.js',base)),import(new URL('torre2/johto-lab-runtime.js',base))]);
+   const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS},{JOHTO_P2_TEXTURES}]=await Promise.all([
+    import(new URL('torre2/johto-lab-catalog.js',base)),
+    import(new URL('torre2/johto-lab-runtime.js',base)),
+    import(new URL('torre2/johto-lab-pixelart.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
    enemy.inmortal=true;me.inmortal=true;
    const result=[];
@@ -63,13 +65,21 @@ const server=http.createServer(async(req,res)=>{
     const before=scene.efectos.length;
     const output=TORRE2_JOHTO_LAB_FORMS[move.forma](me,move,{slot:'q'});
     await new Promise(ok=>setTimeout(ok,100));
-    result.push({id:move.id,output,instantiated:scene.efectos.length>=before});
+    const native=JOHTO_P2_TEXTURES[move.id]||[];
+    const textures=native.map(name=>({name,loaded:scene.textures.exists(name),
+      rendered:scene.children.list.some(o=>o.active&&o.texture?.key===name)}));
+    result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures});
    }
    return result;
   });
   console.log('JOHTO_LAB_18_CASTS',JSON.stringify(casts));
   assert.equal(casts.length,18);
-  for(const cast of casts){assert.equal(cast.output,true,cast.id+' cast');assert.equal(cast.instantiated,true,cast.id+' visual effect');}
+  for(const cast of casts){
+   assert.equal(cast.output,true,cast.id+' cast');
+   assert.equal(cast.instantiated,true,cast.id+' visual effect');
+   assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
+    cast.id+' missing actual native P2 pixel-art sprite: '+JSON.stringify(cast.textures));
+  }
   // True projectile/contact path: count real native receive calls, not only VFX constructors.
   const impacts=await page.evaluate(async()=>{
    const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
@@ -101,6 +111,30 @@ const server=http.createServer(async(req,res)=>{
   });
   console.log('JOHTO_LAB_18_NATIVE_CONTACTS',JSON.stringify(impacts));
   for(const row of impacts)assert.ok(row.calls>0,'Missing genuine native contact '+row.id);
+  // Visual evidence: capture every native P2 pixel-art move in the actual
+  // Phaser combat canvas. No compositing of mockups or generated concept art.
+  await fs.mkdir('test-evidence/johto-native-pixelart',{recursive:true});
+  for(const {id} of casts){
+   await page.evaluate(async moveId=>{
+    const base=new URL('./',Array.from(document.scripts)
+     .find(s=>s.src.includes('/main.js')).src);
+    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
+     import(new URL('torre2/johto-lab-catalog.js',base)),
+     import(new URL('torre2/johto-lab-runtime.js',base))]);
+    const scene=window.__pt2Game.scene.getScene('combate');
+    scene.efectos.forEach(fx=>fx.destroy?.());scene.efectos=[];
+    const me=scene.luchadores[0],enemy=scene.luchadores[1];
+    me.est={};me.accion=null;me.dash=null;
+    me.x=178;me.y=178;enemy.x=273;enemy.y=178;
+    me.ax=enemy.x;me.ay=enemy.y;
+    if(moveId==='snore')me.ponerEstado('dormido',6,{cura:0});
+    const m=JOHTO_18.find(m=>m.id===moveId);
+    TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:'q'});
+   },id);
+   await page.waitForTimeout(190);
+   await page.screenshot({path:'test-evidence/johto-native-pixelart/'+id+'.png'});
+  }
+  console.log('JOHTO_PIXEL_ART_EVIDENCE_SAVED',casts.map(c=>c.id).join(','));
   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').salir());
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('johto-lab'),null,{timeout:12000});
   const returned=await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').picks);
