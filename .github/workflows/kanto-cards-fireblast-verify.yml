@@ -8,6 +8,7 @@ on:
       - 'tools/pokearena/torre2-move-pool.js'
       - 'tests/trainer-cards.test.js'
       - 'tests/t98-*'
+      - 'tests/t99-*'
       - 'tests/t13-campaign-native-dodges-browser.cjs'
       - 'tests/t16-auto-weather-native-browser.cjs'
       - 'tests/rematches-browser.cjs'
@@ -60,7 +61,10 @@ jobs:
       - name: Check full-party cards without maps in Chromium
         env:
           CHROME_BIN: /usr/bin/google-chrome
-        run: node tests/t98-cards-only-browser.cjs
+        run: |
+          set -euo pipefail
+          node tests/t98-cards-only-browser.cjs
+          node tests/t99-cards-ui-team-tm-browser.cjs
       - name: Cast native Fire Blast on the real Phaser touch HUD
         env:
           CHROME_BIN: /usr/bin/google-chrome

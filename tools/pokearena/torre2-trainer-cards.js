@@ -158,11 +158,11 @@ function extrasPage(scene,state,handlers){
   ['ÁUDIO',handlers.audio],['REINICIAR JORNADA',handlers.reset]
  ];
  actions.forEach(([name,fn],i)=>{
-  const x=205+(i%2)*230,y=118+Math.floor(i/2)*76;
+  const x=85+(i%2)*250,y=118+Math.floor(i/2)*76;
   control(scene,layer,x,y,220,56,name,()=>{layer.destroy(true);fn?.()},
    {id:'cards-extras-'+i,gold:name==='POKÉDEX',size:12});
  });
- control(scene,layer,320,276,168,30,'VOLTAR AOS CARDS',()=>layer.destroy(true),
+ control(scene,layer,236,276,168,30,'VOLTAR AOS CARDS',()=>layer.destroy(true),
   {id:'cards-extras-close',size:10});
  return layer;
 }
