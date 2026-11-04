@@ -155,17 +155,7 @@ const patches=[
   ['preload(){texto(this,ANCHO/2,ALTO/2,"LOADING...",{tam:8,color:"#d6a63a",origen:.5});',
    'preload(){const txt=texto(this,ANCHO/2,ALTO/2,"LOADING...",{tam:8,color:"#d6a63a",origen:.5});this.load.on("progress",p=>txt.active&&txt.setText("LOADING... "+Math.round(p*100)+"%"));this.load.on("loaderror",f=>console.warn("Poké Arena resource failed",f?.src));'],
   ['const nombres=soloEstos?null:BASICAS;cargarPMD(this,usados,nombres);',
-   'const nombres=soloEstos?null:BASICAS;if(!soloEstos){
- const finalesMenu=[...new Set(ROSTER.map(p=>p.evoluciones?.at(-1)??p)
-  .filter(f=>{const d=m[f.dex];return d?.anims?.Idle&&(d.feet??5)-(d.head??-16)<=36;})
-  .map(f=>f.dex))].slice(0,12);
- // The title's original posar() ONLY uses small, final-stage Idle sprites.
- // Loading just four starter families starves it of side mascots, even
- // though the bottom Walk parade still displays the starters. Preserve
- // fast boot by restricting startup to 12 verified logo-ready final forms.
- usados=soloFormas(m,new Set([...formasDe(["bulbasaur","charmander","squirtle","pichu"]),...finalesMenu]));
- if(finalesMenu.length<2)throw Error("P2 title: no suitable final-form mascots in PMD manifest");
-}cargarPMD(this,usados,nombres);'],
+   'const nombres=soloEstos?null:BASICAS;if(!soloEstos){const finalesMenu=[...new Set(ROSTER.map(p=>p.evoluciones?.at(-1)??p).filter(f=>{const d=m[f.dex];return d?.anims?.Idle&&(d.feet??5)-(d.head??-16)<=36;}).map(f=>f.dex))].slice(0,12);usados=soloFormas(m,new Set([...formasDe(["bulbasaur","charmander","squirtle","pichu"]),...finalesMenu]));if(finalesMenu.length<2)throw Error("P2 title: no suitable final-form mascots in PMD manifest");}cargarPMD(this,usados,nombres);'],
   ['crearAnimsHojas(this);generarTexturas(this);texturasUI(this);this.arrancar()',
    'crearAnimsHojas(this);generarTexturas(this);texturasUI(this);this.arrancar();window.__pt2Started=true']
  ]],
