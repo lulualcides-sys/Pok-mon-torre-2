@@ -70,6 +70,34 @@ const server=http.createServer(async(req,res)=>{
   console.log('JOHTO_LAB_18_CASTS',JSON.stringify(casts));
   assert.equal(casts.length,18);
   for(const cast of casts){assert.equal(cast.output,true,cast.id+' cast');assert.equal(cast.instantiated,true,cast.id+' visual effect');}
+  // True projectile/contact path: count real native receive calls, not only VFX constructors.
+  const impacts=await page.evaluate(async()=>{
+   const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
+   const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
+    import(new URL('torre2/johto-lab-catalog.js',base)),import(new URL('torre2/johto-lab-runtime.js',base))]);
+   const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
+   const original=enemy.recibir,measured=[];
+   let calls=0;enemy.recibir=function(...args){calls++;return original.apply(this,args)};
+   try{
+    scene.fase='lucha';me.inmortal=true;enemy.inmortal=true;
+    for(const move of JOHTO_18){
+     for(const fx of scene.efectos)fx.destroy?.();
+     scene.efectos=[];
+     me.est={};me.accion=null;me.dash=null;me.x=180;me.y=180;
+     enemy.ko=false;enemy.hp=enemy.hpMax;enemy.x=280;enemy.y=180;
+     me.ax=enemy.x;me.ay=enemy.y;
+     if(move.id==='snore')me.ponerEstado('dormido',6,{cura:0});
+     calls=0;
+     const ok=TORRE2_JOHTO_LAB_FORMS[move.forma](me,move,{slot:'q'});
+     const effect=scene.efectos.at(-1);
+     if(ok&&effect)for(let i=0;i<125;i++){if(effect.update(.016)===false)break;}
+     measured.push({id:move.id,ok,calls});
+    }
+   }finally{enemy.recibir=original;}
+   return measured;
+  });
+  console.log('JOHTO_LAB_18_NATIVE_CONTACTS',JSON.stringify(impacts));
+  for(const row of impacts)assert.ok(row.calls>0,'Missing genuine native contact '+row.id);
   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').salir());
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('johto-lab'),null,{timeout:12000});
   const returned=await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').picks);
