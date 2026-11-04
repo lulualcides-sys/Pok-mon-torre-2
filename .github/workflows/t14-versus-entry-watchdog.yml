@@ -9,6 +9,11 @@ on:
       - '.github/workflows/t14-versus-entry-watchdog.yml'
 permissions:
   contents: read
+concurrency:
+  # Cancel superseded PR run; preserve all validation jobs.
+  group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   versus-entry:
     runs-on: ubuntu-24.04

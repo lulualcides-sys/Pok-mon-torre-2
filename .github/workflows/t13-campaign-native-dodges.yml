@@ -11,6 +11,11 @@ on:
     branches: [feat/t13-campaign-native-move-dodges-20261031]
 permissions:
   contents: read
+concurrency:
+  # Cancel superseded PR run; preserve all validation jobs.
+  group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   campaign-esp:
     runs-on: ubuntu-24.04

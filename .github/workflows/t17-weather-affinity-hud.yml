@@ -12,6 +12,11 @@ on:
       - 'specs/020-weather-affinity-hud/**'
 permissions:
   contents: read
+concurrency:
+  # Cancel superseded PR run; preserve all validation jobs.
+  group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   weather-status-native:
     runs-on: ubuntu-24.04

@@ -10,6 +10,11 @@ on:
       - '.github/workflows/t24-route-rematch-report.yml'
 permissions:
   contents: read
+concurrency:
+  # Cancel superseded PR run; preserve all validation jobs.
+  group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 jobs:
   path-and-report:
     runs-on: ubuntu-24.04
