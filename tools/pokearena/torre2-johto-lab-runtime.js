@@ -9,6 +9,7 @@ import {withJohtoLabCooldown} from "./torre2-johto-lab-cooldown.js";
 import {johtoPose} from "./torre2-johto-motion.js";
 import {makeJohtoFourNative,castJohtoFourNative} from "./torre2-johto-four-native.js";
 import {RADIO} from "../config.js";
+import {TIPOS} from "../datos.js";
 import {magnitudeGen3,presentGen3,tripleKickGen3,beatUpGen3Participants} from "./torre2-johto-gen3-mechanics.js";
 import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
@@ -475,4 +476,6 @@ function cast(l,h,extra){
 }
 export const TORRE2_JOHTO_LAB_FORMS=Object.freeze(Object.fromEntries(
  [...JOHTO_18.map(m=>[m.forma,(l,h,extra)=>cast(l,h,extra)]),
-  ...Object.entries(TORRE2_JOHTO_PIXELFX_FORMS)].map(([form,cast])=>[form,withJohtoLabCooldown(cast)])));
+  ...Object.entries(TORRE2_JOHTO_PIXELFX_FORMS)].map(([form,cast])=>[form,withJohtoLabCooldown(cast,(scene,fighter,move)=>
+  vfx.globo(scene,fighter,`${move.nombre}!`,
+   vfx.tono(move,TIPOS[move.tipo]??fighter.colorTipo??0xffffff)))])));

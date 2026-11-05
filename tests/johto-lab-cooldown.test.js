@@ -43,3 +43,17 @@ test("Lab-only guard never enables preview moves outside training",()=>{
  assert.equal(withJohtoLabCooldown(()=>{n++;return true;})(me),false);
  assert.equal(n,0);
 });
+
+test("P2 name bubble is emitted once on accepted offensive casts, never on rejected casts",()=>{
+ const labels=[],scene={datos:{johtoLab:true},efectos:[],globos:[]};
+ const me={escena:scene,t:1,cd:{lmb:0,rmb:0,q:0,e:0}};
+ const name=(scene,fighter,move)=>labels.push(move.nombre+"!");
+ const accepted=withJohtoLabCooldown(()=>true,name);
+ const refused=withJohtoLabCooldown(()=>false,name);
+ assert.equal(refused(me,{nombre:"Blocked",visualOnly:false}),false);
+ assert.equal(labels.length,0);
+ assert.equal(accepted(me,{nombre:"Steel Wing",visualOnly:false}),true);
+ assert.deepEqual(labels,["Steel Wing!"]);
+ assert.equal(accepted(me,{nombre:"Thief",visualOnly:false}),false);
+ assert.deepEqual(labels,["Steel Wing!"]);
+});

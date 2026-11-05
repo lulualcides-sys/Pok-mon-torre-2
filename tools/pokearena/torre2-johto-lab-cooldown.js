@@ -3,11 +3,11 @@
  * Each successful offensive cast announces its canonical name ABOVE the
  * attacker with the genuine Poké Arena 2D vfx.globo UI (presentar()).
  */
-import * as vfx from "../vfx.js";
-import {TIPOS} from "../datos.js";
+// Native P2 visual modules are injected by the browser runtime, not imported
+// here: unit tests run without upstream src/vfx.js and datos.js.
 export const JOHTO_LAB_COOLDOWN_SECONDS=1;
 const SLOTS=["lmb","rmb","q","e"];
-export function withJohtoLabCooldown(cast){
+export function withJohtoLabCooldown(cast,announce=null){
  if(typeof cast!=="function")throw TypeError("Johto cast function required");
  return function guardedJohtoCast(fighter,move,extra){
   const scene=fighter?.escena;
@@ -41,10 +41,8 @@ export function withJohtoLabCooldown(cast){
   // Native Poké Arena 2D: habilidades.js#presentar -> vfx.globo.
   // Unlike its basic-attack exception, the user explicitly requires this
   // for ALL new offensive moves, including ATK. Never announce failed casts.
-  if(!move.visualOnly&&scene.globos){
-   vfx.globo(scene,fighter,`${move.nombre}!`,
-    vfx.tono(move,TIPOS[move.tipo]??fighter.colorTipo??0xffffff));
-  }
+  if(move&&!move.visualOnly&&scene.globos&&typeof announce==="function")
+   announce(scene,fighter,move);
   // Share a visible cooldown across all four skill buttons.
   if(fighter.cd&&typeof fighter.cd==="object")
    for(const slot of SLOTS)
