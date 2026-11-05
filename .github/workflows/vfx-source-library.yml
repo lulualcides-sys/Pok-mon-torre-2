@@ -8,6 +8,12 @@ on:
       - 'docs/GUIA-RAPIDO-REPOSITORIO.md'
       - 'tools/dev/vfx-source-search.mjs'
       - 'tests/vfx-source-library.test.js'
+      - 'tests/vfx-selection-policy.test.js'
+      - 'data/vfx-selection-decisions.json'
+      - 'data/move-reuse-policy.json'
+      - 'docs/PADRAO-COMPARACAO-VFX-POR-GOLPE.md'
+      - '.github/PULL_REQUEST_TEMPLATE.md'
+      - 'tools/dev/vfx-review-policy.mjs'
       - '.github/workflows/vfx-source-library.yml'
   push:
     branches: [main]
@@ -30,7 +36,9 @@ jobs:
         run: |
           set -euo pipefail
           node --check tools/dev/vfx-source-search.mjs
-          node --test tests/vfx-source-library.test.js
+          node --check tools/dev/vfx-review-policy.mjs
+          node --test tests/vfx-source-library.test.js tests/vfx-selection-policy.test.js
+          node tools/dev/vfx-review-policy.mjs --check
           node tools/dev/vfx-source-search.mjs "Fire Blast"
           node tools/dev/vfx-source-search.mjs "Ice Beam" --json > /tmp/torre2-vfx-ice.json
           test -s /tmp/torre2-vfx-ice.json
