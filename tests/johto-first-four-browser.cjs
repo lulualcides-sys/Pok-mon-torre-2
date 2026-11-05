@@ -18,7 +18,7 @@ const server=http.createServer(async(req,res)=>{
  const browser=await chromium.launch({executablePath:process.env.CHROME_BIN,headless:true,
   args:["--no-sandbox","--enable-unsafe-swiftshader","--use-gl=angle","--use-angle=swiftshader"]});
  try{
-  const page=await browser.newPage({viewport:{width:1280,height:720}});
+  let page=await browser.newPage({viewport:{width:1280,height:720}});
   const errors=[],network=[];
   page.on("pageerror",e=>errors.push(String(e)));
   page.on("requestfailed",x=>network.push(x.url()+" "+(x.failure()?.errorText||"")));
@@ -47,7 +47,28 @@ const server=http.createServer(async(req,res)=>{
    const s=window.__pt2Game.scene.getScene("combate");
    return s.scene.isActive()&&s.fase==="lucha"&&s.__johtoLabInstalled;
   },null,{timeout:40000});
-  const casts=await page.evaluate(async()=>{
+  // Each P2 name globo is verified in an independently booted live
+  // Chromium arena. Headless Phaser CanvasPool cannot support several
+  // synthetic native Text allocations in the same packed test instance.
+  // Reboots are real UI boots; never mock vfx.globo or its displayed text.
+  const casts=[];
+  for(const [index,id] of visible.visible.entries()){
+   if(index){
+    await page.close();
+    page=await browser.newPage({viewport:{width:1280,height:720}});
+    page.on("pageerror",e=>errors.push(String(e)));
+    page.on("requestfailed",x=>network.push(x.url()+" "+(x.failure()?.errorText||"")));
+    await page.goto("http://127.0.0.1:4305/arena2d/?original=1");
+    await page.waitForFunction(()=>window.__pt2Game?.scene.isActive("titulo"),null,{timeout:45000});
+    await page.evaluate(()=>window.__pt2Game.scene.getScene("titulo").scene.start("johto-lab"));
+    await page.waitForFunction(()=>window.__pt2Game.scene.isActive("johto-lab"),null,{timeout:15000});
+    await page.evaluate(()=>window.__pt2Game.scene.getScene("johto-lab").startPractice());
+    await page.waitForFunction(()=>{
+     const s=window.__pt2Game.scene.getScene("combate");
+     return s.scene.isActive()&&s.fase==="lucha"&&s.__johtoLabInstalled;
+    },null,{timeout:40000});
+   }
+   const singleCast=await page.evaluate(async(moveId)=>{
    const base=new URL("./",Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src);
    const [{JOHTO_LAB_VISIBLE},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
     import(new URL("torre2/johto-lab-catalog.js",base)),
@@ -66,7 +87,7 @@ const server=http.createServer(async(req,res)=>{
    enemy.efectosGolpe=()=>{};me.acierto=()=>{};
    me.ganarExp=()=>{};enemy.ganarExp=()=>{};enemy.ganarUlti=()=>{};
    Math.random=()=>.35;
-   try{for(const m of JOHTO_LAB_VISIBLE){
+   try{for(const m of JOHTO_LAB_VISIBLE.filter(m=>m.id===moveId)){
     // Real native contact/HP inspection; no campaign saves are touched.
     for(const fx of [...scene.efectos])try{fx.destroy?.()}catch{}
     scene.efectos=[];
@@ -102,8 +123,10 @@ const server=http.createServer(async(req,res)=>{
     enemy.ganarUlti=oldEnemyUlt;}
    for(const fx of [...scene.efectos])try{fx.destroy?.()}catch{}
    scene.efectos=[];
-   return out;
-  });
+   return out[0];
+  },id);
+  casts.push(singleCast);
+  }
   console.log("JOHTO_FIRST_FOUR_IN_PHASER",JSON.stringify({visible,casts,errors,network}));
   assert.ok(casts.every(m=>m.ok&&m.sprites>=8&&m.unique>=3),
    "All four must animate multiple REAL P2 pixel sprites inside Phaser");
