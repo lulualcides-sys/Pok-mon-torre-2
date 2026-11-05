@@ -34,6 +34,11 @@ const actualStats=p=>({
  regen:4
 });
 const magnitude=m=>Number.isFinite(m.dano)?m.dano:0;
+// Authoritative skill source: a move is eligible ONLY when it is already
+// installed and executable. No new visual effects, names or placeholders.
+const executable=m=>Boolean(m?.nombre&&m?.forma&&
+ !m.pendiente&&!m.torre2Unavailable&&!m.torre2RequiresTM&&
+ !["dash","evolucionar","megaevolucionar","renacer"].includes(m.forma));
 export const JOHTO_ATTACK_SLOTS=Object.freeze([
  ["lmb","ATK"],["rmb","HAB 2"],["q","HAB 3"],["e","ULT"]
 ]);
@@ -46,12 +51,12 @@ export function johtoMoveLibrary(original){
  const m=nativeAttacks(original),out=new Map();
  for(const [name,move] of m){
   const key=canon(name);
-  if(key&&move?.forma&&!out.has(key))out.set(key,move);
+  if(key&&executable(move)&&!out.has(key))out.set(key,move);
  }
  // Hidden Power (#201 Unown) already has an approved Johto renderer.
  // Expose it to newly added Johto kits only; never change native P2 kits.
  const hidden=JOHTO_18.find(m=>m.id==="hidden-power");
- if(hidden&&!out.has("hidden-power"))out.set("hidden-power",hidden);
+ if(executable(hidden)&&!out.has("hidden-power"))out.set("hidden-power",hidden);
  return out;
 }
 export function selectJohto100Moves(p,library){
@@ -61,16 +66,15 @@ export function selectJohto100Moves(p,library){
  if(p[1]==="smeargle"){
   return ["tackle","quick-attack","swift","body-slam"]
    .map(id=>({id,level:-2,move:library.get(id),sketched:true}))
-   .filter(x=>x.move?.nombre&&x.move?.forma);
+   .filter(x=>executable(x.move));
  }
  // p[10] contains only Gen III FireRed/LeafGreen natural (level>=0)
  // and compatible TM (level=-1). No invented species/type assignments.
  const legal=p[10].map(([id,level])=>({
   id,level,move:library.get(canon(id))
- })).filter(x=>x.move?.nombre&&x.move?.forma&&
+ })).filter(x=>executable(x.move)&&
   !["snore","hyper-beam"].includes(canon(x.id))&&
-  !(canon(x.id)==="solar-beam"&&!p[2].includes("GRASS"))&&
-  !["dash","evolucionar","megaevolucionar","renacer"].includes(x.move.forma));
+  !(canon(x.id)==="solar-beam"&&!p[2].includes("GRASS")));
  const distinct=[...new Map(legal.map(x=>[canon(x.id),x])).values()];
  const damage=x=>magnitude(x.move);
  const offensive=distinct.filter(x=>damage(x)>0);
@@ -110,12 +114,17 @@ export function selectJohto100Moves(p,library){
 export function johto100Kit(p,library){
  const moves=selectJohto100Moves(p,library);
  const kit={esp:{...simpleDash}},slots=["lmb","rmb","q","e"];
- moves.forEach((m,i)=>{kit[slots[i]]={...m.move,pendiente:false,
+ moves.forEach((m,i)=>{
+  // The sole provider is the already installed, executable move library.
+  // Missing skill? Leave the slot empty rather than create a fake fallback.
+  if(!executable(m.move)||library.get(canon(m.id))!==m.move)return;
+  kit[slots[i]]={...m.move,pendiente:false,
   torre2JohtoLegal:m.sketched?"FRLG-SKETCH-DEMO":"FRLG",
   torre2JohtoMoveLevel:m.level,
   ...(p[1]==="unown"&&m.id==="hidden-power"?
     {torre2JohtoSpecialUnown:true}:{}),
-  ...(i===3?{ulti:true}:{})}});
+  ...(i===3?{ulti:true}:{})};
+ });
  return kit;
 }
 export function addAllJohtoSpecies(original){

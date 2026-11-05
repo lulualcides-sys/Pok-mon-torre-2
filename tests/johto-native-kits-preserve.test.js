@@ -17,7 +17,7 @@ for(const [from,to] of [
  assert.ok(source.includes(needle),'Original build import missing: '+from);
  source=source.replace(needle,'from '+JSON.stringify(new URL(to,folder).href));
 }
-const {addAllJohtoSpecies,selectJohto100Moves}=await import(
+const {addAllJohtoSpecies,selectJohto100Moves,johto100Kit,johtoMoveLibrary}=await import(
  'data:text/javascript;base64,'+Buffer.from(source).toString('base64')
 );
 
@@ -106,5 +106,65 @@ test('all new Johto autokits exclude generic Hyper Beam and off-type Solar Beam'
   assert.ok(!moves.some(m=>m.id==='hyper-beam'),p[1]+' received Hyper Beam');
   if(!p[2].includes('GRASS'))
    assert.ok(!moves.some(m=>m.id==='solar-beam'),p[1]+' received off-type Solar Beam');
+ }
+});
+
+test('only existing executable library moves can be equipped in any Johto slot',()=>{
+ const good={
+  nombre:'Mirror Coat',forma:'native-mirror',tipo:'PSYCHIC',dano:12
+ };
+ const available=new Map([
+  ['mirror-coat',good],
+  ['counter',{nombre:'Counter',forma:'ghost-factory',pendiente:true}],
+  ['safeguard',{nombre:'Safeguard',forma:'native-status',torre2Unavailable:true}],
+  ['destiny-bond',{nombre:'Destiny Bond'}]
+ ]);
+ const wob=JOHTO_100_ROWS.find(row=>row[1]==='wobbuffet');
+ assert.ok(wob,'Missing Wobbuffet in FRLG data');
+ const kit=johto100Kit(wob,available);
+ assert.equal(kit.lmb?.nombre,'Mirror Coat');
+ assert.equal(kit.rmb,undefined);
+ assert.equal(kit.q,undefined);
+ assert.equal(kit.e,undefined);
+ assert.equal(kit.esp?.forma,'dash');
+ assert.deepEqual(Object.keys(kit).sort(),['esp','lmb'],
+  'A Wobbuffet with one installed move must not gain three imaginary attacks');
+ const unavailable=new Map([
+  ['mirror-coat',{...good,pendiente:true}]
+ ]);
+ const empty=johto100Kit(wob,unavailable);
+ assert.deepEqual(Object.keys(empty),['esp'],
+  'Unavailable only move must NOT be substituted with a fake one');
+});
+
+test('new Johto kits never equip a move absent from an approved installed catalog',()=>{
+ const original=[
+  {id:'test-moves',kit:{
+    lmb:{nombre:'Ember',forma:'ember',tipo:'FIRE',dano:7},
+    rmb:{nombre:'Bite',forma:'bite',tipo:'DARK',dano:11},
+    q:{nombre:'Crunch',forma:'crunch',tipo:'DARK',dano:19},
+    e:{nombre:'Flamethrower',forma:'flame',tipo:'FIRE',dano:25}
+  },evoluciones:[]}
+ ];
+ const library=johtoMoveLibrary(original);
+ const snapshot=structuredClone(original);
+ const created=addAllJohtoSpecies(original);
+ assert.deepEqual(original,snapshot,'Source P2 attacks must remain immutable');
+ const unown=created.find(x=>x.id==='unown');
+ assert.ok(unown?.kit.lmb?.nombre==='Hidden Power',
+  'Only already approved Hidden Power may extend the native move catalog');
+ for(const p of created){
+  for(const stage of [p,...p.evoluciones||[]]){
+   for(const slot of ['lmb','rmb','q','e']){
+    const move=stage.kit?.[slot];
+    if(!move)continue;
+    const same=[...library.values()].find(src=>
+      src.nombre===move.nombre&&src.forma===move.forma);
+    assert.ok(same,
+     p.id+' '+(stage.nome||stage.nombre||'base')+' slot '+slot+' is not in installed library');
+    assert.equal(move.pendiente,false);
+    assert.notEqual(move.torre2Unavailable,true);
+   }
+  }
  }
 });
