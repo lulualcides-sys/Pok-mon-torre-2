@@ -29,7 +29,9 @@ export function withJohtoLabCooldown(cast){
     const oldDestroy=effect.destroy;
     effect.destroy=function(...args){alive=false;return oldDestroy.apply(this,args)};
    }
-   return ()=>alive;
+   // An effect removed from the Phaser effect list is no longer active.
+   // Avoid a stale reference blocking the next cast forever after cleanup.
+   return ()=>alive&&Array.isArray(scene.efectos)&&scene.efectos.includes(effect);
   });
   fighter.__johtoLabNextCastAt=now+JOHTO_LAB_COOLDOWN_SECONDS;
   // Share a visible cooldown across all four skill buttons.
