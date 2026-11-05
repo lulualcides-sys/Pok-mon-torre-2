@@ -1,6 +1,10 @@
 /* Exclusively for the isolated Johto Mewtwo Test Lab.
  * Apply an actual shared 1s cooldown and prevent animation stacking.
+ * Each successful offensive cast announces its canonical name ABOVE the
+ * attacker with the genuine Poké Arena 2D vfx.globo UI (presentar()).
  */
+import * as vfx from "../vfx.js";
+import {TIPOS} from "../datos.js";
 export const JOHTO_LAB_COOLDOWN_SECONDS=1;
 const SLOTS=["lmb","rmb","q","e"];
 export function withJohtoLabCooldown(cast){
@@ -34,6 +38,13 @@ export function withJohtoLabCooldown(cast){
    return ()=>alive&&Array.isArray(scene.efectos)&&scene.efectos.includes(effect);
   });
   fighter.__johtoLabNextCastAt=now+JOHTO_LAB_COOLDOWN_SECONDS;
+  // Native Poké Arena 2D: habilidades.js#presentar -> vfx.globo.
+  // Unlike its basic-attack exception, the user explicitly requires this
+  // for ALL new offensive moves, including ATK. Never announce failed casts.
+  if(!move.visualOnly&&scene.globos){
+   vfx.globo(scene,fighter,`${move.nombre}!`,
+    vfx.tono(move,TIPOS[move.tipo]??fighter.colorTipo??0xffffff));
+  }
   // Share a visible cooldown across all four skill buttons.
   if(fighter.cd&&typeof fighter.cd==="object")
    for(const slot of SLOTS)

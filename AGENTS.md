@@ -67,3 +67,11 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 - Esta biblioteca é **complementar** às quatro fontes obrigatórias da `docs/agentes/POLITICA-GOLPES-INTEGRAL.md`, nunca as substitui. Não afirmar que todos os projetos foram copiados; diferenciar amostra local, referência URL e material bloqueado.
 - Fontes sem licença ou com conflito de licença (`blocked-*`) são **consulta somente**. Para packs em `download-required`, obter ZIP pelo autor e registrar hash, condições e autoria antes de reusar. Não usar Canvas 2D/Godot shader como golpe em tempo de execução: converter/portar para Phaser/WebGL com nearest-neighbor.
 - **Preservar TODOS os efeitos aprovados**, incluindo Snow/Powder Snow, Whirlpool e Zap Cannon de Johto. Jamais substituir golpear só porque um catálogo externo parece melhor; testar no Training e aprovar visualmente.
+
+
+## REGRA PERMANENTE — NOME DO GOLPE + COLISÃO P2 (05/11/2026)
+
+- **Todo novo golpe ofensivo:** renderizar o nome canônico acima do Pokémon atacante no momento de um cast válido; usar a API original `vfx.globo(escena,luchador,\`\${h.nombre}!\`,vfx.tono(h,TIPOS[h.tipo]))` (`habilidades.js#presentar`), sem duplicar balão num mesmo uso. Incluir ATK, HAB 2/3 e ULT por exigência expressa; não mostrar nome em falhas de lançamento.
+- **Física sem efeito falso:** movimentação/quadros da animação dependem de posição, raio e colisão P2; dano via `r.recibir(l, ...)`; sprite de IMPACTO somente após acerto real. Preservar os visuais que o usuário já aprovou e separar a aprovação estética das mecânicas secundárias.
+- **Snore:** só funciona dormindo; o Training pode oferecer botão *DORMIR + SNORE* para demonstração sem alterar a campanha. **False Swipe:** não pode reduzir o HP abaixo de 1. Texturas Phaser nativas P2 e efeito visível legível no mobile. Testes Chromium devem verificar nome flutuante, contato, HP real, zero impacto em erro e manutenção dos aprovados.
+- **Aprovados Johto que saem da fila de revisão, mas permanecem intactos:** Powder Snow, Whirlpool, Zap Cannon, Triple Kick e Octazooka. Reprovação/revisão atual: Thief, Snore, False Swipe e Steel Wing, exclusivamente entre os 18 ofensivos Johto; os 28 de status/previews não fazem parte dessa lista.
