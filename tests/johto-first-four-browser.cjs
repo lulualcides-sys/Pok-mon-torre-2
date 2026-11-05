@@ -33,14 +33,13 @@ const server=http.createServer(async(req,res)=>{
    return {visible:s.moveCards.filter(card=>card.m).map(card=>card.m.id),
     originals:c.JOHTO_LAB_ALL.filter(x=>["powder-snow","whirlpool","zap-cannon"].includes(x.id)).map(x=>x.id),
     defaults:[...s.picks],
-    frames:c.JOHTO_LAB_VISIBLE.map(m=>({id:m.id,found:s.textures.exists("torre2-johto-pixelfx-"+m.id),
-     frames:s.textures.get("torre2-johto-pixelfx-"+m.id).getFrameNames().length}))};
+    removedOld:c.JOHTO_LAB_VISIBLE.map(m=>({id:m.id,loaded:s.textures.exists("torre2-johto-pixelfx-"+m.id)}))};
   });
   assert.deepEqual(visible.visible,["triple-kick","thief","snore","octazooka"]);
   assert.deepEqual(visible.defaults,visible.visible);
   assert.equal(visible.originals.length,3,"Approved FX preserved in move pool");
-  assert.ok(visible.frames.every(x=>x.found&&x.frames===24),
-   "4 distinct 24-frame PNG textures must load in Phaser");
+  assert.ok(visible.removedOld.every(x=>!x.loaded),
+   "Four rejected rectangular spritesheets must NOT be loaded");
   await fs.mkdir("test-evidence/johto-first-four",{recursive:true});
   await page.screenshot({path:"test-evidence/johto-first-four/choice.png"});
   await page.evaluate(()=>window.__pt2Game.scene.getScene("johto-lab").startPractice());
@@ -63,27 +62,29 @@ const server=http.createServer(async(req,res)=>{
     me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
     me.accion=null;me.dash=null;me.est=m.id==="snore"?{dormido:true}:{};
     me.ax=enemy.x;me.ay=enemy.y;
+    const oldChildren=new Set(scene.children.list);
     const ok=TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:"q"});
-    const key="torre2-johto-pixelfx-"+m.id;
-    const sprite=scene.children.list.find(o=>o.active&&o.texture?.key===key);
+    const native=scene.children.list.filter(o=>o.active&&!oldChildren.has(o)&&
+      ["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua"].includes(o.texture?.key));
     const effect=scene.efectos.at(-1);
-    const frames=[];
-    if(sprite&&effect){
+    const poses=[];
+    if(native.length&&effect){
      for(const dt of [.04,.08,.12,.08]){
       effect.update(dt);
-      frames.push(String(sprite.frame?.name));
+      poses.push(native.map(o=>o.visible?
+       [o.x,o.y,o.displayWidth,o.displayHeight,Math.round(o.alpha*100)].join(","):"off").join("|"));
      }
     }
-    out.push({id:m.id,ok,found:!!sprite,frames,
-     unique:new Set(frames).size});
+    out.push({id:m.id,ok,source:"P2-native",sprites:native.length,
+      assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size});
    }
    for(const fx of [...scene.efectos])try{fx.destroy?.()}catch{}
    scene.efectos=[];
    return out;
   });
   console.log("JOHTO_FIRST_FOUR_IN_PHASER",JSON.stringify({visible,casts,errors,network}));
-  assert.ok(casts.every(m=>m.ok&&m.found&&m.unique>=3),
-   "Every reviewed attack must play moving frames inside Phaser, not a frozen stamp");
+  assert.ok(casts.every(m=>m.ok&&m.sprites>=8&&m.unique>=3),
+   "All four must animate multiple REAL P2 pixel sprites inside Phaser");
   assert.equal(errors.length,0,"Page JavaScript errors: "+errors.join(" | "));
   await page.screenshot({path:"test-evidence/johto-first-four/battle.png"});
  }finally{await browser.close()}
