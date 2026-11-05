@@ -114,6 +114,26 @@ const server=http.createServer(async(req,res)=>{
    "Native and Johto cards must be mixed in one National Dex-ordered grid");
   assert.equal(nationalGrid.originalIndices,true,
    "Keep all original ROSTER indices for saves and selection");
+  // A fast initial Pokédex must not strand the next page with missing PMD portraits.
+  // Page two is loaded on demand and must become visible with its real image.
+  const secondPage=await page.evaluate(async()=>{
+   const scene=window.__pt2Game.scene.getScene("pokedex");
+   const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
+   const {ROSTER}=await import(new URL("datos.js",new URL("./",script)));
+   const order=ROSTER.map((p,i)=>({i,dex:Number(p?.dex)||100000+i}))
+    .sort((a,b)=>a.dex-b.dex||a.i-b.i);
+   const index=order[36]?.i;
+   if(!Number.isInteger(index))throw Error("Expected a second National Dex page");
+   scene.elegir(index);
+   return {index,id:ROSTER[index].id,dex:ROSTER[index].dex};
+  });
+  await page.waitForFunction(({index,dex})=>{
+   const scene=window.__pt2Game.scene.getScene("pokedex");
+   const cell=scene.casillas?.[index];
+   return scene.dexPage===1&&scene.foco===index&&cell?.img?.visible&&
+    cell.img.texture?.key==="retrato-"+dex;
+  },secondPage,{timeout:40000});
+  console.log("POKEDEX_SECOND_PAGE_LAZY_PMDS_READY",JSON.stringify(secondPage));
   // Diagnostic for the separate main Pages failure: Rayquaza was reported
   // unselectable. Do not change or bypass native P2 move slots to fix it.
   await page.evaluate(()=>window.__pt2Game.scene.start("seleccion",{
