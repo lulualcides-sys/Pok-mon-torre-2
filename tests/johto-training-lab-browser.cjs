@@ -49,6 +49,43 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(combat.opponent,'onix');assert.equal(combat.names[0],'Thief');
   assert.ok(combat.forms.every(x=>x.startsWith('torre2_johto_')));
   assert.equal(combat.dummy,true);assert.equal(combat.saveFlag,false);
+  // Real Phaser browser check: 1s shared slot lock + no stacked animations.
+  const cooldownGate=await page.evaluate(async()=>{
+   const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
+   const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
+    import(new URL('torre2/johto-lab-catalog.js',base)),
+    import(new URL('torre2/johto-lab-runtime.js',base))]);
+   const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],
+    enemy=scene.luchadores[1],before=scene.efectos.length,oldT=me.t;
+   const a=JOHTO_18.find(x=>x.id==='thief'),b=JOHTO_18.find(x=>x.id==='triple-kick');
+   me.est={};me.accion=null;me.dash=null;me.ax=enemy.x;me.ay=enemy.y;
+   me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
+   const first=TORRE2_JOHTO_LAB_FORMS[a.forma](me,a,{slot:'lmb'});
+   const repeat=TORRE2_JOHTO_LAB_FORMS[a.forma](me,a,{slot:'lmb'});
+   const otherSlot=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   const nativeBars=['lmb','rmb','q','e'].map(k=>me.cd?.[k]);
+   me.t=oldT+1.01;
+   const runningVFX=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   for(const fx of scene.efectos.slice(before))fx.destroy?.();
+   scene.efectos.splice(before);
+   me.t=oldT+.99;
+   const before1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   me.t=oldT+1.01;
+   const after1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   for(const fx of scene.efectos.slice(before))fx.destroy?.();
+   scene.efectos.splice(before);
+   me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
+   me.t=oldT;me.accion=null;me.dash=null;
+   return {first,repeat,otherSlot,runningVFX,before1s,after1s,nativeBars};
+  });
+  assert.equal(cooldownGate.first,true);
+  assert.equal(cooldownGate.repeat,false,'Same move cannot spam');
+  assert.equal(cooldownGate.otherSlot,false,'Switching button cannot bypass global cooldown');
+  assert.equal(cooldownGate.before1s,false,'Still blocked at 0.99s');
+  assert.equal(cooldownGate.runningVFX,false,'Cannot overlap a still-running visual effect');
+  assert.equal(cooldownGate.after1s,true,'May cast after 1s and old animation completes');
+  assert.ok(cooldownGate.nativeBars.every(x=>x>=1),'Native cooldown visible on all four slots');
+  console.log('JOHTO_LAB_COOLDOWN_1S_VERIFIED',JSON.stringify(cooldownGate));
   const casts=await page.evaluate(async()=>{
    const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS},{JOHTO_P2_TEXTURES}]=await Promise.all([
@@ -59,6 +96,7 @@ const server=http.createServer(async(req,res)=>{
    enemy.inmortal=true;me.inmortal=true;
    const result=[];
    for(const move of JOHTO_18){
+    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
     me.accion=null;me.dash=null;me.est={};
     me.ax=enemy.x=me.x+100;me.ay=enemy.y=me.y;
     if(move.id==='snore')me.ponerEstado('dormido',5,{cura:0});
@@ -115,6 +153,7 @@ const server=http.createServer(async(req,res)=>{
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],
     enemy=scene.luchadores[1],out=[];
    for(const m of JOHTO_PIXELFX_28){
+    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
     const hp=enemy.hp,texture='torre2-johto-pixelfx-'+m.id;
     const ok=TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:'q'});
     const last=scene.efectos.at(-1);
@@ -167,6 +206,7 @@ const server=http.createServer(async(req,res)=>{
    try{
     scene.fase='lucha';me.inmortal=true;enemy.inmortal=true;
     for(const move of JOHTO_18){
+     me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
      for(const fx of scene.efectos)fx.destroy?.();
      scene.efectos=[];
      me.est={};me.accion=null;me.dash=null;me.x=180;me.y=180;
@@ -199,6 +239,7 @@ const server=http.createServer(async(req,res)=>{
     const scene=window.__pt2Game.scene.getScene('combate');
     scene.efectos.forEach(fx=>fx.destroy?.());scene.efectos=[];
     const me=scene.luchadores[0],enemy=scene.luchadores[1];
+    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
     me.est={};me.accion=null;me.dash=null;
     me.x=178;me.y=178;enemy.x=273;enemy.y=178;
     me.ax=enemy.x;me.ay=enemy.y;

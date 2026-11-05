@@ -8,7 +8,7 @@ export function installJohtoLabCombat(scene){
  const tick=()=>{
   if(!scene.scene.isActive())return;
   fighter.energia=100;fighter.ulti=100;fighter.calor=0;
-  for(const slot of Object.keys(fighter.cd||{}))fighter.cd[slot]=0;
+  // Native cooldowns are never reset each step (previous infinite-cast bug).
  };
  const button=(x,label,run,color)=>{
   scene.add.rectangle(x,39,118,24,color,.94).setDepth(3800)
@@ -19,7 +19,7 @@ export function installJohtoLabCombat(scene){
  };
  button(130,"SLEEP / SNORE",()=>fighter.ponerEstado("dormido",6,{cura:0}),0x554a79);
  button(517,"TROCAR GOLPES",()=>scene.scene.start("johto-lab",{slots:scene.datos.johtoLab.slots}),0x206b66);
- scene.add.text(320,14,"MEWTWO LAB · 18 GOLPES · SEM SAVE",{
+ scene.add.text(320,14,"MEWTWO LAB · 46 GOLPES · CD 1s · SEM SAVE",{
   fontFamily:"Pixelify Sans,monospace",fontSize:"11px",color:"#ffe6ad"
  }).setOrigin(.5).setDepth(3801);
  tick();scene.game.events.on("step",tick);

@@ -29,3 +29,11 @@
 ## Licença e atribuição
 
 PixelFX © patch-gg, licenciado sob MIT. Consultar `LICENSE` e `NOTICE.md` no repositório upstream para atribuições transitivas; não inferir que sprites ou recursos de terceiros não incluídos no PixelFX também sejam MIT. Não copiar os efeitos aprovados do cliente base para exportá-los como PixelFX.
+
+
+## Correção de cooldown do Mewtwo Test Lab
+
+- Os **46 golpes** agora usam `cd:1` segundo, exclusivo do laboratório Johto.
+- Corrigido reset indevido a cada quadro em `torre2-johto-lab-combat.js`; energia/ULT de teste continuam ilimitadas.
+- O novo `torre2-johto-lab-cooldown.js` controla a pausa global de 1s entre os quatro botões e impede sobreposição de VFX ativos que durem mais de 1s. Nenhuma animação aprovada é editada.
+- Testes específicos e Chromium verificam repetição, troca de tecla, 0,99s, 1,01s e persistência de animação; campanha/Arena continuam fora do escopo.

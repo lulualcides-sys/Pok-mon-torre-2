@@ -36,7 +36,7 @@ export const JOHTO_PIXELFX_28=Object.freeze([
 ].map((m)=>Object.freeze({
  ...m,categoria:"STATUS",poder:0,precisao:100,pp:20,dano:0,alcance:180,
  anim:"Charge",style:"pixelfx",forma:"torre2_pixelfx_"+m.id.replaceAll("-",""),
- coste:8,cd:2.4,lanzar:.13,source:"pixelfx-visual-preview",visualOnly:true,
+ coste:8,cd:1,lanzar:.13,source:"pixelfx-visual-preview",visualOnly:true,
  approved:false,pendiente:false
 })));
 

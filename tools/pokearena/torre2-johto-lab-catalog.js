@@ -24,7 +24,7 @@ export const JOHTO_18=Object.freeze([
  ["beat-up","Beat Up","DARK","PHYSICAL",0,100,10,12,92,"Attack","kick"]
 ].map(([id,nombre,tipo,categoria,poder,precisao,pp,dano,alcance,anim,style])=>
  Object.freeze({id,nombre,tipo,categoria,poder,precisao,pp,dano,alcance,
-  anim,style,forma:"torre2_johto_"+id.replaceAll("-",""),coste:8,cd:2.4,
+  anim,style,forma:"torre2_johto_"+id.replaceAll("-",""),coste:8,cd:1,
   lanzar:.13,source:"johto-lab-prototype",approved:false,pendiente:false})));
 export const JOHTO_LAB_SLOTS=Object.freeze(["lmb","rmb","q","e"]);
 export const JOHTO_LAB_DEFAULT=Object.freeze(["triple-kick","powder-snow","zap-cannon","whirlpool"]);

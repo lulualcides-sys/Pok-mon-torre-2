@@ -13,6 +13,7 @@ test('Three approved Johto FX stay original, 15 replaced, 28 added, no duplicate
  assert.equal(JOHTO_PIXELFX_28.length,28);
  assert.equal(JOHTO_PIXELFX_43.length,43);
  assert.equal(JOHTO_LAB_ALL.length,46);
+ for(const move of JOHTO_LAB_ALL)assert.equal(move.cd,1,move.id+' must use 1s cooldown');
  assert.equal(new Set(JOHTO_LAB_ALL.map(m=>m.id)).size,46);
  const fx=new Set(JOHTO_PIXELFX_43.map(m=>m.id));
  assert.equal(fx.size,43);
@@ -32,6 +33,9 @@ test('PixelFX is build-time only; native Phaser runtime and 3 approved originals
  const runtime=readFileSync('tools/pokearena/torre2-johto-lab-runtime.js','utf8');
  const newruntime=readFileSync('tools/pokearena/torre2-johto-pixelfx-runtime.js','utf8');
  const generator=readFileSync('tools/pokearena/torre2-pixelfx-sheets.mjs','utf8');
+ const labCombat=readFileSync('tools/pokearena/torre2-johto-lab-combat.js','utf8');
+ assert.doesNotMatch(labCombat,/fighter\.cd\[slot\]=0/);
+ assert.match(runtime,/withJohtoLabCooldown/);
  const scene=readFileSync('tools/pokearena/torre2-johto-lab-scene.js','utf8');
  const build=readFileSync('tools/pokearena/build-preview.mjs','utf8');
  assert.match(runtime,/const rework=REWORK_IDS\.has\(h\.id\)/);
