@@ -47,16 +47,24 @@ test("Legacy existing moves are not falsely classified as newly audited",()=>{
 test("New experimental Johto effects require individual VFX audits, not legacy exemption",()=>{
  const ids=requiredVfxIds(process.cwd(),baseline);
  if(fs.existsSync("tools/pokearena/torre2-johto-pixelfx-catalog.js")){
-  assert.equal(ids.length,43);
-  for(const id of ["triple-kick","thief","snore","octazooka"])
-   assert.ok(ids.includes(id),"Required Johto VFX review missing: "+id);
-  const missing=validateVfxSelections(baseline,catalog,ids);
-  assert.equal(missing.filter(x=>x.includes("MISSING VFX source comparison")).length,43);
+  assert.deepEqual(ids,["octazooka","snore","thief","triple-kick"]);
+  assert.deepEqual(validateVfxSelections(baseline,catalog,ids)
+   .filter(x=>x.includes("MISSING VFX source comparison")).length,4);
+  const reviews=JSON.parse(fs.readFileSync("data/vfx-selection-decisions.json","utf8"));
+  assert.deepEqual(validateVfxSelections(reviews,catalog,ids),[]);
+  assert.equal(Object.keys(reviews.decisions).length,4);
+  for(const id of ids)assert.equal(reviews.decisions[id].visualApproval.state,"pending");
  }else assert.deepEqual(ids,[]);
 });
 test("Valid individual move comparison covers all ten sources and four native references",()=>{
  const data={...baseline,decisions:{"steel-wing":example()}};
  assert.deepEqual(validateVfxSelections(data,catalog,["steel-wing"]),[]);
+});
+test("P2 source can be selected when its real native texture reuse is documented",()=>{
+ const row=example(),effectRef="tools/pokearena/torre2-johto-four-native.js#createTriple";
+ row.originalSources.P2.effectRef=effectRef;
+ row.selected=[{sourceId:"P2",effectRef,contribution:"Reuse P2 texture layers and animation timing without changing the existing approved sprites."}];
+ assert.deepEqual(validateVfxSelections({...baseline,decisions:{"steel-wing":row}},catalog,["steel-wing"]),[]);
 });
 test("New move is blocked when no comparison record exists",()=>{
  assert.ok(validateVfxSelections(baseline,catalog,["new-test-move"]).some(x=>x.includes("MISSING")));

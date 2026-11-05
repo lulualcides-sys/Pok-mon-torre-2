@@ -20,8 +20,23 @@ export function requiredVfxIds(root=ROOT,data){
  const reused=JSON.parse(fs.readFileSync(path.join(root,"data/move-reuse-policy.json"),"utf8"));
  const grandfathered=new Set(current.legacyMoveIds||[]);
  const ids=Object.keys(reused.newMoves||{}).filter(id=>!grandfathered.has(id));
+ // Johto has 43 experimental VFX, but only four are submitted for this review.
+ // Keep the other 39 quarantined until they enter JOHTO_LAB_REVIEW_4.
+ // On parsing failure, fail closed by requiring every experimental VFX.
  const johto=path.join(root,"tools/pokearena/torre2-johto-pixelfx-catalog.js");
- if(fs.existsSync(johto))ids.push(...parseJohtoVisualIds(fs.readFileSync(johto,"utf8")));
+ if(fs.existsSync(johto)){
+  const candidates=parseJohtoVisualIds(fs.readFileSync(johto,"utf8"));
+  const lab=path.join(root,"tools/pokearena/torre2-johto-lab-catalog.js");
+  if(!fs.existsSync(lab)){ids.push(...candidates);}
+  else{
+   const code=fs.readFileSync(lab,"utf8");
+   const m=code.match(/JOHTO_LAB_REVIEW_4\s*=\s*Object\.freeze\(\[([^\]]+)\]\)/);
+   const selected=m?[...m[1].matchAll(/"([a-z0-9-]+)"/g)].map(x=>x[1]):[];
+   if(!selected.length||selected.some(id=>!candidates.includes(id)))
+    ids.push(...candidates);
+   else ids.push(...selected);
+  }
+ }
  return [...new Set(ids)].sort();
 }
 export function validateVfxSelections(data,catalog,required=[]){
@@ -66,10 +81,13 @@ export function validateVfxSelections(data,catalog,required=[]){
    if(!known.has(extra))add(id+": unrecognized source "+extra);
   if(!Array.isArray(entry.selected)||!entry.selected.length)add(id+": no justified best-match VFX selected");
   else for(const choice of entry.selected){
-   if(!known.has(choice.sourceId)||entry.libraryReview?.[choice.sourceId]?.state!=="candidate")
-    add(id+": selected effect not an eligible compared candidate: "+choice.sourceId);
-   if(!filled(choice.effectRef)||choice.effectRef!==entry.libraryReview?.[choice.sourceId]?.effectRef||
-      !filled(choice.contribution))
+   const native=LEGACY.includes(choice.sourceId);
+   const eligible=native?entry.originalSources?.[choice.sourceId]?.state==="inspected":
+    known.has(choice.sourceId)&&entry.libraryReview?.[choice.sourceId]?.state==="candidate";
+   if(!eligible)add(id+": selected effect not an eligible compared candidate: "+choice.sourceId);
+   const ref=native?entry.originalSources?.[choice.sourceId]?.effectRef:
+    entry.libraryReview?.[choice.sourceId]?.effectRef;
+   if(!filled(choice.effectRef)||choice.effectRef!==ref||!filled(choice.contribution))
     add(id+": chosen effect needs matching path and real contribution");
   }
   if(!filled(entry.comparisonRationale))add(id+": missing documented comparison and decision rationale");
