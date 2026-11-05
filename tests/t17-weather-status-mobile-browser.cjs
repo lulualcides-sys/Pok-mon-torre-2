@@ -68,6 +68,19 @@ const server=http.createServer(async(req,res)=>{
    [{side:0,text:'ATK +20%'},{side:1,text:'ATK -20%'}]);
   assert.ok(first.onScreen.length>=1,'Native Text must be visible beside actor');
   await page.screenshot({path:'test-evidence/t17-weather-status-mobile.png'});
+  // Keep a real battle alive during the three-second cosmetic expiry test.
+  // Without this, normal CPU damage can KO the actors before rain refresh.
+  await page.evaluate(()=>{
+   const b=window.__pt2Game.scene.getScene('combate');
+   for(const fighter of b.luchadores||[]){
+    fighter.inmortal=true;fighter.ko=false;
+    if(Number.isFinite(fighter.hp))fighter.hp=Math.max(1,fighter.hp);
+   }
+   if(b.controles?.[1]&&b.luchadores?.[0]){
+    const p=b.luchadores[0];
+    b.controles[1].leer=()=>({mx:0,my:0,ax:p.x,ay:p.y});
+   }
+  });
   // The native scene clock (not a mocked Date) must clear cosmetic labels
   // at 3 seconds while the real weather damage effect continues.
   await page.waitForTimeout(3150);

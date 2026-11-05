@@ -62,6 +62,9 @@ export function paginateKantoPokedexSource(original){
  }
  function kantoDexStages(def){
  const stages=etapasDe(def);
+ // Native P2 source species must display original Arena slots, not a
+ // projected Kanto campaign Lv50 loadout.
+ if(!def.torre2ArenaAdded)return stages;
  // The Torre 2 level-gated resolver only covers the Kanto campaign.
  // Non-Kanto source Pokémon such as Deoxys, Lugia and Zubat evolutions
  // must display their actual original Poké Arena abilities, never the

@@ -37,14 +37,14 @@ const server=http.createServer(async(req,res)=>{
     const raw=f.forma.vel,native=f.velBase;
     f.escena={datos:{torre2:{active:true},modo:'campanha'}};
     const campaign=f.velBase;
-    rows.push({id:def.id,stage,added:!!def.torre2ArenaAdded,extended:!!def.torre2Kanto151,raw,native,campaign,formula:synchronizedArenaSpeed(raw,{added:!!def.torre2ArenaAdded,kanto151:!!def.torre2Kanto151})});
+    rows.push({id:def.id,stage,added:!!def.torre2ArenaAdded,extended:!!def.torre2Kanto151,johto:!!def.torre2Johto100,raw,native,campaign,formula:synchronizedArenaSpeed(raw,{added:!!def.torre2ArenaAdded,kanto151:!!def.torre2Kanto151,johto100:!!def.torre2Johto100})});
    }
   }
   return rows;
  });
- const raw={native:[],early:[],extended:[]},synced={native:[],early:[],extended:[]};
+ const raw={native:[],early:[],extended:[],johto:[]},synced={native:[],early:[],extended:[],johto:[]};
  for(const row of result){
-  const group=!row.added?'native':row.extended?'extended':'early';
+  const group=!row.added?'native':row.johto?'johto':row.extended?'extended':'early';
   if(row.stage===0){raw[group].push(row.raw);synced[group].push(row.native);}
   assert.equal(row.campaign,row.native,row.id+' Arena and campaign must walk at same speed');
   assert.equal(row.native,row.formula,row.id+' uses the exact tempo helper');
@@ -59,10 +59,13 @@ const server=http.createServer(async(req,res)=>{
  assert.ok(summary.native.count>20,'baseline roster loaded');
  assert.ok(summary.early.count>10,'early Kanto roster loaded');
  assert.ok(summary.extended.count>10,'remaining Kanto roster loaded');
+ assert.ok(summary.johto.count>30,'Johto roster loaded as its own generation');
  assert.ok(Math.abs(summary.early.new-summary.native.new)<15,'early added Kanto should match native pacing');
  assert.ok(Math.abs(summary.extended.new-summary.native.new)<15,'extended added Kanto should match native pacing');
+ assert.ok(Math.abs(summary.johto.new-summary.native.new)<15,'Johto walking speed should match native pacing');
  assert.ok(summary.early.new>summary.early.old,'early added Kanto movement improved');
  assert.ok(summary.extended.new>summary.extended.old,'extended Kanto movement improved');
+ assert.ok(summary.johto.new>summary.johto.old,'Johto walking speed calibrated without altering originals');
  assert.deepEqual(errors,[],'no runtime errors');
  console.log('PASS native Arena and Kanto walk at identical calibrated pace; original species unchanged');
  }finally{await browser.close();server.close()}

@@ -70,6 +70,8 @@ await fs.writeFile(path.join(dest,'assets/ui/frlg/items/bag-male.png'),bagPNG);
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');
 await installEarlyKantoSprites(dest);
+const {installJohtoSpriteCollabAssets}=await import('./install-johto-sprites.mjs');
+await installJohtoSpriteCollabAssets(dest);
 // Only replace the original title-image bytes. The Phaser title scene, its
 // buttons, animated background, layout, hotspots and menu flow stay identical.
 // Keep the approved pixel logo as a small indexed PNG for fast mobile loading.
@@ -276,6 +278,8 @@ await Promise.all([
  ['tools/pokearena/torre2-arena-tempo.js','arena-tempo.js'],
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
+ ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
+ ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
  ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
@@ -335,9 +339,9 @@ patches.push(
  ['datos.js',[
   ['function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];return{...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen}}',
    'function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];if(!e)return def;const result={...def,...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen};for(const key of ["hp","atk","def","vel","regen"]){if(!Number.isFinite(result[key]))result[key]=def[key];}return result}'],
-  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
+  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{addAllJohtoSpecies}from"./torre2/johto-100-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
   ['const ROSTER=TODOS.filter(p=>!p.desactivado);',
-   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
+   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));TODOS.push(...addAllJohtoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
  ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
@@ -610,7 +614,7 @@ patches.push(['luchador.js',[
  ],
  [
   'get velBase(){return(this.forma.vel+(this.mega?this.forma.mega.vel:0))*(this.jefe?.vel??1)}',
-  'get velBase(){return synchronizedArenaSpeed(this.forma.vel+(this.mega?this.forma.mega.vel:0),{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,campaign:!!this.escena.datos?.torre2})*(this.jefe?.vel??1)}'
+  'get velBase(){return synchronizedArenaSpeed(this.forma.vel+(this.mega?this.forma.mega.vel:0),{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,johto100:this.def.torre2Johto100===true,campaign:!!this.escena.datos?.torre2})*(this.jefe?.vel??1)}'
  ]
 ]]);
 // Only freshly-added Kanto BASE forms outside the campaign need enough
@@ -923,7 +927,7 @@ for(const [filename,changes] of patches){
        !body.slice(start,start+350).includes(native))
      throw Error('Unrecognized native speed getter: '+body.slice(start,start+250));
     const updated='synchronizedArenaSpeed('+native+
-      ',{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,campaign:!!this.escena.datos?.torre2})';
+      ',{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,johto100:this.def.torre2Johto100===true,campaign:!!this.escena.datos?.torre2})';
     body=body.slice(0,start)+body.slice(start).replace(native,updated);
     continue;
    }
@@ -1071,6 +1075,7 @@ for(const [filename,changes] of patches){
      throw Error('Unknown native ROSTER declaration; not injecting species');
     const setup='TODOS.push(...addEarlyKantoSpecies(TODOS));'+
      'TODOS.push(...addAllKantoSpecies(TODOS));'+
+     'TODOS.push(...addAllJohtoSpecies(TODOS));'+
      'upgradeKantoEvolutionBattleKits(TODOS);';
     body=body.replace(declarations[0],setup+declarations[0]);
     continue;
@@ -1104,6 +1109,9 @@ const spriteManifest=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/man
 for(const spriteFile of rayquazaRequiredSpriteFiles(spriteManifest))
  await fs.access(path.join(dest,'assets/pmd',spriteFile));
 await fs.writeFile(rayquazaRosterFile,previewRoster);
+
+
+
 console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; required PMD sprite assets verified.');
 
 // Native menus only: install premium pixel borders, maintaining original
@@ -1191,8 +1199,36 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
 // pedestal: six rows of six cards with tiny previous/next Phaser controls.
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
-await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
- await fs.readFile(pokedexPath,'utf8')));
+const paginatedPokedex=paginateKantoPokedexSource(
+ await fs.readFile(pokedexPath,'utf8'));
+// Display-only adapter for native incomplete kits, including Ho-Oh,
+// Crobat and Steelix; do NOT alter a single original P2 combat slot.
+const safeSparsePokedex=`
+const __pt2OriginalPokedexMovimientos=Pokedex.prototype.movimientos;
+Pokedex.prototype.movimientos=function(...args){
+ const kit=this.etapas?.[this.etapa]?.kit||{},slots=["lmb","rmb","q","e","esp"];
+ if(!slots.some(slot=>!kit[slot]?.nombre||!kit[slot]?.forma))
+  return __pt2OriginalPokedexMovimientos.apply(this,args);
+ // The P2 renderer assumes every slot exists. For sparse kits (Unown,
+ // Ho-Oh, Wobbuffet...) render a Pokédex-only readout; no battle mutation.
+ const group=this.movs||(this.movs=this.add.container(0,0).setDepth(160));
+ group.removeAll(true);
+ const labels=["ATK","HAB 2","HAB 3","ULT","ESQUIVA"];
+ const scaleX=Number(group.scaleX)||1,scaleY=Number(group.scaleY)||1;
+ for(let i=0;i<slots.length;i++){
+  const h=kit[slots[i]],valid=!!(h?.nombre&&h?.forma);
+  const line=this.add.text((345-(Number(group.x)||0))/scaleX,
+   (165+i*27-(Number(group.y)||0))/scaleY,
+   labels[i]+": "+(valid?h.nombre:"SEM GOLPE"),{
+    fontFamily:"Pixelify Sans,monospace",fontSize:"11px",
+    color:valid?"#e2f2ff":"#91a6b9",
+    stroke:"#081a2a",strokeThickness:2
+   }).setOrigin(0,.5);
+  group.add(line);
+ }
+};
+`;
+await fs.writeFile(pokedexPath,paginatedPokedex+safeSparsePokedex);
 
 // The base client already ships the five Greninja styles for Froakie,
 // Frogadier and Greninja. Use the ORIGINAL sprites, metadata and red aura;
@@ -1200,6 +1236,33 @@ await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
 const {installGreninjaVariants}=await import('./torre2-greninja-variants.mjs');
 const greninjaVariants=await installGreninjaVariants(dest,clientSource);
 console.log('Native Greninja 5-skin reuse:',JSON.stringify(greninjaVariants));
+
+// Apply OFFLINE-only unlock AFTER native Greninja's own source compatibility
+// checks; the installer must inspect the unmodified upstream lock expression.
+// Rayquaza and the 100 Johto species must be selectable in OUR offline
+// Arena/Training/VS only. Keep native kits untouched; leave ranked unchanged.
+const johtoSelectionPath=path.join(dest,clientSource,'escenas/seleccion.js');
+const johtoSelection=await fs.readFile(johtoSelectionPath,'utf8');
+// Source versions can legitimately add new permissions to the OFFLINE
+// selection rule. Preserve the full ORIGINAL rule as fallback; only override
+// with an affirmative offline allow for Johto and Rayquaza. Fail closed on
+// unrecognized or ambiguous upstream source.
+const candidates=[...johtoSelection.matchAll(/const bloqueado=([^;\n]{40,500});/g)];
+if(candidates.length!==1||
+   !candidates[0][1].includes('desbloqueado')||
+   !candidates[0][1].includes('ranked')){
+ const i=johtoSelection.indexOf('bloqueado=');
+ throw Error('Unrecognized upstream native selection locking rule: '+
+  johtoSelection.slice(Math.max(0,i-110),i+540));
+}
+const originalExpression=candidates[0][1];
+const protectedLock='const __torre2Offline=["cpu","entreno","versus"].includes(this.modo);'+
+ 'const __torre2IsJohto=f=>{const n=Number(f?.dex);return Number.isInteger(n)&&n>=152&&n<=251};'+
+ 'const __torre2Solo=__torre2Offline&&(p.id==="rayquaza"||__torre2IsJohto(p)||'+
+ 'p.evoluciones?.some(__torre2IsJohto)||p.torre2Johto100===true);'+
+ 'const bloqueado=__torre2Solo?false:('+originalExpression+');';
+await fs.writeFile(johtoSelectionPath,
+ johtoSelection.replace(candidates[0][0],protectedLock));
 
 // Avoid stale attack VFX on mobile browsers and GitHub Pages caching.
 // Previously all revisions imported exactly the same /src-8d89349697/*.js

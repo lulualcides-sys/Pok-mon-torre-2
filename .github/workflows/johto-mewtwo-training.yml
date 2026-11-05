@@ -67,11 +67,20 @@ jobs:
           node tools/pokearena/build-preview.mjs
           node tests/johto-training-lab-built.test.mjs
           node tests/johto-pixelfx-built.test.mjs
+          node tests/johto-100-built.test.mjs
       - name: Test Mewtwo Lab with 3 approved, 15 replaced and 28 visual-only PixelFX casts
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
-          node tests/johto-training-lab-browser.cjs
+          # The 100-species release does not publish any unapproved visual
+          # experiments. Validate the real Arena and Pokédex now; keep the
+          # experimental Steel Wing/PixelFX lab gate on its own PR (#565).
+          if [[ "${{ github.head_ref }}" == release/johto100-* ]]; then
+            node tests/johto-100-browser.cjs
+          else
+            node tests/johto-training-lab-browser.cjs
+            node tests/johto-100-browser.cjs
+          fi
       - uses: actions/upload-artifact@v4
         if: always()
         with:

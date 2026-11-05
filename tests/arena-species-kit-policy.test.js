@@ -223,7 +223,7 @@ test('Arena fighter modifications are conditional; campaign/native kits stay unt
  assert.ok(['VAPOREON','JOLTEON','FLAREON'].includes(evolved.nombre));
  assert.equal(native.forma.nombre,evolved.nombre,'Evolution stable for one fighter');
  assert.equal(native.puedeEvolucionar,false,'Eevee cannot evolve again into another branch');
- assert.equal(native.kitActual().lmb.cd,evolved.nombre==='VAPOREON'?3.5:evolved.nombre==='FLAREON'?3.5:5);
+ assert.strictEqual(native.kitActual(),eevee.evoluciones[native.etapa-1].kit,'Native Eevee must keep original cooldown and kit');
  const story=new Fighter(eevee,true);story.etapa=1;
  assert.equal(story.forma.nombre,'VAPOREON','Campaign stays on existing evolution branch');
  assert.strictEqual(story.kitActual(),eevee.evoluciones[0].kit,'No Arena cooldown patch in campaign');
@@ -288,7 +288,8 @@ test('Live Gengar Arena policy also covers evolved Gastly but not campaign or ot
  installArenaMovePolicy(Fighter,[gastly,donor]);
  const arena=new Fighter(gastly,false,2),campaign=new Fighter(gastly,true,2);
  const corrected=arena.kitActual();
- assert.equal(corrected.q.nombre,'Dark Pulse','Gengar evolution must receive the approved distinct Dark Pulse at fighter runtime');
+ assert.strictEqual(corrected,nativeKit,'Native Gengar kit must remain strictly original in Arena');
+ assert.equal(corrected.q.nombre,'Hyper Beam','Original Gengar native slot cannot be replaced');
  assert.strictEqual(campaign.kitActual(),nativeKit,'Gen III campaign keeps original kit');
  assert.equal(nativeKit.q.nombre,'Hyper Beam','Native source untouched');
  assert.equal(new Fighter(gastly,false,1).kitActual().rmb.nombre,'Shadow Ball',

@@ -52,6 +52,10 @@ export function upgradeKantoEvolutionBattleKits(roster){
   lookup.set(h.nombre.toLowerCase(),h);
  const changed=[];
  for(const def of roster){
+  // The original Poké Arena 2D client owns every native species kit and
+  // evolution/Mega. Never synthesize moves for its base-roster entries.
+  // Only families introduced by Torre 2 may use custom FRLG evolution kits.
+  if(!def?.torre2ArenaAdded)continue;
   if(!allowed.has(def.id)||!Array.isArray(def.evoluciones))continue;
   const byStage=new Map([[def.id,def],
    ...def.evoluciones.map(x=>[String(x.nombre||'').toLowerCase(),x])]);

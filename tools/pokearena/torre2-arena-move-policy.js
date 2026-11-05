@@ -311,9 +311,12 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   if(this.escena?.datos?.torre2)return original;
   const form=this.forma;
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
-  if(id==='gengar')return enforceArenaMoveCooldowns(replaceGengarHyperBeam(original,library));
+  // Native P2 battle kits stay exactly as they came from original client.
   if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
-   return enforceArenaMoveCooldowns(original);
+   return original;
+  // Johto was chosen using genuine species FRLG/approved attacks, not
+  // Kanto Arena-121 fallback or native cooldown rewrite.
+  if(this.def.torre2Johto100===true)return original;
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
   return selectApprovedArenaKit(auto,id,library,nativeDodges);
  };
