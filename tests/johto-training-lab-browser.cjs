@@ -31,7 +31,7 @@ const server=http.createServer(async(req,res)=>{
    s.slot=0;s.moveCards.find(c=>c.m.id==='thief').r.emit('pointerdown');
    return {cards:s.moveCards.length,slots:s.picks,active:s.slot};
   });
-  assert.equal(editor.cards,18);
+  assert.equal(editor.cards,15,'Editor paginates 46 moves into mobile-friendly sets of 15');
   assert.equal(editor.slots[0],'thief','Move chosen from the editor must equip in ATK');
   assert.equal(new Set(editor.slots).size,4,'No duplicated move on slots');
   await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').startPractice());
@@ -68,6 +68,9 @@ const server=http.createServer(async(req,res)=>{
     const native=JOHTO_P2_TEXTURES[move.id]||[];
     const textures=native.map(name=>({name,loaded:scene.textures.exists(name),
       rendered:scene.children.list.some(o=>o.active&&o.texture?.key===name)}));
+    const pixelfxKey='torre2-johto-pixelfx-'+move.id;
+    const pixelFXLoaded=scene.textures.exists(pixelfxKey);
+    const pixelFXRendered=scene.children.list.some(o=>o.active&&o.texture?.key===pixelfxKey);
     const pilotKey='torre2-johto-pilot-'+move.id;
     const pilot=scene.textures.exists(pilotKey);
     const electroBallLoaded=scene.textures.exists('vfx-electroball');
@@ -80,7 +83,7 @@ const server=http.createServer(async(req,res)=>{
       o.getData?.('torre2-zap-native-impact')===true&&
       o.texture?.key==='vfx-electroball');
     result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures,
-     pilot,electroBallLoaded,electroBallRendered,zapImpactRendered,
+     pilot,pixelFXLoaded,pixelFXRendered,electroBallLoaded,electroBallRendered,zapImpactRendered,
      previewVisible:pilot&&scene.children.list.some(o=>
       o.active&&o.texture?.key===pilotKey)});
    }
@@ -94,9 +97,12 @@ const server=http.createServer(async(req,res)=>{
    if(cast.id==='zap-cannon'){
     assert.ok(cast.electroBallLoaded&&cast.electroBallRendered&&cast.zapImpactRendered,
      'Zap Cannon must render original Raichu Electro Ball plus impact');
-   }else{
+   }else if(['powder-snow','whirlpool'].includes(cast.id)){
     assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
-     cast.id+' missing actual native P2 sprite: '+JSON.stringify(cast.textures));
+     cast.id+' approved native P2 art was replaced unexpectedly');
+   }else{
+    assert.ok(cast.pixelFXLoaded&&cast.pixelFXRendered,
+     cast.id+' missing actual PixelFX sprite in Phaser renderer');
    }
   }
   // Snow and Whirlpool are approved. Zap Cannon now uses the base sprite
@@ -189,6 +195,6 @@ const server=http.createServer(async(req,res)=>{
   const returned=await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').picks);
   assert.equal(returned[0],'thief');
   assert.deepEqual(errors,[],'No uncaught Phaser JS errors');
-  console.log('PASS MEWTWO JOHTO LAB: selectable 18, native Training Mewtwo, 4 slots and return');
+  console.log('PASS MEWTWO JOHTO LAB: 3 approved + 15 remade PixelFX casts, plus 28 preview choices');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});
