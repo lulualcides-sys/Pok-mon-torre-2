@@ -11,6 +11,14 @@ node tools/dev/vfx-source-search.mjs --all
 node --test tests/vfx-source-library.test.js
 ```
 
+## Padrão obrigatório de comparação por golpe (05/11/2026)
+
+A fonte não é escolhida por padrão. Para CADA golpe, pesquisar sua mecânica, avaliar as dez fontes com evidência e selecionar a que melhor encaixa em movimento, silhueta, pixel art, licença e desempenho. Comparar as dez não significa copiar as dez. Registrar a ficha individual em data/vfx-selection-decisions.json antes de criar ou refazer a animação.
+
+Ferramentas: node tools/dev/vfx-source-search.mjs "NOME DO GOLPE" --json; node tools/dev/vfx-source-search.mjs --all; node tools/dev/vfx-review-policy.mjs --draft "NOME DO GOLPE"; node tools/dev/vfx-review-policy.mjs --check.
+
+Protocolo detalhado: docs/PADRAO-COMPARACAO-VFX-POR-GOLPE.md. PR #565 de Johto ainda deve auditar seus 43 efeitos antes do merge; preservar os três VFX já aprovados. Código sem licença verificável nunca pode ser copiado.
+
 ## Checklist obrigatório antes de criar/refazer um golpe
 
 1. **Preserve a regra das quatro fontes originais** em `docs/agentes/POLITICA-GOLPES-INTEGRAL.md`: T2 aprovado, Poké Arena 2D, Zarza, Emerald Arena. Este novo acervo é *complementar*, não uma dispensa nem comprovação automática dessas quatro fontes.
