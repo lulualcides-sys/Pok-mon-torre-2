@@ -8,8 +8,12 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
   // exists in the shared installed library, so an autopopulate fallback
   // would incorrectly change Ho-Oh and must fail this regression test.
   {id:'ho-oh',kit:{},evoluciones:[]},
-  {id:'crobat',kit:{e:{nombre:'Cross Poison',forma:'native-poison',dano:11}},
-   evoluciones:[{nombre:'Crobat Mega',kit:{lmb:{nombre:'Wing Attack',forma:'native-wing'}}}]},
+  {id:'zubat',kit:{lmb:{nombre:'Leech Life',forma:'native-leech',dano:4}},
+   evoluciones:[{nombre:'Crobat',dex:'0169',
+    kit:{e:{nombre:'Cross Poison',forma:'native-poison',dano:11}},
+    mega:{nombre:'Mega Crobat',dex:'0169',kit:{lmb:{nombre:'Wing Attack',forma:'native-wing'}}}}]},
+  {id:'onix',kit:{lmb:{nombre:'Tackle',forma:'native-tackle'}},
+   evoluciones:[{nombre:'Steelix',dex:'0208',kit:{e:{nombre:'Heavy Slam',forma:'native-steel'}}}]},
   {id:'raikou',kit:{lmb:{nombre:'Thunder Fang',forma:'native-electric'},
     rmb:{nombre:'Shock Wave',forma:'native-shock'},q:{nombre:'Discharge',forma:'native-d'},
     e:{nombre:'Wild Charge',forma:'native-w'},esp:{nombre:'Dodge',forma:'dash'}},
@@ -23,7 +27,7 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
   'Native P2 kits/evolution slots must never change as a side effect of Johto injection');
  assert.equal(original[0].kit.lmb,undefined,'Empty native Ho-Oh must stay empty');
  assert.equal(original[0].torre2JohtoNativeLegalKit,undefined,'Do not silently mark native repaired');
- for(const id of ['ho-oh','crobat','raikou'])
+ for(const id of ['ho-oh','crobat','steelix','raikou'])
   assert.equal(created.some(p=>p.id===id),false,'Do not re-add a native P2 species: '+id);
  assert.equal(created.some(p=>p.id==='chikorita'),true,'Genuinely new Johto species should still be added');
 });

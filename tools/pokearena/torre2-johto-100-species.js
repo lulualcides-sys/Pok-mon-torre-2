@@ -94,13 +94,29 @@ export function johto100Kit(p,library){
  return kit;
 }
 export function addAllJohtoSpecies(original){
- const known=new Map(original.map(x=>[x.id,x])),library=johtoMoveLibrary(original);
+ const library=johtoMoveLibrary(original);
+ // The native P2 roster contains both root species and evolution stages
+ // nested in evoluciones (sometimes with a Mega form). Protect ALL of them,
+ // not merely original[].id, and do not create duplicate re-kitted stages.
+ const nativeNames=new Set(),nativeDex=new Set();
+ const register=form=>{
+  if(!form)return;
+  for(const name of [form.id,form.nombre]){
+   const key=canon(name);if(key)nativeNames.add(key);
+  }
+  const n=Number(form.dex);
+  if(Number.isInteger(n)&&n>0)nativeDex.add(n);
+ };
+ for(const p of original){
+  register(p);register(p.mega);
+  for(const stage of p.evoluciones||[]){register(stage);register(stage.mega)}
+ }
  const result=[];
  for(const p of JOHTO_100_ROWS){
   // Native P2 originals (including evolutions, megas and empty Ho-Oh) are
   // NEVER mutated, completed or re-slotted. Only genuinely new species
   // receive FRLG-compatible Torre 2 kits; Arena and Pokédex share native truth.
-  if(known.has(p[1])) continue;
+  if(nativeNames.has(canon(p[1]))||nativeDex.has(p[0])) continue;
   const kit=johto100Kit(p,library);
   const sub=lineage(p[0]);
   result.push({
