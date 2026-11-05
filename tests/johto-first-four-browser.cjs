@@ -35,7 +35,7 @@ const server=http.createServer(async(req,res)=>{
     defaults:[...s.picks],
     removedOld:c.JOHTO_LAB_VISIBLE.map(m=>({id:m.id,loaded:s.textures.exists("torre2-johto-pixelfx-"+m.id)}))};
   });
-  assert.deepEqual(visible.visible,["thief","snore","false-swipe","steel-wing"]);
+  assert.deepEqual(visible.visible,["thief","false-swipe","steel-wing","rock-smash"]);
   assert.deepEqual(visible.defaults,visible.visible);
   assert.equal(visible.originals.length,5,"All 5 approved FX preserved in move pool");
   assert.ok(visible.removedOld.every(x=>!x.loaded),
@@ -99,7 +99,9 @@ const server=http.createServer(async(req,res)=>{
     const oldChildren=new Set(scene.children.list);
     const ok=TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:"q"});
     const native=scene.children.list.filter(o=>o.active&&!oldChildren.has(o)&&
-      ["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-mira","p-psiquico"].includes(o.texture?.key));
+      ["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-mira","p-psiquico","p-guijarro",
+       "vfx-quickattack","vfx-arco","vfx-arco-sombra","vfx-arco-acero","vfx-arco-golpe",
+       "vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca"].includes(o.texture?.key));
     const effect=scene.efectos.at(-1),beforeHP=enemy.hp;
     const nameVisible=scene.globos?.some(c=>c.list?.some(obj=>obj.text===m.nombre+"!"))||false;
     const poses=[];
@@ -109,12 +111,13 @@ const server=http.createServer(async(req,res)=>{
      for(let frame=0;frame<66;frame++){
       effect.update(.016);
       if(frame%3===0)poses.push(native.map(o=>o.visible?
-       [o.x,o.y,o.displayWidth,o.displayHeight,Math.round(o.alpha*100)].join(","):"off").join("|"));
+       [o.x,o.y,o.displayWidth,o.displayHeight,o.frame?.name,Math.round(o.alpha*100)].join(","):"off").join("|"));
      }
     }
     out.push({id:m.id,ok,source:"P2-native",sprites:native.length,
       assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
       damage:beforeHP-enemy.hp,nameVisible,
+      sourceFrames:[...new Set(native.filter(o=>o.texture?.key?.startsWith("vfx-")).map(o=>o.frame?.name))].filter(x=>x!=null),
       noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
     // Await P2's native 1.05s globo tween before the next cast.
     // Avoid exhausting the canvas pool via artificial synchronous bursts.
@@ -132,6 +135,8 @@ const server=http.createServer(async(req,res)=>{
   console.log("JOHTO_FIRST_FOUR_IN_PHASER",JSON.stringify({visible,casts,errors,network}));
   assert.ok(casts.every(m=>m.ok&&m.sprites>=8&&m.unique>=3),
    "All four must animate multiple REAL P2 pixel sprites inside Phaser");
+  assert.ok(casts.every(m=>m.sourceFrames.length>=2),
+   "All four use actual multi-frame P2 VFX source spritesheets");
   assert.ok(casts.every(m=>m.damage>0),
    "Every move must reduce native opponent HP, not only show an effect");
   assert.ok(casts.every(m=>m.nameVisible),

@@ -15,12 +15,14 @@ test("Only four unapproved attacks are in the review UI; approved three untouche
  }
 });
 test("All four VFX move and change native P2 sprite layers, no painted rectangles",()=>{
- const names=new Set(["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-psiquico","p-mira"]);
+ const names=new Set(["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-psiquico","p-mira","p-guijarro",
+ "vfx-quickattack","vfx-arco","vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca"]);
  const scene={textures:{exists(id){return names.has(id)},get(){return{setFilter(){}}}},
   add:{image(x,y,id){return {
    name:id,active:true,visible:false,alpha:0,
    setDepth(){return this},setAlpha(x){this.alpha=x;return this},
    setTint(){return this},setBlendMode(){return this},
+   setFrame(n){this.frame=n;return this},
    setVisible(x){this.visible=x;return this},
    setPosition(x,y){this.x=x;this.y=y;return this},
    setDisplaySize(w,h){this.w=w;this.h=h;return this},
@@ -40,7 +42,7 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
      hitPoint:{x:293,y:151},projectile:{x:170+(293-170)*t,y:146+5*t,active:t<.7}
     });
     poses.push(fx.sprites.map(o=>o.visible?
-     [o.x,o.y,o.w,o.h,Math.round(o.alpha*100)].join(","):"off").join("|"));
+     [o.x,o.y,o.w,o.h,o.frame,Math.round(o.alpha*100)].join(","):"off").join("|"));
    }
    assert.ok(new Set(poses).size>=5,"Native animation is static for "+id);
    fx.destroy();assert.ok(fx.sprites.every(x=>!x.active));
@@ -50,9 +52,10 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
 test("Gen III stats and one-second shared lab cooldown remain",()=>{
  for(const m of JOHTO_LAB_VISIBLE)assert.equal(m.cd,1);
  const thief=JOHTO_LAB_VISIBLE.find(x=>x.id==="thief");
- const snore=JOHTO_LAB_VISIBLE.find(x=>x.id==="snore");
+ const rock=JOHTO_LAB_VISIBLE.find(x=>x.id==="rock-smash");
  assert.equal(thief.poder,40);assert.equal(thief.categoria,"SPECIAL");
- assert.equal(thief.pp,10);assert.equal(snore.poder,40);assert.equal(snore.categoria,"PHYSICAL");
+ assert.equal(thief.pp,10);assert.equal(rock.poder,20);assert.equal(rock.categoria,"PHYSICAL");
+ assert.equal(rock.precisao,100);assert.equal(rock.pp,15);
 });
 
 test("P2 contact geometry rejects remote melee and accepts actual overlapping body",async()=>{

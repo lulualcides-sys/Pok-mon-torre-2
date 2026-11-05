@@ -206,7 +206,7 @@
           "state": "inspected",
           "reference": "tools/pokearena/torre2-johto-four-native.js#createThief",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createThief",
-          "finding": "Uses existing Poké Arena 2D client textures: p-fantasma, p-cuchilla, p-estrella, p-aura; local Phaser image layers are animated with transforms."
+          "finding": "Latest 2026-11-05 visual rewrite discards enlarged generic icon overlays. Uses genuine P2 vfx-quickattack, palette-shadow vfx-arco-sombra, vfx-astonish and tiny original particle glints. Native contact/hit handling remains unchanged."
         },
         "Z": {
           "state": "unavailable",
@@ -303,10 +303,10 @@
         {
           "sourceId": "P2",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createThief",
-          "contribution": "Existing Poké Arena 2D textures p-fantasma, p-cuchilla, p-estrella, p-aura are reused by createThief in native Phaser layers, without rewriting approved effects."
+          "contribution": "Original P2 HOJAS multi-frame sprite sheets: genuine P2 vfx-quickattack, palette-shadow vfx-arco-sombra, vfx-astonish and tiny original particle glints. Real source imagery, no generated blocks. Four pending for visual approval."
         }
       ],
-      "comparisonRationale": "P2 ghost plus slash textures support a theft-and-return motion, unlike the inspected Pixelbolt single slash and generic PixelFX projectiles. The visual does not falsely claim implemented held-item theft.",
+      "comparisonRationale": "Compared static MAPAS icon stacking with original P2 HOJAS animations. Multi-frame, accurately scaled, original palette frame sequences are materially closer to P2 production VFX; collision timing remains native. User approval still pending.",
       "implementation": {
         "files": [
           "tools/pokearena/torre2-johto-four-native.js",
@@ -458,8 +458,8 @@
         "browser": "Four native animations passed Chromium on PR #565 before CI policy synchronization."
       },
       "visualApproval": {
-        "state": "pending",
-        "evidence": ""
+        "state": "rejected",
+        "evidence": "User rejected Snore from current review batch on 2026-11-05; historical move remains in original 18-offensive list only."
       }
     },
     "octazooka": {
@@ -623,7 +623,7 @@
           "state": "inspected",
           "reference": "tools/pokearena/torre2-johto-four-native.js#createFalseSwipe",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createFalseSwipe",
-          "finding": "Uses P2 vfx.js source native textures p-cuchilla, p-estrella, p-aura, and the original luchador.js#recibir contact pipeline in Phaser/WebGL."
+          "finding": "Latest 2026-11-05 visual rewrite discards enlarged generic icon overlays. Uses P2 vfx-acometida and palette-golpe vfx-arco-golpe, vfx-cuchilla source frame progression. Native contact/hit handling remains unchanged."
         },
         "Z": {
           "state": "unavailable",
@@ -720,10 +720,10 @@
         {
           "sourceId": "P2",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createFalseSwipe",
-          "contribution": "Native P2 source textures and body-collision logic are reused for non-KO precision strike; effect appears only after a confirmed recibir hit, without altering approved attacks."
+          "contribution": "Original P2 HOJAS multi-frame sprite sheets: P2 vfx-acometida and palette-golpe vfx-arco-golpe, vfx-cuchilla source frame progression. Real source imagery, no generated blocks. Four pending for visual approval."
         }
       ],
-      "comparisonRationale": "P2 moving texture layers and native recibir body hit logic are the closest legal and functional match for non-KO precision strike; reviewed Pixelbolt and PixelFX samples lack the same collision-timed original battle behavior.",
+      "comparisonRationale": "Compared static MAPAS icon stacking with original P2 HOJAS animations. Multi-frame, accurately scaled, original palette frame sequences are materially closer to P2 production VFX; collision timing remains native. User approval still pending.",
       "implementation": {
         "files": [
           "tools/pokearena/torre2-johto-four-native.js",
@@ -765,7 +765,7 @@
           "state": "inspected",
           "reference": "tools/pokearena/torre2-johto-four-native.js#createSteelWing",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createSteelWing",
-          "finding": "Uses P2 vfx.js source native textures p-cuchilla, p-estrella, p-mira, p-aura, and the original luchador.js#recibir contact pipeline in Phaser/WebGL."
+          "finding": "Latest 2026-11-05 visual rewrite discards enlarged generic icon overlays. Uses P2 vfx-fly and recolored native steel vfx-arco-acero, tiny vfx-aeroblast feathers. Native contact/hit handling remains unchanged."
         },
         "Z": {
           "state": "unavailable",
@@ -862,10 +862,10 @@
         {
           "sourceId": "P2",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createSteelWing",
-          "contribution": "Native P2 source textures and body-collision logic are reused for metallic wing strike; effect appears only after a confirmed recibir hit, without altering approved attacks."
+          "contribution": "Original P2 HOJAS multi-frame sprite sheets: P2 vfx-fly and recolored native steel vfx-arco-acero, tiny vfx-aeroblast feathers. Real source imagery, no generated blocks. Four pending for visual approval."
         }
       ],
-      "comparisonRationale": "P2 moving texture layers and native recibir body hit logic are the closest legal and functional match for metallic wing strike; reviewed Pixelbolt and PixelFX samples lack the same collision-timed original battle behavior.",
+      "comparisonRationale": "Compared static MAPAS icon stacking with original P2 HOJAS animations. Multi-frame, accurately scaled, original palette frame sequences are materially closer to P2 production VFX; collision timing remains native. User approval still pending.",
       "implementation": {
         "files": [
           "tools/pokearena/torre2-johto-four-native.js",
@@ -879,6 +879,148 @@
         "browser": "tests/johto-first-four-browser.cjs",
         "screenshots": "pending real user visual approval",
         "mobilePerformance": "not yet benchmarked separately"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "rock-smash": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/rock-smash",
+        "behavior": "Gen III Rock Smash: Fighting-type, 20 power, 100 accuracy, physical contact, 50% chance to reduce DEF by one stage. Native P2 armaduraRota is a temporary DEF reduction analogue, not exact Gen III stage semantics."
+      },
+      "animation": {
+        "origin": "Short animated P2 vfx-acometida starts beside the fighter who approaches using native body movement.",
+        "travel": "Windup animation follows actual attacker, never spawning a remote stone or applying distant damage.",
+        "contact": "Only a confirmed native recibir() body hit displays 4 animated original P2 vfx-roca-fin sprite-sheet frames directly at the target.",
+        "aftermath": "Five small native P2 rock-fragment sprites spread and fall, plus four original p-guijarro chips; all disappear in under 0.36 seconds."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated P2-native spritesheet adaptation. No writes to approved source effects; distinct P2 hit collision, frame-based rubble."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createRockSmash",
+          "finding": "P2 vfx.js HOJAS.roca contains 32x32 4-column spritesheet with roca-fin frames 8-11, and HOJAS.acometida uses 80x40; combined with real luchador.js#recibir. P2 armaduraRota temporary DEF reduction differs from Gen III permanent -1 DEF stage."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared available licensed generic particles and angular shapes against Rock Smash: none preserves the distinctive P2 contact-only animated 4-frame rock break and grounded shards; retain native P2 HOJAS.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Compared available licensed generic particles and angular shapes against Rock Smash: none preserves the distinctive P2 contact-only animated 4-frame rock break and grounded shards; retain native P2 HOJAS.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared available licensed generic particles and angular shapes against Rock Smash: none preserves the distinctive P2 contact-only animated 4-frame rock break and grounded shards; retain native P2 HOJAS.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createRockSmash",
+          "contribution": "Uses genuine P2 vfx-roca/vfx-acometida frames and p-guijarro chips in isolated Phaser animation, with original recibir body contact; does not modify previously approved visuals."
+        }
+      ],
+      "comparisonRationale": "Original P2 HOJAS sprite sheets provide 4 varied rock-break animation frames and bounded pixel rubble, avoiding the blocky generic particles from prior rejected visuals. Tested against PixelFX/Pixelbolt alternatives recorded in libraryReview.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "requires visual approval from user",
+        "mobilePerformance": "needs visual user device review"
       },
       "visualApproval": {
         "state": "pending",
