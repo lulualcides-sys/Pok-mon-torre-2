@@ -17,8 +17,24 @@ const server=http.createServer(async(req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
   page.on('pageerror',e=>errors.push(String(e)));
-  await page.goto('http://127.0.0.1:4297/arena2d/?original=1');
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
+  const bootConsole=[],missingAssets=[];
+  page.on('console',m=>{if(m.type()==='error')bootConsole.push(m.text().slice(0,400));});
+  page.on('requestfailed',req=>missingAssets.push(req.url().slice(0,240)+" "+(req.failure()?.errorText||'')));
+  const bootResponse=await page.goto('http://127.0.0.1:4297/arena2d/?original=1');
+  try{
+   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>({
+    readyState:document.readyState,gameStarted:!!window.__pt2Started,game:!!window.__pt2Game,
+    scenes:window.__pt2Game?.scene?.scenes?.map(s=>({key:s.sys.settings.key,active:s.scene.isActive()})),
+    bootText:document.querySelector('#pt2-boot-message')?.textContent,
+    scripts:[...document.querySelectorAll('script[src]')].map(s=>s.src).slice(-10)
+   })).catch(e=>({evaluateError:String(e)}));
+   console.error('JOHTO_LAB_BOOT_DIAGNOSTIC',JSON.stringify({diagnostic,errors,bootConsole,missingAssets,HTTP:bootResponse?.status()},null,2));
+   await fs.mkdir('test-evidence/johto-native-pixelart',{recursive:true});
+   await page.screenshot({path:'test-evidence/johto-native-pixelart/boot-failure.png'}).catch(()=>{});
+   throw error;
+  }
   const menu=await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('titulo');s.abrirMenu('jugar');
    return s.botones.map(b=>b.id);
