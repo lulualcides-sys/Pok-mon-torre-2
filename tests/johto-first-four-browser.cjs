@@ -110,12 +110,17 @@ const server=http.createServer(async(req,res)=>{
     const effect=scene.efectos.at(-1),beforeHP=enemy.hp;
     const nameVisible=scene.globos?.some(c=>c.list?.some(obj=>obj.text===m.nombre+"!"))||false;
     const poses=[],liftValues=[],framesSeen=new Set();
-    if(native.length&&effect){
+    let damageFrame=-1,liftStartFrame=-1;
+    if(effect){
      // Advance in actual 60Hz Phaser frames, not large clamped synthetic
      // deltas that skip the 0.34s contact window of False Swipe/Steel Wing.
      for(let frame=0;frame<66;frame++){
       effect.update(.016);
-      if(m.id==="vital-throw")liftValues.push(enemy.salto||0);
+      if(m.id==="vital-throw"){
+       liftValues.push(enemy.salto||0);
+       if(damageFrame<0&&enemy.hp<beforeHP)damageFrame=frame;
+       if(liftStartFrame<0&&enemy.salto>0)liftStartFrame=frame;
+      }
       if(frame%3===0){
        poses.push(native.map(o=>o.visible?
         [o.x,o.y,o.displayWidth,o.displayHeight,o.frame?.name,Math.round(o.alpha*100)].join(","):"off").join("|"));
@@ -131,6 +136,7 @@ const server=http.createServer(async(req,res)=>{
       assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
       damage:beforeHP-enemy.hp,nameVisible,
       liftPeak:liftValues.length?Math.max(...liftValues):0,
+      damageFrame,liftStartFrame,
       sourceFrames:[...framesSeen],
       noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
     // Await P2's native 1.05s globo tween before the next cast.
@@ -147,28 +153,33 @@ const server=http.createServer(async(req,res)=>{
   casts.push(singleCast);
   }
   console.log("JOHTO_FIRST_FOUR_IN_PHASER",JSON.stringify({visible,casts,errors,network}));
-  assert.ok(casts.every(m=>m.ok&&m.sprites>=8&&m.unique>=3),
-   "All four must animate multiple REAL P2 pixel sprites inside Phaser");
+  assert.ok(casts.every(m=>m.ok&&(m.id==="vital-throw"?m.sprites===0:m.sprites>=8&&m.unique>=3)),
+   "Body-only throw has no VFX; other moves animate real native sprites");
   // Distinct silhouettes, not three recolorings of the same P2 slash.
   const assetSets=new Map(casts.map(m=>[m.id,new Set(m.assets)]));
   for(const [id,required] of [
    ["pursuit",["vfx-quickattack","vfx-astonish"]],
-   ["vital-throw",["vfx-acometida"]],
+   ["vital-throw",[]],
    ["beat-up",["vfx-acometida","vfx-hiper_impacto"]]
   ])for(const name of required)
     assert.ok(assetSets.get(id)?.has(name),id+" must use unique "+name);
   const throwAssets=assetSets.get("vital-throw");
-  for(const forbidden of ["vfx-rapidspin","vfx-fly","vfx-atadura"])
-   assert.ok(!throwAssets?.has(forbidden),"Vital Throw still contains unwanted spiral "+forbidden);
+  assert.equal(throwAssets.size,0,"Vital Throw must have ZERO extra visual assets");
   const pursuitAssets=assetSets.get("pursuit");
   for(const forbidden of ["vfx-teleporte","vfx-hexgolpe","vfx-hexaviso"])
    assert.ok(!pursuitAssets?.has(forbidden),"Pursuit must chase, not cast a spell "+forbidden);
   assert.ok(!assetSets.get("beat-up")?.has("vfx-rapidspin"),
    "Beat Up must never reuse spin");
-  assert.ok((casts.find(m=>m.id==="vital-throw")?.liftPeak||0)>=12,
+  const thrown=casts.find(m=>m.id==="vital-throw");
+  assert.ok(thrown.damageFrame>=0&&thrown.damageFrame<=16,
+   "Vital Throw contact must occur during advance, never at 0.55s");
+  assert.ok(thrown.liftStartFrame>=thrown.damageFrame&&
+    thrown.liftStartFrame<=thrown.damageFrame+1,
+   "Opponent must jump within one frame of confirmed contact");
+  assert.ok((thrown?.liftPeak||0)>=12,
     "Vital Throw must physically LIFT the real enemy sprite, not a reused visual burst");
-  assert.ok(casts.every(m=>m.sourceFrames.length>=2),
-   "All four use actual multi-frame P2 VFX source spritesheets");
+  assert.ok(casts.every(m=>m.id==="vital-throw"?m.sourceFrames.length===0:m.sourceFrames.length>=2),
+   "No VFX on throw; other approved moves retain multi-frame native sprites");
   assert.ok(casts.every(m=>m.damage>0),
    "Every move must reduce native opponent HP, not only show an effect");
   assert.ok(casts.every(m=>m.nameVisible),
