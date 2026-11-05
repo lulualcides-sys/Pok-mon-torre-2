@@ -103,7 +103,19 @@ const server=http.createServer(async(req,res)=>{
    for(let cardIndex=0;cardIndex<scene.casillas.length;cardIndex++){
     const family=scene.casillas[cardIndex]?.p;
     if(!family)continue;
-    scene.elegir(cardIndex);
+    try{scene.elegir(cardIndex)}
+    catch(error){
+     const fn=scene.movimientos.toString();
+     const pos=fn.indexOf('.tipo');
+     throw Error('POKEDEX_RENDER_DIAG '+JSON.stringify({
+      cardIndex,family:family.id,selected:scene.foco,stage:scene.etapa,
+      native:!family.torre2ArenaAdded,
+      kit:Object.fromEntries(['lmb','rmb','q','e','esp'].map(role=>[
+       role,family.kit?.[role]?.nombre||null])),
+      helper:fn.slice(Math.max(0,pos-1000),pos+500),
+      failure:String(error)
+     }));
+    }
     for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
      const stage=scene.etapas[stageIndex];
      if(stage?.mega)continue;
