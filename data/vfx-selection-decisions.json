@@ -1738,13 +1738,13 @@
         "mobilePerformance": "pending"
       },
       "visualApproval": {
-        "state": "pending",
-        "evidence": ""
+        "state": "approved",
+        "evidence": "User explicitly approved pursuit on 2026-11-05, although dissatisfied with visual quality. Preserve the current effect without further revisions until requested."
       },
       "userFeedback": {
-        "status": "rejected-prior",
+        "status": "approved-with-reservation",
         "date": "2026-11-05",
-        "note": "User rejected earlier interpretation and requested a unique chase, physical slam without spiral, and short combo."
+        "note": "Approved, with express reservations about aesthetic quality; freeze the current effect."
       }
     },
     "vital-throw": {
@@ -1754,10 +1754,10 @@
         "behavior": "Gen III Fighting-type physical 70 power and 100% accuracy regardless of evasion; turn-based moves-last priority cannot be reproduced in real-time P2 arena. Real body collision with native hitboxes."
       },
       "animation": {
-        "origin": "Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target.",
-        "travel": "Distinct fighter-grounded short source-sheet motion, using 1px crisp nearest-neighbor Phaser transforms.",
-        "contact": "Animated impact is gated behind native recibir actual hit, not on cast start; opponent sprite elevation is preserved only for Vital Throw.",
-        "aftermath": "Compact (4–6px) pixel dust and brief true sheet frames, no swirling or tall spell remnants."
+        "origin": "The real native P2 attacker sprite advances toward target; no decorative animation layers.",
+        "travel": "Native johtoP2Advance moves the fighter to the actual collision box in approximately 0.19 seconds.",
+        "contact": "First true P2 body overlap triggers native recibir damage and opponent salto together, not a delayed 0.55-second window.",
+        "aftermath": "Opponent returns to its standing baseline with a 0.32-second body jump, without dust, explosion, aura or impact sprites."
       },
       "originalSources": {
         "T2": {
@@ -1769,7 +1769,7 @@
           "state": "inspected",
           "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createVitalThrow",
-          "finding": "Original P2 HOJAS compared alongside ten tracked VFX library sources. Revised movement source selection: vfx-acometida, vfx-aterriza-golpe, p-guijarro, p-estrella. Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target."
+          "finding": "No native VFX overlay is drawn. Original P2 fighter movement and opponent.salto are the ONLY animations. Damage at first confirmed body collision."
         },
         "Z": {
           "state": "unavailable",
@@ -1865,11 +1865,11 @@
       "selected": [
         {
           "sourceId": "P2",
-          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createVitalThrow",
-          "contribution": "Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target."
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#castJohtoFourNative",
+          "contribution": "Original native actor position and opposing fighter salto only."
         }
       ],
-      "comparisonRationale": "Compared native P2 sprites with 10-library catalog: PixelBolt licensed slash-hit and Pixel Ability FX orbital presets were reviewed but visually less suitable. Licensed, available P2 sheets selected to keep sprite scale, body animation, and contact coherent; no unknown-license assets copied. Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target.",
+      "comparisonRationale": "User explicitly rejected extras. No effect from any of the ten VFX source libraries is semantically necessary for this physical grapple; therefore ZERO overlay sprites.",
       "implementation": {
         "files": [
           "tools/pokearena/torre2-johto-four-native.js",
@@ -1889,9 +1889,9 @@
         "evidence": ""
       },
       "userFeedback": {
-        "status": "rejected-prior",
+        "status": "rework-requested",
         "date": "2026-11-05",
-        "note": "User rejected earlier interpretation and requested a unique chase, physical slam without spiral, and short combo."
+        "note": "Keep only the real attacker advance and enemy jump, and synchronize contact immediately. No extra visual effect."
       }
     },
     "hidden-power": {
@@ -2179,13 +2179,13 @@
         "mobilePerformance": "pending"
       },
       "visualApproval": {
-        "state": "pending",
-        "evidence": ""
+        "state": "approved",
+        "evidence": "User explicitly approved beat-up on 2026-11-05, although dissatisfied with visual quality. Preserve the current effect without further revisions until requested."
       },
       "userFeedback": {
-        "status": "rejected-prior",
+        "status": "approved-with-reservation",
         "date": "2026-11-05",
-        "note": "User rejected earlier interpretation and requested a unique chase, physical slam without spiral, and short combo."
+        "note": "Approved, with express reservations about aesthetic quality; freeze the current effect."
       }
     }
   }
