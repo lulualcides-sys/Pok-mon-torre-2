@@ -28,3 +28,13 @@ Este repositório é o **Pokémon Torre 2**, não o Torre 1. Estas são instruç
 **Prioridade futura registrada:** *Mewtwo lifts rocks*, inspirada na demonstração do Emerald Arena: erguer pedras do cenário por telecinese, orbitá-las e arremessá-las com colisão independente. NÃO duplicar Rock Throw, Rock Tomb ou Rock Blast. **Planejado, não implementado.**
 
 Leia também `docs/PADRAO-DE-GOLPES-TORRE2-MODELOS.md`, `docs/FILA-GOLPES-QUATRO-FONTES-2026-10-23.md`, `docs/EMERALD-ARENA-LISTA-DE-IMPLEMENTACAO.md` e `docs/CREDITOS-E-LICENCAS.md`.
+
+## REGRA PERMANENTE — KIT NATIVO IMUTÁVEL DO POKÉ ARENA 2D (05/11/2026)
+
+**Para toda espécie ou evolução já presente no cliente-base oficial, os golpes e slots originais são intocáveis.** O Torre 2 não pode modificar, reordenar, substituir, completar ou reconfigurar qualquer parte de `kit` da espécie nativa: `lmb` (ATK), `rmb` (HAB 2), `q` (HAB 3), `e` (ULT), `esp` (esquiva), nomes, forma, dano, cooldown, animação ou efeitos já existentes. Esta regra abrange a **Arena, Pokédex, Training, Mega e demais modos**, não apenas a campanha.
+
+**Critério de origem:** o identificador de espécie/evolução deve ser comparado com o `TODOS`/`ROSTER` original capturado do cliente-base **antes de qualquer `addAll*`, `upgrade*`, fallback ou sincronização do Torre 2**. A existência de uma espécie no cliente-base é suficiente para protegê-la, mesmo se o kit estiver vazio ou incompleto. Exemplo confirmado de exceção proibida: o fallback de Ho-Oh na PR #565 não deve preencher slots vazios; registrar a falta em relatório.
+
+**Somente as espécies verdadeiramente novas** (não presentes no snapshot original do cliente-base) podem receber kits calculados de golpes FRLG/Johto, TMs, VFX aprovados e regras próprias da campanha. O código não pode confundir a Pokédex com a fonte do moveset nem usar a Pokédex para substituir os golpes nativos da Arena: ambas devem consultar a mesma fonte efetiva sem mutação. Evitar também alterações indiretas por referências compartilhadas (`kit` e `evoluciones[].kit`).
+
+**Teste obrigatório antes do merge:** comparar os campos de golpes/slots de **cada espécie nativa e cada evolução/Mega** contra o snapshot original, antes/depois da integração. Nenhuma diferença é permitida sem autorização expressa e específica do usuário. Se o teste falhar, não mesclar nem publicar. Não mascarar slots originalmente vazios como se estivessem implementados, nem reprovar a preservação apenas por existirem lacunas já presentes no cliente-base.
