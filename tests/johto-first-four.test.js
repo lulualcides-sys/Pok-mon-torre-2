@@ -42,7 +42,7 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
    assert.equal(fx.source,"pokearena2d-native-textures");
    assert.ok(fx.sprites.length>=8,"Need layered animation for "+id);
    const poses=[];
-   for(const t of [.04,.16,.32,.5,.7,.9]){
+   for(const t of [.04,.10,.16,.24,.32,.43,.5,.61,.7,.82,.9,.97]){
     fx.update(t,{x:170,y:146},{x:293,y:151},{
      hitIndex:Math.min(2,Math.floor(t*3)),hitAge:t*.27,
      hitPoint:{x:293,y:151},projectile:{x:170+(293-170)*t,y:146+5*t,active:t<.7}
