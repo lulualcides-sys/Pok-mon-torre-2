@@ -135,16 +135,16 @@ export const JOHTO_P2_TEXTURES=Object.freeze({
  "zap-cannon":["p-electro","p-rayo"],
  "false-swipe":["p-cuchilla","p-mira"],
  "steel-wing":["p-cuchilla","p-roca"],
- "return":["p-corazon","p-aura"],
- "present":["p-huevo","p-estrella"],
- "frustration":["p-brasa","p-fantasma"],
- "magnitude":["p-roca","p-guijarro"],
- "pursuit":["p-fantasma","p-shuriken"],
- "vital-throw":["p-roca","p-aura"],
- "hidden-power":["p-psiquico","p-estrella"],
- "rock-smash":["p-roca","p-estrella"],
+ "return":["vfx-quickattack","vfx-arco"],
+ "present":["vfx-huevo","vfx-hiper_impacto"],
+ "frustration":["vfx-quickattack","vfx-arco"],
+ "magnitude":["vfx-roca","p-guijarro"],
+ "pursuit":["vfx-quickattack","vfx-astonish"],
+ "vital-throw":["vfx-acometida","vfx-aterriza"],
+ "hidden-power":["vfx-psico","vfx-psywave"],
+ "rock-smash":["vfx-roca","vfx-acometida"],
  "whirlpool":["p-pulsoAgua","p-chorrito"],
- "beat-up":["p-cuchilla","p-fantasma"]
+ "beat-up":["vfx-acometida","vfx-hiper_impacto"]
 });
 export const JOHTO_PIXEL_MASKS=Object.freeze(Object.fromEntries(
  Object.entries(masks).map(([key,rows])=>[key,Object.freeze(rows)])));

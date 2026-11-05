@@ -17,8 +17,24 @@ const server=http.createServer(async(req,res)=>{
  try{
   const page=await browser.newPage({viewport:{width:1280,height:720}}),errors=[];
   page.on('pageerror',e=>errors.push(String(e)));
-  await page.goto('http://127.0.0.1:4297/arena2d/?original=1');
-  await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
+  const bootConsole=[],missingAssets=[];
+  page.on('console',m=>{if(m.type()==='error')bootConsole.push(m.text().slice(0,400));});
+  page.on('requestfailed',req=>missingAssets.push(req.url().slice(0,240)+" "+(req.failure()?.errorText||'')));
+  const bootResponse=await page.goto('http://127.0.0.1:4297/arena2d/?original=1');
+  try{
+   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:45000});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>({
+    readyState:document.readyState,gameStarted:!!window.__pt2Started,game:!!window.__pt2Game,
+    scenes:window.__pt2Game?.scene?.scenes?.map(s=>({key:s.sys.settings.key,active:s.scene.isActive()})),
+    bootText:document.querySelector('#pt2-boot-message')?.textContent,
+    scripts:[...document.querySelectorAll('script[src]')].map(s=>s.src).slice(-10)
+   })).catch(e=>({evaluateError:String(e)}));
+   console.error('JOHTO_LAB_BOOT_DIAGNOSTIC',JSON.stringify({diagnostic,errors,bootConsole,missingAssets,HTTP:bootResponse?.status()},null,2));
+   await fs.mkdir('test-evidence/johto-native-pixelart',{recursive:true});
+   await page.screenshot({path:'test-evidence/johto-native-pixelart/boot-failure.png'}).catch(()=>{});
+   throw error;
+  }
   const menu=await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('titulo');s.abrirMenu('jugar');
    return s.botones.map(b=>b.id);
@@ -28,11 +44,11 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('johto-lab'),null,{timeout:10000});
   const editor=await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('johto-lab');
-   s.slot=0;s.moveCards.find(c=>c.m.id==='thief').r.emit('pointerdown');
+   s.slot=0;s.moveCards.find(c=>c.m.id==='pursuit').r.emit('pointerdown');
    return {cards:s.moveCards.length,slots:s.picks,active:s.slot};
   });
-  assert.equal(editor.cards,18);
-  assert.equal(editor.slots[0],'thief','Move chosen from the editor must equip in ATK');
+  assert.equal(editor.cards,4,'Only first four pending moves visible; approved FX remain in original renderer');
+  assert.equal(editor.slots[0],'pursuit','Move chosen from the editor must equip in ATK');
   assert.equal(new Set(editor.slots).size,4,'No duplicated move on slots');
   await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').startPractice());
   await page.waitForFunction(()=>{
@@ -46,9 +62,67 @@ const server=http.createServer(async(req,res)=>{
     forms:['lmb','rmb','q','e'].map(k=>me.kit[k]?.forma),dummy:s.entreno,saveFlag:!!s.datos.torre2};
   });
   assert.equal(combat.mode,'entreno');assert.equal(combat.player,'mewtwo');
-  assert.equal(combat.opponent,'onix');assert.equal(combat.names[0],'Thief');
+  assert.equal(combat.opponent,'onix');assert.equal(combat.names[0],'Pursuit');
   assert.ok(combat.forms.every(x=>x.startsWith('torre2_johto_')));
   assert.equal(combat.dummy,true);assert.equal(combat.saveFlag,false);
+  // Real Phaser browser check: 1s shared slot lock + no stacked animations.
+  const cooldownGate=await page.evaluate(async()=>{
+   const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
+   const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
+    import(new URL('torre2/johto-lab-catalog.js',base)),
+    import(new URL('torre2/johto-lab-runtime.js',base))]);
+   const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],
+    enemy=scene.luchadores[1],before=scene.efectos.length,oldT=me.t;
+   const a=JOHTO_18.find(x=>x.id==='pursuit'),b=JOHTO_18.find(x=>x.id==='triple-kick');
+   me.est={};me.accion=null;me.dash=null;me.ax=enemy.x;me.ay=enemy.y;
+   me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
+   const first=TORRE2_JOHTO_LAB_FORMS[a.forma](me,a,{slot:'lmb'});
+   const repeat=TORRE2_JOHTO_LAB_FORMS[a.forma](me,a,{slot:'lmb'});
+   const otherSlot=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   const nativeBars=['lmb','rmb','q','e'].map(k=>me.cd?.[k]);
+   // The native fighter exposes read-only simulated time. NEVER assign me.t.
+   // Temporarily mark only the 1s timer as expired while the VFX is alive:
+   // the independent active-animation gate must still prevent stacking.
+   const due=me.__johtoLabNextCastAt;
+   me.__johtoLabNextCastAt=me.t-.01;
+   const runningVFX=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   me.__johtoLabNextCastAt=due;
+   for(const fx of scene.efectos.slice(before))fx.destroy?.();
+   scene.efectos.splice(before);
+   const before1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   // Real Phaser game time must advance through an actual browser frame.
+   // Training is invulnerable during this 1s observation window.
+   me.inmortal=true;enemy.inmortal=true;
+   const waitDeadline=Date.now()+7000;
+   while(me.t < me.__johtoLabNextCastAt+.02 && Date.now()<waitDeadline)
+    await new Promise(ok=>setTimeout(ok,75));
+   if(!(me.t>=me.__johtoLabNextCastAt))throw Error('Native Phaser simulated clock must pass one second');
+   const beforeFinal={t:me.t,next:me.__johtoLabNextCastAt,active:me.__johtoLabActiveEffects?.map(fn=>fn()),effects:scene.efectos.length,
+    rival:!!me.rival,lab:!!scene.datos?.johtoLab,move:b.forma};
+   const after1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   const afterFinal={t:me.t,next:me.__johtoLabNextCastAt,active:me.__johtoLabActiveEffects?.map(fn=>fn()),effects:scene.efectos.length};
+   for(const fx of scene.efectos.slice(before))fx.destroy?.();
+   scene.efectos.splice(before);
+   me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
+   me.accion=null;me.dash=null;
+   return {first,repeat,otherSlot,runningVFX,before1s,after1s,nativeBars,beforeFinal,afterFinal,
+    diagnostic:{oldT,now:me.t,next:me.__johtoLabNextCastAt,
+     activeEffects:me.__johtoLabActiveEffects?.map(f=>{try{return f()}catch(e){return String(e)}}),
+     fxCount:scene.efectos?.length,baseline:before,
+     rival:!!me.rival,enemyKo:enemy.ko,
+     johtoLab:!!scene.datos?.johtoLab,
+     active:scene.scene.isActive(),inmortal:me.inmortal,
+     nativeReady:me.cd?.rmb}};
+  });
+  console.log('JOHTO_LAB_CD_DIAGNOSTIC',JSON.stringify(cooldownGate));
+  assert.equal(cooldownGate.first,true);
+  assert.equal(cooldownGate.repeat,false,'Same move cannot spam');
+  assert.equal(cooldownGate.otherSlot,false,'Switching button cannot bypass global cooldown');
+  assert.equal(cooldownGate.before1s,false,'Still blocked before the real 1s interval');
+  assert.equal(cooldownGate.runningVFX,false,'Cannot overlap a still-running visual effect');
+  assert.equal(cooldownGate.after1s,true,'May cast after 1s and old animation completes');
+  assert.ok(cooldownGate.nativeBars.every(x=>x>=1),'Native cooldown visible on all four slots');
+  console.log('JOHTO_LAB_COOLDOWN_1S_VERIFIED',JSON.stringify(cooldownGate));
   const casts=await page.evaluate(async()=>{
    const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS},{JOHTO_P2_TEXTURES}]=await Promise.all([
@@ -57,17 +131,28 @@ const server=http.createServer(async(req,res)=>{
     import(new URL('torre2/johto-lab-pixelart.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
    enemy.inmortal=true;me.inmortal=true;
+   // This 18-move synthetic burst is not a user-played match.
+   // Native bubbles are tested separately with real tween frames.
+   const previousBurst=scene.__johtoSyntheticVfxTextBurst;
+   scene.__johtoSyntheticVfxTextBurst=true;
    const result=[];
    for(const move of JOHTO_18){
+    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
     me.accion=null;me.dash=null;me.est={};
     me.ax=enemy.x=me.x+100;me.ay=enemy.y=me.y;
     if(move.id==='snore')me.ponerEstado('dormido',5,{cura:0});
-    const before=scene.efectos.length;
+    const knownEffects=new Set(scene.efectos);
     const output=TORRE2_JOHTO_LAB_FORMS[move.forma](me,move,{slot:'q'});
+    // Some native effects naturally finish within the 100ms observation
+    // interval. Capture actual new object identity at cast time as well.
+    const createdOnCast=scene.efectos.some(fx=>!knownEffects.has(fx));
     await new Promise(ok=>setTimeout(ok,100));
     const native=JOHTO_P2_TEXTURES[move.id]||[];
     const textures=native.map(name=>({name,loaded:scene.textures.exists(name),
       rendered:scene.children.list.some(o=>o.active&&o.texture?.key===name)}));
+    const pixelfxKey='torre2-johto-pixelfx-'+move.id;
+    const pixelFXLoaded=scene.textures.exists(pixelfxKey);
+    const pixelFXRendered=scene.children.list.some(o=>o.active&&o.texture?.key===pixelfxKey);
     const pilotKey='torre2-johto-pilot-'+move.id;
     const pilot=scene.textures.exists(pilotKey);
     const electroBallLoaded=scene.textures.exists('vfx-electroball');
@@ -79,11 +164,13 @@ const server=http.createServer(async(req,res)=>{
      scene.children.list.some(o=>o.active&&
       o.getData?.('torre2-zap-native-impact')===true&&
       o.texture?.key==='vfx-electroball');
-    result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures,
-     pilot,electroBallLoaded,electroBallRendered,zapImpactRendered,
+    result.push({id:move.id,output,
+     instantiated:createdOnCast||scene.efectos.some(fx=>!knownEffects.has(fx)),textures,
+     pilot,pixelFXLoaded,pixelFXRendered,electroBallLoaded,electroBallRendered,zapImpactRendered,
      previewVisible:pilot&&scene.children.list.some(o=>
       o.active&&o.texture?.key===pilotKey)});
    }
+   scene.__johtoSyntheticVfxTextBurst=previousBurst;
    return result;
   });
   console.log('JOHTO_LAB_18_CASTS',JSON.stringify(casts));
@@ -94,11 +181,47 @@ const server=http.createServer(async(req,res)=>{
    if(cast.id==='zap-cannon'){
     assert.ok(cast.electroBallLoaded&&cast.electroBallRendered&&cast.zapImpactRendered,
      'Zap Cannon must render original Raichu Electro Ball plus impact');
-   }else{
+   }else if(['powder-snow','whirlpool'].includes(cast.id)){
     assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
-     cast.id+' missing actual native P2 sprite: '+JSON.stringify(cast.textures));
+     cast.id+' approved native P2 art was replaced unexpectedly');
+   }else if(['triple-kick','thief','snore','octazooka','false-swipe','steel-wing','rock-smash','return','present','frustration','magnitude','pursuit','vital-throw','hidden-power','beat-up'].includes(cast.id)){
+    assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
+     cast.id+' must use genuine original P2 textures, not rejected PNG rectangles');
+    assert.equal(cast.pixelFXLoaded,false,
+     cast.id+' rejected 24-frame block art may not be distributed');
+   }else{
+    assert.ok(cast.pixelFXLoaded&&cast.pixelFXRendered,
+     cast.id+' missing actual PixelFX sprite in Phaser renderer');
    }
   }
+  // Each new visual-only PixelFX cast must display its genuine imported
+  // sprite, but may not inflict invented damage or statuses on the opponent.
+  const fxPreviews=await page.evaluate(async()=>{
+   const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
+   const [{JOHTO_PIXELFX_28},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
+    import(new URL('torre2/torre2-johto-pixelfx-catalog.js',base)),
+    import(new URL('torre2/johto-lab-runtime.js',base))]);
+   const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],
+    enemy=scene.luchadores[1],out=[];
+   for(const m of JOHTO_PIXELFX_28){
+    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
+    const hp=enemy.hp,texture='torre2-johto-pixelfx-'+m.id;
+    const ok=TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:'q'});
+    const last=scene.efectos.at(-1);
+    last?.update(.25);
+    const rendered=scene.children.list.some(o=>o.active&&o.texture?.key===texture);
+    out.push({id:m.id,ok,texture:scene.textures.exists(texture),rendered,
+     noDamage:enemy.hp===hp});
+    last?.destroy?.();
+    scene.efectos.pop();
+   }
+   return out;
+  });
+  assert.equal(fxPreviews.length,28);
+  for(const item of fxPreviews)assert.ok(
+   item.ok&&item.texture&&item.rendered&&item.noDamage,
+   item.id+' requires real no-damage PixelFX preview in WebGL');
+  console.log('JOHTO_PIXELFX_28_VISUAL_ONLY_VERIFIED',fxPreviews.length);
   // Snow and Whirlpool are approved. Zap Cannon now uses the base sprite
   // vfx-electroball, not its old 12-frame generated Zap PNG.
   for(const id of ['powder-snow','whirlpool']){
@@ -119,6 +242,8 @@ const server=http.createServer(async(req,res)=>{
    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
     import(new URL('torre2/johto-lab-catalog.js',base)),import(new URL('torre2/johto-lab-runtime.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
+   const previousBurst=scene.__johtoSyntheticVfxTextBurst;
+   scene.__johtoSyntheticVfxTextBurst=true;
    const original=enemy.recibir,originalRandom=Math.random,originalXP=me.ganarExp,
     originalEnemyXP=enemy.ganarExp,originalEnemyUlt=enemy.ganarUlti,
     originalHitFX=enemy.efectosGolpe,measured=[];
@@ -134,6 +259,7 @@ const server=http.createServer(async(req,res)=>{
    try{
     scene.fase='lucha';me.inmortal=true;enemy.inmortal=true;
     for(const move of JOHTO_18){
+     me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
      for(const fx of scene.efectos)fx.destroy?.();
      scene.efectos=[];
      me.est={};me.accion=null;me.dash=null;me.x=180;me.y=180;
@@ -148,7 +274,8 @@ const server=http.createServer(async(req,res)=>{
     }
    }finally{enemy.recibir=original;me.ganarExp=originalXP;
     enemy.ganarExp=originalEnemyXP;enemy.ganarUlti=originalEnemyUlt;
-    enemy.efectosGolpe=originalHitFX;Math.random=originalRandom;}
+    enemy.efectosGolpe=originalHitFX;Math.random=originalRandom;
+    scene.__johtoSyntheticVfxTextBurst=previousBurst;}
    return measured;
   });
   console.log('JOHTO_LAB_18_NATIVE_CONTACTS',JSON.stringify(impacts));
@@ -166,6 +293,7 @@ const server=http.createServer(async(req,res)=>{
     const scene=window.__pt2Game.scene.getScene('combate');
     scene.efectos.forEach(fx=>fx.destroy?.());scene.efectos=[];
     const me=scene.luchadores[0],enemy=scene.luchadores[1];
+    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
     me.est={};me.accion=null;me.dash=null;
     me.x=178;me.y=178;enemy.x=273;enemy.y=178;
     me.ax=enemy.x;me.ay=enemy.y;
@@ -187,8 +315,8 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').salir());
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('johto-lab'),null,{timeout:12000});
   const returned=await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').picks);
-  assert.equal(returned[0],'thief');
+  assert.equal(returned[0],'pursuit');
   assert.deepEqual(errors,[],'No uncaught Phaser JS errors');
-  console.log('PASS MEWTWO JOHTO LAB: selectable 18, native Training Mewtwo, 4 slots and return');
+  console.log('PASS MEWTWO JOHTO LAB: 3 approved + 15 remade PixelFX casts, plus 28 preview choices');
  }finally{await browser.close();server.close()}
 })().catch(e=>{console.error(e);server.close();process.exitCode=1});

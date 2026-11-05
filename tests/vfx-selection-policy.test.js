@@ -1,6 +1,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
 import {validateVfxSelections,requiredVfxIds,parseJohtoVisualIds,createVfxDraft}
  from "../tools/dev/vfx-review-policy.mjs";
 const catalog=JSON.parse(fs.readFileSync("reference-library/vfx-sources/catalog.json","utf8"));
@@ -33,12 +35,40 @@ const example=()=>{
 };
 test("Legacy existing moves are not falsely classified as newly audited",()=>{
  assert.equal(baseline.legacyMoveIds.length,40);
- assert.deepEqual(requiredVfxIds(process.cwd(),baseline),[]);
+ // Compare legacy behavior in a fixture without experimental Johto modules.
+ const fixture=fs.mkdtempSync(path.join(os.tmpdir(),"torre2-vfx-legacy-"));
+ try{
+  fs.mkdirSync(path.join(fixture,"data"),{recursive:true});
+  fs.writeFileSync(path.join(fixture,"data/move-reuse-policy.json"),JSON.stringify({newMoves:{}}));
+  assert.deepEqual(requiredVfxIds(fixture,baseline),[]);
+ }finally{fs.rmSync(fixture,{recursive:true,force:true});}
  assert.deepEqual(validateVfxSelections(baseline,catalog,[]),[]);
+});
+test("New experimental Johto effects require individual VFX audits, not legacy exemption",()=>{
+ const ids=requiredVfxIds(process.cwd(),baseline);
+ if(fs.existsSync("tools/pokearena/torre2-johto-pixelfx-catalog.js")){
+  assert.deepEqual(ids,["beat-up","hidden-power","pursuit","vital-throw"]);
+  assert.equal(validateVfxSelections({...baseline,decisions:{}},catalog,ids)
+   .filter(x=>x.includes("MISSING VFX source comparison")).length,4);
+  const reviews=JSON.parse(fs.readFileSync("data/vfx-selection-decisions.json","utf8"));
+  assert.deepEqual(validateVfxSelections(reviews,catalog,ids),[]);
+  assert.equal(Object.keys(reviews.decisions).length,15);
+  assert.ok(reviews.decisions.snore,"Rejected Snore history must not be erased");
+  for(const id of ["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power","pursuit","beat-up"])
+   assert.ok(reviews.decisions[id],"Previously approved visual audit preserved");
+  for(const id of ids)assert.equal(reviews.decisions[id].visualApproval.state,
+    "approved");
+ }else assert.deepEqual(ids,[]);
 });
 test("Valid individual move comparison covers all ten sources and four native references",()=>{
  const data={...baseline,decisions:{"steel-wing":example()}};
  assert.deepEqual(validateVfxSelections(data,catalog,["steel-wing"]),[]);
+});
+test("P2 source can be selected when its real native texture reuse is documented",()=>{
+ const row=example(),effectRef="tools/pokearena/torre2-johto-four-native.js#createTriple";
+ row.originalSources.P2.effectRef=effectRef;
+ row.selected=[{sourceId:"P2",effectRef,contribution:"Reuse P2 texture layers and animation timing without changing the existing approved sprites."}];
+ assert.deepEqual(validateVfxSelections({...baseline,decisions:{"steel-wing":row}},catalog,["steel-wing"]),[]);
 });
 test("New move is blocked when no comparison record exists",()=>{
  assert.ok(validateVfxSelections(baseline,catalog,["new-test-move"]).some(x=>x.includes("MISSING")));

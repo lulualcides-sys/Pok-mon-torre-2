@@ -6,7 +6,7 @@ const dir=path.resolve(process.env.PREVIEW_ROOT||"_site","arena2d");
 const {modules}=JSON.parse(fs.readFileSync(path.join(dir,"version.json"),"utf8"));
 const read=(name)=>fs.readFileSync(path.join(dir,modules,name),"utf8");
 for(const p of ["torre2/johto-lab-catalog.js","torre2/johto-lab-runtime.js",
- "torre2/johto-lab-combat.js","torre2/johto-lab-scene.js"]){
+ "torre2/johto-lab-combat.js","torre2/torre2-johto-lab-cooldown.js","torre2/torre2-johto-motion.js","torre2/torre2-johto-gen3-research.js","torre2/johto-lab-scene.js"]){
  assert.ok(fs.existsSync(path.join(dir,modules,p)),p);
 }
 assert.match(read("main.js"),/JohtoLab/);
@@ -21,4 +21,12 @@ assert.match(read("luchador.js"),/this\.escena\.datos\.johtoLab\.kit/);
 assert.match(read("escenas/combate.js"),/installJohtoLabCombat/);
 assert.doesNotMatch(read("torre2/move-pool.js"),/JOHTO_18|johto-lab/);
 assert.doesNotMatch(read("torre2/campanha.js"),/JOHTO_18|johto-lab/);
-console.log("PASS 18 isolated Mewtwo training moves, menu and native battle hooks",modules);
+const manifest=JSON.parse(fs.readFileSync(path.join(dir,"assets/torre2/johto-pixelfx/manifest.json"),"utf8"));
+assert.equal(manifest.files.length,29);
+assert.equal(manifest.files.filter(x=>["pursuit","vital-throw","hidden-power","beat-up"].includes(x.id)).length,0,
+ "No rejected rectangle sprites may ship for the four new P2 effects");
+assert.match(read("torre2/johto-lab-runtime.js"),/makeJohtoFourNative/);
+assert.ok(fs.existsSync(path.join(dir,modules,"torre2/torre2-johto-four-native.js")));
+for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power","pursuit","beat-up"])
+ assert.ok(!manifest.files.some(x=>x.id===id),"Approved original VFX not regenerated");
+console.log("PASS 16 user approvals protected, one body-only Vital Throw pending",modules);

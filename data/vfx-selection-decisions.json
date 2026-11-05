@@ -44,5 +44,2149 @@
     "poison-punch"
   ],
   "legacyNote": "The 40 historical moves are grandfathered only for metadata; their visual art is not retroactively verified or approved. Reworks require a new audit.",
-  "decisions": {}
+  "decisions": {
+    "triple-kick": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/triple-kick",
+        "behavior": "Triple Kick Gen III checks each of three kicks separately at base power 10, 20, 30; the attack stops after a miss."
+      },
+      "animation": {
+        "origin": "Three staggered kick slashes start from the attacker and converge toward the foe.",
+        "travel": "The slashes follow three staggered arcs instead of one large generic projectile.",
+        "contact": "Three discrete impact bursts appear at different target offsets in sequence.",
+        "aftermath": "Short spark and swipe trails fade as the third kick finishes."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Three approved Johto visuals must remain unaltered and were not reused for this new silhouette."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "tools/pokearena/torre2-johto-four-native.js#createTriple",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createTriple",
+          "finding": "Uses existing Poké Arena 2D client textures: p-cuchilla, p-estrella, p-aura; local Phaser image layers are animated with transforms."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Inspected native PixelFX whirlpool module; catalog samples have no matching ink, sleep-sound, or three-contact movement for this review.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Inspected slash sample, but its single impact is less accurate than the three-hit or steal-and-return native P2 sequencing.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Inspected particle presets; these produce generic bursts in Canvas-like style rather than the specific native P2 gesture.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createTriple",
+          "contribution": "Existing Poké Arena 2D textures p-cuchilla, p-estrella, p-aura are reused by createTriple in native Phaser layers, without rewriting approved effects."
+        }
+      ],
+      "comparisonRationale": "P2 has actual slash, star and aura textures useful for three timed kick contacts. Pixelbolt slash-hit is a single nine-frame metal cut, and PixelFX samples are elemental, so the P2 native choreography represents three kicks more faithfully.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "Johto first-four Node tests passed on PR #565.",
+        "browser": "Four native animations passed Chromium on PR #565 before CI policy synchronization."
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "thief": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/thief",
+        "behavior": "Thief in FireRed uses Dark as the Special category with power 40, PP 10 and 100 accuracy; it may steal a held item if the attacker carries none."
+      },
+      "animation": {
+        "origin": "A faint ghost trail grows from the caster before the forward lunge.",
+        "travel": "Dark afterimages sweep toward the opponent then return to the caster.",
+        "contact": "A single slash and star flash marks the theft attempt at the target.",
+        "aftermath": "A small glint returns toward the caster; held-item transfer remains unsupported in the isolated lab."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Three approved Johto visuals must remain unaltered and were not reused for this new silhouette."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "tools/pokearena/torre2-johto-four-native.js#createThief",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createThief",
+          "finding": "Latest 2026-11-05 visual rewrite discards enlarged generic icon overlays. Uses genuine P2 vfx-quickattack, palette-shadow vfx-arco-sombra, vfx-astonish and tiny original particle glints. Native contact/hit handling remains unchanged."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Inspected native PixelFX whirlpool module; catalog samples have no matching ink, sleep-sound, or three-contact movement for this review.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Inspected slash sample, but its single impact is less accurate than the three-hit or steal-and-return native P2 sequencing.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Inspected particle presets; these produce generic bursts in Canvas-like style rather than the specific native P2 gesture.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createThief",
+          "contribution": "Original P2 HOJAS multi-frame sprite sheets: genuine P2 vfx-quickattack, palette-shadow vfx-arco-sombra, vfx-astonish and tiny original particle glints. Real source imagery, no generated blocks. Four pending for visual approval."
+        }
+      ],
+      "comparisonRationale": "Compared static MAPAS icon stacking with original P2 HOJAS animations. Multi-frame, accurately scaled, original palette frame sequences are materially closer to P2 production VFX; collision timing remains native. User approval still pending.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "Johto first-four Node tests passed on PR #565.",
+        "browser": "Four native animations passed Chromium on PR #565 before CI policy synchronization."
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "snore": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/snore",
+        "behavior": "Snore in Generation III is Normal Physical, power 40, PP 15, usable only asleep, with a chance to flinch the target."
+      },
+      "animation": {
+        "origin": "A soft bubble pulse appears close to the sleeping Pokémon.",
+        "travel": "Five overlapping rhythmic hypnosis textures travel from caster to opponent.",
+        "contact": "Successive wavy pulses converge on the target instead of producing a sword slash.",
+        "aftermath": "The final wave fades and the caster's sleep-themed puff vanishes."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Three approved Johto visuals must remain unaltered and were not reused for this new silhouette."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "tools/pokearena/torre2-johto-four-native.js#createSnore",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createSnore",
+          "finding": "Uses existing Poké Arena 2D client textures: p-hipnosis, p-aura, p-espuma; local Phaser image layers are animated with transforms."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Inspected native PixelFX whirlpool module; catalog samples have no matching ink, sleep-sound, or three-contact movement for this review.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Inspected particle presets; these produce generic bursts in Canvas-like style rather than the specific native P2 gesture.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Inspected particle presets; these produce generic bursts in Canvas-like style rather than the specific native P2 gesture.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createSnore",
+          "contribution": "Existing Poké Arena 2D textures p-hipnosis, p-aura, p-espuma are reused by createSnore in native Phaser layers, without rewriting approved effects."
+        }
+      ],
+      "comparisonRationale": "P2 hypnosis and foam textures read as a sleep-linked sound pulse. PixelFX whirlpool and Pixelbolt slash-hit have less fitting silhouettes, while generic particle presets obscure the sound-wave rhythm.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "Johto first-four Node tests passed on PR #565.",
+        "browser": "Four native animations passed Chromium on PR #565 before CI policy synchronization."
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      },
+      "userFeedback": {
+        "status": "rejected",
+        "date": "2026-11-05",
+        "note": "User rejected Snore aesthetically and requested a different move in the four-move review batch. Snore remains in legacy 18 offensive identities, not in review selection."
+      }
+    },
+    "octazooka": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/octazooka",
+        "behavior": "Octazooka Gen III is a Water Special attack with power 65, PP 10 and accuracy 85; it may lower the target's accuracy by one stage."
+      },
+      "animation": {
+        "origin": "A dark purple ink-like orb forms immediately in front of the attacker.",
+        "travel": "An opaque ink projectile arcs toward the opponent with small trailing droplets.",
+        "contact": "At impact, twelve ink droplets spread radially around the target.",
+        "aftermath": "Ink splashes and a short ripple dissolve. Accuracy reduction is not claimed implemented by the visual preview."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Three approved Johto visuals must remain unaltered and were not reused for this new silhouette."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "tools/pokearena/torre2-johto-four-native.js#createOcta",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createOcta",
+          "finding": "Uses existing Poké Arena 2D client textures: p-fantasma, p-agua, p-aura; local Phaser image layers are animated with transforms."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Inspected native PixelFX whirlpool module; catalog samples have no matching ink, sleep-sound, or three-contact movement for this review.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Inspected particle presets; these produce generic bursts in Canvas-like style rather than the specific native P2 gesture.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Inspected particle presets; these produce generic bursts in Canvas-like style rather than the specific native P2 gesture.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createOcta",
+          "contribution": "Existing Poké Arena 2D textures p-fantasma, p-agua, p-aura are reused by createOcta in native Phaser layers, without rewriting approved effects."
+        }
+      ],
+      "comparisonRationale": "The P2 water and shadow textures allow an ink shot and splatter. The available PixelFX whirlpool is a continuous vortex, not a travelling ink projectile; the Pixelbolt slash-hit also mismatches.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "Johto first-four Node tests passed on PR #565.",
+        "browser": "Four native animations passed Chromium on PR #565 before CI policy synchronization."
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "false-swipe": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/false-swipe",
+        "behavior": "False Swipe is a physical Gen III Normal move that hits and leaves the target with at least 1 HP, even if the nominal damage would knock it out."
+      },
+      "animation": {
+        "origin": "The attacker lunges in using the P2 physical attack movement and aims a short green sharp blade.",
+        "travel": "Two compact green native blade textures sweep toward the enemy body volume, not a distant spell.",
+        "contact": "Only after recibir confirms a real physical strike, paired jade slashes cross the target at the exact contact point.",
+        "aftermath": "Tiny green pixel glints disperse; the native 1 HP minimum protects the opponent."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Existing approved Johto hit effects remain frozen; this experimental attack reuses only the independent body-contact geometry, never overwriting approved assets."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "tools/pokearena/torre2-johto-four-native.js#createFalseSwipe",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createFalseSwipe",
+          "finding": "Latest 2026-11-05 visual rewrite discards enlarged generic icon overlays. Uses P2 vfx-acometida and palette-golpe vfx-arco-golpe, vfx-cuchilla source frame progression. Native contact/hit handling remains unchanged."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createFalseSwipe",
+          "contribution": "Original P2 HOJAS multi-frame sprite sheets: P2 vfx-acometida and palette-golpe vfx-arco-golpe, vfx-cuchilla source frame progression. Real source imagery, no generated blocks. Four pending for visual approval."
+        }
+      ],
+      "comparisonRationale": "Compared static MAPAS icon stacking with original P2 HOJAS animations. Multi-frame, accurately scaled, original palette frame sequences are materially closer to P2 production VFX; collision timing remains native. User approval still pending.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending real user visual approval",
+        "mobilePerformance": "not yet benchmarked separately"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "steel-wing": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/steel-wing",
+        "behavior": "Steel Wing is a physical Gen III Steel-type move that deals damage; the Gen III secondary effect can raise the attacker's Defense."
+      },
+      "animation": {
+        "origin": "The attacker approaches with a metallic wing-like arc built from P2 cuchilla pixel textures.",
+        "travel": "Hardened silver wing shards follow a short melee sweep linked to the actual fighter's advance.",
+        "contact": "A pair of silver cross-wing cuts and crystalline sparks appears only after native recibir confirms contact.",
+        "aftermath": "Metal fragments and a pale aura fade near the target without producing a projectile at long range."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Existing approved Johto hit effects remain frozen; this experimental attack reuses only the independent body-contact geometry, never overwriting approved assets."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "tools/pokearena/torre2-johto-four-native.js#createSteelWing",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createSteelWing",
+          "finding": "Latest 2026-11-05 visual rewrite discards enlarged generic icon overlays. Uses P2 vfx-fly and recolored native steel vfx-arco-acero, tiny vfx-aeroblast feathers. Native contact/hit handling remains unchanged."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with metallic wing strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createSteelWing",
+          "contribution": "Original P2 HOJAS multi-frame sprite sheets: P2 vfx-fly and recolored native steel vfx-arco-acero, tiny vfx-aeroblast feathers. Real source imagery, no generated blocks. Four pending for visual approval."
+        }
+      ],
+      "comparisonRationale": "Compared static MAPAS icon stacking with original P2 HOJAS animations. Multi-frame, accurately scaled, original palette frame sequences are materially closer to P2 production VFX; collision timing remains native. User approval still pending.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending real user visual approval",
+        "mobilePerformance": "not yet benchmarked separately"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "rock-smash": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/rock-smash",
+        "behavior": "Gen III Rock Smash: Fighting-type, 20 power, 100 accuracy, physical contact, 50% chance to reduce DEF by one stage. Native P2 armaduraRota is a temporary DEF reduction analogue, not exact Gen III stage semantics."
+      },
+      "animation": {
+        "origin": "Short animated P2 vfx-acometida starts beside the fighter who approaches using native body movement.",
+        "travel": "Windup animation follows actual attacker, never spawning a remote stone or applying distant damage.",
+        "contact": "Only a confirmed native recibir() body hit displays 4 animated original P2 vfx-roca-fin sprite-sheet frames directly at the target.",
+        "aftermath": "Five small native P2 rock-fragment sprites spread and fall, plus four original p-guijarro chips; all disappear in under 0.36 seconds."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated P2-native spritesheet adaptation. No writes to approved source effects; distinct P2 hit collision, frame-based rubble."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createRockSmash",
+          "finding": "P2 vfx.js HOJAS.roca contains 32x32 4-column spritesheet with roca-fin frames 8-11, and HOJAS.acometida uses 80x40; combined with real luchador.js#recibir. P2 armaduraRota temporary DEF reduction differs from Gen III permanent -1 DEF stage."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared available licensed generic particles and angular shapes against Rock Smash: none preserves the distinctive P2 contact-only animated 4-frame rock break and grounded shards; retain native P2 HOJAS.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Compared available licensed generic particles and angular shapes against Rock Smash: none preserves the distinctive P2 contact-only animated 4-frame rock break and grounded shards; retain native P2 HOJAS.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared available licensed generic particles and angular shapes against Rock Smash: none preserves the distinctive P2 contact-only animated 4-frame rock break and grounded shards; retain native P2 HOJAS.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createRockSmash",
+          "contribution": "Uses genuine P2 vfx-roca/vfx-acometida frames and p-guijarro chips in isolated Phaser animation, with original recibir body contact; does not modify previously approved visuals."
+        }
+      ],
+      "comparisonRationale": "Original P2 HOJAS sprite sheets provide 4 varied rock-break animation frames and bounded pixel rubble, avoiding the blocky generic particles from prior rejected visuals. Tested against PixelFX/Pixelbolt alternatives recorded in libraryReview.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "requires visual approval from user",
+        "mobilePerformance": "needs visual user device review"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "return": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/return",
+        "behavior": "Gen III Return physical NORMAL strength floor(friendship * 10/25), at most 102; lab Mewtwo uses maximum friendship fixture (255) only because there is no save friendship model"
+      },
+      "animation": {
+        "origin": "Native P2 move wind-up anchored to the actual Mewtwo fighter.",
+        "travel": "Native P2 sheet motion follows actual attacker or ground source, never detached giant icons.",
+        "contact": "Native melee body contact via original P2 recibir",
+        "aftermath": "Dedicated native P2 spritesheet frames and modest 1px-style particles fade on hit; no impact on a miss."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Johto third visual review, no game campaign/save source modification; nine prior user approvals protected."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createReturn",
+          "finding": "Native P2 HOJAS frames vfx-quickattack and vfx-arco-golpe animated in isolated Phaser with original recibir HP. Nine user-approved VFX are preserved."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createReturn",
+          "contribution": "Genuine native P2 sprite animation vfx-quickattack and vfx-arco-golpe with target hitbox, not generic unapproved PixelFX raster shapes."
+        }
+      ],
+      "comparisonRationale": "Compared original P2 HOJAS animated sheets with static MAPAS icons and available licensed PixelFX samples; P2 battle choreography and hit timing best meet native P2 behavior for this distinct return move.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "not separately benchmarked"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "present": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/present",
+        "behavior": "Present Gen III has 40% 40-power, 30% 80-power, 10% 120-power, 20% healing 25% opponent HP; never fabricate damage when healing"
+      },
+      "animation": {
+        "origin": "Native P2 move wind-up anchored to the actual Mewtwo fighter.",
+        "travel": "P2 egg sprite projectile follows real physical flight path.",
+        "contact": "Projectile P2 body collision via original recibir; native healing if present",
+        "aftermath": "Dedicated native P2 spritesheet frames and modest 1px-style particles fade on hit; no impact on a miss."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Johto third visual review, no game campaign/save source modification; nine prior user approvals protected."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createPresent",
+          "finding": "Native P2 HOJAS frames vfx-huevo and vfx-hiper_impacto animated in isolated Phaser with original recibir HP. Nine user-approved VFX are preserved."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createPresent",
+          "contribution": "Genuine native P2 sprite animation vfx-huevo and vfx-hiper_impacto with target hitbox, not generic unapproved PixelFX raster shapes."
+        }
+      ],
+      "comparisonRationale": "Compared original P2 HOJAS animated sheets with static MAPAS icons and available licensed PixelFX samples; P2 battle choreography and hit timing best meet native P2 behavior for this distinct present move.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "not separately benchmarked"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "frustration": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/frustration",
+        "behavior": "Gen III Frustration physical NORMAL strength floor((255 - friendship)*10/25), at most 102; lab Mewtwo uses minimum friendship fixture (0) only because there is no save friendship model"
+      },
+      "animation": {
+        "origin": "Native P2 move wind-up anchored to the actual Mewtwo fighter.",
+        "travel": "Native P2 sheet motion follows actual attacker or ground source, never detached giant icons.",
+        "contact": "Native melee body contact via original P2 recibir",
+        "aftermath": "Dedicated native P2 spritesheet frames and modest 1px-style particles fade on hit; no impact on a miss."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Johto third visual review, no game campaign/save source modification; nine prior user approvals protected."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createFrustration",
+          "finding": "Native P2 HOJAS frames vfx-quickattack and vfx-arco-sombra animated in isolated Phaser with original recibir HP. Nine user-approved VFX are preserved."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createFrustration",
+          "contribution": "Genuine native P2 sprite animation vfx-quickattack and vfx-arco-sombra with target hitbox, not generic unapproved PixelFX raster shapes."
+        }
+      ],
+      "comparisonRationale": "Compared original P2 HOJAS animated sheets with static MAPAS icons and available licensed PixelFX samples; P2 battle choreography and hit timing best meet native P2 behavior for this distinct frustration move.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "not separately benchmarked"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "magnitude": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/magnitude",
+        "behavior": "Magnitude Gen III levels 4..10 weighted 5/10/20/30/20/10/5%; Ground physical spread, only grounded targets and no melee contact; this 1v1 lab scales native damage by the rolled strength"
+      },
+      "animation": {
+        "origin": "Native P2 move wind-up anchored to the actual Mewtwo fighter.",
+        "travel": "Native P2 sheet motion follows actual attacker or ground source, never detached giant icons.",
+        "contact": "Native P2 ground AoE distance bound and original recibir damage pipeline",
+        "aftermath": "Dedicated native P2 spritesheet frames and modest 1px-style particles fade on hit; no impact on a miss."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Johto third visual review, no game campaign/save source modification; nine prior user approvals protected."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createMagnitude",
+          "finding": "Native P2 HOJAS frames vfx-roca-fin and p-guijarro animated in isolated Phaser with original recibir HP. Nine user-approved VFX are preserved."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createMagnitude",
+          "contribution": "Genuine native P2 sprite animation vfx-roca-fin and p-guijarro with target hitbox, not generic unapproved PixelFX raster shapes."
+        }
+      ],
+      "comparisonRationale": "Compared original P2 HOJAS animated sheets with static MAPAS icons and available licensed PixelFX samples; P2 battle choreography and hit timing best meet native P2 behavior for this distinct magnitude move.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "not separately benchmarked"
+      },
+      "visualApproval": {
+        "state": "pending",
+        "evidence": ""
+      }
+    },
+    "pursuit": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/pursuit",
+        "behavior": "Gen III Dark-type Special 40 power Pursuit. Doubles on actual target switching; absent in solo lab. Real P2 body contact and accurate source animation."
+      },
+      "animation": {
+        "origin": "Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell.",
+        "travel": "Distinct fighter-grounded short source-sheet motion, using 1px crisp nearest-neighbor Phaser transforms.",
+        "contact": "Animated impact is gated behind native recibir actual hit, not on cast start; opponent sprite elevation is preserved only for Vital Throw.",
+        "aftermath": "Compact (4–6px) pixel dust and brief true sheet frames, no swirling or tall spell remnants."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Mewtwo Johto Lab fourth visual review only, keeps 13 approved VFX and does not modify Kanto campaign or saves."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createPursuit",
+          "finding": "Original P2 HOJAS compared alongside ten tracked VFX library sources. Revised movement source selection: vfx-quickattack, vfx-astonish, p-sombra. Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createPursuit",
+          "contribution": "Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell."
+        }
+      ],
+      "comparisonRationale": "Compared native P2 sprites with 10-library catalog: PixelBolt licensed slash-hit and Pixel Ability FX orbital presets were reviewed but visually less suitable. Licensed, available P2 sheets selected to keep sprite scale, body animation, and contact coherent; no unknown-license assets copied. Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "pending"
+      },
+      "visualApproval": {
+        "state": "approved",
+        "evidence": "User explicitly approved pursuit on 2026-11-05, although dissatisfied with visual quality. Preserve the current effect without further revisions until requested."
+      },
+      "userFeedback": {
+        "status": "approved-with-reservation",
+        "date": "2026-11-05",
+        "note": "Approved, with express reservations about aesthetic quality; freeze the current effect."
+      }
+    },
+    "vital-throw": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/vital-throw",
+        "behavior": "Gen III Fighting-type physical 70 power and 100% accuracy regardless of evasion; turn-based moves-last priority cannot be reproduced in real-time P2 arena. Real body collision with native hitboxes."
+      },
+      "animation": {
+        "origin": "The real native P2 attacker sprite advances toward target; no decorative animation layers.",
+        "travel": "Native johtoP2Advance moves the fighter to the actual collision box in approximately 0.19 seconds.",
+        "contact": "First true P2 body overlap triggers native recibir damage and opponent salto together, not a delayed 0.55-second window.",
+        "aftermath": "Opponent returns to its standing baseline with a 0.32-second body jump, without dust, explosion, aura or impact sprites."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Mewtwo Johto Lab fourth visual review only, keeps 13 approved VFX and does not modify Kanto campaign or saves."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createVitalThrow",
+          "finding": "No native VFX overlay is drawn. Original P2 fighter movement and opponent.salto are the ONLY animations. Damage at first confirmed body collision."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createVitalThrow",
+          "contribution": "Native P2 physical fighter movement and victim salto; zero additional sprite effect layers."
+        }
+      ],
+      "comparisonRationale": "User explicitly rejected extras. No effect from any of the ten VFX source libraries is semantically necessary for this physical grapple; therefore ZERO overlay sprites.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "pending"
+      },
+      "visualApproval": {
+        "state": "approved",
+        "evidence": "User approved simplified contact-synchronized body-only Vital Throw on 2026-11-05. Chromium verified damageFrame=liftStartFrame=8, zero overlays, 28px jump (run 42062983979)."
+      },
+      "userFeedback": {
+        "status": "approved",
+        "date": "2026-11-05",
+        "note": "Freeze exact body-only contact timing. Do not add extra FX."
+      }
+    },
+    "hidden-power": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/hidden-power",
+        "behavior": "Gen III variable 30-70 power and variable type from actual IVs. Solo lab explicit IV=31 fixture gives Dark 70, instead of inventing IVs on campaign saves; no Normal-type fixed damage."
+      },
+      "animation": {
+        "origin": "Native P2 source spritesheet wind-up anchored to current attacker's body.",
+        "travel": "Original animated P2 psico/psywave sheets move along the live projectile body path.",
+        "contact": "Visible source-sheet impact begins only after native recibir reports an actual hit; uses original P2 collision and HP.",
+        "aftermath": "Distinct short multi-frame source sprite particles dissipate with no stretched upscaled rectangular icons."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Mewtwo Johto Lab fourth visual review only, keeps 13 approved VFX and does not modify Kanto campaign or saves."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createHiddenPower",
+          "finding": "Uses genuine P2 HOJAS animation sheets vfx-psico, vfx-psywave. Source baseline 13 approved move factories untouched; attack movement/hit checks reuse original P2 recibir pipeline."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createHiddenPower",
+          "contribution": "Frame animated P2 HOJAS sprites vfx-psico, vfx-psywave + per-hit collision. P2 native over generic PixelFX."
+        }
+      ],
+      "comparisonRationale": "Compared actual P2 animated source sheet battle silhouette and native body hit timing against static icon enlargement and licensed PixelFX generic alternatives; selected P2-specific effects with original assets. User visual review still pending.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "pending"
+      },
+      "visualApproval": {
+        "state": "approved",
+        "evidence": "User explicitly approved Hidden Power on 2026-11-05 in this conversation; frozen VFX, may remain playable in the lab but excluded from future aesthetic rework."
+      },
+      "userFeedback": {
+        "status": "approved",
+        "date": "2026-11-05",
+        "note": "Preserve Hidden Power as user-approved; no visual edits to its native source factory."
+      }
+    },
+    "beat-up": {
+      "stage": "implemented",
+      "mechanics": {
+        "reference": "https://pokemondb.net/move/beat-up",
+        "behavior": "Gen III each healthy non-status party member contributes a strike. Solo training lab has only Mewtwo and therefore one hit; P2 typed recibir is an approximation to typeless Gen III damage, not genuine full Gen III formula."
+      },
+      "animation": {
+        "origin": "Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays.",
+        "travel": "Distinct fighter-grounded short source-sheet motion, using 1px crisp nearest-neighbor Phaser transforms.",
+        "contact": "Animated impact is gated behind native recibir actual hit, not on cast start; opponent sprite elevation is preserved only for Vital Throw.",
+        "aftermath": "Compact (4–6px) pixel dust and brief true sheet frames, no swirling or tall spell remnants."
+      },
+      "originalSources": {
+        "T2": {
+          "state": "inspected",
+          "reference": "docs/agentes/POLITICA-GOLPES-INTEGRAL.md",
+          "finding": "Isolated Mewtwo Johto Lab fourth visual review only, keeps 13 approved VFX and does not modify Kanto campaign or saves."
+        },
+        "P2": {
+          "state": "inspected",
+          "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createBeatUp",
+          "finding": "Original P2 HOJAS compared alongside ten tracked VFX library sources. Revised movement source selection: vfx-acometida, vfx-hiper_impacto, p-estrella. Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays."
+        },
+        "Z": {
+          "state": "unavailable",
+          "reference": "https://pokemonzarza.com/",
+          "finding": "No Zarza routine is ported or represented as reused in this pilot; upstream compatibility and permission need separate review before production."
+        },
+        "E": {
+          "state": "unavailable",
+          "reference": "https://github.com/GBurgardt/pokemon-emerald-arena",
+          "finding": "No Emerald Arena routine is ported or claimed reused in this isolated animation; upstream code review remains for production."
+        }
+      },
+      "libraryReview": {
+        "pixelfx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelfx/vendor/src/fx/water/whirlpool.js",
+          "licenseChecked": true,
+          "reason": "Compared the locally imported PixelFX elemental sample with non-KO precision strike: a native P2 moving contact slash has more accurate attacker/target choreography.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "sprite-fusion": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixelbolt": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixelbolt/vendor/examples/slash-hit.fx.json",
+          "licenseChecked": true,
+          "reason": "Reviewed the licensed Pixelbolt slash-hit reference versus the native P2 technique; source hit sprites allow contact-synchronized frames without altering approved effects.",
+          "fit": {
+            "semantics": 3,
+            "pixelArt": 4,
+            "phaser": 3,
+            "performance": 3
+          }
+        },
+        "pixel-ability-fx": {
+          "state": "rejected",
+          "effectRef": "reference-library/vfx-sources/pixel-ability-fx/vendor/js/presets.js",
+          "licenseChecked": true,
+          "reason": "Compared generic particle FX presets against the reference strike: they do not reproduce the specific native contact, slash and follow-through gestures.",
+          "fit": {
+            "semantics": 1,
+            "pixelArt": 2,
+            "phaser": 1,
+            "performance": 1
+          }
+        },
+        "spellbook-gd": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Godot shader samples are not direct Phaser/WebGL assets; no verified port used by this four-move batch."
+        },
+        "foozle-pixel-magic": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "codemanu-free-pixel-effects": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Licensing signals conflict; do not import or rank this asset without confirmation."
+        },
+        "devwizard-pixel-art-spells": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "cs5475-free-pixel-effects": {
+          "state": "unavailable",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "Only metadata or external download link is available; no sample from this source was imported for this specific move."
+        },
+        "pixeldust": {
+          "state": "blocked",
+          "effectRef": "",
+          "licenseChecked": false,
+          "reason": "No usable licensing evidence; absolutely no code or art can be copied."
+        }
+      },
+      "selected": [
+        {
+          "sourceId": "P2",
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createBeatUp",
+          "contribution": "Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays."
+        }
+      ],
+      "comparisonRationale": "Compared native P2 sprites with 10-library catalog: PixelBolt licensed slash-hit and Pixel Ability FX orbital presets were reviewed but visually less suitable. Licensed, available P2 sheets selected to keep sprite scale, body animation, and contact coherent; no unknown-license assets copied. Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays.",
+      "implementation": {
+        "files": [
+          "tools/pokearena/torre2-johto-four-native.js",
+          "tools/pokearena/torre2-johto-lab-runtime.js",
+          "tests/johto-first-four.test.js",
+          "tests/johto-first-four-browser.cjs"
+        ]
+      },
+      "validation": {
+        "unit": "tests/johto-first-four.test.js",
+        "browser": "tests/johto-first-four-browser.cjs",
+        "screenshots": "pending user aesthetic review",
+        "mobilePerformance": "pending"
+      },
+      "visualApproval": {
+        "state": "approved",
+        "evidence": "User explicitly approved beat-up on 2026-11-05, although dissatisfied with visual quality. Preserve the current effect without further revisions until requested."
+      },
+      "userFeedback": {
+        "status": "approved-with-reservation",
+        "date": "2026-11-05",
+        "note": "Approved, with express reservations about aesthetic quality; freeze the current effect."
+      }
+    }
+  }
 }

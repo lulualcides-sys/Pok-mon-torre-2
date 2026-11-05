@@ -298,15 +298,36 @@ const johtoPilot=await generateJohtoPilotSheets(path.join(dest,'assets/torre2/jo
 if(johtoPilot.length!==3||johtoPilot.some(s=>s.frames!==12||s.bytes<512))
  throw Error('Incomplete pilot spritesheet export; refusing placeholder art');
 console.log('Johto PNG pilot sprites:',JSON.stringify(johtoPilot));
+// Exclude four review-active moves AND the five user-approved visuals.
+ // The catalog retains all 43 candidates, while only pending PixelFX artwork
+ // is rasterized; calculate the expected count from source, never hard-code.
+const {generateJohtoPixelFXSheets}=await import('./torre2-pixelfx-sheets.mjs');
+const [{JOHTO_PIXELFX_43},{JOHTO_LAB_REVIEW_4,JOHTO_APPROVED_5}]=await Promise.all([
+ import('./torre2-johto-pixelfx-catalog.js'),
+ import('./torre2-johto-lab-catalog.js')]);
+const excluded=new Set([...JOHTO_LAB_REVIEW_4,...JOHTO_APPROVED_5]);
+const expectedPixelFX=JOHTO_PIXELFX_43.filter(m=>!excluded.has(m.id)).length;
+const pixelfxSheets=await generateJohtoPixelFXSheets(
+ path.join(dest,'assets/torre2/johto-pixelfx'));
+if(pixelfxSheets.length!==expectedPixelFX||pixelfxSheets.some(s=>s.frames!==12||s.bytes<512))
+ throw Error('Incomplete PixelFX Johto spritesheets; refusing placeholders');
+console.log('PixelFX Johto VFX generated:',pixelfxSheets.length);
 await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
 await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
 await Promise.all([
  ['tools/pokearena/torre2-johto-lab-catalog.js','johto-lab-catalog.js'],
  ['tools/pokearena/torre2-johto-lab-scene.js','johto-lab-scene.js'],
  ['tools/pokearena/torre2-johto-lab-runtime.js','johto-lab-runtime.js'],
+ ['tools/pokearena/torre2-johto-four-native.js','torre2-johto-four-native.js'],
  ['tools/pokearena/torre2-native-zap.js','native-zap.js'],
  ['tools/pokearena/torre2-johto-lab-pixelart.js','johto-lab-pixelart.js'],
- ['tools/pokearena/torre2-johto-lab-combat.js','johto-lab-combat.js']
+ ['tools/pokearena/torre2-johto-lab-combat.js','johto-lab-combat.js'],
+ ['tools/pokearena/torre2-johto-lab-cooldown.js','torre2-johto-lab-cooldown.js'],
+ ['tools/pokearena/torre2-johto-motion.js','torre2-johto-motion.js'],
+ ['tools/pokearena/torre2-johto-gen3-research.js','torre2-johto-gen3-research.js'],
+ ['tools/pokearena/torre2-johto-gen3-mechanics.js','torre2-johto-gen3-mechanics.js'],
+ ['tools/pokearena/torre2-johto-pixelfx-catalog.js','torre2-johto-pixelfx-catalog.js'],
+ ['tools/pokearena/torre2-johto-pixelfx-runtime.js','torre2-johto-pixelfx-runtime.js']
 ].map(async([source,name])=>fs.copyFile(path.resolve(source),
  path.join(dest,clientSource,'torre2',name))));
 
@@ -1054,6 +1075,18 @@ for(const [filename,changes] of patches){
     body=body.replace(declarations[0],setup+declarations[0]);
     continue;
    }
+   // The upstream client now gives alternate forms their own typing.
+   // Preserve that native fallback while changing types ONLY for Kanto.
+   if(filename==='luchador.js'&&
+      from==='get tipos(){return this.mega&&this.forma.mega.tipos||this.forma.tipos}'&&
+      to.includes('gen3Types(types)')){
+    const native='get tipos(){return this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos}';
+    if(body.split(native).length!==2)
+     throw Error('Unknown native alternate-form type getter; refusing unsafe patch');
+    body=body.replace(native,
+     'get tipos(){const types=this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos;return this.escena.datos?.torre2?gen3Types(types):types}');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
@@ -1228,11 +1261,17 @@ const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixel-sheets.mjs'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixelfx-sheets.mjs'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-signatures.mjs'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-first-four-sheets.mjs'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-four-native.js'));
+vfxFingerprint.update(await fs.readFile(
+ path.join(dest,'assets/torre2/johto-pixelfx/manifest.json')));
 
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
- 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/johto-lab-pixelart.js','torre2/johto-lab-combat.js',
+ 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/torre2-johto-four-native.js','torre2/johto-lab-pixelart.js','torre2/johto-lab-combat.js','torre2/torre2-johto-lab-cooldown.js','torre2/torre2-johto-motion.js','torre2/torre2-johto-gen3-research.js','torre2/torre2-johto-gen3-mechanics.js','torre2/torre2-johto-pixelfx-catalog.js','torre2/torre2-johto-pixelfx-runtime.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
