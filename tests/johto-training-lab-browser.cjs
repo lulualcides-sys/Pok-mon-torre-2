@@ -131,6 +131,10 @@ const server=http.createServer(async(req,res)=>{
     import(new URL('torre2/johto-lab-pixelart.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
    enemy.inmortal=true;me.inmortal=true;
+   // This 18-move synthetic burst is not a user-played match.
+   // Native bubbles are tested separately with real tween frames.
+   const previousBurst=scene.__johtoSyntheticVfxTextBurst;
+   scene.__johtoSyntheticVfxTextBurst=true;
    const result=[];
    for(const move of JOHTO_18){
     me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
@@ -162,6 +166,7 @@ const server=http.createServer(async(req,res)=>{
      previewVisible:pilot&&scene.children.list.some(o=>
       o.active&&o.texture?.key===pilotKey)});
    }
+   scene.__johtoSyntheticVfxTextBurst=previousBurst;
    return result;
   });
   console.log('JOHTO_LAB_18_CASTS',JSON.stringify(casts));
@@ -233,6 +238,8 @@ const server=http.createServer(async(req,res)=>{
    const [{JOHTO_18},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
     import(new URL('torre2/johto-lab-catalog.js',base)),import(new URL('torre2/johto-lab-runtime.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],enemy=scene.luchadores[1];
+   const previousBurst=scene.__johtoSyntheticVfxTextBurst;
+   scene.__johtoSyntheticVfxTextBurst=true;
    const original=enemy.recibir,originalRandom=Math.random,originalXP=me.ganarExp,
     originalEnemyXP=enemy.ganarExp,originalEnemyUlt=enemy.ganarUlti,
     originalHitFX=enemy.efectosGolpe,measured=[];
@@ -263,7 +270,8 @@ const server=http.createServer(async(req,res)=>{
     }
    }finally{enemy.recibir=original;me.ganarExp=originalXP;
     enemy.ganarExp=originalEnemyXP;enemy.ganarUlti=originalEnemyUlt;
-    enemy.efectosGolpe=originalHitFX;Math.random=originalRandom;}
+    enemy.efectosGolpe=originalHitFX;Math.random=originalRandom;
+    scene.__johtoSyntheticVfxTextBurst=previousBurst;}
    return measured;
   });
   console.log('JOHTO_LAB_18_NATIVE_CONTACTS',JSON.stringify(impacts));

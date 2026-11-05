@@ -93,6 +93,9 @@ const server=http.createServer(async(req,res)=>{
       assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
       damage:beforeHP-enemy.hp,nameVisible,
       noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
+    // Await P2's native 1.05s globo tween before the next cast.
+    // Avoid exhausting the canvas pool via artificial synchronous bursts.
+    await new Promise(ok=>setTimeout(ok,1250));
    }}finally{Math.random=originalRandom;
     enemy.efectosGolpe=oldHitText;me.acierto=oldAcerto;
     me.ganarExp=oldExp;enemy.ganarExp=oldEnemyExp;

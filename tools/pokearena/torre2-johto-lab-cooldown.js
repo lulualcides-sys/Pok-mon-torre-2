@@ -41,7 +41,8 @@ export function withJohtoLabCooldown(cast,announce=null){
   // Native Poké Arena 2D: habilidades.js#presentar -> vfx.globo.
   // Unlike its basic-attack exception, the user explicitly requires this
   // for ALL new offensive moves, including ATK. Never announce failed casts.
-  if(move&&!move.visualOnly&&scene.globos&&typeof announce==="function")
+  if(move&&!move.visualOnly&&!scene.__johtoSyntheticVfxTextBurst&&
+     scene.globos&&typeof announce==="function")
    announce(scene,fighter,move);
   // Share a visible cooldown across all four skill buttons.
   if(fighter.cd&&typeof fighter.cd==="object")
