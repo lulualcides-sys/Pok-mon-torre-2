@@ -5,6 +5,8 @@
 import * as vfx from "../vfx.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
 import {TORRE2_JOHTO_PIXELFX_FORMS} from "./torre2-johto-pixelfx-runtime.js";
+import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
+const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
 import {ZAP_ELECTRO_BALL_TEXTURE,zapCannonMotion} from "./native-zap.js";
 const tones={
@@ -271,11 +273,17 @@ function cast(l,h,extra){
  const e=l.escena,r=l.rival,angle=Math.atan2(l.ay-l.y,l.ax-l.x),dx=Math.cos(angle),dy=Math.sin(angle);
  const style=h.style,palette=tones[h.id];if(!palette)return false;
  const g=e.add.graphics().setDepth(1520);
+ const pixelFXKey='torre2-johto-pixelfx-'+h.id;
+ const rework=REWORK_IDS.has(h.id)&&e.textures.exists(pixelFXKey);
+ const pixelFXSprite=rework?e.add.sprite(0,0,pixelFXKey,0)
+  .setDepth(1533).setScale(.78):null;
+ if(pixelFXSprite)e.textures.get(pixelFXKey)
+  .setFilter(Phaser.Textures.FilterMode.NEAREST);
  // Zap Cannon uses the original Raichu Electro Ball sprite from the P2
  // client. Never combine it with the rejected ray fragments or pilot orb.
- const nativeSprites=h.id==='zap-cannon'?[]:nativeP2(e,h.id);
+ const nativeSprites=h.id==='zap-cannon'||rework?[]:nativeP2(e,h.id);
  const pilotKey='torre2-johto-pilot-'+h.id;
- const pilotSprite=h.id!=='zap-cannon'&&e.textures.exists(pilotKey)?
+ const pilotSprite=!rework&&h.id!=='zap-cannon'&&e.textures.exists(pilotKey)?
   e.add.sprite(0,0,pilotKey,0).setDepth(1533):null;
  const nativeOrb=h.id==='zap-cannon'&&e.textures.exists(ZAP_ELECTRO_BALL_TEXTURE)?
   e.add.sprite(0,0,ZAP_ELECTRO_BALL_TEXTURE,0)
@@ -344,22 +352,32 @@ function cast(l,h,extra){
    for(const sprite of snowTrail)sprite.destroy();
    for(const sprite of zapSparks)sprite.destroy();
    nativeOrb?.destroy();nativeImpact?.destroy();
-   pilotSprite?.destroy();return false;}
+   pilotSprite?.destroy();pixelFXSprite?.destroy();return false;}
   // The old projectile kept travelling the whole move's range even after
   // reaching Onix. Both Zap Cannon and Powder Snow ended far to his right.
   // Only the THREE Mewtwo lab pilots clamp to the actual opponent: leave
   // the existing 15 battle prototypes and approved campaign VFX unchanged.
   const ty=r.y-r.alto*.5,tx=r.x;
   const targetDistance=Math.hypot(tx-sx,ty-sy);
-  const maxTravel=(pilotSprite||nativeOrb)&&beam?
+  const maxTravel=(pilotSprite||nativeOrb||pixelFXSprite)&&beam?
    Math.min(h.alcance,targetDistance):h.alcance;
   const travel=Math.min(maxTravel,age*360);
-  const fly=(beam&&(pilotSprite||nativeOrb))?
+  const fly=(beam&&(pilotSprite||nativeOrb||pixelFXSprite))?
    {x:sx+(tx-sx)*(targetDistance?travel/targetDistance:1),
     y:sy+(ty-sy)*(targetDistance?travel/targetDistance:1)}:null;
   const x=fly?fly.x:beam?sx+dx*travel:style==="quake"?l.x+dx*80:melee?l.x+dx*37:r.x;
   const y=fly?fly.y:beam?sy+dy*travel:style==="quake"?l.y-7:melee?l.y-l.alto*.5+dy*12:ty;
-  if(nativeOrb){
+  if(pixelFXSprite){
+   // Replaces only unapproved prototypes; hit windows, miss and damage
+   // remain governed by the existing Johto lab battle mechanics.
+   g.clear();
+   const t=Math.min(1,age/duration);
+   const snap=v=>Math.round(v);
+   const dest=melee||style==='quake'?{x:r.x,y:ty}:{x,y};
+   pixelFXSprite.setFrame(Math.min(11,Math.floor(t*12)))
+    .setPosition(snap(dest.x),snap(dest.y))
+    .setAlpha(t>.86?Math.max(.06,(1-t)/.14):1);
+  }else if(nativeOrb){
    // Source sprite frames: vfx-electroball row 0 (six flying poses),
    // row 1 (six impact poses). Adapted into a weightier cannon blast.
    // This is the real Raichu Electro Ball visual, not the old generated
@@ -422,7 +440,7 @@ function cast(l,h,extra){
  },destroy(){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
   for(const sprite of snowTrail)sprite.destroy();
   for(const sprite of zapSparks)sprite.destroy();
-  nativeOrb?.destroy();nativeImpact?.destroy();pilotSprite?.destroy();}};
+  nativeOrb?.destroy();nativeImpact?.destroy();pilotSprite?.destroy();pixelFXSprite?.destroy();}};
  e.efectos.push(fx);return true;
 }
 export const TORRE2_JOHTO_LAB_FORMS=Object.freeze(Object.fromEntries(
