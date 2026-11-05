@@ -37,7 +37,7 @@ export function rankSources(query,limit=10){
   }
   if(mov.includes(input))score+=12;
   if(name.includes(input))score+=12;
-  if(s.copyState==="selected-samples-local")score+=1;
+  if(s.copyState==="selected-samples-local"&&score>0)score+=1;
   if(s.licenseState==="conflict"||s.licenseState==="missing")score-=10;
   return {...s,score};
  }).filter(s=>input? s.score>0:true)
