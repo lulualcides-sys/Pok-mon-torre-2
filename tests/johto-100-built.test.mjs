@@ -31,6 +31,9 @@ for(const p of JOHTO_100_ROWS){
 const {modules}=JSON.parse(fs.readFileSync(path.join(site,"version.json"),"utf8"));
 const output=path.join(site,modules);
 const builtDatos=fs.readFileSync(path.join(output,"datos.js"),"utf8");
+const builtPokedex=fs.readFileSync(path.join(output,"escenas/pokedex.js"),"utf8");
+assert.match(builtPokedex,/Pokedex\\.prototype\\.movimientos=function/,
+ "Built Pokédex must guard missing executable Johto moves before dereferencing h.tipo");
 for(const file of ["torre2/johto-100-data.js","torre2/johto-100-species.js"])
  assert.ok(fs.existsSync(path.join(output,file)),"Missing executable Johto module: "+file);
 assert.ok(builtDatos.includes("addAllJohtoSpecies"),"Built roster must import Johto integration");

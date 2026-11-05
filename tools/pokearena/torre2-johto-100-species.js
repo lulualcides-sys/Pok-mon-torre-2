@@ -94,10 +94,28 @@ export function johto100Kit(p,library){
  return kit;
 }
 export function addAllJohtoSpecies(original){
- const known=new Set(original.map(x=>x.id)),library=johtoMoveLibrary(original);
+ const known=new Map(original.map(x=>[x.id,x])),library=johtoMoveLibrary(original);
  const result=[];
  for(const p of JOHTO_100_ROWS){
-  if(known.has(p[1]))continue;
+  if(known.has(p[1])){
+   // The P2 client already includes Ho-Oh as a sprite/roster entry but it
+   // currently has no executable battle slots. Preserve all native visuals
+   // and existing moves; fill ONLY empty slots from its legal FRLG learnset,
+   // and ONLY with already installed P2 or approved Torre 2 renderers.
+   if(p[1]==="ho-oh"){
+    const native=known.get(p[1]),slots=["lmb","rmb","q","e"];
+    if(!slots.some(slot=>native?.kit?.[slot]?.nombre&&native.kit[slot]?.forma)){
+     const legalKit=johto100Kit(p,library),restored={...native.kit};
+     for(const slot of slots)if(!restored[slot]?.forma&&legalKit[slot]?.forma)
+      restored[slot]=legalKit[slot];
+     if(slots.some(slot=>restored[slot]?.forma)){
+      native.kit=restored;
+      native.torre2JohtoNativeLegalKit=true;
+     }
+    }
+   }
+   continue;
+  }
   const kit=johto100Kit(p,library);
   const sub=lineage(p[0]);
   result.push({

@@ -1199,8 +1199,28 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
 // pedestal: six rows of six cards with tiny previous/next Phaser controls.
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
-await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
- await fs.readFile(pokedexPath,'utf8')));
+const paginatedPokedex=paginateKantoPokedexSource(
+ await fs.readFile(pokedexPath,'utf8'));
+// Genuine Gen II exceptions (Unown/Smeargle) currently have only Hidden
+// Power/Sketch in FRLG; without an executable move implementation, these
+// kits remain empty rather than silently getting fabricated attacks.
+// The upstream P2 Pokédex assumes all slots exist and dereferences h.tipo.
+// Guard only empty kits, preserving every playable native/approved move UI.
+if(!/class Pokedex\\b/.test(paginatedPokedex)||
+   !/movimientos\\s*\\(/.test(paginatedPokedex))
+ throw Error('Native Pokedex structure changed; cannot safely guard empty Gen II kits');
+const noEmptyJohtoPokedexCrash=`
+const __pt2OriginalPokedexMovimientos=Pokedex.prototype.movimientos;
+Pokedex.prototype.movimientos=function(...args){
+ const kit=this.etapas?.[this.etapa]?.kit;
+ if(!kit||!["lmb","rmb","q","e"].some(slot=>kit[slot]?.nombre&&kit[slot]?.forma)){
+  this.movs?.removeAll?.(true);
+  return;
+ }
+ return __pt2OriginalPokedexMovimientos.apply(this,args);
+};
+`;
+await fs.writeFile(pokedexPath,paginatedPokedex+noEmptyJohtoPokedexCrash);
 
 // The base client already ships the five Greninja styles for Froakie,
 // Frogadier and Greninja. Use the ORIGINAL sprites, metadata and red aura;
