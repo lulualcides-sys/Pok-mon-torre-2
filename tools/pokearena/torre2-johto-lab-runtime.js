@@ -341,7 +341,9 @@ function cast(l,h,extra){
    r.hp=Math.max(1,r.hp);r.ko=oldKo;
   }
   if(outcome==="golpe"){
-   vfx.rafaga(e,"chispa",r.x,r.y-r.alto*.5,palette[1],8);
+   // Original approved three retain their native impact sparkle.
+   // Redone 15 use PixelFX-only art, not mixed hand-drawn impact particles.
+   if(!rework)vfx.rafaga(e,"chispa",r.x,r.y-r.alto*.5,palette[1],8);
    if(h.id==="zap-cannon")r.ponerEstado("paralizado",2.5);
    if(h.id==="whirlpool")r.ponerEstado("lento",.7,{f:.25});
   }

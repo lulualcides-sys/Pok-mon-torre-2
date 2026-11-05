@@ -11,6 +11,20 @@ import {JOHTO_PIXELFX_43,PIXELFX_PIN} from "./torre2-johto-pixelfx-catalog.js";
 
 export const PIXELFX_CEL=96;
 export const PIXELFX_FRAMES=12;
+/* PixelFX source palettes selected for genuine Pokémon move semantics.
+ * Recolor at source (not CSS/tinting generic orbs) and keep the true
+ * procedural animation/frames distinct for every move.
+ */
+const PIXELFX_PALETTES=Object.freeze({
+ "octazooka":["#101024","#1d1a35","#302644","#4a375e","#665080","#8d75a5","#b5a3ce","#e1d8ed"],
+ "thief":["#111225","#26243f","#43335e","#65508a","#8970b2","#baa0d8","#e1cdef","#fff1ff"],
+ "steel-wing":["#0c1f32","#1c3b53","#315b75","#547e99","#86abc1","#b9d7e4","#dceef3","#ffffff"],
+ "return":["#351b39","#68406b","#9e5c91","#c97fa6","#eaa9c4","#ffcddd","#ffe8ee","#ffffff"],
+ "frustration":["#391916","#733027","#af4a2b","#d95c31","#f18a42","#ffb65b","#ffe18d","#fff5c0"],
+ "present":["#472335","#8a3555","#bc446e","#ea6081","#f3a366","#fdd182","#fff1b9","#ffffff"],
+ "hidden-power":["#1a2140","#353969","#52569d","#6f74bb","#9d9bdf","#cbbeef","#e6dcfb","#ffffff"],
+ "pursuit":["#151323","#29223d","#493361","#6e4885","#9b64ae","#bf8dce","#e6c5f1","#ffffff"]
+});
 const FRAME=256;
 const BAND=PIXELFX_CEL*PIXELFX_FRAMES;
 const PNG_HEADER=Buffer.from([137,80,78,71,13,10,26,10]);
@@ -68,7 +82,8 @@ export async function generateJohtoPixelFXSheets(folder){
   if(typeof mod.draw!=="function"&&typeof mod.create!=="function")
    throw Error("PixelFX module lacks renderer: "+m.fx);
   const duration=Math.max(.7,Math.min(3.2,mod.meta?.duration??1.8));
-  const fx=createFx(mod,{x:0,y:0,seed:7,light:.72});
+  const fx=createFx(mod,{x:0,y:0,seed:7,light:.72,
+   ...(PIXELFX_PALETTES[m.id]?{palette:PIXELFX_PALETTES[m.id]}:{})});
   const f=createFrame(FRAME,FRAME,-FRAME/2,-FRAME/2);
   const out=new Uint8ClampedArray(FRAME*FRAME*4),captures=[];
   for(let i=0;i<PIXELFX_FRAMES;i++){
