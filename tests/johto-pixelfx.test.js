@@ -13,6 +13,8 @@ test('Three approved Johto FX stay original, 15 replaced, 28 added, no duplicate
  assert.equal(JOHTO_PIXELFX_28.length,28);
  assert.equal(JOHTO_PIXELFX_43.length,43);
  assert.equal(JOHTO_LAB_ALL.length,46);
+ for(const id of ["thief","pursuit","beat-up"])assert.equal(JOHTO_LAB_ALL.find(m=>m.id===id).categoria,"SPECIAL");
+ assert.equal(JOHTO_LAB_ALL.find(m=>m.id==="sweet-kiss").tipo,"NORMAL");
  for(const move of JOHTO_LAB_ALL)assert.equal(move.cd,1,move.id+' must use 1s cooldown');
  assert.equal(new Set(JOHTO_LAB_ALL.map(m=>m.id)).size,46);
  const fx=new Set(JOHTO_PIXELFX_43.map(m=>m.id));

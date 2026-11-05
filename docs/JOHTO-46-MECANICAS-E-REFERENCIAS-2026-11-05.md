@@ -13,3 +13,7 @@ Antes de novas artes, consultar também as quatro fontes exigidas pela política
 ## Motion review 43 moves
 
 43 distinct Phaser/WebGL sprite paths added according to the Gen III individual behavior audit. Self-only moves display on the caster, traps and damage on foe/ground, exchanging moves between both, attacks in flight. No approved VFX modified, no campaign unlock.
+
+## Correções da mecânica Gen III na arena de teste
+
+Magnitude usa sorteio ponderado de níveis 4–10. Present tem 40% força 40, 30% força 80, 10% força 120 e 20% cura. Triple Kick evolui potência em três acertos separados. Beat Up não inventa cinco aliados quando o treino possui só Mewtwo. Golpes Dark usam categoria especial Gen III, e Sweet Kiss passa a Normal. Efeitos aprovados e campanha não alterados.

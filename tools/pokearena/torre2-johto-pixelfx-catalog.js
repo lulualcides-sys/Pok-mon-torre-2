@@ -13,7 +13,7 @@ export const JOHTO_PIXELFX_28=Object.freeze([
  {"id":"conversion-2","nombre":"Conversion 2","tipo":"NORMAL","fx":"arcane/portal"},
  {"id":"cotton-spore","nombre":"Cotton Spore","tipo":"GRASS","fx":"nature/spore-burst"},
  {"id":"spite","nombre":"Spite","tipo":"GHOST","fx":"shadow/soul-drain"},
- {"id":"sweet-kiss","nombre":"Sweet Kiss","tipo":"FAIRY","fx":"status/charmed"},
+ {"id":"sweet-kiss","nombre":"Sweet Kiss","tipo":"NORMAL","fx":"status/charmed"},
  {"id":"belly-drum","nombre":"Belly Drum","tipo":"NORMAL","fx":"status/rage"},
  {"id":"spikes","nombre":"Spikes","tipo":"GROUND","fx":"nature/thorns"},
  {"id":"foresight","nombre":"Foresight","tipo":"NORMAL","fx":"arcane/magic-circle-cast"},

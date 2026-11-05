@@ -5,7 +5,7 @@
 import {JOHTO_PIXELFX_28} from "./torre2-johto-pixelfx-catalog.js";
 export const JOHTO_18=Object.freeze([
  ["triple-kick","Triple Kick","FIGHTING","PHYSICAL",10,90,10,6,70,"Punch","kick"],
- ["thief","Thief","DARK","PHYSICAL",60,100,25,12,85,"Attack","slash"],
+ ["thief","Thief","DARK","SPECIAL",60,100,25,12,85,"Attack","slash"],
  ["snore","Snore","NORMAL","SPECIAL",50,100,15,10,190,"Charge","sound"],
  ["powder-snow","Powder Snow","ICE","SPECIAL",40,100,25,8,240,"Shoot","snow"],
  ["octazooka","Octazooka","WATER","SPECIAL",65,85,10,13,240,"Shoot","ink"],
@@ -16,12 +16,12 @@ export const JOHTO_18=Object.freeze([
  ["present","Present","NORMAL","PHYSICAL",0,90,15,12,235,"Throw","gift"],
  ["frustration","Frustration","NORMAL","PHYSICAL",102,100,20,16,98,"Attack","dash"],
  ["magnitude","Magnitude","GROUND","PHYSICAL",0,100,30,16,150,"Charge","quake"],
- ["pursuit","Pursuit","DARK","PHYSICAL",40,100,20,8,170,"Attack","slash"],
+ ["pursuit","Pursuit","DARK","SPECIAL",40,100,20,8,170,"Attack","slash"],
  ["vital-throw","Vital Throw","FIGHTING","PHYSICAL",70,100,10,15,84,"Attack","throw"],
  ["hidden-power","Hidden Power","NORMAL","SPECIAL",60,100,15,12,238,"Charge","orb"],
  ["rock-smash","Rock Smash","FIGHTING","PHYSICAL",40,100,15,8,100,"Swing","rock"],
  ["whirlpool","Whirlpool","WATER","SPECIAL",35,85,15,8,215,"Charge","vortex"],
- ["beat-up","Beat Up","DARK","PHYSICAL",0,100,10,12,92,"Attack","kick"]
+ ["beat-up","Beat Up","DARK","SPECIAL",0,100,10,12,92,"Attack","kick"]
 ].map(([id,nombre,tipo,categoria,poder,precisao,pp,dano,alcance,anim,style])=>
  Object.freeze({id,nombre,tipo,categoria,poder,precisao,pp,dano,alcance,
   anim,style,forma:"torre2_johto_"+id.replaceAll("-",""),coste:8,cd:1,

@@ -7,6 +7,7 @@ import {JOHTO_18} from "./johto-lab-catalog.js";
 import {TORRE2_JOHTO_PIXELFX_FORMS} from "./torre2-johto-pixelfx-runtime.js";
 import {withJohtoLabCooldown} from "./torre2-johto-lab-cooldown.js";
 import {johtoPose} from "./torre2-johto-motion.js";
+import {magnitudeGen3,presentGen3,tripleKickGen3,beatUpGen3Participants} from "./torre2-johto-gen3-mechanics.js";
 import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
@@ -314,7 +315,7 @@ function cast(l,h,extra){
   style==="vortex"?1.65:style==="quake"?1.05:beam?1.1:.75;
  const windows=h.id==='zap-cannon'?[.84]:
   h.id==="triple-kick"?[.17,.34,.51]:
-  h.id==="beat-up"?[.12,.23,.34,.45,.56]:
+  h.id==="beat-up"?Array.from({length:beatUpGen3Participants(e.datos?.johtoLab?.party)},(_,i)=>.28+i*.11):
   h.id==="whirlpool"?[.4,.7,1,1.3]:[.31];
  let age=0,hits=0,stopped=false;
  l.animar(h.anim||"Attack",.53,.13);
@@ -329,12 +330,13 @@ function cast(l,h,extra){
   if(r.ko||stopped)return;
   if(Math.random()>h.precisao/100){if(h.id==="triple-kick")stopped=true;return;}
   let damage=h.dano;
-  if(h.id==="triple-kick")damage*=hits+1;
-  if(h.id==="beat-up")damage*=.52; // preview until team is modeled
-  if(h.id==="magnitude")damage*=[.7,1,1.4,1.8][Math.floor(Math.random()*4)];
+  if(h.id==="triple-kick")damage*=tripleKickGen3(hits).power/10;
+  if(h.id==="beat-up")damage*=.52; // One valid solo fighter in current lab
+  if(h.id==="magnitude")damage*=magnitudeGen3().power/70;
   if(h.id==="present"){
-   if(Math.random()<.2){r.hp=Math.min(r.hpMax,r.hp+r.hpMax*.25);return;}
-   damage*=.7+Math.floor(Math.random()*3)*.45;
+   const result=presentGen3();
+   if(result.kind==="heal"){r.hp=Math.min(r.hpMax,r.hp+r.hpMax*result.fraction);return;}
+   damage*=result.power/80;
   }
   const oldKo=r.ko;
   const outcome=r.recibir(l,{dano:damage,tipo:h.tipo,slot:extra?.slot,
