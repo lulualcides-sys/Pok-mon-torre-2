@@ -47,14 +47,14 @@ test("Legacy existing moves are not falsely classified as newly audited",()=>{
 test("New experimental Johto effects require individual VFX audits, not legacy exemption",()=>{
  const ids=requiredVfxIds(process.cwd(),baseline);
  if(fs.existsSync("tools/pokearena/torre2-johto-pixelfx-catalog.js")){
-  assert.deepEqual(ids,["frustration","magnitude","present","return"]);
+  assert.deepEqual(ids,["beat-up","hidden-power","pursuit","vital-throw"]);
   assert.equal(validateVfxSelections({...baseline,decisions:{}},catalog,ids)
    .filter(x=>x.includes("MISSING VFX source comparison")).length,4);
   const reviews=JSON.parse(fs.readFileSync("data/vfx-selection-decisions.json","utf8"));
   assert.deepEqual(validateVfxSelections(reviews,catalog,ids),[]);
-  assert.equal(Object.keys(reviews.decisions).length,11);
+  assert.equal(Object.keys(reviews.decisions).length,15);
   assert.ok(reviews.decisions.snore,"Rejected Snore history must not be erased");
-  for(const id of ["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"])
+  for(const id of ["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude"])
    assert.ok(reviews.decisions[id],"Previously approved visual audit preserved");
   for(const id of ids)assert.equal(reviews.decisions[id].visualApproval.state,"pending");
  }else assert.deepEqual(ids,[]);

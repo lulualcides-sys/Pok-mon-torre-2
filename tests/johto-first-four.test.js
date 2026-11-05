@@ -7,16 +7,17 @@ test("Only four unapproved attacks are in the review UI; approved three untouche
  assert.deepEqual(JOHTO_LAB_VISIBLE.map(x=>x.id),JOHTO_FOUR_NATIVE_IDS);
  assert.deepEqual([...JOHTO_LAB_DEFAULT],JOHTO_FOUR_NATIVE_IDS);
  assert.equal(JOHTO_LAB_ALL.length,46);
- for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"]){
+ for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude"]){
   assert.ok(JOHTO_LAB_ALL.some(x=>x.id===id));
   assert.ok(!JOHTO_LAB_VISIBLE.some(x=>x.id===id));
-  if(!["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"].includes(id))
+  if(!["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude"].includes(id))
    assert.equal(makeJohtoFourNative({},id),null);
  }
 });
 test("All four VFX move and change native P2 sprite layers, no painted rectangles",()=>{
  const names=new Set(["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-psiquico","p-mira","p-guijarro",
- "vfx-quickattack","vfx-arco","vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca","vfx-huevo","vfx-hiper_impacto","p-corazon","p-brasa","p-roca"]);
+ "vfx-quickattack","vfx-arco","vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca","vfx-huevo","vfx-hiper_impacto","p-corazon","p-brasa","p-roca",
+ "vfx-psico","vfx-psywave","p-sombra"]);
  const scene={textures:{exists(id){return names.has(id)},get(){return{setFilter(){}}}},
   add:{image(x,y,id){return {
    name:id,active:true,visible:false,alpha:0,
@@ -49,20 +50,20 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
   }
  }finally{delete globalThis.Phaser}
 });
-test("Gen III stats and one-second shared lab cooldown remain",()=>{
+test("Gen III stats and one-second shared lab cooldown remain",async()=>{
  for(const m of JOHTO_LAB_VISIBLE)assert.equal(m.cd,1);
- const ret=JOHTO_LAB_VISIBLE.find(x=>x.id==="return");
- const gift=JOHTO_LAB_VISIBLE.find(x=>x.id==="present");
- const quake=JOHTO_LAB_VISIBLE.find(x=>x.id==="magnitude");
- assert.equal(ret.poder,102);assert.equal(ret.categoria,"PHYSICAL");
- assert.equal(gift.poder,0);assert.equal(gift.pp,15);
- assert.equal(quake.poder,0);assert.equal(quake.pp,30);
- assert.deepEqual(johtoBatch3Roll("present",()=>.1),{power:40,heal:false});
- assert.deepEqual(johtoBatch3Roll("present",()=>.5),{power:80,heal:false});
- assert.deepEqual(johtoBatch3Roll("present",()=>.75),{power:120,heal:false});
- assert.deepEqual(johtoBatch3Roll("present",()=>.9),{power:0,heal:true});
- const magnitude=[0,.05,.15,.35,.65,.85,.95].map(v=>johtoBatch3Roll("magnitude",()=>v).power);
- assert.deepEqual(magnitude,[10,30,50,70,90,110,150]);
+ const pursued=JOHTO_LAB_VISIBLE.find(x=>x.id==="pursuit");
+ const throwMove=JOHTO_LAB_VISIBLE.find(x=>x.id==="vital-throw");
+ const hidden=JOHTO_LAB_VISIBLE.find(x=>x.id==="hidden-power");
+ const beat=JOHTO_LAB_VISIBLE.find(x=>x.id==="beat-up");
+ assert.equal(pursued.poder,40);assert.equal(pursued.categoria,"SPECIAL");
+ assert.equal(throwMove.poder,70);assert.equal(throwMove.precisao,100);
+ assert.equal(hidden.pp,15);assert.equal(beat.pp,10);
+ const {hiddenPowerGen3,beatUpGen3Participants}=await import("../tools/pokearena/torre2-johto-gen3-mechanics.js");
+ assert.deepEqual(hiddenPowerGen3({hp:31,attack:31,defense:31,speed:31,spAttack:31,spDefense:31}),
+   {type:"DARK",power:70});
+ assert.equal(beatUpGen3Participants(),1);
+ assert.equal(beatUpGen3Participants([{hp:90,est:{}},{hp:0,est:{}},{hp:80,est:{veneno:true}}]),1);
 });
 
 test("P2 contact geometry rejects remote melee and accepts actual overlapping body",async()=>{

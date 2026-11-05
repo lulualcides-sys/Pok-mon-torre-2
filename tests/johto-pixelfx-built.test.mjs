@@ -12,11 +12,11 @@ const remaining=JOHTO_PIXELFX_43.filter(m=>
  !JOHTO_LAB_REVIEW_4.includes(m.id)&&!JOHTO_APPROVED_5.includes(m.id));
 assert.equal(JOHTO_PIXELFX_43.length,43);
 assert.equal(JOHTO_LAB_REVIEW_4.length,4);
-assert.equal(remaining.length,33);
+assert.equal(remaining.length,29);
 assert.equal(manifest.files.length,remaining.length);
 assert.equal(manifest.mode,'visual-only');
 assert.equal(manifest.approved,false);
-assert.equal(manifest.engine,'P2-native-ten-live-plus-PixelFX-unapproved-backlog');
+assert.equal(manifest.engine,'P2-native-fourteen-live-plus-PixelFX-unapproved-backlog');
 assert.deepEqual(new Set(manifest.files.map(x=>x.id)),new Set(remaining.map(x=>x.id)));
 for(const id of JOHTO_LAB_REVIEW_4)assert.ok(!manifest.files.some(x=>x.id===id),id+' rejected rectangular PixelFX must not ship');
 for(const id of JOHTO_APPROVED_5)assert.ok(!manifest.files.some(x=>x.id===id),id+' approved VFX was overwritten');
@@ -54,4 +54,4 @@ const output=resolve(process.env.PREVIEW_ROOT||'_site','arena2d',version.modules
 for(const p of ['torre2/torre2-johto-pixelfx-catalog.js','torre2/torre2-johto-pixelfx-runtime.js','torre2/torre2-johto-four-native.js']){
  assert.ok(statSync(join(output,p)).size>100,p);
 }
-console.log('PASS 33 unapproved PixelFX sheets + ten native P2 moves; all nine approvals preserved');
+console.log('PASS 29 unapproved PixelFX sheets + fourteen native P2 moves; all thirteen approvals preserved');
