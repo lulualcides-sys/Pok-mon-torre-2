@@ -17,7 +17,14 @@ test("all 18 skills have distinct inked pixel sprites and native P2 texture pair
    move.id+": no ink outline or highlights");
   assert.equal(pal.length,5,move.id+": palette needs outline/shadow/body/light/specular");
   assert.equal(native.length,2,move.id+": requires at least two original P2 pixel sprites");
-  assert.ok(native.every(x=>x.startsWith("p-")),move.id+": not a client texture");
+  // Approved 17 metadata pairs use P2's small MAPAS p-* icons.
+  // The newly rejected-and-reworked Rock Smash now uses original animated
+  // P2 HOJAS vfx-* sheets instead; don't force icon-only metadata on it.
+  assert.ok(native.every(x=>x.startsWith("p-")||x.startsWith("vfx-")),
+   move.id+": not a client texture");
+  if(move.id==="rock-smash")
+   assert.deepEqual(native,["vfx-roca","vfx-acometida"],
+    "Rock Smash must identify the real multi-frame source P2 sheets");
   const colors=new Set(mask.join("").replace(/\./g,""));
   assert.ok(colors.size>=4,move.id+": not enough distinct shades");
   const normalized=mask.join("\n");

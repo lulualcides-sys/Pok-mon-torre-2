@@ -184,7 +184,7 @@ const server=http.createServer(async(req,res)=>{
    }else if(['powder-snow','whirlpool'].includes(cast.id)){
     assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
      cast.id+' approved native P2 art was replaced unexpectedly');
-   }else if(['triple-kick','thief','snore','octazooka','false-swipe','steel-wing'].includes(cast.id)){
+   }else if(['triple-kick','thief','snore','octazooka','false-swipe','steel-wing','rock-smash'].includes(cast.id)){
     assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
      cast.id+' must use genuine original P2 textures, not rejected PNG rectangles');
     assert.equal(cast.pixelFXLoaded,false,
