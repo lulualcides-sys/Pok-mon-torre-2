@@ -290,9 +290,9 @@ function cast(l,h,extra){
    "steel-wing":"acero","rock-smash":"golpe"}[h.id];
   if(palette)vfx.hay(l.escena,"arco-"+palette);
   if(h.id==="return")vfx.hay(l.escena,"arco-golpe");
-  if(h.id==="frustration"||h.id==="pursuit"||h.id==="beat-up")
+  if(h.id==="frustration")
    vfx.hay(l.escena,"arco-sombra");
-  if(h.id==="vital-throw")vfx.hay(l.escena,"acometida-golpe");
+  if(h.id==="vital-throw")vfx.hay(l.escena,"aterriza-golpe");
   if(h.id==="false-swipe"||h.id==="rock-smash")
    vfx.hay(l.escena,"acometida-golpe");
   return castJohtoFourNative(l,h,extra,RADIO);

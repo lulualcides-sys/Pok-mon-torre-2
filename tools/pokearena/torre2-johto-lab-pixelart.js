@@ -139,12 +139,12 @@ export const JOHTO_P2_TEXTURES=Object.freeze({
  "present":["vfx-huevo","vfx-hiper_impacto"],
  "frustration":["vfx-quickattack","vfx-arco"],
  "magnitude":["vfx-roca","p-guijarro"],
- "pursuit":["vfx-quickattack","vfx-arco"],
- "vital-throw":["vfx-acometida","vfx-roca"],
+ "pursuit":["vfx-teleporte","vfx-hexgolpe"],
+ "vital-throw":["vfx-atadura","vfx-aterriza"],
  "hidden-power":["vfx-psico","vfx-psywave"],
  "rock-smash":["vfx-roca","vfx-acometida"],
  "whirlpool":["p-pulsoAgua","p-chorrito"],
- "beat-up":["vfx-quickattack","vfx-arco"]
+ "beat-up":["vfx-acometida","vfx-hiper_impacto"]
 });
 export const JOHTO_PIXEL_MASKS=Object.freeze(Object.fromEntries(
  Object.entries(masks).map(([key,rows])=>[key,Object.freeze(rows)])));

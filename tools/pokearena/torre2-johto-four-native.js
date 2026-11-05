@@ -428,60 +428,75 @@ function createMagnitude(scene){
 // Fourth visual review: native Poké Arena 2D sprite sheets for the last
 // four offensive Johto identities. Never import unapproved rectangle strips.
 function createPursuit(scene){
- const chase=part(scene,"vfx-quickattack",0xffd8ff,1535);
- const arcs=[part(scene,arcKey(scene,"sombra"),0xffffff,1542),
-  part(scene,arcKey(scene,"sombra"),0xffffff,1543)];
- const shadows=Array.from({length:5},()=>part(scene,"vfx-astonish",0xd09bed,1539));
- const sparks=Array.from({length:4},()=>part(scene,"p-sombra",0xc592ec,1544));
- return {sprites:[chase,...arcs,...shadows,...sparks],update(t,a,b,state={}){
-  const actor=state.actor||a,dir=state.dirX??1,
-    wind=t<.58?fade(t/.58,.06,.87):0;
-  framePlace(chase,actor.x-dir*16,actor.y-8,60,30,wind,
-    frameAt(t,.34,2),0,dir<0);
-  shadows.forEach((o,i)=>{
-   const p=clamp(t*1.8-i*.15);
-   framePlace(o,actor.x-dir*(8+i*10),actor.y-5+(i%2)*6,
-    16+i%2*4,15+i%2*4,wind*(.4-i*.052),
-    frameAt(p,1,5));
-  });
-  const hitAge=state.hitAge,valid=Number.isFinite(hitAge)&&hitAge>=0&&hitAge<.31;
-  const u=valid?clamp(hitAge/.31):0,alpha=valid?fade(u,.05,.8):0;
-  const target=state.hitPoint||b;
-  arcs.forEach((o,i)=>framePlace(o,target.x+(i?5:-6),target.y+(i?6:-5),
-   56,40,alpha*(i?.75:1),4+frameAt(clamp((u-i*.13)/.87),1,4),
-   i?-27:22,dir<0));
-  sparks.forEach((o,i)=>{
-   const angle=2.3999*i,d=5+u*(16+i*3);
-   place(o,target.x+Math.cos(angle)*d,target.y+Math.sin(angle)*d*.6,
-    5,6,alpha*(.68-i*.12));
-  });
- }};
+ // SHADOW PURSUIT: shadow ghosts hunt the retreating rival, disappear
+ // behind him, then dark HEX rises vertically. NO slashes, quickattack,
+ // generic physical arc or impact shared with Beat Up.
+ const tele=part(scene,"vfx-teleporte",0xc59be8,1536);
+ const ghosts=Array.from({length:4},()=>part(scene,"vfx-astonish",0xb89bd6,1539));
+ const hex=part(scene,"vfx-hexgolpe",0xc29cdf,1541);
+ const rune=part(scene,"vfx-hexaviso",0x725291,1540);
+ const motes=Array.from({length:6},()=>part(scene,"p-sombra",0xb391d7,1542));
+ return {sprites:[tele,...ghosts,hex,rune,...motes],
+  update(t,a,b,state={}){
+   const actor=state.actor||a,dir=state.dirX??1,
+    progress=clamp(t/.64),start=t<.6?fade(t/.6,.06,.84):0,
+    target=state.hitPoint||b;
+   framePlace(tele,actor.x-dir*10,actor.y-10,
+    37,53,start*.92,Math.min(5,Math.floor(t*23)),0,dir<0);
+   ghosts.forEach((o,i)=>{
+    const p=clamp(progress-i*.15),x=mix(a.x,target.x,p),
+      y=mix(a.y,target.y,p)-9-Math.sin(p*Math.PI)*13;
+    framePlace(o,x-dir*(i+1)*3,y,
+     16+i%2*3,19+i%2*3,
+     start*(.6-i*.105)*smooth((t-i*.065)/.09),
+     (Math.floor(t*30)+i)%8);
+   });
+   const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.34,
+    u=hit?clamp(age/.34):0,alpha=hit?fade(u,.04,.81):0;
+   framePlace(rune,target.x,target.y-24,39,36,alpha*.56,
+     Math.min(5,Math.floor(u*6)));
+   // Only AFTER actual P2 recibir: shadow descends rather than slashing.
+   framePlace(hex,target.x,target.y+6,48,74,alpha,
+     Math.min(5,Math.floor(u*6)));
+   motes.forEach((o,i)=>{
+    const p=(i+.5)/6,xx=target.x+Math.cos(p*2*Math.PI)*(8+u*18),
+      yy=target.y+Math.sin(p*2*Math.PI)*(8+u*24);
+    place(o,xx,yy,5+i%2,5+i%2,alpha*(.55-i*.065));
+   });
+  }
+ };
 }
 function createVitalThrow(scene){
- const charge=part(scene,attackSheet(scene),0xffffff,1536);
- const lift=part(scene,"vfx-fly",0xffffff,1538);
- const impact=Array.from({length:3},()=>part(scene,"vfx-roca",0xffffff,1541));
- const dirt=Array.from({length:6},()=>part(scene,"p-guijarro",0xe1c69b,1543));
- return {sprites:[charge,lift,...impact,...dirt],update(t,a,b,state={}){
-  const actor=state.actor||a,dir=state.dirX??1,
-   pre=t<.6?fade(t/.6,.07,.89):0;
-  framePlace(charge,actor.x+dir*12,actor.y-4,57,29,pre*.85,
-   frameAt(t,.45,3),0,dir<0);
-  framePlace(lift,actor.x+dir*18,actor.y-18,48,36,
-   pre*.52,frameAt(t,.48,3),dir<0?-16:16);
-  const age=state.hitAge,valid=Number.isFinite(age)&&age>=0&&age<.37,
-    u=valid?clamp(age/.37):0,alpha=valid?fade(u,.045,.85):0,
-    target=state.hitPoint||b;
-  impact.forEach((o,i)=>{
-   framePlace(o,target.x+(i-1)*11,target.y+8+i%2*6,
-    22+i*5,21+i*5,alpha*(.85-i*.18),
-    8+frameAt(clamp(u+i*.13),1,4),i*20);
-  });
-  dirt.forEach((o,i)=>{
-   const angle=i*2.4,d=6+u*(20+i*3);
-   place(o,target.x+Math.cos(angle)*d,
-    target.y+13+Math.sin(angle)*d*.53+u*u*7,
-    5+i%3,4+i%2,alpha*(.65-i*.07),i*20);
+ // GRAPPLE > VERTICAL LIFT > SLAM. Uses real fighter.salto for the
+ // raised enemy silhouette after confirmed hit; never the Rock Smash
+ // shards or a repeated dark cut. Shadow on floor remains grounded.
+ const bind=part(scene,"vfx-atadura",0xffe7b7,1540);
+ const spiral=part(scene,"vfx-fly",0xe4d9ff,1538);
+ const wrap=part(scene,"vfx-rapidspin",0xfff3df,1537);
+ const slam=part(scene,"vfx-aterriza",0xffffff,1541);
+ const dust=Array.from({length:8},()=>part(scene,"p-guijarro",0xc6b69c,1542));
+ return {sprites:[bind,spiral,wrap,slam,...dust],update(t,a,b,state={}){
+  const actor=state.actor||a,target=state.hitPoint||b,dir=state.dirX??1,
+   pre=t<.64?fade(t/.64,.06,.91):0;
+  framePlace(bind,actor.x+dir*15,actor.y-3,32,32,pre*.92,
+   Math.floor(t*24)%6);
+  framePlace(wrap,actor.x+dir*19,actor.y-10,51,39,pre*.58,
+   Math.floor(t*22)%3);
+  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.4,
+   u=hit?clamp(age/.4):0,alpha=hit?fade(u,.045,.87):0,
+   lift=Math.sin(Math.PI*u)*28;
+  framePlace(spiral,target.x,target.y-18-lift,52,43,alpha*.89,
+   Math.min(2,Math.floor(u*3)),dir<0?-15:15);
+  // At landing: frame sequence of the native P2 ground impact.
+  const land=clamp((u-.54)/.46);
+  framePlace(slam,target.x,target.y+19,86,43,
+   alpha*smooth((u-.51)/.16),
+   Math.min(2,Math.floor(land*3)));
+  dust.forEach((o,i)=>{
+   const theta=i/8*Math.PI*2,dist=8+land*(18+i%3*4);
+   place(o,target.x+Math.cos(theta)*dist,
+    target.y+20+Math.sin(theta)*dist*.31,
+    4+i%3,3+i%2,alpha*smooth((u-.54)/.14)*(.8-i*.08));
   });
  }};
 }
@@ -509,34 +524,39 @@ function createHiddenPower(scene){
  }};
 }
 function createBeatUp(scene){
- const rush=part(scene,"vfx-quickattack",0xffffff,1535);
- const arcs=Array.from({length:3},()=>part(scene,arcKey(scene,"sombra"),0xffffff,1541));
- const echos=Array.from({length:4},()=>part(scene,"vfx-astonish",0xb79bd9,1540));
- const specs=Array.from({length:5},()=>part(scene,"p-sombra",0xc3a3ea,1543));
- return {sprites:[rush,...arcs,...echos,...specs],update(t,a,b,state={}){
-  const actor=state.actor||a,dir=state.dirX??1,
-    wind=t<.66?fade(t/.66,.06,.86):0;
-  framePlace(rush,actor.x-dir*11,actor.y-7,54,27,wind*.75,
-   frameAt(t,.42,2),0,dir<0);
-  echos.forEach((o,i)=>framePlace(o,actor.x-dir*(i+1)*9,
-   actor.y-6+(i%2)*5,16,16,wind*(.42-i*.085),
-   (i+Math.floor(t*14))%5));
-  const age=state.hitAge,valid=Number.isFinite(age)&&age>=0&&age<.18,
-    u=valid?clamp(age/.18):0,alpha=valid?fade(u,.04,.78):0,
-    target=state.hitPoint||b,which=state.hitIndex??0;
-  arcs.forEach((o,i)=>{
-   const phase=clamp((u-i*.16)/.78);
-   framePlace(o,target.x+(which%3-1)*8+i*5,
-    target.y+(i-1)*7,48,34,alpha*(1-i*.22),
-    4+frameAt(phase,1,4),which%2?28:-26,dir<0);
-  });
-  specs.forEach((o,i)=>{const phi=i*2.4,d=6+u*(10+i*2);
-   place(o,target.x+Math.cos(phi)*d,target.y+Math.sin(phi)*d*.7,
-    5,5,alpha*(.72-i*.1));
+ // TEAM STRIKES: short per-member physical punch impacts, distinct from
+ // Pursuit's ghost teleport + vertical hex. The actor actually closes to
+ // the opponent, and one native recibir call accompanies each real member.
+ const fists=Array.from({length:3},()=>part(scene,"vfx-acometida",0xffffff,1541));
+ const impacts=Array.from({length:3},()=>part(scene,"vfx-hiper_impacto",0xffebac,1542));
+ const hits=Array.from({length:7},()=>part(scene,"p-estrella",0xffd9a6,1543));
+ const approach=part(scene,"vfx-rapidspin",0xffe3b5,1537);
+ return {sprites:[...fists,...impacts,...hits,approach],update(t,a,b,state={}){
+  const actor=state.actor||a,dir=state.dirX??1,target=state.hitPoint||b,
+   wind=t<.47?fade(t/.47,.06,.83):0;
+  framePlace(approach,actor.x-dir*11,actor.y-4,49,32,wind*.72,
+   Math.min(2,Math.floor(t*18)),0,dir<0);
+  const age=state.hitAge,valid=Number.isFinite(age)&&age>=0&&age<.19,
+    u=valid?clamp(age/.19):0,alpha=valid?fade(u,.04,.83):0,
+    hitNo=Math.max(0,state.hitIndex||0),side=hitNo%2?1:-1;
+  fists.forEach((o,i)=>framePlace(o,
+   target.x+dir*(-14+u*13)+(i-1)*6,
+   target.y-7+side*(i-1)*6,
+   34+i%2*5,20+i%2*3,alpha*(.85-i*.2),
+   Math.min(2,Math.floor(clamp((u-i*.18)/.8)*3)),
+   side*(i*8-10),dir<0));
+  impacts.forEach((o,i)=>framePlace(o,
+    target.x+(i-1)*8,target.y+(i%2?9:-7),
+    26+i*5,25+i*4,alpha*(.86-i*.23),
+    Math.min(5,Math.floor(clamp((u-i*.14)/.9)*6))));
+  hits.forEach((o,i)=>{
+   const phi=i*2.39996,d=5+u*(10+i%3*2);
+   place(o,target.x+Math.cos(phi)*d,
+    target.y+Math.sin(phi)*d*.8,
+    5+i%2,5+i%2,alpha*(.62-i*.06));
   });
  }};
 }
-
 const FACTORIES=Object.freeze({
  "triple-kick":createTriple,thief:createThief,snore:createSnore,
  octazooka:createOcta,"false-swipe":createFalseSwipe,"steel-wing":createSteelWing,
@@ -560,10 +580,10 @@ export function makeJohtoFourNative(scene,id){
   frustration:["vfx-quickattack","vfx-arco","vfx-astonish","p-brasa"],
   present:["vfx-huevo","p-estrella","p-corazon","vfx-hiper_impacto"],
   magnitude:["vfx-roca","p-guijarro","p-roca"],
-  pursuit:["vfx-quickattack","vfx-arco","vfx-astonish","p-sombra"],
-  "vital-throw":["vfx-acometida","vfx-fly","vfx-roca","p-guijarro"],
+  pursuit:["vfx-teleporte","vfx-astonish","vfx-hexgolpe","vfx-hexaviso","p-sombra"],
+  "vital-throw":["vfx-atadura","vfx-fly","vfx-rapidspin","vfx-aterriza","p-guijarro"],
   "hidden-power":["vfx-psico","vfx-psywave","p-psiquico"],
-  "beat-up":["vfx-quickattack","vfx-arco","vfx-astonish","p-sombra"]
+  "beat-up":["vfx-acometida","vfx-hiper_impacto","vfx-rapidspin","p-estrella"]
  }[id];
  if(!required.every(t=>scene.textures.exists(t)))return null;
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);
@@ -653,6 +673,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  const friendshipPower=id==="return"?Math.floor(friendship*10/25):
   id==="frustration"?Math.floor((255-friendship)*10/25):0;
  let age=0,nextHit=0,stop=false,hitIndex=-1,hitAt=-Infinity,
+  vitalLiftBaseline=null,vitalLiftApplied=null,
   hitPoint=null,projectileAlive=!melee,previousDistance=0,done=false;
  const action={hasta:l.t+duration,bloquea:true,lento:0,angulo:angle};
  l.accion=action;
@@ -698,6 +719,12 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   }finally{if(keepAlive)r.inmortal=wasImmortal}
   if(result!=="golpe")return false;
   hitIndex=index;hitAt=age;hitPoint={x:r.x,y:r.y-r.alto*.5};
+  if(id==="vital-throw"&&vitalLiftBaseline==null){
+   // P2 renderer uses salto for visual elevation, without moving r.y,
+   // collision box, team slot, stat data or save records.
+   vitalLiftBaseline=Number(r.salto)||0;
+   vitalLiftApplied=vitalLiftBaseline;
+  }
   // Gen III Snore: can flinch on a successful hit; in the real-time P2
   // client this is the native brief aturdido action interruption.
   if(id==="snore"&&Math.random()<.3)r.ponerEstado?.("aturdido",.24);
@@ -759,6 +786,11 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    }
   }
   const hitAge=age-hitAt;
+  if(id==="vital-throw"&&vitalLiftBaseline!=null&&!r.ko){
+   const u=clamp(hitAge/.4);
+   vitalLiftApplied=vitalLiftBaseline+Math.round(Math.sin(u*Math.PI)*28);
+   r.salto=vitalLiftApplied;
+  }
   const livePoint={
    x:startProjectile.x+ux*previousDistance,
    y:startProjectile.y+uy*previousDistance-l.alto*.5,
@@ -785,6 +817,9 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  },destroy(){
   if(done)return;
   done=true;visual.destroy();
+  // Restore only elevation owned by this one isolated throw.
+  if(id==="vital-throw"&&vitalLiftBaseline!=null&&r.salto===vitalLiftApplied)
+   r.salto=vitalLiftBaseline;
   if(l.accion===action)l.accion=null;
  }};
  e.efectos.push(obj);
