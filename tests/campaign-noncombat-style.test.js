@@ -50,6 +50,8 @@ test('screen-specific polish covers campaign panels without touching native figh
    'no consistent pixel panel on '+name);
  }
  assert.match(artwork,/One coherent noncombat visual system/);
+ assert.doesNotMatch(artwork,/px\(g,0,52,640,2/,'central subtitle must not cross full-width top rail');
+ assert.match(artwork,/px\(g,9,59,89,2/);
  assert.match(scene,/this\.add\.zone\(x,y,w,Math\.max\(h,27\)\)/);
  assert.match(scene,/Avoid duplicate mobile purchase|duplicate-submit protection/i);
  assert.match(scene,/renderTrainerCardHub\(this,state,handlers\)/);
