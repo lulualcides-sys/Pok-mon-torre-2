@@ -4,6 +4,7 @@
  */
 import * as vfx from "../vfx.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
+import {TORRE2_JOHTO_PIXELFX_FORMS} from "./torre2-johto-pixelfx-runtime.js";
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
 import {ZAP_ELECTRO_BALL_TEXTURE,zapCannonMotion} from "./native-zap.js";
 const tones={
@@ -425,4 +426,5 @@ function cast(l,h,extra){
  e.efectos.push(fx);return true;
 }
 export const TORRE2_JOHTO_LAB_FORMS=Object.freeze(Object.fromEntries(
- JOHTO_18.map(m=>[m.forma,(l,h,extra)=>cast(l,h,extra)])));
+ [...JOHTO_18.map(m=>[m.forma,(l,h,extra)=>cast(l,h,extra)]),
+  ...Object.entries(TORRE2_JOHTO_PIXELFX_FORMS)]));
