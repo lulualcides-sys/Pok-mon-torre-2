@@ -11,6 +11,7 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 ## Regras inegociáveis
 
 - **Preservar todos os golpes, efeitos, sprites e mecânicas já aprovados.** Não sobrescrever aprovações ou alterar o padrão nativo do Poké Arena 2D.
+- **NOVO padrão VFX Johto (04/11):** para efeitos novos usar apenas PixelFX MIT offline no Phaser, com 3 exceções de preservação absolutas: Snow/Powder Snow, Whirlpool e Zap Cannon; 15 refeitos + 28 prévias visuais isoladas. **Ler** `docs/PIXELFX-PADRAO-JOHTO-2026-11-04.md`; isso não libera golpes nem substitui mecânica/revisão de outras fontes. Essa decisão posterior determina o gerador visual de novos VFX de Johto, sem alterar qualquer VFX aprovado.
 - **Qualquer mudança em golpes, VFX, catálogo, proveniência ou testes de golpes exige leitura prévia da política INTEGRAL**: `docs/agentes/POLITICA-GOLPES-INTEGRAL.md`. Ela é a cópia literal das regras anteriores deste `AGENTS.md` e continua obrigatória. Ler também `docs/FICHA-REAPROVEITAMENTO-4-FONTES.md` quando pertinente.
 - Para novos golpes, conferir as **quatro fontes** (efeitos aprovados do Torre 2, Poké Arena 2D, Pokémon Zarza e Emerald Arena), verificando caminhos, símbolos e licenças. Sem afirmar reutilização se houve apenas inspiração. Sem dispensar fonte sem a autorização expressa exigida na política integral. Não duplicar golpes existentes.
 - Golpes em Phaser/WebGL, pixel art proporcional, colisão/dano sincronizados. Não usar Canvas 2D, CSS como ataque, vídeo colado ou Python para criar/animações de golpes.
