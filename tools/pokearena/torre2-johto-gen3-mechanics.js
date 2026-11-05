@@ -14,8 +14,8 @@ export const MAGNITUDE_TABLE=Object.freeze([
 ]);
 export function magnitudeGen3(random=Math.random){
  const roll=Math.max(0,Math.min(.999999999,Number(random())||0));
- let cursor=0;
- for(const tier of MAGNITUDE_TABLE){cursor+=tier.weight/100;if(roll<cursor)return tier}
+ let cumulativePercent=0;
+ for(const tier of MAGNITUDE_TABLE){cumulativePercent+=tier.weight;if(roll*100<cumulativePercent)return tier}
  return MAGNITUDE_TABLE.at(-1);
 }
 export function presentGen3(random=Math.random){
