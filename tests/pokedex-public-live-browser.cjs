@@ -10,7 +10,9 @@ const base=(process.env.POKEDEX_PUBLIC_URL||
  'https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/').replace(/\/?$/,'/');
 const expected={
  mew:['Pound','Ancient Power','Mega Punch','Psychic'],
- scyther:['Wing Attack','Fury Cutter','Double Team','X-Scissor'],
+ // KIT CAMPANHA · NV50 must reflect the campaign resolver, not the
+ // separate Arena-121 preset. Swords Dance is the actual Lv50 HAB3.
+ scyther:['Wing Attack','Fury Cutter','Swords Dance','X-Scissor'],
  'mr-mime':['Pound','Confusion','Psywave','Psychic'],
  cubone:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
  marowak:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
@@ -196,6 +198,8 @@ const expected={
     'PUBLIC Pokédex stale/incorrect for '+id+'; real loaded slots: '+JSON.stringify(values));
    assert.deepEqual(item.unavailable,[],id+' shows Locked, inactive or unlearned TM');
   }
+   assert.equal(result.observations.scyther.descriptor,'KIT CAMPANHA · NV50',
+    'Scyther expected slot only applies to the campaign Lv50 Pokédex view');
   // Separate canonical move names from the role badge. Native Psychic
   // is the move name; its fourth-slot metadata and visible ULT badge
   // must BOTH be retained. Do not weaken any Pokédex/UI assertion.
