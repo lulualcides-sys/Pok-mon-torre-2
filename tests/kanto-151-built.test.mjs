@@ -68,8 +68,14 @@ for(const def of ROSTER){
    changedEvolutions++;
   for(const slot of roleSlots){
    if(!realKit[slot]?.nombre)continue;
+   if(!def.torre2ArenaAdded){
+    // The original P2 may ship a named but non-executable placeholder
+    // (e.g. Machamp HAB2). Keep its exact slot without inventing a VFX.
+    // New Torre 2 species still require fully executable attacks.
+    continue;
+   }
    assert.ok(realKit[slot].forma&&!realKit[slot].pendiente,
-    'Evolved '+id+' must have real unlocked attack for '+slot);
+    'New Torre 2 evolution '+id+' must have real unlocked attack for '+slot);
   }
   // Native Poké Arena has species-specific defensive actions (e.g.
   // Charizard's Flying dodge = 'vuelo'). Keep EXACT original action,
