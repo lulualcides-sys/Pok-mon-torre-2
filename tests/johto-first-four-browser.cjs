@@ -109,22 +109,29 @@ const server=http.createServer(async(req,res)=>{
        "vfx-hexaviso","vfx-atadura","vfx-rapidspin","vfx-aterriza","vfx-aterriza-golpe"].includes(o.texture?.key));
     const effect=scene.efectos.at(-1),beforeHP=enemy.hp;
     const nameVisible=scene.globos?.some(c=>c.list?.some(obj=>obj.text===m.nombre+"!"))||false;
-    const poses=[],liftValues=[];
+    const poses=[],liftValues=[],framesSeen=new Set();
     if(native.length&&effect){
      // Advance in actual 60Hz Phaser frames, not large clamped synthetic
      // deltas that skip the 0.34s contact window of False Swipe/Steel Wing.
      for(let frame=0;frame<66;frame++){
       effect.update(.016);
       if(m.id==="vital-throw")liftValues.push(enemy.salto||0);
-      if(frame%3===0)poses.push(native.map(o=>o.visible?
-       [o.x,o.y,o.displayWidth,o.displayHeight,o.frame?.name,Math.round(o.alpha*100)].join(","):"off").join("|"));
+      if(frame%3===0){
+       poses.push(native.map(o=>o.visible?
+        [o.x,o.y,o.displayWidth,o.displayHeight,o.frame?.name,Math.round(o.alpha*100)].join(","):"off").join("|"));
+       // Collect ACTUAL P2 source frames across the 60Hz animation.
+       // Sampling only the last frame falsely classified short impacts
+       // as static, even though their sheet advanced on earlier ticks.
+       for(const sprite of native)if(sprite.visible&&sprite.texture?.key?.startsWith("vfx-"))
+        framesSeen.add(sprite.texture.key+":"+sprite.frame?.name);
+      }
      }
     }
     out.push({id:m.id,ok,source:"P2-native",sprites:native.length,
       assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
       damage:beforeHP-enemy.hp,nameVisible,
       liftPeak:liftValues.length?Math.max(...liftValues):0,
-      sourceFrames:[...new Set(native.filter(o=>o.texture?.key?.startsWith("vfx-")).map(o=>o.frame?.name))].filter(x=>x!=null),
+      sourceFrames:[...framesSeen],
       noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
     // Await P2's native 1.05s globo tween before the next cast.
     // Avoid exhausting the canvas pool via artificial synchronous bursts.
