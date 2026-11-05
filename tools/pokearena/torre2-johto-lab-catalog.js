@@ -2,6 +2,7 @@
  * Deliberately not imported into campaign move-pool, saves, Pokédex or TM system.
  * Renderer metadata for visual testing is provisional, not a claim of Gen II parity.
  */
+import {JOHTO_PIXELFX_28} from "./torre2-johto-pixelfx-catalog.js";
 export const JOHTO_18=Object.freeze([
  ["triple-kick","Triple Kick","FIGHTING","PHYSICAL",10,90,10,6,70,"Punch","kick"],
  ["thief","Thief","DARK","PHYSICAL",60,100,25,12,85,"Attack","slash"],
@@ -27,7 +28,8 @@ export const JOHTO_18=Object.freeze([
   lanzar:.13,source:"johto-lab-prototype",approved:false,pendiente:false})));
 export const JOHTO_LAB_SLOTS=Object.freeze(["lmb","rmb","q","e"]);
 export const JOHTO_LAB_DEFAULT=Object.freeze(["triple-kick","powder-snow","zap-cannon","whirlpool"]);
-const byId=new Map(JOHTO_18.map(m=>[m.id,m]));
+export const JOHTO_LAB_ALL=Object.freeze([...JOHTO_18,...JOHTO_PIXELFX_28]);
+const byId=new Map(JOHTO_LAB_ALL.map(m=>[m.id,m]));
 export function validateJohtoLabSlots(ids){
  return Array.isArray(ids)&&ids.length===4&&new Set(ids).size===4&&ids.every(id=>byId.has(id));
 }
