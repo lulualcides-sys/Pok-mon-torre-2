@@ -11,7 +11,7 @@ export const JOHTO_FOUR_NATIVE_IDS=Object.freeze([
 export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze([
  "triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash",
  "return","present","frustration","magnitude","hidden-power",
- "pursuit","beat-up"]);
+ "pursuit","beat-up","vital-throw"]);
 import {hiddenPowerGen3 as johtoHiddenPowerGen3} from "./torre2-johto-gen3-mechanics.js";
 const clamp=v=>Math.max(0,Math.min(1,v));
 const smooth=v=>{v=clamp(v);return v*v*(3-2*v)};

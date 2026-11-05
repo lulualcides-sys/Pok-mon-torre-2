@@ -1885,13 +1885,13 @@
         "mobilePerformance": "pending"
       },
       "visualApproval": {
-        "state": "pending",
-        "evidence": ""
+        "state": "approved",
+        "evidence": "User approved simplified contact-synchronized body-only Vital Throw on 2026-11-05. Chromium verified damageFrame=liftStartFrame=8, zero overlays, 28px jump (run 42062983979)."
       },
       "userFeedback": {
-        "status": "rework-requested",
+        "status": "approved",
         "date": "2026-11-05",
-        "note": "Keep only the real attacker advance and enemy jump, and synchronize contact immediately. No extra visual effect."
+        "note": "Freeze exact body-only contact timing. Do not add extra FX."
       }
     },
     "hidden-power": {

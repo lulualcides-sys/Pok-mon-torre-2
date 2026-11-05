@@ -106,3 +106,9 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 - Pursuit proibido de ter feitiço/coluna HEX e teleporte. Velocidade e sombras acompanhando o ator, com `vfx-quickattack`, `vfx-astonish`, `p-sombra`, e impacto só em colisão real.
 - Beat Up proibido de `vfx-rapidspin`: impactos físicos localizados `vfx-acometida` e `vfx-hiper_impacto`. Um membro presente no training = apenas um evento de dano; minianimação com 3 poses físicas por evento não deve fingir participantes extra.
 - **10 pastas VFX catalogadas:** só copiar arte/código de fontes com licença verificada e exemplos disponíveis. A pesquisa de PixelBolt e Pixel Ability FX orienta ritmo/impacto, mas o runtime continua usando a pixel art original P2, sem shaders ou objetos novos por quadro.
+
+
+### Johto 2026-11-05 — 17 aprovações completas
+- Vital Throw simplificado aprovado: avançar fisicamente e saltar o adversário no contato, sem efeito extra. CI run 42062983979 passou.
+- Preservar intocados 17 aprovados: Powder Snow, Whirlpool, Zap Cannon, Triple Kick, Octazooka, Thief, False Swipe, Steel Wing, Rock Smash, Return, Present, Frustration, Magnitude, Hidden Power, Pursuit, Beat Up, Vital Throw.
+- Snore fora da revisão, não integrar automaticamente. Adicionar geração II exclusivamente aos modos não campanha, separar os ataques em ATK/HAB2/HAB3/ULT com compatibilidade real, nunca inventar VFX ou dados de PvP.

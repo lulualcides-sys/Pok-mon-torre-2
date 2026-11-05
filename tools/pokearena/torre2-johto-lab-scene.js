@@ -24,7 +24,7 @@ export class JohtoLab extends Phaser.Scene{
   this.add.rectangle(320,180,640,360,0x071426);
   this.add.text(320,13,"MEWTWO · JOHTO TRAINING LAB",{fontFamily:"Pixelify Sans,monospace",
    fontSize:"19px",color:"#ffe6a4",stroke:"#101f38",strokeThickness:3}).setOrigin(.5);
-  this.add.text(320,37,"JOHTO · 1 EM REVISÃO · 16 APROVADOS PRESERVADOS",{
+  this.add.text(320,37,"JOHTO · 17 APROVADOS · SNORE EXCLUÍDO",{
    fontFamily:"Pixelify Sans,monospace",fontSize:"10px",color:"#a7bfdc"}).setOrigin(.5);
   const box=(x,y,w,h,fill,stroke,action)=>{
    const r=this.add.rectangle(x,y,w,h,fill,.96).setStrokeStyle(1,stroke);

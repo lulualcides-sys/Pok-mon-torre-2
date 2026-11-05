@@ -57,7 +57,7 @@ test("New experimental Johto effects require individual VFX audits, not legacy e
   for(const id of ["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power","pursuit","beat-up"])
    assert.ok(reviews.decisions[id],"Previously approved visual audit preserved");
   for(const id of ids)assert.equal(reviews.decisions[id].visualApproval.state,
-    id==="vital-throw"?"pending":"approved");
+    "approved");
  }else assert.deepEqual(ids,[]);
 });
 test("Valid individual move comparison covers all ten sources and four native references",()=>{

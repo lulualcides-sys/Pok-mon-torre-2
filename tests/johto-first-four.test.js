@@ -3,17 +3,18 @@ import assert from "node:assert/strict";
 import {JOHTO_LAB_VISIBLE,JOHTO_LAB_ALL,JOHTO_LAB_DEFAULT}
  from "../tools/pokearena/torre2-johto-lab-catalog.js";
 import {JOHTO_FOUR_NATIVE_IDS,makeJohtoFourNative,johtoBatch3Roll} from "../tools/pokearena/torre2-johto-four-native.js";
-test("Only Vital Throw remains unapproved; 16 user-approved effects frozen",()=>{
+test("All 17 reviewed moves approved and Snore excluded",()=>{
  assert.deepEqual(JOHTO_LAB_VISIBLE.map(x=>x.id),JOHTO_FOUR_NATIVE_IDS);
  assert.deepEqual([...JOHTO_LAB_DEFAULT],JOHTO_FOUR_NATIVE_IDS);
- assert.equal(JOHTO_LAB_VISIBLE.filter(x=>!x.approved).length,1);
+ assert.equal(JOHTO_LAB_VISIBLE.filter(x=>!x.approved).length,0);
  assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id==="pursuit").approved,true);
  assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id==="beat-up").approved,true);
+ assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id==="vital-throw").approved,true);
  assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id==="hidden-power").approved,true);
  assert.equal(JOHTO_LAB_ALL.length,46);
  for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power"]){
   assert.ok(JOHTO_LAB_ALL.some(x=>x.id===id));
-  if(!["hidden-power","pursuit","beat-up"].includes(id))
+  if(!["hidden-power","pursuit","beat-up","vital-throw"].includes(id))
    assert.ok(!JOHTO_LAB_VISIBLE.some(x=>x.id===id));
   else assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id===id).approved,true);
   if(!["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power"].includes(id))
