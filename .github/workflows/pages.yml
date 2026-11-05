@@ -57,6 +57,9 @@ jobs:
           # aborted by the remote host (notably lib/phaser.min.js). A previous
           # Pages job failed only AFTER the capture/build loop, so the old
           # retry policy never recovered those partial builds.
+          # PixelFX generates PNG sheets offline before the browser runner
+          # installs deps; pin+install here so the Pages build is reproducible.
+          npm install --no-audit --no-fund
           # Retry the full capture + build + critical-file verification as
           # one atomic gate; never deploy a missing Phaser runtime.
           for attempt in 1 2 3 4; do
