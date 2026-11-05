@@ -9,7 +9,8 @@ import {mkdir,writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {JOHTO_PIXELFX_43,PIXELFX_PIN} from "./torre2-johto-pixelfx-catalog.js";
 import {addJohtoPixelSignature} from "./torre2-johto-signatures.mjs";
-import {FIRST_FOUR} from "./torre2-johto-first-four-sheets.mjs";
+import {JOHTO_LAB_REVIEW_4,JOHTO_APPROVED_5} from "./torre2-johto-lab-catalog.js";
+const EXCLUDE_NATIVE=new Set([...JOHTO_LAB_REVIEW_4,...JOHTO_APPROVED_5]);
 
 export const PIXELFX_CEL=96;
 export const PIXELFX_FRAMES=12;
@@ -79,7 +80,9 @@ export async function generateJohtoPixelFXSheets(folder){
  await mkdir(folder,{recursive:true});
  const results=[];
  for(const m of JOHTO_PIXELFX_43){
-  if(FIRST_FOUR.includes(m.id))continue; // Four rejected blocky PNGs never shipped.
+  // No generated static PNG for review-active moves OR already approved
+  // techniques. All six use independent real-time P2 native sprite layers.
+  if(EXCLUDE_NATIVE.has(m.id))continue;
   // Uses the actual upstream PixelFX module and its draw/particle simulation.
   const mod=await import("pixelfx/fx/"+m.fx);
   if(typeof mod.draw!=="function"&&typeof mod.create!=="function")
@@ -107,7 +110,7 @@ export async function generateJohtoPixelFXSheets(folder){
    bytes:image.length,painted,sourceCrop:side,visualOnly:true});
  }
  await writeFile(join(folder,"manifest.json"),JSON.stringify({
-  generator:"torre2-pixelfx-sheets.mjs",engine:"P2-native-four-live-plus-PixelFX-unapproved-backlog",upstreamCommit:PIXELFX_PIN,
+  generator:"torre2-pixelfx-sheets.mjs",engine:"P2-native-six-live-plus-PixelFX-unapproved-backlog",upstreamCommit:PIXELFX_PIN,
   license:"MIT",approved:false,mode:"visual-only",files:results
  },null,2)+"\n");
  return results;

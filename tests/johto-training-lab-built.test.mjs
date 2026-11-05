@@ -22,11 +22,11 @@ assert.match(read("escenas/combate.js"),/installJohtoLabCombat/);
 assert.doesNotMatch(read("torre2/move-pool.js"),/JOHTO_18|johto-lab/);
 assert.doesNotMatch(read("torre2/campanha.js"),/JOHTO_18|johto-lab/);
 const manifest=JSON.parse(fs.readFileSync(path.join(dir,"assets/torre2/johto-pixelfx/manifest.json"),"utf8"));
-assert.equal(manifest.files.length,39);
-assert.equal(manifest.files.filter(x=>["triple-kick","thief","snore","octazooka"].includes(x.id)).length,0,
+assert.equal(manifest.files.length,37);
+assert.equal(manifest.files.filter(x=>["thief","snore","false-swipe","steel-wing"].includes(x.id)).length,0,
  "No rejected rectangle sprites may ship for the four new P2 effects");
 assert.match(read("torre2/johto-lab-runtime.js"),/makeJohtoFourNative/);
 assert.ok(fs.existsSync(path.join(dir,modules,"torre2/torre2-johto-four-native.js")));
-for(const id of ["powder-snow","whirlpool","zap-cannon"])
+for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka"])
  assert.ok(!manifest.files.some(x=>x.id===id),"Approved original VFX not regenerated");
-console.log("PASS 4 visible Johto moves, 24 animated frames, 3 approved untouched",modules);
+console.log("PASS four offensive Johto reviews, six native P2 moves, five approved untouched",modules);
