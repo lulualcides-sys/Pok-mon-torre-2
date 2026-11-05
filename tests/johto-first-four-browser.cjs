@@ -56,6 +56,15 @@ const server=http.createServer(async(req,res)=>{
     me=scene.luchadores[0],enemy=scene.luchadores[1],out=[];
    me.inmortal=true;enemy.inmortal=true;
    const originalRandom=Math.random;
+   // The browser test bursts nine synthetic ticks without a browser paint.
+   // Native Phaser floating-damage Text can exhaust its canvas texture,
+   // so suppress ONLY that visual side effect in this test (not in game).
+   // Enemy.recibir, defenses, shields and native HP remain real.
+   const oldHitText=enemy.efectosGolpe,oldAcerto=me.acierto,
+    oldExp=me.ganarExp,oldEnemyExp=enemy.ganarExp,
+    oldEnemyUlt=enemy.ganarUlti;
+   enemy.efectosGolpe=()=>{};me.acierto=()=>{};
+   me.ganarExp=()=>{};enemy.ganarExp=()=>{};enemy.ganarUlti=()=>{};
    Math.random=()=>.35;
    try{for(const m of JOHTO_LAB_VISIBLE){
     // Real native contact/HP inspection; no campaign saves are touched.
@@ -83,7 +92,10 @@ const server=http.createServer(async(req,res)=>{
       assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
       damage:beforeHP-enemy.hp,
       noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
-   }}finally{Math.random=originalRandom;}
+   }}finally{Math.random=originalRandom;
+    enemy.efectosGolpe=oldHitText;me.acierto=oldAcerto;
+    me.ganarExp=oldExp;enemy.ganarExp=oldEnemyExp;
+    enemy.ganarUlti=oldEnemyUlt;}
    for(const fx of [...scene.efectos])try{fx.destroy?.()}catch{}
    scene.efectos=[];
    return out;
