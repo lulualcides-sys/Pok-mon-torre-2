@@ -55,29 +55,35 @@ const server=http.createServer(async(req,res)=>{
    const scene=window.__pt2Game.scene.getScene("combate"),
     me=scene.luchadores[0],enemy=scene.luchadores[1],out=[];
    me.inmortal=true;enemy.inmortal=true;
-   for(const m of JOHTO_LAB_VISIBLE){
-    // Synthetic visual-only inspection; no save or campaign is touched.
+   const originalRandom=Math.random;
+   Math.random=()=>.35;
+   try{for(const m of JOHTO_LAB_VISIBLE){
+    // Real native contact/HP inspection; no campaign saves are touched.
     for(const fx of [...scene.efectos])try{fx.destroy?.()}catch{}
     scene.efectos=[];
     me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
     me.accion=null;me.dash=null;me.est=m.id==="snore"?{dormido:true}:{};
+    me.x=180;me.y=180;enemy.x=280;enemy.y=180;
+    enemy.est={};enemy.ko=false;enemy.hp=enemy.hpMax;
     me.ax=enemy.x;me.ay=enemy.y;
     const oldChildren=new Set(scene.children.list);
     const ok=TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:"q"});
     const native=scene.children.list.filter(o=>o.active&&!oldChildren.has(o)&&
       ["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua"].includes(o.texture?.key));
-    const effect=scene.efectos.at(-1);
+    const effect=scene.efectos.at(-1),beforeHP=enemy.hp;
     const poses=[];
     if(native.length&&effect){
-     for(const dt of [.04,.08,.12,.08]){
+     for(const dt of [.04,.08,.12,.05,.11,.15,.06,.08,.08]){
       effect.update(dt);
       poses.push(native.map(o=>o.visible?
        [o.x,o.y,o.displayWidth,o.displayHeight,Math.round(o.alpha*100)].join(","):"off").join("|"));
      }
     }
     out.push({id:m.id,ok,source:"P2-native",sprites:native.length,
-      assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size});
-   }
+      assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
+      damage:beforeHP-enemy.hp,
+      noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
+   }}finally{Math.random=originalRandom;}
    for(const fx of [...scene.efectos])try{fx.destroy?.()}catch{}
    scene.efectos=[];
    return out;
@@ -85,6 +91,10 @@ const server=http.createServer(async(req,res)=>{
   console.log("JOHTO_FIRST_FOUR_IN_PHASER",JSON.stringify({visible,casts,errors,network}));
   assert.ok(casts.every(m=>m.ok&&m.sprites>=8&&m.unique>=3),
    "All four must animate multiple REAL P2 pixel sprites inside Phaser");
+  assert.ok(casts.every(m=>m.damage>0),
+   "Every move must reduce native opponent HP, not only show an effect");
+  assert.ok(casts.find(m=>m.id==="triple-kick").noPrematureTriple,
+   "Triple Kick cannot show its impact before a confirmed physical collision");
   assert.equal(errors.length,0,"Page JavaScript errors: "+errors.join(" | "));
   await page.screenshot({path:"test-evidence/johto-first-four/battle.png"});
  }finally{await browser.close()}

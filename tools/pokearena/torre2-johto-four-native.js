@@ -204,7 +204,10 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   duration=id==="triple-kick"?.77:id==="thief"?.71:id==="snore"?.91:.9,
   rise=.13,projectileSpeed=id==="snore"?260:350,
   maxRange=Math.max(1,h.alcance||180),
-  advance=Math.min(maxRange,Math.max(0,distance-17)),
+  // Native golpe/patada close into the target's actual standing hitbox.
+  // The 70px Triple Kick melee reach includes a 25px physical approach.
+  advance=Math.min(maxRange+(id==="triple-kick"?25:0),
+   Math.max(0,distance-17)),
   startProjectile={x:source.x+ux*17,y:source.y+uy*17},
   srcVisual={x:source.x,y:source.y-l.alto*.5},
   aimedVisual={x:source.x+ux*maxRange,y:source.y+uy*maxRange-l.alto*.5},

@@ -60,6 +60,8 @@ test("P2 contact geometry rejects remote melee and accepts actual overlapping bo
  const foe={x:280,y:190,alto:39,est:{}};
  assert.equal(johtoP2BodyContact(foe,180,190,16,0,18),false);
  assert.equal(johtoP2BodyContact(foe,267,190,16,0,18),true);
+ assert.equal(Math.min(70+25,100-17),83);
+ assert.equal(johtoP2BodyContact(foe,263,190,16,0,18),true);
  assert.equal(johtoP2BodyContact({...foe,est:{vuelo:true}},280,190,16,0,18),false);
  assert.deepEqual(johtoP2Advance({x:180,y:190},0,80,0),{x:180,y:190});
  assert.equal(Math.round(johtoP2Advance({x:180,y:190},0,80,1).x),260);
