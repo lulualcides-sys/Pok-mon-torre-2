@@ -1,5 +1,5 @@
-/* Limit the 151+ native roster to 8 columns and 2 rows per page.
- * Preserve the original touchscreen controls, duel panels and FIGHT button. */
+/* Arena selection only: 4 columns × 2 rows (8 Pokémon per page).
+ * Preserve native arrow navigation, touchscreen controls, duel panels and FIGHT button. */
 export function paginateSelectionSource(source){
  const once=(a,b)=>{if(!source.includes(a)){
   // Never silently discard an unrecognized upstream layout. Log a small,
@@ -22,10 +22,10 @@ export function paginateSelectionSource(source){
  const legacy='const FILAS=Math.ceil(ROSTER.length/POR_FILA);';
  const current='FILAS=ROSTER.length>13?2:1;const POR_FILA=Math.ceil(ROSTER.length/FILAS);';
  if(source.includes(legacy)){
-  once('const POR_FILA=12;','const POR_FILA=8;');
+  once('const POR_FILA=12;','const POR_FILA=4;');
   once(legacy,'const FILAS=Math.min(2,Math.ceil(ROSTER.length/POR_FILA));');
  }else if(source.includes(current))
-  once(current,'FILAS=2;const POR_FILA=8;');
+  once(current,'FILAS=2;const POR_FILA=4;');
  else throw Error('Unrecognized Poké Arena selection dimensions; refusing unsafe patch');
  once('const fila=Math.floor(i/POR_FILA),col=i%POR_FILA;', 'const fila=Math.floor((i%(POR_FILA*2))/POR_FILA),col=i%POR_FILA;');
  once('const enFila=Math.min(POR_FILA,ROSTER.length-fila*POR_FILA);','const enFila=POR_FILA;');
