@@ -1,6 +1,23 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {addAllJohtoSpecies} from '../tools/pokearena/torre2-johto-100-species.js';
+import {readFileSync} from 'node:fs';
+
+// The source tree uses torre2-* file names. The Phaser build rewrites the
+// same imports to short names. Test actual source logic with only the two
+// module specifiers remapped; do not change production build imports.
+const folder=new URL('../tools/pokearena/',import.meta.url);
+let source=readFileSync(new URL('torre2-johto-100-species.js',folder),'utf8');
+for(const [from,to] of [
+ ['johto-100-data.js','torre2-johto-100-data.js'],
+ ['early-kanto-species.js','torre2-early-kanto-species.js']
+]){
+ const needle='from "./'+from+'"';
+ assert.ok(source.includes(needle),'Original build import missing: '+from);
+ source=source.replace(needle,'from '+JSON.stringify(new URL(to,folder).href));
+}
+const {addAllJohtoSpecies}=await import(
+ 'data:text/javascript;base64,'+Buffer.from(source).toString('base64')
+);
 
 test('species from P2 keep original kits and slots, even if incomplete',()=>{
  const original=[
