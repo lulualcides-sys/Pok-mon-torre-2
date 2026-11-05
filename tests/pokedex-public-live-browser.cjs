@@ -10,7 +10,8 @@ const base=(process.env.POKEDEX_PUBLIC_URL||
  'https://lulualcides-sys.github.io/Pok-mon-torre-2/arena2d/').replace(/\/?$/,'/');
 const expected={
  mew:['Pound','Ancient Power','Mega Punch','Psychic'],
- scyther:['Wing Attack','Fury Cutter','Double Team','X-Scissor'],
+ // Keep expected slots consistent with the approved live Lv50 Arena resolver.
+ scyther:['Wing Attack','Fury Cutter','Swords Dance','X-Scissor'],
  'mr-mime':['Pound','Confusion','Psywave','Psychic'],
  cubone:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
  marowak:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
@@ -116,6 +117,10 @@ const expected={
    ]);
    const eligible=new Set(KANTO_151.filter(p=>p.id!=='mewtwo').map(p=>p.id));
    const found=new Set(),problems=[],roles=['lmb','rmb','q','e'];
+   const scytherBattle=(()=>{
+    const kit=resolveLoadout({id:'scyther',progression:{species:'scyther',level:50},tmMoves:[]});
+    return roles.map(role=>kit[role]?.nombre||null);
+   })();
    const savedBefore=JSON.stringify(Object.fromEntries(
     Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
    if(auditFull){
@@ -164,12 +169,12 @@ const expected={
    const kanto=auditFull?{eligible:eligible.size,visible:found.size,
     missing:[...eligible].filter(id=>!found.has(id)),
     problems:problems.slice(0,40),totalProblems:problems.length}:null;
-   return{build,installed,cardCount:scene.casillas.length,observations,kanto};
+   return{build,installed,cardCount:scene.casillas.length,observations,kanto,scytherBattle};
   },{expect:expected,release:version.modules,
    auditFull:process.env.POKEDEX_FULL_PUBLIC_AUDIT==='1'});
   const report={url,build:result.build,publicVersion:version.modules,
    installed:result.installed,cardCount:result.cardCount,
-   observations:result.observations,kanto:result.kanto,errors,missing};
+   observations:result.observations,kanto:result.kanto,scytherBattle:result.scytherBattle,errors,missing};
   fs.writeFileSync('test-evidence/pokedex-public-live-audit.json',
    JSON.stringify(report,null,2));
   console.log('PUBLIC_POKEDEX_AUDIT',JSON.stringify(report));
@@ -196,6 +201,10 @@ const expected={
     'PUBLIC Pokédex stale/incorrect for '+id+'; real loaded slots: '+JSON.stringify(values));
    assert.deepEqual(item.unavailable,[],id+' shows Locked, inactive or unlearned TM');
   }
+  // Do not adjust Arena attacks to satisfy a stale browser fixture.
+  // Compare the published move slots to the real Lv50 battle resolver.
+  assert.deepEqual(['lmb','rmb','q','e'].map(slot=>result.observations.scyther.slots[slot]),
+   result.scytherBattle,'Live Scyther Pokédex differs from Lv50 battle moves');
   // Separate canonical move names from the role badge. Native Psychic
   // is the move name; its fourth-slot metadata and visible ULT badge
   // must BOTH be retained. Do not weaken any Pokédex/UI assertion.
