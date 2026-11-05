@@ -312,6 +312,9 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   const form=this.forma;
   const id=idOf(this.etapa>0?form?.nombre:this.def?.id);
   if(id==='gengar')return enforceArenaMoveCooldowns(replaceGengarHyperBeam(original,library));
+  // Johto #0152-0251 already has a native FRLG-legal 4-slot kit;
+  // Kanto-only auto-selection must NEVER overwrite it by species type.
+  if(this.def?.torre2Johto100)return enforceArenaMoveCooldowns(original);
   if(this.def?.torre2ArenaAdded!==true||PROTECTED_P2_KANTO_IDS.has(id))
    return enforceArenaMoveCooldowns(original);
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);

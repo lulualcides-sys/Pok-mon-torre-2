@@ -142,6 +142,11 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
 // 8x8 icon patterns, never replacing available upstream or approved art.
 const {installMissingNativeLeagueIcons}=await import('./install-native-league-icons.mjs');
 await installMissingNativeLeagueIcons(dest,clientSource);
+// Add the 100 canonical Johto PMD sprite/portrait entries as local assets.
+// Original Poké Arena art is never overwritten; non-commercial attribution.
+const {installJohtoSpriteCollabAssets}=await import("./install-johto-sprites.mjs");
+const johtoSpriteSync=await installJohtoSpriteCollabAssets(dest);
+console.log("Johto 100 native sprite coverage",JSON.stringify(johtoSpriteSync));
 // Original League can still import ponerRetrato after Poké Arena replaced its
 // sprite helper with casillaRetrato. Ensure the missing named export exists in
 // our isolated copy, using only the already approved/native PMD texture.
@@ -276,6 +281,8 @@ await Promise.all([
  ['tools/pokearena/torre2-arena-tempo.js','arena-tempo.js'],
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
+ ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
+ ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
  ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
@@ -335,9 +342,9 @@ patches.push(
  ['datos.js',[
   ['function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];return{...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen}}',
    'function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];if(!e)return def;const result={...def,...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen};for(const key of ["hp","atk","def","vel","regen"]){if(!Number.isFinite(result[key]))result[key]=def[key];}return result}'],
-  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
+  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{addAllJohtoSpecies}from"./torre2/johto-100-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
   ['const ROSTER=TODOS.filter(p=>!p.desactivado);',
-   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
+   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));TODOS.push(...addAllJohtoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
  ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
