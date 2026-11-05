@@ -60,8 +60,18 @@ export function paginateKantoPokedexSource(original){
   return Number.isInteger(candidate)?candidate:
    (TORRE2_KANTO_TYPE_PALETTE[type]??0x9db1c7);
  }
+ let __pt2PokedexMissingRenderOnly=false;
  function kantoDexStages(def){
  const stages=etapasDe(def);
+ if(__pt2PokedexMissingRenderOnly)return stages.map(stage=>{
+  const orig=stage?.kit||{},copy={...orig};
+  for(const slot of ['lmb','rmb','q','e','esp']){
+   if(!copy[slot]?.nombre||!copy[slot]?.forma)
+    copy[slot]={nombre:'SEM GOLPE',forma:'desativado',tipo:'NORMAL',
+     dano:0,cd:0,coste:0,pendiente:true,torre2Unavailable:true};
+  }
+  return {...stage,kit:copy};
+ });
  // Native P2 source species must display original Arena slots, not a
  // projected Kanto campaign Lv50 loadout.
  if(!def.torre2ArenaAdded)return stages;

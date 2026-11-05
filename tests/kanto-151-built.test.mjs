@@ -81,7 +81,8 @@ for(const def of ROSTER){
     'Native P2 evolution must not be rewritten: '+id);
   const expectedDodge=def.torre2ArenaAdded?
    (stage.torre2OriginalKit?.esp?.forma||parentKit.esp?.forma||'dash'):
-   (stage.kit?.esp?.forma||parentKit.esp?.forma);
+   (Object.hasOwn(stage.kit||{},'esp')?
+    stage.kit?.esp?.forma:parentKit.esp?.forma);
   assert.equal(realKit.esp?.forma,expectedDodge,
    'Evolution must preserve its original non-damaging Dodge: '+id);
  }

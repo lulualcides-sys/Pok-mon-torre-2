@@ -16,6 +16,7 @@ export const ARENA_SPEED_REFERENCE = Object.freeze({
   native: 129,
   earlyKanto: 121,
   extendedKanto: 104,
+  johto: 98.54, // measured 100 Johto rows (58 + Gen III Speed × .66)
   spread: 0.90,
   min: 86,
   max: 168,
@@ -24,11 +25,12 @@ export const ARENA_SPEED_REFERENCE = Object.freeze({
 export function synchronizedArenaSpeed(raw, {
   added = false,
   kanto151 = false,
+  johto100 = false,
   campaign = false, // legacy call-site argument; no longer excludes the campaign
 } = {}) {
   if (!added || !Number.isFinite(raw) || raw <= 0) return raw;
-  const benchmark = kanto151
-    ? ARENA_SPEED_REFERENCE.extendedKanto
+  const benchmark = johto100 ? ARENA_SPEED_REFERENCE.johto
+    : kanto151 ? ARENA_SPEED_REFERENCE.extendedKanto
     : ARENA_SPEED_REFERENCE.earlyKanto;
   const adjusted = ARENA_SPEED_REFERENCE.native
     + (raw - benchmark) * ARENA_SPEED_REFERENCE.spread;

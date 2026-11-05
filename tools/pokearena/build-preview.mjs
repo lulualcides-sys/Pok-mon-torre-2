@@ -614,7 +614,7 @@ patches.push(['luchador.js',[
  ],
  [
   'get velBase(){return(this.forma.vel+(this.mega?this.forma.mega.vel:0))*(this.jefe?.vel??1)}',
-  'get velBase(){return synchronizedArenaSpeed(this.forma.vel+(this.mega?this.forma.mega.vel:0),{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,campaign:!!this.escena.datos?.torre2})*(this.jefe?.vel??1)}'
+  'get velBase(){return synchronizedArenaSpeed(this.forma.vel+(this.mega?this.forma.mega.vel:0),{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,johto100:this.def.torre2Johto100===true,campaign:!!this.escena.datos?.torre2})*(this.jefe?.vel??1)}'
  ]
 ]]);
 // Only freshly-added Kanto BASE forms outside the campaign need enough
@@ -927,7 +927,7 @@ for(const [filename,changes] of patches){
        !body.slice(start,start+350).includes(native))
      throw Error('Unrecognized native speed getter: '+body.slice(start,start+250));
     const updated='synchronizedArenaSpeed('+native+
-      ',{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,campaign:!!this.escena.datos?.torre2})';
+      ',{added:this.def.torre2ArenaAdded===true,kanto151:this.def.torre2Kanto151===true,johto100:this.def.torre2Johto100===true,campaign:!!this.escena.datos?.torre2})';
     body=body.slice(0,start)+body.slice(start).replace(native,updated);
     continue;
    }
@@ -1222,8 +1222,12 @@ Pokedex.prototype.movimientos=function(...args){
  };
  this.etapas=[...originalStages];
  this.etapas[this.etapa]={...stage,kit:displayKit};
+ __pt2PokedexMissingRenderOnly=true;
  try{return __pt2OriginalPokedexMovimientos.apply(this,args)}
- finally{this.etapas=originalStages}
+ finally{
+  __pt2PokedexMissingRenderOnly=false;
+  this.etapas=originalStages;
+ }
 };
 `;
 await fs.writeFile(pokedexPath,paginatedPokedex+safeSparsePokedex);
