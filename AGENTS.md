@@ -82,3 +82,8 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 - Novo lote exclusivo: Thief, False Swipe, Steel Wing, Rock Smash. Não modificar Powder Snow, Whirlpool, Zap Cannon, Triple Kick e Octazooka.
 - Proibido fingir beleza com `p-cuchilla`/ícones monocromáticos esticados: as quatro novas animações usam os spritesheets multi-frame reais de `vfx.js#HOJAS` (`arco`, `acometida`, `quickattack`, `fly`, `roca`) com paletas originais P2 através de `vfx.hay()`, escala próxima do original e colisão física sincronizada. Nome do golpe em cima do atacante via `vfx.globo` continua obrigatório.
 - Não publicar em main antes de avaliação estética explícita do usuário. Tests de dano e CI não equivalem a aprovação visual.
+
+### Lote 3 Johto — 2026-11-05
+- **Aprovados pelo usuário** e intocáveis: Powder Snow, Whirlpool, Zap Cannon, Triple Kick, Octazooka, Thief, False Swipe, Steel Wing, Rock Smash. Nove no total; não redesenhar, substituir ou ressuscitar versões antigas em build.
+- **Lote 3 pendente de avaliação visual:** Return, Present, Frustration, Magnitude. Usar spritesheets nativas P2 multi-frame com hitbox/HP real, golpe anunciado acima do Pokémon, animação e duração limitada; não alterar campanha.
+- **Mecânica Generation III:** Present 40% poder 40 / 30% poder 80 / 10% poder 120 / 20% cura 25% HP do adversário. Magnitude níveis 4 a 10 (pesos 5/10/20/30/20/10/5%, poderes 10/30/50/70/90/110/150), efeito terrestre sem contato. Return/Frustration usam força derivada de amizade; no laboratório sem sistema de amizade, declarar fixture controlada de extremos, nunca fingir suporte permanente a amizades do save.

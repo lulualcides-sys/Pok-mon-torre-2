@@ -10,7 +10,7 @@ export class JohtoLab extends Phaser.Scene{
   // Artist-editable PNG strips built offline; only the isolated test lab loads them.
   // Browser nearest-neighbor preserves crisp pixel art on 16:9/WebGL displays.
   for(const m of JOHTO_LAB_ALL.filter(m=>m.visualOnly||
-  !['zap-cannon','powder-snow','whirlpool','triple-kick','thief','snore','octazooka','false-swipe','steel-wing','rock-smash'].includes(m.id)))
+  !['zap-cannon','powder-snow','whirlpool','triple-kick','thief','snore','octazooka','false-swipe','steel-wing','rock-smash','return','present','frustration','magnitude'].includes(m.id)))
    this.load.spritesheet('torre2-johto-pixelfx-'+m.id,
     'assets/torre2/johto-pixelfx/'+m.id+'.png',
     {frameWidth:96,frameHeight:96});
@@ -24,7 +24,7 @@ export class JohtoLab extends Phaser.Scene{
   this.add.rectangle(320,180,640,360,0x071426);
   this.add.text(320,13,"MEWTWO · JOHTO TRAINING LAB",{fontFamily:"Pixelify Sans,monospace",
    fontSize:"19px",color:"#ffe6a4",stroke:"#101f38",strokeThickness:3}).setOrigin(.5);
-  this.add.text(320,37,"JOHTO · 4 OFENSIVOS · 5 APROVADOS PRESERVADOS",{
+  this.add.text(320,37,"JOHTO · 4 OFENSIVOS · 9 APROVADOS PRESERVADOS",{
    fontFamily:"Pixelify Sans,monospace",fontSize:"10px",color:"#a7bfdc"}).setOrigin(.5);
   const box=(x,y,w,h,fill,stroke,action)=>{
    const r=this.add.rectangle(x,y,w,h,fill,.96).setStrokeStyle(1,stroke);
@@ -76,7 +76,7 @@ export class JohtoLab extends Phaser.Scene{
    r.setStrokeStyle(1,i===this.slot?0xffdf92:0x6383ae);
    value.setText(JOHTO_LAB_ALL.find(m=>m.id===this.picks[i]).nombre);
   });
-  this.pageLabel.setText("LOTE 2 · "+JOHTO_LAB_VISIBLE.length+" DE 18 OFENSIVOS");
+  this.pageLabel.setText("LOTE 3 · "+JOHTO_LAB_VISIBLE.length+" DE 18 OFENSIVOS");
   const selected=JOHTO_LAB_ALL.find(m=>m.id===this.picks[(this.slot+3)%4]);
   const description=JOHTO_GEN3_SPEC[selected?.id]?.effect||"Escolha um golpe";
   this.infoLabel.setText((selected?.nombre||"")+" · "+

@@ -6,9 +6,9 @@
  * The 3 approved effects NEVER enter this module.
  */
 export const JOHTO_FOUR_NATIVE_IDS=Object.freeze([
- "thief","false-swipe","steel-wing","rock-smash"
+ "return","present","frustration","magnitude"
 ]);
-export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze(["triple-kick","octazooka"]);
+export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze(["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"]);
 const clamp=v=>Math.max(0,Math.min(1,v));
 const smooth=v=>{v=clamp(v);return v*v*(3-2*v)};
 const mix=(a,b,v)=>a+(b-a)*v;
@@ -299,10 +299,134 @@ function createRockSmash(scene){
   });
  }};
 }
+// Wave 3: user-approved prior VFX are FROZEN. Four independent source-sheet
+// animations, contact-bound native HP, no large stretched MAPAS glyphs.
+export function johtoBatch3Roll(id,random=Math.random){
+ const u=Math.max(0,Math.min(.999999,Number(random())));
+ if(id==="present"){
+  if(u<.4)return {power:40,heal:false};
+  if(u<.7)return {power:80,heal:false};
+  if(u<.8)return {power:120,heal:false};
+  return {power:0,heal:true};
+ }
+ if(id==="magnitude"){
+  const thresholds=[.05,.15,.35,.65,.85,.95,1],
+   powers=[10,30,50,70,90,110,150];
+  let i=thresholds.findIndex(t=>u<t);if(i<0)i=6;
+  return {level:4+i,power:powers[i],heal:false};
+ }
+ return null;
+}
+function createReturn(scene){
+ const drive=part(scene,"vfx-quickattack",0xffffff,1536);
+ const arcs=[part(scene,arcKey(scene,"golpe"),0xffffff,1540),
+  part(scene,"vfx-acometida",0xffffff,1541)];
+ const hearts=Array.from({length:5},()=>part(scene,"p-corazon",0xffe8c5,1542));
+ return {sprites:[drive,...arcs,...hearts],update(t,a,b,state={}){
+  const actor=state.actor||a,dir=state.dirX??1,
+   wind=t<.53?fade(t/.53,.05,.84):0,target=state.hitPoint||b,
+   age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.27;
+  framePlace(drive,actor.x-dir*16,actor.y-10,61,30,wind*.9,
+   frameAt(t,.45,2),0,dir<0);
+  const u=hit?clamp(age/.27):0,alpha=hit?fade(u,.045,.83):0;
+  framePlace(arcs[0],target.x,target.y,55,40,alpha,
+   4+frameAt(u,1,4),dir<0?18:-18,dir<0);
+  framePlace(arcs[1],target.x-dir*10,target.y,65,34,alpha*.6,
+   frameAt(u,1,3),0,dir<0);
+  hearts.forEach((o,i)=>{const k=u*(9+i*4),phi=i*2.3999;
+   place(o,target.x+Math.cos(phi)*k,target.y+Math.sin(phi)*k*.7,
+    6,7,alpha*(.57-i*.07),0);
+  });
+ }};
+}
+function createFrustration(scene){
+ const dash=part(scene,"vfx-quickattack",0xf8a39d,1536);
+ const slash=[part(scene,arcKey(scene,"sombra"),0xff846d,1540),
+  part(scene,"vfx-astonish",0xe88a72,1541)];
+ const sparks=Array.from({length:8},()=>part(scene,"p-brasa",0xf17b55,1542));
+ return {sprites:[dash,...slash,...sparks],update(t,a,b,state={}){
+  const actor=state.actor||a,dir=state.dirX??1,
+   wind=t<.55?fade(t/.55,.05,.85):0,target=state.hitPoint||b,
+   age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.32;
+  framePlace(dash,actor.x-dir*15,actor.y-10,62,34,wind*.87,
+   frameAt(t,.42,2),0,dir<0);
+  const u=hit?clamp(age/.32):0,alpha=hit?fade(u,.055,.81):0;
+  framePlace(slash[0],target.x,target.y,64,45,alpha,
+   4+frameAt(u,1,4),dir<0?-22:22,dir<0);
+  framePlace(slash[1],target.x-3,target.y-7,30,28,alpha*.7,
+   frameAt(u,1,5));
+  sparks.forEach((o,i)=>{const angle=i*2.3999,dist=7+u*(13+i);
+   place(o,target.x+Math.cos(angle)*dist,
+    target.y+Math.sin(angle)*dist*.75+u*u*4,
+    5+i%2*2,5+i%2*2,alpha*(.8-i*.055),i*17);
+  });
+ }};
+}
+function createPresent(scene){
+ const gift=part(scene,"vfx-huevo",0xffffff,1540);
+ const glint=part(scene,"p-estrella",0xfde6a6,1541);
+ const wrapping=Array.from({length:3},()=>part(scene,"p-corazon",0xffa9bb,1539));
+ const blast=[part(scene,"vfx-hiper_impacto",0xffffff,1541),
+  part(scene,"vfx-huevo",0xffffff,1542)];
+ const heal=Array.from({length:6},()=>part(scene,"p-corazon",0x8affd3,1543));
+ return {sprites:[gift,glint,...wrapping,...blast,...heal],update(t,a,b,state={}){
+  const p=state.projectile||{x:a.x,y:a.y,active:false},dir=state.dirX??1,
+   moving=!!p.active;
+  framePlace(gift,p.x,p.y-7,28,27,moving*.98,
+   Math.floor(t*17)%4,0,dir<0);
+  place(glint,p.x-6,p.y-15,7,7,moving*.72);
+  wrapping.forEach((o,i)=>{
+   const k=(t*8+i/3)%1;
+   place(o,p.x-8-dir*i*6,p.y-2+Math.sin(k*Math.PI*2+i)*8,
+     5,5,moving*(.38-i*.08),i*20);
+  });
+  const age=state.hitAge,target=state.hitPoint||b,
+   hit=Number.isFinite(age)&&age>=0&&age<.32,
+   u=hit?clamp(age/.32):0,alpha=hit?fade(u,.045,.83):0,
+   recovered=state.heal===true;
+  framePlace(blast[0],target.x,target.y,59,51,
+   recovered?0:alpha,frameAt(u,1,4));
+  framePlace(blast[1],target.x,target.y,34,32,
+   recovered?0:alpha*.66,8+frameAt(u,1,4));
+  heal.forEach((o,i)=>{
+   const theta=i*2.3999,dist=8+u*(9+i*3);
+   place(o,target.x+Math.cos(theta)*dist,
+    target.y+Math.sin(theta)*dist*.74-u*10,
+    7,7,recovered?alpha*(.9-i*.08):0,i*35);
+  });
+ }};
+}
+function createMagnitude(scene){
+ const fractures=Array.from({length:7},()=>part(scene,"vfx-roca",0xffffff,1540));
+ const rubble=Array.from({length:12},()=>part(scene,"p-guijarro",0xcfb584,1541));
+ const dust=Array.from({length:5},()=>part(scene,"p-roca",0x927255,1539));
+ return {sprites:[...fractures,...rubble,...dust],update(t,a,b,state={}){
+  const age=state.hitAge,target=state.hitPoint||b,
+   hit=Number.isFinite(age)&&age>=0&&age<.44,
+   u=hit?clamp(age/.44):0,opacity=hit?fade(u,.04,.86):0,
+   power=state.power??70,scale=.75+Math.min(1,power/150);
+  fractures.forEach((o,i)=>{const phi=i*Math.PI*2/7,dist=10+u*(17+i%3*5)*scale;
+   framePlace(o,target.x+Math.cos(phi)*dist,
+    target.y+12+Math.sin(phi)*dist*.44,
+    20+scale*8,17+scale*8,opacity*(.85-i*.07),
+    8+frameAt(clamp(u+i*.08),1,4),i*22);
+  });
+  rubble.forEach((o,i)=>{const angle=i*2.3999,dist=6+u*(15+i%4*6)*scale;
+   place(o,target.x+Math.cos(angle)*dist,
+    target.y+10+Math.sin(angle)*dist*.37-u*10+u*u*13,
+    5+i%3,4+i%2,opacity*(.77-i*.045),i*21);
+  });
+  dust.forEach((o,i)=>{const x=target.x+(i-2)*21*scale;
+   place(o,x,target.y+17+u*8,12+i%2*6,7,opacity*.3,0);
+  });
+ }};
+}
+
 const FACTORIES=Object.freeze({
  "triple-kick":createTriple,thief:createThief,snore:createSnore,
  octazooka:createOcta,"false-swipe":createFalseSwipe,"steel-wing":createSteelWing,
- "rock-smash":createRockSmash
+ "rock-smash":createRockSmash,
+ return:createReturn,present:createPresent,frustration:createFrustration,magnitude:createMagnitude
 });
 export function makeJohtoFourNative(scene,id){
  if(!scene?.textures||!FACTORIES[id])return null;
@@ -314,7 +438,11 @@ export function makeJohtoFourNative(scene,id){
   octazooka:["p-fantasma","p-agua","p-aura"],
   "false-swipe":["vfx-acometida","vfx-arco","vfx-cuchilla","p-estrella"],
   "steel-wing":["vfx-fly","vfx-arco","vfx-aeroblast","p-estrella"],
-  "rock-smash":["vfx-acometida","vfx-roca","p-guijarro"]
+  "rock-smash":["vfx-acometida","vfx-roca","p-guijarro"],
+  return:["vfx-quickattack","vfx-arco","vfx-acometida","p-corazon"],
+  frustration:["vfx-quickattack","vfx-arco","vfx-astonish","p-brasa"],
+  present:["vfx-huevo","p-estrella","p-corazon","vfx-hiper_impacto"],
+  magnitude:["vfx-roca","p-guijarro","p-roca"]
  }[id];
  if(!required.every(t=>scene.textures.exists(t)))return null;
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);
@@ -355,23 +483,34 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  const angle=Math.atan2(aimY-source.y,aimX-source.x),
   ux=Math.cos(angle),uy=Math.sin(angle),
   distance=Math.hypot(aimX-source.x,aimY-source.y),
-  melee=!["snore","octazooka"].includes(id),
+  melee=!["snore","octazooka","present","magnitude"].includes(id),
+  seismic=id==="magnitude",
   duration=id==="triple-kick"?.77:id==="thief"?.71:
    id==="false-swipe"?.74:id==="steel-wing"?.78:
-   id==="rock-smash"?.73:id==="snore"?.91:.9,
-  rise=.13,projectileSpeed=id==="snore"?260:350,
+   id==="rock-smash"?.73:id==="return"?.68:id==="frustration"?.76:
+   id==="present"?.89:id==="magnitude"?.88:id==="snore"?.91:.9,
+  rise=.13,projectileSpeed=id==="snore"?260:id==="present"?265:350,
   maxRange=Math.max(1,h.alcance||180),
   // Native golpe/patada close into the target's actual standing hitbox.
   // The 70px Triple Kick melee reach includes a 25px physical approach.
   advance=Math.min(maxRange+(id==="triple-kick"?25:
-   id==="false-swipe"||id==="steel-wing"||id==="rock-smash"?18:0),
+   id==="false-swipe"||id==="steel-wing"||id==="rock-smash"||
+   id==="return"||id==="frustration"?18:0),
    Math.max(0,distance-17)),
   startProjectile={x:source.x+ux*17,y:source.y+uy*17},
   srcVisual={x:source.x,y:source.y-l.alto*.5},
   aimedVisual={x:source.x+ux*maxRange,y:source.y+uy*maxRange-l.alto*.5},
   hitWindows=id==="triple-kick"?[.24,.40,.56]:
    id==="thief"?[.32]:id==="false-swipe"?[.34]:
-   id==="steel-wing"?[.36]:id==="rock-smash"?[.34]:[];
+   id==="steel-wing"?[.36]:id==="rock-smash"?[.34]:
+   id==="return"?[.32]:id==="frustration"?[.35]:
+   id==="magnitude"?[.38]:[];
+ const roll=id==="present"||id==="magnitude"?johtoBatch3Roll(id):null;
+ const friendship=Number.isFinite(l.amizade)?Math.max(0,Math.min(255,l.amizade)):
+  id==="return"?255:id==="frustration"?0:128;
+ // No friendship engine in this isolated lab: max-power fixture only.
+ const friendshipPower=id==="return"?Math.floor(friendship*10/25):
+  id==="frustration"?Math.floor((255-friendship)*10/25):0;
  let age=0,nextHit=0,stop=false,hitIndex=-1,hitAt=-Infinity,
   hitPoint=null,projectileAlive=!melee,previousDistance=0,done=false;
  const action={hasta:l.t+duration,bloquea:true,lento:0,angulo:angle};
@@ -382,6 +521,17 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   if(Math.random()>h.precisao/100){if(id==="triple-kick")stop=true;return false;}
   const dx=r.x-l.x,dy=r.y-l.y,d=Math.hypot(dx,dy)||1;
   const mult=id==="triple-kick"?index+1:1;
+  if(id==="present"&&roll?.heal){
+   // Present heals the opponent by 25% max HP (Gen III).
+   const before=r.hp,amount=Math.max(1,Math.floor(r.hpMax*.25));
+   if(typeof r.curar==="function")r.curar(amount);
+   else r.hp=Math.min(r.hpMax,r.hp+amount);
+   hitIndex=index;hitAt=age;hitPoint={x:r.x,y:r.y-r.alto*.5};
+   return r.hp>=before;
+  }
+  const powerMultiplier=id==="present"?(roll.power/40):
+   id==="magnitude"?(roll.power/70):
+   id==="return"||id==="frustration"?friendshipPower/102:1;
   // Use the original fighter damage pipeline: defenses, typing, shields,
   // training ledger, knockback and HP all remain in native recibir().
   // False Swipe is a non-KO technique (at least 1 HP). Native recibir
@@ -390,7 +540,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   if(keepAlive)r.inmortal=true;
   let result;
   try{
-   result=r.recibir(l,{dano:h.dano*mult,tipo:h.tipo,
+   result=r.recibir(l,{dano:h.dano*mult*powerMultiplier,tipo:h.tipo,
     slot:extra?.slot,surge:extra?.surge,empuje:melee?14:10,
     dirX:dx/d,dirY:dy/d,proyectil:!melee,tick:index>0});
   }finally{if(keepAlive)r.inmortal=wasImmortal}
@@ -410,7 +560,15 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   if(age>=duration||l.ko||!e.scene.isActive()){
    obj.destroy();return false;
   }
-  if(melee){
+  if(seismic){
+   if(nextHit===0&&age>=hitWindows[0]){
+    nextHit++;
+    // Earth tremor reaches nearby grounded rivals; never strike airborne
+    // targets or create a fake hit before the shock wave.
+    if(Math.hypot(l.x-r.x,l.y-r.y)<=Math.max(150,maxRange)&&
+       !r.est?.vuelo)contact(0,r.x,r.y);
+   }
+  }else if(melee){
    // Native golpe()/patada() move the fighter before validating body
    // contact, never make impact sprites appear at remote targets.
    const next=johtoP2Advance(source,angle,advance,age/.19);
@@ -437,7 +595,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
     for(let i=1;i<=segments;i++){
      const dist=start+(distanceNow-start)*i/segments;
      const x=startProjectile.x+ux*dist,y=startProjectile.y+uy*dist;
-     if(johtoP2BodyContact(r,x,y,id==="octazooka"?11:18,
+     if(johtoP2BodyContact(r,x,y,id==="octazooka"?11:id==="present"?12:18,
        l.alto*.5,nativeRadio)){
       projectileAlive=false;
       contact(0,x,y);
@@ -458,14 +616,17 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
     {hitIndex,hitAge,hitPoint});
   else if(id==="thief"||id==="false-swipe"||
-   id==="steel-wing"||id==="rock-smash")
+   id==="steel-wing"||id==="rock-smash"||id==="return"||id==="frustration")
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
     {hitAge,hitPoint,actor:{x:l.x,y:l.y-l.alto*.5},dirX:ux,dirY:uy});
+  else if(id==="magnitude")
+   visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
+    {hitAge,hitPoint,power:roll?.power,level:roll?.level});
   else if(id==="snore")
    visual.update(age/duration,srcVisual,aimedVisual,{hitAge,hitPoint,projectile:livePoint});
   else
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
-    {hitAge,hitPoint,projectile:livePoint});
+    {hitAge,hitPoint,projectile:livePoint,heal:roll?.heal,dirX:ux});
   return true;
  },destroy(){
   if(done)return;

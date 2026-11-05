@@ -138,7 +138,7 @@ export const JOHTO_P2_TEXTURES=Object.freeze({
  "return":["p-corazon","p-aura"],
  "present":["p-huevo","p-estrella"],
  "frustration":["p-brasa","p-fantasma"],
- "magnitude":["p-roca","p-guijarro"],
+ "magnitude":["vfx-roca","p-guijarro"],
  "pursuit":["p-fantasma","p-shuriken"],
  "vital-throw":["p-roca","p-aura"],
  "hidden-power":["p-psiquico","p-estrella"],
