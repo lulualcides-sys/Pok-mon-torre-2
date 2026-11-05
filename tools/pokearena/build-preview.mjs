@@ -1242,6 +1242,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixel-sheets.mjs'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixelfx-sheets.mjs'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-signatures.mjs'));
 vfxFingerprint.update(await fs.readFile(
  path.join(dest,'assets/torre2/johto-pixelfx/manifest.json')));
 

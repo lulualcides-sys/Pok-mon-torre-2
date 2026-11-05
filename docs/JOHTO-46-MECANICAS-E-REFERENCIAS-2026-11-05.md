@@ -17,3 +17,7 @@ Antes de novas artes, consultar também as quatro fontes exigidas pela política
 ## Correções da mecânica Gen III na arena de teste
 
 Magnitude usa sorteio ponderado de níveis 4–10. Present tem 40% força 40, 30% força 80, 10% força 120 e 20% cura. Triple Kick evolui potência em três acertos separados. Beat Up não inventa cinco aliados quando o treino possui só Mewtwo. Golpes Dark usam categoria especial Gen III, e Sweet Kiss passa a Normal. Efeitos aprovados e campanha não alterados.
+
+## SpriteSheets com pixel signatures
+
+43 efeitos PixelFX recebem detalhes por golpe aplicados em memória RGBA durante a exportação offline: teia, espinhos no chão, tinta, rochas, flocos, ondas, asas, notas e escudos. Essa camada é pixel art nativa (nearest-neighbor), não Canvas/CSS em batalha, e nunca inclui as três artes de Johto já aprovadas.

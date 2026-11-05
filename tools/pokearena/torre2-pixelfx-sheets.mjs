@@ -8,6 +8,7 @@ import {deflateSync} from "node:zlib";
 import {mkdir,writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {JOHTO_PIXELFX_43,PIXELFX_PIN} from "./torre2-johto-pixelfx-catalog.js";
+import {addJohtoPixelSignature} from "./torre2-johto-signatures.mjs";
 
 export const PIXELFX_CEL=96;
 export const PIXELFX_FRAMES=12;
@@ -93,6 +94,9 @@ export async function generateJohtoPixelFXSheets(folder){
    captures.push(out.slice());
   }
   const {strip,painted,side}=cropFrames(captures);
+  // Add move-specific eight-bit shapes directly to PixelFX frames at build time.
+  // 3 approved original animations are absent from this list, by design.
+  addJohtoPixelSignature(strip,m.id);
   const image=png(strip,BAND,PIXELFX_CEL);
   const file=join(folder,m.id+".png");
   await writeFile(file,image);
