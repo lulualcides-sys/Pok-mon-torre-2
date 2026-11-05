@@ -32,7 +32,7 @@ export function paginateKantoPokedexSource(original){
  let s=String(original);
  s=once(s,
   'this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+i%COLS*CEL,GY+Math.floor(i/COLS)*CEL,i));',
-  'this.dexPage=Math.floor(TORRE2_DEX_RANK[this.foco]/36);this.dexPages=Math.ceil(ROSTER.length/36);this.casillas=ROSTER.map((p,i)=>{const v=TORRE2_DEX_RANK[i]%36;return this.casilla(p,GX+(v%COLS)*CEL,GY+Math.floor(v/COLS)*CEL,i)});');
+  'torre2DexEnsureOrder();this.dexPage=Math.floor(TORRE2_DEX_RANK[this.foco]/36);this.dexPages=Math.ceil(ROSTER.length/36);this.casillas=ROSTER.map((p,i)=>{const v=TORRE2_DEX_RANK[i]%36;return this.casilla(p,GX+(v%COLS)*CEL,GY+Math.floor(v/COLS)*CEL,i)});');
  // Match the Kanto campaign's actual equipped attack names per evolution.
  // The native Poké Arena 2D Pokédex does not know about Torre 2 loadouts.
  // Only recognized Kanto forms are adapted; all other original entries,
@@ -56,14 +56,20 @@ export function paginateKantoPokedexSource(original){
  });
  // Stable display-only National Dex ordering. Never reorder ROSTER,
  // casillas indices, game saves or upstream Poké Arena species definitions.
- const TORRE2_DEX_ORDER=ROSTER.map((_,i)=>i).sort((a,b)=>{
-  const x=Number(ROSTER[a]?.dex),y=Number(ROSTER[b]?.dex);
-  const ax=Number.isFinite(x)&&x>0?x:100000+a;
-  const by=Number.isFinite(y)&&y>0?y:100000+b;
-  return ax-by||a-b;
- });
- const TORRE2_DEX_RANK=Array(ROSTER.length);
- TORRE2_DEX_ORDER.forEach((index,rank)=>{TORRE2_DEX_RANK[index]=rank});
+ // Calculated lazily: isolated native-color helper tests do not load
+ // ROSTER, while the full Phaser Pokedex initializes it on first create.
+ let TORRE2_DEX_ORDER=null,TORRE2_DEX_RANK=null;
+ function torre2DexEnsureOrder(){
+  if(TORRE2_DEX_RANK)return;
+  TORRE2_DEX_ORDER=ROSTER.map((_,i)=>i).sort((a,b)=>{
+   const x=Number(ROSTER[a]?.dex),y=Number(ROSTER[b]?.dex);
+   const ax=Number.isFinite(x)&&x>0?x:100000+a;
+   const by=Number.isFinite(y)&&y>0?y:100000+b;
+   return ax-by||a-b;
+  });
+  TORRE2_DEX_RANK=Array(ROSTER.length);
+  TORRE2_DEX_ORDER.forEach((index,rank)=>{TORRE2_DEX_RANK[index]=rank});
+ }
  function kantoDexTypeColor(type){
   const native=typeof TIPOS==='undefined'?null:TIPOS;
   const candidate=native?.[type];
