@@ -1206,27 +1206,25 @@ const paginatedPokedex=paginateKantoPokedexSource(
 const safeSparsePokedex=`
 const __pt2OriginalPokedexMovimientos=Pokedex.prototype.movimientos;
 Pokedex.prototype.movimientos=function(...args){
- const originalStages=this.etapas,stage=originalStages?.[this.etapa];
- const originalKit=stage?.kit,slots=["lmb","rmb","q","e","esp"];
- if(!originalKit||!["lmb","rmb","q","e"].some(slot=>
-   originalKit[slot]?.nombre&&originalKit[slot]?.forma)){
-  this.movs?.removeAll?.(true);return;
- }
- const absent=slots.filter(slot=>
-  !originalKit[slot]?.nombre||!originalKit[slot]?.forma);
- if(!absent.length)return __pt2OriginalPokedexMovimientos.apply(this,args);
- const displayKit={...originalKit};
- for(const slot of absent)displayKit[slot]={
-  nombre:"SEM GOLPE",forma:"desativado",tipo:"NORMAL",dano:0,
-  cd:0,coste:0,pendiente:true,torre2Unavailable:true
- };
- this.etapas=[...originalStages];
- this.etapas[this.etapa]={...stage,kit:displayKit};
- __pt2PokedexMissingRenderOnly=true;
- try{return __pt2OriginalPokedexMovimientos.apply(this,args)}
- finally{
-  __pt2PokedexMissingRenderOnly=false;
-  this.etapas=originalStages;
+ const kit=this.etapas?.[this.etapa]?.kit||{},slots=["lmb","rmb","q","e","esp"];
+ if(!slots.some(slot=>!kit[slot]?.nombre||!kit[slot]?.forma))
+  return __pt2OriginalPokedexMovimientos.apply(this,args);
+ // The P2 renderer assumes every slot exists. For sparse kits (Unown,
+ // Ho-Oh, Wobbuffet...) render a Pokédex-only readout; no battle mutation.
+ const group=this.movs||(this.movs=this.add.container(0,0).setDepth(160));
+ group.removeAll(true);
+ const labels=["ATK","HAB 2","HAB 3","ULT","ESQUIVA"];
+ const scaleX=Number(group.scaleX)||1,scaleY=Number(group.scaleY)||1;
+ for(let i=0;i<slots.length;i++){
+  const h=kit[slots[i]],valid=!!(h?.nombre&&h?.forma);
+  const line=this.add.text((345-(Number(group.x)||0))/scaleX,
+   (165+i*27-(Number(group.y)||0))/scaleY,
+   labels[i]+": "+(valid?h.nombre:"SEM GOLPE"),{
+    fontFamily:"Pixelify Sans,monospace",fontSize:"11px",
+    color:valid?"#e2f2ff":"#91a6b9",
+    stroke:"#081a2a",strokeThickness:2
+   }).setOrigin(0,.5);
+  group.add(line);
  }
 };
 `;

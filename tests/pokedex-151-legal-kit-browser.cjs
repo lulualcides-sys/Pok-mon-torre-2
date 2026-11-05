@@ -34,7 +34,7 @@ const server=http.createServer(async(req,res)=>{
   const audit=await page.evaluate(async()=>{
    const {modules}=await (await fetch('/arena2d/version.json')).json();
    const base='/arena2d/'+modules+'/';
-   const [{kantoDexStages},{ROSTER},{KANTO_151},{resolveLoadout,availableMoves,campaignLearnset}]=
+   const [{kantoDexStages,etapasDe},{ROSTER},{KANTO_151},{resolveLoadout,availableMoves,campaignLearnset}]=
      await Promise.all(['escenas/pokedex.js','datos.js',
       'torre2/all-kanto-species.js','torre2/move-pool.js'].map(x=>import(base+x)));
    const known=new Set(KANTO_151.map(x=>x.id)),checked=[],issues=[],exceptions=[];
@@ -78,6 +78,12 @@ const server=http.createServer(async(req,res)=>{
      if(stage.mega)return;
      const id=(i===0?def.id:(def.evoluciones?.[i-1]?.nombre||'')).toLowerCase();
      if(!known.has(id)||id==='mewtwo')return;
+     if(!def.torre2ArenaAdded){
+      const original=etapasDe(def)[i];
+      if(JSON.stringify(stage.kit)!==JSON.stringify(original?.kit))
+       issues.push({id,stage:i,problem:'native P2 kit diverged in Pokédex'});
+      checked.push(id);return;
+     }
      const m={id,progression:{species:id,level:50},tmMoves:[]};
      const selected=resolveLoadout(m),kit=stage.kit;
      const legal=new Map(campaignLearnset(id)
@@ -133,6 +139,12 @@ const server=http.createServer(async(req,res)=>{
      const displayed=scene.etapas[scene.etapa]?.kit||{};
      const battle=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
      uiSeen.add(id);
+     if(!family.torre2ArenaAdded){
+      const original=etapasDe(family)[stageIndex]?.kit||{};
+      if(JSON.stringify(displayed)!==JSON.stringify(original))
+       uiProblems.push({id,stage:stageIndex,problem:'native P2 kit changed in Arena/Pokédex'});
+      continue;
+     }
      for(const role of required){
       const view=displayed[role],actual=battle[role];
       if(!view?.id||!view?.forma||view.pendiente||
