@@ -512,6 +512,7 @@ create(){
    'fuji','dojo','bill','safari','tower','silph','harbor']);
   const homes=buildingInteractions(location).filter(h=>important.has(h.id));
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(16,80,608,218,0x4797b2);
   text(this,320,35,'CASAS E LUGARES IMPORTANTES',{
    ...titleStyle,fontSize:'18px'}).setOrigin(.5);
   text(this,320,74,'LOCAL: '+(location||region.title).toUpperCase(),{
@@ -530,6 +531,7 @@ create(){
   const remaining=Math.max(0,limit-state.trainer);
   const ready=!state.champion&&remaining===0;
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(38,88,564,196,0xb49c61);
   text(this,320,47,state.stage<8?'DESAFIO DO GINÁSIO':'DESAFIO DA LIGA',{
    ...titleStyle,fontSize:'22px'}).setOrigin(.5);
   text(this,320,104,ready?'LÍDER DISPONÍVEL PARA BATALHA':
@@ -837,6 +839,7 @@ create(){
  }
  badgeCaseScreen(state,selected=0){
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(24,64,592,239,0x9c9f71);
   const index=Math.max(0,Math.min(7,selected));
   text(this,320,28,'ESTOJO DE INSÍGNIAS',titleStyle).setOrigin(.5);
   text(this,320,52,'KANTO  ·  '+GYMS.filter(g=>state.badges.includes(g.badge)).length+' / 8',statusStyle).setOrigin(.5);
@@ -996,6 +999,7 @@ create(){
  }
  captureScreen(state){
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(19,72,602,206,0x67aa9a);
   const victim=state.pendingCapture;
   if(!victim)return this.scene.restart();
   text(this,320,37,'CAPTURAR '+victim.id.toUpperCase(),{
@@ -1025,6 +1029,7 @@ create(){
   const maxPage=Math.max(0,Math.ceil(trainers.length/6)-1);
   page=Math.max(0,Math.min(maxPage,page));
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(12,66,616,230,0x569bb3);
   text(this,320,23,'VS SEEKER · REVANCHES DE KANTO',{
    ...titleStyle,fontSize:'18px'}).setOrigin(.5);
   text(this,320,47,'MAPAS CONCLUÍDOS · CARGA '+(state.rematches?.charge||0)+'/3 · SEM NOVAS INSÍGNIAS',{
@@ -1055,6 +1060,7 @@ create(){
  rematchScreen(state,index,mapStage=state.stage){
   const foe=rematchOpponent(state,index,mapStage);if(!foe)return;
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(40,84,560,200,0xbca16e);
   text(this,320,60,'REVANCHE · '+foe.name.toUpperCase(),titleStyle).setOrigin(.5);
   text(this,320,110,'MAPA '+(STAGES[mapStage]?.city||'KANTO').toUpperCase()+
    ' · EQUIPE Nv.'+foe.level+' · VS '+(state.rematches?.charge||0)+'/3',textStyle).setOrigin(.5);
@@ -1101,6 +1107,7 @@ create(){
  }
  enterTraining(state){
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(20,82,600,210,0x489eaa);
   const cfg=this.__labConfig??={player:'mewtwo',enemy:'onix',level:50,weather:'none'};
   text(this,320,35,'LABORATÓRIO · 151 POKÉMON',titleStyle).setOrigin(.5);
   text(this,320,65,'Testes isolados · sem XP, dinheiro ou alterações no save',statusStyle).setOrigin(.5);
@@ -1325,6 +1332,7 @@ create(){
  centerScreen(state){
   this.__torre2CenterBusy=false;
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(44,79,552,240,0x50a3a4);
   text(this,320,41,'CENTRO POKÉMON',{...titleStyle,fontSize:'24px'}).setOrigin(.5);
   text(this,320,96,'CURAR TODA A EQUIPE · SEM CUSTO',{
    fontSize:'16px',color:'#a4f6dc'}).setOrigin(.5);
