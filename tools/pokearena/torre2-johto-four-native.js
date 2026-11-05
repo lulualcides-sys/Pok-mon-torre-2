@@ -428,77 +428,75 @@ function createMagnitude(scene){
 // Fourth visual review: native Poké Arena 2D sprite sheets for the last
 // four offensive Johto identities. Never import unapproved rectangle strips.
 function createPursuit(scene){
- // SHADOW PURSUIT: shadow ghosts hunt the retreating rival, disappear
- // behind him, then dark HEX rises vertically. NO slashes, quickattack,
- // generic physical arc or impact shared with Beat Up.
- const tele=part(scene,"vfx-teleporte",0xc59be8,1536);
- const ghosts=Array.from({length:4},()=>part(scene,"vfx-astonish",0xb89bd6,1539));
- const hex=part(scene,"vfx-hexgolpe",0xc29cdf,1541);
- const rune=part(scene,"vfx-hexaviso",0x725291,1540);
- const motes=Array.from({length:6},()=>part(scene,"p-sombra",0xb391d7,1542));
- return {sprites:[tele,...ghosts,hex,rune,...motes],
-  update(t,a,b,state={}){
-   const actor=state.actor||a,dir=state.dirX??1,
-    progress=clamp(t/.64),start=t<.6?fade(t/.6,.06,.84):0,
-    target=state.hitPoint||b;
-   framePlace(tele,actor.x-dir*10,actor.y-10,
-    37,53,start*.92,Math.min(5,Math.floor(t*23)),0,dir<0);
-   ghosts.forEach((o,i)=>{
-    const p=clamp(progress-i*.15),x=mix(a.x,target.x,p),
-      y=mix(a.y,target.y,p)-9-Math.sin(p*Math.PI)*13;
-    framePlace(o,x-dir*(i+1)*3,y,
-     16+i%2*3,19+i%2*3,
-     start*(.6-i*.105)*smooth((t-i*.065)/.09),
-     (Math.floor(t*30)+i)%8);
-   });
-   const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.34,
-    u=hit?clamp(age/.34):0,alpha=hit?fade(u,.04,.81):0;
-   framePlace(rune,target.x,target.y-24,39,36,alpha*.56,
-     Math.min(5,Math.floor(u*6)));
-   // Only AFTER actual P2 recibir: shadow descends rather than slashing.
-   framePlace(hex,target.x,target.y+6,48,74,alpha,
-     Math.min(5,Math.floor(u*6)));
-   motes.forEach((o,i)=>{
-    const p=(i+.5)/6,xx=target.x+Math.cos(p*2*Math.PI)*(8+u*18),
-      yy=target.y+Math.sin(p*2*Math.PI)*(8+u*24);
-    place(o,xx,yy,5+i%2,5+i%2,alpha*(.55-i*.065));
-   });
-  }
- };
+ // PURSUIT: chase, not a spell. Short 2-frame P2 Quick Attack and three
+ // restrained trailing silhouettes track the *actual* attacker. Only real
+ // body contact produces a small dark physical hit; no teleport/HEX pillar.
+ const dash=part(scene,"vfx-quickattack",0xd4b9f2,1537);
+ const traces=Array.from({length:4},()=>part(scene,"vfx-astonish",0x9979bd,1536));
+ const hits=Array.from({length:3},()=>part(scene,"vfx-astonish",0xc59fe6,1542));
+ const dust=Array.from({length:4},()=>part(scene,"p-sombra",0x8b6cad,1543));
+ return {sprites:[dash,...traces,...hits,...dust],update(t,a,b,state={}){
+  const actor=state.actor||a,dir=state.dirX??1,
+   wind=t<.58?fade(t/.58,.035,.9):0;
+  framePlace(dash,actor.x-dir*16,actor.y-8,51,26,wind*.85,
+    Math.floor(t*22)%2,0,dir<0);
+  traces.forEach((o,i)=>{
+   const delay=.035+i*.048,alpha=wind*(.59-i*.09)*
+    smooth((t-delay)/.12);
+   framePlace(o,actor.x-dir*(12+i*9),
+    actor.y-5+Math.sin(i*1.7)*4,
+    17+i%2*2,17+i%2*2,alpha,(Math.floor(t*21)+i)%8);
+  });
+  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.23,
+   u=hit?clamp(age/.23):0,alpha=hit?fade(u,.045,.79):0,
+   target=state.hitPoint||b;
+  // One restrained dark burst precisely at the collision, NOT a tall
+  // ray, large magic ring or borrowed Beat Up physical combo.
+  hits.forEach((o,i)=>{
+   const phase=clamp((u-i*.12)/.85);
+   framePlace(o,target.x+(i-1)*7,target.y+(i%2?6:-5),
+    21+i*2,20+i*2,alpha*(.86-i*.24),
+    (Math.floor(phase*7)+i)%8);
+  });
+  dust.forEach((o,i)=>{
+   const dx=(i%2?-1:1)*(5+u*(6+i*2));
+   place(o,target.x+dx,target.y+(i-1.5)*5-u*3,
+     4+i%2,4+i%2,alpha*(.43-i*.075));
+  });
+ }};
 }
 function createVitalThrow(scene){
- // GRAPPLE > VERTICAL LIFT > SLAM. Uses real fighter.salto for the
- // raised enemy silhouette after confirmed hit; never the Rock Smash
- // shards or a repeated dark cut. Shadow on floor remains grounded.
- const bind=part(scene,"vfx-atadura",0xffe7b7,1540);
- const spiral=part(scene,"vfx-fly",0xe4d9ff,1538);
- const wrap=part(scene,"vfx-rapidspin",0xfff3df,1537);
- const slam=part(scene,
-  scene.textures.exists("vfx-aterriza-golpe")?
-   "vfx-aterriza-golpe":"vfx-aterriza",0xffffff,1541);
- const dust=Array.from({length:8},()=>part(scene,"p-guijarro",0xc6b69c,1542));
- return {sprites:[bind,spiral,wrap,slam,...dust],update(t,a,b,state={}){
+ // VITAL THROW: grounded contact, target sprite lift (r.salto stays in
+ // castJohtoFourNative), then a single P2 landing with LOW dust.
+ // No wrap, atadura, fly, rapidspin, rings or spirals anywhere.
+ const grab=part(scene,attackSheet(scene),0xffead0,1538);
+ const slam=part(scene,scene.textures.exists("vfx-aterriza-golpe")?
+  "vfx-aterriza-golpe":"vfx-aterriza",0xffffff,1541);
+ const dust=Array.from({length:6},()=>part(scene,"p-guijarro",0xc5ae90,1542));
+ const flecks=Array.from({length:2},()=>part(scene,"p-estrella",0xffe5b0,1543));
+ return {sprites:[grab,slam,...dust,...flecks],update(t,a,b,state={}){
   const actor=state.actor||a,target=state.hitPoint||b,dir=state.dirX??1,
-   pre=t<.64?fade(t/.64,.06,.91):0;
-  framePlace(bind,actor.x+dir*15,actor.y-3,32,32,pre*.92,
-   Math.floor(t*24)%6);
-  framePlace(wrap,actor.x+dir*19,actor.y-10,51,39,pre*.58,
-   Math.floor(t*22)%3);
+    wind=t<.6?fade(t/.6,.05,.87):0;
+  // Contact cue is only a very short shoulder impact next to the caster.
+  framePlace(grab,actor.x+dir*13,actor.y-4,37,23,wind*.67,
+    Math.min(2,Math.floor(t*16)),0,dir<0);
   const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.4,
-   u=hit?clamp(age/.4):0,alpha=hit?fade(u,.045,.87):0,
-   lift=Math.sin(Math.PI*u)*28;
-  framePlace(spiral,target.x,target.y-18-lift,52,43,alpha*.89,
-   Math.min(2,Math.floor(u*3)),dir<0?-15:15);
-  // At landing: frame sequence of the native P2 ground impact.
-  const land=clamp((u-.54)/.46);
-  framePlace(slam,target.x,target.y+19,86,43,
-   alpha*smooth((u-.51)/.16),
-   Math.min(2,Math.floor(land*3)));
+    u=hit?clamp(age/.4):0,land=clamp((u-.57)/.43),
+    opacity=hit?fade(land,.09,.81)*smooth((u-.53)/.14):0;
+  // The native opponent sprite itself rises 28px; NO decorative lift VFX.
+  // Earth-contact image only starts after the target returns to the floor.
+  framePlace(slam,target.x,target.y+19,72,36,opacity*.83,
+    Math.min(2,Math.floor(land*3)));
   dust.forEach((o,i)=>{
-   const theta=i/8*Math.PI*2,dist=8+land*(18+i%3*4);
-   place(o,target.x+Math.cos(theta)*dist,
-    target.y+20+Math.sin(theta)*dist*.31,
-    4+i%3,3+i%2,alpha*smooth((u-.54)/.14)*(.8-i*.08));
+   const side=i%2?-1:1,dist=(6+i*3)+land*(9+i%3*3);
+   place(o,target.x+side*dist,target.y+20+
+     Math.sin(i*2.2)*3+land*3,4+i%3,3+i%2,
+     opacity*(.55-i*.065));
+  });
+  flecks.forEach((o,i)=>{
+   const off=i?12:-12;
+   place(o,target.x+off,target.y+15-land*3,
+     6,6,opacity*(.55-i*.12));
   });
  }};
 }
@@ -526,36 +524,35 @@ function createHiddenPower(scene){
  }};
 }
 function createBeatUp(scene){
- // TEAM STRIKES: short per-member physical punch impacts, distinct from
- // Pursuit's ghost teleport + vertical hex. The actor actually closes to
- // the opponent, and one native recibir call accompanies each real member.
- const fists=Array.from({length:3},()=>part(scene,"vfx-acometida",0xffffff,1541));
- const impacts=Array.from({length:3},()=>part(scene,"vfx-hiper_impacto",0xffebac,1542));
- const hits=Array.from({length:7},()=>part(scene,"p-estrella",0xffd9a6,1543));
- const approach=part(scene,"vfx-rapidspin",0xffe3b5,1537);
- return {sprites:[...fists,...impacts,...hits,approach],update(t,a,b,state={}){
-  const actor=state.actor||a,dir=state.dirX??1,target=state.hitPoint||b,
-   wind=t<.47?fade(t/.47,.06,.83):0;
-  framePlace(approach,actor.x-dir*11,actor.y-4,49,32,wind*.72,
-   Math.min(2,Math.floor(t*18)),0,dir<0);
-  const age=state.hitAge,valid=Number.isFinite(age)&&age>=0&&age<.19,
-    u=valid?clamp(age/.19):0,alpha=valid?fade(u,.04,.83):0,
-    hitNo=Math.max(0,state.hitIndex||0),side=hitNo%2?1:-1;
-  fists.forEach((o,i)=>framePlace(o,
-   target.x+dir*(-14+u*13)+(i-1)*6,
-   target.y-7+side*(i-1)*6,
-   34+i%2*5,20+i%2*3,alpha*(.85-i*.2),
-   Math.min(2,Math.floor(clamp((u-i*.18)/.8)*3)),
-   side*(i*8-10),dir<0));
-  impacts.forEach((o,i)=>framePlace(o,
-    target.x+(i-1)*8,target.y+(i%2?9:-7),
-    26+i*5,25+i*4,alpha*(.86-i*.23),
-    Math.min(5,Math.floor(clamp((u-i*.14)/.9)*6))));
-  hits.forEach((o,i)=>{
-   const phi=i*2.39996,d=5+u*(10+i%3*2);
-   place(o,target.x+Math.cos(phi)*d,
-    target.y+Math.sin(phi)*d*.8,
-    5+i%2,5+i%2,alpha*(.62-i*.06));
+ // BEAT UP: a per-party-member short physical flurry. Each confirmed
+ // P2 contact gets THREE tiny rhythmic contact animations, but only ONE
+ // real damage event per valid member. No darkness, pursuit, spin or magic.
+ const punches=Array.from({length:3},()=>part(scene,attackSheet(scene),0xffffff,1540));
+ const impacts=Array.from({length:3},()=>part(scene,"vfx-hiper_impacto",0xffedd0,1542));
+ const glints=Array.from({length:4},()=>part(scene,"p-estrella",0xffddb0,1543));
+ return {sprites:[...punches,...impacts,...glints],update(t,a,b,state={}){
+  const target=state.hitPoint||b,age=state.hitAge,
+    connected=Number.isFinite(age)&&age>=0&&age<.28,
+    hitNo=Number.isInteger(state.hitIndex)?state.hitIndex:0,
+    dir=state.dirX??1;
+  punches.forEach((o,i)=>{
+   const local=connected?(age-i*.066)/.094:-1,
+    active=local>=0&&local<1,phase=active?clamp(local):0,
+    amp=active?fade(phase,.07,.82):0,
+    side=(hitNo+i)%2?-1:1;
+   framePlace(o,target.x-side*dir*(15-phase*13),
+    target.y+(i-1)*8,30,18,amp*.9,
+    Math.min(2,Math.floor(phase*3)),0,side<0);
+   framePlace(impacts[i],target.x+side*4,target.y+(i-1)*8,
+    25,23,amp*.71,Math.min(5,Math.floor(phase*6)));
+  });
+  glints.forEach((o,i)=>{
+   const j=i%3,local=connected?(age-j*.066)/.094:-1,
+     ok=local>=0&&local<1,u=ok?clamp(local):0,
+     side=(hitNo+j)%2?-1:1;
+   place(o,target.x+side*(7+u*(4+i%2*3)),
+     target.y+(j-1)*8+(i%2?5:-5),
+     5,5,ok?fade(u,.08,.8)*(.53-i*.08):0);
   });
  }};
 }
@@ -582,10 +579,10 @@ export function makeJohtoFourNative(scene,id){
   frustration:["vfx-quickattack","vfx-arco","vfx-astonish","p-brasa"],
   present:["vfx-huevo","p-estrella","p-corazon","vfx-hiper_impacto"],
   magnitude:["vfx-roca","p-guijarro","p-roca"],
-  pursuit:["vfx-teleporte","vfx-astonish","vfx-hexgolpe","vfx-hexaviso","p-sombra"],
-  "vital-throw":["vfx-atadura","vfx-fly","vfx-rapidspin","vfx-aterriza","p-guijarro"],
+  pursuit:["vfx-quickattack","vfx-astonish","p-sombra"],
+  "vital-throw":["vfx-acometida","vfx-aterriza","p-guijarro","p-estrella"],
   "hidden-power":["vfx-psico","vfx-psywave","p-psiquico"],
-  "beat-up":["vfx-acometida","vfx-hiper_impacto","vfx-rapidspin","p-estrella"]
+  "beat-up":["vfx-acometida","vfx-hiper_impacto","p-estrella"]
  }[id];
  if(!required.every(t=>scene.textures.exists(t)))return null;
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);

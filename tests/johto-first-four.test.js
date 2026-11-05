@@ -105,13 +105,12 @@ test("Triple Kick never paints a hit without confirmed native recibir",()=>{
 });
 
 test("Pursuit, Vital Throw and Beat Up have distinct native frame identities; no palette-only duplication",()=>{
- const a=()=>new Set(["vfx-teleporte","vfx-hexgolpe","vfx-hexaviso",
- "vfx-atadura","vfx-aterriza","vfx-fly","vfx-rapidspin",
+ const a=()=>new Set(["vfx-quickattack","vfx-aterriza",
  "vfx-acometida","vfx-hiper_impacto","vfx-astonish","p-sombra",
  "p-guijarro","p-estrella"]);
  const sources={
-  pursuit:["vfx-teleporte","vfx-hexgolpe"],
-  "vital-throw":["vfx-atadura","vfx-aterriza"],
+  pursuit:["vfx-quickattack","vfx-astonish"],
+  "vital-throw":["vfx-acometida","vfx-aterriza"],
   "beat-up":["vfx-acometida","vfx-hiper_impacto"]
  };
  const names=a();const scene={textures:{exists(n){return names.has(n)},get(){return{setFilter(){}}}},
@@ -129,6 +128,13 @@ test("Pursuit, Vital Throw and Beat Up have distinct native frame identities; no
    const assetSet=new Set(fx.sprites.map(s=>s.name));
    for(const key of signature)assert.ok(assetSet.has(key),id+" missing "+key);
    fingerprints.push([...assetSet].sort().join(","));
+   if(id==="vital-throw"){
+    for(const forbidden of ["vfx-rapidspin","vfx-fly","vfx-atadura"])
+      assert.ok(!assetSet.has(forbidden),"Vital Throw must never spin: "+forbidden);
+   }
+   if(id==="pursuit")for(const forbidden of ["vfx-hexgolpe","vfx-hexaviso","vfx-teleporte"])
+    assert.ok(!assetSet.has(forbidden),"Pursuit is chase, NOT spell column: "+forbidden);
+   if(id==="beat-up")assert.ok(!assetSet.has("vfx-rapidspin"),"Beat Up has no spin");
    fx.update(.5,{x:180,y:150},{x:280,y:150},
     {actor:{x:260,y:150},hitAge:.09,hitPoint:{x:280,y:150},dirX:1,hitIndex:0});
    assert.ok(fx.sprites.some(s=>s.visible),id+" no visual attack on hit");

@@ -1607,10 +1607,10 @@
         "behavior": "Gen III Dark-type Special 40 power Pursuit. Doubles on actual target switching; absent in solo lab. Real P2 body contact and accurate source animation."
       },
       "animation": {
-        "origin": "A shadow hunt: P2 teleporte and astonish ghosts race toward opponent, then vertical HEX beam only on confirmed contact.",
-        "travel": "Layered genuine P2 HOJAS pixel sprites with distinctive movement phases; no static huge p-* icons.",
-        "contact": "Impact layer starts ONLY after real P2 recibir collision.",
-        "aftermath": "Short decay after each distinct verified hit, no overlay shared with other two rejected VFX."
+        "origin": "Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell.",
+        "travel": "Distinct fighter-grounded short source-sheet motion, using 1px crisp nearest-neighbor Phaser transforms.",
+        "contact": "Animated impact is gated behind native recibir actual hit, not on cast start; opponent sprite elevation is preserved only for Vital Throw.",
+        "aftermath": "Compact (4–6px) pixel dust and brief true sheet frames, no swirling or tall spell remnants."
       },
       "originalSources": {
         "T2": {
@@ -1622,7 +1622,7 @@
           "state": "inspected",
           "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createPursuit",
-          "finding": "Researched 2026-11-05 with original P2 HOJAS animations: vfx-teleporte, vfx-astonish, vfx-hexgolpe, vfx-hexaviso. A shadow hunt: P2 teleporte and astonish ghosts race toward opponent, then vertical HEX beam only on confirmed contact."
+          "finding": "Original P2 HOJAS compared alongside ten tracked VFX library sources. Revised movement source selection: vfx-quickattack, vfx-astonish, p-sombra. Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell."
         },
         "Z": {
           "state": "unavailable",
@@ -1719,10 +1719,10 @@
         {
           "sourceId": "P2",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createPursuit",
-          "contribution": "A shadow hunt: P2 teleporte and astonish ghosts race toward opponent, then vertical HEX beam only on confirmed contact."
+          "contribution": "Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell."
         }
       ],
-      "comparisonRationale": "Pursuit differs from previous three visually: NO P2 Quick Attack, no dark vfx-arco slash, no physical fist. Vertical HEX stalk/shadow silhouette unique. Compared with ten library entries; native P2 original sheets best preserve source rendering consistency. Gen III references: Bulbapedia Pursuit/Vital Throw/Beat Up.",
+      "comparisonRationale": "Compared native P2 sprites with 10-library catalog: PixelBolt licensed slash-hit and Pixel Ability FX orbital presets were reviewed but visually less suitable. Licensed, available P2 sheets selected to keep sprite scale, body animation, and contact coherent; no unknown-license assets copied. Quick physical chase: the attacker's actual position draws a short P2 2-frame Quick Attack plus small, non-magical staggered afterimages; dark impact ONLY after contacto. Removed teleporte and vertical HEX spell.",
       "implementation": {
         "files": [
           "tools/pokearena/torre2-johto-four-native.js",
@@ -1744,7 +1744,7 @@
       "userFeedback": {
         "status": "rejected-prior",
         "date": "2026-11-05",
-        "note": "User specifically rejected indistinguishable prior effect, requires unique new animation for this move."
+        "note": "User rejected earlier interpretation and requested a unique chase, physical slam without spiral, and short combo."
       }
     },
     "vital-throw": {
@@ -1754,10 +1754,10 @@
         "behavior": "Gen III Fighting-type physical 70 power and 100% accuracy regardless of evasion; turn-based moves-last priority cannot be reproduced in real-time P2 arena. Real body collision with native hitboxes."
       },
       "animation": {
-        "origin": "A genuine grapple wind-up with native P2 atadura; after confirmed P2 recibir, r.salto lifts rival sprites up then native P2 aterriza slams down.",
-        "travel": "Layered genuine P2 HOJAS pixel sprites with distinctive movement phases; no static huge p-* icons.",
-        "contact": "Impact layer starts ONLY after real P2 recibir collision.",
-        "aftermath": "Short decay after each distinct verified hit, no overlay shared with other two rejected VFX."
+        "origin": "Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target.",
+        "travel": "Distinct fighter-grounded short source-sheet motion, using 1px crisp nearest-neighbor Phaser transforms.",
+        "contact": "Animated impact is gated behind native recibir actual hit, not on cast start; opponent sprite elevation is preserved only for Vital Throw.",
+        "aftermath": "Compact (4–6px) pixel dust and brief true sheet frames, no swirling or tall spell remnants."
       },
       "originalSources": {
         "T2": {
@@ -1769,7 +1769,7 @@
           "state": "inspected",
           "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createVitalThrow",
-          "finding": "Researched 2026-11-05 with original P2 HOJAS animations: vfx-atadura, vfx-rapidspin, vfx-fly, vfx-aterriza. A genuine grapple wind-up with native P2 atadura; after confirmed P2 recibir, r.salto lifts rival sprites up then native P2 aterriza slams down."
+          "finding": "Original P2 HOJAS compared alongside ten tracked VFX library sources. Revised movement source selection: vfx-acometida, vfx-aterriza-golpe, p-guijarro, p-estrella. Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target."
         },
         "Z": {
           "state": "unavailable",
@@ -1866,10 +1866,10 @@
         {
           "sourceId": "P2",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createVitalThrow",
-          "contribution": "A genuine grapple wind-up with native P2 atadura; after confirmed P2 recibir, r.salto lifts rival sprites up then native P2 aterriza slams down."
+          "contribution": "Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target."
         }
       ],
-      "comparisonRationale": "Vital Throw is NOT a Rock Smash shatter: P2 fighter actual sprite lifts while ground shadow stays on floor. Native aterriza ground-hit; NO archaic slash, arc or rock-fin. Compared with ten library entries; native P2 original sheets best preserve source rendering consistency. Gen III references: Bulbapedia Pursuit/Vital Throw/Beat Up.",
+      "comparisonRationale": "Compared native P2 sprites with 10-library catalog: PixelBolt licensed slash-hit and Pixel Ability FX orbital presets were reviewed but visually less suitable. Licensed, available P2 sheets selected to keep sprite scale, body animation, and contact coherent; no unknown-license assets copied. Physical grapple short wind-up, opponent genuinely lifted by r.salto and lands into a shallow grounded P2 aterriza sheet; all fly, rapidspin and atadura spirals are deleted. Dust is low, not wrapped around target.",
       "implementation": {
         "files": [
           "tools/pokearena/torre2-johto-four-native.js",
@@ -1891,7 +1891,7 @@
       "userFeedback": {
         "status": "rejected-prior",
         "date": "2026-11-05",
-        "note": "User specifically rejected indistinguishable prior effect, requires unique new animation for this move."
+        "note": "User rejected earlier interpretation and requested a unique chase, physical slam without spiral, and short combo."
       }
     },
     "hidden-power": {
@@ -2048,10 +2048,10 @@
         "behavior": "Gen III each healthy non-status party member contributes a strike. Solo training lab has only Mewtwo and therefore one hit; P2 typed recibir is an approximation to typeless Gen III damage, not genuine full Gen III formula."
       },
       "animation": {
-        "origin": "Member-by-member contact punches, rhythmic P2 acometida and compact hiper_impacto. Damage once per real healthy party member, one in solo lab.",
-        "travel": "Layered genuine P2 HOJAS pixel sprites with distinctive movement phases; no static huge p-* icons.",
-        "contact": "Impact layer starts ONLY after real P2 recibir collision.",
-        "aftermath": "Short decay after each distinct verified hit, no overlay shared with other two rejected VFX."
+        "origin": "Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays.",
+        "travel": "Distinct fighter-grounded short source-sheet motion, using 1px crisp nearest-neighbor Phaser transforms.",
+        "contact": "Animated impact is gated behind native recibir actual hit, not on cast start; opponent sprite elevation is preserved only for Vital Throw.",
+        "aftermath": "Compact (4–6px) pixel dust and brief true sheet frames, no swirling or tall spell remnants."
       },
       "originalSources": {
         "T2": {
@@ -2063,7 +2063,7 @@
           "state": "inspected",
           "reference": "https://www.pokearena2d.com/src-43a0198bd6/vfx.js",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createBeatUp",
-          "finding": "Researched 2026-11-05 with original P2 HOJAS animations: vfx-acometida, vfx-hiper_impacto, vfx-rapidspin, p-estrella. Member-by-member contact punches, rhythmic P2 acometida and compact hiper_impacto. Damage once per real healthy party member, one in solo lab."
+          "finding": "Original P2 HOJAS compared alongside ten tracked VFX library sources. Revised movement source selection: vfx-acometida, vfx-hiper_impacto, p-estrella. Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays."
         },
         "Z": {
           "state": "unavailable",
@@ -2160,10 +2160,10 @@
         {
           "sourceId": "P2",
           "effectRef": "tools/pokearena/torre2-johto-four-native.js#createBeatUp",
-          "contribution": "Member-by-member contact punches, rhythmic P2 acometida and compact hiper_impacto. Damage once per real healthy party member, one in solo lab."
+          "contribution": "Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays."
         }
       ],
-      "comparisonRationale": "Beat Up NOT a Pursuit recolor: no ghost, no teleport, no slash and no dark aura. Sequential punch impacts, each existing party participant only. Compared with ten library entries; native P2 original sheets best preserve source rendering consistency. Gen III references: Bulbapedia Pursuit/Vital Throw/Beat Up.",
+      "comparisonRationale": "Compared native P2 sprites with 10-library catalog: PixelBolt licensed slash-hit and Pixel Ability FX orbital presets were reviewed but visually less suitable. Licensed, available P2 sheets selected to keep sprite scale, body animation, and contact coherent; no unknown-license assets copied. Three concise alternating physical micro-hits after each real team-member contact; only one native damage call per healthy team member (one in single-Mewtwo lab). No magic, smoke/shadow, rapidspin or large overlays.",
       "implementation": {
         "files": [
           "tools/pokearena/torre2-johto-four-native.js",
@@ -2185,7 +2185,7 @@
       "userFeedback": {
         "status": "rejected-prior",
         "date": "2026-11-05",
-        "note": "User specifically rejected indistinguishable prior effect, requires unique new animation for this move."
+        "note": "User rejected earlier interpretation and requested a unique chase, physical slam without spiral, and short combo."
       }
     }
   }

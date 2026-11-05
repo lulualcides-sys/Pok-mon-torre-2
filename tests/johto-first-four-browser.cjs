@@ -145,11 +145,19 @@ const server=http.createServer(async(req,res)=>{
   // Distinct silhouettes, not three recolorings of the same P2 slash.
   const assetSets=new Map(casts.map(m=>[m.id,new Set(m.assets)]));
   for(const [id,required] of [
-   ["pursuit",["vfx-teleporte","vfx-hexgolpe"]],
-   ["vital-throw",["vfx-atadura"]],
+   ["pursuit",["vfx-quickattack","vfx-astonish"]],
+   ["vital-throw",["vfx-acometida"]],
    ["beat-up",["vfx-acometida","vfx-hiper_impacto"]]
   ])for(const name of required)
     assert.ok(assetSets.get(id)?.has(name),id+" must use unique "+name);
+  const throwAssets=assetSets.get("vital-throw");
+  for(const forbidden of ["vfx-rapidspin","vfx-fly","vfx-atadura"])
+   assert.ok(!throwAssets?.has(forbidden),"Vital Throw still contains unwanted spiral "+forbidden);
+  const pursuitAssets=assetSets.get("pursuit");
+  for(const forbidden of ["vfx-teleporte","vfx-hexgolpe","vfx-hexaviso"])
+   assert.ok(!pursuitAssets?.has(forbidden),"Pursuit must chase, not cast a spell "+forbidden);
+  assert.ok(!assetSets.get("beat-up")?.has("vfx-rapidspin"),
+   "Beat Up must never reuse spin");
   assert.ok((casts.find(m=>m.id==="vital-throw")?.liftPeak||0)>=12,
     "Vital Throw must physically LIFT the real enemy sprite, not a reused visual burst");
   assert.ok(casts.every(m=>m.sourceFrames.length>=2),
