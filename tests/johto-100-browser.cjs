@@ -73,8 +73,17 @@ const server=http.createServer(async(req,res)=>{
   const unown=report.partial.find(x=>x.id==="unown");
   assert.equal(unown?.abilities[0],"Hidden Power",
    "Unown must expose the approved playable Hidden Power");
-  assert.equal(report.partial.some(x=>x.id==="smeargle"),false,
-   "New Smeargle must have four executable Sketch-demo abilities");
+  // A Sketch demo may use ONLY already-installed cast renderers.
+  // Current upstream exposes Tackle and Body Slam but not all four demo
+  // moves; preserve empty slots instead of manufacturing unavailable FX.
+  const smeargle=report.partial.find(x=>x.id==="smeargle")||
+   report.samples.find(x=>x.id==="smeargle");
+  assert.ok(smeargle?.rendered>=1,"New Smeargle needs a real installed attack");
+  assert.ok(smeargle.abilities.filter(Boolean).every(name=>
+   ["Tackle","Quick Attack","Swift","Body Slam"].includes(name)),
+   "Smeargle cannot receive an invented Sketch move");
+  assert.ok(!smeargle.abilities.includes("Hyper Beam"),
+   "Smeargle cannot receive generic Hyper Beam fallback");
   // Confirm every original card keeps its original ROSTER index although
   // the visible Pokédex is now one interleaved National Dex grid.
   const inappropriate=report.partial.filter(x=>x.region==="JOHTO"&&
