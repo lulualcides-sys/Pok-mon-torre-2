@@ -52,6 +52,8 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
  for(const id of ['ho-oh','crobat','steelix','raikou'])
   assert.equal(created.some(p=>p.id===id),false,'Do not re-add a native P2 species: '+id);
  assert.equal(created.some(p=>p.id==='chikorita'),true,'Genuinely new Johto species should still be added');
+ assert.ok(created.every(p=>['FISICO','MIXTO'].includes(p.rol)),
+  'New Johto must use real native P2 ROLES, never CUERPO_A_CUERPO');
  const unown=created.find(p=>p.id==='unown'),smeargle=created.find(p=>p.id==='smeargle');
  assert.equal(unown?.kit.lmb?.nombre,'Hidden Power');
  assert.equal(unown?.kit.lmb?.torre2JohtoSpecialUnown,true);

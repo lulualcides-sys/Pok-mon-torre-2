@@ -140,8 +140,10 @@ export function addAllJohtoSpecies(original){
    torre2Johto100:true,torre2ArenaAdded:true,torre2ArenaRegion:"JOHTO",
    torre2JohtoLegalMoves:p[10].length,
    torre2JohtoFilledSlots:["lmb","rmb","q","e"].filter(slot=>kit[slot]).length,
-   tipos:[...p[2]],rol:["FIGHTING","GROUND","ROCK"].includes(p[2][0])?
-    "CUERPO_A_CUERPO":"MIXTO",
+   tipos:[...p[2]],// The original Phaser ROLES table accepts FISICO/MIXTO, not
+   // CUERPO_A_CUERPO. Preserve native role matrix without modifying P2.
+   rol:["FIGHTING","GROUND","ROCK"].includes(p[2][0])?
+    "FISICO":"MIXTO",
    lema:"JOHTO / GEN II",...actualStats(p),ia:{rango:115},kit,
    evoluciones:sub.map(q=>({
     dex:num(q[0]),nombre:q[1].toUpperCase(),
