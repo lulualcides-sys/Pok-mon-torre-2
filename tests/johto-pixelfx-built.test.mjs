@@ -4,13 +4,20 @@ import {readFileSync,statSync} from 'node:fs';
 import {resolve,join} from 'node:path';
 import {inflateSync} from 'node:zlib';
 import {JOHTO_PIXELFX_43,JOHTO_APPROVED_3} from '../tools/pokearena/torre2-johto-pixelfx-catalog.js';
+import {JOHTO_LAB_REVIEW_4} from '../tools/pokearena/torre2-johto-lab-catalog.js';
 const dir=resolve(process.env.PREVIEW_ROOT||'_site','arena2d/assets/torre2/johto-pixelfx');
 const manifest=JSON.parse(readFileSync(join(dir,'manifest.json'),'utf8'));
-assert.equal(manifest.files.length,43);
+// Four moves now render native P2 layers, never the rejected PixelFX sheets.
+const remaining=JOHTO_PIXELFX_43.filter(m=>!JOHTO_LAB_REVIEW_4.includes(m.id));
+assert.equal(JOHTO_PIXELFX_43.length,43);
+assert.equal(JOHTO_LAB_REVIEW_4.length,4);
+assert.equal(remaining.length,39);
+assert.equal(manifest.files.length,remaining.length);
 assert.equal(manifest.mode,'visual-only');
 assert.equal(manifest.approved,false);
-assert.equal(manifest.engine,'pixelfx');
-assert.deepEqual(new Set(manifest.files.map(x=>x.id)),new Set(JOHTO_PIXELFX_43.map(x=>x.id)));
+assert.equal(manifest.engine,'P2-native-four-live-plus-PixelFX-unapproved-backlog');
+assert.deepEqual(new Set(manifest.files.map(x=>x.id)),new Set(remaining.map(x=>x.id)));
+for(const id of JOHTO_LAB_REVIEW_4)assert.ok(!manifest.files.some(x=>x.id===id),id+' rejected rectangular PixelFX must not ship');
 for(const id of JOHTO_APPROVED_3)assert.ok(!manifest.files.some(x=>x.id===id),id+' approved VFX was overwritten');
 const hashes=new Set();
 for(const m of manifest.files){
@@ -40,10 +47,10 @@ for(const m of manifest.files){
  assert.ok(counts.filter(n=>n>0).length>=3,m.id+': fewer than 3 nonempty frames');
  hashes.add(b.toString('base64'));
 }
-assert.equal(hashes.size,43,'Generic copies duplicated PixelFX generated assets');
+assert.equal(hashes.size,remaining.length,'Generic copies duplicated PixelFX generated assets');
 const version=JSON.parse(readFileSync(resolve(process.env.PREVIEW_ROOT||'_site','arena2d/version.json'),'utf8'));
 const output=resolve(process.env.PREVIEW_ROOT||'_site','arena2d',version.modules);
-for(const p of ['torre2/torre2-johto-pixelfx-catalog.js','torre2/torre2-johto-pixelfx-runtime.js']){
+for(const p of ['torre2/torre2-johto-pixelfx-catalog.js','torre2/torre2-johto-pixelfx-runtime.js','torre2/torre2-johto-four-native.js']){
  assert.ok(statSync(join(output,p)).size>100,p);
 }
-console.log('PASS 43 original PixelFX sprite sheets generated, checked for identity and 12-frame content; approved three untouched');
+console.log('PASS 39 original PixelFX sprite sheets + four native P2 moves; approved three untouched');
