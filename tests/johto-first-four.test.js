@@ -34,7 +34,10 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
    assert.ok(fx.sprites.length>=8,"Need layered animation for "+id);
    const poses=[];
    for(const t of [.04,.16,.32,.5,.7,.9]){
-    fx.update(t,{x:170,y:146},{x:293,y:151});
+    fx.update(t,{x:170,y:146},{x:293,y:151},{
+     hitIndex:Math.min(2,Math.floor(t*3)),hitAge:(t*3%1)*.15,
+     hitPoint:{x:293,y:151},projectile:{x:170+(293-170)*t,y:146+5*t,active:t<.7}
+    });
     poses.push(fx.sprites.map(o=>o.visible?
      [o.x,o.y,o.w,o.h,Math.round(o.alpha*100)].join(","):"off").join("|"));
    }
@@ -49,4 +52,35 @@ test("Gen III stats and one-second shared lab cooldown remain",()=>{
  const snore=JOHTO_LAB_VISIBLE.find(x=>x.id==="snore");
  assert.equal(thief.poder,40);assert.equal(thief.categoria,"SPECIAL");
  assert.equal(thief.pp,10);assert.equal(snore.poder,40);assert.equal(snore.categoria,"PHYSICAL");
+});
+
+test("P2 contact geometry rejects remote melee and accepts actual overlapping body",async()=>{
+ const {johtoP2BodyContact,johtoP2Advance}
+  =await import("../tools/pokearena/torre2-johto-four-native.js");
+ const foe={x:280,y:190,alto:39,est:{}};
+ assert.equal(johtoP2BodyContact(foe,180,190,16,0,18),false);
+ assert.equal(johtoP2BodyContact(foe,267,190,16,0,18),true);
+ assert.equal(johtoP2BodyContact({...foe,est:{vuelo:true}},280,190,16,0,18),false);
+ assert.deepEqual(johtoP2Advance({x:180,y:190},0,80,0),{x:180,y:190});
+ assert.equal(Math.round(johtoP2Advance({x:180,y:190},0,80,1).x),260);
+});
+test("Triple Kick never paints a hit without confirmed native recibir",()=>{
+ const names=new Set(["p-cuchilla","p-estrella","p-aura"]);
+ const scene={textures:{exists(id){return names.has(id)},get(){return{setFilter(){}}}},
+  add:{image(x,y,id){return{
+   active:true,visible:false,setDepth(){return this},setAlpha(){return this},
+   setTint(){return this},setBlendMode(){return this},setVisible(v){this.visible=v;return this},
+   setPosition(){return this},setDisplaySize(){return this},
+   setAngle(){return this},setFlipX(){return this},destroy(){this.active=false}
+  }}}};
+ globalThis.Phaser={BlendModes:{NORMAL:0},Textures:{FilterMode:{NEAREST:1}}};
+ try{
+  const fx=makeJohtoFourNative(scene,"triple-kick");
+  fx.update(.3,{x:180,y:140},{x:280,y:140});
+  assert.equal(fx.sprites.filter(s=>s.visible).length,0);
+  fx.update(.3,{x:180,y:140},{x:280,y:140},
+   {hitIndex:0,hitAge:.045});
+  assert.ok(fx.sprites.some(s=>s.visible),"Visible only after confirmed native contact");
+  fx.destroy();
+ }finally{delete globalThis.Phaser}
 });

@@ -38,7 +38,15 @@ function createTriple(scene){
   ring:part(scene,"p-aura",0xf1b764,1534)
  }));
  const trails=Array.from({length:4},()=>part(scene,"p-cuchilla",0xd99c4a,1533));
- return{sprites:[...kicks.flatMap(x=>Object.values(x)),...trails],update(t,a,b){
+ return{sprites:[...kicks.flatMap(x=>Object.values(x)),...trails],update(t,a,b,state={}){
+  // The original client resolves contact before emitting a hit effect.
+  // Triple Kick has THREE separate hit windows and no effect on a miss.
+  if(!Number.isInteger(state.hitIndex)||state.hitIndex<0||
+     !Number.isFinite(state.hitAge)||state.hitAge<0||state.hitAge>=.19){
+   for(const o of this.sprites)o.setVisible(false);
+   return;
+  }
+  t=(Math.min(2,state.hitIndex)+Math.min(.96,state.hitAge/.19*.92))/3;
   const d=t*3,k=Math.min(2,Math.floor(d)),u=d-k;
   const impacts=[{dx:-18,dy:-18,angle:-42},{dx:17,dy:2,angle:35},{dx:-2,dy:17,angle:-12}];
   for(let n=0;n<3;n++){
@@ -60,12 +68,12 @@ function createTriple(scene){
  }};
 }
 function createThief(scene){
- const body=part(scene,"p-fantasma",0x8061bc,1534);
+ const body=part(scene,"p-fantasma",0xb6a0fb,1534);
  const cut=part(scene,"p-cuchilla",0xd9b8ff,1536);
  const spark=part(scene,"p-estrella",0xfff0ae,1537);
  const copies=Array.from({length:5},()=>part(scene,"p-fantasma",0x5d428e,1532));
  const stolen=part(scene,"p-aura",0xf0dcae,1535);
- return {sprites:[body,cut,spark,stolen,...copies],update(t,a,b){
+ return {sprites:[body,cut,spark,stolen,...copies],update(t,a,b,state={}){
   // Teleport forward, steal on contact, retreat with a small golden glint.
   const outbound=t<.46,phase=outbound?clamp(t/.46):clamp((t-.46)/.54);
   const q=outbound?smooth(phase):1-smooth(phase);
@@ -77,11 +85,15 @@ function createThief(scene){
    place(img,mix(a.x,b.x,old),mix(a.y,b.y,old)-19*Math.sin(old*PI),31-i*2,24-i,
     active*(.23-i*.03),0,i%2===0);
   });
-  const contact=fade((t-.34)/.23,.12,.74);
-  place(cut,b.x,b.y-4,52,35,contact,-31);
-  place(spark,b.x+8,b.y-7,23,23,contact*.82);
-  const back=fade((t-.45)/.55,.12,.87);
-  place(stolen,x+10,y-12,13,13,back,0);
+  const elapsed=state.hitAge;
+  const contact=Number.isFinite(elapsed)&&elapsed>=0&&elapsed<.22?
+   fade(elapsed/.22,.07,.81):0;
+  const hit=state.hitPoint||b;
+  place(cut,hit.x,hit.y-4,58,38,contact,-31);
+  place(spark,hit.x+8,hit.y-7,27,27,contact);
+  const back=Number.isFinite(elapsed)&&elapsed>=0&&elapsed<.36?
+   fade(elapsed/.36,.09,.87):0;
+  place(stolen,x+10,y-12,17,17,back,0);
  }};
 }
 function createSnore(scene){
@@ -109,28 +121,32 @@ function createOcta(scene){
  const ink=Array.from({length:12},(_,i)=>part(scene,
   i%4===0?"p-agua":"p-fantasma",i%3===0?0x9e71b3:0x412655,1536));
  const ripple=part(scene,"p-aura",0x7c5d9c,1533);
- return {sprites:[ball,shine,...trail,...ink,ripple],update(t,a,b){
-  const flight=clamp(t/.67),impact=clamp((t-.67)/.33),
-  q=smooth(flight),x=mix(a.x+12,b.x,q),y=mix(a.y-9,b.y-9,q)-12*Math.sin(q*PI);
-  const living=(1-smooth((t-.64)/.1));
+ return {sprites:[ball,shine,...trail,...ink,ripple],update(t,a,b,state={}){
+  // Projectile exists in flight; ink splashes ONLY after native recibir("golpe").
+  const projectile=state.projectile||{active:false,x:a.x,y:a.y},
+   x=projectile.x,y=projectile.y,living=projectile.active?1:0,
+   flight=clamp(t/.7),q=smooth(flight),
+   elapsed=state.hitAge,
+   impact=Number.isFinite(elapsed)&&elapsed>=0&&elapsed<.26?clamp(elapsed/.26):0,
+   target=state.hitPoint||b;
   place(ball,x,y,37+4*Math.sin(t*PI*9),31+4*Math.sin(t*PI*9),
    living*.97,24*Math.sin(t*PI*4));
   place(shine,x-5,y-7,16,15,living*.88);
   trail.forEach((img,i)=>{
    const old=clamp(q-(i+1)*.13);
    const alpha=living*(.35-i*.045)*smooth((t-i*.02)/.1);
-   place(img,mix(a.x+12,b.x,old),mix(a.y-9,b.y-9,old)-
+   place(img,mix(a.x+12,x,old),mix(a.y-9,y,old)-
     12*Math.sin(old*PI)+5*Math.sin(i*3),17-i,11-i,alpha,i*13);
   });
-  const splash=impact>0?fade(impact,.12,.83):0;
+  const splash=impact>0?fade(impact,.12,.85):0;
   ink.forEach((img,i)=>{
    const angle=2.399963*i+Math.sin(i*2)*.15,
    outward=7+impact*(26+(i%4)*5),
-   px=b.x+Math.cos(angle)*outward,
-   py=b.y+Math.sin(angle)*outward*.75+impact*impact*18;
+   px=target.x+Math.cos(angle)*outward,
+   py=target.y+Math.sin(angle)*outward*.75+impact*impact*18;
    place(img,px,py,15-(i%3)*2,11-(i%3)*2,splash*(.83-(i%4)*.08),i*29);
   });
-  place(ripple,b.x,b.y,15+impact*62,12+impact*48,splash*.36);
+  place(ripple,target.x,target.y,15+impact*62,12+impact*48,splash*.36);
  }};
 }
 const FACTORIES=Object.freeze({
@@ -149,10 +165,134 @@ export function makeJohtoFourNative(scene,id){
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);
  if(!sprites.length)throw Error("Native Johto four effect unexpectedly empty: "+id);
  return {source:"pokearena2d-native-textures",id,sprites,
-  update(progress,caster,target){
+  update(progress,caster,target,state={}){
    const t=clamp(progress);
-   fx.update(t,caster,target);
+   fx.update(t,caster,target,state);
   },
   destroy(){for(const sprite of sprites)if(sprite.active)sprite.destroy()}
  };
+}
+
+/* Native Poké Arena 2D source: habilidades.js#tocaCuerpo and
+ * luchador.js#recibir. This is a scoped adaptation of the client contact
+ * geometry and movement into an isolated Johto lab, not a substitute
+ * fake target-centered damage function. */
+export function johtoP2BodyContact(r,x,y,rad,alt=0,radio=18){
+ if(!r||r.ko||r.est?.vuelo||!Number.isFinite(x)||!Number.isFinite(y))
+  return false;
+ const height=Math.max(r.alto??24,2*radio),ys=y-alt;
+ const cx=Math.max(r.x-radio,Math.min(r.x+radio,x));
+ const cy=Math.max(r.y-height,Math.min(r.y,ys));
+ return Math.hypot(x-cx,ys-cy)<=rad;
+}
+export function johtoP2Advance(from,angle,distance,progress){
+ const u=smooth(progress),d=Math.max(0,distance)*u;
+ return {x:from.x+Math.cos(angle)*d,y:from.y+Math.sin(angle)*d};
+}
+export function castJohtoFourNative(l,h,extra,nativeRadio=18){
+ const e=l?.escena,r=l?.rival,id=h?.id;
+ if(!e?.datos?.johtoLab||!r||r.ko||!FACTORIES[id])return false;
+ if(id==="snore"&&!l.est?.dormido)return false;
+ const visual=makeJohtoFourNative(e,id);
+ if(!visual)return false;
+ const source={x:l.x,y:l.y},aimX=Number.isFinite(l.ax)?l.ax:r.x,
+  aimY=Number.isFinite(l.ay)?l.ay:r.y;
+ const angle=Math.atan2(aimY-source.y,aimX-source.x),
+  ux=Math.cos(angle),uy=Math.sin(angle),
+  distance=Math.hypot(aimX-source.x,aimY-source.y),
+  melee=id==="triple-kick"||id==="thief",
+  duration=id==="triple-kick"?.77:id==="thief"?.71:id==="snore"?.91:.9,
+  rise=.13,projectileSpeed=id==="snore"?260:350,
+  maxRange=Math.max(1,h.alcance||180),
+  advance=Math.min(maxRange,Math.max(0,distance-17)),
+  startProjectile={x:source.x+ux*17,y:source.y+uy*17},
+  srcVisual={x:source.x,y:source.y-l.alto*.5},
+  aimedVisual={x:source.x+ux*maxRange,y:source.y+uy*maxRange-l.alto*.5},
+  hitWindows=id==="triple-kick"?[.24,.40,.56]:id==="thief"?[.32]:[];
+ let age=0,nextHit=0,stop=false,hitIndex=-1,hitAt=-Infinity,
+  hitPoint=null,projectileAlive=!melee,previousDistance=0,done=false;
+ const action={hasta:l.t+duration,bloquea:true,lento:0,angulo:angle};
+ l.accion=action;
+ l.animar(h.anim||(melee?"Attack":"Shoot"),duration,.14);
+ const contact=(index,px,py)=>{
+  if(stop||r.ko||l.ko||r.est?.vuelo)return false;
+  if(Math.random()>h.precisao/100){if(id==="triple-kick")stop=true;return false;}
+  const dx=r.x-l.x,dy=r.y-l.y,d=Math.hypot(dx,dy)||1;
+  const mult=id==="triple-kick"?index+1:1;
+  // Use the original fighter damage pipeline: defenses, typing, shields,
+  // training ledger, knockback and HP all remain in native recibir().
+  const result=r.recibir(l,{dano:h.dano*mult,tipo:h.tipo,
+   slot:extra?.slot,surge:extra?.surge,empuje:melee?14:10,
+   dirX:dx/d,dirY:dy/d,proyectil:!melee,tick:index>0});
+  if(result!=="golpe")return false;
+  hitIndex=index;hitAt=age;hitPoint={x:r.x,y:r.y-r.alto*.5};
+  return true;
+ };
+ const obj={update(dt){
+  age+=Math.max(0,Math.min(.05,Number(dt)||0));
+  if(age>=duration||l.ko||!e.scene.isActive()){
+   obj.destroy();return false;
+  }
+  if(melee){
+   // Native golpe()/patada() move the fighter before validating body
+   // contact, never make impact sprites appear at remote targets.
+   const next=johtoP2Advance(source,angle,advance,age/.19);
+   l.x=next.x;l.y=next.y;
+   l.limitar?.();
+   while(nextHit<hitWindows.length&&age>=hitWindows[nextHit]){
+    const index=nextHit++;
+    if(stop)break;
+    if(!johtoP2BodyContact(r,l.x,l.y,id==="triple-kick"?16:20,0,nativeRadio)){
+     if(id==="triple-kick")stop=true;
+     continue;
+    }
+    contact(index,l.x,l.y);
+   }
+  }else{
+   // Native Proyectil checks the path every update and calls recibir only
+   // when its body volume actually intersects the opponent. Do not grant
+   // damage because an effect merely reached a precomputed time window.
+   if(projectileAlive&&age>=rise){
+    const distanceNow=Math.min(maxRange,(age-rise)*projectileSpeed);
+    const start=Math.max(0,previousDistance);
+    const segments=Math.max(1,Math.ceil((distanceNow-start)/6));
+    for(let i=1;i<=segments;i++){
+     const dist=start+(distanceNow-start)*i/segments;
+     const x=startProjectile.x+ux*dist,y=startProjectile.y+uy*dist;
+     if(johtoP2BodyContact(r,x,y,id==="octazooka"?11:18,
+       l.alto*.5,nativeRadio)){
+      projectileAlive=false;
+      contact(0,x,y);
+      break;
+     }
+    }
+    previousDistance=distanceNow;
+    if(distanceNow>=maxRange)projectileAlive=false;
+   }
+  }
+  const hitAge=age-hitAt;
+  const livePoint={
+   x:startProjectile.x+ux*previousDistance,
+   y:startProjectile.y+uy*previousDistance-l.alto*.5,
+   active:projectileAlive&&age>=rise
+  };
+  if(id==="triple-kick")
+   visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
+    {hitIndex,hitAge,hitPoint});
+  else if(id==="thief")
+   visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
+    {hitAge,hitPoint});
+  else if(id==="snore")
+   visual.update(age/duration,srcVisual,aimedVisual,{hitAge,hitPoint,projectile:livePoint});
+  else
+   visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
+    {hitAge,hitPoint,projectile:livePoint});
+  return true;
+ },destroy(){
+  if(done)return;
+  done=true;visual.destroy();
+  if(l.accion===action)l.accion=null;
+ }};
+ e.efectos.push(obj);
+ return true;
 }

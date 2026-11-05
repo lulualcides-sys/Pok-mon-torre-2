@@ -7,7 +7,8 @@ import {JOHTO_18} from "./johto-lab-catalog.js";
 import {TORRE2_JOHTO_PIXELFX_FORMS} from "./torre2-johto-pixelfx-runtime.js";
 import {withJohtoLabCooldown} from "./torre2-johto-lab-cooldown.js";
 import {johtoPose} from "./torre2-johto-motion.js";
-import {makeJohtoFourNative} from "./torre2-johto-four-native.js";
+import {makeJohtoFourNative,castJohtoFourNative} from "./torre2-johto-four-native.js";
+import {RADIO} from "../config.js";
 import {magnitudeGen3,presentGen3,tripleKickGen3,beatUpGen3Participants} from "./torre2-johto-gen3-mechanics.js";
 import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
@@ -274,6 +275,9 @@ function artwork(g,id,style,x,y,age,duration,r,l){
 }
 function cast(l,h,extra){
  if(!l?.escena?.datos?.johtoLab||!l.rival)return false;
+ // Four new Johto moves use native P2 body/contact/recibir mechanics.
+ // Leave all 3 approved VFX and 39 other candidates on their original paths.
+ if(BATCH_FOUR.has(h.id))return castJohtoFourNative(l,h,extra,RADIO);
  if(h.id==="snore"&&!l.est?.dormido)return false;
  const e=l.escena,r=l.rival,angle=Math.atan2(l.ay-l.y,l.ax-l.x),dx=Math.cos(angle),dy=Math.sin(angle);
  const style=h.style,palette=tones[h.id];if(!palette)return false;
