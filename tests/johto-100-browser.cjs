@@ -75,6 +75,32 @@ const server=http.createServer(async(req,res)=>{
    "Unown must expose the approved playable Hidden Power");
   assert.equal(report.partial.some(x=>x.id==="smeargle"),false,
    "New Smeargle must have four executable Sketch-demo abilities");
+  // Confirm every original card keeps its original ROSTER index although
+  // the visible Pokédex is now one interleaved National Dex grid.
+  const inappropriate=report.partial.filter(x=>x.region==="JOHTO"&&
+   x.abilities.some(n=>n==="Hyper Beam"||
+    n==="Solar Beam"&&!x.type.split("/").includes("GRASS")));
+  assert.deepEqual(inappropriate,[],"No generic Hyper Beam or off-type Solar Beam in new Johto");
+  await page.evaluate(()=>window.__pt2Game.scene.start("pokedex"));
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive("pokedex")&&
+   window.__pt2Game.scene.getScene("pokedex").casillas?.length>=150,null,{timeout:30000});
+  const nationalGrid=await page.evaluate(async()=>{
+   const scene=window.__pt2Game.scene.getScene("pokedex");
+   const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
+   const {ROSTER}=await import(new URL("datos.js",new URL("./",script)));
+   const dex=(p,i)=>{const n=Number(p?.dex);return Number.isFinite(n)&&n>0?n:100000+i};
+   const expected=ROSTER.map((p,i)=>({p,i})).sort((a,b)=>
+    dex(a.p,a.i)-dex(b.p,b.i)||a.i-b.i).slice(0,36).map(x=>x.p.id);
+   const visible=scene.casillas.filter(c=>c.g?.visible)
+    .sort((a,b)=>a.y-b.y||a.x-b.x).map(c=>c.p?.id);
+   return {expected,visible,originalIndices:scene.casillas.every((c,i)=>c.p?.id===ROSTER[i]?.id),
+    total:scene.casillas.length};
+  });
+  console.log("JOHTO_NATIONAL_POKEDEX_SORT",JSON.stringify(nationalGrid));
+  assert.deepEqual(nationalGrid.visible,nationalGrid.expected,
+   "Native and Johto cards must be mixed in one National Dex-ordered grid");
+  assert.equal(nationalGrid.originalIndices,true,
+   "Keep all original ROSTER indices for saves and selection");
   // Diagnostic for the separate main Pages failure: Rayquaza was reported
   // unselectable. Do not change or bypass native P2 move slots to fix it.
   await page.evaluate(()=>window.__pt2Game.scene.start("seleccion",{

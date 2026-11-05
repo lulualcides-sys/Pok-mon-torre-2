@@ -32,7 +32,7 @@ export function paginateKantoPokedexSource(original){
  let s=String(original);
  s=once(s,
   'this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+i%COLS*CEL,GY+Math.floor(i/COLS)*CEL,i));',
-  'this.dexPage=Math.floor(this.foco/36);this.dexPages=Math.ceil(ROSTER.length/36);this.casillas=ROSTER.map((p,i)=>this.casilla(p,GX+(i%36)%COLS*CEL,GY+Math.floor((i%36)/COLS)*CEL,i));');
+  'this.dexPage=Math.floor(TORRE2_DEX_RANK[this.foco]/36);this.dexPages=Math.ceil(ROSTER.length/36);this.casillas=ROSTER.map((p,i)=>{const v=TORRE2_DEX_RANK[i]%36;return this.casilla(p,GX+(v%COLS)*CEL,GY+Math.floor(v/COLS)*CEL,i)});');
  // Match the Kanto campaign's actual equipped attack names per evolution.
  // The native Poké Arena 2D Pokédex does not know about Torre 2 loadouts.
  // Only recognized Kanto forms are adapted; all other original entries,
@@ -54,6 +54,16 @@ export function paginateKantoPokedexSource(original){
   ROCK:0xbaa981,GHOST:0x9b8ec5,DRAGON:0x9da9ef,DARK:0x969cac,
   STEEL:0xa4bbc6,FAIRY:0xe5a8d6
  });
+ // Stable display-only National Dex ordering. Never reorder ROSTER,
+ // casillas indices, game saves or upstream Poké Arena species definitions.
+ const TORRE2_DEX_ORDER=ROSTER.map((_,i)=>i).sort((a,b)=>{
+  const x=Number(ROSTER[a]?.dex),y=Number(ROSTER[b]?.dex);
+  const ax=Number.isFinite(x)&&x>0?x:100000+a;
+  const by=Number.isFinite(y)&&y>0?y:100000+b;
+  return ax-by||a-b;
+ });
+ const TORRE2_DEX_RANK=Array(ROSTER.length);
+ TORRE2_DEX_ORDER.forEach((index,rank)=>{TORRE2_DEX_RANK[index]=rank});
  function kantoDexTypeColor(type){
   const native=typeof TIPOS==='undefined'?null:TIPOS;
   const candidate=native?.[type];
@@ -163,15 +173,15 @@ export function paginateKantoPokedexSource(original){
   "p.tipos.forEach((t,k)=>{g.fillStyle(kantoDexTypeColor(t),1);g.fillRect(x+k*ancho,y+CEL-4,ancho,2)});"+
   "const img=this.add.image(x+1,y+1,'retrato-'+p.dex).setOrigin(0).setDisplaySize(CEL-4,CEL-4);"+
   "const zone=this.add.zone(x+(CEL-2)/2,y+(CEL-2)/2,CEL-2,CEL-2).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(i));"+
-  "const show=Math.floor(i/36)===this.dexPage;"+
+  "const show=Math.floor(TORRE2_DEX_RANK[i]/36)===this.dexPage;"+
   "if(!show){g.setVisible(false);img.setVisible(false);zone.setVisible(false).disableInteractive();}"+
   "return{p,x,y,w:CEL-2,h:CEL-2,g,img,zone}}";
  s=s.slice(0,start)+card+s.slice(end);
  s=once(s,'elegir(i){if(i===this.foco)return;this.foco=i;',
   "elegir(i){if(i===this.foco)return;"+
-  "const next=Math.floor(i/36);if(next!==this.dexPage){this.dexPage=next;"+
+  "const next=Math.floor(TORRE2_DEX_RANK[i]/36);if(next!==this.dexPage){this.dexPage=next;"+
   "for(const [index,c] of this.casillas.entries()){"+
-  "const shown=Math.floor(index/36)===next;c.g.setVisible(shown);c.img.setVisible(shown);c.zone.setVisible(shown);"+
+  "const shown=Math.floor(TORRE2_DEX_RANK[index]/36)===next;c.g.setVisible(shown);c.img.setVisible(shown);c.zone.setVisible(shown);"+
   "if(shown)c.zone.setInteractive({useHandCursor:true});else c.zone.disableInteractive();}}"+
   "this.dexPageLabel?.setText((this.dexPage+1)+' / '+this.dexPages);this.foco=i;");
  s=once(s,
@@ -179,8 +189,8 @@ export function paginateKantoPokedexSource(original){
   "this.fila=0;"+
   "this.dexPageLabel=texto(this,114,276,(this.dexPage+1)+' / '+this.dexPages,{tam:10,color:'#c5ddf6'}).setDepth(22).setOrigin(.5);"+
   "texto(this,456,348,'VER GOLPES',{tam:10,color:'#ffe1a1'}).setDepth(30).setOrigin(.5).setInteractive({useHandCursor:true}).on('pointerdown',()=>showKantoCampaignLearnset(this));"+
-  "texto(this,35,276,'◀ ANTES',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(Math.max(0,(this.dexPage-1)*36)));"+
-  "texto(this,168,276,'PRÓX ▶',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(Math.min(ROSTER.length-1,(this.dexPage+1)*36)));"+
+  "texto(this,35,276,'◀ ANTES',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(TORRE2_DEX_ORDER[Math.max(0,(this.dexPage-1)*36)]));"+
+  "texto(this,168,276,'PRÓX ▶',{tam:8,color:'#ffe1a1'}).setDepth(22).setInteractive({useHandCursor:true}).on('pointerdown',()=>this.elegir(TORRE2_DEX_ORDER[Math.min(ROSTER.length-1,(this.dexPage+1)*36)]));"+
   "this.time.addEvent({delay:700,loop:true,callback:()=>this.girar()});");
  // All Pokédex rendering paths must read the validated Kanto evolution
  // stages, not a second unsanitized upstream etapasDe() calculation.
