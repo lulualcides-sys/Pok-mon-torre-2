@@ -93,11 +93,19 @@ const server=http.createServer(async(req,res)=>{
    const cards=window.__pt2Game.scene.getScene("seleccion").casillas;
    const card=cards.find(c=>c.p?.id==="rayquaza");
    const i=selectText.indexOf("const bloqueado=");
+   const other=Object.fromEntries(["chikorita","smeargle","lugia"].map(id=>{
+    const c=cards.find(x=>x.p?.id===id);
+    return [id,{present:!!c,locked:c?.bloqueado??null}];
+   }));
    return {native:!!native,disabled:native?.desactivado,selectedCard:!!card,
-    cardLocked:card?.bloqueado,cardDex:card?.p?.dex,
+    cardLocked:card?.bloqueado,cardDex:card?.p?.dex,other,
     sourceBlock:i<0?"not-found":selectText.slice(i,i+380)};
   });
   console.log("RAYQUAZA_SELECTION_PREDEPLOY_DIAGNOSTIC",JSON.stringify(rayquaza));
+  assert.equal(rayquaza.cardLocked,false,"Rayquaza must be selectable in offline Arena");
+  for(const id of ["chikorita","smeargle","lugia"])
+   assert.deepEqual(rayquaza.other[id],{present:true,locked:false},
+    "All 100 Johto species must be selectable offline, including native roots: "+id);
   // Check the actual non-Lab Arena with the new Unown (real Phaser cast).
   // Native Poké Arena / other Pokémon's kits remain unchanged.
   await page.evaluate(()=>window.__pt2Game.scene.start("combate",{

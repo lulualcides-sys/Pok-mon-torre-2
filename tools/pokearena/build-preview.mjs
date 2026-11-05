@@ -1112,6 +1112,22 @@ const spriteManifest=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/man
 for(const spriteFile of rayquazaRequiredSpriteFiles(spriteManifest))
  await fs.access(path.join(dest,'assets/pmd',spriteFile));
 await fs.writeFile(rayquazaRosterFile,previewRoster);
+// Enable only Rayquaza and the Johto 100 roster (including nested native
+// evolutions) in this copy's OFFLINE Arena CPU/Training/VS selection. Keep
+// upstream P2 move kits, original unlock progression and ranked unchanged.
+const johtoSelectFile=path.join(dest,clientSource,'escenas/seleccion.js');
+const sourceSelection=await fs.readFile(johtoSelectFile,'utf8');
+const lockBefore='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));';
+const lockAfter='const __torre2Offline=["cpu","entreno","versus"].includes(this.modo);'+
+ 'const __torre2IsJohto=f=>{const n=Number(f?.dex);return Number.isInteger(n)&&n>=152&&n<=251};'+
+ 'const __torre2Solo=__torre2Offline&&(p.id==="rayquaza"||__torre2IsJohto(p)||'+
+ 'p.evoluciones?.some(__torre2IsJohto)||p.torre2Johto100===true);'+
+ 'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):'+
+ '!(__torre2Solo||p.id==="froakie"&&__torre2Offline||desbloqueado(p.id));';
+if(sourceSelection.split(lockBefore).length!==2)
+ throw Error('P2 selection unlock rule changed; refusing to guess any new unlock');
+await fs.writeFile(johtoSelectFile,sourceSelection.replace(lockBefore,lockAfter));
+
 console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; required PMD sprite assets verified.');
 
 // Native menus only: install premium pixel borders, maintaining original
