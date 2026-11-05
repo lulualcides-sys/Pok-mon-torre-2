@@ -47,7 +47,7 @@ const server=http.createServer(async(req,res)=>{
    s.slot=0;s.moveCards.find(c=>c.m.id==='thief').r.emit('pointerdown');
    return {cards:s.moveCards.length,slots:s.picks,active:s.slot};
   });
-  assert.equal(editor.cards,15,'Editor paginates 46 moves into mobile-friendly sets of 15');
+  assert.equal(editor.cards,4,'Only first four pending moves visible; approved FX remain in original renderer');
   assert.equal(editor.slots[0],'thief','Move chosen from the editor must equip in ATK');
   assert.equal(new Set(editor.slots).size,4,'No duplicated move on slots');
   await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').startPractice());
