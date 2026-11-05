@@ -1206,8 +1206,8 @@ const paginatedPokedex=paginateKantoPokedexSource(
 // kits remain empty rather than silently getting fabricated attacks.
 // The upstream P2 Pokédex assumes all slots exist and dereferences h.tipo.
 // Guard only empty kits, preserving every playable native/approved move UI.
-if(!/class Pokedex\\b/.test(paginatedPokedex)||
-   !/movimientos\\s*\\(/.test(paginatedPokedex))
+if(!/class Pokedex\b/.test(paginatedPokedex)||
+   !/movimientos\s*\(/.test(paginatedPokedex))
  throw Error('Native Pokedex structure changed; cannot safely guard empty Gen II kits');
 const noEmptyJohtoPokedexCrash=`
 const __pt2OriginalPokedexMovimientos=Pokedex.prototype.movimientos;
