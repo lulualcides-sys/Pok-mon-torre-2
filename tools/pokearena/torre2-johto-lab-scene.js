@@ -1,5 +1,5 @@
 /* Isolated 18-move Mewtwo Training selector. No campaign reads/writes. */
-import {JOHTO_LAB_ALL,JOHTO_LAB_SLOTS,JOHTO_LAB_DEFAULT,validateJohtoLabSlots,makeJohtoTrainingKit}
+import {JOHTO_LAB_ALL,JOHTO_LAB_VISIBLE,JOHTO_LAB_SLOTS,JOHTO_LAB_DEFAULT,validateJohtoLabSlots,makeJohtoTrainingKit}
  from "./johto-lab-catalog.js";
 import {JOHTO_GEN3_SPEC} from "./torre2-johto-gen3-research.js";
 import {esTactil} from "../tactil.js";
@@ -23,7 +23,7 @@ export class JohtoLab extends Phaser.Scene{
   this.add.rectangle(320,180,640,360,0x071426);
   this.add.text(320,13,"MEWTWO · JOHTO TRAINING LAB",{fontFamily:"Pixelify Sans,monospace",
    fontSize:"19px",color:"#ffe6a4",stroke:"#101f38",strokeThickness:3}).setOrigin(.5);
-  this.add.text(320,37,"46 GOLPES: 3 APROVADOS + 43 PIXELFX · SEM CAMPANHA",{
+  this.add.text(320,37,"LOTE 1/11 · 4 EM REVISÃO · 3 APROVADOS PRESERVADOS",{
    fontFamily:"Pixelify Sans,monospace",fontSize:"10px",color:"#a7bfdc"}).setOrigin(.5);
   const box=(x,y,w,h,fill,stroke,action)=>{
    const r=this.add.rectangle(x,y,w,h,fill,.96).setStrokeStyle(1,stroke);
@@ -40,35 +40,24 @@ export class JohtoLab extends Phaser.Scene{
     fontSize:"10px",color:"#fff1c2"}).setOrigin(.5);
    return {r,title,value};
   });
-  // 15 visible entries per page, preserving native 640x360 mobile controls.
-  const pageSize=15;
-  this.moveCards=Array.from({length:pageSize},(_,i)=>{
-   const x=110+(i%3)*211,y=111+Math.floor(i/3)*30;
-   const r=box(x,y,200,26,0x14283e,0x415c7b,()=>{
+  // Exactly four pending moves per review. Approved techniques are hidden,
+  // NOT deleted from the game or its historical/immutable VFX catalog.
+  this.moveCards=Array.from({length:4},(_,i)=>{
+   const x=173+(i%2)*294,y=143+Math.floor(i/2)*65;
+   const r=box(x,y,280,54,0x14283e,0x415c7b,()=>{
     const m=this.moveCards[i].m;if(!m)return;
     const old=this.picks.indexOf(m.id);
     if(old>=0&&old!==this.slot)this.picks[old]=this.picks[this.slot];
     this.picks[this.slot]=m.id;
     this.slot=(this.slot+1)%4;this.refresh();
    });
-   const text=this.add.text(x-93,y,"",{fontFamily:"Pixelify Sans,monospace",
-    fontSize:"11px",color:"#e4f0ff"}).setOrigin(0,.5);
+   const text=this.add.text(x-126,y,"",{fontFamily:"Pixelify Sans,monospace",
+    fontSize:"14px",color:"#e4f0ff"}).setOrigin(0,.5);
    return {r,text,m:null};
   });
-  box(185,280,108,25,0x30405c,0x91a4cf,()=>{
-   this.page=(this.page+Math.ceil(JOHTO_LAB_ALL.length/pageSize)-1)
-    %Math.ceil(JOHTO_LAB_ALL.length/pageSize);this.refresh();
-  });
-  this.add.text(185,280,"< ANTERIOR",{fontFamily:"Pixelify Sans,monospace",
-   fontSize:"10px",color:"#fff2d5"}).setOrigin(.5);
-  box(457,280,108,25,0x30405c,0x91a4cf,()=>{
-   this.page=(this.page+1)%Math.ceil(JOHTO_LAB_ALL.length/pageSize);
-   this.refresh();
-  });
-  this.add.text(457,280,"PRÓXIMA >",{fontFamily:"Pixelify Sans,monospace",
-   fontSize:"10px",color:"#fff2d5"}).setOrigin(.5);
-  this.pageLabel=this.add.text(320,280,"",{fontFamily:"Pixelify Sans,monospace",
-   fontSize:"10px",color:"#ffe0a0"}).setOrigin(.5);
+  this.pageLabel=this.add.text(320,279,"4/43 EM REVISÃO · PRÓXIMOS SOMENTE APÓS APROVAÇÃO",{
+   fontFamily:"Pixelify Sans,monospace",fontSize:"9px",color:"#a6d9e9"
+  }).setOrigin(.5);
   this.infoLabel=this.add.text(320,297,"",{
    fontFamily:"Pixelify Sans,monospace",fontSize:"9px",color:"#ffc987"
   }).setOrigin(.5);
@@ -86,14 +75,13 @@ export class JohtoLab extends Phaser.Scene{
    r.setStrokeStyle(1,i===this.slot?0xffdf92:0x6383ae);
    value.setText(JOHTO_LAB_ALL.find(m=>m.id===this.picks[i]).nombre);
   });
-  const pages=Math.ceil(JOHTO_LAB_ALL.length/15);
-  this.pageLabel.setText((this.page+1)+" / "+pages);
+  this.pageLabel.setText("LOTE 1 · "+JOHTO_LAB_VISIBLE.length+" DE 43 EM REVISÃO");
   const selected=JOHTO_LAB_ALL.find(m=>m.id===this.picks[(this.slot+3)%4]);
   const description=JOHTO_GEN3_SPEC[selected?.id]?.effect||"Escolha um golpe";
   this.infoLabel.setText((selected?.nombre||"")+" · "+
    (description.length>74?description.slice(0,71)+"...":description));
   this.moveCards.forEach((card,i)=>{
-   const {r,text}=card,m=JOHTO_LAB_ALL[this.page*15+i]||null;
+   const {r,text}=card,m=JOHTO_LAB_VISIBLE[i]||null;
    card.m=m;
    r.setVisible(!!m);text.setVisible(!!m);
    if(!m){r.disableInteractive();return;}
@@ -101,7 +89,7 @@ export class JohtoLab extends Phaser.Scene{
    const chosen=this.picks.includes(m.id),active=this.picks[this.slot]===m.id;
    r.setFillStyle(active?0x365d53:chosen?0x273f55:0x14283e);
    r.setStrokeStyle(1,chosen?0xe2bd73:0x415c7b);
-   text.setText(m.nombre+(m.visualOnly?" [VFX]":['zap-cannon','powder-snow','whirlpool'].includes(m.id)?" [OK]":" [FX]"))
+   text.setText(m.nombre+" · PENDENTE DE APROVAÇÃO")
     .setColor(chosen?"#ffe5a2":m.visualOnly?"#aadceb":"#e4f0ff");
   });
  }

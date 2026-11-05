@@ -21,3 +21,15 @@ test("Mewtwo lab enforces four distinct slots without changing original Pokémon
  assert.equal(validateJohtoLabSlots(["unknown","thief","present","snore"]),false);
  assert.throws(()=>makeJohtoTrainingKit(["thief","thief","present","snore"]));
 });
+
+test("Review UI only displays the first four unapproved moves without removing approved moves",async()=>{
+ const {JOHTO_LAB_REVIEW_4,JOHTO_LAB_VISIBLE,JOHTO_LAB_ALL}
+  =await import("../tools/pokearena/torre2-johto-lab-catalog.js");
+ assert.deepEqual([...JOHTO_LAB_REVIEW_4],["triple-kick","thief","snore","octazooka"]);
+ assert.deepEqual(JOHTO_LAB_VISIBLE.map(m=>m.id),JOHTO_LAB_REVIEW_4);
+ assert.equal(JOHTO_LAB_ALL.length,46);
+ for(const id of ["powder-snow","whirlpool","zap-cannon"]){
+  assert.ok(JOHTO_LAB_ALL.some(m=>m.id===id),"approved move kept intact");
+  assert.ok(!JOHTO_LAB_VISIBLE.some(m=>m.id===id),"approved move hidden from test choices");
+ }
+});

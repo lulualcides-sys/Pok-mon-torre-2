@@ -19,7 +19,7 @@ export function installJohtoLabCombat(scene){
  };
  button(130,"SLEEP / SNORE",()=>fighter.ponerEstado("dormido",6,{cura:0}),0x554a79);
  button(517,"TROCAR GOLPES",()=>scene.scene.start("johto-lab",{slots:scene.datos.johtoLab.slots}),0x206b66);
- scene.add.text(320,14,"MEWTWO LAB · 46 GOLPES · CD 1s · SEM SAVE",{
+ scene.add.text(320,14,"MEWTWO LAB · LOTE 1 · 4 GOLPES · CD 1s",{
   fontFamily:"Pixelify Sans,monospace",fontSize:"11px",color:"#ffe6ad"
  }).setOrigin(.5).setDepth(3801);
  tick();scene.game.events.on("step",tick);
