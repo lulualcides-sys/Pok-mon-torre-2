@@ -1068,6 +1068,18 @@ for(const [filename,changes] of patches){
     body=body.replace(declarations[0],setup+declarations[0]);
     continue;
    }
+   // The upstream client now gives alternate forms their own typing.
+   // Preserve that native fallback while changing types ONLY for Kanto.
+   if(filename==='luchador.js'&&
+      from==='get tipos(){return this.mega&&this.forma.mega.tipos||this.forma.tipos}'&&
+      to.includes('gen3Types(types)')){
+    const native='get tipos(){return this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos}';
+    if(body.split(native).length!==2)
+     throw Error('Unknown native alternate-form type getter; refusing unsafe patch');
+    body=body.replace(native,
+     'get tipos(){const types=this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos;return this.escena.datos?.torre2?gen3Types(types):types}');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
