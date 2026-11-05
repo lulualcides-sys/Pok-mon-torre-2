@@ -11,7 +11,9 @@ test("Only three unapproved attacks remain; Hidden Power is approved and frozen"
  assert.equal(JOHTO_LAB_ALL.length,46);
  for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power"]){
   assert.ok(JOHTO_LAB_ALL.some(x=>x.id===id));
-  assert.ok(!JOHTO_LAB_VISIBLE.some(x=>x.id===id));
+  if(id!=="hidden-power")
+   assert.ok(!JOHTO_LAB_VISIBLE.some(x=>x.id===id));
+  else assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id===id).approved,true);
   if(!["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power"].includes(id))
    assert.equal(makeJohtoFourNative({},id),null);
  }

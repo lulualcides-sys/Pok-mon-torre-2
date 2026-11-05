@@ -31,6 +31,9 @@ test("Review UI displays only four offensive moves; preserves all nine approved 
  assert.equal(JOHTO_LAB_ALL.length,46);
  for(const id of JOHTO_APPROVED_5){
   assert.ok(JOHTO_LAB_ALL.some(m=>m.id===id),"approved move kept intact");
-  assert.ok(!JOHTO_LAB_VISIBLE.some(m=>m.id===id),"approved move hidden from test choices");
+  if(id!=="hidden-power")
+   assert.ok(!JOHTO_LAB_VISIBLE.some(m=>m.id===id),"approved move hidden from test choices");
+  else assert.equal(JOHTO_LAB_VISIBLE.find(m=>m.id===id).approved,true,
+   "Hidden Power stays available in the fourth slot but must be visibly approved");
  }
 });
