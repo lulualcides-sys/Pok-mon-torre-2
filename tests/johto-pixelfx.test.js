@@ -49,6 +49,8 @@ test('PixelFX is build-time only; native Phaser runtime and 3 approved originals
  assert.match(newruntime,/if\(!scene\?\.datos\?\.johtoLab/,'No new casts outside isolated lab');
  assert.doesNotMatch(newruntime,/recibir\(|ponerEstado\(|\.hp\s*=/,'PixelFX-only casts cannot fake damage/status');
  assert.match(generator,/createFx\(mod/);
+ assert.match(generator,/renderBatchFourFile\(m\.id,folder\)/);
+ assert.match(runtime,/Math\.min\(23,Math\.floor\(t\*24\)\)/);
  assert.match(generator,/addJohtoPixelSignature\(strip,m\.id\)/,'Each PixelFX strip must be semantically enhanced at build time');
  assert.match(generator,/composite\(f,out,null/);
  assert.match(generator,/for\(const m of JOHTO_PIXELFX_43\)/);

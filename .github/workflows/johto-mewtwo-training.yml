@@ -32,6 +32,8 @@ jobs:
           node --check tools/pokearena/torre2-johto-lab-runtime.js
           node --check tools/pokearena/torre2-johto-lab-scene.js
           node --check tools/pokearena/torre2-pixelfx-sheets.mjs
+          node --check tools/pokearena/torre2-johto-first-four-sheets.mjs
+          node --test tests/johto-first-four.test.js
           node --check tools/pokearena/torre2-johto-pixelfx-runtime.js
           node --test tests/johto-pixelfx.test.js tests/johto-motion.test.js tests/johto-gen3-research.test.js tests/johto-gen3-mechanics.test.js tests/johto-signatures.test.js
           node --test tests/johto-pilot-sprites.test.mjs tests/johto-pixelart.test.js tests/johto-training-lab.test.js

@@ -10,6 +10,7 @@ import {johtoPose} from "./torre2-johto-motion.js";
 import {magnitudeGen3,presentGen3,tripleKickGen3,beatUpGen3Participants} from "./torre2-johto-gen3-mechanics.js";
 import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
+const BATCH_FOUR=new Set(["triple-kick","thief","snore","octazooka"]);
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
 import {ZAP_ELECTRO_BALL_TEXTURE,zapCannonMotion} from "./native-zap.js";
 const tones={
@@ -386,8 +387,10 @@ function cast(l,h,extra){
    g.clear();
    const t=Math.min(1,age/duration);
    const pose=johtoPose(h.id,t,{x:sx,y:sy},{x:tx,y:ty},r.y,1);
-   pixelFXSprite.setFrame(pose.frame)
-    .setPosition(pose.x,pose.y).setScale(pose.scale).setAngle(pose.angle)
+   const batch1=BATCH_FOUR.has(h.id);
+   pixelFXSprite.setFrame(batch1?Math.min(23,Math.floor(t*24)):pose.frame)
+    .setPosition(pose.x,pose.y)
+    .setScale(pose.scale*(batch1?1.4:1)).setAngle(pose.angle)
     .setAlpha(pose.alpha*(t>.9?Math.max(.05,(1-t)/.1):1));
   }else if(nativeOrb){
    // Source sprite frames: vfx-electroball row 0 (six flying poses),

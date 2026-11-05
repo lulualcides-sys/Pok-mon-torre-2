@@ -5,8 +5,8 @@
 import {JOHTO_PIXELFX_28} from "./torre2-johto-pixelfx-catalog.js";
 export const JOHTO_18=Object.freeze([
  ["triple-kick","Triple Kick","FIGHTING","PHYSICAL",10,90,10,6,70,"Punch","kick"],
- ["thief","Thief","DARK","SPECIAL",60,100,25,12,85,"Attack","slash"],
- ["snore","Snore","NORMAL","SPECIAL",50,100,15,10,190,"Charge","sound"],
+ ["thief","Thief","DARK","SPECIAL",40,100,10,12,85,"Attack","slash"],
+ ["snore","Snore","NORMAL","PHYSICAL",40,100,15,10,190,"Charge","sound"],
  ["powder-snow","Powder Snow","ICE","SPECIAL",40,100,25,8,240,"Shoot","snow"],
  ["octazooka","Octazooka","WATER","SPECIAL",65,85,10,13,240,"Shoot","ink"],
  ["zap-cannon","Zap Cannon","ELECTRIC","SPECIAL",120,50,5,24,280,"Charge","electric"],

@@ -9,6 +9,7 @@ import {mkdir,writeFile} from "node:fs/promises";
 import {join} from "node:path";
 import {JOHTO_PIXELFX_43,PIXELFX_PIN} from "./torre2-johto-pixelfx-catalog.js";
 import {addJohtoPixelSignature} from "./torre2-johto-signatures.mjs";
+import {FIRST_FOUR,renderBatchFourFile} from "./torre2-johto-first-four-sheets.mjs";
 
 export const PIXELFX_CEL=96;
 export const PIXELFX_FRAMES=12;
@@ -78,6 +79,12 @@ export async function generateJohtoPixelFXSheets(folder){
  await mkdir(folder,{recursive:true});
  const results=[];
  for(const m of JOHTO_PIXELFX_43){
+  if(FIRST_FOUR.includes(m.id)){
+   // Completely remade review batch — 24 actually different native pixel art frames.
+   // Approved Snow, Whirlpool and Zap Cannon are never in this generator.
+   results.push(await renderBatchFourFile(m.id,folder));
+   continue;
+  }
   // Uses the actual upstream PixelFX module and its draw/particle simulation.
   const mod=await import("pixelfx/fx/"+m.fx);
   if(typeof mod.draw!=="function"&&typeof mod.create!=="function")
@@ -105,7 +112,7 @@ export async function generateJohtoPixelFXSheets(folder){
    bytes:image.length,painted,sourceCrop:side,visualOnly:true});
  }
  await writeFile(join(folder,"manifest.json"),JSON.stringify({
-  generator:"torre2-pixelfx-sheets.mjs",engine:"pixelfx",upstreamCommit:PIXELFX_PIN,
+  generator:"torre2-pixelfx-sheets.mjs",engine:"four-original-moving-sprites-plus-unreviewed-pixelfx",upstreamCommit:PIXELFX_PIN,
   license:"MIT",approved:false,mode:"visual-only",files:results
  },null,2)+"\n");
  return results;

@@ -21,4 +21,11 @@ assert.match(read("luchador.js"),/this\.escena\.datos\.johtoLab\.kit/);
 assert.match(read("escenas/combate.js"),/installJohtoLabCombat/);
 assert.doesNotMatch(read("torre2/move-pool.js"),/JOHTO_18|johto-lab/);
 assert.doesNotMatch(read("torre2/campanha.js"),/JOHTO_18|johto-lab/);
-console.log("PASS 18 isolated Mewtwo training moves, menu and native battle hooks",modules);
+const manifest=JSON.parse(fs.readFileSync(path.join(dir,"assets/torre2/johto-pixelfx/manifest.json"),"utf8"));
+assert.equal(manifest.files.length,43);
+assert.deepEqual(manifest.files.filter(x=>x.reviewBatch===1).map(x=>x.id),
+ ["triple-kick","thief","snore","octazooka"]);
+assert.ok(manifest.files.filter(x=>x.reviewBatch===1).every(x=>x.frames===24));
+for(const id of ["powder-snow","whirlpool","zap-cannon"])
+ assert.ok(!manifest.files.some(x=>x.id===id),"Approved original VFX not regenerated");
+console.log("PASS 4 visible Johto moves, 24 animated frames, 3 approved untouched",modules);

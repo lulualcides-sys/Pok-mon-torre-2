@@ -302,7 +302,7 @@ console.log('Johto PNG pilot sprites:',JSON.stringify(johtoPilot));
 const {generateJohtoPixelFXSheets}=await import('./torre2-pixelfx-sheets.mjs');
 const pixelfxSheets=await generateJohtoPixelFXSheets(
  path.join(dest,'assets/torre2/johto-pixelfx'));
-if(pixelfxSheets.length!==43||pixelfxSheets.some(s=>s.frames!==12||s.bytes<512))
+if(pixelfxSheets.length!==43||pixelfxSheets.some(s=>s.frames!==(s.reviewBatch===1?24:12)||s.bytes<512))
  throw Error('Incomplete PixelFX 43 spritesheets; refusing placeholders');
 console.log('PixelFX Johto VFX generated:',pixelfxSheets.length);
 await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
@@ -1243,6 +1243,7 @@ vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.j
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixel-sheets.mjs'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixelfx-sheets.mjs'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-signatures.mjs'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-first-four-sheets.mjs'));
 vfxFingerprint.update(await fs.readFile(
  path.join(dest,'assets/torre2/johto-pixelfx/manifest.json')));
 
