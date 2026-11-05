@@ -10,7 +10,8 @@ export const JOHTO_FOUR_NATIVE_IDS=Object.freeze([
 ]);
 export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze([
  "triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash",
- "return","present","frustration","magnitude","hidden-power"]);
+ "return","present","frustration","magnitude","hidden-power",
+ "pursuit","beat-up"]);
 import {hiddenPowerGen3 as johtoHiddenPowerGen3} from "./torre2-johto-gen3-mechanics.js";
 const clamp=v=>Math.max(0,Math.min(1,v));
 const smooth=v=>{v=clamp(v);return v*v*(3-2*v)};
@@ -465,40 +466,10 @@ function createPursuit(scene){
   });
  }};
 }
-function createVitalThrow(scene){
- // VITAL THROW: grounded contact, target sprite lift (r.salto stays in
- // castJohtoFourNative), then a single P2 landing with LOW dust.
- // No wrap, atadura, fly, rapidspin, rings or spirals anywhere.
- const grab=part(scene,attackSheet(scene),0xffead0,1538);
- const slam=part(scene,scene.textures.exists("vfx-aterriza-golpe")?
-  "vfx-aterriza-golpe":"vfx-aterriza",0xffffff,1541);
- const dust=Array.from({length:6},()=>part(scene,"p-guijarro",0xc5ae90,1542));
- const flecks=Array.from({length:2},()=>part(scene,"p-estrella",0xffe5b0,1543));
- return {sprites:[grab,slam,...dust,...flecks],update(t,a,b,state={}){
-  const actor=state.actor||a,target=state.hitPoint||b,dir=state.dirX??1,
-    wind=t<.6?fade(t/.6,.05,.87):0;
-  // Contact cue is only a very short shoulder impact next to the caster.
-  framePlace(grab,actor.x+dir*13,actor.y-4,37,23,wind*.67,
-    Math.min(2,Math.floor(t*16)),0,dir<0);
-  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.4,
-    u=hit?clamp(age/.4):0,land=clamp((u-.57)/.43),
-    opacity=hit?fade(land,.09,.81)*smooth((u-.53)/.14):0;
-  // The native opponent sprite itself rises 28px; NO decorative lift VFX.
-  // Earth-contact image only starts after the target returns to the floor.
-  framePlace(slam,target.x,target.y+19,72,36,opacity*.83,
-    Math.min(2,Math.floor(land*3)));
-  dust.forEach((o,i)=>{
-   const side=i%2?-1:1,dist=(6+i*3)+land*(9+i%3*3);
-   place(o,target.x+side*dist,target.y+20+
-     Math.sin(i*2.2)*3+land*3,4+i%3,3+i%2,
-     opacity*(.55-i*.065));
-  });
-  flecks.forEach((o,i)=>{
-   const off=i?12:-12;
-   place(o,target.x+off,target.y+15-land*3,
-     6,6,opacity*(.55-i*.12));
-  });
- }};
+function createVitalThrow(_scene){
+ // Deliberately NO supplementary VFX. The P2 fighter advances and the
+ // real opponent jumps at the actual collision tick, nothing else.
+ return {sprites:[],update(){}};
 }
 function createHiddenPower(scene){
  const core=part(scene,"vfx-psico",0xffffff,1539);
@@ -580,14 +551,15 @@ export function makeJohtoFourNative(scene,id){
   present:["vfx-huevo","p-estrella","p-corazon","vfx-hiper_impacto"],
   magnitude:["vfx-roca","p-guijarro","p-roca"],
   pursuit:["vfx-quickattack","vfx-astonish","p-sombra"],
-  "vital-throw":["vfx-acometida","vfx-aterriza","p-guijarro","p-estrella"],
+  "vital-throw":[], // Body-only fighter advance and enemy salto
   "hidden-power":["vfx-psico","vfx-psywave","p-psiquico"],
   "beat-up":["vfx-acometida","vfx-hiper_impacto","p-estrella"]
  }[id];
  if(!required.every(t=>scene.textures.exists(t)))return null;
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);
- if(!sprites.length)throw Error("Native Johto four effect unexpectedly empty: "+id);
- return {source:"pokearena2d-native-textures",id,sprites,
+ if(!sprites.length&&id!=="vital-throw")
+  throw Error("Native Johto move unexpectedly missing animation layers: "+id);
+ return {source:id==="vital-throw"?"pokearena2d-native-body-motion":"pokearena2d-native-textures",id,sprites,
   update(progress,caster,target,state={}){
    const t=clamp(progress);
    fx.update(t,caster,target,state);
@@ -629,7 +601,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    id==="false-swipe"?.74:id==="steel-wing"?.78:
    id==="rock-smash"?.73:id==="return"?.68:id==="frustration"?.76:
    id==="present"?.89:id==="magnitude"?.88:id==="snore"?.91:
-   id==="pursuit"?.73:id==="vital-throw"?.96:
+   id==="pursuit"?.73:id==="vital-throw"?.58:
    id==="hidden-power"?.94:id==="beat-up"?.99:.9,
   rise=.13,projectileSpeed=id==="snore"?260:
    id==="present"?265:id==="hidden-power"?315:350,
@@ -649,7 +621,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    id==="steel-wing"?[.36]:id==="rock-smash"?[.34]:
    id==="return"?[.32]:id==="frustration"?[.35]:
    id==="magnitude"?[.38]:id==="pursuit"?[.35]:
-   id==="vital-throw"?[.55]:id==="beat-up"?[.31]:[];
+   id==="vital-throw"?[]:id==="beat-up"?[.31]:[];
  const roll=id==="present"||id==="magnitude"?johtoBatch3Roll(id):null;
  // The isolated training uses a single Mewtwo unless an actual party
  // array exists. No invented teammates or non-existent extra strikes.
@@ -713,7 +685,8 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   try{
    result=r.recibir(l,{dano:h.dano*mult*powerMultiplier*pursued,
     tipo:id==="hidden-power"?hidden.type:h.tipo,
-    slot:extra?.slot,surge:extra?.surge,empuje:melee?14:10,
+    slot:extra?.slot,surge:extra?.surge,
+    empuje:id==="vital-throw"?0:melee?14:10,
     dirX:dx/d,dirY:dy/d,proyectil:!melee,tick:index>0});
   }finally{if(keepAlive)r.inmortal=wasImmortal}
   if(result!=="golpe")return false;
@@ -722,7 +695,9 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    // P2 renderer uses salto for visual elevation, without moving r.y,
    // collision box, team slot, stat data or save records.
    vitalLiftBaseline=Number(r.salto)||0;
-   vitalLiftApplied=vitalLiftBaseline;
+   vitalLiftApplied=vitalLiftBaseline+6;
+   // Same tick as confirmed P2 recibir, no arbitrary timed impact.
+   r.salto=vitalLiftApplied;
   }
   // Gen III Snore: can flinch on a successful hit; in the real-time P2
   // client this is the native brief aturdido action interruption.
@@ -752,6 +727,13 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    const next=johtoP2Advance(source,angle,advance,age/.19);
    l.x=next.x;l.y=next.y;
    l.limitar?.();
+   // Vital Throw hits at the FIRST true P2 body overlap while advancing.
+   // It does not wait for an impact timestamp after contact.
+   if(id==="vital-throw"&&nextHit===0&&
+      johtoP2BodyContact(r,l.x,l.y,24,0,nativeRadio)){
+    nextHit=1;
+    contact(0,l.x,l.y);
+   }
    while(nextHit<beatWindows.length&&age>=beatWindows[nextHit]){
     const index=nextHit++;
     if(stop)break;
@@ -786,7 +768,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   }
   const hitAge=age-hitAt;
   if(id==="vital-throw"&&vitalLiftBaseline!=null&&!r.ko){
-   const u=clamp(hitAge/.4);
+   const u=clamp((hitAge+.024)/.32);
    vitalLiftApplied=vitalLiftBaseline+Math.round(Math.sin(u*Math.PI)*28);
    r.salto=vitalLiftApplied;
   }
