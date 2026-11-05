@@ -49,7 +49,8 @@ test('PixelFX is build-time only; native Phaser runtime and 3 approved originals
  assert.match(newruntime,/if\(!scene\?\.datos\?\.johtoLab/,'No new casts outside isolated lab');
  assert.doesNotMatch(newruntime,/recibir\(|ponerEstado\(|\.hp\s*=/,'PixelFX-only casts cannot fake damage/status');
  assert.match(generator,/createFx\(mod/);
- assert.match(generator,/if\(FIRST_FOUR\.includes\(m\.id\)\)continue/);
+ assert.match(generator,/if\(EXCLUDE_NATIVE\.has\(m\.id\)\)continue/);
+ assert.match(generator,/JOHTO_APPROVED_5/,'Previously approved visual effects remain excluded from PixelFX output');
  assert.match(runtime,/makeJohtoFourNative\(e,h\.id\)/);
  assert.match(runtime,/if\(nativeFour\)/);
  assert.match(generator,/addJohtoPixelSignature\(strip,m\.id\)/,'Each PixelFX strip must be semantically enhanced at build time');
