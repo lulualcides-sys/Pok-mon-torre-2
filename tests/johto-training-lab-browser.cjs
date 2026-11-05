@@ -96,7 +96,7 @@ const server=http.createServer(async(req,res)=>{
    const waitDeadline=Date.now()+7000;
    while(me.t < me.__johtoLabNextCastAt+.02 && Date.now()<waitDeadline)
     await new Promise(ok=>setTimeout(ok,75));
-   assert.ok(me.t>=me.__johtoLabNextCastAt,'Native Phaser simulated clock must pass one second');
+   if(!(me.t>=me.__johtoLabNextCastAt))throw Error('Native Phaser simulated clock must pass one second');
    const beforeFinal={t:me.t,next:me.__johtoLabNextCastAt,active:me.__johtoLabActiveEffects?.map(fn=>fn()),effects:scene.efectos.length,
     rival:!!me.rival,lab:!!scene.datos?.johtoLab,move:b.forma};
    const after1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
