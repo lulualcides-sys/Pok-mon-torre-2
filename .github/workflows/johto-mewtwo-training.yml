@@ -3,6 +3,8 @@ on:
   pull_request:
     paths:
       - 'tools/pokearena/torre2-johto-*'
+      - 'tools/pokearena/torre2-pixelfx-sheets.mjs'
+      - 'package.json'
       - 'tools/pokearena/build-preview.mjs'
       - 'tests/johto-*'
       - '.github/workflows/johto-mewtwo-training.yml'
@@ -16,7 +18,7 @@ concurrency:
   cancel-in-progress: true
 jobs:
   quick-pixel:
-    name: Quick 3-move pixel validation (no browser/download)
+    name: Quick original-3 guard + PixelFX 43 mappings (no browser)
     runs-on: ubuntu-24.04
     timeout-minutes: 3
     steps:
@@ -29,6 +31,9 @@ jobs:
           node --check tools/pokearena/torre2-pixel-sheets.mjs
           node --check tools/pokearena/torre2-johto-lab-runtime.js
           node --check tools/pokearena/torre2-johto-lab-scene.js
+          node --check tools/pokearena/torre2-pixelfx-sheets.mjs
+          node --check tools/pokearena/torre2-johto-pixelfx-runtime.js
+          node --test tests/johto-pixelfx.test.js
           node --test tests/johto-pilot-sprites.test.mjs tests/johto-pixelart.test.js tests/johto-training-lab.test.js
   johto-training:
     needs: quick-pixel
@@ -59,7 +64,8 @@ jobs:
           done
           node tools/pokearena/build-preview.mjs
           node tests/johto-training-lab-built.test.mjs
-      - name: Test real Mewtwo Training and eighteen casts in Chromium
+          node tests/johto-pixelfx-built.test.mjs
+      - name: Test Mewtwo Lab with 3 approved, 15 replaced and 28 visual-only PixelFX casts
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
