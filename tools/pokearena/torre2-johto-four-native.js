@@ -6,7 +6,7 @@
  * The 3 approved effects NEVER enter this module.
  */
 export const JOHTO_FOUR_NATIVE_IDS=Object.freeze([
- "thief","snore","false-swipe","steel-wing"
+ "thief","false-swipe","steel-wing","rock-smash"
 ]);
 export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze(["triple-kick","octazooka"]);
 const clamp=v=>Math.max(0,Math.min(1,v));
@@ -32,6 +32,21 @@ function place(img,x,y,w,h,alpha=1,angle=0,flip=false){
  img.setPosition(round(x),round(y)).setDisplaySize(round(w),round(h));
  img.setAlpha(a).setAngle(angle).setFlipX(flip);
 }
+// Authentic P2 animated spritesheets (vfx.js#HOJAS), never an enlarged
+// 1px icon disguised as an attack. Native frames, not procedural circles.
+function framePlace(img,x,y,w,h,alpha,frame,angle=0,flip=false){
+ if(!img)return;
+ img.setFrame?.(Math.max(0,Math.floor(frame)));
+ place(img,x,y,w,h,alpha,angle,flip);
+}
+function arcKey(scene,palette){
+ const themed="vfx-arco-"+palette;
+ return scene.textures.exists(themed)?themed:"vfx-arco";
+}
+function frameAt(age,seconds,frames=4){
+ return Math.min(frames-1,Math.max(0,Math.floor(Math.max(0,age)/seconds*frames)));
+}
+
 function createTriple(scene){
  const kicks=Array.from({length:3},()=>({
   main:part(scene,"p-cuchilla",0xffe8ad,1535),
@@ -69,43 +84,46 @@ function createTriple(scene){
  }};
 }
 function createThief(scene){
- // P2 golpe() rhythm: stealth approach near the caster, two conspicuous
- // criss-cross slashes ONLY after recibir("golpe"), and a stolen-item glint
- // returning to the caster. No animated remote slash before real collision.
- const shadow=Array.from({length:5},()=>part(scene,"p-sombra",0x563688,1532));
- const cuts=[
-  part(scene,"p-cuchilla",0xe5caff,1538),
-  part(scene,"p-cuchilla",0xffffff,1539),
-  part(scene,"p-cuchilla",0xa379ed,1537)
+ // P2 original Quick Attack + palette-recolored Shadow arc. These are
+ // source sprite-sheet FRAME sequences, not scaled-up MAPAS icons.
+ const rush=part(scene,"vfx-quickattack",0xffffff,1534);
+ const slashes=[
+  part(scene,arcKey(scene,"sombra"),0xffffff,1541),
+  part(scene,arcKey(scene,"sombra"),0xffffff,1542)
  ];
- const sparks=Array.from({length:5},(_,i)=>part(scene,"p-estrella",
-  i%2?0xf8e5ff:0xfdeaa0,1540));
- const stolen=part(scene,"p-aura",0xffd56d,1536);
- return {sprites:[...shadow,...cuts,...sparks,stolen],update(t,a,b,state={}){
-  const actor=state.actor||a,target=state.hitPoint||b;
-  const stealth=fade(t,.07,.79);
-  shadow.forEach((img,i)=>{
-   const wobble=Math.sin(t*PI*9+i*1.6)*5,
-    xx=actor.x-10-i*7,yy=actor.y-8+wobble;
-   place(img,xx,yy,21-i*2,28-i,stealth*(.52-i*.075),i%2?-16:12);
-  });
-  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.31;
-  const impact=hit?fade(age/.31,.035,.8):0;
-  cuts.forEach((img,i)=>{
-   const p=clamp(age/.31),shift=i===0?-1:i===1?1:0;
-   place(img,target.x+shift*12,target.y+shift*7,
-    62+i*11,38+i*7,impact*(i===1?1:.85),
-    [39,-46,6][i]);
-  });
-  sparks.forEach((img,i)=>{
-   const x=target.x+Math.cos(i*2.4)*(9+clamp(age/.31)*28),
-    y=target.y+Math.sin(i*2.4)*(9+clamp(age/.31)*20);
-   place(img,x,y,15+i%3*4,15+i%3*4,impact*(.92-i*.09),i*25);
-  });
-  const retreat=hit?fade(age/.31,.05,.93):0;
-  const back=hit?smooth(clamp(age/.31)):0;
-  place(stolen,mix(target.x,actor.x,back),mix(target.y-13,actor.y-17,back),
-   21,21,retreat,0);
+ const echo=Array.from({length:2},()=>part(scene,"vfx-astonish",0xffffff,1543));
+ const dust=Array.from({length:3},()=>part(scene,"p-sombra",0x9680c5,1537));
+ const glitter=Array.from({length:3},()=>part(scene,"p-estrella",0xd8b6ff,1544));
+ return {sprites:[rush,...slashes,...echo,...dust,...glitter],
+  update(t,a,b,state={}){
+   const actor=state.actor||a,dir=state.dirX??1;
+   const wind=t<.49?fade(t/.49,.055,.79):0;
+   framePlace(rush,actor.x-dir*16,actor.y-6,57,28,wind*.78,
+    frameAt(t,.29,2),0,dir<0);
+   dust.forEach((img,i)=>{
+    place(img,actor.x-dir*(8+i*7),actor.y+9+(i%2)*4,
+     6+(i%2)*2,5+(i%2)*2,wind*(.36-i*.09),i*12);
+   });
+   const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.31;
+   const u=hit?clamp(age/.31):0,opacity=hit?fade(u,.04,.78):0;
+   const target=state.hitPoint||b;
+   slashes.forEach((img,i)=>{
+    const phase=clamp((u-i*.19)/.78);
+    const amp=opacity*(i===0?1:.82)*smooth((u-i*.14)/.13);
+    framePlace(img,target.x+dir*(i?2:-5),target.y+(i?-5:2),
+      57,43,amp,4+frameAt(phase,.95,4),
+      i?28:-25,dir<0);
+   });
+   echo.forEach((img,i)=>{
+    const p=clamp((u-i*.18)/.78);
+    framePlace(img,target.x+(i?9:-8),target.y-3,
+     21,21,opacity*(.56-i*.17),frameAt(p,1,5));
+   });
+   glitter.forEach((img,i)=>{
+    const q=u*(18+i*4),ang=2.399963*i;
+    place(img,target.x+Math.cos(ang)*q,target.y+Math.sin(ang)*q*.8,
+     6,6,opacity*(.78-i*.16),i*35);
+   });
  }};
 }
 function createSnore(scene){
@@ -183,69 +201,116 @@ function createOcta(scene){
  // Next two offensives from the original 18; these never alter approved
 // Triple Kick or Octazooka and never create false remote damage.
 function createFalseSwipe(scene){
- const blades=Array.from({length:4},(_,i)=>part(scene,"p-cuchilla",
-   i%2?0xd8fff7:0x79facf,1538+i));
- const glints=Array.from({length:5},()=>part(scene,"p-estrella",0xe8fffa,1541));
- const aura=part(scene,"p-aura",0x72f2b7,1535);
- return {sprites:[...blades,...glints,aura],update(t,a,b,state={}){
-  const age=state.hitAge,target=state.hitPoint||b,
-   hit=Number.isFinite(age)&&age>=0&&age<.36,
-   q=hit?clamp(age/.36):0,alpha=hit?fade(q,.045,.83):0;
-  blades.forEach((img,i)=>{
-   const swap=i%2===0?-1:1,stage=clamp(q*1.3);
-   place(img,target.x+swap*(18-stage*12),target.y+(i<2?-17:17),
-    38+stage*30,24+stage*14,alpha*(1-i*.13),
-    swap*(i<2?39:-44));
-  });
+ // One deliberate blade, a precise P2 Acometida, and tiny glints on
+ // confirmed contact. Not multiple gigantic colored knife triangles.
+ const thrust=part(scene,"vfx-acometida",0xffffff,1538);
+ const arc=part(scene,arcKey(scene,"golpe"),0xffffff,1540);
+ const slicing=part(scene,"vfx-cuchilla",0xffffff,1541);
+ const glints=Array.from({length:6},(_,i)=>part(scene,"p-estrella",
+  i%2?0xc8f5ff:0xf8fff1,1542));
+ return {sprites:[thrust,arc,slicing,...glints],update(t,a,b,state={}){
+  const target=state.hitPoint||b,actor=state.actor||a,dir=state.dirX??1;
+  const wind=t<.52?fade(t/.52,.05,.82):0;
+  framePlace(thrust,actor.x+dir*15,actor.y-3,
+   63,30,wind*.7,frameAt(t,.25,3),0,dir<0);
+  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.26;
+  const u=hit?clamp(age/.26):0,opacity=hit?fade(u,.045,.82):0;
+  framePlace(arc,target.x-dir*6,target.y,49,36,opacity,
+    frameAt(u,1,4),dir<0?-12:12,dir<0);
+  framePlace(slicing,target.x+dir*3,target.y-4,34,25,
+   opacity*(.54+u*.16),3+frameAt(u,.95,3),dir<0?-12:12);
   glints.forEach((img,i)=>{
-   const theta=i*2.39996,dist=8+q*30;
-   place(img,target.x+Math.cos(theta)*dist,
-    target.y+Math.sin(theta)*dist*.75,
-    16+i%2*5,16+i%2*5,alpha*(.82-i*.09),i*21);
+   const ang=2.399963*i,dist=5+u*(14+i*2);
+   place(img,target.x+Math.cos(ang)*dist,
+    target.y+Math.sin(ang)*dist*.72,
+    4+i%2,4+i%2,opacity*(.68-i*.07));
   });
-  place(aura,target.x,target.y,24+q*54,16+q*37,alpha*.34,0);
  }};
 }
 function createSteelWing(scene){
- const wings=Array.from({length:5},(_,i)=>part(scene,"p-cuchilla",
-   i%2?0xefffff:0x8cb7d4,1536+i));
- const edges=Array.from({length:5},(_,i)=>part(scene,
-   i%2?"p-estrella":"p-mira",0xd4faff,1541));
- const shock=part(scene,"p-aura",0xaed5e6,1535);
- return {sprites:[...wings,...edges,shock],update(t,a,b,state={}){
-  const age=state.hitAge,target=state.hitPoint||b,
-   hit=Number.isFinite(age)&&age>=0&&age<.33,
-   q=hit?clamp(age/.33):0,alpha=hit?fade(q,.04,.85):0;
-  wings.forEach((img,i)=>{
-   const side=i%2?-1:1,spread=14+q*(17+i*2);
-   place(img,target.x+side*spread*.54,target.y+(i-2)*8,
-    44+i*5,17+i*4,alpha*(.92-i*.10),
-    side*(48+i*7));
+ // Native P2 Fly (animated wing wind-up) + real metallic ARC frames,
+ // recolored via P2 vfx.hay('arco-acero') at cast time.
+ const wing=part(scene,"vfx-fly",0xffffff,1537);
+ const arcs=[
+  part(scene,arcKey(scene,"acero"),0xffffff,1541),
+  part(scene,arcKey(scene,"acero"),0xffffff,1542)
+ ];
+ const feathers=Array.from({length:5},()=>part(scene,"vfx-aeroblast",0xd5efff,1539));
+ const sparks=Array.from({length:3},()=>part(scene,"p-estrella",0xf4fbff,1544));
+ return {sprites:[wing,...arcs,...feathers,...sparks],update(t,a,b,state={}){
+  const actor=state.actor||a,target=state.hitPoint||b,dir=state.dirX??1;
+  const wind=t<.54?fade(t/.54,.04,.81):0;
+  framePlace(wing,actor.x-dir*8,actor.y-15,76,49,wind*.85,
+   frameAt(t,.38,3),0,dir<0);
+  feathers.forEach((img,i)=>{
+   const drift=t*43+i*5;
+   framePlace(img,actor.x-dir*(4+i*7+drift*.3),
+    actor.y-9+(i-2)*5,15,11,wind*(.39-i*.035),
+    (i+frameAt(t,.38,3))%6,dir<0?180:0);
   });
-  edges.forEach((img,i)=>{
-   const angle=i*2.4+.5,dist=10+q*34;
-   place(img,target.x+Math.cos(angle)*dist,
-    target.y+Math.sin(angle)*dist*.68,
-    15+i%3*3,15+i%3*3,alpha*(.9-i*.1),i*36);
+  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.32;
+  const u=hit?clamp(age/.32):0,opacity=hit?fade(u,.04,.82):0;
+  arcs.forEach((img,i)=>{
+   const q=clamp((u-i*.17)/.83);
+   framePlace(img,target.x+dir*(i?-5:6),target.y+(i?8:-6),
+    64,44,opacity*(i===0?1:.73)*smooth((u-i*.12)/.12),
+    4+frameAt(q,1,4),i===0?22:-27,dir<0);
   });
-  place(shock,target.x,target.y,30+q*55,18+q*35,alpha*.38,0);
+  sparks.forEach((img,i)=>{
+   const theta=i*2.4,q=9+u*23;
+   place(img,target.x+Math.cos(theta)*q,
+    target.y+Math.sin(theta)*q*.74,6,6,
+    opacity*(.81-i*.17),i*33);
+  });
  }};
 }
-
+function createRockSmash(scene){
+ // A rock visibly SHATTERS only if the native P2 recibir confirms contact.
+ // Original animated P2 rock-fin frames 8..11 plus small flying stone shards.
+ const strike=part(scene,"vfx-acometida",0xffffff,1538);
+ const rock=part(scene,"vfx-roca",0xffffff,1540);
+ const shards=Array.from({length:5},()=>part(scene,"vfx-roca",0xffffff,1541));
+ const crumbs=Array.from({length:4},()=>part(scene,"p-guijarro",0xd7ba91,1542));
+ return {sprites:[strike,rock,...shards,...crumbs],update(t,a,b,state={}){
+  const actor=state.actor||a,target=state.hitPoint||b,dir=state.dirX??1;
+  const wind=t<.49?fade(t/.49,.045,.78):0;
+  framePlace(strike,actor.x+dir*15,actor.y,60,29,
+   wind*.78,frameAt(t,.29,3),dir<0?180:0);
+  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.36;
+  const u=hit?clamp(age/.36):0,opacity=hit?fade(u,.025,.86):0;
+  framePlace(rock,target.x,target.y,40+u*5,39+u*5,opacity,
+   8+frameAt(u,1,4));
+  shards.forEach((img,i)=>{
+   const theta=(i*.8-.9)*Math.PI,dist=6+u*(21+i*2);
+   const xx=target.x+Math.cos(theta)*dist;
+   const yy=target.y+Math.sin(theta)*dist*.7+u*u*12;
+   framePlace(img,xx,yy,12+i%2*3,11+i%2*3,
+    opacity*(.8-i*.08),8+frameAt(clamp(u+i*.12),1,4),i*42);
+  });
+  crumbs.forEach((img,i)=>{
+   const theta=i*PI*.5+.4,dist=4+u*(10+i*3);
+   place(img,target.x+Math.cos(theta)*dist,
+    target.y+Math.sin(theta)*dist*.75+u*u*8,
+    4,4,opacity*(.68-i*.11),i*45);
+  });
+ }};
+}
 const FACTORIES=Object.freeze({
  "triple-kick":createTriple,thief:createThief,snore:createSnore,
- octazooka:createOcta,"false-swipe":createFalseSwipe,"steel-wing":createSteelWing
+ octazooka:createOcta,"false-swipe":createFalseSwipe,"steel-wing":createSteelWing,
+ "rock-smash":createRockSmash
 });
 export function makeJohtoFourNative(scene,id){
  if(!scene?.textures||!FACTORIES[id])return null;
  // Check actual source textures: no fallback to the rejected blocky spritesheets.
  const required={
   "triple-kick":["p-cuchilla","p-estrella","p-aura"],
-  thief:["p-sombra","p-cuchilla","p-estrella","p-aura"],
+  thief:["vfx-quickattack","vfx-arco","vfx-astonish","p-sombra","p-estrella"],
   snore:["p-hipnosis","p-aura","p-estrella","p-psiquico","p-espuma"],
   octazooka:["p-fantasma","p-agua","p-aura"],
-  "false-swipe":["p-cuchilla","p-estrella","p-aura"],
-  "steel-wing":["p-cuchilla","p-estrella","p-mira","p-aura"]
+  "false-swipe":["vfx-acometida","vfx-arco","vfx-cuchilla","p-estrella"],
+  "steel-wing":["vfx-fly","vfx-arco","vfx-aeroblast","p-estrella"],
+  "rock-smash":["vfx-acometida","vfx-roca","p-guijarro"]
  }[id];
  if(!required.every(t=>scene.textures.exists(t)))return null;
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);
@@ -288,19 +353,21 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   distance=Math.hypot(aimX-source.x,aimY-source.y),
   melee=!["snore","octazooka"].includes(id),
   duration=id==="triple-kick"?.77:id==="thief"?.71:
-   id==="false-swipe"?.74:id==="steel-wing"?.78:id==="snore"?.91:.9,
+   id==="false-swipe"?.74:id==="steel-wing"?.78:
+   id==="rock-smash"?.73:id==="snore"?.91:.9,
   rise=.13,projectileSpeed=id==="snore"?260:350,
   maxRange=Math.max(1,h.alcance||180),
   // Native golpe/patada close into the target's actual standing hitbox.
   // The 70px Triple Kick melee reach includes a 25px physical approach.
   advance=Math.min(maxRange+(id==="triple-kick"?25:
-   id==="false-swipe"||id==="steel-wing"?18:0),
+   id==="false-swipe"||id==="steel-wing"||id==="rock-smash"?18:0),
    Math.max(0,distance-17)),
   startProjectile={x:source.x+ux*17,y:source.y+uy*17},
   srcVisual={x:source.x,y:source.y-l.alto*.5},
   aimedVisual={x:source.x+ux*maxRange,y:source.y+uy*maxRange-l.alto*.5},
   hitWindows=id==="triple-kick"?[.24,.40,.56]:
-   id==="thief"?[.32]:id==="false-swipe"?[.34]:id==="steel-wing"?[.36]:[];
+   id==="thief"?[.32]:id==="false-swipe"?[.34]:
+   id==="steel-wing"?[.36]:id==="rock-smash"?[.34]:[];
  let age=0,nextHit=0,stop=false,hitIndex=-1,hitAt=-Infinity,
   hitPoint=null,projectileAlive=!melee,previousDistance=0,done=false;
  const action={hasta:l.t+duration,bloquea:true,lento:0,angulo:angle};
@@ -328,6 +395,10 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   // Gen III Snore: can flinch on a successful hit; in the real-time P2
   // client this is the native brief aturdido action interruption.
   if(id==="snore"&&Math.random()<.3)r.ponerEstado?.("aturdido",.24);
+  // P2-native Armor Break is the closest real-time semantic analogue to
+  // Gen III Rock Smash's 50% chance of one Defense stage down.
+  // No direct mutation of the permanent Pokemon base DEF value.
+  if(id==="rock-smash"&&Math.random()<.5)r.ponerEstado?.("armaduraRota",3);
   return true;
  };
  const obj={update(dt){
@@ -382,9 +453,10 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   if(id==="triple-kick")
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
     {hitIndex,hitAge,hitPoint});
-  else if(id==="thief")
+  else if(id==="thief"||id==="false-swipe"||
+   id==="steel-wing"||id==="rock-smash")
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
-    {hitAge,hitPoint,actor:{x:l.x,y:l.y-l.alto*.5}});
+    {hitAge,hitPoint,actor:{x:l.x,y:l.y-l.alto*.5},dirX:ux,dirY:uy});
   else if(id==="snore")
    visual.update(age/duration,srcVisual,aimedVisual,{hitAge,hitPoint,projectile:livePoint});
   else

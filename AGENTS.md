@@ -75,3 +75,10 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 - **Física sem efeito falso:** movimentação/quadros da animação dependem de posição, raio e colisão P2; dano via `r.recibir(l, ...)`; sprite de IMPACTO somente após acerto real. Preservar os visuais que o usuário já aprovou e separar a aprovação estética das mecânicas secundárias.
 - **Snore:** só funciona dormindo; o Training pode oferecer botão *DORMIR + SNORE* para demonstração sem alterar a campanha. **False Swipe:** não pode reduzir o HP abaixo de 1. Texturas Phaser nativas P2 e efeito visível legível no mobile. Testes Chromium devem verificar nome flutuante, contato, HP real, zero impacto em erro e manutenção dos aprovados.
 - **Aprovados Johto que saem da fila de revisão, mas permanecem intactos:** Powder Snow, Whirlpool, Zap Cannon, Triple Kick e Octazooka. Reprovação/revisão atual: Thief, Snore, False Swipe e Steel Wing, exclusivamente entre os 18 ofensivos Johto; os 28 de status/previews não fazem parte dessa lista.
+
+
+### Revisão Johto 2026-11-05 — usuário rejeitou Snore do lote
+- Snore NÃO integra mais o lote visível de aprovação; permanece apenas como identidade histórica entre os 18 ofensivos, sem aprovação estética. Substituição: Rock Smash (Gen III 20 poder, Fighting, contato, 50% probabilidade de baixar defesa). Em P2, `armaduraRota` temporária é a adaptação nativa possível, **não** equivalente exato a -1 estágio de FireRed.
+- Novo lote exclusivo: Thief, False Swipe, Steel Wing, Rock Smash. Não modificar Powder Snow, Whirlpool, Zap Cannon, Triple Kick e Octazooka.
+- Proibido fingir beleza com `p-cuchilla`/ícones monocromáticos esticados: as quatro novas animações usam os spritesheets multi-frame reais de `vfx.js#HOJAS` (`arco`, `acometida`, `quickattack`, `fly`, `roca`) com paletas originais P2 através de `vfx.hay()`, escala próxima do original e colisão física sincronizada. Nome do golpe em cima do atacante via `vfx.globo` continua obrigatório.
+- Não publicar em main antes de avaliação estética explícita do usuário. Tests de dano e CI não equivalem a aprovação visual.

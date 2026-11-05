@@ -142,7 +142,7 @@ export const JOHTO_P2_TEXTURES=Object.freeze({
  "pursuit":["p-fantasma","p-shuriken"],
  "vital-throw":["p-roca","p-aura"],
  "hidden-power":["p-psiquico","p-estrella"],
- "rock-smash":["p-roca","p-estrella"],
+ "rock-smash":["vfx-roca","vfx-acometida","p-guijarro"],
  "whirlpool":["p-pulsoAgua","p-chorrito"],
  "beat-up":["p-cuchilla","p-fantasma"]
 });

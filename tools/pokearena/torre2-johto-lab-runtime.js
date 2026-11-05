@@ -15,7 +15,8 @@ import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
 // Keep approved Triple Kick + Octazooka on their EXACT existing native
 // factories while reviewing Thief, Snore, False Swipe and Steel Wing.
-const BATCH_FOUR=new Set(["triple-kick","octazooka","thief","snore","false-swipe","steel-wing"]);
+const BATCH_FOUR=new Set(["triple-kick","octazooka","thief","snore",
+ "false-swipe","steel-wing","rock-smash"]);
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
 import {ZAP_ELECTRO_BALL_TEXTURE,zapCannonMotion} from "./native-zap.js";
 const tones={
@@ -280,7 +281,14 @@ function cast(l,h,extra){
  if(!l?.escena?.datos?.johtoLab||!l.rival)return false;
  // Four new Johto moves use native P2 body/contact/recibir mechanics.
  // Leave all 3 approved VFX and 39 other candidates on their original paths.
- if(BATCH_FOUR.has(h.id))return castJohtoFourNative(l,h,extra,RADIO);
+ if(BATCH_FOUR.has(h.id)){
+  // Let original P2 dynamically recolor the genuine animated slash sheet.
+  // vfx.hay uses vfx.js#PALETAS_VFX and keeps the source frame layout.
+  const palette={"thief":"sombra","false-swipe":"golpe",
+   "steel-wing":"acero","rock-smash":"golpe"}[h.id];
+  if(palette)vfx.hay(l.escena,"arco-"+palette);
+  return castJohtoFourNative(l,h,extra,RADIO);
+ }
  if(h.id==="snore"&&!l.est?.dormido)return false;
  const e=l.escena,r=l.rival,angle=Math.atan2(l.ay-l.y,l.ax-l.x),dx=Math.cos(angle),dy=Math.sin(angle);
  const style=h.style,palette=tones[h.id];if(!palette)return false;

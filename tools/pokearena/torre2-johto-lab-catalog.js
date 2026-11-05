@@ -19,7 +19,7 @@ export const JOHTO_18=Object.freeze([
  ["pursuit","Pursuit","DARK","SPECIAL",40,100,20,8,170,"Attack","slash"],
  ["vital-throw","Vital Throw","FIGHTING","PHYSICAL",70,100,10,15,84,"Attack","throw"],
  ["hidden-power","Hidden Power","NORMAL","SPECIAL",60,100,15,12,238,"Charge","orb"],
- ["rock-smash","Rock Smash","FIGHTING","PHYSICAL",40,100,15,8,100,"Swing","rock"],
+ ["rock-smash","Rock Smash","FIGHTING","PHYSICAL",20,100,15,8,100,"Swing","rock"],
  ["whirlpool","Whirlpool","WATER","SPECIAL",35,85,15,8,215,"Charge","vortex"],
  ["beat-up","Beat Up","DARK","SPECIAL",0,100,10,12,92,"Attack","kick"]
 ].map(([id,nombre,tipo,categoria,poder,precisao,pp,dano,alcance,anim,style])=>
@@ -33,7 +33,7 @@ export const JOHTO_LAB_SLOTS=Object.freeze(["lmb","rmb","q","e"]);
 export const JOHTO_APPROVED_5=Object.freeze(["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka"]);
 // Next visual approval batch: two reworks plus two other offensive Gen III moves.
 // All 28 STATUS/visual-only prototypes remain excluded from the visible review list.
-export const JOHTO_LAB_REVIEW_4=Object.freeze(["thief","snore","false-swipe","steel-wing"]);
+export const JOHTO_LAB_REVIEW_4=Object.freeze(["thief","false-swipe","steel-wing","rock-smash"]);
 export const JOHTO_LAB_VISIBLE=Object.freeze(JOHTO_LAB_REVIEW_4.map(id=>
  [...JOHTO_18,...JOHTO_PIXELFX_28].find(m=>m.id===id)));
 export const JOHTO_LAB_DEFAULT=JOHTO_LAB_REVIEW_4;
