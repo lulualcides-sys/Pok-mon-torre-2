@@ -80,8 +80,12 @@ const server=http.createServer(async(req,res)=>{
    report.samples.find(x=>x.id==="smeargle");
   assert.ok(smeargle?.rendered>=1,"New Smeargle needs a real installed attack");
   assert.ok(smeargle.abilities.filter(Boolean).every(name=>
-   ["Tackle","Quick Attack","Swift","Body Slam"].includes(name)),
-   "Smeargle cannot receive an invented Sketch move");
+   ["Tackle","Counter","Revenge","Mirror Coat","Quick Attack",
+    "Swift","Body Slam","Bite","Ember","Water Gun"].includes(name)),
+   "Smeargle must only copy installed moves through Sketch");
+  assert.deepEqual(smeargle.abilities,
+   ["Tackle","Revenge","Mirror Coat","Body Slam"],
+   "Installed native P2 library must equip four distinctive real Sketch moves");
   assert.ok(!smeargle.abilities.includes("Hyper Beam"),
    "Smeargle cannot receive generic Hyper Beam fallback");
   // Confirm every original card keeps its original ROSTER index although
