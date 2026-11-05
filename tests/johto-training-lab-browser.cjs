@@ -105,6 +105,33 @@ const server=http.createServer(async(req,res)=>{
      cast.id+' missing actual PixelFX sprite in Phaser renderer');
    }
   }
+  // Each new visual-only PixelFX cast must display its genuine imported
+  // sprite, but may not inflict invented damage or statuses on the opponent.
+  const fxPreviews=await page.evaluate(async()=>{
+   const base=new URL('./',Array.from(document.scripts).find(s=>s.src.includes('/main.js')).src);
+   const [{JOHTO_PIXELFX_28},{TORRE2_JOHTO_LAB_FORMS}]=await Promise.all([
+    import(new URL('torre2/torre2-johto-pixelfx-catalog.js',base)),
+    import(new URL('torre2/johto-lab-runtime.js',base))]);
+   const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],
+    enemy=scene.luchadores[1],out=[];
+   for(const m of JOHTO_PIXELFX_28){
+    const hp=enemy.hp,texture='torre2-johto-pixelfx-'+m.id;
+    const ok=TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:'q'});
+    const last=scene.efectos.at(-1);
+    last?.update(.25);
+    const rendered=scene.children.list.some(o=>o.active&&o.texture?.key===texture);
+    out.push({id:m.id,ok,texture:scene.textures.exists(texture),rendered,
+     noDamage:enemy.hp===hp});
+    last?.destroy?.();
+    scene.efectos.pop();
+   }
+   return out;
+  });
+  assert.equal(fxPreviews.length,28);
+  for(const item of fxPreviews)assert.ok(
+   item.ok&&item.texture&&item.rendered&&item.noDamage,
+   item.id+' requires real no-damage PixelFX preview in WebGL');
+  console.log('JOHTO_PIXELFX_28_VISUAL_ONLY_VERIFIED',fxPreviews.length);
   // Snow and Whirlpool are approved. Zap Cannon now uses the base sprite
   // vfx-electroball, not its old 12-frame generated Zap PNG.
   for(const id of ['powder-snow','whirlpool']){
