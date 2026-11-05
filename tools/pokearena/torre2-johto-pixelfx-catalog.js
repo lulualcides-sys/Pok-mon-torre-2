@@ -39,3 +39,24 @@ export const JOHTO_PIXELFX_28=Object.freeze([
  coste:8,cd:2.4,lanzar:.13,source:"pixelfx-visual-preview",visualOnly:true,
  approved:false,pendiente:false
 })));
+
+// The three user-approved original VFX are immutable and excluded here.
+export const JOHTO_APPROVED_3=Object.freeze(["zap-cannon","powder-snow","whirlpool"]);
+export const JOHTO_PIXELFX_REWORK_15=Object.freeze([
+ {id:"triple-kick",fx:"melee/dagger-flurry",approved:false},
+ {id:"thief",fx:"melee/claw-swipe",approved:false},
+ {id:"snore",fx:"arcane/arcane-beam",approved:false},
+ {id:"octazooka",fx:"water/water-orb",approved:false},
+ {id:"false-swipe",fx:"melee/sword-slash",approved:false},
+ {id:"steel-wing",fx:"melee/heavy-cleave",approved:false},
+ {id:"return",fx:"melee/thrust",approved:false},
+ {id:"present",fx:"arcane/arcane-orb",approved:false},
+ {id:"frustration",fx:"melee/hammer-smash",approved:false},
+ {id:"magnitude",fx:"nature/quake",approved:false},
+ {id:"pursuit",fx:"shadow/shadow-tendrils",approved:false},
+ {id:"vital-throw",fx:"melee/uppercut",approved:false},
+ {id:"hidden-power",fx:"arcane/arcane-missiles",approved:false},
+ {id:"rock-smash",fx:"nature/boulder",approved:false},
+ {id:"beat-up",fx:"melee/double-slash",approved:false},
+].map(m=>Object.freeze(m)));
+export const JOHTO_PIXELFX_43=Object.freeze([...JOHTO_PIXELFX_REWORK_15,...JOHTO_PIXELFX_28]);
