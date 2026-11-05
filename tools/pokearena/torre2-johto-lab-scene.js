@@ -8,7 +8,7 @@ export class JohtoLab extends Phaser.Scene{
  preload(){
   // Artist-editable PNG strips built offline; only the isolated test lab loads them.
   // Browser nearest-neighbor preserves crisp pixel art on 16:9/WebGL displays.
-  for(const m of JOHTO_LAB_ALL.filter(m=>m.visualOnly))
+  for(const m of JOHTO_LAB_ALL.filter(m=>m.visualOnly||!['zap-cannon','powder-snow','whirlpool'].includes(m.id)))
    this.load.spritesheet('torre2-johto-pixelfx-'+m.id,
     'assets/torre2/johto-pixelfx/'+m.id+'.png',
     {frameWidth:96,frameHeight:96});
@@ -22,7 +22,7 @@ export class JohtoLab extends Phaser.Scene{
   this.add.rectangle(320,180,640,360,0x071426);
   this.add.text(320,13,"MEWTWO · JOHTO TRAINING LAB",{fontFamily:"Pixelify Sans,monospace",
    fontSize:"19px",color:"#ffe6a4",stroke:"#101f38",strokeThickness:3}).setOrigin(.5);
-  this.add.text(320,37,"46 VFX: 18 PROTÓTIPOS + 28 PIXELFX · 4 SLOTS · SEM CAMPANHA",{
+  this.add.text(320,37,"46 GOLPES: 3 APROVADOS + 43 PIXELFX · SEM CAMPANHA",{
    fontFamily:"Pixelify Sans,monospace",fontSize:"10px",color:"#a7bfdc"}).setOrigin(.5);
   const box=(x,y,w,h,fill,stroke,action)=>{
    const r=this.add.rectangle(x,y,w,h,fill,.96).setStrokeStyle(1,stroke);
@@ -95,7 +95,7 @@ export class JohtoLab extends Phaser.Scene{
    const chosen=this.picks.includes(m.id),active=this.picks[this.slot]===m.id;
    r.setFillStyle(active?0x365d53:chosen?0x273f55:0x14283e);
    r.setStrokeStyle(1,chosen?0xe2bd73:0x415c7b);
-   text.setText(m.nombre+(m.visualOnly?"  [FX]":""))
+   text.setText(m.nombre+(m.visualOnly?" [VFX]":['zap-cannon','powder-snow','whirlpool'].includes(m.id)?" [OK]":" [FX]"))
     .setColor(chosen?"#ffe5a2":m.visualOnly?"#aadceb":"#e4f0ff");
   });
  }
