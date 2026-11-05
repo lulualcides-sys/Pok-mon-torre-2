@@ -3,8 +3,8 @@
  * an ALREADY INSTALLED P2/approved Torre2 ability and real cast renderer.
  * ATK=LMB, HAB2=RMB, HAB3=Q, ULT=E, ESP remains native simple dash.
  */
-import {JOHTO_100_ROWS} from "./torre2-johto-100-data.js";
-import {nativeAttacks} from "./torre2-early-kanto-species.js";
+import {JOHTO_100_ROWS} from "./johto-100-data.js";
+import {nativeAttacks} from "./early-kanto-species.js";
 const canon=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
  .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const byNumber=new Map(JOHTO_100_ROWS.map(p=>[p[0],p]));
