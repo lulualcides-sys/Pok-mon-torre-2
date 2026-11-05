@@ -18,7 +18,9 @@ permissions:
 concurrency:
   group: pokemon-torre-2-pages
   # When many move patches arrive, deploy only the latest commit.
-  cancel-in-progress: true
+  # Keep the active release alive; newer successful builds replace the queued run.
+  # Cancelling the running release on every merge starved the public Pages site.
+  cancel-in-progress: false
 
 jobs:
   deploy:
