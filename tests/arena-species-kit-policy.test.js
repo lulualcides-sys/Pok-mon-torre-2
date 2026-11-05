@@ -288,7 +288,8 @@ test('Live Gengar Arena policy also covers evolved Gastly but not campaign or ot
  installArenaMovePolicy(Fighter,[gastly,donor]);
  const arena=new Fighter(gastly,false,2),campaign=new Fighter(gastly,true,2);
  const corrected=arena.kitActual();
- assert.equal(corrected.q.nombre,'Dark Pulse','Gengar evolution must receive the approved distinct Dark Pulse at fighter runtime');
+ assert.strictEqual(corrected,nativeKit,'Native Gengar kit must remain strictly original in Arena');
+ assert.equal(corrected.q.nombre,'Hyper Beam','Original Gengar native slot cannot be replaced');
  assert.strictEqual(campaign.kitActual(),nativeKit,'Gen III campaign keeps original kit');
  assert.equal(nativeKit.q.nombre,'Hyper Beam','Native source untouched');
  assert.equal(new Fighter(gastly,false,1).kitActual().rmb.nombre,'Shadow Ball',
