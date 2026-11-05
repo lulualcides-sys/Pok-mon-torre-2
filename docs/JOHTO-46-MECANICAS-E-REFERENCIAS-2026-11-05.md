@@ -21,3 +21,7 @@ Magnitude usa sorteio ponderado de níveis 4–10. Present tem 40% força 40, 30
 ## SpriteSheets com pixel signatures
 
 43 efeitos PixelFX recebem detalhes por golpe aplicados em memória RGBA durante a exportação offline: teia, espinhos no chão, tinta, rochas, flocos, ondas, asas, notas e escudos. Essa camada é pixel art nativa (nearest-neighbor), não Canvas/CSS em batalha, e nunca inclui as três artes de Johto já aprovadas.
+
+## Correção de boot isolado
+
+O build gerava `johto-lab-cooldown.js`, mas o código fonte importava `torre2-johto-lab-cooldown.js`. Corrigido o destino do módulo e o teste de artefato; antes o Phaser abortava por 404 na importação de JavaScript. Não alterar a campanha ou o efeito aprovado.
