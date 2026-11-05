@@ -80,13 +80,20 @@ const server=http.createServer(async(req,res)=>{
    const repeat=TORRE2_JOHTO_LAB_FORMS[a.forma](me,a,{slot:'lmb'});
    const otherSlot=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
    const nativeBars=['lmb','rmb','q','e'].map(k=>me.cd?.[k]);
-   me.t=oldT+1.01;
+   // The native fighter exposes read-only simulated time. NEVER assign me.t.
+   // Temporarily mark only the 1s timer as expired while the VFX is alive:
+   // the independent active-animation gate must still prevent stacking.
+   const due=me.__johtoLabNextCastAt;
+   me.__johtoLabNextCastAt=me.t-.01;
    const runningVFX=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   me.__johtoLabNextCastAt=due;
    for(const fx of scene.efectos.slice(before))fx.destroy?.();
    scene.efectos.splice(before);
-   me.t=oldT+.99;
    const before1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
-   me.t=oldT+1.01;
+   // Real Phaser game time must advance through an actual browser frame.
+   // Training is invulnerable during this 1s observation window.
+   me.inmortal=true;enemy.inmortal=true;
+   await new Promise(ok=>setTimeout(ok,1150));
    const beforeFinal={t:me.t,next:me.__johtoLabNextCastAt,active:me.__johtoLabActiveEffects?.map(fn=>fn()),effects:scene.efectos.length,
     rival:!!me.rival,lab:!!scene.datos?.johtoLab,move:b.forma};
    const after1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
@@ -94,7 +101,7 @@ const server=http.createServer(async(req,res)=>{
    for(const fx of scene.efectos.slice(before))fx.destroy?.();
    scene.efectos.splice(before);
    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
-   me.t=oldT;me.accion=null;me.dash=null;
+   me.accion=null;me.dash=null;
    return {first,repeat,otherSlot,runningVFX,before1s,after1s,nativeBars,beforeFinal,afterFinal,
     diagnostic:{oldT,now:me.t,next:me.__johtoLabNextCastAt,
      activeEffects:me.__johtoLabActiveEffects?.map(f=>{try{return f()}catch(e){return String(e)}}),
@@ -108,7 +115,7 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(cooldownGate.first,true);
   assert.equal(cooldownGate.repeat,false,'Same move cannot spam');
   assert.equal(cooldownGate.otherSlot,false,'Switching button cannot bypass global cooldown');
-  assert.equal(cooldownGate.before1s,false,'Still blocked at 0.99s');
+  assert.equal(cooldownGate.before1s,false,'Still blocked before the real 1s interval');
   assert.equal(cooldownGate.runningVFX,false,'Cannot overlap a still-running visual effect');
   assert.equal(cooldownGate.after1s,true,'May cast after 1s and old animation completes');
   assert.ok(cooldownGate.nativeBars.every(x=>x>=1),'Native cooldown visible on all four slots');
