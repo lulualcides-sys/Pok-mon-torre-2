@@ -82,3 +82,38 @@ jobs:
             site-capture/CAPTURE-REPORT.json
           retention-days: 7
           if-no-files-found: warn
+
+  review-first-four:
+    name: Browser — four reworked Johto moves (independent review)
+    needs: quick-pixel
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser test dependencies
+        run: npm install --no-audit --no-fund
+      - name: Capture upstream and build isolated preview
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs; then break; fi
+            if [ "$attempt" -eq 4 ]; then exit 1; fi
+            sleep 3
+          done
+          node tools/pokearena/build-preview.mjs
+          node tests/johto-training-lab-built.test.mjs
+      - name: Real Chromium — 4 choices, 3 originals preserved, 24 changing frames
+        run: |
+          set -euo pipefail
+          export CHROME_BIN="$(command -v google-chrome)"
+          node tests/johto-first-four-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: johto-first-four-screenshots
+          path: test-evidence/johto-first-four/
+          retention-days: 7
+          if-no-files-found: warn
