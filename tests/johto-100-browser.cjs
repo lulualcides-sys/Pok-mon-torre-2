@@ -75,6 +75,29 @@ const server=http.createServer(async(req,res)=>{
    "Unown must expose the approved playable Hidden Power");
   assert.equal(report.partial.some(x=>x.id==="smeargle"),false,
    "New Smeargle must have four executable Sketch-demo abilities");
+  // Diagnostic for the separate main Pages failure: Rayquaza was reported
+  // unselectable. Do not change or bypass native P2 move slots to fix it.
+  await page.evaluate(()=>window.__pt2Game.scene.start("seleccion",{
+   previo:{modo:"cpu",p1:"rayquaza"}
+  }));
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive("seleccion")&&
+   window.__pt2Game.scene.getScene("seleccion").casillas?.length>40,null,{timeout:30000});
+  const rayquaza=await page.evaluate(async()=>{
+   const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
+   const base=new URL("./",script);
+   const [{ROSTER},selectText]=await Promise.all([
+    import(new URL("datos.js",base)),
+    fetch(new URL("escenas/seleccion.js",base)).then(r=>r.text())
+   ]);
+   const native=ROSTER.find(p=>p.id==="rayquaza");
+   const cards=window.__pt2Game.scene.getScene("seleccion").casillas;
+   const card=cards.find(c=>c.p?.id==="rayquaza");
+   const i=selectText.indexOf("const bloqueado=");
+   return {native:!!native,disabled:native?.desactivado,selectedCard:!!card,
+    cardLocked:card?.bloqueado,cardDex:card?.p?.dex,
+    sourceBlock:i<0?"not-found":selectText.slice(i,i+380)};
+  });
+  console.log("RAYQUAZA_SELECTION_PREDEPLOY_DIAGNOSTIC",JSON.stringify(rayquaza));
   // Check the actual non-Lab Arena with the new Unown (real Phaser cast).
   // Native Poké Arena / other Pokémon's kits remain unchanged.
   await page.evaluate(()=>window.__pt2Game.scene.start("combate",{
