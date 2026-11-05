@@ -11,6 +11,7 @@ import {stripNativeSocialFooterLinks} from './torre2-native-social-compat.mjs';
 import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-compat.mjs';
 import {enableRayquazaForHomologation,rayquazaRequiredSpriteFiles} from './torre2-rayquaza-preview.mjs';
 import {skinMenuScene} from './torre2-noncombat-button-skin.mjs';
+import {removeCustomizeTitleOption,preloadPokedexOnePage} from './torre2-title-pokedex-fast.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -1320,6 +1321,19 @@ await fs.writeFile(johtoSelectionPath,
   throw Error('Unknown native title structure; cannot safely restore original Pokémon');
  }
  await fs.writeFile(file,source);
+}
+// Apply UI-only release adjustments after every native title/Pokédex patch.
+// Removing CUSTOMIZE does not alter SETTINGS, PLAY or battle controls.
+{
+ const titleFile=path.join(dest,clientSource,'escenas/titulo.js');
+ const before=await fs.readFile(titleFile,'utf8');
+ const after=removeCustomizeTitleOption(before);
+ await fs.writeFile(titleFile,after);
+ console.log('Native title CUSTOMIZE tile:',after===before?'not present':'removed');
+ const dexFile=path.join(dest,clientSource,'escenas/pokedex.js');
+ const dex=await fs.readFile(dexFile,'utf8');
+ await fs.writeFile(dexFile,preloadPokedexOnePage(dex));
+ console.log('Pokédex: preload only visible 36-card National Dex page, load others on demand');
 }
 const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
