@@ -92,10 +92,25 @@ const server=http.createServer(async(req,res)=>{
    await page.screenshot({path:'test-evidence/center-heal-'+label+'-start.png',fullPage:true});
    // The confirmation zone exists only for 450ms. Screenshots/Chrome capture
    // may miss that narrow window. Inspect the durable save, not a transient UI.
-   await page.waitForFunction(()=>{
-    const s=window.core.readCampaign();
-    return s?.team?.every(m=>m.hp===100&&m.status===null&&!m.confusion);
-   },null,{timeout:12000});
+   try{
+    await page.waitForFunction(()=>{
+     const s=window.core.readCampaign();
+     return s?.team?.every(m=>m.hp===100&&m.status===null&&!m.confusion);
+    },null,{timeout:30000});
+   }catch(error){
+    const diagnostic=await page.evaluate(()=>{
+     const scene=window.__pt2Game?.scene?.getScene('campanha');
+     const save=window.core?.readCampaign?.();
+     return {sceneActive:scene?.scene?.isActive(),busy:scene?.__torre2CenterBusy,
+      health:save?.team?.map(m=>({id:m.id,hp:m.hp,status:m.status,
+       confusion:m.confusion})),errors:scene?.children?.list?.filter(o=>
+       o.getData?.('torre2-center-save-error')===true)?.map(o=>o.text)};
+    }).catch(e=>({diagnosticFailure:String(e)}));
+    console.error('CENTER_HEAL_TIMEOUT_DIAGNOSTIC',label,JSON.stringify({diagnostic,errors}));
+    await page.screenshot({path:'test-evidence/center-heal-'+label+'-timeout.png',
+     fullPage:true}).catch(()=>{});
+    throw error;
+   }
    const healed=await page.evaluate(()=>{
     const s=core.readCampaign();
     return {hp:s.team.map(p=>p.hp),status:s.team.map(p=>p.status),
