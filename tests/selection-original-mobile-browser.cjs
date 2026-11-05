@@ -54,7 +54,7 @@ const server=http.createServer(async(req,res)=>{
     return scene.children.list.filter(obj=>obj?.getData?.('torre2-ui-theme')==='premium-noncombat').length;
    });
    assert.ok(themedControls>=3,'Original noncombat selection controls must use Pixel Art Premium');
-   assert.equal(initial.visibleCards,16,'Only 16 Pokémon can be rendered on one page');
+   assert.equal(initial.visibleCards,8,'Only 8 Pokémon can be rendered on one page');
    assert.deepEqual(initial.visiblePages,[initial.page],'A hidden page has visible sprites');
    assert.equal(initial.hiddenClickable,0,'Hidden Pokémon cannot be touched');
    assert.ok(initial.label.startsWith('PÁG '+(initial.page+1)+'/'),'Page indicator must match the focused Pokémon');
@@ -63,16 +63,16 @@ const server=http.createServer(async(req,res)=>{
    const nextPage=initial.page===0?1:0;
    await page.evaluate((targetPage)=>{
     const s=window.__pt2Game.scene.getScene('seleccion');
-    s.foco=targetPage*16;s.refrescar();
+    s.foco=targetPage*8;s.refrescar();
    },nextPage);
    const changed=await inspect();
-   assert.equal(changed.visibleCards,16);
+   assert.equal(changed.visibleCards,8);
    assert.deepEqual(changed.visiblePages,[nextPage]);
    assert.equal(changed.hiddenClickable,0);
    assert.ok(changed.label.startsWith('PÁG '+(nextPage+1)+'/'));
    await fs.mkdir('test-evidence',{recursive:true});
-   await page.screenshot({path:mobile?'test-evidence/selection-16-per-page-mobile.png':
-    'test-evidence/selection-16-per-page-desktop.png',fullPage:true});
+   await page.screenshot({path:mobile?'test-evidence/selection-8-per-page-mobile.png':
+    'test-evidence/selection-8-per-page-desktop.png',fullPage:true});
    assert.deepEqual(pageErrors,[],'Phaser selection errors');
    console.log('PHASER SELECTION RESPONSIVE PASS',JSON.stringify({mobile,initial,changed}));
    await page.close();

@@ -39,12 +39,27 @@ export function header(scene){
  px(g,0,51,640,1,0x70bee9);
 }
 export function backdrop(scene){
+ // One coherent noncombat visual system: restrained FRLG pixel rails and
+ // panels behind normal campaign UI. Native battle scenes never import it.
  const g=scene.add.graphics().setDepth(0),r=rand(98);
  px(g,0,52,640,308,0x08192f);
  for(let y=55;y<360;y+=12)for(let x=4;x<640;x+=12){
   const k=r();px(g,x,y,5,5,k<.4?0x16395f:0x0e2946,.45);
  }
- px(g,0,352,640,8,0x0e3157);
+ // Side rails leave a clear corridor for centered subtitle text.
+ px(g,9,59,89,2,0x306e9b,.8);
+ px(g,542,59,89,2,0x306e9b,.8);
+ px(g,9,61,62,1,0x8acbec,.55);
+ px(g,569,61,62,1,0x8acbec,.55);
+ px(g,6,63,2,278,0x3a799f,.65);
+ px(g,632,63,2,278,0x3a799f,.65);
+ for(const x of [6,628])for(const y of [62,333]){
+  px(g,x,y,6,3,0x85c6dd,.85);
+  px(g,x+2,y+3,2,3,0x285a83);
+ }
+ px(g,0,350,640,10,0x081b32);
+ px(g,8,349,624,2,0x347ba1,.95);
+ px(g,0,354,640,6,0x0e3157);
 }
 export function buttonFrame(g,x,y,w,h,tone='blue',hover=false){
  const opts=tone==='gold'?[0xefd06d,0xfff4aa,0xd48929,0xffcb52]:

@@ -45,8 +45,8 @@ const server=http.createServer(async(req,res)=>{
   });
   const initial=await measure();
   assert.equal(initial.page,0);
-  assert.equal(initial.pages,Math.ceil(initial.total/24));
-  assert.equal(initial.visible,24,'First page must expose 24 Pokémon, not 76 clipped columns');
+  assert.equal(initial.pages,Math.ceil(initial.total/8));
+  assert.equal(initial.visible,8,'First page must expose 8 Pokémon, not a clipped dense grid');
   assert.deepEqual(initial.misplaced,[]);
   assert.deepEqual(initial.inputLeaks,[],'Off-page cards still accept touch/click');
   // Use the REAL native previous/next page button, not a direct scene mutation.
@@ -61,8 +61,8 @@ const server=http.createServer(async(req,res)=>{
    null,{timeout:9000});
   const second=await measure();
   assert.equal(second.page,1);
-  assert.equal(second.visible,24);
-  assert.equal(second.focus,24);
+  assert.equal(second.visible,8);
+  assert.equal(second.focus,8);
   assert.deepEqual(second.misplaced,[]);
   assert.deepEqual(second.inputLeaks,[]);
   for(let i=2;i<initial.pages;i++){
@@ -72,7 +72,7 @@ const server=http.createServer(async(req,res)=>{
   }
   const last=await measure();
   assert.equal(last.page,initial.pages-1);
-  assert.equal(last.visible,last.total-(initial.pages-1)*24,
+  assert.equal(last.visible,last.total-(initial.pages-1)*8,
    'Last page must expose EVERY remaining Pokémon');
   assert.deepEqual(last.inputLeaks,[]);
   assert.deepEqual(last.misplaced,[]);

@@ -115,6 +115,12 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/source-client-smoke.cjs
+      - name: Arena seleção compacta — setas, oito visíveis e toque desktop/mobile
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tests/selection-original-mobile-browser.cjs
+          node tests/t08-native-selection-pagination-browser.cjs
       - name: Gerar diagnóstico automático na falha
         if: failure()
         env:
