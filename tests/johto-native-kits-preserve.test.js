@@ -2,6 +2,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {JOHTO_100_ROWS} from '../tools/pokearena/torre2-johto-100-data.js';
+import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
+ GEN4_HGSS_JOHTO_TM,GEN5_B2W2_JOHTO_TM}
+ from '../tools/pokearena/torre2-gen45-johto-learnsets.js';
 
 // The source tree uses torre2-* file names. The Phaser build rewrites the
 // same imports to short names. Test actual source logic with only the two
@@ -11,7 +14,8 @@ let source=readFileSync(new URL('torre2-johto-100-species.js',folder),'utf8');
 for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
- ['johto-lab-catalog.js','torre2-johto-lab-catalog.js']
+ ['johto-lab-catalog.js','torre2-johto-lab-catalog.js'],
+ ['gen45-johto-learnsets.js','torre2-gen45-johto-learnsets.js']
 ]){
  const needle='from "./'+from+'"';
  assert.ok(source.includes(needle),'Original build import missing: '+from);
@@ -71,7 +75,7 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
  assert.equal(unown?.kit.lmb?.torre2JohtoSpecialUnown,true);
  assert.deepEqual(['lmb','rmb','q','e'].map(k=>smeargle?.kit[k]?.nombre),
   ['Tackle','Quick Attack','Swift','Body Slam']);
- assert.equal(smeargle?.kit.e?.torre2JohtoLegal,'FRLG-SKETCH-DEMO');
+ assert.equal(smeargle?.kit.e?.torre2JohtoLegal,'GEN5-SKETCH-DEMO');
  for(const id of ['houndour','houndoom']){
   const added=created.find(p=>p.id===id);
   assert.ok(added,'Missing new '+id);
@@ -167,4 +171,28 @@ test('new Johto kits never equip a move absent from an approved installed catalo
    }
   }
  }
+});
+
+test('Johto Gen IV HGSS / Gen V B2W2 source data covers all 100',()=>{
+ for(const m of [GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
+   GEN4_HGSS_JOHTO_TM,GEN5_B2W2_JOHTO_TM])
+  assert.equal(Object.keys(m).length,100);
+ assert.equal(GEN4_HGSS_JOHTO_LEVEL_UP.wobbuffet.counter,1);
+ assert.equal(GEN5_B2W2_JOHTO_LEVEL_UP.wobbuffet.counter,1);
+ assert.equal(GEN5_B2W2_JOHTO_LEVEL_UP.houndour['foul-play'],40);
+ assert.equal(GEN5_B2W2_JOHTO_LEVEL_UP.smeargle.sketch,1);
+ assert.equal(GEN5_B2W2_JOHTO_LEVEL_UP.wobbuffet.revenge,undefined,
+ 'Revenge cannot be assigned to Wobbuffet');
+});
+test('Smeargle uses installed Revenge and Mirror Coat through Sketch',()=>{
+ const selected=selectJohto100Moves(JOHTO_100_ROWS.find(p=>p[1]==='smeargle'),
+ new Map([
+  ['tackle',{nombre:'Tackle',forma:'tajo'}],
+  ['revenge',{nombre:'Revenge',forma:'contra'}],
+  ['mirror-coat',{nombre:'Mirror Coat',forma:'contra'}],
+  ['body-slam',{nombre:'Body Slam',forma:'patada'}],
+  ['counter',{nombre:'Counter',forma:'contra',pendiente:true}]
+ ]));
+ assert.deepEqual(selected.map(x=>x.move.nombre),
+ ['Tackle','Revenge','Mirror Coat','Body Slam']);
 });

@@ -280,6 +280,7 @@ await Promise.all([
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
  ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
+ ['tools/pokearena/torre2-gen45-johto-learnsets.js','gen45-johto-learnsets.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
  ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],

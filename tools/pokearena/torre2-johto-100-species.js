@@ -6,6 +6,8 @@
 import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
+import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
+ GEN4_HGSS_JOHTO_TM,GEN5_B2W2_JOHTO_TM} from "./gen45-johto-learnsets.js";
 const canon=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
  .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const byNumber=new Map(JOHTO_100_ROWS.map(p=>[p[0],p]));
@@ -64,15 +66,32 @@ export function selectJohto100Moves(p,library){
  // legal target ability. In the offline Arena this is an explicit DEMO kit,
  // not fake level-up data, and it is never applied to native P2 species.
  if(p[1]==="smeargle"){
-  return ["tackle","quick-attack","swift","body-slam"]
+  // Copy only installed battle moves (Sketch may copy Revenge/Mirror Coat).
+  return ["tackle","counter","revenge","mirror-coat",
+   "quick-attack","swift","body-slam","bite","ember","water-gun"]
    .map(id=>({id,level:-2,move:library.get(id),sketched:true}))
    .filter(x=>executable(x.move));
  }
- // p[10] contains only Gen III FireRed/LeafGreen natural (level>=0)
- // and compatible TM (level=-1). No invented species/type assignments.
- const legal=p[10].map(([id,level])=>({
-  id,level,move:library.get(canon(id))
- })).filter(x=>executable(x.move)&&
+ // FRLG natural/TM plus independently verified Gen IV HGSS and
+ // Gen V B2W2 species-legal attacks, intersected with actual P2 library.
+ const learned=new Map();
+ const addLegal=(id,level,source)=>{
+  const key=canon(id),prior=learned.get(key),move=library.get(key);
+  if(!key||!executable(move))return;
+  const x={id:key,level,move,source};
+  if(!prior||(prior.level<0&&level>=0))learned.set(key,x);
+ };
+ for(const [id,level] of p[10])
+  addLegal(id,level,level>=0?"FRLG-LEVEL":"FRLG-TM");
+ for(const [id,level] of Object.entries(GEN4_HGSS_JOHTO_LEVEL_UP[p[1]]||{}))
+  addLegal(id,level,"GEN4-HGSS-LEVEL");
+ for(const [id,level] of Object.entries(GEN5_B2W2_JOHTO_LEVEL_UP[p[1]]||{}))
+  addLegal(id,level,"GEN5-B2W2-LEVEL");
+ for(const id of Object.keys(GEN4_HGSS_JOHTO_TM[p[1]]||{}))
+  addLegal(id,-1,"GEN4-HGSS-TM");
+ for(const id of Object.keys(GEN5_B2W2_JOHTO_TM[p[1]]||{}))
+  addLegal(id,-1,"GEN5-B2W2-TM");
+ const legal=[...learned.values()].filter(x=>executable(x.move)&&
   !["snore","hyper-beam"].includes(canon(x.id))&&
   !(canon(x.id)==="solar-beam"&&!p[2].includes("GRASS")));
  const distinct=[...new Map(legal.map(x=>[canon(x.id),x])).values()];
@@ -119,7 +138,7 @@ export function johto100Kit(p,library){
   // Missing skill? Leave the slot empty rather than create a fake fallback.
   if(!executable(m.move)||library.get(canon(m.id))!==m.move)return;
   kit[slots[i]]={...m.move,pendiente:false,
-  torre2JohtoLegal:m.sketched?"FRLG-SKETCH-DEMO":"FRLG",
+  torre2JohtoLegal:m.sketched?"GEN5-SKETCH-DEMO":m.source,
   torre2JohtoMoveLevel:m.level,
   ...(p[1]==="unown"&&m.id==="hidden-power"?
     {torre2JohtoSpecialUnown:true}:{}),
