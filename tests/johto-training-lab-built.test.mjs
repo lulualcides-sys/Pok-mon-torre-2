@@ -22,11 +22,11 @@ assert.match(read("escenas/combate.js"),/installJohtoLabCombat/);
 assert.doesNotMatch(read("torre2/move-pool.js"),/JOHTO_18|johto-lab/);
 assert.doesNotMatch(read("torre2/campanha.js"),/JOHTO_18|johto-lab/);
 const manifest=JSON.parse(fs.readFileSync(path.join(dir,"assets/torre2/johto-pixelfx/manifest.json"),"utf8"));
-assert.equal(manifest.files.length,37);
-assert.equal(manifest.files.filter(x=>["thief","false-swipe","steel-wing","rock-smash"].includes(x.id)).length,0,
+assert.equal(manifest.files.length,33);
+assert.equal(manifest.files.filter(x=>["return","present","frustration","magnitude"].includes(x.id)).length,0,
  "No rejected rectangle sprites may ship for the four new P2 effects");
 assert.match(read("torre2/johto-lab-runtime.js"),/makeJohtoFourNative/);
 assert.ok(fs.existsSync(path.join(dir,modules,"torre2/torre2-johto-four-native.js")));
-for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka"])
+for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"])
  assert.ok(!manifest.files.some(x=>x.id===id),"Approved original VFX not regenerated");
-console.log("PASS four offensive Johto reviews, six native P2 moves, five approved untouched",modules);
+console.log("PASS next four Johto reviews, ten native P2 moves, nine approved untouched",modules);

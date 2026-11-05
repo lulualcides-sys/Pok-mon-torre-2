@@ -2,21 +2,21 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import {JOHTO_LAB_VISIBLE,JOHTO_LAB_ALL,JOHTO_LAB_DEFAULT}
  from "../tools/pokearena/torre2-johto-lab-catalog.js";
-import {JOHTO_FOUR_NATIVE_IDS,makeJohtoFourNative} from "../tools/pokearena/torre2-johto-four-native.js";
+import {JOHTO_FOUR_NATIVE_IDS,makeJohtoFourNative,johtoBatch3Roll} from "../tools/pokearena/torre2-johto-four-native.js";
 test("Only four unapproved attacks are in the review UI; approved three untouched",()=>{
  assert.deepEqual(JOHTO_LAB_VISIBLE.map(x=>x.id),JOHTO_FOUR_NATIVE_IDS);
  assert.deepEqual([...JOHTO_LAB_DEFAULT],JOHTO_FOUR_NATIVE_IDS);
  assert.equal(JOHTO_LAB_ALL.length,46);
- for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka"]){
+ for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"]){
   assert.ok(JOHTO_LAB_ALL.some(x=>x.id===id));
   assert.ok(!JOHTO_LAB_VISIBLE.some(x=>x.id===id));
-  if(!["triple-kick","octazooka"].includes(id))
+  if(!["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"].includes(id))
    assert.equal(makeJohtoFourNative({},id),null);
  }
 });
 test("All four VFX move and change native P2 sprite layers, no painted rectangles",()=>{
  const names=new Set(["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-psiquico","p-mira","p-guijarro",
- "vfx-quickattack","vfx-arco","vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca"]);
+ "vfx-quickattack","vfx-arco","vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca","vfx-huevo","vfx-hiper_impacto","p-corazon","p-brasa","p-roca"]);
  const scene={textures:{exists(id){return names.has(id)},get(){return{setFilter(){}}}},
   add:{image(x,y,id){return {
    name:id,active:true,visible:false,alpha:0,
@@ -51,11 +51,18 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
 });
 test("Gen III stats and one-second shared lab cooldown remain",()=>{
  for(const m of JOHTO_LAB_VISIBLE)assert.equal(m.cd,1);
- const thief=JOHTO_LAB_VISIBLE.find(x=>x.id==="thief");
- const rock=JOHTO_LAB_VISIBLE.find(x=>x.id==="rock-smash");
- assert.equal(thief.poder,40);assert.equal(thief.categoria,"SPECIAL");
- assert.equal(thief.pp,10);assert.equal(rock.poder,20);assert.equal(rock.categoria,"PHYSICAL");
- assert.equal(rock.precisao,100);assert.equal(rock.pp,15);
+ const ret=JOHTO_LAB_VISIBLE.find(x=>x.id==="return");
+ const gift=JOHTO_LAB_VISIBLE.find(x=>x.id==="present");
+ const quake=JOHTO_LAB_VISIBLE.find(x=>x.id==="magnitude");
+ assert.equal(ret.poder,102);assert.equal(ret.categoria,"PHYSICAL");
+ assert.equal(gift.poder,0);assert.equal(gift.pp,15);
+ assert.equal(quake.poder,0);assert.equal(quake.pp,30);
+ assert.deepEqual(johtoBatch3Roll("present",()=>.1),{power:40,heal:false});
+ assert.deepEqual(johtoBatch3Roll("present",()=>.5),{power:80,heal:false});
+ assert.deepEqual(johtoBatch3Roll("present",()=>.75),{power:120,heal:false});
+ assert.deepEqual(johtoBatch3Roll("present",()=>.9),{power:0,heal:true});
+ const magnitude=[0,.05,.15,.35,.65,.85,.95].map(v=>johtoBatch3Roll("magnitude",()=>v).power);
+ assert.deepEqual(magnitude,[10,30,50,70,90,110,150]);
 });
 
 test("P2 contact geometry rejects remote melee and accepts actual overlapping body",async()=>{

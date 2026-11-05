@@ -31,13 +31,13 @@ const server=http.createServer(async(req,res)=>{
    const base=new URL("./",Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src);
    const c=await import(new URL("torre2/johto-lab-catalog.js",base));
    return {visible:s.moveCards.filter(card=>card.m).map(card=>card.m.id),
-    originals:c.JOHTO_LAB_ALL.filter(x=>["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka"].includes(x.id)).map(x=>x.id),
+    originals:c.JOHTO_LAB_ALL.filter(x=>["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"].includes(x.id)).map(x=>x.id),
     defaults:[...s.picks],
     removedOld:c.JOHTO_LAB_VISIBLE.map(m=>({id:m.id,loaded:s.textures.exists("torre2-johto-pixelfx-"+m.id)}))};
   });
-  assert.deepEqual(visible.visible,["thief","false-swipe","steel-wing","rock-smash"]);
+  assert.deepEqual(visible.visible,["return","present","frustration","magnitude"]);
   assert.deepEqual(visible.defaults,visible.visible);
-  assert.equal(visible.originals.length,5,"All 5 approved FX preserved in move pool");
+  assert.equal(visible.originals.length,9,"All 9 approved FX preserved in move pool");
   assert.ok(visible.removedOld.every(x=>!x.loaded),
    "Four rejected rectangular spritesheets must NOT be loaded");
   await fs.mkdir("test-evidence/johto-first-four",{recursive:true});
@@ -101,7 +101,7 @@ const server=http.createServer(async(req,res)=>{
     const native=scene.children.list.filter(o=>o.active&&!oldChildren.has(o)&&
       ["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-mira","p-psiquico","p-guijarro",
        "vfx-quickattack","vfx-arco","vfx-arco-sombra","vfx-arco-acero","vfx-arco-golpe",
-       "vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca"].includes(o.texture?.key));
+       "vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca","vfx-huevo","vfx-hiper_impacto","p-corazon","p-brasa","p-roca"].includes(o.texture?.key));
     const effect=scene.efectos.at(-1),beforeHP=enemy.hp;
     const nameVisible=scene.globos?.some(c=>c.list?.some(obj=>obj.text===m.nombre+"!"))||false;
     const poses=[];

@@ -110,7 +110,7 @@ export async function generateJohtoPixelFXSheets(folder){
    bytes:image.length,painted,sourceCrop:side,visualOnly:true});
  }
  await writeFile(join(folder,"manifest.json"),JSON.stringify({
-  generator:"torre2-pixelfx-sheets.mjs",engine:"P2-native-six-live-plus-PixelFX-unapproved-backlog",upstreamCommit:PIXELFX_PIN,
+  generator:"torre2-pixelfx-sheets.mjs",engine:"P2-native-ten-live-plus-PixelFX-unapproved-backlog",upstreamCommit:PIXELFX_PIN,
   license:"MIT",approved:false,mode:"visual-only",files:results
  },null,2)+"\n");
  return results;

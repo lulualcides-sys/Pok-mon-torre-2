@@ -23,10 +23,10 @@ test("Mewtwo lab enforces four distinct slots without changing original Pokémon
  assert.throws(()=>makeJohtoTrainingKit(["thief","thief","present","snore"]));
 });
 
-test("Review UI displays only four offensive moves; preserves all five approved VFX",async()=>{
+test("Review UI displays only four offensive moves; preserves all nine approved VFX",async()=>{
  const {JOHTO_LAB_REVIEW_4,JOHTO_LAB_VISIBLE,JOHTO_LAB_ALL}
   =await import("../tools/pokearena/torre2-johto-lab-catalog.js");
- assert.deepEqual([...JOHTO_LAB_REVIEW_4],["thief","false-swipe","steel-wing","rock-smash"]);
+ assert.deepEqual([...JOHTO_LAB_REVIEW_4],["return","present","frustration","magnitude"]);
  assert.deepEqual(JOHTO_LAB_VISIBLE.map(m=>m.id),JOHTO_LAB_REVIEW_4);
  assert.equal(JOHTO_LAB_ALL.length,46);
  for(const id of JOHTO_APPROVED_5){
