@@ -7,7 +7,7 @@ import {createFrame,clearFrame,createFx,composite} from "pixelfx";
 import {deflateSync} from "node:zlib";
 import {mkdir,writeFile} from "node:fs/promises";
 import {join} from "node:path";
-import {JOHTO_PIXELFX_28,PIXELFX_PIN} from "./torre2-johto-pixelfx-catalog.js";
+import {JOHTO_PIXELFX_43,PIXELFX_PIN} from "./torre2-johto-pixelfx-catalog.js";
 
 export const PIXELFX_CEL=96;
 export const PIXELFX_FRAMES=12;
@@ -62,7 +62,7 @@ function cropFrames(frames){
 export async function generateJohtoPixelFXSheets(folder){
  await mkdir(folder,{recursive:true});
  const results=[];
- for(const m of JOHTO_PIXELFX_28){
+ for(const m of JOHTO_PIXELFX_43){
   // Uses the actual upstream PixelFX module and its draw/particle simulation.
   const mod=await import("pixelfx/fx/"+m.fx);
   if(typeof mod.draw!=="function"&&typeof mod.create!=="function")
