@@ -87,12 +87,15 @@ const server=http.createServer(async(req,res)=>{
    me.t=oldT+.99;
    const before1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
    me.t=oldT+1.01;
+   const beforeFinal={t:me.t,next:me.__johtoLabNextCastAt,active:me.__johtoLabActiveEffects?.map(fn=>fn()),effects:scene.efectos.length,
+    rival:!!me.rival,lab:!!scene.datos?.johtoLab,move:b.forma};
    const after1s=TORRE2_JOHTO_LAB_FORMS[b.forma](me,b,{slot:'rmb'});
+   const afterFinal={t:me.t,next:me.__johtoLabNextCastAt,active:me.__johtoLabActiveEffects?.map(fn=>fn()),effects:scene.efectos.length};
    for(const fx of scene.efectos.slice(before))fx.destroy?.();
    scene.efectos.splice(before);
    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
    me.t=oldT;me.accion=null;me.dash=null;
-   return {first,repeat,otherSlot,runningVFX,before1s,after1s,nativeBars,
+   return {first,repeat,otherSlot,runningVFX,before1s,after1s,nativeBars,beforeFinal,afterFinal,
     diagnostic:{oldT,now:me.t,next:me.__johtoLabNextCastAt,
      activeEffects:me.__johtoLabActiveEffects?.map(f=>{try{return f()}catch(e){return String(e)}}),
      fxCount:scene.efectos?.length,baseline:before,
