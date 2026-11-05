@@ -631,8 +631,12 @@ const cargaBuilt=fs.readFileSync(path.join(stage,version,'escenas/carga.js'),'ut
 assert.ok(!cargaBuilt.includes('assets/ui/balls20.png'),
  'Do not request missing balls20.png from live site: native client has no consumer');
 const dexBuilt=fs.readFileSync(path.join(stage,version,'escenas/pokedex.js'),'utf8');
-assert.ok(dexBuilt.includes('preload(){const m=this.registry.get("manifiesto")'),
- 'Pokédex loads all 26 original base portraits before drawing the grid');
+assert.ok(dexBuilt.includes('TORRE2_DEX_ORDER.slice(start,start+36)')&&
+  !dexBuilt.includes('new Set(ROSTER.map(p=>p.dex))'),
+  'Pokédex must load only the 36 visible National Dex cards on first open');
+assert.ok(dexBuilt.includes('this.torre2DexLoadPage(next)')&&
+  dexBuilt.includes('if(this.textures.exists(key))c.img.setTexture(key)'),
+  'Every later page must load and restore its real PMD portraits');
 assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
  'Pokédex must use existing PMD portrait/Idle assets rather than placeholder');
 assert.ok(dexBuilt.includes('this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)}'),
