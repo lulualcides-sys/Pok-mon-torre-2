@@ -6,9 +6,12 @@
  * The 3 approved effects NEVER enter this module.
  */
 export const JOHTO_FOUR_NATIVE_IDS=Object.freeze([
- "return","present","frustration","magnitude"
+ "pursuit","vital-throw","hidden-power","beat-up"
 ]);
-export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze(["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash"]);
+export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze([
+ "triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash",
+ "return","present","frustration","magnitude"]);
+import {hiddenPowerGen3 as johtoHiddenPowerGen3} from "./torre2-johto-gen3-mechanics.js";
 const clamp=v=>Math.max(0,Math.min(1,v));
 const smooth=v=>{v=clamp(v);return v*v*(3-2*v)};
 const mix=(a,b,v)=>a+(b-a)*v;
@@ -422,11 +425,125 @@ function createMagnitude(scene){
  }};
 }
 
+// Fourth visual review: native Poké Arena 2D sprite sheets for the last
+// four offensive Johto identities. Never import unapproved rectangle strips.
+function createPursuit(scene){
+ const chase=part(scene,"vfx-quickattack",0xffd8ff,1535);
+ const arcs=[part(scene,arcKey(scene,"sombra"),0xffffff,1542),
+  part(scene,arcKey(scene,"sombra"),0xffffff,1543)];
+ const shadows=Array.from({length:5},()=>part(scene,"vfx-astonish",0xd09bed,1539));
+ const sparks=Array.from({length:4},()=>part(scene,"p-sombra",0xc592ec,1544));
+ return {sprites:[chase,...arcs,...shadows,...sparks],update(t,a,b,state={}){
+  const actor=state.actor||a,dir=state.dirX??1,
+    wind=t<.58?fade(t/.58,.06,.87):0;
+  framePlace(chase,actor.x-dir*16,actor.y-8,60,30,wind,
+    frameAt(t,.34,2),0,dir<0);
+  shadows.forEach((o,i)=>{
+   const p=clamp(t*1.8-i*.15);
+   framePlace(o,actor.x-dir*(8+i*10),actor.y-5+(i%2)*6,
+    16+i%2*4,15+i%2*4,wind*(.4-i*.052),
+    frameAt(p,1,5));
+  });
+  const hitAge=state.hitAge,valid=Number.isFinite(hitAge)&&hitAge>=0&&hitAge<.31;
+  const u=valid?clamp(hitAge/.31):0,alpha=valid?fade(u,.05,.8):0;
+  const target=state.hitPoint||b;
+  arcs.forEach((o,i)=>framePlace(o,target.x+(i?5:-6),target.y+(i?6:-5),
+   56,40,alpha*(i?.75:1),4+frameAt(clamp((u-i*.13)/.87),1,4),
+   i?-27:22,dir<0));
+  sparks.forEach((o,i)=>{
+   const angle=2.3999*i,d=5+u*(16+i*3);
+   place(o,target.x+Math.cos(angle)*d,target.y+Math.sin(angle)*d*.6,
+    5,6,alpha*(.68-i*.12));
+  });
+ }};
+}
+function createVitalThrow(scene){
+ const charge=part(scene,attackSheet(scene),0xffffff,1536);
+ const lift=part(scene,"vfx-fly",0xffffff,1538);
+ const impact=Array.from({length:3},()=>part(scene,"vfx-roca",0xffffff,1541));
+ const dirt=Array.from({length:6},()=>part(scene,"p-guijarro",0xe1c69b,1543));
+ return {sprites:[charge,lift,...impact,...dirt],update(t,a,b,state={}){
+  const actor=state.actor||a,dir=state.dirX??1,
+   pre=t<.6?fade(t/.6,.07,.89):0;
+  framePlace(charge,actor.x+dir*12,actor.y-4,57,29,pre*.85,
+   frameAt(t,.45,3),0,dir<0);
+  framePlace(lift,actor.x+dir*18,actor.y-18,48,36,
+   pre*.52,frameAt(t,.48,3),dir<0?-16:16);
+  const age=state.hitAge,valid=Number.isFinite(age)&&age>=0&&age<.37,
+    u=valid?clamp(age/.37):0,alpha=valid?fade(u,.045,.85):0,
+    target=state.hitPoint||b;
+  impact.forEach((o,i)=>{
+   framePlace(o,target.x+(i-1)*11,target.y+8+i%2*6,
+    22+i*5,21+i*5,alpha*(.85-i*.18),
+    8+frameAt(clamp(u+i*.13),1,4),i*20);
+  });
+  dirt.forEach((o,i)=>{
+   const angle=i*2.4,d=6+u*(20+i*3);
+   place(o,target.x+Math.cos(angle)*d,
+    target.y+13+Math.sin(angle)*d*.53+u*u*7,
+    5+i%3,4+i%2,alpha*(.65-i*.07),i*20);
+  });
+ }};
+}
+function createHiddenPower(scene){
+ const core=part(scene,"vfx-psico",0xffffff,1539);
+ const aura=part(scene,"vfx-psywave",0xffffff,1540);
+ const tails=Array.from({length:5},()=>part(scene,"vfx-psywave",0xc9b1ff,1538));
+ const shards=Array.from({length:5},()=>part(scene,"p-psiquico",0xd3bcff,1542));
+ return {sprites:[core,aura,...tails,...shards],update(t,a,b,state={}){
+  const p=state.projectile||{active:false,x:a.x,y:a.y},on=p.active?1:0;
+  framePlace(core,p.x,p.y,34,34,on*.95,Math.floor(t*22)%8);
+  framePlace(aura,p.x,p.y,45,43,on*.69,Math.floor(t*19)%6);
+  tails.forEach((o,i)=>{
+   framePlace(o,p.x-(i+1)*(state.dirX??1)*8,p.y-4+(i%2)*8,
+    17+i%2*4,18+i%2*4,on*(.47-i*.07),(i+Math.floor(t*18))%6);
+  });
+  const age=state.hitAge,valid=Number.isFinite(age)&&age>=0&&age<.34,
+    u=valid?clamp(age/.34):0,alpha=valid?fade(u,.045,.85):0,
+    target=state.hitPoint||b;
+  shards.forEach((o,i)=>{
+   const phi=i*2.3999,d=8+u*(14+i*2);
+   place(o,target.x+Math.cos(phi)*d,target.y+Math.sin(phi)*d*.8,
+    7+i%2*2,7+i%2*2,alpha*(.79-i*.08),i*34);
+  });
+ }};
+}
+function createBeatUp(scene){
+ const rush=part(scene,"vfx-quickattack",0xffffff,1535);
+ const arcs=Array.from({length:3},()=>part(scene,arcKey(scene,"sombra"),0xffffff,1541));
+ const echos=Array.from({length:4},()=>part(scene,"vfx-astonish",0xb79bd9,1540));
+ const specs=Array.from({length:5},()=>part(scene,"p-sombra",0xc3a3ea,1543));
+ return {sprites:[rush,...arcs,...echos,...specs],update(t,a,b,state={}){
+  const actor=state.actor||a,dir=state.dirX??1,
+    wind=t<.66?fade(t/.66,.06,.86):0;
+  framePlace(rush,actor.x-dir*11,actor.y-7,54,27,wind*.75,
+   frameAt(t,.42,2),0,dir<0);
+  echos.forEach((o,i)=>framePlace(o,actor.x-dir*(i+1)*9,
+   actor.y-6+(i%2)*5,16,16,wind*(.42-i*.085),
+   (i+Math.floor(t*14))%5));
+  const age=state.hitAge,valid=Number.isFinite(age)&&age>=0&&age<.18,
+    u=valid?clamp(age/.18):0,alpha=valid?fade(u,.04,.78):0,
+    target=state.hitPoint||b,which=state.hitIndex??0;
+  arcs.forEach((o,i)=>{
+   const phase=clamp((u-i*.16)/.78);
+   framePlace(o,target.x+(which%3-1)*8+i*5,
+    target.y+(i-1)*7,48,34,alpha*(1-i*.22),
+    4+frameAt(phase,1,4),which%2?28:-26,dir<0);
+  });
+  specs.forEach((o,i)=>{const phi=i*2.4,d=6+u*(10+i*2);
+   place(o,target.x+Math.cos(phi)*d,target.y+Math.sin(phi)*d*.7,
+    5,5,alpha*(.72-i*.1));
+  });
+ }};
+}
+
 const FACTORIES=Object.freeze({
  "triple-kick":createTriple,thief:createThief,snore:createSnore,
  octazooka:createOcta,"false-swipe":createFalseSwipe,"steel-wing":createSteelWing,
  "rock-smash":createRockSmash,
- return:createReturn,present:createPresent,frustration:createFrustration,magnitude:createMagnitude
+ return:createReturn,present:createPresent,frustration:createFrustration,magnitude:createMagnitude,
+ pursuit:createPursuit,"vital-throw":createVitalThrow,
+ "hidden-power":createHiddenPower,"beat-up":createBeatUp
 });
 export function makeJohtoFourNative(scene,id){
  if(!scene?.textures||!FACTORIES[id])return null;
@@ -442,7 +559,11 @@ export function makeJohtoFourNative(scene,id){
   return:["vfx-quickattack","vfx-arco","vfx-acometida","p-corazon"],
   frustration:["vfx-quickattack","vfx-arco","vfx-astonish","p-brasa"],
   present:["vfx-huevo","p-estrella","p-corazon","vfx-hiper_impacto"],
-  magnitude:["vfx-roca","p-guijarro","p-roca"]
+  magnitude:["vfx-roca","p-guijarro","p-roca"],
+  pursuit:["vfx-quickattack","vfx-arco","vfx-astonish","p-sombra"],
+  "vital-throw":["vfx-acometida","vfx-fly","vfx-roca","p-guijarro"],
+  "hidden-power":["vfx-psico","vfx-psywave","p-psiquico"],
+  "beat-up":["vfx-quickattack","vfx-arco","vfx-astonish","p-sombra"]
  }[id];
  if(!required.every(t=>scene.textures.exists(t)))return null;
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);
@@ -483,19 +604,23 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  const angle=Math.atan2(aimY-source.y,aimX-source.x),
   ux=Math.cos(angle),uy=Math.sin(angle),
   distance=Math.hypot(aimX-source.x,aimY-source.y),
-  melee=!["snore","octazooka","present","magnitude"].includes(id),
+  melee=!["snore","octazooka","present","magnitude","hidden-power"].includes(id),
   seismic=id==="magnitude",
   duration=id==="triple-kick"?.77:id==="thief"?.71:
    id==="false-swipe"?.74:id==="steel-wing"?.78:
    id==="rock-smash"?.73:id==="return"?.68:id==="frustration"?.76:
-   id==="present"?.89:id==="magnitude"?.88:id==="snore"?.91:.9,
-  rise=.13,projectileSpeed=id==="snore"?260:id==="present"?265:350,
+   id==="present"?.89:id==="magnitude"?.88:id==="snore"?.91:
+   id==="pursuit"?.73:id==="vital-throw"?.96:
+   id==="hidden-power"?.94:id==="beat-up"?.99:.9,
+  rise=.13,projectileSpeed=id==="snore"?260:
+   id==="present"?265:id==="hidden-power"?315:350,
   maxRange=Math.max(1,h.alcance||180),
   // Native golpe/patada close into the target's actual standing hitbox.
   // The 70px Triple Kick melee reach includes a 25px physical approach.
   advance=Math.min(maxRange+(id==="triple-kick"?25:
    id==="false-swipe"||id==="steel-wing"||id==="rock-smash"||
-   id==="return"||id==="frustration"?18:0),
+   id==="return"||id==="frustration"||id==="pursuit"||
+   id==="vital-throw"||id==="beat-up"?22:0),
    Math.max(0,distance-17)),
   startProjectile={x:source.x+ux*17,y:source.y+uy*17},
   srcVisual={x:source.x,y:source.y-l.alto*.5},
@@ -504,8 +629,24 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    id==="thief"?[.32]:id==="false-swipe"?[.34]:
    id==="steel-wing"?[.36]:id==="rock-smash"?[.34]:
    id==="return"?[.32]:id==="frustration"?[.35]:
-   id==="magnitude"?[.38]:[];
+   id==="magnitude"?[.38]:id==="pursuit"?[.35]:
+   id==="vital-throw"?[.55]:id==="beat-up"?[.31]:[];
  const roll=id==="present"||id==="magnitude"?johtoBatch3Roll(id):null;
+ // The isolated training uses a single Mewtwo unless an actual party
+ // array exists. No invented teammates or non-existent extra strikes.
+ const party=e.datos.johtoLab.party;
+ const members=id==="beat-up"&&Array.isArray(party)&&party.length?
+  party.filter(p=>p&&p.hp>0&&!p.est?.dormido&&!p.est?.veneno&&
+   !p.est?.quemado&&!p.est?.paralizado&&!p.est?.congelado).slice(0,6):
+  id==="beat-up"?[{baseAtk:l.def?.formas?.[0]?.atk??l.def?.atk??110}]:[];
+ const beatWindows=id==="beat-up"?
+  members.map((_,i)=>.31+i*.11):hitWindows;
+ // Real Gen III IV formula, never quietly substitute fixed Normal power.
+ // A deterministic lab Mewtwo fixture is explicit when saved IVs are absent.
+ const ivs=l.ivs||e.datos.johtoLab.ivs||
+  {hp:31,attack:31,defense:31,speed:31,spAttack:31,spDefense:31};
+ const hidden=id==="hidden-power"?johtoHiddenPowerGen3(ivs):null;
+ if(id==="hidden-power"&&!hidden){visual.destroy();return false;}
  const friendship=Number.isFinite(l.amizade)?Math.max(0,Math.min(255,l.amizade)):
   id==="return"?255:id==="frustration"?0:128;
  // No friendship engine in this isolated lab: max-power fixture only.
@@ -518,7 +659,9 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  l.animar(h.anim||(melee?"Attack":"Shoot"),duration,.14);
  const contact=(index,px,py)=>{
   if(stop||r.ko||l.ko||r.est?.vuelo)return false;
-  if(Math.random()>h.precisao/100){if(id==="triple-kick")stop=true;return false;}
+  if(id!=="vital-throw"&&Math.random()>h.precisao/100){
+   if(id==="triple-kick")stop=true;return false;
+  }
   const dx=r.x-l.x,dy=r.y-l.y,d=Math.hypot(dx,dy)||1;
   const mult=id==="triple-kick"?index+1:1;
   if(id==="present"&&roll?.heal){
@@ -531,7 +674,15 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   }
   const powerMultiplier=id==="present"?(roll.power/40):
    id==="magnitude"?(roll.power/70):
-   id==="return"||id==="frustration"?friendshipPower/102:1;
+   id==="return"||id==="frustration"?friendshipPower/102:
+   id==="hidden-power"?hidden.power/60:
+   id==="beat-up"?Math.max(.4,Math.min(1,
+    (Number(members[index]?.baseAtk??members[index]?.atk??110)/110)*.58)):1;
+  // Pursuit's switch interception only triggers if the target genuinely
+  // enters a switch/recall action; isolated Mewtwo lab has no switching.
+  const pursuitSwitch=id==="pursuit"&&
+   (r.est?.retirada||r.accion?.tipo==="cambio"||r.accion?.tipo==="retirada");
+  const pursued=id==="pursuit"&&pursuitSwitch?2:1;
   // Use the original fighter damage pipeline: defenses, typing, shields,
   // training ledger, knockback and HP all remain in native recibir().
   // False Swipe is a non-KO technique (at least 1 HP). Native recibir
@@ -540,7 +691,8 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   if(keepAlive)r.inmortal=true;
   let result;
   try{
-   result=r.recibir(l,{dano:h.dano*mult*powerMultiplier,tipo:h.tipo,
+   result=r.recibir(l,{dano:h.dano*mult*powerMultiplier*pursued,
+    tipo:id==="hidden-power"?hidden.type:h.tipo,
     slot:extra?.slot,surge:extra?.surge,empuje:melee?14:10,
     dirX:dx/d,dirY:dy/d,proyectil:!melee,tick:index>0});
   }finally{if(keepAlive)r.inmortal=wasImmortal}
@@ -574,7 +726,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    const next=johtoP2Advance(source,angle,advance,age/.19);
    l.x=next.x;l.y=next.y;
    l.limitar?.();
-   while(nextHit<hitWindows.length&&age>=hitWindows[nextHit]){
+   while(nextHit<beatWindows.length&&age>=beatWindows[nextHit]){
     const index=nextHit++;
     if(stop)break;
     if(!johtoP2BodyContact(r,l.x,l.y,
@@ -616,9 +768,10 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
     {hitIndex,hitAge,hitPoint});
   else if(id==="thief"||id==="false-swipe"||
-   id==="steel-wing"||id==="rock-smash"||id==="return"||id==="frustration")
+   id==="steel-wing"||id==="rock-smash"||id==="return"||
+   id==="frustration"||id==="pursuit"||id==="vital-throw"||id==="beat-up")
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
-    {hitAge,hitPoint,actor:{x:l.x,y:l.y-l.alto*.5},dirX:ux,dirY:uy});
+    {hitAge,hitPoint,hitIndex,actor:{x:l.x,y:l.y-l.alto*.5},dirX:ux,dirY:uy});
   else if(id==="magnitude")
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
     {hitAge,hitPoint,power:roll?.power,level:roll?.level});
@@ -626,7 +779,8 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    visual.update(age/duration,srcVisual,aimedVisual,{hitAge,hitPoint,projectile:livePoint});
   else
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
-    {hitAge,hitPoint,projectile:livePoint,heal:roll?.heal,dirX:ux});
+    {hitAge,hitPoint,projectile:livePoint,heal:roll?.heal,dirX:ux,
+     type:hidden?.type});
   return true;
  },destroy(){
   if(done)return;

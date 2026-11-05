@@ -28,7 +28,7 @@ export function installJohtoLabCombat(scene){
   TORRE2_JOHTO_LAB_FORMS[fighter.kit[slot].forma]?.(fighter,fighter.kit[slot],{slot});
  },0x554a79);
  button(517,"TROCAR GOLPES",()=>scene.scene.start("johto-lab",{slots:scene.datos.johtoLab.slots}),0x206b66);
- scene.add.text(320,14,"MEWTWO LAB · LOTE 2 · 4 OFENSIVOS · CD 1s",{
+ scene.add.text(320,14,"MEWTWO LAB · LOTE 4 · 4 OFENSIVOS · CD 1s",{
   fontFamily:"Pixelify Sans,monospace",fontSize:"11px",color:"#ffe6ad"
  }).setOrigin(.5).setDepth(3801);
  tick();scene.game.events.on("step",tick);

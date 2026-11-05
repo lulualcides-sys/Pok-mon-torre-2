@@ -26,18 +26,20 @@ export const JOHTO_18=Object.freeze([
  Object.freeze({id,nombre,tipo,categoria,poder,precisao,pp,dano,alcance,
   anim,style,forma:"torre2_johto_"+id.replaceAll("-",""),coste:8,cd:1,
   lanzar:.13,source:"johto-lab-prototype",approved:["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka",
-   "thief","false-swipe","steel-wing","rock-smash"].includes(id),
+   "thief","false-swipe","steel-wing","rock-smash",
+   "return","present","frustration","magnitude"].includes(id),
   pendiente:false})));
 export const JOHTO_LAB_SLOTS=Object.freeze(["lmb","rmb","q","e"]);
 // The three approved techniques remain in JOHTO_LAB_ALL for compatibility,
  // original animation preservation and campaign use. They are NOT review targets.
 export const JOHTO_APPROVED_5=Object.freeze([
  "powder-snow","whirlpool","zap-cannon","triple-kick","octazooka",
- "thief","false-swipe","steel-wing","rock-smash"
+ "thief","false-swipe","steel-wing","rock-smash",
+ "return","present","frustration","magnitude"
 ]);
 // Next visual approval batch: two reworks plus two other offensive Gen III moves.
 // All 28 STATUS/visual-only prototypes remain excluded from the visible review list.
-export const JOHTO_LAB_REVIEW_4=Object.freeze(["return","present","frustration","magnitude"]);
+export const JOHTO_LAB_REVIEW_4=Object.freeze(["pursuit","vital-throw","hidden-power","beat-up"]);
 export const JOHTO_LAB_VISIBLE=Object.freeze(JOHTO_LAB_REVIEW_4.map(id=>
  [...JOHTO_18,...JOHTO_PIXELFX_28].find(m=>m.id===id)));
 export const JOHTO_LAB_DEFAULT=JOHTO_LAB_REVIEW_4;

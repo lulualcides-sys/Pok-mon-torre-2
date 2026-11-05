@@ -17,7 +17,8 @@ const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
 // factories while reviewing Thief, Snore, False Swipe and Steel Wing.
 const BATCH_FOUR=new Set(["triple-kick","octazooka","thief","snore",
  "false-swipe","steel-wing","rock-smash",
- "return","present","frustration","magnitude"]);
+ "return","present","frustration","magnitude",
+ "pursuit","vital-throw","hidden-power","beat-up"]);
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
 import {ZAP_ELECTRO_BALL_TEXTURE,zapCannonMotion} from "./native-zap.js";
 const tones={
@@ -289,7 +290,9 @@ function cast(l,h,extra){
    "steel-wing":"acero","rock-smash":"golpe"}[h.id];
   if(palette)vfx.hay(l.escena,"arco-"+palette);
   if(h.id==="return")vfx.hay(l.escena,"arco-golpe");
-  if(h.id==="frustration")vfx.hay(l.escena,"arco-sombra");
+  if(h.id==="frustration"||h.id==="pursuit"||h.id==="beat-up")
+   vfx.hay(l.escena,"arco-sombra");
+  if(h.id==="vital-throw")vfx.hay(l.escena,"acometida-golpe");
   if(h.id==="false-swipe"||h.id==="rock-smash")
    vfx.hay(l.escena,"acometida-golpe");
   return castJohtoFourNative(l,h,extra,RADIO);
