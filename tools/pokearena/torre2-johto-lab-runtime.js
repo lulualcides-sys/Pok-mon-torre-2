@@ -313,10 +313,17 @@ function cast(l,h,extra){
  const beam=projectile.has(style),melee=adjacent.has(style);
  const duration=h.id==='zap-cannon'?1.2:
   style==="vortex"?1.65:style==="quake"?1.05:beam?1.1:.75;
+ // Hit windows align with the visible PixelFX impact phase, not cast onset.
+ // The 3 approved attacks retain their existing timings verbatim.
  const windows=h.id==='zap-cannon'?[.84]:
   h.id==="triple-kick"?[.17,.34,.51]:
   h.id==="beat-up"?Array.from({length:beatUpGen3Participants(e.datos?.johtoLab?.party)},(_,i)=>.28+i*.11):
-  h.id==="whirlpool"?[.4,.7,1,1.3]:[.31];
+  h.id==="whirlpool"?[.4,.7,1,1.3]:
+  h.id==="snore"?[.76]:
+  h.id==="octazooka"?[.79]:
+  h.id==="present"?[.96]:
+  h.id==="hidden-power"?[.9]:
+  h.id==="vital-throw"?[.61]:[.31];
  let age=0,hits=0,stopped=false;
  l.animar(h.anim||"Attack",.53,.13);
  l.accion={hasta:l.t+.38,angulo:angle,lento:.65};
