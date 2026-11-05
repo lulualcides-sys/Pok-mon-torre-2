@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
+import {JOHTO_100_ROWS} from '../tools/pokearena/torre2-johto-100-data.js';
 
 // The source tree uses torre2-* file names. The Phaser build rewrites the
 // same imports to short names. Test actual source logic with only the two
@@ -16,7 +17,7 @@ for(const [from,to] of [
  assert.ok(source.includes(needle),'Original build import missing: '+from);
  source=source.replace(needle,'from '+JSON.stringify(new URL(to,folder).href));
 }
-const {addAllJohtoSpecies}=await import(
+const {addAllJohtoSpecies,selectJohto100Moves}=await import(
  'data:text/javascript;base64,'+Buffer.from(source).toString('base64')
 );
 
@@ -40,7 +41,18 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
     lmb:{nombre:'Tackle',forma:'native-tackle',tipo:'NORMAL',dano:5},
     rmb:{nombre:'Quick Attack',forma:'native-quick',tipo:'NORMAL',dano:7},
     q:{nombre:'Swift',forma:'native-swift',tipo:'NORMAL',dano:10},
-    e:{nombre:'Hyper Beam',forma:'native-hyper',tipo:'NORMAL',dano:32}},
+    e:{nombre:'Body Slam',forma:'native-body',tipo:'NORMAL',dano:20}},
+   evoluciones:[]},
+  {id:'test-fire-and-dark-moves',kit:{
+    lmb:{nombre:'Ember',forma:'native-ember',tipo:'FIRE',dano:5},
+    rmb:{nombre:'Bite',forma:'native-bite',tipo:'DARK',dano:12},
+    q:{nombre:'Crunch',forma:'native-crunch',tipo:'DARK',dano:14},
+    e:{nombre:'Flamethrower',forma:'native-flame',tipo:'FIRE',dano:19}},
+   evoluciones:[]},
+  {id:'test-machine-moves',kit:{
+    lmb:{nombre:'Solar Beam',forma:'native-solar',tipo:'GRASS',dano:90},
+    rmb:{nombre:'Hyper Beam',forma:'native-hyper',tipo:'NORMAL',dano:100},
+    e:{nombre:'Fire Blast',forma:'native-fireblast',tipo:'FIRE',dano:26}},
    evoluciones:[]}
  ];
  const snapshot=structuredClone(original);
@@ -58,8 +70,16 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
  assert.equal(unown?.kit.lmb?.nombre,'Hidden Power');
  assert.equal(unown?.kit.lmb?.torre2JohtoSpecialUnown,true);
  assert.deepEqual(['lmb','rmb','q','e'].map(k=>smeargle?.kit[k]?.nombre),
-  ['Tackle','Quick Attack','Swift','Hyper Beam']);
+  ['Tackle','Quick Attack','Swift','Body Slam']);
  assert.equal(smeargle?.kit.e?.torre2JohtoLegal,'FRLG-SKETCH-DEMO');
+ for(const id of ['houndour','houndoom']){
+  const added=created.find(p=>p.id===id);
+  assert.ok(added,'Missing new '+id);
+  const names=['lmb','rmb','q','e'].map(slot=>added.kit[slot]?.nombre);
+  assert.ok(!names.includes('Hyper Beam'),'Generic Hyper Beam in '+id);
+  assert.ok(!names.includes('Solar Beam'),'Off-type Solar Beam in '+id);
+  assert.equal(added.kit.e?.nombre,'Fire Blast','Strongest FIRE attack must be ULT for '+id);
+ }
  assert.equal(original[0].kit.lmb,undefined,'Native Ho-Oh must remain empty');
 
 });
@@ -68,4 +88,23 @@ test('Kanto evolution upgrade cannot rewrite original P2 family slots',()=>{
  const source=readFileSync(new URL('../tools/pokearena/torre2-evolution-kits.js',import.meta.url),'utf8');
  assert.match(source,/if\(!def\?\.torre2ArenaAdded\)continue;/,
   'Native client species must be excluded before any evolution kit reassignment');
+});
+
+test('all new Johto autokits exclude generic Hyper Beam and off-type Solar Beam',()=>{
+ const installed=new Map([
+  ['hyper-beam',{nombre:'Hyper Beam',forma:'native-hyper',tipo:'NORMAL',dano:100}],
+  ['solar-beam',{nombre:'Solar Beam',forma:'native-solar',tipo:'GRASS',dano:90}],
+  ['tackle',{nombre:'Tackle',forma:'native-tackle',tipo:'NORMAL',dano:5}],
+  ['ember',{nombre:'Ember',forma:'native-ember',tipo:'FIRE',dano:5}],
+  ['bite',{nombre:'Bite',forma:'native-bite',tipo:'DARK',dano:12}],
+  ['crunch',{nombre:'Crunch',forma:'native-crunch',tipo:'DARK',dano:14}],
+  ['flamethrower',{nombre:'Flamethrower',forma:'native-flame',tipo:'FIRE',dano:19}]
+ ]);
+ for(const p of JOHTO_100_ROWS){
+  if(p[1]==='smeargle')continue;
+  const moves=selectJohto100Moves(p,installed);
+  assert.ok(!moves.some(m=>m.id==='hyper-beam'),p[1]+' received Hyper Beam');
+  if(!p[2].includes('GRASS'))
+   assert.ok(!moves.some(m=>m.id==='solar-beam'),p[1]+' received off-type Solar Beam');
+ }
 });
