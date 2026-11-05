@@ -48,7 +48,7 @@ test("New experimental Johto effects require individual VFX audits, not legacy e
  const ids=requiredVfxIds(process.cwd(),baseline);
  if(fs.existsSync("tools/pokearena/torre2-johto-pixelfx-catalog.js")){
   assert.deepEqual(ids,["octazooka","snore","thief","triple-kick"]);
-  assert.deepEqual(validateVfxSelections(baseline,catalog,ids)
+  assert.equal(validateVfxSelections({...baseline,decisions:{}},catalog,ids)
    .filter(x=>x.includes("MISSING VFX source comparison")).length,4);
   const reviews=JSON.parse(fs.readFileSync("data/vfx-selection-decisions.json","utf8"));
   assert.deepEqual(validateVfxSelections(reviews,catalog,ids),[]);
