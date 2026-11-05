@@ -473,7 +473,9 @@ function createVitalThrow(scene){
  const bind=part(scene,"vfx-atadura",0xffe7b7,1540);
  const spiral=part(scene,"vfx-fly",0xe4d9ff,1538);
  const wrap=part(scene,"vfx-rapidspin",0xfff3df,1537);
- const slam=part(scene,"vfx-aterriza",0xffffff,1541);
+ const slam=part(scene,
+  scene.textures.exists("vfx-aterriza-golpe")?
+   "vfx-aterriza-golpe":"vfx-aterriza",0xffffff,1541);
  const dust=Array.from({length:8},()=>part(scene,"p-guijarro",0xc6b69c,1542));
  return {sprites:[bind,spiral,wrap,slam,...dust],update(t,a,b,state={}){
   const actor=state.actor||a,target=state.hitPoint||b,dir=state.dirX??1,

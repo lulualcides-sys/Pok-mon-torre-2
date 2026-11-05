@@ -106,15 +106,16 @@ const server=http.createServer(async(req,res)=>{
        "vfx-quickattack","vfx-arco","vfx-arco-sombra","vfx-arco-acero","vfx-arco-golpe",
        "vfx-astonish","vfx-acometida","vfx-cuchilla","vfx-fly","vfx-aeroblast","vfx-roca","vfx-huevo","vfx-hiper_impacto","p-corazon","p-brasa","p-roca",
        "vfx-psico","vfx-psywave","vfx-teleporte","vfx-hexgolpe",
-       "vfx-hexaviso","vfx-atadura","vfx-rapidspin","vfx-aterriza"].includes(o.texture?.key));
+       "vfx-hexaviso","vfx-atadura","vfx-rapidspin","vfx-aterriza","vfx-aterriza-golpe"].includes(o.texture?.key));
     const effect=scene.efectos.at(-1),beforeHP=enemy.hp;
     const nameVisible=scene.globos?.some(c=>c.list?.some(obj=>obj.text===m.nombre+"!"))||false;
-    const poses=[];
+    const poses=[],liftValues=[];
     if(native.length&&effect){
      // Advance in actual 60Hz Phaser frames, not large clamped synthetic
      // deltas that skip the 0.34s contact window of False Swipe/Steel Wing.
      for(let frame=0;frame<66;frame++){
       effect.update(.016);
+      if(m.id==="vital-throw")liftValues.push(enemy.salto||0);
       if(frame%3===0)poses.push(native.map(o=>o.visible?
        [o.x,o.y,o.displayWidth,o.displayHeight,o.frame?.name,Math.round(o.alpha*100)].join(","):"off").join("|"));
      }
@@ -122,6 +123,7 @@ const server=http.createServer(async(req,res)=>{
     out.push({id:m.id,ok,source:"P2-native",sprites:native.length,
       assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
       damage:beforeHP-enemy.hp,nameVisible,
+      liftPeak:liftValues.length?Math.max(...liftValues):0,
       sourceFrames:[...new Set(native.filter(o=>o.texture?.key?.startsWith("vfx-")).map(o=>o.frame?.name))].filter(x=>x!=null),
       noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
     // Await P2's native 1.05s globo tween before the next cast.
@@ -140,6 +142,16 @@ const server=http.createServer(async(req,res)=>{
   console.log("JOHTO_FIRST_FOUR_IN_PHASER",JSON.stringify({visible,casts,errors,network}));
   assert.ok(casts.every(m=>m.ok&&m.sprites>=8&&m.unique>=3),
    "All four must animate multiple REAL P2 pixel sprites inside Phaser");
+  // Distinct silhouettes, not three recolorings of the same P2 slash.
+  const assetSets=new Map(casts.map(m=>[m.id,new Set(m.assets)]));
+  for(const [id,required] of [
+   ["pursuit",["vfx-teleporte","vfx-hexgolpe"]],
+   ["vital-throw",["vfx-atadura"]],
+   ["beat-up",["vfx-acometida","vfx-hiper_impacto"]]
+  ])for(const name of required)
+    assert.ok(assetSets.get(id)?.has(name),id+" must use unique "+name);
+  assert.ok((casts.find(m=>m.id==="vital-throw")?.liftPeak||0)>=12,
+    "Vital Throw must physically LIFT the real enemy sprite, not a reused visual burst");
   assert.ok(casts.every(m=>m.sourceFrames.length>=2),
    "All four use actual multi-frame P2 VFX source spritesheets");
   assert.ok(casts.every(m=>m.damage>0),
