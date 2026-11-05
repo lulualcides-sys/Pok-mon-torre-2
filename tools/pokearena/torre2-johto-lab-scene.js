@@ -9,7 +9,8 @@ export class JohtoLab extends Phaser.Scene{
  preload(){
   // Artist-editable PNG strips built offline; only the isolated test lab loads them.
   // Browser nearest-neighbor preserves crisp pixel art on 16:9/WebGL displays.
-  for(const m of JOHTO_LAB_ALL.filter(m=>m.visualOnly||!['zap-cannon','powder-snow','whirlpool'].includes(m.id)))
+  for(const m of JOHTO_LAB_ALL.filter(m=>m.visualOnly||
+  !['zap-cannon','powder-snow','whirlpool','triple-kick','thief','snore','octazooka'].includes(m.id)))
    this.load.spritesheet('torre2-johto-pixelfx-'+m.id,
     'assets/torre2/johto-pixelfx/'+m.id+'.png',
     {frameWidth:96,frameHeight:96});

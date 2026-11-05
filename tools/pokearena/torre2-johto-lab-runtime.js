@@ -7,6 +7,7 @@ import {JOHTO_18} from "./johto-lab-catalog.js";
 import {TORRE2_JOHTO_PIXELFX_FORMS} from "./torre2-johto-pixelfx-runtime.js";
 import {withJohtoLabCooldown} from "./torre2-johto-lab-cooldown.js";
 import {johtoPose} from "./torre2-johto-motion.js";
+import {makeJohtoFourNative} from "./torre2-johto-four-native.js";
 import {magnitudeGen3,presentGen3,tripleKickGen3,beatUpGen3Participants} from "./torre2-johto-gen3-mechanics.js";
 import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
@@ -277,17 +278,19 @@ function cast(l,h,extra){
  const e=l.escena,r=l.rival,angle=Math.atan2(l.ay-l.y,l.ax-l.x),dx=Math.cos(angle),dy=Math.sin(angle);
  const style=h.style,palette=tones[h.id];if(!palette)return false;
  const g=e.add.graphics().setDepth(1520);
+ const nativeFour=BATCH_FOUR.has(h.id)?makeJohtoFourNative(e,h.id):null;
+ if(BATCH_FOUR.has(h.id)&&!nativeFour){g.destroy();return false;}
  const pixelFXKey='torre2-johto-pixelfx-'+h.id;
- const rework=REWORK_IDS.has(h.id)&&e.textures.exists(pixelFXKey);
+ const rework=REWORK_IDS.has(h.id)&&!nativeFour&&e.textures.exists(pixelFXKey);
  const pixelFXSprite=rework?e.add.sprite(0,0,pixelFXKey,0)
   .setDepth(1533).setScale(.78):null;
  if(pixelFXSprite)e.textures.get(pixelFXKey)
   .setFilter(Phaser.Textures.FilterMode.NEAREST);
  // Zap Cannon uses the original Raichu Electro Ball sprite from the P2
  // client. Never combine it with the rejected ray fragments or pilot orb.
- const nativeSprites=h.id==='zap-cannon'||rework?[]:nativeP2(e,h.id);
+ const nativeSprites=h.id==='zap-cannon'||rework||nativeFour?[]:nativeP2(e,h.id);
  const pilotKey='torre2-johto-pilot-'+h.id;
- const pilotSprite=!rework&&h.id!=='zap-cannon'&&e.textures.exists(pilotKey)?
+ const pilotSprite=!rework&&!nativeFour&&h.id!=='zap-cannon'&&e.textures.exists(pilotKey)?
   e.add.sprite(0,0,pilotKey,0).setDepth(1533):null;
  const nativeOrb=h.id==='zap-cannon'&&e.textures.exists(ZAP_ELECTRO_BALL_TEXTURE)?
   e.add.sprite(0,0,ZAP_ELECTRO_BALL_TEXTURE,0)
@@ -362,7 +365,7 @@ function cast(l,h,extra){
  };
  const fx={update(dt){
   age+=Math.max(0,Math.min(.05,dt||0));
-  if(age>=duration){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
+  if(age>=duration){g.destroy();nativeFour?.destroy();for(const sprite of nativeSprites)sprite.destroy();
    for(const sprite of snowTrail)sprite.destroy();
    for(const sprite of zapSparks)sprite.destroy();
    nativeOrb?.destroy();nativeImpact?.destroy();
@@ -381,7 +384,9 @@ function cast(l,h,extra){
     y:sy+(ty-sy)*(targetDistance?travel/targetDistance:1)}:null;
   const x=fly?fly.x:beam?sx+dx*travel:style==="quake"?l.x+dx*80:melee?l.x+dx*37:r.x;
   const y=fly?fly.y:beam?sy+dy*travel:style==="quake"?l.y-7:melee?l.y-l.alto*.5+dy*12:ty;
-  if(pixelFXSprite){
+  if(nativeFour){
+   g.clear();nativeFour.update(age/duration,{x:sx,y:sy},{x:tx,y:ty});
+  }else if(pixelFXSprite){
    // Replaces only unapproved prototypes; hit windows, miss and damage
    // remain governed by the existing Johto lab battle mechanics.
    g.clear();
@@ -452,7 +457,7 @@ function cast(l,h,extra){
    hits++; // independent hit windows; only triple-kick stops after miss
   }
   return true;
- },destroy(){g.destroy();for(const sprite of nativeSprites)sprite.destroy();
+ },destroy(){g.destroy();nativeFour?.destroy();for(const sprite of nativeSprites)sprite.destroy();
   for(const sprite of snowTrail)sprite.destroy();
   for(const sprite of zapSparks)sprite.destroy();
   nativeOrb?.destroy();nativeImpact?.destroy();pilotSprite?.destroy();pixelFXSprite?.destroy();}};
