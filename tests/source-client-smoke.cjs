@@ -278,6 +278,7 @@ const server=http.createServer(async(req,res)=>{
     .find(x=>x.src.includes('/main.js'));
    const root=new URL('./',entry.src);
    const {resolveLoadout}=await import(new URL('torre2/move-pool.js',root).href);
+   const {ROSTER}=await import(new URL('datos.js',root).href);
    const families={
     bulbasaur:['ivysaur','venusaur'],charmander:['charmeleon','charizard'],
     squirtle:['wartortle','blastoise'],pidgey:['pidgeotto','pidgeot'],
@@ -303,7 +304,10 @@ const server=http.createServer(async(req,res)=>{
      const displayed=slots.map(k=>stage.kit[k]?.nombre);
      const inBattle=slots.map(k=>loadout[k]?.nombre);
      const dodge=stage.kit.esp?.nombre;
-     results.push({base,species,displayed,inBattle,dodge});
+     const originalDef=ROSTER.find(p=>p.id===base);
+     const originalStage=originalDef?.evoluciones?.find(x=>x.nombre.toLowerCase()===species);
+     const originalDodge=originalStage?.kit?.esp?.nombre||originalDef?.kit?.esp?.nombre;
+     results.push({base,species,displayed,inBattle,dodge,native:!originalDef?.torre2ArenaAdded,originalDodge});
     }
    }
    return results;
@@ -320,8 +324,11 @@ const server=http.createServer(async(req,res)=>{
     'Pokédex must display at least one real attack for '+evo.species);
    assert.ok(evo.inBattle.some(Boolean),
     'Campaign must equip a genuinely unlocked attack for '+evo.species);
-   assert.equal(evo.dodge,'Dodge',
-    'Fifth defensive move missing from Pokédex '+evo.species);
+   if(evo.native)
+    assert.equal(evo.dodge,evo.originalDodge,
+     'Native Pokédex must show original ESP, not forced generic Dodge: '+evo.species);
+   else assert.equal(evo.dodge,'Dodge',
+    'New Kanto Pokédex must retain approved Dodge: '+evo.species);
    if(evo.species==='persian')
     assert.equal(evo.displayed[2],'Pay Day',
      'Persian Pokédex must display the approved Pay Day in HAB 3');
