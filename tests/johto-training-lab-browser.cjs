@@ -175,6 +175,11 @@ const server=http.createServer(async(req,res)=>{
    }else if(['powder-snow','whirlpool'].includes(cast.id)){
     assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
      cast.id+' approved native P2 art was replaced unexpectedly');
+   }else if(['triple-kick','thief','snore','octazooka'].includes(cast.id)){
+    assert.ok(cast.textures.some(t=>t.loaded&&t.rendered),
+     cast.id+' must use genuine original P2 textures, not rejected PNG rectangles');
+    assert.equal(cast.pixelFXLoaded,false,
+     cast.id+' rejected 24-frame block art may not be distributed');
    }else{
     assert.ok(cast.pixelFXLoaded&&cast.pixelFXRendered,
      cast.id+' missing actual PixelFX sprite in Phaser renderer');
