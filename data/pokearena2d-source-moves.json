@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "source": "https://www.pokearena2d.com/",
-  "sourceVersion": "src-a7abf17cdc",
-  "siteVersion": "src-582cf3cf6c",
+  "sourceVersion": "src-2c69e32038",
+  "siteVersion": "src-43a0198bd6",
   "note": "Only confirmed native source names. Kanto compatibility is official level-up metadata; battle availability, VFX, user-approved ULT rules and save safety still require independent validation.",
-  "originalMoveCount": 168,
-  "nativePokemonCount": 33,
+  "originalMoveCount": 176,
+  "nativePokemonCount": 34,
   "nativePokemon": [
     "arceus",
     "articuno",
@@ -27,6 +27,7 @@
     "mewtwo",
     "mimikyu",
     "munchlax",
+    "nincada",
     "onix",
     "pichu",
     "ponyta",
@@ -157,10 +158,16 @@
           "pokemon": "dreepy",
           "stage": "DREEPY",
           "slot": "q"
+        },
+        {
+          "pokemon": "nincada",
+          "stage": "NINJASK",
+          "slot": "esp"
         }
       ],
       "nativeScopes": [
-        "active"
+        "active",
+        "disabled"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -2820,6 +2827,69 @@
       "integration": "native-source-metadata; not automatically equipped"
     },
     {
+      "id": "bugbuzz",
+      "name": "Bug Buzz",
+      "types": [
+        "BUG"
+      ],
+      "forms": [
+        "pulso"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "nincada",
+          "stage": "NINJASK",
+          "slot": "e"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "butterfree",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 40,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 42,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 31,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "venomoth",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 59,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 59,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 46,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
       "id": "bulletpunch",
       "name": "Bullet Punch",
       "types": [
@@ -3982,6 +4052,11 @@
           "pokemon": "gible",
           "stage": "GARCHOMP",
           "slot": "esp"
+        },
+        {
+          "pokemon": "nincada",
+          "stage": "NINCADA",
+          "slot": "esp"
         }
       ],
       "nativeScopes": [
@@ -4486,6 +4561,7 @@
         "FLYING"
       ],
       "forms": [
+        "ascenso",
         "meteoro"
       ],
       "nativeExamples": [
@@ -4497,13 +4573,56 @@
         {
           "pokemon": "rayquaza",
           "stage": "MEGA RAYQUAZA",
-          "slot": "e"
+          "slot": "esp"
         }
       ],
       "nativeScopes": [
         "active"
       ],
       "compatibleKantoByVerifiedLevelUp": [],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
+      "id": "dragonbreath",
+      "name": "Dragon Breath",
+      "types": [
+        "DRAGON"
+      ],
+      "forms": [
+        "proyectil"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
+          "slot": "lmb"
+        }
+      ],
+      "nativeScopes": [
+        "active"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "onix",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 30,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 33,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 25,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
       "integration": "native-source-metadata; not automatically equipped"
     },
     {
@@ -4539,11 +4658,6 @@
         {
           "pokemon": "rayquaza",
           "stage": "RAYQUAZA",
-          "slot": "lmb"
-        },
-        {
-          "pokemon": "rayquaza",
-          "stage": "MEGA RAYQUAZA",
           "slot": "lmb"
         }
       ],
@@ -4598,11 +4712,6 @@
         {
           "pokemon": "rayquaza",
           "stage": "RAYQUAZA",
-          "slot": "q"
-        },
-        {
-          "pokemon": "rayquaza",
-          "stage": "MEGA RAYQUAZA",
           "slot": "q"
         }
       ],
@@ -4905,6 +5014,11 @@
           "pokemon": "magikarp",
           "stage": "GYARADOS",
           "slot": "rmb"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
+          "slot": "q"
         }
       ],
       "nativeScopes": [
@@ -6338,11 +6452,6 @@
         {
           "pokemon": "rayquaza",
           "stage": "RAYQUAZA",
-          "slot": "esp"
-        },
-        {
-          "pokemon": "rayquaza",
-          "stage": "MEGA RAYQUAZA",
           "slot": "esp"
         }
       ],
@@ -7786,6 +7895,492 @@
       "integration": "native-source-metadata; not automatically equipped"
     },
     {
+      "id": "furycutter",
+      "name": "Fury Cutter",
+      "types": [
+        "BUG"
+      ],
+      "forms": [
+        "tajo"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "nincada",
+          "stage": "NINJASK",
+          "slot": "lmb"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "farfetchd",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 26,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "kabutops",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "paras",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 17,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "parasect",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 17,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandshrew",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 25,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 14,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandslash",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 28,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 14,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "scyther",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 46,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 25,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 25,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
+      "id": "furyswipes",
+      "name": "Fury Swipes",
+      "types": [
+        "NORMAL"
+      ],
+      "forms": [
+        "rafaga"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "nincada",
+          "stage": "NINCADA",
+          "slot": "e"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "charizard",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 20,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "charmander",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 18,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "charmeleon",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 20,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "diglett",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 21,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 15,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "dugtrio",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 21,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 15,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "golduck",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 44,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 27,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 22,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 18,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "mankey",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 16,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 9,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 9,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 16,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "meowth",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 36,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 14,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 14,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 19,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "nidoran-f",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 30,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 19,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 19,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 21,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "nidorina",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 34,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 20,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 20,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 31,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "paras",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 15,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "parasect",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 15,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "persian",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 42,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 14,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 14,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 19,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "primeape",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 16,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 9,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 9,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 16,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "psyduck",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 40,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 27,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 22,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 18,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "raticate",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandshrew",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 37,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 19,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 20,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 16,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandslash",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 42,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 19,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 20,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 16,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
       "id": "gigaimpact",
       "name": "Giga Impact",
       "types": [
@@ -8159,6 +8754,49 @@
       "integration": "native-source-metadata; not automatically equipped"
     },
     {
+      "id": "grudge",
+      "name": "Grudge",
+      "types": [
+        "GHOST"
+      ],
+      "forms": [
+        "escudo"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "nincada",
+          "stage": "NINJASK",
+          "slot": "q"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "vulpix",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 37,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 41,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 44,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
       "id": "gyroball",
       "name": "Gyro Ball",
       "types": [
@@ -8335,10 +8973,16 @@
           "pokemon": "seedot",
           "stage": "SEEDOT",
           "slot": "q"
+        },
+        {
+          "pokemon": "nincada",
+          "stage": "NINCADA",
+          "slot": "q"
         }
       ],
       "nativeScopes": [
-        "active"
+        "active",
+        "disabled"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -9477,6 +10121,11 @@
         {
           "pokemon": "magikarp",
           "stage": "GYARADOS",
+          "slot": "e"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
           "slot": "e"
         }
       ],
@@ -10767,10 +11416,16 @@
           "pokemon": "zubat",
           "stage": "CROBAT",
           "slot": "q"
+        },
+        {
+          "pokemon": "nincada",
+          "stage": "NINCADA",
+          "slot": "rmb"
         }
       ],
       "nativeScopes": [
-        "active"
+        "active",
+        "disabled"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -15872,6 +16527,529 @@
       "integration": "native-source-metadata; not automatically equipped"
     },
     {
+      "id": "scratch",
+      "name": "Scratch",
+      "types": [
+        "NORMAL"
+      ],
+      "forms": [
+        "tajo"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "nincada",
+          "stage": "NINCADA",
+          "slot": "lmb"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "charizard",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "charmander",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "charmeleon",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "diglett",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "dugtrio",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "golduck",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "kabuto",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "kabutops",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "mankey",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "meowth",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "nidoqueen",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "nidoran-f",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "nidorina",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "paras",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "parasect",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "persian",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "primeape",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "psyduck",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandshrew",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandslash",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
       "id": "searingshot",
       "name": "Searing Shot",
       "types": [
@@ -18037,6 +19215,204 @@
               "level": 4,
               "method": "level-up"
             },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
+      "id": "swordsdance",
+      "name": "Swords Dance",
+      "types": [
+        "NORMAL"
+      ],
+      "forms": [
+        "potenciar"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "nincada",
+          "stage": "NINJASK",
+          "slot": "q"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "dodrio",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 37,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "doduo",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 32,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "farfetchd",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 31,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 25,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 25,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 36,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "kabutops",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 63,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "marowak",
+          "sources": [
+            {
+              "edition": "LETSGO_G7",
+              "level": 0,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pinsir",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 49,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 38,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 40,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 32,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "raticate",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandshrew",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 38,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 28,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "sandslash",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 38,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 36,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "scyther",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 36,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 57,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 57,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 44,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "victreebel",
+          "sources": [
             {
               "edition": "LETSGO_G7",
               "level": 1,
@@ -21638,6 +23014,109 @@
             {
               "edition": "LETSGO_G7",
               "level": 4,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
+      "id": "xscissor",
+      "name": "X-Scissor",
+      "types": [
+        "BUG"
+      ],
+      "forms": [
+        "embestidas"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "nincada",
+          "stage": "NINJASK",
+          "slot": "rmb"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "paras",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 43,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 54,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 31,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "parasect",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 55,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 66,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 43,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pinsir",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 30,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 29,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 20,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "scyther",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 41,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 41,
+              "method": "level-up"
+            },
+            {
+              "edition": "LETSGO_G7",
+              "level": 50,
               "method": "level-up"
             }
           ]

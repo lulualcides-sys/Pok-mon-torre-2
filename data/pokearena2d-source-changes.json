@@ -1,36 +1,171 @@
 {
   "schemaVersion": 1,
   "source": "https://www.pokearena2d.com/",
-  "previousVersion": "src-2203b5fd63",
-  "currentVersion": "src-a7abf17cdc",
-  "previousSiteVersion": "src-2d2489fdee",
-  "currentSiteVersion": "src-582cf3cf6c",
+  "previousVersion": "src-a7abf17cdc",
+  "currentVersion": "src-2c69e32038",
+  "previousSiteVersion": "src-582cf3cf6c",
+  "currentSiteVersion": "src-43a0198bd6",
   "comparison": "differential",
-  "additions": [],
+  "additions": [
+    {
+      "id": "bugbuzz",
+      "name": "Bug Buzz",
+      "compatibleKanto": [
+        "butterfree",
+        "venomoth"
+      ]
+    },
+    {
+      "id": "dragonbreath",
+      "name": "Dragon Breath",
+      "compatibleKanto": [
+        "onix"
+      ]
+    },
+    {
+      "id": "furycutter",
+      "name": "Fury Cutter",
+      "compatibleKanto": [
+        "farfetchd",
+        "kabutops",
+        "paras",
+        "parasect",
+        "sandshrew",
+        "sandslash",
+        "scyther"
+      ]
+    },
+    {
+      "id": "furyswipes",
+      "name": "Fury Swipes",
+      "compatibleKanto": [
+        "charizard",
+        "charmander",
+        "charmeleon",
+        "diglett",
+        "dugtrio",
+        "golduck",
+        "mankey",
+        "meowth",
+        "nidoran-f",
+        "nidorina",
+        "paras",
+        "parasect",
+        "persian",
+        "primeape",
+        "psyduck",
+        "raticate",
+        "sandshrew",
+        "sandslash"
+      ]
+    },
+    {
+      "id": "grudge",
+      "name": "Grudge",
+      "compatibleKanto": [
+        "vulpix"
+      ]
+    },
+    {
+      "id": "scratch",
+      "name": "Scratch",
+      "compatibleKanto": [
+        "charizard",
+        "charmander",
+        "charmeleon",
+        "diglett",
+        "dugtrio",
+        "golduck",
+        "kabuto",
+        "kabutops",
+        "mankey",
+        "meowth",
+        "nidoqueen",
+        "nidoran-f",
+        "nidorina",
+        "paras",
+        "parasect",
+        "persian",
+        "primeape",
+        "psyduck",
+        "sandshrew",
+        "sandslash"
+      ]
+    },
+    {
+      "id": "swordsdance",
+      "name": "Swords Dance",
+      "compatibleKanto": [
+        "dodrio",
+        "doduo",
+        "farfetchd",
+        "kabutops",
+        "marowak",
+        "pinsir",
+        "raticate",
+        "sandshrew",
+        "sandslash",
+        "scyther",
+        "victreebel"
+      ]
+    },
+    {
+      "id": "xscissor",
+      "name": "X-Scissor",
+      "compatibleKanto": [
+        "paras",
+        "parasect",
+        "pinsir",
+        "scyther"
+      ]
+    }
+  ],
   "removals": [],
   "changed": [
     {
+      "id": "agility",
+      "name": "Agility"
+    },
+    {
+      "id": "dig",
+      "name": "Dig"
+    },
+    {
       "id": "dragonascent",
       "name": "Dragon Ascent"
+    },
+    {
+      "id": "dragonclaw",
+      "name": "Dragon Claw"
     },
     {
       "id": "dragondance",
       "name": "Dragon Dance"
     },
     {
+      "id": "dragontail",
+      "name": "Dragon Tail"
+    },
+    {
       "id": "extremespeed",
       "name": "Extreme Speed"
     },
     {
-      "id": "hurricane",
-      "name": "Hurricane"
+      "id": "harden",
+      "name": "Harden"
     },
     {
-      "id": "twister",
-      "name": "Twister"
+      "id": "hyperbeam",
+      "name": "Hyper Beam"
+    },
+    {
+      "id": "leechlife",
+      "name": "Leech Life"
     }
   ],
-  "newSourcePokemon": [],
+  "newSourcePokemon": [
+    "nincada"
+  ],
   "initialSnapshotCount": null,
   "action": "Cataloged for reuse; validate renderers, licensing, legal Kanto learning, approval and campaign gates before editing battle kits."
 }
