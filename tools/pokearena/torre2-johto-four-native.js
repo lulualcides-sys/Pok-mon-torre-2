@@ -43,6 +43,10 @@ function arcKey(scene,palette){
  const themed="vfx-arco-"+palette;
  return scene.textures.exists(themed)?themed:"vfx-arco";
 }
+function attackSheet(scene){
+ return scene.textures.exists("vfx-acometida-golpe")?
+  "vfx-acometida-golpe":"vfx-acometida";
+}
 function frameAt(age,seconds,frames=4){
  return Math.min(frames-1,Math.max(0,Math.floor(Math.max(0,age)/seconds*frames)));
 }
@@ -203,7 +207,7 @@ function createOcta(scene){
 function createFalseSwipe(scene){
  // One deliberate blade, a precise P2 Acometida, and tiny glints on
  // confirmed contact. Not multiple gigantic colored knife triangles.
- const thrust=part(scene,"vfx-acometida",0xffffff,1538);
+ const thrust=part(scene,attackSheet(scene),0xffffff,1538);
  const arc=part(scene,arcKey(scene,"golpe"),0xffffff,1540);
  const slicing=part(scene,"vfx-cuchilla",0xffffff,1541);
  const glints=Array.from({length:6},(_,i)=>part(scene,"p-estrella",
@@ -267,7 +271,7 @@ function createSteelWing(scene){
 function createRockSmash(scene){
  // A rock visibly SHATTERS only if the native P2 recibir confirms contact.
  // Original animated P2 rock-fin frames 8..11 plus small flying stone shards.
- const strike=part(scene,"vfx-acometida",0xffffff,1538);
+ const strike=part(scene,attackSheet(scene),0xffffff,1538);
  const rock=part(scene,"vfx-roca",0xffffff,1540);
  const shards=Array.from({length:5},()=>part(scene,"vfx-roca",0xffffff,1541));
  const crumbs=Array.from({length:4},()=>part(scene,"p-guijarro",0xd7ba91,1542));

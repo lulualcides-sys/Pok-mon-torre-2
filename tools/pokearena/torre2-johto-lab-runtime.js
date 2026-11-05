@@ -287,6 +287,8 @@ function cast(l,h,extra){
   const palette={"thief":"sombra","false-swipe":"golpe",
    "steel-wing":"acero","rock-smash":"golpe"}[h.id];
   if(palette)vfx.hay(l.escena,"arco-"+palette);
+  if(h.id==="false-swipe"||h.id==="rock-smash")
+   vfx.hay(l.escena,"acometida-golpe");
   return castJohtoFourNative(l,h,extra,RADIO);
  }
  if(h.id==="snore"&&!l.est?.dormido)return false;
