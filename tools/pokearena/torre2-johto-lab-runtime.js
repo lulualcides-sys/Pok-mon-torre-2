@@ -376,10 +376,14 @@ function cast(l,h,extra){
   // the existing 15 battle prototypes and approved campaign VFX unchanged.
   const ty=r.y-r.alto*.5,tx=r.x;
   const targetDistance=Math.hypot(tx-sx,ty-sy);
-  const maxTravel=(pilotSprite||nativeOrb||pixelFXSprite)&&beam?
+  // Octazooka's native ink projectile must reach the opponent's hitbox,
+  // rather than overshooting at its later .79s contact window.
+  // Leave the three approved projectiles and other lab casts untouched.
+  const targetBound=pilotSprite||nativeOrb||pixelFXSprite||(nativeFour&&h.id==='octazooka');
+  const maxTravel=targetBound&&beam?
    Math.min(h.alcance,targetDistance):h.alcance;
   const travel=Math.min(maxTravel,age*360);
-  const fly=(beam&&(pilotSprite||nativeOrb||pixelFXSprite))?
+  const fly=(beam&&targetBound)?
    {x:sx+(tx-sx)*(targetDistance?travel/targetDistance:1),
     y:sy+(ty-sy)*(targetDistance?travel/targetDistance:1)}:null;
   const x=fly?fly.x:beam?sx+dx*travel:style==="quake"?l.x+dx*80:melee?l.x+dx*37:r.x;
