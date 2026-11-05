@@ -92,8 +92,16 @@ const server=http.createServer(async(req,res)=>{
    scene.efectos.splice(before);
    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
    me.t=oldT;me.accion=null;me.dash=null;
-   return {first,repeat,otherSlot,runningVFX,before1s,after1s,nativeBars};
+   return {first,repeat,otherSlot,runningVFX,before1s,after1s,nativeBars,
+    diagnostic:{oldT,now:me.t,next:me.__johtoLabNextCastAt,
+     activeEffects:me.__johtoLabActiveEffects?.map(f=>{try{return f()}catch(e){return String(e)}}),
+     fxCount:scene.efectos?.length,baseline:before,
+     rival:!!me.rival,enemyKo:enemy.ko,
+     johtoLab:!!scene.datos?.johtoLab,
+     active:scene.scene.isActive(),inmortal:me.inmortal,
+     nativeReady:me.cd?.rmb}};
   });
+  console.log('JOHTO_LAB_CD_DIAGNOSTIC',JSON.stringify(cooldownGate));
   assert.equal(cooldownGate.first,true);
   assert.equal(cooldownGate.repeat,false,'Same move cannot spam');
   assert.equal(cooldownGate.otherSlot,false,'Switching button cannot bypass global cooldown');
