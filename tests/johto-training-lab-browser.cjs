@@ -44,11 +44,11 @@ const server=http.createServer(async(req,res)=>{
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('johto-lab'),null,{timeout:10000});
   const editor=await page.evaluate(()=>{
    const s=window.__pt2Game.scene.getScene('johto-lab');
-   s.slot=0;s.moveCards.find(c=>c.m.id==='thief').r.emit('pointerdown');
+   s.slot=0;s.moveCards.find(c=>c.m.id==='return').r.emit('pointerdown');
    return {cards:s.moveCards.length,slots:s.picks,active:s.slot};
   });
   assert.equal(editor.cards,4,'Only first four pending moves visible; approved FX remain in original renderer');
-  assert.equal(editor.slots[0],'thief','Move chosen from the editor must equip in ATK');
+  assert.equal(editor.slots[0],'return','Move chosen from the editor must equip in ATK');
   assert.equal(new Set(editor.slots).size,4,'No duplicated move on slots');
   await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').startPractice());
   await page.waitForFunction(()=>{
@@ -62,7 +62,7 @@ const server=http.createServer(async(req,res)=>{
     forms:['lmb','rmb','q','e'].map(k=>me.kit[k]?.forma),dummy:s.entreno,saveFlag:!!s.datos.torre2};
   });
   assert.equal(combat.mode,'entreno');assert.equal(combat.player,'mewtwo');
-  assert.equal(combat.opponent,'onix');assert.equal(combat.names[0],'Thief');
+  assert.equal(combat.opponent,'onix');assert.equal(combat.names[0],'Return');
   assert.ok(combat.forms.every(x=>x.startsWith('torre2_johto_')));
   assert.equal(combat.dummy,true);assert.equal(combat.saveFlag,false);
   // Real Phaser browser check: 1s shared slot lock + no stacked animations.
@@ -73,7 +73,7 @@ const server=http.createServer(async(req,res)=>{
     import(new URL('torre2/johto-lab-runtime.js',base))]);
    const scene=window.__pt2Game.scene.getScene('combate'),me=scene.luchadores[0],
     enemy=scene.luchadores[1],before=scene.efectos.length,oldT=me.t;
-   const a=JOHTO_18.find(x=>x.id==='thief'),b=JOHTO_18.find(x=>x.id==='triple-kick');
+   const a=JOHTO_18.find(x=>x.id==='return'),b=JOHTO_18.find(x=>x.id==='triple-kick');
    me.est={};me.accion=null;me.dash=null;me.ax=enemy.x;me.ay=enemy.y;
    me.__johtoLabNextCastAt=-Infinity;me.__johtoLabActiveEffects=[];
    const first=TORRE2_JOHTO_LAB_FORMS[a.forma](me,a,{slot:'lmb'});
@@ -315,7 +315,7 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.getScene('combate').salir());
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive('johto-lab'),null,{timeout:12000});
   const returned=await page.evaluate(()=>window.__pt2Game.scene.getScene('johto-lab').picks);
-  assert.equal(returned[0],'thief');
+  assert.equal(returned[0],'return');
   assert.deepEqual(errors,[],'No uncaught Phaser JS errors');
   console.log('PASS MEWTWO JOHTO LAB: 3 approved + 15 remade PixelFX casts, plus 28 preview choices');
  }finally{await browser.close();server.close()}
