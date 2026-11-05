@@ -442,6 +442,22 @@ create(){
  backdrop(){
   richBackdrop(this);
  }
+ // Shared noncombat pixel frame. Deliberately inert graphics: input zones,
+ // text, saves and battle scenes retain the exact native behavior.
+ uiSection(x,y,w,h,accent=0x5ba5c9){
+  const g=this.add.graphics().setDepth(0);
+  g.fillStyle(0x020a15,.72).fillRect(x+3,y+4,w,h);
+  g.fillStyle(accent,.8).fillRect(x,y,w,h);
+  g.fillStyle(0x0d2943,.97).fillRect(x+2,y+2,w-4,h-4);
+  g.fillStyle(0x163b59,.8).fillRect(x+4,y+4,w-8,h-8);
+  g.fillStyle(accent,.95).fillRect(x+7,y+5,w-14,2);
+  g.fillStyle(0x051527,.9).fillRect(x+7,y+h-8,w-14,3);
+  for(const cx of [x+4,x+w-8]){
+   g.fillStyle(0xd4eff7,.75).fillRect(cx,y+4,4,3);
+   g.fillStyle(0x0b2034).fillRect(cx+1,y+h-7,3,3);
+  }
+  return g;
+ }
  mapScreen(state){
   // Reopen the SAME stage map through Phaser's scene lifecycle so the
   // navigation header and all click zones are recreated correctly.
@@ -531,8 +547,18 @@ create(){
   this.button(320,306,210,33,'◀ VOLTAR AO MAPA',()=>this.scene.restart());
  }
  card(x,y,w,h,accent=0x4b789b){
-  const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98).setStrokeStyle(1,accent);
-  const line=this.add.rectangle(x+2,y+2,4,h-4,accent,.9).setOrigin(0,0);
+  const bg=this.add.rectangle(x+w/2,y+h/2,w,h,0x13253e,.98)
+   .setStrokeStyle(1,accent);
+  // Pixel frame and corner fittings only. Existing card contents and
+  // controls continue to use their approved geometry and handlers.
+  const g=this.add.graphics().setDepth(1);
+  g.fillStyle(0x071526,.95).fillRect(x+3,y+h-7,w-6,3);
+  g.fillStyle(accent,.83).fillRect(x+5,y+4,w-10,2);
+  g.fillStyle(accent,.8).fillRect(x+3,y+7,3,h-14);
+  for(const cx of [x+3,x+w-8]){
+   g.fillStyle(0xd4edf3,.8).fillRect(cx,y+3,5,3);
+   g.fillStyle(accent,.7).fillRect(cx,y+h-6,5,3);
+  }
   return bg;
  }
  hallOfFameScreen(state){
@@ -1366,6 +1392,7 @@ create(){
  }
  martScreen(state,page=0,errorText=''){
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(9,50,622,236,0x478dbb);
   text(this,320,23,'POKÉ MART · $'+state.money,{
    ...titleStyle,fontSize:'19px'}).setOrigin(.5);
   const items=MART_ITEMS.filter(i=>martItemUnlocked(state,i));
@@ -1410,6 +1437,7 @@ create(){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  this.uiSection(9,66,622,229,0x5c9cba);
   text(this,320,24,'MINHA EQUIPE · '+state.team.length+'/6',{
    ...titleStyle,fontSize:'20px'}).setOrigin(.5).setDepth(6)
    .setData('torre2-team-overview',true);
@@ -1422,6 +1450,13 @@ create(){
     .setStrokeStyle(2,active?0xf6c851:0x648eaa).setDepth(3)
     .setInteractive({useHandCursor:true})
     .setData('torre2-team-overview-slot',i);
+   // Small engraved state rails; portraits remain above the frame.
+   const rail=this.add.graphics().setDepth(4);
+   rail.fillStyle(active?0xffe29b:0x80b9d2,.9)
+    .fillRect(x-94,y-47,188,2);
+   rail.fillStyle(0x0a2239,.9).fillRect(x-94,y+42,188,3);
+   rail.fillStyle(active?0xf6c851:0x5b89a9,.8)
+    .fillRect(x-94,y-44,3,84);
    this.drawPortrait(member,x-68,y-3,43,5);
    const name=(active?'◆ ':'')+member.id.toUpperCase();
    estrechar(text(this,x-36,y-36,name,{
@@ -1452,6 +1487,7 @@ create(){
  }
  bagScreen(state,errorText=''){
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(13,81,614,241,0x428ea9);
   text(this,320,27,'BOLSA · POKÉDÓLARES '+state.money,{
    ...titleStyle,fontSize:'20px'}).setOrigin(.5);
   const inv=state.inventory||{};
@@ -1540,6 +1576,7 @@ create(){
  }
  statusMedicineScreen(state,target,errorText=''){
   this.children.removeAll(true);this.backdrop();
+  this.uiSection(13,82,614,215,0x5b9db6);
   const member=state.team[target];
   text(this,320,25,'REMÉDIOS DE STATUS',{...titleStyle,fontSize:'20px'}).setOrigin(.5);
   const status=statusLabel({est:{[member.status?.kind]:true}})||(member.confusion?'CONFUSÃO':'SEM STATUS');
@@ -1572,6 +1609,7 @@ create(){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  this.uiSection(8,53,624,283,0x4e92bc);
   // Exclusive mobile screen: prevent touches on Back and attack rows from
   // passing to other scene hotspots (notably original fullscreen behind it).
   this.scene.bringToTop();
@@ -1923,6 +1961,8 @@ create(){
   };
   this.children.removeAll(true);this.cameras.main.setBackgroundColor(C.ink);
   this.backdrop();
+  this.uiSection(10,62,310,223,0x5e9ab9);
+  this.uiSection(323,62,308,223,0x6cabc4);
   this.pcFilter=PC_FILTERS.includes(this.pcFilter)?this.pcFilter:'ALL';
   const boxView=pcPageModel(state,page,this.pcFilter);
   const {page:safePage,pages:totalPages}=boxView;
@@ -1993,6 +2033,8 @@ create(){
  dexScreen(state){
   this.children.removeAll(true);
   this.cameras.main.setBackgroundColor(C.ink);
+  this.backdrop();
+  this.uiSection(20,69,598,243,0x5a9cb6);
   const supported=ROSTER.flatMap(p=>[p.id,
    ...(p.evoluciones||[]).map(x=>x.nombre)]);
   const view=kantoDexPageModel(state,KANTO_DEX,supported,this.dexPage||0);
