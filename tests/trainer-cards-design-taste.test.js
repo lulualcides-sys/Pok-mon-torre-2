@@ -19,7 +19,7 @@ const palette={
  cream:0xf7f4df,green:0x50cc84,lock:0x50677c,shadow:0x040d1d
 };
 const drawing=source.slice(start,middle)+'\n'+source.slice(cardStart,cardEnd);
-const {trainerCardFrame}=vm.runInNewContext('({'+
+const trainerCardFrame=vm.runInNewContext('({'+
  'run: function(){'+drawing+'return trainerCardFrame;}'+'}).run()',
  {PALETTE:palette,Math});
 
