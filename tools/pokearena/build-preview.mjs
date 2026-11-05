@@ -1112,16 +1112,27 @@ await fs.writeFile(rayquazaRosterFile,previewRoster);
 // Arena/Training/VS only. Keep native kits untouched; leave ranked unchanged.
 const johtoSelectionPath=path.join(dest,clientSource,'escenas/seleccion.js');
 const johtoSelection=await fs.readFile(johtoSelectionPath,'utf8');
-const originalLock='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));';
-const offlineLock='const __torre2Offline=["cpu","entreno","versus"].includes(this.modo);'+
+// Source versions can legitimately add new permissions to the OFFLINE
+// selection rule. Preserve the full ORIGINAL rule as fallback; only override
+// with an affirmative offline allow for Johto and Rayquaza. Fail closed on
+// unrecognized or ambiguous upstream source.
+const candidates=[...johtoSelection.matchAll(/const bloqueado=([^;\n]{40,500});/g)];
+if(candidates.length!==1||
+   !candidates[0][1].includes('desbloqueado')||
+   !candidates[0][1].includes('ranked')){
+ const i=johtoSelection.indexOf('bloqueado=');
+ throw Error('Unrecognized upstream native selection locking rule: '+
+  johtoSelection.slice(Math.max(0,i-110),i+540));
+}
+const originalExpression=candidates[0][1];
+const protectedLock='const __torre2Offline=["cpu","entreno","versus"].includes(this.modo);'+
  'const __torre2IsJohto=f=>{const n=Number(f?.dex);return Number.isInteger(n)&&n>=152&&n<=251};'+
  'const __torre2Solo=__torre2Offline&&(p.id==="rayquaza"||__torre2IsJohto(p)||'+
  'p.evoluciones?.some(__torre2IsJohto)||p.torre2Johto100===true);'+
- 'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):'+
- '!(__torre2Solo||p.id==="froakie"&&__torre2Offline||desbloqueado(p.id));';
-if(johtoSelection.split(originalLock).length!==2)
- throw Error('Poké Arena selection lock changed; refusing guessed unlock');
-await fs.writeFile(johtoSelectionPath,johtoSelection.replace(originalLock,offlineLock));
+ 'const bloqueado=__torre2Solo?false:('+originalExpression+');';
+await fs.writeFile(johtoSelectionPath,
+ johtoSelection.replace(candidates[0][0],protectedLock));
+
 
 console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; required PMD sprite assets verified.');
 
