@@ -3,15 +3,17 @@ import assert from "node:assert/strict";
 import {JOHTO_LAB_VISIBLE,JOHTO_LAB_ALL,JOHTO_LAB_DEFAULT}
  from "../tools/pokearena/torre2-johto-lab-catalog.js";
 import {JOHTO_FOUR_NATIVE_IDS,makeJohtoFourNative,johtoBatch3Roll} from "../tools/pokearena/torre2-johto-four-native.js";
-test("Only three unapproved attacks remain; Hidden Power is approved and frozen",()=>{
+test("Only Vital Throw remains unapproved; 16 user-approved effects frozen",()=>{
  assert.deepEqual(JOHTO_LAB_VISIBLE.map(x=>x.id),JOHTO_FOUR_NATIVE_IDS);
  assert.deepEqual([...JOHTO_LAB_DEFAULT],JOHTO_FOUR_NATIVE_IDS);
- assert.equal(JOHTO_LAB_VISIBLE.filter(x=>!x.approved).length,3);
+ assert.equal(JOHTO_LAB_VISIBLE.filter(x=>!x.approved).length,1);
+ assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id==="pursuit").approved,true);
+ assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id==="beat-up").approved,true);
  assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id==="hidden-power").approved,true);
  assert.equal(JOHTO_LAB_ALL.length,46);
  for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power"]){
   assert.ok(JOHTO_LAB_ALL.some(x=>x.id===id));
-  if(id!=="hidden-power")
+  if(!["hidden-power","pursuit","beat-up"].includes(id))
    assert.ok(!JOHTO_LAB_VISIBLE.some(x=>x.id===id));
   else assert.equal(JOHTO_LAB_VISIBLE.find(x=>x.id===id).approved,true);
   if(!["triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power"].includes(id))
@@ -39,8 +41,9 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
  try{
   for(const id of JOHTO_FOUR_NATIVE_IDS){
    const fx=makeJohtoFourNative(scene,id);
-   assert.equal(fx.source,"pokearena2d-native-textures");
-   assert.ok(fx.sprites.length>=8,"Need layered animation for "+id);
+   assert.equal(fx.source,id==="vital-throw"?"pokearena2d-native-body-motion":"pokearena2d-native-textures");
+   if(id==="vital-throw")assert.equal(fx.sprites.length,0,"Vital Throw must have zero visual overlay");
+   else assert.ok(fx.sprites.length>=8,"Need layered animation for "+id);
    const poses=[];
    for(const t of [.04,.10,.16,.24,.32,.43,.5,.61,.7,.82,.9,.97]){
     fx.update(t,{x:170,y:146},{x:293,y:151},{
@@ -50,7 +53,7 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
     poses.push(fx.sprites.map(o=>o.visible?
      [o.x,o.y,o.w,o.h,o.frame,Math.round(o.alpha*100)].join(","):"off").join("|"));
    }
-   assert.ok(new Set(poses).size>=5,"Native animation is static for "+id);
+   if(id!=="vital-throw")assert.ok(new Set(poses).size>=5,"Native animation is static for "+id);
    fx.destroy();assert.ok(fx.sprites.every(x=>!x.active));
   }
  }finally{delete globalThis.Phaser}
@@ -110,7 +113,7 @@ test("Pursuit, Vital Throw and Beat Up have distinct native frame identities; no
  "p-guijarro","p-estrella"]);
  const sources={
   pursuit:["vfx-quickattack","vfx-astonish"],
-  "vital-throw":["vfx-acometida","vfx-aterriza"],
+  "vital-throw":[],
   "beat-up":["vfx-acometida","vfx-hiper_impacto"]
  };
  const names=a();const scene={textures:{exists(n){return names.has(n)},get(){return{setFilter(){}}}},
@@ -128,6 +131,7 @@ test("Pursuit, Vital Throw and Beat Up have distinct native frame identities; no
    const assetSet=new Set(fx.sprites.map(s=>s.name));
    for(const key of signature)assert.ok(assetSet.has(key),id+" missing "+key);
    fingerprints.push([...assetSet].sort().join(","));
+   if(id==="vital-throw")assert.equal(assetSet.size,0,"No decorative animations for throw");
    if(id==="vital-throw"){
     for(const forbidden of ["vfx-rapidspin","vfx-fly","vfx-atadura"])
       assert.ok(!assetSet.has(forbidden),"Vital Throw must never spin: "+forbidden);
@@ -137,7 +141,7 @@ test("Pursuit, Vital Throw and Beat Up have distinct native frame identities; no
    if(id==="beat-up")assert.ok(!assetSet.has("vfx-rapidspin"),"Beat Up has no spin");
    fx.update(.5,{x:180,y:150},{x:280,y:150},
     {actor:{x:260,y:150},hitAge:.09,hitPoint:{x:280,y:150},dirX:1,hitIndex:0});
-   assert.ok(fx.sprites.some(s=>s.visible),id+" no visual attack on hit");
+   if(id!=="vital-throw")assert.ok(fx.sprites.some(s=>s.visible),id+" no visual attack on hit");
    fx.destroy();
   }
   assert.equal(new Set(fingerprints).size,3,"Three rejected identical VFX must have unique textures");
