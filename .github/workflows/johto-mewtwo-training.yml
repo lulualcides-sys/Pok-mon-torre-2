@@ -67,11 +67,13 @@ jobs:
           node tools/pokearena/build-preview.mjs
           node tests/johto-training-lab-built.test.mjs
           node tests/johto-pixelfx-built.test.mjs
+          node tests/johto-100-built.test.mjs
       - name: Test Mewtwo Lab with 3 approved, 15 replaced and 28 visual-only PixelFX casts
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/johto-training-lab-browser.cjs
+          node tests/johto-100-browser.cjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:

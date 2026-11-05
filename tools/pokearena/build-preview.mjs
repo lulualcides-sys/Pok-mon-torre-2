@@ -70,6 +70,8 @@ await fs.writeFile(path.join(dest,'assets/ui/frlg/items/bag-male.png'),bagPNG);
 // Build-time mirror, same-origin static licensed PMD sprites, no runtime CDN.
 const {installEarlyKantoSprites}=await import('./install-early-kanto-assets.mjs');
 await installEarlyKantoSprites(dest);
+const {installJohtoSpriteCollabAssets}=await import('./install-johto-sprites.mjs');
+await installJohtoSpriteCollabAssets(dest);
 // Only replace the original title-image bytes. The Phaser title scene, its
 // buttons, animated background, layout, hotspots and menu flow stay identical.
 // Keep the approved pixel logo as a small indexed PNG for fast mobile loading.
@@ -276,6 +278,8 @@ await Promise.all([
  ['tools/pokearena/torre2-arena-tempo.js','arena-tempo.js'],
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
+ ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
+ ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
  ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
@@ -335,9 +339,9 @@ patches.push(
  ['datos.js',[
   ['function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];return{...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen}}',
    'function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];if(!e)return def;const result={...def,...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen};for(const key of ["hp","atk","def","vel","regen"]){if(!Number.isFinite(result[key]))result[key]=def[key];}return result}'],
-  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
+  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{addAllJohtoSpecies}from"./torre2/johto-100-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
   ['const ROSTER=TODOS.filter(p=>!p.desactivado);',
-   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
+   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));TODOS.push(...addAllJohtoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
  ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
@@ -1104,6 +1108,21 @@ const spriteManifest=JSON.parse(await fs.readFile(path.join(dest,'assets/pmd/man
 for(const spriteFile of rayquazaRequiredSpriteFiles(spriteManifest))
  await fs.access(path.join(dest,'assets/pmd',spriteFile));
 await fs.writeFile(rayquazaRosterFile,previewRoster);
+// Rayquaza and the 100 Johto species must be selectable in OUR offline
+// Arena/Training/VS only. Keep native kits untouched; leave ranked unchanged.
+const johtoSelectionPath=path.join(dest,clientSource,'escenas/seleccion.js');
+const johtoSelection=await fs.readFile(johtoSelectionPath,'utf8');
+const originalLock='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));';
+const offlineLock='const __torre2Offline=["cpu","entreno","versus"].includes(this.modo);'+
+ 'const __torre2IsJohto=f=>{const n=Number(f?.dex);return Number.isInteger(n)&&n>=152&&n<=251};'+
+ 'const __torre2Solo=__torre2Offline&&(p.id==="rayquaza"||__torre2IsJohto(p)||'+
+ 'p.evoluciones?.some(__torre2IsJohto)||p.torre2Johto100===true);'+
+ 'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):'+
+ '!(__torre2Solo||p.id==="froakie"&&__torre2Offline||desbloqueado(p.id));';
+if(johtoSelection.split(originalLock).length!==2)
+ throw Error('Poké Arena selection lock changed; refusing guessed unlock');
+await fs.writeFile(johtoSelectionPath,johtoSelection.replace(originalLock,offlineLock));
+
 console.log('Rayquaza / Mega Rayquaza added to the ORIGINAL Torre 2 arena; required PMD sprite assets verified.');
 
 // Native menus only: install premium pixel borders, maintaining original
@@ -1191,8 +1210,34 @@ for(const [filename,klass] of [['escenas/combate.js','Combate'],['escenas/batall
 // pedestal: six rows of six cards with tiny previous/next Phaser controls.
 const {paginateKantoPokedexSource}=await import('./torre2-pokedex-pages.mjs');
 const pokedexPath=path.join(dest,clientSource,'escenas/pokedex.js');
-await fs.writeFile(pokedexPath,paginateKantoPokedexSource(
- await fs.readFile(pokedexPath,'utf8')));
+const paginatedPokedex=paginateKantoPokedexSource(
+ await fs.readFile(pokedexPath,'utf8'));
+// Display-only adapter for native incomplete kits, including Ho-Oh,
+// Crobat and Steelix; do NOT alter a single original P2 combat slot.
+const safeSparsePokedex=`
+const __pt2OriginalPokedexMovimientos=Pokedex.prototype.movimientos;
+Pokedex.prototype.movimientos=function(...args){
+ const originalStages=this.etapas,stage=originalStages?.[this.etapa];
+ const originalKit=stage?.kit,slots=["lmb","rmb","q","e","esp"];
+ if(!originalKit||!["lmb","rmb","q","e"].some(slot=>
+   originalKit[slot]?.nombre&&originalKit[slot]?.forma)){
+  this.movs?.removeAll?.(true);return;
+ }
+ const absent=slots.filter(slot=>
+  !originalKit[slot]?.nombre||!originalKit[slot]?.forma);
+ if(!absent.length)return __pt2OriginalPokedexMovimientos.apply(this,args);
+ const displayKit={...originalKit};
+ for(const slot of absent)displayKit[slot]={
+  nombre:"SEM GOLPE",forma:"desativado",tipo:"NORMAL",dano:0,
+  cd:0,coste:0,pendiente:true,torre2Unavailable:true
+ };
+ this.etapas=[...originalStages];
+ this.etapas[this.etapa]={...stage,kit:displayKit};
+ try{return __pt2OriginalPokedexMovimientos.apply(this,args)}
+ finally{this.etapas=originalStages}
+};
+`;
+await fs.writeFile(pokedexPath,paginatedPokedex+safeSparsePokedex);
 
 // The base client already ships the five Greninja styles for Froakie,
 // Frogadier and Greninja. Use the ORIGINAL sprites, metadata and red aura;

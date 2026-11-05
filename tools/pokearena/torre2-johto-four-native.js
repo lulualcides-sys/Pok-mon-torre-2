@@ -586,7 +586,8 @@ export function johtoP2Advance(from,angle,distance,progress){
 }
 export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  const e=l?.escena,r=l?.rival,id=h?.id;
- if(!e?.datos?.johtoLab||!r||r.ko||!FACTORIES[id])return false;
+ const unown=id==="hidden-power"&&h?.torre2JohtoSpecialUnown===true;
+ if((!e?.datos?.johtoLab&&!unown)||!r||r.ko||!FACTORIES[id])return false;
  if(id==="snore"&&!l.est?.dormido)return false;
  const visual=makeJohtoFourNative(e,id);
  if(!visual)return false;
@@ -625,7 +626,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  const roll=id==="present"||id==="magnitude"?johtoBatch3Roll(id):null;
  // The isolated training uses a single Mewtwo unless an actual party
  // array exists. No invented teammates or non-existent extra strikes.
- const party=e.datos.johtoLab.party;
+ const party=e.datos?.johtoLab?.party;
  const members=id==="beat-up"&&Array.isArray(party)&&party.length?
   party.filter(p=>p&&p.hp>0&&!p.est?.dormido&&!p.est?.veneno&&
    !p.est?.quemado&&!p.est?.paralizado&&!p.est?.congelado).slice(0,6):
@@ -634,7 +635,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   members.map((_,i)=>.31+i*.11):hitWindows;
  // Real Gen III IV formula, never quietly substitute fixed Normal power.
  // A deterministic lab Mewtwo fixture is explicit when saved IVs are absent.
- const ivs=l.ivs||e.datos.johtoLab.ivs||
+ const ivs=l.ivs||e.datos?.johtoLab?.ivs||
   {hp:31,attack:31,defense:31,speed:31,spAttack:31,spDefense:31};
  const hidden=id==="hidden-power"?johtoHiddenPowerGen3(ivs):null;
  if(id==="hidden-power"&&!hidden){visual.destroy();return false;}
