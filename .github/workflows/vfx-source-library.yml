@@ -1,0 +1,36 @@
+name: Biblioteca de VFX — fontes, licencas e busca
+on:
+  pull_request:
+    paths:
+      - 'reference-library/vfx-sources/**'
+      - 'reference-library/README.md'
+      - 'AGENTS.md'
+      - 'docs/GUIA-RAPIDO-REPOSITORIO.md'
+      - 'tools/dev/vfx-source-search.mjs'
+      - 'tests/vfx-source-library.test.js'
+      - '.github/workflows/vfx-source-library.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'reference-library/vfx-sources/**'
+      - 'tools/dev/vfx-source-search.mjs'
+      - 'tests/vfx-source-library.test.js'
+permissions:
+  contents: read
+jobs:
+  library-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verificar sintaxe, fichas, licencas, sample files e regras de preservacao
+        run: |
+          set -euo pipefail
+          node --check tools/dev/vfx-source-search.mjs
+          node --test tests/vfx-source-library.test.js
+          node tools/dev/vfx-source-search.mjs "Fire Blast"
+          node tools/dev/vfx-source-search.mjs "Ice Beam" --json > /tmp/torre2-vfx-ice.json
+          test -s /tmp/torre2-vfx-ice.json

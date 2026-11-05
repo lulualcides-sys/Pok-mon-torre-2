@@ -38,3 +38,9 @@ Todos os caminhos sem prefixo na coluna «Código» permanecem em `tools/pokeare
 - `reference-assets/` e `reference-library/` não devem ser limpos ou distribuídos sem revisão de uso/licença.
 
 > Índice criado para reduzir buscas repetidas. Nenhum arquivo de execução foi movido.
+
+## Pesquisa de efeitos externos antes de novos golpes
+
+- Catálogo pesquisável: `reference-library/vfx-sources/catalog.json`; guia e disponibilidade real: `reference-library/vfx-sources/README.md`.
+- Comando: `node tools/dev/vfx-source-search.mjs "golpe/tipo"`.
+- Ver a política integral de quatro fontes antes de alterar VFX; o catálogo de 10 fornecedores é complemento, não substituição.

@@ -1,0 +1,362 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-11-04",
+  "scope": "Pokemon Torre 2 - biblioteca de referencias para pesquisa de VFX; nao importada pelo jogo",
+  "total": 10,
+  "sources": [
+    {
+      "id": "pixelfx",
+      "name": "PixelFX",
+      "url": "https://github.com/patch-gg/pixelfx",
+      "kind": "code",
+      "license": "MIT",
+      "licenseState": "verified",
+      "copyState": "selected-samples-local",
+      "repository": "patch-gg/pixelfx",
+      "pin": "a84159688af3ca37a4be05a0d422b94451b2e24e",
+      "priority": 1,
+      "tags": [
+        "fire",
+        "electric",
+        "water",
+        "ice",
+        "explosion",
+        "impact",
+        "magic",
+        "status",
+        "weather",
+        "projectile",
+        "beam",
+        "dark",
+        "psychic"
+      ],
+      "moves": [
+        "fire blast",
+        "flamethrower",
+        "thunderbolt",
+        "zap cannon",
+        "ice beam",
+        "whirlpool",
+        "blizzard",
+        "shadow ball"
+      ],
+      "localSamples": [
+        "vendor/src/fx/fire/fireball.js",
+        "vendor/src/fx/lightning/zap-hit.js",
+        "vendor/src/fx/water/whirlpool.js",
+        "vendor/src/fx/ice/frost-nova.js"
+      ],
+      "notes": "Amostras de código MIT disponíveis localmente; biblioteca upstream completa permanece externa. Sobrepõe parte da Sprite Fusion. Não substituir VFX aprovados."
+    },
+    {
+      "id": "sprite-fusion",
+      "name": "Sprite Fusion Pixel Art VFX",
+      "url": "https://www.spritefusion.com/pixel-art-vfx",
+      "kind": "code-external",
+      "license": "MIT (declaração do autor)",
+      "licenseState": "verified-website",
+      "copyState": "links-only",
+      "priority": 2,
+      "tags": [
+        "fire",
+        "electric",
+        "ice",
+        "poison",
+        "explosion",
+        "impact",
+        "beam",
+        "shield",
+        "weather",
+        "status",
+        "projectile"
+      ],
+      "moves": [
+        "fire blast",
+        "zap cannon",
+        "ice beam",
+        "poison jab",
+        "protect",
+        "rain dance"
+      ],
+      "localSamples": [],
+      "notes": "Biblioteca de 25 famílias, código/ZIP individual via site ou MCP. Amostras não copiadas; confirmar licença por arquivo baixado e evitar duplicação com PixelFX."
+    },
+    {
+      "id": "pixelbolt",
+      "name": "Pixelbolt",
+      "url": "https://github.com/skulitom/Pixelbolt",
+      "kind": "json-recipes",
+      "license": "MIT",
+      "licenseState": "verified",
+      "copyState": "selected-samples-local",
+      "repository": "skulitom/Pixelbolt",
+      "pin": "ad69982446effc0e37dc76f4f95f16e8d175cc07",
+      "priority": 2,
+      "tags": [
+        "fire",
+        "electric",
+        "ice",
+        "poison",
+        "dark",
+        "shadow",
+        "shield",
+        "impact",
+        "slash",
+        "heal",
+        "magic",
+        "projectile"
+      ],
+      "moves": [
+        "fire blast",
+        "thunder",
+        "blizzard",
+        "shadow ball",
+        "steel wing",
+        "recover",
+        "protect"
+      ],
+      "localSamples": [
+        "vendor/examples/fireball.fx.json",
+        "vendor/examples/ice-spells.fx.json",
+        "vendor/examples/lightning-spells.fx.json",
+        "vendor/examples/poison-spells.fx.json",
+        "vendor/examples/shadow-spells.fx.json",
+        "vendor/examples/shield.fx.json",
+        "vendor/examples/slash-hit.fx.json",
+        "vendor/examples/healing-circle.fx.json"
+      ],
+      "notes": "Receitas JSON prontas para estudar e adaptar; CLI completo não foi copiado. Exportar PNG/spritesheet antes de integrar à Phaser."
+    },
+    {
+      "id": "pixel-ability-fx",
+      "name": "Pixel Ability FX Generator",
+      "url": "https://github.com/GameDev-Toolkit/pixel-ability-fx-generator",
+      "kind": "generator-code",
+      "license": "Apache-2.0",
+      "licenseState": "verified",
+      "copyState": "selected-samples-local",
+      "repository": "GameDev-Toolkit/pixel-ability-fx-generator",
+      "pin": "7898827adc524bbc02b3fa9ecb61cff84e0761ce",
+      "priority": 3,
+      "tags": [
+        "magic",
+        "status",
+        "shield",
+        "barrier",
+        "aura",
+        "buff",
+        "debuff",
+        "impact",
+        "explosion",
+        "fire",
+        "ice",
+        "electric",
+        "poison"
+      ],
+      "moves": [
+        "protect",
+        "light screen",
+        "reflect",
+        "swords dance",
+        "rain dance",
+        "fire blast"
+      ],
+      "localSamples": [
+        "vendor/js/presets.js",
+        "vendor/js/AbilityEffect.js",
+        "vendor/js/engine/Emitter.js",
+        "vendor/js/engine/Particle.js",
+        "vendor/js/engine/Renderer.js"
+      ],
+      "notes": "Inclui módulos de referência Apache-2.0 (não a aplicação completa). Phaser usa spritesheets exportadas, não runtime Canvas 2D."
+    },
+    {
+      "id": "spellbook-gd",
+      "name": "Spellbook GD",
+      "url": "https://github.com/Alkaliii/spellbook-gd",
+      "kind": "godot-shaders",
+      "license": "MIT",
+      "licenseState": "verified",
+      "copyState": "selected-samples-local",
+      "repository": "Alkaliii/spellbook-gd",
+      "pin": "17861170ab94e91033b5e5f7966de2868b473d47",
+      "priority": 4,
+      "tags": [
+        "shader",
+        "magic",
+        "aura",
+        "outline",
+        "shadow",
+        "glow",
+        "pixel",
+        "environment",
+        "status"
+      ],
+      "moves": [
+        "psychic",
+        "shadow ball",
+        "calm mind",
+        "hypnosis"
+      ],
+      "localSamples": [
+        "vendor/assets/shaders/ps_Idyllic2D.gdshader",
+        "vendor/assets/shaders/dotted_grid.gdshader"
+      ],
+      "notes": "Shaders Godot apenas para referência: exigem reimplementação/port para WebGL/Phaser; não importar .gdshader diretamente."
+    },
+    {
+      "id": "foozle-pixel-magic",
+      "name": "Foozle Pixel Magic Effects",
+      "url": "https://foozlecc.itch.io/pixel-magic-sprite-effects",
+      "kind": "png-pack",
+      "license": "CC0-1.0",
+      "licenseState": "verified-website",
+      "copyState": "download-required",
+      "priority": 2,
+      "tags": [
+        "fire",
+        "water",
+        "earth",
+        "rock",
+        "wind",
+        "tornado",
+        "portal",
+        "explosion",
+        "projectile"
+      ],
+      "moves": [
+        "fire ball",
+        "water gun",
+        "whirlpool",
+        "rock blast",
+        "gust",
+        "hurricane"
+      ],
+      "localSamples": [],
+      "notes": "10 efeitos 32x32. ZIP de 101 KB disponível no itch.io mas NÃO foi baixado/copiado. Baixar pelo link oficial, verificar ZIP e arquivar procedência antes de usar."
+    },
+    {
+      "id": "codemanu-free-pixel-effects",
+      "name": "CodeManu Free Pixel Effects Pack",
+      "url": "https://codemanu.itch.io/pixelart-effect-pack",
+      "kind": "png-pack",
+      "license": "inconsistente: texto domínio público; metadados CC-BY-4.0",
+      "licenseState": "conflict",
+      "copyState": "blocked-license-review",
+      "priority": 5,
+      "tags": [
+        "explosion",
+        "impact",
+        "magic",
+        "fire",
+        "electric",
+        "ice",
+        "particle",
+        "attack"
+      ],
+      "moves": [
+        "fire blast",
+        "explosion",
+        "hyper beam",
+        "zap cannon"
+      ],
+      "localSamples": [],
+      "notes": "20 efeitos, 100x100. Página diz domínio público, metadados dizem CC BY 4.0; sem importação até resolver condições e atribuição. ZIP não foi baixado."
+    },
+    {
+      "id": "devwizard-pixel-art-spells",
+      "name": "DevWizard Pixel Art Spells",
+      "url": "https://opengameart.org/content/pixel-art-spells",
+      "downloadUrl": "https://opengameart.org/sites/default/files/pixelart_spells_1.zip",
+      "kind": "png-ase-pack",
+      "license": "CC0-1.0",
+      "licenseState": "verified-website",
+      "copyState": "download-required",
+      "priority": 2,
+      "tags": [
+        "projectile",
+        "arcane",
+        "dark",
+        "shadow",
+        "fire",
+        "ice",
+        "water",
+        "wind",
+        "earth",
+        "rock",
+        "shield",
+        "beam",
+        "magic"
+      ],
+      "moves": [
+        "shadow ball",
+        "ice beam",
+        "water pulse",
+        "rock throw",
+        "solar beam",
+        "aurora beam"
+      ],
+      "localSamples": [],
+      "notes": "23 tipos de feitiços em PNG e ASP. ZIP externo não foi importado. Conferir arquivos e paletas antes do reuso."
+    },
+    {
+      "id": "cs5475-free-pixel-effects",
+      "name": "cs5475 Free Pixel Effects",
+      "url": "https://cs5475.itch.io/free-pixel-effects",
+      "kind": "png-pack",
+      "license": "CC0-1.0",
+      "licenseState": "verified-website",
+      "copyState": "download-required",
+      "priority": 3,
+      "tags": [
+        "explosion",
+        "impact",
+        "fire",
+        "ice",
+        "poison",
+        "arcane",
+        "magic",
+        "holy",
+        "projectile"
+      ],
+      "moves": [
+        "explosion",
+        "fire blast",
+        "ice punch",
+        "poison jab",
+        "shadow ball"
+      ],
+      "localSamples": [],
+      "notes": "30 efeitos (12 explosões, 10 impactos, 8 magias). PNG spritesheets/JSON. ZIP externo não foi importado; conferir transparência e escala."
+    },
+    {
+      "id": "pixeldust",
+      "name": "PixelDust",
+      "url": "https://github.com/pjferri/pixeldust",
+      "kind": "particle-generator",
+      "license": "não identificada",
+      "licenseState": "missing",
+      "copyState": "blocked-no-license",
+      "repository": "pjferri/pixeldust",
+      "pin": "09d15bc9e4e7c7badb27a7d2095576e57a390050",
+      "priority": 9,
+      "tags": [
+        "particles",
+        "fire",
+        "smoke",
+        "magic",
+        "explosion",
+        "trail",
+        "weather"
+      ],
+      "moves": [
+        "smog",
+        "smokescreen",
+        "ember",
+        "fire blast"
+      ],
+      "localSamples": [],
+      "notes": "Sem LICENSE no repositório consultado. Apenas consultar referência pública; NÃO copiar código, presets ou imagens até obter licença."
+    }
+  ]
+}
