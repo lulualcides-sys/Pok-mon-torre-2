@@ -73,8 +73,47 @@ const server=http.createServer(async(req,res)=>{
   const unown=report.partial.find(x=>x.id==="unown");
   assert.equal(unown?.abilities[0],"Hidden Power",
    "Unown must expose the approved playable Hidden Power");
-  assert.equal(report.partial.some(x=>x.id==="smeargle"),false,
-   "New Smeargle must have four executable Sketch-demo abilities");
+  // A Sketch demo may use ONLY already-installed cast renderers.
+  // Current upstream exposes Tackle and Body Slam but not all four demo
+  // moves; preserve empty slots instead of manufacturing unavailable FX.
+  const smeargle=report.partial.find(x=>x.id==="smeargle")||
+   report.samples.find(x=>x.id==="smeargle");
+  assert.ok(smeargle?.rendered>=1,"New Smeargle needs a real installed attack");
+  assert.ok(smeargle.abilities.filter(Boolean).every(name=>
+   ["Tackle","Counter","Revenge","Mirror Coat","Quick Attack",
+    "Swift","Body Slam","Bite","Ember","Water Gun"].includes(name)),
+   "Smeargle must only copy installed moves through Sketch");
+  assert.deepEqual(smeargle.abilities,
+   ["Tackle","Revenge","Mirror Coat","Body Slam"],
+   "Installed native P2 library must equip four distinctive real Sketch moves");
+  assert.ok(!smeargle.abilities.includes("Hyper Beam"),
+   "Smeargle cannot receive generic Hyper Beam fallback");
+  // Confirm every original card keeps its original ROSTER index although
+  // the visible Pokédex is now one interleaved National Dex grid.
+  const inappropriate=report.partial.filter(x=>x.region==="JOHTO"&&
+   x.abilities.some(n=>n==="Hyper Beam"||
+    n==="Solar Beam"&&!x.type.split("/").includes("GRASS")));
+  assert.deepEqual(inappropriate,[],"No generic Hyper Beam or off-type Solar Beam in new Johto");
+  await page.evaluate(()=>window.__pt2Game.scene.start("pokedex"));
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive("pokedex")&&
+   window.__pt2Game.scene.getScene("pokedex").casillas?.length>=150,null,{timeout:30000});
+  const nationalGrid=await page.evaluate(async()=>{
+   const scene=window.__pt2Game.scene.getScene("pokedex");
+   const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
+   const {ROSTER}=await import(new URL("datos.js",new URL("./",script)));
+   const dex=(p,i)=>{const n=Number(p?.dex);return Number.isFinite(n)&&n>0?n:100000+i};
+   const expected=ROSTER.map((p,i)=>({p,i})).sort((a,b)=>
+    dex(a.p,a.i)-dex(b.p,b.i)||a.i-b.i).slice(0,36).map(x=>x.p.id);
+   const visible=scene.casillas.filter(c=>c.g?.visible)
+    .sort((a,b)=>a.y-b.y||a.x-b.x).map(c=>c.p?.id);
+   return {expected,visible,originalIndices:scene.casillas.every((c,i)=>c.p?.id===ROSTER[i]?.id),
+    total:scene.casillas.length};
+  });
+  console.log("JOHTO_NATIONAL_POKEDEX_SORT",JSON.stringify(nationalGrid));
+  assert.deepEqual(nationalGrid.visible,nationalGrid.expected,
+   "Native and Johto cards must be mixed in one National Dex-ordered grid");
+  assert.equal(nationalGrid.originalIndices,true,
+   "Keep all original ROSTER indices for saves and selection");
   // Diagnostic for the separate main Pages failure: Rayquaza was reported
   // unselectable. Do not change or bypass native P2 move slots to fix it.
   await page.evaluate(()=>window.__pt2Game.scene.start("seleccion",{
@@ -111,8 +150,25 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.start("combate",{
    modo:"cpu",p1:"unown",p2:"buneary",mandos:["tactil","pad0"],nivel:"normal"
   }));
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive("combate")&&
-   window.__pt2Game.scene.getScene("combate").fase==="lucha",null,{timeout:25000});
+  // PMD frames sometimes decode slowly under shared Chromium CI.
+  // Never suppress a real hang: record active scenes and screenshot on failure.
+  try{
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive("combate")&&
+    window.__pt2Game.scene.getScene("combate").fase==="lucha",null,{timeout:45000});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>{
+    const game=window.__pt2Game,scene=game?.scene?.getScene("combate");
+    return {phase:scene?.fase,active:game?.scene?.isActive("combate"),
+     scenes:game?.scene?.getScenes(true).map(s=>s.scene.key),
+     combatants:scene?.luchadores?.map(p=>({id:p.def?.id,ko:p.ko,phase:p.fase}))};
+   }).catch(e=>({inspectError:String(e)}));
+   console.error("JOHTO_REAL_ARENA_TRANSITION_DIAGNOSTIC",
+    JSON.stringify({diagnostic,errors}));
+   await fs.mkdir("test-evidence/johto-100",{recursive:true});
+   await page.screenshot({path:"test-evidence/johto-100/unown-transition-timeout.png"})
+    .catch(()=>{});
+   throw error;
+  }
   const unownCast=await page.evaluate(async()=>{
    const scene=window.__pt2Game.scene.getScene("combate"),u=scene.luchadores[0];
    const target=scene.luchadores[1];

@@ -6,6 +6,8 @@
 import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
+import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
+ GEN4_HGSS_JOHTO_TM,GEN5_B2W2_JOHTO_TM} from "./gen45-johto-learnsets.js";
 const canon=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
  .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const byNumber=new Map(JOHTO_100_ROWS.map(p=>[p[0],p]));
@@ -34,6 +36,11 @@ const actualStats=p=>({
  regen:4
 });
 const magnitude=m=>Number.isFinite(m.dano)?m.dano:0;
+// Authoritative skill source: a move is eligible ONLY when it is already
+// installed and executable. No new visual effects, names or placeholders.
+const executable=m=>Boolean(m?.nombre&&m?.forma&&
+ !m.pendiente&&!m.torre2Unavailable&&!m.torre2RequiresTM&&
+ !["dash","evolucionar","megaevolucionar","renacer"].includes(m.forma));
 export const JOHTO_ATTACK_SLOTS=Object.freeze([
  ["lmb","ATK"],["rmb","HAB 2"],["q","HAB 3"],["e","ULT"]
 ]);
@@ -46,12 +53,12 @@ export function johtoMoveLibrary(original){
  const m=nativeAttacks(original),out=new Map();
  for(const [name,move] of m){
   const key=canon(name);
-  if(key&&move?.forma&&!out.has(key))out.set(key,move);
+  if(key&&executable(move)&&!out.has(key))out.set(key,move);
  }
  // Hidden Power (#201 Unown) already has an approved Johto renderer.
  // Expose it to newly added Johto kits only; never change native P2 kits.
  const hidden=JOHTO_18.find(m=>m.id==="hidden-power");
- if(hidden&&!out.has("hidden-power"))out.set("hidden-power",hidden);
+ if(executable(hidden)&&!out.has("hidden-power"))out.set("hidden-power",hidden);
  return out;
 }
 export function selectJohto100Moves(p,library){
@@ -59,54 +66,84 @@ export function selectJohto100Moves(p,library){
  // legal target ability. In the offline Arena this is an explicit DEMO kit,
  // not fake level-up data, and it is never applied to native P2 species.
  if(p[1]==="smeargle"){
-  return ["tackle","quick-attack","swift","hyper-beam"]
+  // Copy only installed battle moves (Sketch may copy Revenge/Mirror Coat).
+  return ["tackle","counter","revenge","mirror-coat",
+   "quick-attack","swift","body-slam","bite","ember","water-gun"]
    .map(id=>({id,level:-2,move:library.get(id),sketched:true}))
-   .filter(x=>x.move?.nombre&&x.move?.forma);
+   .filter(x=>executable(x.move));
  }
- // p[10] contains only Gen III FireRed/LeafGreen natural (level>=0)
- // and compatible TM (level=-1). No invented species/type assignments.
- const legal=p[10].map(([id,level])=>({
-  id,level,move:library.get(canon(id))
- })).filter(x=>x.move?.nombre&&x.move?.forma&&x.id!=="snore"&&
-  !["dash","evolucionar","megaevolucionar","renacer"].includes(x.move.forma));
+ // FRLG natural/TM plus independently verified Gen IV HGSS and
+ // Gen V B2W2 species-legal attacks, intersected with actual P2 library.
+ const learned=new Map();
+ const addLegal=(id,level,source)=>{
+  const key=canon(id),prior=learned.get(key),move=library.get(key);
+  if(!key||!executable(move))return;
+  const x={id:key,level,move,source};
+  if(!prior||(prior.level<0&&level>=0))learned.set(key,x);
+ };
+ for(const [id,level] of p[10])
+  addLegal(id,level,level>=0?"FRLG-LEVEL":"FRLG-TM");
+ for(const [id,level] of Object.entries(GEN4_HGSS_JOHTO_LEVEL_UP[p[1]]||{}))
+  addLegal(id,level,"GEN4-HGSS-LEVEL");
+ for(const [id,level] of Object.entries(GEN5_B2W2_JOHTO_LEVEL_UP[p[1]]||{}))
+  addLegal(id,level,"GEN5-B2W2-LEVEL");
+ for(const id of Object.keys(GEN4_HGSS_JOHTO_TM[p[1]]||{}))
+  addLegal(id,-1,"GEN4-HGSS-TM");
+ for(const id of Object.keys(GEN5_B2W2_JOHTO_TM[p[1]]||{}))
+  addLegal(id,-1,"GEN5-B2W2-TM");
+ const legal=[...learned.values()].filter(x=>executable(x.move)&&
+  !["snore","hyper-beam"].includes(canon(x.id))&&
+  !(canon(x.id)==="solar-beam"&&!p[2].includes("GRASS")));
  const distinct=[...new Map(legal.map(x=>[canon(x.id),x])).values()];
  const damage=x=>magnitude(x.move);
  const offensive=distinct.filter(x=>damage(x)>0);
- const natural=offensive.filter(x=>x.level>=0);
- const primary=p[2][0],typed=x=>x.move.tipo===primary;
+ const isTyped=x=>p[2].includes(x.move.tipo);
+ const isNatural=x=>x.level>=0;
+ const byEarly=(a,b)=>a.level-b.level||damage(a)-damage(b);
+ const byStrong=(a,b)=>
+  Number(isTyped(b))-Number(isTyped(a))||
+  damage(b)-damage(a)||
+  Number(isNatural(b))-Number(isNatural(a));
  const moves=[],used=new Set();
  const add=x=>{
   const key=canon(x?.id);
   if(!key||used.has(key))return false;
   moves.push(x);used.add(key);return true;
  };
- // Basic attack is the weakest actual learned physical/special renderer,
- // prioritizing one natively learned early, never inventing Tackle.
- add([...natural].sort((a,b)=>a.level-b.level||damage(a)-damage(b))[0]||
-     [...offensive].sort((a,b)=>damage(a)-damage(b))[0]||distinct[0]);
- // Two abilities: distinct genuine learnable moves; favor same-type STAB,
- // variety, and normal progress from weaker to stronger.
- const byProgress=[...natural].sort((a,b)=>a.level-b.level||damage(a)-damage(b));
- for(const choice of [...byProgress.filter(typed),...byProgress,
-  ...offensive.filter(typed).sort((a,b)=>damage(a)-damage(b)),
-  ...offensive.sort((a,b)=>damage(a)-damage(b)),...distinct])
+ // Reserve the strongest compatible type/signature attack for ULT
+ // BEFORE allocating HAB 2/3; do not let a generic TM win by raw damage.
+ // Pokémon with one attack (e.g. Unown) keep their actual ATK.
+ const ultimate=offensive.length>=2?[...offensive].sort(byStrong)[0]:null;
+ const others=distinct.filter(x=>x!==ultimate);
+ const lowerOffense=others.filter(x=>damage(x)>0);
+ const natural=lowerOffense.filter(isNatural);
+ const first=[...natural].sort(byEarly)[0]||
+  [...lowerOffense].sort((a,b)=>damage(a)-damage(b))[0]||others[0];
+ add(first);
+ const byProgress=[...natural].sort(byEarly);
+ const typeAttacks=[...lowerOffense].filter(isTyped).sort(byEarly);
+ const otherAttacks=[...lowerOffense].sort((a,b)=>damage(a)-damage(b));
+ for(const choice of [...byProgress.filter(isTyped),...byProgress,
+  ...typeAttacks,...otherAttacks,...others.filter(isTyped),...others])
   if(moves.length<3)add(choice);
- // ULT only a real, installed and legal offensive attack, strongest
- // among unused moves. If none exists, leave a visible honest gap.
- const ultimate=[...offensive].filter(x=>!used.has(canon(x.id)))
-  .sort((a,b)=>damage(b)-damage(a)||Number(typed(b))-Number(typed(a)))[0];
- add(ultimate);
+ if(ultimate)add(ultimate);
+
  return moves.slice(0,4);
 }
 export function johto100Kit(p,library){
  const moves=selectJohto100Moves(p,library);
  const kit={esp:{...simpleDash}},slots=["lmb","rmb","q","e"];
- moves.forEach((m,i)=>{kit[slots[i]]={...m.move,pendiente:false,
-  torre2JohtoLegal:m.sketched?"FRLG-SKETCH-DEMO":"FRLG",
+ moves.forEach((m,i)=>{
+  // The sole provider is the already installed, executable move library.
+  // Missing skill? Leave the slot empty rather than create a fake fallback.
+  if(!executable(m.move)||library.get(canon(m.id))!==m.move)return;
+  kit[slots[i]]={...m.move,pendiente:false,
+  torre2JohtoLegal:m.sketched?"GEN5-SKETCH-DEMO":m.source,
   torre2JohtoMoveLevel:m.level,
   ...(p[1]==="unown"&&m.id==="hidden-power"?
     {torre2JohtoSpecialUnown:true}:{}),
-  ...(i===3?{ulti:true}:{})}});
+  ...(i===3?{ulti:true}:{})};
+ });
  return kit;
 }
 export function addAllJohtoSpecies(original){
