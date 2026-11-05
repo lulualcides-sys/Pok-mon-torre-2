@@ -150,8 +150,25 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.start("combate",{
    modo:"cpu",p1:"unown",p2:"buneary",mandos:["tactil","pad0"],nivel:"normal"
   }));
-  await page.waitForFunction(()=>window.__pt2Game.scene.isActive("combate")&&
-   window.__pt2Game.scene.getScene("combate").fase==="lucha",null,{timeout:25000});
+  // PMD frames sometimes decode slowly under shared Chromium CI.
+  // Never suppress a real hang: record active scenes and screenshot on failure.
+  try{
+   await page.waitForFunction(()=>window.__pt2Game.scene.isActive("combate")&&
+    window.__pt2Game.scene.getScene("combate").fase==="lucha",null,{timeout:45000});
+  }catch(error){
+   const diagnostic=await page.evaluate(()=>{
+    const game=window.__pt2Game,scene=game?.scene?.getScene("combate");
+    return {phase:scene?.fase,active:game?.scene?.isActive("combate"),
+     scenes:game?.scene?.getScenes(true).map(s=>s.scene.key),
+     combatants:scene?.luchadores?.map(p=>({id:p.def?.id,ko:p.ko,phase:p.fase}))};
+   }).catch(e=>({inspectError:String(e)}));
+   console.error("JOHTO_REAL_ARENA_TRANSITION_DIAGNOSTIC",
+    JSON.stringify({diagnostic,errors}));
+   await fs.mkdir("test-evidence/johto-100",{recursive:true});
+   await page.screenshot({path:"test-evidence/johto-100/unown-transition-timeout.png"})
+    .catch(()=>{});
+   throw error;
+  }
   const unownCast=await page.evaluate(async()=>{
    const scene=window.__pt2Game.scene.getScene("combate"),u=scene.luchadores[0];
    const target=scene.luchadores[1];
