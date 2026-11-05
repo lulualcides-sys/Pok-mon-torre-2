@@ -5,6 +5,7 @@
  */
 import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
+import {JOHTO_18} from "./johto-lab-catalog.js";
 const canon=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
  .toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const byNumber=new Map(JOHTO_100_ROWS.map(p=>[p[0],p]));
@@ -47,9 +48,21 @@ export function johtoMoveLibrary(original){
   const key=canon(name);
   if(key&&move?.forma&&!out.has(key))out.set(key,move);
  }
+ // Hidden Power (#201 Unown) already has an approved Johto renderer.
+ // Expose it to newly added Johto kits only; never change native P2 kits.
+ const hidden=JOHTO_18.find(m=>m.id==="hidden-power");
+ if(hidden&&!out.has("hidden-power"))out.set("hidden-power",hidden);
  return out;
 }
 export function selectJohto100Moves(p,library){
+ // In FRLG Smeargle learns only Sketch. A Sketch-derived move may be any
+ // legal target ability. In the offline Arena this is an explicit DEMO kit,
+ // not fake level-up data, and it is never applied to native P2 species.
+ if(p[1]==="smeargle"){
+  return ["tackle","quick-attack","swift","hyper-beam"]
+   .map(id=>({id,level:-2,move:library.get(id),sketched:true}))
+   .filter(x=>x.move?.nombre&&x.move?.forma);
+ }
  // p[10] contains only Gen III FireRed/LeafGreen natural (level>=0)
  // and compatible TM (level=-1). No invented species/type assignments.
  const legal=p[10].map(([id,level])=>({
@@ -89,7 +102,10 @@ export function johto100Kit(p,library){
  const moves=selectJohto100Moves(p,library);
  const kit={esp:{...simpleDash}},slots=["lmb","rmb","q","e"];
  moves.forEach((m,i)=>{kit[slots[i]]={...m.move,pendiente:false,
-  torre2JohtoLegal:"FRLG",torre2JohtoMoveLevel:m.level,
+  torre2JohtoLegal:m.sketched?"FRLG-SKETCH-DEMO":"FRLG",
+  torre2JohtoMoveLevel:m.level,
+  ...(p[1]==="unown"&&m.id==="hidden-power"?
+    {torre2JohtoSpecialUnown:true}:{}),
   ...(i===3?{ulti:true}:{})}});
  return kit;
 }

@@ -280,7 +280,10 @@ function artwork(g,id,style,x,y,age,duration,r,l){
   pixelShards(g,id,x0,y0,age,(phase-.36)/.64);
 }
 function cast(l,h,extra){
- if(!l?.escena?.datos?.johtoLab||!l.rival)return false;
+ // Allow the single approved Hidden Power to run on NEW Unown in offline
+ // Arena; the other Johto effects remain confined to Mewtwo Lab.
+ const nativeUnown=h?.id==="hidden-power"&&h?.torre2JohtoSpecialUnown===true;
+ if(!l?.rival||(!l?.escena?.datos?.johtoLab&&!nativeUnown))return false;
  // Four new Johto moves use native P2 body/contact/recibir mechanics.
  // Leave all 3 approved VFX and 39 other candidates on their original paths.
  if(BATCH_FOUR.has(h.id)){

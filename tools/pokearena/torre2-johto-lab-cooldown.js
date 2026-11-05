@@ -11,7 +11,13 @@ export function withJohtoLabCooldown(cast,announce=null){
  if(typeof cast!=="function")throw TypeError("Johto cast function required");
  return function guardedJohtoCast(fighter,move,extra){
   const scene=fighter?.escena;
-  if(!scene?.datos?.johtoLab)return false;
+  // Keep normal P2 Arena cooldowns intact. Lab-shared cooldown is only
+  // applied in the Mewtwo Lab. New Unown's Hidden Power is exempt.
+  if(!scene?.datos?.johtoLab){
+   if(move?.id==="hidden-power"&&move?.torre2JohtoSpecialUnown===true)
+    return cast(fighter,move,extra);
+   return false;
+  }
   const now=Number(fighter.t);
   if(!Number.isFinite(now))return false;
   if(now<(fighter.__johtoLabNextCastAt??-Infinity))return false;

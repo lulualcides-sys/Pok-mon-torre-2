@@ -66,8 +66,15 @@ const server=http.createServer(async(req,res)=>{
   assert.deepEqual(report.slotLabels,[["lmb","ATK"],["rmb","HAB 2"],["q","HAB 3"],["e","ULT"]]);
   assert.equal(report.missing.length,0,
    "100 Johto names/dex must exist inside actual Phaser ROSTER and evolution forms");
-  assert.equal(report.empty.length,0,
-   "No Johto species may have zero executable battle attacks; see coverage.json");
+  // Empty native Ho-Oh must not be filled: original Poké Arena 2D kits
+  // are immutable, even when the upstream client has no executable move.
+  assert.deepEqual(report.empty.map(x=>x.id),["ho-oh"],
+   "Only original Ho-Oh may lack a playable attack; see coverage.json");
+  const unown=report.partial.find(x=>x.id==="unown");
+  assert.equal(unown?.abilities[0],"Hidden Power",
+   "Unown must expose the approved playable Hidden Power");
+  assert.equal(report.partial.some(x=>x.id==="smeargle"),false,
+   "New Smeargle must have four executable Sketch-demo abilities");
   assert.equal(errors.length,0,"JS errors: "+errors.join("|"));
  }finally{await browser.close()}
 })().then(()=>server.close(),e=>{console.error(e);server.close();process.exitCode=1});
