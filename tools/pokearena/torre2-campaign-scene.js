@@ -284,35 +284,65 @@ create(){
    });
   }
  }
- // Exact original Poké Arena 2D menu frame, font and hover/highlight,
- // reused here rather than reinterpreted with generic rectangles and CSS.
+ // Design Taste adapted to the existing FRLG pixel-art language:
+ // consistent visual hierarchy and tactile feedback on CAMPAIGN buttons only.
+ // The trainer-card hub, Arena HUD, move keys and native combat UI are untouched.
  button(x,y,w,h,label,callback,emphasis=false,tam=null,variant=null,captionInset=0){
   const g=this.add.graphics().setDepth(3);
   const size=tam??(w>=202?12:w>=145?10:w>=92?9:8);
-  // Reserve an icon gutter so TM art never covers its caption.
+  // Keep the native caption sizing, icon gutter and exact click geometry.
   const caption=estrechar(textoMenu(this,x,y,label,{
    tam:size,borde:3,colorBorde:MENU_UI.bordeTexto
   }).setOrigin(.5).setDepth(5),w-14-captionInset)
    .setData('torre2-button-caption',label);
   if(captionInset)caption.setX(x+captionInset/2);
-  let hovered=false;
+  const tone=variant||(emphasis?'gold':'blue');
+  const isBack=/^[◀←]/.test(label);
+  let hovered=false,pressed=false;
   const paint=()=>{
-   g.clear();const tone=variant||(emphasis?'gold':'blue');
-   buttonFrame(g,x-w/2,y-h/2,w,h,tone,hovered);
+   g.clear();
+   const left=Math.round(x-w/2),top=Math.round(y-h/2);
+   const down=pressed?1:0;
+   // Preserve the approved native pixel frame, add a crisp GBA-style
+   // engraved strip and a subtle inset only on noncombat menu buttons.
+   buttonFrame(g,left,top+down,w,h,tone,hovered&&!pressed);
+   if(w>=88&&h>=24){
+    const light=tone==='gold'?0xfff1a4:tone==='green'?0xc7ffe0:0xa4dfff;
+    const rim=tone==='gold'?0x966321:tone==='green'?0x115d47:0x153d79;
+    const markerX=isBack?left+w-12:left+9;
+    g.fillStyle(rim,.95).fillRect(markerX-2,top+down+7,6,h-14);
+    g.fillStyle(light,.96).fillRect(markerX,top+down+8,2,h-16);
+    g.fillStyle(light,hovered?1:.68)
+     .fillRect(left+12,top+down+5,Math.max(1,w-24),1);
+    g.fillStyle(rim,.85)
+     .fillRect(left+12,top+down+h-7,Math.max(1,w-24),1);
+    if(emphasis&&h>=30){
+     g.fillStyle(light,.9).fillRect(left+w-16,top+down+8,5,2);
+     g.fillRect(left+w-14,top+down+10,2,3);
+    }
+   }
+   if(pressed){
+    g.fillStyle(0x06121f,.19)
+     .fillRect(left+4,top+down+5,Math.max(1,w-8),Math.max(1,h-10));
+   }
+   caption.setY(y+down);
    caption.setColor(tone==='gold'?'#2e291b':hovered?'#fff5cd':'#f9fdff');
    caption.setStroke(tone==='gold'?'#fff1ac':'#091629',tone==='gold'?0:3);
   };
   const zone=this.add.zone(x,y,w,Math.max(h,27)).setDepth(8)
-   .setInteractive({useHandCursor:true});
+   .setInteractive({useHandCursor:true})
+   .setData('torre2-campaign-button',{label,tone});
   zone.on('pointerover',()=>{hovered=true;paint()});
-  zone.on('pointerout',()=>{hovered=false;paint()});
+  zone.on('pointerout',()=>{hovered=false;pressed=false;paint()});
+  zone.on('pointerup',()=>{pressed=false;paint()});
   let lastPress=-Infinity;
   zone.on('pointerdown',(_p,_x,_y,event)=>{
    event?.stopPropagation?.();
-   // Avoid duplicate mobile purchase, restart and starter submissions.
+   // Preserve duplicate-submit protection for purchases, saves and resets.
    const now=Date.now();
    if(now-lastPress<190)return;
    lastPress=now;
+   pressed=true;paint();
    callback();
   });
   paint();return zone;
