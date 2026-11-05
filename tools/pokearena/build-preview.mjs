@@ -1075,6 +1075,7 @@ for(const [filename,changes] of patches){
      throw Error('Unknown native ROSTER declaration; not injecting species');
     const setup='TODOS.push(...addEarlyKantoSpecies(TODOS));'+
      'TODOS.push(...addAllKantoSpecies(TODOS));'+
+     'TODOS.push(...addAllJohtoSpecies(TODOS));'+
      'upgradeKantoEvolutionBattleKits(TODOS);';
     body=body.replace(declarations[0],setup+declarations[0]);
     continue;
