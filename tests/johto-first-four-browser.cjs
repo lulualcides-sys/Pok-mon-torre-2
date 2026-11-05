@@ -104,9 +104,11 @@ const server=http.createServer(async(req,res)=>{
     const nameVisible=scene.globos?.some(c=>c.list?.some(obj=>obj.text===m.nombre+"!"))||false;
     const poses=[];
     if(native.length&&effect){
-     for(const dt of [.04,.08,.12,.05,.11,.15,.06,.08,.08]){
-      effect.update(dt);
-      poses.push(native.map(o=>o.visible?
+     // Advance in actual 60Hz Phaser frames, not large clamped synthetic
+     // deltas that skip the 0.34s contact window of False Swipe/Steel Wing.
+     for(let frame=0;frame<66;frame++){
+      effect.update(.016);
+      if(frame%3===0)poses.push(native.map(o=>o.visible?
        [o.x,o.y,o.displayWidth,o.displayHeight,Math.round(o.alpha*100)].join(","):"off").join("|"));
      }
     }

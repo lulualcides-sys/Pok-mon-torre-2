@@ -141,8 +141,11 @@ const server=http.createServer(async(req,res)=>{
     me.accion=null;me.dash=null;me.est={};
     me.ax=enemy.x=me.x+100;me.ay=enemy.y=me.y;
     if(move.id==='snore')me.ponerEstado('dormido',5,{cura:0});
-    const before=scene.efectos.length;
+    const knownEffects=new Set(scene.efectos);
     const output=TORRE2_JOHTO_LAB_FORMS[move.forma](me,move,{slot:'q'});
+    // Some native effects naturally finish within the 100ms observation
+    // interval. Capture actual new object identity at cast time as well.
+    const createdOnCast=scene.efectos.some(fx=>!knownEffects.has(fx));
     await new Promise(ok=>setTimeout(ok,100));
     const native=JOHTO_P2_TEXTURES[move.id]||[];
     const textures=native.map(name=>({name,loaded:scene.textures.exists(name),
@@ -161,7 +164,8 @@ const server=http.createServer(async(req,res)=>{
      scene.children.list.some(o=>o.active&&
       o.getData?.('torre2-zap-native-impact')===true&&
       o.texture?.key==='vfx-electroball');
-    result.push({id:move.id,output,instantiated:scene.efectos.length>=before,textures,
+    result.push({id:move.id,output,
+     instantiated:createdOnCast||scene.efectos.some(fx=>!knownEffects.has(fx)),textures,
      pilot,pixelFXLoaded,pixelFXRendered,electroBallLoaded,electroBallRendered,zapImpactRendered,
      previewVisible:pilot&&scene.children.list.some(o=>
       o.active&&o.texture?.key===pilotKey)});
