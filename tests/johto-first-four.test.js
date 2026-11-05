@@ -7,14 +7,15 @@ test("Only four unapproved attacks are in the review UI; approved three untouche
  assert.deepEqual(JOHTO_LAB_VISIBLE.map(x=>x.id),JOHTO_FOUR_NATIVE_IDS);
  assert.deepEqual([...JOHTO_LAB_DEFAULT],JOHTO_FOUR_NATIVE_IDS);
  assert.equal(JOHTO_LAB_ALL.length,46);
- for(const id of ["powder-snow","whirlpool","zap-cannon"]){
+ for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka"]){
   assert.ok(JOHTO_LAB_ALL.some(x=>x.id===id));
   assert.ok(!JOHTO_LAB_VISIBLE.some(x=>x.id===id));
-  assert.equal(makeJohtoFourNative({},id),null);
+  if(!["triple-kick","octazooka"].includes(id))
+   assert.equal(makeJohtoFourNative({},id),null);
  }
 });
 test("All four VFX move and change native P2 sprite layers, no painted rectangles",()=>{
- const names=new Set(["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua"]);
+ const names=new Set(["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-psiquico","p-mira"]);
  const scene={textures:{exists(id){return names.has(id)},get(){return{setFilter(){}}}},
   add:{image(x,y,id){return {
    name:id,active:true,visible:false,alpha:0,
@@ -35,7 +36,7 @@ test("All four VFX move and change native P2 sprite layers, no painted rectangle
    const poses=[];
    for(const t of [.04,.16,.32,.5,.7,.9]){
     fx.update(t,{x:170,y:146},{x:293,y:151},{
-     hitIndex:Math.min(2,Math.floor(t*3)),hitAge:(t*3%1)*.15,
+     hitIndex:Math.min(2,Math.floor(t*3)),hitAge:t*.27,
      hitPoint:{x:293,y:151},projectile:{x:170+(293-170)*t,y:146+5*t,active:t<.7}
     });
     poses.push(fx.sprites.map(o=>o.visible?

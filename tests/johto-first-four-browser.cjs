@@ -31,13 +31,13 @@ const server=http.createServer(async(req,res)=>{
    const base=new URL("./",Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src);
    const c=await import(new URL("torre2/johto-lab-catalog.js",base));
    return {visible:s.moveCards.filter(card=>card.m).map(card=>card.m.id),
-    originals:c.JOHTO_LAB_ALL.filter(x=>["powder-snow","whirlpool","zap-cannon"].includes(x.id)).map(x=>x.id),
+    originals:c.JOHTO_LAB_ALL.filter(x=>["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka"].includes(x.id)).map(x=>x.id),
     defaults:[...s.picks],
     removedOld:c.JOHTO_LAB_VISIBLE.map(m=>({id:m.id,loaded:s.textures.exists("torre2-johto-pixelfx-"+m.id)}))};
   });
-  assert.deepEqual(visible.visible,["triple-kick","thief","snore","octazooka"]);
+  assert.deepEqual(visible.visible,["thief","snore","false-swipe","steel-wing"]);
   assert.deepEqual(visible.defaults,visible.visible);
-  assert.equal(visible.originals.length,3,"Approved FX preserved in move pool");
+  assert.equal(visible.originals.length,5,"All 5 approved FX preserved in move pool");
   assert.ok(visible.removedOld.every(x=>!x.loaded),
    "Four rejected rectangular spritesheets must NOT be loaded");
   await fs.mkdir("test-evidence/johto-first-four",{recursive:true});
@@ -78,8 +78,9 @@ const server=http.createServer(async(req,res)=>{
     const oldChildren=new Set(scene.children.list);
     const ok=TORRE2_JOHTO_LAB_FORMS[m.forma](me,m,{slot:"q"});
     const native=scene.children.list.filter(o=>o.active&&!oldChildren.has(o)&&
-      ["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua"].includes(o.texture?.key));
+      ["p-cuchilla","p-estrella","p-aura","p-fantasma","p-hipnosis","p-espuma","p-agua","p-sombra","p-mira","p-psiquico"].includes(o.texture?.key));
     const effect=scene.efectos.at(-1),beforeHP=enemy.hp;
+    const nameVisible=scene.globos?.some(c=>c.list?.some(obj=>obj.text===m.nombre+"!"))||false;
     const poses=[];
     if(native.length&&effect){
      for(const dt of [.04,.08,.12,.05,.11,.15,.06,.08,.08]){
@@ -90,7 +91,7 @@ const server=http.createServer(async(req,res)=>{
     }
     out.push({id:m.id,ok,source:"P2-native",sprites:native.length,
       assets:[...new Set(native.map(o=>o.texture?.key))],unique:new Set(poses).size,
-      damage:beforeHP-enemy.hp,
+      damage:beforeHP-enemy.hp,nameVisible,
       noPrematureTriple:m.id!=="triple-kick"||poses[0].split("|").every(p=>p==="off")});
    }}finally{Math.random=originalRandom;
     enemy.efectosGolpe=oldHitText;me.acierto=oldAcerto;
@@ -105,8 +106,8 @@ const server=http.createServer(async(req,res)=>{
    "All four must animate multiple REAL P2 pixel sprites inside Phaser");
   assert.ok(casts.every(m=>m.damage>0),
    "Every move must reduce native opponent HP, not only show an effect");
-  assert.ok(casts.find(m=>m.id==="triple-kick").noPrematureTriple,
-   "Triple Kick cannot show its impact before a confirmed physical collision");
+  assert.ok(casts.every(m=>m.nameVisible),
+   "Poké Arena native globo must announce the move above Mewtwo for every offensive cast");
   assert.equal(errors.length,0,"Page JavaScript errors: "+errors.join(" | "));
   await page.screenshot({path:"test-evidence/johto-first-four/battle.png"});
  }finally{await browser.close()}

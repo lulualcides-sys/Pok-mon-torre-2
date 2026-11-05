@@ -12,7 +12,9 @@ import {RADIO} from "../config.js";
 import {magnitudeGen3,presentGen3,tripleKickGen3,beatUpGen3Participants} from "./torre2-johto-gen3-mechanics.js";
 import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
-const BATCH_FOUR=new Set(["triple-kick","thief","snore","octazooka"]);
+// Keep approved Triple Kick + Octazooka on their EXACT existing native
+// factories while reviewing Thief, Snore, False Swipe and Steel Wing.
+const BATCH_FOUR=new Set(["triple-kick","octazooka","thief","snore","false-swipe","steel-wing"]);
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
 import {ZAP_ELECTRO_BALL_TEXTURE,zapCannonMotion} from "./native-zap.js";
 const tones={

@@ -6,8 +6,9 @@
  * The 3 approved effects NEVER enter this module.
  */
 export const JOHTO_FOUR_NATIVE_IDS=Object.freeze([
- "triple-kick","thief","snore","octazooka"
+ "thief","snore","false-swipe","steel-wing"
 ]);
+export const JOHTO_APPROVED_NATIVE_IDS=Object.freeze(["triple-kick","octazooka"]);
 const clamp=v=>Math.max(0,Math.min(1,v));
 const smooth=v=>{v=clamp(v);return v*v*(3-2*v)};
 const mix=(a,b,v)=>a+(b-a)*v;
@@ -68,50 +69,80 @@ function createTriple(scene){
  }};
 }
 function createThief(scene){
- const body=part(scene,"p-fantasma",0xb6a0fb,1534);
- const cut=part(scene,"p-cuchilla",0xd9b8ff,1536);
- const spark=part(scene,"p-estrella",0xfff0ae,1537);
- const copies=Array.from({length:5},()=>part(scene,"p-fantasma",0x5d428e,1532));
- const stolen=part(scene,"p-aura",0xf0dcae,1535);
- return {sprites:[body,cut,spark,stolen,...copies],update(t,a,b,state={}){
-  // Teleport forward, steal on contact, retreat with a small golden glint.
-  const outbound=t<.46,phase=outbound?clamp(t/.46):clamp((t-.46)/.54);
-  const q=outbound?smooth(phase):1-smooth(phase);
-  const x=mix(a.x,b.x,q),y=mix(a.y,b.y,q)-21*Math.sin(q*PI);
-  const active=fade(t,.07,.9);
-  place(body,x,y,37,31,active*.85,18*Math.sin(t*PI*3));
-  copies.forEach((img,i)=>{
-   const old=clamp(outbound?q-(i+1)*.14:q+(i+1)*.13);
-   place(img,mix(a.x,b.x,old),mix(a.y,b.y,old)-19*Math.sin(old*PI),31-i*2,24-i,
-    active*(.23-i*.03),0,i%2===0);
+ // P2 golpe() rhythm: stealth approach near the caster, two conspicuous
+ // criss-cross slashes ONLY after recibir("golpe"), and a stolen-item glint
+ // returning to the caster. No animated remote slash before real collision.
+ const shadow=Array.from({length:5},()=>part(scene,"p-sombra",0x563688,1532));
+ const cuts=[
+  part(scene,"p-cuchilla",0xe5caff,1538),
+  part(scene,"p-cuchilla",0xffffff,1539),
+  part(scene,"p-cuchilla",0xa379ed,1537)
+ ];
+ const sparks=Array.from({length:5},(_,i)=>part(scene,"p-estrella",
+  i%2?0xf8e5ff:0xfdeaa0,1540));
+ const stolen=part(scene,"p-aura",0xffd56d,1536);
+ return {sprites:[...shadow,...cuts,...sparks,stolen],update(t,a,b,state={}){
+  const actor=state.actor||a,target=state.hitPoint||b;
+  const stealth=fade(t,.07,.79);
+  shadow.forEach((img,i)=>{
+   const wobble=Math.sin(t*PI*9+i*1.6)*5,
+    xx=actor.x-10-i*7,yy=actor.y-8+wobble;
+   place(img,xx,yy,21-i*2,28-i,stealth*(.52-i*.075),i%2?-16:12);
   });
-  const elapsed=state.hitAge;
-  const contact=Number.isFinite(elapsed)&&elapsed>=0&&elapsed<.22?
-   fade(elapsed/.22,.07,.81):0;
-  const hit=state.hitPoint||b;
-  place(cut,hit.x,hit.y-4,58,38,contact,-31);
-  place(spark,hit.x+8,hit.y-7,27,27,contact);
-  const back=Number.isFinite(elapsed)&&elapsed>=0&&elapsed<.36?
-   fade(elapsed/.36,.09,.87):0;
-  place(stolen,x+10,y-12,17,17,back,0);
+  const age=state.hitAge,hit=Number.isFinite(age)&&age>=0&&age<.31;
+  const impact=hit?fade(age/.31,.035,.8):0;
+  cuts.forEach((img,i)=>{
+   const p=clamp(age/.31),shift=i===0?-1:i===1?1:0;
+   place(img,target.x+shift*12,target.y+shift*7,
+    62+i*11,38+i*7,impact*(i===1?1:.85),
+    [39,-46,6][i]);
+  });
+  sparks.forEach((img,i)=>{
+   const x=target.x+Math.cos(i*2.4)*(9+clamp(age/.31)*28),
+    y=target.y+Math.sin(i*2.4)*(9+clamp(age/.31)*20);
+   place(img,x,y,15+i%3*4,15+i%3*4,impact*(.92-i*.09),i*25);
+  });
+  const retreat=hit?fade(age/.31,.05,.93):0;
+  const back=hit?smooth(clamp(age/.31)):0;
+  place(stolen,mix(target.x,actor.x,back),mix(target.y-13,actor.y-17,back),
+   21,21,retreat,0);
  }};
 }
 function createSnore(scene){
- // No attack while awake: existing battle logic keeps this restriction.
- const waves=Array.from({length:5},()=>part(scene,"p-hipnosis",0x9feeff,1533));
- const echoes=Array.from({length:5},()=>part(scene,"p-aura",0x59cad8,1532));
- const nose=part(scene,"p-espuma",0xd7fbff,1534);
- return {sprites:[...waves,...echoes,nose],update(t,a,b){
-  for(let i=0;i<5;i++){
-   const q=(t*1.65-i*.23);
-   const p=clamp(q),alive=q>=0&&q<=1?fade(p,.14,.79):0;
-   const x=mix(a.x+14,b.x-6,p),y=mix(a.y-17,b.y-8,p)+Math.sin(PI*3*p+i)*4;
-   place(waves[i],x,y,18+p*28,24+p*20,alive*.83,
-    9*Math.sin(i+q*3),i%2===1);
-   place(echoes[i],x-7,y-4,20+p*13,16+p*19,alive*.28);
-  }
-  const puff=.4+.28*Math.sin(t*PI*12);
-  place(nose,a.x+16,a.y-14,18,13,(1-smooth((t-.75)/.25))*puff);
+ // P2 viento(sound)/Proyectil composition: a clearly visible SOUND wave
+ // moves along the actual projectile hitbox; a target burst appears only if
+ // recibir() confirmed impact. The sleep bubble is at the user, never enemy.
+ const waves=Array.from({length:5},(_,i)=>part(scene,"p-hipnosis",
+   i%2?0x83eaff:0xffffff,1537));
+ const echoes=Array.from({length:4},()=>part(scene,"p-aura",0x50bbff,1534));
+ const burst=Array.from({length:4},(_,i)=>part(scene,
+   i%2?"p-estrella":"p-psiquico",i%2?0xffffff:0x84f4ff,1539));
+ const bubble=part(scene,"p-espuma",0xc5fcff,1536);
+ return {sprites:[...waves,...echoes,...burst,bubble],update(t,a,b,state={}){
+  const projectile=state.projectile||{active:false,x:a.x,y:a.y},
+    active=!!projectile.active,
+    x=projectile.x,y=projectile.y;
+  waves.forEach((img,i)=>{
+   const pulse=(t*6+i*.25)%1;
+   const wx=x-9-i*10,wy=y-8+Math.sin(i*1.7+t*14)*6;
+   place(img,wx,wy,36+pulse*36,38+pulse*30,
+    active*(.95-i*.12),i%2?14:-14,i%2===1);
+  });
+  echoes.forEach((img,i)=>{
+   const wx=x-18-i*14,wy=y-5+Math.sin(t*12+i)*7;
+   place(img,wx,wy,24+i*8,30+i*6,active*(.42-i*.085),0);
+  });
+  const age=state.hitAge,impact=Number.isFinite(age)&&age>=0&&age<.32?
+   fade(age/.32,.05,.81):0,target=state.hitPoint||b;
+  burst.forEach((img,i)=>{
+   const p=clamp(age/.32),angle=i*PI/2+.15;
+   place(img,target.x+Math.cos(angle)*(7+p*30),
+    target.y+Math.sin(angle)*(6+p*21),
+    35+i*8+p*19,32+i*6+p*17,
+    impact*(1-i*.13),i*45);
+  });
+  const snorePuff=fade(t,.05,.86)*(.7+.22*Math.sin(t*PI*13));
+  place(bubble,a.x+13,a.y-20,24+Math.sin(t*PI*12)*3,20,snorePuff);
  }};
 }
 function createOcta(scene){
@@ -149,17 +180,72 @@ function createOcta(scene){
   place(ripple,target.x,target.y,15+impact*62,12+impact*48,splash*.36);
  }};
 }
+ // Next two offensives from the original 18; these never alter approved
+// Triple Kick or Octazooka and never create false remote damage.
+function createFalseSwipe(scene){
+ const blades=Array.from({length:4},(_,i)=>part(scene,"p-cuchilla",
+   i%2?0xd8fff7:0x79facf,1538+i));
+ const glints=Array.from({length:5},()=>part(scene,"p-estrella",0xe8fffa,1541));
+ const aura=part(scene,"p-aura",0x72f2b7,1535);
+ return {sprites:[...blades,...glints,aura],update(t,a,b,state={}){
+  const age=state.hitAge,target=state.hitPoint||b,
+   hit=Number.isFinite(age)&&age>=0&&age<.36,
+   q=hit?clamp(age/.36):0,alpha=hit?fade(q,.045,.83):0;
+  blades.forEach((img,i)=>{
+   const swap=i%2===0?-1:1,stage=clamp(q*1.3);
+   place(img,target.x+swap*(18-stage*12),target.y+(i<2?-17:17),
+    38+stage*30,24+stage*14,alpha*(1-i*.13),
+    swap*(i<2?39:-44));
+  });
+  glints.forEach((img,i)=>{
+   const theta=i*2.39996,dist=8+q*30;
+   place(img,target.x+Math.cos(theta)*dist,
+    target.y+Math.sin(theta)*dist*.75,
+    16+i%2*5,16+i%2*5,alpha*(.82-i*.09),i*21);
+  });
+  place(aura,target.x,target.y,24+q*54,16+q*37,alpha*.34,0);
+ }};
+}
+function createSteelWing(scene){
+ const wings=Array.from({length:5},(_,i)=>part(scene,"p-cuchilla",
+   i%2?0xefffff:0x8cb7d4,1536+i));
+ const edges=Array.from({length:5},(_,i)=>part(scene,
+   i%2?"p-estrella":"p-mira",0xd4faff,1541));
+ const shock=part(scene,"p-aura",0xaed5e6,1535);
+ return {sprites:[...wings,...edges,shock],update(t,a,b,state={}){
+  const age=state.hitAge,target=state.hitPoint||b,
+   hit=Number.isFinite(age)&&age>=0&&age<.33,
+   q=hit?clamp(age/.33):0,alpha=hit?fade(q,.04,.85):0;
+  wings.forEach((img,i)=>{
+   const side=i%2?-1:1,spread=14+q*(17+i*2);
+   place(img,target.x+side*spread*.54,target.y+(i-2)*8,
+    44+i*5,17+i*4,alpha*(.92-i*.10),
+    side*(48+i*7));
+  });
+  edges.forEach((img,i)=>{
+   const angle=i*2.4+.5,dist=10+q*34;
+   place(img,target.x+Math.cos(angle)*dist,
+    target.y+Math.sin(angle)*dist*.68,
+    15+i%3*3,15+i%3*3,alpha*(.9-i*.1),i*36);
+  });
+  place(shock,target.x,target.y,30+q*55,18+q*35,alpha*.38,0);
+ }};
+}
+
 const FACTORIES=Object.freeze({
- "triple-kick":createTriple,thief:createThief,snore:createSnore,octazooka:createOcta
+ "triple-kick":createTriple,thief:createThief,snore:createSnore,
+ octazooka:createOcta,"false-swipe":createFalseSwipe,"steel-wing":createSteelWing
 });
 export function makeJohtoFourNative(scene,id){
  if(!scene?.textures||!FACTORIES[id])return null;
  // Check actual source textures: no fallback to the rejected blocky spritesheets.
  const required={
   "triple-kick":["p-cuchilla","p-estrella","p-aura"],
-  thief:["p-fantasma","p-cuchilla","p-estrella","p-aura"],
-  snore:["p-hipnosis","p-aura","p-espuma"],
-  octazooka:["p-fantasma","p-agua","p-aura"]
+  thief:["p-sombra","p-cuchilla","p-estrella","p-aura"],
+  snore:["p-hipnosis","p-aura","p-estrella","p-psiquico","p-espuma"],
+  octazooka:["p-fantasma","p-agua","p-aura"],
+  "false-swipe":["p-cuchilla","p-estrella","p-aura"],
+  "steel-wing":["p-cuchilla","p-estrella","p-mira","p-aura"]
  }[id];
  if(!required.every(t=>scene.textures.exists(t)))return null;
  const fx=FACTORIES[id](scene),sprites=fx.sprites.filter(Boolean);
@@ -200,18 +286,21 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
  const angle=Math.atan2(aimY-source.y,aimX-source.x),
   ux=Math.cos(angle),uy=Math.sin(angle),
   distance=Math.hypot(aimX-source.x,aimY-source.y),
-  melee=id==="triple-kick"||id==="thief",
-  duration=id==="triple-kick"?.77:id==="thief"?.71:id==="snore"?.91:.9,
+  melee=!["snore","octazooka"].includes(id),
+  duration=id==="triple-kick"?.77:id==="thief"?.71:
+   id==="false-swipe"?.74:id==="steel-wing"?.78:id==="snore"?.91:.9,
   rise=.13,projectileSpeed=id==="snore"?260:350,
   maxRange=Math.max(1,h.alcance||180),
   // Native golpe/patada close into the target's actual standing hitbox.
   // The 70px Triple Kick melee reach includes a 25px physical approach.
-  advance=Math.min(maxRange+(id==="triple-kick"?25:0),
+  advance=Math.min(maxRange+(id==="triple-kick"?25:
+   id==="false-swipe"||id==="steel-wing"?18:0),
    Math.max(0,distance-17)),
   startProjectile={x:source.x+ux*17,y:source.y+uy*17},
   srcVisual={x:source.x,y:source.y-l.alto*.5},
   aimedVisual={x:source.x+ux*maxRange,y:source.y+uy*maxRange-l.alto*.5},
-  hitWindows=id==="triple-kick"?[.24,.40,.56]:id==="thief"?[.32]:[];
+  hitWindows=id==="triple-kick"?[.24,.40,.56]:
+   id==="thief"?[.32]:id==="false-swipe"?[.34]:id==="steel-wing"?[.36]:[];
  let age=0,nextHit=0,stop=false,hitIndex=-1,hitAt=-Infinity,
   hitPoint=null,projectileAlive=!melee,previousDistance=0,done=false;
  const action={hasta:l.t+duration,bloquea:true,lento:0,angulo:angle};
@@ -224,11 +313,21 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
   const mult=id==="triple-kick"?index+1:1;
   // Use the original fighter damage pipeline: defenses, typing, shields,
   // training ledger, knockback and HP all remain in native recibir().
-  const result=r.recibir(l,{dano:h.dano*mult,tipo:h.tipo,
-   slot:extra?.slot,surge:extra?.surge,empuje:melee?14:10,
-   dirX:dx/d,dirY:dy/d,proyectil:!melee,tick:index>0});
+  // False Swipe is a non-KO technique (at least 1 HP). Native recibir
+  // already implements this through the existing inmortal HP floor.
+  const keepAlive=id==="false-swipe",wasImmortal=r.inmortal;
+  if(keepAlive)r.inmortal=true;
+  let result;
+  try{
+   result=r.recibir(l,{dano:h.dano*mult,tipo:h.tipo,
+    slot:extra?.slot,surge:extra?.surge,empuje:melee?14:10,
+    dirX:dx/d,dirY:dy/d,proyectil:!melee,tick:index>0});
+  }finally{if(keepAlive)r.inmortal=wasImmortal}
   if(result!=="golpe")return false;
   hitIndex=index;hitAt=age;hitPoint={x:r.x,y:r.y-r.alto*.5};
+  // Gen III Snore: can flinch on a successful hit; in the real-time P2
+  // client this is the native brief aturdido action interruption.
+  if(id==="snore"&&Math.random()<.3)r.ponerEstado?.("aturdido",.24);
   return true;
  };
  const obj={update(dt){
@@ -245,7 +344,8 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
    while(nextHit<hitWindows.length&&age>=hitWindows[nextHit]){
     const index=nextHit++;
     if(stop)break;
-    if(!johtoP2BodyContact(r,l.x,l.y,id==="triple-kick"?16:20,0,nativeRadio)){
+    if(!johtoP2BodyContact(r,l.x,l.y,
+      id==="triple-kick"?16:id==="thief"?20:24,0,nativeRadio)){
      if(id==="triple-kick")stop=true;
      continue;
     }
@@ -284,7 +384,7 @@ export function castJohtoFourNative(l,h,extra,nativeRadio=18){
     {hitIndex,hitAge,hitPoint});
   else if(id==="thief")
    visual.update(age/duration,srcVisual,hitPoint||aimedVisual,
-    {hitAge,hitPoint});
+    {hitAge,hitPoint,actor:{x:l.x,y:l.y-l.alto*.5}});
   else if(id==="snore")
    visual.update(age/duration,srcVisual,aimedVisual,{hitAge,hitPoint,projectile:livePoint});
   else
