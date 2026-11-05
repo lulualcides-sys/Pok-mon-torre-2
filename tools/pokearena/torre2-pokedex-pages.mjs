@@ -62,6 +62,9 @@ export function paginateKantoPokedexSource(original){
  }
  function kantoDexStages(def){
  const stages=etapasDe(def);
+ // Original P2 species and every original evolution/mega use exactly the
+ // Arena kit. Campaign learnsets are displayed only in the separate overlay.
+ if(!def.torre2ArenaAdded)return stages;
  // The Torre 2 level-gated resolver only covers the Kanto campaign.
  // Non-Kanto source Pokémon such as Deoxys, Lugia and Zubat evolutions
  // must display their actual original Poké Arena abilities, never the

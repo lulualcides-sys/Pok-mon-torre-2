@@ -1212,12 +1212,26 @@ if(!/class Pokedex\b/.test(paginatedPokedex)||
 const noEmptyJohtoPokedexCrash=`
 const __pt2OriginalPokedexMovimientos=Pokedex.prototype.movimientos;
 Pokedex.prototype.movimientos=function(...args){
- const kit=this.etapas?.[this.etapa]?.kit;
- if(!kit||!["lmb","rmb","q","e"].some(slot=>kit[slot]?.nombre&&kit[slot]?.forma)){
-  this.movs?.removeAll?.(true);
-  return;
+ const originalStages=this.etapas,stage=originalStages?.[this.etapa];
+ const originalKit=stage?.kit,slots=["lmb","rmb","q","e","esp"];
+ if(!originalKit||!["lmb","rmb","q","e"].some(slot=>
+   originalKit[slot]?.nombre&&originalKit[slot]?.forma)){
+  this.movs?.removeAll?.(true);return;
  }
- return __pt2OriginalPokedexMovimientos.apply(this,args);
+ const absent=slots.filter(slot=>
+  !originalKit[slot]?.nombre||!originalKit[slot]?.forma);
+ if(!absent.length)return __pt2OriginalPokedexMovimientos.apply(this,args);
+ // Native P2 draws all 5 slots and reads h.tipo. Use a temporary view
+ // model to mark unavailable holes, never mutating native Arena kits.
+ const displayKit={...originalKit};
+ for(const slot of absent)displayKit[slot]={
+  nombre:"SEM GOLPE",forma:"desativado",tipo:"NORMAL",dano:0,
+  cd:0,coste:0,pendiente:true,torre2Unavailable:true
+ };
+ this.etapas=[...originalStages];
+ this.etapas[this.etapa]={...stage,kit:displayKit};
+ try{return __pt2OriginalPokedexMovimientos.apply(this,args)}
+ finally{this.etapas=originalStages}
 };
 `;
 await fs.writeFile(pokedexPath,paginatedPokedex+noEmptyJohtoPokedexCrash);
