@@ -46,8 +46,11 @@ export function backdrop(scene){
  for(let y=55;y<360;y+=12)for(let x=4;x<640;x+=12){
   const k=r();px(g,x,y,5,5,k<.4?0x16395f:0x0e2946,.45);
  }
- px(g,0,52,640,2,0x306e9b);
- px(g,0,54,640,1,0x8acbec,.65);
+ // Side rails leave a clear corridor for centered subtitle text.
+ px(g,9,59,89,2,0x306e9b,.8);
+ px(g,542,59,89,2,0x306e9b,.8);
+ px(g,9,61,62,1,0x8acbec,.55);
+ px(g,569,61,62,1,0x8acbec,.55);
  px(g,6,63,2,278,0x3a799f,.65);
  px(g,632,63,2,278,0x3a799f,.65);
  for(const x of [6,628])for(const y of [62,333]){
