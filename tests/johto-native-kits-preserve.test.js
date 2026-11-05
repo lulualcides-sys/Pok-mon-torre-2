@@ -63,3 +63,9 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
  assert.equal(original[0].kit.lmb,undefined,'Native Ho-Oh must remain empty');
 
 });
+
+test('Kanto evolution upgrade cannot rewrite original P2 family slots',()=>{
+ const source=readFileSync(new URL('../tools/pokearena/torre2-evolution-kits.js',import.meta.url),'utf8');
+ assert.match(source,/if\(!def\?\.torre2ArenaAdded\)continue;/,
+  'Native client species must be excluded before any evolution kit reassignment');
+});
