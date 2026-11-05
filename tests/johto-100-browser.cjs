@@ -75,6 +75,31 @@ const server=http.createServer(async(req,res)=>{
    "Unown must expose the approved playable Hidden Power");
   assert.equal(report.partial.some(x=>x.id==="smeargle"),false,
    "New Smeargle must have four executable Sketch-demo abilities");
+  // Check the actual non-Lab Arena with the new Unown (real Phaser cast).
+  // Native Poké Arena / other Pokémon's kits remain unchanged.
+  await page.evaluate(()=>window.__pt2Game.scene.start("combate",{
+   modo:"cpu",p1:"unown",p2:"buneary",mandos:["tactil","pad0"],nivel:"normal"
+  }));
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive("combate")&&
+   window.__pt2Game.scene.getScene("combate").fase==="lucha",null,{timeout:25000});
+  const unownCast=await page.evaluate(async()=>{
+   const scene=window.__pt2Game.scene.getScene("combate"),u=scene.luchadores[0];
+   const target=scene.luchadores[1];
+   const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
+   const forms=await import(new URL("torre2/signature-fx.js",new URL("./",script)));
+   u.energia=100;u.ax=target.x;u.ay=target.y;u.ko=false;u.accion=null;
+   const before=scene.efectos.length;
+   const move=u.kit?.lmb;
+   const cast=forms.TORRE2_FORMS[move?.forma]?.(u,move,{slot:"lmb"});
+   return {id:u.def?.id,move:move?.nombre,form:move?.forma,cast,
+    before,after:scene.efectos.length,lab:!!scene.datos?.johtoLab};
+  });
+  console.log("JOHTO_UNOWN_REAL_ARENA_CAST",JSON.stringify(unownCast));
+  assert.equal(unownCast.id,"unown");
+  assert.equal(unownCast.move,"Hidden Power");
+  assert.equal(unownCast.lab,false,"Unown must cast in actual Arena, not only Mewtwo Lab");
+  assert.equal(unownCast.cast,true,"Unown Hidden Power must launch in normal Arena");
+  assert.ok(unownCast.after>unownCast.before,"Real Hidden Power VFX must be active");
   assert.equal(errors.length,0,"JS errors: "+errors.join("|"));
  }finally{await browser.close()}
 })().then(()=>server.close(),e=>{console.error(e);server.close();process.exitCode=1});
