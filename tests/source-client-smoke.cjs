@@ -168,8 +168,9 @@ const server=http.createServer(async(req,res)=>{
   }
   const dexData=await dexPage.evaluate(()=>{
    const p=window.__pt2Game.scene.getScene('pokedex');
-   const base=p.casillas.map(x=>x.p.dex);
-   return {count:p.casillas.length,portraits:base.map(id=>({
+   const visible=p.casillas.filter(c=>c.g?.visible);
+   const base=visible.map(x=>x.p.dex);
+   return {count:p.casillas.length,visibleCount:visible.length,portraits:base.map(id=>({
     id,exists:p.textures.exists('retrato-'+id),
     idle:p.anims.exists(id+'-Idle-0')})),
     bottom:Math.max(...p.casillas.map(c=>c.y+c.h)),podium:p.peanaY,
@@ -179,8 +180,9 @@ const server=http.createServer(async(req,res)=>{
    'Pokédex should retain 26 native cards and add ten original early-Kanto species');
   assert.ok(dexData.bottom<=dexData.podium-22,
    'Expanded 36-family Pokédex cards cannot overlap the Pokémon pedestal');
+  assert.equal(dexData.visibleCount,36,'The initial National Dex page shows 36 cards');
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
-   'Every base Pokédex Pokémon must have a real captured PMD portrait and Idle: '+
+   'Every visible Pokédex card must have a real PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
   assert.deepEqual(dexData.tabNames.slice(0,3),['BULBASAUR','IVYSAUR','VENUSAUR'],
    'Original Bulbasaur family tabs must remain clickable');
