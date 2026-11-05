@@ -14,7 +14,10 @@ for(const p of JOHTO_100_ROWS){
  const [id,name,types,hp,atk,def,spa,spd,speed,parent,moves]=p,dex=String(id).padStart(4,"0");
  assert.equal(id,152+total++);assert.ok(name&&types.length>=1&&types.length<=2);
  for(const n of [hp,atk,def,spa,spd,speed])assert.ok(n>=1&&n<=255,name+" invalid base stat");
- if(parent)assert.ok(parent>=1&&parent<id,name+" evolved parent missing");
+ // Later-generation baby Pokémon (e.g. Azurill #298 -> Marill #183)
+ // are legitimate Pokédex parents, but are outside the Johto 100 roster.
+ if(parent)assert.ok(Number.isInteger(parent)&&parent>=1&&parent<=11000,
+  name+" invalid evolution parent ID");
  assert.ok(moves.length>=1,"Missing legal FireRed/LeafGreen moves: "+name);
  assert.equal(new Set(moves.map(([m])=>m)).size,moves.length,"duplicate FRLG "+name);
  assert.ok(moves.every(([m,l])=>m&&Number.isInteger(l)&&l>=-1),"illegal move metadata: "+name);
