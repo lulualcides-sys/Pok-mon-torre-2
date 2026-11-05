@@ -43,8 +43,19 @@ function box(scene,layer,x,y,w,h,{fill=PALETTE.panel,edge=PALETTE.edge,
  g.fillStyle(PALETTE.shadow,.9);g.fillRect(x+3,y+4,w,h);
  g.fillStyle(edge);g.fillRect(x,y,w,h);
  g.fillStyle(fill);g.fillRect(x+2,y+2,w-4,h-4);
- g.fillStyle(accent,.9);g.fillRect(x+3,y+3,w-6,2);
- g.fillStyle(0x031122,.35);g.fillRect(x+3,y+h-6,w-6,2);
+ g.fillStyle(accent,.95);g.fillRect(x+4,y+4,w-8,2);
+ g.fillStyle(0x030f20,.8);g.fillRect(x+4,y+h-7,w-8,3);
+ // Taste Skill: consistent eight-pixel stepped corners, not rounded web cards.
+ // Keep the original rectangle bounds and all Phaser hit areas unchanged.
+ if(w>=32&&h>=14){
+  const corners=[[x+3,y+3],[x+w-7,y+3],[x+3,y+h-7],[x+w-7,y+h-7]];
+  for(const [cx,cy] of corners){
+   g.fillStyle(accent,1);g.fillRect(cx,cy,4,2);
+   g.fillStyle(0x07172b,.8);g.fillRect(cx+1,cy+2,2,2);
+  }
+  g.fillStyle(accent,.45);g.fillRect(x+7,y+8,2,Math.max(1,h-16));
+  g.fillRect(x+w-9,y+8,2,Math.max(1,h-16));
+ }
  layer.add(g);return g;
 }
 function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
@@ -54,18 +65,57 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
   accent:muted?0x606f7d:gold?0xffebac:0x9ed2e6});
  text(scene,layer,x+w/2,y+h/2,label,size,
   muted?'#8fa0ac':gold?'#fff5ca':'#ecf8ff');
+ // The shine is paint only: no additional interactive surface or larger target.
+ const focus=scene.add.graphics();layer.add(focus);
  const zone=scene.add.zone(x+w/2,y+h/2,w,h)
   .setInteractive({useHandCursor:!muted}).setData('torre2-card-control',id||label);
  layer.add(zone);
  let lastPress=-Infinity;
- if(!muted)zone.on('pointerdown',(_p,_x,_y,event)=>{
-  event?.stopPropagation?.();
-  const now=Date.now();
-  if(now-lastPress<190)return;
-  lastPress=now;
-  fn?.();
- });
+ if(!muted){
+  const shine=()=>{
+   focus.clear();
+   focus.fillStyle(gold?0xffed9a:0xbdeaff,.85);
+   focus.fillRect(x+6,y+4,Math.max(1,w-12),2);
+   focus.fillRect(x+3,y+6,2,Math.max(1,h-12));
+  };
+  zone.on('pointerover',shine).on('pointerout',()=>focus.clear());
+  zone.on('pointerdown',(_p,_x,_y,event)=>{
+   event?.stopPropagation?.();
+   const now=Date.now();
+   if(now-lastPress<190)return;
+   lastPress=now;
+   fn?.();
+  });
+ }
  return zone;
+}
+// Trainer-card artwork only. Keep the approved five-column grid and FRLG
+// sprites exactly where they are; these pixel details never become hitboxes.
+function trainerCardFrame(scene,layer,x,y,w,h,entry){
+ const edge=entry.active?PALETTE.gold:entry.completed?PALETTE.green:0x587790;
+ const trim=entry.active?PALETTE.sun:entry.completed?0x7fe0a5:0x7bacc7;
+ box(scene,layer,x,y,w,h,{
+  fill:entry.active?0x173e62:entry.completed?0x14374d:0x102d4a,
+  edge,accent:trim
+ });
+ const art=scene.add.graphics();
+ // Title strip, character alcove and visible selected/defeated marker.
+ art.fillStyle(entry.leader?0x49314a:entry.active?0x325475:0x1a3a55,.92);
+ art.fillRect(x+5,y+8,w-10,23);
+ art.fillStyle(trim,.92);art.fillRect(x+7,y+30,w-14,2);
+ art.fillStyle(edge,1);art.fillRect(x+5,y+9,3,20);
+ art.fillStyle(trim,.9);art.fillRect(x+w-11,y+11,4,4);
+ art.fillStyle(PALETTE.shadow,.7);art.fillRect(x+7,y+36,w-14,96);
+ art.fillStyle(0x2a5271,.47);art.fillRect(x+10,y+38,w-20,2);
+ art.fillStyle(trim,.5);art.fillRect(x+9,y+134,w-18,1);
+ art.fillStyle(PALETTE.shadow,.6);art.fillRect(x+9,y+162,w-18,1);
+ // Four metal notches frame the roster, without covering portrait sprites.
+ for(const cx of [x+10,x+w-13]){
+  art.fillStyle(trim,.65);
+  art.fillRect(cx,y+139,3,2);art.fillRect(cx,y+157,3,2);
+ }
+ layer.add(art);
+ return edge;
 }
 function npc(scene,layer,kind,x,y,scale=2.3){
  const image=addFireRedNPC(scene,kind,x,y,{scale,depth:0});
@@ -180,6 +230,13 @@ function cardsPage(scene,state,handlers){
  bg.fillStyle(0x0b3555);bg.fillRect(0,0,640,55);
  bg.fillStyle(0x3388bb);bg.fillRect(0,52,640,2);
  bg.fillStyle(0x0b2b48);bg.fillRect(0,284,640,76);
+ bg.fillStyle(0x79bfe1,.78);bg.fillRect(14,53,110,1);
+ bg.fillStyle(0xe5ba63,.9);bg.fillRect(16,76,608,2);
+ bg.fillStyle(0x123a56);bg.fillRect(16,303,608,1);
+ for(let x=18;x<=614;x+=28){
+  bg.fillStyle(x%3?0x4282a6:0x79a7bb,.23);
+  bg.fillRect(x,297,11,2);
+ }
  for(let i=0;i<10;i++){
   bg.fillStyle(i%2?0x29668a:0x164567,.16);
   bg.fillRect((i*97+31)%640,58+(i*29)%224,36,3);
@@ -208,18 +265,19 @@ function cardsPage(scene,state,handlers){
   const entry=all[page*5+c];
   if(!entry)continue;
   const x=18+c*124,y=81,w=109,h=190;
-  const edge=entry.active?PALETTE.gold:entry.completed?PALETTE.green:0x587790;
-  box(scene,layer,x,y,w,h,{fill:entry.active?0x173e62:0x102d4a,
-   edge,accent:entry.active?PALETTE.sun:entry.completed?0x7fe0a5:0x7bacc7});
+  const edge=trainerCardFrame(scene,layer,x,y,w,h,entry);
   const glyph=entry.leader?'LÍDER':entry.foe?.kind==='rival'?'RIVAL':
    entry.foe?.kind==='rocket'?'ROCKET':'TREINADOR';
   text(scene,layer,x+w/2,y+15,
    String(entry.index+1).padStart(2,'0')+'  '+glyph,10,'#f6f3da');
   const podium=scene.add.graphics();
-  podium.fillStyle(0x0b233b);podium.fillRect(x+10,y+37,w-20,94);
+  podium.fillStyle(entry.active?0x123451:0x0b233b);
+  podium.fillRect(x+12,y+39,w-24,89);
   podium.fillStyle(entry.active?0x365f7b:0x23435a);
-  podium.fillRect(x+17,y+116,w-34,4);
-  podium.fillStyle(0x112e45,.7);podium.fillRect(x+18,y+122,w-36,2);
+  podium.fillRect(x+17,y+115,w-34,5);
+  podium.fillStyle(0x86bdca,.25);podium.fillRect(x+16,y+43,w-32,2);
+  podium.fillStyle(0x112e45,.8);podium.fillRect(x+18,y+122,w-36,2);
+  podium.fillStyle(0x517b96,.55);podium.fillRect(x+16,y+126,w-32,2);
   layer.add(podium);
   npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+102,
    entry.leader?2.55:2.35);
@@ -284,6 +342,16 @@ function detailPage(scene,state,handlers,entry){
  }
  g.fillStyle(0x0a243c);g.fillRect(252,0,388,360);
  g.fillStyle(PALETTE.gold);g.fillRect(250,0,3,360);
+ // Detail-screen framing: a quiet GBA-style rail; the real NPC and PMD
+ // portraits, labels and battle action keep their approved coordinates.
+ g.fillStyle(0x1c4e6a);g.fillRect(265,76,359,2);
+ g.fillStyle(0xc4d5dc,.5);g.fillRect(265,80,359,1);
+ g.fillStyle(0x5794b5,.5);g.fillRect(265,300,357,2);
+ g.fillStyle(0xffde91,.75);g.fillRect(21,262,211,2);
+ for(const px of [269,615]){
+  g.fillStyle(0x8ec1d5,.75);g.fillRect(px,87,3,7);
+  g.fillRect(px,285,3,7);
+ }
  layer.add(g);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(shield);
