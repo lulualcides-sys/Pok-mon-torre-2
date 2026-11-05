@@ -458,8 +458,13 @@
         "browser": "Four native animations passed Chromium on PR #565 before CI policy synchronization."
       },
       "visualApproval": {
-        "state": "rejected",
-        "evidence": "User rejected Snore from current review batch on 2026-11-05; historical move remains in original 18-offensive list only."
+        "state": "pending",
+        "evidence": ""
+      },
+      "userFeedback": {
+        "status": "rejected",
+        "date": "2026-11-05",
+        "note": "User rejected Snore aesthetically and requested a different move in the four-move review batch. Snore remains in legacy 18 offensive identities, not in review selection."
       }
     },
     "octazooka": {
