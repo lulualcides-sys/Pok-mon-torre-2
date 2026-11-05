@@ -49,3 +49,21 @@ Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de ca
 - **Com Superpowers disponível:** aplicar `brainstorming` em mudanças novas de comportamento (sem pedir aprovações repetidas de decisões já tomadas no Script Mestre), `systematic-debugging` em defeitos, `test-driven-development` em regressões, `executing-plans` em planos aprovados e `verification-before-completion` antes de comunicar resultado; solicitar revisão quando possível. Sem acesso à skill, executar o equivalente manualmente e dizer que não houve invocação do plugin.
 - **Ciclo mínimo:** reproduzir → RED (quando aplicável) → mudança pequena e isolada → GREEN → testes focados + CI/build/navegador aplicáveis → revisão → PR/merge → confirmar Pages HTTP no SHA exato. Nunca reportar sucesso sem evidência nova.
 - **Registro obrigatório:** arquivos modificados, SHA/PR, testes realmente executados (fixture vs. Chromium vs. campanha natural vs. Android físico), conclusão de CI e estado de publicação. Adoção destes métodos **não** conclui nenhuma seção do Script Mestre nem instala automaticamente o CLI Spec Kit.
+
+## REGRA PRIORITÁRIA — COMPARAR A BIBLIOTECA INTEIRA PARA CADA GOLPE (05/11/2026)
+
+- **Obrigatório para todo novo golpe ou refação:** pesquisar a mecânica Pokémon da geração/modo correto antes de produzir VFX. Definir origem, trajetória, contato, múltiplos impactos, status e dissipação. Não confundir efeito visual com mecânica completa.
+- **Não escolher PixelFX automaticamente.** Consultar e comparar individualmente as dez fontes de reference-library/vfx-sources/catalog.json (PixelFX, Sprite Fusion, Pixelbolt, Pixel Ability FX, Spellbook GD, Foozle, CodeManu, DevWizard, cs5475, PixelDust), incluindo adequação ao golpe, caminho do efeito, licença, pixel art, Phaser e desempenho. O vencedor pode ser qualquer recurso realmente compatível ou uma composição legalmente permitida. Não usar fontes bloqueadas.
+- **Ficha auditável por golpe:** criar rascunho com node tools/dev/vfx-review-policy.mjs --draft "Nome Do Golpe"; preencher data/vfx-selection-decisions.json com as dez fontes, alternativas rejeitadas e decisão fundamentada. O teste tests/vfx-selection-policy.test.js e node tools/dev/vfx-review-policy.mjs --check reprovam novas entradas sem ficha. Rascunhos pending nunca valem como prova.
+- **Conservar integralmente** as quatro fontes tradicionais (T2, Poké Arena 2D, Zarza, Emerald Arena) da POLITICA-GOLPES-INTEGRAL; o novo processo é adicional, não substitui a comprovação de reaproveitamento nem a revisão de licenças.
+- Preservar todos os VFX aprovados, especialmente Powder Snow, Whirlpool e Zap Cannon. Os 43 Johto da PR #565 precisam de comparação efetiva antes de aprovação/merge. Não declarar aprovado por CI verde, commit ou deploy isolado.
+- **Leia o protocolo completo** em docs/PADRAO-COMPARACAO-VFX-POR-GOLPE.md e o checklist de PR. Testar com screenshots reais, Phaser/WebGL e FPS mobile; não publicar na campanha sem aprovação artística.
+
+---
+
+## Fontes adicionais de VFX (04/11/2026)
+
+- **Antes de criar ou refazer qualquer golpe**, pesquisar `reference-library/vfx-sources/catalog.json` com `node tools/dev/vfx-source-search.mjs "NOME DO GOLPE"`, abrir as amostras locais mais próximas e conferir seus originais/licenças. Compare PixelFX, Sprite Fusion, Pixelbolt, Pixel Ability FX, Spellbook GD, Foozle, CodeManu, DevWizard, cs5475 e PixelDust.
+- Esta biblioteca é **complementar** às quatro fontes obrigatórias da `docs/agentes/POLITICA-GOLPES-INTEGRAL.md`, nunca as substitui. Não afirmar que todos os projetos foram copiados; diferenciar amostra local, referência URL e material bloqueado.
+- Fontes sem licença ou com conflito de licença (`blocked-*`) são **consulta somente**. Para packs em `download-required`, obter ZIP pelo autor e registrar hash, condições e autoria antes de reusar. Não usar Canvas 2D/Godot shader como golpe em tempo de execução: converter/portar para Phaser/WebGL com nearest-neighbor.
+- **Preservar TODOS os efeitos aprovados**, incluindo Snow/Powder Snow, Whirlpool e Zap Cannon de Johto. Jamais substituir golpear só porque um catálogo externo parece melhor; testar no Training e aprovar visualmente.

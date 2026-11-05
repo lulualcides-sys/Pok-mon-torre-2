@@ -20,3 +20,9 @@ Pacote organizado de referências recebidas do usuário em outubro de 2026. **Es
 - Antes de integrar imagens ao build, separar regiões/frames e validar proporções, transparência, navegação, colisões e créditos.
 - Os direitos dos sprites de Pokémon pertencem aos respectivos titulares; conferir também os termos dos contribuidores do Spriters Resource.
 - O ZIP da biblioteca é um artefato separado; a presença deste índice não significa que o ZIP ou as imagens estão disponíveis neste repositório.
+
+## Acervo pesquisável de VFX pixel art (novembro/2026)
+
+- [Biblioteca de 10 fontes](vfx-sources/README.md), [catálogo estruturado](vfx-sources/catalog.json).
+- Amostras MIT/Apache-2.0 disponíveis em quatro subpastas `vendor/`; o restante possui fichas de origem com status de download ou licença. A presença no índice **não significa** que todo ZIP/repositório esteja copiado localmente.
+- Antes de desenvolver golpes: `node tools/dev/vfx-source-search.mjs "nome do golpe"`, política integral e revisão de licenças.
