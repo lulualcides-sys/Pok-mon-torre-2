@@ -27,6 +27,6 @@ assert.equal(manifest.files.filter(x=>["pursuit","vital-throw","hidden-power","b
  "No rejected rectangle sprites may ship for the four new P2 effects");
 assert.match(read("torre2/johto-lab-runtime.js"),/makeJohtoFourNative/);
 assert.ok(fs.existsSync(path.join(dir,modules,"torre2/torre2-johto-four-native.js")));
-for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power"])
+for(const id of ["powder-snow","whirlpool","zap-cannon","triple-kick","octazooka","thief","false-swipe","steel-wing","rock-smash","return","present","frustration","magnitude","hidden-power","pursuit","beat-up"])
  assert.ok(!manifest.files.some(x=>x.id===id),"Approved original VFX not regenerated");
-console.log("PASS three reworked Johto reviews, fourteen native P2 moves, fourteen approved untouched",modules);
+console.log("PASS 16 user approvals protected, one body-only Vital Throw pending",modules);
