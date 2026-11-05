@@ -33,6 +33,8 @@ test('PixelFX is build-time only; native Phaser runtime and 3 approved originals
  const runtime=readFileSync('tools/pokearena/torre2-johto-lab-runtime.js','utf8');
  const newruntime=readFileSync('tools/pokearena/torre2-johto-pixelfx-runtime.js','utf8');
  const generator=readFileSync('tools/pokearena/torre2-pixelfx-sheets.mjs','utf8');
+ assert.match(runtime,/johtoPose\(h\.id/);
+ assert.match(newruntime,/johtoPose\(h\.id/);
  const labCombat=readFileSync('tools/pokearena/torre2-johto-lab-combat.js','utf8');
  assert.doesNotMatch(labCombat,/fighter\.cd\[slot\]=0/);
  assert.match(runtime,/withJohtoLabCooldown/);

@@ -9,3 +9,7 @@ Preservar **Powder Snow, Whirlpool e Zap Cannon**. Os outros 43 ainda dependem d
 Distinções críticas: Triple Kick tem 3 chutes 10/20/30 e precisão individual; Magnitude tem pesos 5/10/20/30/20/10/5 e poderes 10/30/50/70/90/110/150; Beat Up depende de aliados saudáveis; Hidden Power depende de IVs (poder 30–70 em Gen III); os tipos Dark eram especiais em Gen III, e Sweet Kiss é Normal; Morning Sun cura 1/2, 2/3 no sol, 1/4 em outros climas; Attract falha com Mewtwo sem gênero.
 
 Antes de novas artes, consultar também as quatro fontes exigidas pela política e a biblioteca reference-library/vfx-sources/ (na main). Usar PixelFX renderizado offline para spritesheets Phaser/WebGL; não alterar a campanha/saves. Regra do Test Lab: cooldown 1 segundo sem VFX sobrepostos.
+
+## Motion review 43 moves
+
+43 distinct Phaser/WebGL sprite paths added according to the Gen III individual behavior audit. Self-only moves display on the caster, traps and damage on foe/ground, exchanging moves between both, attacks in flight. No approved VFX modified, no campaign unlock.

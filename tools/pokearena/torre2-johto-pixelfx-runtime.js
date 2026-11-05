@@ -3,10 +3,8 @@
  * No Canvas drawing, runtime procedural CPU loop, contact damage or new status.
  */
 import {JOHTO_PIXELFX_28} from "./torre2-johto-pixelfx-catalog.js";
-const NO_TARGET=new Set([
- "sketch","conversion-2","belly-drum","detect","endure","swagger",
- "milk-drink","sleep-talk","heal-bell","baton-pass","morning-sun","psych-up"
-]);
+import {johtoPose} from "./torre2-johto-motion.js";
+import {JOHTO_GEN3_SPEC} from "./torre2-johto-gen3-research.js";
 export function castJohtoPixelFX(l,h){
  const scene=l?.escena;
  if(!scene?.datos?.johtoLab||!scene?.efectos||!h?.visualOnly)return false;
@@ -15,9 +13,10 @@ export function castJohtoPixelFX(l,h){
  const sprite=scene.add.sprite(0,0,key,0).setDepth(1535);
  sprite.setScale(.8);
  scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
- const label=scene.add.text(0,0,"PIXELFX · SOMENTE VFX",{
+ const spec=JOHTO_GEN3_SPEC[h.id];
+ const label=scene.add.text(0,0,(spec?.effect||h.nombre).slice(0,62),{
   fontFamily:"Pixelify Sans,monospace",fontSize:"8px",color:"#ffe3a4",
-  stroke:"#0b1829",strokeThickness:2
+  stroke:"#0b1829",strokeThickness:2,wordWrap:{width:226}
  }).setOrigin(.5).setDepth(1536);
  const duration=1.4;
  let age=0,dead=false;
@@ -27,11 +26,14 @@ export function castJohtoPixelFX(l,h){
  const effect={update(dt){
   age+=Math.max(0,Math.min(.05,dt||0));
   if(age>=duration){destroy();return false;}
-  const target=!NO_TARGET.has(h.id)&&l.rival&&!l.rival.ko?l.rival:l;
-  const x=Math.round(target.x),y=Math.round(target.y-target.alto*.5);
-  sprite.setPosition(x,y).setFrame(Math.min(11,Math.floor(age/duration*12)))
-   .setAlpha(age>duration-.18?Math.max(0,(duration-age)/.18):1);
-  label.setPosition(x,y-47).setAlpha(age>duration-.18?.6:1);
+  const rival=l.rival||l;
+  const caster={x:l.x,y:l.y-l.alto*.5},target={x:rival.x,y:rival.y-rival.alto*.5};
+  const pose=johtoPose(h.id,age/duration,caster,target,rival.y,1);
+  sprite.setPosition(pose.x,pose.y).setFrame(pose.frame)
+   .setScale(pose.scale).setAngle(pose.angle)
+   .setAlpha(pose.alpha*(age>duration-.18?Math.max(0,(duration-age)/.18):1));
+  label.setPosition(pose.x,pose.y-42-pose.scale*9)
+   .setAlpha(age>duration-.18?.6:1);
   return true;
  },destroy};
  l.animar?.(h.anim||"Charge",.42,.12);

@@ -6,6 +6,7 @@ import * as vfx from "../vfx.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
 import {TORRE2_JOHTO_PIXELFX_FORMS} from "./torre2-johto-pixelfx-runtime.js";
 import {withJohtoLabCooldown} from "./torre2-johto-lab-cooldown.js";
+import {johtoPose} from "./torre2-johto-motion.js";
 import {JOHTO_PIXELFX_REWORK_15} from "./torre2-johto-pixelfx-catalog.js";
 const REWORK_IDS=new Set(JOHTO_PIXELFX_REWORK_15.map(m=>m.id));
 import {JOHTO_P2_TEXTURES,JOHTO_PIXEL_PALETTES,JOHTO_PIXEL_FRAMES,stampJohto} from "./johto-lab-pixelart.js";
@@ -375,11 +376,10 @@ function cast(l,h,extra){
    // remain governed by the existing Johto lab battle mechanics.
    g.clear();
    const t=Math.min(1,age/duration);
-   const snap=v=>Math.round(v);
-   const dest=melee||style==='quake'?{x:r.x,y:ty}:{x,y};
-   pixelFXSprite.setFrame(Math.min(11,Math.floor(t*12)))
-    .setPosition(snap(dest.x),snap(dest.y))
-    .setAlpha(t>.86?Math.max(.06,(1-t)/.14):1);
+   const pose=johtoPose(h.id,t,{x:sx,y:sy},{x:tx,y:ty},r.y,1);
+   pixelFXSprite.setFrame(pose.frame)
+    .setPosition(pose.x,pose.y).setScale(pose.scale).setAngle(pose.angle)
+    .setAlpha(pose.alpha*(t>.9?Math.max(.05,(1-t)/.1):1));
   }else if(nativeOrb){
    // Source sprite frames: vfx-electroball row 0 (six flying poses),
    // row 1 (six impact poses). Adapted into a weightier cannon blast.

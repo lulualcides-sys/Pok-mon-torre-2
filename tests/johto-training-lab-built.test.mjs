@@ -6,7 +6,7 @@ const dir=path.resolve(process.env.PREVIEW_ROOT||"_site","arena2d");
 const {modules}=JSON.parse(fs.readFileSync(path.join(dir,"version.json"),"utf8"));
 const read=(name)=>fs.readFileSync(path.join(dir,modules,name),"utf8");
 for(const p of ["torre2/johto-lab-catalog.js","torre2/johto-lab-runtime.js",
- "torre2/johto-lab-combat.js","torre2/johto-lab-cooldown.js","torre2/johto-lab-scene.js"]){
+ "torre2/johto-lab-combat.js","torre2/johto-lab-cooldown.js","torre2/torre2-johto-motion.js","torre2/torre2-johto-gen3-research.js","torre2/johto-lab-scene.js"]){
  assert.ok(fs.existsSync(path.join(dir,modules,p)),p);
 }
 assert.match(read("main.js"),/JohtoLab/);

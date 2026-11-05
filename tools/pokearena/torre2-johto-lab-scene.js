@@ -1,6 +1,7 @@
 /* Isolated 18-move Mewtwo Training selector. No campaign reads/writes. */
 import {JOHTO_LAB_ALL,JOHTO_LAB_SLOTS,JOHTO_LAB_DEFAULT,validateJohtoLabSlots,makeJohtoTrainingKit}
  from "./johto-lab-catalog.js";
+import {JOHTO_GEN3_SPEC} from "./torre2-johto-gen3-research.js";
 import {esTactil} from "../tactil.js";
 export class JohtoLab extends Phaser.Scene{
  constructor(){super("johto-lab")}
@@ -68,8 +69,9 @@ export class JohtoLab extends Phaser.Scene{
    fontSize:"10px",color:"#fff2d5"}).setOrigin(.5);
   this.pageLabel=this.add.text(320,280,"",{fontFamily:"Pixelify Sans,monospace",
    fontSize:"10px",color:"#ffe0a0"}).setOrigin(.5);
-  this.add.text(320,296,"28 NOVOS: VFX SOMENTE · SEM DANO/STATUS · MECÂNICAS PENDENTES",{
-   fontFamily:"Pixelify Sans,monospace",fontSize:"10px",color:"#ffc987"}).setOrigin(.5);
+  this.infoLabel=this.add.text(320,297,"",{
+   fontFamily:"Pixelify Sans,monospace",fontSize:"9px",color:"#ffc987"
+  }).setOrigin(.5);
   box(419,330,232,37,0x225a46,0x89e5ab,()=>this.startPractice());
   this.add.text(419,330,"TESTAR NO TRAINING",{fontFamily:"Pixelify Sans,monospace",
    fontSize:"15px",color:"#e6ffdf"}).setOrigin(.5);
@@ -86,6 +88,10 @@ export class JohtoLab extends Phaser.Scene{
   });
   const pages=Math.ceil(JOHTO_LAB_ALL.length/15);
   this.pageLabel.setText((this.page+1)+" / "+pages);
+  const selected=JOHTO_LAB_ALL.find(m=>m.id===this.picks[(this.slot+3)%4]);
+  const description=JOHTO_GEN3_SPEC[selected?.id]?.effect||"Escolha um golpe";
+  this.infoLabel.setText((selected?.nombre||"")+" · "+
+   (description.length>74?description.slice(0,71)+"...":description));
   this.moveCards.forEach((card,i)=>{
    const {r,text}=card,m=JOHTO_LAB_ALL[this.page*15+i]||null;
    card.m=m;
