@@ -1865,8 +1865,8 @@
       "selected": [
         {
           "sourceId": "P2",
-          "effectRef": "tools/pokearena/torre2-johto-four-native.js#castJohtoFourNative",
-          "contribution": "Original native actor position and opposing fighter salto only."
+          "effectRef": "tools/pokearena/torre2-johto-four-native.js#createVitalThrow",
+          "contribution": "Native P2 physical fighter movement and victim salto; zero additional sprite effect layers."
         }
       ],
       "comparisonRationale": "User explicitly rejected extras. No effect from any of the ten VFX source libraries is semantically necessary for this physical grapple; therefore ZERO overlay sprites.",
