@@ -184,7 +184,11 @@ const approvedNativeBaselineFallbacks=[
  {nombre:'Aurora Beam',forma:'chorro',tipo:'ICE',dano:15,largo:240,ancho:16,anchoVisual:26,carga:.25,dur:.8,empuje:50,giro:2.2,paleta:'aurora',ralentiza:.3,ralentizaDur:1.8,congela:true,coste:35,cd:7,anim:'Charge',trozos:['solar-a-hielo','solar-b-hielo','solar-c-hielo'],velTrozos:700,aditivo:true,hojaBoca:'solar-boca-hielo'},
  {nombre:'Calm Mind',forma:'potenciar',tipo:'PSYCHIC',dur:5,mult:1.25,reduce:.15,texto:'CALM MIND',coste:30,cd:14,anim:'Charge'}
 ];
-const nativeMoves=ROSTER.flatMap(collect);
+// The compiled ROSTER includes the Torre 2-added Kanto/Johto species.
+// They are NEVER original P2. Keeping them here used to relabel approved
+// exclusive Torre 2 VFX as native when species kits borrowed those moves.
+const nativeMoves=ROSTER.filter(p=>!p.torre2ArenaAdded&&
+ !p.torre2Kanto151&&!p.torre2Johto100).flatMap(collect);
 const rawLibrary=[...nativeMoves,...SIGNATURE_MOVES,...approvedNativeBaselineFallbacks];
 const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
 for(const h of rawLibrary){
