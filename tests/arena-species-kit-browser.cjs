@@ -40,7 +40,7 @@ const server=http.createServer(async(req,res)=>{
    const history=[];
    const origRandom=Math.random;
    try{
-    for(const seed of [0,.4,.99]){
+    for(const seed of [0,.20,.40,.60,.80]){
      Math.random=()=>seed;
      const f=fighter('eevee');f.etapa=1;
      const first=f.forma.nombre,second=f.forma.nombre;
@@ -51,6 +51,33 @@ const server=http.createServer(async(req,res)=>{
    }finally{Math.random=origRandom;}
    const campaign=fighter('eevee',true);campaign.etapa=1;
    const original=campaign.forma.nombre;
+    // Actual Luchador getter and XP path, not only a synthetic roster snapshot.
+    const magby=fighter('magby');
+    magby.exp=0;magby.ko=false;magby.stats={expPerdida:0};
+    magby.escena.sim=true; // don't invoke visual FX in this deterministic probe
+    const beforeMagby={evolutions:magby.def.evoluciones.map(e=>e.nombre),
+     threshold:magby.expNecesaria,ready:magby.puedeEvolucionar};
+    magby.ganarExp(magby.expNecesaria);
+    const magbyReady=magby.puedeEvolucionar;
+    magby.etapa=1;
+    const magmar={name:magby.forma.nombre,threshold:magby.expNecesaria,
+     moves:['lmb','rmb','q','e'].map(k=>magby.kitActual()?.[k]?.nombre||null)};
+    magby.ganarExp(Math.max(0,magby.expNecesaria-magby.exp));
+    const magmortarReady=magby.puedeEvolucionar;
+    magby.etapa=2;
+    const magmortar={name:magby.forma.nombre,
+     moves:['lmb','rmb','q','e'].map(k=>magby.kitActual()?.[k]?.nombre||null)};
+    const magbyEvolution={beforeMagby,magbyReady,magmar,magmortarReady,magmortar};
+    const togeticStages={};
+    for(const [name,stage] of [['togepi',0],['togetic',1]]){
+     const f=fighter('togepi');f.etapa=stage;
+     const kit=f.kitActual();
+     togeticStages[name]={form:f.forma.nombre,
+      moves:['lmb','rmb','q','e'].map(slot=>({
+       slot,name:kit[slot]?.nombre||null,forma:kit[slot]?.forma||null,
+       damage:kit[slot]?.dano??null,pending:kit[slot]?.pendiente===true
+      }))};
+    }
    const cooldown={};
    for(const def of ROSTER){
     for(let stage=0;stage<=def.evoluciones.length;stage++){
@@ -67,7 +94,7 @@ const server=http.createServer(async(req,res)=>{
      }
     }
    }
-   return {variants,history,campaign:original,cooldown,rosterSize:ROSTER.length};
+   return {variants,history,campaign:original,cooldown,rosterSize:ROSTER.length,magbyEvolution,togeticStages};
   });
   console.log('ARENA_REVIEW',JSON.stringify(results));
   for(const name of ['clefairy','persian','raticate','marowak','kingler','weezing','porygon']){
@@ -92,9 +119,27 @@ const server=http.createServer(async(req,res)=>{
   if(persian.added)assert.ok(persian.slots.some(x=>x.name==='Pay Day'),'Persian approved signature');
   const marowak=results.variants.marowak;
   if(marowak.added)assert.ok(marowak.slots.some(x=>x.name==='Bonemerang'),'Marowak approved signature');
-  assert.deepEqual(results.history.map(x=>x.first),['VAPOREON','JOLTEON','FLAREON'],'Eevee branches should be three distinct outcomes');
+  assert.deepEqual(results.history.map(x=>x.first),
+    ['VAPOREON','JOLTEON','FLAREON','ESPEON','UMBREON'],
+    'Eevee must offer all five installed branches'); 
+   assert.deepEqual(results.magbyEvolution.beforeMagby.evolutions,['MAGMAR','MAGMORTAR']);
+   assert.equal(results.magbyEvolution.magbyReady,true,'Magby must earn an evolution');
+   assert.equal(results.magbyEvolution.magmar.name,'MAGMAR');
+   assert.equal(results.magbyEvolution.magmortarReady,true,'Magmar must evolve again');
+   assert.equal(results.magbyEvolution.magmortar.name,'MAGMORTAR');
+   for(const name of ['magmar','magmortar'])
+    assert.ok(results.magbyEvolution[name].moves.some(Boolean),
+     name+' cannot have an empty combat kit');
+   for(const [name,stage] of Object.entries(results.togeticStages)){
+    assert.equal(stage.moves.length,4);
+    assert.ok(stage.moves.every(x=>x.name&&x.forma&&!x.pending),
+     name+' has an unusable Arena attack: '+JSON.stringify(stage));
+    assert.ok(stage.moves.filter(x=>x.damage>0).length>=2,
+     name+' needs real offensive moves');
+   }
   assert.ok(results.history.every(x=>x.first===x.second&&!x.mayEvolve),'Branch stable until end of battle');
-  const eeveeTypes={VAPOREON:'WATER',JOLTEON:'ELECTRIC',FLAREON:'FIRE'};
+  const eeveeTypes={VAPOREON:'WATER',JOLTEON:'ELECTRIC',FLAREON:'FIRE',
+    ESPEON:'PSYCHIC',UMBREON:'DARK'};
   for(const row of results.history)assert.ok(row.skills.some(s=>s.type===eeveeTypes[row.first]),
    'Eevee '+row.first+' needs a signature attack matching its evolution');
   assert.equal(results.campaign,'VAPOREON','Campaign explicitly unchanged');
