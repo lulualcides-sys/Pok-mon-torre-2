@@ -16,7 +16,9 @@ const expected={
  'mr-mime':['Pound','Confusion','Psywave','Psychic'],
  cubone:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
  marowak:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
- doduo:['Peck','Jump Kick','Drill Peck','ULT · Tri Attack'],
+ // Real public Lv50 campaign kit verified on 2026-11-06. This is test-only:
+ // Never rewrite P2 native Pokémon data to satisfy an obsolete assertion.
+ doduo:['Peck','Fury Attack','Drill Peck','ULT · Tri Attack'],
  deoxys:['Confusion','Psychic','Form Change','Psycho Boost']
 };
 (async()=>{
