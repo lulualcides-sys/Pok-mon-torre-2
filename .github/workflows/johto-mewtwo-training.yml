@@ -57,6 +57,8 @@ jobs:
           node --test tests/johto-training-lab.test.js tests/johto-pixelart.test.js
           npm test
       - name: Capture upstream and build isolated Phaser preview
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           # P2 upstream now answers 403 to unattended Actions; use the already
@@ -103,6 +105,8 @@ jobs:
       - name: Install browser test dependencies
         run: npm install --no-audit --no-fund
       - name: Capture upstream and build isolated preview
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
           # P2 upstream now answers 403 to unattended Actions; use the already
