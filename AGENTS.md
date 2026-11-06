@@ -2,6 +2,18 @@
 
 Este é o **Pokémon Torre 2**. Nunca misturar com Pokémon Torre 1. Antes de cada patch, consultar o índice `docs/GUIA-RAPIDO-REPOSITORIO.md` e abrir **somente** o código, testes e documentos necessários ao escopo. O plano de economia e suas limitações estão em `docs/ECONOMIA-DE-CONTEXTO-ASTRA.md`.
 
+## REGRA GLOBAL E PERMANENTE — FONTE NATIVA P2 INVIOLÁVEL (decisão de 06/11/2026)
+
+**Tem precedência sobre orientações históricas conflitantes. Vale para todos os agentes, chats, PRs, modos e futuras sincronizações.**
+
+1. **Pokémon originais Poké Arena 2D são somente leitura.** Identificar espécies, evoluções e Megas no snapshot ORIGINAL, **antes** da injeção de qualquer espécie Torre 2. Não criar duplicata nem alterar/completar golpes, kits, slots lmb/rmb/q/e/esp, poder, cooldown, efeitos, sprites, evoluções ou ULT, mesmo que um auditor indique 0/1/3 golpes. **Ho-Oh, Crobat e Steelix são exemplos expressos.** Todos os modos (Arena, Pokédex, Training etc.) consultam a fonte nativa.
+2. **VFX: prioridade global por nome canônico.** Se um golpe do Torre 2 também existe com efeito/forma executável no cliente-base P2, o Torre 2 **usa a forma/animação original P2**, sem modificar dados ou kits do P2. **Peck, Double Kick, Crunch e TODOS os outros overlaps**, independentemente da aprovação histórica de um efeito caseiro. Aprovação antiga não autoriza forçar VFX duplicado.
+3. **Aprovações exclusivas preservadas.** Se o P2 não tem golpe executável correspondente, manter o VFX exclusivo aprovado do Torre 2; novos golpes dependem de biblioteca executável, learnset legal, licença e aprovação. Não criar fallback genérico ou Hyper Beam para completar kits nativos. Preservar HUD de batalha, saves e arte aprovada.
+4. **Teste obrigatório por PR:** comparar snapshot de TODOS os kits originais (incluindo evoluções e Megas) antes/depois; conferir todos os VFX repetidos e exclusivos; executar testes Phaser/Chromium e CI; verificar SHA exato realmente servido pelo GitHub Pages. Merge não prova publicação.
+5. **Auditoria de backlog:** usar estas regras nos PRs antigos sem mesclar drafts obsoletos em massa nem reaplicar mudanças já publicadas.
+
+**Regra auxiliar:** docs/agentes/POLITICA-GOLPES-INTEGRAL.md. Havendo divergência com recomendações de 04–05/11, prevalece esta decisão de 06/11.
+
 ## Memória operacional de baixo custo (Obsidian/Markdown)
 
 - **Antes da busca de código**, quando houver shell Node no checkout, executar `node tools/dev/memoria-contexto.mjs <area>` (consulte `--list`). As notas ficam em [`docs/memoria/00-INDICE.md`](docs/memoria/00-INDICE.md) e podem ser abertas localmente no Obsidian.
