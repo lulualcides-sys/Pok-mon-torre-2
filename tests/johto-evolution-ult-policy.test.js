@@ -4,6 +4,9 @@ import {readFileSync} from 'node:fs';
 import {JOHTO_100_ROWS} from '../tools/pokearena/torre2-johto-100-data.js';
 const root=new URL('../tools/pokearena/',import.meta.url);
 let src=readFileSync(new URL('torre2-johto-100-species.js',root),'utf8');
+// This data-URL test isolates move policy from the Magmortar roster hook.
+src=src.replace('import {attachMagmortarEvolution} from "./magmar-family.js";',
+ 'const attachMagmortarEvolution=()=>false;');
 for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
