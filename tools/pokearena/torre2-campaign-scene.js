@@ -778,64 +778,32 @@ create(){
   if(!deferEeveeChoice)this.promptPendingEeveeEvolution(state);
   return path;
  }
- // This is a campaign-only choice, NOT the instant EVO command in Arena.
- // A stored Eevee reaches Lv30 during battle; the three Kanto forms are
- // offered only once the battle ends. No random auto-choice or XP shortcut.
+ // Post-battle evolution: one random legal Kanto form, chosen exactly once
+ // per Eevee UID through the existing primary/backup atomic save path.
  promptPendingEeveeEvolution(state){
   const pending=pendingEeveeEvolution(state);
-  if(!pending||this.__torre2EeveeChoice?.active)return false;
-  const layer=480;
-  const backdrop=this.add.graphics().setDepth(layer);
-  backdrop.fillStyle(0x06101f,.94);backdrop.fillRect(0,0,640,360);
-  backdrop.fillStyle(0x112b40,.99);backdrop.fillRoundedRect(56,69,528,231,8);
-  backdrop.lineStyle(3,0xf4cd71,1);backdrop.strokeRoundedRect(56,69,528,231,8);
-  this.__torre2EeveeChoice=backdrop;
-  this.add.zone(320,180,640,360).setDepth(layer+1).setInteractive()
-   .setData('torre2-eevee-blocker',true);
-  const title=(x,y,content,size,color)=>{
-   return text(this,x,y,content,{fontFamily:'Pixelify Sans,monospace',
-    fontSize:size+'px',fontStyle:'bold',color,
-    stroke:'#040e18',strokeThickness:2}).setOrigin(.5).setDepth(layer+5);
-  };
-  title(320,101,'EEVEE PRONTO PARA EVOLUIR!',21,'#ffe3a0');
-  title(320,136,'NÍVEL '+pending.level+'  ·  ESCOLHA A FORMA DE KANTO',12,'#e4f3fb');
-  title(320,158,'A escolha é permanente e ficará salva.',10,'#c7d6e2');
-  const variants=[
-   ['vaporeon','ÁGUA',0x4a91cf],
-   ['jolteon','ELÉTRICO',0xe2ba4d],
-   ['flareon','FOGO',0xc96750]
-  ];
-  let saveWarning;
-  variants.forEach(([id,type,color],i)=>{
-   const x=149+i*171,y=226,w=158,h=68;
-   const g=this.add.graphics().setDepth(layer+3);
-   g.fillStyle(0x142e44,1);g.fillRoundedRect(x-w/2,y-h/2,w,h,5);
-   g.fillStyle(color,.96);g.fillRect(x-w/2+4,y-h/2+4,w-8,5);
-   g.lineStyle(2,color,1);g.strokeRoundedRect(x-w/2,y-h/2,w,h,5);
-   title(x,y-5,id.toUpperCase(),12,'#fff9e9');
-   title(x,y+17,type,10,'#deebf5');
-   this.add.zone(x,y,w,h).setDepth(layer+8)
-    .setInteractive({useHandCursor:true})
-    .setData('torre2-eevee-choice',id)
-    .on('pointerdown',(_p,_x,_y,event)=>{
-     event?.stopPropagation?.();
-     try{
-      const current=readCampaign();
-      // A stale/malformed save must never be evolved by a frozen UI object.
-      if(!current)return this.scene.restart();
-      const outcome=chooseEeveeEvolution(current,pending.uid,id);
-      if(!outcome.ok)return this.scene.restart();
-      this.scene.restart();
-     }catch{
-      // Keep all three choices clickable so the player can retry the save.
-      saveWarning?.setText('NÃO FOI POSSÍVEL SALVAR · TENTE NOVAMENTE');
-     }
-    });
-  });
-  title(320,284,'EVOLUÇÃO POR NÍVEL · APÓS A BATALHA',9,'#b6cedf');
-  saveWarning=title(320,309,'',10,'#ff9898')
-   .setData('torre2-eevee-save-error',true);
-  return true;
+  if(!pending||this.__torre2EeveeResolving||this.__torre2EeveeAttempted===pending.uid)return false;
+  this.__torre2EeveeAttempted=pending.uid;
+  this.__torre2EeveeResolving=true;
+  try{
+   const current=readCampaign();
+   if(!current)return false;
+   const result=chooseEeveeEvolution(current,pending.uid,'random');
+   if(!result.ok)return false;
+   this.scene.restart();
+   return true;
+  }catch(e){
+   // Save denied: leave Eevee pending and offer a deliberate retry.
+   const warning=text(this,320,327,'EVOLUÇÃO PENDENTE · TOQUE PARA TENTAR NOVAMENTE',{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#ffb9a1'
+   }).setOrigin(.5).setDepth(480).setInteractive({useHandCursor:true});
+   warning.on('pointerdown',()=>{
+    warning.destroy();
+    this.__torre2EeveeAttempted=null;
+    this.promptPendingEeveeEvolution(readCampaign());
+   });
+   return false;
+  }finally{this.__torre2EeveeResolving=false}
  }
  badgeCaseScreen(state,selected=0){
   this.children.removeAll(true);this.backdrop();
