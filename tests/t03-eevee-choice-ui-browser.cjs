@@ -23,7 +23,7 @@ const server=http.createServer(async(req,res)=>{
   '--use-gl=angle','--use-angle=swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[],report={mode:'Prepared post-battle checkpoint in real Phaser UI',forms:[]};
- page.on('pageerror',e=>errors.push(String(e)));
+ page.on('pageerror',e=>errors.push(e.stack||String(e)));
  const gameReady=()=>page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
  try{
   await page.goto('http://127.0.0.1:4389/arena2d/?original=1',{waitUntil:'domcontentloaded'});
