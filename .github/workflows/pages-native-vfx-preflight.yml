@@ -80,9 +80,10 @@ jobs:
         run: |
           set -euo pipefail
           export CHROME_BIN="$(command -v google-chrome)"
+          # Fail fast on the ACTUAL reported Arena overlay before slower smoke.
+          node tests/arena-family-selector-browser.cjs
           node tests/source-client-smoke.cjs
           node tests/selection-original-mobile-browser.cjs
-          node tests/arena-family-selector-browser.cjs
           node tests/pokedex-crossgen-families-browser.cjs
       - name: Preserve browser evidence even on failure
         if: always()
