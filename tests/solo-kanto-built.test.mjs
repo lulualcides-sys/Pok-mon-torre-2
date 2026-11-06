@@ -487,9 +487,15 @@ for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
  assert.ok(!pendingIds.includes(id),'Native and approved moves must never enter NEW: '+id);
-for(const id of ['metronome','absorb','x-scissor'])
- assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
-  'User just approved the previously queued move '+id);
+for(const id of ['metronome','absorb','x-scissor']){
+ const selected=allMoves.find(m=>m.id===id);
+ assert.ok(selected,'Missing formerly approved or native move '+id);
+ if(selected.source==='arena2d-original')
+  assert.equal(selected.forma,nativeMoves.get(canonicalMoveKey(selected.nombre))?.forma,
+   'The original P2 renderer must supersede approved custom '+id);
+ else assert.equal(selected.approved,true,
+   'Exclusive Torre2 move lost its approval '+id);
+}
 assert.ok(pending.every(isPendingApprovalMove));
 assert.ok(pending.every(m=>m.source==='new-phaser-fx'));
 assert.equal(filterMoveLibrary(allMoves,'NEW','ROCK').length,0,
@@ -634,10 +640,12 @@ for(const [id,forma] of [['hyper-fang','torre2_hyperfang'],
 }
 for(const [id,forma] of [['metronome','torre2_metronome'],['absorb','torre2_absorb'],['x-scissor','torre2_xscissor']]){
  const h=allMoves.find(m=>m.id===id);
- assert.ok(h,'New ability must be in Kanto/Mewtwo move library: '+id);
- assert.equal(h.forma,forma);
- assert.equal(h.approved,true,'Moves already marked approved must remain approved');
- assert.equal(equipMove(tester,0,id),true,'New trio selectable in Mewtwo test menu');
+ assert.ok(h,'Original/native ability missing from Kanto/Mewtwo move library: '+id);
+ const original=nativeMoves.get(canonicalMoveKey(h.nombre));
+ assert.equal(h.forma,original?.forma??forma);
+ if(original)assert.equal(h.source,'arena2d-original');
+ else assert.equal(h.approved,true,'Exclusive Torre2 move lost approval');
+ assert.equal(equipMove(tester,0,id),true,'Move must remain selectable in Mewtwo test menu');
 }
 const newVfx=fs.readFileSync(path.join(stage,version,'torre2/next-specific-fx.js'),'utf8');
 for(const name of ['metronome','absorb','xscissor'])assert.ok(
