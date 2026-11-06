@@ -283,6 +283,7 @@ await Promise.all([
  ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
  ['tools/pokearena/torre2-pokedex-families.js','pokedex-families.js'],
  ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
+ ['tools/pokearena/torre2-magmar-family.js','magmar-family.js'],
  ['tools/pokearena/torre2-wobbuffet-native.js','wobbuffet-native.js'],
  ['tools/pokearena/torre2-gen45-johto-learnsets.js','gen45-johto-learnsets.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
@@ -344,9 +345,9 @@ patches.push(
  ['datos.js',[
   ['function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];return{...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen}}',
    'function etapaDe(def,i){if(!i)return def;const e=def.evoluciones[i-1];if(!e)return def;const result={...def,...e,tipos:e.tipos??def.tipos,regen:e.regen??def.regen};for(const key of ["hp","atk","def","vel","regen"]){if(!Number.isFinite(result[key]))result[key]=def[key];}return result}'],
-  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{addAllJohtoSpecies}from"./torre2/johto-100-species.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
+  ['const TIPOS={','import{addEarlyKantoSpecies}from"./torre2/early-kanto-species.js";import{addAllKantoSpecies}from"./torre2/all-kanto-species.js";import{addAllJohtoSpecies}from"./torre2/johto-100-species.js";import{attachMagmortarEvolution}from"./torre2/magmar-family.js";import{upgradeKantoEvolutionBattleKits}from"./torre2/evolution-kits.js";const TIPOS={'],
   ['const ROSTER=TODOS.filter(p=>!p.desactivado);',
-   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));TODOS.push(...addAllJohtoSpecies(TODOS));upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
+   'TODOS.push(...addEarlyKantoSpecies(TODOS));TODOS.push(...addAllKantoSpecies(TODOS));TODOS.push(...addAllJohtoSpecies(TODOS));attachMagmortarEvolution(TODOS);upgradeKantoEvolutionBattleKits(TODOS);const ROSTER=TODOS.filter(p=>!p.desactivado);']
  ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
