@@ -133,10 +133,17 @@ const server=http.createServer(async(req,res)=>{
     const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
     const {ROSTER}=await import(new URL('./datos.js',src));
     const i=ROSTER.findIndex(p=>p.id==='torchic');
+    const before={opened:sel.abierto,previewOnly:sel.previewOnly,
+     root:sel.root,focus:sel.foco,callback:typeof sel.alElegir,
+     prior:prep.plazas[0].id,blocked:!!sel.bloqueado?.(ROSTER[i].id),
+     target:ROSTER[i].id};
     sel.bloqueado=null;sel.elegir(i);
-    return{expected:ROSTER[i].id,actual:prep.plazas[0].id,closed:prep.selector===null};
+    return{expected:ROSTER[i].id,actual:prep.plazas[0].id,
+     closed:prep.selector===null,before,notice:sel.aviso?.text||null};
    });
-   assert.equal(chosen.actual,chosen.expected,'Original Arena choose callback lost');
+   console.log('ARENA_FAMILY_CHOOSE_DIAGNOSTIC',JSON.stringify(chosen));
+   assert.equal(chosen.actual,chosen.expected,
+    'Original Arena choose callback lost: '+JSON.stringify(chosen));
    assert.ok(chosen.closed,'Selector did not close after choosing');
    assert.deepEqual(errors,[],'Arena family selector generated JS exceptions');
    console.log('PASS_ARENA_FAMILY_SELECTOR',JSON.stringify({mobile,first,second,family,chosen}));
