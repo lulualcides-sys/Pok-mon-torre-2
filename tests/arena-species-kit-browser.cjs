@@ -78,7 +78,9 @@ const server=http.createServer(async(req,res)=>{
        damage:kit[slot]?.dano??null,pending:kit[slot]?.pendiente===true
       }))};
     }
-   const cooldown={};
+   // Source P2 cooldowns remain untouched: Arena balancing only concerns
+   // fighters added by Torre 2 (Suicune Blizzard is native 1 second).
+   const cooldown={},nativeCooldown={};
    for(const def of ROSTER){
     for(let stage=0;stage<=def.evoluciones.length;stage++){
      const f=Object.create(Luchador.prototype);
@@ -90,11 +92,12 @@ const server=http.createServer(async(req,res)=>{
       const attack=kit[slot];if(!attack?.nombre)continue;
       const key=attack.nombre.toLowerCase();
       if(!['blizzard','seismic toss','hydro pump','egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos','thunder','psybeam','psy beam','fire blast','charge','solar beam','solarbeam','rayo solar'].includes(key))continue;
-      (cooldown[key]??=[]).push({species:def.id,stage,cd:attack.cd});
+      const bucket=def.torre2ArenaAdded===true?cooldown:nativeCooldown;
+      (bucket[key]??=[]).push({species:def.id,stage,cd:attack.cd});
      }
     }
    }
-   return {variants,history,campaign:original,cooldown,rosterSize:ROSTER.length,magbyEvolution,togeticStages};
+   return {variants,history,campaign:original,cooldown,nativeCooldown,rosterSize:ROSTER.length,magbyEvolution,togeticStages};
   });
   console.log('ARENA_REVIEW',JSON.stringify(results));
   for(const name of ['clefairy','persian','raticate','marowak','kingler','weezing','porygon']){
@@ -143,6 +146,8 @@ const server=http.createServer(async(req,res)=>{
   for(const row of results.history)assert.ok(row.skills.some(s=>s.type===eeveeTypes[row.first]),
    'Eevee '+row.first+' needs a signature attack matching its evolution');
   assert.equal(results.campaign,'VAPOREON','Campaign explicitly unchanged');
+  assert.ok(results.nativeCooldown.blizzard?.some(x=>x.species==='suicune'&&x.cd===1),
+    'Original P2 Suicune Blizzard remains exactly 1s');
   for(const [name,expected] of [['blizzard',4],['seismic toss',3],['hydro pump',3.5]]){
    assert.ok((results.cooldown[name]||[]).length>0,name+' must be present in built Phaser client');
    for(const h of results.cooldown[name]||[])assert.equal(h.cd,expected,
