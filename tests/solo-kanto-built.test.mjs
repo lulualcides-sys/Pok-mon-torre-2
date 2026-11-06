@@ -72,7 +72,7 @@ const {createCampaign,currentOpponent,resolveBattle,attemptCapture,readCampaign,
 const items=new Map();
 globalThis.localStorage={getItem:k=>items.get(k)??null,setItem:(k,v)=>items.set(k,String(v)),removeItem:k=>items.delete(k)};
 const {availableMoves,equipMove,selectedMoves,resolveLoadout,
- TEST_LIBRARY,SIGNATURE_MOVES,canonicalMoveKey,
+ TEST_LIBRARY,SIGNATURE_MOVES,canonicalMoveKey,APPROVED_KANTO_NATIVE_OVERLAPS,
  isPendingApprovalMove,filterMoveLibrary}=await import(
  pathToFileURL(path.join(stage,version,'torre2/move-pool.js')));
 // New Steel moves are unique, equipable for test Mewtwo and visually isolated.
@@ -453,10 +453,20 @@ assert.equal(uniqueNameKeys.size,TEST_LIBRARY.length,
  'Duplicate Pokémon moves in selectable library (including translated aliases)');
 const nativeNames=new Set(TEST_LIBRARY
  .filter(m=>m.source==='arena2d-original').map(m=>canonicalMoveKey(m.nombre)));
-const repeatedOriginals=SIGNATURE_MOVES
- .filter(m=>nativeNames.has(canonicalMoveKey(m.nombre)));
+const approvedLegacyOverlaps=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
+const repeatedOriginals=SIGNATURE_MOVES.filter(m=>
+ nativeNames.has(canonicalMoveKey(m.nombre))&&
+ !approvedLegacyOverlaps.has(canonicalMoveKey(m.nombre)));
 assert.deepEqual(repeatedOriginals,[],
- 'A client-original move is already approved: never recreate a separate custom move');
+ 'No newly created custom duplicates of native P2 moves');
+for(const m of SIGNATURE_MOVES.filter(m=>
+ approvedLegacyOverlaps.has(canonicalMoveKey(m.nombre)))){
+ const selected=TEST_LIBRARY.find(x=>canonicalMoveKey(x.nombre)===canonicalMoveKey(m.nombre));
+ if(!nativeNames.has(canonicalMoveKey(m.nombre)))continue;
+ assert.equal(m.approved,true,'Native overlap requires prior user VFX approval');
+ assert.equal(selected?.forma,m.forma,'Previously approved VFX stays in Torre 2 campaign');
+ assert.equal(selected?.source,'new-phaser-fx','Native Arena kit must remain unmodified');
+}
 assert.equal(canonicalMoveKey('Bola Sombria'),canonicalMoveKey('Shadow Ball'));
 assert.equal(canonicalMoveKey('Pistola de Água'),canonicalMoveKey('Water Gun'));
 assert.equal(canonicalMoveKey('Bomba de Sementes'),canonicalMoveKey('Seed Bomb'));
