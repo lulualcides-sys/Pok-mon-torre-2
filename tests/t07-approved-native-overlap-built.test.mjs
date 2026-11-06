@@ -25,7 +25,8 @@ const slots=['lmb','rmb','esp','q','e'];
 const merge=(a,b)=>Object.fromEntries(
  [...new Set([...Object.keys(a||{}),...Object.keys(b||{})])]
   .map(key=>[key,{...(a?.[key]||{}),...(b?.[key]||{})}]));
-for(const def of ROSTER){
+for(const def of ROSTER.filter(p=>!p.torre2ArenaAdded&&
+ !p.torre2Kanto151&&!p.torre2Johto100)){
  const read=kit=>{
   for(const slot of slots){
    if(slot==='esp'&&earlyKantoSlotPlan(def.id))continue;
