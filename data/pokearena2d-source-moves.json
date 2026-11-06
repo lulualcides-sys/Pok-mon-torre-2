@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
   "source": "https://www.pokearena2d.com/",
-  "sourceVersion": "src-da4c1150a5",
-  "siteVersion": "src-97f03e6e1b",
+  "sourceVersion": "src-2203b5fd63",
+  "siteVersion": "src-2d2489fdee",
   "note": "Only confirmed native source names. Kanto compatibility is official level-up metadata; battle availability, VFX, user-approved ULT rules and save safety still require independent validation.",
-  "originalMoveCount": 165,
-  "nativePokemonCount": 32,
+  "originalMoveCount": 168,
+  "nativePokemonCount": 33,
   "nativePokemon": [
     "arceus",
     "articuno",
@@ -31,6 +31,7 @@
     "pichu",
     "ponyta",
     "raikou",
+    "rayquaza",
     "regigigas",
     "riolu",
     "seedot",
@@ -4479,6 +4480,33 @@
       "integration": "native-source-metadata; not automatically equipped"
     },
     {
+      "id": "dragonascent",
+      "name": "Dragon Ascent",
+      "types": [
+        "FLYING"
+      ],
+      "forms": [
+        "meteoro"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "rayquaza",
+          "stage": "RAYQUAZA",
+          "slot": "e"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
+          "slot": "e"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
       "id": "dragonclaw",
       "name": "Dragon Claw",
       "types": [
@@ -4506,6 +4534,16 @@
         {
           "pokemon": "arceus",
           "stage": "ARCEUS",
+          "slot": "lmb"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "RAYQUAZA",
+          "slot": "lmb"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
           "slot": "lmb"
         }
       ],
@@ -4556,10 +4594,21 @@
           "pokemon": "dreepy",
           "stage": "DRAGAPULT",
           "slot": "q"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "RAYQUAZA",
+          "slot": "q"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
+          "slot": "q"
         }
       ],
       "nativeScopes": [
-        "active"
+        "active",
+        "disabled"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -6286,10 +6335,21 @@
           "pokemon": "arceus",
           "stage": "ARCEUS",
           "slot": "esp"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "RAYQUAZA",
+          "slot": "esp"
+        },
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
+          "slot": "esp"
         }
       ],
       "nativeScopes": [
-        "active"
+        "active",
+        "disabled"
       ],
       "compatibleKantoByVerifiedLevelUp": [
         {
@@ -8769,6 +8829,89 @@
             {
               "edition": "LETSGO_G7",
               "level": 45,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
+      "id": "hurricane",
+      "name": "Hurricane",
+      "types": [
+        "FLYING"
+      ],
+      "forms": [
+        "torbellino"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "rayquaza",
+          "stage": "MEGA RAYQUAZA",
+          "slot": "rmb"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "articuno",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 92,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "dragonite",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 81,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "moltres",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 92,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pidgeot",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 68,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pidgeotto",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 62,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pidgey",
+          "sources": [
+            {
+              "edition": "B2W2_G5",
+              "level": 53,
               "method": "level-up"
             }
           ]
@@ -19666,6 +19809,194 @@
             {
               "edition": "LETSGO_G7",
               "level": 1,
+              "method": "level-up"
+            }
+          ]
+        }
+      ],
+      "integration": "native-source-metadata; not automatically equipped"
+    },
+    {
+      "id": "twister",
+      "name": "Twister",
+      "types": [
+        "DRAGON"
+      ],
+      "forms": [
+        "torbellino"
+      ],
+      "nativeExamples": [
+        {
+          "pokemon": "rayquaza",
+          "stage": "RAYQUAZA",
+          "slot": "rmb"
+        }
+      ],
+      "nativeScopes": [
+        "disabled"
+      ],
+      "compatibleKantoByVerifiedLevelUp": [
+        {
+          "species": "dragonair",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "dragonite",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 1,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 1,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "dratini",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 15,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 11,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 11,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "gyarados",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 35,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 29,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 29,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "horsea",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 29,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 26,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 26,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pidgeot",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 22,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 22,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pidgeotto",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 22,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 22,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "pidgey",
+          "sources": [
+            {
+              "edition": "HGSS_G4",
+              "level": 21,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 21,
+              "method": "level-up"
+            }
+          ]
+        },
+        {
+          "species": "seadra",
+          "sources": [
+            {
+              "edition": "FRLG_G3",
+              "level": 29,
+              "method": "level-up"
+            },
+            {
+              "edition": "HGSS_G4",
+              "level": 26,
+              "method": "level-up"
+            },
+            {
+              "edition": "B2W2_G5",
+              "level": 26,
               "method": "level-up"
             }
           ]
