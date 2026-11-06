@@ -54,6 +54,12 @@ for(const [key,signature] of signatures){
    key+' must use the actual P2 animation, not '+signature.forma);
   assert.equal(actual.source,'arena2d-original',
    key+' must be attributed to the native source');
+  // A duplicate renderer must NEVER silently rewrite Torre 2-only damage,
+  // cooldown or ULT balance: P2 supplies ART, not a new campaign ruleset.
+  for(const prop of ['dano','poder','precisao','pp','cd','coste'])
+   if(signature[prop]!==undefined)
+    assert.equal(actual[prop],signature[prop],
+     key+' original visual must not change approved Torre 2 '+prop);
  }else{
   preservedExclusives++;
   assert.equal(actual.forma,signature.forma,
@@ -62,7 +68,7 @@ for(const [key,signature] of signatures){
    key+' exclusive visual was lost');
  }
 }
-for(const key of ['peck','double-kick','psychic','ice-shard','shadow-ball']){
+for(const key of ['peck','double-kick','psychic','ice-shard','shadow-ball','x-scissor']){
  assert.ok(upstream.has(key),'Original P2 move is absent: '+key);
  assert.equal(byName.get(key)?.forma,upstream.get(key).forma,
   'Native effect not selected: '+key);

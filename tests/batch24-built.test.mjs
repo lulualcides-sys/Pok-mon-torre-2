@@ -5,22 +5,41 @@ const version=JSON.parse(fs.readFileSync(new URL('version.json',root))).modules;
 const dir=new URL(version+'/torre2/batch24/',root);
 const {BATCH24_MOVES,BATCH24_NATIVE_REUSE}=await import(new URL('catalog.js',dir));
 const {BATCH24_FORMS}=await import(new URL('runtime.js',dir));
-const {TEST_LIBRARY,filterMoveLibrary}=await import(new URL('../move-pool.js',dir));
+const {TEST_LIBRARY,filterMoveLibrary,canonicalMoveKey}=await import(new URL('../move-pool.js',dir));
 assert.equal(BATCH24_MOVES.length,23,'No reimplementation of original Dragon Pulse');
 assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,0,
-  'All batch24 effects are now user-approved');
+ 'All selected batch24 effects must have approved status');
 for(const move of BATCH24_MOVES){
- const indexed=TEST_LIBRARY.find(h=>h.id===move.id);
- assert.equal(indexed?.approved,move.approved,move.id+' catalog approval was not retained');
- const inNew=filterMoveLibrary(TEST_LIBRARY,'NEW').some(h=>h.id===move.id);
- assert.equal(inNew,!move.approved,move.id+' NEW tab must not show an approved move');
+ const key=canonicalMoveKey(move.nombre);
+ const selected=TEST_LIBRARY.filter(h=>canonicalMoveKey(h.nombre)===key);
+ assert.equal(selected.length,1,move.id+' must occupy exactly one editor row');
+ const indexed=selected[0];
+ // The user explicitly requires ORIGINAL P2 VFX to win on EVERY overlap,
+ // even if a legacy same-name Torre 2 signature was approved. This test
+ // validates selection, without changing the original source or losing the
+ // independent, executable signature implementation.
+ if(indexed.source==='arena2d-original'){
+  assert.ok(indexed.forma&&!indexed.forma.startsWith('torre2_batch24_'),
+   move.id+' original P2 animation was replaced by a custom renderer');
+  assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').some(h=>canonicalMoveKey(h.nombre)===key),false,
+   move.id+' original P2 move leaked into NEW tab');
+ }else{
+  assert.equal(indexed.id,move.id,move.id+' exclusive Torre 2 ID changed');
+  assert.equal(indexed.forma,move.forma,move.id+' exclusive approved VFX changed');
+  assert.equal(indexed.approved,move.approved,move.id+' exclusive approval was lost');
+  assert.equal(indexed.source,'new-phaser-fx',move.id+' missing Torre 2 exclusive source');
+  assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').some(h=>h.id===move.id),!move.approved,
+   move.id+' approved exclusive must not appear in NEW');
+ }
 }
 const original=TEST_LIBRARY.filter(h=>h.nombre==='Dragon Pulse');
 assert.equal(original.length,1,'The original Dragon Pulse remains selectable exactly once');
 assert.equal(original[0].source,'arena2d-original','Do not override the original Dragon Pulse');
 assert.ok(!original[0].forma?.startsWith('torre2_batch24_'));
 assert.equal(BATCH24_NATIVE_REUSE.nombre,'Dragon Pulse');
-for(const h of BATCH24_MOVES)assert.equal(TEST_LIBRARY.filter(x=>x.id===h.id).length,1,h.id+' duplicated');
+for(const h of BATCH24_MOVES)
+ assert.equal(TEST_LIBRARY.filter(x=>canonicalMoveKey(x.nombre)===canonicalMoveKey(h.nombre)).length,
+  1,h.id+' duplicated playable move');
 function fixture(y=100){
  const parts=[];
  const scene={efectos:[],add:{graphics(){const g={dead:false,setDepth(){return this},clear(){return this},fillStyle(){return this},fillRect(){assert.ok(!this.dead);return this},destroy(){this.dead=true}};parts.push(g);return g}}};
@@ -84,4 +103,4 @@ try{
  assert.equal(practice.target.hp,1000,'Onix training HP stays fixed');
  assert.equal(practice.scene.__torre2TrainingHits,1,'Training receives one genuine Poison Jab hit');
 }
-console.log('23 signature moves tested, 21 approved and 2 pending; Poison Jab validated on real and training targets.');
+console.log('23 historical signature renderers verified (exclusive retained; P2 overlaps native-first); Poison Jab motion validated on real and training targets.');

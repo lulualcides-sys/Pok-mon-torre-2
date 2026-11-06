@@ -191,16 +191,26 @@ const nativeMoves=ROSTER.filter(p=>!p.torre2ArenaAdded&&
  !p.torre2Kanto151&&!p.torre2Johto100).flatMap(collect);
 const rawLibrary=[...nativeMoves,...SIGNATURE_MOVES,...approvedNativeBaselineFallbacks];
 const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
+const signatureByName=new Map(SIGNATURE_MOVES.map(m=>[canonicalMoveKey(m.nombre),m]));
+// Only when equipping a Torre 2-added Pokémon, preserve the PREVIOUS
+// campaign balance of an identical named move. The original P2 VFX object
+// stays the source of 'forma', sprite/texture, style, movement, hit animation,
+// projectile geometry, and original visual parameters. NEVER edit ROSTER or
+// native P2 Pokémon kits. Native Arena/VS remains exactly as captured.
+const CAMPAIGN_BALANCE_KEYS=Object.freeze([
+ 'dano','poder','precisao','pp','categoria','fazContato','cd','coste'
+]);
 for(const h of rawLibrary){
  const id=h.id||norm(h.nombre),sameMove=canonicalMoveKey(h.nombre);
  if(!sameMove||ids.has(id)||seenNames.has(sameMove))continue;
- // The source ROSTER is visited BEFORE any Torre 2 additions. The first
- // executable native move wins by canonical NAME, even when an old signature
- // was marked approved. No native crunch/peck/overlap exceptions.
- // If the native move has no renderer, collect() ignores it and the existing
- // approved Torre 2 fallback may supply the legal executable attack instead.
- const native= !signatureEntries.has(h);
- ids.set(id,{...h,id,
+ const native=!signatureEntries.has(h),previous=native?signatureByName.get(sameMove):null;
+ const balance=previous?Object.fromEntries(CAMPAIGN_BALANCE_KEYS
+  .filter(key=>previous[key]!==undefined).map(key=>[key,previous[key]])):{};
+ // The original P2 animation always wins for overlapping canonical names.
+ // Only the independent Torre 2 campaign's balance fields are carried over;
+ // native species themselves are never changed.
+ ids.set(id,{...h,...balance,id,
+  ...(previous&&Object.keys(balance).length?{torre2CampaignBalance:true}:{}),
   source:native?'arena2d-original':'new-phaser-fx'});
  seenNames.add(sameMove);
 }
