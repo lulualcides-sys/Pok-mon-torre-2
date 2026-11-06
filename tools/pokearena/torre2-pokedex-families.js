@@ -36,15 +36,46 @@ export function buildPokedexFamilies(roster,johtoRows=[],evolutions={}){
    if(child&&before!==child&&!parent.has(child))parent.set(child,before);
   }
  }
- // Across generations, babies are not in the same 151/100 row group as
- // their parents. This only changes the Pokédex visual root, never level,
- // save evolution rules, attack library or the original P2 battle ROSTER.
- // Magby (#240) -> Magmar (#126) -> Magmortar (#467, new standalone stage).
- for(const [child,before] of [[126,240],[467,126]]){
-  const hasChild=[...dexById.values()].includes(child);
-  const hasParent=[...dexById.values()].includes(before);
-  if(hasChild&&hasParent)parent.set(child,before);
- }
+ // Cross-generation lineage that cannot be reconstructed from the Johto
+ // 152-251 source alone. The first number is the EVOLVED form, the second
+ // is its direct pre-evolution. Only join forms actually installed in ROSTER.
+ // This is Pokédex presentation ONLY: never mutate original P2 kits/saves,
+ // roster entries, animations, or level-up/evolution mechanics.
+ const crossGenParents=[
+  [25,172],    // Pichu -> Pikachu -> Raichu
+  [35,173],    // Cleffa -> Clefairy
+  [39,174],    // Igglybuff -> Jigglypuff
+  [106,236],[107,236],[237,236], // Tyrogue: Hitmonlee/chan/top
+  [124,238],   // Smoochum -> Jynx
+  [125,239],[466,125], // Elekid -> Electabuzz -> Electivire
+  [126,240],[467,126], // Magby -> Magmar -> Magmortar
+  [183,298],   // Azurill -> Marill -> Azumarill
+  [202,360],   // Wynaut -> Wobbuffet
+  [315,406],[407,315], // Budew -> Roselia -> Roserade
+  [185,438],   // Bonsly -> Sudowoodo
+  [122,439],   // Mime Jr. -> Mr. Mime
+  [113,440],[242,113], // Happiny -> Chansey -> Blissey
+  [143,446],   // Munchlax -> Snorlax
+  [226,458],   // Mantyke -> Mantine
+  [82,81],[462,82], // Magnemite -> Magneton -> Magnezone
+  [108,463],   // Lickitung -> Lickilicky
+  [112,464],   // Rhydon -> Rhyperior
+  [114,465],   // Tangela -> Tangrowth
+  [176,175],[468,176], // Togepi -> Togetic -> Togekiss
+  [193,469],   // Yanma -> Yanmega
+  [470,133],[471,133],[700,133], // Eevee branches
+  [215,461],   // Sneasel -> Weavile
+  [207,472],   // Gligar -> Gliscor
+  [221,473],   // Swinub -> Piloswine -> Mamoswine
+  [137,233],[233,474], // Porygon -> Porygon2 -> Porygon-Z
+  [281,475],   // Kirlia -> Gallade
+  [299,476],   // Nosepass -> Probopass
+  [356,477],   // Dusclops -> Dusknoir
+  [361,478]    // Snorunt -> Froslass
+ ];
+ const installed=new Set(dexById.values());
+ for(const [child,before] of crossGenParents)
+  if(installed.has(child)&&installed.has(before))parent.set(child,before);
  // Native Poké Arena nested stages are authoritative when no relation exists.
  for(const [child,i] of nestedOwner){
   const before=num(roster[i].dex);
@@ -76,10 +107,13 @@ export function buildPokedexFamilies(roster,johtoRows=[],evolutions={}){
   if(!membersByRoot.has(root))membersByRoot.set(root,[]);
   membersByRoot.get(root).push(i);
  });
- const order=[...membersByRoot.keys()].sort((a,b)=>{
-  const x=num(roster[a].dex)??100000+a,y=num(roster[b].dex)??100000+b;
-  return x-y||a-b;
- });
+ // National Dex ordering uses the earliest available family member, not
+ // necessarily the BABY root (Pichu is #172 but Pikachu's family starts #25).
+ // Keep each evolution on one card without shuffling battle ROSTER indices.
+ const familyFirstDex=root=>Math.min(...membersByRoot.get(root).map(i=>
+  num(roster[i].dex)??100000+i));
+ const order=[...membersByRoot.keys()].sort((a,b)=>
+  familyFirstDex(a)-familyFirstDex(b)||a-b);
  const rank=Array(roster.length),rootSet=new Set(order);
  order.forEach((root,k)=>{for(const i of membersByRoot.get(root))rank[i]=k});
  return {order,rank,rootSet,rootIndexForIndex,membersByRoot};
