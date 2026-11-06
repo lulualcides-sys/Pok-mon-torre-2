@@ -58,8 +58,10 @@ const server=http.createServer(async(req,res)=>{
     return {stage:me.etapa,threshold:me.expNecesaria,can:me.puedeEvolucionar};
    });
    assert.ok(pre.can,'Native EXP threshold does not enable evolution '+JSON.stringify(pre));
-   await page.waitForFunction(n=>window.__pt2Game.scene.getScene('combate').luchadores[0].etapa===n,
-    pre.stage+1,{timeout:12000});
+   // Eevee's five branches occupy stage indexes 1–5. Await ANY legal
+   // evolution, then assert the selected form by name below.
+   await page.waitForFunction(n=>window.__pt2Game.scene.getScene('combate').luchadores[0].etapa>n,
+    pre.stage,{timeout:12000});
    return page.evaluate(()=>{
     const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
     s.panelTactil.arriba({id:90});
