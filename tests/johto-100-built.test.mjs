@@ -31,6 +31,9 @@ for(const p of JOHTO_100_ROWS){
 const {modules}=JSON.parse(fs.readFileSync(path.join(site,"version.json"),"utf8"));
 const output=path.join(site,modules);
 const builtDatos=fs.readFileSync(path.join(output,"datos.js"),"utf8");
+assert.ok(manifest['0467']?.anims?.Idle,'Magmortar #0467 needs a real PMD Idle');
+assert.ok(fs.existsSync(path.join(pmddir,'0467','portrait.png')),
+ 'Magmortar #0467 portrait must be a real asset, not a green placeholder');
 const builtPokedex=fs.readFileSync(path.join(output,"escenas/pokedex.js"),"utf8");
 assert.match(builtPokedex,/Pokedex\.prototype\.movimientos=function/,
  "Built Pokédex must guard missing executable Johto moves before dereferencing h.tipo");
