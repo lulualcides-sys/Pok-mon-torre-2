@@ -66,6 +66,19 @@ const server=http.createServer(async(req,res)=>{
     s.foco=targetPage*8;s.refrescar();
    },nextPage);
    const changed=await inspect();
+   // A single mobile/desktop pointerdown must choose the focused Pokémon,
+   // not only highlight it and demand an inaccessible second tap.
+   const chosen=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('seleccion');
+    const card=scene.casillas[scene.torre2Page*8+2];
+    const zone=card.objects.find(o=>o.type==='Zone'&&o.input?.enabled);
+    if(!zone)return {error:'No selectable zone on visible page'};
+    zone.emit('pointerdown');
+    return {expected:card.p.id,choice:scene.eleccion[0],step:scene.paso};
+   });
+   assert.equal(chosen.choice,chosen.expected,
+    'A single touch must select a Pokémon in original offline Arena');
+
    assert.equal(changed.visibleCards,8);
    assert.deepEqual(changed.visiblePages,[nextPage]);
    assert.equal(changed.hiddenClickable,0);
