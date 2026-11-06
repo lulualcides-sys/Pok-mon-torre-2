@@ -90,7 +90,21 @@ const server=http.createServer(async(req,res)=>{
   const umbreon=await evo();
   await page.evaluate(()=>{Math.random=window.__pt2EeveePriorRandom});
   assert.equal(umbreon.name,'UMBREON');
-  assert.ok(umbreon.texture?.includes('0197'),'Umbreon PMD atlas was not preloaded');
+  // Evolution changes the fighter's dex on its scheduled callback; Phaser
+  // swaps the actual animated sprite on the following render tick.
+  await page.waitForFunction(()=>{
+   const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
+   return me.spr?.texture?.key?.includes('0197');
+  },null,{timeout:9000}).catch(async error=>{
+   const state=await page.evaluate(()=>{
+    const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
+    return {name:me.nome||me.nombre,form:me.forma?.nombre,dex:me.dex,
+     actual:me.dexActual,sprite:me.spr?.texture?.key,
+     idleAvailable:s.textures.exists('pmd-0197-Idle'),
+     animation:me.spr?.anims?.currentAnim?.key};
+   });
+   throw new Error('Umbreon PMD never replaced the sprite: '+JSON.stringify(state)+'; '+error);
+  });
   assert.ok(umbreon.kit.some(Boolean),'Evolved Eevee lost its skills');
   const togepi=await battle('togepi');
   assert.ok(togepi.buttons?.includes('lmb'),'Togepi cannot attack in Arena');
