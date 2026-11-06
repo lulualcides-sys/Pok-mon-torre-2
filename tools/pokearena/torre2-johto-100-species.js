@@ -7,6 +7,7 @@ import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
 import {TORRE2_WOBBUFFET_MOVES} from "./wobbuffet-native.js";
+import {attachMagmortarEvolution} from "./magmar-family.js";
 import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
  GEN4_HGSS_JOHTO_TM,GEN5_B2W2_JOHTO_TM} from "./gen45-johto-learnsets.js";
 const canon=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
@@ -185,6 +186,12 @@ export function johto100Kit(p,library){
  return kit;
 }
 export function addAllJohtoSpecies(original){
+ // A supported newer client exposes a different ROSTER declaration. Its
+ // compatibility installer invokes this builder but may skip the later
+ // explicit Magmortar hook. Register only our own Magmar evolution here so
+ // BOTH supported installer paths produce the same family, exactly once.
+ // Native P2 Magmar and its original kit remain completely untouched.
+ attachMagmortarEvolution(original);
  const library=johtoMoveLibrary(original);
  // The native P2 roster contains both root species and evolution stages
  // nested in evoluciones (sometimes with a Mega form). Protect ALL of them,
