@@ -1,0 +1,39 @@
+name: Worktrunk — isolated development pilot
+
+on:
+  pull_request:
+    paths:
+      - 'tools/dev/worktrunk-isolation.mjs'
+      - 'tests/worktrunk-isolation.test.js'
+      - '.github/workflows/worktrunk-safe-pilot.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/dev/worktrunk-isolation.mjs'
+      - 'tests/worktrunk-isolation.test.js'
+      - '.github/workflows/worktrunk-safe-pilot.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  safe-worktree:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate safety gate (does not install Worktrunk)
+        run: |
+          node --check tools/dev/worktrunk-isolation.mjs
+          node --test tests/worktrunk-isolation.test.js
+          node tools/dev/worktrunk-isolation.mjs status
+      - name: Full game unit regressions
+        run: |
+          npm install --no-audit --no-fund
+          npm run check
+          npm run check:reuse
+          npm test
