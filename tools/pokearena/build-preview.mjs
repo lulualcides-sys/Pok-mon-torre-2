@@ -283,6 +283,7 @@ await Promise.all([
  ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
  ['tools/pokearena/torre2-pokedex-families.js','pokedex-families.js'],
  ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
+ ['tools/pokearena/torre2-wobbuffet-native.js','wobbuffet-native.js'],
  ['tools/pokearena/torre2-gen45-johto-learnsets.js','gen45-johto-learnsets.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
@@ -349,9 +350,9 @@ patches.push(
  ]],
  ['habilidades.js',[
   ['import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";',
-   'import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";import{TORRE2_FORMS}from"./torre2/signature-fx.js";'],
+   'import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from"./config.js";import{TORRE2_FORMS}from"./torre2/signature-fx.js";import{TORRE2_WOBBUFFET_FORMS}from"./torre2/wobbuffet-native.js";'],
   ['const FORMAS={proyectil,chorro,cono,zona,rayo,pulso,',
-   'const FORMAS={...TORRE2_FORMS,torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(l,h,extra,FORMAS),proyectil,chorro,cono,zona,rayo,pulso,']
+   'const FORMAS={...TORRE2_FORMS,...TORRE2_WOBBUFFET_FORMS,torre2_metronome:(l,h,extra)=>TORRE2_FORMS.torre2_metronome(l,h,extra,FORMAS),proyectil,chorro,cono,zona,rayo,pulso,']
  ]],
  ['luchador.js',[
   ['return this.aspecto?vfx.kitAspecto(kit,this.aspecto):kit',
@@ -552,7 +553,7 @@ patches.push(['luchador.js',[
 // Campaign-only Gen III matchups and STAB, preserving all approved renderers.
 patches.push(['luchador.js',[
  ['import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";',
-  'import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";import{gen3Effectiveness,gen3Stab,gen3BurnModifier,gen3Category,gen3Types}from"./torre2/gen3-types.js";import{weatherDamageMultiplier,weatherThunderMiss}from"./torre2/weather.js";'],
+  'import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";import{gen3Effectiveness,gen3Stab,gen3BurnModifier,gen3Category,gen3Types}from"./torre2/gen3-types.js";import{weatherDamageMultiplier,weatherThunderMiss}from"./torre2/weather.js";import{wobbuffetBlocksStatus,wobbuffetAfterHit}from"./torre2/wobbuffet-native.js";'],
  ['const mult=g.puro||REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);',
   'const mult=g.puro?1:e.datos?.torre2?gen3Effectiveness(g.tipo,this.tipos):REGLAS.basicosNeutros&&g.slot==="lmb"?1:efectividad(g.tipo,this.tipos);if(e.datos?.torre2&&!mult){this.avisar("immune",()=>vfx.textoFlotante(e,this.x,this.y-this.alto-14,"NÃO AFETOU!",{color:"#b0bfcd",dur:700,sube:8}),1);return"miss"}'],
  ['if(fuente?.est.quemado)d*=ESTADOS_TIPO.FIRE.dano;',
@@ -565,8 +566,8 @@ patches.push(['luchador.js',[
   'if(!e.datos?.torre2&&this.est.congelado&&fuente!==this)d*=1-REGLAS.congelaReduce;']
 ]]);
 // Persistent campaign status; native renderers still read the same est object.
-patches.push(['luchador.js',[["import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";","import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";import{applyGen3Status,tickGen3Status,gen3StatusInput}from\"./torre2/gen3-status.js\";"],["ponerEstado(nombre,dur,datos={}){","ponerEstado(nombre,dur,datos={}){if(this.escena.datos?.torre2&&applyGen3Status(this,nombre,datos))return;"],["update(dt,intento){if(this.remoto)","update(dt,intento){if(this.escena.datos?.torre2&&!this.remoto){tickGen3Status(this,dt);intento=gen3StatusInput(this,intento)}if(this.remoto)"],["const ritmo=this.est.paralizado?ESTADOS_TIPO.ELECTRIC.ataque:1;","const ritmo=this.est.paralizado&&!this.est.paralizado.torre2Status?ESTADOS_TIPO.ELECTRIC.ataque:1;"],["const q=this.est[clave];if(!q)continue;","const q=this.est[clave];if(!q||q.torre2Status)continue;"],["if(this.est.confuso){mx=-mx;my=-my}","if(this.est.confuso&&!this.est.confuso.torre2Status){mx=-mx;my=-my}"],["const zz=this.est.dormido;if(zz){","const zz=this.est.dormido;if(zz&&!zz.torre2Status){"]]]);
-patches.push(['luchador.js',[["this.hp=Math.max(this.inmortal?1:0,this.hp-d);","if(e.datos?.torre2&&d>0&&g.tipo===\"FIRE\"&&!g.puro&&this.est.congelado?.torre2Status)delete this.est.congelado;this.hp=Math.max(this.inmortal?1:0,this.hp-d);"],["this.ponerEstado(\"veneno\",v.dur,{dps:v.dps,fuente})","this.ponerEstado(v.toxic?\"toxic\":\"veneno\",v.dur,{dps:v.dps,fuente,toxic:v.toxic===true})"]]]);
+patches.push(['luchador.js',[["import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";","import{CAMPO,COLOR,RADIO,limitarCampo}from\"./config.js\";import{applyGen3Status,tickGen3Status,gen3StatusInput}from\"./torre2/gen3-status.js\";"],["ponerEstado(nombre,dur,datos={}){","ponerEstado(nombre,dur,datos={}){if(wobbuffetBlocksStatus(this,nombre))return;if(this.escena.datos?.torre2&&applyGen3Status(this,nombre,datos))return;"],["update(dt,intento){if(this.remoto)","update(dt,intento){if(this.escena.datos?.torre2&&!this.remoto){tickGen3Status(this,dt);intento=gen3StatusInput(this,intento)}if(this.remoto)"],["const ritmo=this.est.paralizado?ESTADOS_TIPO.ELECTRIC.ataque:1;","const ritmo=this.est.paralizado&&!this.est.paralizado.torre2Status?ESTADOS_TIPO.ELECTRIC.ataque:1;"],["const q=this.est[clave];if(!q)continue;","const q=this.est[clave];if(!q||q.torre2Status)continue;"],["if(this.est.confuso){mx=-mx;my=-my}","if(this.est.confuso&&!this.est.confuso.torre2Status){mx=-mx;my=-my}"],["const zz=this.est.dormido;if(zz){","const zz=this.est.dormido;if(zz&&!zz.torre2Status){"]]]);
+patches.push(['luchador.js',[["this.hp=Math.max(this.inmortal?1:0,this.hp-d);","if(e.datos?.torre2&&d>0&&g.tipo===\"FIRE\"&&!g.puro&&this.est.congelado?.torre2Status)delete this.est.congelado;this.hp=Math.max(this.inmortal?1:0,this.hp-d);wobbuffetAfterHit(this,fuente,g,d);"],["this.ponerEstado(\"veneno\",v.dur,{dps:v.dps,fuente})","this.ponerEstado(v.toxic?\"toxic\":\"veneno\",v.dur,{dps:v.dps,fuente,toxic:v.toxic===true})"]]]);
 patches.push(['habilidades.js',[["import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from\"./config.js\";","import{CAMPO,RADIO,VISTA,limitarCampo,fueraCampo}from\"./config.js\";import{weatherFromMove}from\"./torre2/weather.js\";"],["etiquetarAccion(l,accionAntes,h,slot);l.energia-=coste;","etiquetarAccion(l,accionAntes,h,slot);weatherFromMove(l,h);l.energia-=coste;"]]]);
 patches.push(['escenas/preparar.js',[["if(dex!==p.dex&&!this.anims.exists(`${dex}-Idle-0`)){precargarLineas(this,[pl.id],[aspecto]);alTerminarCarga(this,()=>{t.mostrado=null;this.refrescar()});dex=p.dex}","if(!this.anims.exists(`${dex}-Idle-0`)){this.__torre2PreviewQueued??=new Set();if(!this.__torre2PreviewQueued.has(dex)){this.__torre2PreviewQueued.add(dex);precargarLineas(this,[pl.id],[aspecto]);alTerminarCarga(this,()=>{if(this.scene.isActive()&&this.anims.exists(`${dex}-Idle-0`)){t.mostrado=null;this.refrescar()}})}c.add(texto(this,52,55,\"LOADING...\",{tam:7}).setOrigin(.5));return}"]]]);
 // Flash Cannon lowers Special Defense on an actual successful hit.
