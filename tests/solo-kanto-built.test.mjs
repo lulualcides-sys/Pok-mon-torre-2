@@ -635,7 +635,7 @@ assert.ok(dexBuilt.includes('TORRE2_DEX_ORDER.slice(start,start+TORRE2_DEX_PAGE_
   !dexBuilt.includes('new Set(ROSTER.map(p=>p.dex))'),
   'Pokédex must load only the 25 native family cards on first open');
 assert.ok(dexBuilt.includes('this.torre2DexLoadPage(next)')&&
-  dexBuilt.includes('if(this.textures.exists(key)&&c.img.texture?.key!==key)c.img.setTexture(key)'),
+  dexBuilt.includes('const nativeKey=retratoA(this,c.p.dex,CEL-6)'),
   'Every later native family page must restore its real PMD portraits');
 assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
  'Pokédex must use existing PMD portrait/Idle assets rather than placeholder');
