@@ -57,6 +57,15 @@ const server=http.createServer(async(req,res)=>{
    assert.equal(first.visible,8,'Arena must show 8 family cards, never 13 columns');
    assert.equal(first.clickable,8,'All eight cards must have touch targets');
    assert.equal(first.brokenVisible,0,'Never show green missing-portrait placeholders');
+   // Loading PMD textures can temporarily suspend Phaser scene input.
+   // Wait for the first real portrait before checking physical touch targets.
+   await page.waitForFunction(()=>{
+    const sel=window.__pt2Game.scene.getScene('preparar').selector;
+    return sel?.celdas?.some(c=>c.img.visible);
+   },null,{timeout:30000});
+   await page.screenshot({path:mobile?
+    'test-evidence/arena-family-before-nav-mobile.png':
+    'test-evidence/arena-family-before-nav-desktop.png'});
    const canvasClick=async(x,y)=>{
     const pt=await page.evaluate(({x,y})=>{
      const r=document.querySelector('#juego canvas').getBoundingClientRect();
@@ -65,8 +74,18 @@ const server=http.createServer(async(req,res)=>{
     await page.mouse.click(pt.x,pt.y);
    };
    await canvasClick(498,167);
-   await page.waitForFunction(()=>window.__pt2Game.scene.getScene('preparar')
-    .selector?.page===1,null,{timeout:8000});
+   const afterClick=await page.evaluate(()=>{
+    const sel=window.__pt2Game.scene.getScene('preparar').selector,
+     scene=window.__pt2Game.scene.getScene('preparar');
+    return{page:sel?.page,opened:sel?.abierto,
+     buttons:sel?.botones?.length,
+     zones:scene.children.list.filter(o=>o.type==='Zone'&&o.depth>=sel.capa+4)
+      .slice(0,12).map(z=>({x:z.x,y:z.y,depth:z.depth,
+       input:z.input?.enabled,width:z.width,height:z.height}))};
+   });
+   console.log('ARENA_FAMILY_AFTER_PHYSICAL_CLICK',JSON.stringify(afterClick));
+   assert.equal(afterClick.page,1,
+    'Physical next-page arrow failed: '+JSON.stringify(afterClick));
    const second=await page.evaluate(()=>{
     const s=window.__pt2Game.scene.getScene('preparar').selector;
     return{page:s.page,visible:s.celdas.length,root:s.root,
