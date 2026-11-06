@@ -29,13 +29,32 @@ const server=http.createServer(async(req,res)=>{
   const errors=[];page.on('pageerror',e=>errors.push(String(e)));
   await page.goto('http://127.0.0.1:4386/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
+  let priorBattles=0;
   async function battle(id){
+   // Each combat scene owns physics, timers and loaders. Recycling the same
+   // active scene across Magby, Eevee and Togepi can retain end-of-round
+   // callbacks and cause false timeouts. Use a fresh title-to-battle lifecycle
+   // for each species as a mobile player would.
+   if(priorBattles++){
+    await page.reload({waitUntil:'domcontentloaded'});
+    await page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),
+     null,{timeout:60000});
+   }
    await page.evaluate(id=>window.__pt2Game.scene.start('combate',
     {modo:'cpu',p1:id,p2:'joltik',mandos:['tactil','pad0'],nivel:'facil'}),id);
    await page.waitForFunction(id=>{
     const s=window.__pt2Game.scene.getScene('combate');
     return s.scene.isActive()&&s.fase==='lucha'&&s.luchadores?.[0]?.def?.id===id;
-   },id,{timeout:50000});
+   },id,{timeout:50000}).catch(async error=>{
+    const diagnostics=await page.evaluate(()=>{
+     const s=window.__pt2Game?.scene.getScene('combate');
+     return {status:s?.sys?.settings?.status,active:s?.scene?.isActive(),
+      phase:s?.fase,sceneData:s?.datos?.p1,
+      own:s?.luchadores?.[0]?.def?.id,other:s?.luchadores?.[1]?.def?.id};
+    });
+    throw new Error('Mobile Arena failed to start '+id+': '+
+     JSON.stringify(diagnostics)+'; '+error);
+   });
    const state=await page.evaluate(()=>{
     const s=window.__pt2Game.scene.getScene('combate'),me=s.luchadores[0];
     me.inmortal=true;s.luchadores[1].inmortal=true;
