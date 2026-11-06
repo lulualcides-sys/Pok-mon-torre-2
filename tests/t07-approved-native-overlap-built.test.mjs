@@ -12,7 +12,7 @@ const {SIGNATURE_MOVES,TEST_LIBRARY,APPROVED_KANTO_NATIVE_OVERLAPS,
  pathToFileURL(path.join(root,modules,'torre2/move-pool.js')).href);
 assert.deepEqual(APPROVED_KANTO_NATIVE_OVERLAPS,[
  'ice-shard','psychic','shadow-ball','ice-beam','twister',
- 'fury-cutter','x-scissor','double-kick','peck'
+ 'fury-cutter','x-scissor','double-kick'
 ]);
 assert.ok(TEST_LIBRARY.length>=227,'The original approved effect inventory was truncated');
 assert.equal(new Set(TEST_LIBRARY.map(move=>canonicalMoveKey(move.nombre))).size,
@@ -29,6 +29,12 @@ for(const key of APPROVED_KANTO_NATIVE_OVERLAPS){
  assert.equal(actual.source,'new-phaser-fx',key+' native client replaced Torre 2 signature');
  verified.push({id:actual.id,form:actual.forma});
 }
+// Peck is the single user-requested replacement: use its real Poké Arena
+// native renderer, not our rejected pixel beak. Other approved overlaps remain.
+const nativePeck=TEST_LIBRARY.find(m=>canonicalMoveKey(m.nombre)==='peck');
+assert.equal(nativePeck?.forma,'tajo','Peck must reuse the real upstream tajo animation');
+assert.equal(nativePeck?.source,'arena2d-original','Peck must not use torre2_peck');
+assert.equal(nativePeck?.estilo,'viento','Peck must retain P2 native wind slash styling');
 const member=(id,level=50)=>({id,progression:{species:id,level},tmMoves:[]});
 for(const [species,key] of [['gengar','shadow-ball'],['lapras','ice-beam'],
  ['alakazam','psychic']]){
