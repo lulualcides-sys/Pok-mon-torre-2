@@ -139,6 +139,7 @@ jobs:
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
           node tests/rayquaza-mega-built.test.mjs
+          node --test tests/johto-native-kits-preserve.test.js tests/johto-evolution-ult-policy.test.js
           node --test tests/pokedex-native-families.test.js
           node tests/pokedex-crossgen-families-built.test.mjs
           node tests/arena-family-selector-built.test.mjs
@@ -155,6 +156,7 @@ jobs:
           CHROME_BIN="$(command -v google-chrome)" node tests/t08-arena-roles-summary-mobile-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/kanto-intro-touch-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/selection-original-mobile-browser.cjs
+          CHROME_BIN="$(command -v google-chrome)" node tests/arena-species-kit-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/arena-family-selector-browser.cjs
           CHROME_BIN="$(command -v google-chrome)" node tests/rayquaza-mega-browser.cjs
       - name: Guardião Chromium — título mobile, mapa e batalha (sem novo build)
