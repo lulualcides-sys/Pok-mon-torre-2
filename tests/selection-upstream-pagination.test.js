@@ -8,6 +8,8 @@ const shared=[
  'const fila=Math.floor(i/POR_FILA),col=i%POR_FILA;',
  'const enFila=Math.min(POR_FILA,ROSTER.length-fila*POR_FILA);',
  'return this.casilla(p,x0+col*(TW+TGAP),TY+fila*(TH+TGAP),i)',
+ 'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);',
+ 'if(esTactil()&&this.paso<2&&this.foco!==i){this.foco=i;sfx("seleccion");this.refrescar();return}this.elegir(i)',
  'this.opciones();this.ayuda=',
  'refrescar(){const porId='
 ].join('');
@@ -39,9 +41,7 @@ test('unsupported upstream code fails closed rather than guessing native hitboxe
 });
 
 test('Selection pages have direct one-tap mobile picking and only load visible portraits',()=>{
- const patched=paginateSelectionSource(october+
-  'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);'+
-  'if(esTactil()&&this.paso<2&&this.foco!==i){this.foco=i;sfx("seleccion");this.refrescar();return}this.elegir(i)');
+ const patched=paginateSelectionSource(october);
  assert.ok(patched.includes('if(this.paso<2)this.foco=i;this.elegir(i)'));
  assert.ok(patched.includes('this.torre2LoadPortraitPage(this.torre2Page)'));
  assert.ok(patched.includes('this.load.image(key,"assets/pmd/"+c.p.dex+"/portrait.png")'));
