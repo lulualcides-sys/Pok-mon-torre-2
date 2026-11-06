@@ -14,7 +14,7 @@ const {POISON_PUNCH_MOVES}=await load('torre2/torre2-finale13-catalog.js');
 const reviewedMoveIds=FINALE_13_MOVES.map(x=>x.id).concat(POISON_PUNCH_MOVES.map(x=>x.id));
 const userApproved=new Set(reviewedMoveIds);
 const reviewedMoves=[...FINALE_13_MOVES,...POISON_PUNCH_MOVES];
-const {TEST_LIBRARY,availableMoves,filterMoveLibrary}=await load('torre2/move-pool.js');
+const {TEST_LIBRARY,availableMoves,filterMoveLibrary,canonicalMoveKey}=await load('torre2/move-pool.js');
 const {ROSTER}=await load('datos.js');
 assert.equal(FINALE_13_MOVES.length,13);
 assert.equal(FINALE_13_NAMES.length,13);
@@ -23,16 +23,32 @@ assert.equal(POISON_PUNCH_MOVES.length,1);
 assert.equal(Object.keys(TORRE2_FINALE_13_FORMS).length,14);
 assert.ok(ROSTER.some(p=>p.id==='mewtwo'));
 for(const h of reviewedMoves){
- const entries=TEST_LIBRARY.filter(m=>m.id===h.id);
+ const id=canonicalMoveKey(h.nombre);
+ const entries=TEST_LIBRARY.filter(m=>canonicalMoveKey(m.nombre)===id);
  assert.equal(entries.length,1,'One canonical name only: '+h.nombre);
- assert.equal(entries[0].forma,h.forma,'Renderer mismatch '+h.nombre);
- assert.equal(entries[0].approved,userApproved.has(h.id),
-  'Explicit visual approval must persist: '+h.nombre);
+ const selected=entries[0];
+ // Gameplay preservation: the Torre 2 signature is still installed and
+ // separately tested below with real damage, status and graphics fixtures.
+ // VFX priority: ALL same-name original Poké Arena moves MUST take their
+ // native form in the actual campaign/editor. Do not demand a custom effect
+ // for something original P2 already renders.
+ if(selected.source==='arena2d-original'){
+  assert.ok(selected.forma&&!selected.forma.startsWith('torre2_finale_'),
+   'Original P2 renderer was overwritten for '+h.nombre);
+  assert.equal(selected.torre2CampaignBalance,true,
+   'Campaign strength must survive changing renderer for '+h.nombre);
+ }else{
+  assert.equal(selected.id,h.id,'Exclusive Torre 2 ID was changed: '+h.nombre);
+  assert.equal(selected.forma,h.forma,'Exclusive renderer mismatch '+h.nombre);
+  assert.equal(selected.approved,userApproved.has(h.id),
+   'Exclusive visual approval must persist: '+h.nombre);
+  assert.equal(selected.source,'new-phaser-fx','Exclusive source lost: '+h.nombre);
+ }
  assert.equal(typeof TORRE2_FINALE_13_FORMS[h.forma],'function');
- assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').some(x=>x.id===h.id),
-  !userApproved.has(h.id),'Only unapproved attacks should be listed in NEW: '+h.nombre);
+ assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').some(x=>canonicalMoveKey(x.nombre)===id),
+  !userApproved.has(h.id),'Only unapproved attacks should be in NEW: '+h.nombre);
  assert.ok(availableMoves({id:'mewtwo',progression:{species:'mewtwo',level:50}})
-  .some(x=>x.id===h.id),'Mewtwo must equip '+h.nombre);
+  .some(x=>canonicalMoveKey(x.nombre)===id),'Mewtwo must equip '+h.nombre);
 }
 // Surf remains present as the original renderer for laboratory/legacy
 // compatibility, but its visual was rejected for Kanto campaign use.
