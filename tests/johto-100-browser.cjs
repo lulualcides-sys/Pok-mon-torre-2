@@ -56,7 +56,7 @@ const server=http.createServer(async(req,res)=>{
    return {total:diag.length,roster:ROSTER.length,
     missing:diag.filter(x=>!x.present),empty:diag.filter(x=>!x.rendered),
     partial:diag.filter(x=>x.rendered<4),counts,
-    samples:diag.filter(x=>[152,155,158,172,201,235,243,249,251].includes(x.dex)),
+    samples:diag.filter(x=>[152,155,158,172,201,202,235,243,249,251].includes(x.dex)),
     slotLabels:JOHTO_ATTACK_SLOTS};
   });
   console.log("JOHTO_100_LIVE_ROSTER_AUDIT",JSON.stringify(report));
@@ -70,6 +70,11 @@ const server=http.createServer(async(req,res)=>{
   // are immutable, even when the upstream client has no executable move.
   assert.deepEqual(report.empty.map(x=>x.id),["ho-oh"],
    "Only original Ho-Oh may lack a playable attack; see coverage.json");
+  const wob=report.samples.find(x=>x.id==="wobbuffet");
+  assert.deepEqual(wob?.abilities,["Counter","Mirror Coat","Safeguard","Destiny Bond"],
+   "Wobbuffet must use four genuine Gen IV-V moves, not blank cards");
+  assert.equal(report.partial.some(x=>x.id==="wobbuffet"),false,
+   "Wobbuffet cannot remain partly empty in Johto");
   const unown=report.partial.find(x=>x.id==="unown");
   assert.equal(unown?.abilities[0],"Hidden Power",
    "Unown must expose the approved playable Hidden Power");
@@ -274,6 +279,44 @@ const server=http.createServer(async(req,res)=>{
   assert.equal(unownCast.lab,false,"Unown must cast in actual Arena, not only Mewtwo Lab");
   assert.equal(unownCast.cast,true,"Unown Hidden Power must launch in normal Arena");
   assert.ok(unownCast.after>unownCast.before,"Real Hidden Power VFX must be active");
+  // Verify the ACTUAL offline Arena HP/status pipeline, not only move names.
+  await page.evaluate(()=>window.__pt2Game.scene.start("combate",{
+   modo:"cpu",p1:"wobbuffet",p2:"buneary",mandos:["tactil","pad0"],nivel:"normal"
+  }));
+  await page.waitForFunction(()=>window.__pt2Game.scene.isActive("combate")&&
+   window.__pt2Game.scene.getScene("combate").fase==="lucha",null,{timeout:45000});
+  const wobLive=await page.evaluate(async()=>{
+   const scene=window.__pt2Game.scene.getScene("combate"),
+    w=scene.luchadores[0],foe=scene.luchadores[1];
+   const base=new URL("./",[...document.scripts].find(x=>x.src.includes("/main.js")).src);
+   const {TORRE2_WOBBUFFET_FORMS}=await import(new URL("torre2/wobbuffet-native.js",base));
+   const slots=["lmb","rmb","q","e"];
+   w.hp=w.hpMax;foe.hp=foe.hpMax;w.energia=100;w.ulti=100;
+   w.est={};w.accion=null;w.inmortal=false;foe.inmortal=false;
+   TORRE2_WOBBUFFET_FORMS[w.kit.lmb.forma](w,w.kit.lmb);
+   const before={w:w.hp,enemy:foe.hp};
+   w.recibir(foe,{dano:8,tipo:"NORMAL",categoria:"PHYSICAL",slot:"lmb"});
+   const after={w:w.hp,enemy:foe.hp};
+   w.est={};w.hp=Math.max(10,w.hpMax/2);
+   TORRE2_WOBBUFFET_FORMS[w.kit.q.forma](w,w.kit.q);
+   w.ponerEstado("veneno",8);
+   const safeguard=!w.est.veneno&&w.est.torre2WobbuffetSafeguard?.hasta>w.t;
+   w.est={};w.hp=3;foe.hp=foe.hpMax;
+   TORRE2_WOBBUFFET_FORMS[w.kit.e.forma](w,w.kit.e);
+   w.recibir(foe,{dano:10000,tipo:"NORMAL",categoria:"PHYSICAL",slot:"lmb"});
+   return {id:w.def.id,slots:slots.map(k=>w.kit[k]?.nombre),
+    before,after,safeguard,destiny:{w:w.hp,enemy:foe.hp},
+    isLab:!!scene.datos?.johtoLab};
+  });
+  console.log("WOBBUFFET_REAL_ARENA_MECHANICS",JSON.stringify(wobLive));
+  assert.equal(wobLive.id,"wobbuffet");
+  assert.equal(wobLive.isLab,false);
+  assert.deepEqual(wobLive.slots,["Counter","Mirror Coat","Safeguard","Destiny Bond"]);
+  assert.ok(wobLive.after.w<wobLive.before.w,"Counter must take physical damage");
+  assert.ok(wobLive.after.enemy<wobLive.before.enemy,"Counter must retaliate to real HP");
+  assert.equal(wobLive.safeguard,true,"Safeguard did not prevent native poison");
+  assert.ok(wobLive.destiny.w<=0&&wobLive.destiny.enemy<=0,
+   "Destiny Bond must KO foe upon Wobbuffet direct knockout");
   assert.equal(errors.length,0,"JS errors: "+errors.join("|"));
  }finally{await browser.close()}
 })().then(()=>server.close(),e=>{console.error(e);server.close();process.exitCode=1});

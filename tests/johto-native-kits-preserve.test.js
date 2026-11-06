@@ -15,6 +15,7 @@ for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
  ['johto-lab-catalog.js','torre2-johto-lab-catalog.js'],
+ ['wobbuffet-native.js','torre2-wobbuffet-native.js'],
  ['gen45-johto-learnsets.js','torre2-gen45-johto-learnsets.js']
 ]){
  const needle='from "./'+from+'"';
@@ -86,6 +87,30 @@ test('species from P2 keep original kits and slots, even if incomplete',()=>{
  }
  assert.equal(original[0].kit.lmb,undefined,'Native Ho-Oh must remain empty');
 
+});
+
+test('new Wobbuffet uses its genuine four HGSS moves if native Mirror Coat exists',()=>{
+ const original=[{id:'native-test',kit:{
+  lmb:{nombre:'Mirror Coat',forma:'contra',tipo:'PSYCHIC',dano:11},
+  rmb:{nombre:'Tackle',forma:'golpe',tipo:'NORMAL',dano:3}
+ },evoluciones:[]}];
+ const before=structuredClone(original);
+ const library=johtoMoveLibrary(original);
+ const row=JOHTO_100_ROWS.find(p=>p[1]==='wobbuffet');
+ const kit=johto100Kit(row,library);
+ assert.deepEqual(['lmb','rmb','q','e'].map(k=>kit[k]?.nombre),
+  ['Counter','Mirror Coat','Safeguard','Destiny Bond']);
+ assert.ok(['lmb','q','e'].every(k=>
+  kit[k]?.forma?.startsWith('torre2_wobbuffet_')),
+  'New Wobbuffet moves need actual non-placeholder form handlers');
+ assert.equal(kit.rmb.forma,'contra','Mirror Coat must keep native P2 renderer');
+ assert.equal(kit.e.ulti,true);
+ assert.equal(kit.esp.forma,'dash');
+ assert.deepEqual(original,before,'Must never change existing Poké Arena kits');
+ const other=JOHTO_100_ROWS.find(p=>p[1]==='chikorita');
+ assert.ok(!selectJohto100Moves(other,library)
+  .some(m=>m.move?.torre2WobbuffetOnly),
+  'New Counter/Safeguard/Destiny Bond must stay Wobbuffet-only until approved for others');
 });
 
 test('Kanto evolution upgrade cannot rewrite original P2 family slots',()=>{
