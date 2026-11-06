@@ -451,21 +451,28 @@ assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Are
 const uniqueNameKeys=new Set(TEST_LIBRARY.map(m=>canonicalMoveKey(m.nombre)));
 assert.equal(uniqueNameKeys.size,TEST_LIBRARY.length,
  'Duplicate Pokémon moves in selectable library (including translated aliases)');
-const nativeNames=new Set(TEST_LIBRARY
- .filter(m=>m.source==='arena2d-original').map(m=>canonicalMoveKey(m.nombre)));
-const approvedLegacyOverlaps=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
-const repeatedOriginals=SIGNATURE_MOVES.filter(m=>
- nativeNames.has(canonicalMoveKey(m.nombre))&&
- !approvedLegacyOverlaps.has(canonicalMoveKey(m.nombre)));
-assert.deepEqual(repeatedOriginals,[],
- 'No newly created custom duplicates of native P2 moves');
-for(const m of SIGNATURE_MOVES.filter(m=>
- approvedLegacyOverlaps.has(canonicalMoveKey(m.nombre)))){
- const selected=TEST_LIBRARY.find(x=>canonicalMoveKey(x.nombre)===canonicalMoveKey(m.nombre));
- if(!nativeNames.has(canonicalMoveKey(m.nombre)))continue;
- assert.equal(m.approved,true,'Native overlap requires prior user VFX approval');
- assert.equal(selected?.forma,m.forma,'Previously approved VFX stays in Torre 2 campaign');
- assert.equal(selected?.source,'new-phaser-fx','Native Arena kit must remain unmodified');
+// Approved Torre2-only moves stay intact, but the ORIGINAL Poké Arena 2D
+// renderer wins whenever a source-client move has the same canonical name.
+// The historical test incorrectly required custom VFX to override P2, which
+// contradicts the project's permanent native-first policy (AGENTS.md).
+const nativeMoves=new Map(TEST_LIBRARY.filter(m=>m.source==='arena2d-original')
+ .map(m=>[canonicalMoveKey(m.nombre),m]));
+const overlappingSignatureMoves=SIGNATURE_MOVES.filter(m=>
+ nativeMoves.has(canonicalMoveKey(m.nombre)));
+for(const proposed of overlappingSignatureMoves){
+ const key=canonicalMoveKey(proposed.nombre);
+ const selected=TEST_LIBRARY.find(m=>canonicalMoveKey(m.nombre)===key);
+ assert.ok(selected,'Native move absent from combined library: '+proposed.nombre);
+ assert.equal(selected.source,'arena2d-original',
+  'Original P2 renderer must supersede a Torre2 custom overlap: '+proposed.nombre);
+ assert.equal(selected.forma,nativeMoves.get(key).forma,
+  'Native renderer changed for '+proposed.nombre);
+}
+for(const proposed of SIGNATURE_MOVES.filter(m=>
+ !nativeMoves.has(canonicalMoveKey(m.nombre)))){
+ const selected=TEST_LIBRARY.find(m=>
+  canonicalMoveKey(m.nombre)===canonicalMoveKey(proposed.nombre));
+ assert.ok(selected,'An exclusive approved Torre2 move was removed: '+proposed.nombre);
 }
 assert.equal(canonicalMoveKey('Bola Sombria'),canonicalMoveKey('Shadow Ball'));
 assert.equal(canonicalMoveKey('Pistola de Água'),canonicalMoveKey('Water Gun'));
