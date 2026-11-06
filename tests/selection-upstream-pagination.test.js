@@ -37,3 +37,13 @@ test('unsupported upstream code fails closed rather than guessing native hitboxe
  assert.throws(()=>paginateSelectionSource('const FILAS=999;'+shared),
   /Unrecognized Poké Arena selection dimensions/);
 });
+
+test('Selection pages have direct one-tap mobile picking and only load visible portraits',()=>{
+ const patched=paginateSelectionSource(october+
+  'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);'+
+  'if(esTactil()&&this.paso<2&&this.foco!==i){this.foco=i;sfx("seleccion");this.refrescar();return}this.elegir(i)');
+ assert.ok(patched.includes('if(this.paso<2)this.foco=i;this.elegir(i)'));
+ assert.ok(patched.includes('this.torre2LoadPortraitPage(this.torre2Page)'));
+ assert.ok(patched.includes('this.load.image(key,"assets/pmd/"+c.p.dex+"/portrait.png")'));
+ assert.ok(patched.includes('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false'));
+});
