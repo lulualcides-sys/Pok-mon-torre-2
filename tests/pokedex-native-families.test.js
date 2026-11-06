@@ -55,3 +55,25 @@ test('Cross-generation baby pre-evolution joins Pikachu without changing battle 
  assert.equal(model.order.length,3);
  assert.notEqual(model.rootIndexForIndex[3],model.rootIndexForIndex[4]);
 });
+
+test('Magby Magmar Magmortar share one native-family card and 3 tabs',()=>{
+ const roster=[
+  unit('magby',240),
+  unit('magmar',126,[['magmortar',467]]),
+  unit('larvitar',246,[['pupitar',247],['tyranitar',248]]),
+  unit('tyranitar',248)
+ ];
+ const snapshot=JSON.stringify(roster);
+ const johto=[
+  [240,'magby',[],0,0,0,0,0,0,0,[]],
+  [246,'larvitar',[],0,0,0,0,0,0,0,[]],
+  [247,'pupitar',[],0,0,0,0,0,0,246,[]],
+  [248,'tyranitar',[],0,0,0,0,0,0,247,[]]
+ ];
+ const groups=buildPokedexFamilies(roster,johto,{});
+ assert.equal(groups.rootIndexForIndex[1],0,'Magmar must belong to Magby');
+ assert.equal(groups.membersByRoot.get(0).length,2,'Magmortar remains nested in Magmar');
+ assert.equal(groups.rootIndexForIndex[3],2,'Tyranitar grouped under Larvitar');
+ assert.equal(groups.order.length,2,'Only Magby and Larvitar cards should appear');
+ assert.equal(JSON.stringify(roster),snapshot,'Never change the original battle ROSTER');
+});
