@@ -22,6 +22,12 @@ test('enable only native Rayquaza in the isolated copy, keep Mimikyu disabled',(
  assert.equal(RAYQUAZA_PREVIEW_SPECIES.megaDex,'0384-0001');
 });
 
+test('upstream v0.65.1 already enables Rayquaza natively: no duplicate patch',()=>{
+ const publicEnabled=native().replace('desactivado:"local",id:"rayquaza"','id:"rayquaza"');
+ assert.equal(enableRayquazaForHomologation(publicEnabled),publicEnabled);
+ assert.equal((publicEnabled.match(/id:"rayquaza"/g)||[]).length,1);
+});
+
 test('upstream kit changed or disabled twice: fail safely',()=>{
  assert.throws(()=>enableRayquazaForHomologation(native({mega:false})),/Mega kit changed|kit changed/i);
  assert.throws(()=>enableRayquazaForHomologation(native({ray:'desactivado:true'})),/missing or duplicated/i);
