@@ -254,6 +254,39 @@ const expected={
   assert.match(result.observations.mew.descriptor,/KIT CAMPANHA · NV50/);
   assert.deepEqual(errors,[],'Public Phaser browser runtime errors');
   assert.deepEqual(missing,[],'Missing assets on the published site');
+  if(process.env.POKEDEX_FAMILY_AUDIT==='1'){
+   const grouped=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('pokedex'),out={};
+    for(const id of ['smoochum','elekid','magby','tyrogue']){
+     const i=scene.casillas.findIndex(c=>c?.p?.id===id);
+     if(i<0){out[id]={error:'missing family root'};continue}
+     scene.elegir(i);
+     out[id]={
+      stageNames:(scene.etapas||[]).map(e=>String(e.nombre||'').toLowerCase()),
+      description:scene.lema?.text||'',
+      page:scene.dexPage,
+      pages:scene.dexPages
+     };
+    }
+    return out;
+   });
+   fs.writeFileSync('test-evidence/pokedex-public-families.json',
+    JSON.stringify({release:version.modules,grouped},null,2));
+   for(const [baby,names] of Object.entries({
+    smoochum:['smoochum','jynx'],
+    elekid:['elekid','electabuzz'],
+    magby:['magby','magmar'],
+    tyrogue:['tyrogue','hitmonlee','hitmonchan','hitmontop']
+   })){
+    const family=grouped[baby];
+    assert.ok(family&&!family.error,'Public family root missing: '+baby);
+    for(const name of names)assert.ok(family.stageNames.includes(name),
+     baby+' must show '+name+' as an evolution TAB on the actual published site');
+    assert.ok(family.description.startsWith('FAMÍLIA · '),
+     baby+' incorrectly says "Does not evolve" after family grouping');
+   }
+   console.log('PASS_PUBLIC_CROSS_GEN_FAMILIES',JSON.stringify(grouped));
+  }
   await page.screenshot({path:'test-evidence/pokedex-public-live-last.png',fullPage:true});
   // A fully published Pokédex is not enough if the original Arena selection
   // still exposes the old 12/13-column portrait grid (reported on Android).
