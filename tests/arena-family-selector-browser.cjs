@@ -38,6 +38,8 @@ const server=http.createServer(async(req,res)=>{
    await page.waitForFunction(()=>window.__pt2Game?.scene?.isActive('preparar')&&
     window.__pt2Game.scene.getScene('preparar').plazas?.length===6,
     null,{timeout:45000});
+   const baselineLoaderror=await page.evaluate(()=>
+    window.__pt2Game.scene.getScene('preparar').load.listenerCount('loaderror'));
    await page.evaluate(()=>window.__pt2Game.scene.getScene('preparar').abrirSelector(0));
    await page.waitForFunction(()=>window.__pt2Game.scene.getScene('preparar')
     .selector?.abierto===true,null,{timeout:15000});
@@ -155,6 +157,15 @@ const server=http.createServer(async(req,res)=>{
    assert.ok(chosen.lockedPreserved,
     'Locked species must not bypass the original Arena unlock rules');
    assert.ok(chosen.closed,'Selector did not close after choosing');
+   const remaining=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('preparar');
+    return {loaderErrors:scene.load.listenerCount('loaderror'),
+     selected:scene.selector===null};
+   });
+   assert.ok(remaining.loaderErrors<=baselineLoaderror,
+    'Portrait downloads leaked loader error handlers when Arena selector closed: '+
+    JSON.stringify({baselineLoaderror,remaining}));
+   assert.equal(remaining.selected,true,'The old selector must release its sprite callbacks');
    assert.deepEqual(errors,[],'Arena family selector generated JS exceptions');
    console.log('PASS_ARENA_FAMILY_SELECTOR',JSON.stringify({mobile,first,second,family,chosen}));
    await page.close();
