@@ -549,6 +549,15 @@ patches.push(['luchador.js',[
  ['if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!helado&&!this.est.enfermo){',
   'if(t-this.ultimoDano>=REGLAS.curaTras&&this.hp<this.hpMax&&!helado&&!this.est.enfermo&&!this.escena.datos?.torre2){']
 ]]);
+// Fire Blast MOBILE ONLY: reduce peripheral floor-fire sprites from 15 to 5.
+ // Keep the central boom sheet, radius, five-arm silhouette, native damage,
+ // lingering burn time, camera hit, cooldown and all Arena/VS art unchanged.
+ // The renderer's original triple-layer fire remains untouched on desktop.
+ // The marker is added only to the campaign-selected copy in move-pool.js.
+patches.push(['habilidades.js',[[
+ 'const llamas=[llamaSuelo(e,x,y+1,"l",h.explosion.arde,h.aspecto)];brazos.forEach(([bx,by],i)=>["l","m","s"].forEach((talla,j)=>{',
+ 'const llamas=[llamaSuelo(e,x,y+1,"l",h.explosion.arde,h.aspecto)];const compact=h.explosion.torre2MobileFlameBudget&&(e.game?.device?.os?.android||e.game?.device?.os?.iOS||globalThis.matchMedia?.("(pointer: coarse)")?.matches);const flameLayers=compact?[["s",2]]:[["l",0],["m",1],["s",2]];brazos.forEach(([bx,by],i)=>flameLayers.forEach(([talla,j])=>{'
+]]]);
 // Campaign-only Gen III matchups and STAB, preserving all approved renderers.
 patches.push(['luchador.js',[
  ['import{CAMPO,COLOR,RADIO,limitarCampo}from"./config.js";',
