@@ -20,6 +20,7 @@ on:
       - 'tests/johto-native-kits-preserve.test.js'
       - 'tests/johto-evolution-ult-policy.test.js'
       - 'tests/arena-species-kit-browser.cjs'
+      - 'tests/arena-johto-evolution-built.test.mjs'
       - 'tools/pokearena/build-preview.mjs'
       - 'tests/arena-family-selector-source.test.mjs'
       - 'tests/arena-family-selector-built.test.mjs'
@@ -79,6 +80,7 @@ jobs:
           node tests/arena-family-selector-built.test.mjs
           node tests/rayquaza-mega-built.test.mjs
           node --test tests/johto-native-kits-preserve.test.js tests/johto-evolution-ult-policy.test.js
+          node tests/arena-johto-evolution-built.test.mjs
           node --test tests/pokedex-native-families.test.js
           node tests/pokedex-crossgen-families-built.test.mjs
       - name: Real original Chromium smoke and mobile Pokemon selection
