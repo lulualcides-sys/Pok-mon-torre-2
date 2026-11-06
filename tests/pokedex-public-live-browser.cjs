@@ -254,7 +254,85 @@ const expected={
   assert.match(result.observations.mew.descriptor,/KIT CAMPANHA · NV50/);
   assert.deepEqual(errors,[],'Public Phaser browser runtime errors');
   assert.deepEqual(missing,[],'Missing assets on the published site');
+  if(process.env.POKEDEX_FAMILY_AUDIT==='1'){
+   const grouped=await page.evaluate(()=>{
+    const scene=window.__pt2Game.scene.getScene('pokedex'),out={};
+    for(const id of ['smoochum','elekid','magby','tyrogue']){
+     const i=scene.casillas.findIndex(c=>c?.p?.id===id);
+     if(i<0){out[id]={error:'missing family root'};continue}
+     scene.elegir(i);
+     out[id]={
+      stageNames:(scene.etapas||[]).map(e=>String(e.nombre||'').toLowerCase()),
+      description:scene.lema?.text||'',
+      page:scene.dexPage,
+      pages:scene.dexPages
+     };
+    }
+    return out;
+   });
+   fs.writeFileSync('test-evidence/pokedex-public-families.json',
+    JSON.stringify({release:version.modules,grouped},null,2));
+   for(const [baby,names] of Object.entries({
+    smoochum:['smoochum','jynx'],
+    elekid:['elekid','electabuzz'],
+    magby:['magby','magmar'],
+    tyrogue:['tyrogue','hitmonlee','hitmonchan','hitmontop']
+   })){
+    const family=grouped[baby];
+    assert.ok(family&&!family.error,'Public family root missing: '+baby);
+    for(const name of names)assert.ok(family.stageNames.includes(name),
+     baby+' must show '+name+' as an evolution TAB on the actual published site');
+    assert.ok(family.description.startsWith('FAMÍLIA · '),
+     baby+' incorrectly says "Does not evolve" after family grouping');
+   }
+   console.log('PASS_PUBLIC_CROSS_GEN_FAMILIES',JSON.stringify(grouped));
+  }
   await page.screenshot({path:'test-evidence/pokedex-public-live-last.png',fullPage:true});
+  // A fully published Pokédex is not enough if the original Arena selection
+  // still exposes the old 12/13-column portrait grid (reported on Android).
+  // Test the ACTUAL deployed Phaser scene rather than relying on a local build.
+  await page.evaluate(()=>window.__pt2Game.scene.start('seleccion',{
+   previo:{modo:'cpu',p1:'bulbasaur'}
+  }));
+  await page.waitForFunction(()=>{
+   const s=window.__pt2Game?.scene?.getScene('seleccion');
+   return s?.scene.isActive()&&s.casillas?.length>50&&s.torre2Pages>1;
+  },null,{timeout:45000});
+  const selection=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene('seleccion');
+   const cards=s.casillas||[];
+   const inspect=()=>({
+    page:s.torre2Page,
+    pages:s.torre2Pages,
+    total:cards.length,
+    visible:cards.filter(c=>c.objects?.some(o=>o.visible)).length,
+    misplaced:cards.filter(c=>c.objects?.some(o=>o.visible)&&
+     c.page!==s.torre2Page).map(c=>c.p?.id),
+    hiddenInteractive:cards.filter(c=>c.page!==s.torre2Page&&
+     c.objects?.some(o=>o.input?.enabled)).map(c=>c.p?.id),
+    missingPortraits:cards.filter(c=>c.page===s.torre2Page&&c.img?.visible&&
+     /MISSING|__DEFAULT|__MISSING/i.test(c.img?.texture?.key||'')).map(c=>c.p?.id),
+    label:s.torre2PageLabel?.text||''
+   });
+   const first=inspect();
+   s.foco=8;s.refrescar();
+   return {first,second:inspect(),fightButton:!!s.botonLuchar};
+  });
+  fs.writeFileSync('test-evidence/arena-public-pagination-audit.json',
+   JSON.stringify({release:version.modules,selection},null,2));
+  for(const [which,view] of Object.entries({first:selection.first,second:selection.second})){
+   assert.equal(view.visible,8,'Public Arena '+which+' must show only eight cards');
+   assert.deepEqual(view.misplaced,[],'Public Arena '+which+' renders hidden-page cards');
+   assert.deepEqual(view.hiddenInteractive,[],
+    'Public Arena '+which+' accepts taps on hidden Pokémon');
+   assert.deepEqual(view.missingPortraits,[],
+    'Public Arena '+which+' still shows placeholder portraits');
+   assert.ok(view.label.startsWith('PÁG '+(view.page+1)+'/'),
+    'Public Arena '+which+' has no page label');
+  }
+  assert.equal(selection.second.page,1,'Arena next page is not reachable');
+  assert.equal(selection.fightButton,true,'Original battle FIGHT control was lost');
+  console.log('PASS_PUBLIC_ARENA_SELECTION_8_PER_PAGE',JSON.stringify(selection));
   console.log('PASS_PUBLIC_POKEDEX_RELEASE',version.modules);
  }finally{await browser.close()}
 })().catch(e=>{console.error(e);process.exitCode=1});
