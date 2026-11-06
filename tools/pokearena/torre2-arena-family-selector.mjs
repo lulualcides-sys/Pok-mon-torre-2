@@ -170,6 +170,7 @@ class SelectorPokemon{
    Math.ceil(this.order.length/PAGE_SIZE));
  }
  renderDetails(){
+  this.versiones.forEach(button=>button.destruir());this.versiones=[];
   this.info?.destroy(true);
   this.border.clear();
   for(const c of this.celdas)marcoCasilla(
