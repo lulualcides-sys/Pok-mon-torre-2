@@ -16,7 +16,7 @@ test('patches only the 13-column Arena popup, preserving native exports',()=>{
  assert.match(revised,/buildPokedexFamilies\(ROSTER,JOHTO_100_ROWS,LEVEL_EVOLUTIONS\)/);
  assert.match(revised,/this\.order\.slice\(this\.page\*PAGE_SIZE/);
  assert.match(revised,/forms\(root\)/);
- assert.match(revised,/this\.elegir\?\./);
+ assert.match(revised,/this\.elegir\(f\.index\)/);
  assert.match(revised,/this\.alElegir\?\.\(p.id,k\)/);
  assert.match(revised,/this\.bloqueado\?\.\(p.id\)/);
  assert.match(revised,/this\.addPortrait\(cas\.img,p\.dex,LW\)/);
