@@ -11,6 +11,7 @@ for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
  ['johto-lab-catalog.js','torre2-johto-lab-catalog.js'],
+ ['batch24/catalog.js','batch24/catalog.js'],
  ['wobbuffet-native.js','torre2-wobbuffet-native.js'],
  ['gen45-johto-learnsets.js','torre2-gen45-johto-learnsets.js']
 ])src=src.replace('from "./'+from+'"','from '+JSON.stringify(new URL(to,root).href));
@@ -27,7 +28,7 @@ const entries=[
  ['earthquake','GROUND',19],['rock-slide','ROCK',15],['stone-edge','ROCK',20],
  ['bite','DARK',7],['thrash','NORMAL',11],['sandstorm','ROCK',0],
  ['quick-attack','NORMAL',6],['hidden-power','PSYCHIC',9],['fire-blast','FIRE',19],
- ['charm','NORMAL',0],['shock-wave','ELECTRIC',10],
+ ['charm','NORMAL',0],['dark-pulse','DARK',16],['shock-wave','ELECTRIC',10],
  ['water-pulse','WATER',11],['shadow-ball','GHOST',17],['psychic','PSYCHIC',20]
 ];
 const library=new Map(entries.map(([id,type,damage])=>[id,mk(id,type,damage)]));
@@ -82,4 +83,15 @@ test('Togepi and Togetic have four DIFFERENT usable FRLG-compatible Arena abilit
  }
  assert.notDeepEqual(togetic.map(m=>m.id),togepi.map(m=>m.id),
   'Togetic should not repeat its baby kit unchanged');
+});
+
+test('Umbreon gets its legal HGSS TM79 Dark Pulse ULT from installed VFX',()=>{
+ const plan=selectJohto100Moves(row('umbreon'),library);
+ assert.equal(plan.length,4);
+ assert.equal(plan[3].id,'dark-pulse');
+ assert.equal(plan[3].move.tipo,'DARK');
+ assert.equal(plan[3].move.forma,'native-executable');
+ assert.ok(plan.some(m=>m.id==='quick-attack'));
+ assert.ok(plan.every(m=>m.move?.forma),
+  'Never equip an unimplemented Dark attack');
 });
