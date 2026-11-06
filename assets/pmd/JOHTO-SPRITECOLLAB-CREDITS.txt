@@ -1,0 +1,6 @@
+Johto #0152-0251 fan-game sprite art: PMDCollab SpriteCollab.
+Source: https://github.com/PMDCollab/SpriteCollab
+Commit: bbed4cdf28546e18df6f821d78853d54e1e64b56
+License: CC BY-NC 4.0, non-commercial use and creator credit required.
+Creator credits: https://github.com/PMDCollab/SpriteCollab/blob/master/spritebot_credits.txt
+Native Poké Arena 2D sprites were not overwritten.

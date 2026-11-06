@@ -1,0 +1,26 @@
+// Poison Jab — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "poison-jab",
+  "nombre": "Poison Jab",
+  "approved": true,
+  "forma": "torre2_batch24_poison_jab",
+  "tipo": "POISON",
+  "categoria": "PHYSICAL",
+  "poder": 80,
+  "precisao": 100,
+  "pp": 20,
+  "fazContato": true,
+  "dano": 16,
+  "alcance": 72,
+  "coste": 25,
+  "cd": 6,
+  "anim": "Swing",
+  "lanzar": 0.14,
+  "style": "jab",
+  "palette": "poison",
+  "speed": 0,
+  "secondary": "poison30",
+  "frames": 12,
+  "description": "Poison Jab — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/poison-jab"
+});

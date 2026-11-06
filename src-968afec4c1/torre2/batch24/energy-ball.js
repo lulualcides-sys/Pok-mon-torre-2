@@ -1,0 +1,26 @@
+// Energy Ball — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "energy-ball",
+  "nombre": "Energy Ball",
+  "approved": true,
+  "forma": "torre2_batch24_energy_ball",
+  "tipo": "GRASS",
+  "categoria": "SPECIAL",
+  "poder": 90,
+  "precisao": 100,
+  "pp": 10,
+  "fazContato": false,
+  "dano": 18,
+  "alcance": 245,
+  "coste": 27,
+  "cd": 6.3,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "energy",
+  "palette": "leaf",
+  "speed": 275,
+  "secondary": "spdef10",
+  "frames": 12,
+  "description": "Energy Ball — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/energy-ball"
+});

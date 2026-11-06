@@ -1,0 +1,1 @@
+let fuente=null;const aleatorio=()=>(fuente??Math.random)();function generador(n){let s=Math.imul(n|0,2654435761)>>>0||1;return()=>{s^=s<<13;s>>>=0;s^=s>>>17;s^=s<<5;s>>>=0;return s/4294967296}}function sembrar(n){fuente=generador(n);Math.random=generador((n^2654435769)>>>0);if(typeof Phaser!=="undefined")Phaser.Math.RND.sow([String(n)])}export{aleatorio,generador,sembrar};

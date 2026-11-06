@@ -1,0 +1,26 @@
+// Pin Missile — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "pin-missile",
+  "nombre": "Pin Missile",
+  "approved": true,
+  "forma": "torre2_batch24_pin_missile",
+  "tipo": "BUG",
+  "categoria": "PHYSICAL",
+  "poder": 25,
+  "precisao": 95,
+  "pp": 20,
+  "fazContato": false,
+  "dano": 5,
+  "alcance": 245,
+  "coste": 24,
+  "cd": 4.6,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "pin",
+  "palette": "needle",
+  "speed": 370,
+  "secondary": "multi",
+  "frames": 12,
+  "description": "Pin Missile — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/pin-missile"
+});

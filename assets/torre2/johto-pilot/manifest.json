@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "approved": false,
+  "mode": "pilot",
+  "frames": 12,
+  "authoredSource": "tools/pokearena/torre2-pixel-sheets.mjs",
+  "files": [
+    {
+      "id": "zap-cannon",
+      "frames": 12,
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "bytes": 3068
+    },
+    {
+      "id": "powder-snow",
+      "frames": 12,
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "bytes": 2058
+    },
+    {
+      "id": "whirlpool",
+      "frames": 12,
+      "frameWidth": 64,
+      "frameHeight": 64,
+      "bytes": 3475
+    }
+  ]
+}

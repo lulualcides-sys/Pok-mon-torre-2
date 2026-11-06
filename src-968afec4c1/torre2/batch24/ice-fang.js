@@ -1,0 +1,26 @@
+// Ice Fang — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "ice-fang",
+  "nombre": "Ice Fang",
+  "approved": true,
+  "forma": "torre2_batch24_ice_fang",
+  "tipo": "ICE",
+  "categoria": "PHYSICAL",
+  "poder": 65,
+  "precisao": 95,
+  "pp": 15,
+  "fazContato": true,
+  "dano": 13,
+  "alcance": 73,
+  "coste": 23,
+  "cd": 5.6,
+  "anim": "Swing",
+  "lanzar": 0.14,
+  "style": "icefang",
+  "palette": "ice",
+  "speed": 0,
+  "secondary": "icefang",
+  "frames": 12,
+  "description": "Ice Fang — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/ice-fang"
+});

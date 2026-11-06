@@ -1,0 +1,26 @@
+// Mud Bomb — independent new move definition. Native moves always take priority.
+export default Object.freeze({
+  "id": "mud-bomb",
+  "nombre": "Mud Bomb",
+  "approved": true,
+  "forma": "torre2_batch24_mud_bomb",
+  "tipo": "GROUND",
+  "categoria": "SPECIAL",
+  "poder": 65,
+  "precisao": 85,
+  "pp": 10,
+  "fazContato": false,
+  "dano": 13,
+  "alcance": 220,
+  "coste": 23,
+  "cd": 5.6,
+  "anim": "Shoot",
+  "lanzar": 0.14,
+  "style": "mudbomb",
+  "palette": "mud",
+  "speed": 240,
+  "secondary": "accuracy",
+  "frames": 12,
+  "description": "Mud Bomb — pixel art; manual aim, real contact and dissipating impact",
+  "reference": "https://pokemondb.net/move/mud-bomb"
+});

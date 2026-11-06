@@ -1,0 +1,2575 @@
+{
+ "0001": {
+  "nombre": "Bulbasaur",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0001-aureo": {
+  "nombre": "0001-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0001-sombrio": {
+  "nombre": "0001-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0002": {
+  "nombre": "Ivysaur",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0002-aureo": {
+  "nombre": "0002-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0002-sombrio": {
+  "nombre": "0002-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0003": {
+  "nombre": "Venusaur",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "G〜"
+  ]
+ },
+ "0003-aureo": {
+  "nombre": "0003-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "G〜"
+  ]
+ },
+ "0003-sombrio": {
+  "nombre": "0003-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "G〜"
+  ]
+ },
+ "0004": {
+  "nombre": "Charmander",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0004-aureo": {
+  "nombre": "0004-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0004-sombrio": {
+  "nombre": "0004-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0005": {
+  "nombre": "Charmeleon",
+  "sprite": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "bwappi",
+   "Grimlin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0005-aureo": {
+  "nombre": "0005-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "bwappi",
+   "Grimlin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0005-sombrio": {
+  "nombre": "0005-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "bwappi",
+   "Grimlin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0006": {
+  "nombre": "Charizard",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0006-0001": {
+  "nombre": "Mega Charizard X",
+  "sprite": [
+   "Kevin0itachi",
+   "G〜",
+   "Kevin"
+  ],
+  "retrato": [
+   "Emboarger",
+   "Soulja"
+  ]
+ },
+ "0006-0001-aureo": {
+  "nombre": "0006-0001-aureo",
+  "sprite": [
+   "Kevin0itachi",
+   "G〜",
+   "Kevin"
+  ],
+  "retrato": [
+   "Emboarger",
+   "Soulja"
+  ]
+ },
+ "0006-0001-sombrio": {
+  "nombre": "0006-0001-sombrio",
+  "sprite": [
+   "Kevin0itachi",
+   "G〜",
+   "Kevin"
+  ],
+  "retrato": [
+   "Emboarger",
+   "Soulja"
+  ]
+ },
+ "0006-aureo": {
+  "nombre": "0006-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0006-sombrio": {
+  "nombre": "0006-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "0palite"
+  ]
+ },
+ "0007": {
+  "nombre": "Squirtle",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0007-aureo": {
+  "nombre": "0007-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0007-bowser": {
+  "nombre": "0007-bowser",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0007-sombrio": {
+  "nombre": "0007-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0008": {
+  "nombre": "Wartortle",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0008-aureo": {
+  "nombre": "0008-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0008-bowser": {
+  "nombre": "0008-bowser",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0008-sombrio": {
+  "nombre": "0008-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0009": {
+  "nombre": "Blastoise",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Top_Kec"
+  ]
+ },
+ "0009-aureo": {
+  "nombre": "0009-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Top_Kec"
+  ]
+ },
+ "0009-bowser": {
+  "nombre": "0009-bowser",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Top_Kec"
+  ]
+ },
+ "0009-sombrio": {
+  "nombre": "0009-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Top_Kec"
+  ]
+ },
+ "0025": {
+  "nombre": "Pikachu",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0025-aureo": {
+  "nombre": "0025-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0025-sombrio": {
+  "nombre": "0025-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0026": {
+  "nombre": "Raichu",
+  "sprite": [
+   "CHUNSOFT",
+   "Grimlin",
+   "Top_Kec"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0026-aureo": {
+  "nombre": "0026-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "Grimlin",
+   "Top_Kec"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0026-sombrio": {
+  "nombre": "0026-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "Grimlin",
+   "Top_Kec"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0041": {
+  "nombre": "0041",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "fledermaus"
+  ]
+ },
+ "0041-aureo": {
+  "nombre": "0041-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "fledermaus"
+  ]
+ },
+ "0041-sombrio": {
+  "nombre": "0041-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "fledermaus"
+  ]
+ },
+ "0042": {
+  "nombre": "0042",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0042-aureo": {
+  "nombre": "0042-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0042-sombrio": {
+  "nombre": "0042-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0052": {
+  "nombre": "Meowth",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "PhillipsYoung"
+  ]
+ },
+ "0066": {
+  "nombre": "Machop",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Felis-Licht",
+   "Morei"
+  ]
+ },
+ "0066-aureo": {
+  "nombre": "0066-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Felis-Licht",
+   "Morei"
+  ]
+ },
+ "0066-rojo": {
+  "nombre": "0066-rojo",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Felis-Licht",
+   "Morei"
+  ]
+ },
+ "0066-sombrio": {
+  "nombre": "0066-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Felis-Licht",
+   "Morei"
+  ]
+ },
+ "0067": {
+  "nombre": "Machoke",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0067-aureo": {
+  "nombre": "0067-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0067-rojo": {
+  "nombre": "0067-rojo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0067-sombrio": {
+  "nombre": "0067-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0068": {
+  "nombre": "Machamp",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0068-aureo": {
+  "nombre": "0068-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0068-rojo": {
+  "nombre": "0068-rojo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0068-sombrio": {
+  "nombre": "0068-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0077": {
+  "nombre": "0077",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0077-aureo": {
+  "nombre": "0077-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0077-azul": {
+  "nombre": "0077-azul",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0077-sombrio": {
+  "nombre": "0077-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0078": {
+  "nombre": "0078",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "deltaflare",
+   "baronessfaron"
+  ]
+ },
+ "0078-aureo": {
+  "nombre": "0078-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "deltaflare",
+   "baronessfaron"
+  ]
+ },
+ "0078-azul": {
+  "nombre": "0078-azul",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "deltaflare",
+   "baronessfaron"
+  ]
+ },
+ "0078-sombrio": {
+  "nombre": "0078-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "deltaflare",
+   "baronessfaron"
+  ]
+ },
+ "0092": {
+  "nombre": "0092",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0092-aureo": {
+  "nombre": "0092-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0092-sombrio": {
+  "nombre": "0092-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0093": {
+  "nombre": "0093",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "PhillipsYoung"
+  ]
+ },
+ "0093-aureo": {
+  "nombre": "0093-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "PhillipsYoung"
+  ]
+ },
+ "0093-sombrio": {
+  "nombre": "0093-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "PhillipsYoung"
+  ]
+ },
+ "0094": {
+  "nombre": "0094",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0094-aureo": {
+  "nombre": "0094-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0094-sombrio": {
+  "nombre": "0094-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "Emboarger"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0095": {
+  "nombre": "0095",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0095-aureo": {
+  "nombre": "0095-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0095-sombrio": {
+  "nombre": "0095-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0102": {
+  "nombre": "0102",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0102-aureo": {
+  "nombre": "0102-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0102-sombrio": {
+  "nombre": "0102-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0103": {
+  "nombre": "0103",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "bwappi"
+  ]
+ },
+ "0103-aureo": {
+  "nombre": "0103-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "bwappi"
+  ]
+ },
+ "0103-sombrio": {
+  "nombre": "0103-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "bwappi"
+  ]
+ },
+ "0129": {
+  "nombre": "Magikarp",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JemDragons"
+  ]
+ },
+ "0129-aureo": {
+  "nombre": "0129-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JemDragons"
+  ]
+ },
+ "0129-shiny": {
+  "nombre": "0129-shiny",
+  "sprite": [
+   "Scizivire",
+   "Noo"
+  ],
+  "retrato": [
+   "Tacocoa",
+   "JemDragons"
+  ]
+ },
+ "0129-sombrio": {
+  "nombre": "0129-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JemDragons"
+  ]
+ },
+ "0130": {
+  "nombre": "Gyarados",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0130-aureo": {
+  "nombre": "0130-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0130-shiny": {
+  "nombre": "0130-shiny",
+  "sprite": [
+   "Noo",
+   "Emmuffin"
+  ],
+  "retrato": [
+   "G〜",
+   "Magu"
+  ]
+ },
+ "0130-sombrio": {
+  "nombre": "0130-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0143": {
+  "nombre": "0143",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "NOLASMOR",
+   "Emboarger"
+  ]
+ },
+ "0143-aureo": {
+  "nombre": "0143-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "NOLASMOR",
+   "Emboarger"
+  ]
+ },
+ "0143-sombrio": {
+  "nombre": "0143-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "NOLASMOR",
+   "Emboarger"
+  ]
+ },
+ "0144": {
+  "nombre": "0144",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0144-aureo": {
+  "nombre": "0144-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0144-sombrio": {
+  "nombre": "0144-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0145": {
+  "nombre": "0145",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0145-aureo": {
+  "nombre": "0145-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0145-negro": {
+  "nombre": "0145-negro",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0150": {
+  "nombre": "0150",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0150-0002": {
+  "nombre": "0150-0002",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0150-0002-dorado": {
+  "nombre": "0150-0002-dorado",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0150-0002-sombrio": {
+  "nombre": "0150-0002-sombrio",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0150-dorado": {
+  "nombre": "0150-dorado",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0150-sombrio": {
+  "nombre": "0150-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0169": {
+  "nombre": "0169",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "<ElGian>",
+   "Emmuffin"
+  ]
+ },
+ "0169-aureo": {
+  "nombre": "0169-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "<ElGian>",
+   "Emmuffin"
+  ]
+ },
+ "0169-sombrio": {
+  "nombre": "0169-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "<ElGian>",
+   "Emmuffin"
+  ]
+ },
+ "0172": {
+  "nombre": "Pichu",
+  "sprite": [
+   "CHUNSOFT",
+   "Spikey-Valentine"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "C_Pariah"
+  ]
+ },
+ "0172-aureo": {
+  "nombre": "0172-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "Spikey-Valentine"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "C_Pariah"
+  ]
+ },
+ "0172-sombrio": {
+  "nombre": "0172-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "Spikey-Valentine"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "C_Pariah"
+  ]
+ },
+ "0208": {
+  "nombre": "0208",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0208-0001": {
+  "nombre": "0208-0001",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Ichor"
+  ]
+ },
+ "0208-0001-aureo": {
+  "nombre": "0208-0001-aureo",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Ichor"
+  ]
+ },
+ "0208-0001-sombrio": {
+  "nombre": "0208-0001-sombrio",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Ichor"
+  ]
+ },
+ "0208-aureo": {
+  "nombre": "0208-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0208-sombrio": {
+  "nombre": "0208-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0229": {
+  "nombre": "Houndoom",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "PhillipsYoung",
+   "colaborador anónimo de PMDCollab",
+   "Morei"
+  ]
+ },
+ "0243": {
+  "nombre": "0243",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "programmedsleepstate"
+  ]
+ },
+ "0243-aureo": {
+  "nombre": "0243-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "programmedsleepstate"
+  ]
+ },
+ "0243-sombrio": {
+  "nombre": "0243-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "programmedsleepstate"
+  ]
+ },
+ "0244": {
+  "nombre": "0244",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec"
+  ]
+ },
+ "0244-aureo": {
+  "nombre": "0244-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec"
+  ]
+ },
+ "0244-sombrio": {
+  "nombre": "0244-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec"
+  ]
+ },
+ "0245": {
+  "nombre": "0245",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0245-aureo": {
+  "nombre": "0245-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0245-sombrio": {
+  "nombre": "0245-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0249": {
+  "nombre": "Lugia",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0249-0001": {
+  "nombre": "Shadow Lugia",
+  "sprite": [
+   "Mr_L"
+  ],
+  "retrato": [
+   "CamusZekeSirius",
+   "ShyStarryRain"
+  ]
+ },
+ "0249-0001-aureo": {
+  "nombre": "0249-0001-aureo",
+  "sprite": [
+   "Mr_L"
+  ],
+  "retrato": [
+   "CamusZekeSirius",
+   "ShyStarryRain"
+  ]
+ },
+ "0249-0001-sombrio": {
+  "nombre": "0249-0001-sombrio",
+  "sprite": [
+   "Mr_L"
+  ],
+  "retrato": [
+   "CamusZekeSirius",
+   "ShyStarryRain"
+  ]
+ },
+ "0249-aureo": {
+  "nombre": "0249-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0249-sombrio": {
+  "nombre": "0249-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "G〜"
+  ]
+ },
+ "0250": {
+  "nombre": "Ho-Oh",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "CamusZekeSirius"
+  ]
+ },
+ "0250-aureo": {
+  "nombre": "0250-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "CamusZekeSirius"
+  ]
+ },
+ "0250-sombrio": {
+  "nombre": "0250-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "CamusZekeSirius"
+  ]
+ },
+ "0255": {
+  "nombre": "Torchic",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0256": {
+  "nombre": "Combusken",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain",
+   "Blanky"
+  ]
+ },
+ "0257": {
+  "nombre": "Blaziken",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Noo"
+  ]
+ },
+ "0273": {
+  "nombre": "Seedot",
+  "sprite": [
+   "CHUNSOFT",
+   "Caitemis"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab"
+  ]
+ },
+ "0273-aureo": {
+  "nombre": "0273-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "Caitemis"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab"
+  ]
+ },
+ "0273-sombrio": {
+  "nombre": "0273-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "Caitemis"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab"
+  ]
+ },
+ "0274": {
+  "nombre": "Nuzleaf",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0274-aureo": {
+  "nombre": "0274-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0274-sombrio": {
+  "nombre": "0274-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ]
+ },
+ "0275": {
+  "nombre": "Shiftry",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emboarger",
+   "Tainted#3886",
+   "Gust"
+  ]
+ },
+ "0275-aureo": {
+  "nombre": "0275-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emboarger",
+   "Tainted#3886",
+   "Gust"
+  ]
+ },
+ "0275-sombrio": {
+  "nombre": "0275-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emboarger",
+   "Tainted#3886",
+   "Gust"
+  ]
+ },
+ "0290": {
+  "nombre": "Nincada",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Caitemis"
+  ]
+ },
+ "0291": {
+  "nombre": "Ninjask",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0292": {
+  "nombre": "Shedinja",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Novie"
+  ]
+ },
+ "0319": {
+  "nombre": "Sharpedo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0323": {
+  "nombre": "Camerupt",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0384": {
+  "nombre": "0384",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec"
+  ]
+ },
+ "0384-0001": {
+  "nombre": "0384-0001",
+  "sprite": [
+   "Top_Kec"
+  ],
+  "retrato": [
+   "Top_Kec"
+  ]
+ },
+ "0384-0001-aureo": {
+  "nombre": "0384-0001-aureo",
+  "sprite": [
+   "Top_Kec"
+  ],
+  "retrato": [
+   "Top_Kec"
+  ]
+ },
+ "0384-0001-sombrio": {
+  "nombre": "0384-0001-sombrio",
+  "sprite": [
+   "Top_Kec"
+  ],
+  "retrato": [
+   "Top_Kec"
+  ]
+ },
+ "0384-aureo": {
+  "nombre": "0384-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec"
+  ]
+ },
+ "0384-sombrio": {
+  "nombre": "0384-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec"
+  ]
+ },
+ "0386": {
+  "nombre": "0386",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0001": {
+  "nombre": "0386-0001",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0001-aureo": {
+  "nombre": "0386-0001-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0001-sombrio": {
+  "nombre": "0386-0001-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0002": {
+  "nombre": "0386-0002",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0002-aureo": {
+  "nombre": "0386-0002-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0002-sombrio": {
+  "nombre": "0386-0002-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0003": {
+  "nombre": "0386-0003",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0003-aureo": {
+  "nombre": "0386-0003-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-0003-sombrio": {
+  "nombre": "0386-0003-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-aureo": {
+  "nombre": "0386-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0386-sombrio": {
+  "nombre": "0386-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "colaborador anónimo de PMDCollab",
+   "Noo"
+  ]
+ },
+ "0427": {
+  "nombre": "Buneary",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Gust"
+  ]
+ },
+ "0427-aureo": {
+  "nombre": "0427-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Gust"
+  ]
+ },
+ "0427-sombrio": {
+  "nombre": "0427-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "JFain"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Gust"
+  ]
+ },
+ "0428": {
+  "nombre": "Lopunny",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0428-0001": {
+  "nombre": "Mega Lopunny",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0428-0001-aureo": {
+  "nombre": "0428-0001-aureo",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0428-0001-sombrio": {
+  "nombre": "0428-0001-sombrio",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0428-aureo": {
+  "nombre": "0428-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0428-sombrio": {
+  "nombre": "0428-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain"
+  ]
+ },
+ "0431": {
+  "nombre": "Glameow",
+  "sprite": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain",
+   "ShyStarryRain"
+  ]
+ },
+ "0443": {
+  "nombre": "Gible",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "JFain",
+   "G〜"
+  ]
+ },
+ "0444": {
+  "nombre": "Gabite",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "dmDash"
+  ]
+ },
+ "0445": {
+  "nombre": "Garchomp",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Top_Kec",
+   "G〜"
+  ]
+ },
+ "0446": {
+  "nombre": "0446",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0446-aureo": {
+  "nombre": "0446-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0446-sombrio": {
+  "nombre": "0446-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT"
+  ]
+ },
+ "0447": {
+  "nombre": "Riolu",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Fearless-Quit"
+  ]
+ },
+ "0447-aureo": {
+  "nombre": "0447-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Fearless-Quit"
+  ]
+ },
+ "0447-sombrio": {
+  "nombre": "0447-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Fearless-Quit"
+  ]
+ },
+ "0448": {
+  "nombre": "Lucario",
+  "sprite": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Deeshura",
+   "G〜"
+  ]
+ },
+ "0448-0001": {
+  "nombre": "Mega Lucario",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Caitemis"
+  ]
+ },
+ "0448-0001-aureo": {
+  "nombre": "0448-0001-aureo",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Caitemis"
+  ]
+ },
+ "0448-0001-sombrio": {
+  "nombre": "0448-0001-sombrio",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Caitemis"
+  ]
+ },
+ "0448-aureo": {
+  "nombre": "0448-aureo",
+  "sprite": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Deeshura",
+   "G〜"
+  ]
+ },
+ "0448-sombrio": {
+  "nombre": "0448-sombrio",
+  "sprite": [
+   "CHUNSOFT",
+   "Emmuffin"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "Emmuffin",
+   "Deeshura",
+   "G〜"
+  ]
+ },
+ "0486": {
+  "nombre": "0486",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0486-aureo": {
+  "nombre": "0486-aureo",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0486-sombrio": {
+  "nombre": "0486-sombrio",
+  "sprite": [
+   "CHUNSOFT"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0491": {
+  "nombre": "0491",
+  "sprite": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ],
+  "retrato": [
+   "CHUNSOFT",
+   "baronessfaron"
+  ]
+ },
+ "0493": {
+  "nombre": "0493",
+  "sprite": [
+   "JFain",
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0493-oro": {
+  "nombre": "0493-oro",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0493-oscuro": {
+  "nombre": "0493-oscuro",
+  "sprite": [
+   "JFain",
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0494": {
+  "nombre": "0494",
+  "sprite": [
+   "MonochromeKirby"
+  ],
+  "retrato": [
+   "MonochromeKirby",
+   "baronessfaron"
+  ]
+ },
+ "0494-aureo": {
+  "nombre": "0494-aureo",
+  "sprite": [
+   "MonochromeKirby"
+  ],
+  "retrato": [
+   "MonochromeKirby",
+   "baronessfaron"
+  ]
+ },
+ "0494-sombrio": {
+  "nombre": "0494-sombrio",
+  "sprite": [
+   "MonochromeKirby"
+  ],
+  "retrato": [
+   "MonochromeKirby",
+   "baronessfaron"
+  ]
+ },
+ "0509": {
+  "nombre": "Purrloin",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0595": {
+  "nombre": "0595",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Top_Kec"
+  ]
+ },
+ "0595-aureo": {
+  "nombre": "0595-aureo",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Top_Kec"
+  ]
+ },
+ "0595-sombrio": {
+  "nombre": "0595-sombrio",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Top_Kec"
+  ]
+ },
+ "0596": {
+  "nombre": "0596",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "Gust"
+  ]
+ },
+ "0596-aureo": {
+  "nombre": "0596-aureo",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "Gust"
+  ]
+ },
+ "0596-sombrio": {
+  "nombre": "0596-sombrio",
+  "sprite": [
+   "JFain"
+  ],
+  "retrato": [
+   "Gust"
+  ]
+ },
+ "0656": {
+  "nombre": "0656",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin",
+   "G〜",
+   "Cloudy",
+   "◥θ┴θ◤",
+   "baronessfaron"
+  ]
+ },
+ "0656-amarillo": {
+  "nombre": "0656-amarillo",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin",
+   "G〜",
+   "Cloudy",
+   "◥θ┴θ◤",
+   "baronessfaron"
+  ]
+ },
+ "0656-aureo": {
+  "nombre": "0656-aureo",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin",
+   "G〜",
+   "Cloudy",
+   "◥θ┴θ◤",
+   "baronessfaron"
+  ]
+ },
+ "0656-azabache": {
+  "nombre": "0656-azabache",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin",
+   "G〜",
+   "Cloudy",
+   "◥θ┴θ◤",
+   "baronessfaron"
+  ]
+ },
+ "0656-blanco": {
+  "nombre": "0656-blanco",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin",
+   "G〜",
+   "Cloudy",
+   "◥θ┴θ◤",
+   "baronessfaron"
+  ]
+ },
+ "0656-naranja": {
+  "nombre": "0656-naranja",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin",
+   "G〜",
+   "Cloudy",
+   "◥θ┴θ◤",
+   "baronessfaron"
+  ]
+ },
+ "0657": {
+  "nombre": "0657",
+  "sprite": [
+   "Caitemis"
+  ],
+  "retrato": [
+   "baronessfaron",
+   "◥θ┴θ◤",
+   "NOLASMOR",
+   "JustAGunk"
+  ]
+ },
+ "0657-amarillo": {
+  "nombre": "0657-amarillo",
+  "sprite": [
+   "Caitemis"
+  ],
+  "retrato": [
+   "baronessfaron",
+   "◥θ┴θ◤",
+   "NOLASMOR",
+   "JustAGunk"
+  ]
+ },
+ "0657-aureo": {
+  "nombre": "0657-aureo",
+  "sprite": [
+   "Caitemis"
+  ],
+  "retrato": [
+   "baronessfaron",
+   "◥θ┴θ◤",
+   "NOLASMOR",
+   "JustAGunk"
+  ]
+ },
+ "0657-azabache": {
+  "nombre": "0657-azabache",
+  "sprite": [
+   "Caitemis"
+  ],
+  "retrato": [
+   "baronessfaron",
+   "◥θ┴θ◤",
+   "NOLASMOR",
+   "JustAGunk"
+  ]
+ },
+ "0657-blanco": {
+  "nombre": "0657-blanco",
+  "sprite": [
+   "Caitemis"
+  ],
+  "retrato": [
+   "baronessfaron",
+   "◥θ┴θ◤",
+   "NOLASMOR",
+   "JustAGunk"
+  ]
+ },
+ "0657-naranja": {
+  "nombre": "0657-naranja",
+  "sprite": [
+   "Caitemis"
+  ],
+  "retrato": [
+   "baronessfaron",
+   "◥θ┴θ◤",
+   "NOLASMOR",
+   "JustAGunk"
+  ]
+ },
+ "0658": {
+  "nombre": "0658",
+  "sprite": [
+   "Jhony-Rex",
+   "Soulja"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0658-amarillo": {
+  "nombre": "0658-amarillo",
+  "sprite": [
+   "Jhony-Rex",
+   "Soulja"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0658-aureo": {
+  "nombre": "0658-aureo",
+  "sprite": [
+   "Jhony-Rex",
+   "Soulja"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0658-azabache": {
+  "nombre": "0658-azabache",
+  "sprite": [
+   "Jhony-Rex",
+   "Soulja"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0658-blanco": {
+  "nombre": "0658-blanco",
+  "sprite": [
+   "Jhony-Rex",
+   "Soulja"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0658-naranja": {
+  "nombre": "0658-naranja",
+  "sprite": [
+   "Jhony-Rex",
+   "Soulja"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0718": {
+  "nombre": "0718",
+  "sprite": [
+   "Soulja",
+   "Jhony-Rex",
+   "Emmuffin",
+   "Deeshura",
+   "DeltaL"
+  ],
+  "retrato": [
+   "Noo"
+  ]
+ },
+ "0757": {
+  "nombre": "Salandit",
+  "sprite": [
+   "baronessfaron",
+   "Soulja"
+  ],
+  "retrato": [
+   "baronessfaron"
+  ]
+ },
+ "0778": {
+  "nombre": "Mimikyu",
+  "sprite": [
+   "baronessfaron"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0823": {
+  "nombre": "Corviknight",
+  "sprite": [
+   "nataniel-sama",
+   "◥θ┴θ◤",
+   "G〜",
+   "Soulja"
+  ],
+  "retrato": [
+   "EzerArt",
+   "Soulja"
+  ]
+ },
+ "0877": {
+  "nombre": "Morpeko",
+  "sprite": [
+   "Emmuffin",
+   "Uni"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0885": {
+  "nombre": "0885",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "G〜",
+   "Deeshura",
+   "NOLASMOR",
+   "Top_Kec"
+  ]
+ },
+ "0885-aureo": {
+  "nombre": "0885-aureo",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "G〜",
+   "Deeshura",
+   "NOLASMOR",
+   "Top_Kec"
+  ]
+ },
+ "0885-sombrio": {
+  "nombre": "0885-sombrio",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "G〜",
+   "Deeshura",
+   "NOLASMOR",
+   "Top_Kec"
+  ]
+ },
+ "0886": {
+  "nombre": "0886",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0886-aureo": {
+  "nombre": "0886-aureo",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0886-sombrio": {
+  "nombre": "0886-sombrio",
+  "sprite": [
+   "Jhony-Rex",
+   "Caitemis"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0887": {
+  "nombre": "0887",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0887-aureo": {
+  "nombre": "0887-aureo",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0887-sombrio": {
+  "nombre": "0887-sombrio",
+  "sprite": [
+   "Emmuffin"
+  ],
+  "retrato": [
+   "Emmuffin"
+  ]
+ },
+ "0966": {
+  "nombre": "Revavroom",
+  "sprite": [
+   "Soulja"
+  ],
+  "retrato": [
+   "G〜",
+   "Soulja"
+  ]
+ }
+}
