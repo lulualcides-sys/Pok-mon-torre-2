@@ -84,8 +84,9 @@ const server=http.createServer(async(req,res)=>{
        input:z.input?.enabled,width:z.width,height:z.height}))};
    });
    console.log('ARENA_FAMILY_AFTER_PHYSICAL_CLICK',JSON.stringify(afterClick));
-   assert.equal(afterClick.page,1,
-    'Physical next-page arrow failed: '+JSON.stringify(afterClick));
+   const expectedPage=(first.page+1)%Math.ceil(first.families/8);
+   assert.equal(afterClick.page,expectedPage,
+    'Physical next-page arrow failed: '+JSON.stringify({first,afterClick}));
    const second=await page.evaluate(()=>{
     const s=window.__pt2Game.scene.getScene('preparar').selector;
     return{page:s.page,visible:s.celdas.length,root:s.root,
@@ -93,7 +94,8 @@ const server=http.createServer(async(req,res)=>{
      label:s.pageLabel.text};
    });
    assert.equal(second.visible,8);
-   assert.ok(second.label.includes('2/'));
+   assert.ok(second.label.includes((expectedPage+1)+'/'),
+    'Page label must reflect the advanced family page');
    const family=await page.evaluate(async()=>{
     const s=window.__pt2Game.scene.getScene('preparar').selector;
     const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
