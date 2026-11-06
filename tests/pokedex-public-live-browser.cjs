@@ -107,65 +107,87 @@ const expected={
      descriptor:scene.lema?.text||''
     };
    }
-   // Inspect actual PUBLIC Phaser Pokédex stage cards, not only compiled
-   // fixtures. Mewtwo is a laboratory encounter, not a Kanto campaign slot.
-   // No XP, save, TM, or battle state is changed by these read-only checks.
+   // Native P2 movesets must remain identical to the original source.
+   // Newly added Kanto species must match the real Torre 2 Lv50 loadout.
+   // Audit all grouped evolution tabs only once per family root.
    const root=new URL('.',location.href);
-   const [{KANTO_151},{resolveLoadout},{kantoDexStages}]=await Promise.all([
+   const [{KANTO_151},{resolveLoadout},{etapasDe},{ROSTER}]=await Promise.all([
     import(new URL(release+'/torre2/all-kanto-species.js',root).href),
     import(new URL(release+'/torre2/move-pool.js',root).href),
-    import(new URL(release+'/escenas/pokedex.js',root).href)
+    import(new URL(release+'/escenas/pokedex.js',root).href),
+    import(new URL(release+'/datos.js',root).href)
    ]);
-   const eligible=new Set(KANTO_151.filter(p=>p.id!=='mewtwo').map(p=>p.id));
-   const found=new Set(),problems=[],roles=['lmb','rmb','q','e'];
+   const dexId=new Map(KANTO_151.filter(p=>p.id!=='mewtwo').map(p=>[p.num,p.id]));
+   const eligible=new Set(dexId.values());
+   const native=new Map(),roles=['lmb','rmb','q','e'];
+   for(const p of ROSTER){
+    if(p.torre2ArenaAdded)continue;
+    for(const e of etapasDe(p)){
+     const dex=Number(e.dex);
+     if(dexId.has(dex)&&!native.has(dex))native.set(dex,{stage:e,source:p.id});
+    }
+   }
+   const found=new Set(),roots=new Set(),problems=[],nativeEmpty=[];
+   let nativeChecked=0,addedChecked=0;
    const savedBefore=JSON.stringify(Object.fromEntries(
     Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
    if(auditFull){
-   for(let i=0;i<scene.casillas.length;i++){
-    const family=scene.casillas[i]?.p;
-    if(!family)continue;
-    scene.elegir(i);
-    for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
-     const stage=scene.etapas[stageIndex];
-     if(stage?.mega)continue;
-     const id=String(stageIndex===0?family.id:
-      (family.evoluciones?.[stageIndex-1]?.nombre||stage?.nombre||'')).toLowerCase();
-     // Native P2 may expose alternate/mega/costume forms with the same
-     // Kanto species ID. They are NOT separate Kanto campaign evolutions.
-     if(!eligible.has(id)||found.has(id))continue;
-     scene.irEtapa(stageIndex);
-     // PMD Idle sheets load asynchronously on the first evolution click.
-     // Reading immediately after irEtapa() incorrectly inspects the BASE
-     // form (Pidgey instead of Pidgeot, Caterpie instead of Butterfree).
-     const until=Date.now()+15000;
-     while(scene.etapa!==stageIndex){
-      if(Date.now()>until)throw Error('Evolution tab failed to load: '+id);
-      await new Promise(resolve=>setTimeout(resolve,40));
-     }
-     const displayed=scene.etapas[scene.etapa]?.kit||{};
-     const expectedKit=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
-     const computed=kantoDexStages(family)[stageIndex]?.kit||{};
-     const afterStageName=scene.etapas[scene.etapa]?.nombre;
-     found.add(id);
-     for(const role of roles){
-      const move=displayed[role],real=expectedKit[role];
-      if(!move?.id||!move?.forma||move.pendiente||
-         move.torre2Unavailable||move.torre2RequiresTM)
-       problems.push({id,role,family:family.id,stageIndex,stageName:stage?.nombre,kind:'missing/locked/TM',move:move?.nombre||null});
-      if(move?.id!==real?.id)
-       problems.push({id,role,family:family.id,stageIndex,stageName:stage?.nombre,afterStageName,kind:'Pokédex differs from battle',
-        view:move?.id||null,battle:real?.id||null,computed:computed[role]?.id||null});
+    for(let i=0;i<scene.casillas.length;i++){
+     if(!scene.casillas[i]?.p)continue;
+     scene.elegir(i);
+     if(roots.has(scene.foco))continue;
+     roots.add(scene.foco);
+     const stages=scene.etapas.slice();
+     for(let stageIndex=0;stageIndex<stages.length;stageIndex++){
+      const stage=stages[stageIndex],dex=Number(stage?.dex),id=dexId.get(dex);
+      if(!id||stage.mega||found.has(id))continue;
+      scene.irEtapa(stageIndex);
+      const until=Date.now()+15000;
+      while(scene.etapa!==stageIndex){
+       if(Date.now()>until)throw Error('Evolution tab not ready: '+id);
+       await new Promise(resolve=>setTimeout(resolve,40));
+      }
+      const displayed=scene.etapas[scene.etapa]?.kit||{};
+      found.add(id);
+      if(native.has(dex)){
+       nativeChecked++;
+       const original=native.get(dex);
+       for(const role of roles){
+        const view=displayed[role],base=original.stage.kit?.[role];
+        if(!view?.forma)nativeEmpty.push({id,role});
+        for(const field of ['id','nombre','forma','tipo','dano','cd','coste','ulti','dist','vel','anim']){
+         if((view?.[field]??null)!==(base?.[field]??null))
+          problems.push({id,role,kind:'native P2 kit changed',field,
+           view:view?.[field]??null,original:base?.[field]??null});
+        }
+       }
+      }else{
+       addedChecked++;
+       const expectedKit=resolveLoadout({
+        id,progression:{species:id,level:50},tmMoves:[]
+       });
+       for(const role of roles){
+        const view=displayed[role],real=expectedKit[role];
+        if(!view?.id||!view?.forma||view.pendiente||
+           view.torre2Unavailable||view.torre2RequiresTM)
+         problems.push({id,role,kind:'added stage missing/locked/TM',
+          move:view?.nombre||null});
+        if(view?.id!==real?.id)
+         problems.push({id,role,kind:'added stage differs from battle',
+          view:view?.id||null,battle:real?.id||null});
+       }
+      }
      }
     }
-   }
    }
    const savedAfter=JSON.stringify(Object.fromEntries(
     Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
    if(savedBefore!==savedAfter)
     problems.push({kind:'public Pokédex inspection modified player save'});
    const kanto=auditFull?{eligible:eligible.size,visible:found.size,
+    nativeChecked,addedChecked,nativeEmpty:nativeEmpty.slice(0,40),
     missing:[...eligible].filter(id=>!found.has(id)),
-    problems:problems.slice(0,40),totalProblems:problems.length}:null;
+    problems:problems.slice(0,60),totalProblems:problems.length}:null;
    return{build,installed,cardCount:scene.casillas.length,observations,kanto};
   },{expect:expected,release:version.modules,
    auditFull:process.env.POKEDEX_FULL_PUBLIC_AUDIT==='1'});
@@ -182,6 +204,10 @@ const expected={
   assert.ok(result.cardCount>=90,'Expected at least 90 roster families');
   if(process.env.POKEDEX_FULL_PUBLIC_AUDIT==='1'){
   assert.equal(result.kanto.eligible,150,'Kanto campaign should cover 150 species');
+  assert.equal(result.kanto.nativeChecked+result.kanto.addedChecked,150,
+   'Every Kanto species must be audited under native or added moveset rules');
+  assert.ok(result.kanto.nativeChecked>0&&result.kanto.addedChecked>0,
+   'Do not silently exclude native P2 or newly added Torre 2 species');
   assert.deepEqual(result.kanto.missing,[],
    'Some Kanto species are absent from the ACTUAL public Pokédex');
   assert.equal(result.kanto.visible,150,
