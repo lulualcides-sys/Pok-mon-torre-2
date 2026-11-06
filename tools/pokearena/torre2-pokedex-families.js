@@ -58,20 +58,20 @@ export function buildPokedexFamilies(roster,johtoRows=[],evolutions={}){
   [143,446],   // Munchlax -> Snorlax
   [226,458],   // Mantyke -> Mantine
   [82,81],[462,82], // Magnemite -> Magneton -> Magnezone
-  [108,463],   // Lickitung -> Lickilicky
-  [112,464],   // Rhydon -> Rhyperior
-  [114,465],   // Tangela -> Tangrowth
+  [463,108],   // Lickitung -> Lickilicky
+  [464,112],   // Rhydon -> Rhyperior
+  [465,114],   // Tangela -> Tangrowth
   [176,175],[468,176], // Togepi -> Togetic -> Togekiss
-  [193,469],   // Yanma -> Yanmega
+  [469,193],   // Yanma -> Yanmega
   [470,133],[471,133],[700,133], // Eevee branches
-  [215,461],   // Sneasel -> Weavile
-  [207,472],   // Gligar -> Gliscor
-  [221,473],   // Swinub -> Piloswine -> Mamoswine
-  [137,233],[233,474], // Porygon -> Porygon2 -> Porygon-Z
-  [281,475],   // Kirlia -> Gallade
-  [299,476],   // Nosepass -> Probopass
-  [356,477],   // Dusclops -> Dusknoir
-  [361,478]    // Snorunt -> Froslass
+  [461,215],   // Sneasel -> Weavile
+  [472,207],   // Gligar -> Gliscor
+  [473,221],   // Swinub -> Piloswine -> Mamoswine
+  [233,137],[474,233], // Porygon -> Porygon2 -> Porygon-Z
+  [475,281],   // Kirlia -> Gallade
+  [476,299],   // Nosepass -> Probopass
+  [477,356],   // Dusclops -> Dusknoir
+  [478,361]    // Snorunt -> Froslass
  ];
  const installed=new Set(dexById.values());
  for(const [child,before] of crossGenParents)
