@@ -92,7 +92,10 @@ const server=http.createServer(async(req,res)=>{
       const attack=kit[slot];if(!attack?.nombre)continue;
       const key=attack.nombre.toLowerCase();
       if(!['blizzard','seismic toss','hydro pump','egg bomb','eggbomb','bomba de ovo','bomba-ovo','bomba de huevos','thunder','psybeam','psy beam','fire blast','charge','solar beam','solarbeam','rayo solar'].includes(key))continue;
-      const bucket=def.torre2ArenaAdded===true?cooldown:nativeCooldown;
+      // Johto 100 kits reuse the original P2 move cooldowns by policy;
+      // only Torre 2's Kanto-121 adaptation enforces ARENA_CD.
+      const bucket=def.torre2ArenaAdded===true&&!def.torre2Johto100?
+       cooldown:nativeCooldown;
       (bucket[key]??=[]).push({species:def.id,stage,cd:attack.cd});
      }
     }
