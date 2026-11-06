@@ -49,13 +49,32 @@ const server=http.createServer(async(req,res)=>{
     window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
     return {wins:normalized.wins,level:normalized.team[1].progression.level,uid:eevee.uid};
    },roll);
-   await page.waitForFunction(form=>{
-    const scene=window.__pt2Game?.scene.getScene('campanha');
-    const state=window.kanto?.readCampaign();
-    return scene?.scene.isActive()&&
-     state?.team?.find(m=>m.uid==='t03-eevee-ui')?.id===form&&
-     !window.kanto.pendingEeveeEvolution(state);
-   },form,{timeout:55000});
+   try{
+    await page.waitForFunction(form=>{
+     const scene=window.__pt2Game?.scene.getScene('campanha');
+     const state=window.kanto?.readCampaign();
+     return scene?.scene.isActive()&&
+      state?.team?.find(m=>m.uid==='t03-eevee-ui')?.id===form&&
+      !window.kanto.pendingEeveeEvolution(state);
+    },form,{timeout:55000});
+   }catch(error){
+    const diagnostic=await page.evaluate(()=>{
+     const game=window.__pt2Game,scene=game?.scene?.getScene('campanha');
+     const state=window.kanto?.readCampaign();
+     const member=state?.team?.find(m=>m.uid==='t03-eevee-ui');
+     return {memberId:member?.id,level:member?.progression?.level,
+      pending:state&&window.kanto.pendingEeveeEvolution(state),
+      scenes:game?.scene?.getScenes(true).map(s=>s.scene.key),
+      campaignActive:scene?.scene.isActive(),
+      attempted:scene?.__torre2EeveeAttempted,
+      resolving:scene?.__torre2EeveeResolving,
+      body:document.getElementById('pt2-boot-message')?.textContent,
+      errors:window.__pt2Started};
+    }).catch(e=>({diagnosticError:String(e)}));
+    console.error('T03 EEVEE RANDOM PHASER DIAGNOSTIC',JSON.stringify({form,diagnostic,pageErrors:errors}));
+    await page.screenshot({path:'test-evidence/t03-eevee-timeout.png'}).catch(()=>{});
+    throw error;
+   }
    const controls=await page.evaluate(()=>{
     const scene=window.__pt2Game.scene.getScene('campanha');
     return scene.children.list.filter(o=>o.active&&o.getData?.('torre2-eevee-choice'));
