@@ -159,6 +159,15 @@ if(compatiblePortraitModule!==portraitModuleSource){
 const selectionFile=path.join(dest,clientSource,'escenas/seleccion.js');
 const {paginateSelectionSource}=await import('./torre2-selection-pages.mjs');
 await fs.writeFile(selectionFile,paginateSelectionSource(await fs.readFile(selectionFile,'utf8')));
+ // The six-player Arena uses a DIFFERENT picker (selector.js), not the
+ // VS CPU selection scene above. Its old 13-column grid overflowed mobile
+ // and showed missing portrait markers. Group its native ROSTER into family
+ // pages using the SAME display-only National Dex family model.
+ const arenaSelectorFile=path.join(dest,clientSource,'selector.js');
+ const {adaptArenaFamilySelectorSource}=await import('./torre2-arena-family-selector.mjs');
+ await fs.writeFile(arenaSelectorFile,adaptArenaFamilySelectorSource(
+  await fs.readFile(arenaSelectorFile,'utf8')));
+ console.log('Arena preparar selector: 8 Pokémon families/page, native roster preserved');
 const patches=[
  ['escenas/carga.js',[
   // The public Poké Arena CDN no longer provides balls20.png. No native
