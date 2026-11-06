@@ -293,8 +293,12 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   if(this.escena?.datos?.torre2||this.def?.id!=='eevee'||!(this.etapa>0))
    return form;
   if(!this.__torre2EeveeEvolution){
-   const choices=(this.def.evoluciones||[]).filter(e=>['vaporeon','jolteon','flareon'].includes(idOf(e.nombre)));
-   if(choices.length!==3)return form;
+   // Source-P2 Eevee remains unchanged if only the original three stages
+   // exist. Torre 2-added Eevee gets the same one-time random choice from
+   // all five actually installed Kanto/Johto forms (Espeon and Umbreon too).
+   const choices=(this.def.evoluciones||[]).filter(e=>
+    ['vaporeon','jolteon','flareon','espeon','umbreon'].includes(idOf(e.nombre)));
+   if(choices.length<3)return form;
    const pick=chooseEeveeBranch(choices.length);
    this.__torre2EeveeEvolution=choices[pick-1].nombre;
    this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;
