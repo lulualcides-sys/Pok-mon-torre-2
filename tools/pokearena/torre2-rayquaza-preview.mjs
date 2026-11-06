@@ -4,6 +4,8 @@
  */
 const OFF='desactivado:"local",id:"rayquaza",dex:"0384"';
 const ON='desactivado:false,id:"rayquaza",dex:"0384"';
+// Upstream 0.65.1 enables Rayquaza by omitting the optional disabled flag.
+const PUBLIC='{id:"rayquaza",dex:"0384"';
 const DEX=Object.freeze(['0384','0384-0001']);
 const ANIMS=Object.freeze(['Idle','Walk','Attack','Shoot','Hop']);
 
@@ -11,9 +13,10 @@ export function enableRayquazaForHomologation(source){
  if(typeof source!=='string')throw new TypeError('Expected native datos.js source');
  const offCount=source.split(OFF).length-1;
  const onCount=source.split(ON).length-1;
- if((offCount!==1||onCount!==0)&&(offCount!==0||onCount!==1))
+ const publicCount=source.split(PUBLIC).length-1;
+ if(offCount+onCount+publicCount!==1)
   throw Error('Rayquaza native roster flag is missing or duplicated; refusing guessed unlock');
- const token=offCount?OFF:ON;
+ const token=offCount?OFF:onCount?ON:PUBLIC;
  const start=source.indexOf(token);
  const end=source.indexOf('},{id:"',start+token.length);
  const entry=source.slice(start,end<0?start+3500:end);
