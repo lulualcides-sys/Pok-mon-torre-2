@@ -132,18 +132,28 @@ const server=http.createServer(async(req,res)=>{
     const prep=window.__pt2Game.scene.getScene('preparar'),sel=prep.selector;
     const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;
     const {ROSTER}=await import(new URL('./datos.js',src));
-    const i=ROSTER.findIndex(p=>p.id==='torchic');
+    const torchic=ROSTER.findIndex(p=>p.id==='torchic');
     const before={opened:sel.abierto,previewOnly:sel.previewOnly,
      root:sel.root,focus:sel.foco,callback:typeof sel.alElegir,
-     prior:prep.plazas[0].id,blocked:!!sel.bloqueado?.(ROSTER[i].id),
-     target:ROSTER[i].id};
-    sel.bloqueado=null;sel.elegir(i);
+     prior:prep.plazas[0].id,torchicLocked:!!sel.bloqueado?.('torchic')};
+    // Native P2 League locks are real game rules: never bypass them just
+    // to make a test pass or to claim every species can be picked by P1.
+    if(sel.bloqueado?.('torchic'))sel.elegir(torchic);
+    const lockedPreserved=prep.selector===sel&&prep.plazas[0].id===before.prior;
+    const i=ROSTER.findIndex(p=>p.id!==before.prior&&
+     !prep.plazas.slice(1).some(q=>q.id===p.id)&&
+     !sel.bloqueado?.(p.id));
+    if(i<0)throw Error('No second actually unlocked Arena Pokémon available');
+    sel.selectFamily(sel.families.rootIndexForIndex[i]);
+    sel.elegir(i);
     return{expected:ROSTER[i].id,actual:prep.plazas[0].id,
-     closed:prep.selector===null,before,notice:sel.aviso?.text||null};
+     closed:prep.selector===null,lockedPreserved,before,notice:sel.aviso?.text||null};
    });
    console.log('ARENA_FAMILY_CHOOSE_DIAGNOSTIC',JSON.stringify(chosen));
    assert.equal(chosen.actual,chosen.expected,
     'Original Arena choose callback lost: '+JSON.stringify(chosen));
+   assert.ok(chosen.lockedPreserved,
+    'Locked species must not bypass the original Arena unlock rules');
    assert.ok(chosen.closed,'Selector did not close after choosing');
    assert.deepEqual(errors,[],'Arena family selector generated JS exceptions');
    console.log('PASS_ARENA_FAMILY_SELECTOR',JSON.stringify({mobile,first,second,family,chosen}));
