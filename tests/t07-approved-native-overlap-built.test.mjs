@@ -12,7 +12,7 @@ const {SIGNATURE_MOVES,TEST_LIBRARY,APPROVED_KANTO_NATIVE_OVERLAPS,
  pathToFileURL(path.join(root,modules,'torre2/move-pool.js')).href);
 assert.deepEqual(APPROVED_KANTO_NATIVE_OVERLAPS,[
  'ice-shard','psychic','shadow-ball','ice-beam','twister',
- 'fury-cutter','x-scissor'
+ 'fury-cutter','x-scissor','double-kick','peck'
 ]);
 assert.ok(TEST_LIBRARY.length>=227,'The original approved effect inventory was truncated');
 assert.equal(new Set(TEST_LIBRARY.map(move=>canonicalMoveKey(move.nombre))).size,
