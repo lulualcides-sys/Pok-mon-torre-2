@@ -6,6 +6,7 @@
 import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
+import {TORRE2_WOBBUFFET_MOVES} from "./wobbuffet-native.js";
 import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
  GEN4_HGSS_JOHTO_TM,GEN5_B2W2_JOHTO_TM} from "./gen45-johto-learnsets.js";
 const canon=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
@@ -59,9 +60,18 @@ export function johtoMoveLibrary(original){
  // Expose it to newly added Johto kits only; never change native P2 kits.
  const hidden=JOHTO_18.find(m=>m.id==="hidden-power");
  if(executable(hidden)&&!out.has("hidden-power"))out.set("hidden-power",hidden);
+ // Three new, real executable forms, restricted to newly added Wobbuffet.
+ // Preserve all native Poké Arena 2D species and their original abilities.
+ for(const move of TORRE2_WOBBUFFET_MOVES)out.set(move.id,move);
  return out;
 }
 export function selectJohto100Moves(p,library){
+ if(p[1]==="wobbuffet"){
+  // All four HGSS level-1 skills, with no invented offensive substitutes.
+  return ["counter","mirror-coat","safeguard","destiny-bond"]
+   .map(id=>({id,level:1,source:"GEN4-HGSS-LEVEL",move:library.get(id)}))
+   .filter(x=>executable(x.move));
+ }
  // In FRLG Smeargle learns only Sketch. A Sketch-derived move may be any
  // legal target ability. In the offline Arena this is an explicit DEMO kit,
  // not fake level-up data, and it is never applied to native P2 species.
@@ -70,14 +80,14 @@ export function selectJohto100Moves(p,library){
   return ["tackle","counter","revenge","mirror-coat",
    "quick-attack","swift","body-slam","bite","ember","water-gun"]
    .map(id=>({id,level:-2,move:library.get(id),sketched:true}))
-   .filter(x=>executable(x.move));
+   .filter(x=>executable(x.move)&&!x.move.torre2WobbuffetOnly);
  }
  // FRLG natural/TM plus independently verified Gen IV HGSS and
  // Gen V B2W2 species-legal attacks, intersected with actual P2 library.
  const learned=new Map();
  const addLegal=(id,level,source)=>{
   const key=canon(id),prior=learned.get(key),move=library.get(key);
-  if(!key||!executable(move))return;
+  if(!key||!executable(move)||move.torre2WobbuffetOnly)return;
   const x={id:key,level,move,source};
   if(!prior||(prior.level<0&&level>=0))learned.set(key,x);
  };
