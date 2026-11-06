@@ -18,6 +18,7 @@ for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
  ['johto-lab-catalog.js','torre2-johto-lab-catalog.js'],
+ ['batch24/catalog.js','batch24/catalog.js'],
  ['wobbuffet-native.js','torre2-wobbuffet-native.js'],
  ['gen45-johto-learnsets.js','torre2-gen45-johto-learnsets.js']
 ]){
@@ -268,4 +269,16 @@ test('Added Magby can evolve twice and added Eevee offers Espeon/Umbreon without
  const again=addAllJohtoSpecies([nativeP2,magmar,eevee]);
  assert.equal(eevee.evoluciones.length,before,'Eevee branch linkage must be idempotent');
  assert.ok(again.find(p=>p.id==='magby').evoluciones.length>=2);
+});
+
+test('Umbreon can borrow an approved Dark Pulse only if original P2 has none',()=>{
+ const base=[{id:'p2',kit:{lmb:{nombre:'Tackle',forma:'native_tackle',tipo:'NORMAL',dano:4}}}];
+ const library=johtoMoveLibrary(base);
+ assert.equal(library.get('dark-pulse')?.forma,'torre2_batch24_dark_pulse');
+ const original={id:'p2-with-dark',kit:{lmb:{
+  nombre:'Dark Pulse',forma:'p2_original_dark_pulse',tipo:'DARK',dano:17
+ }}};
+ const native=johtoMoveLibrary([original]);
+ assert.equal(native.get('dark-pulse')?.forma,'p2_original_dark_pulse');
+ assert.equal(original.kit.lmb.forma,'p2_original_dark_pulse');
 });
