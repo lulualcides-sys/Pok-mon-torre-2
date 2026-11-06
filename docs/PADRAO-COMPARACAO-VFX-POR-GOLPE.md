@@ -2,6 +2,10 @@
 
 Decisão do usuário em 05/11/2026: **não usar PixelFX automaticamente**. Para criar, refazer ou melhorar qualquer golpe, pesquisar primeiro como a habilidade funciona no Pokémon da geração usada, depois COMPARAR todas as 10 fontes da biblioteca adicionada ao projeto e escolher a melhor base individual por golpe. Composição de duas ou mais fontes é permitida quando o resultado melhorar, com licenças compatíveis e contribuição real. Comparar 10 fontes não significa copiar/usar as 10.
 
+## Precedência dos golpes iguais — decisão final 06/11/2026
+
+Antes de criar/refazer um VFX, verificar o golpe no **cliente-base original Poké Arena 2D**. Se houver animação executável com o mesmo nome canônico, **o Torre 2 usa o VFX original P2**, independentemente de antiga aprovação de uma versão caseira. Inclui Peck, Double Kick e todos os overlaps. **Não alterar Pokémon/kits originais** (como Ho-Oh, Crobat, Steelix); não preencher slots nativos. Os VFX exclusivos aprovados do Torre 2 continuam intocados. A comparação das dez fontes aplica-se a golpes efetivamente novos/exclusivos sem equivalente nativo. Esta regra revoga a preferência anterior por VFX caseiros de mesmo nome.
+
 ## Processo obrigatório
 
 1. Identificar ID e mecânica canônica: categoria, alvo, origem, trajetória, precisão, colisão, multi-hit, danos, status e sequência de dissipação. Documentar fonte oficial ou técnica verificável (por exemplo, página individual de Pokémon Database, PokéAPI ou dados de jogos). FireRed/Gen III é a base da campanha.
