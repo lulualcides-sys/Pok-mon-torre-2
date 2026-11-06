@@ -55,6 +55,11 @@ export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
  tyranitar:{core:['fire-fang','crunch','earthquake'],ult:'stone-edge'},
  magby:{core:['ember','smog','fire-spin'],ult:'fire-punch',
   exclude:['overheat','fire-blast','flamethrower','lava-plume']},
+ // Togepi's first four legal FRLG moves are largely non-damaging. Give its
+ // playable Arena kit real installed attacks before utility skills.
+ // Metronome is retained only if the existing executable renderer is present.
+ togepi:{core:['metronome','ancient-power','double-edge'],ult:'psychic'},
+ togetic:{core:['magical-leaf','ancient-power','double-edge'],ult:'psychic'},
  // Evolution-final exclusive signatures cannot land on an intermediate ULT.
  feraligatr:{core:['water-gun','aqua-tail','waterfall'],ult:'hydro-pump'}
 });
