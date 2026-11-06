@@ -10,7 +10,8 @@ assert.match(version.modules,/^src-[0-9a-f]{10}$/);
 const {ROSTER,etapaDe}=await import(pathToFileURL(path.join(base,version.modules,'datos.js')).href);
 const ray=ROSTER.find(p=>p.id==='rayquaza');
 assert.ok(ray,'Rayquaza missing from playable homologation roster');
-assert.equal(ray.desactivado,false,'Rayquaza must only be unlocked in this copied bundle');
+assert.ok(ray.desactivado===false||!Object.hasOwn(ray,'desactivado'),
+ 'Rayquaza must be playable, including when original 0.65.1 already enables it');
 assert.equal(ROSTER.filter(p=>p.id==='rayquaza').length,1,'duplicated Rayquaza');
 assert.equal(ray.kit.lmb.nombre,'Dragon Claw');
 assert.equal(ray.kit.rmb.nombre,'Twister');
