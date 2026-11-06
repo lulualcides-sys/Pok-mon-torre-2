@@ -62,25 +62,39 @@ for(const m of pool.TEST_LIBRARY){
 const duplicatedSelections=[...groupedMoves.entries()]
  .filter(([_,rows])=>rows.length!==1)
  .map(([id,rows])=>({id,entries:rows}));
-const originalKeys=new Map(implemented.map(row=>[key(row.name),row.name]));
-const allowedLegacy=new Set(pool.APPROVED_KANTO_NATIVE_OVERLAPS||[]);
-const legacyOverlaps=pool.SIGNATURE_MOVES
- .filter(m=>originalKeys.has(key(m.nombre))&&allowedLegacy.has(key(m.nombre)));
-const collisions=pool.SIGNATURE_MOVES
- .filter(m=>originalKeys.has(key(m.nombre))&&!allowedLegacy.has(key(m.nombre)))
- .map(m=>({name:m.nombre,existingOriginal:originalKeys.get(key(m.nombre))}));
-// A new native version may not silently erase a user-approved old renderer.
-// The exception applies ONLY to the campaign/Mewtwo editor library, not the
-// original Arena/VS definitions, and demands a genuinely approved VFX.
-const invalidLegacy=legacyOverlaps.filter(m=>{
+const originalKeys=new Map(implemented.map(row=>[key(row.name),row]));
+// A native + custom SOURCE declaration is not a duplicated playable move.
+// The old audit unconditionally rejected original P2 attacks whose same-name
+// Torre 2 copy was already marked approved (Peck, Double Kick, Ice Beam, etc.).
+// The user explicitly requires P2 to WIN the actual battle/editor catalog
+// whenever a usable original renderer exists. Check the EFFECT SELECTED,
+// rather than banning a historical source entry that was not selected.
+const nativeOverlaps=pool.SIGNATURE_MOVES
+ .filter(m=>originalKeys.has(key(m.nombre))&&
+  originalKeys.get(key(m.nombre)).forms.length>0);
+const overriddenNative=nativeOverlaps.filter(m=>{
  const selected=pool.TEST_LIBRARY.find(x=>key(x.nombre)===key(m.nombre));
- return m.approved!==true||!m.forma||!selected||
-  selected.forma!==m.forma||selected.id!==m.id||
+ const original=originalKeys.get(key(m.nombre));
+ return !selected||selected.source!=='arena2d-original'||
+  !original.forms.includes(selected.forma);
+});
+const collisions=overriddenNative.map(m=>({
+ name:m.nombre,existingOriginal:originalKeys.get(key(m.nombre)).name,
+ actualSelected:pool.TEST_LIBRARY.find(x=>key(x.nombre)===key(m.nombre))?.forma
+}));
+// Approved Torre 2-exclusive renderers are protected exactly as before.
+// The ignored historical source entry remains available for auditing but
+// cannot replace a genuine P2 overlap at runtime.
+const exclusiveMoves=pool.SIGNATURE_MOVES
+ .filter(m=>!originalKeys.has(key(m.nombre))||
+ !originalKeys.get(key(m.nombre)).forms.length);
+const changedExclusive=exclusiveMoves.filter(m=>{
+ const selected=pool.TEST_LIBRARY.find(x=>key(x.nombre)===key(m.nombre));
+ return !selected||selected.forma!==m.forma||
   selected.source!=='new-phaser-fx';
 });
-if(invalidLegacy.length)throw Error('APPROVED_VFX_CHANGED_BY_UPSTREAM: '+
- JSON.stringify(invalidLegacy.map(x=>({id:x.id,name:x.nombre}))));
-
+if(changedExclusive.length)throw Error('TORRE2_EXCLUSIVE_VFX_CHANGED: '+
+ JSON.stringify(changedExclusive.map(m=>({id:m.id,name:m.nombre}))));
 const customKeys=new Map(),repeatedCustom=[];
 for(const move of pool.SIGNATURE_MOVES){
  const normalized=key(move.nombre);
@@ -129,9 +143,10 @@ const report={version,siteVersion:sourceBuild.src||null,
  originalMoveCount:implemented.length,mewtwoSelectables:pool.TEST_LIBRARY.length,
  originalMoves:implemented,customMoves:pool.SIGNATURE_MOVES,
  deduplication:{duplicatedSelections,collisions,
-   legacyApprovedOverlap:legacyOverlaps.map(m=>({id:m.id,name:m.nombre,form:m.forma})),
+   nativePriorityOverlap:nativeOverlaps.map(m=>({id:m.id,name:m.nombre,selected:'P2'})),
+   exclusiveProtected:exclusiveMoves.length,
    repeatedCustom,sharedNativeVisuals,
-  policy:'Native Poké Arena 2D sprites and attacks stay approved; one canonical PT/EN name; recolor is NOT a new move.'},
+  policy:'Native P2 effects take precedence on EVERY canonical-name overlap; only Torre 2-exclusive approved VFX remain custom; no native species kits are modified.'},
  keyChecks:checks,byType,totals,
  caveats:['IN_SITE means declared in a Pokémon kit, not each move screenshot-tested',
  'Evolution and other-generation kits are included','No move effect from Pokémon Torre 1 is reused',
@@ -144,7 +159,7 @@ const markdown=['# Inventário técnico dos golpes do Poké Arena 2D',
  '- Linhas jogáveis: **'+ROSTER.length+'**',
  '- Movimentos distintos nos kits do cliente: **'+implemented.length+'**',
  '- Biblioteca selecionável no Mewtwo de testes, incluindo novos: **'+pool.TEST_LIBRARY.length+'**',
- '- Entradas duplicadas no Mewtwo: **'+duplicatedSelections.length+'** | Tentativas de refazer ataque nativo: **'+collisions.length+'** | Duplicados personalizados: **'+repeatedCustom.length+'**',
+ '- Entradas duplicadas no Mewtwo: **'+duplicatedSelections.length+'** | VFX originais P2 sobrescritos: **'+collisions.length+'** | Duplicados personalizados: **'+repeatedCustom.length+'**',
  '- Plano 14 ataques + 2 status por tipo: **'+totals.inSite+' já no site**, **'+totals.newTorre2+' novos no Torre 2**, **'+totals.missing+' ainda ausentes**, **'+totals.unassigned+' vagas em aberto**',
  '',
  '## Formas visuais reaproveitadas pelo cliente (não são golpes duplicados)',
