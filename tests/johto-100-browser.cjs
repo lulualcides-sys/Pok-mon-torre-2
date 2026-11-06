@@ -159,6 +159,7 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(families.eevee&&["VAPOREON","JOLTEON","FLAREON","ESPEON","UMBREON"]
    .every(n=>families.eevee.stages.some(s=>s.name.toUpperCase()===n)),
    "Eevee branches must be grouped, with accessible tabs");
+  console.log("JOHTO_EVOLUTION_FAMILY_DIAGNOSTIC",JSON.stringify(families));
   assert.ok(families.magby&&["MAGBY","MAGMAR","MAGMORTAR"]
    .every(n=>families.magby.stages.some(s=>s.name.toUpperCase()===n)),
    "Magby Magmar Magmortar must share one native family and three tabs");
