@@ -14,6 +14,12 @@ export function restoreNativePokedexFamilies(original){
   'import{LEVEL_EVOLUTIONS}from"../torre2/progression.js";'+
   'import{buildPokedexFamilies}from"../torre2/pokedex-families.js";',
   'family metadata import');
+ s=once(s,'import{atacarEnMenu,cargarPMD,crearAnimsPMD,soloFormas}from"../sprites.js";',
+  'import{atacarEnMenu,cargarPMD,crearAnimsPMD,soloFormas,retratoA}from"../sprites.js";',
+  'native PMD portrait scaler import');
+ s=once(s,'if(this.textures.exists(key)&&c.img.texture?.key!==key)c.img.setTexture(key);',
+  'if(this.textures.exists(key)){const nativeKey=retratoA(this,c.p.dex,CEL-6);if(c.img.texture?.key!==nativeKey)c.img.setTexture(nativeKey).setDisplaySize(CEL-6,CEL-6);}',
+  'native portrait refresh after file download');
  s=once(s,'const COLS=6,CEL=36,GX=10,GY=36;',
   'const COLS=5,CEL=44,GX=10,GY=36;','original P2 44px tiles');
  const orderStart=s.indexOf('let TORRE2_DEX_ORDER=null,TORRE2_DEX_RANK=null;');
