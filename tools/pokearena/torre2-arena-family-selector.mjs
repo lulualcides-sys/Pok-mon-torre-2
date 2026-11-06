@@ -8,7 +8,7 @@ export function adaptArenaFamilySelectorSource(source){
   'import{LEVEL_EVOLUTIONS}from"./torre2/progression.js";'+
   'import{buildPokedexFamilies}from"./torre2/pokedex-families.js";'+
   'import{retratoA}from"./sprites.js";';
- const replacement=String.raw`;
+ const replacement=String.raw`
 
 const POR_FILA=4,FILAS=2,PAGE_SIZE=8,FORM_PAGE=4;
 const LW=46,LG=8,SW=408,SH=336,SX=Math.round((ANCHO-SW)/2),SY=Math.round((ALTO-SH)/2);
@@ -252,5 +252,6 @@ class SelectorPokemon{
  }
 }
 export{POR_FILA,SelectorPokemon};
+`;
  return source.slice(0,a)+imports+replacement;
 }
