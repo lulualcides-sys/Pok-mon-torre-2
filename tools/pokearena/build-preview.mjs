@@ -12,6 +12,7 @@ import {ensureNativeWeatherFromMoveImport} from './torre2-native-weather-import-
 import {enableRayquazaForHomologation,rayquazaRequiredSpriteFiles} from './torre2-rayquaza-preview.mjs';
 import {skinMenuScene} from './torre2-noncombat-button-skin.mjs';
 import {removeCustomizeTitleOption,preloadPokedexOnePage} from './torre2-title-pokedex-fast.mjs';
+import {restoreNativePokedexFamilies} from './torre2-pokedex-native-reset.mjs';
 
 const source=path.resolve('site-capture/pokearena-client');
 const root=path.resolve(process.env.PREVIEW_ROOT||'_site');
@@ -280,6 +281,7 @@ await Promise.all([
  ['tools/pokearena/torre2-early-kanto-species.js','early-kanto-species.js'],
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-johto-100-data.js','johto-100-data.js'],
+ ['tools/pokearena/torre2-pokedex-families.js','pokedex-families.js'],
  ['tools/pokearena/torre2-johto-100-species.js','johto-100-species.js'],
  ['tools/pokearena/torre2-gen45-johto-learnsets.js','gen45-johto-learnsets.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
@@ -1332,7 +1334,8 @@ await fs.writeFile(johtoSelectionPath,
  console.log('Native title CUSTOMIZE tile:',after===before?'not present':'removed');
  const dexFile=path.join(dest,clientSource,'escenas/pokedex.js');
  const dex=await fs.readFile(dexFile,'utf8');
- await fs.writeFile(dexFile,preloadPokedexOnePage(dex));
+ await fs.writeFile(dexFile,restoreNativePokedexFamilies(preloadPokedexOnePage(dex)));
+ console.log('Native Poké Arena 2D portrait size and one-card-per-family evolution tabs restored');
  console.log('Pokédex: preload only visible 36-card National Dex page, load others on demand');
 }
 const vfxFingerprint=createHash('sha256');
