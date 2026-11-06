@@ -131,6 +131,11 @@ class SelectorPokemon{
      marks.fillStyle(q.color,1);marks.fillRect(x+off,y+LW-6,6,4);off+=8;
     }
     this.pageObjs.push(marks);
+    if(this.bloqueado&&this.members(index).every(
+     m=>this.bloqueado(ROSTER[m].id))){
+     const lock=this.e.add.graphics().setDepth(this.capa+3);
+     candado(lock,x,y,LW);this.pageObjs.push(lock);
+    }
     const zone=this.e.add.zone(x+LW/2,y+LW/2,LW,LW)
      .setDepth(this.capa+4).setInteractive({useHandCursor:true})
      .on("pointerdown",()=>this.selectFamily(index));
