@@ -224,3 +224,43 @@ test('Smeargle uses installed Revenge and Mirror Coat through Sketch',()=>{
  assert.deepEqual(selected.map(x=>x.move.nombre),
  ['Tackle','Revenge','Mirror Coat','Body Slam']);
 });
+
+test('Added Magby can evolve twice and added Eevee offers Espeon/Umbreon without touching P2',()=>{
+ const fire={
+  lmb:{nombre:'Fire Punch',forma:'native-fire-punch',tipo:'FIRE',dano:14},
+  rmb:{nombre:'Flamethrower',forma:'native-flame',tipo:'FIRE',dano:15},
+  q:{nombre:'Lava Plume',forma:'native-lava',tipo:'FIRE',dano:17},
+  e:{nombre:'Overheat',forma:'native-heat',tipo:'FIRE',dano:22}
+ };
+ const nativeP2={id:'source-p2',dex:'0999',nombre:'SOURCE P2',kit:structuredClone(fire),
+  evoluciones:[{dex:'0998',nombre:'P2 EVOLUTION',kit:structuredClone(fire)}]};
+ const magmar={id:'magmar',dex:'0126',nombre:'MAGMAR',torre2ArenaAdded:true,
+  tipos:['FIRE'],hp:80,vel:100,atk:1,def:1,kit:structuredClone(fire),evoluciones:[]};
+ const eevee={id:'eevee',dex:'0133',nombre:'EEVEE',torre2ArenaAdded:true,
+  kit:{lmb:{nombre:'Tackle',forma:'native-attack',tipo:'NORMAL',dano:3}},
+  evoluciones:[{dex:'0134',nombre:'VAPOREON',kit:{}},
+   {dex:'0135',nombre:'JOLTEON',kit:{}},
+   {dex:'0136',nombre:'FLAREON',kit:{}}]};
+ const nativeSnapshot=JSON.stringify(nativeP2);
+ const added=addAllJohtoSpecies([nativeP2,magmar,eevee]);
+ const magby=added.find(p=>p.id==='magby');
+ assert.ok(magby,'Magby must appear in offline Johto Arena');
+ assert.deepEqual(magby.evoluciones.map(e=>e.nombre),['MAGMAR','MAGMORTAR']);
+ assert.deepEqual(magby.expEvolucion,[50,90]);
+ assert.equal(magby.evoluciones[0].kit.lmb.nombre,'Fire Punch');
+ assert.equal(magby.evoluciones[1].kit.e.nombre,'Overheat');
+ assert.deepEqual(eevee.evoluciones.map(e=>e.nombre),
+  ['VAPOREON','JOLTEON','FLAREON','ESPEON','UMBREON']);
+ for(const name of ['ESPEON','UMBREON']){
+  const stage=eevee.evoluciones.find(e=>e.nombre===name);
+  const source=added.find(p=>p.id===name.toLowerCase());
+  assert.strictEqual(stage.kit,source.kit,
+   name+' must reuse the actual legal Johto kit without fake VFX');
+ }
+ assert.equal(JSON.stringify(nativeP2),nativeSnapshot,
+  'Source-P2 Pokémon cannot be changed by cross-generation branch binding');
+ const before=eevee.evoluciones.length;
+ const again=addAllJohtoSpecies([nativeP2,magmar,eevee]);
+ assert.equal(eevee.evoluciones.length,before,'Eevee branch linkage must be idempotent');
+ assert.ok(again.find(p=>p.id==='magby').evoluciones.length>=2);
+});
