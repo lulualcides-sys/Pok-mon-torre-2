@@ -101,3 +101,15 @@ for(const choice of choices)test('T03 Eevee '+choice+' after battle: level, save
  assert.ok(pre.includes('"eevee"'));
 });
 console.log('PASS T03 Eevee 3 branches (fixture), Lv30 gate, pending save, PC, idempotence');
+
+for(const [roll,target] of [[0,'vaporeon'],[0.4,'jolteon'],[0.999,'flareon']])
+ test('Eevee random evolution roll '+roll+' is saved exactly once',()=>{
+  const {s,uid}=seeded();
+  core.resolveBattle(s,true);
+  assert.ok(core.pendingEeveeEvolution(s));
+  const result=core.chooseEeveeEvolution(s,uid,'random',()=>roll);
+  assert.equal(result.ok,true);
+  assert.equal(result.to,target);
+  assert.equal(core.readCampaign().team[1].id,target);
+  assert.equal(core.chooseEeveeEvolution(s,uid,'random',()=>roll).ok,false);
+ });
