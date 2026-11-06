@@ -14,6 +14,11 @@ on:
       - 'tests/pokedex-native-families.test.js'
       - 'tests/pokedex-crossgen-families-built.test.mjs'
       - 'tests/pokedex-crossgen-families-browser.cjs'
+      - 'tools/pokearena/torre2-arena-family-selector.mjs'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/arena-family-selector-source.test.mjs'
+      - 'tests/arena-family-selector-built.test.mjs'
+      - 'tests/arena-family-selector-browser.cjs'
 permissions:
   contents: read
   actions: read
@@ -65,6 +70,8 @@ jobs:
           node tests/t08-arena-role-slots-built.test.mjs
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
+          node --test tests/arena-family-selector-source.test.mjs
+          node tests/arena-family-selector-built.test.mjs
           node tests/rayquaza-mega-built.test.mjs
           node --test tests/pokedex-native-families.test.js
           node tests/pokedex-crossgen-families-built.test.mjs
@@ -75,6 +82,7 @@ jobs:
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/source-client-smoke.cjs
           node tests/selection-original-mobile-browser.cjs
+          node tests/arena-family-selector-browser.cjs
           node tests/pokedex-crossgen-families-browser.cjs
       - name: Preserve browser evidence even on failure
         if: always()
