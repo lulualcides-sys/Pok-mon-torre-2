@@ -750,7 +750,11 @@ export function isCampaignUltimateOnlyMove(move){
  // Some original Poké Arena abilities omit Gen3 power metadata even though
  // the move is a high-tier finisher (Flare Blitz is multi-contact/charged).
  // Keep the authentic renderer and name, but gate this move behind E.
- if(['flare-blitz','earthquake'].includes(canonicalMoveKey(move.nombre)))return true;
+ // The authentic P2 Shadow Ball has dano=12 per cast and omits Gen III's
+ // canonical base power 80; its former Torre 2 duplicate had dano=14.
+ // Restore the charged-E role WITHOUT touching the original P2 damage,
+ // sprite, cooldown or any source-Pokémon kit.
+ if(['flare-blitz','earthquake','shadow-ball'].includes(key))return true;
  // Original P2 marks some harmless defensive/status actions as `ulti`
  // because they occupied its E slot. In the campaign they remain legal
  // normal HAB actions (e.g. earned FRLG Protect); only a genuinely
