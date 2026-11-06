@@ -50,7 +50,18 @@ class SelectorPokemon{
  makeButton(x,y,label,fn){
   const b=boton(this.e,x,y,label,()=>{if(this.abierto)fn()},
    {altoZona:26,anchoExtra:12});
-  b.capa(this.capa+4);this.botones.push(b);return b;
+  b.capa(this.capa+4);this.botones.push(b);
+  // Touch arrows must stay reachable on narrow Android canvases. Keep the
+  // original styled button, add a clear 52x36 real Phaser input zone above
+  // the panel (not a CSS overlay or a change to battle HUD).
+  if(label==="◀"||label==="▶"){
+   const z=this.e.add.zone(x,y+4,52,36).setDepth(this.capa+7)
+    .setInteractive({useHandCursor:true}).on("pointerdown",()=>{
+     if(this.abierto)fn();
+    });
+   this.objs.push(z);
+  }
+  return b;
  }
  clear(key){for(const o of this[key])if(o?.active)o.destroy();this[key]=[]}
  addPortrait(img,dex,size){
