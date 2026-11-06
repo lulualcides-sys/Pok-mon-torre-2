@@ -26,7 +26,9 @@ const entries=[
  ['smog','POISON',5],['fire-fang','FIRE',13],['crunch','DARK',18],
  ['earthquake','GROUND',19],['rock-slide','ROCK',15],['stone-edge','ROCK',20],
  ['bite','DARK',7],['thrash','NORMAL',11],['sandstorm','ROCK',0],
- ['quick-attack','NORMAL',6],['hidden-power','PSYCHIC',9],['fire-blast','FIRE',19]
+ ['quick-attack','NORMAL',6],['hidden-power','PSYCHIC',9],['fire-blast','FIRE',19],
+ ['charm','NORMAL',0],['shock-wave','ELECTRIC',10],
+ ['water-pulse','WATER',11],['shadow-ball','GHOST',17],['psychic','PSYCHIC',20]
 ];
 const library=new Map(entries.map(([id,type,damage])=>[id,mk(id,type,damage)]));
 const row=id=>JOHTO_100_ROWS.find(p=>p[1]===id);
@@ -61,4 +63,23 @@ test('Magby has real baby moves instead of evolved Overheat ULT',()=>{
 test('Unown officially has only Hidden Power: never fabricate illegal moves',()=>{
  assert.deepEqual(names('unown'),['hidden-power']);
  assert.ok(JOHTO_EVOLUTION_KIT_PLAN.tyranitar);
+});
+
+test('Togepi and Togetic have four DIFFERENT usable FRLG-compatible Arena abilities',()=>{
+ assert.deepEqual(names('togepi'),
+  ['shock-wave','charm','water-pulse','shadow-ball']);
+ assert.deepEqual(names('togetic'),
+  ['shock-wave','water-pulse','shadow-ball','psychic']);
+ const togepi=selectJohto100Moves(row('togepi'),library),
+       togetic=selectJohto100Moves(row('togetic'),library);
+ for(const [id,moves] of [['togepi',togepi],['togetic',togetic]]){
+  assert.equal(moves.length,4,id+' should have four executable skills');
+  for(const m of moves){
+   assert.ok(m.move?.forma,id+' must reuse an installed FX: '+m.id);
+   assert.ok(row(id)[10].some(([name])=>name===m.id),
+    id+' may only equip FRLG legal moves: '+m.id);
+  }
+ }
+ assert.notDeepEqual(togetic.map(m=>m.id),togepi.map(m=>m.id),
+  'Togetic should not repeat its baby kit unchanged');
 });
