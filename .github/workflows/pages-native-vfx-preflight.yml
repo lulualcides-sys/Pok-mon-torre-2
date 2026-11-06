@@ -19,6 +19,10 @@ on:
       - 'tests/arena-family-selector-source.test.mjs'
       - 'tests/arena-family-selector-built.test.mjs'
       - 'tests/arena-family-selector-browser.cjs'
+      - 'tools/pokearena/torre2-johto-100-species.js'
+      - 'tools/pokearena/torre2-arena-move-policy.js'
+      - 'tests/johto-evolution-ult-policy.test.js'
+      - 'tests/arena-species-kit-policy.test.js'
 permissions:
   contents: read
   actions: read
@@ -72,6 +76,7 @@ jobs:
           node tests/finale13-built.test.mjs
           node --test tests/arena-family-selector-source.test.mjs
           node tests/arena-family-selector-built.test.mjs
+          node --test tests/arena-species-kit-policy.test.js tests/johto-evolution-ult-policy.test.js
           node tests/rayquaza-mega-built.test.mjs
           node --test tests/pokedex-native-families.test.js
           node tests/pokedex-crossgen-families-built.test.mjs
