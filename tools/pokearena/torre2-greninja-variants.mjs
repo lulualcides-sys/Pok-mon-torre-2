@@ -61,9 +61,18 @@ export function patchGreninjaSelectionSource(source){
  // entry in our local CPU, training, and local VS only; do not grant League,
  // online or ranked unlocks and do not write to any original account.
  const blocked='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!desbloqueado(p.id);';
- s=replaceOnce(s,blocked,
-  'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));',
-  'Froakie selectable in our offline Arena without League progress');
+ // The Arena pagination adapter already unlocks the *whole offline roster*
+ // (including Froakie). Do not fail the skin adapter or restore old locks.
+ // Ranked still retains the native desbloqueadoRanked check.
+ const offline='const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;';
+ if(s.includes(offline)){
+  if(s.split(offline).length!==2)
+   throw Error('Ambiguous offline Arena unlock while installing Greninja skins');
+ }else{
+  s=replaceOnce(s,blocked,
+   'const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):!(p.id==="froakie"&&["cpu","entreno","versus"].includes(this.modo)||desbloqueado(p.id));',
+   'Froakie selectable in our offline Arena without League progress');
+ }
  // Upstream draws the skin overlay inside the stats panel container. On
  // Chromium, other scene input regions intercept its clicks. Give ONLY the
  // Froakie popup an independent topmost Phaser container; preserve all 5
