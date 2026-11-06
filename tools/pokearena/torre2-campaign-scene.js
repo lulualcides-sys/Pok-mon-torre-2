@@ -790,7 +790,8 @@ create(){
    if(!current)return false;
    const result=chooseEeveeEvolution(current,pending.uid,'random');
    if(!result.ok)return false;
-   this.scene.restart();
+   // Do not restart during Scene.create; defer to the next Phaser frame.
+   this.time.delayedCall(0,()=>{if(this.scene.isActive())this.scene.restart()});
    return true;
   }catch(e){
    // Save denied: leave Eevee pending and offer a deliberate retry.
