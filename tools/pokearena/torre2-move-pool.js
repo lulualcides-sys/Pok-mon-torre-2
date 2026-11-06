@@ -166,15 +166,14 @@ function collect(def){
  }
  return moves;
 }
-// The upstream Poké Arena 2D client may later add a move we had already
-// pixel-animated and approved in Torre 2. Preserve these EIGHT older approved
-// Kanto renderer implementations, while leaving the upstream Arena/VS kits
-// completely intact. These are NOT permission to create future duplicates.
-export const APPROVED_KANTO_NATIVE_OVERLAPS=Object.freeze([
- 'ice-shard','psychic','shadow-ball','ice-beam','twister',
- 'fury-cutter','x-scissor','double-kick'
-]);
-const approvedKantoOverlap=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
+// Global effect precedence (user directive, 2026-11-06):
+// EVERY move present in the authentic Poké Arena 2D ROSTER uses the original
+// resolved native renderer and parameters, including Peck, Double Kick, Crunch,
+// Shadow Ball, Psychic, Ice Shard, X-Scissor, etc. The older Torre 2 VFX stays
+// installed only for techniques ABSENT from the original client. Never patch
+// original P2 skill slots or silently swap the approved original VFX.
+// Kept as an empty compatibility export for older tests/integrations.
+export const APPROVED_KANTO_NATIVE_OVERLAPS=Object.freeze([]);
 // Two native Poke Arena moves existed in the user-approved 227-effect baseline
 // (published src-8faafad601, datos.js: Suicune/Raikou), but later upstream
 // roster edits removed their LAST users. Keep their exact original move data
@@ -185,39 +184,20 @@ const approvedNativeBaselineFallbacks=[
  {nombre:'Aurora Beam',forma:'chorro',tipo:'ICE',dano:15,largo:240,ancho:16,anchoVisual:26,carga:.25,dur:.8,empuje:50,giro:2.2,paleta:'aurora',ralentiza:.3,ralentizaDur:1.8,congela:true,coste:35,cd:7,anim:'Charge',trozos:['solar-a-hielo','solar-b-hielo','solar-c-hielo'],velTrozos:700,aditivo:true,hojaBoca:'solar-boca-hielo'},
  {nombre:'Calm Mind',forma:'potenciar',tipo:'PSYCHIC',dur:5,mult:1.25,reduce:.15,texto:'CALM MIND',coste:30,cd:14,anim:'Charge'}
 ];
-const rawLibrary=[...ROSTER.flatMap(collect),...SIGNATURE_MOVES,...approvedNativeBaselineFallbacks];
+const nativeMoves=ROSTER.flatMap(collect);
+const rawLibrary=[...nativeMoves,...SIGNATURE_MOVES,...approvedNativeBaselineFallbacks];
 const ids=new Map(),seenNames=new Set(),signatureEntries=new Set(SIGNATURE_MOVES);
-const signatureByName=new Map(SIGNATURE_MOVES.map(m=>[canonicalMoveKey(m.nombre),m]));
 for(const h of rawLibrary){
  const id=h.id||norm(h.nombre),sameMove=canonicalMoveKey(h.nombre);
  if(!sameMove||ids.has(id)||seenNames.has(sameMove))continue;
- // ROSTER/native entries are collected before custom ones on purpose:
- // if a move already exists in Pokémon Arena 2D, never override/recreate it.
- // Crunch is already present in the approved client. Swap ONLY the visual
-  // for the Torre 2 selected loadout; preserve native name/stats/PP/accuracy.
-  // The original client's Crunch is untouched and no duplicate is added.
-  const nativeCrunch=sameMove==='crunch'&&!signatureEntries.has(h);
-  // An integrated species can equip user-approved Torre 2 effects. The
-  // canonical signature remains approved, never relabeled as a native copy.
-  const signature=signatureByName.get(sameMove);
-  const inheritedSignature=!signatureEntries.has(h)&&
-   signature&&signature.forma===h.forma;
-  // The original upstream renderer remains available in Poké Arena modes;
-  // ONLY the Torre 2 editor/battle pool uses our prior approved VFX.
-  const preserveApproved=approvedKantoOverlap.has(sameMove)&&
-   !signatureEntries.has(h)&&signature?.approved===true&&Boolean(signature.forma);
-  const resolvedId=preserveApproved?signature.id:id;
-  // A native placeholder can carry pendiente=true even after the SAME VFX
-  // was independently approved in Torre 2. The approved campaign override
-  // must not inherit that stale flag (Bug Bite, Bite, Swift); never clear
-  // pending for an unapproved renderer or modify the native Arena kit.
-  const approvedInherited=(inheritedSignature||preserveApproved)&&
-   signature?.approved===true&&signature?.pendiente!==true;
-  ids.set(resolvedId,{...h,...(inheritedSignature||preserveApproved?signature:{}),id:resolvedId,
-   ...(approvedInherited?{pendiente:false}:{}),
-   ...(nativeCrunch?{forma:'torre2_crunch',approved:true}:{}),
-   source:nativeCrunch?'torre2-visual-override':
-    signatureEntries.has(h)||inheritedSignature||preserveApproved?'new-phaser-fx':'arena2d-original'});
+ // The source ROSTER is visited BEFORE any Torre 2 additions. The first
+ // executable native move wins by canonical NAME, even when an old signature
+ // was marked approved. No native crunch/peck/overlap exceptions.
+ // If the native move has no renderer, collect() ignores it and the existing
+ // approved Torre 2 fallback may supply the legal executable attack instead.
+ const native= !signatureEntries.has(h);
+ ids.set(id,{...h,id,
+  source:native?'arena2d-original':'new-phaser-fx'});
  seenNames.add(sameMove);
 }
 export const TEST_LIBRARY=[...ids.values()].sort((a,b)=>a.nombre.localeCompare(b.nombre));
