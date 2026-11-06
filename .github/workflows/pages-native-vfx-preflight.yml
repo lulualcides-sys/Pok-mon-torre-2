@@ -9,6 +9,11 @@ on:
       - 'tests/t07-approved-native-overlap-built.test.mjs'
       - '.github/workflows/pages.yml'
       - '.github/workflows/pages-native-vfx-preflight.yml'
+      - 'tools/pokearena/torre2-pokedex-families.js'
+      - 'tools/pokearena/torre2-pokedex-native-reset.mjs'
+      - 'tests/pokedex-native-families.test.js'
+      - 'tests/pokedex-crossgen-families-built.test.mjs'
+      - 'tests/pokedex-crossgen-families-browser.cjs'
 permissions:
   contents: read
   actions: read
@@ -61,6 +66,8 @@ jobs:
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
           node tests/rayquaza-mega-built.test.mjs
+          node --test tests/pokedex-native-families.test.js
+          node tests/pokedex-crossgen-families-built.test.mjs
       - name: Real original Chromium smoke and mobile Pokemon selection
         shell: bash
         run: |
@@ -68,6 +75,7 @@ jobs:
           export CHROME_BIN="$(command -v google-chrome)"
           node tests/source-client-smoke.cjs
           node tests/selection-original-mobile-browser.cjs
+          node tests/pokedex-crossgen-families-browser.cjs
       - name: Preserve browser evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4
