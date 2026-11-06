@@ -134,6 +134,48 @@ const server=http.createServer(async(req,res)=>{
     cell.img.texture?.key==="retrato-"+dex;
   },secondPage,{timeout:40000});
   console.log("POKEDEX_SECOND_PAGE_LAZY_PMDS_READY",JSON.stringify(secondPage));
+  // Android regression: page 4 used to show 36 missing-texture green boxes.
+  // A texture key alone is not proof the Phaser texture is actually loaded.
+  for(const pageIndex of [0,3,5]){
+   const target=await page.evaluate(async pageIndex=>{
+    const scene=window.__pt2Game.scene.getScene("pokedex");
+    const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
+    const {ROSTER}=await import(new URL("datos.js",new URL("./",script)));
+    const order=ROSTER.map((p,i)=>({i,dex:Number(p?.dex)||100000+i}))
+     .sort((a,b)=>a.dex-b.dex||a.i-b.i);
+    const index=order[pageIndex*36]?.i;
+    if(!Number.isInteger(index))throw Error("Missing National Dex page "+pageIndex);
+    scene.elegir(index);return {pageIndex,index,dex:ROSTER[index].dex};
+   },pageIndex);
+   try{
+    await page.waitForFunction(({pageIndex,index,dex})=>{
+     const s=window.__pt2Game.scene.getScene("pokedex");
+     if(s.dexPage!==pageIndex||s.foco!==index)return false;
+     const cards=s.casillas.filter(c=>c.g?.visible);
+     if(cards.length!==Math.min(36,s.casillas.length-pageIndex*36))return false;
+     const portraits=cards.every(c=>{
+      const key="retrato-"+c.p.dex;
+      return s.textures.exists(key)&&c.img.visible&&c.img.texture?.key===key;
+     });
+     return portraits&&s.textures.exists("pmd-"+dex+"-Idle")&&
+      s.anims.exists(dex+"-Idle-0")&&s.sprite?.texture?.key==="pmd-"+dex+"-Idle";
+    },target,{timeout:65000});
+   }catch(e){
+    const diagnostic=await page.evaluate(()=>{
+     const s=window.__pt2Game.scene.getScene("pokedex");
+     return {page:s.dexPage,loading:s.load.isLoading(),
+      hint:s.__torre2DexLoadingLabel?.text,
+      cards:s.casillas.filter(c=>c.g?.visible).map(c=>({
+       id:c.p.id,available:s.textures.exists("retrato-"+c.p.dex),
+       image:c.img.texture?.key,visible:c.img.visible})),
+      sprite:s.sprite?.texture?.key};
+    });
+    console.error("POKEDEX_ANDROID_PAGE_DIAGNOSTIC",JSON.stringify({target,diagnostic}));
+    await page.screenshot({path:"test-evidence/johto-100/pokedex-page-"+(pageIndex+1)+"-failed.png"}).catch(()=>{});
+    throw e;
+   }
+   console.log("POKEDEX_PAGE_REAL_TEXTURES",JSON.stringify(target));
+  }
   // Diagnostic for the separate main Pages failure: Rayquaza was reported
   // unselectable. Do not change or bypass native P2 move slots to fix it.
   await page.evaluate(()=>window.__pt2Game.scene.start("seleccion",{
