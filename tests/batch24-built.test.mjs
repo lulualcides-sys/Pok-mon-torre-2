@@ -10,17 +10,28 @@ assert.equal(BATCH24_MOVES.length,23,'No reimplementation of original Dragon Pul
 assert.equal(filterMoveLibrary(TEST_LIBRARY,'NEW').filter(h=>h.forma.startsWith('torre2_batch24_')).length,0,
   'All batch24 effects are now user-approved');
 for(const move of BATCH24_MOVES){
- const indexed=TEST_LIBRARY.find(h=>h.id===move.id);
- assert.equal(indexed?.approved,move.approved,move.id+' catalog approval was not retained');
+ // Native P2 has absolute precedence over a previously approved custom FX.
+ // The legacy approval flag applies only when Torre 2 is the selected source.
+ const indexed=TEST_LIBRARY.find(h=>h.id===move.id||h.nombre===move.nombre);
+ assert.ok(indexed,move.id+' disappeared from the installed battle library');
+ const native=indexed.source==='arena2d-original';
+ if(native){
+  assert.ok(indexed.forma&&!indexed.forma.startsWith('torre2_batch24_'),
+   move.id+' must use original P2 animation');
+ }else{
+  assert.equal(indexed.approved,move.approved,
+   move.id+' exclusive Torre 2 catalog approval was not retained');
+ }
  const inNew=filterMoveLibrary(TEST_LIBRARY,'NEW').some(h=>h.id===move.id);
- assert.equal(inNew,!move.approved,move.id+' NEW tab must not show an approved move');
+ assert.equal(inNew,!native&&!move.approved,
+  move.id+' NEW tab must exclude native or approved moves');
 }
 const original=TEST_LIBRARY.filter(h=>h.nombre==='Dragon Pulse');
 assert.equal(original.length,1,'The original Dragon Pulse remains selectable exactly once');
 assert.equal(original[0].source,'arena2d-original','Do not override the original Dragon Pulse');
 assert.ok(!original[0].forma?.startsWith('torre2_batch24_'));
 assert.equal(BATCH24_NATIVE_REUSE.nombre,'Dragon Pulse');
-for(const h of BATCH24_MOVES)assert.equal(TEST_LIBRARY.filter(x=>x.id===h.id).length,1,h.id+' duplicated');
+for(const h of BATCH24_MOVES)assert.equal(TEST_LIBRARY.filter(x=>x.id===h.id||x.nombre===h.nombre).length,1,h.id+' duplicated');
 function fixture(y=100){
  const parts=[];
  const scene={efectos:[],add:{graphics(){const g={dead:false,setDepth(){return this},clear(){return this},fillStyle(){return this},fillRect(){assert.ok(!this.dead);return this},destroy(){this.dead=true}};parts.push(g);return g}}};
