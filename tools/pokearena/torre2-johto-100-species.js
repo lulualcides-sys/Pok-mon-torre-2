@@ -186,12 +186,6 @@ export function johto100Kit(p,library){
  return kit;
 }
 export function addAllJohtoSpecies(original){
- // A supported newer client exposes a different ROSTER declaration. Its
- // compatibility installer invokes this builder but may skip the later
- // explicit Magmortar hook. Register only our own Magmar evolution here so
- // BOTH supported installer paths produce the same family, exactly once.
- // Native P2 Magmar and its original kit remain completely untouched.
- attachMagmortarEvolution(original);
  const library=johtoMoveLibrary(original);
  // The native P2 roster contains both root species and evolution stages
  // nested in evoluciones (sometimes with a Mega form). Protect ALL of them,
@@ -234,5 +228,10 @@ export function addAllJohtoSpecies(original){
    }))
   });
  }
+ // The newer native ROSTER builder skips the later explicit Magmortar hook.
+ // Attach it after the complete Johto roster is built so the existing legal
+ // FIRE skill providers are present. The operation is idempotent and mutates
+ // only Magmar added by Torre 2; original P2 forms remain immutable.
+ attachMagmortarEvolution([...original,...result]);
  return result;
 }
