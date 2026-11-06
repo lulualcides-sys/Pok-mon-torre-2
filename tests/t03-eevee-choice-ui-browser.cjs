@@ -29,7 +29,19 @@ const server=http.createServer(async(req,res)=>{
   await page.goto('http://127.0.0.1:4389/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await gameReady();
   for(const [roll,form] of [[0,'vaporeon'],[.4,'jolteon'],[.999,'flareon']]){
-   const before=await page.evaluate(async(roll)=>{Math.random=()=>roll;
+   const before=await page.evaluate(async(roll)=>{
+    // Preserve random IDs and Phaser canvas/texture allocation. A globally
+    // constant Math.random can collide with native Phaser resource names.
+    // Seed ONLY the genuine Eevee evolution's default RNG, never the game.
+    window.__pt2OriginalRandom??=Math.random;
+    window.__pt2EeveeSeedHits=0;
+    Math.random=()=>{
+     const call=(new Error()).stack||'';
+     if(call.includes('chooseEeveeEvolution')){
+      window.__pt2EeveeSeedHits++;return roll;
+     }
+     return window.__pt2OriginalRandom();
+    };
     const script=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
     const base=new URL('./',script),core=window.kanto=await import(new URL('./torre2/campaign-core.js',base));
     const progress=await import(new URL('./torre2/progression.js',base));
