@@ -77,3 +77,38 @@ test('Magby Magmar Magmortar share one native-family card and 3 tabs',()=>{
  assert.equal(groups.order.length,2,'Only Magby and Larvitar cards should appear');
  assert.equal(JSON.stringify(roster),snapshot,'Never change the original battle ROSTER');
 });
+
+test('Smoochum, Elekid, Tyrogue and Magby families cross generations without changing P2 kits',()=>{
+ const roster=[
+  unit('jynx',124),unit('electabuzz',125),unit('magmar',126),
+  unit('hitmonlee',106),unit('hitmonchan',107),unit('hitmontop',237),
+  unit('smoochum',238),unit('elekid',239),unit('magby',240),
+  unit('tyrogue',236),unit('electivire',466),unit('magmortar',467),
+  unit('pikachu',25),unit('pichu',172)
+ ];
+ const before=structuredClone(roster);
+ const group=buildPokedexFamilies(roster,[],{});
+ const root=(id)=>group.rootIndexForIndex[roster.findIndex(p=>p.id===id)];
+ for(const [a,b] of [['smoochum','jynx'],['elekid','electabuzz'],
+  ['elekid','electivire'],['magby','magmar'],['magby','magmortar'],
+  ['tyrogue','hitmonlee'],['tyrogue','hitmonchan'],['tyrogue','hitmontop'],
+  ['pichu','pikachu']])
+  assert.equal(root(a),root(b),a+' and '+b+' must occupy one family card');
+ assert.equal(group.membersByRoot.get(root('smoochum')).length,2);
+ assert.equal(group.membersByRoot.get(root('elekid')).length,3);
+ assert.equal(group.membersByRoot.get(root('tyrogue')).length,4);
+ assert.equal(group.order.length,5,'One card for each of five evolution families');
+ // The national list puts the Pikachu lineage at #25 despite its
+ // pre-evolution Pichu having Dex #172 (similarly Jynx #124 / Smoochum #238).
+ assert.equal(group.order[0],root('pichu'),'sort by earliest National Dex family member');
+ assert.ok(group.order.indexOf(root('smoochum'))<group.order.indexOf(root('elekid')));
+ assert.deepEqual(roster,before,'Presentation cannot mutate native P2 Pokémon');
+});
+
+test('Absent cross-generation forms never generate phantom Pokédex stages',()=>{
+ const roster=[unit('smoochum',238),unit('elekid',239),unit('magby',240)];
+ const group=buildPokedexFamilies(roster,[],{});
+ assert.equal(group.order.length,3);
+ assert.ok(group.order.every(i=>group.membersByRoot.get(i).length===1),
+  'Do not invent Jynx/Electabuzz/Magmar if not installed in ROSTER');
+});
