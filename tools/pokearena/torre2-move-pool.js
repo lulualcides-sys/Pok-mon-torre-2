@@ -58,7 +58,8 @@ export function optimizeCampaignFireBlastVfx(move){
  if(!move||canonicalMoveKey(move.nombre)!=='fire-blast'||
     move.forma!=='proyectil'||move.explosion?.hoja!=='fireblast-boom'||
     move.explosion.ecos!==true)return move;
- return {...move,explosion:{...move.explosion,ecos:false}};
+ return {...move,explosion:{...move.explosion,ecos:false,
+   torre2MobileFlameBudget:true}};
 }
 export const KANTO_FIRE_BLAST_LEVEL=50;
 export const KANTO_FIRE_BLAST_SPECIES=Object.freeze([
