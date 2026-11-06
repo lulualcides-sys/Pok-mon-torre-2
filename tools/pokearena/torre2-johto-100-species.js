@@ -55,6 +55,13 @@ export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
  tyranitar:{core:['fire-fang','crunch','earthquake'],ult:'stone-edge'},
  magby:{core:['ember','smog','fire-spin'],ult:'fire-punch',
   exclude:['overheat','fire-blast','flamethrower','lava-plume']},
+ // Togepi/Togetic lack several FRLG natural VFX in the installed client.
+ // These attacks are species-legal FRLG TMs with REAL existing renderers.
+ // This is offline Arena only: never auto-teach TMs in the Kanto campaign.
+ togepi:{core:['shock-wave','charm','water-pulse'],ult:'shadow-ball',
+  exclude:['hyper-beam','solar-beam']},
+ togetic:{core:['shock-wave','water-pulse','shadow-ball'],ult:'psychic',
+  exclude:['hyper-beam','solar-beam']},
  // Evolution-final exclusive signatures cannot land on an intermediate ULT.
  feraligatr:{core:['water-gun','aqua-tail','waterfall'],ult:'hydro-pump'}
 });
@@ -185,6 +192,39 @@ export function johto100Kit(p,library){
  });
  return kit;
 }
+// Cross-generation stages belong to genuinely NEW Torre 2 Arena fighters.
+// Never mutate source-P2 species, battle slots, save data, or custom VFX.
+const asArenaStage=p=>({
+ dex:p.dex,nombre:p.nombre,tipos:[...(p.tipos||[])],
+ hp:p.hp,vel:p.vel,atk:p.atk,def:p.def,regen:p.regen,
+ ...(p.escala!==undefined?{escala:p.escala}:{}),kit:p.kit
+});
+export function linkJohtoArenaEvolutions(original,added){
+ const eevee=original.find(p=>p.id==='eevee'&&p.torre2ArenaAdded===true);
+ if(eevee){
+  eevee.evoluciones??=[];
+  for(const id of ['espeon','umbreon']){
+   const form=added.find(p=>p.id===id&&p.torre2ArenaAdded===true);
+   if(form&&!(eevee.evoluciones||[]).some(e=>Number(e.dex)===Number(form.dex)))
+    eevee.evoluciones.push(asArenaStage(form));
+  }
+ }
+ const magby=added.find(p=>p.id==='magby'&&p.torre2ArenaAdded===true);
+ const magmar=original.find(p=>p.id==='magmar'&&p.torre2ArenaAdded===true);
+ if(magby&&magmar){
+  const forms=[magmar,...(magmar.evoluciones||[]).filter(e=>Number(e.dex)===467)];
+  for(const form of forms)if(!(magby.evoluciones||[])
+    .some(e=>Number(e.dex)===Number(form.dex))){
+    magby.evoluciones??=[];
+    magby.evoluciones.push(asArenaStage(form));
+  }
+  // Native three-stage Arena evolution uses [50,90] experience. Magby
+  // previously had zero stages and therefore could never earn CAN EVOLVE.
+  if(magby.evoluciones.length===2)magby.expEvolucion=[50,90];
+ }
+ return {eevee:eevee?.evoluciones?.length??0,
+  magby:magby?.evoluciones?.length??0};
+}
 export function addAllJohtoSpecies(original){
  const library=johtoMoveLibrary(original);
  // The native P2 roster contains both root species and evolution stages
@@ -233,5 +273,6 @@ export function addAllJohtoSpecies(original){
  // FIRE skill providers are present. The operation is idempotent and mutates
  // only Magmar added by Torre 2; original P2 forms remain immutable.
  attachMagmortarEvolution([...original,...result]);
+ linkJohtoArenaEvolutions(original,result);
  return result;
 }
