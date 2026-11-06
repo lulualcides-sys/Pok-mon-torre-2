@@ -228,7 +228,10 @@ const expected={
   // A matching static label is not sufficient: the public Pokédex must
   // agree with the live, installed battle resolver at the same level.
   const observedDoduo=['lmb','rmb','q','e'].map(slot=>result.observations.doduo?.slots?.[slot]);
-  assert.deepEqual(observedDoduo,result.doduoBattleNames,
+  // An explicit role badge ("ULT ·") is presentation, not a move-name
+  // mismatch. Compare the exact underlying moves after removing that label.
+  const moveName=value=>String(value||'').replace(/^ULT\s*·\s*/i,'').trim();
+  assert.deepEqual(observedDoduo.map(moveName),result.doduoBattleNames.map(moveName),
    'Public Doduo Pokédex differs from its current Lv50 battle moves');
   for(const [id,names] of Object.entries(expected)){
    const item=result.observations[id];
