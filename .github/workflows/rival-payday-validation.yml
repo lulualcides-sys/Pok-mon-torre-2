@@ -12,6 +12,7 @@ on:
       - '.github/workflows/rival-payday-validation.yml'
 permissions:
   contents: read
+  actions: read
 concurrency:
   # Cancel superseded PR run; preserve all validation jobs.
   group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -35,7 +36,7 @@ jobs:
           npm test
       - name: Build actual native Phaser game
         run: |
-          node tools/pokearena/capture-client.mjs
+          GH_TOKEN="${{ github.token }}" bash tools/pokearena/capture-resilient.sh
           node tools/pokearena/build-preview.mjs
           test -s _site/arena2d/index.html
       - name: Verify rival species, move cooldown and Pay Day pixel art
