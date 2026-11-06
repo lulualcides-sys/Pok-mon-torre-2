@@ -11,6 +11,7 @@ on:
     branches: [feat/t13-campaign-native-move-dodges-20261031]
 permissions:
   contents: read
+  actions: read
 concurrency:
   # Cancel superseded PR run; preserve all validation jobs.
   group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -39,7 +40,7 @@ jobs:
         run: |
           set -euo pipefail
           for i in 1 2 3 4; do
-            if node tools/pokearena/capture-client.mjs &&
+            if GH_TOKEN="${{ github.token }}" bash tools/pokearena/capture-resilient.sh &&
               node tools/pokearena/build-preview.mjs &&
               test -s _site/arena2d/version.json; then break; fi
             if [ "$i" -eq 4 ]; then exit 1; fi
