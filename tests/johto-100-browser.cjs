@@ -88,8 +88,8 @@ const server=http.createServer(async(req,res)=>{
    "Installed native P2 library must equip four distinctive real Sketch moves");
   assert.ok(!smeargle.abilities.includes("Hyper Beam"),
    "Smeargle cannot receive generic Hyper Beam fallback");
-  // Confirm every original card keeps its original ROSTER index although
-  // the visible Pokédex is now one interleaved National Dex grid.
+  // One grid cell per evolutionary family, like the original Poké Arena 2D.
+  // Keep every real ROSTER species/kit unchanged for battle and saves.
   const inappropriate=report.partial.filter(x=>x.region==="JOHTO"&&
    x.abilities.some(n=>n==="Hyper Beam"||
     n==="Solar Beam"&&!x.type.split("/").includes("GRASS")));
@@ -97,84 +97,109 @@ const server=http.createServer(async(req,res)=>{
   await page.evaluate(()=>window.__pt2Game.scene.start("pokedex"));
   await page.waitForFunction(()=>window.__pt2Game.scene.isActive("pokedex")&&
    window.__pt2Game.scene.getScene("pokedex").casillas?.length>=150,null,{timeout:30000});
-  const nationalGrid=await page.evaluate(async()=>{
+  const grouping=await page.evaluate(async()=>{
    const scene=window.__pt2Game.scene.getScene("pokedex");
    const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
-   const {ROSTER}=await import(new URL("datos.js",new URL("./",script)));
-   const dex=(p,i)=>{const n=Number(p?.dex);return Number.isFinite(n)&&n>0?n:100000+i};
-   const expected=ROSTER.map((p,i)=>({p,i})).sort((a,b)=>
-    dex(a.p,a.i)-dex(b.p,b.i)||a.i-b.i).slice(0,36).map(x=>x.p.id);
-   const visible=scene.casillas.filter(c=>c.g?.visible)
-    .sort((a,b)=>a.y-b.y||a.x-b.x).map(c=>c.p?.id);
-   return {expected,visible,originalIndices:scene.casillas.every((c,i)=>c.p?.id===ROSTER[i]?.id),
-    total:scene.casillas.length};
+   const base=new URL("./",script);
+   const [{ROSTER},{JOHTO_100_ROWS},{LEVEL_EVOLUTIONS},{buildPokedexFamilies}]=
+    await Promise.all([
+     import(new URL("datos.js",base)),
+     import(new URL("torre2/johto-100-data.js",base)),
+     import(new URL("torre2/progression.js",base)),
+     import(new URL("torre2/pokedex-families.js",base))
+    ]);
+   const model=buildPokedexFamilies(ROSTER,JOHTO_100_ROWS,LEVEL_EVOLUTIONS);
+   const visible=scene.casillas.filter(c=>c.g.visible).sort((a,b)=>a.y-b.y||a.x-b.x);
+   return {
+    expected:model.order.slice(0,25).map(i=>ROSTER[i].id),
+    visible:visible.map(c=>c.p.id),
+    nativeSize:visible.map(c=>({cell:c.w,image:c.img.displayWidth})),
+    originalIndices:scene.casillas.every((c,i)=>c.p.id===ROSTER[i].id),
+    roster:ROSTER.length,families:model.order.length,pages:scene.dexPages,
+    rootFor:model.rootIndexForIndex,
+    ids:ROSTER.map(p=>p.id)
+   };
   });
-  console.log("JOHTO_NATIONAL_POKEDEX_SORT",JSON.stringify(nationalGrid));
-  assert.deepEqual(nationalGrid.visible,nationalGrid.expected,
-   "Native and Johto cards must be mixed in one National Dex-ordered grid");
-  assert.equal(nationalGrid.originalIndices,true,
-   "Keep all original ROSTER indices for saves and selection");
-  // A fast initial Pokédex must not strand the next page with missing PMD portraits.
-  // Page two is loaded on demand and must become visible with its real image.
-  const secondPage=await page.evaluate(async()=>{
-   const scene=window.__pt2Game.scene.getScene("pokedex");
-   const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
-   const {ROSTER}=await import(new URL("datos.js",new URL("./",script)));
-   const order=ROSTER.map((p,i)=>({i,dex:Number(p?.dex)||100000+i}))
-    .sort((a,b)=>a.dex-b.dex||a.i-b.i);
-   const index=order[36]?.i;
-   if(!Number.isInteger(index))throw Error("Expected a second National Dex page");
-   scene.elegir(index);
-   return {index,id:ROSTER[index].id,dex:ROSTER[index].dex};
+  assert.deepEqual(grouping.visible,grouping.expected,
+   "P2 Pokédex grid should show one original root portrait per family");
+  assert.ok(grouping.families<grouping.roster&&grouping.families>45,
+   "Nested evolution forms must not have separate cards");
+  assert.equal(grouping.originalIndices,true,"Original battle ROSTER order must be intact");
+  assert.ok(grouping.nativeSize.every(x=>x.cell===42&&x.image===38),
+   "Restore exactly the native P2 44px cell and 38px portrait, no 6x6 enlargement");
+  assert.equal(grouping.pages,Math.ceil(grouping.families/25));
+  console.log("POKEDEX_NATIVE_FAMILY_GRID",JSON.stringify({
+   roster:grouping.roster,families:grouping.families,pages:grouping.pages,
+   first:grouping.visible.slice(0,8),nativeSize:grouping.nativeSize[0]
+  }));
+  // Chikorita/Bayleef/Meganium must share ONE card and be switchable in
+  // the original native evolution tabs, never displayed as three tiles.
+  const families=await page.evaluate(()=>{
+   const s=window.__pt2Game.scene.getScene("pokedex");
+   const ids=s.casillas.map(c=>c.p.id);
+   const stagesOf=id=>{
+    const i=ids.indexOf(id);
+    if(i<0)return null;
+    s.elegir(i);
+    return {root:s.foco,stages:s.etapas.map(e=>({name:e.nombre,dex:e.dex}))};
+   };
+   return {chikorita:stagesOf("chikorita"),eevee:stagesOf("eevee")};
   });
-  await page.waitForFunction(({index,dex})=>{
-   const scene=window.__pt2Game.scene.getScene("pokedex");
-   const cell=scene.casillas?.[index];
-   return scene.dexPage===1&&scene.foco===index&&cell?.img?.visible&&
-    cell.img.texture?.key==="retrato-"+dex;
-  },secondPage,{timeout:40000});
-  console.log("POKEDEX_SECOND_PAGE_LAZY_PMDS_READY",JSON.stringify(secondPage));
-  // Android regression: page 4 used to show 36 missing-texture green boxes.
-  // A texture key alone is not proof the Phaser texture is actually loaded.
-  for(const pageIndex of [0,3,5]){
-   const target=await page.evaluate(async pageIndex=>{
-    const scene=window.__pt2Game.scene.getScene("pokedex");
-    const script=Array.from(document.scripts).find(s=>s.src.includes("/main.js")).src;
-    const {ROSTER}=await import(new URL("datos.js",new URL("./",script)));
-    const order=ROSTER.map((p,i)=>({i,dex:Number(p?.dex)||100000+i}))
-     .sort((a,b)=>a.dex-b.dex||a.i-b.i);
-    const index=order[pageIndex*36]?.i;
-    if(!Number.isInteger(index))throw Error("Missing National Dex page "+pageIndex);
-    scene.elegir(index);return {pageIndex,index,dex:ROSTER[index].dex};
-   },pageIndex);
+  assert.ok(families.chikorita,"Chikorita root must exist");
+  assert.ok(["0152","0153","0154"].every(d=>
+   families.chikorita.stages.some(s=>s.dex===d)),
+   "Chikorita Bayleef and Meganium must be in native evolution tabs");
+  assert.ok(families.eevee&&["VAPOREON","JOLTEON","FLAREON","ESPEON","UMBREON"]
+   .every(n=>families.eevee.stages.some(s=>s.name.toUpperCase()===n)),
+   "Eevee branches must be grouped, with accessible tabs");
+  // Visit the very same Marill group from the Android screenshot and the
+  // last family page; require actual texture bytes and Idle for the selected.
+  const positions=await page.evaluate(async()=>{
+   const s=window.__pt2Game.scene.getScene("pokedex");
+   const script=Array.from(document.scripts).find(x=>x.src.includes("/main.js")).src;
+   const b=new URL("./",script);
+   const [{ROSTER},{JOHTO_100_ROWS},{LEVEL_EVOLUTIONS},{buildPokedexFamilies}]=
+    await Promise.all([import(new URL("datos.js",b)),
+     import(new URL("torre2/johto-100-data.js",b)),
+     import(new URL("torre2/progression.js",b)),
+     import(new URL("torre2/pokedex-families.js",b))]);
+   const m=buildPokedexFamilies(ROSTER,JOHTO_100_ROWS,LEVEL_EVOLUTIONS);
+   const marill=ROSTER.findIndex(p=>p.id==="marill");
+   if(marill<0)throw Error("Marill must be in Pokédex");
+   const ranks=[0,m.rank[marill],m.order.length-1];
+   return [...new Set(ranks.map(rank=>Math.floor(rank/25)))].map(pageIndex=>({
+    pageIndex,index:m.order[pageIndex*25],dex:ROSTER[m.order[pageIndex*25]].dex,
+    expected:Math.min(25,m.order.length-pageIndex*25)
+   }));
+  });
+  for(const target of positions){
+   await page.evaluate(({index})=>
+    window.__pt2Game.scene.getScene("pokedex").elegir(index),target);
    try{
-    await page.waitForFunction(({pageIndex,index,dex})=>{
+    await page.waitForFunction(({pageIndex,index,dex,expected})=>{
      const s=window.__pt2Game.scene.getScene("pokedex");
      if(s.dexPage!==pageIndex||s.foco!==index)return false;
-     const cards=s.casillas.filter(c=>c.g?.visible);
-     if(cards.length!==Math.min(36,s.casillas.length-pageIndex*36))return false;
-     const portraits=cards.every(c=>{
-      const key="retrato-"+c.p.dex;
-      return s.textures.exists(key)&&c.img.visible&&c.img.texture?.key===key;
-     });
-     return portraits&&s.textures.exists("pmd-"+dex+"-Idle")&&
+     const visible=s.casillas.filter(c=>c.g.visible);
+     if(visible.length!==expected)return false;
+     if(!visible.every(c=>s.textures.exists("retrato-"+c.p.dex)&&
+      c.img.visible&&c.img.texture?.key==="retrato-"+c.p.dex&&
+      c.img.displayWidth===38))return false;
+     return s.textures.exists("pmd-"+dex+"-Idle")&&
       s.anims.exists(dex+"-Idle-0")&&s.sprite?.texture?.key==="pmd-"+dex+"-Idle";
     },target,{timeout:65000});
    }catch(e){
-    const diagnostic=await page.evaluate(()=>{
+    const details=await page.evaluate(()=>{
      const s=window.__pt2Game.scene.getScene("pokedex");
-     return {page:s.dexPage,loading:s.load.isLoading(),
-      hint:s.__torre2DexLoadingLabel?.text,
-      cards:s.casillas.filter(c=>c.g?.visible).map(c=>({
-       id:c.p.id,available:s.textures.exists("retrato-"+c.p.dex),
-       image:c.img.texture?.key,visible:c.img.visible})),
-      sprite:s.sprite?.texture?.key};
+     return {page:s.dexPage,focus:s.foco,label:s.__torre2DexLoadingLabel?.text,
+      cards:s.casillas.filter(c=>c.g.visible).map(c=>({
+       id:c.p.id,key:c.img.texture?.key,ready:s.textures.exists("retrato-"+c.p.dex)})),
+      main:s.sprite?.texture?.key};
     });
-    console.error("POKEDEX_ANDROID_PAGE_DIAGNOSTIC",JSON.stringify({target,diagnostic}));
-    await page.screenshot({path:"test-evidence/johto-100/pokedex-page-"+(pageIndex+1)+"-failed.png"}).catch(()=>{});
+    console.error("NATIVE_POKEDEX_FAMILY_DIAGNOSTIC",JSON.stringify({target,details}));
+    await page.screenshot({path:"test-evidence/johto-100/family-page-"+(target.pageIndex+1)+"-failed.png"}).catch(()=>{});
     throw e;
    }
-   console.log("POKEDEX_PAGE_REAL_TEXTURES",JSON.stringify(target));
+   console.log("NATIVE_POKEDEX_FAMILY_PAGE_VERIFIED",JSON.stringify(target));
   }
   // Diagnostic for the separate main Pages failure: Rayquaza was reported
   // unselectable. Do not change or bypass native P2 move slots to fix it.
