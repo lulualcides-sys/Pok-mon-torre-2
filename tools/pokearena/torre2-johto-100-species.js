@@ -58,8 +58,8 @@ export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
  // Togepi's first four legal FRLG moves are largely non-damaging. Give its
  // playable Arena kit real installed attacks before utility skills.
  // Metronome is retained only if the existing executable renderer is present.
- togepi:{core:['ancient-power','double-edge','metronome'],ult:'psychic'},
- togetic:{core:['magical-leaf','ancient-power','double-edge'],ult:'psychic'},
+ togepi:{core:['hidden-power','double-edge','metronome'],ult:'psychic'},
+ togetic:{core:['aerial-ace','fly','hidden-power'],ult:'psychic'},
  // Evolution-final exclusive signatures cannot land on an intermediate ULT.
  feraligatr:{core:['water-gun','aqua-tail','waterfall'],ult:'hydro-pump'}
 });
