@@ -44,14 +44,15 @@ const server=http.createServer(async(req,res)=>{
   const state=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('pokedex');
    return {cardCount:scene.casillas?.length??0,
-    painted:scene.casillas?.filter(c=>c?.g?.active&&c?.img?.active).length??0,
+    painted:scene.casillas?.filter(c=>c?.g?.visible&&c?.img?.active).length??0,
+    nativeWidth:scene.casillas?.find(c=>c?.g?.visible)?.img?.displayWidth??0,
     baseDex:scene.casillas?.[0]?.p?.dex,
     types:scene.casillas?.[0]?.p?.tipos,
     active:scene.scene.isActive()};
   });
   assert.equal(state.active,true);
-  assert.ok(state.cardCount>=36&&state.painted>=36,
-   'Native Pokédex must draw 36+ type-striped animated cards: '+JSON.stringify(state));
+  assert.ok(state.cardCount>=36&&state.painted===25&&state.nativeWidth===38,
+   'Native P2 Pokédex must draw 25 grouped-family cards at original 38px portrait size: '+JSON.stringify(state));
   assert.ok(state.types?.length,'Original dex type metadata was lost');
   assert.ok(!errors.some(x=>/TIPOS is not defined/.test(x)),
    'Native upstream removed TIPOS and crashed card painting: '+errors.join('; '));

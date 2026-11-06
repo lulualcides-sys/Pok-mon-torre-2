@@ -631,16 +631,18 @@ const cargaBuilt=fs.readFileSync(path.join(stage,version,'escenas/carga.js'),'ut
 assert.ok(!cargaBuilt.includes('assets/ui/balls20.png'),
  'Do not request missing balls20.png from live site: native client has no consumer');
 const dexBuilt=fs.readFileSync(path.join(stage,version,'escenas/pokedex.js'),'utf8');
-assert.ok(dexBuilt.includes('TORRE2_DEX_ORDER.slice(start,start+36)')&&
+assert.ok(dexBuilt.includes('TORRE2_DEX_ORDER.slice(start,start+TORRE2_DEX_PAGE_SIZE)')&&
   !dexBuilt.includes('new Set(ROSTER.map(p=>p.dex))'),
-  'Pokédex must load only the 36 visible National Dex cards on first open');
+  'Pokédex must load only the 25 native family cards on first open');
 assert.ok(dexBuilt.includes('this.torre2DexLoadPage(next)')&&
-  dexBuilt.includes('if(this.textures.exists(key))c.img.setTexture(key)'),
-  'Every later page must load and restore its real PMD portraits');
+  dexBuilt.includes('const nativeKey=retratoA(this,c.p.dex,CEL-6)'),
+  'Every later native family page must restore its real PMD portraits');
 assert.ok(dexBuilt.includes('cargarPMD(this,this._torre2DexForms,["Idle"])'),
  'Pokédex must use existing PMD portrait/Idle assets rather than placeholder');
 assert.ok(dexBuilt.includes('this.load.once("complete",()=>{if(!this.scene.isActive())return;crearAnimsPMD(this,forms,["Idle"]);this.irEtapa(i)}'),
  'Pokedex evolution tabs must lazily load each selected original PMD animation');
+assert.ok(dexBuilt.includes('const COLS=5,CEL=44,GX=10,GY=36;')&&dexBuilt.includes('casillaRetrato(this,x,y,CEL-2,p.dex)')&&dexBuilt.includes('TORRE2_DEX_FAMILIES.rootSet.has(i)'),
+ 'Pokédex must use native P2 44px cards and only evolutionary family roots');
 const early=fs.readFileSync(path.join(stage,version,'torre2/early-route-fx.js'),'utf8');
 for(const name of ['gust','poisonsting','bite','crunch','peck','bugbite'])
  assert.ok(early.includes('export function '+name+'('),

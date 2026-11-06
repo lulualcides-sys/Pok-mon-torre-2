@@ -238,7 +238,9 @@ assert.match(dexCode,/if\(!h\?\.id\|\|!h\?\.nombre\|\|!h\?\.forma\|\|!unlocked\.
 assert.match(dexCode,/torre2RequiresTM:false,torre2UnlockLevel:unlocked\.get\(h\.id\)/);
 assert.doesNotMatch(dexCode,/const h=selectPokedexArenaMove\(stage\.kit/,
  'Do not reintroduce the original bug: a native TM must not override a legal campaign skill');
-assert.match(dexCode,/this\.etapas=kantoDexStages\(p\)/);
+assert.match(dexCode,/this\.etapas=torre2DexFamilyStages\(p\)/);
+ assert.match(dexCode,/const base=kantoDexStages\(ROSTER\[root\]\)/,
+  'Use approved Kanto moveset inside the original family evolution tabs');
 for(const role of ['ATK','HAB 2','HAB 3','ULT','ESQUIVA'])
  assert.ok(dexCode.includes('"'+role+'"'),'Missing Pokédex role '+role);
 
