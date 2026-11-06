@@ -44,7 +44,10 @@ export function restoreNativePokedexFamilies(original){
   'if(seen.has(String(stage.dex)))continue;',
   'seen.add(String(stage.dex));extras.push({...stage,etiqueta:stage.nombre});}}',
   'extras.sort((a,b)=>Number(a.dex)-Number(b.dex));',
-  'return [...base,...extras];}'
+  'return [...base,...extras];}',
+  'function torre2DexFamilyDescription(p){',
+  'const total=torre2DexFamilyStages(p).length;',
+  'return total>1?"FAMÍLIA · "+total+" FORMAS":(p.lema??"");}'
  ].join('');
  s=s.slice(0,orderStart)+helper+s.slice(orderEnd);
  const beforeGrid='torre2DexEnsureOrder();this.dexPage=Math.floor(TORRE2_DEX_RANK[this.foco]/36);this.dexPages=Math.ceil(ROSTER.length/36);this.casillas=ROSTER.map((p,i)=>{const v=TORRE2_DEX_RANK[i]%36;return this.casilla(p,GX+(v%COLS)*CEL,GY+Math.floor(v/COLS)*CEL,i)});';
@@ -95,6 +98,9 @@ export function restoreNativePokedexFamilies(original){
   'const next=(f+d%n+n)%n;this.elegir(TORRE2_DEX_ORDER[next])}'
  ].join('');
  s=s.slice(0,begin)+nativeCard+s.slice(end);
+ s=once(s,'"KIT CAMPANHA · NV50":(p.lema??""));',
+  '"KIT CAMPANHA · NV50":torre2DexFamilyDescription(p));',
+  'replace misleading "Does not evolve" on grouped baby Pokémon');
  s=once(s,'this.etapas=kantoDexStages(p);',
   'this.etapas=torre2DexFamilyStages(p);','nested evolution display');
  s=once(s,'const e=kantoDexStages(ROSTER[this.foco])[i];',
