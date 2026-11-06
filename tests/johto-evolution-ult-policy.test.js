@@ -97,6 +97,6 @@ test('Togepi/Togetic have installed legal damaging moves, with no fabricated VFX
   assert.ok(moves.every(x=>installed.get(x.id)===x.move&&x.move.forma),
    'No invented VFX or unauthorised move');
   assert.equal(new Set(moves.map(x=>x.id)).size,moves.length);
-  assert.ok(moves.some(x=>x.id==='ancient-power'));
+  assert.ok(moves.some(x=>x.id==='hidden-power'),id+' must retain the already-installed legal Hidden Power');
  }
 });
