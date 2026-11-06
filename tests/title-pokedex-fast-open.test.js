@@ -30,12 +30,17 @@ test('Pokédex loads one 36-card page, not the entire roster at entry',()=>{
   'cargarPMD(this,this._torre2DexForms,["Idle"]);}create(){'+
   'crearAnimsPMD(this,this._torre2DexForms,["Idle"]);';
  const chooser='const next=Math.floor(TORRE2_DEX_RANK[i]/36);if(next!==this.dexPage){';
- const out=preloadPokedexOnePage(old+chooser);
+ const pedestal='peana(et,celebrar){this.sprite?.destroy();const m=this.manifiesto[et.dex];';
+ const out=preloadPokedexOnePage(old+chooser+pedestal);
  assert.ok(out.includes('TORRE2_DEX_ORDER.slice(start,start+36)'));
  assert.ok(!out.includes('new Set(ROSTER.map(p=>p.dex))'));
  assert.ok(out.includes('this.torre2DexLoadPage(next);'));
  assert.ok(out.includes('c.img.setTexture(key)'));
- assert.ok(out.includes('this.load.once("complete",ready)'));
- assert.ok(out.includes('if(this.dexPage===page)this.refrescar(true)'));
+ assert.ok(out.includes('cargarPMD(this,forms,[])'), 'Pages load portraits first');
+ assert.ok(out.includes('this.load.on("filecomplete",onFile)'), 'Each image fills as received');
+ assert.ok(out.includes('this.load.once("complete",finish)'), 'Page load cleans event handler');
+ assert.ok(out.includes('this.torre2DexEnsureIdle(et.dex)'), 'Selected PMD loads on demand');
+ assert.ok(out.includes('this.textures.exists("pmd-"+et.dex+"-Idle")'), 'Never show a missing selected sprite');
+ assert.ok(out.includes('this.__torre2DexPageRequests.delete(page)'), 'Allow retries after failed requests');
  assert.throws(()=>preloadPokedexOnePage('class Pokedex {}'),/upstream changed/);
 });

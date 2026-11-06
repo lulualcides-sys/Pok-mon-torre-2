@@ -187,7 +187,7 @@ export function paginateKantoPokedexSource(original){
   "elegir(i){if(i===this.foco)return;"+
   "const next=Math.floor(TORRE2_DEX_RANK[i]/36);if(next!==this.dexPage){this.dexPage=next;"+
   "for(const [index,c] of this.casillas.entries()){"+
-  "const shown=Math.floor(TORRE2_DEX_RANK[index]/36)===next;c.g.setVisible(shown);c.img.setVisible(shown);c.zone.setVisible(shown);"+
+  "const shown=Math.floor(TORRE2_DEX_RANK[index]/36)===next;c.g.setVisible(shown);c.img.setVisible(shown&&this.textures.exists('retrato-'+c.p.dex));c.zone.setVisible(shown);"+
   "if(shown)c.zone.setInteractive({useHandCursor:true});else c.zone.disableInteractive();}}"+
   "this.dexPageLabel?.setText((this.dexPage+1)+' / '+this.dexPages);this.foco=i;");
  s=once(s,
