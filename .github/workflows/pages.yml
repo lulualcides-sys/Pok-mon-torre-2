@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
   pages: write
   id-token: write
 
@@ -62,23 +63,26 @@ jobs:
           # PixelFX generates PNG sheets offline before the browser runner
           # installs deps; pin+install here so the Pages build is reproducible.
           npm install --no-audit --no-fund
-          # Retry the full capture + build + critical-file verification as
-          # one atomic gate; never deploy a missing Phaser runtime.
-          for attempt in 1 2 3 4; do
-            if node tools/pokearena/capture-client.mjs \
-                && node tools/pokearena/build-preview.mjs \
-                && test -s _site/arena2d/index.html \
-                && test -s _site/arena2d/lib/phaser.min.js; then
-              echo "Cliente Phaser completo validado (tentativa $attempt)"
-              break
-            fi
-            if [ "$attempt" -eq 4 ]; then
-              echo "::error::Cliente Phaser incompleto após 4 tentativas de captura/build/verificação"
-              exit 1
-            fi
-            echo "::warning::Cliente Phaser incompleto; repetindo aquisição e build ($attempt/4)"
-            sleep $((attempt * 8))
-          done
+          # Try the authorized first-party capture ONCE. If the external site
+          # responds HTTP 403/partial, use the previous immutable verified
+          # original-source artifact; no mock graphics or hidden bypass.
+          if node tools/pokearena/capture-client.mjs \
+             && node tools/pokearena/build-preview.mjs \
+             && test -s _site/arena2d/index.html \
+             && test -s _site/arena2d/lib/phaser.min.js; then
+            echo "Live P2 source captured and complete."
+          else
+            echo "::warning::Live P2 unavailable. Use hash-verified authorized capture from Actions run 42195598090."
+            rm -rf site-capture _site/arena2d
+            mkdir -p site-capture
+            GH_TOKEN="${{ github.token }}" gh run download 42195598090 \
+              --repo "${{ github.repository }}" \
+              --name pokearena2d-cliente-publico-capturado --dir site-capture
+            node tools/pokearena/verify-pinned-capture.mjs
+            node tools/pokearena/build-preview.mjs
+            test -s _site/arena2d/index.html
+            test -s _site/arena2d/lib/phaser.min.js
+          fi
           # Keep the old Pixi test laboratory at /lab.html but launch the real
           # solo Kanto Phaser game at the stable public root once Pages is enabled.
           cp _site/index.html _site/lab.html
