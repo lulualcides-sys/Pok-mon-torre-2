@@ -320,7 +320,13 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
    return original;
   // Johto was chosen using genuine species FRLG/approved attacks, not
   // Kanto Arena-121 fallback or native cooldown rewrite.
-  if(this.def.torre2Johto100===true)return original;
+  // Eevee is a newly added Kanto parent, but Espeon/Umbreon are genuine
+  // Johto battle stages. Do not overwrite their approved Johto loadouts
+  // through the Kanto FRLG-only kit planner; this previously erased the
+  // real DARK moves of Umbreon after it evolved.
+  if(this.def.torre2Johto100===true||
+     (this.def.id==='eevee'&&['espeon','umbreon'].includes(id)))
+   return original;
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
   return selectApprovedArenaKit(auto,id,library,nativeDodges);
  };
