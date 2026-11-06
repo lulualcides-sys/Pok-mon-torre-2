@@ -16,7 +16,9 @@ const expected={
  'mr-mime':['Pound','Confusion','Psywave','Psychic'],
  cubone:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
  marowak:['Bone Rush','Bone Club','Bonemerang','Earthquake'],
- doduo:['Peck','Jump Kick','Drill Peck','ULT · Tri Attack'],
+ // Doduo is Torre 2-added: its current legal Lv50 battle resolver uses
+ // Fury Attack; Jump Kick belonged to an obsolete hard-coded expectation.
+ doduo:['Peck','Fury Attack','Drill Peck','ULT · Tri Attack'],
  deoxys:['Confusion','Psychic','Form Change','Psycho Boost']
 };
 (async()=>{
@@ -180,6 +182,13 @@ const expected={
      }
     }
    }
+   // When public Pokédex changes, ensure Doduo's four shown skills are the
+   // same legal skills equipped by the REAL Torre 2 Lv50 battle resolver.
+   // Never change original P2 species data to satisfy a stale snapshot.
+   const doduoBattle=resolveLoadout({
+    id:'doduo',progression:{species:'doduo',level:50},tmMoves:[]
+   });
+   const doduoBattleNames=roles.map(slot=>doduoBattle[slot]?.nombre||null);
    const savedAfter=JSON.stringify(Object.fromEntries(
     Object.keys(localStorage).map(key=>[key,localStorage.getItem(key)])));
    if(savedBefore!==savedAfter)
@@ -188,7 +197,7 @@ const expected={
     nativeChecked,addedChecked,nativeEmpty:nativeEmpty.slice(0,40),
     missing:[...eligible].filter(id=>!found.has(id)),
     problems:problems.slice(0,60),totalProblems:problems.length}:null;
-   return{build,installed,cardCount:scene.casillas.length,observations,kanto};
+   return{build,installed,cardCount:scene.casillas.length,observations,kanto,doduoBattleNames};
   },{expect:expected,release:version.modules,
    auditFull:process.env.POKEDEX_FULL_PUBLIC_AUDIT==='1'});
   const report={url,build:result.build,publicVersion:version.modules,
@@ -216,6 +225,11 @@ const expected={
    'Public Kanto stage kits differ from real Lv50 battle loadouts: '+
     JSON.stringify(result.kanto.problems));
   }
+  // A matching static label is not sufficient: the public Pokédex must
+  // agree with the live, installed battle resolver at the same level.
+  const observedDoduo=['lmb','rmb','q','e'].map(slot=>result.observations.doduo?.slots?.[slot]);
+  assert.deepEqual(observedDoduo,result.doduoBattleNames,
+   'Public Doduo Pokédex differs from its current Lv50 battle moves');
   for(const [id,names] of Object.entries(expected)){
    const item=result.observations[id];
    assert.ok(item&&!item.error,id+' missing on public Pokédex');
