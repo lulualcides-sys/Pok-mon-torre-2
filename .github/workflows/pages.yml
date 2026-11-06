@@ -140,6 +140,7 @@ jobs:
           node tests/finale13-built.test.mjs
           node tests/rayquaza-mega-built.test.mjs
           node --test tests/johto-native-kits-preserve.test.js tests/johto-evolution-ult-policy.test.js
+          node tests/arena-johto-evolution-built.test.mjs
           node --test tests/pokedex-native-families.test.js
           node tests/pokedex-crossgen-families-built.test.mjs
           node tests/arena-family-selector-built.test.mjs
