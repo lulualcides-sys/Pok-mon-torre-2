@@ -11,6 +11,9 @@ import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
 // module specifiers remapped; do not change production build imports.
 const folder=new URL('../tools/pokearena/',import.meta.url);
 let source=readFileSync(new URL('torre2-johto-100-species.js',folder),'utf8');
+// This data-URL test isolates move policy from the Magmortar roster hook.
+source=source.replace('import {attachMagmortarEvolution} from "./magmar-family.js";',
+ 'const attachMagmortarEvolution=()=>false;');
 for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
