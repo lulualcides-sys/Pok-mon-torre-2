@@ -27,7 +27,9 @@ jobs:
   deploy:
     if: ${{ github.event_name == 'push' || github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    # Full original Chromium suite + Pages CDN propagation can exceed 15 min.
+    # Preserve every regression gate; extend the job rather than skipping tests.
+    timeout-minutes: 35
     environment:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
