@@ -15,6 +15,11 @@ on:
       - 'tests/pokedex-crossgen-families-built.test.mjs'
       - 'tests/pokedex-crossgen-families-browser.cjs'
       - 'tools/pokearena/torre2-arena-family-selector.mjs'
+      - 'tools/pokearena/torre2-johto-100-species.js'
+      - 'tools/pokearena/torre2-arena-move-policy.js'
+      - 'tests/johto-native-kits-preserve.test.js'
+      - 'tests/johto-evolution-ult-policy.test.js'
+      - 'tests/arena-species-kit-browser.cjs'
       - 'tools/pokearena/build-preview.mjs'
       - 'tests/arena-family-selector-source.test.mjs'
       - 'tests/arena-family-selector-built.test.mjs'
@@ -73,6 +78,7 @@ jobs:
           node --test tests/arena-family-selector-source.test.mjs
           node tests/arena-family-selector-built.test.mjs
           node tests/rayquaza-mega-built.test.mjs
+          node --test tests/johto-native-kits-preserve.test.js tests/johto-evolution-ult-policy.test.js
           node --test tests/pokedex-native-families.test.js
           node tests/pokedex-crossgen-families-built.test.mjs
       - name: Real original Chromium smoke and mobile Pokemon selection
@@ -82,6 +88,7 @@ jobs:
           export CHROME_BIN="$(command -v google-chrome)"
           # Fail fast on the ACTUAL reported Arena overlay before slower smoke.
           node tests/arena-family-selector-browser.cjs
+          node tests/arena-species-kit-browser.cjs
           node tests/source-client-smoke.cjs
           node tests/selection-original-mobile-browser.cjs
           node tests/pokedex-crossgen-families-browser.cjs
