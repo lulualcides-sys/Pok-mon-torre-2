@@ -571,16 +571,23 @@ export function pendingEeveeEvolution(state){
  }
  return null;
 }
-export function chooseEeveeEvolution(state,uid,choice){
+export function chooseEeveeEvolution(state,uid,choice,random=Math.random){
  // Do not trust UI state or a manually edited save. Resolve only a named
  // Eevee that has REALLY met Lv30; do not mutate on invalid requests.
- if(typeof uid!=='string'||!EEVEE_KANTO_CHOICES.includes(choice))
+ if(typeof uid!=='string'||!(choice==='random'||EEVEE_KANTO_CHOICES.includes(choice)))
   return {ok:false,reason:'Evolução inválida.'};
  const selected=eeveeEntries(state).find(entry=>entry.uid===uid);
  const member=selected?.member;
  if(!member||member.id!=='eevee'||member.progression?.species!=='eevee'||
-   !levelEvolutionChoices(member.progression).includes(choice))
+   !(choice==='random'?EEVEE_KANTO_CHOICES.some(id=>levelEvolutionChoices(member.progression).includes(id)):
+     levelEvolutionChoices(member.progression).includes(choice)))
   return {ok:false,reason:'Eevee ainda não está pronto para evoluir.'};
+ if(choice==='random'){
+  const available=EEVEE_KANTO_CHOICES.filter(id=>levelEvolutionChoices(member.progression).includes(id));
+  const roll=Number(random());
+  const sample=Number.isFinite(roll)?Math.max(0,Math.min(.999999999,roll)):0;
+  choice=available[Math.floor(sample*available.length)];
+ }
  // Stage the entire evolution, Pokédex registration and message before
  // touching the live party/PC. A denied primary or backup write must leave
  // Eevee pending at Lv30 so the trainer can retry the same choice.

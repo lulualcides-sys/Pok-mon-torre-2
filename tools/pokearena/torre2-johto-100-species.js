@@ -7,6 +7,7 @@ import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
 import {TORRE2_WOBBUFFET_MOVES} from "./wobbuffet-native.js";
+import {attachMagmortarEvolution} from "./magmar-family.js";
 import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
  GEN4_HGSS_JOHTO_TM,GEN5_B2W2_JOHTO_TM} from "./gen45-johto-learnsets.js";
 const canon=s=>String(s||"").normalize("NFKD").replace(/[\u0300-\u036f]/g,"")
@@ -37,6 +38,26 @@ const actualStats=p=>({
  regen:4
 });
 const magnitude=m=>Number.isFinite(m.dano)?m.dano:0;
+/* Signature choices only for Torre2-added Johto species. The original P2
+ * battle roster, all original moves and approved VFX are never rewritten.
+ * A final evolution must not inherit a baby Pokémon's entire four-move kit.
+ */
+export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
+ cyndaquil:{core:['tackle','ember','smokescreen'],ult:'flame-wheel',
+  exclude:['overheat','fire-blast','flamethrower','eruption','lava-plume']},
+ quilava:{core:['quick-attack','ember','flame-wheel'],ult:'flamethrower',
+  exclude:['overheat','fire-blast','eruption']},
+ typhlosion:{core:['flame-wheel','flamethrower','lava-plume'],ult:'overheat'},
+ larvitar:{core:['bite','sandstorm','rock-slide'],ult:'thrash',
+  exclude:['earthquake','stone-edge','crunch','fire-blast']},
+ pupitar:{core:['bite','rock-slide','crunch'],ult:'earthquake',
+  exclude:['stone-edge','fire-blast']},
+ tyranitar:{core:['fire-fang','crunch','earthquake'],ult:'stone-edge'},
+ magby:{core:['ember','smog','fire-spin'],ult:'fire-punch',
+  exclude:['overheat','fire-blast','flamethrower','lava-plume']},
+ // Evolution-final exclusive signatures cannot land on an intermediate ULT.
+ feraligatr:{core:['water-gun','aqua-tail','waterfall'],ult:'hydro-pump'}
+});
 // Authoritative skill source: a move is eligible ONLY when it is already
 // installed and executable. No new visual effects, names or placeholders.
 const executable=m=>Boolean(m?.nombre&&m?.forma&&
@@ -105,8 +126,12 @@ export function selectJohto100Moves(p,library){
   !["snore","hyper-beam"].includes(canon(x.id))&&
   !(canon(x.id)==="solar-beam"&&!p[2].includes("GRASS")));
  const distinct=[...new Map(legal.map(x=>[canon(x.id),x])).values()];
+ const plan=JOHTO_EVOLUTION_KIT_PLAN[p[1]];
+ const blocked=new Set(plan?.exclude||[]);
+ const choices=distinct.filter(x=>!blocked.has(canon(x.id)));
+ const preferredUltimate=choices.find(x=>canon(x.id)===plan?.ult&&magnitude(x.move)>0);
  const damage=x=>magnitude(x.move);
- const offensive=distinct.filter(x=>damage(x)>0);
+ const offensive=choices.filter(x=>damage(x)>0);
  const isTyped=x=>p[2].includes(x.move.tipo);
  const isNatural=x=>x.level>=0;
  const byEarly=(a,b)=>a.level-b.level||damage(a)-damage(b);
@@ -123,13 +148,17 @@ export function selectJohto100Moves(p,library){
  // Reserve the strongest compatible type/signature attack for ULT
  // BEFORE allocating HAB 2/3; do not let a generic TM win by raw damage.
  // Pokémon with one attack (e.g. Unown) keep their actual ATK.
- const ultimate=offensive.length>=2?[...offensive].sort(byStrong)[0]:null;
- const others=distinct.filter(x=>x!==ultimate);
+ const ultimate=preferredUltimate||(offensive.length>=2?[...offensive].sort(byStrong)[0]:null);
+ const others=choices.filter(x=>x!==ultimate);
  const lowerOffense=others.filter(x=>damage(x)>0);
  const natural=lowerOffense.filter(isNatural);
  const first=[...natural].sort(byEarly)[0]||
   [...lowerOffense].sort((a,b)=>damage(a)-damage(b))[0]||others[0];
- add(first);
+ for(const desired of plan?.core||[]){
+  const m=others.find(x=>canon(x.id)===desired);
+  if(m&&moves.length<3)add(m);
+ }
+ if(!moves.length)add(first);
  const byProgress=[...natural].sort(byEarly);
  const typeAttacks=[...lowerOffense].filter(isTyped).sort(byEarly);
  const otherAttacks=[...lowerOffense].sort((a,b)=>damage(a)-damage(b));
@@ -199,5 +228,10 @@ export function addAllJohtoSpecies(original){
    }))
   });
  }
+ // The newer native ROSTER builder skips the later explicit Magmortar hook.
+ // Attach it after the complete Johto roster is built so the existing legal
+ // FIRE skill providers are present. The operation is idempotent and mutates
+ // only Magmar added by Torre 2; original P2 forms remain immutable.
+ attachMagmortarEvolution([...original,...result]);
  return result;
 }

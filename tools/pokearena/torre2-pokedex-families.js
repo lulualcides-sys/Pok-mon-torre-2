@@ -36,6 +36,15 @@ export function buildPokedexFamilies(roster,johtoRows=[],evolutions={}){
    if(child&&before!==child&&!parent.has(child))parent.set(child,before);
   }
  }
+ // Across generations, babies are not in the same 151/100 row group as
+ // their parents. This only changes the Pokédex visual root, never level,
+ // save evolution rules, attack library or the original P2 battle ROSTER.
+ // Magby (#240) -> Magmar (#126) -> Magmortar (#467, new standalone stage).
+ for(const [child,before] of [[126,240],[467,126]]){
+  const hasChild=[...dexById.values()].includes(child);
+  const hasParent=[...dexById.values()].includes(before);
+  if(hasChild&&hasParent)parent.set(child,before);
+ }
  // Native Poké Arena nested stages are authoritative when no relation exists.
  for(const [child,i] of nestedOwner){
   const before=num(roster[i].dex);

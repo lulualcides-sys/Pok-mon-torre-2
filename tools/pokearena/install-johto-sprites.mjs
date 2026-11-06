@@ -11,6 +11,8 @@ const ROOT="https://raw.githubusercontent.com/PMDCollab/SpriteCollab/"+JOHTO_SPR
 const ACTIONS=["Idle","Walk","Attack","Shoot","Charge","Hurt","Faint",
  "Hop","Swing","Double","Rotate","Pose","Strike"];
 const nDex=id=>String(id).padStart(4,"0");
+// Add original PMDCollab Gen-IV Magmortar art without replacing native client sprites.
+const ALL_SPRITE_ROWS=[...JOHTO_100_ROWS,[467,"magmortar"]];
 const tag=(source,name)=>source.match(new RegExp("<"+name+">([\\s\\S]*?)<\\/"+name+">"))?.[1]?.trim()||"";
 function animations(xml,dex){
  const anims={};const blocks=[...xml.matchAll(/<Anim>([\s\S]*?)<\/Anim>/g)];
@@ -68,7 +70,7 @@ export async function installJohtoSpriteCollabAssets(site,{
  const root=path.join(site,"assets/pmd"),manifestFile=path.join(root,"manifest.json");
  const manifest=JSON.parse(await fs.readFile(manifestFile,"utf8"));
  // This is additive. Existing original Poké Arena PMD assets are immutable.
- const missing=JOHTO_100_ROWS.filter(p=>!manifest[nDex(p[0])]);
+ const missing=ALL_SPRITE_ROWS.filter(p=>!manifest[nDex(p[0])]);
  const jobs=[];
  let totalBytes=0,totalPNG=0;
  await pool(missing,Math.min(concurrency,12),async row=>{
@@ -112,17 +114,17 @@ export async function installJohtoSpriteCollabAssets(site,{
    if(!anim.file)delete m.anims[name];
   if(!m.anims.Idle)throw Error("Missing usable Idle animation for Johto "+dex);
  }
- for(const row of JOHTO_100_ROWS)
+ for(const row of ALL_SPRITE_ROWS)
   if(!manifest[nDex(row[0])]?.anims?.Idle)
    throw Error("Johto asset coverage incomplete for "+nDex(row[0]));
  await fs.writeFile(manifestFile,JSON.stringify(manifest));
  await fs.writeFile(path.join(root,"JOHTO-SPRITECOLLAB-CREDITS.txt"),
-  "Johto #0152-0251 fan-game sprite art: PMDCollab SpriteCollab.\n"+
+  "Johto #0152-0251 + Magmortar #0467 art: PMDCollab SpriteCollab.\n"+
   "Source: https://github.com/PMDCollab/SpriteCollab\n"+
   "Commit: "+JOHTO_SPRITECOLLAB_COMMIT+"\n"+
   "License: CC BY-NC 4.0, non-commercial use and creator credit required.\n"+
   "Creator credits: https://github.com/PMDCollab/SpriteCollab/blob/master/spritebot_credits.txt\n"+
   "Native Poké Arena 2D sprites were not overwritten.\n");
- return {species:JOHTO_100_ROWS.length,downloadedSpecies:missing.length,
+ return {species:ALL_SPRITE_ROWS.length,downloadedSpecies:missing.length,
    newPng:totalPNG,newBytes:totalBytes};
 }

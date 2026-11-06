@@ -148,7 +148,9 @@ const server=http.createServer(async(req,res)=>{
     s.elegir(i);
     return {root:s.foco,stages:s.etapas.map(e=>({name:e.nombre,dex:e.dex}))};
    };
-   return {chikorita:stagesOf("chikorita"),eevee:stagesOf("eevee")};
+   return {chikorita:stagesOf("chikorita"),eevee:stagesOf("eevee"),
+    magby:stagesOf("magby"),larvitar:stagesOf("larvitar"),
+    cyndaquil:stagesOf("cyndaquil")};
   });
   assert.ok(families.chikorita,"Chikorita root must exist");
   assert.ok(["0152","0153","0154"].every(d=>
@@ -157,6 +159,30 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(families.eevee&&["VAPOREON","JOLTEON","FLAREON","ESPEON","UMBREON"]
    .every(n=>families.eevee.stages.some(s=>s.name.toUpperCase()===n)),
    "Eevee branches must be grouped, with accessible tabs");
+  console.log("JOHTO_EVOLUTION_FAMILY_DIAGNOSTIC",JSON.stringify(families));
+  assert.ok(families.magby&&["MAGBY","MAGMAR","MAGMORTAR"]
+   .every(n=>families.magby.stages.some(s=>s.name.toUpperCase()===n)),
+   "Magby Magmar Magmortar must share one native family and three tabs");
+  assert.ok(families.larvitar&&["LARVITAR","PUPITAR","TYRANITAR"]
+   .every(n=>families.larvitar.stages.some(s=>s.name.toUpperCase()===n)));
+  const kits=await page.evaluate(()=>{
+   const roster=window.__pt2Game.scene.getScene("pokedex").casillas.map(c=>c.p);
+   const moves=(root,name)=>{
+    const p=roster.find(x=>x.id===root);
+    const stage=name===root?p:p?.evoluciones?.find(e=>e.nombre.toLowerCase()===name);
+    return ["lmb","rmb","q","e"].map(k=>stage?.kit?.[k]?.nombre||null);
+   };
+   return {tyranitar:moves("larvitar","tyranitar"),
+    cyndaquil:moves("cyndaquil","cyndaquil"),
+    typhlosion:moves("cyndaquil","typhlosion"),
+    magmortar:moves("magmar","magmortar")};
+  });
+  assert.equal(kits.tyranitar[3],"Stone Edge",
+   "Tyranitar ULT must be Stone Edge, never Crunch");
+  assert.notDeepEqual(kits.cyndaquil,kits.typhlosion,
+   "Typhlosion must gain different stronger abilities than Cyndaquil");
+  assert.ok(kits.magmortar.every(Boolean),"Magmortar must have four executable moves");
+  console.log("JOHTO_EVOLUTION_KITS_VERIFIED",JSON.stringify(kits));
   // Visit the very same Marill group from the Android screenshot and the
   // last family page; require actual texture bytes and Idle for the selected.
   const positions=await page.evaluate(async()=>{

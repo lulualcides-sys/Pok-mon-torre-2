@@ -105,44 +105,46 @@ const server=http.createServer(async(req,res)=>{
    // families (Pichu/Munchlax) and alternate forms; only 150 distinct Kanto
    // stages belong to the campaign (Mewtwo stays in the laboratory).
    const scene=window.__pt2Game.scene.getScene('pokedex');
-   const uiSeen=new Set(),uiProblems=[];
+   const uiSeen=new Set(),uiProblems=[],processedRoots=new Set();
+   const byDex=new Map(KANTO_151.filter(p=>p.id!=='mewtwo').map(p=>[p.num,p.id]));
+   // Evolution pages group multiple ROSTER entries, including baby species
+   // from Johto. Use the NATIONAL DEX, not the old grid-card index.
+   const sourceByDex=new Map();
+   for(const def of ROSTER)for(const stage of etapasDe(def)){
+    const dex=Number(stage?.dex);
+    if(!sourceByDex.has(dex))sourceByDex.set(dex,{def,stage});
+   }
    for(let cardIndex=0;cardIndex<scene.casillas.length;cardIndex++){
-    const family=scene.casillas[cardIndex]?.p;
-    if(!family)continue;
+    const request=scene.casillas[cardIndex]?.p;
+    if(!request)continue;
     try{scene.elegir(cardIndex)}
-    catch(error){
-     const fn=scene.movimientos.toString();
-     const pos=fn.indexOf('.tipo');
-     throw Error('POKEDEX_RENDER_DIAG '+JSON.stringify({
-      cardIndex,family:family.id,selected:scene.foco,stage:scene.etapa,
-      native:!family.torre2ArenaAdded,
-      kit:Object.fromEntries(['lmb','rmb','q','e','esp'].map(role=>[
-       role,family.kit?.[role]?.nombre||null])),
-      helper:fn.slice(Math.max(0,pos-1000),pos+500),
-      failure:String(error)
-     }));
-    }
+    catch(error){throw Error('POKEDEX_RENDER_DIAG '+JSON.stringify({
+      cardIndex,requested:request.id,selected:scene.foco,failure:String(error)
+    }))}
+    const rootIndex=scene.foco;
+    if(processedRoots.has(rootIndex))continue;
+    processedRoots.add(rootIndex);
+    const family=scene.casillas[rootIndex]?.p||request;
     for(let stageIndex=0;stageIndex<scene.etapas.length;stageIndex++){
      const stage=scene.etapas[stageIndex];
      if(stage?.mega)continue;
-     const id=String(stageIndex===0?family.id:
-      (family.evoluciones?.[stageIndex-1]?.nombre||stage?.nombre||'')).toLowerCase();
-     if(!known.has(id)||id==='mewtwo'||uiSeen.has(id))continue;
+     const dex=Number(stage?.dex),id=byDex.get(dex);
+     if(!id||uiSeen.has(id))continue;
      scene.irEtapa(stageIndex);
-     // Native P2 lazy-loads each evolved PMD Idle sprite. The tab is NOT
-     // selected until the async Phaser loader completes; wait for real UI.
      const until=Date.now()+15000;
      while(scene.etapa!==stageIndex){
       if(Date.now()>until)throw Error('Evolution tab failed to load: '+id);
       await new Promise(resolve=>setTimeout(resolve,40));
      }
      const displayed=scene.etapas[scene.etapa]?.kit||{};
+     const source=sourceByDex.get(dex);
      const battle=resolveLoadout({id,progression:{species:id,level:50},tmMoves:[]});
      uiSeen.add(id);
-     if(!family.torre2ArenaAdded){
-      const original=etapasDe(family)[stageIndex]?.kit||{};
+     if(source?.def?.torre2ArenaAdded!==true){
+      const original=source?.stage?.kit||{};
       if(JSON.stringify(displayed)!==JSON.stringify(original))
-       uiProblems.push({id,stage:stageIndex,problem:'native P2 kit changed in Arena/Pokédex'});
+       uiProblems.push({id,stage:stageIndex,root:family.id,
+        problem:'native P2 kit changed in Arena/Pokédex'});
       continue;
      }
      for(const role of required){

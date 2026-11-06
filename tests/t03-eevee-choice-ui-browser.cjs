@@ -23,13 +23,25 @@ const server=http.createServer(async(req,res)=>{
   '--use-gl=angle','--use-angle=swiftshader']});
  const page=await browser.newPage({viewport:{width:1280,height:720}});
  const errors=[],report={mode:'Prepared post-battle checkpoint in real Phaser UI',forms:[]};
- page.on('pageerror',e=>errors.push(String(e)));
+ page.on('pageerror',e=>errors.push(e.stack||String(e)));
  const gameReady=()=>page.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:60000});
  try{
   await page.goto('http://127.0.0.1:4389/arena2d/?original=1',{waitUntil:'domcontentloaded'});
   await gameReady();
-  for(const form of ['vaporeon','jolteon','flareon']){
-   const before=await page.evaluate(async()=>{
+  for(const [roll,form] of [[0,'vaporeon'],[.4,'jolteon'],[.999,'flareon']]){
+   const before=await page.evaluate(async(roll)=>{
+    // Preserve random IDs and Phaser canvas/texture allocation. A globally
+    // constant Math.random can collide with native Phaser resource names.
+    // Seed ONLY the genuine Eevee evolution's default RNG, never the game.
+    window.__pt2OriginalRandom??=Math.random;
+    window.__pt2EeveeSeedHits=0;
+    Math.random=()=>{
+     const call=(new Error()).stack||'';
+     if(call.includes('chooseEeveeEvolution')){
+      window.__pt2EeveeSeedHits++;return roll;
+     }
+     return window.__pt2OriginalRandom();
+    };
     const script=[...document.scripts].find(s=>s.src?.includes('/main.js')).src;
     const base=new URL('./',script),core=window.kanto=await import(new URL('./torre2/campaign-core.js',base));
     const progress=await import(new URL('./torre2/progression.js',base));
@@ -48,23 +60,39 @@ const server=http.createServer(async(req,res)=>{
     if(!result.won||normalized.team[1].id!=='eevee')throw Error('Bad post-battle pending fixture');
     window.__pt2Game.scene.getScene('titulo').scene.start('campanha');
     return {wins:normalized.wins,level:normalized.team[1].progression.level,uid:eevee.uid};
-   });
-   await page.waitForFunction(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    return c.scene.isActive()&&c.__torre2EeveeChoice?.active&&
-     c.children.list.filter(o=>o.active&&o.getData?.('torre2-eevee-choice')).length===3;
-   },null,{timeout:55000});
+   },roll);
+   try{
+    await page.waitForFunction(form=>{
+     const scene=window.__pt2Game?.scene.getScene('campanha');
+     const state=window.kanto?.readCampaign();
+     return scene?.scene.isActive()&&
+      state?.team?.find(m=>m.uid==='t03-eevee-ui')?.id===form&&
+      !window.kanto.pendingEeveeEvolution(state);
+    },form,{timeout:55000});
+   }catch(error){
+    const diagnostic=await page.evaluate(()=>{
+     const game=window.__pt2Game,scene=game?.scene?.getScene('campanha');
+     const state=window.kanto?.readCampaign();
+     const member=state?.team?.find(m=>m.uid==='t03-eevee-ui');
+     return {memberId:member?.id,level:member?.progression?.level,
+      pending:state&&window.kanto.pendingEeveeEvolution(state),
+      scenes:game?.scene?.getScenes(true).map(s=>s.scene.key),
+      campaignActive:scene?.scene.isActive(),
+      attempted:scene?.__torre2EeveeAttempted,
+      resolving:scene?.__torre2EeveeResolving,
+      body:document.getElementById('pt2-boot-message')?.textContent,
+      errors:window.__pt2Started};
+    }).catch(e=>({diagnosticError:String(e)}));
+    console.error('T03 EEVEE RANDOM PHASER DIAGNOSTIC',JSON.stringify({form,diagnostic,pageErrors:errors}));
+    await page.screenshot({path:'test-evidence/t03-eevee-timeout.png'}).catch(()=>{});
+    throw error;
+   }
    const controls=await page.evaluate(()=>{
-    const c=window.__pt2Game.scene.getScene('campanha');
-    return c.children.list.filter(o=>o.active&&o.getData?.('torre2-eevee-choice'))
-     .map(o=>({id:o.getData('torre2-eevee-choice'),x:o.x,y:o.y}));
+    const scene=window.__pt2Game.scene.getScene('campanha');
+    return scene.children.list.filter(o=>o.active&&o.getData?.('torre2-eevee-choice'));
    });
-   assert.deepEqual(controls.map(x=>x.id),['vaporeon','jolteon','flareon']);
-   await page.screenshot({path:'test-evidence/t03-eevee-choices-'+form+'.png'});
-   const target=controls.find(o=>o.id===form);
-   const rect=await page.locator('#juego canvas').boundingBox();
-   assert.ok(rect);
-   await page.mouse.click(rect.x+target.x*rect.width/640,rect.y+target.y*rect.height/360);
+   assert.equal(controls.length,0,'Random evolution must not show the old branch-choice modal');
+   await page.screenshot({path:'test-evidence/t03-eevee-random-'+form+'.png'});
    await page.waitForFunction(form=>{
     const s=window.kanto.readCampaign();
     return window.__pt2Game.scene.isActive('campanha')&&
@@ -96,12 +124,12 @@ const server=http.createServer(async(req,res)=>{
    });
    assert.equal(post.id,form);
    assert.equal(post.bytes,saved.bytes,'Valid Eevee evolution save must not mutate on reload');
-   report.forms.push({from:'eevee',to:form,level:saved.level,
+   report.forms.push({from:'eevee',to:form,roll,level:saved.level,
     uid:saved.uid,saveUnchanged:true,wins:saved.won,choiceCount:controls.length});
-   console.log('PASS T03 EEVEE PHASER CHOICE',JSON.stringify(report.forms.at(-1)));
+   console.log('PASS T03 EEVEE PHASER RANDOM',JSON.stringify(report.forms.at(-1)));
   }
   assert.deepEqual(errors,[],'No browser JavaScript exceptions');
-  console.log('PASS three saved Eevee forms via native Phaser touch controls');
+  console.log('PASS three Eevee randomized branches via real Phaser save');
  }finally{
   fs.writeFileSync('test-evidence/t03-eevee-choices.json',JSON.stringify(report,null,2));
   await browser.close();server.close();

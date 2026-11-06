@@ -28,7 +28,11 @@ assert.match(aspects,/froakie:\["naranja","amarillo","blanco","azabache","azabac
 assert.match(aspects,/if\(id==="froakie"\)return todos\(id\)/);
 assert.match(aspects,/azabacheaura:"RED AURA",azabache:"BLACK"/);
 assert.match(selection,/for\(const dex of \["0656","0657","0658"\]\)/);
-assert.match(selection,/\["cpu","entreno","versus"\]/);
+assert.ok(
+ selection.includes('const bloqueado=this.modo==="ranked"?!desbloqueadoRanked(p.id):false;')||
+ selection.includes('["cpu","entreno","versus"]'),
+ 'Froakie and all other offline Pokémon must be usable; ranked still keeps locks'
+);
 assert.match(preparar,/desbloqueadoNativo/);
 assert.match(sprites,/azabacheaura:"azabache"/,
  'Final skin uses the original black animation frames');
