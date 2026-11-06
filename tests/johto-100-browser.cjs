@@ -182,7 +182,7 @@ const server=http.createServer(async(req,res)=>{
      const visible=s.casillas.filter(c=>c.g.visible);
      if(visible.length!==expected)return false;
      if(!visible.every(c=>s.textures.exists("retrato-"+c.p.dex)&&
-      c.img.visible&&c.img.texture?.key==="retrato-"+c.p.dex&&
+      c.img.visible&&c.img.texture?.key?.startsWith("retrato-"+c.p.dex)&&
       c.img.displayWidth===38))return false;
      return s.textures.exists("pmd-"+dex+"-Idle")&&
       s.anims.exists(dex+"-Idle-0")&&s.sprite?.texture?.key==="pmd-"+dex+"-Idle";
