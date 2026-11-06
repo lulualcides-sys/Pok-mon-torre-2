@@ -179,8 +179,8 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(dexData.count>=36,
    'Pokédex should retain 26 native cards and add ten original early-Kanto species');
   assert.ok(dexData.bottom<=dexData.podium-22,
-   'Expanded 36-family Pokédex cards cannot overlap the Pokémon pedestal');
-  assert.equal(dexData.visibleCount,36,'The initial National Dex page shows 36 cards');
+   'Native P2 family cards cannot overlap the Pokémon pedestal');
+  assert.equal(dexData.visibleCount,25,'Native 5-column Pokédex shows one entry per family');
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
    'Every visible Pokédex card must have a real PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));
