@@ -256,5 +256,15 @@ export function addAllJohtoSpecies(original){
  // FIRE skill providers are present. The operation is idempotent and mutates
  // only Magmar added by Torre 2; original P2 forms remain immutable.
  attachMagmortarEvolution([...original,...result]);
+ // The final Magmortar stage is installed only after the move library and
+ // Johto roots have been assembled. Extend Magby's private evolution chain
+ // with that stage; never modify the original P2 Magmar or other species.
+ const magby=result.find(p=>p.id==="magby");
+ const magmar=original.find(p=>p.id==="magmar");
+ const magmortar=(magmar?.evoluciones||[]).find(e=>Number(e.dex)===467);
+ if(magby?.evoluciones?.some(e=>Number(e.dex)===126)&&magmortar&&
+    !magby.evoluciones.some(e=>Number(e.dex)===467)){
+  magby.evoluciones.push({...magmortar});
+ }
  return result;
 }
