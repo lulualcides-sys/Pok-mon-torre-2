@@ -2,6 +2,15 @@
 
 Este repositório é o **Pokémon Torre 2**, não o Torre 1. Estas são instruções para qualquer agente, pessoa ou assistente que edite movimentos no futuro.
 
+## REGRA DE PRECEDÊNCIA INVIOLÁVEL — 06/11/2026 (TODOS os PRs)
+
+- **Espécies e evoluções/Megas nativas do Poké Arena 2D são intocáveis**, inclusive Ho-Oh, Crobat e Steelix. Não modificar ou completar kits, slots, golpes, ULT, sprites, cooldown e VFX, inclusive se houver menos de quatro habilidades. Identificar o nativo antes de integrar qualquer espécie nova. A Pokédex não pode reescrever dados da Arena.
+- **Todos os golpes com nome canônico igual** no Torre 2 e cliente-base P2 **usam a animação/forma executável original P2** no catálogo Torre 2, sem editar o objeto/kit nativo. Isso inclui Peck, Double Kick, Crunch e qualquer outro overlap. **Esta regra supera a proteção histórica dos efeitos caseiros homônimos**, mesmo quando antes aprovados.
+- **VFX exclusivos aprovados do Torre 2 permanecem preservados**; sem renderer original P2 executável não inventar equivalência nem alterar kit nativo. Kits calculados apenas de espécies realmente novas, com learnsets compatíveis e biblioteca executável.
+- **Regressões obrigatórias:** snapshot de kits nativos de espécie/evolução/Mega antes/depois; varredura de overlaps e exclusivos; testes Chromium/Phaser, checks CI e confirmação do SHA publicado no GitHub Pages.
+
+**Em conflito com decisões anteriores neste documento, esta regra expressa prevalece.**
+
 ## REGRA MÁXIMA — REAPROVEITAMENTO REAL DE QUATRO FONTES (23/10/2026)
 
 **É proibido inventar um golpe do zero por conveniência sem verificar primeiro os recursos concretos disponíveis nas quatro fontes abaixo.** O usuário exige reutilizar efetivamente componentes já existentes — e não apenas dizer que algo foi "inspirado" em outros jogos. A estética final permanece exatamente a do Poké Arena 2D, com pixel art legível.
