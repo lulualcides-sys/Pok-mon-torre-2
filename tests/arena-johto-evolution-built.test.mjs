@@ -21,6 +21,12 @@ assert.deepEqual(magby.expEvolucion,[50,90]);
 assert.deepEqual(eevee.evoluciones.map(p=>p.nombre),
  ['VAPOREON','JOLTEON','FLAREON','ESPEON','UMBREON']);
 assert.equal(eevee.torre2ArenaAdded,true);
+// Umbreon's DARK move is a legal HGSS TM79 from the installed approved
+// catalog, or the original P2 ability if the client later adds it.
+const umbreon=eevee.evoluciones.find(p=>p.nombre==='UMBREON');
+assert.equal(umbreon?.kit?.e?.nombre,'Dark Pulse');
+assert.equal(umbreon.kit.e.tipo,'DARK');
+assert.ok(umbreon.kit.e.forma,'Umbreon cannot have a placeholder ULT');
 const legal=(name)=>new Set(JOHTO_100_ROWS.find(p=>p[1]===name)[10]
  .map(([move])=>move));
 const checked={};
