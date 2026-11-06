@@ -9,7 +9,11 @@ export function attachMagmortarEvolution(roster){
  const magmar=roster.find(p=>p.id==='magmar');
  if(!magmar||magmar.torre2ArenaAdded!==true)return false;
  if((magmar.evoluciones||[]).some(e=>Number(e.dex)===467))return true;
- const library=nativeAttacks(roster),used=new Set();
+ // Native P2 indexes attack names with spaces ("Fire Punch"); this roster
+ // planner uses kebab-case ("fire-punch"). Normalize both exactly once,
+ // retaining the first/original P2 provider and its approved renderer.
+ const library=new Map([...nativeAttacks(roster)].map(([name,move])=>[key(name),move]));
+ const used=new Set();
  const preferences=[
   ['fire-punch','flame-wheel','ember'],
   ['flamethrower','fire-spin','fire-blast'],
