@@ -38,3 +38,16 @@ test('premium menu retains native ancho and apagar methods',async()=>{
  for(const method of ['activar(value)','apagar(value)','texto(value)','mostrar(value)','mover(nx,ny)','ancho(){return dimensions().w}','capa(depth)','destruir()'])
   assert.ok(code.includes(method),'Missing native button method: '+method);
 });
+
+// Preserve original PLAY item ordering; only shrink when the menu overlaps ground.
+test('PLAY responsive layout preserves all original actions and does not touch battle scenes',()=>{
+ const skin='marco(b.g,x0,y0,BW,b.h,i===this.foco?"oro":"azul");efectosBoton(b.g,b.luz,x0,y0,BW,b.h,this.time.now)';
+ const setup='const ops=MENUS[menu],{y,paso,alto=BH}=DISPOSICION[menu];this.botones=ops.map((o,i)=>this.boton(o,i,y+i*paso,paso,alto));';
+ const output=skinMenuScene('pintarBoton(){'+skin+'};abrirMenu(menu){'+setup+'}', 'titulo');
+ assert.ok(output.includes('if(menu==="jugar"&&ops.length>1'));
+ assert.ok(output.includes('for(const h of [alto,26,24,22])'));
+ assert.ok(output.includes('this.botones=ops.map((o,i)=>this.boton(o,i,y+i*paso,paso,alto))'));
+ assert.ok(!output.includes(setup),'Upstream overlapping fixed layout must be replaced');
+ assert.equal(output.includes('escenas/combate'),false);
+ assert.throws(()=>skinMenuScene('pintarBoton(){'+skin+'}', 'titulo'),/upstream changed titulo responsive PLAY submenu layout/);
+});
