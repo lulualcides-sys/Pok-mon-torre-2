@@ -14,7 +14,8 @@ test('premium menus replace only the native button import, never global UI or HU
  }
 });
 test('title and Pokédex gain pixel highlights without altering click listeners',()=>{
- const title='pintarBoton(b,i){marco(b.g,x0,y0,BW,b.h,i===this.foco?"oro":"azul");efectosBoton(b.g,b.luz,x0,y0,BW,b.h,this.time.now)}';
+ const title='pintarBoton(b,i){marco(b.g,x0,y0,BW,b.h,i===this.foco?"oro":"azul");efectosBoton(b.g,b.luz,x0,y0,BW,b.h,this.time.now)}'+
+  'const ops=MENUS[menu],{y,paso,alto=BH}=DISPOSICION[menu];this.botones=ops.map((o,i)=>this.boton(o,i,y+i*paso,paso,alto));';
  const t=skinMenuScene(title,'titulo');
  assert.ok(t.includes('fillRect(x0+6,y0+3'));
  assert.ok(t.includes('efectosBoton(b.g,b.luz'));
