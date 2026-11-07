@@ -39,12 +39,31 @@ export function routeEncounterTable(stage){
 }
 export function routeNode(stage,index,max){
  if(index>=max)return {type:'leader',name:'GINÁSIO',index};
- // Insert rivals/Rocket IN the trainer ladder without adding extra
- // compulsory battles. Boss and existing 13+ progression remain unchanged.
+ // Keep the historical number of Rival/Rocket battles, but never render
+ // those characters among the final three/four gym intermediates (#463).
+ // Relocate only the conflicts into the nearest ordinary ROUTE checkpoints.
+ // Indices and the campaign save schema stay exactly the same.
  const rivals=[0,1,2,4,5,8].includes(stage);
  const rockets=[1,3,5,7].includes(stage);
- const type=index>0&&index%9===3&&rivals?'rival':
-  index>0&&index%7===5&&rockets?'rocket':'trainer';
+ const historical=i=>i>0&&i%9===3&&rivals?'rival':
+  i>0&&i%7===5&&rockets?'rocket':'trainer';
+ let type=historical(index);
+ if(stage>=0&&stage<8){
+  const gymStart=max-(stage===0?3:4),displaced=[];
+  for(let i=gymStart;i<max;i++){
+   const prior=historical(i);
+   if(prior!=='trainer')displaced.push(prior);
+  }
+  if(index>=gymStart)type='trainer';
+  else if(type==='trainer'&&displaced.length){
+   const free=[];
+   for(let i=gymStart-1;i>=0&&free.length<displaced.length;i--){
+    if(historical(i)==='trainer')free.push(i);
+   }
+   const offset=free.indexOf(index);
+   if(offset!==-1)type=displaced[offset];
+  }
+ }
  return {type,name:type==='rival'?'RIVAL':type==='rocket'?'ROCKET':'TREINADOR',index};
 }
 // Gym rewards only refer to installed moves. Toxic awaits its own implementation.
