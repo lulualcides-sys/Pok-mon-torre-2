@@ -6,6 +6,7 @@
 import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
+import {BATCH24_MOVES} from "./batch24/catalog.js";
 import {TORRE2_WOBBUFFET_MOVES} from "./wobbuffet-native.js";
 import {attachMagmortarEvolution} from "./magmar-family.js";
 import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
@@ -48,6 +49,10 @@ export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
  quilava:{core:['quick-attack','ember','flame-wheel'],ult:'flamethrower',
   exclude:['overheat','fire-blast','eruption']},
  typhlosion:{core:['flame-wheel','flamethrower','lava-plume'],ult:'overheat'},
+ // Only for NEW Umbreon, never replace a native P2 fighter.
+ // Gen IV HGSS TM79 Dark Pulse has an already-approved executable VFX.
+ umbreon:{core:['quick-attack','shadow-ball','dig'],ult:'dark-pulse',
+  exclude:['hyper-beam','solar-beam']},
  larvitar:{core:['bite','sandstorm','rock-slide'],ult:'thrash',
   exclude:['earthquake','stone-edge','crunch','fire-blast']},
  pupitar:{core:['bite','rock-slide','crunch'],ult:'earthquake',
@@ -82,6 +87,13 @@ export function johtoMoveLibrary(original){
   const key=canon(name);
   if(key&&executable(move)&&!out.has(key))out.set(key,move);
  }
+ // Original P2 kit moves take precedence when available.
+ // Add this existing Torre 2 VFX to the legal Johto MOVE LIBRARY only,
+ // not to any native fighter. The Gen IV HGSS compatibility filter below
+ // decides whether a newly added species may equip it.
+ const approvedDarkPulse=BATCH24_MOVES.find(m=>m.id==="dark-pulse"&&m.approved===true);
+ if(executable(approvedDarkPulse)&&!out.has("dark-pulse"))
+  out.set("dark-pulse",approvedDarkPulse);
  // Hidden Power (#201 Unown) already has an approved Johto renderer.
  // Expose it to newly added Johto kits only; never change native P2 kits.
  const hidden=JOHTO_18.find(m=>m.id==="hidden-power");
