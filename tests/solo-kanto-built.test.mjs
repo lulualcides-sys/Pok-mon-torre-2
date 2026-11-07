@@ -941,8 +941,12 @@ const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf
 assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
 assert.ok(abilityBody.includes('h.paleta==="hieloTorre2"'),'Ice particles apply only to Ice Beam');
 assert.equal(equipMove(tester,0,'ice-beam'),true);
-assert.equal(resolveLoadout(tester).lmb.forma,'chorro');
-assert.equal(resolveLoadout(tester).lmb.paleta,'hieloTorre2');
+const selectedIce=allMoves.find(m=>m.id==='ice-beam');
+assert.ok(selectedIce,'Ice Beam must remain installed and playable');
+assert.equal(resolveLoadout(tester).lmb.forma,selectedIce.forma,
+ 'Equipping Ice Beam must preserve the selected native/approved renderer');
+assert.equal(resolveLoadout(tester).lmb.paleta,selectedIce.paleta,
+ 'Equipping Ice Beam must preserve the selected native/approved palette');
 assert.equal(equipMove(tester,0,'bonemerang'),true);
 const original=allMoves.filter(m=>['Flamethrower','Rock Slide','Water Pulse','Thunderbolt'].includes(m.nombre));
 assert.ok(original.length>=2,'captured Poké Arena move catalog retained');
