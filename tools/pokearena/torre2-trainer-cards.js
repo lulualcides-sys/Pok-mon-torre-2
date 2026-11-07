@@ -216,13 +216,42 @@ function extrasPage(scene,state,handlers){
   {id:'cards-extras-close',size:10});
  return layer;
 }
+// Keep route encounters and 3/4 gym trainers on SEPARATE pages. This
+// changes presentation only: all original encounter/save indices survive.
+export function trainerCardSections(stage,total){
+ if(!Number.isInteger(stage)||stage<0||!Number.isInteger(total)||total<0)
+  throw Error('Invalid campaign stage/card total');
+ const routeCount=stage<8?Math.max(0,total-(stage===0?3:4)):stage===8?total:0;
+ const sections=[];
+ if(routeCount>0){
+  const count=Math.ceil(routeCount/5);
+  const size=Math.floor(routeCount/count),extra=routeCount%count;
+  let start=0;
+  for(let page=0;page<count;page++){
+   const n=size+(page<extra?1:0);
+   sections.push({kind:stage===8?'victory':'route',
+    indices:Array.from({length:n},(_,i)=>start+i)});
+   start+=n;
+  }
+ }
+ sections.push({kind:stage<8?'gym':'league',
+  indices:Array.from({length:total-routeCount+1},(_,i)=>routeCount+i)});
+ return sections;
+}
 function cardsPage(scene,state,handlers){
  const all=trainerCardEntries(state);
  const current=all.find(e=>e.active)||all.at(-1);
- const maxPage=Math.max(0,Math.ceil(all.length/5)-1);
- const desired=Math.floor((state.trainer||0)/5);
+ const sections=trainerCardSections(state.stage,all.length-1);
+ const maxPage=sections.length-1;
+ const desired=Math.max(0,sections.findIndex(s=>s.indices.includes(state.trainer||0)));
+ const progressKey=state.stage+':'+(state.trainer||0);
+ if(scene.__torre2CardProgressKey!==progressKey){
+  scene.__torre2CardPage=desired;
+  scene.__torre2CardProgressKey=progressKey;
+ }
  const page=Math.min(maxPage,Math.max(0,scene.__torre2CardPage??desired));
  scene.__torre2CardPage=page;
+ const visibleEntries=sections[page].indices.map(index=>all[index]);
  const layer=scene.add.container(0,0).setDepth(200);
  layer.setData('torre2-trainer-cards-root',true);
  const bg=scene.add.graphics();
@@ -257,12 +286,18 @@ function cardsPage(scene,state,handlers){
  },{id:'fullscreen',size:9});
  control(scene,layer,578,9,54,32,'MENU',handlers.menu,
   {id:'menu',size:9});
- const heading=page*5+1;
+ const heading=visibleEntries[0].index+1;
+ const last=visibleEntries.at(-1).index+1;
+ const kind=sections[page].kind;
+ const area=kind==='route'?'CAMINHO PARA '+city.toUpperCase():
+  kind==='victory'?'ESTRADA DA VITÓRIA':
+  kind==='league'?'LIGA ÍNDIGO · '+(STAGES[state.stage]?.leader||'CAMPEÃO').toUpperCase():
+  'GINÁSIO DE '+city.toUpperCase();
  text(scene,layer,320,68,
-  'GINÁSIO DE '+city.toUpperCase()+'  ·  DESAFIOS '+heading+'–'+
-  Math.min(all.length,(page+1)*5),11,'#f8f2d6');
+  area+' · '+(heading===last?'DESAFIO '+heading:'DESAFIOS '+heading+'–'+last),
+  11,'#f8f2d6');
  for(let c=0;c<5;c++){
-  const entry=all[page*5+c];
+  const entry=visibleEntries[c];
   if(!entry)continue;
   const x=18+c*124,y=81,w=109,h=190;
   const edge=trainerCardFrame(scene,layer,x,y,w,h,entry);
@@ -325,7 +360,8 @@ function cardsPage(scene,state,handlers){
   detailPage(scene,state,handlers,current);
  },{gold:true,id:'cards-open-current',size:8});
  scene.__torre2CardUI={stage:state.stage,mode:'cards',total:all.length,
-  page,active:current.index,visible:all.slice(page*5,(page+1)*5).map(e=>e.index)};
+  page,section:sections[page].kind,active:current.index,
+  visible:visibleEntries.map(e=>e.index)};
  return scene.__torre2CardUI;
 }
 function detailPage(scene,state,handlers,entry){
