@@ -16,6 +16,7 @@ on:
       - '.github/workflows/t95-pr-release-check.yml'
 permissions:
   contents: read
+  actions: read
 jobs:
   node-checks:
     runs-on: ubuntu-24.04
@@ -50,7 +51,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in 1 2 3; do
-            if node tools/pokearena/capture-client.mjs                 && node tools/pokearena/build-preview.mjs                 && test -s _site/arena2d/lib/phaser.min.js; then
+            if GH_TOKEN="${{ github.token }}" bash tools/pokearena/capture-resilient.sh                 && node tools/pokearena/build-preview.mjs                 && test -s _site/arena2d/lib/phaser.min.js; then
               break
             fi
             if [ "$attempt" -eq 3 ]; then exit 1; fi

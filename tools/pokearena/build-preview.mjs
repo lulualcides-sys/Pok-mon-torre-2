@@ -385,7 +385,12 @@ patches.push(
   ['resultado(){this.fase="fin";',
    'resultado(){if(this.datos.torre2){const ganhou=this.victorias[0]>this.victorias[1];this.fase="fin";this.time.delayedCall(700,()=>this.scene.start("campanha",{finished:true,won:ganhou,marker:this.datos.torre2}));return;}this.fase="fin";'],
   ['salir(){this.soltarTiempo();',
-   'salir(){this.soltarTiempo();if(this.datos.torre2)return this.scene.start("campanha");']
+   'salir(){this.soltarTiempo();if(this.datos.torre2)return this.scene.start("campanha");'],
+  // The original Eevee gains fighter-local Johto branch choices. Load the
+  // *installed* licensed PMD frames BEFORE combat, only when Eevee is used
+  // in offline modes, so evolution cannot flash a missing texture on mobile.
+  ['soltarPMD(this,m,dexs);',
+   'if(!d.torre2&&d.modo!=="online"&&ids.includes("eevee"))for(const dex of ["0196","0197"])if(m[dex])dexs.add(dex);soltarPMD(this,m,dexs);']
  ]],
  ['luchador.js',[
   ['get defensa(){return(this.forma.def+(this.mega?this.forma.mega.def:0))*(this.jefe?.def??1)}','get defensa(){return(this.forma.def+(this.mega?this.forma.mega.def:0))*(this.jefe?.def??1)*(this.escena.datos?.torre2?2/(2+(this.est?.torre2Screech?.stages||0)):1)}'],

@@ -451,21 +451,44 @@ assert.ok(allMoves.length>=100,'test Mewtwo should unlock all captured Poké Are
 const uniqueNameKeys=new Set(TEST_LIBRARY.map(m=>canonicalMoveKey(m.nombre)));
 assert.equal(uniqueNameKeys.size,TEST_LIBRARY.length,
  'Duplicate Pokémon moves in selectable library (including translated aliases)');
-const nativeNames=new Set(TEST_LIBRARY
- .filter(m=>m.source==='arena2d-original').map(m=>canonicalMoveKey(m.nombre)));
-const approvedLegacyOverlaps=new Set(APPROVED_KANTO_NATIVE_OVERLAPS);
-const repeatedOriginals=SIGNATURE_MOVES.filter(m=>
- nativeNames.has(canonicalMoveKey(m.nombre))&&
- !approvedLegacyOverlaps.has(canonicalMoveKey(m.nombre)));
-assert.deepEqual(repeatedOriginals,[],
- 'No newly created custom duplicates of native P2 moves');
-for(const m of SIGNATURE_MOVES.filter(m=>
- approvedLegacyOverlaps.has(canonicalMoveKey(m.nombre)))){
- const selected=TEST_LIBRARY.find(x=>canonicalMoveKey(x.nombre)===canonicalMoveKey(m.nombre));
- if(!nativeNames.has(canonicalMoveKey(m.nombre)))continue;
- assert.equal(m.approved,true,'Native overlap requires prior user VFX approval');
- assert.equal(selected?.forma,m.forma,'Previously approved VFX stays in Torre 2 campaign');
- assert.equal(selected?.source,'new-phaser-fx','Native Arena kit must remain unmodified');
+// Approved Torre2-only moves stay intact, but the ORIGINAL Poké Arena 2D
+// renderer wins whenever a source-client move has the same canonical name.
+// The historical test incorrectly required custom VFX to override P2, which
+// contradicts the project's permanent native-first policy (AGENTS.md).
+const nativeMoves=new Map(TEST_LIBRARY.filter(m=>m.source==='arena2d-original')
+ .map(m=>[canonicalMoveKey(m.nombre),m]));
+// Native P2 VFX always takes precedence for canonical move overlaps.
+// Exclusive approved Torre2 VFX must remain available and unchanged.
+function expectRenderer(id,exclusiveForma){
+ const move=allMoves.find(m=>m.id===id);
+ assert.ok(move,'Missing playable move '+id);
+ const original=nativeMoves.get(canonicalMoveKey(move.nombre));
+ if(original){
+  assert.equal(move.source,'arena2d-original','Original P2 must win for '+id);
+  assert.equal(move.forma,original.forma,'Native renderer changed for '+id);
+ }else{
+  assert.equal(move.source,'new-phaser-fx','Exclusive Torre2 source lost for '+id);
+  if(exclusiveForma)assert.equal(move.forma,exclusiveForma,'Exclusive renderer changed for '+id);
+  assert.equal(move.approved,true,'Exclusive Torre2 move lost approval: '+id);
+ }
+ return move.forma;
+}
+const overlappingSignatureMoves=SIGNATURE_MOVES.filter(m=>
+ nativeMoves.has(canonicalMoveKey(m.nombre)));
+for(const proposed of overlappingSignatureMoves){
+ const key=canonicalMoveKey(proposed.nombre);
+ const selected=TEST_LIBRARY.find(m=>canonicalMoveKey(m.nombre)===key);
+ assert.ok(selected,'Native move absent from combined library: '+proposed.nombre);
+ assert.equal(selected.source,'arena2d-original',
+  'Original P2 renderer must supersede a Torre2 custom overlap: '+proposed.nombre);
+ assert.equal(selected.forma,nativeMoves.get(key).forma,
+  'Native renderer changed for '+proposed.nombre);
+}
+for(const proposed of SIGNATURE_MOVES.filter(m=>
+ !nativeMoves.has(canonicalMoveKey(m.nombre)))){
+ const selected=TEST_LIBRARY.find(m=>
+  canonicalMoveKey(m.nombre)===canonicalMoveKey(proposed.nombre));
+ assert.ok(selected,'An exclusive approved Torre2 move was removed: '+proposed.nombre);
 }
 assert.equal(canonicalMoveKey('Bola Sombria'),canonicalMoveKey('Shadow Ball'));
 assert.equal(canonicalMoveKey('Pistola de Água'),canonicalMoveKey('Water Gun'));
@@ -480,9 +503,15 @@ for(const id of ['bite','crunch','peck','bug-bite','gust','poison-sting',
  'leech-life','bonemerang','flamethrower','metal-claw','bind','double-kick','fury-attack',
  'rock-tomb','horn-attack','metronome','absorb','x-scissor'])
  assert.ok(!pendingIds.includes(id),'Native and approved moves must never enter NEW: '+id);
-for(const id of ['metronome','absorb','x-scissor'])
- assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
-  'User just approved the previously queued move '+id);
+for(const id of ['metronome','absorb','x-scissor']){
+ const selected=allMoves.find(m=>m.id===id);
+ assert.ok(selected,'Missing formerly approved or native move '+id);
+ if(selected.source==='arena2d-original')
+  assert.equal(selected.forma,nativeMoves.get(canonicalMoveKey(selected.nombre))?.forma,
+   'The original P2 renderer must supersede approved custom '+id);
+ else assert.equal(selected.approved,true,
+   'Exclusive Torre2 move lost its approval '+id);
+}
 assert.ok(pending.every(isPendingApprovalMove));
 assert.ok(pending.every(m=>m.source==='new-phaser-fx'));
 assert.equal(filterMoveLibrary(allMoves,'NEW','ROCK').length,0,
@@ -534,10 +563,7 @@ for(const id of ['gust','poison-sting','bite','crunch']){
  assert.equal(equipMove(tester,0,id),true,'early-route move can be equipped '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new early-route move usable '+id);
 }
-const nativeCrunch=allMoves.find(m=>m.id==='crunch');
-assert.ok(nativeCrunch,'Original Pokémon Arena Crunch must be available');
-assert.equal(nativeCrunch.forma,'torre2_crunch','Crunch renderer updated in Kanto loadout');
-assert.equal(nativeCrunch.source,'torre2-visual-override','Native Crunch stats kept');
+const crunchForma=expectRenderer('crunch','torre2_crunch');
 assert.equal(SIGNATURE_MOVES.some(m=>m.id==='crunch'),false,'Never duplicate native Crunch');
 const leech=allMoves.find(m=>m.id==='leech-life');
 assert.ok(leech,'Native Leech Life remains in original catalog');
@@ -547,28 +573,21 @@ assert.equal(leech.forma,'golpe',
  'Leech Life renderer must remain the original Arena 2D hit effect');
 assert.ok(!SIGNATURE_MOVES.some(m=>m.id==='leech-life'),'No duplicate native move');
 for(const [id,forma] of [['peck','torre2_peck'],['bug-bite','torre2_bugbite']]){
- const move=allMoves.find(m=>m.id===id);
- assert.equal(move.forma,forma);
- assert.equal(move.approved,true,'User approved Peck and Bug Bite; freeze graphics and effects');
+ const selectedForma=expectRenderer(id,forma);
  assert.equal(equipMove(tester,0,id),true);
- assert.equal(resolveLoadout(tester).lmb.forma,forma);
+ assert.equal(resolveLoadout(tester).lmb.forma,selectedForma);
 }
 for(const [id,forma] of [
  ['rock-tomb','torre2_rocktomb'],['horn-attack','torre2_hornattack'],
  ['double-kick','torre2_doublekick'],['fury-attack','torre2_furyattack'],
  ['metal-claw','torre2_metalclaw'],['bind','torre2_bind']
 ]){
- const move=allMoves.find(m=>m.id===id);
- assert.ok(move,'Pre-Brock missing attack now installed: '+id);
- assert.equal(move.forma,forma);
- assert.equal(move.source,'new-phaser-fx','Never overwrite an original move');
- assert.equal(move.approved,true,
-  'All six pre-Brock moves are now approved and protected');
+ const selectedForma=expectRenderer(id,forma);
  assert.equal(equipMove(tester,0,id),true);
- assert.equal(resolveLoadout(tester).lmb.forma,forma);
+ assert.equal(resolveLoadout(tester).lmb.forma,selectedForma);
 }
 assert.equal(equipMove(tester,0,'crunch'),true);
-assert.equal(resolveLoadout(tester).lmb.forma,'torre2_crunch');
+assert.equal(resolveLoadout(tester).lmb.forma,crunchForma);
 assert.equal(allMoves.filter(x=>x.nombre==='Tackle').length,1,
  'Tackle already exists in original Pokémon Arena 2D and must not be duplicated');
 const confusion=allMoves.find(x=>x.nombre==='Confusion');
@@ -581,56 +600,46 @@ saveCampaign(state);
 assert.equal(readCampaign().team.find(x=>x.id==='mewtwo').moves[0],confusion.id,
  'selected moves must persist in saved campaign');
 assert.equal(allMoves.filter(x=>x.id==='surf').length,1,'Reworked Surf must be unique');
-assert.equal(allMoves.find(x=>x.id==='surf')?.forma,'torre2_finale_surf',
- 'Old rejected Surf must not be restored: test only the NEW pixel wave');
-assert.equal(allMoves.find(x=>x.id==='surf')?.approved,true,
- 'User explicitly approved the remastered Torre 1 Surf; freeze its renderer');
+expectRenderer('surf','torre2_finale_surf');
 assert.equal(equipMove(tester,0,'surf'),true,
  'Test Mewtwo can equip new Surf in battle for visual review');
 assert.equal(equipMove(tester,0,'swift'),true,'new Swift must equip');
-assert.equal(resolveLoadout(tester).lmb.forma,'torre2_swift');
+assert.equal(resolveLoadout(tester).lmb.forma,expectRenderer('swift','torre2_swift'));
 assert.equal(equipMove(tester,0,'shadow-ball'),true,'new Shadow Ball must equip');
-assert.equal(resolveLoadout(tester).lmb.forma,'torre2_shadowball');
+assert.equal(resolveLoadout(tester).lmb.forma,expectRenderer('shadow-ball','torre2_shadowball'));
 assert.equal(equipMove(tester,0,'lovely-kiss'),true,'new Lovely Kiss must equip');
-assert.equal(resolveLoadout(tester).lmb.forma,'torre2_lovelykiss');
+assert.equal(resolveLoadout(tester).lmb.forma,expectRenderer('lovely-kiss','torre2_lovelykiss'));
 assert.equal(equipMove(tester,0,'bonemerang'),true);
 for(const id of ['ice-beam','rock-blast','confuse-ray','soft-boiled']){
  assert.equal(equipMove(tester,0,id),true,'new move equippable '+id);
  assert.equal(resolveLoadout(tester).lmb.id,id,'new Phaser move active '+id);
 }
 const realBeam=allMoves.find(m=>m.id==='ice-beam');
-assert.equal(realBeam.forma,'chorro','Ice Beam must reuse real Hyper Beam/Aura Storm engine');
-assert.equal(realBeam.paleta,'hieloTorre2');
-assert.equal(realBeam.haz,true);
-assert.equal(realBeam.giro,3.5);
-assert.equal(realBeam.source,'new-phaser-fx','Only native renderer is reused, not falsely relabeled');
+assert.equal(realBeam.forma,expectRenderer('ice-beam','chorro'));
+if(realBeam.source==='new-phaser-fx'){
+ assert.equal(realBeam.paleta,'hieloTorre2');
+ assert.equal(realBeam.haz,true);
+ assert.equal(realBeam.giro,3.5);
+}
 for(const id of [
  'bonemerang','bone-club','tri-attack','pay-day','shadow-ball',
- 'rock-blast','soft-boiled','confuse-ray'
-])
- assert.equal(allMoves.find(m=>m.id===id)?.approved,true,'Previously approved signature move '+id);
-for(const id of ['swift','lovely-kiss'])
- assert.equal(allMoves.find(m=>m.id===id)?.approved,true,
-  'The user has explicitly approved '+id);
-assert.equal(realBeam.approved,true,'Ice Beam V6 approved: native Chorro, frozen palette and crystals are locked');
+ 'rock-blast','soft-boiled','confuse-ray','swift','lovely-kiss','ice-beam'
+])expectRenderer(id);
 // Preserve approvals already registered in the master moveset, without editing their art.
 for(const [id,forma] of [['hyper-fang','torre2_hyperfang'],
  ['guillotine','torre2_guillotine'],['petal-dance','torre2_petaldance']]){
- const h=allMoves.find(x=>x.id===id);
- assert.ok(h,'New Kanto move registered '+id);
- assert.equal(h.forma,forma,'Correct art renderer '+id);
- assert.equal(h.approved,true,
-  'All three prior Kanto moves received visual approval: '+id);
- assert.equal(h.source,'new-phaser-fx');
+ const selectedForma=expectRenderer(id,forma);
  assert.equal(equipMove(tester,0,id),true,'Mewtwo test loadout includes '+id);
- assert.equal(resolveLoadout(tester).lmb.forma,forma);
+ assert.equal(resolveLoadout(tester).lmb.forma,selectedForma);
 }
 for(const [id,forma] of [['metronome','torre2_metronome'],['absorb','torre2_absorb'],['x-scissor','torre2_xscissor']]){
  const h=allMoves.find(m=>m.id===id);
- assert.ok(h,'New ability must be in Kanto/Mewtwo move library: '+id);
- assert.equal(h.forma,forma);
- assert.equal(h.approved,true,'Moves already marked approved must remain approved');
- assert.equal(equipMove(tester,0,id),true,'New trio selectable in Mewtwo test menu');
+ assert.ok(h,'Original/native ability missing from Kanto/Mewtwo move library: '+id);
+ const original=nativeMoves.get(canonicalMoveKey(h.nombre));
+ assert.equal(h.forma,original?.forma??forma);
+ if(original)assert.equal(h.source,'arena2d-original');
+ else assert.equal(h.approved,true,'Exclusive Torre2 move lost approval');
+ assert.equal(equipMove(tester,0,id),true,'Move must remain selectable in Mewtwo test menu');
 }
 const newVfx=fs.readFileSync(path.join(stage,version,'torre2/next-specific-fx.js'),'utf8');
 for(const name of ['metronome','absorb','xscissor'])assert.ok(
@@ -665,12 +674,7 @@ assert.ok(early.includes('const rotations=[0,PI/2]') &&
  early.includes('paintChomp(jaw,cx,cy,rotations[turn]') &&
  early.includes('const struck=landed||strike('),
  'Crunch has horizontal + vertical pixel bites, with only one actual damaging hit');
-for(const id of ['gust','poison-sting'])
- assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
- 'These early-route moves are explicitly approved and frozen: '+id);
-for(const id of ['bite','crunch'])
- assert.equal(allMoves.find(x=>x.id===id)?.approved,true,
- 'User explicitly approved Bite and Crunch; preserve their pixel art and mechanics');
+for(const id of ['gust','poison-sting','bite','crunch'])expectRenderer(id);
 assert.ok(early.includes('export function contactDash(')&&early.includes('dash.step(age)'),
  'Bite and Crunch advance the actual fighter before returning');
 assert.ok(!early.includes('export function leechlife(')&&
@@ -937,8 +941,12 @@ const abilityBody=fs.readFileSync(path.join(stage,version,'habilidades.js'),'utf
 assert.ok(abilityBody.includes('HAZ.hieloTorre2='),'Exact original beam renderer with new palette');
 assert.ok(abilityBody.includes('h.paleta==="hieloTorre2"'),'Ice particles apply only to Ice Beam');
 assert.equal(equipMove(tester,0,'ice-beam'),true);
-assert.equal(resolveLoadout(tester).lmb.forma,'chorro');
-assert.equal(resolveLoadout(tester).lmb.paleta,'hieloTorre2');
+const selectedIce=allMoves.find(m=>m.id==='ice-beam');
+assert.ok(selectedIce,'Ice Beam must remain installed and playable');
+assert.equal(resolveLoadout(tester).lmb.forma,selectedIce.forma,
+ 'Equipping Ice Beam must preserve the selected native/approved renderer');
+assert.equal(resolveLoadout(tester).lmb.paleta,selectedIce.paleta,
+ 'Equipping Ice Beam must preserve the selected native/approved palette');
 assert.equal(equipMove(tester,0,'bonemerang'),true);
 const original=allMoves.filter(m=>['Flamethrower','Rock Slide','Water Pulse','Thunderbolt'].includes(m.nombre));
 assert.ok(original.length>=2,'captured Poké Arena move catalog retained');

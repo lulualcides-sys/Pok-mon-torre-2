@@ -6,6 +6,7 @@
 import {JOHTO_100_ROWS} from "./johto-100-data.js";
 import {nativeAttacks} from "./early-kanto-species.js";
 import {JOHTO_18} from "./johto-lab-catalog.js";
+import {BATCH24_MOVES} from "./batch24/catalog.js";
 import {TORRE2_WOBBUFFET_MOVES} from "./wobbuffet-native.js";
 import {attachMagmortarEvolution} from "./magmar-family.js";
 import {GEN4_HGSS_JOHTO_LEVEL_UP,GEN5_B2W2_JOHTO_LEVEL_UP,
@@ -48,6 +49,10 @@ export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
  quilava:{core:['quick-attack','ember','flame-wheel'],ult:'flamethrower',
   exclude:['overheat','fire-blast','eruption']},
  typhlosion:{core:['flame-wheel','flamethrower','lava-plume'],ult:'overheat'},
+ // Only for NEW Umbreon, never replace a native P2 fighter.
+ // Gen IV HGSS TM79 Dark Pulse has an already-approved executable VFX.
+ umbreon:{core:['quick-attack','shadow-ball','dig'],ult:'dark-pulse',
+  exclude:['hyper-beam','solar-beam']},
  larvitar:{core:['bite','sandstorm','rock-slide'],ult:'thrash',
   exclude:['earthquake','stone-edge','crunch','fire-blast']},
  pupitar:{core:['bite','rock-slide','crunch'],ult:'earthquake',
@@ -55,6 +60,11 @@ export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
  tyranitar:{core:['fire-fang','crunch','earthquake'],ult:'stone-edge'},
  magby:{core:['ember','smog','fire-spin'],ult:'fire-punch',
   exclude:['overheat','fire-blast','flamethrower','lava-plume']},
+ // Togepi's first four legal FRLG moves are largely non-damaging. Give its
+ // playable Arena kit real installed attacks before utility skills.
+ // Metronome is retained only if the existing executable renderer is present.
+ togepi:{core:['hidden-power','double-edge','metronome'],ult:'psychic'},
+ togetic:{core:['aerial-ace','fly','hidden-power'],ult:'psychic'},
  // Evolution-final exclusive signatures cannot land on an intermediate ULT.
  feraligatr:{core:['water-gun','aqua-tail','waterfall'],ult:'hydro-pump'}
 });
@@ -77,6 +87,13 @@ export function johtoMoveLibrary(original){
   const key=canon(name);
   if(key&&executable(move)&&!out.has(key))out.set(key,move);
  }
+ // Original P2 kit moves take precedence when available.
+ // Add this existing Torre 2 VFX to the legal Johto MOVE LIBRARY only,
+ // not to any native fighter. The Gen IV HGSS compatibility filter below
+ // decides whether a newly added species may equip it.
+ const approvedDarkPulse=BATCH24_MOVES.find(m=>m.id==="dark-pulse"&&m.approved===true);
+ if(executable(approvedDarkPulse)&&!out.has("dark-pulse"))
+  out.set("dark-pulse",approvedDarkPulse);
  // Hidden Power (#201 Unown) already has an approved Johto renderer.
  // Expose it to newly added Johto kits only; never change native P2 kits.
  const hidden=JOHTO_18.find(m=>m.id==="hidden-power");
@@ -211,6 +228,24 @@ export function addAllJohtoSpecies(original){
   if(nativeNames.has(canon(p[1]))||nativeDex.has(p[0])) continue;
   const kit=johto100Kit(p,library);
   const sub=lineage(p[0]);
+  // A Gen-II baby can evolve into a native P2 Kanto Pokémon whose National
+  // Dex number is outside 152–251. Clone only the stage descriptor into the
+  // new baby's private evolution list; never mutate the native P2 original.
+  // Magby #240 -> Magmar #126, then Magmortar #467 only when an installed
+  // stage exists. Do not fabricate missing moves or visuals.
+  const bridge=[];
+  if(p[1]==="magby"){
+   const magmar=original.find(q=>canon(q.id)==="magmar"||
+    canon(q.nombre)==="magmar");
+   if(magmar){
+    bridge.push({dex:String(magmar.dex),nombre:"MAGMAR",
+     tipos:[...magmar.tipos],hp:magmar.hp,vel:magmar.vel,
+     atk:magmar.atk,def:magmar.def,regen:magmar.regen,
+     kit:magmar.kit});
+    for(const e of magmar.evoluciones||[])
+     if(Number(e.dex)===467)bridge.push({...e});
+   }
+  }
   result.push({
    id:p[1],dex:num(p[0]),nombre:p[1].toUpperCase(),
    torre2Johto100:true,torre2ArenaAdded:true,torre2ArenaRegion:"JOHTO",
@@ -221,11 +256,11 @@ export function addAllJohtoSpecies(original){
    rol:["FIGHTING","GROUND","ROCK"].includes(p[2][0])?
     "FISICO":"MIXTO",
    lema:"JOHTO / GEN II",...actualStats(p),ia:{rango:115},kit,
-   evoluciones:sub.map(q=>({
+   evoluciones:[...bridge,...sub.map(q=>({
     dex:num(q[0]),nombre:q[1].toUpperCase(),
     tipos:[...q[2]],...actualStats(q),
     kit:johto100Kit(q,library)
-   }))
+   }))]
   });
  }
  // The newer native ROSTER builder skips the later explicit Magmortar hook.
@@ -233,5 +268,15 @@ export function addAllJohtoSpecies(original){
  // FIRE skill providers are present. The operation is idempotent and mutates
  // only Magmar added by Torre 2; original P2 forms remain immutable.
  attachMagmortarEvolution([...original,...result]);
+ // The final Magmortar stage is installed only after the move library and
+ // Johto roots have been assembled. Extend Magby's private evolution chain
+ // with that stage; never modify the original P2 Magmar or other species.
+ const magby=result.find(p=>p.id==="magby");
+ const magmar=original.find(p=>p.id==="magmar");
+ const magmortar=(magmar?.evoluciones||[]).find(e=>Number(e.dex)===467);
+ if(magby?.evoluciones?.some(e=>Number(e.dex)===126)&&magmortar&&
+    !magby.evoluciones.some(e=>Number(e.dex)===467)){
+  magby.evoluciones.push({...magmortar});
+ }
  return result;
 }

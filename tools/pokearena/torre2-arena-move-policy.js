@@ -293,8 +293,18 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
   if(this.escena?.datos?.torre2||this.def?.id!=='eevee'||!(this.etapa>0))
    return form;
   if(!this.__torre2EeveeEvolution){
-   const choices=(this.def.evoluciones||[]).filter(e=>['vaporeon','jolteon','flareon'].includes(idOf(e.nombre)));
-   if(choices.length!==3)return form;
+   // Only the evolving fighter receives a cloned descriptor with Johto
+   // options; the global P2 Eevee and its original kits stay immutable.
+   const originalStages=this.def.evoluciones||[];
+   const names=new Set(originalStages.map(e=>idOf(e.nombre)));
+   const extras=['espeon','umbreon'].map(id=>roster.find(p=>p.id===id))
+    .filter(p=>p?.kit&&!names.has(p.id))
+    .map(p=>({dex:p.dex,nombre:p.nombre,tipos:[...p.tipos],
+     hp:p.hp,vel:p.vel,atk:p.atk,def:p.def,regen:p.regen,kit:p.kit}));
+   if(extras.length)this.def={...this.def,evoluciones:[...originalStages,...extras]};
+   const choices=(this.def.evoluciones||[]).filter(e=>
+    ['vaporeon','jolteon','flareon','espeon','umbreon'].includes(idOf(e.nombre)));
+   if(choices.length<3)return form;
    const pick=chooseEeveeBranch(choices.length);
    this.__torre2EeveeEvolution=choices[pick-1].nombre;
    this.etapa=this.def.evoluciones.indexOf(choices[pick-1])+1;
@@ -316,7 +326,11 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
    return original;
   // Johto was chosen using genuine species FRLG/approved attacks, not
   // Kanto Arena-121 fallback or native cooldown rewrite.
-  if(this.def.torre2Johto100===true)return original;
+  // Eevee's stage is built from the actual installed Johto form. Never
+  // re-plan Espeon/Umbreon through Kanto and erase its original/legal kit.
+  if(this.def.torre2Johto100===true||
+     (this.def.id==='eevee'&&['espeon','umbreon'].includes(id)))
+   return original;
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
   return selectApprovedArenaKit(auto,id,library,nativeDodges);
  };

@@ -18,6 +18,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   # Cancel superseded PR run; preserve all validation jobs.
   group: pt2-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -42,9 +43,11 @@ jobs:
           node --check tools/pokearena/torre2-capture-arena.js
           node --test tests/frlg-mart-original-icons.test.js tests/versus-intro-contract.test.js tests/original-ball-capture.test.js
       - name: Build the original Phaser client and approved Kanto content
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          node tools/pokearena/capture-client.mjs
+          bash tools/pokearena/capture-resilient.sh
           node tools/pokearena/build-preview.mjs
       - name: Verify real PNG alpha, colored palettes and offline shop art
         run: |

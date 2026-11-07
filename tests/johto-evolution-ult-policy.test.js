@@ -11,10 +11,11 @@ for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
  ['johto-lab-catalog.js','torre2-johto-lab-catalog.js'],
+ ['batch24/catalog.js','batch24/catalog.js'],
  ['wobbuffet-native.js','torre2-wobbuffet-native.js'],
  ['gen45-johto-learnsets.js','torre2-gen45-johto-learnsets.js']
 ])src=src.replace('from "./'+from+'"','from '+JSON.stringify(new URL(to,root).href));
-const {selectJohto100Moves,JOHTO_EVOLUTION_KIT_PLAN}=await import(
+const {selectJohto100Moves,JOHTO_EVOLUTION_KIT_PLAN,addAllJohtoSpecies}=await import(
  'data:text/javascript;base64,'+Buffer.from(src).toString('base64')
 );
 const mk=(name,type='NORMAL',dmg=7)=>({id:name,nombre:name.split('-').map(w=>w[0].toUpperCase()+w.slice(1)).join(' '),
@@ -61,4 +62,42 @@ test('Magby has real baby moves instead of evolved Overheat ULT',()=>{
 test('Unown officially has only Hidden Power: never fabricate illegal moves',()=>{
  assert.deepEqual(names('unown'),['hidden-power']);
  assert.ok(JOHTO_EVOLUTION_KIT_PLAN.tyranitar);
+});
+
+test('Magby evolves into installed Magmar without changing original P2 species',()=>{
+ const original=[
+  {id:'magmar',dex:'0126',nombre:'MAGMAR',torre2ArenaAdded:true,
+   tipos:['FIRE'],hp:93,vel:112,atk:1.1,def:.9,regen:4,
+   kit:{lmb:mk('ember','FIRE',5),rmb:mk('fire-punch','FIRE',12),
+    q:mk('fire-spin','FIRE',7),e:mk('flamethrower','FIRE',20)},evoluciones:[]}
+ ];
+ const saved=structuredClone(original);
+ const added=addAllJohtoSpecies(original);
+ const magby=added.find(p=>p.id==='magby');
+ assert.ok(magby?.torre2ArenaAdded&&magby.evoluciones.length,
+  'Magby must have actual battle evolution, not only visual Pokédex family');
+ const stage=magby.evoluciones[0];
+ assert.equal(stage.nombre,'MAGMAR');
+ assert.equal(stage.dex,'0126');
+ for(const slot of ['lmb','rmb','q','e'])
+  assert.equal(stage.kit[slot].nombre,original[0].kit[slot].nombre,
+   'Magby evolution must use installed Magmar native move');
+ assert.deepEqual(original,saved,'Do not edit the existing Magmar entry');
+});
+test('Togepi/Togetic have installed legal damaging moves, with no fabricated VFX',()=>{
+ const installed=new Map(library);
+ for(const [name,type,damage] of [
+  ['metronome','NORMAL',0],['ancient-power','ROCK',10],
+  ['double-edge','NORMAL',17],['psychic','PSYCHIC',21],
+  ['magical-leaf','GRASS',13]
+ ])installed.set(name,mk(name,type,damage));
+ for(const id of ['togepi','togetic']){
+  const moves=selectJohto100Moves(row(id),installed);
+  assert.ok(moves.length>=3,id+' lost available legal attack slots');
+  assert.ok(moves[0].move.dano>0,id+' ATK is non-damaging despite legal attack availability');
+  assert.ok(moves.every(x=>installed.get(x.id)===x.move&&x.move.forma),
+   'No invented VFX or unauthorised move');
+  assert.equal(new Set(moves.map(x=>x.id)).size,moves.length);
+  assert.ok(moves.some(x=>x.id==='hidden-power'),id+' must retain the already-installed legal Hidden Power');
+ }
 });

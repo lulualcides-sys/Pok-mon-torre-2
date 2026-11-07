@@ -139,6 +139,7 @@ jobs:
           node tests/t08-leech-seed-campaign-balance-built.test.mjs
           node tests/finale13-built.test.mjs
           node tests/rayquaza-mega-built.test.mjs
+          node tests/arena-johto-evolution-built.test.mjs
           node --test tests/pokedex-native-families.test.js
           node tests/pokedex-crossgen-families-built.test.mjs
           node tests/arena-family-selector-built.test.mjs

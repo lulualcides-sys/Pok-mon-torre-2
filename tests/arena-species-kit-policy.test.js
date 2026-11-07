@@ -356,3 +356,37 @@ test('Upstream native Gengar Night Shade ULT is corrected to Shadow Ball while d
   ['Hypnosis','Sludge Bomb','Dark Pulse','Shadow Ball'],
   'Gengar stage kit does not reshuffle at successive reads');
 });
+
+test('Eevee Arena independently samples Espeon and Umbreon without rewriting P2 roster',()=>{
+ class Fighter{
+  constructor(def){this.def=def;this.etapa=1;this.escena={datos:{modo:'arena'}};}
+  get forma(){return this.etapa?{...this.def,...this.def.evoluciones[this.etapa-1]}:this.def;}
+  get puedeEvolucionar(){return this.etapa<(this.def.evoluciones||[]).length;}
+  kitActual(){return this.forma.kit;}
+ }
+ const m=name=>({nombre:name.toUpperCase(),kit:{lmb:move('Tackle',5)}});
+ const eevee={id:'eevee',nombre:'EEVEE',evoluciones:
+  ['vaporeon','jolteon','flareon'].map(m),kit:{lmb:move('Quick Attack',6)}};
+ const extras=['espeon','umbreon'].map((id,i)=>({
+  id,nombre:id.toUpperCase(),dex:String(196+i),
+  tipos:[i?'DARK':'PSYCHIC'],hp:80,vel:120,atk:1.2,def:1.1,
+  regen:4,kit:{lmb:move(i?'Pursuit':'Psybeam',12)}
+ }));
+ const original=structuredClone([eevee,...extras]);
+ installArenaMovePolicy(Fighter,[eevee,...extras]);
+ const priorRandom=Math.random;
+ try{
+  for(let i=0;i<5;i++){
+   Math.random=()=>i/5+.01;
+   const fighter=new Fighter(eevee);
+   assert.equal(fighter.forma.nombre,
+    ['VAPOREON','JOLTEON','FLAREON','ESPEON','UMBREON'][i]);
+   assert.equal(fighter.forma.nombre,fighter.forma.nombre,
+    'A selected evolution must remain stable across frames');
+   assert.equal(fighter.puedeEvolucionar,false,'Eevee only evolves once');
+   assert.ok(fighter.kitActual()?.lmb?.nombre);
+  }
+ }finally{Math.random=priorRandom}
+ assert.deepEqual([eevee,...extras],original,
+  'Never mutate original Eevee or independently installed Johto Pokémon');
+});
