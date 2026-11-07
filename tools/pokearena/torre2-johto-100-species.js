@@ -55,6 +55,11 @@ export const JOHTO_EVOLUTION_KIT_PLAN=Object.freeze({
  tyranitar:{core:['fire-fang','crunch','earthquake'],ult:'stone-edge'},
  magby:{core:['ember','smog','fire-spin'],ult:'fire-punch',
   exclude:['overheat','fire-blast','flamethrower','lava-plume']},
+ // Togepi's first four legal FRLG moves are largely non-damaging. Give its
+ // playable Arena kit real installed attacks before utility skills.
+ // Metronome is retained only if the existing executable renderer is present.
+ togepi:{core:['hidden-power','double-edge','metronome'],ult:'psychic'},
+ togetic:{core:['aerial-ace','fly','hidden-power'],ult:'psychic'},
  // Evolution-final exclusive signatures cannot land on an intermediate ULT.
  feraligatr:{core:['water-gun','aqua-tail','waterfall'],ult:'hydro-pump'}
 });
@@ -211,6 +216,24 @@ export function addAllJohtoSpecies(original){
   if(nativeNames.has(canon(p[1]))||nativeDex.has(p[0])) continue;
   const kit=johto100Kit(p,library);
   const sub=lineage(p[0]);
+  // A Gen-II baby can evolve into a native P2 Kanto Pokémon whose National
+  // Dex number is outside 152–251. Clone only the stage descriptor into the
+  // new baby's private evolution list; never mutate the native P2 original.
+  // Magby #240 -> Magmar #126, then Magmortar #467 only when an installed
+  // stage exists. Do not fabricate missing moves or visuals.
+  const bridge=[];
+  if(p[1]==="magby"){
+   const magmar=original.find(q=>canon(q.id)==="magmar"||
+    canon(q.nombre)==="magmar");
+   if(magmar){
+    bridge.push({dex:String(magmar.dex),nombre:"MAGMAR",
+     tipos:[...magmar.tipos],hp:magmar.hp,vel:magmar.vel,
+     atk:magmar.atk,def:magmar.def,regen:magmar.regen,
+     kit:magmar.kit});
+    for(const e of magmar.evoluciones||[])
+     if(Number(e.dex)===467)bridge.push({...e});
+   }
+  }
   result.push({
    id:p[1],dex:num(p[0]),nombre:p[1].toUpperCase(),
    torre2Johto100:true,torre2ArenaAdded:true,torre2ArenaRegion:"JOHTO",
@@ -221,11 +244,11 @@ export function addAllJohtoSpecies(original){
    rol:["FIGHTING","GROUND","ROCK"].includes(p[2][0])?
     "FISICO":"MIXTO",
    lema:"JOHTO / GEN II",...actualStats(p),ia:{rango:115},kit,
-   evoluciones:sub.map(q=>({
+   evoluciones:[...bridge,...sub.map(q=>({
     dex:num(q[0]),nombre:q[1].toUpperCase(),
     tipos:[...q[2]],...actualStats(q),
     kit:johto100Kit(q,library)
-   }))
+   }))]
   });
  }
  // The newer native ROSTER builder skips the later explicit Magmortar hook.
@@ -233,5 +256,15 @@ export function addAllJohtoSpecies(original){
  // FIRE skill providers are present. The operation is idempotent and mutates
  // only Magmar added by Torre 2; original P2 forms remain immutable.
  attachMagmortarEvolution([...original,...result]);
+ // The final Magmortar stage is installed only after the move library and
+ // Johto roots have been assembled. Extend Magby's private evolution chain
+ // with that stage; never modify the original P2 Magmar or other species.
+ const magby=result.find(p=>p.id==="magby");
+ const magmar=original.find(p=>p.id==="magmar");
+ const magmortar=(magmar?.evoluciones||[]).find(e=>Number(e.dex)===467);
+ if(magby?.evoluciones?.some(e=>Number(e.dex)===126)&&magmortar&&
+    !magby.evoluciones.some(e=>Number(e.dex)===467)){
+  magby.evoluciones.push({...magmortar});
+ }
  return result;
 }

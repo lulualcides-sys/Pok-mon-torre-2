@@ -18,7 +18,7 @@ class SelectorPokemon{
   marcas=[],azar=null,bloqueado=null,aspectos=false,alElegir,alCerrar,capa=50}){
   Object.assign(this,{e:escena,color,capa,marcas,azar,bloqueado,aspectos,alElegir,alCerrar,
    abierto:true,botones:[],versiones:[],objs:[],pageObjs:[],formObjs:[],celdas:[],
-   portraitQueue:new Map(),info:null,previewOnly:false,formaPage:0,formaFocus:0});
+   portraitQueue:new Map(),portraitHandlers:new Map(),info:null,previewOnly:false,formaPage:0,formaFocus:0});
   this.families=buildPokedexFamilies(ROSTER,JOHTO_100_ROWS,LEVEL_EVOLUTIONS);
   this.order=this.families.order;this.actual=ROSTER.findIndex(p=>p.id===actual);
   this.foco=Math.max(0,this.actual);
@@ -75,13 +75,27 @@ class SelectorPokemon{
   img.setVisible(false);
   if(!this.portraitQueue.has(key)){
    this.portraitQueue.set(key,[]);
-   scene.load.once("filecomplete-image-"+key,()=>{
+   // Every image previously registered a loaderror listener which survived
+   // successful downloads; repeated page navigation accumulated live handlers.
+   // Install paired listeners and dispose BOTH on either outcome or close.
+   const successEvent="filecomplete-image-"+key;
+   const cleanup=()=>{
+    scene.load.off(successEvent,onSuccess);
+    scene.load.off("loaderror",onError);
+    this.portraitHandlers.delete(key);
+   };
+   const onSuccess=()=>{
     const callbacks=this.portraitQueue.get(key)||[];
-    this.portraitQueue.delete(key);for(const cb of callbacks)cb();
-   });
-   scene.load.once("loaderror",file=>{
-    if(file.key===key)this.portraitQueue.delete(key);
-   });
+    this.portraitQueue.delete(key);cleanup();
+    for(const cb of callbacks)cb();
+   };
+   const onError=file=>{
+    if(file.key!==key)return;
+    this.portraitQueue.delete(key);cleanup();
+   };
+   this.portraitHandlers.set(key,cleanup);
+   scene.load.on(successEvent,onSuccess);
+   scene.load.on("loaderror",onError);
    scene.load.image(key,"assets/pmd/"+dex+"/portrait.png");
   }
   this.portraitQueue.get(key)?.push(show);
@@ -260,7 +274,10 @@ class SelectorPokemon{
  }
  cerrar(sonido=true,elegido=false){
   if(!this.abierto)return;
-  this.abierto=false;this.clear("pageObjs");this.clear("formObjs");
+  this.abierto=false;
+  for(const cleanup of [...this.portraitHandlers.values()])cleanup();
+  this.portraitQueue.clear();this.portraitHandlers.clear();
+  this.clear("pageObjs");this.clear("formObjs");
   this.info?.destroy(true);
   for(const b of this.botones)b.destruir();
   for(const b of this.versiones)b.destruir();

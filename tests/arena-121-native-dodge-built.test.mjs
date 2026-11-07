@@ -55,6 +55,12 @@ for(const def of ROSTER){
   }))];
  for(const form of stages){
   if(!kanto.has(form.name))continue;
+  // Cross-generation Johto babies (Magby -> Magmar) may expose an
+  // already-installed Kanto form via their private evolution list.
+  // That form is audited at its OWN roster root; counting it here would
+  // double-count one of the 121 approved Kanto additions.
+  if(def.torre2Johto100&&form.name!==def.id&&
+     ROSTER.some(other=>other!==def&&other.id===form.name))continue;
   if(!def.torre2ArenaAdded||PROTECTED_P2_KANTO_IDS.has(form.name)){
    nativeIds.push(form.name);
    if(ARENA_APPROVED_121[form.name])

@@ -12,6 +12,7 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   # Cancel superseded PR run; preserve all validation jobs.
@@ -40,7 +41,7 @@ jobs:
         run: |
           set -euo pipefail
           for attempt in 1 2 3; do
-            if node tools/pokearena/capture-client.mjs \
+            if GH_TOKEN="${{ github.token }}" bash tools/pokearena/capture-resilient.sh \
               && node tools/pokearena/build-preview.mjs \
               && test -s _site/arena2d/lib/phaser.min.js; then
               break
