@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pokémon Torre 2 — seis Slash em Phaser</title>
+<style>
+*{box-sizing:border-box}body{background:#081322;color:#e8f7ff;font:15px system-ui,sans-serif;margin:0}
+main{max-width:1020px;padding:15px;margin:auto}h1{font-size:clamp(21px,3vw,32px)}
+p{max-width:760px;color:#bccde2;line-height:1.5}
+#game{width:100%;aspect-ratio:16/9;background:#101f32;border:2px solid #3a5475;border-radius:9px;overflow:hidden}
+button{border:1px solid #8baace;border-radius:7px;background:#284265;color:white;padding:10px 14px;font:inherit;margin:10px 8px 0 0;cursor:pointer}
+#status{font-size:13px}
+</style>
+</head><body><main>
+<h1>Seis Slash — laboratório Phaser/WebGL</h1>
+<p>Spritesheets originais com 12 quadros e filtro pixel art. Cena separada: nenhum golpe, dano, kit Pokémon, save ou tela da arena é modificado. Aguardando revisão visual.</p>
+<div id="game" aria-label="Seis animações de corte no Phaser"></div>
+<button id="pause">Pausar</button><button id="slow">Lento</button><button id="normal">Normal</button>
+<p id="status" role="status">Carregando Phaser/WebGL…</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+<script type="module">
+import {SIX_SLASH_IDS,preloadSixSlashVfx,playSixSlashVfx} from './tools/pokearena/torre2-six-slash-vfx.js';
+const status=document.getElementById('status');
+window.__slashLabReady={ok:false,textureCount:0,renderer:null,visibleSprites:0,errors:[]};
+if(!window.Phaser){status.textContent='Phaser não carregou';window.__slashLabReady.errors.push('missing runtime');}
+else {
+let sceneRef,paused=false,speed=1;
+const names=['RUBRO — GARRA','OURO — CRESCENTE','CIANO — CRISTAL',
+ 'MARFIM — VENDAVAL','VERDE — FOICE','VIOLETA — ESPECTRO'];
+const game=new Phaser.Game({type:Phaser.WEBGL,parent:'game',width:960,height:540,
+ backgroundColor:'#0a1524',pixelArt:true,roundPixels:true,
+ scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
+ render:{pixelArt:true,antialias:false},
+ scene:{
+  preload(){preloadSixSlashVfx(this,'./reference-assets/vfx/six-slashes')},
+  create(){
+   sceneRef=this;const gfx=this.add.graphics();const ids=SIX_SLASH_IDS;
+   for(let i=0;i<6;i++){
+    const x=160+(i%3)*320,y=151+Math.floor(i/3)*240;
+    gfx.fillStyle(0x182c40,1);gfx.fillRoundedRect(x-145,y-110,290,214,8);
+    gfx.lineStyle(2,0x3c5970,1);gfx.strokeRoundedRect(x-145,y-110,290,214,8);
+    this.add.text(x,y-86,names[i],{fontFamily:'monospace',fontSize:'16px',color:'#f3faff'}).setOrigin(.5);
+    this.add.text(x,y+83,'12 QUADROS / 24 FPS',{fontFamily:'monospace',fontSize:'11px',color:'#b8d2e7'}).setOrigin(.5);
+    const replay=()=>{
+     if(paused)return;
+     const s=playSixSlashVfx(this,ids[i],x,y,{scale:1.55,depth:150});
+     if(s){s.anims.timeScale=speed;window.__slashLabReady.visibleSprites++}
+    };
+    replay();this.time.addEvent({delay:800,loop:true,callback:replay});
+   }
+   window.__slashLabReady.textureCount=ids.filter(id=>this.textures.exists('torre2-six-slashes-'+id)).length;
+   window.__slashLabReady.renderer=this.game.renderer.type===Phaser.WEBGL?'WebGL':'not-WebGL';
+   window.__slashLabReady.ok=window.__slashLabReady.textureCount===6 &&
+     window.__slashLabReady.renderer==='WebGL';
+   status.textContent=window.__slashLabReady.ok?'Phaser/WebGL: 6 efeitos carregados, em animação.':'Falha de texturas / WebGL';
+  }
+ }});
+ const allSprites=()=>sceneRef?.children.list.filter(o=>o.anims&&o.texture?.key?.startsWith('torre2-six-slashes-'))||[];
+ document.getElementById('pause').onclick=e=>{paused=!paused;for(const s of allSprites())s.anims.paused=paused;e.target.textContent=paused?'Reproduzir':'Pausar'};
+ document.getElementById('slow').onclick=()=>{speed=.5;for(const s of allSprites())s.anims.timeScale=.5};
+ document.getElementById('normal').onclick=()=>{speed=1;for(const s of allSprites())s.anims.timeScale=1};
+}
+</script></body></html>
