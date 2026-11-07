@@ -326,7 +326,11 @@ export function installArenaMovePolicy(Luchador,roster,extraApproved=[]){
    return original;
   // Johto was chosen using genuine species FRLG/approved attacks, not
   // Kanto Arena-121 fallback or native cooldown rewrite.
-  if(this.def.torre2Johto100===true)return original;
+  // Eevee's stage is built from the actual installed Johto form. Never
+  // re-plan Espeon/Umbreon through Kanto and erase its original/legal kit.
+  if(this.def.torre2Johto100===true||
+     (this.def.id==='eevee'&&['espeon','umbreon'].includes(id)))
+   return original;
   const auto=selectArenaSpeciesKit(original,id,form?.tipos||this.def.tipos,library);
   return selectApprovedArenaKit(auto,id,library,nativeDodges);
  };

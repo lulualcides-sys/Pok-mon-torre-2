@@ -18,6 +18,7 @@ for(const [from,to] of [
  ['johto-100-data.js','torre2-johto-100-data.js'],
  ['early-kanto-species.js','torre2-early-kanto-species.js'],
  ['johto-lab-catalog.js','torre2-johto-lab-catalog.js'],
+ ['batch24/catalog.js','batch24/catalog.js'],
  ['wobbuffet-native.js','torre2-wobbuffet-native.js'],
  ['gen45-johto-learnsets.js','torre2-gen45-johto-learnsets.js']
 ]){
