@@ -40,12 +40,12 @@ const game=new Phaser.Game({type:Phaser.WEBGL,parent:'game',width:960,height:540
     gfx.lineStyle(2,0x3c5970,1);gfx.strokeRoundedRect(x-145,y-110,290,214,8);
     this.add.text(x,y-86,names[i],{fontFamily:'monospace',fontSize:'16px',color:'#f3faff'}).setOrigin(.5);
     this.add.text(x,y+83,'12 QUADROS / 24 FPS',{fontFamily:'monospace',fontSize:'11px',color:'#b8d2e7'}).setOrigin(.5);
-    const replay=()=>{
-     if(paused)return;
-     const s=playSixSlashVfx(this,ids[i],x,y,{scale:1.55,depth:150});
-     if(s){s.anims.timeScale=speed;window.__slashLabReady.visibleSprites++}
-    };
-    replay();this.time.addEvent({delay:800,loop:true,callback:replay});
+    const sprite=playSixSlashVfx(this,ids[i],x,y,{scale:1.55,depth:150,loop:true});
+    if(sprite){
+     sprite.anims.timeScale=speed;
+     sprite.anims.setProgress?.([0.28,0.44,0.57,0.63,0.35,0.52][i]);
+     window.__slashLabReady.visibleSprites++;
+    }
    }
    window.__slashLabReady.textureCount=ids.filter(id=>this.textures.exists('torre2-six-slashes-'+id)).length;
    window.__slashLabReady.renderer=this.game.renderer.type===Phaser.WEBGL?'WebGL':'not-WebGL';
