@@ -29,12 +29,13 @@ export function playSixSlashVfx(scene, id, x, y, options = {}) {
   if (!allowed(id)) throw new RangeError('Unknown slash id: ' + id);
   if (!scene?.textures?.exists(keyFor(id))) return null;
   if (!scene?.add?.sprite || !scene?.anims) return null;
-  const anim = keyFor(id) + '-play';
+  const loop = Boolean(options.loop);
+  const anim = keyFor(id) + (loop ? '-loop' : '-play');
   if (!scene.anims.exists(anim)) {
     scene.anims.create({
       key: anim,
       frames: scene.anims.generateFrameNumbers(keyFor(id), {start: 0, end: SLASH_FRAMES - 1}),
-      frameRate: SLASH_FPS, repeat: 0
+      frameRate: SLASH_FPS, repeat: loop ? -1 : 0
     });
   }
   const sprite = scene.add.sprite(Math.round(x), Math.round(y), keyFor(id), 0);
@@ -46,7 +47,7 @@ export function playSixSlashVfx(scene, id, x, y, options = {}) {
   if (globalThis.Phaser?.Textures?.FilterMode?.NEAREST !== undefined) {
     scene.textures.get(keyFor(id)).setFilter(globalThis.Phaser.Textures.FilterMode.NEAREST);
   }
-  sprite.once('animationcomplete', () => sprite.destroy());
+  if (!loop) sprite.once('animationcomplete', () => sprite.destroy());
   sprite.play(anim);
   return sprite;
 }
