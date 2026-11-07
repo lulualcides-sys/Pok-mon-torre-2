@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "source": "original-pixel-art-inspired-by-user-provided-six-slash-reference",
+  "approved": false,
+  "status": "pending_visual_review",
+  "mode": "visual-only",
+  "noNativeOrApprovedEffectOverrides": true,
+  "frameWidth": 96,
+  "frameHeight": 96,
+  "frames": 12,
+  "fps": 24,
+  "exportFormat": "8-bit indexed PNG / transparent palette index 0",
+  "license": "Original artwork authored specifically for this project; no video frames, watermarks, or third-party sprite pixels copied.",
+  "sprites": [
+    {
+      "id": "ember-rake",
+      "name": "Rubro — Garra",
+      "shape": "jagged claw with flame droplets",
+      "file": "ember-rake.png"
+    },
+    {
+      "id": "solar-crescent",
+      "name": "Dourado — Crescente",
+      "shape": "dual gold crescents and angular sparks",
+      "file": "solar-crescent.png"
+    },
+    {
+      "id": "frost-shatter",
+      "name": "Ciano — Cristal",
+      "shape": "segmented crystalline scythe and facets",
+      "file": "frost-shatter.png"
+    },
+    {
+      "id": "ivory-gale",
+      "name": "Marfim — Vendaval",
+      "shape": "wide wind blade with inner white ripple",
+      "file": "ivory-gale.png"
+    },
+    {
+      "id": "verdant-sickle",
+      "name": "Verde — Foice",
+      "shape": "leaf-tipped hooked blade and floating leaf motes",
+      "file": "verdant-sickle.png"
+    },
+    {
+      "id": "astral-reaver",
+      "name": "Violeta — Espectro",
+      "shape": "twinned ghostly violet scythes and golden dust",
+      "file": "astral-reaver.png"
+    }
+  ],
+  "notes": "Only cosmetic preview assets; do not assign these sprites to Poké Arena 2D canonical moves without native-precedence audit and approval. No hitbox, damage, cooldown, evolution, Pokémon or arena HUD changes.",
+  "review": {
+    "approved": false,
+    "reviewedAt": null,
+    "reviewedBy": null
+  }
+}
