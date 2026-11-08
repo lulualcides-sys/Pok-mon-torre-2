@@ -151,8 +151,40 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
  catch(error){if(error?.code!=='ENOENT')throw error;}
  if(nativePack){
   const {allowIndependentSpriteCollabPMDInNativePacks}=await import('./torre2-pmd-pack-compat.mjs');
-  await fs.writeFile(packFile,allowIndependentSpriteCollabPMDInNativePacks(nativePack));
-  console.log('Native 0.65.8 PMD pack preserved; original SpriteCollab additions use safe local fallback');
+  const pmd=path.join(dest,'assets/pmd');
+  const match=html.match(/<script[^>]*id=["']paq["'][^>]*>([\s\S]*?)<\/script>/);
+  if(!match)throw Error('Official native 0.65.8 package index unavailable');
+  const index=JSON.parse(match[1]);
+  const manifest=JSON.parse(await fs.readFile(path.join(pmd,'manifest.json'),'utf8'));
+  const availablePacks=(await fs.readdir(path.join(dest,'assets/p')))
+   .filter(n=>/^[0-9a-f]{20}\.bin$/.test(n)).map(n=>n.slice(0,-4));
+  if(!availablePacks.includes(index.comun))
+   throw Error('Current P2 common native portrait pack missing');
+  const declared=new Set([index.comun,...Object.values(index.formas||{})]);
+  if(!availablePacks.every(n=>declared.has(n)))
+   throw Error('REA capture includes unexpected native sprite pack');
+  let verified=0;
+  for(const dex of Object.keys(index.formas||{})){
+   const native=manifest[dex];
+   if(!native?.anims?.Idle)throw Error('Missing original PMD entry '+dex);
+   for(const rel of [dex+'/portrait.png',
+    ...Object.values(native.anims).map(a=>a.file)]){
+    if(!/^[0-9]{4}(?:-[a-z0-9]+)?\/[a-zA-Z0-9_-]+(?:-Anim)?\.png$/.test(rel))
+     throw Error('Unexpected original sprite path '+rel);
+    const sprite=await fs.readFile(path.join(pmd,rel));
+    if(sprite.length<80||sprite[0]!==137||sprite[1]!==80)
+     throw Error('Missing verified native loose sprite '+rel);
+    verified++;
+   }
+  }
+  await fs.writeFile(packFile,
+   allowIndependentSpriteCollabPMDInNativePacks(nativePack,availablePacks));
+  console.log('P2_ALPHA0658_SPRITES_VERIFIED',JSON.stringify({
+   nativeForms:Object.keys(index.formas).length,
+   actualNativePacks:availablePacks.length,
+   originalLoosePngs:verified,
+   rule:'use current .bin if available, else previously verified genuine PMD PNG'
+  }));
  }
 }
 
