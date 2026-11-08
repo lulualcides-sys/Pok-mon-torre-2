@@ -61,7 +61,8 @@ async function run(){
    return;
   }
   const result=await command(['inspect-web-page',CDP,target.id,
-   '--observation-ms','900','--include-accessibility-text','--json'],
+   '--observation-ms','900','--include-accessibility-text',
+   '--include-script-sources','--json'],
    'rea-live-page-evidence.json',45000);
   summary.reaExitCode=result.code;
   if(result.code!==0){
@@ -76,9 +77,36 @@ async function run(){
   summary.access='REA browser observation completed';
   summary.evidenceId=analysis.evidence_id??null;
   summary.resultTopLevel=Object.keys(normalized).slice(0,25);
-  // Deliberately DO NOT infer Alpha from arbitrary 0.xx numbers in resources;
-  // VERSION in official config.js remains necessary for confirmation.
-  summary.liveAlpha=null;
+  const items=normalized.scripts?.items||[];
+  summary.loadedScriptCount=items.length;
+  const get=(suffix)=>items.find(x=>x.url?.startsWith('https://www.pokearena2d.com/')&&
+   x.url.endsWith('/'+suffix));
+  const selected=['config.js','notas.js','datos.js'].map(name=>{
+   const item=get(name);
+   return item?{name,url:item.url,cdpHash:item.cdp_hash,
+    included:item.source?.included===true,
+    sourceFields:item.source&&typeof item.source==='object'?Object.keys(item.source):[]}:null;
+  }).filter(Boolean);
+  summary.officialScripts=selected;
+  const getText=(item)=>{
+   if(!item)return null;
+   if(typeof item.source==='string')return item.source;
+   for(const key of ['text','source_text','sourceText','source','content','code','body']){
+    const value=item.source?.[key]??item[key];
+    if(typeof value==='string'&&value.length>40)return value;
+   }
+   return null;
+  };
+  const config=getText(get('config.js')),notes=getText(get('notas.js'));
+  const version=config?.match(/\\b(?:const|let)\\s+VERSION\\s*=\\s*["'](0\\.\\d+(?:\\.\\d+)?)["']/);
+  summary.liveAlpha=version?.[1]??null;
+  summary.liveVersionEvidence=version?'REA_CDP_PUBLIC_CONFIG_JS':'NO_OFFICIAL_VERSION_RETRIEVED';
+  if(notes){
+   summary.latestChangelog=[...notes.matchAll(/\\{version:"(0\\.\\d+(?:\\.\\d+)?)",fecha:"([^"]+)",titulo:"([^"]+)"/g)]
+    .slice(0,9).map(m=>({alpha:m[1],date:m[2],title:m[3]}));
+  }
+  // Original published JavaScript is read for evidence, not retained in artifacts.
+  fs.rmSync(path.join(OUT,'rea-live-page-evidence.json'),{force:true});
  }finally{
   await fs.promises.writeFile(path.join(OUT,'rea-live-page-summary.json'),
    JSON.stringify(summary,null,2)+'\n');
