@@ -346,6 +346,7 @@ await Promise.all([
  ['tools/pokearena/torre2-all-kanto-species.js','all-kanto-species.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
+ ['tools/pokearena/torre2-deoxys-speed-dash.js','deoxys-speed-dash.js'],
  ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
  ['tools/pokearena/torre2-arena-native-dodges.js','arena-native-dodges.js'],
  ['tools/pokearena/torre2-campaign-native-dodges.js','campaign-native-dodges.js'],
@@ -1152,7 +1153,9 @@ await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
  'import{TEST_LIBRARY as __torre2ArenaApprovedLibrary}from"./torre2/move-pool.js";'+
- 'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n');
+ 'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n'+
+ 'import{installSpeedDeoxysUltimateDash}from"./torre2/deoxys-speed-dash.js";'+
+ 'installSpeedDeoxysUltimateDash(Luchador);\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
