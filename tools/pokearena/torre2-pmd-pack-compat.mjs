@@ -10,11 +10,23 @@ const one=(s,a,b,label)=>{
  return s.replace(a,b);
 };
 const SAFE='/^[0-9]{4}(?:-[a-z0-9]+)?[/](?:portrait[.]png|[A-Za-z0-9_-]+-Anim[.]png)$/';
-export function allowIndependentSpriteCollabPMDInNativePacks(original){
+export function allowIndependentSpriteCollabPMDInNativePacks(original,availablePacks=[]){
  if(typeof original!=='string'||!original.includes('const INDICE='))
   throw Error('Not recognized native 0.65.8 packed-PMD module');
+ const allowed=[...new Set(availablePacks)];
+ if(!allowed.every(x=>typeof x==='string'&&/^[a-f0-9]{20}$/.test(x)))
+  throw Error('Unverified native binary package name');
  const canLocal=SAFE+'.test(ruta)';
  let s=String(original);
+ s=one(s,'const INTENTOS=3;',
+  'const INTENTOS=3;const TORRE2_AVAILABLE_PACKS=new Set('+JSON.stringify(allowed)+');',
+  'native pack list marker');
+ const oldSelector='const nombre=INDICE&&paqueteDe(ruta);';
+ if(s.split(oldSelector).length-1!==2)
+  throw Error('P2 0.65.8 must use 2 native packet selectors');
+ s=s.split(oldSelector).join(
+  'const candidate=INDICE&&paqueteDe(ruta),nombre=TORRE2_AVAILABLE_PACKS.has(candidate)?candidate:null;');
+
  const oldRead='if(!abierto.hojas[ruta]||escena.textures.exists(clave2))continue;';
  const newRead=[
   'if(escena.textures.exists(clave2))continue;',
