@@ -1,0 +1,42 @@
+name: Poké Arena 2D — Earth Power Phaser WebGL offline
+
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/batch24/area-targets.js'
+      - 'tools/pokearena/batch24/runtime.js'
+      - 'tests/batch24-area-*'
+      - '.github/workflows/pokearena-0642-area-chromium.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  phaser-ffas:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing Playwright and pinned MIT Phaser for isolated smoke
+        run: npm install --no-audit --no-fund --no-save --no-package-lock phaser@3.90.0
+      - name: Test real actor hit selection and preserve approved visuals
+        run: |
+          node --check tools/pokearena/batch24/runtime.js
+          node --test tests/batch24-area-targets.test.js tests/batch24-area-runtime.test.js
+          node --test tests/batch24-visuals.test.js
+      - name: Test isolated Phaser WebGL real Graphics in Chromium
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/batch24-area-phaser-browser.cjs
+      - name: Save screenshot of isolated WebGL contact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0642-area-webgl-evidence
+          path: test-evidence/pokearena-area/
+          if-no-files-found: warn
+          retention-days: 14
