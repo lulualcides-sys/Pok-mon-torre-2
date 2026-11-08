@@ -1,7 +1,7 @@
 'use strict';
-// Real captured Phaser scene regression: the League AUTO chooses native inputs
-// and retains the original evolution/MEGA command in an offline League fight.
-// This is NOT a claim of reaching an evolution naturally via real EXP.
+// Real Phaser regression using a solo CPU battle carrying League metadata.
+// This validates native controllers and EVO forwarding, NOT the full native
+// tournament menu or an evolution earned naturally through in-game EXP.
 const assert=require('node:assert/strict');
 const fs=require('node:fs/promises');
 const path=require('node:path');
@@ -34,7 +34,8 @@ const server=http.createServer(async(req,res)=>{
    null,{timeout:60000});
   await page.evaluate(()=>{
    window.__pt2Game.scene.getScene('titulo').scene.start('combate',{
-    modo:'liga',p1:'squirtle',p2:'geodude',mandos:['tactil','ia'],nivel:'normal'
+    modo:'cpu',liga:{round:1},p1:'squirtle',p2:'geodude',
+    mandos:['tactil','pad0'],nivel:'normal'
    });
   });
   await page.waitForTimeout(2500);
@@ -76,7 +77,8 @@ const server=http.createServer(async(req,res)=>{
    data.readerIsWrapped=auto.control.leer!==originalReader;
    return data;
   });
-  assert.equal(observed.mode,'liga');
+  assert.equal(observed.mode,'cpu','Native CPU battle preserves its solo controller');
+  assert.equal(diagnostic.auto,true,'League metadata enables native AUTO on CPU scene');
   assert.equal(observed.enabled,true,'League defaults to aggressive native AUTO');
   assert.ok(observed.ai,'Original Phaser IA must be constructed');
   assert.equal(observed.hadNativeControl,true);
