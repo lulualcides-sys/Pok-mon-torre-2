@@ -1,0 +1,36 @@
+<!doctype html><html lang="pt-BR"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Referência visual — Pokémon Torre 2</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#0b1d2a;color:#eef0d9;font:16px/1.5 system-ui,sans-serif}main{max-width:1320px;margin:auto;padding:24px}h1{font-size:28px;margin:0}p{color:#b7cbd0;max-width:920px}nav{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}button,a{font:inherit}button{background:#244b60;border:2px solid #7ca6b0;color:#fff0ba;padding:10px 20px;cursor:pointer}button:focus-visible{outline:3px solid #ffd16b}iframe{width:100%;aspect-ratio:16/9;border:2px solid #7ca6b0;background:#07121f}section{margin:32px 0}h2{font-size:20px}figure{margin:0}figcaption{padding:8px;background:#183547}.pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}img{width:100%;image-rendering:pixelated}small{color:#a4bdc4}#status{min-height:24px}a{color:#f6d58c}@media(max-width:700px){main{padding:14px}.pair{grid-template-columns:1fr}}
+</style><main>
+<small>HOMOLOGAÇÃO · ETAPA C · APROVAÇÃO VISUAL PENDENTE</small><h1>Campanha de Kanto — referência pixel art</h1>
+<p>Cards com cenário e pedestal, PC com retratos e slots, Cerulean com detalhes ambientais. Esta prévia usa o cliente Phaser publicado com módulos visuais isolados. A versão oficial permanece intacta.</p>
+<nav><button data-view="cards">Cards de Cerulean</button><button data-view="city">Cerulean · visualização QA</button><button data-view="pc">PC</button></nav>
+<p id="status" role="status">Carregando o cliente real…</p>
+<iframe id="game" credentialless title="Jogo real — homologação isolada" allow="fullscreen" src="game.html?original=1&torre2-cards=1"></iframe>
+<p><small>Os botões acima abrem um estado preparado para inspeção visual, com Bulbasaur e dois treinadores concluídos. Não representam campanha natural. O iframe usa armazenamento efêmero; não acessa o save do GitHub Pages oficial. Cerulean continua restrita à QA. No celular, use também a orientação horizontal.</small></p>
+<section><h2>Capturas reais · Chromium / Phaser WebGL</h2><p>Antes à esquerda; referência à direita. Desktop 1280 × 720.</p><div id="comparisons"></div></section>
+<p><a href="../specs/002-premium-campaign-reference/report.md">Relatório, testes e limitações</a></p>
+</main><script>
+const frame=document.querySelector('#game'),status=document.querySelector('#status');
+let core;
+async function ready(){for(let n=0;n<240;n++){if(frame.contentWindow?.__pt2Game?.scene.isActive('titulo')||frame.contentWindow?.__pt2Game?.scene.isActive('campanha'))return frame.contentWindow;await new Promise(r=>setTimeout(r,500))}throw Error('Cliente não carregou. Recarregue a página.');}
+let busy=false;
+async function view(kind){if(busy)return;busy=true;document.querySelectorAll('button[data-view]').forEach(b=>b.disabled=true);try{
+ status.textContent='Preparando a referência…';
+ if(!('credentialless' in HTMLIFrameElement.prototype))throw Error('Use Chrome atual para a referência com armazenamento efêmero.');
+ const w=await ready();
+ if(!core){const main=[...w.document.scripts].find(s=>s.src.includes('/main.js')).src;core=await w.eval('import('+JSON.stringify(new URL('./torre2/campaign-core.js',main).href)+')');
+ const state=core.createPlayerCampaign('bulbasaur');state.stage=1;state.trainer=2;core.saveCampaign(state);w.__pt2Game.scene.getScene('titulo').scene.start('campanha');
+ for(let n=0;n<120&&!w.__pt2Game.scene.getScene('campanha').__torre2CardUI;n++)await new Promise(r=>setTimeout(r,250));}
+ const scene=w.__pt2Game.scene.getScene('campanha'),state=core.readCampaign();
+ if(kind==='pc')scene.pcScreen(state);
+ else if(kind==='city'){scene.__torre2PathStage=1;scene.__torre2CityRoute=false;scene.renderLegacyCampaign(state)}
+ else scene.renderCampaign(state);
+ status.textContent='Referência aberta — explore pelos controles do jogo.';
+ }catch(e){status.textContent=e.message}finally{busy=false;document.querySelectorAll('button[data-view]').forEach(b=>b.disabled=false)}}
+document.querySelectorAll('button[data-view]').forEach(b=>b.addEventListener('click',()=>view(b.dataset.view)));
+ready().then(()=>status.textContent='Pronto. Escolha uma das três referências.').catch(e=>status.textContent=e.message);
+for(const [id,name]of [['cards','Cards'],['city','Cerulean'],['pc','PC']]){
+ const section=document.createElement('section');section.innerHTML='<h2>'+name+'</h2><div class="pair">'+['before','after'].map((phase,i)=>'<figure><img loading="lazy" src="evidence/'+phase+'/desktop-'+id+'.png" alt="'+name+' '+(i?'depois':'antes')+'"><figcaption>'+(i?'Referência para aprovação':'Antes')+'</figcaption></figure>').join('')+'</div>';document.querySelector('#comparisons').append(section);
+}
+</script></html>

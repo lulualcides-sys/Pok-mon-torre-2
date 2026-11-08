@@ -1,0 +1,119 @@
+[
+  {
+    "label": "desktop",
+    "width": 1280,
+    "height": 720,
+    "errors": [],
+    "saveUnchanged": true,
+    "meta": {
+      "city": {
+        "version": "cerulean-layered-v1",
+        "layers": 6,
+        "landmarks": 3,
+        "stage": 1,
+        "trainer": 2,
+        "hotspots": [
+          {
+            "id": "center",
+            "label": "CENTRO POKÉMON",
+            "x": 123,
+            "y": 155
+          },
+          {
+            "id": "mart",
+            "label": "POKÉ MART",
+            "x": 103,
+            "y": 257
+          },
+          {
+            "id": "gym",
+            "label": "GINÁSIO DA MISTY",
+            "x": 515,
+            "y": 173
+          }
+        ],
+        "trainerCount": 15,
+        "walking": false
+      },
+      "renderer": 2
+    }
+  },
+  {
+    "label": "tablet",
+    "width": 768,
+    "height": 1024,
+    "errors": [],
+    "saveUnchanged": true,
+    "meta": {
+      "city": {
+        "version": "cerulean-layered-v1",
+        "layers": 6,
+        "landmarks": 3,
+        "stage": 1,
+        "trainer": 2,
+        "hotspots": [
+          {
+            "id": "center",
+            "label": "CENTRO POKÉMON",
+            "x": 123,
+            "y": 155
+          },
+          {
+            "id": "mart",
+            "label": "POKÉ MART",
+            "x": 103,
+            "y": 257
+          },
+          {
+            "id": "gym",
+            "label": "GINÁSIO DA MISTY",
+            "x": 515,
+            "y": 173
+          }
+        ],
+        "trainerCount": 15,
+        "walking": false
+      },
+      "renderer": 2
+    }
+  },
+  {
+    "label": "mobile",
+    "width": 390,
+    "height": 844,
+    "errors": [],
+    "saveUnchanged": true,
+    "meta": {
+      "city": {
+        "version": "cerulean-layered-v1",
+        "layers": 6,
+        "landmarks": 3,
+        "stage": 1,
+        "trainer": 2,
+        "hotspots": [
+          {
+            "id": "center",
+            "label": "CENTRO POKÉMON",
+            "x": 123,
+            "y": 155
+          },
+          {
+            "id": "mart",
+            "label": "POKÉ MART",
+            "x": 103,
+            "y": 257
+          },
+          {
+            "id": "gym",
+            "label": "GINÁSIO DA MISTY",
+            "x": 515,
+            "y": 173
+          }
+        ],
+        "trainerCount": 15,
+        "walking": false
+      },
+      "renderer": 2
+    }
+  }
+]

@@ -1,0 +1,1 @@
+T25 NATIVE MOBILE PC PASS {"team":["mewtwo-9nxstv8","t25-team-1-charmander","t25-team-2-pikachu","t25-team-3-weedle","t25-team-4-pidgey","bulbasaur-n2swbm7"],"box":["t25-box-eevee","t25-team-0-squirtle"],"kept":8,"unchangedEconomy":true}

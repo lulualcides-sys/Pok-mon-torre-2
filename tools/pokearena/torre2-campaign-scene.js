@@ -1,3 +1,4 @@
+import {premiumSprite} from './premium-art.js';
 import {renderCityHub} from './city-hub.js';
 import {statusLabel} from './gen3-status.js';
 import {rematchOpponent,startRematch,resolveRematch,validRematchResult} from './campaign-core.js';
@@ -36,7 +37,7 @@ import {getCampaignMapSpec} from './campaign-map-unified.js';
 import {renderBattlePath,BATTLE_PATH_BACKDROP} from './battle-path.js';
 import {renderTrainerCardHub,renderTrainerCardMapTab} from './trainer-cards.js';
 import {installCampaignAudioSettings} from './audio-settings.js';
-import {resetCardPortraitRequests} from './card-portrait-cache.js';
+import {resetCardPortraitRequests,requestCardPortrait} from './card-portrait-cache.js';
 import {makeBattleReport,showBattleReport} from './battle-report.js';
 import {hallOfFameModel} from './hall-of-fame.js';
 import {originalBallSprite} from './ball-sprites.js';
@@ -1950,6 +1951,29 @@ create(){
   text(this,22,52,'EQUIPE '+state.team.length+'/6',{color:C.gold,fontSize:'14px'});
   text(this,330,52,'ARMAZENAMENTO '+boxView.total+' · ✦ '+boxView.shiny,{
    color:C.gold,fontSize:'12px'});
+  // PC-only terminal furniture. No shared button, roster or transfer changes.
+  const slots=this.add.graphics();
+  for(let i=0;i<6;i++)for(const x of [22,334]){
+   const y=65+i*34;
+   slots.fillStyle(0x0a2134).fillRect(x,y,284,29);
+   slots.fillStyle(0x365e70).fillRect(x,y,284,1);
+   slots.fillStyle(0x173e50).fillRect(x+1,y+1,31,27);
+   slots.fillStyle(0x567d86).fillRect(x+4,y+4,24,1);
+   if(!(x===334&&i===5&&!boxView.rows.length))text(this,x+43,y+8,'— SLOT LIVRE —',{fontSize:'10px',color:'#628597'});
+   if(!(x===334&&i===5&&!boxView.rows.length))text(this,x+17,y+14,String(i+1).padStart(2,'0'),{
+    fontSize:'10px',color:'#8caeb4'}).setOrigin(.5);
+  }
+  // Portraits are original PMD textures, drawn above each occupied row only.
+  const pcPortrait=(member,x,y)=>{
+   const backing=this.add.graphics().setDepth(6);
+   backing.fillStyle(0x173e50).fillRect(x-13,y-13,26,26);
+   ball(backing,x,y,7);
+   const key=portraitKey(member);
+   requestCardPortrait(this,key,'assets/pmd/'+portraitId(member)+'/portrait.png',()=>{
+    if(!backing.active)return; // A late request must not paint another screen.
+    this.add.image(x,y,key).setDisplaySize(24,24).setDepth(7);
+   });
+  };
   state.team.forEach((member,i)=>{
    const y=79+i*34,selected=this.pcSelected===i;
    this.button(164,y,281,29,pcMemberLabel(member,{
@@ -1957,7 +1981,8 @@ create(){
    }),()=>{
     this.pcSelected=i===this.pcSelected?null:i;
     this.__torre2PcNotice=null;this.pcScreen(state,safePage);
-   },selected).setData('torre2-pc-team-index',i);
+   },selected,null,null,36).setData('torre2-pc-team-index',i);
+   pcPortrait(member,39,y);
   });
   boxView.rows.forEach(({member,actualIndex},i)=>{
    const y=79+i*34;
@@ -1973,10 +1998,12 @@ create(){
      this.__torre2PcNotice='EQUIPE CHEIA · SELECIONE UM POKÉMON À ESQUERDA';
     this.pcScreen(state,Math.min(safePage,Math.max(0,
      Math.ceil(boxView.matched/6)-1)));
-   }).setData('torre2-pc-box-index',actualIndex);
+   },false,null,null,36).setData('torre2-pc-box-index',actualIndex);
+   pcPortrait(member,351,y);
   });
-  if(!boxView.rows.length)text(this,344,103,boxView.total?
-   'NENHUM POKÉMON NESTE FILTRO':'PC VAZIO · CAPTURE POKÉMON',statusStyle);
+  if(!boxView.rows.length)text(this,387,247,boxView.total?
+   'NENHUM POKÉMON NESTE FILTRO':'CAPTURE PARA PREENCHER O PC',{...statusStyle,fontSize:'10px'});
+  if(!boxView.rows.length)premiumSprite(this,'terminal',340,235);
   // Four one-tap filters on the native Phaser screen; never alter box order.
   for(const [i,filter] of PC_FILTERS.entries()){
    const buttonLabel={ALL:'TODOS',SHINY:'✦ SHINY',KO:'KO',STATUS:'STATUS'}[filter];

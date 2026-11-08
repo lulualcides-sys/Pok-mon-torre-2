@@ -247,6 +247,7 @@ await Promise.all([
  ['tools/pokearena/torre2-versus-transition.js','versus-transition.js'],
  ['tools/pokearena/torre2-battle-path.js','battle-path.js'],
  ['tools/pokearena/torre2-trainer-cards.js','trainer-cards.js'],
+ ['tools/pokearena/torre2-premium-art.js','premium-art.js'],
  ['tools/pokearena/torre2-card-portrait-cache.js','card-portrait-cache.js'],
  ['tools/pokearena/torre2-city-layout.js','city-layout.js'],
  ['tools/pokearena/torre2-city-scenery.js','city-scenery.js'],
