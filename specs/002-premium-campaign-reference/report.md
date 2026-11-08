@@ -1,6 +1,6 @@
 # Referência de homologação — 08/11/2026
 
-Estado: primeira implementação para revisão; **não aprovada, não mesclada, não publicada no Pages oficial**. Expansão para o restante da campanha aguarda aprovação expressa. Base: `9efaa07fcc2bcfacd04646e086d594aade62846d`.
+Estado atualizado: usuário autorizou publicação direta desta referência em 08/11/2026 ("Não, posta direto no jogo"); integração/publicação ainda aguardam CI. Expansão para o restante da campanha aguarda aprovação expressa. Base: `9efaa07fcc2bcfacd04646e086d594aade62846d`.
 
 ## Entrega
 - Cards de Cerulean: diorama original, pedestal, vegetação e jardineiras; grid, NPCs, rosters e estados preservados. Outras etapas mantêm o cenário anterior.
@@ -51,3 +51,10 @@ A CI remota **não está integralmente aprovada**. Houve falhas em capture, cent
 O link Githack de homologação retornou HTTP 403. A página foi validada localmente em `http://127.0.0.1:4175/homolog/` (servidor desta sessão), mas **não existe prévia externa verificada**. A tentativa de criar preview no projeto Vercel existente `pokemon-torre-2-homologacao-teste` foi bloqueada pela revisão automática por exigir autorização explícita para destino e envio do commit. Pergunta de autorização enviada; nenhum deployment criado por essa tentativa. Pages oficial e main permanecem intactos.
 
 Próximo gate: autorização de preview Vercel → verificar URL navegável → avaliação visual humana. CI completa e build limpo continuam necessários antes de qualquer integração/publicação oficial; expansão da campanha aguarda aprovação do padrão.
+
+
+## Atualização — publicação direta autorizada
+
+A autorização de publicação oficial substitui a solicitação anterior de preview Vercel; não criar esse preview. T95 run 42476335435 passou build real, testes Node e smoke Chromium. Guardião visual run 42476335423 passou desktop/mobile. Quatro workflows antigos repetiram falha na aquisição direta do cliente, antes dos testes. Foram alinhados ao helper existente capture-resilient.sh, com actions:read para baixar o snapshot fixado e verificado; nenhuma assertiva foi removida. Aguardar CI completa e SHA servido para declarar publicação.
+
+QA do Arsenal asset_report.py: PNG 128×32 RGBA, 17 cores, transparência presente, PASS.
