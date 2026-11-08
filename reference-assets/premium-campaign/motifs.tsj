@@ -1,0 +1,59 @@
+{
+  "type": "tileset",
+  "version": "1.10",
+  "tiledversion": "1.11.2",
+  "name": "premium-external",
+  "tilewidth": 32,
+  "tileheight": 32,
+  "tilecount": 4,
+  "columns": 4,
+  "image": "motifs.png",
+  "imagewidth": 128,
+  "imageheight": 32,
+  "tiles": [
+    {
+      "id": 0,
+      "type": "tree",
+      "properties": [
+        {
+          "name": "combat",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "type": "planter",
+      "properties": [
+        {
+          "name": "combat",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "bench",
+      "properties": [
+        {
+          "name": "combat",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "terminal",
+      "properties": [
+        {
+          "name": "combat",
+          "type": "bool",
+          "value": false
+        }
+      ]
+    }
+  ]
+}

@@ -1,3 +1,4 @@
+import {premiumSprite} from './premium-art.js';
 /* Original modular pixel architecture, rendered by Phaser/WebGL.
  * No map screenshot, no uploaded sheet with uncertain redistribution rights.
  * Geometry is local to each building; vegetation uses shared original textures.
@@ -157,6 +158,20 @@ export function renderCityScenery(scene){
  ];
  for(const [x,y]of positions)scene.add.image(x,y,treeKey).setOrigin(.5,1).setScale(.72)
   .setDepth(20+y/1000).setData('torre2-city-layer','vegetation');
+ // Original street furniture: no hit areas, collision or timer changes.
+ for(const [x,y] of [[208,174],[457,209]])
+  premiumSprite(scene,'bench',x,y).setDepth(24).setData('torre2-city-layer','premium-decor');
+ for(const [x,y] of [[222,134],[271,177],[476,194],[529,224]])
+  premiumSprite(scene,'planter',x,y).setDepth(24).setData('torre2-city-layer','premium-decor');
+ // Canal-edge reeds and reflected masonry anchor the water to the quays.
+ const edgeDetail=scene.add.graphics().setDepth(3);
+ for(let y=46;y<117;y+=11){
+  px(edgeDetail,335,y,2,6,0x255c69,.6);px(edgeDetail,400,y+4,2,5,0x9dd3cf,.5);
+ }
+ for(const [x,y]of [[338,212],[397,199],[155,237],[193,221]]){
+  px(edgeDetail,x,y,2,10,0x406e4e);px(edgeDetail,x-3,y+3,2,7,0x78a96a);
+  px(edgeDetail,x+3,y+1,2,9,0x98bd75);
+ }
  const ripples=scene.add.graphics().setDepth(1).setData('torre2-city-layer','water-animation');
  const falls=scene.add.graphics().setDepth(9);
  let tick=0;

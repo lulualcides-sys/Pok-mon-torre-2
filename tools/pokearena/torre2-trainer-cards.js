@@ -1,3 +1,4 @@
+import {premiumSprite} from './premium-art.js';
 /* Pokémon Torre 2 — seleção cinematográfica da campanha via cards.
  * Somente apresentação Phaser; jamais altera progressão, time, saves
  * ou a interface aprovada da Arena. Sprites reais FRLG e PMD.
@@ -271,6 +272,40 @@ function cardsPage(scene,state,handlers){
   text(scene,layer,x+w/2,y+15,
    String(entry.index+1).padStart(2,'0')+'  '+glyph,10,'#f6f3da');
   const podium=scene.add.graphics();
+  if(state.stage===1){
+  // Regional diorama: the trainer stands on masonry, framed by a garden.
+  const water=state.stage===1||state.stage===8;
+  const warm=[0,6,7,9].includes(state.stage);
+  podium.fillStyle(water?0x397e91:warm?0x65695b:0x386955);
+  podium.fillRect(x+12,y+39,w-24,81);
+  podium.fillStyle(water?0x75bdc4:warm?0xaaa481:0x83ad70);
+  podium.fillRect(x+13,y+40,w-26,20);
+  // Distant arcade and stone coursing retain a quiet silhouette behind faces.
+  for(let yy=0;yy<4;yy++)for(let xx=0;xx<7;xx++){
+   podium.fillStyle((xx+yy)%3?0x77969a:0x98b0a6);
+   podium.fillRect(x+14+xx*12,y+61+yy*6,11,5);
+  }
+  podium.fillStyle(0x284c55);podium.fillRect(x+36,y+58,38,36);
+  podium.fillStyle(0x426e73);podium.fillRect(x+40,y+55,30,40);
+  podium.fillStyle(0x9ab6ad);podium.fillRect(x+36,y+56,4,37);
+  podium.fillRect(x+70,y+56,4,37);podium.fillRect(x+40,y+53,30,3);
+  podium.fillStyle(0x435f60);podium.fillRect(x+12,y+94,w-24,26);
+  for(let yy=0;yy<3;yy++)for(let xx=0;xx<7;xx++){
+   podium.fillStyle((xx+yy)%2?0xa5b5a3:0x8fa698);
+   podium.fillRect(x+14+xx*12,y+95+yy*7,11,6);
+  }
+  podium.fillStyle(0x28414a);podium.fillRect(x+34,y+98,42,6);
+  podium.fillStyle(0xd7d4ad);podium.fillRect(x+32,y+96,46,3);
+  podium.fillStyle(0x5a7372);podium.fillRect(x+29,y+105,52,4);
+  podium.fillStyle(0xc4c6a6);podium.fillRect(x+29,y+104,52,2);
+  podium.fillStyle(0x213b48);podium.fillRect(x+12,y+119,w-24,13);
+  layer.add(podium);
+  layer.add(premiumSprite(scene,'tree',x+10,y+64));
+  layer.add(premiumSprite(scene,'tree',x+w-40,y+65));
+  // A restrained lower garden frames the pedestal without covering the NPC.
+  layer.add(premiumSprite(scene,'planter',x+11,y+91));
+  layer.add(premiumSprite(scene,'planter',x+w-42,y+91));
+  }else{
   podium.fillStyle(entry.active?0x123451:0x0b233b);
   podium.fillRect(x+12,y+39,w-24,89);
   podium.fillStyle(entry.active?0x365f7b:0x23435a);
@@ -279,6 +314,7 @@ function cardsPage(scene,state,handlers){
   podium.fillStyle(0x112e45,.8);podium.fillRect(x+18,y+122,w-36,2);
   podium.fillStyle(0x517b96,.55);podium.fillRect(x+16,y+126,w-32,2);
   layer.add(podium);
+  }
   npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+102,
    entry.leader?2.55:2.35);
   if(entry.leader)text(scene,layer,x+w/2,y+126,

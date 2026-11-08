@@ -1,0 +1,9 @@
+- [x] Consultar regras, Script Mestre, referências, Arsenal e PRs atuais.
+- [x] Criar branch isolada.
+- [x] Registrar baseline em navegador.
+- [x] Implementar cards, cidade e PC.
+- [x] Produzir e validar spritesheet reutilizável.
+- [x] Comparar capturas e executar testes locais descritos no relatório.
+- [ ] Build limpo e regressão completa de release (bloqueados pelo acesso ao cliente-base).
+- [ ] Entregar homologação e evidências para aprovação.
+- [ ] Aprovação visual humana (não concedida).
