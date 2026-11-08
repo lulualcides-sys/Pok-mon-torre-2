@@ -2,6 +2,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {autoBattleAllowed,manualFighterControl,installAutoBattle,bindAutoBattleToScene,
  CAMPAIGN_AUTO_OFFENSIVE,campaignAutoProfile,pressureCampaignAutoInput,tuneCampaignAutoBrain,
+ OFFLINE_AUTO_EXTREME,autoBattleProfile,tuneExtremeOfflineAutoBrain,
+ requestOfflineAutoEvolution,isExtremeOfflineAutoScene,
  chooseCampaignAutoWeatherInput,pressureCampaignAutoSkillInput,livingCampaignOpponent}
  from '../tools/pokearena/torre2-auto-battle.js';
 const makeObject=()=>{
@@ -39,7 +41,7 @@ function scene(options={}){
 test('AUTO only appears in solo battles, not PvP, online or replay',()=>{
  for(const mode of ['online','versus','demo','replay'])
   assert.equal(autoBattleAllowed(scene({modo:mode})),false,mode);
- for(const mode of ['cpu','entreno','arena'])
+ for(const mode of ['cpu','entreno','arena','liga','league'])
   assert.equal(autoBattleAllowed(scene({modo:mode})),true,mode);
  const s=scene();s.sim=true;assert.equal(autoBattleAllowed(s),false);
  s.sim=false;s.red={};assert.equal(autoBattleAllowed(s),false);
@@ -138,17 +140,27 @@ test('Campaign AUTO also refreshes when evolution stage changes within one base 
  s.handlers.get('shutdown')();
 });
 
-test('Original Arena AUTO does not recreate its controller when species changes',()=>{
+test('Extreme Arena AUTO refreshes its native brain once after a species or evolution change',()=>{
  const s=scene({modo:'arena'}),control=s.controles[0];
- control.l.def={id:'ivysaur'};
- let creations=0;
- const state=installAutoBattle(s,()=>({leer:()=>({mx:++creations,my:0})}));
- assert.equal(creations,0);
+ control.l.def={id:'ivysaur'};control.l.etapa=0;
+ let builds=0;
+ const state=installAutoBattle(s,actor=>{
+  builds++;
+  const current=actor.def.id+':'+actor.etapa;
+  return {leer:()=>({mx:builds,my:0,source:current})};
+ });
+ assert.equal(builds,1);
  state.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
  control.leer(.016);
- control.l.def={id:'pikachu'};
+ control.l.etapa=1;
+ assert.equal(control.leer(.016).source,'ivysaur:1');
+ assert.equal(builds,2);
  control.leer(.016);
- assert.equal(state.autoSpecies,'ivysaur:0','Keep existing Arena IA untouched');
+ assert.equal(builds,2,'No per-frame brain recreation');
+ control.l.def={id:'pikachu'};control.l.etapa=0;
+ control.leer(.016);
+ assert.equal(state.autoSpecies,'pikachu:0');
+ assert.equal(builds,3);
  s.handlers.get('shutdown')();
 });
 
@@ -206,7 +218,7 @@ test('Scene prototype wrapping preserves original create and delegates AI',()=>{
  s.handlers.get('shutdown')();
 });
 
-test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buffs',()=>{
+test('Campaign and competitive offline AUTO have isolated tactical profiles without buffs',()=>{
  const tiers=[];
  const NativeBrain=class{constructor(_actor,tier){tiers.push(tier)}leer(){return{mx:1,my:0}}};
  class Kanto{constructor(){Object.assign(this,scene({torre2:{kind:'trainer',stage:1}}))}create(){}}
@@ -215,10 +227,14 @@ test('Only Kanto campaign AUTO gets above-Hard offensive parameters without buff
  bindAutoBattleToScene(OriginalArena,NativeBrain);
  const k=new Kanto(),a=new OriginalArena();
  k.create();a.create();
- assert.deepEqual(tiers,[CAMPAIGN_AUTO_OFFENSIVE,'normal'],
-  'Campaign uses offensive native tactics; original Arena remains normal');
+ assert.deepEqual(tiers,[CAMPAIGN_AUTO_OFFENSIVE,OFFLINE_AUTO_EXTREME],
+  'Competitive Arena AUTO must use a dedicated extreme native profile');
  assert.strictEqual(campaignAutoProfile(k),CAMPAIGN_AUTO_OFFENSIVE);
- assert.equal(campaignAutoProfile(a),'normal');
+ assert.equal(campaignAutoProfile(a),'normal','Campaign-only legacy selector remains intact');
+ assert.strictEqual(autoBattleProfile(a),OFFLINE_AUTO_EXTREME);
+ assert.strictEqual(autoBattleProfile(k),CAMPAIGN_AUTO_OFFENSIVE);
+ assert.equal(OFFLINE_AUTO_EXTREME.ventaja,1,'No Maestro hidden damage multiplier');
+ assert.ok(OFFLINE_AUTO_EXTREME.reaccion<CAMPAIGN_AUTO_OFFENSIVE.reaccion);
  assert.equal(CAMPAIGN_AUTO_OFFENSIVE.ventaja,1,
   'Never import Maestro native 35% hidden damage advantage');
  assert.ok(CAMPAIGN_AUTO_OFFENSIVE.reaccion<.08,'Must react faster than native Hard');
@@ -697,4 +713,86 @@ test('T19: weak, endangered or busy AUTO still respects native defensive retreat
    'Never cancel dodge or legitimate attack to chase a weakened foe');
  }
  assert.equal(JSON.stringify(native),original);
+});
+
+test('Extreme AUTO applies decision thresholds per player only; Training/PvP/campaign stay separate',()=>{
+ const template={pBasico:.30,pConGanas:.30,pSinGanas:.50,pSeguro:.85,
+  pAhorro:.50,reservaEnergia:60,energiaTope:95,pPlantarse:.5,
+  rodeo:.60,lateral:.25,rangoBanda:25,combos:[{usar:'q',prioridad:2}]};
+ for(const modo of ['cpu','arena','liga','league']){
+  const brain={c:{...template}};
+  assert.strictEqual(tuneExtremeOfflineAutoBrain(scene({modo}),brain),brain);
+  assert.ok(brain.c.pBasico<=.08);
+  assert.ok(brain.c.pConGanas<=.12);
+  assert.ok(brain.c.pSinGanas<=.22);
+  assert.ok(brain.c.pAhorro<=.04);
+  assert.deepEqual(brain.c.combos,template.combos,'Native approved combos preserved');
+  assert.equal(autoBattleProfile(scene({modo})).ventaja,1,'No hidden damage bonus');
+ }
+ assert.deepEqual(template,{pBasico:.30,pConGanas:.30,pSinGanas:.50,pSeguro:.85,
+  pAhorro:.50,reservaEnergia:60,energiaTope:95,pPlantarse:.5,
+  rodeo:.60,lateral:.25,rangoBanda:25,combos:[{usar:'q',prioridad:2}]});
+ for(const flags of [{modo:'entreno'},{modo:'versus'},{modo:'cpu',torre2:{kind:'trainer'}}]){
+  const target=scene(flags),brain={c:{...template}};
+  assert.strictEqual(tuneExtremeOfflineAutoBrain(target,brain),brain);
+  assert.equal(brain.c.pBasico,.30);
+ }
+ assert.equal(isExtremeOfflineAutoScene(scene({modo:'online',online:true})),false);
+});
+
+test('Extreme offline AUTO evolves through native EVO/MEGA readiness, never fabricates EXP',()=>{
+ for(const modo of ['cpu','arena','liga','league']){
+  const battle=scene({modo}),actor=battle.controles[0].l;
+  actor.def={id:'squirtle'};actor.hp=100;actor.hpMax=100;
+  actor.etapa=0;actor.exp=100;actor.expNecesaria=100;
+  actor.puedeEvolucionar=true;
+  const input={mx:1,my:0,lmb:true,rmb:false,q:false,e:false,mega:false};
+  const original={...input};
+  const out=requestOfflineAutoEvolution(battle,actor,input);
+  assert.equal(out.mega,true,modo+' EVO requested');
+  for(const slot of ['lmb','rmb','q','e'])assert.equal(out[slot],false,'Evolution priority');
+  assert.deepEqual(input,original,'Original AI input is immutable');
+  assert.equal(actor.etapa,0,'Only the native fighter may actually change form');
+  assert.equal(actor.exp,100,'AUTO must never grant EXP');
+  actor.puedeEvolucionar=false;
+  const refused=requestOfflineAutoEvolution(battle,actor,{...input,mega:true});
+  assert.equal(refused.mega,false,'No illegal evolution requests');
+  actor.puedeMega=true;
+  assert.equal(requestOfflineAutoEvolution(battle,actor,input).mega,true,
+   'Native Mega readiness must be honored');
+  actor.ko=true;
+  assert.equal(requestOfflineAutoEvolution(battle,actor,input).mega,false,
+   'KO fighters cannot request transformations');
+ }
+ const campaign=scene({torre2:{kind:'trainer'}});
+ const pokemon={hp:100,puedeEvolucionar:true};
+ const input={mega:false};
+ assert.strictEqual(requestOfflineAutoEvolution(campaign,pokemon,input),input,
+  'Campaign cannot evolve mid-battle');
+ const battle=scene({modo:'cpu'});battle.fase='intro';
+ assert.strictEqual(requestOfflineAutoEvolution(battle,pokemon,input),input);
+});
+
+test('Extreme native reader requests real evolution; AUTO OFF restores manual and never touches campaign',()=>{
+ const battle=scene({modo:'cpu'}),actor=battle.controles[0].l;
+ actor.def={id:'magikarp'};actor.hp=100;actor.hpMax=100;
+ actor.puedeEvolucionar=false;
+ const original=battle.controles[0].leer;
+ const auto=installAutoBattle(battle,()=>({c:{pBasico:.3},leer:()=>({
+  mx:0,my:1,lmb:true,rmb:false,q:false,e:false,mega:false
+ })}));
+ auto.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(battle.controles[0].leer(.016).mega,false);
+ actor.puedeEvolucionar=true;
+ const evolved=battle.controles[0].leer(.016);
+ assert.equal(evolved.mega,true);
+ assert.equal(evolved.lmb,false);
+ actor.etapa=1;actor.puedeEvolucionar=false;
+ assert.equal(battle.controles[0].leer(.016).mega,false,'After EVO, stop requesting');
+ auto.zone.handlers.get('pointerdown')(null,null,null,{stopPropagation(){}});
+ assert.equal(auto.enabled,false,'AUTO button still allows manual control');
+ assert.deepEqual(battle.controles[0].leer(.016),{mx:0,my:0,ax:0,ay:0,lmb:false},
+  'Manual still returns original input');
+ battle.handlers.get('shutdown')();
+ assert.strictEqual(battle.controles[0].leer,original,'Reader restored on shutdown');
 });
