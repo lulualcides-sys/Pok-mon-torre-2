@@ -148,6 +148,7 @@ const server=http.createServer(async(req,res)=>{
   // native layout and clickable evolution tabs must remain unchanged.
   const dexPage=await browser.newPage({viewport:{width:980,height:650}});
   const dexErr=[];dexPage.on('pageerror',e=>dexErr.push(String(e)));
+  const dexBad=[];dexPage.on('response',res=>{if(res.status()>=400&&dexBad.length<50)dexBad.push({status:res.status(),url:res.url()});});
   await dexPage.goto('http://127.0.0.1:4274/arena2d/?pantalla=pokedex',
    {waitUntil:'domcontentloaded',timeout:30000});
   try{
@@ -181,6 +182,21 @@ const server=http.createServer(async(req,res)=>{
   assert.ok(dexData.bottom<=dexData.podium-22,
    'Native P2 family cards cannot overlap the Pokémon pedestal');
   assert.equal(dexData.visibleCount,25,'Native 5-column Pokédex shows one entry per family');
+  if(!dexData.portraits.every(x=>x.exists&&x.idle)){
+   const diag=await dexPage.evaluate(()=>{
+    const p=window.__pt2Game?.scene?.getScene('pokedex');
+    const id=p?.casillas?.find(c=>c.g?.visible)?.p?.dex||'0001';
+    const m=p?.registry?.get('manifiesto')||{};
+    return {id,manifestKeys:Object.keys(m).length,manifestHasId:!!m[id],
+     idlePath:m[id]?.anims?.Idle?.file,
+     page:p?.dexPage,loading:p?.load?.isLoading(),
+     remaining:p?.load?.list?.size,loadedTextureKeys:Object.keys(p?.textures?.list||{}).filter(k=>k.includes('Idle')||k.startsWith('retrato-')).slice(0,30),
+     pageRequests:[...(p?.__torre2DexPageRequests||[])],
+     forms:Object.keys(p?._torre2DexForms||{}).length,
+     loadingLabel:p?.__torre2DexLoadingLabel?.text??null};
+   });
+   console.error('POKEDEX_0658_ASSET_DIAGNOSTIC',JSON.stringify({diag,badRequests:dexBad,errors:dexErr}));
+  }
   assert.ok(dexData.portraits.every(x=>x.exists&&x.idle),
    'Every visible Pokédex card must have a real PMD portrait and Idle: '+
     JSON.stringify(dexData.portraits.filter(x=>!x.exists||!x.idle)));

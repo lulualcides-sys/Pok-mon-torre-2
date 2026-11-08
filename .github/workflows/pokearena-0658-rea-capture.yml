@@ -1,0 +1,152 @@
+name: Poké Arena — REA native Alpha 0.65.8 source audit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/rea-capture-live-public.cjs'
+      - '.github/workflows/pokearena-0658-rea-capture.yml'
+      - 'tools/pokearena/rea-overlay-verified-client.mjs'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-pmd-pack-compat.mjs'
+      - 'tests/rea-pmd-pack-compat.test.mjs'
+      - 'tests/source-client-smoke.cjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  rea-public-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing browser tools
+        run: npm install --no-audit --no-fund
+      - name: Audit browser capture script for syntactic integrity
+        run: node --check tools/pokearena/rea-capture-live-public.cjs
+      - name: Restore same-day REA-signed Alpha source for repeat PR regression checks
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture/rea-public-0658/pokearena-client
+          gh run download 42521266158 --repo "${{ github.repository }}" --name pokearena-0658-rea-public-client-stage --dir site-capture/rea-public-0658/pokearena-client
+          gh run download 42521266158 --repo "${{ github.repository }}" --name pokearena-0658-rea-public-script-audit --dir site-capture/rea-public-0658
+          node -e "const r=require('./site-capture/rea-public-0658/rea-capture-summary.json');if(r.observedAlpha!=='0.65.8'||r.loadedScripts<50||r.fileCount<100)throw Error('Pinned REA capture unverified');console.log('PINNED_REAL_PUBLIC_REA_ALPHA',r.observedAlpha,r.sourceDir)"
+      - name: REA inspect official public client with regular Chrome (no auth/bypass)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          POKEARENA_EXPECTED_ALPHA: '0.65.8'
+        run: |
+          node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-public-0658
+          node -e "const r=require('./site-capture/rea-public-0658/rea-capture-summary.json');if(r.observedAlpha!=='0.65.8'||!r.selectedFromOfficialConfig||r.loadedScripts<50)throw Error('Official release not proven');console.log('PROVED_OFFICIAL_ALPHA',r.observedAlpha,r.sourceDir,'files',r.fileCount)"
+      - name: Preserve source evidence for real client rebuild (not public Pages)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0658-rea-public-script-audit
+          path: |
+            site-capture/rea-public-0658/rea-capture-summary.json
+            site-capture/rea-public-0658/rea-capture-failure.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Keep captured public client available only to this workflow's review
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0658-rea-public-client-stage
+          path: site-capture/rea-public-0658/pokearena-client/
+          if-no-files-found: error
+          retention-days: 3
+
+
+  native-client-build:
+    needs: rea-public-source
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install Phaser and existing vetted build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Restore immutable verified previous source for unchanged static assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture
+          gh run download 42195598090 --repo "${{ github.repository }}" \
+            --name pokearena2d-cliente-publico-capturado --dir site-capture
+          node tools/pokearena/verify-pinned-capture.mjs
+      - name: Download publicly observed 0.65.8 scripts and audit
+        uses: actions/download-artifact@v4
+        with:
+          name: pokearena-0658-rea-public-client-stage
+          path: site-capture/rea-public-0658/pokearena-client
+      - uses: actions/download-artifact@v4
+        with:
+          name: pokearena-0658-rea-public-script-audit
+          path: site-capture/rea-public-0658
+      - name: Validate original Alpha 0.65.8 and overlay ONLY new public modules
+        shell: bash
+        run: |
+          node --check tools/pokearena/rea-overlay-verified-client.mjs
+          node tools/pokearena/rea-overlay-verified-client.mjs
+      - name: Build REAL updated client with all Torre 2 modules and approved arts
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --test tests/rea-pmd-pack-compat.test.mjs
+          node tools/pokearena/build-preview.mjs
+          node -e "const fs=require('fs');const root='_site/arena2d/';const v=require('./_site/arena2d/version.json');const s=fs.readFileSync(root+v.modules+'/config.js','utf8');if(!/VERSION\\s*=\\s*['\"']0\\.65\\.8['\"']/.test(s))throw Error('BUILT CLIENT NOT ALPHA 0.65.8');console.log('BUILT_NATIVE_ALPHA_0658',v.modules);"
+          node tools/dev/approved-visual-guard.mjs
+      - name: Test original combat, move kits, species and saves on native 0.65.8 build
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tools/pokearena/audit-moves.mjs
+          node tests/batch24-built.test.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/arena-family-selector-built.test.mjs
+          node tests/pokedex-crossgen-families-built.test.mjs
+          node tests/arena-johto-evolution-built.test.mjs
+          node tests/versus-intro-built.test.mjs
+      - name: Chromium native scene, sprites, Pokedex and input regressions
+        shell: bash
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          set -euo pipefail
+          node tests/source-client-smoke.cjs
+          node tests/arena-family-selector-browser.cjs
+          node tests/selection-original-mobile-browser.cjs
+          node tests/batch24-browser.cjs
+          node tests/visual-guard-browser.cjs
+      - name: Save verification evidence, including failures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0658-native-build-qa
+          path: |
+            site-capture/rea-public-0658/rea-capture-summary.json
+            test-evidence/
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Preserve candidate ONLY when all real Phaser tests pass
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0658-native-preview-verified
+          path: _site/arena2d/
+          retention-days: 3

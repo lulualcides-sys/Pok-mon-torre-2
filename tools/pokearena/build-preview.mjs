@@ -141,6 +141,53 @@ await fs.writeFile(index,html);
 // every animation for every Pokémon before showing the menu on Android.
 const clientSource=html.match(/src="(src-[0-9a-f]{10})\/main\.js"/)?.[1];
 if(!clientSource)throw Error('Original Phaser source directory missing');
+// Alpha 0.65.8 native pack knows the upstream roster, but not our separately
+// installed, credited Kanto/Johto PMD species. Preserve ALL native packed
+// resources; only missing entries can use genuine local SpriteCollab PNGs.
+{
+ const packFile=path.join(dest,clientSource,'paquetes.js');
+ let nativePack;
+ try{nativePack=await fs.readFile(packFile,'utf8');}
+ catch(error){if(error?.code!=='ENOENT')throw error;}
+ if(nativePack){
+  const {allowIndependentSpriteCollabPMDInNativePacks}=await import('./torre2-pmd-pack-compat.mjs');
+  const pmd=path.join(dest,'assets/pmd');
+  const match=html.match(/<script[^>]*id=["']paq["'][^>]*>([\s\S]*?)<\/script>/);
+  if(!match)throw Error('Official native 0.65.8 package index unavailable');
+  const index=JSON.parse(match[1]);
+  const manifest=JSON.parse(await fs.readFile(path.join(pmd,'manifest.json'),'utf8'));
+  const availablePacks=(await fs.readdir(path.join(dest,'assets/p')))
+   .filter(n=>/^[0-9a-f]{20}\.bin$/.test(n)).map(n=>n.slice(0,-4));
+  if(!availablePacks.includes(index.comun))
+   throw Error('Current P2 common native portrait pack missing');
+  const declared=new Set([index.comun,...Object.values(index.formas||{})]);
+  if(!availablePacks.every(n=>declared.has(n)))
+   throw Error('REA capture includes unexpected native sprite pack');
+  let verified=0;
+  for(const dex of Object.keys(index.formas||{})){
+   const native=manifest[dex];
+   if(!native?.anims?.Idle)throw Error('Missing original PMD entry '+dex);
+   for(const rel of [dex+'/portrait.png',
+    ...Object.values(native.anims).map(a=>a.file)]){
+    if(!/^[0-9]{4}(?:-[a-z0-9]+)*\/[a-zA-Z0-9_-]+(?:-Anim)?\.png$/.test(rel))
+     throw Error('Unexpected original sprite path '+rel);
+    const sprite=await fs.readFile(path.join(pmd,rel));
+    if(sprite.length<80||sprite[0]!==137||sprite[1]!==80)
+     throw Error('Missing verified native loose sprite '+rel);
+    verified++;
+   }
+  }
+  await fs.writeFile(packFile,
+   allowIndependentSpriteCollabPMDInNativePacks(nativePack,availablePacks));
+  console.log('P2_ALPHA0658_SPRITES_VERIFIED',JSON.stringify({
+   nativeForms:Object.keys(index.formas).length,
+   actualNativePacks:availablePacks.length,
+   originalLoosePngs:verified,
+   rule:'use current .bin if available, else previously verified genuine PMD PNG'
+  }));
+ }
+}
+
 // The original client still preloads eight League PNGs that are no longer in
 // its asset snapshot. Recreate only missing textures from its own native
 // 8x8 icon patterns, never replacing available upstream or approved art.
@@ -1112,6 +1159,16 @@ for(const [filename,changes] of patches){
      throw Error('Unknown native alternate-form type getter; refusing unsafe patch');
     body=body.replace(native,
      'get tipos(){const types=this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos;return this.escena.datos?.torre2?gen3Types(types):types}');
+    continue;
+   }
+   // P2 Alpha 0.65.8 adds native exports to config.js. Preserve its
+   // original named imports and add ONLY the independent Kanto campaign.
+   if(filename==='main.js'&&from.startsWith('import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,caso,registrarNombres}')&&
+      to.includes('torre2/campanha.js')){
+    const matches=body.match(/import\{[^;\n]{1,400}\}from"\.\/config\.js";/g)||[];
+    if(matches.length!==1||body.includes('import{Campanha}from"./torre2/campanha.js";'))
+     throw Error('Unrecognized public config import or campaign already installed');
+    body=body.replace(matches[0],matches[0]+'import{Campanha}from"./torre2/campanha.js";');
     continue;
    }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
