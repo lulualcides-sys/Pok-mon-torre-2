@@ -6,12 +6,15 @@ on:
     paths:
       - 'tools/pokearena/torre2-auto-battle.js'
       - 'tests/arena-auto-battle.test.js'
+      - 'tests/league-auto-battle.test.js'
+      - 'tests/league-auto-battle-browser.cjs'
       - 'tests/t10-campaign-auto-offensive-browser.cjs'
       - 'tests/kanto-intro-touch-browser.cjs'
       - '.github/workflows/master-t10-t27-aggressive-auto-reports.yml'
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 jobs:
   t10-t27-native:
     runs-on: ubuntu-24.04
@@ -29,20 +32,40 @@ jobs:
           node --check tools/pokearena/torre2-battle-report.js
           node --check tests/t10-campaign-auto-offensive-browser.cjs
           node --check tests/t27-native-mobile-report-pages-browser.cjs
-          node --test tests/arena-auto-battle.test.js tests/battle-report.test.js
+          node --check tests/league-auto-battle-browser.cjs
+          node --test tests/arena-auto-battle.test.js tests/league-auto-battle.test.js tests/battle-report.test.js
           npm test
           npm run check
           npm run check:reuse
       - name: Compile captured real Phaser/WebGL client
         run: |
           set -euo pipefail
-          for n in 1 2 3 4; do
-            if node tools/pokearena/capture-client.mjs \
-              && node tools/pokearena/build-preview.mjs \
-              && test -s _site/arena2d/version.json; then break; fi
-            if [ "$n" -eq 4 ]; then exit 1; fi
-            sleep $((n*8))
-          done
+          # Same hash-verified public native capture path as production Pages.
+          # The source host sometimes responds HTTP 403 to Node fetch;
+          # don't bypass provenance or silently build an incomplete client.
+          if node tools/pokearena/capture-client.mjs \
+            && node tools/pokearena/build-preview.mjs \
+            && test -s _site/arena2d/lib/phaser.min.js \
+            && test -s _site/arena2d/version.json; then
+            echo "Live original capture ready"
+          else
+            echo "::warning::Original capture unavailable; trying verified public 0.65.8 snapshot"
+            rm -rf site-capture _site/arena2d
+            mkdir -p site-capture
+            GH_TOKEN="${{ github.token }}" gh run download 42195598090 \
+              --repo "${{ github.repository }}" \
+              --name pokearena2d-cliente-publico-capturado --dir site-capture
+            node tools/pokearena/verify-pinned-capture.mjs
+            node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-public-0658
+            node tools/pokearena/rea-overlay-verified-client.mjs
+            node tools/pokearena/build-preview.mjs
+          fi
+          test -s _site/arena2d/lib/phaser.min.js
+          test -s _site/arena2d/version.json
+      - name: League AUTO and evolution decision in real native Phaser scene
+        run: |
+          set -euo pipefail
+          CHROME_BIN="$(command -v google-chrome)" node tests/league-auto-battle-browser.cjs
       - name: Actual campaign AUTO combat using native Phaser AI and no hidden damage
         run: |
           set -euo pipefail

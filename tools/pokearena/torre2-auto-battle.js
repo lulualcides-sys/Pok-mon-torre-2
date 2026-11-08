@@ -1,4 +1,5 @@
 import {WEATHER_MOVES,weatherSpeciesMultiplier} from './weather.js';
+import {gen3Effectiveness,gen3Stab} from './gen3-types.js';
 /* Optional single-player AUTO button backed by the native Poké Arena IA.
  * Kanto campaign starts ON; original Arena modes start OFF. No stat bonuses,
  * battle math, cooldown or approved VFX changes. */
@@ -236,14 +237,115 @@ export function pressureCampaignAutoSkillInput(scene,actor,input,brain=null){
 }
 export const campaignAutoProfile=scene=>scene?.datos?.torre2?
  CAMPAIGN_AUTO_OFFENSIVE:'normal';
-const OFFLINE_MODES=new Set(['cpu','entreno','arena']);
+// League is a separate NATIVE offline mode, not the Kanto campaign. Its
+// AUTO may evolve, but never changes the original species, moves, VFX or stats.
+const LEAGUE_MODES=new Set(['liga','league']);
+export const isLeagueAutoBattle=scene=>{
+ const d=scene?.datos;
+ return Boolean(d&&!d.torre2&&(LEAGUE_MODES.has(String(d.modo||'').toLowerCase())||
+  d.league===true||d.liga===true||
+  (d.liga&&typeof d.liga==='object')));
+};
+// Aggressive decision-making only; NO Maestro damage, speed or energy buffs.
+export const LEAGUE_AUTO_TACTICAL=Object.freeze({
+ reaccion:.03,error:0,esquiva:.84,basicos:1,reflejo:.12,
+ reflejoRival:.16,agresividad:.96,juicio:1,umbralUlti:.62,ventaja:1
+});
+export function tuneLeagueAutoBrain(scene,brain){
+ if(!isLeagueAutoBattle(scene)||!brain?.c||typeof brain.c!=='object')return brain;
+ const c=brain.c;
+ brain.c={...c,
+  pBasico:Math.min(c.pBasico??.30,.17),
+  pConGanas:Math.min(c.pConGanas??.30,.20),
+  pSinGanas:Math.min(c.pSinGanas??.50,.34),
+  pAhorro:Math.min(c.pAhorro??.50,.14),
+  reservaEnergia:Math.min(c.reservaEnergia??60,35),
+  pPlantarse:Math.min(c.pPlantarse??.50,.25),
+  rangoBanda:Math.min(c.rangoBanda??25,19)
+ };
+ return brain;
+}
+// Supplement genuine native IA gaps during League only. The original fight
+// engine still enforces timing, aim, energy, cooldown, dodge, status and EVO.
+export function improveLeagueAutoInput(scene,actor,input){
+ if(!isLeagueAutoBattle(scene)||scene?.fase!=='lucha'||scene.pausado||
+    scene.__torre2Changing||!actor||!input||typeof input!=='object'||
+    actor.ko||!(Number(actor.hp)>0)||actor.accion?.bloquea||actor.dash||
+    actor.est?.aturdido||actor.est?.dormido||actor.est?.congelado||
+    actor.est?.recarga)return input;
+ // The old AUTO unconditionally erased 'mega'. Pass the native IA request,
+ // and make evolution an actual priority once the native readiness getter
+ // approves it. Do not create forms or bypass the evolution meter.
+ if(input.mega)return input;
+ // When evolution is ready, choose it before any offensive ability.
+ // Keep the native dodge untouched; its evasive timing is safety critical.
+ if(!input.esp&&(actor.puedeEvolucionar===true||actor.puedeMega===true))
+  return {...input,lmb:false,rmb:false,q:false,e:false,mega:true};
+ if(input.esp||input.rmb||input.q||input.e)return input;
+ const foe=livingCampaignOpponent(scene,actor);
+ if(!foe||!Number.isFinite(actor.x)||!Number.isFinite(actor.y)||
+    !Number.isFinite(foe.x)||!Number.isFinite(foe.y)||
+    foe.est?.contra||foe.est?.disfraz||
+    (foe.est?.invul?.hasta??0)>(actor.t??0)||
+    (foe.est?.vuelo?.hasta??0)>(actor.t??0))return input;
+ const dx=foe.x-actor.x,dy=foe.y-actor.y,d=Math.hypot(dx,dy);
+ if(d<1||d>950)return input;
+ const hpRatio=Number(actor.hpMax)>0?actor.hp/actor.hpMax:1;
+ let out=input;
+ const basic=actor.kit?.lmb;
+ const reach=Number(basic?.alcance??basic?.largo??0);
+ const approachAt=Math.max(75,Math.min(155,reach>0?reach*.76:90));
+ const danger=Array.isArray(scene.efectos)&&scene.efectos.some(f=>
+  f?.vivo&&f.dueno&&f.dueno!==actor&&Number.isFinite(f.x)&&
+  Number.isFinite(f.y)&&Math.hypot(f.x-actor.x,f.y-actor.y)<100);
+ // Avoid the common sideways standoff, but keep all native retreats, dodges
+ // and defensive decisions when hurt or under projectile pressure.
+ if(hpRatio>=.48&&!danger&&d>approachAt*1.15){
+  const mx=Number(input.mx)||0,my=Number(input.my)||0,mag=Math.hypot(mx,my);
+  const ux=dx/d,uy=dy/d,forward=mag>.12?(mx*ux+my*uy)/mag:0;
+  if(mag<.12)out={...out,mx:ux,my:uy};
+  else if(forward>=-.05&&forward<.55){
+   const x=.74*ux+.26*mx/mag,y=.74*uy+.26*my/mag,n=Math.hypot(x,y)||1;
+   out={...out,mx:x/n,my:y/n};
+  }
+ }
+ if(input.lmb&&reach>0&&d<=reach*.84)return out;
+ if(hpRatio<.28||!Number.isFinite(actor.energia)||
+    Number(actor.calor??0)>=80)return out;
+ const score=move=>{
+  const effect=Array.isArray(foe.tipos)&&foe.tipos.length?
+    gen3Effectiveness(move.tipo,foe.tipos):1;
+  const stab=Array.isArray(actor.tipos)?gen3Stab(move.tipo,actor.tipos):1;
+  return Number(move.dano)*effect*stab;
+ };
+ const options=['rmb','q'].map(slot=>({slot,move:actor.kit?.[slot]}))
+  .filter(({slot,move})=>{
+   if(!move?.forma||move.pendiente||move.torre2Unavailable||
+      move.ulti||!(Number(move.dano)>0)||!(Number(move.alcance??move.largo??0)>0)||
+      d>Number(move.alcance??move.largo)*.84||
+      !Number.isFinite(actor.cd?.[slot])||actor.cd[slot]>0)return false;
+   const cost=Number(move.coste??0);
+   return Number.isFinite(cost)&&cost>=0&&actor.energia>=cost;
+  }).map(item=>({...item,score:score(item.move)}))
+  .filter(item=>Number.isFinite(item.score)&&item.score>0)
+  .sort((a,b)=>b.score-a.score);
+ if(!options.length)return out;
+ // Do not replace a currently useful native basic with a weaker skill.
+ const basicScore=basic&&d<=reach*.84?score(basic):0;
+ if(input.lmb&&options[0].score<=basicScore*1.15)return out;
+ const chosen=options[0].slot;
+ return {...out,lmb:false,rmb:chosen==='rmb',q:chosen==='q',
+  ax:foe.x,ay:foe.y};
+}
+
+const OFFLINE_MODES=new Set(['cpu','entreno','arena','liga','league']);
 const HUMAN_TYPES=new Set(['kbm','tactil','teclado2']);
 const isHuman=c=>HUMAN_TYPES.has(c?.tipo)||/^pad[0-9]+$/.test(c?.tipo||'');
 export function autoBattleAllowed(scene){
  const d=scene?.datos;
  if(!d||scene.sim||scene.enLinea||scene.red||d.online||d.ranked||d.registro||
     ['online','versus','demo','replay'].includes(d.modo))return false;
- return OFFLINE_MODES.has(d.modo)||Boolean(d.torre2);
+ return OFFLINE_MODES.has(d.modo)||isLeagueAutoBattle(scene)||Boolean(d.torre2);
 }
 export function manualFighterControl(scene){
  if(!Array.isArray(scene?.controles))return null;
@@ -260,8 +362,8 @@ export function installAutoBattle(scene,makeNativeAI){
  // Original Arena stores an evolution FAMILY in def.id and the evolved form
  // in etapa. Both must be part of the key (e.g. Squirtle -> Wartortle).
  const fighterSpecies=actor=>String(actor?.def?.id||actor?.dex||'')+':'+String(actor?.etapa??0);
- const state={enabled:!!scene.datos?.torre2,control:original,read:original.leer,
-  ai:tuneCampaignAutoBrain(scene,makeNativeAI(original.l)),
+ const state={enabled:!!scene.datos?.torre2||isLeagueAutoBattle(scene),control:original,read:original.leer,
+  ai:tuneLeagueAutoBrain(scene,tuneCampaignAutoBrain(scene,makeNativeAI(original.l))),
   autoActor:original.l,autoSpecies:fighterSpecies(original.l),
   autoOpponent:livingCampaignOpponent(scene,original.l),
   autoOpponentSpecies:fighterSpecies(livingCampaignOpponent(scene,original.l)),
@@ -280,7 +382,7 @@ export function installAutoBattle(scene,makeNativeAI){
   // cooldowns, damage, energy and every approved move/VFX.
   const fighter=original.l;
   const foe=livingCampaignOpponent(scene,fighter);
-  if(scene.datos?.torre2){
+  if(scene.datos?.torre2||isLeagueAutoBattle(scene)){
    const species=fighterSpecies(fighter),foeSpecies=fighterSpecies(foe);
    const playerChanged=fighter!==state.autoActor||species!==state.autoSpecies;
    const foeChanged=foe!==state.autoOpponent||foeSpecies!==state.autoOpponentSpecies;
@@ -290,7 +392,7 @@ export function installAutoBattle(scene,makeNativeAI){
    if(fighter&&(playerChanged||foeChanged)){
     const ai=makeNativeAI(fighter);
     if(typeof ai?.leer!=='function')throw Error('Native Poké Arena IA missing after party switch');
-    state.ai=tuneCampaignAutoBrain(scene,ai);
+    state.ai=tuneLeagueAutoBrain(scene,tuneCampaignAutoBrain(scene,ai));
     state.autoActor=fighter;state.autoSpecies=species;
     state.autoOpponent=foe;state.autoOpponentSpecies=foeSpecies;
     if(playerChanged)state.diagnostics.playerRebinds++;
@@ -305,13 +407,14 @@ export function installAutoBattle(scene,makeNativeAI){
   if(!it||typeof it!=='object'){
    // Preserve the approved original Arena AUTO: native AI null falls back
    // to the human reader there. Only campaign AUTO neutralizes stale touch.
-   if(!scene.datos?.torre2)return state.read.call(this,dt,...args);
+   if(!scene.datos?.torre2&&!isLeagueAutoBattle(scene))return state.read.call(this,dt,...args);
    stats.nativeNoInput++;
    return {mx:0,my:0,ax:foe?.x??fighter?.x??0,
     ay:foe?.y??fighter?.y??0,lmb:false,rmb:false,q:false,
     e:false,esp:false,mega:false};
   }
-  const weatherAware=chooseCampaignAutoWeatherInput(scene,fighter,it);
+  const leagueAware=improveLeagueAutoInput(scene,fighter,it);
+  const weatherAware=chooseCampaignAutoWeatherInput(scene,fighter,leagueAware);
   const skilled=pressureCampaignAutoSkillInput(scene,fighter,weatherAware,state.ai);
   const pressured=pressureCampaignAutoInput(scene,fighter,skilled,state.ai);
   if(!it.lmb&&pressured.lmb)stats.assistedBasicFrames++;
@@ -320,7 +423,7 @@ export function installAutoBattle(scene,makeNativeAI){
   if(['rmb','q','e'].some(slot=>it[slot]&&
     WEATHER_MOVES[fighter.kit?.[slot]?.nombre]&&!pressured[slot]))
    stats.suppressedWeatherFrames++;
-  return {...pressured,mega:false};
+  return {...pressured,mega:isLeagueAutoBattle(scene)?Boolean(pressured.mega):false};
  };
  original.leer=safeRead;
  scene.__torre2AutoMode=state;
@@ -393,7 +496,7 @@ export function bindAutoBattleToScene(Scene,IA){
   // Campaign AUTO: stronger-than-Hard tactical parameters ONLY for the
   // player AUTO brain. No bonus damage, speed, energy, cooldown or VFX changes.
   // Manual control and the original Arena AUTO still use their old settings.
-  const tactic=campaignAutoProfile(this);
+  const tactic=isLeagueAutoBattle(this)?LEAGUE_AUTO_TACTICAL:campaignAutoProfile(this);
   const install=()=>installAutoBattle(this,fighter=>new IA(fighter,tactic));
   if(!install()&&autoBattleAllowed(this)&&!this.__torre2AutoRetry){
    // Campaign/Phaser may create the player controller AFTER create().
