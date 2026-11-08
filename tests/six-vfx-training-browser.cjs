@@ -54,10 +54,13 @@ const server=http.createServer(async(req,res)=>{
     const game=window.__pt2Game,s=game.scene.getScene('vfx-six-lab');
     const t=game.textures.get('torre2-six-original-vfx-20261108');
     return {loaded:t?.frameTotal,selector:s.cards?.length,selected:s.selected,
-      asset:s.fx?.texture?.key,visible:s.fx?.visible};
+      asset:s.fx?.texture?.key,visible:s.fx?.visible,
+      nativeActors:(s.visualActors||[]).map(a=>a.texture?.key)};
    });
    assert.ok(before.loaded>=96&&before.selector===6&&before.visible,
     'Actual spritesheet and six controls visible: '+JSON.stringify(before));
+   assert.deepEqual(before.nativeActors,['pmd-0103-Idle','pmd-0143-Idle'],
+    'Use original loaded P2 Pokémon sprites, never plain P1/CPU placeholders');
    fs.mkdirSync('test-evidence/six-vfx-lab',{recursive:true});
    for(const id of ['gunk-shot','magnet-bomb','ominous-wind','drill-run','freeze-dry','head-smash']){
     assert.equal(await page.evaluate(id=>window.__pt2Game.scene.getScene('vfx-six-lab').cast(id),id),true);
