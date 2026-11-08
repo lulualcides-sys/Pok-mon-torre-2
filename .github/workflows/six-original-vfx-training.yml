@@ -1,0 +1,47 @@
+name: Six original pixel VFX — Phaser in-game lab gate
+on:
+  push:
+    branches:
+      - feat/six-original-vfx-training-phaser-20261108
+    paths:
+      - 'reference-assets/vfx-six/**'
+      - 'tools/pokearena/torre2-six-vfx-lab-scene.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/six-vfx-training.test.mjs'
+      - '.github/workflows/six-original-vfx-training.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'reference-assets/vfx-six/**'
+      - 'tools/pokearena/torre2-six-vfx-lab-scene.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/six-vfx-training.test.mjs'
+      - '.github/workflows/six-original-vfx-training.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify-native-preservation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax guard — isolated Phaser scene and native client builder
+        run: |
+          node --check tools/pokearena/torre2-six-vfx-lab-scene.js
+          node --check tools/pokearena/build-preview.mjs
+      - name: Six PNG attack cycles, scene registration, manifest hash and safe boundaries
+        run: node --test tests/six-vfx-training.test.mjs
+      - name: Existing test suite (native catalog protection)
+        run: npm test
+      - name: Verify only new lab and build files change from main
+        run: |
+          git fetch origin main --depth=1
+          git diff --name-only origin/main...HEAD | tee /tmp/six-vfx-change-list.txt
+          if grep -E '^(site-capture/|src/|data/move-reuse-policy.json|tools/pokearena/torre2-move-pool.js|tools/pokearena/torre2-johto-lab-runtime.js)' /tmp/six-vfx-change-list.txt; then
+            echo "Unexpected modification to approved combat or native assets"
+            exit 1
+          fi
