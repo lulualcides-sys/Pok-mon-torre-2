@@ -26,3 +26,6 @@ Este lote redesenha a seleção regional, os detalhes e opções; não é conclu
 
 ## Arsenal e pesquisa
 Kit pokemon-campanha-design, create-game-assets, game-ui-ux e level-design consultados. asset_report.py executado; Phaser existente e Playwright utilizados. Superpowers/Spec Kit: plano, revisão independente e validação. Pixelorama, LibreSprite e Tiled não foram executados; nenhuma engine nova ou dependência de runtime instalada.
+
+## Correção detectada pelo CI
+O primeiro gate T98 falhou porque o novo painel da própria equipe usava a mesma tag de apresentação dos retratos adversários. Reproduzido localmente com o teste original (RED), corrigido com tags distintas `torre2-team-preview-*`, e o mesmo teste passou (GREEN) conferindo exatamente seis adversários, suas espécies e escalas. Nenhuma assertiva foi removida. Suite completa repetida: 510/510 PASS; guardião 247 arquivos idênticos. A versão com essa falha não foi publicada.

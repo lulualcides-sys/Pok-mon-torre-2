@@ -138,15 +138,15 @@ export function enemyPortraitDex(scene,id){
  }catch{return null}
 }
 function portraitDex(scene,id){return enemyPortraitDex(scene,id)}
-function portrait(scene,layer,id,x,y,size=43){
+function portrait(scene,layer,id,x,y,size=43,role='opponent'){
  const dex=portraitDex(scene,id);
  if(!dex)return null;
  const key='torre2-portrait-'+dex;
  const show=()=>{
   if(!layer.active||!scene.textures.exists(key))return;
   const image=scene.add.image(x,y,key).setDisplaySize(size,size)
-   .setData('torre2-opponent-sprite',id)
-   .setData('torre2-opponent-size',size);
+   .setData(role==='team'?'torre2-team-preview-sprite':'torre2-opponent-sprite',id)
+   .setData(role==='team'?'torre2-team-preview-size':'torre2-opponent-size',size);
   layer.add(image);
  };
  if(scene.textures.exists(key)){show();return key;}
@@ -287,7 +287,7 @@ function cardsPage(scene,state,handlers){
   if(pw>160){
    text(scene,layer,px+pw/2,215,'SUA EQUIPE',10,'#c5d9c4');
    const team=state.team.slice(0,6),step=Math.min(52,(pw-24)/Math.max(1,team.length));
-   team.forEach((member,j)=>portrait(scene,layer,member.id,px+pw/2+(j-(team.length-1)/2)*step,241,25));
+   team.forEach((member,j)=>portrait(scene,layer,member.id,px+pw/2+(j-(team.length-1)/2)*step,241,25,'team'));
   }else text(scene,layer,px+pw/2,232,city.toUpperCase(),8,'#c5d9c4');
  }
  const navY=278;
