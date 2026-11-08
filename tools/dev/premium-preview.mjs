@@ -4,7 +4,7 @@ import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 const origin='https://lulualcides-sys.github.io/Pok-mon-torre-2';
-const cache=path.resolve('/workspace/pt2-public-cache');
+const cache=path.resolve(process.env.PREVIEW_CACHE||'/workspace/pt2-public-cache');
 const overrides={'premium-art.js':'torre2-premium-art.js','trainer-cards.js':'torre2-trainer-cards.js','city-scenery.js':'torre2-city-scenery.js','campanha.js':'torre2-campaign-scene.js'};
 const mime={'.js':'text/javascript','.html':'text/html','.json':'application/json','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2','.ogg':'audio/ogg','.svg':'image/svg+xml'};
 http.createServer(async(req,res)=>{

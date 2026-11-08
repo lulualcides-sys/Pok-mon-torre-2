@@ -33,3 +33,6 @@ Carregamento tardio do atlas após sair da tela; sprites invadindo texto; contra
 - Script inicial de capturas aguardava estado antigo entre reinícios e tocava uma coluna vazia na Liga; corrigido para aguardar estágio + root ativos e tocar primeiro card existente. Não era falha do jogo.
 - Proxy local precisou NODE_USE_ENV_PROXY=1 para assets fora do cache. Capturas anteriores sem atlas não contam como aprovação visual.
 - Revisão fresca independente solicitada após teste das regiões. Nenhuma publicação deste lote até terminar gates.
+
+## Compatibilização com trabalho concorrente
+A main recebeu #609 (Alpha 0.65.8) enquanto o lote estava em revisão. Rebase limpo sobre f079d9c7fc7794a21e45198d423af23c3271c9d8. Nenhum patch desse cliente foi criado por esta frente. Novo guardião check-scenic-boundary.mjs compara contra essa base, preservando inclusive campaign-scene inteiro, rosters e diálogo importado pelo VS. Capturas finais devem usar cache separado da versão antiga.

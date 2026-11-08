@@ -1,0 +1,59 @@
+name: Campaign scenic cards — isolated visual regression
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-premium-art.js'
+      - 'tools/pokearena/torre2-trainer-cards.js'
+      - 'reference-assets/scenic-v2/**'
+      - 'tests/scenic-atlas*'
+      - 'tools/dev/scenic-v2-review.cjs'
+      - 'tools/dev/check-scenic-boundary.mjs'
+      - '.github/workflows/scenic-campaign-visual.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: scenic-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  scenery:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Preserve protected runtime and test async lifecycle
+        env:
+          SCENIC_BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          npm install --no-audit --no-fund
+          node tools/dev/check-scenic-boundary.mjs
+          node --test tests/scenic-atlas-lifecycle.test.js tests/trainer-cards.test.js tests/trainer-cards-design-taste.test.js
+          node tools/dev/approved-visual-guard.mjs
+      - name: Build genuine native client with isolated external art
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          bash tools/pokearena/capture-resilient.sh
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/assets/ui/scenic/trees-green.png
+          test -s _site/arena2d/assets/ui/scenic/CREDITS.txt
+      - name: Real browser regions, touch and delayed image completion
+        run: |
+          python3 -m http.server 4174 --bind 127.0.0.1 --directory _site > /tmp/scenic-http.log 2>&1 &
+          for i in $(seq 1 20); do
+            if curl -fsS http://127.0.0.1:4174/arena2d/ > /dev/null; then break; fi
+            sleep 1
+          done
+          export CHROME_BIN="$(command -v google-chrome)"
+          OUT=test-evidence/scenic node tools/dev/scenic-v2-review.cjs
+          node tests/scenic-atlas-delayed-browser.cjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: scenic-native-desktop-tablet-mobile
+          path: test-evidence/scenic/

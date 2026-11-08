@@ -1,0 +1,55 @@
+{
+  "errors": [],
+  "report": [
+    {
+      "name": "desktop",
+      "stage": 0,
+      "atlas": 1024
+    },
+    {
+      "name": "desktop",
+      "stage": 1,
+      "atlas": 1024
+    },
+    {
+      "name": "desktop",
+      "stage": 3,
+      "atlas": 1024
+    },
+    {
+      "name": "desktop",
+      "stage": 5,
+      "atlas": 1024
+    },
+    {
+      "name": "desktop",
+      "stage": 6,
+      "atlas": 1024
+    },
+    {
+      "name": "desktop",
+      "stage": 8,
+      "atlas": 1024
+    },
+    {
+      "name": "desktop",
+      "stage": 12,
+      "atlas": 1024
+    },
+    {
+      "name": "mobile-landscape",
+      "stage": 1,
+      "atlas": 1024
+    },
+    {
+      "name": "tablet",
+      "stage": 1,
+      "atlas": 1024
+    },
+    {
+      "name": "mobile-portrait",
+      "stage": 1,
+      "atlas": 1024
+    }
+  ]
+}
