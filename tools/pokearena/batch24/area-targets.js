@@ -9,6 +9,7 @@ export function batch24AreaTargets(actor){
   const target=actor?.rival;
   return target&&target!==actor&&!target.ko?[target]:[];
  }
+ const team=actor?.equipo??actor?.equipe;
  return fighters.filter(target=>target&&target!==actor&&!target.ko&&
-  !(actor.equipo!=null&&target.equipo===actor.equipo));
+  !(team!=null&&(target.equipo??target.equipe)===team));
 }
