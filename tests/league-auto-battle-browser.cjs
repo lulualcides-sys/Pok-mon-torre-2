@@ -37,10 +37,22 @@ const server=http.createServer(async(req,res)=>{
     modo:'liga',p1:'squirtle',p2:'geodude',mandos:['tactil','pad0'],nivel:'normal'
    });
   });
+  await page.waitForTimeout(2500);
+  const diagnostic=await page.evaluate(()=>{
+   const game=window.__pt2Game,scene=game?.scene?.getScene('combate');
+   return {active:scene?.scene?.isActive?.(),fase:scene?.fase,
+    mode:scene?.datos?.modo,controllers:(scene?.controles||[]).map(c=>({
+     tipo:c?.tipo,hasFighter:!!c?.l,remote:!!c?.l?.remoto,reader:typeof c?.leer})),
+    auto:!!scene?.__torre2AutoMode,
+    events:scene?.game?.events?.eventNames?.().slice(0,8),
+    scenes:game?.scene?.getScenes?.(true)?.map(s=>s.scene.key),
+    errorCount:0};
+  });
+  console.log('LEAGUE_NATIVE_DIAGNOSTIC',JSON.stringify({diagnostic,errors}));
   await page.waitForFunction(()=>{
    const c=window.__pt2Game.scene.getScene('combate');
    return c.scene.isActive()&&c.fase==='lucha'&&!!c.__torre2AutoMode;
-  },null,{timeout:60000});
+  },null,{timeout:12000});
   const observed=await page.evaluate(()=>{
    const scene=window.__pt2Game.scene.getScene('combate');
    const auto=scene.__torre2AutoMode;
