@@ -1,0 +1,75 @@
+name: Poké Arena 2D — REA análise estática versionada (sem deploy)
+
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/rea-snapshot-report.mjs'
+      - 'tests/pokearena-rea-provenance.test.mjs'
+      - '.github/workflows/pokearena-rea-static.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rea-static:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - name: Check out Torre 2 branch (no writes)
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Read last legally archived public client only
+        uses: actions/checkout@v4
+        with:
+          ref: pokearena2d-cliente-phaser
+          path: rea-snapshot
+          persist-credentials: false
+          sparse-checkout: |
+            version.json
+            capture-provenance.json
+            src-968afec4c1
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Unit-test release provenance policy
+        run: node --test tests/pokearena-rea-provenance.test.mjs
+      - name: Prepare minimum archive JS module graph
+        shell: bash
+        run: |
+          set -euo pipefail
+          modules="$(node -p "require('./rea-snapshot/version.json').modules")"
+          test -n "$modules"
+          test -s "rea-snapshot/$modules/config.js"
+          test -s "rea-snapshot/$modules/notas.js"
+          mkdir -p rea-input/escenas test-evidence/pokearena-rea
+          for script in config.js notas.js datos.js habilidades.js luchador.js arena.js main.js; do
+            test -s "rea-snapshot/$modules/$script"
+            cp "rea-snapshot/$modules/$script" "rea-input/$script"
+          done
+          for script in batalla.js combate.js; do
+            test -s "rea-snapshot/$modules/escenas/$script"
+            cp "rea-snapshot/$modules/escenas/$script" "rea-input/escenas/$script"
+          done
+          node tools/pokearena/rea-snapshot-report.mjs             "rea-snapshot/$modules" test-evidence/pokearena-rea/version-provenance.json
+          node -e "const p=require('./test-evidence/pokearena-rea/version-provenance.json'); console.log('Last archive Alpha:',p.alpha.lastConfirmedFromArchivedConfig,'Current public Alpha:',p.alpha.currentLive); if(p.alpha.currentLive!==null)throw Error('Cannot claim unverified current release')"
+      - name: Run genuine REA JavaScript application analyzer on archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --version
+          command -v ps
+          timeout 210s npx --yes rea-agents@6.8.0             analyze-javascript-application "$PWD/rea-input" --json             > test-evidence/pokearena-rea/rea-application-evidence.json             2> test-evidence/pokearena-rea/rea-stderr.log
+          test -s test-evidence/pokearena-rea/rea-application-evidence.json
+          node -e "const e=require('./test-evidence/pokearena-rea/rea-application-evidence.json'); if(e.isError||e.error||e.status==='error')throw Error('REA returned analysis error'); console.log('REA static evidence generated, top-level fields:',Object.keys(e).slice(0,20).join(','));"
+      - name: Archive REA evidence and hash audit (no published third-party assets)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-rea-static-evidence
+          path: |
+            test-evidence/pokearena-rea/
+          if-no-files-found: warn
+          retention-days: 14
