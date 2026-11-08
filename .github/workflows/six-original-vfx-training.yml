@@ -45,3 +45,40 @@ jobs:
             echo "Unexpected modification to approved combat or native assets"
             exit 1
           fi
+
+  test-in-game-chromium:
+    needs: verify-native-preservation
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install browser controller and offline PixelFX generator
+        run: npm install --no-audit --no-fund
+      - name: Fetch original authorized Phaser game and build six VFX inside it
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          bash tools/pokearena/capture-resilient.sh
+          node tools/pokearena/build-preview.mjs
+          test -s _site/arena2d/index.html
+          test -s _site/arena2d/assets/torre2/vfx-six/atlas.png
+      - name: Test all six real Phaser frames, menu actions and screenshots at mobile/desktop sizes
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/six-vfx-training-browser.cjs
+      - name: Upload actual Phaser screenshots for visual approval (not auto-approved)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: six-attacks-in-real-pokemon-torre2-phaser
+          path: test-evidence/six-vfx-lab/*.png
+          if-no-files-found: warn
+          retention-days: 21
