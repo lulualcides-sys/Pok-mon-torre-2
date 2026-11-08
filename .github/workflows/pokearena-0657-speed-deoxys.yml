@@ -1,0 +1,41 @@
+name: Poké Arena 2D 0.65.7 — Speed Deoxys ULT + dash (isolated)
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/torre2-deoxys-speed-dash.js'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tests/deoxys-speed-dash*'
+      - '.github/workflows/pokearena-0657-speed-deoxys.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deoxys-0657:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install test dependencies and MIT Phaser (no repo lockfile changes)
+        run: npm install --no-audit --no-fund --no-save --no-package-lock phaser@3.90.0
+      - name: Verify build hook and focused status/cooldown regressions
+        run: |
+          node --check tools/pokearena/torre2-deoxys-speed-dash.js
+          node --check tools/pokearena/build-preview.mjs
+          node --test tests/deoxys-speed-dash.test.js
+      - name: Real Phaser WebGL input/ULT smoke (independent fixtures)
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/deoxys-speed-dash-phaser-browser.cjs
+      - name: Preserve screenshots and exact test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0657-speed-deoxys-webgl-evidence
+          path: test-evidence/deoxys-0657/
+          if-no-files-found: warn
+          retention-days: 14
