@@ -84,4 +84,40 @@ try{
  assert.equal(practice.target.hp,1000,'Onix training HP stays fixed');
  assert.equal(practice.scene.__torre2TrainingHits,1,'Training receives one genuine Poison Jab hit');
 }
+// Alpha 0.63.6 carry-forward: installed Twister must not generate a
+// confirmed-hit impact for a blocked contact or failed accuracy roll.
+// Freeze at frame 44: a genuine hit still shows its existing impact,
+// while a missed / blocked Twister has already cleaned up its Graphics.
+{
+ const h=BATCH24_MOVES.find(move=>move.id==='twister');
+ assert.ok(h?.approved,'Keep approved Twister untouched');
+ for(const reason of ['blocked','accuracy']){
+  const sample=fixture();
+  let receiveCalls=0;
+  if(reason==='blocked')sample.target.recibir=()=>{
+   receiveCalls++;return 'bloqueado';
+  };
+  const move=reason==='accuracy'?{...h,precisao:0}:h;
+  const fx=BATCH24_FORMS[h.forma](sample.actor,move,{slot:'q'});
+  for(let i=0;i<44;i++){
+   sample.actor.t+=1/60;
+   fx.update(1/60);
+  }
+  assert.equal(sample.target.hp,1000,'Twister '+reason+' must never damage');
+  if(reason==='blocked')assert.ok(receiveCalls>0,'A real contact reached blocked target');
+  assert.ok(sample.parts.every(g=>g.dead),
+   'Twister '+reason+' must not persist as a fake hit impact');
+ }
+ const landed=fixture();
+ const fx=BATCH24_FORMS[h.forma](landed.actor,h,{slot:'q'});
+ for(let i=0;i<44;i++){
+  landed.actor.t+=1/60;
+  fx.update(1/60);
+ }
+ assert.ok(landed.target.hp<1000,'Aligned Twister must still cause real damage');
+ assert.ok(landed.parts.some(g=>!g.dead),
+  'Approved impact remains visible after a genuine hit');
+ fx.destroy();
+}
+
 console.log('23 signature moves tested, 21 approved and 2 pending; Poison Jab validated on real and training targets.');
