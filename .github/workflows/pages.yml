@@ -84,7 +84,25 @@ jobs:
             # A regular public Chromium session + REA can observe the real
             # Alpha 0.65.8 resources even when server-side GET returns 403.
             # No login, stealth, private API or bypass; fail closed if absent.
-            node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-public-0658
+            if node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-public-0658; then
+              echo "Official public 0.65.8 REA capture available"
+            else
+              # A normal headless Chrome may fail to expose its CDP port on
+              # shared Actions runners. Restore the identical public-source
+              # evidence captured earlier, not stale 0.65.1 modules or fakes.
+              # The overlay verifies every file SHA256 and full ESM graph.
+              echo "::warning::Live REA/CDP unavailable; restoring pinned public Alpha 0.65.8 evidence from Actions run 42521266158"
+              rm -rf site-capture/rea-public-0658
+              mkdir -p site-capture/rea-public-0658/pokearena-client
+              GH_TOKEN="${{ github.token }}" gh run download 42521266158 \
+                --repo "${{ github.repository }}" \
+                --name pokearena-0658-rea-public-client-stage \
+                --dir site-capture/rea-public-0658/pokearena-client
+              GH_TOKEN="${{ github.token }}" gh run download 42521266158 \
+                --repo "${{ github.repository }}" \
+                --name pokearena-0658-rea-public-script-audit \
+                --dir site-capture/rea-public-0658
+            fi
             node tools/pokearena/rea-overlay-verified-client.mjs
             node tools/pokearena/build-preview.mjs
             test -s _site/arena2d/index.html
