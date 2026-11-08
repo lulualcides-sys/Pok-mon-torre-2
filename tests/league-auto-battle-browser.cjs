@@ -20,30 +20,20 @@ const server=http.createServer(async(req,res)=>{
  }catch{res.writeHead(404);return res.end('not found');}
 });
 (async()=>{
- // Audit the native League menu transition rather than assuming a CPU fixture
- // is equivalent to the League tournament's actual entry path.
- try {
-  const html=await fs.readFile(path.join(root,'arena2d','index.html'),'utf8');
-  const dir=html.match(new RegExp('src="(src-[a-f0-9]{10})/main[.]js"'))?.[1];
-  const file=path.join(root,'arena2d',dir||'','escenas','liga.js');
-  const source=await fs.readFile(file,'utf8');
-  const occurrences=[...source.matchAll(new RegExp('scene[.]start|mandos|modo:|liga:|controles|combate|batalla','g'))]
-   .slice(0,60).map(m=>source.slice(Math.max(0,m.index-130),Math.min(source.length,m.index+200)));
-  console.log('LEAGUE_NATIVE_ROUTING_AUDIT',JSON.stringify({length:source.length,occurrences}));
-  const selection=await fs.readFile(path.join(root,'arena2d',dir,'escenas','seleccion.js'),'utf8');
-  const selectionMatches=[...selection.matchAll(new RegExp('scene[.]start|mandos|modo:|liga:|controles|combate|batalla','g'))]
-   .slice(0,65).map(m=>selection.slice(Math.max(0,m.index-180),Math.min(selection.length,m.index+200)));
-  // The *real* native menu launches mode=cpu with the League metadata.
-  // A synthetic mode=liga combat is not a legitimate tournament transition.
-  assert.ok(source.includes('this.scene.start("seleccion",{previo:{modo:"liga",liga:{'),
-    'Native League card must enter selection with League metadata');
-  assert.ok(selection.includes('modo:"cpu",mandos:[...this.dispositivos],liga:this.liga'),
-    'Native League must launch a solo CPU battle carrying League metadata');
-  console.log('PASS_NATIVE_LEAGUE_SELECTION_ROUTE',JSON.stringify({
-   sourceLength:source.length,selectionLength:selection.length,
-   nativeBattleMode:'cpu',leagueMetadata:true
-  }));
- } catch(error){console.log('LEAGUE_NATIVE_ROUTING_AUDIT_ERROR',String(error));}
+ // Fail closed if the native League -> selection -> combat routing changes.
+ // Only report contract metadata; never dump captured upstream source.
+ const html=await fs.readFile(path.join(root,'arena2d','index.html'),'utf8');
+ const dir=html.match(new RegExp('src="(src-[a-f0-9]{10})/main[.]js"'))?.[1];
+ assert.ok(dir,'Versioned real Phaser modules must be present');
+ const source=await fs.readFile(path.join(root,'arena2d',dir,'escenas','liga.js'),'utf8');
+ const selection=await fs.readFile(path.join(root,'arena2d',dir,'escenas','seleccion.js'),'utf8');
+ assert.ok(source.includes('this.scene.start("seleccion",{previo:{modo:"liga",liga:{'),
+   'Native League cards must enter selection with League metadata');
+ assert.ok(selection.includes('modo:"cpu",mandos:[...this.dispositivos],liga:this.liga'),
+   'Native League must launch solo CPU battles with League metadata');
+ console.log('PASS_NATIVE_LEAGUE_SELECTION_ROUTE',JSON.stringify({
+  modules:dir,mode:'cpu',leagueMetadata:true
+ }));
  await new Promise(resolve=>server.listen(4317,'127.0.0.1',resolve));
  const browser=await chromium.launch({
   executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',headless:true,
