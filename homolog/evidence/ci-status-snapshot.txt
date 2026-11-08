@@ -1,0 +1,29 @@
+capture	fail	22s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439572/job/128617302422	
+center	fail	35s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439494/job/128617302290	
+native-shiny-ui	fail	1m3s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439559/job/128617302292	
+pages-native-vfx-preflight	fail	1m36s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439566/job/128617302522	
+t22-mobile-rematch	fail	1m0s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439550/job/128617302533	
+Approved static art — fast check	pass	6s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439529/job/128617302299	
+Browser — four reworked Johto moves (independent review)	pass	1m3s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439619/job/128617335383	
+Quick original-3 guard + PixelFX 43 mappings (no browser)	pass	8s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439619/job/128617302824	
+shiny-entrance	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439558/job/128617302356	
+audit	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439594/job/128617302697	
+Vercel	pass	0	https://vercel.com/lulualcides-4369/pokemon-torre-2-homologacao-teste/7BWDywywWUVQi6retzAczzMToW1B	Canceled by Ignored Build Step
+safe-auto-closeout	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439578/job/128617302591	
+Native Phaser — desktop/mobile screenshots	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439529/job/128617361758	
+native-battle-bag-quota	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439621/job/128617302732	
+pages-preflight	pass	47s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439498/job/128617335031	
+campaign-esp	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439644/job/128617302939	
+focused-checks	pass	10s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439541/job/128617302315	
+johto-training	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439619/job/128617335354	
+Vercel Preview Comments	pass	0	https://vercel.com/github	
+versus-entry	pass	1m28s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439580/job/128617302573	
+path-and-report	pass	1m20s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439547/job/128617302364	
+node-checks	pass	7s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439498/job/128617302113	
+phaser-preview	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439541/job/128617344250	
+phaser-versus	pass	42s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439533/job/128617302407	
+node-premerge	pass	9s	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439582/job/128617302444	
+validate	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439493/job/128617302269	
+validate-collection	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439514/job/128617302355	
+verify-native-phaser	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439587/job/128617302660	
+weather-status-native	pending	0	https://github.com/lulualcides-sys/Pok-mon-torre-2/actions/runs/42443439579/job/128617302619	

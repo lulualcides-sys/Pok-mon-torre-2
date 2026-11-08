@@ -41,3 +41,13 @@ Estado: primeira implementação para revisão; **não aprovada, não mesclada, 
 Runtime: `torre2-trainer-cards.js`, `torre2-city-scenery.js`, somente PC/imports de `torre2-campaign-scene.js`, novo `torre2-premium-art.js`; build-preview acrescenta somente a cópia do novo módulo.
 
 Apoio: `tools/dev/*premium*`, teste `tests/premium-pc-portrait-browser.cjs`, `reference-assets/premium-campaign`, `homolog` e esta especificação. Nenhum merge de PR antiga; #600 permanece separada.
+
+## Estado remoto após PR #602
+
+PR: https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/602 — draft, implementação `33c47487f73d3393e2f5e28fe7e74336d59a7a3f`.
+
+A CI remota **não está integralmente aprovada**. Houve falhas em capture, center, native-shiny-ui, pages-native-vfx-preflight, t22-mobile-rematch e johto-training. As anotações indicam saída 1 e ausência de capturas; os logs detalhados do armazenamento Azure retornaram 403 nesta sessão. Não há evidência suficiente para atribuir essas falhas à infraestrutura ou ao patch. Checks estáticos e alguns testes Johto passaram; não utilizar isso como aprovação geral.
+
+O link Githack de homologação retornou HTTP 403. A página foi validada localmente em `http://127.0.0.1:4175/homolog/` (servidor desta sessão), mas **não existe prévia externa verificada**. A tentativa de criar preview no projeto Vercel existente `pokemon-torre-2-homologacao-teste` foi bloqueada pela revisão automática por exigir autorização explícita para destino e envio do commit. Pergunta de autorização enviada; nenhum deployment criado por essa tentativa. Pages oficial e main permanecem intactos.
+
+Próximo gate: autorização de preview Vercel → verificar URL navegável → avaliação visual humana. CI completa e build limpo continuam necessários antes de qualquer integração/publicação oficial; expansão da campanha aguarda aprovação do padrão.
