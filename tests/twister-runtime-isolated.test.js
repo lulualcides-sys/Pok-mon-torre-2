@@ -18,6 +18,8 @@ test('Twister collision shows impact only after verified damage in runtime',asyn
    path.join(dir,'client/batch24/runtime.js'));
   await fs.copyFile(path.join(root,'tools/pokearena/batch24/hit-impacts.js'),
    path.join(dir,'client/batch24/hit-impacts.js'));
+  await fs.copyFile(path.join(root,'tools/pokearena/batch24/area-targets.js'),
+   path.join(dir,'client/batch24/area-targets.js'));
   const files=[
    ['client/batch24/catalog.js','export const BATCH24_MOVES='+JSON.stringify([twister])+';'],
    ['client/batch24/pixels.js',
