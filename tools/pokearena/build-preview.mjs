@@ -35,6 +35,10 @@ await fs.cp(source,dest,{recursive:true,force:true});
 const {installCC0WorldTiles}=await import('./install-cc0-world-tiles.mjs');
 const cc0Tiles=await installCC0WorldTiles(dest);
 console.log('Verified CC0 overworld sprites',JSON.stringify(cc0Tiles));
+// Original licensed tree atlas, used only by external trainer-card scenery.
+await fs.mkdir(path.join(dest,'assets/ui/scenic'),{recursive:true});
+for(const file of ['trees-green.png','CREDITS.txt'])
+ await fs.copyFile('reference-assets/scenic-v2/'+file,path.join(dest,'assets/ui/scenic',file));
 const {installFRLGMaps}=await import('./install-frlg-location-tiles.mjs');
 const frlgLocations=await installFRLGMaps(dest);
 console.log('Original FireRed locality maps:',Object.keys(frlgLocations.locations));
@@ -1416,6 +1420,10 @@ await fs.writeFile(johtoSelectionPath,
  console.log('Pokédex: preload only visible 36-card National Dex page, load others on demand');
 }
 const vfxFingerprint=createHash('sha256');
+vfxFingerprint.update(await fs.readFile('reference-assets/scenic-v2/trees-green.png'));
+// External campaign art must also invalidate the published module directory.
+for(const file of ['torre2-premium-art.js','torre2-trainer-cards.js','torre2-city-scenery.js'])
+ vfxFingerprint.update(await fs.readFile('tools/pokearena/'+file));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixel-sheets.mjs'));

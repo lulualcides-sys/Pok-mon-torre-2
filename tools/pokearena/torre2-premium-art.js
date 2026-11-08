@@ -36,3 +36,161 @@ export function premiumSprite(scene,kind,x,y,scale=1){
  }
  return scene.add.image(Math.round(x),Math.round(y),key).setOrigin(0,0).setScale(scale);
 }
+
+// Presentation-only regional scenery. LPC Trees Mega-Pack, CC-BY-SA-3.0.
+// Full authors/source/license: assets/ui/scenic/CREDITS.txt. Private texture.
+export const SCENIC_ATLAS='torre2-scenic-lpc-v2';
+export function scenicTheme(stage){
+ const families=['stone','water','harbor','garden','garden','night','ember','stone','ice','stone','night','league','league'];
+ const kind=families[stage]||'garden';
+ const colors={
+  stone:[0xb2c7bc,0x748a78,0xb4a784,0x686b56,0x344f48],
+  water:[0xa5d5cc,0x559b9c,0xd5c996,0x628779,0x245c65],
+  harbor:[0xc3d8cf,0x408597,0xc4b28a,0x7c8b69,0x294f60],
+  garden:[0xc5d7a5,0x7aab73,0xcebc89,0x6e935e,0x305446],
+  night:[0x8894b2,0x5c6a91,0xa4a0a7,0x65658b,0x343d64],
+  ember:[0xd8ba91,0xa27864,0xc8ac89,0x7a665b,0x493f49],
+  ice:[0xc9e4e2,0x80b8ca,0xd6ddc8,0x779aa0,0x385b73],
+  league:[0xb1bdcb,0x7884a3,0xd3c5a2,0x8b8992,0x3b4a66]
+ };
+ return {kind,sky:colors[kind][0],far:colors[kind][1],path:colors[kind][2],ground:colors[kind][3],shade:colors[kind][4]};
+}
+// Each card owns its listeners; navigating away removes them, including when
+// a network request finishes late. The loader deduplicates by a private key.
+export function withScenicAtlas(scene,owner,paint){
+ if(scene.textures.exists(SCENIC_ATLAS)){paint();return}
+ const event='filecomplete-image-'+SCENIC_ATLAS;
+ const cleanup=()=>{scene.load.off(event,ready);scene.load.off('loaderror',failed)};
+ const ready=()=>{cleanup();owner.off('destroy',cleanup);if(owner.active)paint()};
+ const failed=file=>{if(file.key===SCENIC_ATLAS){cleanup();owner.off('destroy',cleanup)}};
+ owner.once('destroy',cleanup);scene.load.once(event,ready);scene.load.on('loaderror',failed);
+ const queued=[...(scene.load.list?.entries||[]),...(scene.load.inflight?.entries||[])].some(file=>file.key===SCENIC_ATLAS);
+ if(!queued){
+  scene.load.image(SCENIC_ATLAS,'assets/ui/scenic/trees-green.png');
+  if(!scene.load.isLoading())scene.load.start();
+ }
+}
+function scenicTrees(scene,owner,x,y,w,h,variant,kind){
+ if(kind==='ice')return;
+ withScenicAtlas(scene,owner,()=>{
+  const texture=scene.textures.get(SCENIC_ATLAS);texture.setFilter(1);
+  if(!texture.has('grove-v2'))texture.add('grove-v2',0,0,0,64,64);
+  const scale=w>150?2:1;
+  const positions=[[x-8,y+h-64*scale],[x+w-56*scale,y+h-68*scale]];
+  if(['stone','night','ember'].includes(kind))positions.pop();
+  for(const [xx,yy] of positions){
+   const tree=scene.add.image(xx,yy,SCENIC_ATLAS,'grove-v2').setOrigin(0).setScale(scale);
+   // The art occupies only scenery and cannot intercept any pointer event.
+   owner.add(tree);
+  }
+ });
+}
+export function scenicDiorama(scene,layer,x,y,w,h,stage,variant=0){
+ const owner=scene.add.container(0,0);layer.add(owner);
+ const t=scenicTheme(stage),g=scene.add.graphics();owner.add(g);
+ const r=(c,xx,yy,ww,hh)=>{g.fillStyle(c);g.fillRect(Math.round(xx),Math.round(yy),Math.round(ww),Math.round(hh))};
+ r(t.sky,x,y,w,h);r(t.far,x,y+Math.floor(h*.28),w,h*.72);
+ // Cloud clusters and receding roofline have irregular pixel silhouettes.
+ for(let i=0;i<3;i++){
+  const cx=x+9+(i*29+variant*11)%Math.max(16,w-30),cy=y+7+(i%2)*6;
+  r(0xe3e7cd,cx,cy,17,3);r(0xe3e7cd,cx+4,cy-2,8,2);
+ }
+ for(let i=0;i<4;i++){
+  const bx=x+i*w/4,roof=y+24+(i%2)*6;
+  r(t.shade,bx,roof,w/4,4);r(t.ground,bx+3,roof+4,w/4-5,14);
+  r(t.path,bx+7,roof+8,3,5);
+ }
+ const floor=y+Math.floor(h*.58);
+ r(t.ground,x,floor,w,y+h-floor);
+ if(['water','harbor','ice'].includes(t.kind)){
+  r(t.shade,x,floor-9,w,15);r(t.far,x,floor-7,w,11);
+  for(let i=0;i<7;i++)r(t.sky,x+3+(i*17+variant*7)%(w-12),floor-5+(i%3)*3,9,1);
+  r(t.path,x,floor+6,w,3);r(t.shade,x,floor+9,w,2);
+ }
+ // Perspective path, two stone steps and varied stone joints.
+ const middle=x+w/2;
+ for(let row=0;row<5;row++){
+  const yy=floor+8+row*6,span=22+row*9;
+  if(yy>=y+h)break;
+  r(t.shade,middle-span/2,yy,span,6);r(t.path,middle-span/2+1,yy,span-2,4);
+  r(t.ground,middle+(row%2?5:-8),yy,1,4);
+ }
+ for(let i=0;i<16;i++){
+  const xx=x+3+(i*31+variant*13)%(w-6),yy=floor+13+(i*7)%Math.max(1,h-(floor-y)-15);
+  if(Math.abs(xx-middle)>22){r(t.shade,xx,yy,3,1);r(t.path,xx,yy-2,1,2)}
+ }
+ // Distinct regional landmarks, not just a recolour of the same garden.
+ if(['stone','ember'].includes(t.kind)){
+  for(let side=0;side<2;side++)for(let row=0;row<3;row++){
+   const xx=side?x+w-17-row*2:x+row*2,yy=y+25+row*9;
+   r(t.shade,xx,yy,17,10);r(t.path,xx+2,yy,13,2);
+   r(t.ground,xx+3,yy+3,11,5);r(t.far,xx+4,yy+4,3,2);
+  }
+ }
+ if(t.kind==='garden'){
+  for(let i=0;i<8;i++){
+   const xx=x+6+(i*19+variant*7)%(w-12),yy=y+h-8-(i%3)*5;
+   if(Math.abs(xx-middle)>20){r(0x36513d,xx,yy,1,4);r(i%2?0xeeb2ac:0xe7d687,xx-1,yy-2,3,3);r(0xffe8be,xx,yy-1,1,1)}
+  }
+ }
+ if(['harbor','water'].includes(t.kind)){
+  for(const xx of [x+5,x+w-8]){
+   r(0x365b60,xx,floor-8,4,17);r(0xe8ddae,xx,floor-9,4,3);
+   r(0x97b8ac,xx+1,floor-5,1,10);
+  }
+  r(0xc8b78e,x+8,floor+2,w-16,2);
+ }
+ if(['night','league','ice'].includes(t.kind)){
+  const ax=Math.round(middle-16),ay=y+26;
+  r(t.shade,ax,ay,32,38);r(t.path,ax,ay+4,5,34);r(t.path,ax+27,ay+4,5,34);
+  r(t.path,ax+5,ay,22,5);r(t.sky,ax+8,ay-2,16,2);
+  for(const xx of [ax-3,ax+27]){r(t.sky,xx,ay+35,8,2);r(t.ground,xx,ay+37,8,3)}
+  r(t.far,ax+6,ay+6,20,30);
+  if(t.kind==='night'){
+   r(t.sky,x+w-22,y+5,8,8);r(t.sky,x+w-24,y+7,12,4);r(t.far,x+w-19,y+4,8,8);
+   for(let j=0;j<7;j++)r(0xe9dfbc,x+7+(j*29)%(w-14),y+7+(j%3)*5,1,1);
+  }
+ }
+ scenicTrees(scene,owner,x,y,w,h,variant,t.kind);
+ return owner;
+}
+export function scenicBackdrop(scene,layer,stage){
+ const g=scene.add.graphics(),t=scenicTheme(stage);layer.add(g);
+ g.fillStyle(t.shade);g.fillRect(0,0,640,360);
+ // A continuous regional vista sits behind the cards, rather than metal bars.
+ g.fillStyle(t.far);g.fillRect(0,58,640,224);
+ for(let y=67;y<283;y+=9)for(let x=(y%2)*8;x<640;x+=23){
+  g.fillStyle((x+y)%3?t.ground:t.sky,.22);g.fillRect(x,y,12,1);
+ }
+ g.fillStyle(0x142d36,.96);g.fillRect(0,0,640,56);
+ g.fillStyle(0x101f2b,.97);g.fillRect(0,278,640,82);
+ g.fillStyle(0xd9c49a);g.fillRect(0,54,640,1);
+ g.fillStyle(0x9aa990,.6);g.fillRect(0,277,640,1);
+ for(let i=0;i<26;i++){
+  const x=i*25;
+  g.fillStyle(t.shade,.65);g.fillRect(x,58+(i%3)*2,14,6);
+  g.fillStyle(t.path,.3);g.fillRect(x+3,60+(i%3)*2,5,1);
+ }
+ return g;
+}
+export function scenicIcon(scene,layer,kind,x,y){
+ const g=scene.add.graphics();layer.add(g);
+ const r=(c,xx,yy,w,h)=>{g.fillStyle(c);g.fillRect(x+xx,y+yy,w,h)};
+ const cream=0xffe0a0,dark=0x153841,teal=0x67b7ac;
+ if(kind==='bag'){
+  r(dark,-6,-5,12,12);r(cream,-5,-4,10,10);r(0xc78c55,-4,-2,8,6);r(cream,-3,-7,6,2);r(dark,-1,0,2,2);
+ }else if(kind==='center'){
+  r(dark,-7,-5,14,12);r(0xe4d9bf,-6,-4,12,10);r(0xd87570,-7,-7,14,4);r(0xb74752,-1,-2,2,6);r(0xb74752,-3,0,6,2);
+ }else if(kind==='shop'){
+  r(cream,-6,-3,12,9);r(teal,-7,-7,14,5);for(let i=-5;i<7;i+=4)r(cream,i,-7,2,5);r(dark,-2,1,4,5);
+ }else if(kind==='team'||kind==='capture'){
+  r(dark,-6,-4,12,9);r(cream,-4,-6,8,13);r(0xd87962,-5,-4,10,4);r(dark,-6,0,12,2);r(cream,-1,-1,3,3);
+ }else if(kind==='train'){
+  r(cream,-6,-4,4,10);r(cream,3,-4,4,10);r(teal,-3,-1,7,3);r(teal,-7,-2,2,6);r(teal,7,-2,2,6);
+ }else if(kind==='seeker'){
+  r(dark,-5,-6,10,13);r(teal,-4,-5,8,11);r(cream,-2,-3,4,4);r(cream,-2,3,1,1);r(cream,1,3,1,1);r(teal,-5,-8,2,3);
+ }else{
+  r(cream,-5,-6,10,12);r(dark,-3,-4,6,8);r(teal,-1,-2,4,1);r(teal,-1,1,4,1);
+ }
+ return g;
+}
