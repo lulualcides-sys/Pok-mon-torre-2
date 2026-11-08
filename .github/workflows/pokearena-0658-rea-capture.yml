@@ -25,7 +25,19 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Audit browser capture script for syntactic integrity
         run: node --check tools/pokearena/rea-capture-live-public.cjs
+      - name: Restore same-day REA-signed Alpha source for repeat PR regression checks
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture/rea-public-0658/pokearena-client
+          gh run download 42521266158 --repo "${{ github.repository }}" --name pokearena-0658-rea-public-client-stage --dir site-capture/rea-public-0658/pokearena-client
+          gh run download 42521266158 --repo "${{ github.repository }}" --name pokearena-0658-rea-public-script-audit --dir site-capture/rea-public-0658
+          node -e "const r=require('./site-capture/rea-public-0658/rea-capture-summary.json');if(r.observedAlpha!=='0.65.8'||r.loadedScripts<50||r.fileCount<100)throw Error('Pinned REA capture unverified');console.log('PINNED_REAL_PUBLIC_REA_ALPHA',r.observedAlpha,r.sourceDir)"
       - name: REA inspect official public client with regular Chrome (no auth/bypass)
+        if: github.event_name == 'workflow_dispatch'
         env:
           CHROME_BIN: /usr/bin/google-chrome
           POKEARENA_EXPECTED_ALPHA: '0.65.8'
