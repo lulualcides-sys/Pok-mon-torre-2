@@ -15,7 +15,7 @@ test('Earth Power applies one real area hit to each opponent, no ally fire',asyn
  try{
   await fs.mkdir(path.join(tmp,'client/batch24'),{recursive:true});
   await fs.writeFile(path.join(tmp,'package.json'),'{"type":"module"}');
-  for(const p of ['runtime.js','area-targets.js'])
+  for(const p of ['runtime.js','area-targets.js','hit-impacts.js'])
    await fs.copyFile(path.join(root,'tools/pokearena/batch24',p),
     path.join(tmp,'client/batch24',p));
   const stubs=[
