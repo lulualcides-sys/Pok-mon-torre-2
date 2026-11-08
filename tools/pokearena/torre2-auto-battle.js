@@ -277,9 +277,10 @@ export function improveLeagueAutoInput(scene,actor,input){
  // and make evolution an actual priority once the native readiness getter
  // approves it. Do not create forms or bypass the evolution meter.
  if(input.mega)return input;
- if(!input.esp&&!input.rmb&&!input.q&&!input.e&&
-    (actor.puedeEvolucionar===true||actor.puedeMega===true))
-  return {...input,lmb:false,mega:true};
+ // When evolution is ready, choose it before any offensive ability.
+ // Keep the native dodge untouched; its evasive timing is safety critical.
+ if(!input.esp&&(actor.puedeEvolucionar===true||actor.puedeMega===true))
+  return {...input,lmb:false,rmb:false,q:false,e:false,mega:true};
  if(input.esp||input.rmb||input.q||input.e)return input;
  const foe=livingCampaignOpponent(scene,actor);
  if(!foe||!Number.isFinite(actor.x)||!Number.isFinite(actor.y)||
