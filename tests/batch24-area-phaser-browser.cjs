@@ -28,7 +28,7 @@ const server=http.createServer((req,res)=>{
 (async()=>{
  if(!fs.existsSync(phaser))throw Error('Pinned MIT Phaser package missing');
  const earth=(await import(pathToFileURL(path.join(root,'tools/pokearena/batch24/earth-power.js')))).default;
- for(const p of ['runtime.js','area-targets.js']){
+ for(const p of ['runtime.js','area-targets.js','hit-impacts.js']){
   const target=path.join(app,'client/batch24',p);
   fs.mkdirSync(path.dirname(target),{recursive:true});
   fs.copyFileSync(path.join(root,'tools/pokearena/batch24',p),target);
