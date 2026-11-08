@@ -5,6 +5,8 @@ on:
     paths:
       - 'tools/pokearena/rea-snapshot-report.mjs'
       - 'tools/pokearena/rea-live-page-probe.cjs'
+      - 'tools/pokearena/rea-incremental-diff.mjs'
+      - 'tests/pokearena-rea-diff.test.mjs'
       - 'tests/pokearena-rea-provenance.test.mjs'
       - '.github/workflows/pokearena-rea-static.yml'
   workflow_dispatch:
@@ -73,6 +75,14 @@ jobs:
         run: |
           node tools/pokearena/rea-live-page-probe.cjs test-evidence/pokearena-rea
           cat test-evidence/pokearena-rea/rea-live-page-summary.json
+      - name: Generate verified release backlog from REA without copying code
+        shell: bash
+        run: |
+          node --test tests/pokearena-rea-diff.test.mjs
+          node tools/pokearena/rea-incremental-diff.mjs \
+            test-evidence/pokearena-rea/version-provenance.json \
+            test-evidence/pokearena-rea/rea-live-page-summary.json \
+            test-evidence/pokearena-rea/verified-alpha-backlog.json
       - name: Archive REA evidence and hash audit (no published third-party assets)
         if: always()
         uses: actions/upload-artifact@v4
