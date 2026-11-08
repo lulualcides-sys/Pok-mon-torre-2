@@ -91,6 +91,7 @@ async function run(){
   const getText=(item)=>{
    if(!item)return null;
    if(typeof item.source==='string')return item.source;
+   if(typeof item.source?.artifact?.text==='string')return item.source.artifact.text;
    for(const key of ['text','source_text','sourceText','source','content','code','body']){
     const value=item.source?.[key]??item[key];
     if(typeof value==='string'&&value.length>40)return value;
