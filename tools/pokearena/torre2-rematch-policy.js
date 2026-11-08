@@ -34,7 +34,9 @@ export function reserveRematch(state,index,mapStage=state.stage){
 export function validRematchResult(state,ticket){
  const p=state.rematches?.pending;
  return !!p&&!!ticket&&durableTicketToken(p.token)&&
-  durableTicketToken(ticket.token)&&p.token===ticket.token&&p.stage===ticket.stage&&p.trainer===ticket.trainer&&state.stage===(p.progressStage??p.stage)&&state.trainer===p.progress;
+  durableTicketToken(ticket.token)&&p.token===ticket.token&&p.stage===ticket.stage&&p.trainer===ticket.trainer&&
+  p.progressStage===ticket.progressStage&&p.progress===ticket.progress&&
+  state.stage===(p.progressStage??p.stage)&&state.trainer===p.progress;
 }
 export function consumeRematchResult(state,ticket){
  if(!validRematchResult(state,ticket))return false;
