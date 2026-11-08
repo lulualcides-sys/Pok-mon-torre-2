@@ -169,7 +169,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
    if(!native?.anims?.Idle)throw Error('Missing original PMD entry '+dex);
    for(const rel of [dex+'/portrait.png',
     ...Object.values(native.anims).map(a=>a.file)]){
-    if(!/^[0-9]{4}(?:-[a-z0-9]+)?\/[a-zA-Z0-9_-]+(?:-Anim)?\.png$/.test(rel))
+    if(!/^[0-9]{4}(?:-[a-z0-9]+)*\/[a-zA-Z0-9_-]+(?:-Anim)?\.png$/.test(rel))
      throw Error('Unexpected original sprite path '+rel);
     const sprite=await fs.readFile(path.join(pmd,rel));
     if(sprite.length<80||sprite[0]!==137||sprite[1]!==80)
