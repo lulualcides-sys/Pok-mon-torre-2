@@ -1197,7 +1197,7 @@ for(const filename of [
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
- 'torre2/arena-move-policy.js',
+ 'torre2/arena-move-policy.js','torre2/deoxys-speed-dash.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
  'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/versus-intro.js','torre2/battle-path.js',
  'torre2/torre2-approved-maps-atlas.js','torre2/torre2-approved-map-renderer.js','torre2/torre2-approved-map-first-scenes.js','torre2/torre2-gym-ace-ground.js','torre2/torre2-sevii-ferry.js','torre2/torre2-approved-progression-gates.js','torre2/torre2-battle-result-validation.js','torre2/torre2-approved-opening.js',
