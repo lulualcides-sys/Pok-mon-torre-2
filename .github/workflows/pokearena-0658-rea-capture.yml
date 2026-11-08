@@ -1,0 +1,51 @@
+name: Poké Arena — REA native Alpha 0.65.8 source audit
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/rea-capture-live-public.cjs'
+      - '.github/workflows/pokearena-0658-rea-capture.yml'
+      - 'tools/pokearena/rea-overlay-verified-client.mjs'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rea-public-source:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing browser tools
+        run: npm install --no-audit --no-fund
+      - name: Audit browser capture script for syntactic integrity
+        run: node --check tools/pokearena/rea-capture-live-public.cjs
+      - name: REA inspect official public client with regular Chrome (no auth/bypass)
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          POKEARENA_EXPECTED_ALPHA: '0.65.8'
+        run: |
+          node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-public-0658
+          node -e "const r=require('./site-capture/rea-public-0658/rea-capture-summary.json');if(r.observedAlpha!=='0.65.8'||!r.selectedFromOfficialConfig||r.loadedScripts<50)throw Error('Official release not proven');console.log('PROVED_OFFICIAL_ALPHA',r.observedAlpha,r.sourceDir,'files',r.fileCount)"
+      - name: Preserve source evidence for real client rebuild (not public Pages)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0658-rea-public-script-audit
+          path: |
+            site-capture/rea-public-0658/rea-capture-summary.json
+            site-capture/rea-public-0658/rea-capture-failure.json
+          if-no-files-found: warn
+          retention-days: 7
+      - name: Keep captured public client available only to this workflow's review
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-0658-rea-public-client-stage
+          path: site-capture/rea-public-0658/pokearena-client/
+          if-no-files-found: error
+          retention-days: 3
