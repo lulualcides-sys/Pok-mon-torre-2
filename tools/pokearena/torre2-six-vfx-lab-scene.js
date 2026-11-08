@@ -48,18 +48,33 @@ export class VfxSixLab extends Phaser.Scene {
   this.add.text(320,38,'6 NOVOS EFEITOS · PIXEL ART · PHASER/WEBGL',{
    fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#a7d9e9'
   }).setOrigin(.5);
-  this.add.text(114,116,'ATACANTE',{
-   fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#c9e7fb'
-  }).setOrigin(.5);
-  this.add.text(502,116,'ALVO DE TESTE',{
-   fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#f5d9ac'
-  }).setOrigin(.5);
-  this.add.text(113,166,'P1',{
-   fontFamily:'Pixelify Sans,monospace',fontSize:'28px',color:'#aecee5',stroke:'#15283d',strokeThickness:4
-  }).setOrigin(.5);
-  this.add.text(502,166,'CPU',{
-   fontFamily:'Pixelify Sans,monospace',fontSize:'25px',color:'#e2c59b',stroke:'#15283d',strokeThickness:4
-  }).setOrigin(.5);
+  // Use already-loaded original P2 PMD Pokémon from the TITLE scene.
+  // No substitute silhouette, new sprite import or native Pokémon kit mutation.
+  // The title has loaded Exeggutor #0103 and Snorlax #0143 on this build.
+  // The text fallback only handles incomplete external source captures.
+  this.visualActors=[];
+  for(const fighter of [
+   {dex:'0103',x:113,flip:false,animation:'0103-Idle-2',label:'ATACANTE'},
+   {dex:'0143',x:502,flip:true,animation:'0143-Idle-6',label:'ALVO DE TESTE'}
+  ]){
+   this.add.text(fighter.x,95,fighter.label,{
+    fontFamily:'Pixelify Sans,monospace',fontSize:'10px',
+    color:fighter.flip?'#f5d9ac':'#c9e7fb'
+   }).setOrigin(.5);
+   const texture='pmd-'+fighter.dex+'-Idle';
+   if(this.textures.exists(texture)){
+    const actor=this.add.sprite(fighter.x,214,texture)
+     .setOrigin(.5,1).setScale(1.65).setDepth(20);
+    if(fighter.flip)actor.setFlipX(true);
+    if(this.anims.exists(fighter.animation))actor.play(fighter.animation);
+    this.visualActors.push(actor);
+   }else{
+    this.add.text(fighter.x,166,fighter.flip?'CPU':'P1',{
+     fontFamily:'Pixelify Sans,monospace',fontSize:'24px',
+     color:fighter.flip?'#e2c59b':'#aecee5'
+    }).setOrigin(.5);
+   }
+  }
   this.explain=this.add.text(320,60,'Selecione um golpe para assistir ao movimento completo.',{
    fontFamily:'Pixelify Sans,monospace',fontSize:'10px',color:'#c5e3ee'
   }).setOrigin(.5);
