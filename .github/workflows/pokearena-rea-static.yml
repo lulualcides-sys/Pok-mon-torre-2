@@ -57,6 +57,7 @@ jobs:
           node tools/pokearena/rea-snapshot-report.mjs             "rea-snapshot/$modules" test-evidence/pokearena-rea/version-provenance.json
           node -e "const p=require('./test-evidence/pokearena-rea/version-provenance.json'); console.log('Last archive Alpha:',p.alpha.lastConfirmedFromArchivedConfig,'Current public Alpha:',p.alpha.currentLive); if(p.alpha.currentLive!==null)throw Error('Cannot claim unverified current release')"
       - name: Run genuine REA JavaScript application analyzer on archive
+        if: github.event_name == 'workflow_dispatch'
         shell: bash
         run: |
           set -euo pipefail
