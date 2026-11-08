@@ -105,6 +105,9 @@ test('AUTO evolves native League forms when engine says ready, without changing 
  const cmd=s.controles[0].leer(.016);
  assert.equal(cmd.mega,true);
  assert.equal(cmd.lmb,false,'Evolution has priority over a basic');
+ const forced=improveLeagueAutoInput(s,p,{mx:0,my:0,lmb:false,q:true,mega:false});
+ assert.equal(forced.mega,true,'Evolution outranks offensive skill when native getter is ready');
+ assert.equal(forced.q,false,'Evolution input never overlaps an attacking cast');
  assert.strictEqual(p.kit,originalKit);
  p.puedeEvolucionar=false;p.puedeMega=true;
  assert.equal(s.controles[0].leer(.016).mega,true,'Native Mega allowed');
