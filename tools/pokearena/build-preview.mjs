@@ -141,6 +141,21 @@ await fs.writeFile(index,html);
 // every animation for every Pokémon before showing the menu on Android.
 const clientSource=html.match(/src="(src-[0-9a-f]{10})\/main\.js"/)?.[1];
 if(!clientSource)throw Error('Original Phaser source directory missing');
+// Alpha 0.65.8 native pack knows the upstream roster, but not our separately
+// installed, credited Kanto/Johto PMD species. Preserve ALL native packed
+// resources; only missing entries can use genuine local SpriteCollab PNGs.
+{
+ const packFile=path.join(dest,clientSource,'paquetes.js');
+ let nativePack;
+ try{nativePack=await fs.readFile(packFile,'utf8');}
+ catch(error){if(error?.code!=='ENOENT')throw error;}
+ if(nativePack){
+  const {allowIndependentSpriteCollabPMDInNativePacks}=await import('./torre2-pmd-pack-compat.mjs');
+  await fs.writeFile(packFile,allowIndependentSpriteCollabPMDInNativePacks(nativePack));
+  console.log('Native 0.65.8 PMD pack preserved; original SpriteCollab additions use safe local fallback');
+ }
+}
+
 // The original client still preloads eight League PNGs that are no longer in
 // its asset snapshot. Recreate only missing textures from its own native
 // 8x8 icon patterns, never replacing available upstream or approved art.
