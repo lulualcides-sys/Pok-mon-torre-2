@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'tools/pokearena/rea-snapshot-report.mjs'
+      - 'tools/pokearena/rea-live-page-probe.cjs'
       - 'tests/pokearena-rea-provenance.test.mjs'
       - '.github/workflows/pokearena-rea-static.yml'
   workflow_dispatch:
@@ -64,6 +65,13 @@ jobs:
           timeout 210s npx --yes rea-agents@6.8.0             analyze-javascript-application "$PWD/rea-input" --json             > test-evidence/pokearena-rea/rea-application-evidence.json             2> test-evidence/pokearena-rea/rea-stderr.log
           test -s test-evidence/pokearena-rea/rea-application-evidence.json
           node -e "const e=require('./test-evidence/pokearena-rea/rea-application-evidence.json'); if(e.isError||e.error||e.status==='error')throw Error('REA returned analysis error'); console.log('REA static evidence generated, top-level fields:',Object.keys(e).slice(0,20).join(','));"
+      - name: Passive REA browser inspection of live public homepage (no bypass)
+        continue-on-error: true
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: |
+          node tools/pokearena/rea-live-page-probe.cjs test-evidence/pokearena-rea
+          cat test-evidence/pokearena-rea/rea-live-page-summary.json
       - name: Archive REA evidence and hash audit (no published third-party assets)
         if: always()
         uses: actions/upload-artifact@v4
