@@ -4,6 +4,7 @@
  * A blocked/unavailable script must remain a documented UNKNOWN Alpha.
  */
 const fs=require('node:fs');
+const {createHash}=require('node:crypto');
 const path=require('node:path');
 const os=require('node:os');
 const {spawn}=require('node:child_process');
@@ -34,6 +35,51 @@ function command(args,file,timeoutMs=40000){
   });
  });
 }
+function officialRecord(source,id){
+ if(typeof source!=='string')return null;
+ const at=source.indexOf('{id:"'+id+'"');
+ if(at<0)return null;
+ let depth=0,quote=null,escaped=false;
+ for(let i=at;i<source.length;i++){
+  const c=source[i];
+  if(quote){
+   if(escaped)escaped=false;
+   else if(c==='\\')escaped=true;
+   else if(c===quote)quote=null;
+   continue;
+  }
+  if(c==='"'||c==="'"){quote=c;continue;}
+  if(c==='{')depth++;
+  if(c==='}'&&--depth===0)return source.slice(at,i+1);
+ }
+ return null;
+}
+function compactKitEvidence(source,id){
+ const record=officialRecord(source,id);
+ if(!record)return {id,found:false};
+ const all=[...record.matchAll(/nombre:"([^"]+)"/g)].map(m=>m[1]);
+ const forms=[...new Set(all.filter(x=>/DEOXYS|LUCARIO|RIOLU/i.test(x)))];
+ const attacks=[...new Set(all.filter(x=>!/DEOXYS|LUCARIO|RIOLU/i.test(x)))];
+ const speed=record.indexOf('nombre:"SPEED DEOXYS"');
+ const fragment=speed<0?'':record.slice(speed,speed+400);
+ const prop=k=>fragment.match(new RegExp('(?:^|,)'+k+':([0-9.]+)'))?.[1]??null;
+ return {id,found:true,sha256:createHash('sha256').update(record).digest('hex'),
+  forms:forms.slice(0,12),namedMoves:attacks.slice(0,50),
+  speedForm:speed<0?null:{vel:prop('vel'),atk:prop('atk'),def:prop('def')}};
+}
+function parseReleaseDetails(notes){
+ const records=[...notes.matchAll(/\{version:"(0\.\d+(?:\.\d+)?)",fecha:"([^"]+)",titulo:"([^"]+)"/g)];
+ return records.slice(0,12).map((match,index)=>{
+  const text=notes.slice(match.index,records[index+1]?.index??notes.length);
+  const points=text.match(/puntos:\[([^\]]*)\]/)?.[1];
+  let bullets=[];
+  if(points){try{bullets=JSON.parse('['+points+']')}catch{}}
+  const description=text.match(/texto:"([^"]+)"/)?.[1]??null;
+  return {alpha:match[1],date:match[2],title:match[3],
+   description,bullets:bullets.slice(0,9)};
+ });
+}
+
 async function run(){
  const chrome=spawn(CHROME,[
   '--headless=new','--no-sandbox','--disable-dev-shm-usage',
@@ -102,10 +148,16 @@ async function run(){
   const version=config?.match(/\b(?:const|let)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/);
   summary.liveAlpha=version?.[1]??null;
   summary.liveVersionEvidence=version?'REA_CDP_PUBLIC_CONFIG_JS':'NO_OFFICIAL_VERSION_RETRIEVED';
-  if(notes){
-   summary.latestChangelog=[...notes.matchAll(/\{version:"(0\.\d+(?:\.\d+)?)",fecha:"([^"]+)",titulo:"([^"]+)"/g)]
-    .slice(0,9).map(m=>({alpha:m[1],date:m[2],title:m[3]}));
-  }
+  if(notes)summary.latestChangelog=parseReleaseDetails(notes);
+  const liveData=getText(get('datos.js'));
+  const archivePath=path.resolve('rea-input/datos.js');
+  const oldData=fs.existsSync(archivePath)?fs.readFileSync(archivePath,'utf8'):null;
+  summary.verifiedSpeciesDelta=['deoxys','riolu'].map(id=>{
+   const previous=compactKitEvidence(oldData,id);
+   const current=compactKitEvidence(liveData,id);
+   return {id,old:previous,new:current,
+    recordChanged:previous.found&&current.found?previous.sha256!==current.sha256:null};
+  });
   // Original published JavaScript is read for evidence, not retained in artifacts.
   fs.rmSync(path.join(OUT,'rea-live-page-evidence.json'),{force:true});
  }finally{
