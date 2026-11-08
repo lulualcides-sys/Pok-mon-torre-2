@@ -21,3 +21,12 @@ test('Arena with neutral fighters does not accidentally exclude opponents',()=>{
  actor.rival=a;actor.escena={luchadores:[actor,a,b]};
  assert.deepEqual(batch24AreaTargets(actor),[a,b]);
 });
+
+test('Native Phaser equipo=0 and equipe aliases both exclude same-team fighters',()=>{
+ const actor={equipo:0,ko:false},enemy={equipo:1,ko:false},ally={equipo:0,ko:false};
+ actor.rival=enemy;actor.escena={luchadores:[actor,enemy,ally]};
+ assert.deepEqual(batch24AreaTargets(actor),[enemy]);
+ const legacyActor={equipe:0,ko:false},legacyEnemy={equipe:2,ko:false},legacyAlly={equipe:0,ko:false};
+ legacyActor.rival=legacyEnemy;legacyActor.escena={luchadores:[legacyActor,legacyEnemy,legacyAlly]};
+ assert.deepEqual(batch24AreaTargets(legacyActor),[legacyEnemy]);
+});
