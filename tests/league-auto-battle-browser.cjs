@@ -34,7 +34,7 @@ const server=http.createServer(async(req,res)=>{
    null,{timeout:60000});
   await page.evaluate(()=>{
    window.__pt2Game.scene.getScene('titulo').scene.start('combate',{
-    modo:'liga',p1:'squirtle',p2:'geodude',mandos:['tactil','pad0'],nivel:'normal'
+    modo:'liga',p1:'squirtle',p2:'geodude',mandos:['tactil','ia'],nivel:'normal'
    });
   });
   await page.waitForTimeout(2500);
