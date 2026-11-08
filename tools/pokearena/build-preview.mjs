@@ -332,6 +332,17 @@ const pixelfxSheets=await generateJohtoPixelFXSheets(
 if(pixelfxSheets.length!==expectedPixelFX||pixelfxSheets.some(s=>s.frames!==12||s.bytes<512))
  throw Error('Incomplete PixelFX Johto spritesheets; refusing placeholders');
 console.log('PixelFX Johto VFX generated:',pixelfxSheets.length);
+// New six-sprite VFX lab is an isolated real Phaser scene. The source PNG is
+// published inside the game's asset tree; never alter native battle VFX.
+await fs.copyFile('tools/pokearena/torre2-six-vfx-lab-scene.js',
+ path.join(dest,clientSource,'torre2/six-vfx-lab-scene.js'));
+await fs.mkdir(path.join(dest,'assets/torre2/vfx-six'),{recursive:true});
+await fs.copyFile('reference-assets/vfx-six/atlas.png',
+ path.join(dest,'assets/torre2/vfx-six/atlas.png'));
+const sixAtlas=await fs.readFile(path.join(dest,'assets/torre2/vfx-six/atlas.png'));
+if(sixAtlas.length<12000||sixAtlas.subarray(0,8).toString('hex')!=='89504e470d0a1a0a')
+ throw Error('Six new VFX PNG atlas missing or corrupted in Phaser Pages build');
+console.log('Six exclusive visual-review sprites imported into Phaser:',sixAtlas.length);
 await fs.cp('tools/pokearena/batch24',path.join(dest,clientSource,'torre2/batch24'),{recursive:true});
 await fs.cp('tools/pokearena/surge3',path.join(dest,clientSource,'torre2/surge3'),{recursive:true});
 await Promise.all([
@@ -663,13 +674,13 @@ patches.push(['escenas/seleccion.js',[
 patches.push(
  ['main.js',[
   ['import{Campanha}from"./torre2/campanha.js";',
-   'import{Campanha}from"./torre2/campanha.js";import{JohtoLab}from"./torre2/johto-lab-scene.js";'],
+   'import{Campanha}from"./torre2/campanha.js";import{JohtoLab}from"./torre2/johto-lab-scene.js";import{VfxSixLab}from"./torre2/six-vfx-lab-scene.js";'],
   ['scene:[Carga,Campanha,Titulo,Seleccion,Combate,Batalla,Reel,Preparar,',
-   'scene:[Carga,Campanha,Titulo,Seleccion,JohtoLab,Combate,Batalla,Reel,Preparar,']
+   'scene:[Carga,Campanha,Titulo,Seleccion,JohtoLab,VfxSixLab,Combate,Batalla,Reel,Preparar,']
  ]],
  ['escenas/titulo.js',[[
   '{id:"entreno",txt:"TRAINING",escena:"seleccion",datos:{previo:{modo:"entreno"}},ico:"diana"},',
-  '{id:"entreno",txt:"TRAINING",escena:"seleccion",datos:{previo:{modo:"entreno"}},ico:"diana"},{id:"johto-lab",txt:"MEWTWO TEST LAB",escena:"johto-lab",ico:"diana"},'
+  '{id:"entreno",txt:"TRAINING",escena:"seleccion",datos:{previo:{modo:"entreno"}},ico:"diana"},{id:"johto-lab",txt:"MEWTWO TEST LAB",escena:"johto-lab",ico:"diana"},{id:"vfx-six",txt:"NOVOS GOLPES 2D",escena:"vfx-six-lab",ico:"diana"},'
  ]]],
  ['torre2/signature-fx.js',[
   ["import * as vfx from '../vfx.js';",
@@ -1359,6 +1370,8 @@ const vfxFingerprint=createHash('sha256');
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-art.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-campaign-scene.js'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixel-sheets.mjs'));
+vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-six-vfx-lab-scene.js'));
+vfxFingerprint.update(await fs.readFile('reference-assets/vfx-six/atlas.png'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-pixelfx-sheets.mjs'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-signatures.mjs'));
 vfxFingerprint.update(await fs.readFile('tools/pokearena/torre2-johto-first-four-sheets.mjs'));
@@ -1369,7 +1382,7 @@ vfxFingerprint.update(await fs.readFile(
 for(const filename of [
  'escenas/seleccion.js','escenas/preparar.js','torre2/combat-boundary.js','torre2/gen3-types.js','torre2/gen3-status.js','torre2/trainer-items.js','torre2/trainer-strategy.js','torre2/campaign-core.js',
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
- 'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/torre2-johto-four-native.js','torre2/johto-lab-pixelart.js','torre2/johto-lab-combat.js','torre2/torre2-johto-lab-cooldown.js','torre2/torre2-johto-motion.js','torre2/torre2-johto-gen3-research.js','torre2/torre2-johto-gen3-mechanics.js','torre2/torre2-johto-pixelfx-catalog.js','torre2/torre2-johto-pixelfx-runtime.js',
+ 'torre2/six-vfx-lab-scene.js','torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/torre2-johto-four-native.js','torre2/johto-lab-pixelart.js','torre2/johto-lab-combat.js','torre2/torre2-johto-lab-cooldown.js','torre2/torre2-johto-motion.js','torre2/torre2-johto-gen3-research.js','torre2/torre2-johto-gen3-mechanics.js','torre2/torre2-johto-pixelfx-catalog.js','torre2/torre2-johto-pixelfx-runtime.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
  'torre2/arena-move-policy.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
