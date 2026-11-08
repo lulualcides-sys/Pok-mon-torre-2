@@ -9,7 +9,7 @@ const one=(s,a,b,label)=>{
  if(n!==1)throw Error('P2 PMD compatibility '+label+' (matches '+n+')');
  return s.replace(a,b);
 };
-const SAFE='/^[0-9]{4}(?:-[a-z0-9]+)?[/](?:portrait[.]png|[A-Za-z0-9_-]+-Anim[.]png)$/';
+const SAFE='/^[0-9]{4}(?:-[a-z0-9]+)*[/](?:portrait[.]png|[A-Za-z0-9_-]+-Anim[.]png)$/';
 export function allowIndependentSpriteCollabPMDInNativePacks(original,availablePacks=[]){
  if(typeof original!=='string'||!original.includes('const INDICE='))
   throw Error('Not recognized native 0.65.8 packed-PMD module');
