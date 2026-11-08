@@ -298,6 +298,7 @@ await Promise.all([
  ['tools/pokearena/torre2-gen45-johto-learnsets.js','gen45-johto-learnsets.js'],
  ['tools/pokearena/torre2-evolution-kits.js','evolution-kits.js'],
  ['tools/pokearena/torre2-arena-move-policy.js','arena-move-policy.js'],
+ ['tools/pokearena/torre2-deoxys-speed-dash.js','deoxys-speed-dash.js'],
  ['tools/pokearena/torre2-arena-approved-121.js','arena-approved-121.js'],
  ['tools/pokearena/torre2-arena-native-dodges.js','arena-native-dodges.js'],
  ['tools/pokearena/torre2-campaign-native-dodges.js','campaign-native-dodges.js'],
@@ -1201,7 +1202,9 @@ await fs.appendFile(fighterPath,
  '\nimport{ROSTER as __torre2ArenaRoster}from"./datos.js";'+
  'import{installArenaMovePolicy}from"./torre2/arena-move-policy.js";'+
  'import{TEST_LIBRARY as __torre2ArenaApprovedLibrary}from"./torre2/move-pool.js";'+
- 'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n');
+ 'installArenaMovePolicy(Luchador,__torre2ArenaRoster,__torre2ArenaApprovedLibrary);\n'+
+ 'import{installSpeedDeoxysUltimateDash}from"./torre2/deoxys-speed-dash.js";'+
+ 'installSpeedDeoxysUltimateDash(Luchador);\n');
 
 // Optional OFF-by-default solo AUTO toggle: use the original CPU brain
 // only for the real player's existing controller, never touching save data,
@@ -1371,7 +1374,7 @@ for(const filename of [
  'main.js','habilidades.js','luchador.js','datos.js','aspectos.js','torre2/arena-tempo.js','escenas/titulo.js','escenas/pokedex.js','escenas/carga.js',
  'torre2/next-specific-fx.js','torre2/adapted-moves-fx.js','torre2/early-route-fx.js','torre2/prebrock-damage-fx.js','torre2/finale13.js','torre2/torre2-finale13-catalog.js','torre2/clash-fx.js','torre2/steel-fx.js','torre2/signature-fx.js','torre2/johto-lab-catalog.js','torre2/johto-lab-scene.js','torre2/johto-lab-runtime.js','torre2/torre2-johto-four-native.js','torre2/johto-lab-pixelart.js','torre2/johto-lab-combat.js','torre2/torre2-johto-lab-cooldown.js','torre2/torre2-johto-motion.js','torre2/torre2-johto-gen3-research.js','torre2/torre2-johto-gen3-mechanics.js','torre2/torre2-johto-pixelfx-catalog.js','torre2/torre2-johto-pixelfx-runtime.js',
  'escenas/combate.js','escenas/batalla.js','torre2/auto-battle.js',
- 'torre2/arena-move-policy.js',
+ 'torre2/arena-move-policy.js','torre2/deoxys-speed-dash.js',
  'torre2/arena-approved-121.js','torre2/arena-native-dodges.js',
  'torre2/move-pool.js','torre2/gen45-kanto-learnsets.js','torre2/stab-tm-mastery.js','torre2/kanto-intro-moves.js','torre2/early-kanto-species.js','torre2/all-kanto-species.js','torre2/campanha.js','torre2/versus-intro.js','torre2/battle-path.js',
  'torre2/hall-of-fame.js','torre2/party-battle.js','torre2/weather.js','torre2/weather-pixels.js','torre2/rematch-policy.js','torre2/laboratory.js','torre2/training.js','torre2/training-input.js','torre2/campaign-map-unified.js','torre2/level-balance.js',

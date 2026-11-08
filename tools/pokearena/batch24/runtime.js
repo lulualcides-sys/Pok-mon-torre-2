@@ -3,6 +3,8 @@
 import {BATCH24_MOVES} from './catalog.js';
 import {PALETTES,stamp,pixel,impact} from './pixels.js';
 import {paintReworkedMove,paintReworkedImpact} from './visual-upgrades.js';
+import {shouldPaintProjectileImpact} from './hit-impacts.js';
+import {batch24AreaTargets} from './area-targets.js';
 import {clashAt} from '../clash-fx.js';
 import {contactDash} from '../early-route-fx.js';
 import {aleatorio} from '../../azar.js';
@@ -188,7 +190,8 @@ function projectile(l,h,extra){
    if(contact){
     b.done=true;self.clashBody.live=false;
     const result=strike(l,r,h,extra,iceFan?1/count:1);anyHit||=result.landed;
-    b.impact={...contact,time:age};b.refund=h.secondary==='drain'?result.damage*.5:0;
+    if(shouldPaintProjectileImpact(h,result))b.impact={...contact,time:age};
+    b.refund=h.secondary==='drain'?result.damage*.5:0;
    }
   }
   if(!active&&h.secondary==='fury'&&!anyHit)l.__batch24Fury=null;
@@ -247,7 +250,11 @@ function earth(l,h,extra){
    for(let j=0;j<4;j++)pixel(g,point.x+(j-1.5)*9,point.y+10-Math.sin(age*18+j)*3,p[3],2,.7);
   }else{
    drawMove(g,h,point.x,point.y,Math.min(11,Math.floor((age-.27)*24)));
-   if(!checked&&age>=.36){checked=true;const r=l.rival;if(swept(point,point,r,22))strike(l,r,h,extra);}
+   if(!checked&&age>=.36){
+    checked=true;
+    for(const r of batch24AreaTargets(l))
+     if(swept(point,point,r,22))strike(l,r,h,extra);
+   }
    if(age>.42)impact(g,point.x,point.y,p,age-.42,2);
   }
   return age<.94;
