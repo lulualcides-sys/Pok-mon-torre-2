@@ -20,10 +20,10 @@ const server=http.createServer((req,res)=>{
  if(key!=='/phaser.min.js'&&!p.startsWith(app+path.sep)){
   res.writeHead(403).end();return;
  }
- try{
-  res.writeHead(200,{'content-type':p.endsWith('.html')?'text/html':'text/javascript'});
-  res.end(fs.readFileSync(p));
- }catch{res.writeHead(404).end();}
+ let bytes;
+ try{bytes=fs.readFileSync(p);}catch{res.writeHead(404).end();return;}
+ res.writeHead(200,{'content-type':p.endsWith('.html')?'text/html':'text/javascript'});
+ res.end(bytes);
 });
 (async()=>{
  if(!fs.existsSync(phaser))throw Error('Pinned MIT Phaser package missing');
