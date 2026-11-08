@@ -1114,6 +1114,16 @@ for(const [filename,changes] of patches){
      'get tipos(){const types=this.mega&&this.forma.mega.tipos||this.alt?.tipos||this.forma.tipos;return this.escena.datos?.torre2?gen3Types(types):types}');
     continue;
    }
+   // P2 Alpha 0.65.8 adds native exports to config.js. Preserve its
+   // original named imports and add ONLY the independent Kanto campaign.
+   if(filename==='main.js'&&from.startsWith('import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,caso,registrarNombres}')&&
+      to.includes('torre2/campanha.js')){
+    const matches=body.match(/import\\{[^;\\n]{1,400}\\}from"\\.\\/config\\.js";/g)||[];
+    if(matches.length!==1||body.includes('import{Campanha}from"./torre2/campanha.js";'))
+     throw Error('Unrecognized public config import or campaign already installed');
+    body=body.replace(matches[0],matches[0]+'import{Campanha}from"./torre2/campanha.js";');
+    continue;
+   }
    throw Error('Unrecognized upstream client in '+filename+': '+from.slice(0,60));
   }
   body=body.replace(from,to);
