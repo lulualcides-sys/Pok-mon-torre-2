@@ -24,10 +24,10 @@ const server=http.createServer(async(req,res)=>{
  // is equivalent to the League tournament's actual entry path.
  try {
   const html=await fs.readFile(path.join(root,'arena2d','index.html'),'utf8');
-  const dir=html.match(/src="(src-[a-f0-9]{10})\\/main\\.js"/)?.[1];
+  const dir=html.match(new RegExp('src="(src-[a-f0-9]{10})/main[.]js"'))?.[1];
   const file=path.join(root,'arena2d',dir||'','escenas','liga.js');
   const source=await fs.readFile(file,'utf8');
-  const occurrences=[...source.matchAll(/scene\\.start|mandos|modo:|liga:|controles|com[b]ate|batalla/g)]
+  const occurrences=[...source.matchAll(new RegExp('scene[.]start|mandos|modo:|liga:|controles|combate|batalla','g'))]
    .slice(0,60).map(m=>source.slice(Math.max(0,m.index-130),Math.min(source.length,m.index+200)));
   console.log('LEAGUE_NATIVE_ROUTING_AUDIT',JSON.stringify({length:source.length,occurrences}));
  } catch(error){console.log('LEAGUE_NATIVE_ROUTING_AUDIT_ERROR',String(error));}
