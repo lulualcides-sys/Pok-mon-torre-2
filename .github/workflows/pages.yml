@@ -81,10 +81,26 @@ jobs:
               --repo "${{ github.repository }}" \
               --name pokearena2d-cliente-publico-capturado --dir site-capture
             node tools/pokearena/verify-pinned-capture.mjs
+            # A regular public Chromium session + REA can observe the real
+            # Alpha 0.65.8 resources even when server-side GET returns 403.
+            # No login, stealth, private API or bypass; fail closed if absent.
+            node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-public-0658
+            node tools/pokearena/rea-overlay-verified-client.mjs
             node tools/pokearena/build-preview.mjs
             test -s _site/arena2d/index.html
             test -s _site/arena2d/lib/phaser.min.js
           fi
+          # Verify the actual native config.js, not merely an edited label or
+          # TORRE2 build hash. Refuse to re-publish the stale Alpha 0.65.1.
+          node --input-type=module <<'VERIFY_NATIVE_ALPHA'
+          import fs from 'node:fs';
+          const dir='_site/arena2d';
+          const built=JSON.parse(fs.readFileSync(dir+'/version.json','utf8'));
+          const official=fs.readFileSync(dir+'/'+built.modules+'/config.js','utf8');
+          const alpha=official.match(/\b(?:let|const)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/)?.[1];
+          if(alpha!=='0.65.8')throw Error('Refusing to publish stale or unverified native Alpha '+alpha);
+          console.log('VERIFIED_ORIGINAL_P2_ALPHA_IN_PAGES',alpha,built.modules);
+          VERIFY_NATIVE_ALPHA
           # Keep the old Pixi test laboratory at /lab.html but launch the real
           # solo Kanto Phaser game at the stable public root once Pages is enabled.
           cp _site/index.html _site/lab.html
@@ -115,6 +131,7 @@ jobs:
         run: |
           set -euo pipefail
           node tools/pokearena/audit-moves.mjs
+          node --test tests/rea-pmd-pack-compat.test.mjs
           node tests/versus-intro-built.test.mjs
           node tests/center-revive-built.test.mjs
           node tests/batch24-built.test.mjs
@@ -227,6 +244,8 @@ jobs:
           for n in $(seq 1 18); do
             if curl -fsSL --max-time 18 -H 'Cache-Control: no-cache' "$base/index.html?revision=$version-$n" -o /tmp/torre-live.html \
                 && grep -Fq "src=\"$version/main.js\"" /tmp/torre-live.html \
+                && curl -fsSL --max-time 18 "$base/$version/config.js" -o /tmp/torre-live-config.js \
+                && grep -Fq 'VERSION="0.65.8"' /tmp/torre-live-config.js \
                 && curl -fsSL --max-time 18 "$base/$version/torre2/next-specific-fx.js" -o /tmp/torre-live-fx.js \
                 && grep -Fq 'const SCISSOR_CUT=[' /tmp/torre-live-fx.js \
                 && grep -Fq 'stencil(palm,HAND_PALM,cx,cy+5,HAND_PAL,1.5)' /tmp/torre-live-fx.js \
