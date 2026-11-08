@@ -98,11 +98,11 @@ async function run(){
    return null;
   };
   const config=getText(get('config.js')),notes=getText(get('notas.js'));
-  const version=config?.match(/\\b(?:const|let)\\s+VERSION\\s*=\\s*["'](0\\.\\d+(?:\\.\\d+)?)["']/);
+  const version=config?.match(/\b(?:const|let)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/);
   summary.liveAlpha=version?.[1]??null;
   summary.liveVersionEvidence=version?'REA_CDP_PUBLIC_CONFIG_JS':'NO_OFFICIAL_VERSION_RETRIEVED';
   if(notes){
-   summary.latestChangelog=[...notes.matchAll(/\\{version:"(0\\.\\d+(?:\\.\\d+)?)",fecha:"([^"]+)",titulo:"([^"]+)"/g)]
+   summary.latestChangelog=[...notes.matchAll(/\{version:"(0\.\d+(?:\.\d+)?)",fecha:"([^"]+)",titulo:"([^"]+)"/g)]
     .slice(0,9).map(m=>({alpha:m[1],date:m[2],title:m[3]}));
   }
   // Original published JavaScript is read for evidence, not retained in artifacts.
