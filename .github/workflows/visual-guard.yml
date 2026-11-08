@@ -92,6 +92,8 @@ jobs:
             fi
             sleep $((attempt*8))
           done
+      - name: Verificar golpes Batch24 em combate Phaser compilado (inclui Twister)
+        run: node tests/batch24-built.test.mjs
       - name: Capturar título, mobile, mapa e combate em Chromium
         env:
           CHROME_BIN: /usr/bin/google-chrome
