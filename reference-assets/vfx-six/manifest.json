@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "approval": "visual-review-pending",
+  "gameIntegration": "in-game-training-lab-only",
+  "atlas": "atlas.png",
+  "sha256": "c7d9b5adcb59dddb86c6e140bb45eaeb9acc9de0e0ce4fbf63b500e55e6b294c",
+  "width": 224,
+  "height": 1344,
+  "frameWidth": 56,
+  "frameHeight": 56,
+  "framesPerMove": 16,
+  "source": "Six user-requested original pixel-art illustrated spritesheets, rasterized with nearest-neighbor frame placement and color quantization.",
+  "nativeP2Overrides": false,
+  "gameplayKitMutations": false,
+  "moves": [
+    {
+      "id": "gunk-shot",
+      "name": "Gunk Shot",
+      "type": "POISON",
+      "startFrame": 0
+    },
+    {
+      "id": "magnet-bomb",
+      "name": "Magnet Bomb",
+      "type": "STEEL",
+      "startFrame": 16
+    },
+    {
+      "id": "ominous-wind",
+      "name": "Ominous Wind",
+      "type": "GHOST",
+      "startFrame": 32
+    },
+    {
+      "id": "drill-run",
+      "name": "Drill Run",
+      "type": "GROUND",
+      "startFrame": 48
+    },
+    {
+      "id": "freeze-dry",
+      "name": "Freeze-Dry",
+      "type": "ICE",
+      "startFrame": 64
+    },
+    {
+      "id": "head-smash",
+      "name": "Head Smash",
+      "type": "ROCK",
+      "startFrame": 80
+    }
+  ],
+  "reviewNotes": "Visual previews only: no accuracy, collision, real HP, status, recoil, move learnset, ATK/HAB/ULT reassignment or campaign changes. Need in-game art approval and native-vfx collision check before any combat implementation."
+}
