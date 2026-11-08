@@ -6,6 +6,10 @@ on:
       - 'tools/pokearena/rea-capture-live-public.cjs'
       - '.github/workflows/pokearena-0658-rea-capture.yml'
       - 'tools/pokearena/rea-overlay-verified-client.mjs'
+      - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-pmd-pack-compat.mjs'
+      - 'tests/rea-pmd-pack-compat.test.mjs'
+      - 'tests/source-client-smoke.cjs'
   workflow_dispatch:
 
 permissions:
@@ -103,6 +107,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --test tests/rea-pmd-pack-compat.test.mjs
           node tools/pokearena/build-preview.mjs
           node -e "const fs=require('fs');const root='_site/arena2d/';const v=require('./_site/arena2d/version.json');const s=fs.readFileSync(root+v.modules+'/config.js','utf8');if(!/VERSION\\s*=\\s*['\"']0\\.65\\.8['\"']/.test(s))throw Error('BUILT CLIENT NOT ALPHA 0.65.8');console.log('BUILT_NATIVE_ALPHA_0658',v.modules);"
           node tools/dev/approved-visual-guard.mjs
