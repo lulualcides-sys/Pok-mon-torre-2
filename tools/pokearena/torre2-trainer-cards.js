@@ -230,8 +230,8 @@ function cardsPage(scene,state,handlers){
  const city=STAGES[state.stage]?.city||'KANTO';
  text(scene,layer,16,19,'POKÉMON TORRE 2',17,'#ffe2a2').setOrigin(0,.5);
  text(scene,layer,17,38,'KANTO  ·  '+city.toUpperCase(),10,'#a6dcf4').setOrigin(0,.5);
- text(scene,layer,408,18,'DESAFIOS',10,'#a9c9dd');
- text(scene,layer,408,36,(state.trainer||0)+' / '+(all.length-1),15,'#ffdf89');
+ text(scene,layer,408,18,all.length===1?'DESAFIO':'DESAFIOS',10,'#a9c9dd');
+ text(scene,layer,408,36,all.length===1?'1 / 1':(state.trainer||0)+' / '+(all.length-1),15,'#ffdf89');
  control(scene,layer,465,9,54,32,'MAIS',()=>extrasPage(scene,state,handlers),
   {id:'cards-more',size:9});
  control(scene,layer,523,9,51,32,'CHEIA',()=>{
@@ -249,7 +249,7 @@ function cardsPage(scene,state,handlers){
   if(!entry)continue;
   const x=18+c*124,y=81,w=109,h=190;
   const edge=trainerCardFrame(scene,layer,x,y,w,h,entry);
-  const glyph=entry.leader?'LÍDER':entry.foe?.kind==='rival'?'RIVAL':
+  const glyph=entry.leader?(state.stage>=12?'CAMPEÃO':state.stage>=8?'ELITE FOUR':'LÍDER'):entry.foe?.kind==='rival'?'RIVAL':
    entry.foe?.kind==='rocket'?'ROCKET':'TREINADOR';
   text(scene,layer,x+w/2,y+15,
    String(entry.index+1).padStart(2,'0')+'  '+glyph,10,'#f6f3da');

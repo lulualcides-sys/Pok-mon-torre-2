@@ -29,3 +29,4 @@ Kit pokemon-campanha-design, create-game-assets, game-ui-ux e level-design consu
 
 ## Correção detectada pelo CI
 O primeiro gate T98 falhou porque o novo painel da própria equipe usava a mesma tag de apresentação dos retratos adversários. Reproduzido localmente com o teste original (RED), corrigido com tags distintas `torre2-team-preview-*`, e o mesmo teste passou (GREEN) conferindo exatamente seis adversários, suas espécies e escalas. Nenhuma assertiva foi removida. Suite completa repetida: 510/510 PASS; guardião 247 arquivos idênticos. A versão com essa falha não foi publicada.
+O contador externo das etapas com apenas um líder foi corrigido de 0/0 para o único desafio 1/1; o card agora identifica Campeão/Elite Four. É rótulo de apresentação, sem escrita de progressão. Capturas finais repetidas no cliente atual e 510 testes passaram novamente.
