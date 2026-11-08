@@ -118,12 +118,12 @@ test('Evolution rebinds the original IA exactly once after the stage changes',()
  const state=installAutoBattle(s,actor=>{
   constructions++;
   const stage=actor.etapa;
-  return {leer:()=>({mx:stage,my:0,lmb:false})};
+  return {leer:()=>({mx:stage,my:0,lmb:false,fromStage:stage})};
  });
  assert.equal(constructions,1);
- assert.equal(s.controles[0].leer(.016).mx,0);
+ assert.equal(s.controles[0].leer(.016).fromStage,0);
  p.etapa=1;
- assert.equal(s.controles[0].leer(.016).mx,1);
+ assert.equal(s.controles[0].leer(.016).fromStage,1);
  assert.equal(constructions,2);
  s.controles[0].leer(.016);
  assert.equal(constructions,2);
