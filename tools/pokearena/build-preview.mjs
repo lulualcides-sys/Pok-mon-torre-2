@@ -1118,7 +1118,7 @@ for(const [filename,changes] of patches){
    // original named imports and add ONLY the independent Kanto campaign.
    if(filename==='main.js'&&from.startsWith('import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,caso,registrarNombres}')&&
       to.includes('torre2/campanha.js')){
-    const matches=body.match(/import\\{[^;\\n]{1,400}\\}from"\\.\\/config\\.js";/g)||[];
+    const matches=body.match(/import\{[^;\n]{1,400}\}from"\.\/config\.js";/g)||[];
     if(matches.length!==1||body.includes('import{Campanha}from"./torre2/campanha.js";'))
      throw Error('Unrecognized public config import or campaign already installed');
     body=body.replace(matches[0],matches[0]+'import{Campanha}from"./torre2/campanha.js";');
