@@ -4,6 +4,7 @@
  */
 import * as vfx from '../vfx.js';
 import {BATCH24_FORMS} from './batch24/runtime.js';
+import {HURRICANE_PREVIEW_FORMS} from './batch24/hurricane-preview.js';
 import {SURGE3_FORMS} from './surge3/runtime.js';
 import {TORRE2_FINALE_13_FORMS} from './finale13.js';
 import {TORRE2_NEW_FORMS} from './next-batch-fx.js';
@@ -299,6 +300,8 @@ export function payday(l,h,extra){
 }
 export const TORRE2_FORMS={
  ...BATCH24_FORMS,
+ // Opt-in renderer only; not in any equipped kit until visual/browser approval.
+ ...HURRICANE_PREVIEW_FORMS,
  ...TORRE2_FINALE_13_FORMS,
  ...SURGE3_FORMS,
  torre2_bonemerang:bonemerang,torre2_boneclub:boneclub,
