@@ -1,0 +1,34 @@
+name: Punch Impact · four custom moves only (preview)
+on:
+  push:
+    branches: [review/punch-impact-four-20261108]
+    paths:
+      - 'tools/pokearena/torre2-finale13.js'
+      - 'tests/custom-punch-impact-review.test.js'
+      - 'tests/custom-punch-preview-browser.cjs'
+      - 'punch-impact-review.html'
+      - '.github/workflows/punch-impact-review.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  custom-punch-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify only authored punch script and deterministic contact tests
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/torre2-finale13.js
+          node --check tests/custom-punch-preview-browser.cjs
+          node --test tests/custom-punch-impact-review.test.js
+      - name: Check actual public animated Phaser review in Chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          CHROME_BIN="$(command -v google-chrome)" node tests/custom-punch-preview-browser.cjs
