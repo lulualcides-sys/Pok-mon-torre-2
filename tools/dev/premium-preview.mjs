@@ -4,7 +4,7 @@ import http from 'node:http';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 const origin='https://lulualcides-sys.github.io/Pok-mon-torre-2';
-const cache=path.resolve('/workspace/pt2-public-cache');
+const cache=path.resolve(process.env.PREVIEW_CACHE||'/workspace/pt2-public-cache');
 const overrides={'premium-art.js':'torre2-premium-art.js','trainer-cards.js':'torre2-trainer-cards.js','city-scenery.js':'torre2-city-scenery.js','campanha.js':'torre2-campaign-scene.js'};
 const mime={'.js':'text/javascript','.html':'text/html','.json':'application/json','.css':'text/css','.png':'image/png','.jpg':'image/jpeg','.webp':'image/webp','.woff2':'font/woff2','.ogg':'audio/ogg','.svg':'image/svg+xml'};
 http.createServer(async(req,res)=>{
@@ -16,6 +16,10 @@ http.createServer(async(req,res)=>{
   if(!file.startsWith(cache+'/')){res.writeHead(403);return res.end()}
   let data;
   if(name.startsWith('/homolog/')||name.startsWith('/tools/pokearena/')){const local=path.resolve('.'+name);if(!local.startsWith(process.cwd()+'/'))throw Error('Invalid path');data=await fs.readFile(local);res.writeHead(200,{'content-type':mime[path.extname(name)]||'text/html'});return res.end(data)}
+  if(process.env.PREMIUM==='1'&&name.startsWith('/arena2d/assets/ui/scenic/')){
+   const asset=path.basename(name);if(!['trees-green.png','CREDITS.txt'].includes(asset))throw Error('Unknown scenery asset');
+   data=await fs.readFile('reference-assets/scenic-v2/'+asset);res.writeHead(200,{'content-type':mime[path.extname(name)]||'text/plain'});return res.end(data);
+  }
   const visual=name.includes('/torre2/')&&overrides[path.basename(name)];
   if(process.env.PREMIUM==='1'&&visual)data=await fs.readFile('tools/pokearena/'+visual);
   else{

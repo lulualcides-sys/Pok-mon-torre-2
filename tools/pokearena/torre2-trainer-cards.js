@@ -1,4 +1,4 @@
-import {premiumSprite} from './premium-art.js';
+import {scenicBackdrop,scenicDiorama,scenicIcon} from './premium-art.js';
 /* Pokémon Torre 2 — seleção cinematográfica da campanha via cards.
  * Somente apresentação Phaser; jamais altera progressão, time, saves
  * ou a interface aprovada da Arena. Sprites reais FRLG e PMD.
@@ -41,30 +41,26 @@ function text(scene,layer,x,y,value,size=11,color='#f5f4e9',props={}){
 function box(scene,layer,x,y,w,h,{fill=PALETTE.panel,edge=PALETTE.edge,
  accent=PALETTE.light}={}){
  const g=scene.add.graphics();
- g.fillStyle(PALETTE.shadow,.9);g.fillRect(x+3,y+4,w,h);
- g.fillStyle(edge);g.fillRect(x,y,w,h);
- g.fillStyle(fill);g.fillRect(x+2,y+2,w-4,h-4);
- g.fillStyle(accent,.95);g.fillRect(x+4,y+4,w-8,2);
- g.fillStyle(0x030f20,.8);g.fillRect(x+4,y+h-7,w-8,3);
- // Taste Skill: consistent eight-pixel stepped corners, not rounded web cards.
- // Keep the original rectangle bounds and all Phaser hit areas unchanged.
- if(w>=32&&h>=14){
-  const corners=[[x+3,y+3],[x+w-7,y+3],[x+3,y+h-7],[x+w-7,y+h-7]];
-  for(const [cx,cy] of corners){
-   g.fillStyle(accent,1);g.fillRect(cx,cy,4,2);
-   g.fillStyle(0x07172b,.8);g.fillRect(cx+1,cy+2,2,2);
-  }
-  g.fillStyle(accent,.45);g.fillRect(x+7,y+8,2,Math.max(1,h-16));
-  g.fillRect(x+w-9,y+8,2,Math.max(1,h-16));
- }
+ // Pixel-cut silhouette, quiet inset and one light edge; no nested metal bevels.
+ const cut=(xx,yy,ww,hh,c)=>{
+  g.fillStyle(c);g.fillRect(xx+4,yy,ww-8,hh);
+  g.fillRect(xx+2,yy+2,ww-4,hh-4);g.fillRect(xx,yy+4,ww,hh-8);
+ };
+ cut(x+1,y+3,w,h,PALETTE.shadow);cut(x,y,w,h,edge);
+ cut(x+1,y+1,w-2,h-3,fill);
+ g.fillStyle(accent,.65);g.fillRect(x+6,y+2,w-12,1);
+ g.fillStyle(0x0b1822,.4);g.fillRect(x+5,y+h-3,w-10,1);
  layer.add(g);return g;
 }
 function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
  id='',size=10}={}){
- box(scene,layer,x,y,w,h,{fill:muted?0x172737:gold?0x9e6420:0x194d73,
-  edge:muted?0x475568:gold?0xf7cf6b:0x6aafcf,
-  accent:muted?0x606f7d:gold?0xffebac:0x9ed2e6});
- text(scene,layer,x+w/2,y+h/2,label,size,
+ box(scene,layer,x,y,w,h,{fill:muted?0x172737:gold?0x81633a:0x284c50,
+  edge:muted?0x475568:gold?0xe6c384:0x789e9b,
+  accent:muted?0x606f7d:gold?0xffe6b3:0xb3cbbb});
+ const iconIds=['team','bag','center','shop','capture','train','seeker'];
+ const icon=id.startsWith('cards-')&&/^cards-[0-6]$/.test(id)?iconIds[Number(id.slice(-1))]:null;
+ if(icon)scenicIcon(scene,layer,icon,x+12,y+h/2);
+ text(scene,layer,x+w/2+(icon?8:0),y+h/2,label,size,
   muted?'#8fa0ac':gold?'#fff5ca':'#ecf8ff');
  // The shine is paint only: no additional interactive surface or larger target.
  const focus=scene.add.graphics();layer.add(focus);
@@ -95,26 +91,25 @@ function control(scene,layer,x,y,w,h,label,fn,{gold=false,muted=false,
 function trainerCardFrame(scene,layer,x,y,w,h,entry){
  const edge=entry.active?PALETTE.gold:entry.completed?PALETTE.green:0x587790;
  const trim=entry.active?PALETTE.sun:entry.completed?0x7fe0a5:0x7bacc7;
- box(scene,layer,x,y,w,h,{
+ box(scene,layer,x,y+121,w,h-121,{
   fill:entry.active?0x173e62:entry.completed?0x14374d:0x102d4a,
   edge,accent:trim
  });
  const art=scene.add.graphics();
- // Title strip, character alcove and visible selected/defeated marker.
- art.fillStyle(entry.leader?0x49314a:entry.active?0x325475:0x1a3a55,.92);
- art.fillRect(x+5,y+8,w-10,23);
+ // Restrained paper label and stitched lower pocket; scenery does the work.
+ art.fillStyle(entry.leader?0x5e4d63:0x244d52,.96);
+ art.fillRect(x+3,y+6,w-6,25);
  art.fillStyle(trim,.92);art.fillRect(x+7,y+30,w-14,2);
- art.fillStyle(edge,1);art.fillRect(x+5,y+9,3,20);
- art.fillStyle(trim,.9);art.fillRect(x+w-11,y+11,4,4);
- art.fillStyle(PALETTE.shadow,.7);art.fillRect(x+7,y+36,w-14,96);
- art.fillStyle(0x2a5271,.47);art.fillRect(x+10,y+38,w-20,2);
- art.fillStyle(trim,.5);art.fillRect(x+9,y+134,w-18,1);
- art.fillStyle(PALETTE.shadow,.6);art.fillRect(x+9,y+162,w-18,1);
- // Four metal notches frame the roster, without covering portrait sprites.
- for(const cx of [x+10,x+w-13]){
-  art.fillStyle(trim,.65);
-  art.fillRect(cx,y+139,3,2);art.fillRect(cx,y+157,3,2);
+ art.fillStyle(entry.active?0xd7bd7a:entry.completed?0x8bb99b:0x8b9e97);
+ art.fillRect(x+7,y+8,2,15);art.fillRect(x+w-9,y+8,2,15);
+ art.fillStyle(0x122e36);art.fillRect(x+4,y+124,w-8,43);
+ art.fillStyle(trim,.2);art.fillRect(x+9,y+139,w-18,1);
+ for(let xx=x+9;xx<x+w-8;xx+=7){
+  art.fillStyle(trim,.3);art.fillRect(xx,y+165,3,1);
  }
+ // State is also written in text, and never indicated by colour alone.
+ art.fillStyle(trim,.8);art.fillRect(x+7,y+173,2,11);
+ art.fillRect(x+w-9,y+173,2,11);
  layer.add(art);
  return edge;
 }
@@ -143,15 +138,15 @@ export function enemyPortraitDex(scene,id){
  }catch{return null}
 }
 function portraitDex(scene,id){return enemyPortraitDex(scene,id)}
-function portrait(scene,layer,id,x,y,size=43){
+function portrait(scene,layer,id,x,y,size=43,role='opponent'){
  const dex=portraitDex(scene,id);
  if(!dex)return null;
  const key='torre2-portrait-'+dex;
  const show=()=>{
   if(!layer.active||!scene.textures.exists(key))return;
   const image=scene.add.image(x,y,key).setDisplaySize(size,size)
-   .setData('torre2-opponent-sprite',id)
-   .setData('torre2-opponent-size',size);
+   .setData(role==='team'?'torre2-team-preview-sprite':'torre2-opponent-sprite',id)
+   .setData(role==='team'?'torre2-team-preview-size':'torre2-opponent-size',size);
   layer.add(image);
  };
  if(scene.textures.exists(key)){show();return key;}
@@ -198,8 +193,8 @@ function extrasPage(scene,state,handlers){
  layer.setData('torre2-cards-extras',true);
  const shade=scene.add.graphics();
  shade.fillStyle(0x051324,.97);shade.fillRect(0,0,640,360);
- shade.fillStyle(0x173754);shade.fillRect(50,32,540,286);
- shade.lineStyle(3,PALETTE.gold);shade.strokeRect(50,32,540,286);
+ shade.fillStyle(0x203d43);shade.fillRect(50,32,540,286);
+ shade.fillStyle(PALETTE.gold,.6);shade.fillRect(64,32,512,1);
  layer.add(shade);
  layer.add(scene.add.zone(320,180,640,360).setInteractive());
  text(scene,layer,320,68,'OPÇÕES DA CAMPANHA',21,'#ffe6a2');
@@ -215,6 +210,9 @@ function extrasPage(scene,state,handlers){
  });
  control(scene,layer,236,276,168,30,'VOLTAR AOS CARDS',()=>layer.destroy(true),
   {id:'cards-extras-close',size:10});
+ text(scene,layer,320,326,'ARTE DOS CENÁRIOS · CRÉDITOS',9,'#c6d5bd');
+ const credits=scene.add.zone(320,326,260,24).setInteractive({useHandCursor:true});
+ credits.on('pointerdown',()=>window.open('assets/ui/scenic/CREDITS.txt','_blank','noopener'));layer.add(credits);
  return layer;
 }
 function cardsPage(scene,state,handlers){
@@ -226,30 +224,14 @@ function cardsPage(scene,state,handlers){
  scene.__torre2CardPage=page;
  const layer=scene.add.container(0,0).setDepth(200);
  layer.setData('torre2-trainer-cards-root',true);
- const bg=scene.add.graphics();
- bg.fillStyle(PALETTE.navy);bg.fillRect(0,0,640,360);
- bg.fillStyle(0x0b3555);bg.fillRect(0,0,640,55);
- bg.fillStyle(0x3388bb);bg.fillRect(0,52,640,2);
- bg.fillStyle(0x0b2b48);bg.fillRect(0,284,640,76);
- bg.fillStyle(0x79bfe1,.78);bg.fillRect(14,53,110,1);
- bg.fillStyle(0xe5ba63,.9);bg.fillRect(16,76,608,2);
- bg.fillStyle(0x123a56);bg.fillRect(16,303,608,1);
- for(let x=18;x<=614;x+=28){
-  bg.fillStyle(x%3?0x4282a6:0x79a7bb,.23);
-  bg.fillRect(x,297,11,2);
- }
- for(let i=0;i<10;i++){
-  bg.fillStyle(i%2?0x29668a:0x164567,.16);
-  bg.fillRect((i*97+31)%640,58+(i*29)%224,36,3);
- }
- layer.add(bg);
+ scenicBackdrop(scene,layer,state.stage);
  const blocker=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(blocker);
  const city=STAGES[state.stage]?.city||'KANTO';
  text(scene,layer,16,19,'POKÉMON TORRE 2',17,'#ffe2a2').setOrigin(0,.5);
  text(scene,layer,17,38,'KANTO  ·  '+city.toUpperCase(),10,'#a6dcf4').setOrigin(0,.5);
- text(scene,layer,408,18,'DESAFIOS',10,'#a9c9dd');
- text(scene,layer,408,36,(state.trainer||0)+' / '+(all.length-1),15,'#ffdf89');
+ text(scene,layer,408,18,all.length===1?'DESAFIO':'DESAFIOS',10,'#a9c9dd');
+ text(scene,layer,408,36,all.length===1?'1 / 1':(state.trainer||0)+' / '+(all.length-1),15,'#ffdf89');
  control(scene,layer,465,9,54,32,'MAIS',()=>extrasPage(scene,state,handlers),
   {id:'cards-more',size:9});
  control(scene,layer,523,9,51,32,'CHEIA',()=>{
@@ -260,61 +242,18 @@ function cardsPage(scene,state,handlers){
   {id:'menu',size:9});
  const heading=page*5+1;
  text(scene,layer,320,68,
-  'GINÁSIO DE '+city.toUpperCase()+'  ·  DESAFIOS '+heading+'–'+
+  (state.stage>=12?'CAMPEÃO':state.stage>=8?'ELITE FOUR':'JORNADA EM '+city.toUpperCase())+'  ·  DESAFIOS '+heading+'–'+
   Math.min(all.length,(page+1)*5),11,'#f8f2d6');
  for(let c=0;c<5;c++){
   const entry=all[page*5+c];
   if(!entry)continue;
   const x=18+c*124,y=81,w=109,h=190;
   const edge=trainerCardFrame(scene,layer,x,y,w,h,entry);
-  const glyph=entry.leader?'LÍDER':entry.foe?.kind==='rival'?'RIVAL':
+  const glyph=entry.leader?(state.stage>=12?'CAMPEÃO':state.stage>=8?'ELITE FOUR':'LÍDER'):entry.foe?.kind==='rival'?'RIVAL':
    entry.foe?.kind==='rocket'?'ROCKET':'TREINADOR';
   text(scene,layer,x+w/2,y+15,
    String(entry.index+1).padStart(2,'0')+'  '+glyph,10,'#f6f3da');
-  const podium=scene.add.graphics();
-  if(state.stage===1){
-  // Regional diorama: the trainer stands on masonry, framed by a garden.
-  const water=state.stage===1||state.stage===8;
-  const warm=[0,6,7,9].includes(state.stage);
-  podium.fillStyle(water?0x397e91:warm?0x65695b:0x386955);
-  podium.fillRect(x+12,y+39,w-24,81);
-  podium.fillStyle(water?0x75bdc4:warm?0xaaa481:0x83ad70);
-  podium.fillRect(x+13,y+40,w-26,20);
-  // Distant arcade and stone coursing retain a quiet silhouette behind faces.
-  for(let yy=0;yy<4;yy++)for(let xx=0;xx<7;xx++){
-   podium.fillStyle((xx+yy)%3?0x77969a:0x98b0a6);
-   podium.fillRect(x+14+xx*12,y+61+yy*6,11,5);
-  }
-  podium.fillStyle(0x284c55);podium.fillRect(x+36,y+58,38,36);
-  podium.fillStyle(0x426e73);podium.fillRect(x+40,y+55,30,40);
-  podium.fillStyle(0x9ab6ad);podium.fillRect(x+36,y+56,4,37);
-  podium.fillRect(x+70,y+56,4,37);podium.fillRect(x+40,y+53,30,3);
-  podium.fillStyle(0x435f60);podium.fillRect(x+12,y+94,w-24,26);
-  for(let yy=0;yy<3;yy++)for(let xx=0;xx<7;xx++){
-   podium.fillStyle((xx+yy)%2?0xa5b5a3:0x8fa698);
-   podium.fillRect(x+14+xx*12,y+95+yy*7,11,6);
-  }
-  podium.fillStyle(0x28414a);podium.fillRect(x+34,y+98,42,6);
-  podium.fillStyle(0xd7d4ad);podium.fillRect(x+32,y+96,46,3);
-  podium.fillStyle(0x5a7372);podium.fillRect(x+29,y+105,52,4);
-  podium.fillStyle(0xc4c6a6);podium.fillRect(x+29,y+104,52,2);
-  podium.fillStyle(0x213b48);podium.fillRect(x+12,y+119,w-24,13);
-  layer.add(podium);
-  layer.add(premiumSprite(scene,'tree',x+10,y+64));
-  layer.add(premiumSprite(scene,'tree',x+w-40,y+65));
-  // A restrained lower garden frames the pedestal without covering the NPC.
-  layer.add(premiumSprite(scene,'planter',x+11,y+91));
-  layer.add(premiumSprite(scene,'planter',x+w-42,y+91));
-  }else{
-  podium.fillStyle(entry.active?0x123451:0x0b233b);
-  podium.fillRect(x+12,y+39,w-24,89);
-  podium.fillStyle(entry.active?0x365f7b:0x23435a);
-  podium.fillRect(x+17,y+115,w-34,5);
-  podium.fillStyle(0x86bdca,.25);podium.fillRect(x+16,y+43,w-32,2);
-  podium.fillStyle(0x112e45,.8);podium.fillRect(x+18,y+122,w-36,2);
-  podium.fillStyle(0x517b96,.55);podium.fillRect(x+16,y+126,w-32,2);
-  layer.add(podium);
-  }
+  scenicDiorama(scene,layer,x+3,y+35,w-6,89,state.stage,entry.index);
   npc(scene,layer,npcKind(state.stage,entry.index,entry.leader),x+w/2,y+102,
    entry.leader?2.55:2.35);
   if(entry.leader)text(scene,layer,x+w/2,y+126,
@@ -336,6 +275,20 @@ function cardsPage(scene,state,handlers){
    event?.stopPropagation?.();
    detailPage(scene,state,handlers,entry);
   });layer.add(zone);
+ }
+ // Last pages use their otherwise empty slots for a regional journey panel.
+ // Pure presentation: no extra actions, progress writes or card hit areas.
+ const visible=all.slice(page*5,(page+1)*5).length;
+ if(visible<5){
+  const px=18+visible*124,pw=(5-visible)*124-15;
+  box(scene,layer,px,86,pw,181,{fill:0x1b3942,edge:0x5b827f,accent:0xb3cbbb});
+  text(scene,layer,px+pw/2,103,state.stage>=12?'DESAFIO FINAL':'JORNADA EM KANTO',pw>160?14:9,'#ead9ac');
+  scenicDiorama(scene,layer,px+8,119,pw-16,81,state.stage,page);
+  if(pw>160){
+   text(scene,layer,px+pw/2,215,'SUA EQUIPE',10,'#c5d9c4');
+   const team=state.team.slice(0,6),step=Math.min(52,(pw-24)/Math.max(1,team.length));
+   team.forEach((member,j)=>portrait(scene,layer,member.id,px+pw/2+(j-(team.length-1)/2)*step,241,25,'team'));
+  }else text(scene,layer,px+pw/2,232,city.toUpperCase(),8,'#c5d9c4');
  }
  const navY=278;
  control(scene,layer,16,navY,49,28,'◀',()=>{
@@ -371,7 +324,7 @@ function detailPage(scene,state,handlers,entry){
  layer.setData('torre2-trainer-cards-root',true);
  const g=scene.add.graphics();
  g.fillStyle(0x061625);g.fillRect(0,0,640,360);
- g.fillStyle(entry.leader?0x512335:0x123d62);g.fillRect(0,0,252,360);
+ g.fillStyle(entry.leader?0x463f50:0x24484b);g.fillRect(0,0,252,360);
  for(let i=0;i<8;i++){
   g.fillStyle(entry.leader?0xa84345:0x367dad,.2);
   g.fillRect(0,35+i*39,252,4);
@@ -389,6 +342,7 @@ function detailPage(scene,state,handlers,entry){
   g.fillRect(px,285,3,7);
  }
  layer.add(g);
+ scenicDiorama(scene,layer,14,77,222,175,state.stage,entry.index);
  const shield=scene.add.zone(320,180,640,360).setInteractive();
  layer.add(shield);
  control(scene,layer,570,12,53,32,'X',()=>{
@@ -396,13 +350,13 @@ function detailPage(scene,state,handlers,entry){
  },{id:'cards-close'});
  const leader=entry.leader,name=leader?(entry.foe?.name||'LÍDER'):
   (entry.foe?.name||'TREINADOR '+(entry.index+1));
- text(scene,layer,126,28,leader?'LÍDER DE GINÁSIO':'DESAFIO '+(entry.index+1),
+ text(scene,layer,126,28,leader?(state.stage>=12?'CAMPEÃO':state.stage>=8?'ELITE FOUR':'LÍDER DE GINÁSIO'):'DESAFIO '+(entry.index+1),
   14,'#ffe29b');
  npc(scene,layer,npcKind(state.stage,entry.index,leader),126,206,
-  leader?5.2:5.0);
+  leader?3.2:3.0);
  box(scene,layer,20,273,213,57,{fill:0x0b2949,edge:PALETTE.gold});
  text(scene,layer,126,285,name.toUpperCase(),14,'#ffe8ad');
- text(scene,layer,126,310,leader?'BATALHA PELA INSÍGNIA':
+ text(scene,layer,126,310,leader?(state.stage>=12?'DESAFIO FINAL':state.stage>=8?'LIGA POKÉMON':'BATALHA PELA INSÍGNIA'):
   (entry.foe?.kind||'TREINADOR').toUpperCase(),9,'#bde1ef');
  text(scene,layer,410,36,'TIME DO ADVERSÁRIO',17,'#ffe0a2');
  text(scene,layer,408,65,'DESAFIO '+(entry.index+1)+' / '+

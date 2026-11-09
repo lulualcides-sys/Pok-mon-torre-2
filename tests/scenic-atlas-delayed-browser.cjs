@@ -1,0 +1,13 @@
+const {chromium}=require('playwright-core');const assert=require('assert/strict');
+(async()=>{const b=await chromium.launch({executablePath:process.env.CHROME_BIN||'/home/agent/.cache/ms-playwright/chromium-1194/chrome-linux/chrome',args:['--no-sandbox','--enable-unsafe-swiftshader']});
+try{const p=await b.newPage({viewport:{width:1280,height:720}});const errors=[];p.on('pageerror',e=>errors.push(e.message));let pending;
+await p.route('**/assets/ui/scenic/trees-green.png',route=>{pending=route});
+await p.goto(process.env.TEST_URL||'http://127.0.0.1:4174/arena2d/?original=1&torre2-cards=1');await p.waitForFunction(()=>window.__pt2Game?.scene.isActive('titulo'),null,{timeout:90000});
+await p.evaluate(async()=>{const src=[...document.scripts].find(s=>s.src.includes('/main.js')).src;window.core=await import(new URL('./torre2/campaign-core.js',src));const state=core.createPlayerCampaign('bulbasaur');state.stage=1;core.saveCampaign(state);window.__pt2Game.scene.getScene('titulo').scene.start('campanha')});
+await p.waitForFunction(()=>window.__pt2Game.scene.getScene('campanha').__torre2CardUI?.mode==='cards',null,{timeout:60000});
+for(let i=0;i<100&&!pending;i++)await p.waitForTimeout(50);assert.ok(pending,'Real atlas request was intercepted');
+await p.evaluate(()=>window.__pt2Game.scene.getScene('campanha').pcScreen(core.readCampaign()));
+await pending.continue();await p.waitForFunction(()=>window.__pt2Game.textures.exists('torre2-scenic-lpc-v2'));
+const result=await p.evaluate(()=>{const scene=window.__pt2Game.scene.getScene('campanha');const walk=o=>[o,...(o.list||[]).flatMap(walk)];return{lateTrees:scene.children.list.flatMap(walk).filter(o=>o.texture?.key==='torre2-scenic-lpc-v2').length,callbacks:scene.load.listenerCount('filecomplete-image-torre2-scenic-lpc-v2')}});
+assert.deepEqual(result,{lateTrees:0,callbacks:0});assert.deepEqual(errors,[]);console.log('PASS_SCENIC_ATLAS_DELAYED_AFTER_PC');
+}finally{await b.close()}})().catch(e=>{console.error(e);process.exitCode=1});
