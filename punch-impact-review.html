@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark"><meta name="theme-color" content="#0b1628">
+<title>Pokémon Torre 2 · Punch Impact Review</title>
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color:#e6f2ff;background:#08131f}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 55% 0%,#1c3654,#091523 62%,#07101a)}
+main{max-width:1014px;padding:17px 13px 32px;margin:auto}
+header{display:flex;gap:14px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+small{font-weight:750;text-transform:uppercase;letter-spacing:.15em;color:#7ed4db}
+header b{font-size:12px;color:#b0cadc;padding:6px 9px;border:1px solid #385572;border-radius:6px}
+h1{font-size:clamp(25px,5vw,42px);letter-spacing:-.045em;margin:9px 0 5px}
+h1 em{font-style:normal;color:#96e4df}
+.lead{font-size:14px;color:#bacfe0;line-height:1.45;max-width:760px;margin:0 0 15px}
+.tabs,.bar{display:flex;gap:7px;flex-wrap:wrap;align-items:center;margin:11px 0}
+button{border:1px solid #58718f;background:#172e46;color:#e7f2fb;font:650 13px system-ui;
+ padding:10px 13px;border-radius:7px;cursor:pointer;min-height:40px}
+button[aria-pressed=true]{border-color:#8ce4dd;background:#24545a;color:#f0fffd}
+button:focus-visible{outline:3px solid #ffda8d}
+button:hover{filter:brightness(1.15)}
+#screen{width:100%;aspect-ratio:960 / 480;position:relative;overflow:hidden;
+background:#112739;border:1px solid #4d7891;border-radius:10px}
+#screen canvas{display:block;image-rendering:pixelated}
+#screen .overlay{position:absolute;top:12px;left:12px;right:12px;
+pointer-events:none;display:flex;justify-content:space-between;gap:9px}
+.overlay span{border:1px solid #56778a;border-radius:4px;background:#0a1726cc;
+padding:6px 9px;color:#d9f6ff;font:750 clamp(9px,1.7vw,13px) ui-monospace,monospace}
+.status{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+background:#10243a;border:1px solid #3b5b72;border-radius:8px;padding:11px 13px;margin-top:10px}
+#result{font-weight:750}#detail{font-size:12px;color:#b7d1dd}
+.note{font-size:12px;color:#a8becd;margin-top:16px;line-height:1.55}
+code{color:#b7ecfd}@media(max-width:550px){main{padding:11px 8px 24px}
+button{font-size:12px;padding:9px 11px}#screen{aspect-ratio:960/550}
+.lead{font-size:13px}.overlay span{padding:5px 6px;font-size:9px}}
+</style>
+</head>
+<body><main>
+<header><small>Pixelart VFX · revisão privada · 4 golpes</small><b>Torre 2 · sem alterar cliente base</b></header>
+<h1>PUNCH <em>IMPACT V2</em></h1>
+<p class="lead">A mesma animação de punho já aprovada, agora com contato mais preciso e um detalhe elemental discreto no alvo. Escolha cada golpe e compare acerto real com golpe que passou longe.</p>
+<div class="tabs" role="group" aria-label="Selecionar golpe">
+<button type="button" data-kind="firepunch" aria-pressed="true">FIRE PUNCH</button>
+<button type="button" data-kind="thunderpunch" aria-pressed="false">THUNDER PUNCH</button>
+<button type="button" data-kind="icepunch" aria-pressed="false">ICE PUNCH</button>
+<button type="button" data-kind="poisonpunch" aria-pressed="false">POISON PUNCH</button>
+</div>
+<div id="screen" aria-label="Prévia animada Phaser do golpe e do impacto em pixel art">
+<div class="overlay"><span id="name">FIRE PUNCH · FOGO</span><span id="counter">GOLPES CONFIRMADOS: 0</span></div>
+</div>
+<div class="status"><span id="result">Carregando Phaser/WebGL…</span>
+<span id="detail">Mira fixa · contato físico · dano apenas no acerto</span></div>
+<div class="bar" role="group" aria-label="Controles de animação">
+<button type="button" id="hit" aria-pressed="true">ACERTO</button>
+<button type="button" id="miss" aria-pressed="false">ERRO / ESQUIVA</button>
+<button type="button" id="slow" aria-pressed="false">0,5×</button>
+<button type="button" id="normal" aria-pressed="true">1×</button>
+<button type="button" id="replay">REPETIR</button>
+<button type="button" id="pause">PAUSAR</button>
+</div>
+<p class="note">Prévia técnica visual em Phaser. Não mostra um combate completo: usa um alvo de treino e executa o mesmo código do Punch proposto na branch, incluindo a checagem contínua de contato e <code>recibir()</code> simulado. Sem autoacerto, sem partículas quando erra ou bloqueia. Não altera os efeitos originais do Poké Arena 2D, golpes existentes do cliente base ou o jogo publicado. Aguardando aprovação visual.</p>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/phaser@3.90.0/dist/phaser.min.js"></script>
+<script type="module">
+import {TORRE2_FINALE_13_FORMS} from './tools/pokearena/torre2-finale13.js';
+const title=document.querySelector('#name');
+const result=document.querySelector('#result');
+const counter=document.querySelector('#counter');
+const kinds={
+ firepunch:{name:'FIRE PUNCH · FOGO',type:'FIRE',accent:0xffad54,hue:0x9b382a},
+ thunderpunch:{name:'THUNDER PUNCH · RAIO',type:'ELECTRIC',accent:0xfff08a,hue:0x86703a},
+ icepunch:{name:'ICE PUNCH · GELO',type:'ICE',accent:0xb0f0ff,hue:0x397f9b},
+ poisonpunch:{name:'POISON PUNCH · VENENO',type:'POISON',accent:0xdd9bff,hue:0x7a438c}
+};
+const data={ready:false,kind:'firepunch',mode:'hit',paused:false,rate:1,hits:0,attempts:0,
+errors:[],renderer:'',lastOutcome:'',animating:false,contactTime:null,drawFrames:0};
+window.__punchPreview=data;
+let scene,actor,foe,field,playerInk,foeInk,fx,elapsed=0,rest=0,hitAge=-1,hasResult=false;
+const A=['.......K........','.....KKKK.......','....KDDDDK......','....KDWWDK......','...KDLWWLDK.....',
+ '...KDMMMMDK.....','..KKDMMMMDKK....','.KLLDDMMDDLLK...','.KLLDMMMM DLLK..'.replace(' ',''),
+ '...KDDDDDDK.....','..KDDMMMMDDK....','..KDMMDDMMDK....','..KDDDDDDDDK....',
+ '...KDMKKMDK.....','...KD K KD K'.replaceAll(' ','').padEnd(16,'.'),
+ '...KK....KK.....'];
+const B=['......KKK.......','.....KDDDK......','....KDMMDK......','...KDMLLMDK.....','...KDMLLMDK.....',
+ '...KDMWWMDK.....','...KDMLLMDK.....','....KDMDK.......','...KKDMMKK......',
+ '...KDDDDDDK.....','....KDDDK.......','....KDMDK.......','....KDMDK.......','...KK...KK......'];
+const palettes={
+ fighter:{K:0x17222f,D:0x3e6f9c,M:0x589dce,L:0x8be2d7,W:0xf3f9e8},
+ dummy:{K:0x292536,D:0x7b5260,M:0xb87873,L:0xf1bf96,W:0xffe1ae}
+};
+function paintMatrix(g,rows,p,x,y,scale=1){
+ const w=Math.max(...rows.map(r=>r.length)),h=rows.length;
+ for(let j=0;j<h;j++)for(let i=0;i<rows[j].length;i++){
+  const color=p[rows[j][i]];if(color===undefined)continue;
+  g.fillStyle(color,1).fillRect(Math.round(x+(i-w/2)*scale),
+   Math.round(y+(j-h)*scale),Math.ceil(scale),Math.ceil(scale));
+ }
+}
+function setupScene(){
+ field=scene.add.graphics().setDepth(-5);
+ const g=field;g.fillStyle(0x163c41).fillRect(0,0,960,480);
+ g.fillStyle(0x183744).fillRect(0,0,960,330);
+ // Interleaved distant pixel-art mountains and clouds, no CSS gameplay effects.
+ for(let x=0;x<960;x+=12){
+  const h=46+Math.round(15*Math.sin(x*.014)+12*Math.sin(x*.041));
+  g.fillStyle(x%36?0x254b57:0x2b5460).fillRect(x,236-h,12,h+76);
+ }
+ for(let y=314;y<480;y+=11){
+  g.fillStyle(y%22?0x2c674e:0x275e49).fillRect(0,y,960,11);
+ }
+ for(let x=0;x<960;x+=28)for(let y=339;y<480;y+=29){
+  g.fillStyle((x+y)%3?0x35664f:0x3d7556,.7).fillRect(x+4,y+2,12,3);
+ }
+ g.fillStyle(0x10242d).fillEllipse(400,312,71,17).fillEllipse(512,312,77,18);
+ g.fillStyle(0x4b745d).fillEllipse(400,311,65,9).fillEllipse(512,311,70,10);
+ playerInk=scene.add.graphics().setDepth(950);
+ foeInk=scene.add.graphics().setDepth(950);
+ scene.cameras.main.setZoom(2.05);
+ scene.cameras.main.centerOn(468,263);
+}
+function reset(){
+ if(!scene)return;
+ if(fx){fx.destroy();fx=null;}
+ scene.efectos=[];
+ elapsed=0;rest=0;hasResult=false;hitAge=-1;data.attempts++;
+ const y=300;
+ foe={x:data.mode==='miss'?513:506,y:data.mode==='miss'?344:y,alto:36,ko:false,hp:100,est:{},
+  recibir(_actor,packet){
+   // Mirrors native return value: only a valid collision is applied.
+   if(hasResult)return 'bloqueado';
+   hasResult=true;this.hp-=packet.dano||15;data.hits++;
+   hitAge=elapsed;data.contactTime=+elapsed.toFixed(3);
+   data.lastOutcome='HIT';return 'golpe';
+  },
+  ponerEstado(k){this.est[k]=true;}
+ };
+ actor={x:397,y,alto:36,ax:570,ay:y,t:1,ko:false,est:{},escena:scene,rival:foe,
+  limitar(){this.x=Math.max(30,Math.min(920,this.x));},animar(){}};
+ const cfg=kinds[data.kind];
+ fx=TORRE2_FINALE_13_FORMS['torre2_finale_'+data.kind](actor,
+  {tipo:cfg.type,categoria:'PHYSICAL',dano:15}, {slot:'rmb'});
+ title.textContent=cfg.name;
+ counter.textContent='GOLPES CONFIRMADOS: '+data.hits;
+ data.lastOutcome='TRAVEL';
+ result.textContent='PUNHO EM MOVIMENTO · aguardando contato';
+ data.animating=true;
+}
+function drawActors(){
+ if(!actor||!foe)return;
+ playerInk.clear();foeInk.clear();
+ const a=playerInk,b=foeInk;
+ // Source actor only: the sprite movement comes from contactDash in the actual move.
+ a.fillStyle(0x102e32,.4).fillEllipse(actor.x,actor.y+3,39,11);
+ paintMatrix(a,A,palettes.fighter,actor.x,actor.y,1.75);
+ // The dummy flashes ONLY after the move has invoked recibir().
+ const pal=hitAge>=0&&elapsed-hitAge<.12?
+  {...palettes.dummy,M:0xffe2bd,L:0xffffff,W:0xffffff}:palettes.dummy;
+ b.fillStyle(0x102e32,.4).fillEllipse(foe.x,foe.y+3,39,11);
+ paintMatrix(b,B,pal,foe.x,foe.y,1.85);
+ if(hitAge>=0&&elapsed-hitAge<.19){
+  const shift=(elapsed-hitAge)<.10?3:1;
+  b.fillStyle(kinds[data.kind].hue,.60)
+   .fillRect(Math.round(foe.x+18+shift),Math.round(foe.y-23),2,8);
+ }
+}
+function setButtons(){
+ for(const b of document.querySelectorAll('[data-kind]'))
+  b.setAttribute('aria-pressed',String(b.dataset.kind===data.kind));
+ document.querySelector('#hit').setAttribute('aria-pressed',String(data.mode==='hit'));
+ document.querySelector('#miss').setAttribute('aria-pressed',String(data.mode==='miss'));
+ document.querySelector('#slow').setAttribute('aria-pressed',String(data.rate===.5));
+ document.querySelector('#normal').setAttribute('aria-pressed',String(data.rate===1));
+ document.querySelector('#pause').textContent=data.paused?'RETOMAR':'PAUSAR';
+}
+for(const b of document.querySelectorAll('[data-kind]'))b.addEventListener('click',()=>{
+ data.kind=b.dataset.kind;setButtons();reset();
+});
+document.querySelector('#hit').onclick=()=>{data.mode='hit';setButtons();reset();};
+document.querySelector('#miss').onclick=()=>{data.mode='miss';setButtons();reset();};
+document.querySelector('#slow').onclick=()=>{data.rate=.5;setButtons();};
+document.querySelector('#normal').onclick=()=>{data.rate=1;setButtons();};
+document.querySelector('#replay').onclick=()=>reset();
+document.querySelector('#pause').onclick=()=>{data.paused=!data.paused;setButtons();};
+if(!window.Phaser){
+ data.errors.push('Phaser indisponível');
+ result.textContent='Falha: Phaser não carregou';
+}else{
+ new Phaser.Game({
+  type:Phaser.AUTO,parent:'screen',width:960,height:480,
+  backgroundColor:'#172d40',pixelArt:true,roundPixels:true,
+  render:{antialias:false,pixelArt:true},
+  scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH},
+  scene:{
+   create(){
+    scene=this;scene.efectos=[];setupScene();reset();setButtons();
+    data.renderer=this.game.renderer.type===Phaser.WEBGL?'WebGL':'Canvas fallback';
+    data.ready=true;
+    result.textContent='Phaser '+data.renderer+' · contato físico ativo';
+   },
+   update(_t,delta){
+    if(!data.ready||data.paused)return;
+    rest+=Math.min(.06,delta/1000)*data.rate;
+    let n=0;
+    while(rest>=1/60&&n++<4){
+     rest-=1/60;elapsed+=1/60;actor.t+=1/60;
+     if(fx&&fx.update(1/60)===false)fx=null;
+     if(hasResult){
+      result.textContent='HIT CONFIRMADO · impacto '+kinds[data.kind].type+' no alvo';
+      data.lastOutcome='HIT';
+      counter.textContent='GOLPES CONFIRMADOS: '+data.hits;
+     }else if(elapsed>.84){
+      result.textContent='MISS · sem contato, sem dano e sem impacto';
+      data.lastOutcome='MISS';
+     }
+     if(elapsed>=1.75){reset();break;}
+    }
+    drawActors();data.drawFrames++;
+   }
+  }
+ });
+}
+</script>
+</body></html>
