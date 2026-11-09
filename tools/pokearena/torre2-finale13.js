@@ -280,6 +280,76 @@ function projectile(l,h,extra,kind){
  });
  return effect;
 }
+// Review-only improvement for the FOUR user-created Punches. Native P2
+// moves are never routed through this function. Distances remain physical:
+// swept tip vs moving target; misses and blocks create no elemental impact.
+const CUSTOM_PUNCHES=new Set(['firepunch','icepunch','thunderpunch','poisonpunch']);
+export function sweptPunchContact(tip0,tip1,target0,target1,radius){
+ if(![tip0,tip1,target0,target1].every(p=>p&&Number.isFinite(p.x)&&Number.isFinite(p.y))||
+    !Number.isFinite(radius)||radius<=0)return null;
+ const ax=tip0.x-target0.x,ay=tip0.y-target0.y;
+ const bx=tip1.x-target1.x,by=tip1.y-target1.y;
+ const vx=bx-ax,vy=by-ay,len=vx*vx+vy*vy;
+ const t=len>1e-9?clamp(-(ax*vx+ay*vy)/len):0;
+ if(Math.hypot(ax+vx*t,ay+vy*t)>radius)return null;
+ return {x:tip0.x+(tip1.x-tip0.x)*t,
+         y:tip0.y+(tip1.y-tip0.y)*t,t};
+}
+const ICE_SPLINTER=['..3..','.234.','12341','.234.','..2..'];
+const FLAME_TONGUE=['..4..','.343.','23432','.121.','..0..'];
+const POISON_MOTE=['.232.','12341','.232.'];
+// These are only the after-contact accents, not replacements for HAND.
+// The impact is approx 17–22px and lasts 0.19s at 16fps.
+export function paintCustomPunchImpact(g,kind,point,seconds,angle=0){
+ if(!CUSTOM_PUNCHES.has(kind)||!point||seconds<0||seconds>=.20)return false;
+ const progress=clamp(seconds/.20),frame=Math.min(8,Math.floor(progress*9));
+ const fade=1-progress;
+ const pal=kind==='firepunch'?C.fire:kind==='icepunch'?C.ice:
+  kind==='thunderpunch'?C.electric:C.poison;
+ // A tightly contained contact flash, one event only on a real native hit.
+ if(frame<5)stamp(g,SPARK,point.x,point.y,pal,1.04+frame*.08,
+  angle+frame*.23,fade*.84);
+ const vx=Math.cos(angle),vy=Math.sin(angle),nx=-vy,ny=vx;
+ const at=(fore,side)=>({x:point.x+vx*fore+nx*side,
+                         y:point.y+vy*fore+ny*side});
+ if(kind==='firepunch'){
+  for(let k=0;k<3;k++){
+   const p=at(1+frame*(k%2?0.5:1.15),(-1+k)*5);
+   stamp(g,FLAME_TONGUE,p.x,p.y,pal,.68+((k+frame)%3)*.12,
+    angle+(k-1)*.22,fade*(k===1?.88:.65));
+   if(frame<5)dot(g,p.x+nx*(k-1)*2,p.y+ny*(k-1)*2,2,2,pal[4],fade*.75);
+  }
+ }else if(kind==='thunderpunch'){
+  // Two short angular forks, not an oversized lightning beam.
+  for(const sign of [-1,1]){
+   const p=at(2+frame*.75,sign*3);
+   const points=[[0,0],[2,sign*2],[4,sign*1],[6,sign*4],[8,sign*3]];
+   for(let n=0;n<points.length-1;n++){
+    const q=points[n],v=points[n+1];
+    const x=p.x+vx*q[0]+nx*q[1],y=p.y+vy*q[0]+ny*q[1];
+    const xx=p.x+vx*v[0]+nx*v[1],yy=p.y+vy*v[0]+ny*v[1];
+    const steps=Math.max(1,Math.ceil(Math.hypot(xx-x,yy-y)/2));
+    for(let z=0;z<=steps;z++){
+     const k=z/steps;
+     dot(g,x+(xx-x)*k,y+(yy-y)*k,2,2,pal[n%2?4:3],fade*.9);
+    }
+   }
+  }
+ }else if(kind==='icepunch'){
+  for(let k=-1;k<=1;k++){
+   const p=at(3+frame*(.45+Math.abs(k)*.2),k*5);
+   stamp(g,ICE_SPLINTER,p.x,p.y,pal,.58+(k===0?.2:0),
+    angle+k*.36,fade*(k===0?.85:.65));
+  }
+ }else{
+  for(let k=0;k<4;k++){
+   const p=at(1+frame*.64+(k%2)*2,(k-1.5)*4);
+   stamp(g,POISON_MOTE,p.x,p.y,pal,.53+(k%2)*.11,
+    angle+k*.3,fade*.73);
+  }
+ }
+ return true;
+}
 function melee(l,h,extra,kind){
  const e=l.escena,r=l.rival,g=e.add.graphics().setDepth(1515),impact=e.add.graphics().setDepth(1516);
  const fire=kind==='firepunch'||kind==='wheel',ice=kind==='icepunch',electric=kind==='thunderpunch';
@@ -287,7 +357,10 @@ function melee(l,h,extra,kind){
  const o=setup(l,kind==='wheel'?'Charge':'Swing',.87);
  const reach=kind==='aerial'?82:kind==='wheel'?80:72;
  const dash=contactDash(l,o,reach,.22,.48,.82);
- let age=0,hitAt=-1,resolved=false;
+ let age=0,hitAt=-1,resolved=false,hitPoint=null;
+ const customPunch=CUSTOM_PUNCHES.has(kind);
+ let lastTip={x:l.x+o.c*30,y:mid(l)+o.s*30};
+ let lastTarget={x:r.x,y:mid(r)};
  return fxLoop(e,[g,impact],dt=>{
   age+=dt;g.clear();impact.clear();
   if(l.ko||l.est?.aturdido||age>.87)return false;
@@ -306,7 +379,31 @@ function melee(l,h,extra,kind){
   }
   if(kind==='aerial'&&age<.37)for(let n=0;n<4;n++)
    dot(g,x-o.c*n*10,y-o.s*n*10,3,3,pal[3],.78);
-  if(!resolved&&age>=.29){
+  if(customPunch&&!resolved){
+   // Continuous real contact during the forward punch, including fast-moving
+   // targets. One native recibir() call per attack; never home onto the rival.
+   const tip={x:x+o.c*18,y:y+o.s*18};
+   const target={x:r.x,y:mid(r)};
+   if(age>=.115&&age<=.47&&!r.ko){
+    const point=sweptPunchContact(lastTip,tip,lastTarget,target,
+      Math.max(16,(r.alto||36)*.40));
+    if(point){
+     resolved=true;
+     if(damage(l,h,extra,14)){
+      hitAt=age;hitPoint=point;
+      if(kind==='icepunch'&&Math.random()<.1)r.ponerEstado?.('congelado',1.3);
+      if(kind==='thunderpunch'&&Math.random()<.1)r.ponerEstado?.('paralizado',2.3);
+      if(kind==='poisonpunch'&&Math.random()<.3)
+       r.ponerEstado?.('veneno',4,{dps:1.3,fuente:l});
+      if(kind==='firepunch'&&Math.random()<.1)
+       r.ponerEstado?.('quema',3,{dps:1.2,fuente:l});
+     }
+    }
+   }else if(age>.47)resolved=true;
+   lastTip=tip;lastTarget=target;
+  }
+  if(!customPunch&&!resolved&&age>=.29){
+   // Preserve Cross Chop, Aerial Ace and Flame Wheel byte-for-byte behavior.
    resolved=true;
    const prev={x:l.x-o.c*10,y:mid(l)-o.s*10},now={x:x+o.c*18,y:y+o.s*18};
    if(segment(prev,now,r,kind==='wheel'?19:15)){
@@ -321,7 +418,9 @@ function melee(l,h,extra,kind){
     }
    }
   }
-  if(hitAt>=0&&age-hitAt<.21){
+  if(customPunch&&hitAt>=0){
+   paintCustomPunchImpact(impact,kind,hitPoint,age-hitAt,o.a);
+  }else if(!customPunch&&hitAt>=0&&age-hitAt<.21){
    const fade=1-(age-hitAt)/.21;
    if(kind==='cross'){
     stamp(impact,CROSS,r.x,mid(r),pal,1.6,o.a,fade);
