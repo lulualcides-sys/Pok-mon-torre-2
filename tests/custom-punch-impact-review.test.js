@@ -1,7 +1,29 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {sweptPunchContact,paintCustomPunchImpact,TORRE2_FINALE_13_FORMS}
- from '../tools/pokearena/torre2-finale13.js';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import {pathToFileURL} from 'node:url';
+// The original Phaser build renames authored modules to their native
+// aliases. Stage ONLY the verified four-Punch dependency graph for Node tests.
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'torre2-punch-review-'));
+const source=path.resolve('tools/pokearena');
+const files=[
+ ['torre2-finale13.js','finale13.js'],
+ ['torre2-finale13-catalog.js','torre2-finale13-catalog.js'],
+ ['torre2-clash-fx.js','clash-fx.js'],
+ ['torre2-early-route-fx.js','early-route-fx.js'],
+ ['batch24/pixels.js','batch24/pixels.js'],
+ ['batch24/emerald-fragments.js','batch24/emerald-fragments.js']
+];
+for(const [src,dst] of files){
+ const dest=path.join(temp,dst);
+ fs.mkdirSync(path.dirname(dest),{recursive:true});
+ fs.copyFileSync(path.join(source,src),dest);
+}
+fs.writeFileSync(path.join(temp,'package.json'),'{"type":"module"}');
+const {sweptPunchContact,paintCustomPunchImpact,TORRE2_FINALE_13_FORMS}=
+ await import(pathToFileURL(path.join(temp,'finale13.js')).href);
 const moves=[
  ['firepunch','FIRE'],['icepunch','ICE'],
  ['thunderpunch','ELECTRIC'],['poisonpunch','POISON']
