@@ -55,5 +55,29 @@ const {chromium}=require('playwright-core');
    renderer:boot.renderer,types:4,miss:true,pause:true,rate:.5,
    simulatedHitCount:before
   }));
+
+  // Actual mobile touch layout; review is intended to open in a phone
+  // browser, and the Punch buttons must remain usable on narrow screens.
+  const mobile=await browser.newPage({viewport:{width:390,height:844},
+   isMobile:true,hasTouch:true,deviceScaleFactor:2});
+  const mobileErrors=[];mobile.on('pageerror',e=>mobileErrors.push(String(e)));
+  await mobile.goto(url,{waitUntil:'domcontentloaded',timeout:45000});
+  await mobile.waitForFunction(()=>window.__punchPreview?.ready===true,
+   null,{timeout:45000});
+  await mobile.locator('button[data-kind="icepunch"]').tap();
+  await mobile.waitForFunction(()=>window.__punchPreview?.kind==='icepunch'&&
+   window.__punchPreview.hits>=1,null,{timeout:12000});
+  const touch=await mobile.evaluate(()=>({
+   viewport:document.documentElement.clientWidth,
+   pageWidth:document.documentElement.scrollWidth,
+   canvasWidth:document.querySelector('#screen canvas')?.getBoundingClientRect().width,
+   kind:window.__punchPreview.kind,renderer:window.__punchPreview.renderer
+  }));
+  assert.ok(touch.pageWidth<=touch.viewport+2,'Review must not overflow horizontally on phone');
+  assert.ok(touch.canvasWidth>150,'Real Phaser canvas visible on phone');
+  assert.deepEqual(mobileErrors,[],'Phone preview must not throw JS errors');
+  console.log('PASS_ANIMATED_PUNCH_MOBILE',JSON.stringify(touch));
+  await mobile.close();
+
  }finally{await browser.close();}
 })().catch(e=>{console.error(e);process.exitCode=1});
