@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fingerprint,compare,health,probe,incident} from '../tools/pokearena/watch-upstream.mjs';
+import {fingerprint,compare,health,probe,incident,officialAlpha,officialSourceDir} from '../tools/pokearena/watch-upstream.mjs';
 const read = async () => JSON.stringify({siteVersion:'src-123456789a'});
 const response = (status, html) => ({ok:status===200,status,text:async()=>html});
 test('hash is not an Alpha version',()=>{
@@ -35,3 +35,27 @@ test('no false incident when both captures succeeded',async()=>{
   assert.equal((await probe(fetcher,read,'token','owner/repo')).needsAttention,false);
 });
 test('latest completed capture is used',()=>assert.equal(health([{status:'in_progress'},{status:'completed',conclusion:'failure'}]).status,'failed'));
+
+test('actual official Alpha comes only from config.js',()=>{
+  assert.equal(officialSourceDir('<script type="module" src="src-ccbd93e75a/main.js"></script>'),'src-ccbd93e75a');
+  assert.equal(officialAlpha('const VERSION = "0.67.3";'),'0.67.3');
+  assert.equal(officialAlpha('const other = "src-ccbd93e75a";'),null);
+});
+test('official 0.67.3 versus approved 0.65.8 stays pending even if hashes match',async()=>{
+  const fetcher=async url=>response(200,url.includes('config.js')
+    ?'const VERSION="0.67.3";':'<script src="src-123456789a/main.js"></script>');
+  const readVersion=async path=>path.includes('approved-alpha')
+    ?JSON.stringify({approvedAlpha:'0.65.8'})
+    :JSON.stringify({siteVersion:'src-123456789a'});
+  const r=await probe(fetcher,readVersion);
+  assert.equal(r.alpha,'0.67.3');assert.equal(r.approvedAlpha,'0.65.8');
+  assert.equal(r.status,'same-fingerprint');assert.equal(r.needsAttention,true);
+  assert.match(incident(r),/Alpha oficial: \*\*0.67.3\*\*/);
+});
+test('denied public config never invents Alpha',async()=>{
+  const fetcher=async url=>url.endsWith('config.js')
+    ?response(403,'blocked'):response(200,'<script src="src-123456789a/main.js"></script>');
+  const r=await probe(fetcher,read);
+  assert.equal(r.alpha,null);
+  assert.match(r.alphaError,/HTTP 403/);
+});
