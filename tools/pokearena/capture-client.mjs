@@ -8,6 +8,7 @@ import path from 'node:path';
 import {createHash} from 'node:crypto';
 import {discoverClientAssetPaths} from './client-asset-discovery.mjs';
 import {recoverCriticalCapture,unresolvedImportedModules} from './capture-client-critical.mjs';
+import {getPublicClientResource} from './public-client-http.mjs';
 
 const ORIGIN='https://www.pokearena2d.com';
 const CATALOG='https://raw.githubusercontent.com/lulualcides-sys/Pok-mon-torre/rea-pokearena-all-visible-moves/docs/rea-pokearena/INVENTARIO-GERAL.json';
@@ -18,21 +19,10 @@ const details={date:new Date().toISOString(),source:ORIGIN,sourceCatalog:CATALOG
  note:'User-provided permission to use site client code; public resource capture only',
  requestCount:0,totalBytes:0,retrieved:[],unavailable:[],skipped:[],
  changedHashes:[],security:{noCredentials:true,noLogin:true,noEndpoints:true,publicSiteOnly:true}};
-async function get(url,maxBytes=MAX_FILE) {
- const a=new AbortController();const t=setTimeout(()=>a.abort(),18000);
- try {
-  const r=await fetch(url,{signal:a.signal,redirect:'follow',headers:{'User-Agent':'PokemonTorre2-SourceInventory/1.0 (personal noncommercial authorized project)','Accept':'*/*'}});
-  if(!(new URL(r.url).origin===ORIGIN))throw Error('Off-origin redirect');
-  if(!r.ok)throw Error('HTTP '+r.status);
-  const advertised=Number(r.headers.get('content-length')||0);
-  if(advertised>maxBytes)throw Error('File too large: '+advertised);
-  const data=Buffer.from(await r.arrayBuffer());
-  if(data.length>maxBytes)throw Error('File exceeds cap');
-  if(r.headers.get('content-type')?.includes('text/html')&&!r.url.endsWith('/')&&!r.url.endsWith('.html'))
-   throw Error('HTML fallback instead of requested file');
-  return {data,contentType:r.headers.get('content-type')||'',url:r.url};
- }finally{clearTimeout(t)}
-}
+// Reuse the exact ordinary public-request behavior that works in the independent monitor.
+// Explicit 403 remains a hard failure; never add stealth, cookies or alternate origins.
+const get=(url,maxBytes=MAX_FILE)=>getPublicClientResource(url,maxBytes);
+
 function sanitize(raw) {
  if(typeof raw!=='string')return null;
  let p;
