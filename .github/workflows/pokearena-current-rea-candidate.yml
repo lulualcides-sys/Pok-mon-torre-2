@@ -1,0 +1,49 @@
+name: Poké Arena — capturar Alpha oficial atual em laboratório
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/rea-capture-live-public.cjs'
+      - '.github/workflows/pokearena-current-rea-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  public-rea-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install only project-approved browser dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check browser capture syntax
+        run: node --check tools/pokearena/rea-capture-live-public.cjs
+      - name: Observe current public Alpha and capture only resources served by normal Chromium
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          POKEARENA_EXPECTED_ALPHA: auto
+        run: |
+          node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
+          node -e "const r=require('./site-capture/rea-current/rea-capture-summary.json');if(!r.selectedFromOfficialConfig||!/^0\.\d+(?:\.\d+)?$/.test(r.observedAlpha)||r.loadedScripts<50||r.fileCount<55)throw Error('Current Alpha not proven or staged module graph incomplete');console.log('CURRENT_OFFICIAL_ALPHA',r.observedAlpha,'SCRIPTS',r.loadedScripts,'FILES',r.fileCount,'BLOCKED',r.blocked.length);"
+      - name: Retain provenance report even on capture failure (never deploy)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-current-rea-audit
+          path: |
+            site-capture/rea-current/rea-capture-summary.json
+            site-capture/rea-current/rea-capture-failure.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Retain verified candidate code separately (not a public release)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-current-rea-script-stage
+          path: site-capture/rea-current/pokearena-client/
+          if-no-files-found: error
+          retention-days: 7
