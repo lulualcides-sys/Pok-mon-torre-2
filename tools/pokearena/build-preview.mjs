@@ -157,7 +157,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
   const {allowIndependentSpriteCollabPMDInNativePacks}=await import('./torre2-pmd-pack-compat.mjs');
   const pmd=path.join(dest,'assets/pmd');
   const match=html.match(/<script[^>]*id=["']paq["'][^>]*>([\s\S]*?)<\/script>/);
-  if(!match)throw Error('Official native 0.65.8 package index unavailable');
+  if(!match)throw Error('Official native package index unavailable');
   const index=JSON.parse(match[1]);
   const manifest=JSON.parse(await fs.readFile(path.join(pmd,'manifest.json'),'utf8'));
   const availablePacks=(await fs.readdir(path.join(dest,'assets/p')))
@@ -171,6 +171,9 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
   for(const dex of Object.keys(index.formas||{})){
    const native=manifest[dex];
    if(!native?.anims?.Idle)throw Error('Missing original PMD entry '+dex);
+   // A new native pack is already the authoritative source for this form.
+   // Require loose SpriteCollab PNGs only for forms without their declared pack.
+   if(availablePacks.includes(index.formas[dex]))continue;
    for(const rel of [dex+'/portrait.png',
     ...Object.values(native.anims).map(a=>a.file)]){
     if(!/^[0-9]{4}(?:-[a-z0-9]+)*\/[a-zA-Z0-9_-]+(?:-Anim)?\.png$/.test(rel))
@@ -183,7 +186,7 @@ if(!clientSource)throw Error('Original Phaser source directory missing');
   }
   await fs.writeFile(packFile,
    allowIndependentSpriteCollabPMDInNativePacks(nativePack,availablePacks));
-  console.log('P2_ALPHA0658_SPRITES_VERIFIED',JSON.stringify({
+  console.log('P2_NATIVE_SPRITES_VERIFIED',JSON.stringify({
    nativeForms:Object.keys(index.formas).length,
    actualNativePacks:availablePacks.length,
    originalLoosePngs:verified,
