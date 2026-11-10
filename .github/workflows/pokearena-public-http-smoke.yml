@@ -1,0 +1,48 @@
+name: Poké Arena 2D — verificação de captura HTTP pública
+on:
+  pull_request:
+    paths:
+      - 'tools/pokearena/public-client-http.mjs'
+      - 'tools/pokearena/capture-client.mjs'
+      - 'tests/public-client-http.test.mjs'
+      - '.github/workflows/pokearena-public-http-smoke.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/public-client-http.mjs'
+      - 'tools/pokearena/capture-client.mjs'
+      - 'tests/public-client-http.test.mjs'
+      - '.github/workflows/pokearena-public-http-smoke.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  public-http:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax and request-safety regression
+        run: |
+          node --check tools/pokearena/capture-client.mjs
+          node --check tools/pokearena/public-client-http.mjs
+          node --test tests/public-client-http.test.mjs
+      - name: Check official source through ordinary HTTP (no bypass)
+        run: |
+          node --input-type=module <<'JS'
+          import {getPublicClientResource} from './tools/pokearena/public-client-http.mjs';
+          try {
+            const r=await getPublicClientResource('https://www.pokearena2d.com/',3*1024*1024);
+            const html=r.data.toString('utf8');
+            const version=html.match(/src-[0-9a-f]{10}/)?.[0]??null;
+            if(!version)throw Error('HTML without version fingerprint');
+            console.log('PUBLIC_HOME_OK',version);
+            console.log('HTML is NOT a verified Alpha version or full client capture');
+          } catch(e) {
+            console.error('PUBLIC_SOURCE_UNAVAILABLE',String(e));
+            process.exitCode=1;
+          }
+          JS
