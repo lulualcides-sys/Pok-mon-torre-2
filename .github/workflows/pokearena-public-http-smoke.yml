@@ -41,6 +41,21 @@ jobs:
             if(!version)throw Error('HTML without version fingerprint');
             console.log('PUBLIC_HOME_OK',version);
             console.log('HTML is NOT a verified Alpha version or full client capture');
+            const declared=html.match(/src=["'](src-[0-9a-f]{10})\/main\.js["']/i)?.[1];
+            if (!declared) {
+              console.log('OFFICIAL_CONFIG_UNVERIFIED: main.js source directory not found in public HTML');
+            } else {
+              try {
+                const config=await getPublicClientResource('https://www.pokearena2d.com/'+declared+'/config.js',256*1024);
+                const js=config.data.toString('utf8');
+                const alpha=js.match(/\b(?:const|let)\s+VERSION\s*=\s*["'](0\.\d+(?:\.\d+)?)["']/)?.[1]??null;
+                if(alpha)console.log('OFFICIAL_ALPHA_VERIFIED',alpha,'SOURCE',declared);
+                else console.log('OFFICIAL_CONFIG_UNVERIFIED: public config lacks VERSION');
+              } catch(e) {
+                console.log('OFFICIAL_CONFIG_UNAVAILABLE',String(e));
+                console.log('No version change or release may be claimed');
+              }
+            }
           } catch(e) {
             console.error('PUBLIC_SOURCE_UNAVAILABLE',String(e));
             process.exitCode=1;
