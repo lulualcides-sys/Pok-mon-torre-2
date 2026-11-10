@@ -1,0 +1,7 @@
+{
+  "schemaVersion": 1,
+  "approvedAlpha": "0.65.8",
+  "source": "verified public REA capture",
+  "reference": "https://github.com/lulualcides-sys/Pok-mon-torre-2/pull/609",
+  "releasePolicy": "This is the approved deployed client Alpha, not the current upstream version. Never bump without complete verified files, compatibility tests and successful publication."
+}
