@@ -89,6 +89,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node --check tools/pokearena/audit-native-packs.mjs
+          node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/rea-current/native-pack-gaps.json
           node tools/pokearena/build-preview.mjs
           node tools/dev/approved-visual-guard.mjs
           node --test tests/rea-pmd-pack-compat.test.mjs
@@ -109,6 +111,7 @@ jobs:
           path: |
             site-capture/CAPTURE-REPORT.json
             site-capture/rea-current/rea-capture-summary.json
+            site-capture/rea-current/native-pack-gaps.json
             test-evidence/
           if-no-files-found: warn
           retention-days: 14
