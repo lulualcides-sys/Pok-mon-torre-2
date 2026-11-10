@@ -1,0 +1,117 @@
+name: Poké Arena — capturar Alpha oficial atual em laboratório
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'tools/pokearena/rea-capture-live-public.cjs'
+      - '.github/workflows/pokearena-current-rea-candidate.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  public-rea-candidate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install only project-approved browser dependencies
+        run: npm install --no-audit --no-fund
+      - name: Check browser capture syntax
+        run: node --check tools/pokearena/rea-capture-live-public.cjs
+      - name: Observe current public Alpha and capture only resources served by normal Chromium
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          POKEARENA_EXPECTED_ALPHA: auto
+        run: |
+          node tools/pokearena/rea-capture-live-public.cjs site-capture/rea-current
+          node -e "const r=require('./site-capture/rea-current/rea-capture-summary.json');if(!r.selectedFromOfficialConfig||!/^0\.\d+(?:\.\d+)?$/.test(r.observedAlpha)||r.loadedScripts<50||r.fileCount<55)throw Error('Current Alpha not proven or staged module graph incomplete');console.log('CURRENT_OFFICIAL_ALPHA',r.observedAlpha,'SCRIPTS',r.loadedScripts,'FILES',r.fileCount,'BLOCKED',r.blocked.length);"
+      - name: Retain provenance report even on capture failure (never deploy)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-current-rea-audit
+          path: |
+            site-capture/rea-current/rea-capture-summary.json
+            site-capture/rea-current/rea-capture-failure.json
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Retain verified candidate code separately (not a public release)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-current-rea-script-stage
+          path: site-capture/rea-current/pokearena-client/
+          if-no-files-found: error
+          retention-days: 7
+
+  build-current-client:
+    needs: public-rea-candidate
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      GH_TOKEN: ${{ github.token }}
+      POKEARENA_EXPECTED_ALPHA: auto
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install existing approved build dependencies
+        run: npm install --no-audit --no-fund
+      - name: Restore previous SHA-verified static assets (do not claim they are new)
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p site-capture
+          gh run download 42195598090 --repo "${{ github.repository }}" --name pokearena2d-cliente-publico-capturado --dir site-capture
+          node tools/pokearena/verify-pinned-capture.mjs
+      - name: Download only current publicly observed REA resources
+        uses: actions/download-artifact@v4
+        with:
+          name: pokearena-current-rea-script-stage
+          path: site-capture/rea-current/pokearena-client
+      - name: Restore current REA signed metadata
+        uses: actions/download-artifact@v4
+        with:
+          name: pokearena-current-rea-audit
+          path: site-capture/rea-current
+      - name: Strictly verify current Alpha, hashes, ESM imports and provenance
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/rea-overlay-verified-client.mjs
+          node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
+          node -e "const v=require('./site-capture/pokearena-client/version.json');const r=require('./site-capture/rea-current/rea-capture-summary.json');if(v.officialAlpha!==r.observedAlpha)throw Error('Client source Alpha mismatch');console.log('VERIFIED_NATIVE_CANDIDATE',v.officialAlpha,v.modules);"
+      - name: Build Torre 2 with current candidate in isolated directory (no deployment)
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check tools/pokearena/audit-native-packs.mjs
+          node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/rea-current/native-pack-gaps.json
+          node tools/pokearena/build-preview.mjs
+          node tools/dev/approved-visual-guard.mjs
+          node --test tests/rea-pmd-pack-compat.test.mjs
+          node tests/batch24-built.test.mjs
+          node tests/kanto-151-built.test.mjs
+          node tests/arena-family-selector-built.test.mjs
+          node tests/pokedex-crossgen-families-built.test.mjs
+          node tests/arena-johto-evolution-built.test.mjs
+      - name: Chromium smoke for current Alpha and save compatibility
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+        run: node tests/source-client-smoke.cjs
+      - name: Keep tests, source proof and failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pokearena-current-client-build-report
+          path: |
+            site-capture/CAPTURE-REPORT.json
+            site-capture/rea-current/rea-capture-summary.json
+            site-capture/rea-current/native-pack-gaps.json
+            test-evidence/
+          if-no-files-found: warn
+          retention-days: 14
