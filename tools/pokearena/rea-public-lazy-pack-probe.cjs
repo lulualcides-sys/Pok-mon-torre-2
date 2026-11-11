@@ -123,15 +123,13 @@ async function walkMenus(page, report, output) {
   await clickCanvas(page,320,148); // Main title Play.
   await page.waitForTimeout(1000);
   await page.screenshot({path:path.join(output,'public-play-menu.png')});
-  await clickCanvas(page,320,180); // Reference Play submenu: VS CPU.
-  await page.waitForTimeout(1900);
-  await page.screenshot({path:path.join(output,'public-local-selection.png')});
-  report.navigation.push('vs-cpu-public-menu-attempted');
-  for (let i=0;i<18;i++) {
-    await page.keyboard.press('ArrowRight');
-    await page.waitForTimeout(120);
-  }
-  await page.screenshot({path:path.join(output,'public-local-after-navigation.png')});
+  // Confirmed in the current public 0.69.2 screenshot:
+  // Play submenu: League y150, Online y178, Local y205, Arena y232.
+  // NEVER touch Online: it opens account creation and cannot yield solo assets.
+  await clickCanvas(page,320,205);
+  await page.waitForTimeout(1600);
+  await page.screenshot({path:path.join(output,'public-local-menu.png')});
+  report.navigation.push('local-menu-physical-click');
 }
 async function probe(outDir, browserFactory) {
   const output = path.resolve(outDir);
