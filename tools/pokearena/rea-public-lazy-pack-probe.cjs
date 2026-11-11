@@ -80,9 +80,12 @@ async function clickCanvas(page, x, y) {
 async function walkMenus(page, report, output) {
   // Strictly physical clicks/keyboard, no direct Phaser.scene.start(),
   // JS injection, app state changes, online/ranked interaction or private APIs.
-  await page.waitForFunction(() => window.__pt2Game?.scene?.isActive('titulo') &&
-    document.querySelector('#juego canvas'), null, {timeout: 75000});
-  report.navigation.push('public-title-ready');
+  await page.waitForFunction(() => document.querySelector('#juego canvas'),
+    null, {timeout: 45000});
+  // The official 0.69.2 client does not expose Torre 2's __pt2Game global.
+  // Let its normal initial loading finish; never force Phaser scenes via JS.
+  await page.waitForTimeout(7000);
+  report.navigation.push('public-canvas-after-load');
   report.gameAtTitle = await page.evaluate(() => ({
     hasGameGlobal: !!window.__pt2Game,
     activeScenes: window.__pt2Game?.scene?.getScenes(true)?.map(x=>x.scene.key) || [],
@@ -98,11 +101,13 @@ async function walkMenus(page, report, output) {
     activeScenes: window.__pt2Game?.scene?.getScenes(true)?.map(x=>x.scene.key) || []
   }));
   await page.screenshot({path:path.join(output,'public-after-pokedex-click.png')});
-  if (!report.gameAfterClick.activeScenes.includes('pokedex')) {
-    report.errors.push({stage:'pokedex-navigation',reason:'Pokedex scene not confirmed by the normal public UI'});
+  if (report.gameAtTitle.hasGameGlobal &&
+      !report.gameAfterClick.activeScenes.includes('pokedex')) {
+    report.errors.push({stage:'pokedex-navigation',reason:'Pokedex scene did not become active'});
     return;
   }
-  report.navigation.push('pokedex-public-confirmed');
+  report.navigation.push(report.gameAfterClick.activeScenes.includes('pokedex')
+    ? 'pokedex-public-confirmed' : 'pokedex-physical-click-unverified');
   for (let i=0;i<40;i++) {
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(120);
