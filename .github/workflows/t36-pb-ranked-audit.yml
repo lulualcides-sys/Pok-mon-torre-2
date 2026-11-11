@@ -1,0 +1,71 @@
+name: T36 — auditoria segura dos 283 golpes PB Ranked
+
+on:
+  push:
+    branches: [feat/t36-pb-ranked-audit-console-20261031]
+    paths:
+      - "tools/dev/pb-ranked-*.mjs"
+      - "tests/pb-ranked-*.test.mjs"
+      - "reference-library/pb-ranked/derived-move-index.json"
+      - ".github/workflows/t36-pb-ranked-audit.yml"
+  pull_request:
+    paths:
+      - "tools/dev/pb-ranked-*.mjs"
+      - "tests/pb-ranked-*.test.mjs"
+      - "reference-library/pb-ranked/derived-move-index.json"
+      - ".github/workflows/t36-pb-ranked-audit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: t36-pb-ranked-audit
+  cancel-in-progress: false
+
+jobs:
+  validate-source-and-approvals:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+      - name: Syntax and read-only audit checks
+        run: |
+          set -euo pipefail
+          node --check tools/dev/pb-ranked-audit-core.mjs
+          node --check tools/dev/pb-ranked-audit.mjs
+          node --check tools/dev/pb-ranked-report-page.mjs
+          node --check tests/pb-ranked-audit.test.mjs
+          node --test tests/pb-ranked-audit.test.mjs tests/pb-ranked-report-page.test.mjs
+      - name: Validate existing approved visuals and source rules
+        run: |
+          set -euo pipefail
+          node --test tests/approved-visual-guard.test.js
+          npm run check:reuse
+          npm run check
+      - name: Produce reports (no gameplay changes)
+        run: |
+          set -euo pipefail
+          node tools/dev/pb-ranked-audit.mjs --format=json --out=artifacts/pb-ranked-audit.json
+          node tools/dev/pb-ranked-audit.mjs --format=md --out=artifacts/pb-ranked-audit.md
+          node tools/dev/pb-ranked-audit.mjs --format=html --out=artifacts/pb-ranked-audit.html
+          test -s artifacts/pb-ranked-audit.json
+          test -s artifacts/pb-ranked-audit.md
+          test -s artifacts/pb-ranked-audit.html
+          node - <<'NODE'
+          const f=require('fs'),j=JSON.parse(f.readFileSync('artifacts/pb-ranked-audit.json','utf8'));
+          if(j.moves.length!==283 || j.totals.inRoster!==245)throw new Error('Incomplete research coverage');
+          if(j.moves.some(m=>m.claimedExactVfx!==false))throw new Error('Unverified VFX claimed');
+          if(j.actions['preserve-approved']<45)throw new Error('Approved VFX protections missing');
+          console.log('PASS: 283 names, 245 roster, protected VFX; metadata-only');
+          NODE
+      - name: Upload review artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: T36-pb-ranked-283-move-research-audit
+          path: artifacts/
+          if-no-files-found: error
+          retention-days: 14
