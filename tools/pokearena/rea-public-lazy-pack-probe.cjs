@@ -80,18 +80,19 @@ async function clickCanvas(page, x, y) {
 async function walkMenus(page, report, output) {
   // Strictly physical clicks/keyboard, no direct Phaser.scene.start(),
   // JS injection, app state changes, online/ranked interaction or private APIs.
-  await page.waitForFunction(() => document.querySelector('#juego canvas'),
-    null, {timeout: 45000});
-  report.navigation.push('public-canvas');
+  await page.waitForFunction(() => window.__pt2Game?.scene?.isActive('titulo') &&
+    document.querySelector('#juego canvas'), null, {timeout: 75000});
+  report.navigation.push('public-title-ready');
   report.gameAtTitle = await page.evaluate(() => ({
     hasGameGlobal: !!window.__pt2Game,
     activeScenes: window.__pt2Game?.scene?.getScenes(true)?.map(x=>x.scene.key) || [],
     canvasSize: (()=>{const x=document.querySelector('#juego canvas');return [x.width,x.height]})()
   }));
   await page.screenshot({path:path.join(output,'public-title.png')});
-  // Coordinates are from public reference UI. We do not assume they match
-  // new Alphas, and do not claim success without Phaser scene confirmation.
-  await clickCanvas(page,320,162);
+  // Alpha 0.69.2 public screenshot: Play, Customize, Pokedex in that order.
+  // Click the REAL Pokédex button at native 640x360 coordinate (320,200).
+  // Do not guess navigation success; check the active scene below.
+  await clickCanvas(page,320,200);
   await page.waitForTimeout(2800);
   report.gameAfterClick=await page.evaluate(() => ({
     activeScenes: window.__pt2Game?.scene?.getScenes(true)?.map(x=>x.scene.key) || []
@@ -108,6 +109,7 @@ async function walkMenus(page, report, output) {
   }
   report.navigation.push('pokedex-40-keypresses');
   await page.waitForTimeout(1500);
+  await page.screenshot({path:path.join(output,'public-pokedex-after-navigation.png')});
 }
 async function probe(outDir, browserFactory) {
   const output = path.resolve(outDir);
