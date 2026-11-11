@@ -77,17 +77,31 @@ async function clickCanvas(page, x, y) {
   if (!point) throw Error('Public game canvas missing');
   await page.mouse.click(point.x,point.y);
 }
-async function walkMenus(page, report) {
+async function walkMenus(page, report, output) {
   // Strictly physical clicks/keyboard, no direct Phaser.scene.start(),
   // JS injection, app state changes, online/ranked interaction or private APIs.
-  await page.waitForFunction(() => window.__pt2Game?.scene?.isActive('titulo'),
-    null, {timeout: 30000});
-  report.navigation.push('title');
-  // 0.65.1 reference menu: POKÉDEX is the second item; fail closed if changed.
+  await page.waitForFunction(() => document.querySelector('#juego canvas'),
+    null, {timeout: 45000});
+  report.navigation.push('public-canvas');
+  report.gameAtTitle = await page.evaluate(() => ({
+    hasGameGlobal: !!window.__pt2Game,
+    activeScenes: window.__pt2Game?.scene?.getScenes(true)?.map(x=>x.scene.key) || [],
+    canvasSize: (()=>{const x=document.querySelector('#juego canvas');return [x.width,x.height]})()
+  }));
+  await page.screenshot({path:path.join(output,'public-title.png')});
+  // Coordinates are from public reference UI. We do not assume they match
+  // new Alphas, and do not claim success without Phaser scene confirmation.
   await clickCanvas(page,320,162);
-  await page.waitForFunction(() => window.__pt2Game?.scene?.isActive('pokedex'),
-    null, {timeout: 13000});
-  report.navigation.push('pokedex-public');
+  await page.waitForTimeout(2800);
+  report.gameAfterClick=await page.evaluate(() => ({
+    activeScenes: window.__pt2Game?.scene?.getScenes(true)?.map(x=>x.scene.key) || []
+  }));
+  await page.screenshot({path:path.join(output,'public-after-pokedex-click.png')});
+  if (!report.gameAfterClick.activeScenes.includes('pokedex')) {
+    report.errors.push({stage:'pokedex-navigation',reason:'Pokedex scene not confirmed by the normal public UI'});
+    return;
+  }
+  report.navigation.push('pokedex-public-confirmed');
   for (let i=0;i<40;i++) {
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(120);
@@ -111,6 +125,7 @@ async function probe(outDir, browserFactory) {
   try {
     browser = await browserFactory();
     page = await browser.newPage({viewport:{width:1280,height:720}});
+    page.on('pageerror', e => report.errors.push({stage:'public-page-javascript',reason:String(e.message).slice(0,180)}));
     page.on('response', resp => {
       // config.js must come from this very public navigation, not a guessed Alpha.
       const configMatch = new URL(resp.url()).pathname.match(/^\/(src-[a-f0-9]{10})\/config\.js$/);
@@ -163,7 +178,7 @@ async function probe(outDir, browserFactory) {
     report.src=officialSourceDir(html);
     // A VERSION parsed from index is NOT official Alpha. The caller must
     // cross-check config.js from the exact same observed source before upgrade.
-    await walkMenus(page,report).catch(e =>
+    await walkMenus(page,report,output).catch(e =>
       report.errors.push({stage:'public-menu-navigation',reason:String(e.message).slice(0,160)}));
     await Promise.allSettled([...pending]);
     if (publicConfig?.src === report.src) report.version=publicConfig.alpha;
@@ -184,7 +199,8 @@ if (require.main === module) {
   const {chromium}=require('playwright-core');
   const out=process.argv[2]||'site-capture/rea-lazy-pack-probe';
   probe(out,()=>chromium.launch({executablePath:process.env.CHROME_BIN||'/usr/bin/google-chrome',
-    headless:true,args:['--no-sandbox','--disable-dev-shm-usage']}))
+    headless:true,args:['--no-sandbox','--disable-dev-shm-usage',
+      '--enable-unsafe-swiftshader','--use-gl=angle','--use-angle=swiftshader']}))
     .then(result=>{
       console.log('REA_LAZY_PACK_COVERAGE',JSON.stringify({
         src:result.src,alpha:result.version,observed:result.observed.length,
