@@ -1143,6 +1143,19 @@ for(const [filename,changes] of patches){
     console.warn('Changed upstream title Idle-2 conditions preserved unchanged');
     continue;
    }
+   // Alpha 0.69.4 preserves extra GRAPHICS/ONLINE metadata but reduced
+   // approved five home-buttons to 24px height. Restore ONLY the established
+   // Torre 2 home layout and touch spacing; do not rewrite native submenus.
+   if(filename==='escenas/titulo.js'&&from.startsWith('const DISPOSICION=')){
+    const previous='const DISPOSICION={principal:MOVIL.activo?{y:114+BAJA,paso:28,alto:26}:{y:112+BAJA,paso:26,alto:24},jugar:{y:114+BAJA,paso:PASO},ajustes:{y:114+BAJA,paso:PASO}';
+    const current='const DISPOSICION={principal:MOVIL.activo?{y:116+BAJA,paso:34,alto:32}:{y:112+BAJA,paso:32,alto:30},jugar:{y:110+BAJA,paso:PASO},ajustes:{y:112+BAJA,paso:PASO}';
+    if(body.includes(previous)){
+     if(body.split(previous).length!==2||!body.includes(',personalizar:'))
+      throw Error('Unknown current title layout; refusing unsafe touch resize');
+     body=body.replace(previous,current);
+     continue;
+    }
+   }
    // The original title layout has evolved upstream. Do not apply an old
    // coordinate expression to a new version: keep the native current layout
    // intact, while the browser visual guard checks clickability and spacing.
