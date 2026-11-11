@@ -9,6 +9,8 @@ on:
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
       - 'tools/pokearena/torre2-selection-pages.mjs'
       - 'tools/pokearena/build-preview.mjs'
+      - 'tools/pokearena/torre2-rayquaza-preview.mjs'
+      - 'tests/rayquaza-mega-preview.test.js'
       - 'tests/selection-upstream-pagination.test.js'
       - 'tools/pokearena/capture-public-missing-packs.mjs'
       - 'tests/rea-public-native-missing.test.mjs'
