@@ -8,6 +8,7 @@ on:
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
       - 'tools/pokearena/torre2-selection-pages.mjs'
+      - 'tools/pokearena/build-preview.mjs'
       - 'tests/selection-upstream-pagination.test.js'
       - 'tools/pokearena/capture-public-missing-packs.mjs'
       - 'tests/rea-public-native-missing.test.mjs'
