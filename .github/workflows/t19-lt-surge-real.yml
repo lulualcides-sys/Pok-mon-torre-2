@@ -1,0 +1,61 @@
+name: T19 — authentic Lt. Surge battle after 17 Vermilion trainers
+on:
+  push:
+    branches: [test/t19-lt-surge-earned-gym-20261031]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  native-lt-surge:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate source and native battle contracts
+        run: |
+          set -euo pipefail
+          npm install --no-audit --no-fund
+          node --check tests/t19-lt-surge-real-browser.cjs
+          npm test
+          npm run check
+          npm run check:reuse
+      - name: Build native Phaser original source without editing approved sprites
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4; do
+            if node tools/pokearena/capture-client.mjs &&
+               node tools/pokearena/build-preview.mjs &&
+               test -s _site/arena2d/lib/phaser.min.js; then break; fi
+            if [ "$i" -eq 4 ]; then exit 1; fi
+            sleep "$((i*8))"
+          done
+      - name: Restore authentic trainer14 save from successful CI
+        uses: actions/download-artifact@v4
+        with:
+          name: t19-vermilion-three-earned-native
+          run-id: 41235971117
+          repository: ${{ github.repository }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: test-evidence
+      - name: Earn the next three trainer wins in original Phaser with recovery
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
+          T19_EARNED_GRIND_SAVE: test-evidence/t19-vermilion-three-checkpoint.json
+        run: |
+          set -euo pipefail
+          node tests/t19-lt-surge-real-browser.cjs
+      - name: Preserve battle report, checkpoint and failure screens
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: t19-lt-surge-earned-native
+          path: |
+            test-evidence/t19-lt-surge-report.json
+            test-evidence/t19-lt-surge-checkpoint.json
+            test-evidence/t19-lt-surge-*.png
+          retention-days: 21
+          if-no-files-found: warn
