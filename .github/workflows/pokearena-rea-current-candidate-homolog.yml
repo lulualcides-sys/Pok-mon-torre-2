@@ -7,6 +7,8 @@ on:
       - 'tools/pokearena/rea-overlay-verified-client.mjs'
       - 'tools/pokearena/audit-native-packs.mjs'
       - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tools/pokearena/torre2-selection-pages.mjs'
+      - 'tests/selection-upstream-pagination.test.js'
       - 'tools/pokearena/capture-public-missing-packs.mjs'
       - 'tests/rea-public-native-missing.test.mjs'
       - 'tools/pokearena/verify-pinned-capture.mjs'
