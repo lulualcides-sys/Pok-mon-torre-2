@@ -124,9 +124,22 @@ jobs:
           set -e
           if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
           test -s site-capture/pokearena-client/public-missing-packs-report.json
-      - name: Fail closed unless all original packs or approved loose sprites are present
-        run: node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/current-native-gaps.json
-      - name: Build original Phaser into isolated _site, never Pages
+      - name: Record strict original sprite coverage for release gate
+        id: sprite-gate
+        shell: bash
+        run: |
+          set +e
+          node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/current-native-gaps.json
+          code=$?
+          set -e
+          if [ "$code" -eq 0 ]; then
+            echo "complete=true" >> "$GITHUB_OUTPUT"
+          else
+            test -s site-capture/current-native-gaps.json
+            echo "complete=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Original native sprites are missing. Continuing ONLY to isolated diagnostic build; production release remains blocked."
+          fi
+      - name: Build original Phaser into isolated _site for DIAGNOSTICS, never Pages
         run: |
           node tools/pokearena/build-preview.mjs
           node tools/dev/approved-visual-guard.mjs
@@ -135,6 +148,14 @@ jobs:
         env:
           CHROME_BIN: /usr/bin/google-chrome
         run: node tests/source-client-smoke.cjs
+      - name: Fail closed on missing native art even if diagnostic build and browser pass
+        if: always()
+        shell: bash
+        run: |
+          test "${{ steps.sprite-gate.outputs.complete }}" = true || {
+            echo "::error::Native Alpha candidate is missing source-authentic graphics. NO MERGE OR DEPLOY permitted."
+            exit 1
+          }
       - name: Preserve current source/version, pack and browser evidence
         if: always()
         uses: actions/upload-artifact@v4
