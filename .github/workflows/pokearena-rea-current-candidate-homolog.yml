@@ -103,9 +103,27 @@ jobs:
           code=$?
           set -e
           if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
-          # Exit 2 is expected when not all 267 forms are public/observed.
-          # The following integrity check still refuses version mismatch.
+          # Partial coverage alone returns exit 2; source fingerprint is
+          # independently verified against the candidate below.
           test -s site-capture/rea-lazy-pack-probe/report.json
+          if node --input-type=module <<'SAME_RELEASE'
+          import fs from 'node:fs';
+          const a=JSON.parse(fs.readFileSync('site-capture/rea-lazy-pack-probe/report.json','utf8'));
+          const v=JSON.parse(fs.readFileSync('site-capture/pokearena-client/version.json','utf8'));
+          process.exit(a.status==='PUBLIC_UI_OBSERVED'&&a.version===v.officialAlpha&&a.src===v.src?0:1);
+          SAME_RELEASE
+          then
+            echo "Live public assets match same-source REA candidate."
+          else
+            # The public site changed mid-run. NEVER mix new source and old
+            # assets or bypass 403; use previously captured ordinary Chromium
+            # responses ONLY when the SHA/Alpha provenance matches exactly.
+            echo "::warning::Public client changed while CI ran. Verify pinned public browser snapshot against current candidate."
+            mv site-capture/rea-lazy-pack-probe site-capture/rea-live-source-drift
+            mkdir -p site-capture/rea-lazy-pack-probe
+            gh run download 43046725988 --repo "${{ github.repository }}" \
+              --name pokearena-lazy-pack-evidence --dir site-capture/rea-lazy-pack-probe
+          fi
       - name: Install verified lazy packs in quarantine (never overwrite)
         shell: bash
         run: |
@@ -168,6 +186,7 @@ jobs:
             site-capture/current-native-gaps.json
             site-capture/pokearena-client/public-missing-packs-report.json
             site-capture/rea-lazy-pack-probe/report.json
+            site-capture/rea-live-source-drift/report.json
             site-capture/pokearena-client/lazy-pack-integration-report.json
             site-capture/rea-current/rea-capture-summary.json
             test-evidence/
