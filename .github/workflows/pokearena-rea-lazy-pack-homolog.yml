@@ -5,6 +5,8 @@ on:
     paths:
       - 'tools/pokearena/rea-public-lazy-pack-probe.cjs'
       - 'tests/rea-public-lazy-pack-probe.test.cjs'
+      - 'tools/pokearena/stage-verified-lazy-packs.mjs'
+      - 'tests/rea-stage-verified-lazy-packs.test.mjs'
       - '.github/workflows/pokearena-rea-lazy-pack-homolog.yml'
   workflow_dispatch:
 
@@ -27,6 +29,8 @@ jobs:
         run: |
           node --check tools/pokearena/rea-public-lazy-pack-probe.cjs
           node --test tests/rea-public-lazy-pack-probe.test.cjs
+          node --check tools/pokearena/stage-verified-lazy-packs.mjs
+          node --test tests/rea-stage-verified-lazy-packs.test.mjs
   browser-public:
     needs: validate-policy
     runs-on: ubuntu-24.04
