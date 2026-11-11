@@ -758,6 +758,18 @@ for(const [filename,changes] of patches){
     if(!body.includes(helper))body=body.replace(dataImport[0],dataImport[0]+helper);
     continue;
    }
+   // Alpha 0.69.3 implements responsive Pokédex cards natively.
+   // Keep that verified layout instead of forcing the old fixed five-column
+   // card size or replacing casillaRetrato with a deprecated image constructor.
+   if(filename==='escenas/pokedex.js' &&
+      (from==='const COLS=5,CEL=44,GX=10,GY=36;' ||
+       from==='this.add.image(x+1,y+1,`retrato-${p.dex}`).setOrigin(0);')){
+    const grid=body.includes('const COLS=(()=>{for(let c=5;c<12;c++){');
+    const cards=body.includes('casilla(p,x,y,i){casillaRetrato(this,x,y,CEL-2,p.dex)');
+    if(!grid || !cards)
+      throw Error('Unknown upstream Pokédex grid; refusing to remove approved card fix');
+    continue;
+   }
    // The Alpha 0.69.3 config import gained FX. Preserve the exact native
    // import and add only the already approved offline Campanha scene module.
    // No native settings, graphics toggles or network modules are rewritten.
