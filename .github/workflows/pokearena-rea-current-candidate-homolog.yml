@@ -102,11 +102,15 @@ jobs:
       - name: Install verified lazy packs in quarantine (never overwrite)
         shell: bash
         run: |
-          set -uo pipefail
+          set +e
           node tools/pokearena/stage-verified-lazy-packs.mjs site-capture/rea-lazy-pack-probe site-capture/pokearena-client
           code=$?
+          set -e
           if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
-          exit 0
+          # A partial capture is safe as INPUT for the independent full
+          # official pack/loose-sprite coverage audit immediately below.
+          # The audit must FAIL the job if any form remains unrenderable.
+          test -s site-capture/pokearena-client/lazy-pack-integration-report.json
       - name: Fail closed unless all original packs or approved loose sprites are present
         run: node tools/pokearena/audit-native-packs.mjs site-capture/pokearena-client site-capture/current-native-gaps.json
       - name: Build original Phaser into isolated _site, never Pages
