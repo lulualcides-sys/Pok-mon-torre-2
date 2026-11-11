@@ -825,6 +825,16 @@ for(const [filename,changes] of patches){
     console.warn('Optional League patch moved:',from.slice(0,70));
     continue;
    }
+   // Alpha 0.69.x removed the local 2 PLAYERS option itself and now
+   // exposes an explicit LOCAL/VS CPU entry. Avoid deleting another menu
+   // option or adding a guessed selector to an already updated title.
+   if(filename==='escenas/titulo.js' &&
+      from.startsWith('{id:"versus",txt:"2 PLAYERS"') && to===''){
+    if(body.includes('{id:"versus",') ||
+       !body.includes('{id:"cpu",txt:"LOCAL",escena:"seleccion"'))
+      throw Error('Unexpected native local-versus title state');
+    continue;
+   }
    // The upstream client occasionally changes the CAMPO renderer's
    // first statement. Apply the SAME Kanto-only wrong-texture guard at
    // the actual method entry, without rewriting native drawing logic.
