@@ -86,12 +86,19 @@ jobs:
           path: site-capture/rea-current
       - name: Verify original current module graph and preserve approved static bytes
         run: node tools/pokearena/rea-overlay-verified-client.mjs site-capture/pokearena-client site-capture/rea-current
-      - name: Download only browser-observed original native packs, same Alpha verified below
+      - name: Capture native packs in THIS candidate Alpha using normal local VS CPU browser
         shell: bash
+        env:
+          CHROME_BIN: /usr/bin/google-chrome
         run: |
-          set -euo pipefail
-          mkdir -p site-capture/rea-lazy-pack-probe
-          gh run download 43038006169 --repo "${{ github.repository }}" --name pokearena-lazy-pack-evidence --dir site-capture/rea-lazy-pack-probe
+          set +e
+          node tools/pokearena/rea-public-lazy-pack-probe.cjs site-capture/rea-lazy-pack-probe
+          code=$?
+          set -e
+          if [ "$code" -ne 0 ] && [ "$code" -ne 2 ]; then exit "$code"; fi
+          # Exit 2 is expected when not all 267 forms are public/observed.
+          # The following integrity check still refuses version mismatch.
+          test -s site-capture/rea-lazy-pack-probe/report.json
       - name: Install verified lazy packs in quarantine (never overwrite)
         shell: bash
         run: |
@@ -118,6 +125,7 @@ jobs:
           name: current-native-build-gates-homolog
           path: |
             site-capture/current-native-gaps.json
+            site-capture/rea-lazy-pack-probe/report.json
             site-capture/pokearena-client/lazy-pack-integration-report.json
             site-capture/rea-current/rea-capture-summary.json
             test-evidence/
