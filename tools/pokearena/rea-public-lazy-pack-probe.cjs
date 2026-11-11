@@ -108,13 +108,30 @@ async function walkMenus(page, report, output) {
   }
   report.navigation.push(report.gameAfterClick.activeScenes.includes('pokedex')
     ? 'pokedex-public-confirmed' : 'pokedex-physical-click-unverified');
-  for (let i=0;i<40;i++) {
+  // The Pokédex only fetched the common portrait pack in the first probe;
+  // do a short representative navigation, then visit the local VS CPU picker.
+  for (let i=0;i<6;i++) {
+    await page.keyboard.press('ArrowRight');
+    await page.waitForTimeout(100);
+  }
+  report.navigation.push('pokedex-six-keypresses');
+  await page.screenshot({path:path.join(output,'public-pokedex-after-navigation.png')});
+  // Real public UI controls, not scene.start() or direct asset requests.
+  await clickCanvas(page,35,15); // Pokédex's top-left Menu button.
+  await page.waitForTimeout(1200);
+  await page.screenshot({path:path.join(output,'public-after-menu-return.png')});
+  await clickCanvas(page,320,148); // Main title Play.
+  await page.waitForTimeout(1000);
+  await page.screenshot({path:path.join(output,'public-play-menu.png')});
+  await clickCanvas(page,320,180); // Reference Play submenu: VS CPU.
+  await page.waitForTimeout(1900);
+  await page.screenshot({path:path.join(output,'public-local-selection.png')});
+  report.navigation.push('vs-cpu-public-menu-attempted');
+  for (let i=0;i<18;i++) {
     await page.keyboard.press('ArrowRight');
     await page.waitForTimeout(120);
   }
-  report.navigation.push('pokedex-40-keypresses');
-  await page.waitForTimeout(1500);
-  await page.screenshot({path:path.join(output,'public-pokedex-after-navigation.png')});
+  await page.screenshot({path:path.join(output,'public-local-after-navigation.png')});
 }
 async function probe(outDir, browserFactory) {
   const output = path.resolve(outDir);
