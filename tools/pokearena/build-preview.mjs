@@ -758,6 +758,19 @@ for(const [filename,changes] of patches){
     if(!body.includes(helper))body=body.replace(dataImport[0],dataImport[0]+helper);
     continue;
    }
+   // The Alpha 0.69.3 config import gained FX. Preserve the exact native
+   // import and add only the already approved offline Campanha scene module.
+   // No native settings, graphics toggles or network modules are rewritten.
+   if(filename==='main.js'&&
+      from.startsWith('import{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,')&&
+      to.includes('import{Campanha}')){
+    const match=body.match(/^import\{DEBUG,ANCHO,ALTO,VISTA,PANTALLA,REEL,(?:FX,)?caso,registrarNombres\}from"\.\/config\.js";/);
+    if(!match || body.indexOf(match[0],1)!==-1 ||
+       body.includes('import{Campanha}from"./torre2/campanha.js";'))
+      throw Error('Unknown or duplicate native main.js config/Campanha import');
+    body=body.replace(match[0],match[0]+'import{Campanha}from"./torre2/campanha.js";');
+    continue;
+   }
    // Original site startup calls change; no optional online code in Torre 2.
    if(filename==='main.js'&&from.startsWith('iniciarAvisos(juego);')){
     const marker='if(DEBUG)window.juego=juego;';
