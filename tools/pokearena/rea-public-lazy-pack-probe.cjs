@@ -130,12 +130,15 @@ async function walkMenus(page, report, output) {
   await page.waitForTimeout(1600);
   await page.screenshot({path:path.join(output,'public-local-menu.png')});
   report.navigation.push('local-menu-physical-click');
-  // Public screenshot confirms first three starter cards are unlocked.
-  // Pick Charmander as CPU opponent, without unlocking restricted forms.
+  // Normal public selection, first choose player Charmander (column 2)
+  // then a different *unlocked* rival Bulbasaur (column 1).
   await clickCanvas(page,61,60);
-  await page.waitForTimeout(550);
-  await page.screenshot({path:path.join(output,'public-local-cpu-opponent.png')});
-  // Click the visible "Fight!" local VS CPU button, not online/ranked.
+  await page.waitForTimeout(450);
+  await page.screenshot({path:path.join(output,'public-local-player-chosen.png')});
+  await clickCanvas(page,24,60);
+  await page.waitForTimeout(600);
+  await page.screenshot({path:path.join(output,'public-local-rival-chosen.png')});
+  // Click the visible "Fight!" VS CPU button only when both appear ready.
   await clickCanvas(page,565,306);
   await page.waitForTimeout(6500);
   await page.screenshot({path:path.join(output,'public-local-battle.png')});
