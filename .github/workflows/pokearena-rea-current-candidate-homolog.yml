@@ -161,6 +161,8 @@ jobs:
             echo "::warning::Original native sprites are missing. Continuing ONLY to isolated diagnostic build; production release remains blocked."
           fi
       - name: Build original Phaser into isolated _site for DIAGNOSTICS, never Pages
+        env:
+          TORRE2_UPSTREAM_AUDIT: '1'
         run: |
           node tools/pokearena/build-preview.mjs
           node tools/dev/approved-visual-guard.mjs
